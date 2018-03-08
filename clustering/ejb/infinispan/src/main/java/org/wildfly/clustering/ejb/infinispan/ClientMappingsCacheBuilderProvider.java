@@ -26,8 +26,10 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ServiceLoader;
+import java.util.function.Consumer;
 
 import org.infinispan.configuration.cache.CacheMode;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderConfiguration;
@@ -43,7 +45,7 @@ import org.wildfly.clustering.spi.ServiceNameRegistry;
  * Creates routing services.
  * @author Paul Ferraro
  */
-public class ClientMappingsCacheBuilderProvider implements CacheBuilderProvider, CacheAliasBuilderProvider {
+public class ClientMappingsCacheBuilderProvider implements CacheBuilderProvider, CacheAliasBuilderProvider, Consumer<ConfigurationBuilder> {
 
     private final Class<? extends CacheBuilderProvider> providerClass;
 
@@ -56,14 +58,7 @@ public class ClientMappingsCacheBuilderProvider implements CacheBuilderProvider,
         List<CapabilityServiceBuilder<?>> builders = new LinkedList<>();
         if (aliasCacheName == null) {
             String cacheName = BeanManagerFactoryBuilderConfiguration.CLIENT_MAPPINGS_CACHE_NAME;
-            builders.add(new TemplateConfigurationBuilder(ServiceName.parse(InfinispanCacheRequirement.CONFIGURATION.resolve(containerName, cacheName)), containerName, cacheName, aliasCacheName, builder -> {
-                CacheMode mode = builder.clustering().cacheMode();
-                builder.clustering().cacheMode(mode.isClustered() ? CacheMode.REPL_SYNC : CacheMode.LOCAL);
-                // don't use DefaultConsistentHashFactory for REPL caches (WFLY-9276)
-                builder.clustering().hash().consistentHashFactory(null);
-                builder.clustering().l1().disable();
-                builder.persistence().clearStores();
-            }));
+            builders.add(new TemplateConfigurationBuilder(ServiceName.parse(InfinispanCacheRequirement.CONFIGURATION.resolve(containerName, cacheName)), containerName, cacheName, aliasCacheName, this));
             builders.add(new CacheBuilder<>(ServiceName.parse(InfinispanCacheRequirement.CACHE.resolve(containerName, cacheName)), containerName, cacheName));
             ServiceNameRegistry<ClusteringCacheRequirement> routingRegistry = requirement -> ServiceName.parse(requirement.resolve(containerName, cacheName));
             for (CacheBuilderProvider provider : ServiceLoader.load(this.providerClass, this.providerClass.getClassLoader())) {
@@ -76,5 +71,15 @@ public class ClientMappingsCacheBuilderProvider implements CacheBuilderProvider,
     @Override
     public Collection<CapabilityServiceBuilder<?>> getBuilders(ServiceNameRegistry<ClusteringCacheRequirement> registry, String containerName, String aliasCacheName, String targetCacheName) {
         return this.getBuilders(registry, containerName, aliasCacheName);
+    }
+
+    @Override
+    public void accept(ConfigurationBuilder builder) {
+        CacheMode mode = builder.clustering().cacheMode();
+        builder.clustering().cacheMode(mode.isClustered() ? CacheMode.REPL_SYNC : CacheMode.LOCAL);
+        // don't use DefaultConsistentHashFactory for REPL caches (WFLY-9276)
+        builder.clustering().hash().consistentHashFactory(null);
+        builder.clustering().l1().disable();
+        builder.persistence().clearStores();
     }
 }

@@ -21,9 +21,6 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import java.util.Objects;
-import java.util.stream.Stream;
-
 import javax.management.MBeanServer;
 
 import org.jboss.as.clustering.controller.Capability;
@@ -48,6 +45,7 @@ import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.ValueDependency;
 
@@ -78,8 +76,7 @@ public class ChannelBuilder extends CapabilityServiceNameProvider implements Res
     @Override
     public ServiceBuilder<JChannel> build(ServiceTarget target) {
         ServiceBuilder<JChannel> builder = new AsynchronousServiceBuilder<>(this.getServiceName(), this).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND);
-        Stream.of(this.factory, this.cluster, this.server).filter(Objects::nonNull).forEach(dependency -> dependency.register(builder));
-        return builder;
+        return new CompositeDependency(this.factory, this.cluster, this.server).register(builder);
     }
 
     @Override

@@ -22,7 +22,6 @@
 
 package org.jboss.as.clustering.controller;
 
-import java.util.Optional;
 import java.util.function.Function;
 
 import org.jboss.as.controller.OperationContext;
@@ -43,7 +42,7 @@ public class DefaultableCapabilityReference extends CapabilityReference {
      * @param requirement the requirement of the specified capability
      */
     public DefaultableCapabilityReference(Capability capability, DefaultableUnaryRequirement requirement) {
-        super(capability, requirement, (context, value) -> Optional.of((value != null) ? requirement.resolve(value) : requirement.getDefaultRequirement().getName()));
+        super(capability, requirement, (context, value) -> (value != null) ? requirement.resolve(value) : requirement.getDefaultRequirement().getName());
     }
 
     /**
@@ -72,6 +71,6 @@ public class DefaultableCapabilityReference extends CapabilityReference {
      * @param parentResolver the resolver of the parent dynamic component of the requirement
      */
     public DefaultableCapabilityReference(Capability capability, DefaultableBinaryRequirement requirement, Function<OperationContext, String> parentResolver) {
-        super(capability, requirement, (context, value) -> Optional.of((value != null) ? requirement.resolve(parentResolver.apply(context), value) : requirement.getDefaultRequirement().resolve(parentResolver.apply(context))));
+        super(capability, requirement, (context, value) -> (value != null) ? requirement.resolve(parentResolver.apply(context), value) : requirement.getDefaultRequirement().resolve(parentResolver.apply(context)));
     }
 }

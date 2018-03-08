@@ -25,11 +25,8 @@ package org.wildfly.extension.clustering.singleton;
 import static org.wildfly.extension.clustering.singleton.SingletonPolicyResourceDefinition.Attribute.*;
 import static org.wildfly.extension.clustering.singleton.SingletonPolicyResourceDefinition.Capability.*;
 
-import java.util.stream.Stream;
-
 import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
-import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -42,6 +39,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.ImmediateValue;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.ValueDependency;
 import org.wildfly.clustering.singleton.SingletonElectionPolicy;
@@ -69,14 +67,13 @@ public class SingletonPolicyBuilder extends CapabilityServiceNameProvider implem
     public ServiceBuilder<SingletonPolicy> build(ServiceTarget target) {
         Service<SingletonPolicy> service = new ValueService<>(new ImmediateValue<>(this));
         ServiceBuilder<SingletonPolicy> builder = target.addService(this.getServiceName(), service).setInitialMode(ServiceController.Mode.PASSIVE);
-        Stream.of(this.policy, this.factory).forEach(dependency -> dependency.register(builder));
-        return builder;
+        return new CompositeDependency(this.policy, this.factory).register(builder);
     }
 
     @Override
     public Builder<SingletonPolicy> configure(OperationContext context, ModelNode model) throws OperationFailedException {
         String containerName = CACHE_CONTAINER.resolveModelAttribute(context, model).asString();
-        String cacheName = ModelNodes.optionalString(CACHE.resolveModelAttribute(context, model)).orElse(null);
+        String cacheName = CACHE.resolveModelAttribute(context, model).asStringOrNull();
         this.factory = new InjectedValueDependency<>(ClusteringCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY.getServiceName(context, containerName, cacheName), SingletonServiceBuilderFactory.class);
         this.quorum = QUORUM.resolveModelAttribute(context, model).asInt();
         return this;

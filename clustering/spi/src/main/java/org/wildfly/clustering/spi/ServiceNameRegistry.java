@@ -26,8 +26,14 @@ import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.service.Requirement;
 
 /**
+ * Registry of services names for a set of requirements.
  * @author Paul Ferraro
  */
 public interface ServiceNameRegistry<R extends Requirement> {
+    /**
+     * Returns the service name for the specified requirement
+     * @param requirement a requirement
+     * @return a service name.
+     */
     ServiceName getServiceName(R requirement);
 }

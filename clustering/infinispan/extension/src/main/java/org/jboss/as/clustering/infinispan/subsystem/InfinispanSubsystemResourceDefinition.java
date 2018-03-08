@@ -25,6 +25,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.SubsystemRegistration;
@@ -43,6 +44,7 @@ import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
+import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.wildfly.clustering.spi.ClusteringRequirement;
 import org.wildfly.clustering.spi.LocalGroupBuilderProvider;
@@ -52,23 +54,27 @@ import org.wildfly.clustering.spi.LocalGroupBuilderProvider;
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class InfinispanSubsystemResourceDefinition extends SubsystemResourceDefinition<SubsystemRegistration> {
+public class InfinispanSubsystemResourceDefinition extends SubsystemResourceDefinition<SubsystemRegistration> implements Consumer<DeploymentProcessorTarget> {
 
     static final PathElement PATH = pathElement(InfinispanExtension.SUBSYSTEM_NAME);
 
     static final Map<ClusteringRequirement, org.jboss.as.clustering.controller.Capability> LOCAL_CLUSTERING_CAPABILITIES = new EnumMap<>(ClusteringRequirement.class);
     static {
-        EnumSet.allOf(ClusteringRequirement.class).forEach(requirement -> LOCAL_CLUSTERING_CAPABILITIES.put(requirement, new UnaryRequirementCapability(requirement) {
-            @Override
-            public RuntimeCapability<Void> resolve(PathAddress address) {
-                return this.getDefinition().fromBaseCapability(LocalGroupBuilderProvider.LOCAL);
-            }
-        }));
+        for (ClusteringRequirement requirement : EnumSet.allOf(ClusteringRequirement.class)) {
+            LOCAL_CLUSTERING_CAPABILITIES.put(requirement, new UnaryRequirementCapability(requirement) {
+                @Override
+                public RuntimeCapability<Void> resolve(PathAddress address) {
+                    return this.getDefinition().fromBaseCapability(LocalGroupBuilderProvider.LOCAL);
+                }
+            });
+        }
     }
 
     static final Map<ClusteringRequirement, org.jboss.as.clustering.controller.Capability> CLUSTERING_CAPABILITIES = new EnumMap<>(ClusteringRequirement.class);
     static {
-        EnumSet.allOf(ClusteringRequirement.class).forEach(requirement -> CLUSTERING_CAPABILITIES.put(requirement, new RequirementCapability(requirement.getDefaultRequirement(), builder -> builder.setAllowMultipleRegistrations(true))));
+        for (ClusteringRequirement requirement : EnumSet.allOf(ClusteringRequirement.class)) {
+            CLUSTERING_CAPABILITIES.put(requirement, new RequirementCapability(requirement.getDefaultRequirement(), builder -> builder.setAllowMultipleRegistrations(true)));
+        }
     }
 
     static TransformationDescription buildTransformation(ModelVersion version) {
@@ -94,8 +100,13 @@ public class InfinispanSubsystemResourceDefinition extends SubsystemResourceDefi
                 .addCapabilities(CLUSTERING_CAPABILITIES.values())
                 ;
         ResourceServiceHandler handler = new InfinispanSubsystemServiceHandler();
-        new DeploymentChainContributingResourceRegistration(descriptor, handler, target -> target.addDeploymentProcessor(InfinispanExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_CLUSTERING, new ClusteringDependencyProcessor())).register(registration);
+        new DeploymentChainContributingResourceRegistration(descriptor, handler, this).register(registration);
 
         new CacheContainerResourceDefinition().register(registration);
+    }
+
+    @Override
+    public void accept(DeploymentProcessorTarget target) {
+        target.addDeploymentProcessor(InfinispanExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_CLUSTERING, new ClusteringDependencyProcessor());
     }
 }

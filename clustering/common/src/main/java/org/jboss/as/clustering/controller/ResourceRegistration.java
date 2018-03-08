@@ -22,9 +22,11 @@
 
 package org.jboss.as.clustering.controller;
 
+import java.util.Map;
 import java.util.Optional;
 
 import org.jboss.as.clustering.function.Predicates;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.operations.global.ListOperations;
@@ -62,7 +64,10 @@ public class ResourceRegistration implements Registration<ManagementResourceRegi
         this.writeAttributeRegistration.register(registration);
 
         // Register attribute translations
-        this.descriptor.getAttributeTranslations().entrySet().forEach(entry -> registration.registerReadWriteAttribute(entry.getKey(), new ReadAttributeTranslationHandler(entry.getValue()), new WriteAttributeTranslationHandler(entry.getValue())));
+        for (Map.Entry<AttributeDefinition, AttributeTranslation> entry : this.descriptor.getAttributeTranslations().entrySet()) {
+            AttributeTranslation translation = entry.getValue();
+            registration.registerReadWriteAttribute(entry.getKey(), new ReadAttributeTranslationHandler(translation), new WriteAttributeTranslationHandler(translation));
+        }
 
         this.addRegistration.register(registration);
         this.removeRegistration.register(registration);

@@ -53,11 +53,9 @@ import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 import org.wildfly.clustering.service.UnaryRequirement;
 import org.wildfly.clustering.spi.ClusteringRequirement;
-import org.wildfly.clustering.spi.ServiceNameRegistry;
 
 /**
  * Definition for /subsystem=jgroups/channel=* resources
@@ -93,19 +91,8 @@ public class ChannelResourceDefinition extends ChildResourceDefinition<Managemen
 
     static final Map<ClusteringRequirement, org.jboss.as.clustering.controller.Capability> CLUSTERING_CAPABILITIES = new EnumMap<>(ClusteringRequirement.class);
     static {
-        EnumSet.allOf(ClusteringRequirement.class).forEach(requirement -> CLUSTERING_CAPABILITIES.put(requirement, new UnaryRequirementCapability(requirement)));
-    }
-
-    static class CapabilityServiceNameRegistry implements ServiceNameRegistry<ClusteringRequirement> {
-        private PathAddress address;
-
-        CapabilityServiceNameRegistry(PathAddress address) {
-            this.address = address;
-        }
-
-        @Override
-        public ServiceName getServiceName(ClusteringRequirement requirement) {
-            return CLUSTERING_CAPABILITIES.get(requirement).getServiceName(this.address);
+        for (ClusteringRequirement requirement : EnumSet.allOf(ClusteringRequirement.class)) {
+            CLUSTERING_CAPABILITIES.put(requirement, new UnaryRequirementCapability(requirement));
         }
     }
 

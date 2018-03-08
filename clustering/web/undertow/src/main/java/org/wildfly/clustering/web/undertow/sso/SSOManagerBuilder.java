@@ -25,7 +25,6 @@ package org.wildfly.clustering.web.undertow.sso;
 import java.io.Externalizable;
 import java.io.Serializable;
 import java.util.function.Function;
-import java.util.stream.Stream;
 
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.marshalling.MarshallingConfiguration;
@@ -48,6 +47,7 @@ import org.wildfly.clustering.marshalling.jboss.SimpleMarshalledValueFactory;
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingConfigurationRepository;
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingContextFactory;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
+import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.ValueDependency;
 import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.LocalContextFactory;
@@ -90,15 +90,14 @@ public class SSOManagerBuilder<A, D, S, L> implements CapabilityServiceBuilder<S
     }
 
     private final ServiceName name;
-    @SuppressWarnings("rawtypes")
-    private final ValueDependency<SSOManagerFactory> factory;
+    private final ValueDependency<SSOManagerFactory<A, D, S, Batch>> factory;
     private final ValueDependency<SessionIdGenerator> generator;
     private final LocalContextFactory<L> localContextFactory;
 
     private volatile SSOManager<A, D, S, L, Batch> manager;
     private volatile MarshallingContext context;
 
-    public SSOManagerBuilder(ServiceName name, @SuppressWarnings("rawtypes") ValueDependency<SSOManagerFactory> factory, ValueDependency<SessionIdGenerator> generator, LocalContextFactory<L> localContextFactory) {
+    public SSOManagerBuilder(ServiceName name, ValueDependency<SSOManagerFactory<A, D, S, Batch>> factory, ValueDependency<SessionIdGenerator> generator, LocalContextFactory<L> localContextFactory) {
         this.name = name;
         this.factory = factory;
         this.generator = generator;
@@ -113,8 +112,7 @@ public class SSOManagerBuilder<A, D, S, L> implements CapabilityServiceBuilder<S
     @Override
     public ServiceBuilder<SSOManager<A, D, S, L, Batch>> build(ServiceTarget target) {
         ServiceBuilder<SSOManager<A, D, S, L, Batch>> builder = target.addService(this.getServiceName(), this);
-        Stream.of(this.factory, this.generator).forEach(dependency -> dependency.register(builder));
-        return builder;
+        return new CompositeDependency(this.factory, this.generator).register(builder);
     }
 
     @Override

@@ -33,6 +33,6 @@ import org.wildfly.clustering.spi.LocalCacheBuilderProvider;
 public class LocalRegistryFactoryBuilderProvider extends RegistryFactoryBuilderProvider implements LocalCacheBuilderProvider {
 
     public LocalRegistryFactoryBuilderProvider() {
-        super((name, containerName, cacheName) -> new LocalRegistryFactoryBuilder<>(name, containerName, cacheName));
+        super(LocalRegistryFactoryBuilder::new);
     }
 }

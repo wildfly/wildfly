@@ -49,12 +49,14 @@ public class InfinispanExtension implements Extension {
         SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, InfinispanModel.CURRENT.getVersion());
 
         new InfinispanSubsystemResourceDefinition().register(new ContextualSubsystemRegistration(registration, context));
-        registration.registerXMLElementWriter(() -> new InfinispanSubsystemXMLWriter());
+        registration.registerXMLElementWriter(new InfinispanSubsystemXMLWriter());
     }
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        EnumSet.allOf(InfinispanSchema.class).forEach(schema -> context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespaceUri(), () -> new InfinispanSubsystemXMLReader(schema)));
+        for (InfinispanSchema schema : EnumSet.allOf(InfinispanSchema.class)) {
+            context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespaceUri(), new InfinispanSubsystemXMLReader(schema));
+        }
         context.setProfileParsingCompletionHandler(new InfinispanProfileParsingCompletionHandler());
     }
 }

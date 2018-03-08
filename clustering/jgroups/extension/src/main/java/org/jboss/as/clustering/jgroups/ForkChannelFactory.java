@@ -60,7 +60,12 @@ public class ForkChannelFactory implements ChannelFactory {
 
         String stackName = this.protocols.isEmpty() ? this.channel.getClusterName() : id;
 
-        return new ForkChannel(this.channel, stackName, id, this.protocols.stream().map(pc -> pc.createProtocol(this.parentFactory.getProtocolStackConfiguration())).toArray(Protocol[]::new));
+        Protocol[] protocols = new Protocol[this.protocols.size()];
+        for (int i = 0; i < protocols.length; ++i) {
+            protocols[i] = this.protocols.get(i).createProtocol(this.parentFactory.getProtocolStackConfiguration());
+        }
+
+        return new ForkChannel(this.channel, stackName, id, protocols);
     }
 
     @Override

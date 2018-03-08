@@ -26,6 +26,8 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.function.Function;
 
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
@@ -51,27 +53,31 @@ import io.undertow.server.session.SessionIdGenerator;
 /**
  * @author Paul Ferraro
  */
-public class DistributableSingleSignOnManagerBuilder implements CapabilityServiceBuilder<SingleSignOnManager> {
+public class DistributableSingleSignOnManagerBuilder implements CapabilityServiceBuilder<SingleSignOnManager>, Function<SSOManager<ElytronAuthentication, String, Map.Entry<String, URI>, LocalSSOContext, Batch>, SingleSignOnManager> {
 
     private final ServiceName name;
-    @SuppressWarnings("rawtypes")
-    private final ValueDependency<SSOManager> manager;
+    private final ValueDependency<SSOManager<ElytronAuthentication, String, Map.Entry<String, URI>, LocalSSOContext, Batch>> manager;
 
     private final Collection<CapabilityServiceBuilder<?>> builders;
 
+    @SuppressWarnings("unchecked")
     public DistributableSingleSignOnManagerBuilder(ServiceName name, String securityDomainName, SessionIdGenerator generator, SSOManagerFactoryBuilderProvider<Batch> provider) {
         this.name = name;
 
         CapabilityServiceBuilder<SSOManagerFactory<ElytronAuthentication, String, Map.Entry<String, URI>, Batch>> factoryBuilder = provider.<ElytronAuthentication, String, Map.Entry<String, URI>>getBuilder(securityDomainName);
-        @SuppressWarnings("rawtypes")
-        ValueDependency<SSOManagerFactory> factoryDependency = new InjectedValueDependency<>(factoryBuilder, SSOManagerFactory.class);
+        ValueDependency<SSOManagerFactory<ElytronAuthentication, String, Map.Entry<String, URI>, Batch>> factoryDependency = new InjectedValueDependency<>(factoryBuilder, (Class<SSOManagerFactory<ElytronAuthentication, String, Map.Entry<String, URI>, Batch>>) (Class<?>) SSOManagerFactory.class);
         ValueDependency<SessionIdGenerator> generatorDependency = new ImmediateValueDependency<>(generator);
         ServiceName managerServiceName = this.name.append("manager");
         CapabilityServiceBuilder<SSOManager<ElytronAuthentication, String, Map.Entry<String, URI>, LocalSSOContext, Batch>> managerBuilder = new SSOManagerBuilder<>(managerServiceName, factoryDependency, generatorDependency, new LocalSSOContextFactory());
 
-        this.manager = new InjectedValueDependency<>(managerServiceName, SSOManager.class);
+        this.manager = new InjectedValueDependency<>(managerServiceName, (Class<SSOManager<ElytronAuthentication, String, Map.Entry<String, URI>, LocalSSOContext, Batch>>) (Class<?>) SSOManager.class);
 
         this.builders = Arrays.asList(factoryBuilder, managerBuilder);
+    }
+
+    @Override
+    public SingleSignOnManager apply(SSOManager<ElytronAuthentication, String, Entry<String, URI>, LocalSSOContext, Batch> manager) {
+        return new DistributableSingleSignOnManager(manager);
     }
 
     @Override
@@ -81,15 +87,18 @@ public class DistributableSingleSignOnManagerBuilder implements CapabilityServic
 
     @Override
     public Builder<SingleSignOnManager> configure(CapabilityServiceSupport support) {
-        this.builders.forEach(builder -> builder.configure(support));
+        for (CapabilityServiceBuilder<?> builder : this.builders) {
+            builder.configure(support);
+        }
         return this;
     }
 
     @Override
     public ServiceBuilder<SingleSignOnManager> build(ServiceTarget target) {
-        this.builders.forEach(builder -> builder.build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install());
-        @SuppressWarnings("unchecked")
-        Service<SingleSignOnManager> service = new MappedValueService<>(manager -> new DistributableSingleSignOnManager(manager), this.manager);
+        for (CapabilityServiceBuilder<?> builder : this.builders) {
+            builder.build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        }
+        Service<SingleSignOnManager> service = new MappedValueService<>(this, this.manager);
         return this.manager.register(target.addService(this.name, service)).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 }

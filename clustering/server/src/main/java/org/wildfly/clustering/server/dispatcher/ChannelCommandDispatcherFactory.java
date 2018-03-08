@@ -79,11 +79,11 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * all of which will share the same {@link MessageDispatcher} instance.
  * @author Paul Ferraro
  */
-public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDispatcherFactory, RequestHandler, org.wildfly.clustering.server.group.Group<Address>, MembershipListener {
+public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDispatcherFactory, RequestHandler, org.wildfly.clustering.server.group.Group<Address>, MembershipListener, Runnable {
 
     private static ThreadFactory createThreadFactory(Class<?> targetClass) {
-        PrivilegedAction<ThreadFactory> action = () -> new JBossThreadFactory(new ThreadGroup(targetClass.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null);
-        return new ClassLoaderThreadFactory(WildFlySecurityManager.doUnchecked(action), targetClass.getClassLoader());
+        PrivilegedAction<ThreadFactory> action = () -> new ClassLoaderThreadFactory(new JBossThreadFactory(new ThreadGroup(targetClass.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null), targetClass.getClassLoader());
+        return WildFlySecurityManager.doUnchecked(action);
     }
 
     private final ConcurrentMap<Address, Node> members = new ConcurrentHashMap<>();
@@ -115,18 +115,21 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
     }
 
     @Override
+    public void run() {
+        this.dispatcher.stop();
+        this.dispatcher.getChannel().setUpHandler(null);
+        // Cleanup any stray listeners
+        for (ExecutorService executor : this.listeners.values()) {
+            PrivilegedAction<List<Runnable>> action = () -> executor.shutdownNow();
+            WildFlySecurityManager.doUnchecked(action);
+        }
+        this.listeners.clear();
+        this.executorService.shutdownNow();
+    }
+
+    @Override
     public void close() {
-        this.executor.close(() -> {
-            this.dispatcher.stop();
-            this.dispatcher.getChannel().setUpHandler(null);
-            // Cleanup any stray listeners
-            this.listeners.values().forEach(executor -> {
-                PrivilegedAction<List<Runnable>> action = () -> executor.shutdownNow();
-                WildFlySecurityManager.doUnchecked(action);
-            });
-            this.listeners.clear();
-            this.executorService.shutdownNow();
-        });
+        this.executor.close(this);
     }
 
     @Override

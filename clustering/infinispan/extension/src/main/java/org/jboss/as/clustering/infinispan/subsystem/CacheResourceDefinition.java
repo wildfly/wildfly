@@ -55,18 +55,16 @@ import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.service.BinaryRequirement;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
-import org.wildfly.clustering.spi.ServiceNameRegistry;
 
 /**
  * Base class for cache resources which require common cache attributes only.
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class CacheResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
+public class CacheResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> implements Consumer<ManagementResourceRegistration> {
 
     enum Capability implements CapabilityProvider {
         CACHE(InfinispanCacheRequirement.CACHE),
@@ -86,19 +84,8 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
 
     static final Map<ClusteringCacheRequirement, org.jboss.as.clustering.controller.Capability> CLUSTERING_CAPABILITIES = new EnumMap<>(ClusteringCacheRequirement.class);
     static {
-        EnumSet.allOf(ClusteringCacheRequirement.class).forEach(requirement -> CLUSTERING_CAPABILITIES.put(requirement, new BinaryRequirementCapability(requirement)));
-    }
-
-    static class CapabilityServiceNameRegistry implements ServiceNameRegistry<ClusteringCacheRequirement> {
-        private final PathAddress address;
-
-        CapabilityServiceNameRegistry(PathAddress address) {
-            this.address = address;
-        }
-
-        @Override
-        public ServiceName getServiceName(ClusteringCacheRequirement requirement) {
-            return CLUSTERING_CAPABILITIES.get(requirement).getServiceName(this.address);
+        for (ClusteringCacheRequirement requirement : EnumSet.allOf(ClusteringCacheRequirement.class)) {
+            CLUSTERING_CAPABILITIES.put(requirement, new BinaryRequirementCapability(requirement));
         }
     }
 
@@ -220,27 +207,30 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
             .addRequiredSingletonChildren(ObjectMemoryResourceDefinition.PATH, NoStoreResourceDefinition.PATH)
         );
         this.handler = handler;
-        this.registrationConfigurator = registrationConfigurator.andThen(registration -> {
-            if (registration.isRuntimeOnlyRegistrationValid()) {
-                new MetricHandler<>(new CacheMetricExecutor(), CacheMetric.class).register(registration);
-            }
+        this.registrationConfigurator = registrationConfigurator.andThen(this);
+    }
 
-            new ObjectMemoryResourceDefinition().register(registration);
-            new BinaryMemoryResourceDefinition().register(registration);
-            new OffHeapMemoryResourceDefinition().register(registration);
+    @Override
+    public void accept(ManagementResourceRegistration registration) {
+        if (registration.isRuntimeOnlyRegistrationValid()) {
+            new MetricHandler<>(new CacheMetricExecutor(), CacheMetric.class).register(registration);
+        }
 
-            new ExpirationResourceDefinition().register(registration);
-            new LockingResourceDefinition().register(registration);
-            new TransactionResourceDefinition().register(registration);
+        new ObjectMemoryResourceDefinition().register(registration);
+        new BinaryMemoryResourceDefinition().register(registration);
+        new OffHeapMemoryResourceDefinition().register(registration);
 
-            new NoStoreResourceDefinition().register(registration);
-            new CustomStoreResourceDefinition().register(registration);
-            new FileStoreResourceDefinition().register(registration);
-            new BinaryKeyedJDBCStoreResourceDefinition().register(registration);
-            new MixedKeyedJDBCStoreResourceDefinition().register(registration);
-            new StringKeyedJDBCStoreResourceDefinition().register(registration);
-            new RemoteStoreResourceDefinition().register(registration);
-        });
+        new ExpirationResourceDefinition().register(registration);
+        new LockingResourceDefinition().register(registration);
+        new TransactionResourceDefinition().register(registration);
+
+        new NoStoreResourceDefinition().register(registration);
+        new CustomStoreResourceDefinition().register(registration);
+        new FileStoreResourceDefinition().register(registration);
+        new BinaryKeyedJDBCStoreResourceDefinition().register(registration);
+        new MixedKeyedJDBCStoreResourceDefinition().register(registration);
+        new StringKeyedJDBCStoreResourceDefinition().register(registration);
+        new RemoteStoreResourceDefinition().register(registration);
     }
 
     @Override

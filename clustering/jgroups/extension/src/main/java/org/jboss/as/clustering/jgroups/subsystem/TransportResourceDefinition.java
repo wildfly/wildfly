@@ -23,19 +23,19 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.UnaryOperator;
-import java.util.stream.Collectors;
 
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
-import org.jboss.as.clustering.controller.Definable;
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.WriteAttributeStepHandler;
+import org.jboss.as.clustering.controller.WriteAttributeStepHandlerDescriptor;
 import org.jboss.as.clustering.controller.transform.ChainedOperationTransformer;
 import org.jboss.as.clustering.controller.transform.LegacyPropertyAddOperationTransformer;
 import org.jboss.as.clustering.controller.transform.LegacyPropertyMapGetOperationTransformer;
@@ -215,7 +215,9 @@ public class TransportResourceDefinition<T extends TP> extends AbstractProtocolR
             // Reject thread pool configuration, discard if undefined, support EAP 6.x slaves using deprecated attributes
             builder.addChildResource(ThreadPoolResourceDefinition.WILDCARD_PATH, RequiredChildResourceDiscardPolicy.REJECT_AND_WARN);
         } else {
-            EnumSet.allOf(ThreadPoolResourceDefinition.class).forEach(p -> p.buildTransformation(version, parent));
+            for (ThreadPoolResourceDefinition pool : EnumSet.allOf(ThreadPoolResourceDefinition.class)) {
+                pool.buildTransformation(version, parent);
+            }
         }
     }
 
@@ -226,6 +228,19 @@ public class TransportResourceDefinition<T extends TP> extends AbstractProtocolR
             return address.subAddress(0, address.size() - 1).append(LEGACY_PATH);
         }
     };
+
+    @Deprecated
+    static class WriteThreadingAttributeStepHandlerDescriptor implements WriteAttributeStepHandlerDescriptor {
+        @Override
+        public Collection<AttributeDefinition> getAttributes() {
+            Set<ThreadingAttribute> attributes = EnumSet.allOf(ThreadingAttribute.class);
+            List<AttributeDefinition> result = new ArrayList<>(attributes.size());
+            for (ThreadingAttribute attribute : attributes) {
+                result.add(attribute.getDefinition());
+            }
+            return result;
+        }
+    }
 
     TransportResourceDefinition(ResourceServiceBuilderFactory<TransportConfiguration<T>> builderFactory, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
         this(new Parameters(WILDCARD_PATH, JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(WILDCARD_PATH, ProtocolResourceDefinition.WILDCARD_PATH)), builderFactory, parentBuilderFactory);
@@ -242,7 +257,7 @@ public class TransportResourceDefinition<T extends TP> extends AbstractProtocolR
                 .addExtraParameters(ThreadingAttribute.class)
                 .addRequiredChildren(ThreadPoolResourceDefinition.class)
             , builderFactory, parentBuilderFactory, (parent, registration) -> {
-                new WriteAttributeStepHandler(() -> EnumSet.allOf(ThreadingAttribute.class).stream().map(Definable::getDefinition).collect(Collectors.toList())) {
+                new WriteAttributeStepHandler(new WriteThreadingAttributeStepHandlerDescriptor()) {
                     @Override
                     protected void validateUpdatedModel(OperationContext context, Resource model) throws OperationFailedException {
                         // Add a new step to validate instead of doing it directly in this method.
@@ -267,7 +282,9 @@ public class TransportResourceDefinition<T extends TP> extends AbstractProtocolR
                 }.register(registration);
 
                 if (registration.getPathAddress().getLastElement().isWildcard()) {
-                    EnumSet.allOf(ThreadPoolResourceDefinition.class).forEach(pool -> pool.register(registration));
+                    for (ThreadPoolResourceDefinition pool : EnumSet.allOf(ThreadPoolResourceDefinition.class)) {
+                        pool.register(registration);
+                    }
                 }
 
                 if (registration.getPathAddress().getLastElement().isWildcard()) {

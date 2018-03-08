@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.clustering.singleton;
 
+import java.util.function.Consumer;
+
 import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.DeploymentChainContributingResourceRegistration;
@@ -41,6 +43,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
+import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.jbossallxml.JBossAllXmlParserRegisteringProcessor;
 import org.jboss.dmr.ModelType;
@@ -57,7 +60,7 @@ import org.wildfly.extension.clustering.singleton.deployment.SingletonDeployment
  * Definition of the singleton deployer resource.
  * @author Paul Ferraro
  */
-public class SingletonResourceDefinition extends SubsystemResourceDefinition<SubsystemRegistration> {
+public class SingletonResourceDefinition extends SubsystemResourceDefinition<SubsystemRegistration> implements Consumer<DeploymentProcessorTarget> {
 
     static final PathElement PATH = pathElement(SingletonExtension.SUBSYSTEM_NAME);
 
@@ -117,15 +120,18 @@ public class SingletonResourceDefinition extends SubsystemResourceDefinition<Sub
                 .addCapabilities(Capability.class)
                 ;
         ResourceServiceHandler handler = new SingletonServiceHandler();
-        new DeploymentChainContributingResourceRegistration(descriptor, handler, target -> {
-            for (SingletonDeploymentSchema schema : SingletonDeploymentSchema.values()) {
-                target.addDeploymentProcessor(SingletonExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_REGISTER_JBOSS_ALL_SINGLETON_DEPLOYMENT, new JBossAllXmlParserRegisteringProcessor<>(schema.getRoot(), SingletonDeploymentDependencyProcessor.CONFIGURATION_KEY, new SingletonDeploymentXMLReader(schema)));
-            }
-            target.addDeploymentProcessor(SingletonExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_SINGLETON_DEPLOYMENT, new SingletonDeploymentParsingProcessor());
-            target.addDeploymentProcessor(SingletonExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_SINGLETON_DEPLOYMENT, new SingletonDeploymentDependencyProcessor());
-            target.addDeploymentProcessor(SingletonExtension.SUBSYSTEM_NAME, Phase.CONFIGURE_MODULE, Phase.CONFIGURE_SINGLETON_DEPLOYMENT, new SingletonDeploymentProcessor());
-        }).register(registration);
+        new DeploymentChainContributingResourceRegistration(descriptor, handler, this).register(registration);
 
         new SingletonPolicyResourceDefinition().register(registration);
+    }
+
+    @Override
+    public void accept(DeploymentProcessorTarget target) {
+        for (SingletonDeploymentSchema schema : SingletonDeploymentSchema.values()) {
+            target.addDeploymentProcessor(SingletonExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_REGISTER_JBOSS_ALL_SINGLETON_DEPLOYMENT, new JBossAllXmlParserRegisteringProcessor<>(schema.getRoot(), SingletonDeploymentDependencyProcessor.CONFIGURATION_KEY, new SingletonDeploymentXMLReader(schema)));
+        }
+        target.addDeploymentProcessor(SingletonExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_SINGLETON_DEPLOYMENT, new SingletonDeploymentParsingProcessor());
+        target.addDeploymentProcessor(SingletonExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_SINGLETON_DEPLOYMENT, new SingletonDeploymentDependencyProcessor());
+        target.addDeploymentProcessor(SingletonExtension.SUBSYSTEM_NAME, Phase.CONFIGURE_MODULE, Phase.CONFIGURE_SINGLETON_DEPLOYMENT, new SingletonDeploymentProcessor());
     }
 }

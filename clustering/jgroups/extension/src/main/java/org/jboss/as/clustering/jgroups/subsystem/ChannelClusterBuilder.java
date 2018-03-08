@@ -26,7 +26,6 @@ import static org.jboss.as.clustering.jgroups.subsystem.ChannelResourceDefinitio
 
 import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
-import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -54,7 +53,7 @@ public class ChannelClusterBuilder extends CapabilityServiceNameProvider impleme
 
     @Override
     public Builder<String> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.cluster = ModelNodes.optionalString(CLUSTER.resolveModelAttribute(context, model)).orElse(this.name);
+        this.cluster = CLUSTER.resolveModelAttribute(context, model).asString(this.name);
         return this;
     }
 

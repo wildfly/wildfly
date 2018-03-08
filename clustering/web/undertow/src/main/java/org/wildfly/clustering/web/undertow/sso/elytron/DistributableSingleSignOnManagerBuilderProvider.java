@@ -22,15 +22,14 @@
 
 package org.wildfly.clustering.web.undertow.sso.elytron;
 
-import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.StreamSupport;
 
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.clustering.controller.SimpleCapabilityServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.web.sso.SSOManagerFactoryBuilderProvider;
 import org.wildfly.extension.undertow.security.sso.DistributableSecurityDomainSingleSignOnManagerBuilderProvider;
 import org.wildfly.security.http.util.sso.DefaultSingleSignOnManager;
@@ -44,13 +43,17 @@ import io.undertow.server.session.SessionIdGenerator;
 @MetaInfServices(DistributableSecurityDomainSingleSignOnManagerBuilderProvider.class)
 public class DistributableSingleSignOnManagerBuilderProvider implements DistributableSecurityDomainSingleSignOnManagerBuilderProvider {
 
-    @SuppressWarnings("rawtypes")
-    private static final Optional<SSOManagerFactoryBuilderProvider> PROVIDER = StreamSupport.stream(ServiceLoader.load(SSOManagerFactoryBuilderProvider.class, SSOManagerFactoryBuilderProvider.class.getClassLoader()).spliterator(), false).findFirst();
+    private static final SSOManagerFactoryBuilderProvider<Batch> PROVIDER = loadProvider();
+
+    private static SSOManagerFactoryBuilderProvider<Batch> loadProvider() {
+        for (SSOManagerFactoryBuilderProvider<Batch> provider : ServiceLoader.load(SSOManagerFactoryBuilderProvider.class, SSOManagerFactoryBuilderProvider.class.getClassLoader())) {
+            return provider;
+        }
+        return null;
+    }
 
     @Override
     public CapabilityServiceBuilder<SingleSignOnManager> getBuilder(ServiceName name, String securityDomainName, SessionIdGenerator generator) {
-        @SuppressWarnings("unchecked")
-        Optional<CapabilityServiceBuilder<SingleSignOnManager>> builder = PROVIDER.map(provider -> new DistributableSingleSignOnManagerBuilder(name, securityDomainName, generator, provider));
-        return builder.orElse(new SimpleCapabilityServiceBuilder<>(name, new DefaultSingleSignOnManager(new ConcurrentHashMap<>(), generator::createSessionId)));
+        return (PROVIDER != null) ? new DistributableSingleSignOnManagerBuilder(name, securityDomainName, generator, PROVIDER) : new SimpleCapabilityServiceBuilder<>(name, new DefaultSingleSignOnManager(new ConcurrentHashMap<>(), generator::createSessionId));
    }
 }

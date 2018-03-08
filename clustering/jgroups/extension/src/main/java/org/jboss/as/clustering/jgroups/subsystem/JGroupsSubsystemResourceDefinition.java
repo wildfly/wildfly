@@ -60,12 +60,16 @@ public class JGroupsSubsystemResourceDefinition extends SubsystemResourceDefinit
 
     static final Map<JGroupsRequirement, Capability> CAPABILITIES = new EnumMap<>(JGroupsRequirement.class);
     static {
-        EnumSet.allOf(JGroupsRequirement.class).forEach(requirement -> CAPABILITIES.put(requirement, new RequirementCapability(requirement.getDefaultRequirement())));
+        for (JGroupsRequirement requirement : EnumSet.allOf(JGroupsRequirement.class)) {
+            CAPABILITIES.put(requirement, new RequirementCapability(requirement.getDefaultRequirement()));
+        }
     }
 
     static final Map<ClusteringRequirement, Capability> CLUSTERING_CAPABILITIES = new EnumMap<>(ClusteringRequirement.class);
     static {
-        EnumSet.allOf(ClusteringRequirement.class).forEach(requirement -> CLUSTERING_CAPABILITIES.put(requirement, new RequirementCapability(requirement.getDefaultRequirement(), builder -> builder.setAllowMultipleRegistrations(true))));
+        for (ClusteringRequirement requirement : EnumSet.allOf(ClusteringRequirement.class)) {
+            CLUSTERING_CAPABILITIES.put(requirement, new RequirementCapability(requirement.getDefaultRequirement(), builder -> builder.setAllowMultipleRegistrations(true)));
+        }
     }
 
     public enum Attribute implements org.jboss.as.clustering.controller.Attribute {

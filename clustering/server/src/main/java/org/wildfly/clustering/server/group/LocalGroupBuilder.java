@@ -21,8 +21,6 @@
  */
 package org.wildfly.clustering.server.group;
 
-import java.util.function.Function;
-
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
@@ -30,22 +28,28 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.service.ValueService;
+import org.jboss.msc.value.Value;
 import org.wildfly.clustering.group.Group;
-import org.wildfly.clustering.service.MappedValueService;
+import org.wildfly.clustering.service.InjectedValueDependency;
+import org.wildfly.clustering.service.ValueDependency;
 
 /**
  * Builds a non-clustered {@link Group} service.
  * @author Paul Ferraro
  */
-public class LocalGroupBuilder implements CapabilityServiceBuilder<Group> {
+public class LocalGroupBuilder implements CapabilityServiceBuilder<Group>, Value<Group> {
 
     private final ServiceName name;
-
-    private final InjectedValue<ServerEnvironment> environment = new InjectedValue<>();
+    private final ValueDependency<ServerEnvironment> environment = new InjectedValueDependency<>(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class);
 
     public LocalGroupBuilder(ServiceName name) {
         this.name = name;
+    }
+
+    @Override
+    public Group getValue() {
+        return new LocalGroup(new LocalNode(this.environment.getValue().getNodeName()));
     }
 
     @Override
@@ -55,10 +59,6 @@ public class LocalGroupBuilder implements CapabilityServiceBuilder<Group> {
 
     @Override
     public ServiceBuilder<Group> build(ServiceTarget target) {
-        Function<ServerEnvironment, Group> mapper = environment -> new LocalGroup(new LocalNode(environment.getNodeName()));
-        return target.addService(this.name, new MappedValueService<>(mapper, this.environment))
-                .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, this.environment)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                ;
+        return this.environment.register(target.addService(this.name, new ValueService<>(this)).setInitialMode(ServiceController.Mode.ON_DEMAND));
     }
 }

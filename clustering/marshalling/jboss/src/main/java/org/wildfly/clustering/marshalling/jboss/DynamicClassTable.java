@@ -25,6 +25,7 @@ import java.io.Externalizable;
 import java.io.Serializable;
 import java.time.Clock;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -41,8 +42,13 @@ public class DynamicClassTable extends SimpleClassTable {
         super(findClasses(loader));
     }
 
-    private static Class<?>[] findClasses(ClassLoader loader) {
-        List<Class<?>> classes = new LinkedList<>();
+    private static List<Class<?>> findClasses(ClassLoader loader) {
+        List<Class<?>> knownClasses = new LinkedList<>();
+        for (ClassTableContributor contributor : ServiceLoader.load(ClassTableContributor.class, loader)) {
+            knownClasses.addAll(contributor.getKnownClasses());
+        }
+
+        List<Class<?>> classes = new ArrayList<>(knownClasses.size() + 30);
         classes.add(Serializable.class);
         classes.add(Externalizable.class);
 
@@ -80,7 +86,8 @@ public class DynamicClassTable extends SimpleClassTable {
         classes.add(Collections.unmodifiableSortedMap(Collections.emptySortedMap()).getClass());
         classes.add(Collections.unmodifiableSortedSet(Collections.emptySortedSet()).getClass());
 
-        ServiceLoader.load(ClassTableContributor.class, loader).forEach(contributor -> classes.addAll(contributor.getKnownClasses()));
-        return classes.toArray(new Class<?>[classes.size()]);
+        classes.addAll(knownClasses);
+
+        return classes;
     }
 }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,14 +20,27 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.infinispan.subsystem;
+package org.jboss.as.clustering.controller;
+
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.dmr.ModelNode;
 
 /**
+ * {@link OperationStepHandler} that registers runtime resources.
  * @author Paul Ferraro
  */
-public class InvalidationCacheServiceHandler extends ClusteredCacheServiceHandler {
+public class RuntimeResourceRegistrationStepHandler implements OperationStepHandler {
 
-    InvalidationCacheServiceHandler() {
-        super(address -> new InvalidationCacheBuilder(address));
+    private final RuntimeResourceRegistration registration;
+
+    public RuntimeResourceRegistrationStepHandler(RuntimeResourceRegistration registration) {
+        this.registration = registration;
+    }
+
+    @Override
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        this.registration.register(context);
     }
 }

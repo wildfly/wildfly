@@ -39,7 +39,7 @@ import org.wildfly.clustering.spi.ClusteringCacheRequirement;
  * Service that provides the {@link Map.Entry} for the routing {@link org.wildfly.clustering.registry.Registry}.
  * @author Paul Ferraro
  */
-public class RouteRegistryEntryProviderBuilder implements CapabilityServiceBuilder<Map.Entry<String, Void>> {
+public class RouteRegistryEntryProviderBuilder implements CapabilityServiceBuilder<Map.Entry<String, Void>>, Function<String, Map.Entry<String, Void>> {
 
     private final String serverName;
     private final ValueDependency<String> route;
@@ -50,13 +50,17 @@ public class RouteRegistryEntryProviderBuilder implements CapabilityServiceBuild
     }
 
     @Override
+    public Map.Entry<String, Void> apply(String route) {
+        return new AbstractMap.SimpleImmutableEntry<>(route, null);
+    }
+
+    @Override
     public ServiceName getServiceName() {
         return ServiceName.parse(ClusteringCacheRequirement.REGISTRY_ENTRY.resolve(InfinispanSessionManagerFactoryBuilder.DEFAULT_CACHE_CONTAINER, this.serverName));
     }
 
     @Override
     public ServiceBuilder<Map.Entry<String, Void>> build(ServiceTarget target) {
-        Function<String, Map.Entry<String, Void>> mapper = route -> new AbstractMap.SimpleImmutableEntry<>(route, null);
-        return this.route.register(target.addService(this.getServiceName(), new MappedValueService<>(mapper, this.route))).setInitialMode(ServiceController.Mode.ON_DEMAND);
+        return this.route.register(target.addService(this.getServiceName(), new MappedValueService<>(this, this.route))).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 }

@@ -166,7 +166,10 @@ public enum Immutability implements Predicate<Object> {
 
         @Override
         public boolean test(Object object) {
-            return this.immutableClasses.stream().anyMatch(immutableClass -> immutableClass.isInstance(object));
+            for (Class<?> immutableClass : this.immutableClasses) {
+                if (immutableClass.isInstance(object)) return true;
+            }
+            return false;
         }
     },
     COLLECTION() {
@@ -183,7 +186,13 @@ public enum Immutability implements Predicate<Object> {
     },
     ;
 
-    public static final Predicate<Object> INSTANCE = object -> EnumSet.allOf(Immutability.class).stream().anyMatch(predicate -> predicate.test(object));
+    public static final Predicate<Object> INSTANCE = object -> {
+        // These are not an expensive predicates, so there is little to gain from parallel computation
+        for (Predicate<Object> predicate : EnumSet.allOf(Immutability.class)) {
+            if (predicate.test(object)) return true;
+        }
+        return false;
+    };
     static final Predicate<Object> COLLECTION_INSTANCE = new CollectionImmutability(INSTANCE);
 
     static <T> Set<T> createIdentitySet(Collection<T> list) {

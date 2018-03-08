@@ -22,12 +22,12 @@
 
 package org.wildfly.clustering.infinispan.spi.persistence;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ServiceLoader;
 import java.util.UUID;
 import java.util.function.Function;
-import java.util.stream.StreamSupport;
 
 import org.infinispan.persistence.keymappers.TwoWayKey2StringMapper;
 
@@ -43,14 +43,20 @@ public class DynamicKeyFormatMapper extends IndexedKeyFormatMapper {
 
     private static List<KeyFormat<?>> load(ClassLoader loader) {
         List<KeyFormat<?>> keyFormats = new LinkedList<>();
+        for (KeyFormat<?> keyFormat : ServiceLoader.load(KeyFormat.class, loader)) {
+            keyFormats.add(keyFormat);
+        }
+
+        List<KeyFormat<?>> result = new ArrayList<>(keyFormats.size() + 6);
         // Add key formats for common key types
-        keyFormats.add(new SimpleKeyFormat<>(String.class, Function.identity()));
-        keyFormats.add(new SimpleKeyFormat<>(Byte.class, Byte::valueOf));
-        keyFormats.add(new SimpleKeyFormat<>(Short.class, Short::valueOf));
-        keyFormats.add(new SimpleKeyFormat<>(Integer.class, Integer::valueOf));
-        keyFormats.add(new SimpleKeyFormat<>(Long.class, Long::valueOf));
-        keyFormats.add(new SimpleKeyFormat<>(UUID.class, UUID::fromString));
-        StreamSupport.stream(ServiceLoader.load(KeyFormat.class, loader).spliterator(), false).forEach(keyFormat -> keyFormats.add(keyFormat));
-        return keyFormats;
+        result.add(new SimpleKeyFormat<>(String.class, Function.identity()));
+        result.add(new SimpleKeyFormat<>(Byte.class, Byte::valueOf));
+        result.add(new SimpleKeyFormat<>(Short.class, Short::valueOf));
+        result.add(new SimpleKeyFormat<>(Integer.class, Integer::valueOf));
+        result.add(new SimpleKeyFormat<>(Long.class, Long::valueOf));
+        result.add(new SimpleKeyFormat<>(UUID.class, UUID::fromString));
+        result.addAll(keyFormats);
+
+        return result;
     }
 }

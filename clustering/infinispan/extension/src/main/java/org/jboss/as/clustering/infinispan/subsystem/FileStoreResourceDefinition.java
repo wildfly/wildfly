@@ -31,6 +31,7 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
@@ -81,12 +82,15 @@ public class FileStoreResourceDefinition extends StoreResourceDefinition {
     FileStoreResourceDefinition() {
         super(PATH, LEGACY_PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH),
                 descriptor -> descriptor.addAttributes(Attribute.class),
-                FileStoreBuilder::new, registration -> registration.getPathManager().ifPresent(pathManager -> {
-                    ResolvePathHandler pathHandler = ResolvePathHandler.Builder.of(pathManager)
-                            .setPathAttribute(Attribute.RELATIVE_PATH.getDefinition())
-                            .setRelativeToAttribute(Attribute.RELATIVE_TO.getDefinition())
-                            .build();
-                    registration.registerOperationHandler(pathHandler.getOperationDefinition(), pathHandler);
-                }));
+                FileStoreBuilder::new, registration -> {
+                    PathManager pathManager = registration.getPathManager().orElse(null);
+                    if (pathManager != null) {
+                        ResolvePathHandler pathHandler = ResolvePathHandler.Builder.of(pathManager)
+                                .setPathAttribute(Attribute.RELATIVE_PATH.getDefinition())
+                                .setRelativeToAttribute(Attribute.RELATIVE_TO.getDefinition())
+                                .build();
+                        registration.registerOperationHandler(pathHandler.getOperationDefinition(), pathHandler);
+                    }
+                });
     }
 }

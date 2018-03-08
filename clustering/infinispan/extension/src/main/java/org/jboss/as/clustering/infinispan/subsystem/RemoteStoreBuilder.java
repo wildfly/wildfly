@@ -25,8 +25,8 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import static org.jboss.as.clustering.infinispan.subsystem.RemoteStoreResourceDefinition.Attribute.*;
 
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.infinispan.persistence.remote.configuration.RemoteStoreConfiguration;
@@ -75,7 +75,11 @@ public class RemoteStoreBuilder extends StoreBuilder<RemoteStoreConfiguration, R
         this.remoteCacheName = CACHE.resolveModelAttribute(context, model).asString();
         this.socketTimeout = SOCKET_TIMEOUT.resolveModelAttribute(context, model).asLong();
         this.tcpNoDelay = TCP_NO_DELAY.resolveModelAttribute(context, model).asBoolean();
-        this.bindings = StringListAttributeDefinition.unwrapValue(context, SOCKET_BINDINGS.resolveModelAttribute(context, model)).stream().map(binding -> new InjectedValueDependency<>(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING.getServiceName(context, binding), OutboundSocketBinding.class)).collect(Collectors.toList());
+        List<String> bindings = StringListAttributeDefinition.unwrapValue(context, SOCKET_BINDINGS.resolveModelAttribute(context, model));
+        this.bindings = new ArrayList<>(bindings.size());
+        for (String binding : bindings) {
+            this.bindings.add(new InjectedValueDependency<>(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING.getServiceName(context, binding), OutboundSocketBinding.class));
+        }
         return super.configure(context, model);
     }
 
@@ -85,12 +89,13 @@ public class RemoteStoreBuilder extends StoreBuilder<RemoteStoreConfiguration, R
                 .socketTimeout(this.socketTimeout)
                 .tcpNoDelay(this.tcpNoDelay)
                 ;
-        this.bindings.stream().map(Value::getValue).forEach(binding -> {
+        for (Value<OutboundSocketBinding> bindingDependency : this.bindings) {
+            OutboundSocketBinding binding = bindingDependency.getValue();
             try {
                 builder.addServer().host(binding.getResolvedDestinationAddress().getHostAddress()).port(binding.getDestinationPort());
             } catch (UnknownHostException e) {
                 throw InfinispanLogger.ROOT_LOGGER.failedToInjectSocketBinding(e, binding);
             }
-        });
+        }
     }
 }

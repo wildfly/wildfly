@@ -57,7 +57,7 @@ import static java.security.AccessController.doPrivileged;
  * Returns a trivial implementation if the specified cache is not distributed.
  * @author Paul Ferraro
  */
-public class KeyAffinityServiceFactoryBuilder extends CapabilityServiceNameProvider implements Builder<KeyAffinityServiceFactory> {
+public class KeyAffinityServiceFactoryBuilder extends CapabilityServiceNameProvider implements Builder<KeyAffinityServiceFactory>, Function<ExecutorService, KeyAffinityServiceFactory>, Supplier<ExecutorService> {
 
     private volatile int bufferSize = 100;
 
@@ -71,24 +71,29 @@ public class KeyAffinityServiceFactoryBuilder extends CapabilityServiceNameProvi
     }
 
     @Override
-    public ServiceBuilder<KeyAffinityServiceFactory> build(ServiceTarget target) {
+    public ExecutorService get() {
+        ThreadGroup threadGroup = new ThreadGroup("KeyAffinityService ThreadGroup");
+        String namePattern = "KeyAffinityService Thread Pool -- %t";
+        PrivilegedAction<ThreadFactory> action = () -> new JBossThreadFactory(threadGroup, Boolean.FALSE, null, namePattern, null, null);
+        return Executors.newCachedThreadPool(doPrivileged(action));
+    }
+
+    @Override
+    public KeyAffinityServiceFactory apply(ExecutorService executor) {
         int bufferSize = this.bufferSize;
-        Function<ExecutorService, KeyAffinityServiceFactory> mapper = executor -> new KeyAffinityServiceFactory() {
+        return new KeyAffinityServiceFactory() {
             @Override
             public <K> KeyAffinityService<K> createService(Cache<K, ?> cache, KeyGenerator<K> generator) {
                 CacheMode mode = cache.getCacheConfiguration().clustering().cacheMode();
                 return mode.isDistributed() || mode.isReplicated() ? new KeyAffinityServiceImpl<>(executor, cache, generator, bufferSize, Collections.singleton(cache.getCacheManager().getAddress()), false) : new SimpleKeyAffinityService<>(generator);
             }
         };
-        Supplier<ExecutorService> supplier = () -> {
-            ThreadGroup threadGroup = new ThreadGroup("KeyAffinityService ThreadGroup");
-            String namePattern = "KeyAffinityService Thread Pool -- %t";
-            PrivilegedAction<ThreadFactory> action = () -> new JBossThreadFactory(threadGroup, Boolean.FALSE, null, namePattern, null, null);
-            return Executors.newCachedThreadPool(doPrivileged(action));
-        };
-        Service<KeyAffinityServiceFactory> service = new SuppliedValueService<>(mapper, supplier, ExecutorService::shutdown);
-        return new AsynchronousServiceBuilder<>(this.getServiceName(), service).startSynchronously().build(target)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND);
+    }
+
+    @Override
+    public ServiceBuilder<KeyAffinityServiceFactory> build(ServiceTarget target) {
+        Service<KeyAffinityServiceFactory> service = new SuppliedValueService<>(this, this, ExecutorService::shutdown);
+        return new AsynchronousServiceBuilder<>(this.getServiceName(), service).startSynchronously().build(target).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 
     private static class SimpleKeyAffinityService<K> implements KeyAffinityService<K> {

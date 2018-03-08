@@ -21,20 +21,18 @@
  */
 package org.wildfly.clustering.server.provider;
 
-
-import java.util.function.Function;
-
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.ValueService;
+import org.jboss.msc.value.Value;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.provider.ServiceProviderRegistry;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.InjectedValueDependency;
-import org.wildfly.clustering.service.MappedValueService;
 import org.wildfly.clustering.service.ValueDependency;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 
@@ -42,7 +40,7 @@ import org.wildfly.clustering.spi.ClusteringCacheRequirement;
  * Builds a non-clustered {@link ServiceProviderRegistrationFactory} service.
  * @author Paul Ferraro
  */
-public class LocalServiceProviderRegistryBuilder<T> implements CapabilityServiceBuilder<ServiceProviderRegistry<T>> {
+public class LocalServiceProviderRegistryBuilder<T> implements CapabilityServiceBuilder<ServiceProviderRegistry<T>>, Value<ServiceProviderRegistry<T>> {
 
     private final ServiceName name;
     private final String containerName;
@@ -54,6 +52,11 @@ public class LocalServiceProviderRegistryBuilder<T> implements CapabilityService
         this.name = name;
         this.containerName = containerName;
         this.cacheName = cacheName;
+    }
+
+    @Override
+    public ServiceProviderRegistry<T> getValue() {
+        return new LocalServiceProviderRegistry<>(this.group.getValue());
     }
 
     @Override
@@ -69,7 +72,6 @@ public class LocalServiceProviderRegistryBuilder<T> implements CapabilityService
 
     @Override
     public ServiceBuilder<ServiceProviderRegistry<T>> build(ServiceTarget target) {
-        Function<Group, ServiceProviderRegistry<T>> mapper = LocalServiceProviderRegistry::new;
-        return this.group.register(target.addService(this.name, new MappedValueService<>(mapper, this.group)).setInitialMode(ServiceController.Mode.ON_DEMAND));
+        return this.group.register(target.addService(this.name, new ValueService<>(this)).setInitialMode(ServiceController.Mode.ON_DEMAND));
     }
 }

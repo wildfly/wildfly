@@ -40,7 +40,7 @@ import org.wildfly.clustering.spi.ClusteringRequirement;
  * Builds a channel-based {@link Group} service.
  * @author Paul Ferraro
  */
-public class ChannelGroupBuilder implements CapabilityServiceBuilder<Group> {
+public class ChannelGroupBuilder implements CapabilityServiceBuilder<Group>, Value<Group> {
 
     private final ServiceName name;
     private final String group;
@@ -50,6 +50,11 @@ public class ChannelGroupBuilder implements CapabilityServiceBuilder<Group> {
     public ChannelGroupBuilder(ServiceName name, String group) {
         this.name = name;
         this.group = group;
+    }
+
+    @Override
+    public Group getValue() {
+        return this.factory.getValue().getGroup();
     }
 
     @Override
@@ -65,7 +70,6 @@ public class ChannelGroupBuilder implements CapabilityServiceBuilder<Group> {
 
     @Override
     public ServiceBuilder<Group> build(ServiceTarget target) {
-        Value<Group> value = () -> this.factory.getValue().getGroup();
-        return this.factory.register(target.addService(this.getServiceName(), new ValueService<>(value)).setInitialMode(ServiceController.Mode.ON_DEMAND));
+        return this.factory.register(target.addService(this.getServiceName(), new ValueService<>(this)).setInitialMode(ServiceController.Mode.ON_DEMAND));
     }
 }

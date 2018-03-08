@@ -25,11 +25,8 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import static org.jboss.as.clustering.jgroups.subsystem.TransportResourceDefinition.Attribute.*;
 
 import java.net.InetSocketAddress;
-import java.util.Arrays;
-import java.util.Optional;
 
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
-import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.jgroups.ClassLoaderThreadFactory;
 import org.jboss.as.clustering.jgroups.JChannelFactory;
 import org.jboss.as.controller.OperationContext;
@@ -44,7 +41,7 @@ import org.jgroups.protocols.TP;
 import org.jgroups.util.DefaultThreadFactory;
 import org.wildfly.clustering.jgroups.spi.TransportConfiguration;
 import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.service.Dependency;
+import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.ValueDependency;
 
@@ -74,38 +71,33 @@ public class TransportConfigurationBuilder<T extends TP> extends AbstractProtoco
     @Override
     public ServiceBuilder<TransportConfiguration<T>> build(ServiceTarget target) {
         ServiceBuilder<TransportConfiguration<T>> builder = super.build(target);
-        for (Dependency dependency : Arrays.asList(this.threadPoolFactory, this.socketBinding, this.diagnosticsSocketBinding)) {
-            if (dependency != null) {
-                dependency.register(builder);
-            }
-        }
-        return builder;
+        return new CompositeDependency(this.threadPoolFactory, this.socketBinding, this.diagnosticsSocketBinding).register(builder);
     }
 
     @Override
     public Builder<TransportConfiguration<T>> configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.socketBinding = new InjectedValueDependency<>(CommonUnaryRequirement.SOCKET_BINDING.getServiceName(context, SOCKET_BINDING.resolveModelAttribute(context, model).asString()), SocketBinding.class);
-        String diagnosticsSocketBinding = ModelNodes.optionalString(DIAGNOSTICS_SOCKET_BINDING.resolveModelAttribute(context, model)).orElse(null);
+        String diagnosticsSocketBinding = DIAGNOSTICS_SOCKET_BINDING.resolveModelAttribute(context, model).asStringOrNull();
         this.diagnosticsSocketBinding = (diagnosticsSocketBinding != null) ? new InjectedValueDependency<>(CommonUnaryRequirement.SOCKET_BINDING.getServiceName(context, diagnosticsSocketBinding), SocketBinding.class) : null;
 
-        Optional<String> machine = ModelNodes.optionalString(MACHINE.resolveModelAttribute(context, model));
-        Optional<String> rack = ModelNodes.optionalString(RACK.resolveModelAttribute(context, model));
-        Optional<String> site = ModelNodes.optionalString(SITE.resolveModelAttribute(context, model));
-        if (site.isPresent() || rack.isPresent() || machine.isPresent()) {
+        ModelNode machine = MACHINE.resolveModelAttribute(context, model);
+        ModelNode rack = RACK.resolveModelAttribute(context, model);
+        ModelNode site = SITE.resolveModelAttribute(context, model);
+        if (site.isDefined() || rack.isDefined() || machine.isDefined()) {
             this.topology = new Topology() {
                 @Override
                 public String getMachine() {
-                    return machine.orElse(null);
+                    return machine.asStringOrNull();
                 }
 
                 @Override
                 public String getRack() {
-                    return rack.orElse(null);
+                    return rack.asStringOrNull();
                 }
 
                 @Override
                 public String getSite() {
-                    return site.orElse(null);
+                    return site.asStringOrNull();
                 }
             };
         }

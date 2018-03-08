@@ -107,6 +107,6 @@ public class DistributedCacheResourceDefinition extends SharedStateCacheResource
     }
 
     DistributedCacheResourceDefinition() {
-        super(WILDCARD_PATH, descriptor -> descriptor.addAttributes(Attribute.class), new DistributedCacheServiceHandler());
+        super(WILDCARD_PATH, descriptor -> descriptor.addAttributes(Attribute.class), new ClusteredCacheServiceHandler(DistributedCacheBuilder::new));
     }
 }

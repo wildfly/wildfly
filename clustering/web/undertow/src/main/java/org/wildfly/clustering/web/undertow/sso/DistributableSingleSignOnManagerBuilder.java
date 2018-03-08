@@ -29,7 +29,6 @@ import io.undertow.server.session.SessionListener;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.stream.Stream;
 
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
@@ -41,6 +40,7 @@ import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.Value;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.ValueDependency;
 import org.wildfly.clustering.web.sso.SSOManager;
@@ -52,16 +52,16 @@ import org.wildfly.clustering.web.sso.SSOManagerFactoryBuilderProvider;
  * Builds a distributable {@link SingleSignOnManagerFactory} service.
  * @author Paul Ferraro
  */
-public class DistributableSingleSignOnManagerBuilder implements CapabilityServiceBuilder<SingleSignOnManager> {
+public class DistributableSingleSignOnManagerBuilder implements CapabilityServiceBuilder<SingleSignOnManager>, Value<SingleSignOnManager> {
 
     private final ServiceName name;
 
-    @SuppressWarnings("rawtypes")
-    private final ValueDependency<SSOManager> manager;
+    private final ValueDependency<SSOManager<AuthenticatedSession, String, String, Void, Batch>> manager;
     private final ValueDependency<SessionManagerRegistry> registry;
 
     private final Collection<CapabilityServiceBuilder<?>> builders;
 
+    @SuppressWarnings("unchecked")
     public DistributableSingleSignOnManagerBuilder(ServiceName name, String serverName, String hostName, SSOManagerFactoryBuilderProvider<Batch> provider) {
         this.name = name;
 
@@ -69,14 +69,12 @@ public class DistributableSingleSignOnManagerBuilder implements CapabilityServic
         ServiceName generatorServiceName = this.name.append("generator");
         CapabilityServiceBuilder<SessionIdGenerator> generatorBuilder = new SessionIdGeneratorBuilder(generatorServiceName, serverName);
 
-        @SuppressWarnings("rawtypes")
-        ValueDependency<SSOManagerFactory> factoryDependency = new InjectedValueDependency<>(factoryBuilder, SSOManagerFactory.class);
+        ValueDependency<SSOManagerFactory<AuthenticatedSession, String, String, Batch>> factoryDependency = new InjectedValueDependency<>(factoryBuilder, (Class<SSOManagerFactory<AuthenticatedSession, String, String, Batch>>) (Class<?>) SSOManagerFactory.class);
         ValueDependency<SessionIdGenerator> generatorDependency = new InjectedValueDependency<>(generatorServiceName, SessionIdGenerator.class);
         ServiceName managerServiceName = this.name.append("manager");
         CapabilityServiceBuilder<SSOManager<AuthenticatedSession, String, String, Void, Batch>> managerBuilder = new SSOManagerBuilder<>(managerServiceName, factoryDependency, generatorDependency, () -> null);
 
-        @SuppressWarnings("rawtypes")
-        ValueDependency<SSOManager> managerDependency = new InjectedValueDependency<>(managerServiceName, SSOManager.class);
+        ValueDependency<SSOManager<AuthenticatedSession, String, String, Void, Batch>> managerDependency = new InjectedValueDependency<>(managerServiceName, (Class<SSOManager<AuthenticatedSession, String, String, Void, Batch>>) (Class<?>) SSOManager.class);
         ServiceName listenerServiceName = this.name.append("listener");
         CapabilityServiceBuilder<SessionListener> listenerBuilder = new SessionListenerBuilder(listenerServiceName, managerDependency);
 
@@ -84,10 +82,15 @@ public class DistributableSingleSignOnManagerBuilder implements CapabilityServic
         ServiceName registryServiceName = this.name.append("registry");
         CapabilityServiceBuilder<SessionManagerRegistry> registryBuilder = new SessionManagerRegistryBuilder(registryServiceName, serverName, hostName, listenerDependency);
 
-        this.manager = new InjectedValueDependency<>(managerBuilder, SSOManager.class);
+        this.manager = new InjectedValueDependency<>(managerBuilder, (Class<SSOManager<AuthenticatedSession, String, String, Void, Batch>>) (Class<?>) SSOManager.class);
         this.registry = new InjectedValueDependency<>(registryBuilder, SessionManagerRegistry.class);
 
         this.builders = Arrays.asList(factoryBuilder, generatorBuilder, managerBuilder, listenerBuilder, registryBuilder);
+    }
+
+    @Override
+    public SingleSignOnManager getValue() {
+        return new DistributableSingleSignOnManager(this.manager.getValue(), this.registry.getValue());
     }
 
     @Override
@@ -97,16 +100,18 @@ public class DistributableSingleSignOnManagerBuilder implements CapabilityServic
 
     @Override
     public Builder<SingleSignOnManager> configure(CapabilityServiceSupport support) {
-        this.builders.forEach(builder -> builder.configure(support));
+        for (CapabilityServiceBuilder<?> builder : this.builders) {
+            builder.configure(support);
+        }
         return this;
     }
 
     @Override
     public ServiceBuilder<SingleSignOnManager> build(ServiceTarget target) {
-        this.builders.forEach(builder -> builder.build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install());
-        Value<SingleSignOnManager> manager = () -> new DistributableSingleSignOnManager(this.manager.getValue(), this.registry.getValue());
-        ServiceBuilder<SingleSignOnManager> builder = target.addService(this.name, new ValueService<>(manager)).setInitialMode(ServiceController.Mode.ON_DEMAND);
-        Stream.of(this.manager, this.registry).forEach(dependency -> dependency.register(builder));
-        return builder;
+        for (CapabilityServiceBuilder<?> builder : this.builders) {
+            builder.build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        }
+        ServiceBuilder<SingleSignOnManager> builder = target.addService(this.name, new ValueService<>(this)).setInitialMode(ServiceController.Mode.ON_DEMAND);
+        return new CompositeDependency(this.manager, this.registry).register(builder);
     }
 }

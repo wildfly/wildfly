@@ -34,6 +34,6 @@ import org.wildfly.clustering.spi.DistributedCacheBuilderProvider;
 public class DistributedCacheGroupBuilderProvider extends CacheGroupBuilderProvider implements org.wildfly.clustering.spi.DistributedCacheBuilderProvider {
 
     public DistributedCacheGroupBuilderProvider() {
-        super((name, containerName, cacheName) -> new CacheGroupBuilder(name, containerName, cacheName));
+        super(CacheGroupBuilder::new);
     }
 }

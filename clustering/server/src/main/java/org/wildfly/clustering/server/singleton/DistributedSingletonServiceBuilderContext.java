@@ -22,6 +22,7 @@
 
 package org.wildfly.clustering.server.singleton;
 
+import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.provider.ServiceProviderRegistry;
 import org.wildfly.clustering.service.ValueDependency;
@@ -31,7 +32,6 @@ import org.wildfly.clustering.service.ValueDependency;
  * @author Paul Ferraro
  */
 public interface DistributedSingletonServiceBuilderContext {
-    @SuppressWarnings("rawtypes")
-    ValueDependency<ServiceProviderRegistry> getServiceProviderRegistryDependency();
+    ValueDependency<ServiceProviderRegistry<ServiceName>> getServiceProviderRegistryDependency();
     ValueDependency<CommandDispatcherFactory> getCommandDispatcherFactoryDependency();
 }

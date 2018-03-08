@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,38 +20,36 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.controller;
+package org.wildfly.clustering.spi;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.EnumSet;
+import java.util.Map;
 
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.clustering.controller.Capability;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.msc.service.ServiceName;
+import org.wildfly.clustering.service.Requirement;
 
 /**
- * Registration facility for capabilities.
+ * Generic {@link ServiceNameRegistry} for a specific set of requirements.
  * @author Paul Ferraro
  */
-public class CapabilityRegistration implements Registration<ManagementResourceRegistration> {
+public class CapabilityServiceNameRegistry<R extends Requirement, C extends Capability> implements ServiceNameRegistry<R> {
 
-    private final Collection<? extends Capability> capabilities;
+    private final Map<R, C> capabilities;
+    private final PathAddress address;
 
-    public <E extends Enum<E> & Capability> CapabilityRegistration(Class<E> capabilityClass) {
-        this(EnumSet.allOf(capabilityClass));
-    }
-
-    public CapabilityRegistration(Capability... capabilities) {
-        this.capabilities = Arrays.asList(capabilities);
-    }
-
-    public CapabilityRegistration(Collection<? extends Capability> capabilities) {
+    /**
+     * Constructs a new service name registry.
+     * @param capabilities a map of requirement to capability
+     * @param address the resource address from which to resolve service names
+     */
+    public CapabilityServiceNameRegistry(Map<R, C> capabilities, PathAddress address) {
         this.capabilities = capabilities;
+        this.address = address;
     }
 
     @Override
-    public void register(ManagementResourceRegistration registration) {
-        for (Capability capability : this.capabilities) {
-            registration.registerCapability(capability.getDefinition());
-        }
+    public ServiceName getServiceName(R requirement) {
+        return this.capabilities.get(requirement).getServiceName(this.address);
     }
 }

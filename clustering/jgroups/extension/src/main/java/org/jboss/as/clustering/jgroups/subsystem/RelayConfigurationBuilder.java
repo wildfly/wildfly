@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -46,6 +46,7 @@ import org.jgroups.protocols.relay.config.RelayConfig;
 import org.wildfly.clustering.jgroups.spi.RelayConfiguration;
 import org.wildfly.clustering.jgroups.spi.RemoteSiteConfiguration;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.Dependency;
 import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.ServiceNameProvider;
 import org.wildfly.clustering.service.ValueDependency;
@@ -72,7 +73,9 @@ public class RelayConfigurationBuilder extends AbstractProtocolConfigurationBuil
     @Override
     public ServiceBuilder<RelayConfiguration> build(ServiceTarget target) {
         ServiceBuilder<RelayConfiguration> builder = super.build(target);
-        this.sites.forEach(dependency -> dependency.register(builder));
+        for (Dependency dependency : this.sites) {
+            dependency.register(builder);
+        }
         return builder;
     }
 
@@ -82,7 +85,11 @@ public class RelayConfigurationBuilder extends AbstractProtocolConfigurationBuil
 
         PathAddress address = context.getCurrentAddress();
         Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
-        this.sites = resource.getChildren(RemoteSiteResourceDefinition.WILDCARD_PATH.getKey()).stream().map(entry -> new InjectedValueDependency<>(new RemoteSiteServiceNameProvider(address, entry.getPathElement()), RemoteSiteConfiguration.class)).collect(Collectors.toList());
+        Set<Resource.ResourceEntry> entries = resource.getChildren(RemoteSiteResourceDefinition.WILDCARD_PATH.getKey());
+        this.sites = new ArrayList<>(entries.size());
+        for (Resource.ResourceEntry entry : entries) {
+            this.sites.add(new InjectedValueDependency<>(new RemoteSiteServiceNameProvider(address, entry.getPathElement()), RemoteSiteConfiguration.class));
+        }
 
         return super.configure(context, model);
     }
@@ -99,7 +106,11 @@ public class RelayConfigurationBuilder extends AbstractProtocolConfigurationBuil
 
     @Override
     public List<RemoteSiteConfiguration> getRemoteSites() {
-        return this.sites.stream().map(Value::getValue).collect(Collectors.toList());
+        List<RemoteSiteConfiguration> result = new ArrayList<>(this.sites.size());
+        for (Value<RemoteSiteConfiguration> site : this.sites) {
+            result.add(site.getValue());
+        }
+        return result;
     }
 
     @Override

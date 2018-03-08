@@ -34,6 +34,6 @@ public class RandomElectionPolicyResourceDefinition extends ElectionPolicyResour
     static final PathElement PATH = pathElement(PATH_VALUE);
 
     RandomElectionPolicyResourceDefinition() {
-        super(PATH, SingletonExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH), Consumers.empty(), address -> new RandomElectionPolicyBuilder(address));
+        super(PATH, SingletonExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH), Consumers.empty(), RandomElectionPolicyBuilder::new);
     }
 }

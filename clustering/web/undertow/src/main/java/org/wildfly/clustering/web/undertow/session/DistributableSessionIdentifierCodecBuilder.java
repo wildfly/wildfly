@@ -21,6 +21,8 @@
  */
 package org.wildfly.clustering.web.undertow.session;
 
+import java.util.function.Function;
+
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.web.session.RoutingSupport;
@@ -41,7 +43,7 @@ import org.wildfly.clustering.web.session.RouteLocatorBuilderProvider;
  * Builds a distributable {@link SessionIdentifierCodec} service.
  * @author Paul Ferraro
  */
-public class DistributableSessionIdentifierCodecBuilder implements CapabilityServiceBuilder<SessionIdentifierCodec> {
+public class DistributableSessionIdentifierCodecBuilder implements CapabilityServiceBuilder<SessionIdentifierCodec>, Function<RouteLocator, SessionIdentifierCodec> {
 
     private final ServiceName name;
     private final CapabilityServiceBuilder<RouteLocator> locatorBuilder;
@@ -49,8 +51,12 @@ public class DistributableSessionIdentifierCodecBuilder implements CapabilitySer
 
     public DistributableSessionIdentifierCodecBuilder(ServiceName name, String serverName, String deploymentName, RouteLocatorBuilderProvider provider) {
         this.name = name;
-
         this.locatorBuilder = provider.getRouteLocatorBuilder(serverName, deploymentName);
+    }
+
+    @Override
+    public SessionIdentifierCodec apply(RouteLocator locator) {
+        return new DistributableSessionIdentifierCodec(locator, this.routing);
     }
 
     @Override
@@ -68,7 +74,7 @@ public class DistributableSessionIdentifierCodecBuilder implements CapabilitySer
     public ServiceBuilder<SessionIdentifierCodec> build(ServiceTarget target) {
         this.locatorBuilder.build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
         InjectedValue<RouteLocator> locatorValue = new InjectedValue<>();
-        Service<SessionIdentifierCodec> service = new MappedValueService<>(locator -> new DistributableSessionIdentifierCodec(locator, this.routing), locatorValue);
+        Service<SessionIdentifierCodec> service = new MappedValueService<>(this, locatorValue);
         return target.addService(this.name, service)
                 .addDependency(this.locatorBuilder.getServiceName(), RouteLocator.class, locatorValue)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)

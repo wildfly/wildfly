@@ -92,7 +92,9 @@ public class FineSessionAttributesFactory<V> implements SessionAttributesFactory
     public boolean remove(String id) {
         SessionAttributeNamesEntry entry = this.namesCache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).remove(new SessionAttributeNamesKey(id));
         if (entry == null) return false;
-        entry.getNames().values().forEach(attributeId -> this.attributeCache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(new SessionAttributeKey(id, attributeId)));
+        for (Integer attributeId : entry.getNames().values()) {
+            this.attributeCache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(new SessionAttributeKey(id, attributeId));
+        }
         return true;
     }
 
@@ -101,13 +103,13 @@ public class FineSessionAttributesFactory<V> implements SessionAttributesFactory
         SessionAttributeNamesKey key = new SessionAttributeNamesKey(id);
         SessionAttributeNamesEntry entry = this.namesCache.getAdvancedCache().withFlags(EVICTION_FLAGS).get(key);
         if (entry != null) {
-            entry.getNames().entrySet().stream().forEach(attribute -> {
+            for (Map.Entry<String, Integer> attribute : entry.getNames().entrySet()) {
                 try {
                     this.attributeCache.evict(new SessionAttributeKey(id, attribute.getValue()));
                 } catch (Throwable e) {
                     InfinispanWebLogger.ROOT_LOGGER.failedToPassivateSessionAttribute(e, id, attribute.getKey());
                 }
-            });
+            }
             this.namesCache.getAdvancedCache().withFlags(Flag.FAIL_SILENTLY).evict(key);
         }
         return (entry != null);

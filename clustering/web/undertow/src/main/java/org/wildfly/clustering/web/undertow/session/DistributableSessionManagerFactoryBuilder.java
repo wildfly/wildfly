@@ -61,7 +61,7 @@ import org.wildfly.extension.undertow.session.DistributableSessionManagerConfigu
  * Distributable {@link SessionManagerFactory} builder for Undertow.
  * @author Paul Ferraro
  */
-public class DistributableSessionManagerFactoryBuilder implements CapabilityServiceBuilder<SessionManagerFactory> {
+public class DistributableSessionManagerFactoryBuilder implements CapabilityServiceBuilder<SessionManagerFactory>, Function<org.wildfly.clustering.web.session.SessionManagerFactory<LocalSessionContext, Batch>, SessionManagerFactory> {
 
     static final Map<ReplicationGranularity, SessionManagerFactoryConfiguration.SessionAttributePersistenceStrategy> strategies = new EnumMap<>(ReplicationGranularity.class);
     static {
@@ -150,6 +150,11 @@ public class DistributableSessionManagerFactoryBuilder implements CapabilityServ
     }
 
     @Override
+    public SessionManagerFactory apply(org.wildfly.clustering.web.session.SessionManagerFactory<LocalSessionContext, Batch> factory) {
+        return new DistributableSessionManagerFactory(factory, this.config);
+    }
+
+    @Override
     public ServiceName getServiceName() {
         return this.name;
     }
@@ -160,15 +165,14 @@ public class DistributableSessionManagerFactoryBuilder implements CapabilityServ
         return this;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public ServiceBuilder<SessionManagerFactory> build(ServiceTarget target) {
         this.factoryBuilder.build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
-        @SuppressWarnings("rawtypes")
-        InjectedValue<org.wildfly.clustering.web.session.SessionManagerFactory> sessionManagerFactoryValue = new InjectedValue<>();
-        @SuppressWarnings("unchecked")
-        Service<SessionManagerFactory> service = new MappedValueService<>(sessionManagerFactory -> new DistributableSessionManagerFactory(sessionManagerFactory, this.config), sessionManagerFactoryValue);
+        InjectedValue<org.wildfly.clustering.web.session.SessionManagerFactory<LocalSessionContext, Batch>> sessionManagerFactoryValue = new InjectedValue<>();
+        Service<SessionManagerFactory> service = new MappedValueService<>(this, sessionManagerFactoryValue);
         return target.addService(this.name, service)
-                .addDependency(this.factoryBuilder.getServiceName(), org.wildfly.clustering.web.session.SessionManagerFactory.class, sessionManagerFactoryValue)
+                .addDependency(this.factoryBuilder.getServiceName(), (Class<org.wildfly.clustering.web.session.SessionManagerFactory<LocalSessionContext, Batch>>) (Class<?>) org.wildfly.clustering.web.session.SessionManagerFactory.class, sessionManagerFactoryValue)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 }

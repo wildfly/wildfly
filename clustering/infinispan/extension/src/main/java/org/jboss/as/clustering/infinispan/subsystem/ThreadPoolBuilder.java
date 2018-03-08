@@ -22,7 +22,6 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -37,12 +36,14 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.concurrent.ClassLoaderThreadFactory;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author Radoslav Husar
  * @version August 2015
  */
 public class ThreadPoolBuilder extends GlobalComponentBuilder<ThreadPoolConfiguration> {
+    static final PrivilegedAction<ClassLoader> GET_CLASS_LOADER_ACTION = () -> ThreadPoolExecutorFactory.class.getClassLoader();
 
     private final ThreadPoolConfigurationBuilder builder = new ThreadPoolConfigurationBuilder(null);
     private final ThreadPoolDefinition definition;
@@ -62,9 +63,7 @@ public class ThreadPoolBuilder extends GlobalComponentBuilder<ThreadPoolConfigur
         ) {
             @Override
             public ExecutorService createExecutor(ThreadFactory factory) {
-                return super.createExecutor(new ClassLoaderThreadFactory(factory, AccessController.doPrivileged(
-                        (PrivilegedAction<ClassLoader>) () -> ClassLoaderThreadFactory.class.getClassLoader()))
-                );
+                return super.createExecutor(new ClassLoaderThreadFactory(factory, WildFlySecurityManager.doUnchecked(GET_CLASS_LOADER_ACTION)));
             }
         };
         this.builder.threadPoolFactory(factory);

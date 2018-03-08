@@ -23,7 +23,6 @@ package org.wildfly.clustering.web.undertow.sso;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.stream.Stream;
 
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
@@ -36,6 +35,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.ValueDependency;
 import org.wildfly.clustering.web.undertow.UndertowBinaryRequirement;
@@ -86,8 +86,7 @@ public class SessionManagerRegistryBuilder implements CapabilityServiceBuilder<S
     @Override
     public ServiceBuilder<SessionManagerRegistry> build(ServiceTarget target) {
         ServiceBuilder<SessionManagerRegistry> builder = target.addService(this.name, this).setInitialMode(ServiceController.Mode.ON_DEMAND);
-        Stream.of(this.listener, this.service, this.host).forEach(dependency -> dependency.register(builder));
-        return builder;
+        return new CompositeDependency(this.listener, this.service, this.host).register(builder);
     }
 
     @Override
@@ -98,12 +97,16 @@ public class SessionManagerRegistryBuilder implements CapabilityServiceBuilder<S
     @Override
     public void start(StartContext context) throws StartException {
         this.service.getValue().registerListener(this);
-        this.host.getValue().getDeployments().forEach(deployment -> this.addDeployment(deployment));
+        for (Deployment deployment : this.host.getValue().getDeployments()) {
+            this.addDeployment(deployment);
+        }
     }
 
     @Override
     public void stop(StopContext context) {
-        this.host.getValue().getDeployments().forEach(deployment -> this.removeDeployment(deployment));
+        for (Deployment deployment : this.host.getValue().getDeployments()) {
+            this.removeDeployment(deployment);
+        }
         this.service.getValue().unregisterListener(this);
     }
 

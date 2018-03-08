@@ -32,7 +32,7 @@ import org.wildfly.clustering.registry.RegistryFactory;
 /**
  * @author Paul Ferraro
  */
-public class FunctionalRegistryFactory<K, V> implements RegistryFactory<K, V> {
+public class FunctionalRegistryFactory<K, V> implements RegistryFactory<K, V>, Runnable {
 
     private final AtomicReference<Map.Entry<K, V>> entry = new AtomicReference<>();
     private final BiFunction<Map.Entry<K, V>, Runnable, Registry<K, V>> factory;
@@ -42,11 +42,16 @@ public class FunctionalRegistryFactory<K, V> implements RegistryFactory<K, V> {
     }
 
     @Override
+    public void run() {
+        this.entry.set(null);
+    }
+
+    @Override
     public Registry<K, V> createRegistry(Map.Entry<K, V> entry) {
         // Ensure only one registry is created at a time
         if (!this.entry.compareAndSet(null, entry)) {
             throw new IllegalStateException();
         }
-        return this.factory.apply(entry, () -> this.entry.set(null));
+        return this.factory.apply(entry, this);
     }
 }

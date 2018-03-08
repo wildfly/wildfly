@@ -21,6 +21,9 @@
  */
 package org.wildfly.clustering.server.registry;
 
+import java.util.Map;
+import java.util.function.BiFunction;
+
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.service.ServiceBuilder;
@@ -30,6 +33,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.Value;
 import org.wildfly.clustering.group.Group;
+import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.registry.RegistryFactory;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.InjectedValueDependency;
@@ -42,7 +46,7 @@ import org.wildfly.clustering.spi.ClusteringCacheRequirement;
  * @param <K> the registry key type
  * @param <V> the registry value type
  */
-public class LocalRegistryFactoryBuilder<K, V> implements CapabilityServiceBuilder<RegistryFactory<K, V>> {
+public class LocalRegistryFactoryBuilder<K, V> implements CapabilityServiceBuilder<RegistryFactory<K, V>>, BiFunction<Map.Entry<K, V>, Runnable, Registry<K, V>>, Value<RegistryFactory<K, V>> {
 
     private final ServiceName name;
     private final String containerName;
@@ -54,6 +58,16 @@ public class LocalRegistryFactoryBuilder<K, V> implements CapabilityServiceBuild
         this.name = name;
         this.containerName = containerName;
         this.cacheName = cacheName;
+    }
+
+    @Override
+    public RegistryFactory<K, V> getValue() {
+        return new FunctionalRegistryFactory<>(this);
+    }
+
+    @Override
+    public Registry<K, V> apply(Map.Entry<K, V> entry, Runnable closeTask) {
+        return new LocalRegistry<>(this.group.getValue(), entry, closeTask);
     }
 
     @Override
@@ -69,7 +83,6 @@ public class LocalRegistryFactoryBuilder<K, V> implements CapabilityServiceBuild
 
     @Override
     public ServiceBuilder<RegistryFactory<K, V>> build(ServiceTarget target) {
-        Value<RegistryFactory<K, V>> value = () -> new FunctionalRegistryFactory<>((entry, closeTask) -> new LocalRegistry<>(this.group.getValue(), entry, closeTask));
-        return this.group.register(target.addService(this.name, new ValueService<>(value)).setInitialMode(ServiceController.Mode.ON_DEMAND));
+        return this.group.register(target.addService(this.name, new ValueService<>(this)).setInitialMode(ServiceController.Mode.ON_DEMAND));
     }
 }

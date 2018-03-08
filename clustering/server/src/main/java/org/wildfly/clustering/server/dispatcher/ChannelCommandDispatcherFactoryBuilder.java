@@ -24,7 +24,6 @@ package org.wildfly.clustering.server.dispatcher;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.clustering.function.Consumers;
@@ -52,6 +51,7 @@ import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingConfigurationRe
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingContextFactory;
 import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.SuppliedValueService;
 import org.wildfly.clustering.service.ValueDependency;
@@ -60,7 +60,7 @@ import org.wildfly.clustering.service.ValueDependency;
  * Builds a channel-based {@link org.wildfly.clustering.dispatcher.CommandDispatcherFactory} service.
  * @author Paul Ferraro
  */
-public class ChannelCommandDispatcherFactoryBuilder implements CapabilityServiceBuilder<CommandDispatcherFactory>, ChannelCommandDispatcherFactoryConfiguration, MarshallingConfigurationContext {
+public class ChannelCommandDispatcherFactoryBuilder implements CapabilityServiceBuilder<CommandDispatcherFactory>, ChannelCommandDispatcherFactoryConfiguration, MarshallingConfigurationContext, Supplier<AutoCloseableCommandDispatcherFactory> {
 
     enum MarshallingVersion implements Function<MarshallingConfigurationContext, MarshallingConfiguration> {
         VERSION_1() {
@@ -101,6 +101,11 @@ public class ChannelCommandDispatcherFactoryBuilder implements CapabilityService
     }
 
     @Override
+    public AutoCloseableCommandDispatcherFactory get() {
+        return new ManagedCommandDispatcherFactory(new ChannelCommandDispatcherFactory(this));
+    }
+
+    @Override
     public ServiceName getServiceName() {
         return this.name;
     }
@@ -115,14 +120,12 @@ public class ChannelCommandDispatcherFactoryBuilder implements CapabilityService
 
     @Override
     public ServiceBuilder<CommandDispatcherFactory> build(ServiceTarget target) {
-        Supplier<AutoCloseableCommandDispatcherFactory> supplier = () -> new ManagedCommandDispatcherFactory(new ChannelCommandDispatcherFactory(this));
-        Service<CommandDispatcherFactory> service = new SuppliedValueService<>(Functions.identity(), supplier, Consumers.close());
+        Service<CommandDispatcherFactory> service = new SuppliedValueService<>(Functions.identity(), this, Consumers.close());
         ServiceBuilder<CommandDispatcherFactory> builder = new AsynchronousServiceBuilder<>(this.name, service).build(target)
                 .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, this.loader)
                 .setInitialMode(ServiceController.Mode.PASSIVE)
                 ;
-        Stream.of(this.channel, this.channelFactory, this.module).forEach(dependency -> dependency.register(builder));
-        return builder;
+        return new CompositeDependency(this.channel, this.channelFactory, this.module).register(builder);
     }
 
     public ChannelCommandDispatcherFactoryBuilder timeout(long value, TimeUnit unit) {

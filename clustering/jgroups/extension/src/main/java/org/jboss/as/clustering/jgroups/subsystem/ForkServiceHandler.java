@@ -23,11 +23,16 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import static org.jboss.as.clustering.jgroups.subsystem.ForkResourceDefinition.CLUSTERING_CAPABILITIES;
-import static org.jboss.as.clustering.jgroups.subsystem.ForkResourceDefinition.Capability.*;
+import static org.jboss.as.clustering.jgroups.subsystem.ForkResourceDefinition.Capability.FORK_CHANNEL;
+import static org.jboss.as.clustering.jgroups.subsystem.ForkResourceDefinition.Capability.FORK_CHANNEL_CLUSTER;
+import static org.jboss.as.clustering.jgroups.subsystem.ForkResourceDefinition.Capability.FORK_CHANNEL_FACTORY;
+import static org.jboss.as.clustering.jgroups.subsystem.ForkResourceDefinition.Capability.FORK_CHANNEL_MODULE;
+import static org.jboss.as.clustering.jgroups.subsystem.ForkResourceDefinition.Capability.FORK_CHANNEL_SOURCE;
 
 import java.util.EnumSet;
 import java.util.ServiceLoader;
 
+import org.jboss.as.clustering.controller.Capability;
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
@@ -41,7 +46,10 @@ import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 import org.wildfly.clustering.service.AliasServiceBuilder;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.spi.CapabilityServiceNameRegistry;
+import org.wildfly.clustering.spi.ClusteringRequirement;
 import org.wildfly.clustering.spi.GroupAliasBuilderProvider;
+import org.wildfly.clustering.spi.ServiceNameRegistry;
 
 /**
  * @author Paul Ferraro
@@ -71,8 +79,10 @@ public class ForkServiceHandler extends SimpleResourceServiceHandler<ChannelFact
         new BinderServiceBuilder<>(JGroupsBindingFactory.createChannelBinding(name), JGroupsRequirement.CHANNEL.getServiceName(context, name), JGroupsRequirement.CHANNEL.getType()).build(target).install();
         new BinderServiceBuilder<>(JGroupsBindingFactory.createChannelFactoryBinding(name), JGroupsRequirement.CHANNEL_FACTORY.getServiceName(context, name), JGroupsRequirement.CHANNEL_FACTORY.getType()).build(target).install();
 
+        ServiceNameRegistry<ClusteringRequirement> registry = new CapabilityServiceNameRegistry<>(CLUSTERING_CAPABILITIES, address);
+
         for (GroupAliasBuilderProvider provider : ServiceLoader.load(GroupAliasBuilderProvider.class, GroupAliasBuilderProvider.class.getClassLoader())) {
-            for (CapabilityServiceBuilder<?> builder : provider.getBuilders(requirement -> CLUSTERING_CAPABILITIES.get(requirement).getServiceName(address), name, channel)) {
+            for (CapabilityServiceBuilder<?> builder : provider.getBuilders(registry, name, channel)) {
                 builder.configure(context).build(target).install();
             }
         }
@@ -85,8 +95,10 @@ public class ForkServiceHandler extends SimpleResourceServiceHandler<ChannelFact
         String name = context.getCurrentAddressValue();
         String channel = address.getParent().getLastElement().getValue();
 
+        ServiceNameRegistry<ClusteringRequirement> registry = new CapabilityServiceNameRegistry<>(CLUSTERING_CAPABILITIES, address);
+
         for (GroupAliasBuilderProvider provider : ServiceLoader.load(GroupAliasBuilderProvider.class, GroupAliasBuilderProvider.class.getClassLoader())) {
-            for (Builder<?> builder : provider.getBuilders(requirement -> CLUSTERING_CAPABILITIES.get(requirement).getServiceName(address), name, channel)) {
+            for (Builder<?> builder : provider.getBuilders(registry, name, channel)) {
                 context.removeService(builder.getServiceName());
             }
         }
@@ -94,7 +106,10 @@ public class ForkServiceHandler extends SimpleResourceServiceHandler<ChannelFact
         context.removeService(JGroupsBindingFactory.createChannelBinding(name).getBinderServiceName());
         context.removeService(JGroupsBindingFactory.createChannelFactoryBinding(name).getBinderServiceName());
 
-        EnumSet.complementOf(EnumSet.of(FORK_CHANNEL_FACTORY)).forEach(capability -> context.removeService(capability.getServiceName(address)));
+        // FORK_CHANNEL_FACTORY is removed by super impl
+        for (Capability capability : EnumSet.complementOf(EnumSet.of(FORK_CHANNEL_FACTORY))) {
+            context.removeService(capability.getServiceName(address));
+        }
 
         super.removeServices(context, model);
     }

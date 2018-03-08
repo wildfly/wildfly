@@ -46,6 +46,6 @@ public class ReplicatedCacheResourceDefinition extends SharedStateCacheResourceD
     }
 
     ReplicatedCacheResourceDefinition() {
-        super(WILDCARD_PATH, Consumers.empty(), new ReplicatedCacheServiceHandler());
+        super(WILDCARD_PATH, Consumers.empty(), new ClusteredCacheServiceHandler(ReplicatedCacheBuilder::new));
     }
 }

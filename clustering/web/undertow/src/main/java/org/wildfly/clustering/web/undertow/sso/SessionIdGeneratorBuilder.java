@@ -43,7 +43,7 @@ import io.undertow.server.session.SessionIdGenerator;
 /**
  * @author Paul Ferraro
  */
-public class SessionIdGeneratorBuilder implements CapabilityServiceBuilder<SessionIdGenerator> {
+public class SessionIdGeneratorBuilder implements CapabilityServiceBuilder<SessionIdGenerator>, Function<Server, SessionIdGenerator> {
 
     private final ServiceName name;
     private final String serverName;
@@ -53,6 +53,13 @@ public class SessionIdGeneratorBuilder implements CapabilityServiceBuilder<Sessi
     public SessionIdGeneratorBuilder(ServiceName name, String serverName) {
         this.name = name;
         this.serverName = serverName;
+    }
+
+    @Override
+    public SessionIdGenerator apply(Server server) {
+        SecureRandomSessionIdGenerator generator = new SecureRandomSessionIdGenerator();
+        generator.setLength(server.getServletContainer().getSessionIdLength());
+        return generator;
     }
 
     @Override
@@ -68,12 +75,7 @@ public class SessionIdGeneratorBuilder implements CapabilityServiceBuilder<Sessi
 
     @Override
     public ServiceBuilder<SessionIdGenerator> build(ServiceTarget target) {
-        Function<Server, SessionIdGenerator> mapper = server -> {
-            SecureRandomSessionIdGenerator generator = new SecureRandomSessionIdGenerator();
-            generator.setLength(server.getServletContainer().getSessionIdLength());
-            return generator;
-        };
-        Service<SessionIdGenerator> service = new MappedValueService<>(mapper, this.server);
+        Service<SessionIdGenerator> service = new MappedValueService<>(this, this.server);
         return this.server.register(target.addService(this.getServiceName(), service));
     }
 }

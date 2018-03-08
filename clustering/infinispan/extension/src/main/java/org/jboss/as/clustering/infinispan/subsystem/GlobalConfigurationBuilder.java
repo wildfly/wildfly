@@ -26,11 +26,9 @@ import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourc
 import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Attribute.STATISTICS_ENABLED;
 import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Capability.CONFIGURATION;
 
-import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Map;
-import java.util.Optional;
 
 import javax.management.MBeanServer;
 
@@ -45,7 +43,6 @@ import org.infinispan.configuration.internal.PrivateGlobalConfigurationBuilder;
 import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
-import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.clustering.infinispan.MBeanServerProvider;
 import org.jboss.as.controller.OperationContext;
@@ -65,6 +62,7 @@ import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.infinispan.AdvancedExternalizerAdapter;
 import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.Dependency;
 import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.ValueDependency;
@@ -83,7 +81,7 @@ public class GlobalConfigurationBuilder extends CapabilityServiceNameProvider im
     private final String name;
 
     private volatile ValueDependency<MBeanServer> server;
-    private volatile Optional<String> defaultCache;
+    private volatile String defaultCache;
     private volatile boolean statisticsEnabled;
 
     GlobalConfigurationBuilder(PathAddress address) {
@@ -103,7 +101,7 @@ public class GlobalConfigurationBuilder extends CapabilityServiceNameProvider im
     @Override
     public Builder<GlobalConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.server = context.hasOptionalCapability(CommonRequirement.MBEAN_SERVER.getName(), null, null) ? new InjectedValueDependency<>(CommonRequirement.MBEAN_SERVER.getServiceName(context), MBeanServer.class) : null;
-        this.defaultCache = ModelNodes.optionalString(DEFAULT_CACHE.resolveModelAttribute(context, model));
+        this.defaultCache = DEFAULT_CACHE.resolveModelAttribute(context, model).asStringOrNull();
         this.statisticsEnabled = STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean();
         return this;
     }
@@ -111,9 +109,8 @@ public class GlobalConfigurationBuilder extends CapabilityServiceNameProvider im
     @Override
     public GlobalConfiguration getValue() {
         org.infinispan.configuration.global.GlobalConfigurationBuilder builder = new org.infinispan.configuration.global.GlobalConfigurationBuilder();
-        String defaultCache = this.defaultCache.orElse(null);
-        if (defaultCache != null) {
-            builder.defaultCacheName(defaultCache);
+        if (this.defaultCache != null) {
+            builder.defaultCacheName(this.defaultCache);
         }
         TransportConfiguration transport = this.transport.getValue();
         // This fails due to ISPN-4755 !!
@@ -177,15 +174,6 @@ public class GlobalConfigurationBuilder extends CapabilityServiceNameProvider im
         for (Dependency dependency : this.schedulers.values()) {
             dependency.register(builder);
         }
-        for (Dependency dependency : Arrays.asList(this.module, this.transport, this.site, this.server)) {
-            if (dependency != null) {
-                dependency.register(builder);
-            }
-        }
-        return builder;
-    }
-
-    Optional<String> getDefaultCache() {
-        return this.defaultCache;
+        return new CompositeDependency(this.module, this.transport, this.site, this.server).register(builder);
     }
 }

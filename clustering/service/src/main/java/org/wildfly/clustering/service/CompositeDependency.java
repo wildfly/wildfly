@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,14 +20,28 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.infinispan.subsystem;
+package org.wildfly.clustering.service;
+
+import org.jboss.msc.service.ServiceBuilder;
 
 /**
  * @author Paul Ferraro
  */
-public class DistributedCacheServiceHandler extends ClusteredCacheServiceHandler {
+public class CompositeDependency implements Dependency {
 
-    DistributedCacheServiceHandler() {
-        super(address -> new DistributedCacheBuilder(address));
+    private final Dependency[] dependencies;
+
+    public CompositeDependency(Dependency... dependencies) {
+        this.dependencies = dependencies;
+    }
+
+    @Override
+    public <T> ServiceBuilder<T> register(ServiceBuilder<T> builder) {
+        for (Dependency dependency : this.dependencies) {
+            if (dependency != null) {
+                dependency.register(builder);
+            }
+        }
+        return builder;
     }
 }

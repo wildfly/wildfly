@@ -29,7 +29,6 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableEntryException;
-import java.util.stream.Stream;
 
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.CredentialSourceDependency;
@@ -43,6 +42,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jgroups.protocols.Encrypt;
 import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.ValueDependency;
 import org.wildfly.security.credential.PasswordCredential;
@@ -77,8 +77,7 @@ public class EncryptProtocolConfigurationBuilder<E extends KeyStore.Entry, P ext
     @Override
     public ServiceBuilder<ProtocolConfiguration<P>> build(ServiceTarget target) {
         ServiceBuilder<ProtocolConfiguration<P>> builder = super.build(target);
-        Stream.of(this.keyStore, this.credentialSource).forEach(dependency -> dependency.register(builder));
-        return builder;
+        return new CompositeDependency(this.keyStore, this.credentialSource).register(builder);
     }
 
     @Override

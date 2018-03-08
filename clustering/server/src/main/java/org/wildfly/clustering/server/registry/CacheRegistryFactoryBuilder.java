@@ -21,8 +21,8 @@
  */
 package org.wildfly.clustering.server.registry;
 
-import java.util.Map.Entry;
-import java.util.stream.Stream;
+import java.util.Map;
+import java.util.function.BiFunction;
 
 import org.infinispan.Cache;
 import org.infinispan.remoting.transport.Address;
@@ -39,9 +39,11 @@ import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.infinispan.InfinispanBatcher;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
+import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.registry.RegistryFactory;
 import org.wildfly.clustering.server.group.Group;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.ValueDependency;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
@@ -50,16 +52,14 @@ import org.wildfly.clustering.spi.ClusteringCacheRequirement;
  * Builds a clustered {@link RegistryFactory}.
  * @author Paul Ferraro
  */
-public class CacheRegistryFactoryBuilder<K, V> implements CapabilityServiceBuilder<RegistryFactory<K, V>>, CacheRegistryConfiguration<K, V> {
+public class CacheRegistryFactoryBuilder<K, V> implements CapabilityServiceBuilder<RegistryFactory<K, V>>, CacheRegistryConfiguration<K, V>, Value<RegistryFactory<K, V>>, BiFunction<Map.Entry<K, V>, Runnable, Registry<K, V>> {
 
     private final ServiceName name;
     private final String containerName;
     private final String cacheName;
 
-    @SuppressWarnings("rawtypes")
-    private volatile ValueDependency<Group> group;
-    @SuppressWarnings("rawtypes")
-    private volatile ValueDependency<Cache> cache;
+    private volatile ValueDependency<Group<Address>> group;
+    private volatile ValueDependency<Cache<Node, Map.Entry<K, V>>> cache;
 
     public CacheRegistryFactoryBuilder(ServiceName name, String containerName, String cacheName) {
         this.name = name;
@@ -68,23 +68,32 @@ public class CacheRegistryFactoryBuilder<K, V> implements CapabilityServiceBuild
     }
 
     @Override
+    public RegistryFactory<K, V> getValue() {
+        return new FunctionalRegistryFactory<>(this);
+    }
+
+    @Override
+    public Registry<K, V> apply(Map.Entry<K, V> entry, Runnable closeTask) {
+        return new CacheRegistry<>(this, entry, closeTask);
+    }
+
+    @Override
     public ServiceName getServiceName() {
         return this.name;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public Builder<RegistryFactory<K, V>> configure(CapabilityServiceSupport support) {
-        this.cache = new InjectedValueDependency<>(InfinispanCacheRequirement.CACHE.getServiceName(support, this.containerName, this.cacheName), Cache.class);
-        this.group = new InjectedValueDependency<>(ClusteringCacheRequirement.GROUP.getServiceName(support, this.containerName, this.cacheName), Group.class);
+        this.cache = new InjectedValueDependency<>(InfinispanCacheRequirement.CACHE.getServiceName(support, this.containerName, this.cacheName), (Class<Cache<Node, Map.Entry<K, V>>>) (Class<?>) Cache.class);
+        this.group = new InjectedValueDependency<>(ClusteringCacheRequirement.GROUP.getServiceName(support, this.containerName, this.cacheName), (Class<Group<Address>>) (Class<?>) Group.class);
         return this;
     }
 
     @Override
     public ServiceBuilder<RegistryFactory<K, V>> build(ServiceTarget target) {
-        Value<RegistryFactory<K, V>> value = () -> new FunctionalRegistryFactory<>((entry, closeTask) -> new CacheRegistry<>(this, entry, closeTask));
-        ServiceBuilder<RegistryFactory<K, V>> builder = target.addService(this.name, new ValueService<>(value)).setInitialMode(ServiceController.Mode.ON_DEMAND);
-        Stream.of(this.cache, this.group).forEach(dependency -> dependency.register(builder));
-        return builder;
+        ServiceBuilder<RegistryFactory<K, V>> builder = target.addService(this.name, new ValueService<>(this)).setInitialMode(ServiceController.Mode.ON_DEMAND);
+        return new CompositeDependency(this.cache, this.group).register(builder);
     }
 
     @Override
@@ -98,7 +107,7 @@ public class CacheRegistryFactoryBuilder<K, V> implements CapabilityServiceBuild
     }
 
     @Override
-    public Cache<Node, Entry<K, V>> getCache() {
+    public Cache<Node, Map.Entry<K, V>> getCache() {
         return this.cache.getValue();
     }
 }

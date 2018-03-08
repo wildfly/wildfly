@@ -26,7 +26,7 @@ import static org.jboss.as.controller.transform.description.TransformationDescri
 
 import java.util.EnumSet;
 
-import org.jboss.as.clustering.controller.Model;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
 import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
 import org.kohsuke.MetaInfServices;
@@ -45,6 +45,9 @@ public class InfinispanExtensionTransformerRegistration implements ExtensionTran
     @Override
     public void registerTransformers(SubsystemTransformerRegistration registration) {
         // Register transformers for all but the current model
-        EnumSet.complementOf(EnumSet.of(InfinispanModel.CURRENT)).stream().map(Model::getVersion).forEach(version -> register(InfinispanSubsystemResourceDefinition.buildTransformation(version), registration, version));
+        for (InfinispanModel model : EnumSet.complementOf(EnumSet.of(InfinispanModel.CURRENT))) {
+            ModelVersion version = model.getVersion();
+            register(InfinispanSubsystemResourceDefinition.buildTransformation(version), registration, version);
+        }
     }
 }

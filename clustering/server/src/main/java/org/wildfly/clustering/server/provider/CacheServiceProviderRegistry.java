@@ -21,7 +21,6 @@
  */
 package org.wildfly.clustering.server.provider;
 
-import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.AbstractMap;
 import java.util.Collection;
@@ -71,9 +70,8 @@ import org.wildfly.clustering.server.logging.ClusteringServerLogger;
 public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<T>, GroupListener, AutoCloseable {
 
     private static ThreadFactory createThreadFactory(Class<?> targetClass) {
-        PrivilegedAction<ThreadFactory> action = () -> new JBossThreadFactory(new ThreadGroup(targetClass.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null);
-        return new ClassLoaderThreadFactory(WildFlySecurityManager.doUnchecked(action),
-                AccessController.doPrivileged((PrivilegedAction<ClassLoader>) () -> targetClass.getClassLoader()));
+        PrivilegedAction<ThreadFactory> action = () -> new ClassLoaderThreadFactory(new JBossThreadFactory(new ThreadGroup(targetClass.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null), targetClass.getClassLoader());
+        return WildFlySecurityManager.doUnchecked(action);
     }
 
     private final ConcurrentMap<T, Map.Entry<Listener, ExecutorService>> listeners = new ConcurrentHashMap<>();
@@ -210,7 +208,9 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
                     try {
                         Collection<T> services = this.dispatcher.executeOnNode(new GetLocalServicesCommand<>(), joinedMember).get();
                         try (Batch batch = this.batcher.createBatch()) {
-                            services.forEach(service -> this.register(joinedMember, service));
+                            for (T service : services) {
+                                this.register(joinedMember, service);
+                            }
                         }
                     } catch (Exception e) {
                         ClusteringServerLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);

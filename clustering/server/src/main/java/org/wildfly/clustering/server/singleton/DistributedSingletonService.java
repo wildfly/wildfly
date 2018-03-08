@@ -54,8 +54,7 @@ import org.wildfly.clustering.singleton.SingletonService;
  */
 public class DistributedSingletonService<T> implements SingletonService<T>, SingletonContext<T>, ServiceProviderRegistration.Listener, PrimaryProxyContext<T> {
 
-    @SuppressWarnings("rawtypes")
-    private final Value<ServiceProviderRegistry> registry;
+    private final Value<ServiceProviderRegistry<ServiceName>> registry;
     private final Value<CommandDispatcherFactory> dispatcherFactory;
     private final ServiceName serviceName;
     private final Service<T> primaryService;

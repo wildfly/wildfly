@@ -38,7 +38,7 @@ import org.wildfly.clustering.service.ValueDependency;
  * Builds a cache configuration based on the configuration of a template cache.
  * @author Paul Ferraro
  */
-public class TemplateConfigurationBuilder implements CapabilityServiceBuilder<Configuration> {
+public class TemplateConfigurationBuilder implements CapabilityServiceBuilder<Configuration>, Consumer<org.infinispan.configuration.cache.ConfigurationBuilder> {
 
     private final CapabilityServiceBuilder<Configuration> builder;
     private final String containerName;
@@ -57,10 +57,14 @@ public class TemplateConfigurationBuilder implements CapabilityServiceBuilder<Co
     }
 
     public TemplateConfigurationBuilder(ServiceName name, String containerName, String cacheName, String templateCacheName, Consumer<org.infinispan.configuration.cache.ConfigurationBuilder> templateConsumer) {
-        Consumer<org.infinispan.configuration.cache.ConfigurationBuilder> consumer = builder -> builder.read(this.template.getValue());
-        this.builder = new ConfigurationBuilder(name, containerName, cacheName, consumer.andThen(templateConsumer));
+        this.builder = new ConfigurationBuilder(name, containerName, cacheName, this.andThen(templateConsumer));
         this.containerName = containerName;
         this.templateCacheName = templateCacheName;
+    }
+
+    @Override
+    public void accept(org.infinispan.configuration.cache.ConfigurationBuilder builder) {
+        builder.read(this.template.getValue());
     }
 
     @Override

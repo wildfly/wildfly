@@ -23,6 +23,7 @@
 package org.jboss.as.clustering.controller;
 
 import org.jboss.as.clustering.controller.transform.InitialAttributeValueOperationContextAttachment;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -65,7 +66,9 @@ public class RestartParentResourceWriteAttributeHandler<T> extends RestartParent
 
     @Override
     public void register(ManagementResourceRegistration registration) {
-        this.descriptor.getAttributes().forEach(attribute -> registration.registerReadWriteAttribute(attribute, null, this));
+        for (AttributeDefinition attribute : this.descriptor.getAttributes()) {
+            registration.registerReadWriteAttribute(attribute, null, this);
+        }
     }
 
     @Override

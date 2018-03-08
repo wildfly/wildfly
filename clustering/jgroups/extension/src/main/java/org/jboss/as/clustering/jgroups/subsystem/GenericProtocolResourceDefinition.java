@@ -77,7 +77,9 @@ public class GenericProtocolResourceDefinition<P extends Protocol> extends Proto
         super(path, descriptorConfigurator.andThen(descriptor -> descriptor
                 .addExtraParameters(DeprecatedAttribute.class)
                 ), ProtocolConfigurationBuilder::new, parentBuilderFactory, (parent, registration) -> {
-                    EnumSet.allOf(DeprecatedAttribute.class).forEach(attribute -> registration.registerReadOnlyAttribute(attribute.getDefinition(), null));
+                    for (org.jboss.as.clustering.controller.Attribute attribute : EnumSet.allOf(DeprecatedAttribute.class)) {
+                        registration.registerReadOnlyAttribute(attribute.getDefinition(), null);
+                    }
                 });
     }
 }

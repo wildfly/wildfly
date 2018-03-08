@@ -24,6 +24,7 @@ package org.wildfly.clustering.service.concurrent;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -41,7 +42,7 @@ import org.wildfly.clustering.service.SuppliedValueService;
  * Service that provides a {@link ScheduledThreadPoolExecutor} that removes tasks from the task queue upon cancellation.
  * @author Paul Ferraro
  */
-public class RemoveOnCancelScheduledExecutorServiceBuilder implements Builder<ScheduledExecutorService> {
+public class RemoveOnCancelScheduledExecutorServiceBuilder implements Builder<ScheduledExecutorService>, Function<ScheduledExecutorService, ScheduledExecutorService>, Supplier<ScheduledExecutorService>, Consumer<ScheduledExecutorService> {
 
     private final ServiceName name;
     private final ThreadFactory factory;
@@ -53,20 +54,31 @@ public class RemoveOnCancelScheduledExecutorServiceBuilder implements Builder<Sc
     }
 
     @Override
+    public ScheduledExecutorService apply(ScheduledExecutorService executor) {
+        return JBossExecutors.protectedScheduledExecutorService(executor);
+    }
+
+    @Override
+    public ScheduledExecutorService get() {
+        ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(this.size, this.factory);
+        executor.setRemoveOnCancelPolicy(true);
+        executor.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
+        return executor;
+    }
+
+    @Override
+    public void accept(ScheduledExecutorService executor) {
+        executor.shutdownNow();
+    }
+
+    @Override
     public ServiceName getServiceName() {
         return this.name;
     }
 
     @Override
     public ServiceBuilder<ScheduledExecutorService> build(ServiceTarget target) {
-        Function<ScheduledExecutorService, ScheduledExecutorService> mapper = executor -> JBossExecutors.protectedScheduledExecutorService(executor);
-        Supplier<ScheduledExecutorService> supplier = () -> {
-            ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(this.size, this.factory);
-            executor.setRemoveOnCancelPolicy(true);
-            executor.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
-            return executor;
-        };
-        Service<ScheduledExecutorService> service = new SuppliedValueService<>(mapper, supplier, ScheduledExecutorService::shutdown);
+        Service<ScheduledExecutorService> service = new SuppliedValueService<>(this, this, this);
         return new AsynchronousServiceBuilder<>(this.name, service).startSynchronously().build(target).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 
