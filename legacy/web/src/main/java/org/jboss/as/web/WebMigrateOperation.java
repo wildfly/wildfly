@@ -402,7 +402,7 @@ public class WebMigrateOperation implements OperationStepHandler {
         addres = pathAddress(managementCoreService, pathElement(SECURITY_REALM, realmName), pathElement(AUTHENTICATION, TRUSTSTORE));
         ModelNode addOp = createAddOperation(addres);
         addOp.get(ModelDescriptionConstants.KEYSTORE_PATH).set(caCertificateFile);
-        addOp.get(ModelDescriptionConstants.KEYSTORE_PASSWORD).set(password);
+        addOp.get(ModelDescriptionConstants.KEYSTORE_PASSWORD).set(caCertificatePassword);
         addOp.get(ModelDescriptionConstants.KEYSTORE_PROVIDER).set(trustStoreType);
         migrationOperations.put(addres, addOp);
 
