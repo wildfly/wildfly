@@ -22,12 +22,11 @@
 
 package org.jboss.as.clustering.controller;
 
-import java.util.Optional;
-
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -36,33 +35,56 @@ import org.jboss.dmr.ModelNode;
  */
 public class ReadAttributeTranslationHandler implements OperationStepHandler {
 
-    private final Attribute targetAttribute;
-    private final AttributeValueTranslator translator;
+    private final AttributeTranslation translation;
 
     public ReadAttributeTranslationHandler(AttributeTranslation translation) {
-        this(translation.getTargetAttribute(), translation.getReadTranslator());
-    }
-
-    public ReadAttributeTranslationHandler(Attribute targetAttribute, AttributeValueTranslator translator) {
-        this.targetAttribute = targetAttribute;
-        this.translator = translator;
+        this.translation = translation;
     }
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        ModelNode targetOperation = Operations.createReadAttributeOperation(context.getCurrentAddress(), this.targetAttribute);
-        String targetName = this.targetAttribute.getName();
-        // If attribute has no read handler, synthesize one
-        Optional.ofNullable(context.getResourceRegistration().getAttributeAccess(PathAddress.EMPTY_ADDRESS, targetName).getReadHandler()).orElse((ctx, op) -> {
-            ModelNode model = ctx.readResource(PathAddress.EMPTY_ADDRESS).getModel();
-            ModelNode result = ctx.getResult();
-            if (model.hasDefined(targetName)) {
-                result.set(model.get(targetName));
-            } else if (Operations.isIncludeDefaults(op)) {
-                result.set(this.targetAttribute.getDefinition().getDefaultValue());
+        PathAddress currentAddress = context.getCurrentAddress();
+        PathAddress targetAddress = this.translation.getPathAddressTransformation().apply(currentAddress);
+        Attribute targetAttribute = this.translation.getTargetAttribute();
+        ModelNode targetOperation = Operations.createReadAttributeOperation(targetAddress, targetAttribute);
+        ImmutableManagementResourceRegistration targetRegistration = this.translation.getResourceRegistrationTransformation().apply(context.getResourceRegistration());
+        OperationStepHandler readAttributeHandler = targetRegistration.getAttributeAccess(PathAddress.EMPTY_ADDRESS, targetAttribute.getName()).getReadHandler();
+        OperationStepHandler readTranslatedAttributeHandler = new ReadTranslatedAttributeStepHandler(readAttributeHandler, targetAttribute, this.translation.getReadTranslator());
+        // If targetOperation applies to the current resource, we can execute in the current step
+        if (targetAddress == currentAddress) {
+            readTranslatedAttributeHandler.execute(context, targetOperation);
+        } else {
+            context.addStep(targetOperation, readTranslatedAttributeHandler, context.getCurrentStage(), true);
+        }
+    }
+
+    private static class ReadTranslatedAttributeStepHandler implements OperationStepHandler {
+        private final OperationStepHandler readHandler;
+        private final Attribute targetAttribute;
+        private final AttributeValueTranslator translator;
+
+        ReadTranslatedAttributeStepHandler(OperationStepHandler readHandler, Attribute targetAttribute, AttributeValueTranslator translator) {
+            this.readHandler = readHandler;
+            this.targetAttribute = targetAttribute;
+            this.translator = translator;
+        }
+
+        @Override
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+            if (this.readHandler != null) {
+                this.readHandler.execute(context, operation);
+            } else {
+                // If attribute has no read handler, simulate one
+                ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS, false).getModel();
+                ModelNode result = context.getResult();
+                if (model.hasDefined(this.targetAttribute.getName())) {
+                    result.set(model.get(this.targetAttribute.getName()));
+                } else if (Operations.isIncludeDefaults(operation)) {
+                    result.set(this.targetAttribute.getDefinition().getDefaultValue());
+                }
             }
-        }).execute(context, targetOperation);
-        ModelNode result = context.getResult();
-        result.set(this.translator.translate(context, result));
+            ModelNode result = context.getResult();
+            result.set(this.translator.translate(context, result));
+        }
     }
 }

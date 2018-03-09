@@ -27,6 +27,7 @@ import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
 import org.infinispan.persistence.jdbc.DatabaseType;
+import org.jboss.as.clustering.controller.AttributeTranslation;
 import org.jboss.as.clustering.controller.AttributeValueTranslator;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
@@ -38,8 +39,6 @@ import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -180,43 +179,50 @@ public abstract class JDBCStoreResourceDefinition extends StoreResourceDefinitio
         }
     }
 
-    static final AttributeValueTranslator POOL_NAME_TO_JNDI_NAME_TRANSLATOR = new AttributeValueTranslator() {
+    static final AttributeTranslation DATA_SOURCE_TRANSLATION = new AttributeTranslation() {
         @Override
-        public ModelNode translate(OperationContext context, ModelNode value) throws OperationFailedException {
-            String poolName = value.asString();
-            PathAddress address = context.getCurrentAddress();
-            PathAddress rootAddress = address.subAddress(0, address.size() - 4);
-            PathAddress subsystemAddress = rootAddress.append(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "datasources"));
-            Resource subsystem = context.readResourceFromRoot(subsystemAddress);
-            for (String type : Arrays.asList("data-source", "xa-data-source")) {
-                Resource resource = subsystem.getChild(PathElement.pathElement(type, poolName));
-                if (resource != null) {
-                    return resource.getModel().get("jndi-name");
-                }
-            }
-            throw InfinispanLogger.ROOT_LOGGER.dataSourceNotFound(poolName);
+        public org.jboss.as.clustering.controller.Attribute getTargetAttribute() {
+            return Attribute.DATA_SOURCE;
         }
-    };
 
-    static final AttributeValueTranslator JNDI_NAME_TO_POOL_NAME_TRANSLATOR = new AttributeValueTranslator() {
         @Override
-        public ModelNode translate(OperationContext context, ModelNode value) throws OperationFailedException {
-            String jndiName = value.asString();
-            PathAddress address = context.getCurrentAddress();
-            PathAddress rootAddress = address.subAddress(0, address.size() - 4);
-            PathAddress subsystemAddress = rootAddress.append(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "datasources"));
-            Resource subsystem = context.readResourceFromRoot(subsystemAddress);
-            for (String type : Arrays.asList("data-source", "xa-data-source")) {
-                if (subsystem.hasChildren(type)) {
-                    for (Resource.ResourceEntry entry : subsystem.getChildren(type)) {
-                        ModelNode model = entry.getModel();
-                        if (model.get("jndi-name").asString().equals(jndiName)) {
-                            return new ModelNode(entry.getName());
+        public AttributeValueTranslator getReadTranslator() {
+            return (context, value) -> {
+                String poolName = value.asString();
+                PathAddress address = context.getCurrentAddress();
+                PathAddress rootAddress = address.subAddress(0, address.size() - 4);
+                PathAddress subsystemAddress = rootAddress.append(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "datasources"));
+                Resource subsystem = context.readResourceFromRoot(subsystemAddress);
+                for (String type : Arrays.asList("data-source", "xa-data-source")) {
+                    Resource resource = subsystem.getChild(PathElement.pathElement(type, poolName));
+                    if (resource != null) {
+                        return resource.getModel().get("jndi-name");
+                    }
+                }
+                throw InfinispanLogger.ROOT_LOGGER.dataSourceNotFound(poolName);
+            };
+        }
+
+        @Override
+        public AttributeValueTranslator getWriteTranslator() {
+            return (context, value) -> {
+                String jndiName = value.asString();
+                PathAddress address = context.getCurrentAddress();
+                PathAddress rootAddress = address.subAddress(0, address.size() - 4);
+                PathAddress subsystemAddress = rootAddress.append(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "datasources"));
+                Resource subsystem = context.readResourceFromRoot(subsystemAddress);
+                for (String type : Arrays.asList("data-source", "xa-data-source")) {
+                    if (subsystem.hasChildren(type)) {
+                        for (Resource.ResourceEntry entry : subsystem.getChildren(type)) {
+                            ModelNode model = entry.getModel();
+                            if (model.get("jndi-name").asString().equals(jndiName)) {
+                                return new ModelNode(entry.getName());
+                            }
                         }
                     }
                 }
-            }
-            throw InfinispanLogger.ROOT_LOGGER.dataSourceJndiNameNotFound(jndiName);
+                throw InfinispanLogger.ROOT_LOGGER.dataSourceJndiNameNotFound(jndiName);
+            };
         }
     };
 
@@ -224,7 +230,7 @@ public abstract class JDBCStoreResourceDefinition extends StoreResourceDefinitio
         super(path, legacyPath, resolver, configurator.andThen(descriptor -> descriptor
                 .addAttributes(Attribute.class)
                 // Translate deprecated DATASOURCE attribute to DATA_SOURCE attribute
-                .addAttributeTranslation(DeprecatedAttribute.DATASOURCE, Attribute.DATA_SOURCE, POOL_NAME_TO_JNDI_NAME_TRANSLATOR, JNDI_NAME_TO_POOL_NAME_TRANSLATOR)
+                .addAttributeTranslation(DeprecatedAttribute.DATASOURCE, DATA_SOURCE_TRANSLATION)
             ), JDBCStoreBuilder::new, registrationConfigurator);
     }
 }
