@@ -60,7 +60,7 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
     public void registerTransformers(SubsystemTransformerRegistration registration) {
         ChainedTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(registration.getCurrentSubsystemVersion());
 
-        registerTransformers_EAP_7_2_0(builder.createBuilder(MessagingExtension.VERSION_3_1_0, MessagingExtension.VERSION_3_0_0));
+        registerTransformers_EAP_7_2_0(builder.createBuilder(MessagingExtension.VERSION_4_0_0, MessagingExtension.VERSION_3_0_0));
         registerTransformers_EAP_7_1_0(builder.createBuilder(MessagingExtension.VERSION_3_0_0, MessagingExtension.VERSION_2_0_0));
         registerTransformers_EAP_7_0_0(builder.createBuilder(MessagingExtension.VERSION_2_0_0, MessagingExtension.VERSION_1_0_0));
 
@@ -71,7 +71,7 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
         ResourceTransformationDescriptionBuilder server = subsystem.addChildResource(MessagingExtension.SERVER_PATH);
         // WFLY-10165 - journal-jdbc-network-timeout default value is 20 seconds.
         defaultValueAttributeConverter(server, ServerDefinition.JOURNAL_JDBC_NETWORK_TIMEOUT);
-    }
+        }
 
     private static void registerTransformers_EAP_7_1_0(ResourceTransformationDescriptionBuilder subsystem) {
         ResourceTransformationDescriptionBuilder server = subsystem.addChildResource(MessagingExtension.SERVER_PATH);
