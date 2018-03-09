@@ -23,33 +23,33 @@
 package org.jboss.as.clustering.controller.transform;
 
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.DiscardPolicy;
 import org.jboss.as.controller.transform.description.DynamicDiscardPolicy;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 
 /**
- * Implementation of a generic {@link DynamicDiscardPolicy} that discards child resources which have all their
- * attributes undefined, conditionally rejects or leaves resource for further transformation. It is to be used for required child
- * resources that are auto-created.
+ * Implementation of a generic {@link DynamicDiscardPolicy} that discards child resources which have all their attribute undefined and have no children.
+ * Conditionally rejects or leaves resource for further transformation. It is to be used for required child resources that are auto-created.
  *
  * @author Radoslav Husar
- * @version Sep 2015
  */
 public enum RequiredChildResourceDiscardPolicy implements DynamicDiscardPolicy {
 
     /**
-     * Policy that discards if all attributes are undefined; rejects otherwise.
+     * Policy that discards if all attributes are undefined and resource has no children; rejects otherwise.
      */
     REJECT_AND_WARN(DiscardPolicy.REJECT_AND_WARN),
 
     /**
-     * Policy that discards if all attributes are undefined; never discards otherwise ({@link DiscardPolicy#NEVER}) in order to proceed with
-     * resource transformations.
+     * Policy that discards if all attributes are undefined and resource has no children;
+     * never discards otherwise ({@link DiscardPolicy#NEVER}) in order to proceed with resource transformations.
      */
-    NEVER(DiscardPolicy.NEVER);
-
+    NEVER(DiscardPolicy.NEVER),
+    ;
     private final DiscardPolicy policy;
 
     RequiredChildResourceDiscardPolicy(DiscardPolicy policy) {
@@ -57,21 +57,28 @@ public enum RequiredChildResourceDiscardPolicy implements DynamicDiscardPolicy {
     }
 
     /**
-     * @return {@link DiscardPolicy#REJECT_AND_WARN} if any of the attributes are defined; {@link DiscardPolicy#SILENT} otherwise
+     * @return contextual discard policy if any resource attributes are undefined and has no children; {@link DiscardPolicy#SILENT} otherwise.
      */
     @Override
     public DiscardPolicy checkResource(TransformationContext context, PathAddress address) {
-        ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
+        Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
+        ImmutableManagementResourceRegistration registration = context.getResourceRegistration(PathAddress.EMPTY_ADDRESS);
+        ModelNode model = resource.getModel();
 
         if (model.isDefined()) {
-            for (Property entry : model.asPropertyList()) {
-                if (entry.getValue().isDefined()) {
-                    return policy;
+            for (String attribute : registration.getAttributeNames(PathAddress.EMPTY_ADDRESS)) {
+                if (model.hasDefined(attribute)) {
+                    return this.policy;
                 }
+            }
+        }
+
+        for (PathElement path : registration.getChildAddresses(PathAddress.EMPTY_ADDRESS)) {
+            if (path.isWildcard() ? resource.hasChildren(path.getKey()) : resource.hasChild(path)) {
+                return this.policy;
             }
         }
 
         return DiscardPolicy.SILENT;
     }
-
 }
