@@ -90,6 +90,8 @@ public class PersistenceUnitXmlParser extends MetaDataElementParser {
                 version = Version.JPA_2_0;
             } else if ("2.1".equals(versionString)) {
                 version = Version.JPA_2_1;
+            } else if ("2.2".equals(versionString)) {
+                version = Version.JPA_2_2;
             } else if ("2".equals(versionString)) {
                 version = Version.JPA_2_0;
             } else {
