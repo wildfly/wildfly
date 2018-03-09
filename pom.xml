@@ -358,7 +358,7 @@
         <version.org.jboss.ws.cxf>5.2.3.Final</version.org.jboss.ws.cxf>
         <version.org.jboss.ws.jaxws-undertow-httpspi>1.0.1.Final</version.org.jboss.ws.jaxws-undertow-httpspi>
         <version.org.jboss.ws.spi>3.2.2.Final</version.org.jboss.ws.spi>
-        <version.org.jboss.xnio.netty.netty-xnio-transport>0.1.2.Final</version.org.jboss.xnio.netty.netty-xnio-transport>
+        <version.org.jboss.xnio.netty.netty-xnio-transport>0.1.6.Final</version.org.jboss.xnio.netty.netty-xnio-transport>
         <version.org.jdom>1.1.3</version.org.jdom>
         <version.org.jgroups>4.0.13.Final</version.org.jgroups>
         <version.org.jgroups.azure>1.2.0.Final</version.org.jgroups.azure>
