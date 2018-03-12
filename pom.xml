@@ -6573,19 +6573,7 @@
                 <!-- There are lots of issues with checkstyle runtime on JDK9, it somewhat works but really slows down build, disabling it for now-->
                 <checkstyle.skip>true</checkstyle.skip>
             </properties>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-compiler-plugin</artifactId>
-                        <version>${version.compiler.plugin}</version>
-                        <configuration>
-                            <!-- jdk.unsupported is needed for security subsystem FastConcurrentDirectDeque-->
-                            <compilerArgument>-J--add-modules=java.xml.ws.annotation,jdk.unsupported</compilerArgument>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
+            
         </profile>
         <profile>
             <id>docs</id>
