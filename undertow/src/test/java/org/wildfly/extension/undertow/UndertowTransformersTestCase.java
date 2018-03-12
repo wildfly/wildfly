@@ -115,7 +115,8 @@ public class UndertowTransformersTestCase extends AbstractSubsystemBaseTest {
                                 HttpListenerResourceDefinition.REQUIRE_HOST_HTTP11.getName(),
                                 HttpListenerResourceDefinition.PROXY_ADDRESS_FORWARDING.getName(),
                                 HttpListenerResourceDefinition.CERTIFICATE_FORWARDING.getName(),
-                                HttpsListenerResourceDefinition.SSL_CONTEXT.getName()
+                                HttpsListenerResourceDefinition.SSL_CONTEXT.getName(),
+                                HttpsListenerResourceDefinition.ALLOW_UNESCAPED_CHARACTERS_IN_URL.getName()
                         )
                 )
                 .addFailedAttribute(reverseProxy, new FailedOperationTransformationConfig.NewAttributesConfig(ReverseProxyHandler.MAX_RETRIES))
