@@ -22,6 +22,9 @@
 
 package org.jboss.as.jpa.processor;
 
+import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
+
+import org.jboss.as.jpa.Hibernate51CompatibilityTransformer;
 import org.jboss.as.jpa.classloader.JPADelegatingClassFileTransformer;
 import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
@@ -41,6 +44,13 @@ import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
  */
 public class JPAClassFileTransformerProcessor implements DeploymentUnitProcessor {
 
+    private static final boolean hibernate51CompatibilityTransformer = Boolean.getBoolean("Hibernate51CompatibilityTransformer");
+
+    static {
+        if(hibernate51CompatibilityTransformer) {
+            ROOT_LOGGER.hibernate51CompatibilityTransformerEnabled();
+        }
+    }
 
     /**
      * Add dependencies for modules required for JPA deployments
@@ -56,8 +66,9 @@ public class JPAClassFileTransformerProcessor implements DeploymentUnitProcessor
         // during the call to CreateContainerEntityManagerFactory.
 
         DelegatingClassFileTransformer transformer = deploymentUnit.getAttachment(DelegatingClassFileTransformer.ATTACHMENT_KEY);
-
+        boolean appContainsPersistenceProviderJars = false;  // remove when we revert WFLY-10520
         if ( transformer != null) {
+
             for (ResourceRoot resourceRoot : DeploymentUtils.allResourceRoots(deploymentUnit)) {
                 PersistenceUnitMetadataHolder holder = resourceRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS);
                 if (holder != null) {
@@ -65,8 +76,20 @@ public class JPAClassFileTransformerProcessor implements DeploymentUnitProcessor
                         if (Configuration.needClassFileTransformer(pu)) {
                             transformer.addTransformer(new JPADelegatingClassFileTransformer(pu));
                         }
+                        // remove this check when we revert WFLY-10520
+                        String provider = pu.getProperties().getProperty(Configuration.PROVIDER_MODULE);
+                        if (provider != null) {
+                            if (provider.equals(Configuration.PROVIDER_MODULE_APPLICATION_SUPPLIED)) {
+                                appContainsPersistenceProviderJars = true;
+                            }
+                        }
+
                     }
                 }
+            }
+            // WFLY-10520 Add Hibernate ORM 5.3 compatibility transformer
+            if(!appContainsPersistenceProviderJars && hibernate51CompatibilityTransformer) {
+                transformer.addTransformer(Hibernate51CompatibilityTransformer.getInstance());
             }
         }
     }

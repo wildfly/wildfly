@@ -130,9 +130,10 @@ public class Hibernate4NativeAPIProviderTestCase {
             Student s1 = sfsb.createStudent("MADHUMITA", "SADHUKHAN", "99 Purkynova REDHAT BRNO CZ", 1);
             Student s2 = sfsb.createStudent("REDHAT", "LINUX", "Worldwide", 3);
             Student st = sfsb.getStudent(s1.getStudentId());
-            assertTrue("name read from hibernate session is MADHUMITA", "MADHUMITA".equals(st.getFirstName()));
+            assertTrue( "name read from hibernate session is MADHUMITA", "MADHUMITA".equals( st.getFirstName() ) );
         } finally {
             sfsb.cleanup();
         }
     }
+
 }

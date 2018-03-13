@@ -758,4 +758,8 @@ public interface JpaLogger extends BasicLogger {
     @Message(id = 73, value = "Transformation of class %s failed")
     IllegalStateException invalidClassFormat(@Cause IllegalClassFormatException cause, String className);
 
+    @LogMessage(level = INFO)
+    @Message(id = 74, value = "Deprecated Hibernate51CompatibilityTransformer is enabled for all application deployments.")
+    void hibernate51CompatibilityTransformerEnabled();
+
 }
