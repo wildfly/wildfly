@@ -76,13 +76,15 @@ class TransactionSubsystemXMLPersister implements XMLElementWriter<SubsystemMars
         }
         if (TransactionSubsystemRootResourceDefinition.STATISTICS_ENABLED.isMarshallable(node)
                 || TransactionSubsystemRootResourceDefinition.ENABLE_TSM_STATUS.isMarshallable(node)
-                || TransactionSubsystemRootResourceDefinition.DEFAULT_TIMEOUT.isMarshallable(node)) {
+                || TransactionSubsystemRootResourceDefinition.DEFAULT_TIMEOUT.isMarshallable(node)
+                || TransactionSubsystemRootResourceDefinition.MAXIMUM_TIMEOUT.isMarshallable(node)) {
 
             writer.writeStartElement(Element.COORDINATOR_ENVIRONMENT.getLocalName());
 
             TransactionSubsystemRootResourceDefinition.STATISTICS_ENABLED.marshallAsAttribute(node, writer);
             TransactionSubsystemRootResourceDefinition.ENABLE_TSM_STATUS.marshallAsAttribute(node, writer);
             TransactionSubsystemRootResourceDefinition.DEFAULT_TIMEOUT.marshallAsAttribute(node, writer);
+            TransactionSubsystemRootResourceDefinition.MAXIMUM_TIMEOUT.marshallAsAttribute(node, writer);
 
             writer.writeEndElement();
         }

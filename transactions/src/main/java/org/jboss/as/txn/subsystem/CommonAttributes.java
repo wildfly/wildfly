@@ -32,6 +32,7 @@ interface CommonAttributes {
     String CORE_ENVIRONMENT = "core-environment";
     String COORDINATOR_ENVIRONMENT = "coordinator-environment";
     String DEFAULT_TIMEOUT = "default-timeout";
+    String MAXIMUM_TIMEOUT = "maximum-timeout";
     String ENABLE_STATISTICS = "enable-statistics";
     /** transaction status manager (TSM) service, needed for out of process recovery, should be provided or not */
     String ENABLE_TSM_STATUS = "enable-tsm-status";
