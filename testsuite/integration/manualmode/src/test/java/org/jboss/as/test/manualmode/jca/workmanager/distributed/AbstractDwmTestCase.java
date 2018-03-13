@@ -238,7 +238,9 @@ public abstract class AbstractDwmTestCase {
             ModelNode compositeOp = ModelUtil.createCompositeNode(
                     new ModelNode[] { removeDwm, removeContext });
             mcc.execute(compositeOp);
-            ServerReload.executeReloadAndWaitForCompletion(mcc, 60000, false,
+            //large reload time is due to https://issues.jboss.org/browse/WFLY-10008
+            //when this is fixed reload time can be dropped
+            ServerReload.executeReloadAndWaitForCompletion(mcc, 90000, false,
                     CONTAINER_0.equals(containerId) ? TestSuiteEnvironment.getServerAddress() : TestSuiteEnvironment.getServerAddressNode1(),
                     serverPort);
         }
