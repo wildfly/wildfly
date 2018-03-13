@@ -158,6 +158,10 @@
       <groupId>org.jboss.spec.javax.management.j2ee</groupId>
       <artifactId>jboss-j2eemgmt-api_1.1_spec</artifactId>
     </dependency>
+    <dependency>
+      <groupId>javax.jws</groupId>
+      <artifactId>jsr181-api</artifactId>
+    </dependency>
   </dependencies>
 
   <!-- Modules -->

@@ -1026,6 +1026,27 @@
             </properties>
         </profile>
         <profile>
+            <id>jdk-target</id>
+            <activation>
+                <jdk>[9,)</jdk>
+                <property>
+                    <name>jdk-release</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <version>${version.compiler.plugin}</version>
+                        <configuration>
+                            <release>${jdk-release}</release>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
             <id>ci-cleanup</id>
             <activation>
                 <property>

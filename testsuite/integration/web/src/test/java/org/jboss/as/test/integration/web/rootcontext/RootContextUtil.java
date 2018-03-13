@@ -22,8 +22,10 @@
 package org.jboss.as.test.integration.web.rootcontext;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
@@ -65,6 +67,7 @@ import org.jboss.logging.Logger;
         op.get(OP_ADDR).add(SUBSYSTEM, WEB_SUBSYSTEM_NAME);
         op.get(OP_ADDR).add(SERVER, "default-server");
         op.get(OP_ADDR).add(HOST, virtualHost);
+        op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         op.get("default-web-module").set("somewar.war");
 
         updates.add(op);
@@ -80,6 +83,7 @@ import org.jboss.logging.Logger;
         op.get(OP_ADDR).add(SUBSYSTEM, WEB_SUBSYSTEM_NAME);
         op.get(OP_ADDR).add(SERVER, "default-server");
         op.get(OP_ADDR).add(HOST, virtualHost);
+        op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         updates.add(op);
 
         applyUpdates(updates, client);
@@ -96,7 +100,7 @@ import org.jboss.logging.Logger;
         applyUpdates(updates, client);
     }
 
-    public static void applyUpdates(final List<ModelNode> updates, final ModelControllerClient client) throws Exception {
+    private static void applyUpdates(final List<ModelNode> updates, final ModelControllerClient client) throws Exception {
         for (ModelNode update : updates) {
             log.trace("+++ Update on " + client + ":\n" + update.toString());
             ModelNode result = client.execute(new OperationBuilder(update).build());

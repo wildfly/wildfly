@@ -24,7 +24,6 @@ package org.jboss.as.test.integration.web.rootcontext;
 import java.net.URL;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -64,7 +63,7 @@ public class RootContextWarUnitTestCase {
         }
     }
 
-    @Deployment(name = "root-context.war", testable = false)
+    @Deployment(name = "root-context.war")
     public static WebArchive warDeployment() {
 
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
@@ -80,7 +79,6 @@ public class RootContextWarUnitTestCase {
     }
 
     @Test
-    @OperateOnDeployment("root-context.war")
     public void testRootContextWAR(@ArquillianResource URL url) throws Exception {
         String response = RootContextUtil.hitRootContext(url, HOST);
         assertTrue(response.contains("A Root Context Page"));

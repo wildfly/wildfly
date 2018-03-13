@@ -66,13 +66,6 @@
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-core-testsuite-shared</artifactId>
-            <exclusions>
-                <exclusion>
-                    <!-- workaround until we get new core release -->
-                    <groupId>org.syslog4j</groupId>
-                    <artifactId>syslog4j</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>

@@ -24,7 +24,6 @@ package org.jboss.as.test.integration.web.rootcontext;
 import java.net.URL;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -66,7 +65,7 @@ public class RootContextEarUnitTestCase {
 
     private static String HOST = "context-host";
 
-    @Deployment(name = "root-web.ear", testable = false)
+    @Deployment(name = "root-web.ear")
     public static EnterpriseArchive earDeployment() {
 
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
@@ -86,7 +85,6 @@ public class RootContextEarUnitTestCase {
     }
 
     @Test
-    @OperateOnDeployment("root-web.ear")
     public void testRootContextEAR(@ArquillianResource URL url) throws Exception {
         String response = RootContextUtil.hitRootContext(url, HOST);
         assertTrue(response.contains("A Root Context Page"));
