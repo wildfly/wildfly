@@ -151,7 +151,7 @@
                 <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
                 <coordinator-environment default-timeout="300"/>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:undertow:1.0">
+            <subsystem xmlns="urn:jboss:domain:undertow:6.0">
                 <buffer-caches>
                     <buffer-cache name="default" buffer-size="1024" buffers-per-region="1024" max-regions="10"/>
                 </buffer-caches>
@@ -250,7 +250,7 @@
                 <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
                 <coordinator-environment default-timeout="300"/>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:undertow:1.0">
+            <subsystem xmlns="urn:jboss:domain:undertow:6.0">
                 <buffer-caches>
                     <buffer-cache name="default" buffer-size="1024" buffers-per-region="1024" max-regions="10"/>
                 </buffer-caches>
@@ -349,7 +349,7 @@
                 <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
                 <coordinator-environment default-timeout="300"/>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:undertow:1.0">
+            <subsystem xmlns="urn:jboss:domain:undertow:6.0">
                 <buffer-caches>
                     <buffer-cache name="default" buffer-size="1024" buffers-per-region="1024" max-regions="10"/>
                 </buffer-caches>

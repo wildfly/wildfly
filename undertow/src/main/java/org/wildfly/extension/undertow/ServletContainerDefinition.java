@@ -181,6 +181,15 @@ class ServletContainerDefinition extends PersistentResourceDefinition {
                     .setAllowExpression(true)
                     .build();
 
+
+    protected static final AttributeDefinition DEFAULT_COOKIE_VERSION =
+            new SimpleAttributeDefinitionBuilder(Constants.DEFAULT_COOKIE_VERSION, ModelType.INT, true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setAllowExpression(true)
+                    .setDefaultValue(new ModelNode(0))
+                    .setValidator(new IntRangeValidator(0, 1, true,true))
+                    .build();
+
     private static final List<? extends PersistentResourceDefinition> CHILDREN;
     static final Collection<AttributeDefinition> ATTRIBUTES = Arrays.asList(
             ALLOW_NON_STANDARD_WRAPPERS,
@@ -200,7 +209,8 @@ class ServletContainerDefinition extends PersistentResourceDefinition {
             DISABLE_SESSION_ID_REUSE,
             FILE_CACHE_METADATA_SIZE,
             FILE_CACHE_MAX_FILE_SIZE,
-            FILE_CACHE_TIME_TO_LIVE
+            FILE_CACHE_TIME_TO_LIVE,
+            DEFAULT_COOKIE_VERSION
             );
 
     static final ServletContainerDefinition INSTANCE = new ServletContainerDefinition();

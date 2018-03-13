@@ -33,31 +33,24 @@ import org.junit.Test;
  *
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
-public class UndertowSubsystemTestCase extends AbstractUndertowSubsystemTestCase {
+public class UndertowSubsystem50TestCase extends AbstractUndertowSubsystemTestCase {
 
     private final String virtualHostName = "some-server";
     private final int flag = 1;
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("undertow-6.0.xml");
+        return readResource("undertow-5.0.xml");
     }
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-undertow_6_0.xsd";
+        return "schema/wildfly-undertow_5_0.xsd";
     }
 
     @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[]{"/subsystem-templates/undertow.xml"};
-    }
-
-
-    @Test
-    @Override
-    public void testSchemaOfSubsystemTemplates() throws Exception {
-        super.testSchemaOfSubsystemTemplates();
+    protected KernelServices standardSubsystemTest(String configId, boolean compareXml) throws Exception {
+        return super.standardSubsystemTest(configId, false);
     }
 
     @Test

@@ -618,6 +618,8 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 d.setMinorVersion(1);
             }
 
+            d.setDefaultCookieVersion(servletContainer.getDefaultCookieVersion());
+
             //in most cases flush just hurts performance for no good reason
             d.setIgnoreFlush(servletContainer.isIgnoreFlush());
 

@@ -85,13 +85,14 @@ public class ServletContainerService implements Service<ServletContainerService>
     private final int fileCacheMetadataSize;
     private final int fileCacheMaxFileSize;
     private final Integer fileCacheTimeToLive;
+    private final int defaultCookieVersion;
 
     public ServletContainerService(boolean allowNonStandardWrappers, ServletStackTraces stackTraces, SessionCookieConfig sessionCookieConfig, JSPConfig jspConfig,
                                    String defaultEncoding, boolean useListenerEncoding, boolean ignoreFlush, boolean eagerFilterInit, int defaultSessionTimeout,
                                    boolean disableCachingForSecuredPages, boolean websocketsEnabled, boolean dispatchWebsocketInvocationToWorker, boolean perMessageDeflate,
                                    int deflaterLevel, Map<String, String> mimeMappings, List<String> welcomeFiles, Boolean directoryListingEnabled, boolean proactiveAuth,
                                    int sessionIdLength, Map<String, AuthenticationMechanismFactory> authenticationMechanisms, Integer maxSessions,
-                                   CrawlerSessionManagerConfig crawlerSessionManagerConfig, boolean disableFileWatchService, boolean disableSessionIdReuse, int fileCacheMetadataSize, int fileCacheMaxFileSize, Integer fileCacheTimeToLive) {
+                                   CrawlerSessionManagerConfig crawlerSessionManagerConfig, boolean disableFileWatchService, boolean disableSessionIdReuse, int fileCacheMetadataSize, int fileCacheMaxFileSize, Integer fileCacheTimeToLive, int defaultCookieVersion) {
 
         this.allowNonStandardWrappers = allowNonStandardWrappers;
         this.stackTraces = stackTraces;
@@ -120,6 +121,7 @@ public class ServletContainerService implements Service<ServletContainerService>
         this.fileCacheMetadataSize = fileCacheMetadataSize;
         this.fileCacheMaxFileSize = fileCacheMaxFileSize;
         this.fileCacheTimeToLive = fileCacheTimeToLive;
+        this.defaultCookieVersion = defaultCookieVersion;
     }
 
     @Override
@@ -272,5 +274,9 @@ public class ServletContainerService implements Service<ServletContainerService>
 
     public Integer getFileCacheTimeToLive() {
         return fileCacheTimeToLive;
+    }
+
+    public int getDefaultCookieVersion() {
+        return defaultCookieVersion;
     }
 }
