@@ -135,12 +135,6 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition<Ma
             builder.getAttributeBuilder().setDiscard(DiscardAttributeChecker.ALWAYS, Attribute.MAX_BATCH_SIZE.getDefinition());
         }
 
-        if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
-            builder.discardChildResource(StoreWriteThroughResourceDefinition.PATH);
-        } else {
-            StoreWriteThroughResourceDefinition.buildTransformation(version, builder);
-        }
-
         if (InfinispanModel.VERSION_3_0_0.requiresTransformation(version)) {
             builder.addOperationTransformationOverride(ModelDescriptionConstants.ADD)
                     .setCustomOperationTransformer(new SimpleOperationTransformer(new LegacyPropertyAddOperationTransformer()))
@@ -158,6 +152,7 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition<Ma
             }
         }
 
+        StoreWriteThroughResourceDefinition.buildTransformation(version, builder);
         StoreWriteBehindResourceDefinition.buildTransformation(version, builder);
     }
 

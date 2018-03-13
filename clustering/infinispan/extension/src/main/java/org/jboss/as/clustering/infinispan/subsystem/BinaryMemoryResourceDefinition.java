@@ -28,9 +28,11 @@ import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.eviction.EvictionType;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -58,6 +60,12 @@ public class BinaryMemoryResourceDefinition extends MemoryResourceDefinition {
         @Override
         public AttributeDefinition getDefinition() {
             return this.definition;
+        }
+    }
+
+    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
+        if (InfinispanModel.VERSION_6_0_0.requiresTransformation(version)) {
+            parent.rejectChildResource(PATH);
         }
     }
 

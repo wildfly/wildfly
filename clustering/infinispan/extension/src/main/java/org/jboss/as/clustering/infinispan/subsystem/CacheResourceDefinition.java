@@ -172,13 +172,9 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
             builder.setCustomResourceTransformer(batchingTransformer);
         }
 
-
+        BinaryMemoryResourceDefinition.buildTransformation(version, builder);
         ObjectMemoryResourceDefinition.buildTransformation(version, builder);
-
-        if (InfinispanModel.VERSION_6_0_0.requiresTransformation(version)) {
-            builder.rejectChildResource(BinaryMemoryResourceDefinition.PATH);
-            builder.rejectChildResource(OffHeapMemoryResourceDefinition.PATH);
-        }
+        OffHeapMemoryResourceDefinition.buildTransformation(version, builder);
 
         LockingResourceDefinition.buildTransformation(version, builder);
         ExpirationResourceDefinition.buildTransformation(version, builder);

@@ -74,6 +74,7 @@ public class ObjectMemoryResourceDefinition extends MemoryResourceDefinition {
         }
     }
 
+    @SuppressWarnings("deprecation")
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH, RequiredChildResourceDiscardPolicy.NEVER) : InfinispanModel.VERSION_6_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, EVICTION_PATH, RequiredChildResourceDiscardPolicy.NEVER) : parent.addChildResource(PATH);
 
@@ -81,7 +82,7 @@ public class ObjectMemoryResourceDefinition extends MemoryResourceDefinition {
             builder.getAttributeBuilder()
                 .addRename(Attribute.SIZE.getDefinition(), DeprecatedAttribute.MAX_ENTRIES.getName())
                 .setValueConverter(new SimpleAttributeConverter((address, name, value, model, context) -> {
-                    // Set legacy eviction strategy to NONE is size is negative, otherwise set to LRU
+                    // Set legacy eviction strategy to NONE if size is negative, otherwise set to LRU
                     if (model.hasDefined(Attribute.SIZE.getName()) && (model.get(Attribute.SIZE.getName()).asLong() < 0)) {
                         value.set(EvictionStrategy.NONE.name());
                     } else {

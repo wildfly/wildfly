@@ -119,12 +119,13 @@ public class OperationsTestCase extends OperationTestCaseBase {
         }
     }
 
+    @SuppressWarnings("deprecation")
     private static ModelNode createStringKeyedTable() {
 
         // create a string-keyed-table complex attribute
         ModelNode stringKeyedTable = new ModelNode().setEmptyObject();
         stringKeyedTable.get(StringTableResourceDefinition.Attribute.PREFIX.getName()).set("ispn_bucket");
-        stringKeyedTable.get(TableResourceDefinition.Attribute.BATCH_SIZE.getName()).set(100);
+        stringKeyedTable.get(TableResourceDefinition.DeprecatedAttribute.BATCH_SIZE.getName()).set(100);
         stringKeyedTable.get(TableResourceDefinition.Attribute.FETCH_SIZE.getName()).set(100);
 
         ModelNode idColumn = stringKeyedTable.get(TableResourceDefinition.ColumnAttribute.ID.getName()).setEmptyObject();

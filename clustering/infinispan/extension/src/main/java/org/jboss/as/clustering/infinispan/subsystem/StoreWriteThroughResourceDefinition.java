@@ -38,8 +38,10 @@ public class StoreWriteThroughResourceDefinition extends StoreWriteResourceDefin
 
     static final PathElement PATH = pathElement("through");
 
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
-        // Do nothing
+    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
+        if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
+            parent.discardChildResource(StoreWriteThroughResourceDefinition.PATH);
+        }
     }
 
     StoreWriteThroughResourceDefinition() {

@@ -206,23 +206,8 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
         return this;
     }
 
-    public ResourceDescriptor addAttributeTranslation(Attribute sourceAttribute, Attribute targetAttribute, AttributeValueTranslator readAttributeTranslator, AttributeValueTranslator writeAttributeTranslator) {
-        this.attributeTranslations.put(sourceAttribute.getDefinition(), new AttributeTranslation() {
-            @Override
-            public Attribute getTargetAttribute() {
-                return targetAttribute;
-            }
-
-            @Override
-            public AttributeValueTranslator getReadTranslator() {
-                return readAttributeTranslator;
-            }
-
-            @Override
-            public AttributeValueTranslator getWriteTranslator() {
-                return writeAttributeTranslator;
-            }
-        });
+    public ResourceDescriptor addAttributeTranslation(Attribute sourceAttribute, AttributeTranslation translation) {
+        this.attributeTranslations.put(sourceAttribute.getDefinition(), translation);
         return this;
     }
 

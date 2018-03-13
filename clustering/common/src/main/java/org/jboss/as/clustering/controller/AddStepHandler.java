@@ -127,18 +127,30 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
         for (AttributeDefinition definition : this.descriptor.getExtraParameters()) {
             definition.validateOperation(operation);
         }
+        PathAddress currentAddress = context.getCurrentAddress();
         // Validate and apply attribute translations
         Map<AttributeDefinition, AttributeTranslation> translations = this.descriptor.getAttributeTranslations();
         for (Map.Entry<AttributeDefinition, AttributeTranslation> entry : translations.entrySet()) {
-            AttributeDefinition alias = entry.getKey();
+            AttributeDefinition sourceParameter = entry.getKey();
             AttributeTranslation translation = entry.getValue();
-            Attribute target = translation.getTargetAttribute();
-            String targetName = target.getName();
-            if (operation.hasDefined(alias.getName()) && !operation.hasDefined(targetName)) {
-                ModelNode value = alias.validateOperation(operation);
-                ModelNode translatedValue = translation.getWriteTranslator().translate(context, value);
-                // Target attribute will be validated by super implementation
-                operation.get(targetName).set(translatedValue);
+            if (operation.hasDefined(sourceParameter.getName())) {
+                ModelNode value = sourceParameter.validateOperation(operation);
+                ModelNode targetValue = translation.getWriteTranslator().translate(context, value);
+                Attribute targetAttribute = translation.getTargetAttribute();
+                PathAddress targetAddress = translation.getPathAddressTransformation().apply(currentAddress);
+                // If target attribute exists in the current resource, just fix the operation
+                // Otherwise, we need a separate write-attribute operation
+                if (targetAddress == currentAddress) {
+                    String targetName = targetAttribute.getName();
+                    if (!operation.hasDefined(targetName)) {
+                        operation.get(targetName).set(targetValue);
+                    }
+                } else {
+                    ModelNode writeAttributeOperation = Operations.createWriteAttributeOperation(targetAddress, targetAttribute, targetValue);
+                    ImmutableManagementResourceRegistration targetRegistration = translation.getResourceRegistrationTransformation().apply(context.getResourceRegistration());
+                    OperationStepHandler writeAttributeHandler = targetRegistration.getAttributeAccess(PathAddress.EMPTY_ADDRESS, targetAttribute.getName()).getWriteHandler();
+                    context.addStep(writeAttributeOperation, writeAttributeHandler, OperationContext.Stage.MODEL);
+                }
             }
         }
         // Validate proper attributes

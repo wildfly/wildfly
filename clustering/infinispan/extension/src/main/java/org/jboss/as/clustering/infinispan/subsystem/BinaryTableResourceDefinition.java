@@ -70,6 +70,8 @@ public class BinaryTableResourceDefinition extends TableResourceDefinition {
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
 
+        TableResourceDefinition.buildTransformation(version, builder);
+
         if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
             OperationTransformer addTransformer = new OperationTransformer() {
                 @Override
