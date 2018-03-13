@@ -148,6 +148,7 @@ public class EJBClientAuthenticationFailsTestCase {
             } catch (NoSuchEJBException nsee) {
                 System.setErr(new PrintStream(baos));
                 nsee.printStackTrace();
+                Thread.sleep(2000);
                 System.setErr(oldOut);
                 String output = new String(baos.toByteArray());
                 int count = count(output, "Server rejected authentication");
