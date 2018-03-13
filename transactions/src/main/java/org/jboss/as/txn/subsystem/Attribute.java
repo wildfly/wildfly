@@ -40,6 +40,7 @@ enum Attribute {
     ENABLE_STATISTICS("enable-statistics"),
     ENABLE_TSM_STATUS("enable-tsm-status"),
     DEFAULT_TIMEOUT("default-timeout"),
+    MAXIMUM_TIMEOUT("maximum-timeout"),
     RECOVERY_LISTENER("recovery-listener"),
     RELATIVE_TO("relative-to"),
     STATISTICS_ENABLED("statistics-enabled"),

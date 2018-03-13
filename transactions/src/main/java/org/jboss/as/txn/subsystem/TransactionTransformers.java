@@ -15,16 +15,18 @@
  */
 package org.jboss.as.txn.subsystem;
 
-import static org.jboss.as.txn.subsystem.TransactionExtension.CURRENT_MODEL_VERSION;
-import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.OBJECT_STORE_RELATIVE_TO;
-
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
 import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
 import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.ChainedTransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
+
+import static org.jboss.as.txn.subsystem.TransactionExtension.CURRENT_MODEL_VERSION;
+import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.MAXIMUM_TIMEOUT;
+import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.OBJECT_STORE_RELATIVE_TO;
 
 /**
  * @author Emmanuel Hugonnet (c) 2017 Red Hat, inc.
@@ -44,7 +46,7 @@ public class TransactionTransformers implements ExtensionTransformerRegistration
     @Override
     public void registerTransformers(SubsystemTransformerRegistration subsystemRegistration) {
         ChainedTransformationDescriptionBuilder chainedBuilder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(CURRENT_MODEL_VERSION);
-        // 4.0.0 --> 3.0.0
+        // 4.1.0 --> 3.0.0
         /*
         Missing attributes in current: []; missing in legacy [number-of-system-rollbacks, average-commit-time] //both runtime
         Different 'default' for attribute 'object-store-relative-to'. Current: undefined; legacy: "jboss.server.data.dir"
@@ -55,6 +57,7 @@ public class TransactionTransformers implements ExtensionTransformerRegistration
         ResourceTransformationDescriptionBuilder builderEap7 = chainedBuilder.createBuilder(CURRENT_MODEL_VERSION, MODEL_VERSION_EAP70);
         builderEap7.getAttributeBuilder()
                 .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(OBJECT_STORE_RELATIVE_TO), OBJECT_STORE_RELATIVE_TO)
+                .setDiscard(DiscardAttributeChecker.DiscardAttributeValueChecker.ALWAYS, MAXIMUM_TIMEOUT)
                 .end();
 
         builderEap7.addChildResource(TransactionExtension.LOG_STORE_PATH)
