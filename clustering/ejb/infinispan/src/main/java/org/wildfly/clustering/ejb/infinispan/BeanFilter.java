@@ -22,15 +22,20 @@
 
 package org.wildfly.clustering.ejb.infinispan;
 
+import java.io.Serializable;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Map;
+import java.util.function.Predicate;
 
-import org.infinispan.util.function.SerializablePredicate;
+import org.infinispan.metadata.Metadata;
+import org.infinispan.notifications.cachelistener.filter.CacheEventFilter;
+import org.infinispan.notifications.cachelistener.filter.EventType;
 
 /**
  * Filters a cache for entries specific to a particular bean.
  * @author Paul Ferraro
  */
-public class BeanFilter<I> implements SerializablePredicate<Map.Entry<? super BeanKey<I>, ? super BeanEntry<I>>> {
+public class BeanFilter<I> implements CacheEventFilter<Object, Object>, Predicate<Object>, Serializable {
     private static final long serialVersionUID = -1079989480899595045L;
 
     private final String beanName;
@@ -40,18 +45,21 @@ public class BeanFilter<I> implements SerializablePredicate<Map.Entry<? super Be
     }
 
     @Override
-    public boolean test(Map.Entry<? super BeanKey<I>, ? super BeanEntry<I>> entry) {
-        if (entry.getKey() instanceof BeanKey) {
-            Object value = entry.getValue();
-            if (value instanceof BeanEntry) {
-                return this.beanName.equals(((BeanEntry<?>) value).getBeanName());
+    public boolean test(Object object) {
+        if (object instanceof Map.Entry) {
+            Map.Entry<?, ?> entry = (Map.Entry<?, ?>) object;
+            if (entry.getKey() instanceof BeanKey) {
+                Object value = entry.getValue();
+                if (value instanceof BeanEntry) {
+                    return this.beanName.equals(((BeanEntry<?>) value).getBeanName());
+                }
             }
         }
         return false;
     }
 
     @Override
-    public String toString() {
-        return this.beanName;
+    public boolean accept(Object key, Object oldValue, Metadata metaData, Object newValue, Metadata newMetaData, EventType type) {
+        return this.test(new SimpleImmutableEntry<>(key, oldValue)) || this.test(new SimpleImmutableEntry<>(key, newValue));
     }
 }

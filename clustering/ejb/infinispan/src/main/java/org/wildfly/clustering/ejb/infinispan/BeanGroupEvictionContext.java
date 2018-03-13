@@ -21,28 +21,17 @@
  */
 package org.wildfly.clustering.ejb.infinispan;
 
-import org.wildfly.clustering.dispatcher.Command;
-import org.wildfly.clustering.ejb.Bean;
+import org.wildfly.clustering.ee.Batcher;
+import org.wildfly.clustering.ee.infinispan.Evictor;
+import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 
 /**
- * Command that schedules a session.
+ * Encapsulates the context for session eviction.
  * @author Paul Ferraro
  */
-public class ScheduleSchedulerCommand<I> implements Command<Void, SchedulerContext<I>> {
-    private static final long serialVersionUID = -2606847692331278614L;
+public interface BeanGroupEvictionContext<I> {
 
-    private final I beanId;
-    private final I groupId;
+    Batcher<TransactionBatch> getBatcher();
 
-    public ScheduleSchedulerCommand(Bean<I, ?> bean) {
-        this.beanId = bean.getId();
-        this.groupId = bean.getGroupId();
-    }
-
-    @Override
-    public Void execute(SchedulerContext<I> context) {
-        context.getBeanScheduler().schedule(this.beanId);
-        context.getBeanGroupScheduler().schedule(this.groupId);
-        return null;
-    }
+    Evictor<I> getEvictor();
 }

@@ -21,9 +21,6 @@
  */
 package org.wildfly.clustering.ejb.infinispan;
 
-import java.util.Map;
-import java.util.function.Predicate;
-
 import org.infinispan.remoting.transport.Address;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ee.infinispan.CacheProperties;
@@ -36,8 +33,8 @@ import org.wildfly.clustering.spi.NodeFactory;
  * @author Paul Ferraro
  * @param <T>
  */
-public interface InfinispanBeanManagerConfiguration<I, T> {
-    Predicate<Map.Entry<? super BeanKey<I>, ? super BeanEntry<I>>> getBeanFilter();
+public interface InfinispanBeanManagerConfiguration<T> {
+    String getBeanName();
     KeyAffinityServiceFactory getAffinityFactory();
     Registry<String, ?> getRegistry();
     NodeFactory<Address> getNodeFactory();
