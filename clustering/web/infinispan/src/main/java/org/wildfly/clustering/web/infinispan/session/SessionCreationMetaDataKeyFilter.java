@@ -22,18 +22,25 @@
 
 package org.wildfly.clustering.web.infinispan.session;
 
+import java.io.Serializable;
+import java.util.function.Predicate;
 
-import org.infinispan.util.function.SerializablePredicate;
+import org.infinispan.filter.KeyFilter;
 
 /**
  * Filters a cache for session creation meta data entries.
  * @author Paul Ferraro
  */
-public class SessionCreationMetaDataKeyFilter implements SerializablePredicate<Object> {
+public class SessionCreationMetaDataKeyFilter implements KeyFilter<Object>, Predicate<Object>, Serializable {
     private static final long serialVersionUID = -1079989480899595045L;
 
     @Override
-    public boolean test(Object key) {
+    public boolean accept(Object key) {
         return key instanceof SessionCreationMetaDataKey;
+    }
+
+    @Override
+    public boolean test(Object key) {
+        return this.accept(key);
     }
 }

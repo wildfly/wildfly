@@ -22,8 +22,6 @@
 
 package org.wildfly.clustering.infinispan.spi.distribution;
 
-import java.util.Objects;
-
 import org.infinispan.distribution.group.Group;
 
 /**
@@ -60,7 +58,7 @@ public class Key<K> {
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.getClass(), this.value);
+        return (31 * this.getClass().getName().hashCode()) + this.value.hashCode();
     }
 
     @Override

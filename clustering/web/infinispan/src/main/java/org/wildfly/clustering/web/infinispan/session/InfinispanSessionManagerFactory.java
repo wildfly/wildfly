@@ -22,6 +22,7 @@
 package org.wildfly.clustering.web.infinispan.session;
 
 import java.security.PrivilegedAction;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -113,10 +114,16 @@ public class InfinispanSessionManagerFactory<C extends Marshallability, L> imple
         CommandDispatcherFactory dispatcherFactory = config.getCommandDispatcherFactory();
         ExpiredSessionRemover<?, ?, L> remover = new ExpiredSessionRemover<>(this.factory);
         this.expirationRegistrar = remover;
-        this.scheduler = new SessionExpirationScheduler(this.batcher, remover);
+        List<Scheduler> schedulers = new ArrayList<>(2);
+        schedulers.add(new SessionExpirationScheduler(this.batcher, remover));
+        int maxActiveSessions = config.getSessionManagerFactoryConfiguration().getMaxActiveSessions();
+        if (maxActiveSessions >= 0) {
+            schedulers.add(new SessionEvictionScheduler(this.cache.getName() + ".eviction", this.factory, this.batcher, dispatcherFactory, maxActiveSessions));
+        }
+        this.scheduler = new CompositeScheduler(schedulers);
         this.dispatcher = dispatcherFactory.createCommandDispatcher(this.cache.getName(), this.scheduler);
         this.group = dispatcherFactory.getGroup();
-        this.cache.addListener(this);
+        this.cache.addListener(this, this.filter);
         this.schedule(new SimpleLocality(false), new CacheLocality(this.cache));
     }
 
