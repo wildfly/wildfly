@@ -29,6 +29,7 @@
 
     <resources>
         <artifact name="${org.ow2.asm:asm}"/>
+        <artifact name="${org.ow2.asm:asm-util}"/>
     </resources>
 
     <dependencies>

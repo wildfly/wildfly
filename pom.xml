@@ -3621,6 +3621,7 @@
                 <artifactId>javax.security.enterprise</artifactId>
                 <version>${version.org.glassfish.soteria}</version>
             </dependency>
+
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-core</artifactId>
@@ -5821,6 +5822,18 @@
             </dependency>
 
             <dependency>
+                <groupId>org.ow2.asm</groupId>
+                <artifactId>asm-util</artifactId>
+                <version>${version.org.ow2.asm}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
                 <groupId>org.picketbox</groupId>
                 <artifactId>picketbox-commons</artifactId>
                 <version>${version.org.picketbox.picketbox-commons}</version>
@@ -6180,6 +6193,13 @@
                 <version>${version.org.jboss.shrinkwrap.descriptors}</version>
                 <scope>test</scope>
             </dependency>
+
+           <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>wildfly-ormtransformer</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 

@@ -28,6 +28,7 @@
         <module>hibernate5_3</module>
         <module>hibernate5-3-legacy</module>
         <module>hibernate5-legacy</module>
+        <module>hibernate-transformer</module>
         <module>eclipselink</module>
         <module>openjpa</module>
     </modules>

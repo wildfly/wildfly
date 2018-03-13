@@ -4048,6 +4048,17 @@
       </licenses>
     </dependency>
     <dependency>
+      <groupId>org.ow2.asm</groupId>
+      <artifactId>asm-util</artifactId>
+      <licenses>
+        <license>
+          <name>BSD 3-Clause "New" or "Revised" License</name>
+          <url>http://www.opensource.org/licenses/BSD-3-Clause</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
       <groupId>org.picketlink</groupId>
       <artifactId>picketlink-api</artifactId>
       <licenses>
