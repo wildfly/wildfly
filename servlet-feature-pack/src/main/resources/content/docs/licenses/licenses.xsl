@@ -56,6 +56,9 @@
     <xsl:template name="remap-local-filename">
         <xsl:param name="name"/>
         <xsl:choose>
+            <xsl:when test="$name = 'GNU General Public License v2.0 only'">
+                <xsl:text>gnu general public license v2.0 only.html</xsl:text>
+            </xsl:when>
             <xsl:when test="$name = ''">
                 <xsl:text>.html</xsl:text>
             </xsl:when>
