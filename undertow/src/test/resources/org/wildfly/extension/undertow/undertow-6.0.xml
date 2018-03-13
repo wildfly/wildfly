@@ -42,7 +42,7 @@
          <access-log directory="${jboss.server.server.dir}" pattern="REQ %{i,test-header}" predicate="not path-suffix(*.css)" prefix="access" rotate="false"/>
          <single-sign-on cookie-name="SSOID" domain="${prop.domain:myDomain}" http-only="true" path="/path" secure="true"/>
       </host>
-      <host alias="www.mysite.com,${prop.value:default-alias}" default-response-code="501" default-web-module="something-else.war" disable-console-redirect="true" name="other-host">
+      <host alias="www.mysite.com,${prop.value:default-alias}" default-response-code="501" default-web-module="something-else.war" disable-console-redirect="true" name="other-host" queue-requests-on-start="false">
          <location handler="welcome-content" name="/">
             <filter-ref name="limit-connections"/>
             <filter-ref name="headers"/>

@@ -107,6 +107,7 @@ public class UndertowTransformersTestCase extends AbstractSubsystemBaseTest {
         PathAddress modClusterPath = subsystemAddress.append(UndertowExtension.PATH_FILTERS).append(Constants.MOD_CLUSTER);
 
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, targetVersion, ops, new FailedOperationTransformationConfig()
+                .addFailedAttribute(hostAddress, new FailedOperationTransformationConfig.NewAttributesConfig(HostDefinition.QUEUE_REQUESTS_ON_START))
                 .addFailedAttribute(httpAddress,
                         new FailedOperationTransformationConfig.NewAttributesConfig(
                                 HttpListenerResourceDefinition.REQUIRE_HOST_HTTP11,

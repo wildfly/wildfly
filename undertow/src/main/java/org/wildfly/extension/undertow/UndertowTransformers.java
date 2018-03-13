@@ -66,6 +66,8 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
 
     private static void registerTransformers_EAP_7_1_0(SubsystemTransformerRegistration subsystemRegistration) {
         final ResourceTransformationDescriptionBuilder subsystemBuilder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        final ResourceTransformationDescriptionBuilder serverBuilder = subsystemBuilder.addChildResource(UndertowExtension.SERVER_PATH);
+        final ResourceTransformationDescriptionBuilder hostBuilder = serverBuilder.addChildResource(UndertowExtension.HOST_PATH);
         subsystemBuilder
                 .addChildResource(UndertowExtension.PATH_SERVLET_CONTAINER)
                 .getAttributeBuilder()
@@ -78,7 +80,6 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(0)), ServletContainerDefinition.DEFAULT_COOKIE_VERSION)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, ServletContainerDefinition.DEFAULT_COOKIE_VERSION)
                 .end();
-        final ResourceTransformationDescriptionBuilder serverBuilder = subsystemBuilder.addChildResource(UndertowExtension.SERVER_PATH);
 
         final AttributeTransformationDescriptionBuilder http = serverBuilder.addChildResource(UndertowExtension.HTTP_LISTENER_PATH).getAttributeBuilder()
                 .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(true)), HttpListenerResourceDefinition.PROXY_PROTOCOL.getName())
@@ -93,6 +94,12 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
         final AttributeTransformationDescriptionBuilder ajp = serverBuilder.addChildResource(UndertowExtension.AJP_LISTENER_PATH).getAttributeBuilder();
         addCommonListenerRules_EAP_7_1_0(ajp);
         ajp.end();
+
+
+        hostBuilder.getAttributeBuilder()
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(HostDefinition.QUEUE_REQUESTS_ON_START.getDefaultValue()), HostDefinition.QUEUE_REQUESTS_ON_START)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, HostDefinition.QUEUE_REQUESTS_ON_START)
+                .end();
 
         TransformationDescription.Tools.register(subsystemBuilder.build(), subsystemRegistration, MODEL_VERSION_EAP7_1_0);
     }
@@ -196,6 +203,11 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
                 .end();
 
         hostBuilder.rejectChildResource(UndertowExtension.PATH_HTTP_INVOKER);
+        hostBuilder.getAttributeBuilder()
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(HostDefinition.QUEUE_REQUESTS_ON_START.getDefaultValue()), HostDefinition.QUEUE_REQUESTS_ON_START)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, HostDefinition.QUEUE_REQUESTS_ON_START)
+                .end();
+
         subsystemBuilder.rejectChildResource(UndertowExtension.PATH_APPLICATION_SECURITY_DOMAIN);
 
         TransformationDescription.Tools.register(subsystemBuilder.build(), subsystemRegistration, MODEL_VERSION_EAP7_0_0);
