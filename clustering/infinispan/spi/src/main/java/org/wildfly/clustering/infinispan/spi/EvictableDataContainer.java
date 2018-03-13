@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,17 +19,20 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.infinispan.session;
 
-import org.wildfly.clustering.ee.Batcher;
-import org.wildfly.clustering.ee.infinispan.Evictor;
-import org.wildfly.clustering.ee.infinispan.TransactionBatch;
+package org.wildfly.clustering.infinispan.spi;
+
+import java.util.function.Predicate;
+
+import org.infinispan.container.DefaultDataContainer;
 
 /**
- * Encapsulates the context for session eviction.
+ * Custom {@link DataContainer} considers only specific cache entries for eviction.
  * @author Paul Ferraro
  */
-public interface SessionEvictionContext {
-    Batcher<TransactionBatch> getBatcher();
-    Evictor<String> getEvictor();
+public class EvictableDataContainer<K, V> extends DefaultDataContainer<K, V> {
+
+    public EvictableDataContainer(long size, Predicate<K> evictable) {
+        super(size, (key, entry) -> evictable.test(key) ? 1 : 0);
+    }
 }

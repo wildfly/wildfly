@@ -26,7 +26,6 @@ import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Map;
 
 import org.wildfly.clustering.web.LocalContextFactory;
-import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
@@ -90,20 +89,6 @@ public class InfinispanSessionFactory<V, L> implements SessionFactory<Infinispan
             return true;
         }
         return false;
-    }
-
-    @Override
-    public boolean evict(String id) {
-        try {
-            boolean evicted = this.metaDataFactory.evict(id);
-            if (evicted) {
-                this.attributesFactory.evict(id);
-            }
-            return evicted;
-        } catch (Throwable e) {
-            InfinispanWebLogger.ROOT_LOGGER.failedToPassivateSession(e, id);
-            return false;
-        }
     }
 
     @Override

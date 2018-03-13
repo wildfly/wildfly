@@ -19,31 +19,19 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.infinispan.session;
 
-import org.wildfly.clustering.dispatcher.Command;
-import org.wildfly.clustering.ee.Batch;
-import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
+package org.wildfly.clustering.ejb.infinispan;
+
+import org.infinispan.filter.KeyFilter;
 
 /**
- * Command that evicts a session.
+ * Filters a cache for entries specific to a particular bean.
  * @author Paul Ferraro
  */
-public class SessionEvictionCommand implements Command<Void, SessionEvictionContext> {
-    private static final long serialVersionUID = -4778211331615647237L;
-
-    private final String id;
-
-    SessionEvictionCommand(String id) {
-        this.id = id;
-    }
+public class BeanGroupFilter implements KeyFilter<Object> {
 
     @Override
-    public Void execute(SessionEvictionContext context) throws Exception {
-        InfinispanWebLogger.ROOT_LOGGER.tracef("Passivating session %s", this.id);
-        try (Batch batch = context.getBatcher().createBatch()) {
-            context.getEvictor().evict(this.id);
-            return null;
-        }
+    public boolean accept(Object key) {
+        return key instanceof BeanGroupKey;
     }
 }

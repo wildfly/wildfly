@@ -20,48 +20,25 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.infinispan.session;
+package org.wildfly.clustering.infinispan.spi;
 
-import java.util.List;
+import java.util.function.Predicate;
 
-import org.wildfly.clustering.infinispan.spi.distribution.Locality;
-import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
+import org.infinispan.filter.KeyFilter;
 
 /**
  * @author Paul Ferraro
  */
-public class CompositeScheduler implements Scheduler {
-    private final List<Scheduler> schedulers;
+public class PredicateKeyFilter<K> implements KeyFilter<K> {
 
-    public CompositeScheduler(List<Scheduler> schedulers) {
-        this.schedulers = schedulers;
+    private final Predicate<? super K> predicate;
+
+    public PredicateKeyFilter(Predicate<? super K> predicate) {
+        this.predicate = predicate;
     }
 
     @Override
-    public void schedule(String sessionId, ImmutableSessionMetaData metaData) {
-        for (Scheduler scheduler : this.schedulers) {
-            scheduler.schedule(sessionId, metaData);
-        }
-    }
-
-    @Override
-    public void cancel(String sessionId) {
-        for (Scheduler scheduler : this.schedulers) {
-            scheduler.cancel(sessionId);
-        }
-    }
-
-    @Override
-    public void cancel(Locality locality) {
-        for (Scheduler scheduler : this.schedulers) {
-            scheduler.cancel(locality);
-        }
-    }
-
-    @Override
-    public void close() {
-        for (Scheduler scheduler : this.schedulers) {
-            scheduler.close();
-        }
+    public boolean accept(K key) {
+        return this.predicate.test(key);
     }
 }

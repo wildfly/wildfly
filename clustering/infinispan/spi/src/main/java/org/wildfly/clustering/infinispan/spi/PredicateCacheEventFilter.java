@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,36 +19,30 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.ejb.infinispan;
 
-import org.wildfly.clustering.dispatcher.Command;
-import org.wildfly.clustering.ee.Batch;
-import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
+package org.wildfly.clustering.infinispan.spi;
+
+import java.util.Map;
+import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.function.Predicate;
+
+import org.infinispan.metadata.Metadata;
+import org.infinispan.notifications.cachelistener.filter.CacheEventFilter;
+import org.infinispan.notifications.cachelistener.filter.EventType;
 
 /**
- * Command that evicts a bean.
  * @author Paul Ferraro
  */
-public class BeanGroupEvictionCommand<I> implements Command<Void, BeanGroupEvictionContext<I>> {
-    private static final long serialVersionUID = -6593293772761100784L;
+public class PredicateCacheEventFilter<K, V> implements CacheEventFilter<K, V> {
 
-    private final I id;
+    private final Predicate<Map.Entry<? super K, ? super V>> predicate;
 
-    public BeanGroupEvictionCommand(I id) {
-        this.id = id;
+    public PredicateCacheEventFilter(Predicate<Map.Entry<? super K, ? super V>> predicate) {
+        this.predicate = predicate;
     }
 
     @Override
-    public Void execute(BeanGroupEvictionContext<I> context) throws Exception {
-        InfinispanEjbLogger.ROOT_LOGGER.tracef("Evicting stateful session bean %s", this.id);
-        try (Batch batch = context.getBatcher().createBatch()) {
-            try {
-                context.getEvictor().evict(this.id);
-                return null;
-            } catch (Exception e) {
-                batch.discard();
-                throw e;
-            }
-        }
+    public boolean accept(K key, V oldValue, Metadata oldMetadata, V newValue, Metadata newMetadata, EventType eventType) {
+        return this.predicate.test(new SimpleImmutableEntry<>(key, oldValue)) || this.predicate.test(new SimpleImmutableEntry<>(key, newValue));
     }
 }
