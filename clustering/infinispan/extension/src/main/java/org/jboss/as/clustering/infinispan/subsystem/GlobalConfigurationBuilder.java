@@ -40,6 +40,7 @@ import org.infinispan.configuration.global.SiteConfiguration;
 import org.infinispan.configuration.global.ThreadPoolConfiguration;
 import org.infinispan.configuration.global.TransportConfiguration;
 import org.infinispan.configuration.internal.PrivateGlobalConfigurationBuilder;
+import org.infinispan.globalstate.ConfigurationStorage;
 import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
@@ -159,6 +160,8 @@ public class GlobalConfigurationBuilder extends CapabilityServiceNameProvider im
         // Disable triangle algorithm
         // We optimize for originator as primary owner
         builder.addModule(PrivateGlobalConfigurationBuilder.class).serverMode(true);
+        // Disable configuration storage
+        builder.globalState().configurationStorage(ConfigurationStorage.IMMUTABLE).disable();
 
         return builder.build();
     }

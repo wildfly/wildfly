@@ -34,6 +34,7 @@ import java.util.function.Supplier;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfiguration;
+import org.infinispan.globalstate.GlobalConfigurationManager;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.notifications.Listener;
@@ -48,6 +49,7 @@ import org.jboss.as.clustering.infinispan.BatcherFactory;
 import org.jboss.as.clustering.infinispan.DefaultCacheContainer;
 import org.jboss.as.clustering.infinispan.InfinispanBatcherFactory;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
+import org.jboss.as.clustering.infinispan.LocalGlobalConfigurationManager;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -96,7 +98,8 @@ public class CacheContainerBuilder extends CapabilityServiceNameProvider impleme
             manager.undefineConfiguration(defaultCacheName);
         }
         manager.addListener(this);
-
+        // Override GlobalConfigurationManager with a local implementation
+        manager.getGlobalComponentRegistry().registerComponent(new LocalGlobalConfigurationManager(), GlobalConfigurationManager.class);
         manager.start();
         InfinispanLogger.ROOT_LOGGER.debugf("%s cache container started", this.name);
         return manager;
