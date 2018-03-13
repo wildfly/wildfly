@@ -3621,6 +3621,7 @@
                 <artifactId>javax.security.enterprise</artifactId>
                 <version>${version.org.glassfish.soteria}</version>
             </dependency>
+
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-core</artifactId>
