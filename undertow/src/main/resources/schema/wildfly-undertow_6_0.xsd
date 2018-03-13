@@ -576,11 +576,6 @@
         <xs:attribute name="max-regions" use="optional" type="xs:string"/>
     </xs:complexType>
 
-    <xs:complexType name="basic-authType">
-        <xs:attribute name="name" use="required" type="xs:string"/>
-        <xs:attribute name="security-domain" use="required" type="xs:string"/>
-
-    </xs:complexType>
     <xs:complexType name="request-limitType">
         <xs:attribute name="name" use="required" type="xs:string"/>
         <xs:attribute name="max-concurrent-requests" use="required" type="xs:integer"/>
