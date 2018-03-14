@@ -119,7 +119,7 @@
             -Djboss.bind.address.private=${node0}
             -Djboss.bind.address.management=${node0}
             -Djboss.default.multicast.address=${mcast}
-            </jvm.args.ip.server>
+        </jvm.args.ip.server>
         <jvm.args.ip.client>${jvm.args.ip}</jvm.args.ip.client>
 
         <!-- Server arguments. Cannot have a null server argument in ARQ, set a dummy system property -->
