@@ -89,6 +89,7 @@ public class InfinispanBeanGroup<I, T> implements BeanGroup<I, T> {
 
     @Override
     public T removeBean(I id) {
+        this.entry.decrementUsage(id);
         return this.beans().remove(id);
     }
 
