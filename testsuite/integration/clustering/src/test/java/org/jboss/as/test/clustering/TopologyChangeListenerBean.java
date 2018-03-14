@@ -29,11 +29,11 @@ import javax.ejb.Remote;
 import javax.ejb.Stateless;
 
 import org.infinispan.Cache;
+import org.infinispan.distribution.DistributionManager;
+import org.infinispan.distribution.LocalizedCacheTopology;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.TopologyChanged;
 import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
-import org.infinispan.statetransfer.StateTransferManager;
-import org.infinispan.topology.CacheTopology;
 import org.jboss.as.clustering.msc.ServiceContainerHelper;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.logging.Logger;
@@ -64,13 +64,13 @@ public class TopologyChangeListenerBean implements TopologyChangeListener {
         cache.addListener(this);
         try
         {
-            long start = System.currentTimeMillis();
-            long now = start;
-            long endTime = start + timeout;
             synchronized (this) {
-                StateTransferManager transfer = cache.getAdvancedCache().getComponentRegistry().getStateTransferManager();
-                CacheTopology topology = transfer.getCacheTopology();
+                DistributionManager dist = cache.getAdvancedCache().getDistributionManager();
+                LocalizedCacheTopology topology = dist.getCacheTopology();
                 Set<String> members = getMembers(topology);
+                long start = System.currentTimeMillis();
+                long now = start;
+                long endTime = start + timeout;
                 while (!expectedMembers.equals(members)) {
                     logger.infof("%s != %s, waiting for a topology change event. Current topology id = %d", expectedMembers, members, topology.getTopologyId());
                     this.wait(endTime - now);
@@ -78,7 +78,7 @@ public class TopologyChangeListenerBean implements TopologyChangeListener {
                     if (now >= endTime) {
                         throw new InterruptedException(String.format("Cache %s/%s failed to establish view %s within %d ms.  Current view is: %s", containerName, cacheName, expectedMembers, timeout, members));
                     }
-                    topology = transfer.getCacheTopology();
+                    topology = dist.getCacheTopology();
                     members = getMembers(topology);
                 }
                 logger.infof("Cache %s/%s successfully established view %s within %d ms. Topology id = %d", containerName, cacheName, expectedMembers, now - start, topology.getTopologyId());
@@ -88,8 +88,8 @@ public class TopologyChangeListenerBean implements TopologyChangeListener {
         }
     }
 
-    private static Set<String> getMembers(CacheTopology topology) {
-        return topology.getCurrentCH().getMembers().stream().map(Object::toString).sorted().collect(Collectors.toSet());
+    private static Set<String> getMembers(LocalizedCacheTopology topology) {
+        return topology.getMembers().stream().map(Object::toString).sorted().collect(Collectors.toSet());
     }
 
     @TopologyChanged
