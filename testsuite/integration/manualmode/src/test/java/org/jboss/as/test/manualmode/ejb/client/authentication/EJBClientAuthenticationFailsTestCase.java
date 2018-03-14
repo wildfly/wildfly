@@ -30,6 +30,7 @@ import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.manualmode.ejb.Util;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.ejb.client.EJBClientConnection;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.ejb.protocol.remote.RemoteTransportProvider;
@@ -132,7 +133,7 @@ public class EJBClientAuthenticationFailsTestCase {
         final EJBClientContext ejbCtx = new EJBClientContext.Builder()
                 .addTransportProvider(new RemoteTransportProvider())
                 .addClientConnection(new EJBClientConnection.Builder()
-                        .setDestination(URI.create("remote+http://127.0.0.1:8080")).build())
+                        .setDestination(URI.create("remote+http://" + TestSuiteEnvironment.getServerAddressNode1() + ":8080")).build())
                 .build();
         EJBClientContext.getContextManager().setThreadDefault(ejbCtx);
         AuthenticationContext.getContextManager().setThreadDefault(authCtx);
