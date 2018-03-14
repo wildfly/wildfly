@@ -243,7 +243,10 @@
         <version.org.picketbox.picketbox-commons>1.0.0.final</version.org.picketbox.picketbox-commons>
         <version.org.picketlink>2.5.5.SP9</version.org.picketlink>
         <version.org.reactivestreams>1.0.2</version.org.reactivestreams>
+        <!-- Using two different slf4j versions here as the slf4j-ext is a deprecated module and may be removed in the
+             future. For other slf4j dependencies we want to continue to use the upstream version. -->
         <version.org.slf4j>1.7.22</version.org.slf4j>
+        <version.org.slf4j.ext>1.7.22.jbossorg-1</version.org.slf4j.ext>
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.wildfly.arquillian>2.1.0.Final</version.org.wildfly.arquillian>
         <version.org.wildfly.bridge.servlet-api-bridge>1.0.1.Final</version.org.wildfly.bridge.servlet-api-bridge>
@@ -6408,20 +6411,8 @@
 
             <dependency>
                 <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-api</artifactId>
-                <version>${version.org.slf4j}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-ext</artifactId>
-                <version>${version.org.slf4j}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-simple</artifactId>
-                <version>${version.org.slf4j}</version>
+                <version>${version.org.slf4j.ext}</version>
             </dependency>
 
             <dependency>
