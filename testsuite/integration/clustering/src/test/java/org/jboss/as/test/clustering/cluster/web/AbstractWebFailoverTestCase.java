@@ -21,10 +21,14 @@
  */
 package org.jboss.as.test.clustering.cluster.web;
 
+import static org.jboss.as.test.shared.IntermittentFailure.thisTestIsFailingIntermittently;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
@@ -42,7 +46,9 @@ import org.jboss.as.test.clustering.ClusterHttpClientUtil;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
+import org.jgroups.util.Util;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -53,6 +59,16 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTestCase {
+
+    @BeforeClass
+    public static void beforeClass() {
+        AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
+            if (Util.checkForWindows()) {
+                thisTestIsFailingIntermittently("WFLY-10026 Disable on Windows until CI environment is fixed");
+            }
+            return null;
+        });
+    }
 
     private final String deploymentName;
     private final CacheMode cacheMode;
