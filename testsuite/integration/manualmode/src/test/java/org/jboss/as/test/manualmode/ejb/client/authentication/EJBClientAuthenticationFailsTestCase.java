@@ -52,8 +52,8 @@ import org.wildfly.security.sasl.SaslMechanismSelector;
 import javax.ejb.NoSuchEJBException;
 import javax.naming.Context;
 import javax.naming.NamingException;
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.URI;
 import java.util.Properties;
 
@@ -139,23 +139,15 @@ public class EJBClientAuthenticationFailsTestCase {
 
         HelloBeanRemote bean = lookup(HelloBeanRemote.class, HelloBean.class, DEPLOYMENT);
         assertNotNull(bean);
-
-        PrintStream oldOut = System.err;
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try {
-            try {
-                bean.hello();
-            } catch (NoSuchEJBException nsee) {
-                System.setErr(new PrintStream(baos));
-                nsee.printStackTrace();
-                Thread.sleep(2000);
-                System.setErr(oldOut);
-                String output = new String(baos.toByteArray());
-                int count = count(output, "Server rejected authentication");
-                Assert.assertEquals("Number of occurrences of the message must be 2", 2, count);
-            }
-        } finally {
-            System.setErr(oldOut);
+            bean.hello();
+        } catch (NoSuchEJBException nsee) {
+            StringWriter sw = new StringWriter();
+            nsee.printStackTrace(new PrintWriter(sw));
+            String output = sw.toString();
+
+            int count = count(output, "Server rejected authentication");
+            Assert.assertEquals("Number of occurrences of the message must be 2", 2, count);
         }
     }
 
