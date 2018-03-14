@@ -22,13 +22,9 @@
 
 package org.jboss.as.test.integration.ejb.stateful.passivation;
 
-import javax.ejb.Local;
-import javax.ejb.Remove;
-
 /**
  * @author Paul Ferraro
  */
-@Local
 public interface Bean extends AutoCloseable {
     /**
      * Returns whether or not this instance has been passivated
@@ -44,6 +40,5 @@ public interface Bean extends AutoCloseable {
     }
 
     @Override
-    @Remove
     void close();
 }

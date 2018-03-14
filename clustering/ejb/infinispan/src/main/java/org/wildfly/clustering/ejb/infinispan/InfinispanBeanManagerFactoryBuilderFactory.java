@@ -112,8 +112,8 @@ public class InfinispanBeanManagerFactoryBuilderFactory<I> implements BeanManage
             int size = this.config.getMaxSize();
             builder.memory().evictionType(EvictionType.COUNT).storageType(StorageType.OBJECT).size(size);
             if (size >= 0) {
-                // Only evict bean entries
-                // We will cascade eviction to the associated bean group
+                // Only evict bean group entries
+                // We will cascade eviction to the associated beans
                 builder.dataContainer().dataContainer(new EvictableDataContainer<>(size, BeanGroupKey.class::isInstance));
             }
         };

@@ -22,8 +22,6 @@
 
 package org.jboss.as.test.integration.ejb.stateful.passivation;
 
-import javax.ejb.Remove;
-
 /**
  * @author <a href="mailto:andrew.rubinger@jboss.org">ALR</a>
  */
@@ -62,6 +60,5 @@ public interface TestPassivationRemote extends AutoCloseable {
     void setManagedBeanMessage(String message);
 
     @Override
-    @Remove
     void close();
 }

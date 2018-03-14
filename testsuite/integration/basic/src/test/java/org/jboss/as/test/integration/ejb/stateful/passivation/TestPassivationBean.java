@@ -30,6 +30,7 @@ import javax.ejb.EJB;
 import javax.ejb.PostActivate;
 import javax.ejb.PrePassivate;
 import javax.ejb.Remote;
+import javax.ejb.Remove;
 import javax.ejb.Stateful;
 import javax.inject.Inject;
 import javax.interceptor.Interceptors;
@@ -139,6 +140,7 @@ public class TestPassivationBean extends PassivationSuperClass implements TestPa
         this.beenActivated = true;
     }
 
+    @Remove
     @Override
     public void close() {
         log.trace("Bean [" + this.identificator + "] removing");

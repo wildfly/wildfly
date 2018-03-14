@@ -74,7 +74,7 @@ public class InfinispanBeanGroupFactory<I, T> implements BeanGroupFactory<I, T> 
     public InfinispanBeanGroupFactory(Cache<BeanGroupKey<I>, BeanGroupEntry<I, T>> cache, Cache<BeanKey<I>, BeanEntry<I>> beanCache, Predicate<Map.Entry<? super BeanKey<I>, ? super BeanEntry<I>>> beanFilter, MarshalledValueFactory<MarshallingContext> factory, MarshallingContext context, CacheProperties properties, PassivationConfiguration<T> passivation) {
         this.cache = cache;
         this.findCache = properties.isLockOnRead() ? cache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK) : cache;
-        this.beanCache = beanCache.getAdvancedCache().withFlags(Flag.SKIP_LISTENER_NOTIFICATION);
+        this.beanCache = beanCache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_LISTENER_NOTIFICATION);
         this.beanFilter = beanFilter;
         this.factory = factory;
         this.context = context;
@@ -116,13 +116,16 @@ public class InfinispanBeanGroupFactory<I, T> implements BeanGroupFactory<I, T> 
 
     @Override
     public boolean remove(I id) {
-        this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(id);
+        this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(this.createKey(id));
         return true;
     }
 
     @Override
     public BeanGroup<I, T> createGroup(I id, BeanGroupEntry<I, T> entry) {
-        Mutator mutator = new CacheEntryMutator<>(this.cache, this.createKey(id), entry);
+        return this.createGroup(id, entry, new CacheEntryMutator<>(this.cache, this.createKey(id), entry));
+    }
+
+    private BeanGroup<I, T> createGroup(I id, BeanGroupEntry<I, T> entry, Mutator mutator) {
         return new InfinispanBeanGroup<>(id, entry, this.context, mutator, this);
     }
 
@@ -130,14 +133,15 @@ public class InfinispanBeanGroupFactory<I, T> implements BeanGroupFactory<I, T> 
     public void passivated(CacheEntryPassivatedEvent<BeanGroupKey<I>, BeanGroupEntry<I, T>> event) {
         if (event.isPre()) {
             BeanGroupEntry<I, T> entry = event.getValue();
-            BeanGroup<I, T> group = this.createGroup(event.getKey().getId(), entry);
-            try {
-                for (I beanId : entry.getBeans().get(this.context).keySet()) {
+            try (BeanGroup<I, T> group = new InfinispanBeanGroup<>(event.getKey().getId(), entry, this.context, Mutator.PASSIVE, this)) {
+                for (I beanId : group.getBeans()) {
                     BeanKey<I> beanKey = new InfinispanBeanKey<>(beanId);
-                    BeanEntry<I> beanEntry = this.beanCache.get(beanKey);
+                    BeanEntry<I> beanEntry = this.beanCache.getAdvancedCache().withFlags(Flag.SKIP_CACHE_LOAD).get(beanKey);
                     if ((beanEntry != null) && this.beanFilter.test(new AbstractMap.SimpleImmutableEntry<>(beanKey, beanEntry))) {
+                        InfinispanEjbLogger.ROOT_LOGGER.tracef("Passivating bean %s", beanKey);
                         this.passiveCount.incrementAndGet();
                         group.prePassivate(beanId, this.passivationListener);
+                        // Cascade evict to bean entry
                         this.beanCache.evict(beanKey);
                     }
                 }
@@ -151,12 +155,12 @@ public class InfinispanBeanGroupFactory<I, T> implements BeanGroupFactory<I, T> 
     public void activated(CacheEntryActivatedEvent<BeanGroupKey<I>, BeanGroupEntry<I, T>> event) {
         if (!event.isPre()) {
             BeanGroupEntry<I, T> entry = event.getValue();
-            BeanGroup<I, T> group = this.createGroup(event.getKey().getId(), entry);
-            try {
-                for (I beanId : entry.getBeans().get(this.context).keySet()) {
+            try (BeanGroup<I, T> group = new InfinispanBeanGroup<>(event.getKey().getId(), entry, this.context, Mutator.PASSIVE, this)) {
+                for (I beanId : group.getBeans()) {
                     BeanKey<I> beanKey = new InfinispanBeanKey<>(beanId);
                     BeanEntry<I> beanEntry = this.beanCache.get(beanKey);
                     if ((beanEntry != null) && this.beanFilter.test(new AbstractMap.SimpleImmutableEntry<>(beanKey, beanEntry))) {
+                        InfinispanEjbLogger.ROOT_LOGGER.tracef("Activating bean %s", beanKey);
                         this.passiveCount.decrementAndGet();
                         group.postActivate(beanId, this.passivationListener);
                     }
