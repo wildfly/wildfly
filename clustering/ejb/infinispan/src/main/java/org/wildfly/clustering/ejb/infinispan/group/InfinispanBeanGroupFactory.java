@@ -22,6 +22,7 @@
 package org.wildfly.clustering.ejb.infinispan.group;
 
 import java.util.AbstractMap;
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -34,8 +35,11 @@ import org.infinispan.notifications.cachelistener.annotation.CacheEntryActivated
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryPassivated;
 import org.infinispan.notifications.cachelistener.event.CacheEntryActivatedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryPassivatedEvent;
+import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.Mutator;
 import org.wildfly.clustering.ee.infinispan.CacheProperties;
+import org.wildfly.clustering.ee.infinispan.InfinispanBatcher;
+import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.ee.infinispan.CacheEntryMutator;
 import org.wildfly.clustering.ejb.PassivationListener;
 import org.wildfly.clustering.ejb.infinispan.BeanEntry;
@@ -62,6 +66,7 @@ import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
 @Listener
 public class InfinispanBeanGroupFactory<I, T> implements BeanGroupFactory<I, T> {
 
+    private final Batcher<TransactionBatch> batcher;
     private final Cache<BeanGroupKey<I>, BeanGroupEntry<I, T>> cache;
     private final Cache<BeanGroupKey<I>, BeanGroupEntry<I, T>> findCache;
     private final Cache<BeanKey<I>, BeanEntry<I>> beanCache;
@@ -79,6 +84,7 @@ public class InfinispanBeanGroupFactory<I, T> implements BeanGroupFactory<I, T> 
         this.factory = factory;
         this.context = context;
         this.passivationListener = !properties.isPersistent() ? passivation.getPassivationListener() : null;
+        this.batcher = new InfinispanBatcher(this.beanCache);
         this.cache.addListener(this, new BeanGroupFilter());
     }
 
@@ -138,11 +144,16 @@ public class InfinispanBeanGroupFactory<I, T> implements BeanGroupFactory<I, T> 
                     BeanKey<I> beanKey = new InfinispanBeanKey<>(beanId);
                     BeanEntry<I> beanEntry = this.beanCache.getAdvancedCache().withFlags(Flag.SKIP_CACHE_LOAD).get(beanKey);
                     if ((beanEntry != null) && this.beanFilter.test(new AbstractMap.SimpleImmutableEntry<>(beanKey, beanEntry))) {
-                        InfinispanEjbLogger.ROOT_LOGGER.tracef("Passivating bean %s", beanKey);
-                        this.passiveCount.incrementAndGet();
-                        group.prePassivate(beanId, this.passivationListener);
-                        // Cascade evict to bean entry
-                        this.beanCache.evict(beanKey);
+                        try (TransactionBatch batch = this.batcher.createBatch()) {
+                            // Don't evict if another thread is holding a lock on this bean
+                            if (this.beanCache.getAdvancedCache().withFlags(Flag.ZERO_LOCK_ACQUISITION_TIMEOUT, Flag.FAIL_SILENTLY).lock(Collections.singleton(beanKey))) {
+                                InfinispanEjbLogger.ROOT_LOGGER.tracef("Passivating bean %s", beanKey);
+                                this.passiveCount.incrementAndGet();
+                                group.prePassivate(beanId, this.passivationListener);
+                                // Cascade evict to bean entry
+                                this.beanCache.evict(beanKey);
+                            }
+                        }
                     }
                 }
             } catch (Exception e) {
