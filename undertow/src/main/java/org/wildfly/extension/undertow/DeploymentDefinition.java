@@ -357,6 +357,13 @@ public class DeploymentDefinition extends SimpleResourceDefinition {
                             result.set((int) sms.getRejectedSessions());
                         }
                         break;
+                    case HIGHEST_SESSION_COUNT:
+                        if (sms == null) {
+                            result.set(0);
+                        } else {
+                            result.set((int) sms.getHighestSessionCount());
+                        }
+                        break;
                     default:
                         throw new IllegalStateException(UndertowLogger.ROOT_LOGGER.unknownMetric(stat));
                 }
@@ -402,6 +409,8 @@ public class DeploymentDefinition extends SimpleResourceDefinition {
         REJECTED_SESSIONS(new SimpleAttributeDefinitionBuilder("rejected-sessions", ModelType.INT)
                 .setUndefinedMetricValue(new ModelNode(0)).setStorageRuntime().build()),
         MAX_ACTIVE_SESSIONS(new SimpleAttributeDefinitionBuilder("max-active-sessions", ModelType.INT)
+                .setUndefinedMetricValue(new ModelNode(0)).setStorageRuntime().build()),
+        HIGHEST_SESSION_COUNT(new SimpleAttributeDefinitionBuilder("highest-session-count", ModelType.INT)
                 .setUndefinedMetricValue(new ModelNode(0)).setStorageRuntime().build());
 
         private static final Map<String, SessionStat> MAP = new HashMap<>();

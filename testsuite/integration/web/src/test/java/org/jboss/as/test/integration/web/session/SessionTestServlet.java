@@ -37,14 +37,18 @@ public class SessionTestServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        HttpSession session = req.getSession(true);
-        Integer val = (Integer) session.getAttribute("val");
-        if (val == null) {
-            session.setAttribute("val", 0);
-            resp.getWriter().print(0);
+        if(req.getParameter("invalidate") != null) {
+            req.getSession().invalidate();
         } else {
-            session.setAttribute("val", ++val);
-            resp.getWriter().print(val);
+            HttpSession session = req.getSession(true);
+            Integer val = (Integer) session.getAttribute("val");
+            if (val == null) {
+                session.setAttribute("val", 0);
+                resp.getWriter().print(0);
+            } else {
+                session.setAttribute("val", ++val);
+                resp.getWriter().print(val);
+            }
         }
     }
 
