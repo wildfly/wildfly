@@ -62,14 +62,10 @@ fi
 # Setup JBoss sepecific properties
 JAVA_OPTS="$JAVA_OPTS -Dprogram.name=wsconsume.sh"
 
-# Setup classpath
-JBOSS_CLASSPATH=$JAVA_HOME/lib/tools.jar
-
 # For Cygwin, switch paths to Windows format before running java
 if $cygwin; then
     JBOSS_HOME=`cygpath --path --windows "$JBOSS_HOME"`
     JAVA_HOME=`cygpath --path --windows "$JAVA_HOME"`
-    JBOSS_CLASSPATH=`cygpath --path --windows "$JBOSS_CLASSPATH"`
 fi
 
 if [ "x$JBOSS_MODULEPATH" = "x" ]; then
@@ -87,7 +83,7 @@ fi
 NEW_SECURITY_MANAGER_SET=`echo $JAVA_OPTS | $GREP "-secmgr"`
 if [ "x$NEW_SECURITY_MANAGER_SET" != "x" ]; then
     SECMGR="true"
-    JAVA_OPTS=${JAVA_OPTS/-secmgr/}
+    JAVA_OPTS=`echo $JAVA_OPTS | sed "s/-secmgr//" `
 fi
 
 # Set up the module arguments
@@ -98,7 +94,6 @@ fi
 
 # Execute the command
 eval \"$JAVA\" $JAVA_OPTS \
-    -classpath \""$JBOSS_CLASSPATH"\" \
     -jar \""$JBOSS_HOME"/jboss-modules.jar\" \
     $MODULE_OPTS \
     -mp \""${JBOSS_MODULEPATH}"\" \

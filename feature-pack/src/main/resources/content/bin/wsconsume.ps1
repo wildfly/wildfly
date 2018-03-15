@@ -13,7 +13,6 @@ $JAVA_OPTS = @()
 
 $JAVA_OPTS+="-Dprogram.name=wsconsume.ps1"
 
-
 $PROG_ARGS = Get-Java-Arguments -entryModule "org.jboss.ws.tools.wsconsume" -logFileProperties $null -serverOpts $ARGS
 & $JAVA $PROG_ARGS
 
