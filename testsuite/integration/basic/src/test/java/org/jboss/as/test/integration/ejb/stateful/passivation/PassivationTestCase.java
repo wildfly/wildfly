@@ -33,7 +33,6 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -51,7 +50,6 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @ServerSetup(PassivationTestCaseSetup.class)
 public class PassivationTestCase {
-    private static final long PASSIVATION_WAIT = TimeoutUtil.adjust(5000);
 
     @ArquillianResource
     private InitialContext ctx;
@@ -60,7 +58,6 @@ public class PassivationTestCase {
     public static Archive<?> deploy() throws Exception {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "passivation-test.jar");
         jar.addPackage(PassivationTestCase.class.getPackage());
-        jar.addClass(TimeoutUtil.class);
         jar.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
         jar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr \n"),
                 "MANIFEST.MF");
@@ -96,17 +93,11 @@ public class PassivationTestCase {
                 Assert.assertEquals("Super", remote2.getSuperEmployee().getName());
                 Assert.assertEquals("bar", remote2.getManagedBeanMessage());
 
-                // Passivation happens asynchronously, so give it a sec
-                Thread.sleep(PASSIVATION_WAIT);
-
                 Assert.assertTrue("@PrePassivate not called, check cache configuration and client sleep time", remote1.hasBeenPassivated());
                 Assert.assertTrue("@PostActivate not called, check cache configuration and client sleep time", remote1.hasBeenActivated());
                 Assert.assertTrue(remote1.isPersistenceContextSame());
                 Assert.assertEquals("Super", remote1.getSuperEmployee().getName());
                 Assert.assertEquals("bar", remote1.getManagedBeanMessage());
-
-                // Passivation happens asynchronously, so give it a sec
-                Thread.sleep(PASSIVATION_WAIT);
 
                 Assert.assertTrue("@PrePassivate not called, check cache configuration and client sleep time", remote2.hasBeenPassivated());
                 Assert.assertTrue("@PrePassivate not called, check cache configuration and client sleep time", remote2.hasBeenActivated());
@@ -138,9 +129,6 @@ public class PassivationTestCase {
                     // now do the same with a deployment descriptor configured stateful bean
                     try (Bean ddBean2 = (Bean) ctx.lookup("java:module/passivation-disabled-bean" + "!" + Bean.class.getName())) {
                         ddBean2.doNothing();
-
-                        // Passivation happens asynchronously, so give it a sec
-                        Thread.sleep(PASSIVATION_WAIT);
 
                         // make sure bean's passivation and activation callbacks weren't invoked
                         Assert.assertFalse("(Annotation based) Stateful bean marked as passivation disabled was incorrectly passivated", bean.wasPassivated());
@@ -174,9 +162,6 @@ public class PassivationTestCase {
                     try (Bean ddBean2 = (Bean) ctx.lookup("java:module/passivation-enabled-bean" + "!" + Bean.class.getName())) {
                         ddBean2.doNothing();
 
-                        // Passivation happens asynchronously, so give it a sec
-                        Thread.sleep(PASSIVATION_WAIT);
-
                         Assert.assertTrue("(Annotation based) Stateful bean marked as passivation enabled was not passivated", bean.wasPassivated());
                         Assert.assertTrue("(Annotation based) Stateful bean marked as passivation enabled was not activated", bean.wasActivated());
 
@@ -204,9 +189,6 @@ public class PassivationTestCase {
             try (Bean passivationOverrideBean2 = (Bean) ctx.lookup("java:module/passivation-override-bean" + "!" + Bean.class.getName())) {
                 passivationOverrideBean2.doNothing();
 
-                // Passivation happens asynchronously, so give it a sec
-                Thread.sleep(PASSIVATION_WAIT);
-
                 // make sure bean's passivation and activation callbacks weren't invoked
                 Assert.assertFalse("(Annotation based) Stateful bean marked as passivation disabled was incorrectly passivated", passivationOverrideBean.wasPassivated());
                 Assert.assertFalse("(Annotation based) Stateful bean marked as passivation disabled was incorrectly activated", passivationOverrideBean.wasActivated());
@@ -232,9 +214,6 @@ public class PassivationTestCase {
                 // make an invocation
                 Assert.assertEquals("Returned remote2 result was not expected", TestPassivationRemote.EXPECTED_RESULT,
                         remote2.returnTrueString());
-
-                // passivation happens asynchronously, so give it a sec
-                Thread.sleep(PASSIVATION_WAIT);
 
                 // verify that remote1 was prePassivated
                 Assert.assertTrue(PassivationInterceptor.getPrePassivateTarget() instanceof BeanWithSerializationIssue);
