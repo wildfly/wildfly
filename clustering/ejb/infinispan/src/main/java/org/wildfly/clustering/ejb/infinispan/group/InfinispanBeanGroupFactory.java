@@ -29,14 +29,17 @@ import java.util.function.Predicate;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
+import org.infinispan.context.impl.ImmutableContext;
+import org.infinispan.marshall.core.MarshalledEntry;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryActivated;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryPassivated;
 import org.infinispan.notifications.cachelistener.event.CacheEntryActivatedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryPassivatedEvent;
+import org.infinispan.persistence.manager.PersistenceManager;
 import org.wildfly.clustering.ee.Mutator;
-import org.wildfly.clustering.ee.infinispan.CacheProperties;
 import org.wildfly.clustering.ee.infinispan.CacheEntryMutator;
+import org.wildfly.clustering.ee.infinispan.CacheProperties;
 import org.wildfly.clustering.ejb.PassivationListener;
 import org.wildfly.clustering.ejb.infinispan.BeanEntry;
 import org.wildfly.clustering.ejb.infinispan.BeanGroup;
@@ -106,7 +109,19 @@ public class InfinispanBeanGroupFactory<I, T> implements BeanGroupFactory<I, T> 
 
     @Override
     public BeanGroupEntry<I, T> findValue(I id) {
-        return this.findCache.get(this.createKey(id));
+        BeanGroupKey<I> key = this.createKey(id);
+        BeanGroupEntry<I, T> entry = this.findCache.get(key);
+        if (entry == null) {
+            // Temporary workaround for ISPN-8959
+            PersistenceManager persistence = this.cache.getAdvancedCache().getComponentRegistry().getComponent(PersistenceManager.class);
+            MarshalledEntry<BeanGroupKey<I>, BeanGroupEntry<I, T>> marshalledEntry = persistence.loadFromAllStores(key, ImmutableContext.INSTANCE);
+            if (marshalledEntry != null) {
+                entry = marshalledEntry.getValue();
+                // Restore cache entry
+                this.cache.put(key, entry);
+            }
+        }
+        return entry;
     }
 
     @Override
