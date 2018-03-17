@@ -83,7 +83,7 @@ set "JAVA_OPTS=%JAVA_OPTS% -Dprogram.name=wsconsume.bat"
 "%JAVA%" %JAVA_OPTS% ^
     -classpath "%JAVA_HOME%\lib\tools.jar" ^
     -jar "%JBOSS_RUNJAR%" ^
-    "%MODULE_OPTS%"^
+    %MODULE_OPTS% ^
     -mp "%JBOSS_MODULEPATH%" ^
     org.jboss.ws.tools.wsconsume ^
      %*
