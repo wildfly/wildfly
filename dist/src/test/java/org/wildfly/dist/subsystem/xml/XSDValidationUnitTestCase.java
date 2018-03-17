@@ -19,7 +19,10 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.smoke.subsystem.xml;
+
+package org.wildfly.dist.subsystem.xml;
+
+import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
 import java.net.URL;
@@ -35,8 +38,6 @@ import javax.xml.validation.Validator;
 import org.jboss.metadata.parser.util.XMLResourceResolver;
 import org.junit.Test;
 import org.w3c.dom.Document;
-
-import static org.junit.Assert.assertNotNull;
 
 /**
  * A XSDValidationUnitTestCase.
