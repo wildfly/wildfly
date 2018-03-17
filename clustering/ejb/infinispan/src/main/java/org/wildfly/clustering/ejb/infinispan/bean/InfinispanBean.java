@@ -93,7 +93,6 @@ public class InfinispanBean<I, T> implements Bean<I, T> {
         if (this.valid.compareAndSet(true, false)) {
             InfinispanEjbLogger.ROOT_LOGGER.tracef("Removing bean %s", this.id);
             this.remover.remove(this.id, listener);
-            this.close();
         }
     }
 
