@@ -1091,12 +1091,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 d.addOuterHandlerChainWrapper(new HandlerWrapper() {
                     @Override
                     public HttpHandler wrap(HttpHandler handler) {
-                        if (predicatedHandlers.size() == 1) {
-                            PredicatedHandler ph = predicatedHandlers.get(0);
-                            return Handlers.predicate(ph.getPredicate(), ph.getHandler().wrap(handler), handler);
-                        } else {
-                            return Handlers.predicates(predicatedHandlers, handler);
-                        }
+                        return Handlers.predicates(predicatedHandlers, handler);
                     }
                 });
                 d.addOuterHandlerChainWrapper(new RewriteCorrectingHandlerWrappers.PreWrapper());
