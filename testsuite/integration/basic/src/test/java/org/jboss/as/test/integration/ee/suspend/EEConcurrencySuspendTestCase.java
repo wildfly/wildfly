@@ -26,6 +26,7 @@ import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.
 import java.net.HttpURLConnection;
 import java.net.SocketPermission;
 import java.net.URL;
+import java.io.FilePermission;
 import java.util.PropertyPermission;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -80,6 +81,7 @@ public class EEConcurrencySuspendTestCase {
                 new PropertyPermission("jboss.http.port", "read"),
                 new RemotingPermission("createEndpoint"),
                 new RemotingPermission("connect"),
+                new FilePermission(System.getProperty("jboss.inst") + "/standalone/tmp/auth/*", "read"),
                 new SocketPermission(TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getHttpPort(), "connect,resolve")),
                 "permissions.xml");
         return war;

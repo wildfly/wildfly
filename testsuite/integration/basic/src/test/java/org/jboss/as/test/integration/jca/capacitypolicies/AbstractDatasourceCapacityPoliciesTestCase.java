@@ -36,6 +36,7 @@ import java.lang.reflect.ReflectPermission;
 import java.sql.Connection;
 import java.util.HashMap;
 import java.util.Map;
+import java.io.FilePermission;
 import java.util.PropertyPermission;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Resource;
@@ -122,6 +123,7 @@ public abstract class AbstractDatasourceCapacityPoliciesTestCase extends JcaMgmt
         jar.addAsManifestResource(createPermissionsXmlAsset(
                 new RemotingPermission("createEndpoint"),
                 new RemotingPermission("connect"),
+                new FilePermission(System.getProperty("jboss.inst") + "/standalone/tmp/auth/*", "read"),
                 new PropertyPermission("ts.timeout.factor", "read"),
                 new RuntimePermission("accessDeclaredMembers"),
                 new ReflectPermission("suppressAccessChecks")
