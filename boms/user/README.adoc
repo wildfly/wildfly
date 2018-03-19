@@ -1,0 +1,42 @@
+= WildFly BOMs
+
+The WildFly BOMs project provides Maven BOM files enhancing Java EE 7 with deployment and test tooling. These files manage the version of the dependencies you use in your project, ensuring you always get a compatible stack.
+
+== Usage
+
+To use the BOM, import into your dependency management. For example, if you wanted "Java EE with WildFly", use:
+
+[source, xml]
+----
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>org.wildfly.bom</groupId>
+            <artifactId>wildfly-javaee7</artifactId>
+            <scope>import</scope>
+            <type>pom</type>
+            <version>13.0.0.Final</version>
+        </dependency>
+    </dependencies>
+</dependencyManagement> 
+----
+
+Unfortunately, Maven doesn't allow you to specify plugin versions this way. The readme for each BOM calls out any plugin versions you should use. For example, to use the plugins associated with "Java EE with Tools recommended by WildFly":
+
+[source, xml]
+----
+<pluginManagement>
+    <plugins>
+        <!-- The WildFly Maven Plugin deploys your war to a local WildFly container -->
+        <!-- To use, set the JBOSS_HOME environment variable and run:
+             mvn package wildfly:deploy -->
+        <plugin>
+            <groupId>org.wildfly.plugins</groupId>
+            <artifactId>wildfly-maven-plugin</artifactId>
+            <version>1.2.1.Final</version>
+        </plugin>
+    </plugins>
+</pluginManagement>
+----
+
+You'll need to take a look at the POM source in order to find the latest versions of plugins recommended.
