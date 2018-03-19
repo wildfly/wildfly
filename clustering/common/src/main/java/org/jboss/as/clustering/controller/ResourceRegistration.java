@@ -23,9 +23,7 @@
 package org.jboss.as.clustering.controller;
 
 import java.util.Map;
-import java.util.Optional;
 
-import org.jboss.as.clustering.function.Predicates;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
@@ -88,8 +86,9 @@ public class ResourceRegistration implements Registration<ManagementResourceRegi
 
     private void registerTransformedOperation(ManagementResourceRegistration registration, OperationDefinition definition, OperationStepHandler handler) {
         // Only override global operation handlers for non-identity transformations
-        Optional.of(handler).map(this.descriptor.getOperationTransformation())
-                .filter(Predicates.same(handler).negate())
-                .ifPresent(transformedHandler -> registration.registerOperationHandler(definition, transformedHandler));
+        OperationStepHandler transformedHandler = this.descriptor.getOperationTransformation().apply(handler);
+        if (handler != transformedHandler) {
+            registration.registerOperationHandler(definition, transformedHandler);
+        }
     }
 }
