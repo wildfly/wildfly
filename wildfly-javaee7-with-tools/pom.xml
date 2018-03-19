@@ -53,7 +53,7 @@
             <dependency>
                 <groupId>org.wildfly.bom</groupId>
                 <artifactId>wildfly-javaee7</artifactId>
-                <version>${project.version}</version>
+                <version>13.0.0.Alpha2-SNAPSHOT</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

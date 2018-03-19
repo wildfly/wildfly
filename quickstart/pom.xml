@@ -219,14 +219,14 @@
             <dependency>
                 <groupId>org.wildfly.bom</groupId>
                 <artifactId>ejb-client-bom</artifactId>
-                <version>${project.version}</version>
+                <version>13.0.0.Alpha2-SNAPSHOT</version>
                 <type>pom</type>
             </dependency>
 
             <dependency>
                 <groupId>org.wildfly.bom</groupId>
                 <artifactId>jms-client-bom</artifactId>
-                <version>${project.version}</version>
+                <version>13.0.0.Alpha2-SNAPSHOT</version>
                 <type>pom</type>
             </dependency>
             <!-- JBoss distributes a complete set of Java EE APIs including a Bill
@@ -238,7 +238,7 @@
             <dependency>
                 <groupId>org.wildfly.bom</groupId>
                 <artifactId>wildfly-javaee7-with-tools</artifactId>
-                <version>${project.version}</version>
+                <version>13.0.0.Alpha2-SNAPSHOT</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
