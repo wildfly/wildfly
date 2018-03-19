@@ -242,4 +242,22 @@ public class OperationsTestCase extends OperationTestCaseBase {
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertFalse(result.get(RESULT).isDefined());
     }
+
+    @Test
+    public void testLegacyProtocolAddRemoveOperation() throws Exception {
+        KernelServices services = this.buildKernelServices();
+
+        testProtocolAddRemoveOperation(services, "MERGE2");
+        testProtocolAddRemoveOperation(services, "pbcast.NAKACK");
+        testProtocolAddRemoveOperation(services, "UNICAST2");
+    }
+
+    private static void testProtocolAddRemoveOperation(KernelServices services, String protocol) {
+
+        ModelNode result = services.executeOperation(getProtocolAddOperation("minimal", protocol));
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
+
+        result = services.executeOperation(getProtocolRemoveOperation("minimal", protocol));
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
+    }
 }

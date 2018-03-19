@@ -33,13 +33,13 @@
         <protocol type="MPING" socket-binding="jgroups-mping">
             <property name="name">${test.expr:value}</property>
         </protocol>
-        <protocol type="MERGE2"/>
+        <protocol type="MERGE3"/>
         <protocol type="FD_SOCK" socket-binding="jgroups-tcp-fd"/>
         <protocol type="FD"/>
         <protocol type="VERIFY_SUSPECT"/>
         <protocol type="BARRIER"/>
-        <protocol type="pbcast.NAKACK"/>
-        <protocol type="UNICAST2"/>
+        <protocol type="pbcast.NAKACK2"/>
+        <protocol type="UNICAST3"/>
         <protocol type="pbcast.STABLE"/>
         <protocol type="pbcast.GMS"/>
         <protocol type="UFC"/>

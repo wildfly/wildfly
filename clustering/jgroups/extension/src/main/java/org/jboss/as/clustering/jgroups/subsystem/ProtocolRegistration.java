@@ -38,7 +38,12 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jgroups.PhysicalAddress;
+import org.jgroups.conf.ProtocolConfiguration;
+import org.jgroups.protocols.MERGE3;
+import org.jgroups.protocols.UNICAST3;
+import org.jgroups.protocols.pbcast.NAKACK2;
 import org.jgroups.stack.IpAddress;
+import org.jgroups.stack.Protocol;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 
 /**
@@ -55,7 +60,7 @@ public class ProtocolRegistration implements Registration<ManagementResourceRegi
         ASYM_ENCRYPT(KeyStore.PrivateKeyEntry.class),
         SYM_ENCRYPT(KeyStore.SecretKeyEntry.class),
         ;
-        Class<? extends KeyStore.Entry> entryClass;
+        final Class<? extends KeyStore.Entry> entryClass;
 
         EncryptProtocol(Class<? extends KeyStore.Entry> entryClass) {
             this.entryClass = entryClass;
@@ -66,7 +71,7 @@ public class ProtocolRegistration implements Registration<ManagementResourceRegi
         TCPGOSSIP(InetSocketAddress.class, Function.identity()),
         TCPPING(PhysicalAddress.class, address -> new IpAddress(address.getAddress(), address.getPort())),
         ;
-        Function<InetSocketAddress, ?> hostTransformer;
+        final Function<InetSocketAddress, ?> hostTransformer;
 
         <A> InitialHostsProtocol(Class<A> hostClass, Function<InetSocketAddress, A> hostTransformer) {
             this.hostTransformer = hostTransformer;
@@ -79,6 +84,26 @@ public class ProtocolRegistration implements Registration<ManagementResourceRegi
 
     enum MulticastProtocol {
         MPING;
+    }
+
+    enum LegacyProtocol {
+        MERGE2(MERGE3.class, JGroupsModel.VERSION_6_0_0),
+        NAKACK("pbcast.NAKACK", NAKACK2.class, JGroupsModel.VERSION_6_0_0),
+        UNICAST2(UNICAST3.class, JGroupsModel.VERSION_6_0_0),
+        ;
+        final String name;
+        final String targetName;
+        final JGroupsModel deprecation;
+
+        LegacyProtocol(Class<? extends Protocol> targetProtocol, JGroupsModel deprecation) {
+            this(null, targetProtocol, deprecation);
+        }
+
+        LegacyProtocol(String name, Class<? extends Protocol> targetProtocol, JGroupsModel deprecation) {
+            this.name = (name != null) ? name : this.name();
+            this.targetName = targetProtocol.getName().substring(ProtocolConfiguration.protocol_prefix.length() + 1);
+            this.deprecation = deprecation;
+        }
     }
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
@@ -170,6 +195,10 @@ public class ProtocolRegistration implements Registration<ManagementResourceRegi
             new AuthProtocolResourceDefinition(protocol.name(), this.descriptorConfigurator, this.parentBuilderFactory).register(registration);
             // Add deprecated override definition for legacy variant
             new GenericProtocolResourceDefinition<>(protocol.name(), JGroupsModel.VERSION_5_0_0, this.descriptorConfigurator, this.parentBuilderFactory).register(registration);
+        }
+
+        for (LegacyProtocol protocol : EnumSet.allOf(LegacyProtocol.class)) {
+            new LegacyProtocolResourceDefinition<>(protocol.name, protocol.targetName, protocol.deprecation, this.descriptorConfigurator, this.parentBuilderFactory).register(registration);
         }
     }
 }
