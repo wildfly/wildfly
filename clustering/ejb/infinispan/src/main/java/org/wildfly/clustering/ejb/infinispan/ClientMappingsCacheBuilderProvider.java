@@ -30,6 +30,7 @@ import java.util.function.Consumer;
 
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.eviction.EvictionStrategy;
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderConfiguration;
@@ -86,7 +87,7 @@ public class ClientMappingsCacheBuilderProvider implements CacheBuilderProvider,
         // Disable expiration
         builder.expiration().lifespan(-1).maxIdle(-1);
         // Disable eviction
-        builder.memory().size(-1);
+        builder.memory().size(-1).evictionStrategy(EvictionStrategy.MANUAL);
         builder.persistence().clearStores();
     }
 }
