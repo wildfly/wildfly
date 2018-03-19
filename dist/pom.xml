@@ -142,7 +142,7 @@
                         </goals>
                         <inherited>true</inherited>
                         <configuration>
-                            <outputDirectory>${basedir}/target/${project.build.finalName}-for-validation</outputDirectory>
+                            <outputDirectory>${basedir}/target/xml-validation</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>${basedir}/target/${project.build.finalName}</directory>
@@ -168,7 +168,7 @@
                 <configuration>
                     <!-- Parameters to test cases. -->
                     <systemPropertyVariables combine.children="append">
-                        <jboss.dist>${basedir}/target/${project.build.finalName}-for-validation</jboss.dist>
+                        <jboss.dist>${basedir}/target/xml-validation</jboss.dist>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
