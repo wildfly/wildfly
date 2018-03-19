@@ -41,7 +41,7 @@ class ManagedReferenceReleaseInterceptor implements Interceptor {
      *
      * @param contextKey the context key
      */
-    public ManagedReferenceReleaseInterceptor(final Object contextKey) {
+    ManagedReferenceReleaseInterceptor(final Object contextKey) {
         if (contextKey == null) {
             throw EeLogger.ROOT_LOGGER.nullVar("contextKey");
         }

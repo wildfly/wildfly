@@ -170,7 +170,7 @@ public class ExternalContextObjectFactory implements ObjectFactory {
     private static class LookupByStringContext implements Context {
         private final Context context;
 
-        public LookupByStringContext(Context context) {
+        LookupByStringContext(Context context) {
             this.context = context;
         }
 

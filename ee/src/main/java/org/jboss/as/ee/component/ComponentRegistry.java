@@ -96,7 +96,7 @@ public class ComponentRegistry {
         private final ComponentInstance instance;
         private boolean destroyed;
 
-        public ComponentManagedReference(final ComponentInstance component) {
+        ComponentManagedReference(final ComponentInstance component) {
             instance = component;
         }
 

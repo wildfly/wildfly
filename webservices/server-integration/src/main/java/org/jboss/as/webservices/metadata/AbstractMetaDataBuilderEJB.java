@@ -82,8 +82,7 @@ abstract class AbstractMetaDataBuilderEJB {
      * @param dep webservice deployment
      * @param ejbArchiveMD universal EJB meta data model
      */
-    private void buildWebservicesMetaData(final Deployment dep, final EJBArchiveMetaData.Builder ejbArchiveMDBuilder)
-    {
+    private void buildWebservicesMetaData(final Deployment dep, final EJBArchiveMetaData.Builder ejbArchiveMDBuilder) {
        final JBossWebservicesMetaData webservicesMD = WSHelper.getOptionalAttachment(dep, JBossWebservicesMetaData.class);
 
        if (webservicesMD == null) return;

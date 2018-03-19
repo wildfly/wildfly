@@ -159,8 +159,7 @@ public class KDCServerAnnotationProcessor {
 
     }
 
-    private static Transport createTransport( CreateTransport transportBuilder, int startPort )
-    {
+    private static Transport createTransport( CreateTransport transportBuilder, int startPort ) {
         String protocol = transportBuilder.protocol();
         int port = transportBuilder.port();
         int nbThreads = transportBuilder.nbThreads();
