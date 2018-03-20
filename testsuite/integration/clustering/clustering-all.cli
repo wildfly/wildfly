@@ -7,6 +7,8 @@ embed-server --server-config=standalone-ha.xml
 /subsystem=jgroups/stack=tcp/protocol=MPING:remove()
 /subsystem=jgroups/stack=tcp/protocol=TCPPING:add(add-index=0)
 
+/subsystem=logging/logger=org.jgroups:add(level=TRACE)
+
 stop-embedded-server
 
 
@@ -18,5 +20,7 @@ embed-server --server-config=standalone-full-ha.xml
 
 /subsystem=jgroups/stack=tcp/protocol=MPING:remove()
 /subsystem=jgroups/stack=tcp/protocol=TCPPING:add(add-index=0)
+
+/subsystem=logging/logger=org.jgroups:add(level=TRACE)
 
 stop-embedded-server
