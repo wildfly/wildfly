@@ -66,7 +66,7 @@
                 <property name="name">${test.expr:value}</property>
             </socket-protocol>
             <jdbc-protocol type="JDBC_PING" data-source="ExampleDS"/>
-            <protocol type="MERGE2"/>
+            <protocol type="MERGE3"/>
             <protocol type="FD_SOCK" socket-binding="jgroups-tcp-fd"/>
             <protocol type="FD"/>
             <protocol type="VERIFY_SUSPECT"/>
@@ -74,7 +74,7 @@
                 <key-credential-reference store="my-credential-store" alias="credential-alias" type="PASSWORD"/>
             </encrypt-protocol>
             <protocol type="pbcast.NAKACK2"/>
-            <protocol type="UNICAST2"/>
+            <protocol type="UNICAST3"/>
             <protocol type="pbcast.STABLE"/>
             <protocol type="pbcast.GMS"/>
             <auth-protocol type="AUTH">

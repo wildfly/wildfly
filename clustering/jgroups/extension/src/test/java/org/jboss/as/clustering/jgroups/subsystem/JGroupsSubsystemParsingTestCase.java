@@ -139,7 +139,7 @@ public class JGroupsSubsystemParsingTestCase extends ClusteringSubsystemTest {
         transport.get("socket-binding").set("jgroups-udp");
 
         ModelNode protocols = new ModelNode();
-        String[] protocolList = {"PING", "MERGE3", "FD_SOCK", "FD", "VERIFY_SUSPECT", "BARRIER", "pbcast.NAKACK2", "UNICAST2",
+        String[] protocolList = {"PING", "MERGE3", "FD_SOCK", "FD", "VERIFY_SUSPECT", "BARRIER", "pbcast.NAKACK2", "UNICAST3",
                           "pbcast.STABLE", "pbcast.GMS", "UFC", "MFC", "FRAG2", "RSVP"} ;
 
         for (int i = 0; i < protocolList.length; i++) {
@@ -206,7 +206,7 @@ public class JGroupsSubsystemParsingTestCase extends ClusteringSubsystemTest {
         final PathAddress stackAddress = subsystemAddress.append(StackResourceDefinition.pathElement("maximal"));
 
         //Check the fork protocols honour indexed adds by inserting a protocol at the start
-        ModelNode add = Operations.createAddOperation(forkAddress.append(ProtocolResourceDefinition.pathElement("MERGE2")), 0);
+        ModelNode add = Operations.createAddOperation(forkAddress.append(ProtocolResourceDefinition.pathElement("MERGE3")), 0);
         ModelTestUtils.checkOutcome(services.executeOperation(add));
 
         ModelNode subsystemModel = services.readWholeModel().get(JGroupsSubsystemResourceDefinition.PATH.getKeyValuePair());
@@ -214,7 +214,7 @@ public class JGroupsSubsystemParsingTestCase extends ClusteringSubsystemTest {
         ModelNode forkModel = channelModel.get(ForkResourceDefinition.pathElement("web").getKeyValuePair());
 
         Assert.assertEquals(originalForkModel.keys().size() + 1, forkModel.get(ProtocolResourceDefinition.WILDCARD_PATH.getKey()).keys().size());
-        Assert.assertEquals("MERGE2", forkModel.get(ProtocolResourceDefinition.WILDCARD_PATH.getKey()).keys().iterator().next());
+        Assert.assertEquals("MERGE3", forkModel.get(ProtocolResourceDefinition.WILDCARD_PATH.getKey()).keys().iterator().next());
 
         //Check the stack protocols honour indexed adds by removing a protocol in the middle and readding it
         ModelNode remove = Util.createRemoveOperation(stackAddress.append(ProtocolResourceDefinition.pathElement("FD")));
