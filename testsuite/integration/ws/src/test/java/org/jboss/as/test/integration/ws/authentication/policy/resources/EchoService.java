@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.manualmode.security.resources;
+package org.jboss.as.test.integration.ws.authentication.policy.resources;
 
 import org.jboss.ejb3.annotation.SecurityDomain;
 import org.jboss.security.SecurityContext;

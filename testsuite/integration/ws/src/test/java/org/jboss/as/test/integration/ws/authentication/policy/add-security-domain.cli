@@ -55,6 +55,3 @@
         } \
     ] \
 )
-
-# set default EJB3 security domain (for some unknown reason is security domain annotation ignored as well as jboss-web.xml
-/subsystem=ejb3:write-attribute(name=default-security-domain,value=sp)

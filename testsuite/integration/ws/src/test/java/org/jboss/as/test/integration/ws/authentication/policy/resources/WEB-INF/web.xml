@@ -4,7 +4,7 @@
   xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
    <servlet>
      <servlet-name>PicketLinkSTS</servlet-name>
-     <servlet-class>org.jboss.as.test.manualmode.security.resources.PicketLinkSTSService</servlet-class>
+     <servlet-class>org.jboss.as.test.integration.ws.authentication.policy.resources.PicketLinkSTSService</servlet-class>
    </servlet>
    <servlet-mapping>
       <servlet-name>PicketLinkSTS</servlet-name>

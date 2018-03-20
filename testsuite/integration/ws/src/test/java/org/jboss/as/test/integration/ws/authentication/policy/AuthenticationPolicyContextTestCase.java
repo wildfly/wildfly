@@ -20,14 +20,12 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.manualmode.security;
+package org.jboss.as.test.integration.ws.authentication.policy;
 
 import org.apache.commons.io.IOUtils;
-import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.cli.CommandContext;
@@ -38,9 +36,9 @@ import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.test.integration.management.util.CLIOpResult;
 import org.jboss.as.test.integration.management.util.CLITestUtil;
 import org.jboss.as.test.integration.management.util.ServerReload;
-import org.jboss.as.test.manualmode.security.resources.EchoService;
-import org.jboss.as.test.manualmode.security.resources.EchoServiceRemote;
-import org.jboss.as.test.manualmode.security.resources.PicketLinkSTSService;
+import org.jboss.as.test.integration.ws.authentication.policy.resources.EchoService;
+import org.jboss.as.test.integration.ws.authentication.policy.resources.EchoServiceRemote;
+import org.jboss.as.test.integration.ws.authentication.policy.resources.PicketLinkSTSService;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -93,29 +91,24 @@ public class AuthenticationPolicyContextTestCase {
 
     private static final String PICKETLINK_STS = "picketlink-sts";
     private static final String PICKETLINK_STS_WS = "picketlink-sts-ws";
-    private static final String RESOURCE_DIR = "org/jboss/as/test/manualmode/security/resources/";
+    private static final String RESOURCE_DIR = "org/jboss/as/test/integration/ws/authentication/policy/resources/";
 
     private static final String HOST = TestSuiteEnvironment.getServerAddress();
     private static final int PORT_OFFSET = 0;
     private static final String USERNAME = "UserA";
     private static final String PASSWORD = "PassA";
-    private static final String CONTAINER = "jbossas-sts";
-    public static final String DEFAULT_HOST = getHostname();
-    public static final int DEFAULT_PORT = 8080;
+    private static final String DEFAULT_HOST = getHostname();
+    private static final int DEFAULT_PORT = 8080;
 
     private volatile ModelControllerClient modelControllerClient;
-    protected static WSTrustClient wsClient;
+    private static WSTrustClient wsClient;
     private volatile CommandContext commandCtx;
     private volatile ByteArrayOutputStream consoleOut = new ByteArrayOutputStream();
-
-    @ArquillianResource
-    private static ContainerController container;
 
     @ArquillianResource
     private static volatile Deployer deployer;
 
     @Deployment(name = PICKETLINK_STS, managed = false, testable = false)
-    @TargetsContainer(CONTAINER)
     public static Archive<?> createPicketlinkStsDeployment() {
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         WebArchive war = ShrinkWrap.create(WebArchive.class, PICKETLINK_STS + ".war");
@@ -135,7 +128,6 @@ public class AuthenticationPolicyContextTestCase {
     }
 
     @Deployment(name = PICKETLINK_STS_WS, managed = false, testable = false)
-    @TargetsContainer(CONTAINER)
     public static Archive<?> createPicketlinkStsWsDeployment() {
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         WebArchive war = ShrinkWrap.create(WebArchive.class, PICKETLINK_STS_WS + ".war");
@@ -150,7 +142,7 @@ public class AuthenticationPolicyContextTestCase {
         war.addAsWebInfResource(tccl.getResource( RESOURCE_DIR + "WEB-INF/jboss-wsse-server.xml"), "jboss-wsse-server.xml");
         war.addAsManifestResource(tccl.getResource(RESOURCE_DIR + "META-INF/jboss-deployment-structure.xml"), "jboss-deployment-structure.xml");
         war.addAsManifestResource(tccl.getResource(RESOURCE_DIR + "META-INF/jboss-webservices.xml"), "jboss-webservices.xml");
-        war.addAsResource(AuthenticationPolicyContextTestCase.class.getPackage(), "dummmy-ws-handler.xml", "org/jboss/as/test/manualmode/security/resources/dummmy-ws-handler.xml");
+        war.addAsResource(AuthenticationPolicyContextTestCase.class.getPackage(), "dummmy-ws-handler.xml", "org/jboss/as/test/integration/ws/authentication/policy/resources/dummmy-ws-handler.xml");
         return war;
     }
 
@@ -170,7 +162,6 @@ public class AuthenticationPolicyContextTestCase {
 
     @Before
     public void before() {
-        container.start(CONTAINER);
         try {
             initServerConfiguration(PICKETLINK_STS, PICKETLINK_STS_WS);
         } catch (Throwable t) {
@@ -183,7 +174,6 @@ public class AuthenticationPolicyContextTestCase {
     public void after() throws IOException {
         deployer.undeploy(PICKETLINK_STS);
         deployer.undeploy(PICKETLINK_STS_WS);
-        container.stop(CONTAINER);
     }
 
     @BeforeClass
