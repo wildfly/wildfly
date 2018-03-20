@@ -28,6 +28,8 @@ import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
+import javax.transaction.xa.XAResource;
+
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.junit.Assert;
 
@@ -52,6 +54,14 @@ public final class TxTestUtil {
             throw new RuntimeException("Can't enlist test xa resource '" + xaResource + "'", e);
         }
         return xaResource;
+    }
+
+    public static void enlistTestXAResource(Transaction txn, XAResource xaResource) {
+        try {
+            txn.enlistResource(xaResource);
+        } catch (IllegalStateException | RollbackException | SystemException e) {
+            throw new RuntimeException("Can't enlist test xa resource '" + xaResource + "'", e);
+        }
     }
 
     public static void addSynchronization(Transaction txn, TransactionCheckerSingletonRemote checker) {
