@@ -86,9 +86,20 @@ class InjectedJMSContext extends JMSContextWrapper implements Serializable {
     JMSContext getDelegate() {
         boolean inTx = isInTransaction();
         AbstractJMSContext jmsContext = inTx ? transactedJMSContext.get() : requestedJMSContext;
+
         ROOT_LOGGER.debugf("using %s to create the injected JMSContext", jmsContext, id);
         ConnectionFactory connectionFactory = getConnectionFactory();
-        return jmsContext.getContext(id, info, connectionFactory);
+        JMSContext contextInstance = jmsContext.getContext(id, info, connectionFactory);
+
+        //fix of  WFLY-9501
+        // CCM tries to clean opened connections before execution of @PreDestroy method on JMSContext - which is executed after completion, see .
+        // Correct phase to call close is afterCompletion {@see TransactionSynchronizationRegistry.registerInterposedSynchronization}
+        if(inTx) {
+            TransactedJMSContext transactedJMSContext = (TransactedJMSContext)jmsContext;
+            transactedJMSContext.registerCleanUpListener(transactionSynchronizationRegistry, contextInstance);
+        }
+
+        return contextInstance;
     }
 
     /**

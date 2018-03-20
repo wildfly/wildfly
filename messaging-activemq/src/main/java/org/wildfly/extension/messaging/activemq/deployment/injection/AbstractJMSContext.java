@@ -28,7 +28,6 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.annotation.PreDestroy;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSContext;
 
@@ -66,7 +65,6 @@ public abstract class AbstractJMSContext implements Serializable {
         return context;
     }
 
-    @PreDestroy
     void cleanUp() {
         ROOT_LOGGER.debugf("Clean up JMSContext created from %s", this);
         for (JMSContext jmsContext : contexts.values()) {
@@ -74,5 +72,4 @@ public abstract class AbstractJMSContext implements Serializable {
         }
         contexts.clear();
     }
-
 }
