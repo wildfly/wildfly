@@ -32,6 +32,7 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ObjectListAttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -878,6 +879,11 @@ public class Constants {
             .setXmlName(Driver.Tag.XA_DATASOURCE_CLASS.getLocalName())
             .setRequired(false)
             .setAllowExpression(true)
+            .build();
+
+    static final PrimitiveListAttributeDefinition DATASOURCE_CLASS_INFO = PrimitiveListAttributeDefinition.Builder.of("datasource-class-info", ModelType.OBJECT)
+            .setRequired(false)
+            .setStorageRuntime()
             .build();
 
     static final SimpleAttributeDefinition[] JDBC_DRIVER_ATTRIBUTES = {
