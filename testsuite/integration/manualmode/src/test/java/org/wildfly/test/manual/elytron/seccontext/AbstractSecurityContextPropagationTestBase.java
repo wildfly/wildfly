@@ -351,7 +351,7 @@ public abstract class AbstractSecurityContextPropagationTestBase {
      * @param httpClient client instance
      * @param url URL to make request to
      * @param token bearer token
-     * @param expectedStatus expected status code
+     * @param expectedStatusCode expected status code
      * @return response body
      */
     protected String doHttpRequestTokenAuthn(final CloseableHttpClient httpClient, final URL url, String token,
@@ -598,6 +598,36 @@ public abstract class AbstractSecurityContextPropagationTestBase {
             this.name = name;
             this.host = host;
             this.portOffset = portOffset;
+        }
+
+        public void startContainer() {
+            containerController.start(name);
+        }
+
+        public void initServerConfiguration(String configurationFile) {
+            try {
+                client = ModelControllerClient.Factory.create(host, getManagementPort());
+                commandCtx = CLITestUtil.getCommandContext(host, getManagementPort(), null, consoleOut, -1);
+                commandCtx.connectController();
+
+                File cliFile = File.createTempFile(configurationFile + "-", ".cli");
+                try (FileOutputStream fos = new FileOutputStream(cliFile)) {
+                    IOUtils.copy(ServerHolder.class.getResourceAsStream(configurationFile), fos);
+                }
+                runBatch(cliFile);
+                cliFile.delete();
+                reload();
+            } catch (Exception e) {
+                LOGGER.error("Server configuration initialization failed: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+
+        public void stopContainer() throws IOException {
+            if (containerController.isStarted(name)) {
+                client.close();
+                containerController.stop(name);
+            }
         }
 
         public void resetContainerConfiguration(ServerConfiguration config)
