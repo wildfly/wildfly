@@ -154,7 +154,7 @@ public abstract class BuildConfigurationTestBase {
             throw new RuntimeException(e);
         }
         try (BufferedReader reader = new BufferedReader(new FileReader(domainConfigFile));
-             final BufferedWriter writer = Files.newBufferedWriter(file.toPath())
+             BufferedWriter writer = Files.newBufferedWriter(file.toPath())
         ) {
             String line = reader.readLine();
             while (line != null) {

@@ -115,7 +115,7 @@ public class JAASIdentityCachingTestCase {
         final UsernamePasswordCredentials credentials = new UsernamePasswordCredentials("admin", CustomLoginModule.PASSWORD);
         credentialsProvider.setCredentials(new AuthScope(greetingUri.getHost(), greetingUri.getPort()),
                             credentials);
-        try (final CloseableHttpClient httpClient = HttpClients.createDefault()){
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()){
             final HttpGet getCounter = new HttpGet(counterUri);
             final HttpGet getGreeting = new HttpGet(greetingUri);
             HttpResponse response = httpClient.execute(getGreeting);

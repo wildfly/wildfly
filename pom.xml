@@ -74,7 +74,7 @@
           -->
         <maven.min.version>3.3.1</maven.min.version>
         <!-- use older version of checkstyle as otherwise lots of checks fail -->
-        <version.checkstyle>6.8</version.checkstyle>
+        <version.checkstyle>8.5</version.checkstyle>
         <!--
             Dependency versions. Please keep alphabetical.
 
@@ -252,7 +252,7 @@
         <version.org.wildfly.bridge.servlet-api-bridge>1.0.1.Final</version.org.wildfly.bridge.servlet-api-bridge>
         <version.org.wildfly.build-tools>1.2.9.Final</version.org.wildfly.build-tools>
         <version.org.wildfly.cdi-api-bridge>1.0.1.Final</version.org.wildfly.cdi-api-bridge>
-        <version.org.wildfly.checkstyle-config>1.0.5.Final</version.org.wildfly.checkstyle-config>
+        <version.org.wildfly.checkstyle-config>1.0.7.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.core>5.0.0.Alpha1</version.org.wildfly.core>
         <version.org.wildfly.plugin>1.2.1.Final</version.org.wildfly.plugin>
         <version.org.wildfly.http-client>1.0.12.Final</version.org.wildfly.http-client>

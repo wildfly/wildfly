@@ -207,7 +207,7 @@ public abstract class AbstractAuthenticationForwardingTestCase extends AbstractS
         final URL whoAmIServletUrl = new URL(
                 server1.getApplicationHttpUrl() + "/" + WAR_ENTRY_SERVLET_FORM + WhoAmIServlet.SERVLET_PATH);
 
-        try (final CloseableHttpClient httpClient = HttpClientBuilder.create().setRedirectStrategy(REDIRECT_STRATEGY).build()) {
+        try (CloseableHttpClient httpClient = HttpClientBuilder.create().setRedirectStrategy(REDIRECT_STRATEGY).build()) {
             assertEquals("Unexpected result from WhoAmIServlet", "admin",
                     doHttpRequestFormAuthn(httpClient, whoAmIServletUrl, true, "admin", "admin", SC_OK));
             assertEquals("Unexpected result from EntryServlet", "admin", doHttpRequest(httpClient, entryServletUrl, SC_OK));
@@ -231,7 +231,7 @@ public abstract class AbstractAuthenticationForwardingTestCase extends AbstractS
         final URL whoAmIServletUrl = new URL(
                 server1.getApplicationHttpUrl() + "/" + WAR_ENTRY_SERVLET_FORM + WhoAmIServlet.SERVLET_PATH);
 
-        try (final CloseableHttpClient httpClient = HttpClientBuilder.create().setRedirectStrategy(REDIRECT_STRATEGY).build()) {
+        try (CloseableHttpClient httpClient = HttpClientBuilder.create().setRedirectStrategy(REDIRECT_STRATEGY).build()) {
             assertEquals("Unexpected result from WhoAmIServlet", "servlet",
                     doHttpRequestFormAuthn(httpClient, whoAmIServletUrl, true, "servlet", "servlet", SC_OK));
             assertThat("Unexpected result from EntryServlet", doHttpRequest(httpClient, entryServletUrl, SC_OK),
@@ -257,7 +257,7 @@ public abstract class AbstractAuthenticationForwardingTestCase extends AbstractS
         final URL whoAmIServletUrl = new URL(
                 server1.getApplicationHttpUrl() + "/" + WAR_ENTRY_SERVLET_FORM + WhoAmIServlet.SERVLET_PATH);
 
-        try (final CloseableHttpClient httpClient = HttpClientBuilder.create().setRedirectStrategy(REDIRECT_STRATEGY).build()) {
+        try (CloseableHttpClient httpClient = HttpClientBuilder.create().setRedirectStrategy(REDIRECT_STRATEGY).build()) {
             assertEquals("Unexpected result from EntryServlet", "admin",
                     doHttpRequestFormAuthn(httpClient, entryServletUrl, true, "admin", "admin", SC_OK));
             assertEquals("Unexpected result from WhoAmIServlet", "admin", doHttpRequest(httpClient, whoAmIServletUrl, SC_OK));
@@ -282,7 +282,7 @@ public abstract class AbstractAuthenticationForwardingTestCase extends AbstractS
         final URL whoAmIServletUrl = new URL(
                 server1.getApplicationHttpUrl() + "/" + WAR_ENTRY_SERVLET_FORM + WhoAmIServlet.SERVLET_PATH);
 
-        try (final CloseableHttpClient httpClient = HttpClientBuilder.create().setRedirectStrategy(REDIRECT_STRATEGY).build()) {
+        try (CloseableHttpClient httpClient = HttpClientBuilder.create().setRedirectStrategy(REDIRECT_STRATEGY).build()) {
             assertThat("Unexpected result from EntryServlet",
                     doHttpRequestFormAuthn(httpClient, entryServletUrl, true, "servlet", "servlet", SC_OK),
                     isEjbAccessException());
@@ -300,7 +300,7 @@ public abstract class AbstractAuthenticationForwardingTestCase extends AbstractS
         final URL whoAmIServletUrl = new URL(
                 server1.getApplicationHttpUrl() + "/" + WAR_ENTRY_SERVLET_BEARER_TOKEN + WhoAmIServlet.SERVLET_PATH);
 
-        try (final CloseableHttpClient httpClient = HttpClientBuilder.create().setRedirectStrategy(REDIRECT_STRATEGY).build()) {
+        try (CloseableHttpClient httpClient = HttpClientBuilder.create().setRedirectStrategy(REDIRECT_STRATEGY).build()) {
             final String jwtToken = createJwtToken("admin");
             assertEquals("Unexpected result from WhoAmIServlet", "admin",
                     doHttpRequestTokenAuthn(httpClient, whoAmIServletUrl, jwtToken, SC_OK));
@@ -309,7 +309,7 @@ public abstract class AbstractAuthenticationForwardingTestCase extends AbstractS
         }
 
         // do the call without sufficient role in EJB (server2)
-        try (final CloseableHttpClient httpClient = HttpClientBuilder.create().setRedirectStrategy(REDIRECT_STRATEGY).build()) {
+        try (CloseableHttpClient httpClient = HttpClientBuilder.create().setRedirectStrategy(REDIRECT_STRATEGY).build()) {
             final String jwtToken = createJwtToken("servlet");
             assertThat("Unexpected result from EntryServlet",
                     doHttpRequestTokenAuthn(httpClient, entryServletUrl, jwtToken, SC_OK), isEjbAccessException());

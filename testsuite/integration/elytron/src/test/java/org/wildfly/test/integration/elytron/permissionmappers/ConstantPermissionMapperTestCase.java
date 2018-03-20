@@ -250,8 +250,8 @@ public class ConstantPermissionMapperTestCase {
         setParam(nvps, CheckIdentityPermissionServlet.PARAM_TARGET, target);
         setParam(nvps, CheckIdentityPermissionServlet.PARAM_ACTION, action);
         post.setEntity(new UrlEncodedFormEntity(nvps, StandardCharsets.UTF_8));
-        try (final CloseableHttpClient httpClient = HttpClients.createDefault()) {
-            try (final CloseableHttpResponse response = httpClient.execute(post)) {
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            try (CloseableHttpResponse response = httpClient.execute(post)) {
                 int statusCode = response.getStatusLine().getStatusCode();
                 if (statusCode == SC_FORBIDDEN && user != null) {
                     return Boolean.toString(false);

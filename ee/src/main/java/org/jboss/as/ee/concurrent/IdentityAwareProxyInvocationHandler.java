@@ -72,7 +72,7 @@ class IdentityAwareProxyInvocationHandler extends ContextProxyInvocationHandler 
         /**
          * @param cause
          */
-        public WrapperException(Throwable cause) {
+        WrapperException(Throwable cause) {
             super(cause);
         }
 

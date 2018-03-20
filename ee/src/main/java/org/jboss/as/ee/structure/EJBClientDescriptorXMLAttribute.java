@@ -22,7 +22,7 @@ public enum EJBClientDescriptorXMLAttribute {
 
     private final String name;
 
-    private EJBClientDescriptorXMLAttribute(final String name) {
+    EJBClientDescriptorXMLAttribute(final String name) {
         this.name = name;
     }
 

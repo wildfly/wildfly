@@ -162,8 +162,8 @@ public abstract class AbstractCredentialStoreTestCase {
         nvps.add(new BasicNameValuePair(ReadCredentialServlet.PARAM_CREDENTIAL_STORE, credentialStore));
         nvps.add(new BasicNameValuePair(ReadCredentialServlet.PARAM_ALIAS, alias));
         post.setEntity(new UrlEncodedFormEntity(nvps, StandardCharsets.UTF_8));
-        try (final CloseableHttpClient httpClient = HttpClients.createDefault()) {
-            try (final CloseableHttpResponse response = httpClient.execute(post)) {
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            try (CloseableHttpResponse response = httpClient.execute(post)) {
                 int statusCode = response.getStatusLine().getStatusCode();
                 assertEquals("Unexpected status code in HTTP response.", expectedStatus, statusCode);
                 body = EntityUtils.toString(response.getEntity());

@@ -283,7 +283,7 @@ public class Utils extends CoreUtils {
      * @throws Exception
      */
     public static void makeCall(String URL, String user, String pass, int expectedStatusCode) throws Exception {
-        try (final CloseableHttpClient httpClient = HttpClients.createDefault()){
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()){
             HttpGet httpget = new HttpGet(URL);
 
             HttpResponse response = httpClient.execute(httpget);
@@ -455,7 +455,7 @@ public class Utils extends CoreUtils {
                 .register(AuthSchemes.BASIC, new BasicSchemeFactory(Consts.UTF_8))
                 .register(AuthSchemes.DIGEST, new DigestSchemeFactory(Consts.UTF_8))
                 .build();
-        try (final CloseableHttpClient httpClient = HttpClientBuilder.create()
+        try (CloseableHttpClient httpClient = HttpClientBuilder.create()
                 .setDefaultAuthSchemeRegistry(authSchemeRegistry)
                 .build()){
             final HttpGet httpGet = new HttpGet(url.toURI());
@@ -526,7 +526,7 @@ public class Utils extends CoreUtils {
 
         final Krb5LoginConfiguration krb5Configuration = new Krb5LoginConfiguration(getLoginConfiguration());
 
-        try (final CloseableHttpClient httpClient = HttpClientBuilder.create()
+        try (CloseableHttpClient httpClient = HttpClientBuilder.create()
                         .setDefaultAuthSchemeRegistry(authSchemeRegistry)
                         .setDefaultCredentialsProvider(credentialsProvider)
                         .build()){
@@ -692,7 +692,7 @@ public class Utils extends CoreUtils {
         LOGGER.trace("Requesting URL: " + url);
 
         String unauthorizedPageBody = null;
-        try (final CloseableHttpClient httpClient = HttpClientBuilder.create().setRedirectStrategy(REDIRECT_STRATEGY).build()) {
+        try (CloseableHttpClient httpClient = HttpClientBuilder.create().setRedirectStrategy(REDIRECT_STRATEGY).build()) {
             final HttpGet httpGet = new HttpGet(url);
             HttpResponse response = httpClient.execute(httpGet);
             int statusCode = response.getStatusLine().getStatusCode();
@@ -963,7 +963,7 @@ public class Utils extends CoreUtils {
      */
     public static String makeCall(URI uri, int expectedStatusCode) throws Exception {
 
-        try (final CloseableHttpClient httpClient = HttpClients.createDefault()){
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()){
             final HttpGet httpget = new HttpGet(uri);
             final HttpResponse response = httpClient.execute(httpget);
             int statusCode = response.getStatusLine().getStatusCode();
