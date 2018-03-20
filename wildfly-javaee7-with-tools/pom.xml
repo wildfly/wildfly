@@ -23,7 +23,7 @@
     <parent>
         <groupId>org.wildfly.bom</groupId>
         <artifactId>wildfly</artifactId>
-        <version>13.0.0.Alpha3-SNAPSHOT</version>
+        <version>13.0.0.Alpha3</version>
     </parent>
 
     <artifactId>wildfly-javaee7-with-tools</artifactId>
@@ -53,7 +53,7 @@
             <dependency>
                 <groupId>org.wildfly.bom</groupId>
                 <artifactId>wildfly-javaee7</artifactId>
-                <version>13.0.0.Alpha3-SNAPSHOT</version>
+                <version>13.0.0.Alpha3</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
