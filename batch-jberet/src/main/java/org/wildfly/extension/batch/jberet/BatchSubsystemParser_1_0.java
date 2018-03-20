@@ -51,8 +51,6 @@ import org.wildfly.extension.batch.jberet.thread.pool.BatchThreadPoolResourceDef
  */
 public class BatchSubsystemParser_1_0 implements XMLStreamConstants, XMLElementReader<List<ModelNode>> {
 
-    public static final BatchSubsystemParser_1_0 INSTANCE = new BatchSubsystemParser_1_0();
-
     private final Map<Element, SimpleAttributeDefinition> attributeElements;
 
     public BatchSubsystemParser_1_0() {

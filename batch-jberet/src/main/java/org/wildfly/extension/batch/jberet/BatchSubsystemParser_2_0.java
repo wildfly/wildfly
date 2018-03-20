@@ -28,8 +28,6 @@ import org.jboss.staxmapper.XMLElementReader;
  */
 class BatchSubsystemParser_2_0 extends BatchSubsystemParser_1_0 implements XMLStreamConstants, XMLElementReader<List<ModelNode>> {
 
-    public static final BatchSubsystemParser_2_0 INSTANCE = new BatchSubsystemParser_2_0();
-
     public BatchSubsystemParser_2_0() {
         super(Collections.singletonMap(Element.SECURITY_DOMAIN, BatchSubsystemDefinition.SECURITY_DOMAIN));
     }

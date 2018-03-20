@@ -91,25 +91,6 @@ public class JBossJPAParser  {
         UNKNOWN
     }
 
-    enum Attribute {
-        INHERITANCE,
-        // default unknown attribute
-        UNKNOWN;
-
-        private static final Map<QName, Attribute> attributes;
-
-        static {
-            Map<QName, Attribute> attributesMap = new HashMap<QName, Attribute>();
-            attributesMap.put(new QName(INHERITANCE_CONSTANT), INHERITANCE);
-            attributes = attributesMap;
-        }
-
-        static Attribute of(QName qName) {
-            final Attribute attribute = attributes.get(qName);
-            return attribute == null ? UNKNOWN : attribute;
-        }
-    }
-
     private JBossJPAParser() {
     }
 
