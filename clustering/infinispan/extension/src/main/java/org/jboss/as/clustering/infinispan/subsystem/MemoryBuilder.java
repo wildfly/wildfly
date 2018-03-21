@@ -25,6 +25,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.MemoryConfiguration;
 import org.infinispan.configuration.cache.StorageType;
+import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.eviction.EvictionType;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
@@ -61,6 +62,7 @@ public class MemoryBuilder extends ComponentBuilder<MemoryConfiguration> {
         return new ConfigurationBuilder().memory()
                 .size(this.size)
                 .storageType(this.storageType)
+                .evictionStrategy(this.size > 0 ? EvictionStrategy.REMOVE : EvictionStrategy.MANUAL)
                 .evictionType(this.evictionType)
                 .addressCount(this.capacity)
                 .create();
