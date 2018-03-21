@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="messaging-activemq" xmlns="urn:jboss:galleon:feature-group:1.0">
+    <feature spec="subsystem.messaging-activemq">
+        <feature spec="subsystem.messaging-activemq.server">
+            <param name="server" value="default"/>
+            <feature spec="subsystem.messaging-activemq.server.http-connector">
+                <param name="http-connector" value="http-connector"/>
+                <param name="socket-binding" value="http"/>
+                <param name="endpoint" value="http-acceptor"/>
+            </feature>
+            <feature spec="subsystem.messaging-activemq.server.http-connector">
+                <param name="http-connector" value="http-connector-throughput"/>
+                <param name="socket-binding" value="http"/>
+                <param name="endpoint" value="http-acceptor-throughput"/>
+                <param name="params" value="{batch-delay=50}"/>
+            </feature>
+            <feature spec="subsystem.messaging-activemq.server.connection-factory">
+                <param name="connection-factory" value="InVmConnectionFactory"/>
+                <param name="connectors" value="[in-vm]"/>
+                <param name="entries" value="[java:/ConnectionFactory]"/>
+            </feature>
+            <feature spec="subsystem.messaging-activemq.server.connection-factory">
+                <param name="connection-factory" value="RemoteConnectionFactory"/>
+                <param name="connectors" value="[http-connector]"/>
+                <param name="entries" value="[java:jboss/exported/jms/RemoteConnectionFactory]"/>
+            </feature>
+            <feature spec="subsystem.messaging-activemq.server.http-acceptor">
+                <param name="http-acceptor" value="http-acceptor"/>
+                <param name="http-listener" value="default"/>
+            </feature>
+            <feature spec="subsystem.messaging-activemq.server.http-acceptor">
+                <param name="http-acceptor" value="http-acceptor-throughput"/>
+                <param name="http-listener" value="default"/>
+                <param name="params" value="{batch-delay=50,direct-deliver=false}"/>
+            </feature>
+            <feature spec="subsystem.messaging-activemq.server.in-vm-acceptor">
+                <param name="in-vm-acceptor" value="in-vm"/>
+                <param name="server-id" value="0"/>
+                <param name="params" value="{buffer-pooling=false}"/>
+            </feature>
+            <feature spec="subsystem.messaging-activemq.server.in-vm-connector">
+                <param name="in-vm-connector" value="in-vm"/>
+                <param name="server-id" value="0"/>
+                <param name="params" value="{buffer-pooling=false}"/>
+            </feature>
+            <feature spec="subsystem.messaging-activemq.server.jms-queue">
+                <param name="jms-queue" value="ExpiryQueue"/>
+                <param name="entries" value="[java:/jms/queue/ExpiryQueue]"/>
+            </feature>
+            <feature spec="subsystem.messaging-activemq.server.jms-queue">
+                <param name="jms-queue" value="DLQ"/>
+                <param name="entries" value="[java:/jms/queue/DLQ]"/>
+            </feature>
+            <feature spec="subsystem.messaging-activemq.server.pooled-connection-factory">
+                <param name="pooled-connection-factory" value="activemq-ra"/>
+                <param name="entries" value="[java:/JmsXA,java:jboss/DefaultJMSConnectionFactory]"/>
+                <param name="connectors" value="[in-vm]"/>
+                <param name="transaction" value="xa"/>
+            </feature>
+            <feature spec="subsystem.messaging-activemq.server.security-setting">
+                <param name="security-setting" value="#"/>
+                <feature spec="subsystem.messaging-activemq.server.security-setting.role">
+                    <param name="role" value="guest"/>
+                    <param name="consume" value="true"/>
+                    <param name="send" value="true"/>
+                    <param name="create-non-durable-queue" value="true"/>
+                    <param name="delete-non-durable-queue" value="true"/>
+                </feature>
+            </feature>
+            <feature spec="subsystem.messaging-activemq.server.address-setting">
+                <param name="address-setting" value="#"/>
+                <param name="dead-letter-address" value="jms.queue.DLQ"/>
+                <param name="expiry-address" value="jms.queue.ExpiryQueue"/>
+                <param name="max-size-bytes" value="10485760"/>
+                <param name="page-size-bytes" value="2097152"/>
+                <param name="message-counter-history-day-limit" value="10"/>
+            </feature>
+        </feature>
+    </feature>
+    <feature spec="subsystem.ejb3">
+        <param name="default-resource-adapter-name" value="${ejb.resource-adapter-name:activemq-ra.rar}"/>
+        <param name="default-mdb-instance-pool" value="mdb-strict-max-pool"/>
+    </feature>
+    <feature spec="subsystem.ee">
+        <feature spec="subsystem.ee.service.default-bindings">
+            <param name="jms-connection-factory" value="java:jboss/DefaultJMSConnectionFactory"/>
+        </feature>
+    </feature>
+</feature-group-spec>

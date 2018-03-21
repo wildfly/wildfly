@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="modcluster" xmlns="urn:jboss:galleon:feature-group:1.0">
+    <feature spec="subsystem.modcluster">
+        <feature spec="subsystem.modcluster.mod-cluster-config.configuration">
+            <param name="advertise-socket" value="modcluster"/>
+            <param name="connector" value="ajp"/>
+            <feature spec="subsystem.modcluster.mod-cluster-config.configuration.dynamic-load-provider.configuration">
+                <feature spec="subsystem.modcluster.mod-cluster-config.configuration.dynamic-load-provider.configuration.load-metric">
+                    <param name="load-metric" value="cpu"/>
+                    <param name="type" value="cpu"/>
+                </feature>
+            </feature>
+        </feature>
+    </feature>
+</feature-group-spec>

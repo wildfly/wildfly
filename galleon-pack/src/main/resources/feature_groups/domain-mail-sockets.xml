@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="domain-mail-sockets" xmlns="urn:jboss:galleon:feature-group:1.0">
+    <feature spec="domain.socket-binding-group.remote-destination-outbound-socket-binding">
+        <param name="remote-destination-outbound-socket-binding" value="mail-smtp"/>
+        <param name="host" value="localhost"/>
+        <param name="port" value="25"/>
+    </feature>
+</feature-group-spec>

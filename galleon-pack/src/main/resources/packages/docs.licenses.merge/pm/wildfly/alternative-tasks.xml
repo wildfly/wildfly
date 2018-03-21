@@ -1,0 +1,6 @@
+<?xml version="1.0" ?>
+
+<tasks xmlns="urn:wildfly:wildfly-feature-pack-tasks:2.0">
+    <delete path="docs/licenses/licenses.html"/>
+    <transform stylesheet="docs/licenses/licenses.xsl" src="docs/licenses/licenses.xml" output="docs/licenses/licenses.html" phase="FINALIZING"/>
+</tasks>

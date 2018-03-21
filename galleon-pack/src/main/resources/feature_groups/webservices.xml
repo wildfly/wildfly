@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="webservices" xmlns="urn:jboss:galleon:feature-group:1.0">
+    <feature spec="subsystem.webservices">
+        <param name="wsdl-host" value="${jboss.bind.address:127.0.0.1}"/>
+        <feature spec="subsystem.webservices.client-config">
+            <param name="client-config" value="Standard-Client-Config"/>
+        </feature>
+        <feature spec="subsystem.webservices.endpoint-config">
+            <param name="endpoint-config" value="Standard-Endpoint-Config"/>
+        </feature>
+        <feature spec="subsystem.webservices.endpoint-config">
+            <param name="endpoint-config" value="Recording-Endpoint-Config"/>
+            <feature spec="subsystem.webservices.endpoint-config.pre-handler-chain">
+                <param name="pre-handler-chain" value="recording-handlers" />
+                <param name="protocol-bindings" value="##SOAP11_HTTP ##SOAP11_HTTP_MTOM ##SOAP12_HTTP ##SOAP12_HTTP_MTOM"/>
+                <feature spec="subsystem.webservices.endpoint-config.pre-handler-chain.handler">
+                    <param name="handler" value="RecordingHandler"/>
+                    <param name="class" value="org.jboss.ws.common.invocation.RecordingServerHandler"/>
+                </feature>
+            </feature>
+        </feature>
+    </feature>
+</feature-group-spec>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="standalone-profile" xmlns="urn:jboss:galleon:feature-group:1.0">
+
+    <origin name="org.wildfly.core:wildfly-core-galleon-pack">
+        <feature-group name="standalone-profile">
+            <exclude spec="subsystem.discovery"/>
+        </feature-group>
+    </origin>
+
+    <feature-group name="deployment-scanner">
+        <include feature-id="subsystem.deployment-scanner.scanner:scanner=default">
+            <param name="path" value="deployments" />
+            <param name="relative-to" value="jboss.server.base.dir" />
+            <param name="scan-interval" value="5000" />
+            <param name="runtime-failure-causes-rollback" value="${jboss.deployment.scanner.rollback.on.failure:false}"/>
+        </include>
+    </feature-group>
+
+    <feature-group name="basic-profile"/>
+
+</feature-group-spec>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="transactions-sockets" xmlns="urn:jboss:galleon:feature-group:1.0">
+    <feature spec="socket-binding-group.socket-binding">
+        <param name="socket-binding" value="txn-recovery-environment"/>
+        <param name="port" value="4712"/>
+    </feature>
+    <feature spec="socket-binding-group.socket-binding">
+        <param name="socket-binding" value="txn-status-manager"/>
+        <param name="port" value="4713"/>
+    </feature>
+</feature-group-spec>

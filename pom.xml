@@ -55,15 +55,18 @@
         <module>batch-jberet</module>
         <module>bean-validation</module>
         <module>build</module>
+        <module>build-legacy</module>
         <module>client/shade</module>
         <module>clustering</module>
         <module>component-matrix-builder</module>
         <module>connector</module>
         <module>dist</module>
+        <module>dist-legacy</module>
         <module>ee</module>
         <module>ee-security</module>
         <module>ejb3</module>
         <module>feature-pack</module>
+        <module>galleon-pack</module>
         <module>iiop-openjdk</module>
         <module>jaxrs</module>
         <module>jdr</module>
@@ -89,9 +92,12 @@
         <module>transactions</module>
         <module>undertow</module>
         <module>servlet-build</module>
+        <module>servlet-build-legacy</module>
         <module>web-common</module>
         <module>servlet-dist</module>
+        <module>servlet-dist-legacy</module>
         <module>servlet-feature-pack</module>
+        <module>servlet-galleon-pack</module>
         <module>webservices</module>
         <module>weld</module>
         <module>xts</module>
@@ -154,6 +160,7 @@
         <version.checkstyle>8.5</version.checkstyle>
         <version.help.plugin>2.2</version.help.plugin>
         <version.jacoco.plugin>0.7.9</version.jacoco.plugin>
+        <version.org.jboss.galleon>1.0.0.CR2</version.org.jboss.galleon>
 
         <!-- TODO This is an unusual case where we override the version only for this client. The parent pom version is
                   using the 1.1 version for the Java EE 8 tech preview though the client still currently expects 1.0.
@@ -164,6 +171,7 @@
         <version.org.wildfly.checkstyle-config>1.0.7.Final</version.org.wildfly.checkstyle-config>
 
         <version.org.wildfly.component-matrix-plugin>1.0.1.Final</version.org.wildfly.component-matrix-plugin>
+        <version.org.wildfly.galleon-plugins>1.0.0.CR3</version.org.wildfly.galleon-plugins>
         <version.org.wildfly.maven.plugins>1.0.1</version.org.wildfly.maven.plugins>
         <version.org.wildfly.plugin>1.2.1.Final</version.org.wildfly.plugin>
         <!-- Non-default maven plugin versions and configuration -->
@@ -733,6 +741,20 @@
 
             <dependency>
                 <groupId>${project.groupId}</groupId>
+                <artifactId>wildfly-galleon-pack</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>wildfly-galleon-pack</artifactId>
+                <version>${project.version}</version>
+                <type>zip</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-iiop-openjdk</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -897,6 +919,20 @@
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-servlet-feature-pack</artifactId>
+                <version>${project.version}</version>
+                <type>zip</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>wildfly-servlet-galleon-pack</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>wildfly-servlet-galleon-pack</artifactId>
                 <version>${project.version}</version>
                 <type>zip</type>
             </dependency>
@@ -6597,6 +6633,11 @@
                     <version>${version.help.plugin}</version>
                 </plugin>
                 <plugin>
+                    <groupId>org.jboss.galleon</groupId>
+                    <artifactId>galleon-maven-plugins</artifactId>
+                    <version>${version.org.jboss.galleon}</version>
+                </plugin>
+                <plugin>
                     <groupId>org.wildfly.build</groupId>
                     <artifactId>wildfly-feature-pack-build-maven-plugin</artifactId>
                     <version>${version.org.wildfly.build-tools}</version>
@@ -6605,6 +6646,11 @@
                     <groupId>org.wildfly.build</groupId>
                     <artifactId>wildfly-server-provisioning-maven-plugin</artifactId>
                     <version>${version.org.wildfly.build-tools}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.wildfly.galleon-plugins</groupId>
+                    <artifactId>wildfly-galleon-maven-plugins</artifactId>
+                    <version>${version.org.wildfly.galleon-plugins}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>

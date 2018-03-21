@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="ha-sockets" xmlns="urn:jboss:galleon:feature-group:1.0">
+    <feature-group name="jgroups-sockets"/>
+    <feature-group name="modcluster-sockets"/>
+</feature-group-spec>

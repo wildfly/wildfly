@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="batch-jberet" xmlns="urn:jboss:galleon:feature-group:1.0">
+    <feature spec="subsystem.batch-jberet">
+        <param name="default-thread-pool" value="batch"/>
+        <param name="default-job-repository" value="in-memory"/>
+        <feature spec="subsystem.batch-jberet.in-memory-job-repository">
+            <param name="in-memory-job-repository" value="in-memory" />
+        </feature>
+        <feature spec="subsystem.batch-jberet.thread-pool">
+            <param name="thread-pool" value="batch" />
+            <param name="max-threads" value="10" />
+            <param name="keepalive-time" value="{time=30,unit=SECONDS}"/>
+        </feature>
+    </feature>
+    <feature spec="subsystem.elytron.permission-set.permissions">
+        <param name="subsystem" value="elytron"/>
+        <param name="permission-set" value="default-permissions"/>
+        <param name="module" value="org.wildfly.extension.batch.jberet"/>
+        <param name="class-name" value="org.wildfly.extension.batch.jberet.deployment.BatchPermission"/>
+        <param name="target-name" value="*"/>
+    </feature>
+</feature-group-spec>

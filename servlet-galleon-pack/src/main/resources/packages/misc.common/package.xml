@@ -1,0 +1,13 @@
+<?xml version="1.0" ?>
+
+<package-spec xmlns="urn:jboss:galleon:package:1.0" name="misc.common">
+    <dependencies>
+        <package name="LICENSE.txt"/>
+        <package name="README.txt"/>
+        <package name="copyright.txt"/>
+        <package name="welcome-content"/>
+        <origin name="org.wildfly.core:wildfly-core-galleon-pack">
+            <package name="misc.common"/>
+        </origin>
+    </dependencies>
+</package-spec>

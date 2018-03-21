@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="security" xmlns="urn:jboss:galleon:feature-group:1.0">
+    <feature spec="subsystem.security">
+        <feature spec="subsystem.security.security-domain">
+            <param name="security-domain" value="other"/>
+            <param name="cache-type" value="default"/>
+            <feature spec="subsystem.security.security-domain.authentication.classic">
+                <feature spec="subsystem.security.security-domain.authentication.classic.login-module">
+                    <param name="login-module" value="Remoting"/>
+                    <param name="code" value="Remoting"/>
+                    <param name="flag" value="optional"/>
+                    <param name="module-options" value="{password-stacking=useFirstPass}"/>
+                </feature>
+                <feature spec="subsystem.security.security-domain.authentication.classic.login-module">
+                    <param name="login-module" value="RealmDirect"/>
+                    <param name="code" value="RealmDirect"/>
+                    <param name="flag" value="required"/>
+                    <param name="module-options" value="{password-stacking=useFirstPass}"/>
+                </feature>
+            </feature>
+        </feature>
+    </feature>
+</feature-group-spec>

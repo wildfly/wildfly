@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="datasources" xmlns="urn:jboss:galleon:feature-group:1.0">
+    <feature spec="subsystem.datasources">
+        <feature spec="subsystem.datasources.jdbc-driver">
+            <param name="jdbc-driver" value="h2"/>
+            <param name="driver-name" value="h2"/>
+            <param name="driver-module-name" value="com.h2database.h2"/>
+            <param name="driver-xa-datasource-class-name" value="org.h2.jdbcx.JdbcDataSource"/>
+        </feature>
+        <feature spec="subsystem.datasources.data-source">
+            <param name="data-source" value="ExampleDS"/>
+            <param name="enabled" value="true"/>
+            <param name="use-java-context" value="true"/>
+            <param name="jndi-name" value="java:jboss/datasources/ExampleDS"/>
+            <param name="data-source" value="ExampleDS"/>
+            <param name="connection-url" value="&quot;jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE&quot;"/>
+            <param name="driver-name" value="h2"/>
+            <param name="user-name" value="sa"/>
+            <param name="password" value="sa"/>
+        </feature>
+    </feature>
+
+    <feature spec="subsystem.ee.service.default-bindings">
+        <param name="datasource" value="java:jboss/datasources/ExampleDS"/>
+    </feature>
+</feature-group-spec>

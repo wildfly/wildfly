@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="standalone-profile" xmlns="urn:jboss:galleon:feature-group:1.0">
+
+    <origin name="org.wildfly:wildfly-servlet-galleon-pack">
+        <feature-group name="standalone-profile"/>
+    </origin>
+
+    <feature-group name="basic-profile"/>
+
+</feature-group-spec>
