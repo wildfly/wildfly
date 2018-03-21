@@ -107,11 +107,13 @@ public class ProtocolRegistration implements Registration<ManagementResourceRegi
     }
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-
-        ProtocolResourceDefinition.buildTransformation(version, parent);
+        ProtocolResourceDefinition.addTransformations(version, parent.addChildResource(ProtocolResourceDefinition.WILDCARD_PATH));
 
         for (MulticastProtocol protocol : EnumSet.allOf(MulticastProtocol.class)) {
-            SocketBindingProtocolResourceDefinition.addTransformations(version, parent.addChildResource(ProtocolResourceDefinition.pathElement(protocol.name())));
+            PathElement path = ProtocolResourceDefinition.pathElement(protocol.name());
+            if (!JGroupsModel.VERSION_5_0_0.requiresTransformation(version)) {
+                SocketBindingProtocolResourceDefinition.addTransformations(version, parent.addChildResource(path));
+            }
         }
 
         for (JdbcProtocol protocol : EnumSet.allOf(JdbcProtocol.class)) {

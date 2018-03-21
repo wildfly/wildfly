@@ -46,7 +46,7 @@
             </transport>
             <socket-protocol type="MPING" module="org.jgroups" socket-binding="jgroups-mping"/>
             <protocol type="MERGE3"/>
-            <protocol type="FD_SOCK" socket-binding="jgroups-tcp-fd"/>
+            <protocol type="FD_SOCK"/>
             <protocol type="FD"/>
             <protocol type="VERIFY_SUSPECT"/>
             <protocol type="pbcast.NAKACK2"/>

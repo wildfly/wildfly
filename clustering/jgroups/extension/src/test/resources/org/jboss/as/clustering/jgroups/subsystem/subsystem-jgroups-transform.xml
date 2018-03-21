@@ -42,7 +42,7 @@
                 <property name="receive_on_all_interfaces">true</property>
             </socket-protocol>
             <protocol type="MERGE3"/>
-            <protocol type="FD_SOCK" socket-binding="jgroups-tcp-fd"/>
+            <protocol type="FD_SOCK"/>
             <protocol type="FD"/>
             <protocol type="VERIFY_SUSPECT"/>
             <protocol type="pbcast.NAKACK2"/>
