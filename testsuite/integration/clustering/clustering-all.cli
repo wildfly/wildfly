@@ -9,6 +9,9 @@ embed-server --server-config=standalone-ha.xml
 
 /subsystem=logging/logger=org.jgroups:add(level=TRACE)
 
+/subsystem=jgroups/stack=tcp/protocol=pbcast.GMS:write-attribute(name=properties,value={join_timeout=10000})
+/subsystem=jgroups/stack=udp/protocol=pbcast.GMS:write-attribute(name=properties,value={join_timeout=10000})
+
 stop-embedded-server
 
 
@@ -22,5 +25,8 @@ embed-server --server-config=standalone-full-ha.xml
 /subsystem=jgroups/stack=tcp/protocol=TCPPING:add(add-index=0)
 
 /subsystem=logging/logger=org.jgroups:add(level=TRACE)
+
+/subsystem=jgroups/stack=tcp/protocol=pbcast.GMS:write-attribute(name=properties,value={join_timeout=10000})
+/subsystem=jgroups/stack=udp/protocol=pbcast.GMS:write-attribute(name=properties,value={join_timeout=10000})
 
 stop-embedded-server
