@@ -57,10 +57,11 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class SingletonServiceTestCase {
+    private static final String MODULE_NAME = SingletonServiceTestCase.class.getSimpleName();
 
     @Deployment(testable = false)
     public static Archive<?> deployment() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, "singleton.war");
+        WebArchive war = ShrinkWrap.create(WebArchive.class, MODULE_NAME + ".war");
         war.addPackage(NodeService.class.getPackage());
         war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.as.server\n"));
         war.addAsManifestResource(createPermissionsXmlAsset(

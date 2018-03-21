@@ -32,7 +32,9 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 
 public class CoarseWebFailoverTestCase extends AbstractWebFailoverTestCase {
-    private static final String DEPLOYMENT_NAME = "coarse-distributable.war";
+
+    private static final String MODULE_NAME = CoarseWebFailoverTestCase.class.getSimpleName();
+    private static final String DEPLOYMENT_NAME = MODULE_NAME + ".war";
 
     public CoarseWebFailoverTestCase() {
         super(DEPLOYMENT_NAME, TransactionMode.TRANSACTIONAL);

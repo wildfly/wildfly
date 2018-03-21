@@ -59,6 +59,8 @@ import org.junit.runner.RunWith;
 @ServerSetup(WebSecurityDomainSetup.class)
 public class BasicAuthenticationWebFailoverTestCase extends AbstractClusteringTestCase {
 
+    private static final String MODULE_NAME = BasicAuthenticationWebFailoverTestCase.class.getSimpleName();
+
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(NODE_1)
     public static Archive<?> deployment0() {
@@ -72,7 +74,7 @@ public class BasicAuthenticationWebFailoverTestCase extends AbstractClusteringTe
     }
 
     private static Archive<?> getDeployment() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, "basic-authentication.war");
+        WebArchive war = ShrinkWrap.create(WebArchive.class, MODULE_NAME + ".war");
         war.addClass(SecureServlet.class);
         war.setWebXML(SecureServlet.class.getPackage(), "web-basic.xml");
         war.addAsWebInfResource(SecureServlet.class.getPackage(), "jboss-web.xml", "jboss-web.xml");

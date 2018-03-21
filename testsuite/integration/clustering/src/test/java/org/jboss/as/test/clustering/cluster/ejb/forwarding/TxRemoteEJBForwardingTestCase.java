@@ -22,21 +22,11 @@
 
 package org.jboss.as.test.clustering.cluster.ejb.forwarding;
 
-import javax.naming.NamingException;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.as.test.clustering.ejb.EJBDirectory;
-import org.jboss.as.test.clustering.ejb.NamingEJBDirectory;
-import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
-import org.jboss.as.test.clustering.cluster.ejb.forwarding.bean.common.CommonStatefulSB;
-import org.jboss.as.test.clustering.cluster.ejb.forwarding.bean.forwarding.AbstractForwardingStatefulSBImpl;
 import org.jboss.as.test.clustering.cluster.ejb.forwarding.bean.forwarding.ForwardingStatefulSBImpl;
-import org.jboss.as.test.clustering.cluster.ejb.forwarding.bean.stateful.RemoteStatefulSB;
+import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.wildfly.common.function.ExceptionSupplier;
 
 /**
  * Tests concurrent fail-over with a managed transaction context on the forwarder.
@@ -45,38 +35,21 @@ import org.wildfly.common.function.ExceptionSupplier;
  */
 public class TxRemoteEJBForwardingTestCase extends AbstractRemoteEJBForwardingTestCase {
 
-    public static final String MODULE_NAME = "forwarder-tx";
+    public static final String MODULE_NAME = TxRemoteEJBForwardingTestCase.class.getSimpleName();
 
     public TxRemoteEJBForwardingTestCase() {
-        this(() -> new RemoteEJBDirectory(MODULE_NAME));
-    }
-
-    TxRemoteEJBForwardingTestCase(ExceptionSupplier<EJBDirectory, NamingException> directorySupplier) {
-        super(directorySupplier, ForwardingStatefulSBImpl.class.getSimpleName());
+        super(() -> new RemoteEJBDirectory(MODULE_NAME), ForwardingStatefulSBImpl.class.getSimpleName());
     }
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(NODE_1)
-    public static Archive<?> deployment0() {
-        return createForwardingDeployment();
+    public static Archive<?> deployment1() {
+        return createForwardingDeployment(MODULE_NAME, true);
     }
 
     @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
     @TargetsContainer(NODE_2)
-    public static Archive<?> deployment1() {
-        return createForwardingDeployment();
-    }
-
-    private static Archive<?> createForwardingDeployment() {
-        JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
-        ejbJar.addClass(CommonStatefulSB.class);
-        ejbJar.addClass(RemoteStatefulSB.class);
-        // the forwarding classes
-        ejbJar.addClass(AbstractForwardingStatefulSBImpl.class);
-        ejbJar.addClass(ForwardingStatefulSBImpl.class);
-        ejbJar.addClasses(EJBDirectory.class, NamingEJBDirectory.class, RemoteEJBDirectory.class);
-        // remote outbound connection configuration
-        ejbJar.addAsManifestResource(AbstractRemoteEJBForwardingTestCase.class.getPackage(), "jboss-ejb-client.xml", "jboss-ejb-client.xml");
-        return ejbJar;
+    public static Archive<?> deployment2() {
+        return createForwardingDeployment(MODULE_NAME, true);
     }
 }

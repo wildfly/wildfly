@@ -39,8 +39,12 @@ import org.jboss.as.test.clustering.CLIServerSetupTask;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.ejb.forwarding.bean.common.CommonStatefulSB;
 import org.jboss.as.test.clustering.cluster.ejb.forwarding.bean.forwarding.AbstractForwardingStatefulSBImpl;
+import org.jboss.as.test.clustering.cluster.ejb.forwarding.bean.forwarding.ForwardingStatefulSBImpl;
+import org.jboss.as.test.clustering.cluster.ejb.forwarding.bean.forwarding.NonTxForwardingStatefulSBImpl;
 import org.jboss.as.test.clustering.cluster.ejb.forwarding.bean.stateful.RemoteStatefulSB;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
+import org.jboss.as.test.clustering.ejb.NamingEJBDirectory;
+import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
@@ -104,7 +108,24 @@ public abstract class AbstractRemoteEJBForwardingTestCase extends AbstractCluste
         return createNonForwardingDeployment();
     }
 
-    private static Archive<?> createNonForwardingDeployment() {
+    public static Archive<?> createForwardingDeployment(String moduleName, boolean tx) {
+        JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, moduleName + ".jar");
+        ejbJar.addClass(CommonStatefulSB.class);
+        ejbJar.addClass(RemoteStatefulSB.class);
+        // the forwarding classes
+        ejbJar.addClass(AbstractForwardingStatefulSBImpl.class);
+        if (tx) {
+            ejbJar.addClass(ForwardingStatefulSBImpl.class);
+        } else {
+            ejbJar.addClass(NonTxForwardingStatefulSBImpl.class);
+        }
+        ejbJar.addClasses(EJBDirectory.class, NamingEJBDirectory.class, RemoteEJBDirectory.class);
+        // remote outbound connection configuration
+        ejbJar.addAsManifestResource(AbstractRemoteEJBForwardingTestCase.class.getPackage(), "jboss-ejb-client.xml", "jboss-ejb-client.xml");
+        return ejbJar;
+    }
+
+    public static Archive<?> createNonForwardingDeployment() {
         JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, AbstractForwardingStatefulSBImpl.MODULE_NAME + ".jar");
         ejbJar.addPackage(CommonStatefulSB.class.getPackage());
         ejbJar.addPackage(RemoteStatefulSB.class.getPackage());

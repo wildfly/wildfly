@@ -35,27 +35,27 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
  */
 public class SingletonDeploymentDescriptorTestCase extends SingletonDeploymentTestCase {
 
-    private static final String DEPLOYMENT_NAME = "singleton-deployment-descriptor";
+    private static final String MODULE_NAME = SingletonDeploymentDescriptorTestCase.class.getSimpleName();
 
     public SingletonDeploymentDescriptorTestCase() {
-        super(DEPLOYMENT_NAME);
+        super(MODULE_NAME);
     }
 
-    @Deployment(name = SINGLETON_DEPLOYMENT_1, managed = false, testable = false)
+    @Deployment(name = DEPLOYMENT_HELPER_1, managed = false, testable = false)
     @TargetsContainer(NODE_1)
     public static Archive<?> deployment0() {
         return createDeployment();
     }
 
-    @Deployment(name = SINGLETON_DEPLOYMENT_2, managed = false, testable = false)
+    @Deployment(name = DEPLOYMENT_HELPER_2, managed = false, testable = false)
     @TargetsContainer(NODE_2)
     public static Archive<?> deployment1() {
         return createDeployment();
     }
 
     private static Archive<?> createDeployment() {
-        EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, DEPLOYMENT_NAME + ".ear");
-        WebArchive war = ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME + ".war");
+        EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, MODULE_NAME + ".ear");
+        WebArchive war = ShrinkWrap.create(WebArchive.class, MODULE_NAME + ".war");
         war.addPackage(TraceServlet.class.getPackage());
         ear.addAsModule(war);
         ear.addAsManifestResource(SingletonDeploymentDescriptorTestCase.class.getPackage(), "singleton-deployment.xml", "singleton-deployment.xml");

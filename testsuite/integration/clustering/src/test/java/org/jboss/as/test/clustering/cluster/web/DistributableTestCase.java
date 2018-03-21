@@ -63,22 +63,24 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class DistributableTestCase extends AbstractClusteringTestCase {
 
+    private static final String MODULE_NAME = DistributableTestCase.class.getSimpleName();
+
     private static final int REQUEST_DURATION = 10000;
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(NODE_1)
-    public static Archive<?> deployment0() {
+    public static Archive<?> deployment1() {
         return getDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
     @TargetsContainer(NODE_2)
-    public static Archive<?> deployment1() {
+    public static Archive<?> deployment2() {
         return getDeployment();
     }
 
     private static Archive<?> getDeployment() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, "distributable.war");
+        WebArchive war = ShrinkWrap.create(WebArchive.class, MODULE_NAME + ".war");
         war.addClasses(SimpleServlet.class, Mutable.class);
         war.setWebXML(DistributableTestCase.class.getPackage(), "web.xml");
         return war;

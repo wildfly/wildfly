@@ -20,7 +20,7 @@ import org.junit.runner.RunWith;
 
 @RunWith(Arquillian.class)
 public class ServiceProviderRegistrationTestCase extends AbstractClusteringTestCase {
-    private static final String MODULE_NAME = "service-provider-registration";
+    private static final String MODULE_NAME = ServiceProviderRegistrationTestCase.class.getSimpleName();
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(NODE_1)

@@ -56,7 +56,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class RemoteStatefulEJBConcurrentFailoverTestCase extends AbstractClusteringTestCase {
-    private static final String MODULE_NAME = "remote-stateful-ejb-concurrent-failover-test";
+    private static final String MODULE_NAME = RemoteStatefulEJBConcurrentFailoverTestCase.class.getSimpleName();
 
     private static final long CLIENT_TOPOLOGY_UPDATE_WAIT = TimeoutUtil.adjust(5000);
 

@@ -35,7 +35,7 @@ import org.jboss.shrinkwrap.api.Archive;
  * @author Paul Ferraro
  */
 public class RemoteStatelessEJBFailoverTestCase extends AbstractRemoteStatelessEJBFailoverTestCase {
-    private static final String MODULE_NAME = "remote-stateless-ejb-failover-test";
+    private static final String MODULE_NAME = RemoteStatelessEJBFailoverTestCase.class.getSimpleName();
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(NODE_1)

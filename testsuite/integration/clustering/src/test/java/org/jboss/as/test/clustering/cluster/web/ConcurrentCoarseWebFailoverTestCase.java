@@ -34,7 +34,9 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 
 @ServerSetup(ConcurrentWebFailoverServerSetup.class)
 public class ConcurrentCoarseWebFailoverTestCase extends AbstractWebFailoverTestCase {
-    private static final String DEPLOYMENT_NAME = "coarse-concurrent-distributable.war";
+
+    private static final String MODULE_NAME = ConcurrentCoarseWebFailoverTestCase.class.getSimpleName();
+    private static final String DEPLOYMENT_NAME = MODULE_NAME + ".war";
 
     public ConcurrentCoarseWebFailoverTestCase() {
         super(DEPLOYMENT_NAME, TransactionMode.NON_TRANSACTIONAL);

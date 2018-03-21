@@ -55,20 +55,22 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class SingletonPolicyServiceTestCase extends AbstractClusteringTestCase {
 
+    private static final String MODULE_NAME = SingletonPolicyServiceTestCase.class.getSimpleName();
+
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(NODE_1)
-    public static Archive<?> deployment0() {
+    public static Archive<?> deployment1() {
         return createDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
     @TargetsContainer(NODE_2)
-    public static Archive<?> deployment1() {
+    public static Archive<?> deployment2() {
         return createDeployment();
     }
 
     private static Archive<?> createDeployment() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, "singleton.war");
+        WebArchive war = ShrinkWrap.create(WebArchive.class, MODULE_NAME + ".war");
         war.addPackage(NodeService.class.getPackage());
         war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.as.server\n"));
         war.addAsServiceProvider(org.jboss.msc.service.ServiceActivator.class, NodeServicePolicyActivator.class);

@@ -31,6 +31,8 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class CoarseSessionPassivationTestCase extends SessionPassivationTestCase {
 
+    private static final String MODULE_NAME = CoarseSessionPassivationTestCase.class.getSimpleName();
+
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(NODE_1)
     public static Archive<?> deployment0() {
@@ -44,6 +46,6 @@ public class CoarseSessionPassivationTestCase extends SessionPassivationTestCase
     }
 
     static WebArchive getDeployment() {
-        return getBaseDeployment().addAsWebInfResource(SessionPassivationTestCase.class.getPackage(), "jboss-web-coarse.xml", "jboss-web.xml");
+        return getBaseDeployment(MODULE_NAME).addAsWebInfResource(SessionPassivationTestCase.class.getPackage(), "jboss-web-coarse.xml", "jboss-web.xml");
     }
 }

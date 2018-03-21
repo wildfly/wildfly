@@ -49,7 +49,9 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public class ReplicationForNegotiationAuthenticatorTestCase extends AbstractWebFailoverTestCase {
-    private static final String DEPLOYMENT_NAME = "negotiationAuthenticator.war";
+
+    private static final String MODULE_NAME = ReplicationForNegotiationAuthenticatorTestCase.class.getSimpleName();
+    private static final String DEPLOYMENT_NAME = MODULE_NAME + ".war";
 
     public ReplicationForNegotiationAuthenticatorTestCase() {
         super(DEPLOYMENT_NAME, TransactionMode.TRANSACTIONAL);

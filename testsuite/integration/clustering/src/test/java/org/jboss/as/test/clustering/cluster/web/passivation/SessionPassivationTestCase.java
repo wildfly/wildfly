@@ -42,7 +42,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.web.DistributableTestCase;
@@ -56,8 +55,8 @@ public abstract class SessionPassivationTestCase extends AbstractClusteringTestC
 
     private static final int MAX_PASSIVATION_WAIT = TimeoutUtil.adjust(10000);
 
-    static WebArchive getBaseDeployment() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, "passivation.war");
+    static WebArchive getBaseDeployment(String moduleName) {
+        WebArchive war = ShrinkWrap.create(WebArchive.class, moduleName + ".war");
         war.addClasses(SessionOperationServlet.class);
         // Take web.xml from the managed test.
         war.setWebXML(DistributableTestCase.class.getPackage(), "web.xml");
@@ -65,7 +64,6 @@ public abstract class SessionPassivationTestCase extends AbstractClusteringTestC
     }
 
     @Test
-    @InSequence(1)
     public void test(@ArquillianResource(SessionOperationServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL)
             throws IOException, URISyntaxException {
 

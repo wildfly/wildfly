@@ -59,8 +59,9 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class StatefulTimeoutTestCase extends AbstractClusteringTestCase {
+
+    private static final String MODULE_NAME = StatefulTimeoutTestCase.class.getSimpleName();
     private static final long WAIT_FOR_TIMEOUT = TimeoutUtil.adjust(5000);
-    private static final String MODULE_NAME = "stateful-timeout";
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(NODE_1)
