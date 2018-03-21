@@ -61,6 +61,7 @@ import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.SimpleResourceDefinition.Parameters;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
@@ -197,8 +198,10 @@ public class MessagingExtension implements Extension {
         subsystem.registerSubModel(JMSBridgeDefinition.INSTANCE);
 
         if (registerRuntimeOnly) {
-            final ManagementResourceRegistration deployment = subsystemRegistration.registerDeploymentModel(new SimpleResourceDefinition(SUBSYSTEM_PATH, getResourceDescriptionResolver("deployed")));
-            final ManagementResourceRegistration deployedServer = deployment.registerSubModel(new SimpleResourceDefinition(SERVER_PATH, getResourceDescriptionResolver(SERVER)));
+            final ManagementResourceRegistration deployment = subsystemRegistration.registerDeploymentModel(new SimpleResourceDefinition(
+                    new Parameters(SUBSYSTEM_PATH, getResourceDescriptionResolver("deployed")).setFeature(false)));
+            final ManagementResourceRegistration deployedServer = deployment.registerSubModel(new SimpleResourceDefinition(
+                    new Parameters(SERVER_PATH, getResourceDescriptionResolver(SERVER)).setFeature(false)));
             deployedServer.registerSubModel(new JMSQueueDefinition(true, registerRuntimeOnly));
             deployedServer.registerSubModel(new JMSTopicDefinition(true, registerRuntimeOnly));
             deployedServer.registerSubModel(PooledConnectionFactoryDefinition.DEPLOYMENT_INSTANCE);

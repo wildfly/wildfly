@@ -164,6 +164,7 @@ public final class WSExtension implements Extension {
 
         if (registerRuntimeOnly) {
             subsystem.registerDeploymentModel(ResourceBuilder.Factory.create(SUBSYSTEM_PATH, getResourceDescriptionResolver("deployment"))
+                    .noFeature()
                     .pushChild(ENDPOINT_PATH)
                     .addMetrics(WSEndpointMetrics.INSTANCE, WSEndpointMetrics.ATTRIBUTES)
                     .addReadOnlyAttribute(ENDPOINT_CLASS)

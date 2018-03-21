@@ -43,13 +43,16 @@ import org.jboss.dmr.ModelType;
  */
 public class JPADefinition extends SimpleResourceDefinition {
 
-    public static final JPADefinition INSTANCE = new JPADefinition();
+    public static final JPADefinition INSTANCE = new JPADefinition(true);
+    public static final JPADefinition DEPLOYMENT_INSTANCE = new JPADefinition(false);
 
-    private JPADefinition() {
-        super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, JPAExtension.SUBSYSTEM_NAME),
-                JPAExtension.getResourceDescriptionResolver(),
-                JPASubSystemAdd.INSTANCE,
-                ReloadRequiredRemoveStepHandler.INSTANCE);
+
+    private JPADefinition(boolean feature) {
+        super(new Parameters(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, JPAExtension.SUBSYSTEM_NAME),
+                JPAExtension.getResourceDescriptionResolver())
+                .setAddHandler(JPASubSystemAdd.INSTANCE)
+                .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
+                .setFeature(feature));
     }
 
     protected static final SimpleAttributeDefinition DEFAULT_DATASOURCE =
