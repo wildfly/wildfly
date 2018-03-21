@@ -25,7 +25,6 @@ package org.jboss.as.ejb3.deployment.processors;
 import static org.jboss.as.ejb3.deployment.processors.AbstractDeploymentUnitProcessor.getEjbJarDescription;
 import static org.jboss.as.ejb3.deployment.processors.ViewInterfaces.getPotentialViewInterfaces;
 
-import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Properties;
@@ -41,6 +40,7 @@ import org.jboss.as.ejb3.component.messagedriven.DefaultResourceAdapterService;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.logging.EjbLogger;
+import org.jboss.as.ejb3.util.MdbValidationsUtil;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.EjbDeploymentMarker;
@@ -101,7 +101,7 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
         for (final AnnotationInstance messageBeanAnnotation : messageBeanAnnotations) {
             final AnnotationTarget target = messageBeanAnnotation.target();
             final ClassInfo beanClassInfo = (ClassInfo) target;
-            if (!assertMDBClassValidity(beanClassInfo)) {
+            if (! MdbValidationsUtil.assertMDBClassValidity(beanClassInfo).isEmpty() ) {
                 continue;
             }
             final String ejbName = beanClassInfo.name().local();
@@ -178,38 +178,10 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
             // move to next super class
             superClassDotName = superClass.superName();
         }
-
         if (interfaces.size() != 1)
             throw EjbLogger.ROOT_LOGGER.mdbDoesNotImplementNorSpecifyMessageListener(beanClass);
         return interfaces.iterator().next().toString();
     }
-
-
-    /**
-     * Returns true if the passed <code>mdbClass</code> meets the requirements set by the EJB3 spec about
-     * bean implementation classes. The passed <code>mdbClass</code> must not be an interface and must be public
-     * and not final and not abstract. If it passes these requirements then this method returns true. Else it returns false.
-     *
-     * @param mdbClass The MDB class
-     * @return
-     */
-    private boolean assertMDBClassValidity(final ClassInfo mdbClass) {
-        final short flags = mdbClass.flags();
-        final String className = mdbClass.name().toString();
-        // must *not* be an interface
-        if (Modifier.isInterface(flags)) {
-            EjbLogger.DEPLOYMENT_LOGGER.mdbClassCannotBeAnInterface(className);
-            return false;
-        }
-        // bean class must be public, must *not* be abstract or final
-        if (!Modifier.isPublic(flags) || Modifier.isAbstract(flags) || Modifier.isFinal(flags)) {
-            EjbLogger.DEPLOYMENT_LOGGER.mdbClassMustBePublicNonAbstractNonFinal(className);
-            return false;
-        }
-        // valid class
-        return true;
-    }
-
 
     private Properties getActivationConfigProperties(final ActivationConfigMetaData activationConfig) {
         final Properties activationConfigProps = new Properties();
