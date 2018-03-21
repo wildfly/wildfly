@@ -9,6 +9,9 @@ embed-server --server-config=standalone-ha.xml
 
 /subsystem=logging/logger=org.jgroups:add(level=TRACE)
 
+/subsystem=jgroups/stack=tcp/transport=TCP:remove()
+/subsystem=jgroups/stack=tcp/transport=TCP_NIO2:add(socket-binding=jgroups-tcp)
+
 stop-embedded-server
 
 
@@ -22,5 +25,8 @@ embed-server --server-config=standalone-full-ha.xml
 /subsystem=jgroups/stack=tcp/protocol=TCPPING:add(add-index=0)
 
 /subsystem=logging/logger=org.jgroups:add(level=TRACE)
+
+/subsystem=jgroups/stack=tcp/transport=TCP:remove()
+/subsystem=jgroups/stack=tcp/transport=TCP_NIO2:add(socket-binding=jgroups-tcp)
 
 stop-embedded-server
