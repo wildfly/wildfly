@@ -85,7 +85,7 @@
                             <reuseForks>false</reuseForks>
 
                             <environmentVariables>
-                                        <JBOSS_HOME>${jboss.dist}</JBOSS_HOME>
+                                        <JBOSS_HOME>${wildfly.dir}</JBOSS_HOME>
                             </environmentVariables>
 
                             <!-- Parameters to test cases. -->
