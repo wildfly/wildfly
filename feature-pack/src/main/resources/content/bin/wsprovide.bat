@@ -84,7 +84,7 @@ set "JAVA_OPTS=%JAVA_OPTS% -Dprogram.name=wsprovide.bat"
     -jar "%JBOSS_RUNJAR%" ^
     %MODULE_OPTS% ^
     -mp "%JBOSS_MODULEPATH%" ^
-     org.jboss.ws.tools.wsprovide ^
-     %*
+    org.jboss.ws.tools.wsprovide ^
+    %*
 
 :END

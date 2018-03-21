@@ -1,6 +1,6 @@
 ##################################################################
 #                                                               ##
-#    wsprovide tool script for Windows                              ##
+#    wsprovide tool script for Windows                          ##
 #                                                               ##
 ##################################################################
 $scripts = (Get-ChildItem $MyInvocation.MyCommand.Path).Directory.FullName;
