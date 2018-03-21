@@ -18,9 +18,13 @@
                 <include>**/src/**</include>
                 <include>**/*.txt</include>
                 <include>**/*.sh</include>
+                <include>**/*.cli</include>
                 <include>**/*.bat</include>
                 <include>**/*.md</include>
                 <include>tools/**</include>
+                <include>mvnw</include>
+                <include>mvnw.cmd</include>
+                <include>.mvn/**</include>
             </includes>
             <excludes>
                 <!-- Ignore build output -->
