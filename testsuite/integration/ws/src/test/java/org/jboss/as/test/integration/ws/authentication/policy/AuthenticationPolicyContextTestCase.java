@@ -110,38 +110,36 @@ public class AuthenticationPolicyContextTestCase {
 
     @Deployment(name = PICKETLINK_STS, managed = false, testable = false)
     public static Archive<?> createPicketlinkStsDeployment() {
-        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         WebArchive war = ShrinkWrap.create(WebArchive.class, PICKETLINK_STS + ".war");
         war.addClass(PicketLinkSTSService.class);
-        war.addAsResource(tccl.getResource( RESOURCE_DIR + "sts-users.properties"), "sts-users.properties");
-        war.addAsResource(tccl.getResource( RESOURCE_DIR + "sts-roles.properties"), "sts-roles.properties");
-        war.addAsWebInfResource(tccl.getResource( RESOURCE_DIR + "WEB-INF/sts_keystore.jks"), "classes/sts_keystore.jks");
+        war.addAsResource(AuthenticationPolicyContextTestCase.class.getPackage(), "resources/sts-users.properties", "sts-users.properties");
+        war.addAsResource(AuthenticationPolicyContextTestCase.class.getPackage(), "resources/sts-roles.properties", "sts-roles.properties");
+        war.addAsResource(AuthenticationPolicyContextTestCase.class.getPackage(), "resources/WEB-INF/sts_keystore.jks", "sts_keystore.jks");
         war.addAsWebInfResource(createFilteredAsset("resources/WEB-INF/picketlink-sts.xml"), "classes/picketlink-sts.xml");
         war.addAsWebInfResource(createFilteredAsset("resources/WEB-INF/wsdl/PicketLinkSTS.wsdl"), "wsdl/PicketLinkSTS.wsdl");
-        war.addAsWebInfResource(tccl.getResource( RESOURCE_DIR + "WEB-INF/beans.xml"), "beans.xml");
-        war.addAsWebInfResource(tccl.getResource( RESOURCE_DIR + "WEB-INF/jboss-web.xml"), "jboss-web.xml");
-        war.addAsWebInfResource(tccl.getResource( RESOURCE_DIR + "WEB-INF/jboss-wsse-server.xml"), "jboss-wsse-server.xml");
-        war.addAsWebInfResource(tccl.getResource( RESOURCE_DIR + "WEB-INF/web.xml"), "web.xml");
-        war.addAsManifestResource(tccl.getResource(RESOURCE_DIR + "META-INF/jboss-deployment-structure.xml"), "jboss-deployment-structure.xml");
-        war.addAsManifestResource(tccl.getResource(RESOURCE_DIR + "META-INF/jboss-webservices.xml"), "jboss-webservices.xml");
+        war.addAsWebInfResource(AuthenticationPolicyContextTestCase.class.getPackage(), "resources/WEB-INF/beans.xml", "beans.xml");
+        war.addAsWebInfResource(AuthenticationPolicyContextTestCase.class.getPackage(), "resources/WEB-INF/jboss-web.xml", "jboss-web.xml");
+        war.addAsWebInfResource(AuthenticationPolicyContextTestCase.class.getPackage(), "resources/WEB-INF/jboss-wsse-server.xml", "jboss-wsse-server.xml");
+        war.addAsWebInfResource(AuthenticationPolicyContextTestCase.class.getPackage(), "resources/WEB-INF/web.xml", "web.xml");
+        war.addAsManifestResource(AuthenticationPolicyContextTestCase.class.getPackage(), "resources/META-INF/jboss-deployment-structure.xml", "jboss-deployment-structure.xml");
+        war.addAsManifestResource(AuthenticationPolicyContextTestCase.class.getPackage(), "resources/META-INF/jboss-webservices.xml", "jboss-webservices.xml");
         return war;
     }
 
     @Deployment(name = PICKETLINK_STS_WS, managed = false, testable = false)
     public static Archive<?> createPicketlinkStsWsDeployment() {
-        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         WebArchive war = ShrinkWrap.create(WebArchive.class, PICKETLINK_STS_WS + ".war");
         war.addClasses(EchoServiceRemote.class);
         war.addClasses(EchoService.class);
-        war.addAsResource(tccl.getResource( RESOURCE_DIR + "sp-users.properties"), "sp-users.properties");
-        war.addAsResource(tccl.getResource( RESOURCE_DIR + "sp-roles.properties"), "sp-roles.properties");
-        war.addAsResource(tccl.getResource( RESOURCE_DIR + "sts-config.properties"), "sts-config.properties");
+        war.addAsResource(AuthenticationPolicyContextTestCase.class.getPackage(), "resources/sp-users.properties", "sp-users.properties");
+        war.addAsResource(AuthenticationPolicyContextTestCase.class.getPackage(), "resources/sp-roles.properties", "sp-roles.properties");
+        war.addAsResource(AuthenticationPolicyContextTestCase.class.getPackage(), "resources/sts-config.properties", "sts-config.properties");
         war.addAsWebInfResource(createFilteredAsset("resources/WEB-INF/wsdl/PicketLinkSTS.wsdl"), "wsdl/PicketLinkSTS.wsdl");
-        war.addAsWebInfResource(tccl.getResource( RESOURCE_DIR + "WEB-INF/beans.xml"), "beans.xml");
-        war.addAsWebInfResource(tccl.getResource( RESOURCE_DIR + "WEB-INF/jboss-web-ws.xml"), "jboss-web-ws.xml");
-        war.addAsWebInfResource(tccl.getResource( RESOURCE_DIR + "WEB-INF/jboss-wsse-server.xml"), "jboss-wsse-server.xml");
-        war.addAsManifestResource(tccl.getResource(RESOURCE_DIR + "META-INF/jboss-deployment-structure.xml"), "jboss-deployment-structure.xml");
-        war.addAsManifestResource(tccl.getResource(RESOURCE_DIR + "META-INF/jboss-webservices.xml"), "jboss-webservices.xml");
+        war.addAsWebInfResource(AuthenticationPolicyContextTestCase.class.getPackage(), "resources/WEB-INF/beans.xml", "beans.xml");
+        war.addAsWebInfResource(AuthenticationPolicyContextTestCase.class.getPackage(), "resources/WEB-INF/jboss-web-ws.xml", "jboss-web-ws.xml");
+        war.addAsWebInfResource(AuthenticationPolicyContextTestCase.class.getPackage(), "resources/WEB-INF/jboss-wsse-server.xml", "jboss-wsse-server.xml");
+        war.addAsManifestResource(AuthenticationPolicyContextTestCase.class.getPackage(), "resources/META-INF/jboss-deployment-structure.xml", "jboss-deployment-structure.xml");
+        war.addAsManifestResource(AuthenticationPolicyContextTestCase.class.getPackage(), "resources/META-INF/jboss-webservices.xml", "jboss-webservices.xml");
         war.addAsResource(AuthenticationPolicyContextTestCase.class.getPackage(), "dummmy-ws-handler.xml", "org/jboss/as/test/integration/ws/authentication/policy/resources/dummmy-ws-handler.xml");
         return war;
     }
@@ -171,9 +169,10 @@ public class AuthenticationPolicyContextTestCase {
     }
 
     @After
-    public void after() throws IOException {
+    public void after() throws Exception {
         deployer.undeploy(PICKETLINK_STS);
         deployer.undeploy(PICKETLINK_STS_WS);
+        this.serverConfigurationCleanup();
     }
 
     @BeforeClass
@@ -235,6 +234,20 @@ public class AuthenticationPolicyContextTestCase {
         deployer.deploy(deployment2);
     }
 
+    private void serverConfigurationCleanup() throws Exception {
+        modelControllerClient = ModelControllerClient.Factory.create(HOST, getManagementPort());
+        commandCtx = CLITestUtil.getCommandContext(HOST, getManagementPort(), null, consoleOut, -1);
+        commandCtx.connectController();
+
+        File cliFile = File.createTempFile("remove_endpoint_and_domains-", ".cli");
+        try (FileOutputStream fos = new FileOutputStream(cliFile)) {
+            IOUtils.copy(AuthenticationPolicyContextTestCase.class.getResourceAsStream("remove_endpoint_and_domains.cli"), fos);
+        }
+        runBatch(cliFile);
+        cliFile.delete();
+        reload();
+    }
+
     /**
      * Sends command line to CLI.
      *
@@ -289,35 +302,33 @@ public class AuthenticationPolicyContextTestCase {
     public void test() throws Exception {
         Element assertion = null;
         try {
-            LOGGER.info("Invoking token service to get SAML assertion for " + USERNAME);
+            LOGGER.debug("Invoking token service to get SAML assertion for " + USERNAME);
             assertion = wsClient.issueToken(SAMLUtil.SAML2_TOKEN_TYPE);
             String domElementAsString = DocumentUtil.getDOMElementAsString(assertion);
-            System.out.println("assertion: " + domElementAsString);
-            LOGGER.info("SAML assertion for " + USERNAME + " successfully obtained!");
+            LOGGER.debug("assertion: " + domElementAsString);
+            LOGGER.debug("SAML assertion for " + USERNAME + " successfully obtained!");
         } catch (WSTrustException wse) {
             LOGGER.error("Unable to issue assertion: " + wse.getMessage());
             wse.printStackTrace();
             System.exit(1);
         }
 
-        URL wsdl = new URL("http://localhost:8080/picketlink-sts-ws/EchoService?wsdl");
-        QName serviceName = new QName("http://ws.picketlink.sts.jboss.org/", "EchoServiceService");
-        Service service = Service.create(wsdl, serviceName);
-        EchoServiceRemote port = service.getPort(new QName("http://ws.picketlink.sts.jboss.org/", "EchoServicePort"),
-                EchoServiceRemote.class);
-
-        BindingProvider bp = (BindingProvider) port;
-        ClientConfigUtil.setConfigHandlers(bp, "standard-jaxws-client-config.xml", "SAML WSSecurity Client");
-        bp.getRequestContext().put(SAML2Constants.SAML2_ASSERTION_PROPERTY, assertion);
-
         try {
+            URL wsdl = new URL("http://localhost:8080/picketlink-sts-ws/EchoService?wsdl");
+            QName serviceName = new QName("http://ws.picketlink.sts.jboss.org/", "EchoServiceService");
+            Service service = Service.create(wsdl, serviceName);
+            EchoServiceRemote port = service.getPort(new QName("http://ws.picketlink.sts.jboss.org/", "EchoServicePort"),
+                    EchoServiceRemote.class);
+
+            BindingProvider bp = (BindingProvider) port;
+            ClientConfigUtil.setConfigHandlers(bp, "standard-jaxws-client-config.xml", "SAML WSSecurity Client");
+            bp.getRequestContext().put(SAML2Constants.SAML2_ASSERTION_PROPERTY, assertion);
+
             port.echo("Test");
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
-            fail(e.getMessage());
-        }
-        if (wsClient != null) {
-            wsClient.close();
+        } finally {
+            if (wsClient != null) {
+                wsClient.close();
+            }
         }
     }
 }

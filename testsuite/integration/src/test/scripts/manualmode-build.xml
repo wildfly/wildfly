@@ -101,9 +101,6 @@
         <copy todir="target/jbossas-dwm-1" overwrite="true">
             <fileset dir="target/wildfly"/>
         </copy>
-        <copy todir="target/jbossas-sts" overwrite="true">
-                    <fileset dir="target/wildfly"/>
-        </copy>
         <ts.config-as.change-transport-stack name="jbossas-dwm-0"
                                              stack="tcp"/>
         <ts.config-as.change-transport-stack name="jbossas-dwm-1"

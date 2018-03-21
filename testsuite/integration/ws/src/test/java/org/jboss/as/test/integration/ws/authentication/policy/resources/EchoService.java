@@ -58,19 +58,9 @@ public class EchoService implements EchoServiceRemote {
     @Override
     @WebMethod
     public void echo(final String echo) {
-        System.out.println("EchoService: " + echo);
-        System.out.println("Principal: " + wsCtx.getUserPrincipal());
-        System.out.println("Principal.getName(): " + wsCtx.getUserPrincipal().getName());
-        System.out.println("wctx isUserInRole('testRole'): " + wsCtx.isUserInRole("testRole"));
-        System.out.println("ejbctx isUserInRole('testRole'): " + ejbCtx.isCallerInRole("testRole"));
-
         try {
             Subject subject = (Subject) PolicyContext.getContext("javax.security.auth.Subject.container");
-            System.out.println("Found subject in web service call: " + subject);
             SecurityContext current = SecurityContextAssociation.getSecurityContext();
-            System.out.println("Found security context in web service call: " + current);
-            System.out.println("Security domain in web service call: " + current.getSecurityDomain());
-            System.out.println("Subject info in web service call: " + current.getSubjectInfo());
         } catch (PolicyContextException e) {
             throw new IllegalStateException(e);
         }
