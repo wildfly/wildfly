@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<PicketLink xmlns="urn:picketlink:identity-federation:config:2.1">
+	<PicketLinkIDP xmlns="urn:picketlink:identity-federation:config:2.1"
+                   AttributeManager="org.picketlink.identity.federation.bindings.wildfly.idp.UndertowAttributeManager"
+                   RoleGenerator="org.picketlink.identity.federation.bindings.wildfly.idp.UndertowRoleGenerator">
+		<IdentityURL>http://${node0.escaped}:8080/idp/</IdentityURL>
+		<Trust>
+			<Domains>${node0.escaped},jboss.com,jboss.org,amazonaws.com</Domains>
+		</Trust>
+	</PicketLinkIDP>
+	<Handlers xmlns="urn:picketlink:identity-federation:handler:config:2.1">
+		<Handler
+			class="org.picketlink.identity.federation.web.handlers.saml2.SAML2IssuerTrustHandler" />
+		<Handler
+			class="org.picketlink.identity.federation.web.handlers.saml2.SAML2LogOutHandler" />
+		<Handler
+			class="org.picketlink.identity.federation.web.handlers.saml2.SAML2AuthenticationHandler" />
+		<Handler
+			class="org.picketlink.identity.federation.web.handlers.saml2.RolesGenerationHandler" />
+	</Handlers>
+	<!-- 
+		The configuration bellow defines a token timeout and a clock skew. Both configurations will be used during the SAML Assertion creation.
+		This configuration is optional. It is defined only to show you how to set the token timeout and clock skew configuration. 
+	 -->
+	<PicketLinkSTS xmlns="urn:picketlink:identity-federation:config:2.1" TokenTimeout="5000" ClockSkew="0">
+		<TokenProviders>
+			<TokenProvider
+				ProviderClass="org.picketlink.identity.federation.core.saml.v1.providers.SAML11AssertionTokenProvider"
+				TokenType="urn:oasis:names:tc:SAML:1.0:assertion"
+				TokenElement="Assertion" TokenElementNS="urn:oasis:names:tc:SAML:1.0:assertion" />
+			<TokenProvider
+				ProviderClass="org.picketlink.identity.federation.core.saml.v2.providers.SAML20AssertionTokenProvider"
+				TokenType="urn:oasis:names:tc:SAML:2.0:assertion"
+				TokenElement="Assertion" TokenElementNS="urn:oasis:names:tc:SAML:2.0:assertion" />
+		</TokenProviders>
+	</PicketLinkSTS>
+
+</PicketLink>

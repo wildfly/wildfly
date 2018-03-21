@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<web-app xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+	version="2.5">
+
+    <display-name>PicketLink Identity Provider</display-name>
+
+	<description>PicketLink Identity Provider With a Basic Configuration</description>
+
+	<listener>
+		<listener-class>org.picketlink.identity.federation.web.listeners.IDPHttpSessionListener</listener-class>
+	</listener>
+
+    <!-- The IDPFilter is responsible for enabling all SAML processing. -->
+    <filter>
+        <filter-name>IDPFilter</filter-name>
+        <filter-class>org.picketlink.identity.federation.web.filters.IDPFilter</filter-class>
+    </filter>
+
+    <filter-mapping>
+        <filter-name>IDPFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+    
+	<!-- Define a security constraint that gives unlimited access to some static resources. -->
+	<security-constraint>
+		<web-resource-collection>
+			<web-resource-name>Images</web-resource-name>
+			<url-pattern>/images/*</url-pattern>
+		</web-resource-collection>
+		<web-resource-collection>
+			<web-resource-name>CSS</web-resource-name>
+			<url-pattern>/css/*</url-pattern>
+		</web-resource-collection>
+	</security-constraint>
+
+	<!-- Define a Security Constraint on this application. -->
+	<security-constraint>
+		<web-resource-collection>
+			<web-resource-name>Manager command</web-resource-name>
+			<url-pattern>/*</url-pattern>
+		</web-resource-collection>
+		<auth-constraint>
+			<role-name>manager</role-name>
+			<role-name>Sales</role-name>
+			<role-name>Employee</role-name>
+		</auth-constraint>
+	</security-constraint>
+
+	<!-- Define the Login Configuration for this application. -->
+	<login-config>
+		<auth-method>FORM</auth-method>
+		<realm-name>PicketLink IDP Application</realm-name>
+		<form-login-config>
+			<form-login-page>/jsp/login.jsp</form-login-page>
+			<form-error-page>/jsp/login-error.jsp</form-error-page>
+		</form-login-config>
+	</login-config>
+
+	<!-- Security roles referenced by this web application. -->
+	<security-role>
+		<role-name>manager</role-name>
+	</security-role>
+	<security-role>
+		<role-name>Sales</role-name>
+	</security-role>
+	<security-role>
+		<role-name>Employee</role-name>
+	</security-role>
+</web-app>
