@@ -67,7 +67,7 @@ public class LegacyProtocolResourceDefinition<P extends Protocol> extends Protoc
             Operations.setPathAddress(operation, targetAddress);
             PathAddress targetRegistrationAddress = address.getParent().append(ProtocolResourceDefinition.WILDCARD_PATH);
             String operationName = Operations.getName(operation);
-            context.addStep(operation, context.getRootResourceRegistration().getOperationHandler(targetRegistrationAddress, operationName), OperationContext.Stage.MODEL);
+            context.addStep(operation, context.getRootResourceRegistration().getOperationHandler(targetRegistrationAddress, operationName), OperationContext.Stage.MODEL, true);
         }
     }
 
