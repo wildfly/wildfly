@@ -43,8 +43,6 @@ import org.jboss.msc.service.ServiceController;
  */
 public abstract class PoolMetrics implements OperationStepHandler {
 
-    static final String[] NO_LOCATION = new String[0];
-
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         if (context.isNormalServer()) {
             context.addStep(new OperationStepHandler() {

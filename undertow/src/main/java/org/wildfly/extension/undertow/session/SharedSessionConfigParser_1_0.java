@@ -102,23 +102,6 @@ public class SharedSessionConfigParser_1_0 implements JBossAllXMLParser<SharedSe
         UNKNOWN
     }
 
-    enum Attribute {
-        // default unknown attribute
-        UNKNOWN;
-
-        private static final Map<QName, Attribute> attributes;
-
-        static {
-            Map<QName, Attribute> attributesMap = new HashMap<QName, Attribute>();
-            attributes = attributesMap;
-        }
-
-        static Attribute of(QName qName) {
-            final Attribute attribute = attributes.get(qName);
-            return attribute == null ? UNKNOWN : attribute;
-        }
-    }
-
     private SharedSessionConfigParser_1_0() {
     }
 
