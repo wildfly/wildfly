@@ -46,7 +46,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class RegistryTestCase {
-    private static final String MODULE_NAME = "registry";
+    private static final String MODULE_NAME = RegistryTestCase.class.getSimpleName();
 
     @Deployment(testable = false)
     public static Archive<?> createDeployment() {

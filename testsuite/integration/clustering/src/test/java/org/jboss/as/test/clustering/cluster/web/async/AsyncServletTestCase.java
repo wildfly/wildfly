@@ -55,7 +55,9 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class AsyncServletTestCase extends AbstractClusteringTestCase {
-    private static final String DEPLOYMENT_NAME = "async.war";
+
+    private static final String MODULE_NAME = AsyncServletTestCase.class.getSimpleName();
+    private static final String DEPLOYMENT_NAME = MODULE_NAME + ".war";
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(NODE_1)

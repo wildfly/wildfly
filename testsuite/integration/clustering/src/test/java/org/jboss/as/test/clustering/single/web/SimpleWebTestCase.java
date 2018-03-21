@@ -54,9 +54,11 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class SimpleWebTestCase {
 
+    private static final String MODULE_NAME = SimpleWebTestCase.class.getSimpleName();
+
     @Deployment(name = DEPLOYMENT_1, testable = false)
     public static Archive<?> deployment() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, "distributable.war");
+        WebArchive war = ShrinkWrap.create(WebArchive.class, MODULE_NAME + ".war");
         war.addClasses(SimpleServlet.class, Mutable.class);
         war.setWebXML(SimpleWebTestCase.class.getPackage(), "web.xml");
         return war;

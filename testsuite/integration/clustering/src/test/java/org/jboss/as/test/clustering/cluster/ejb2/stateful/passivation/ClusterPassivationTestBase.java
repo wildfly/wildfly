@@ -50,7 +50,7 @@ import org.junit.BeforeClass;
  */
 public abstract class ClusterPassivationTestBase {
     private static Logger log = Logger.getLogger(ClusterPassivationTestBase.class);
-    public static final String MODULE_NAME = "cluster-passivation-test";
+    public static final String MODULE_NAME = ClusterPassivationTestBase.class.getSimpleName();
 
     protected static EJBDirectory directory;
 

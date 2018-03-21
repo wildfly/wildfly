@@ -42,18 +42,18 @@ import org.junit.runner.RunWith;
 
 @RunWith(Arquillian.class)
 public class CommandDispatcherTestCase extends AbstractClusteringTestCase {
+    private static final String MODULE_NAME = CommandDispatcherTestCase.class.getSimpleName();
     private static final long VIEW_CHANGE_WAIT = TimeoutUtil.adjust(2000);
-    private static final String MODULE_NAME = "command-dispatcher";
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(NODE_1)
-    public static Archive<?> createDeploymentForContainer1() {
+    public static Archive<?> deployment1() {
         return createDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
     @TargetsContainer(NODE_2)
-    public static Archive<?> createDeploymentForContainer2() {
+    public static Archive<?> deployment2() {
         return createDeployment();
     }
 

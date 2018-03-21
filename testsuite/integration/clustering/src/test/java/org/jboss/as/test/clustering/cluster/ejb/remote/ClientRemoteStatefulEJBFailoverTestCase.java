@@ -28,7 +28,7 @@ import org.jboss.as.test.clustering.ejb.ClientEJBDirectory;
 import org.jboss.shrinkwrap.api.Archive;
 
 public class ClientRemoteStatefulEJBFailoverTestCase extends AbstractRemoteStatefulEJBFailoverTestCase {
-    private static final String MODULE_NAME = "client-remote-stateful-ejb-failover-test";
+    private static final String MODULE_NAME = ClientRemoteStatefulEJBFailoverTestCase.class.getSimpleName();
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(NODE_1)

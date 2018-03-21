@@ -78,6 +78,8 @@ import org.junit.runner.RunWith;
 @ServerSetup({XSiteSimpleTestCase.ServerSetupTask.class})
 public class XSiteSimpleTestCase extends AbstractClusteringTestCase {
 
+    private static final String MODULE_NAME = XSiteSimpleTestCase.class.getSimpleName();
+
     public XSiteSimpleTestCase() {
         super(FOUR_NODES, FOUR_DEPLOYMENTS);
     }
@@ -107,7 +109,7 @@ public class XSiteSimpleTestCase extends AbstractClusteringTestCase {
     }
 
     private static Archive<?> getDeployment() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, "xsite.war");
+        WebArchive war = ShrinkWrap.create(WebArchive.class, MODULE_NAME + ".war");
         war.addClass(CacheAccessServlet.class);
         war.setWebXML(XSiteSimpleTestCase.class.getPackage(), "web.xml");
         war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.infinispan\n"));

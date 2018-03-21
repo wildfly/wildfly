@@ -62,7 +62,7 @@ import org.wildfly.test.api.Authentication;
 @RunWith(Arquillian.class)
 public class ClusteredJPA2LCTestCase {
 
-    private static final String MODULE_NAME = "clustered2lc";
+    private static final String MODULE_NAME = ClusteredJPA2LCTestCase.class.getSimpleName();
 
     @ArquillianResource
     protected ContainerController controller;
@@ -139,7 +139,7 @@ public class ClusteredJPA2LCTestCase {
      * The two nodes don't actually have a shared database instance, but that doesn't matter for this test.
      */
     @Test
-    @InSequence(0)
+    @InSequence
     public void testEntityCacheReplication(@ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) URL url0,
                                            @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) URL url1)
             throws Exception {

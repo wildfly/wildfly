@@ -52,7 +52,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class ClientExceptionRemoteEJBTestCase extends AbstractClusteringTestCase {
-    private static final String MODULE_NAME = "client-exception-remote-ejb-test";
+    private static final String MODULE_NAME = ClientExceptionRemoteEJBTestCase.class.getSimpleName();
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(NODE_1)

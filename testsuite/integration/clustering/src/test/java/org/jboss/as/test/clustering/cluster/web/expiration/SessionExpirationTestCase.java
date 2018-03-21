@@ -48,8 +48,8 @@ import org.junit.Test;
  */
 public abstract class SessionExpirationTestCase extends AbstractClusteringTestCase {
 
-    static WebArchive getBaseDeployment() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, "expiration.war");
+    static WebArchive getBaseDeployment(String moduleName) {
+        WebArchive war = ShrinkWrap.create(WebArchive.class, moduleName + ".war");
         war.addClasses(SessionOperationServlet.class, RecordingWebListener.class);
         // Take web.xml from the managed test.
         war.setWebXML(DistributableTestCase.class.getPackage(), "web.xml");

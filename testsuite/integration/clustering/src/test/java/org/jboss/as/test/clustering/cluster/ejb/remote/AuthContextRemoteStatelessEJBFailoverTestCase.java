@@ -39,7 +39,7 @@ import org.wildfly.security.auth.client.MatchRule;
  * @author Paul Ferraro
  */
 public abstract class AuthContextRemoteStatelessEJBFailoverTestCase extends AbstractRemoteStatelessEJBFailoverTestCase {
-    private static final String MODULE_NAME = "secure-remote-stateless-ejb-failover-test";
+    private static final String MODULE_NAME = AuthContextRemoteStatelessEJBFailoverTestCase.class.getSimpleName();
 
     static final AuthenticationContext AUTHENTICATION_CONTEXT = AuthenticationContext.captureCurrent().with(
             MatchRule.ALL.matchAbstractType("ejb", "jboss"),

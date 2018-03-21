@@ -43,7 +43,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class CommandDispatcherTestCase {
-    private static final String MODULE_NAME = "command-dispatcher";
+    private static final String MODULE_NAME = CommandDispatcherTestCase.class.getSimpleName();
 
     @Deployment(testable = false)
     public static Archive<?> createDeployment() {

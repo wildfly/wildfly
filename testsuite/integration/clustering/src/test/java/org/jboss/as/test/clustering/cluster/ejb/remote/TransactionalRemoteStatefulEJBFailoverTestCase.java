@@ -52,7 +52,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class TransactionalRemoteStatefulEJBFailoverTestCase extends AbstractClusteringTestCase {
-    private static final String MODULE_NAME = "transactional-remote-stateful-ejb-failover-test";
+    private static final String MODULE_NAME = TransactionalRemoteStatefulEJBFailoverTestCase.class.getSimpleName();
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(NODE_1)

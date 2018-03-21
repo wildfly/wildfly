@@ -35,7 +35,9 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
  * @author Radoslav Husar
  */
 public class FineWebFailoverTestCase extends AbstractWebFailoverTestCase {
-    private static final String DEPLOYMENT_NAME = "fine-distributable.war";
+
+    private static final String MODULE_NAME = FineWebFailoverTestCase.class.getSimpleName();
+    private static final String DEPLOYMENT_NAME = MODULE_NAME + ".war";
 
     public FineWebFailoverTestCase() {
         super(DEPLOYMENT_NAME, TransactionMode.TRANSACTIONAL);
