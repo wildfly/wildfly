@@ -23,7 +23,6 @@ import org.jboss.byteman.contrib.bmunit.BMUnit;
 import org.jboss.ejb.client.ClusterNodeSelector;
 import org.jboss.ejb.client.EJBClientConnection;
 import org.jboss.ejb.client.EJBClientContext;
-import org.jboss.ejb.client.legacy.JBossEJBProperties;
 import org.jboss.ejb.protocol.remote.RemoteTransportProvider;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -65,7 +64,6 @@ public class ClientClusterNodeSelectorTestCase extends AbstractClusteringTestCas
 
     private static final String MODULE_NAME = "remote-stateless-ejb-cns-test";
     private static final long CLIENT_TOPOLOGY_UPDATE_WAIT = TimeoutUtil.adjust(2000);
-    private static final String PROPERTIES_FILE = "clustered-jboss-ejb-client.properties";
 
     public static String AFFINITY;
     public static String CLUSTER_NAME;
@@ -100,12 +98,6 @@ public class ClientClusterNodeSelectorTestCase extends AbstractClusteringTestCas
                 ClientClusterNodeSelectorTestCase.class
                 , BMRunnerUtil.computeBMScriptName(ClientClusterNodeSelectorTestCase.class.getAnnotation(BMScript.class).value())
                 , BMRunnerUtil.normaliseLoadDirectory(ClientClusterNodeSelectorTestCase.class.getAnnotation(BMScript.class)));
-
-        // trigger the static init of the correct properties file - this also depends on running in forkMode=always
-        JBossEJBProperties ejbProperties =
-                JBossEJBProperties.fromClassPath(ClientClusterNodeSelectorTestCase.class.getClassLoader()
-                        , PROPERTIES_FILE);
-        JBossEJBProperties.getContextManager().setGlobalDefault(ejbProperties);
     }
 
     @AfterClass
