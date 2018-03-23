@@ -101,7 +101,7 @@
         </xs:attribute>
         <xs:attribute name="max-attempts" type="xs:int" use="optional" default="1">
             <xs:annotation>
-                <xs:documentation>Number of times an httpd proxy will attempt to send a given request to a worker before giving up.</xs:documentation>
+                <xs:documentation>Maximum number of failover attempts by reverse proxy when sending the request to the backend server.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="flush-packets" type="xs:boolean" use="optional" default="false">
