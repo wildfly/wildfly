@@ -49,7 +49,6 @@
         <module name="org.jboss.as.naming" optional="true"/>
         <module name="org.wildfly.security.elytron-private"/>
         <module name="org.wildfly.extension.request-controller" />
-        <module name="org.wildfly.extension.undertow" />
         <module name="org.jboss.as.server" />
         <module name="org.jboss.invocation"/>
         <module name="org.jboss.jandex"/>
@@ -59,7 +58,6 @@
         <module name="org.jboss.metadata.common"/>
         <module name="org.jboss.metadata.ear"/>
         <module name="org.jboss.vfs"/>
-        <module name="org.picketbox"/>
         <module name="org.wildfly.common"/>
     </dependencies>
 </module>
