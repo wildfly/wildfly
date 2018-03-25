@@ -71,7 +71,6 @@
         <module name="org.jboss.as.naming"/>
         <module name="org.jboss.as.web-common"/>
         <module name="org.jboss.narayana.compensations" />
-        <module name="org.omg.api"/>
 
         <!-- TODO WFLY-5966 validate the need for these and remove if not needed.
              Prior to WFLY-5922 they were exported by javax.ejb.api. -->
