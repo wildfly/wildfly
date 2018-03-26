@@ -23,7 +23,7 @@
     <parent>
           <groupId>org.wildfly.bom</groupId>
           <artifactId>wildfly</artifactId>
-          <version>13.0.0.Alpha5</version>
+          <version>13.0.0.Alpha6-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
       </parent>
 
