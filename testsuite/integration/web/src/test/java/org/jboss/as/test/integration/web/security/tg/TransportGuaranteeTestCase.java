@@ -58,7 +58,6 @@ import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
-import org.jboss.as.test.integration.management.ServerManager;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.as.test.integration.security.common.AbstractSecurityRealmsServerSetupTask;
 import org.jboss.as.test.integration.security.common.config.realm.RealmKeystore;
@@ -248,7 +247,6 @@ public class TransportGuaranteeTestCase {
     }
 
     static class ListenerSetup extends AbstractSecurityRealmsServerSetupTask implements ServerSetupTask {
-        private ServerManager serverManager;
 
         private static final Logger log = Logger.getLogger(ListenerSetup.class);
 
