@@ -19,8 +19,11 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ee.concurrent.handle;
+package org.jboss.as.security.deployment;
 
+import org.jboss.as.ee.concurrent.handle.ContextHandleFactory;
+import org.jboss.as.ee.concurrent.handle.ResetContextHandle;
+import org.jboss.as.ee.concurrent.handle.SetupContextHandle;
 import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
 import org.wildfly.security.manager.WildFlySecurityManager;
