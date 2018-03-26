@@ -26,11 +26,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
+import static org.jboss.as.test.integration.security.common.SSLTruststoreUtil.HTTPS_PORT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.net.Socket;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -61,9 +64,12 @@ import org.jboss.as.test.integration.security.common.config.realm.ServerIdentity
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import io.undertow.util.FileUtils;
 
 /**
  * @author Dominik Pospisil <dpospisi@redhat.com>
@@ -83,8 +89,8 @@ public class ListenerTestCase extends ContainerResourceMgmtTestBase {
 
     @Deployment
     public static Archive<?> getDeployment() {
-        JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "dummy.jar");
-        ja.addClass(ListenerTestCase.class);
+        WebArchive ja = ShrinkWrap.create(WebArchive.class, "proxy.war");
+        ja.addClasses(ListenerTestCase.class, RemoteIpServlet.class);
         return ja;
     }
 
@@ -127,8 +133,6 @@ public class ListenerTestCase extends ContainerResourceMgmtTestBase {
         } finally {
             removeListener(Listener.HTTPS);
         }
-
-
     }
 
     @Test
@@ -141,7 +145,7 @@ public class ListenerTestCase extends ContainerResourceMgmtTestBase {
     public void testAddAndRemoveRollbacks() throws Exception {
 
         // execute and rollback add socket
-        ModelNode addSocketOp = getAddSocketBindingOp(Listener.HTTPJIO);
+        ModelNode addSocketOp = getAddSocketBindingOp(Listener.HTTP);
         ModelNode ret = executeAndRollbackOperation(addSocketOp);
         assertTrue("failed".equals(ret.get("outcome").asString()));
 
@@ -149,7 +153,7 @@ public class ListenerTestCase extends ContainerResourceMgmtTestBase {
         executeOperation(addSocketOp);
 
         // execute and rollback add connector
-        ModelNode addConnectorOp = getAddListenerOp(Listener.HTTPJIO);
+        ModelNode addConnectorOp = getAddListenerOp(Listener.HTTP, false);
         ret = executeAndRollbackOperation(addConnectorOp);
         assertTrue("failed".equals(ret.get("outcome").asString()));
 
@@ -157,10 +161,10 @@ public class ListenerTestCase extends ContainerResourceMgmtTestBase {
         executeOperation(addConnectorOp);
 
         // check it is listed
-        assertTrue(getListenerList().get("http").contains("test-" + Listener.HTTPJIO.getName() + "-listener"));
+        assertTrue(getListenerList().get("http").contains("test-" + Listener.HTTP.getName() + "-listener"));
 
         // execute and rollback remove connector
-        ModelNode removeConnOp = getRemoveConnectorOp(Listener.HTTPJIO);
+        ModelNode removeConnOp = getRemoveConnectorOp(Listener.HTTP);
         ret = executeAndRollbackOperation(removeConnOp);
         assertEquals("failed", ret.get("outcome").asString());
 
@@ -174,7 +178,7 @@ public class ListenerTestCase extends ContainerResourceMgmtTestBase {
         assertFalse("Connector not removed.", WebUtil.testHttpURL(cURL));
 
         // execute and rollback remove socket binding
-        ModelNode removeSocketOp = getRemoveSocketBindingOp(Listener.HTTPJIO);
+        ModelNode removeSocketOp = getRemoveSocketBindingOp(Listener.HTTP);
         ret = executeAndRollbackOperation(removeSocketOp);
         assertEquals("failed", ret.get("outcome").asString());
 
@@ -182,14 +186,45 @@ public class ListenerTestCase extends ContainerResourceMgmtTestBase {
         executeOperation(removeSocketOp);
     }
 
+    @Test
+    public void testProxyProtocolOverHTTP() throws Exception {
+        addListener(Listener.HTTP, true);
+        try (Socket s = new Socket(url.getHost(), 8181)) {
+            s.getOutputStream().write("PROXY TCP4 1.2.3.4 5.6.7.8 444 555\r\nGET /proxy/addr HTTP/1.0\r\n\r\n".getBytes(StandardCharsets.US_ASCII));
+            String result = FileUtils.readFile(s.getInputStream());
+            Assert.assertTrue(result, result.contains("result:1.2.3.4:444 5.6.7.8:555"));
+        } finally {
+            removeListener(Listener.HTTP);
+        }
+    }
+
+
+    @Test
+    public void testProxyProtocolOverHTTPS() throws Exception {
+        addListener(Listener.HTTPS, true);
+        try (Socket s = new Socket(url.getHost(), 8181)) {
+            s.getOutputStream().write("PROXY TCP4 1.2.3.4 5.6.7.8 444 555\r\n".getBytes(StandardCharsets.US_ASCII));
+            Socket ssl = TestHttpClientUtils.getSslContext().getSocketFactory().createSocket(s, url.getHost(), HTTPS_PORT, true);
+            ssl.getOutputStream().write("GET /proxy/addr HTTP/1.0\r\n\r\n".getBytes(StandardCharsets.US_ASCII));
+            String result = FileUtils.readFile(ssl.getInputStream());
+            Assert.assertTrue(result, result.contains("result:1.2.3.4:444 5.6.7.8:555"));
+        } finally {
+            removeListener(Listener.HTTPS);
+        }
+    }
+
     private void addListener(Listener conn) throws Exception {
+        addListener(conn, false);
+    }
+
+    private void addListener(Listener conn, boolean proxyProtocol) throws Exception {
 
         // add socket binding
         ModelNode op = getAddSocketBindingOp(conn);
         executeOperation(op);
 
         // add connector
-        op = getAddListenerOp(conn);
+        op = getAddListenerOp(conn, proxyProtocol);
         executeOperation(op);
 
         // check it is listed
@@ -202,11 +237,14 @@ public class ListenerTestCase extends ContainerResourceMgmtTestBase {
         return op;
     }
 
-    private ModelNode getAddListenerOp(Listener conn) {
+    private ModelNode getAddListenerOp(Listener conn, boolean proxyProtocol) {
         final ModelNode composite = Util.getEmptyOperation(COMPOSITE, new ModelNode());
         final ModelNode steps = composite.get(STEPS);
         ModelNode op = createOpNode("subsystem=undertow/server=default-server/" + conn.getScheme() + "-listener=test-" + conn.getName() + "-listener", "add");
         op.get("socket-binding").set("test-" + conn.getName() + socketBindingCount);
+        if(proxyProtocol) {
+            op.get("proxy-protocol").set(true);
+        }
         if (conn.isSecure()) {
             op.get("security-realm").set("ssl-realm");
         }

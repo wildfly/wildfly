@@ -8,24 +8,17 @@ package org.jboss.as.test.integration.management;
  */
 public enum Listener {
 
-    HTTP("http", "http", "HTTP/1.1", false),
-    HTTPS("http", "https", "HTTP/1.1", true),
-    AJP("ajp", "http", "AJP/1.3", false),
-    HTTPJIO("http", "http", "org.apache.coyote.http11.Http11Protocol", false),
-    HTTPSJIO("http", "https", "org.apache.coyote.http11.Http11Protocol", true),
-    AJPJIO("ajp", "http", "org.apache.coyote.ajp.AjpProtocol", false),
-    HTTPNATIVE("http", "http", "org.apache.coyote.http11.Http11AprProtocol", false),
-    HTTPSNATIVE("http","https", "org.apache.coyote.http11.Http11AprProtocol", true);
+    HTTP("http", "http", false),
+    HTTPS("http", "https", true),
+    AJP("ajp", "http", false);
 
     private final String name;
     private final String scheme;
-    private final String protocol;
     private final boolean secure;
 
-    private Listener(String name, String scheme, String protocol, boolean secure) {
+    private Listener(String name, String scheme, boolean secure) {
         this.name = name;
         this.scheme = scheme;
-        this.protocol = protocol;
         this.secure = secure;
     }
 
@@ -35,10 +28,6 @@ public enum Listener {
 
     public final String getScheme() {
         return scheme;
-    }
-
-    public final String getProtocol() {
-        return protocol;
     }
 
     public final boolean isSecure() {

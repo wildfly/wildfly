@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.http.util;
 
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import javax.net.ssl.SSLContext;
@@ -75,22 +77,7 @@ public class TestHttpClientUtils {
      */
     public static CloseableHttpClient getHttpsClient(CredentialsProvider credentialsProvider) {
         try {
-            SSLContext ctx = SSLContext.getInstance("TLS");
-            X509TrustManager tm = new X509TrustManager() {
-
-                public void checkClientTrusted(X509Certificate[] xcs, String string) throws CertificateException {
-                }
-
-                public void checkServerTrusted(X509Certificate[] xcs, String string) throws CertificateException {
-                }
-
-                public X509Certificate[] getAcceptedIssuers() {
-                    return null;
-                }
-            };
-            ctx.init(null, new TrustManager[]{tm}, null);
-
-            ctx.init(null, new TrustManager[]{tm}, null);
+            SSLContext ctx = getSslContext();
 
             SSLConnectionSocketFactory sslConnectionFactory = new SSLConnectionSocketFactory(ctx, new NoopHostnameVerifier());
 
@@ -111,6 +98,26 @@ public class TestHttpClientUtils {
             ex.printStackTrace();
             return null;
         }
+    }
+
+    public static SSLContext getSslContext() throws NoSuchAlgorithmException, KeyManagementException {
+        SSLContext ctx = SSLContext.getInstance("TLS");
+        X509TrustManager tm = new X509TrustManager() {
+
+            public void checkClientTrusted(X509Certificate[] xcs, String string) throws CertificateException {
+            }
+
+            public void checkServerTrusted(X509Certificate[] xcs, String string) throws CertificateException {
+            }
+
+            public X509Certificate[] getAcceptedIssuers() {
+                return null;
+            }
+        };
+        ctx.init(null, new TrustManager[]{tm}, null);
+
+        ctx.init(null, new TrustManager[]{tm}, null);
+        return ctx;
     }
 
     /**

@@ -48,7 +48,7 @@ public class AjpListenerService extends ListenerService {
     private final String scheme;
 
     public AjpListenerService(String name, final String scheme, OptionMap listenerOptions, OptionMap socketOptions) {
-        super(name, listenerOptions, socketOptions);
+        super(name, listenerOptions, socketOptions, false);
         this.scheme = scheme;
     }
 

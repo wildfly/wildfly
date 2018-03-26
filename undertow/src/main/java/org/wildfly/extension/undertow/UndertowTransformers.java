@@ -80,14 +80,16 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
                 .end();
         final ResourceTransformationDescriptionBuilder serverBuilder = subsystemBuilder.addChildResource(UndertowExtension.SERVER_PATH);
 
-        final AttributeTransformationDescriptionBuilder https = serverBuilder.addChildResource(UndertowExtension.HTTPS_LISTENER_PATH).getAttributeBuilder();
-        addCommonListenerRules_EAP_7_1_0(https);
-        https.end();
-
-        final AttributeTransformationDescriptionBuilder http = serverBuilder.addChildResource(UndertowExtension.HTTP_LISTENER_PATH).getAttributeBuilder();
+        final AttributeTransformationDescriptionBuilder http = serverBuilder.addChildResource(UndertowExtension.HTTP_LISTENER_PATH).getAttributeBuilder()
+                .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(true)), HttpListenerResourceDefinition.PROXY_PROTOCOL.getName())
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), HttpListenerResourceDefinition.PROXY_PROTOCOL);
         addCommonListenerRules_EAP_7_1_0(http);
         http.end();
-
+        final AttributeTransformationDescriptionBuilder https = serverBuilder.addChildResource(UndertowExtension.HTTPS_LISTENER_PATH).getAttributeBuilder()
+                .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(true)), HttpListenerResourceDefinition.PROXY_PROTOCOL.getName())
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), HttpListenerResourceDefinition.PROXY_PROTOCOL);
+        addCommonListenerRules_EAP_7_1_0(https);
+        https.end();
         final AttributeTransformationDescriptionBuilder ajp = serverBuilder.addChildResource(UndertowExtension.AJP_LISTENER_PATH).getAttributeBuilder();
         addCommonListenerRules_EAP_7_1_0(ajp);
         ajp.end();
@@ -205,11 +207,13 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
                 .setDiscard(FALSE_DISCARD_CHECKER, HttpListenerResourceDefinition.REQUIRE_HOST_HTTP11)
                 .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(HttpListenerResourceDefinition.HTTP2_HEADER_TABLE_SIZE), HttpListenerResourceDefinition.HTTP2_HEADER_TABLE_SIZE)
                 .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(HttpListenerResourceDefinition.HTTP2_INITIAL_WINDOW_SIZE), HttpListenerResourceDefinition.HTTP2_INITIAL_WINDOW_SIZE)
-                .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(HttpListenerResourceDefinition.HTTP2_MAX_FRAME_SIZE), HttpListenerResourceDefinition.HTTP2_MAX_FRAME_SIZE);
+                .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(HttpListenerResourceDefinition.HTTP2_MAX_FRAME_SIZE), HttpListenerResourceDefinition.HTTP2_MAX_FRAME_SIZE)
+                .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(true)), HttpListenerResourceDefinition.PROXY_PROTOCOL.getName())
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), HttpListenerResourceDefinition.PROXY_PROTOCOL);
     }
 
     private static AttributeTransformationDescriptionBuilder convertCommonListenerAttributes(AttributeTransformationDescriptionBuilder builder) {
-        return builder.setValueConverter(new AttributeConverter.DefaultAttributeConverter() {
+        builder.setValueConverter(new AttributeConverter.DefaultAttributeConverter() {
             @Override
             protected void convertAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
                 if (attributeValue.isDefined() && attributeValue.asLong() == 0L) {
@@ -217,5 +221,7 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
                 }
             }
         }, ListenerResourceDefinition.MAX_ENTITY_SIZE);
+
+        return builder;
     }
 }
