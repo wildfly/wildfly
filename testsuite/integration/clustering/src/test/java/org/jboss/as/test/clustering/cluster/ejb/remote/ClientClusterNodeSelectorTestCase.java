@@ -4,7 +4,6 @@ package org.jboss.as.test.clustering.cluster.ejb.remote;
 import org.apache.commons.lang.math.RandomUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -52,7 +51,7 @@ import java.util.PropertyPermission;
 @RunWith(Arquillian.class)
 public class ClientClusterNodeSelectorTestCase extends AbstractClusteringTestCase {
 
-    private static final String MODULE_NAME = "remote-stateless-ejb-cns-test";
+    private static final String MODULE_NAME = ClientClusterNodeSelectorTestCase.class.getSimpleName();
     private static final long CLIENT_TOPOLOGY_UPDATE_WAIT = TimeoutUtil.adjust(2000);
     /**
      * Implementation of {@link ClusterNodeSelector} to be used for custom cluster node selection
@@ -101,11 +100,8 @@ public class ClientClusterNodeSelectorTestCase extends AbstractClusteringTestCas
     /**
      * Instructs the ClusterNodeSelector on which node to call before each request and that checks that the response
      * comes from that very node;
-     * @param baseURL1
-     * @throws Exception
      */
     @Test
-    @RunAsClient
     public void test(
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1
     ) throws Exception {
@@ -156,8 +152,6 @@ public class ClientClusterNodeSelectorTestCase extends AbstractClusteringTestCas
 
     /**
      * Calls the bean on the specified node and checks the response is coming from the specified node
-     * @param bean
-     * @param node
      */
     private void callBeanOnNode(Heartbeat bean, String node) {
         CustomClusterNodeSelector.PICK_NODE = node;
@@ -172,8 +166,6 @@ public class ClientClusterNodeSelectorTestCase extends AbstractClusteringTestCas
 
     /**
      * Test archive containing the EJB to call
-     * @param moduleName
-     * @return
      */
     private static Archive<?> createDeployment(String moduleName) {
         return ShrinkWrap.create(JavaArchive.class, moduleName + ".jar")
