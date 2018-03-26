@@ -15,11 +15,6 @@ import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Result;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
-import org.jboss.byteman.contrib.bmunit.BMScript;
-import org.jboss.byteman.contrib.bmunit.BMUnitConfig;
-import org.jboss.byteman.contrib.bmunit.BMRunnerUtil;
-import org.jboss.byteman.contrib.bmunit.BMUnitConfigState;
-import org.jboss.byteman.contrib.bmunit.BMUnit;
 import org.jboss.ejb.client.ClusterNodeSelector;
 import org.jboss.ejb.client.EJBClientConnection;
 import org.jboss.ejb.client.EJBClientContext;
@@ -27,9 +22,7 @@ import org.jboss.ejb.protocol.remote.RemoteTransportProvider;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.naming.client.WildFlyInitialContextFactory;
@@ -50,24 +43,17 @@ import java.util.PropertyPermission;
  * <p>This test basically replicates test org.jboss.ejb.client.test.ClusterNodeSelectorTestCase in project
  * jboss-ejb-client (credits to <a href="mailto:rachmato@redhat.com">Richard Achmatowicz</a>);</p>
  * <p>This test was added after the functionality was broken because of the affinity not being correctly sent to the
- * client (refer to issue <a href="https://issues.jboss.org/browse/WFLY-10030">WFLY-10030</a>); that is why a Byteman rule
- * has been added to track the affinity and print it out in case the test fails;</p>
+ * client (refer to issue <a href="https://issues.jboss.org/browse/WFLY-10030">WFLY-10030</a>);</p>
  * <p>NOTE: this test can be run using the following command issued from the root directory of the whole WildFly project:
  * {@code ./integration-tests.sh test -Dts.noSmoke -Dts.clustering -Dtest=org.jboss.as.test.clustering.cluster.ejb.remote.ClientClusterNodeSelectorTestCase}</p>
  *
  * @author <a href="mailto:tborgato@redhat.com">Tommaso Borgato</a>
  */
 @RunWith(Arquillian.class)
-@BMUnitConfig(loadDirectory="target/test-classes")
-@BMScript(value= "clientclusternodeselector.btm")
 public class ClientClusterNodeSelectorTestCase extends AbstractClusteringTestCase {
 
     private static final String MODULE_NAME = "remote-stateless-ejb-cns-test";
     private static final long CLIENT_TOPOLOGY_UPDATE_WAIT = TimeoutUtil.adjust(2000);
-
-    public static String AFFINITY;
-    public static String CLUSTER_NAME;
-
     /**
      * Implementation of {@link ClusterNodeSelector} to be used for custom cluster node selection
      */
@@ -86,23 +72,6 @@ public class ClientClusterNodeSelectorTestCase extends AbstractClusteringTestCas
 
     public ClientClusterNodeSelectorTestCase() throws Exception {
         super(FOUR_NODES);
-    }
-
-    @BeforeClass
-    public static void beforeClass() throws Exception {
-        // calls into the byteman engine to do the setup from annotations on this class
-        BMUnitConfigState.pushConfigurationState(
-                ClientClusterNodeSelectorTestCase.class.getAnnotation(BMUnitConfig.class)
-                , ClientClusterNodeSelectorTestCase.class);
-        BMUnit.loadScriptFile(
-                ClientClusterNodeSelectorTestCase.class
-                , BMRunnerUtil.computeBMScriptName(ClientClusterNodeSelectorTestCase.class.getAnnotation(BMScript.class).value())
-                , BMRunnerUtil.normaliseLoadDirectory(ClientClusterNodeSelectorTestCase.class.getAnnotation(BMScript.class)));
-    }
-
-    @AfterClass
-    public static void afterClass() throws Exception {
-        BMUnitConfigState.popConfigurationState(ClientClusterNodeSelectorTestCase.class);
     }
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
@@ -140,42 +109,49 @@ public class ClientClusterNodeSelectorTestCase extends AbstractClusteringTestCas
     public void test(
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1
     ) throws Exception {
+        EJBClientContext BKP = null;
+        try {
+            final EJBClientContext.Builder ejbClientBuilder = new EJBClientContext.Builder();
+            ejbClientBuilder.addTransportProvider(new RemoteTransportProvider());
+            final EJBClientConnection.Builder connBuilder = new EJBClientConnection.Builder();
+            connBuilder.setDestination(URI.create(String.format("remote+%s", baseURL1)));
+            ejbClientBuilder.addClientConnection(connBuilder.build());
+            // ====================================================================================
+            // set the custom ClusterNodeSelector
+            // ====================================================================================
+            ejbClientBuilder.setClusterNodeSelector(new CustomClusterNodeSelector());
+            BKP = EJBClientContext.getContextManager().getThreadDefault();
+            final EJBClientContext ejbCtx = ejbClientBuilder.build();
+            EJBClientContext.getContextManager().setThreadDefault(ejbCtx);
 
-        final EJBClientContext.Builder ejbClientBuilder = new EJBClientContext.Builder();
-        ejbClientBuilder.addTransportProvider(new RemoteTransportProvider());
-        final EJBClientConnection.Builder connBuilder = new EJBClientConnection.Builder();
-        connBuilder.setDestination(URI.create(String.format("remote+%s", baseURL1)));
-        ejbClientBuilder.addClientConnection(connBuilder.build());
-        // ====================================================================================
-        // set the custom ClusterNodeSelector
-        // ====================================================================================
-        ejbClientBuilder.setClusterNodeSelector(new CustomClusterNodeSelector());
-        final EJBClientContext ejbCtx = ejbClientBuilder.build();
-        EJBClientContext.getContextManager().setThreadDefault(ejbCtx);
+            Properties props = new Properties();
+            props.put(Context.INITIAL_CONTEXT_FACTORY, WildFlyInitialContextFactory.class.getName());
+            InitialContext ctx = new InitialContext(props);
+            String lookupName = "ejb:/" + MODULE_NAME + "/" + HeartbeatBean.class.getSimpleName() + "!" + Heartbeat.class.getName();
+            Heartbeat bean = (Heartbeat) ctx.lookup(lookupName);
 
-        Properties props = new Properties();
-        props.put(Context.INITIAL_CONTEXT_FACTORY, WildFlyInitialContextFactory.class.getName());
-        InitialContext ctx = new InitialContext(props);
-        String lookupName = "ejb:/" + MODULE_NAME + "/" + HeartbeatBean.class.getSimpleName() + "!" + Heartbeat.class.getName();
-        Heartbeat bean = (Heartbeat) ctx.lookup(lookupName);
+            // ====================================================================================
+            // first call goes to connected node regardless of CustomClusterNodeSelector
+            // ====================================================================================
+            Result<Date> res = bean.pulse();
+            Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);
 
-        // ====================================================================================
-        // first call goes to connected node regardless of CustomClusterNodeSelector
-        // ====================================================================================
-        Result<Date> res = bean.pulse();
-        Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);
+            // ====================================================================================
+            // subsequent calls must be routed to the node selected by the CustomClusterNodeSelector
+            // ====================================================================================
+            callBeanOnNode(bean, NODE_4);
+            callBeanOnNode(bean, NODE_2);
+            callBeanOnNode(bean, NODE_4);
+            callBeanOnNode(bean, NODE_4);
+            callBeanOnNode(bean, NODE_1);
+            callBeanOnNode(bean, NODE_3);
 
-        // ====================================================================================
-        // subsequent calls must be routed to the node selected by the CustomClusterNodeSelector
-        // ====================================================================================
-        callBeanOnNode(bean, NODE_4);
-        callBeanOnNode(bean, NODE_2);
-        callBeanOnNode(bean, NODE_4);
-        callBeanOnNode(bean, NODE_4);
-        callBeanOnNode(bean, NODE_1);
-        callBeanOnNode(bean, NODE_3);
-
-        ctx.close();
+            ctx.close();
+        } finally {
+            if ((BKP != null)) {
+                EJBClientContext.getContextManager().setThreadDefault(BKP);
+            }
+        }
     }
 
     /**
@@ -187,12 +163,10 @@ public class ClientClusterNodeSelectorTestCase extends AbstractClusteringTestCas
         CustomClusterNodeSelector.PICK_NODE = node;
         Result<Date> res = bean.pulse();
         Assert.assertEquals(
-                String.format("%s not being used by the client to select cluster node! Request was routed to node %s instead of node %s! maybe because affinity is '%s' and not 'Cluster \"ejb\"' (remote cluster name is '%s')?"
+                String.format("%s not being used by the client to select cluster node! Request was routed to node %s instead of node %s! (check affinity value in logs)"
                         , CustomClusterNodeSelector.class.getName()
                         , res.getNode()
-                        , CustomClusterNodeSelector.PICK_NODE
-                        , AFFINITY
-                        , CLUSTER_NAME)
+                        , CustomClusterNodeSelector.PICK_NODE)
                 , CustomClusterNodeSelector.PICK_NODE, res.getNode());
     }
 
