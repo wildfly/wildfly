@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,30 +22,21 @@
 
 package org.jboss.as.clustering.infinispan.subsystem.remote;
 
-import org.jboss.as.clustering.controller.ResourceServiceNameFactory;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.msc.service.ServiceName;
+import org.infinispan.commons.marshall.jboss.AbstractJBossMarshaller;
+import org.jboss.marshalling.ModularClassResolver;
+import org.jboss.modules.Module;
+import org.wildfly.clustering.marshalling.jboss.DynamicClassTable;
+import org.wildfly.clustering.marshalling.jboss.ExternalizerObjectTable;
 
 /**
- * Enumerates components of the remote cache container.
- *
  * @author Radoslav Husar
  */
-public enum RemoteCacheContainerComponent implements ResourceServiceNameFactory {
+public class HotRodMarshaller extends AbstractJBossMarshaller {
 
-    CONNECTION_POOL(ConnectionPoolResourceDefinition.PATH.getValue()),
-    MODULE("module"),
-    NEAR_CACHE(NearCacheResourceDefinition.WILDCARD_PATH.getKey()),
-    ;
-
-    private final String[] components;
-
-    RemoteCacheContainerComponent(String... components) {
-        this.components = components;
-    }
-
-    @Override
-    public ServiceName getServiceName(PathAddress remoteContainerAddress) {
-        return RemoteCacheContainerResourceDefinition.Capability.CONFIGURATION.getServiceName(remoteContainerAddress).append(this.components);
+    public HotRodMarshaller(Module module) {
+        super();
+        super.baseCfg.setClassResolver(ModularClassResolver.getInstance(module.getModuleLoader()));
+        super.baseCfg.setClassTable(new DynamicClassTable(module.getClassLoader()));
+        super.baseCfg.setObjectTable(new ExternalizerObjectTable(module.getClassLoader()));
     }
 }

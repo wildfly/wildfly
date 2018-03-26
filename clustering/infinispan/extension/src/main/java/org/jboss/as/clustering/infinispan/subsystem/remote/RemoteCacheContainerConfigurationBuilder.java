@@ -50,6 +50,7 @@ import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -77,6 +78,7 @@ public class RemoteCacheContainerConfigurationBuilder implements ResourceService
     private volatile String defaultRemoteCluster;
     private volatile int keySizeEstimate;
     private volatile int maxRetries;
+    private final ValueDependency<Module> module;
     private volatile String protocolVersion;
     private volatile int socketTimeout;
     private volatile boolean tcpNoDelay;
@@ -86,6 +88,7 @@ public class RemoteCacheContainerConfigurationBuilder implements ResourceService
     RemoteCacheContainerConfigurationBuilder(PathAddress address) {
         this.address = address;
         this.threadPools.put(ThreadPoolResourceDefinition.CLIENT, new InjectedValueDependency<>(ThreadPoolResourceDefinition.CLIENT.getServiceName(address), ExecutorFactoryConfiguration.class));
+        this.module = new InjectedValueDependency<>(RemoteCacheContainerComponent.MODULE.getServiceName(address), Module.class);
     }
 
     @Override
@@ -128,6 +131,7 @@ public class RemoteCacheContainerConfigurationBuilder implements ResourceService
                 .addDependency(RemoteCacheContainerComponent.NEAR_CACHE.getServiceName(address), NearCacheConfiguration.class, this.nearCache)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 ;
+        this.module.register(builder);
         for (ValueDependency<ExecutorFactoryConfiguration> dependency : this.threadPools.values()) {
             dependency.register(builder);
         }
@@ -143,6 +147,7 @@ public class RemoteCacheContainerConfigurationBuilder implements ResourceService
     @Override
     public Configuration getValue() {
         ConfigurationBuilder builder = new ConfigurationBuilder()
+                .marshaller(new HotRodMarshaller(this.module.getValue()))
                 .connectionTimeout(this.connectionTimeout)
                 .keySizeEstimate(this.keySizeEstimate)
                 .maxRetries(this.maxRetries)

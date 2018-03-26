@@ -22,9 +22,12 @@
 
 package org.jboss.as.clustering.infinispan.subsystem.remote;
 
+import static org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition.Attribute.MODULE;
+
 import java.util.EnumSet;
 
 import org.infinispan.client.hotrod.configuration.Configuration;
+import org.jboss.as.clustering.controller.ModuleBuilder;
 import org.jboss.as.clustering.controller.ParentResourceServiceHandler;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.infinispan.subsystem.InfinispanBindingFactory;
@@ -33,6 +36,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.infinispan.spi.RemoteCacheContainer;
@@ -55,6 +59,8 @@ public class RemoteCacheContainerServiceHandler extends ParentResourceServiceHan
 
         ServiceTarget target = context.getServiceTarget();
 
+        new ModuleBuilder(RemoteCacheContainerComponent.MODULE.getServiceName(address), MODULE).configure(context, model).build(target).setInitialMode(ServiceController.Mode.PASSIVE).install();
+
         RemoteCacheContainerBuilder containerBuilder = new RemoteCacheContainerBuilder(address).configure(context, model);
         containerBuilder.build(target).install();
 
@@ -72,6 +78,8 @@ public class RemoteCacheContainerServiceHandler extends ParentResourceServiceHan
             ServiceName serviceName = component.getServiceName(address);
             context.removeService(serviceName);
         }
+
+        context.removeService(RemoteCacheContainerComponent.MODULE.getServiceName(address));
 
         super.removeServices(context, model);
     }

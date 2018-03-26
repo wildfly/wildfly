@@ -36,6 +36,7 @@ import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.RestartParentResourceRegistration;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
+import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
 import org.jboss.as.clustering.infinispan.subsystem.InfinispanExtension;
 import org.jboss.as.clustering.infinispan.subsystem.ThreadPoolResourceDefinition;
 import org.jboss.as.controller.AttributeDefinition;
@@ -84,6 +85,7 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
         DEFAULT_REMOTE_CLUSTER("default-remote-cluster", ModelType.STRING, builder -> builder.setRequired(true).setCapabilityReference(new CapabilityReference(Capability.CONFIGURATION, RemoteClusterResourceDefinition.Requirement.REMOTE_CLUSTER))),
         KEY_SIZE_ESTIMATE("key-size-estimate", ModelType.INT, new ModelNode(64)),
         MAX_RETRIES("max-retries", ModelType.INT, new ModelNode(10)),
+        MODULE("module", ModelType.STRING, builder -> builder.setDefaultValue(new ModelNode("org.jboss.as.clustering.infinispan")).setValidator(new ModuleIdentifierValidatorBuilder().configure(builder).build())),
         PROTOCOL_VERSION("protocol-version", ModelType.STRING, builder -> builder.setDefaultValue(new ModelNode(ProtocolVersion.DEFAULT_PROTOCOL_VERSION.toString())).setValidator(new EnumValidator<>(ProtocolVersion.class))),
         SOCKET_TIMEOUT("socket-timeout", ModelType.INT, new ModelNode(60000)),
         TCP_NO_DELAY("tcp-no-delay", ModelType.BOOLEAN, new ModelNode(true)),

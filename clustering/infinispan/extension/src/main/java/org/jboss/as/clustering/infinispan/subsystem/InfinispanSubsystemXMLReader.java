@@ -1789,6 +1789,10 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     readAttribute(reader, i, operation, RemoteCacheContainerResourceDefinition.Attribute.MAX_RETRIES);
                     break;
                 }
+                case MODULE: {
+                    readAttribute(reader, i, operation, RemoteCacheContainerResourceDefinition.Attribute.MODULE);
+                    break;
+                }
                 case PROTOCOL_VERSION: {
                     readAttribute(reader, i, operation, RemoteCacheContainerResourceDefinition.Attribute.PROTOCOL_VERSION);
                     break;

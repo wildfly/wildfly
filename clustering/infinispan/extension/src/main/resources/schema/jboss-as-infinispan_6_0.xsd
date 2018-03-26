@@ -1162,6 +1162,11 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="module" type="xs:string" default="org.jboss.as.clustering.infinispan">
+            <xs:annotation>
+                <xs:documentation>Defines the module whose class loader should be used when configuring remote cache container marshaller.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
         <xs:attribute name="name" type="xs:string" use="required">
             <xs:annotation>
                 <xs:documentation>
