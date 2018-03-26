@@ -123,6 +123,7 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
                 .setDiscard(new DiscardAttributeValueChecker(QUEUE_REQUESTS_ON_START.getDefaultValue()), QUEUE_REQUESTS_ON_START)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, QUEUE_REQUESTS_ON_START)
                 .end();
+        subsystemBuilder.rejectChildResource(UndertowExtension.BYTE_BUFFER_POOL_PATH);
     }
 
     private static void addCommonListenerRules_EAP_7_1_0(AttributeTransformationDescriptionBuilder listener) {

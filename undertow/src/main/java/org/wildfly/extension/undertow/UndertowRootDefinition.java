@@ -105,6 +105,7 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
     static final ApplicationSecurityDomainDefinition APPLICATION_SECURITY_DOMAIN = ApplicationSecurityDomainDefinition.INSTANCE;
     static final AttributeDefinition[] ATTRIBUTES = { DEFAULT_VIRTUAL_HOST, DEFAULT_SERVLET_CONTAINER, DEFAULT_SERVER, INSTANCE_ID, STATISTICS_ENABLED, DEFAULT_SECURITY_DOMAIN };
     static final PersistentResourceDefinition[] CHILDREN = {
+            ByteBufferPoolDefinition.INSTANCE,
             BufferCacheDefinition.INSTANCE,
             ServerDefinition.INSTANCE,
             ServletContainerDefinition.INSTANCE,

@@ -40,6 +40,7 @@
             </xs:documentation>
         </xs:annotation>
         <xs:sequence>
+            <xs:element name="byte-buffer-pool" type="byte-buffer-poolType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="buffer-cache" type="buffer-cacheType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="server" type="serverType" minOccurs="1" maxOccurs="unbounded"/>
             <xs:element name="servlet-container" type="servletContainerType" minOccurs="0" maxOccurs="unbounded"/>
@@ -580,6 +581,21 @@
         <xs:attribute name="max-regions" use="optional" type="xs:string"/>
     </xs:complexType>
 
+    <xs:complexType name="byte-buffer-poolType">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                The buffer pool used for IO operations
+                ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="name" use="required" type="xs:string"/>
+        <xs:attribute name="buffer-size" use="optional" type="xs:int"/>
+        <xs:attribute name="direct" use="optional" type="xs:boolean"/>
+        <xs:attribute name="thread-local-cache-size" use="optional" type="xs:int"/>
+        <xs:attribute name="max-pool-size" use="optional" type="xs:int"/>
+        <xs:attribute name="leak-detection-percent" use="optional" type="xs:int"/>
+    </xs:complexType>
     <xs:complexType name="request-limitType">
         <xs:attribute name="name" use="required" type="xs:string"/>
         <xs:attribute name="max-concurrent-requests" use="required" type="xs:integer"/>

@@ -28,6 +28,7 @@ import java.util.Properties;
 import javax.net.ssl.SSLContext;
 
 import io.undertow.predicate.Predicates;
+import io.undertow.server.DefaultByteBufferPool;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.PathHandler;
 import org.jboss.as.controller.ControlledProcessStateService;
@@ -54,7 +55,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.ImmediateValue;
 import org.junit.Assert;
-import org.wildfly.extension.io.BufferPoolService;
 import org.wildfly.extension.io.IOServices;
 import org.wildfly.extension.io.WorkerService;
 import org.wildfly.extension.undertow.filters.FilterRef;
@@ -222,7 +222,7 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
                 target.addService(ControlledProcessStateService.SERVICE_NAME, new AbstractService<ControlledProcessStateService>() {
                 }).install();
 
-                target.addService(IOServices.BUFFER_POOL.append("default"), new BufferPoolService(2048, 2048, true))
+                target.addService(ServiceName.parse(Capabilities.CAPABILITY_BYTE_BUFFER_POOL + ".default"), new ValueService<>(new ImmediateValue<>(new DefaultByteBufferPool(true, 2048))))
                         .setInitialMode(ServiceController.Mode.ACTIVE).install();
                 // ListenerRegistry.Listener listener = new ListenerRegistry.Listener("http", "default", "default",
                 // InetSocketAddress.createUnresolved("localhost",8080));

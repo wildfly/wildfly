@@ -47,6 +47,7 @@ public class UndertowExtension implements Extension {
 
     public static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
 
+    public static final PathElement BYTE_BUFFER_POOL_PATH = PathElement.pathElement(Constants.BYTE_BUFFER_POOL);
     public static final PathElement PATH_HANDLERS = PathElement.pathElement(Constants.CONFIGURATION, Constants.HANDLER);
     public static final PathElement PATH_FILTERS = PathElement.pathElement(Constants.CONFIGURATION, Constants.FILTER);
     public static final PathElement PATH_JSP = PathElement.pathElement(Constants.SETTING, Constants.JSP);

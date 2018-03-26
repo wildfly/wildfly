@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.undertow;
 
+import io.undertow.connector.ByteBufferPool;
 import io.undertow.security.api.AuthenticationMechanismFactory;
 import io.undertow.server.handlers.cache.DirectBufferCache;
 import io.undertow.servlet.api.CrawlerSessionManagerConfig;
@@ -34,10 +35,8 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.xnio.Pool;
 import org.xnio.XnioWorker;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -69,7 +68,7 @@ public class ServletContainerService implements Service<ServletContainerService>
     private final CrawlerSessionManagerConfig crawlerSessionManagerConfig;
 
     private final boolean websocketsEnabled;
-    private final InjectedValue<Pool<ByteBuffer>> websocketsBufferPool = new InjectedValue<>();
+    private final InjectedValue<ByteBufferPool> websocketsBufferPool = new InjectedValue<>();
     private final InjectedValue<XnioWorker> websocketsWorker = new InjectedValue<>();
     private final boolean dispatchWebsocketInvocationToWorker;
     private final boolean perMessageDeflate;
@@ -183,7 +182,7 @@ public class ServletContainerService implements Service<ServletContainerService>
         return websocketsWorker;
     }
 
-    public InjectedValue<Pool<ByteBuffer>> getWebsocketsBufferPool() {
+    public InjectedValue<ByteBufferPool> getWebsocketsBufferPool() {
         return websocketsBufferPool;
     }
 

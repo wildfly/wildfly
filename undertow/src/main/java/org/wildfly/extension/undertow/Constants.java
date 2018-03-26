@@ -256,4 +256,9 @@ public interface Constants {
     String DEFAULT_COOKIE_VERSION = "default-cookie-version";
 
     String PROXY_PROTOCOL = "proxy-protocol";
+    String MAX_POOL_SIZE = "max-pool-size";
+    String THREAD_LOCAL_CACHE_SIZE = "thread-local-cache-size";
+    String DIRECT = "direct";
+    String LEAK_DETECTION_PERCENT = "leak-detection-percent";
+    String BYTE_BUFFER_POOL = "byte-buffer-pool";
 }
