@@ -314,6 +314,51 @@
             </build>
         </profile>
         <profile>
+            <id>docs</id>
+            <activation>
+                <property>
+                    <name>release</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.asciidoctor</groupId>
+                        <artifactId>asciidoctor-maven-plugin</artifactId>
+                        <version>1.5.6</version>
+                        <configuration>
+                            <backend>html5</backend>
+                            <attributes>
+                                <artifactId>${project.artifactId}</artifactId>
+                            </attributes>
+                            <resources>
+                                <resource>
+                                    <directory>.</directory>
+                                    <excludes>
+                                        <exclude>**/*</exclude>
+                                    </excludes>
+                                </resource>
+                            </resources>
+                            <doctype>article</doctype>
+                            <sourceDirectory>.</sourceDirectory>
+                            <sourceDocumentName>README.adoc</sourceDocumentName>
+                            <outputFile>README.html</outputFile>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>output-html</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>process-asciidoc</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                </plugins>
+            </build>
+        </profile>
+        <profile>
             <!-- When built in OpenShift the 'openshift' profile will be
                 used when invoking mvn. -->
             <!-- Use this profile for any OpenShift specific customization
@@ -327,10 +372,19 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-war-plugin</artifactId>
-                        <version>${version.war.plugin}</version>
                         <configuration>
                             <warName>ROOT</warName>
                         </configuration>
+                    </plugin>
+                    <plugin>
+                      <groupId>org.apache.maven.plugins</groupId>
+                      <artifactId>maven-source-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>
