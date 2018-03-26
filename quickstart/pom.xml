@@ -359,6 +359,17 @@
             </build>
         </profile>
         <profile>
+            <id>adoc</id>
+            <activation>
+                <file>
+                    <missing>README.adoc</missing>
+                </file>
+            </activation>
+            <properties>
+                <asciidoctor.skip>true</asciidoctor.skip>
+            </properties>
+        </profile>
+        <profile>
             <!-- When built in OpenShift the 'openshift' profile will be
                 used when invoking mvn. -->
             <!-- Use this profile for any OpenShift specific customization
