@@ -1,0 +1,27 @@
+= EJB Client Interceptors
+
+== Implementing Client Interceptors
+
+The EJB client supports the notion of client side interceptors. These are interceptors
+that are run before an invocation is dispatched, and can modify various properties of
+the request before it is sent, as well as modifying parameters and the return value.
+
+These interceptors are represented by the class `org.jboss.ejb.client.EJBClientInterceptor`,
+and are generally registered placing interceptor class names in
+`META-INF/services/org.jboss.ejb.client.EJBClientInterceptor`.
+
+For more details about what can be modified refer to the EJB client JavaDoc.
+
+== Accessing invocation context data
+
+It is possible for client interceptors to access data from the invocation context context data map used in the server
+invocation (i.e. `InvocationContext.getContextData()`). To access a specific key you must call
+`org.jboss.ejb.client.EJBClientInvocationContext.addReturnedContextDataKey(String key)` with
+the name of the key you are interested in. This method must be called from the `handleInvocation` method
+of the interceptor.
+
+If there is data in the context map under this specific key then it will be send back to the client
+and will be available in the handleInvocationResult in the client invocations context data map.
+
+
+
