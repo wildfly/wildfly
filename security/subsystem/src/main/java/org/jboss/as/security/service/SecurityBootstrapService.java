@@ -76,7 +76,12 @@ public class SecurityBootstrapService implements Service<Void> {
 
     private Policy oldPolicy;
 
-    private Policy jaccPolicy;
+    /**
+     * This is static because we want to keep using the same one after reload
+     *
+     * see https://issues.jboss.org/browse/WFLY-10066
+     */
+    private static volatile Policy jaccPolicy;
 
     private final boolean initializeJacc;
 
@@ -107,24 +112,26 @@ public class SecurityBootstrapService implements Service<Void> {
         try {
             // Get the current Policy impl
             oldPolicy = Policy.getPolicy();
-            String module = WildFlySecurityManager.getPropertyPrivileged(JACC_MODULE, null);
-            String provider = WildFlySecurityManager.getPropertyPrivileged(JACC_POLICY_PROVIDER, "org.jboss.security.jacc.DelegatingPolicy");
-            Class<?> providerClass = loadClass(module, provider);
-            try {
-                // Look for a ctor(Policy) signature
-                Class<?>[] ctorSig = { Policy.class };
-                Constructor<?> ctor = providerClass.getConstructor(ctorSig);
-                Object[] ctorArgs = { oldPolicy };
-                jaccPolicy = (Policy) ctor.newInstance(ctorArgs);
-            } catch (NoSuchMethodException e) {
-                log.debugf("Provider does not support ctor(Policy)");
+            if(jaccPolicy == null) {
+                String module = WildFlySecurityManager.getPropertyPrivileged(JACC_MODULE, null);
+                String provider = WildFlySecurityManager.getPropertyPrivileged(JACC_POLICY_PROVIDER, "org.jboss.security.jacc.DelegatingPolicy");
+                Class<?> providerClass = loadClass(module, provider);
                 try {
-                    jaccPolicy = (Policy) providerClass.newInstance();
-                } catch (Exception e1) {
-                    throw SecurityLogger.ROOT_LOGGER.unableToStartException("SecurityBootstrapService", e1);
+                    // Look for a ctor(Policy) signature
+                    Class<?>[] ctorSig = {Policy.class};
+                    Constructor<?> ctor = providerClass.getConstructor(ctorSig);
+                    Object[] ctorArgs = {oldPolicy};
+                    jaccPolicy = (Policy) ctor.newInstance(ctorArgs);
+                } catch (NoSuchMethodException e) {
+                    log.debugf("Provider does not support ctor(Policy)");
+                    try {
+                        jaccPolicy = (Policy) providerClass.newInstance();
+                    } catch (Exception e1) {
+                        throw SecurityLogger.ROOT_LOGGER.unableToStartException("SecurityBootstrapService", e1);
+                    }
+                } catch (Exception e) {
+                    throw SecurityLogger.ROOT_LOGGER.unableToStartException("SecurityBootstrapService", e);
                 }
-            } catch (Exception e) {
-                throw SecurityLogger.ROOT_LOGGER.unableToStartException("SecurityBootstrapService", e);
             }
 
             // Install the JACC policy provider
