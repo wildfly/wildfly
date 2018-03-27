@@ -30,6 +30,7 @@
 
 
     <resources>
+        <artifact name="${org.infinispan:infinispan-hibernate-cache-spi}"/>
         <artifact name="${org.infinispan:infinispan-hibernate-cache-commons}"/>
         <artifact name="${org.infinispan:infinispan-hibernate-cache-spi}"/>
         <artifact name="${org.infinispan:infinispan-hibernate-cache-v51}"/>
@@ -39,8 +40,10 @@
         <module name="org.hibernate"/>
         <module name="javax.api"/>
         <module name="javax.transaction.api"/>
+        <module name="org.hibernate.jipijapa-hibernate5" services="import"/>
         <module name="org.infinispan" services="import"/>
         <module name="org.infinispan.commons"/>
+        <module name="org.jboss.as.jpa.spi"/>
         <module name="org.jboss.logging"/>
     </dependencies>
 </module>

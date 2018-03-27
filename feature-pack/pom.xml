@@ -900,6 +900,10 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>jipijapa-hibernate5-legacy</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -2254,6 +2258,10 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-hibernate-cache-spi</artifactId>
         </dependency>
 
         <dependency>

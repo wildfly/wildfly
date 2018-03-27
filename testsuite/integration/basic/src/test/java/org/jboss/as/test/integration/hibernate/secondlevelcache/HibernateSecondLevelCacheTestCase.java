@@ -51,7 +51,7 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class HibernateSecondLevelCacheTestCase {
 
-    private static final String FACTORY_CLASS = "<property name=\"hibernate.cache.region.factory_class\">org.jboss.as.jpa.hibernate5.infinispan.InfinispanRegionFactory</property>";
+    private static final String FACTORY_CLASS = "<property name=\"hibernate.cache.region.factory_class\">org.infinispan.hibernate.cache.v51.InfinispanRegionFactory</property>";
     private static final String MODULE_DEPENDENCIES = "Dependencies: org.hibernate.envers export,org.hibernate\n";
 
     private static final String ARCHIVE_NAME = "hibernateSecondLevel_test";
@@ -63,6 +63,7 @@ public class HibernateSecondLevelCacheTestCase {
             + "<property name=\"hibernate.cache.use_second_level_cache\">true</property>"
             + "<property name=\"hibernate.show_sql\">false</property>"
             + FACTORY_CLASS
+            + "<property name=\"hibernate.cache.infinispan.shared\">false</property>"
             + "<mapping resource=\"testmapping.hbm.xml\"/>" + "</session-factory></hibernate-configuration>";
 
     public static final String testmapping = "<?xml version=\"1.0\"?>" + "<!DOCTYPE hibernate-mapping PUBLIC "

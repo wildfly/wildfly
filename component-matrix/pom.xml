@@ -321,6 +321,11 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>jipijapa-hibernate5-legacy</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>${project.groupId}</groupId>
@@ -3807,6 +3812,12 @@
                         <groupId>io.reactivex.rxjava2</groupId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.infinispan</groupId>
+                <artifactId>infinispan-hibernate-cache-spi</artifactId>
+                <version>${version.org.infinispan}</version>
             </dependency>
             <dependency>
                 <groupId>org.infinispan</groupId>
