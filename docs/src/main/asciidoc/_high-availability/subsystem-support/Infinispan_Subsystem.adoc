@@ -1,554 +1,395 @@
 [[Infinispan_Subsystem]]
 = Infinispan Subsystem
 
-[[infinispan-purpose]]
-== Purpose
+The Infinispan subsystem configures a set of Infinispan cache containers and cache configurations for use by WildFly clustering services.
 
-The Infinispan subsystem provides caching support for HA services in the
-form of Infinispan caches: high-performance, transactional caches which
-can operate in both non-distributed and distributed scenarios.
-Distributed caching support is used in the provision of many key HA
-services. For example, the failover of a session-oriented client HTTP
-request from a failing node to a new (failover) node depends on session
-data for the client being available on the new node. In other words, the
-client session data needs to be replicated across nodes in the cluster.
-This is effectively achieved via a distributed Infinispan cache. This
-approach to providing fail-over also applies to EJB SFSB sessions. Over
-and above providing support for fail-over, an underlying cache is also
-required when providing second-level caching for entity beans using
-Hibernate, and this case is also handled through the use of an
-Infinispan cache.
+== Cache container
 
-The Infinispan subsystem provides the following features:
+A cache container manages a set of cache configurations that share the same transport and marshalling configuration.
+Cache containers returned by the Infinispan subsystem are auto-configured with the following customizations:
 
-* allows definition and configuration of named cache containers and caches
-* view run-time metrics associated with cache container and cache instances
+* A custom xref:transport[transport] capable of sharing a JGroups channel defined by the JGroups subsystem.
+* Uses WildFly's mbean server, if the org.jboss.as.jmx extension is present.
+* Marshaller configured to resolve classes using JBoss Modules.
+* Marshaller configured with a set of marshalling optimizations for common JDK classes
+* Marshaller configured with additional Externalizers loadable from the configured module attribute.
 
-In the following sections, we describe the Infinispan subsystem.
-
-[IMPORTANT]
-
-Infinispan cache containers and caches are created transparently as part
-of the clustering functionality (e.g. on clustered application
-deployment, cache containers and their associated caches will be created
-behind the scenes to support clustered features such as session
-replication or caching of entities around the cluster).
-
-[[infinispan-configuration-example]]
-== Configuration Example
-
-In this section, we provide an example XML configuration of the
-infinispan subsystem and review the configuration elements and
-attributes.
-
-[IMPORTANT]
-
-The schema for the subsystem, describing all valid elements and
-attributes, can be found in the WildFly distribution, in the `docs/schema`
-directory.
-
-[source, xml]
+e.g. To create a new cache container that loads marshallers from the "org.bar" module:
+[source]
 ----
-<subsystem xmlns="urn:jboss:domain:infinispan:6.0">
-    <cache-container name="server" aliases="singleton cluster" default-cache="default" module="org.wildfly.clustering.server">
-        <transport lock-timeout="60000"/>
-        <replicated-cache name="default">
-            <transaction mode="BATCH"/>
-        </replicated-cache>
-    </cache-container>
-    <cache-container name="web" default-cache="dist" module="org.wildfly.clustering.web.infinispan">
-        <transport lock-timeout="60000"/>
-        <distributed-cache name="dist">
-            <locking isolation="REPEATABLE_READ"/>
-            <transaction mode="BATCH"/>
-            <file-store/>
-        </distributed-cache>
-    </cache-container>
-    <cache-container name="ejb" aliases="sfsb" default-cache="dist" module="org.wildfly.clustering.ejb.infinispan">
-        <transport lock-timeout="60000"/>
-        <distributed-cache name="dist">
-            <locking isolation="REPEATABLE_READ"/>
-            <transaction mode="BATCH"/>
-            <file-store/>
-        </distributed-cache>
-    </cache-container>
-    <cache-container name="hibernate" default-cache="local-query" module="org.infinispan.hibernate-cache">
-        <transport lock-timeout="60000"/>
-        <local-cache name="local-query">
-            <object-memory size="10000"/>
-            <expiration max-idle="100000"/>
-        </local-cache>
-        <invalidation-cache name="entity">
-            <transaction mode="NON_XA"/>
-            <object-memory size="10000"/>
-            <expiration max-idle="100000"/>
-        </invalidation-cache>
-        <replicated-cache name="timestamps"/>
-    </cache-container>
-</subsystem>
+/subsystem=infinispan/cache-container=foo:add(module=org.foo)
 ----
 
-[[cache-container]]
-=== <cache-container>
+A cache container may designate a specific cache as its default cache, i.e. the cache returned via http://docs.jboss.org/infinispan/9.2/apidocs/org/infinispan/manager/CacheContainer.html#getCache--[CacheContainer.getCache()]:
 
-This element is used to configure a cache container.
+e.g. To set "bar" as the default cache of the "foo" container:
+[source]
+----
+/subsystem=infinispan/cache-container=foo:write-attribute(name=default-cache, value=bar)
+----
 
-* `name` This attribute is used to specify the name of the cache
-container.
-* `default-cache` This attribute configures the default cache to be
-used, when no cache is otherwise specified.
-* `listener-executor` This attribute references a defined thread pool
-executor in the threads subsystem. It governs the allocation and
-execution of runnable tasks in the replication queue.
-* `eviction-executor` This attribute references a defined thread pool
-executor in the threads subsystem. It governs the allocation and
-execution of runnable tasks to handle evictions.
-* `replication-queue-executor` This attribute references a defined
-thread pool executor in the threads subsystem. It governs the allocation
-and execution of runnable tasks to handle asynchronous cache operations.
-* `jndi-name` This attribute is used to assign a name for the cache
-container in the JNDI name service.
-* `module` This attribute configures the module whose class loader
-should be used when building this cache container's configuration.
-* `start` This attribute configured the cache container start mode and
-has since been deprecated, the only supported and the default value is
-LAZY (on-demand start).
-* `aliases` This attribute is used to define aliases for the cache
-container name.
+[[transport]]
+=== Transport
 
-This element has the following child elements: *<transport>*,
-*<local-cache>*, *<invalidation-cache>*, *<replicated-cache>*, and
-*<distributed-cache>*.
+Configures the mechanism used by clustered caches to communicate with each other.
+It is only necessary to define a transport if the cache container contains clustered caches.
 
-[[infinispan-transport]]
-==== <transport>
-
-This element is used to configure the JGroups transport used by the
-cache container, when required.
-
-* `stack` This attribute configures the JGroups stack to be used for the
-transport. If none is specified, the default-stack for the JGroups
-subsystem is used.
-* `cluster` This attribute configures the name of the group
-communication cluster. This is the name which will be seen in debugging
-logs.
-* `executor` This attribute references a defined thread pool executor in
-the threads subsystem. It governs the allocation and execution of
-runnable tasks to handle ? <fill me in >?.
-* `lock-timeout` This attribute configures the time-out to be used when
-obtaining locks for the transport.
-* `site` This attribute configures the site id of the cache container.
-* `rack` This attribute configures the rack id of the cache container.
-* `machine` This attribute configures the machine id of the cache
-container.
-+
-[IMPORTANT]
-
-The presence of the transport element is required when operating in
-clustered mode
-
-The remaining child elements of *<cache-container>*, namely
-*<local-cache>*, *<invalidation-cache>*, *<replicated-cache>* and
-*<distributed-cache>*, each configures one of four key cache types or
-classifications.
-
-[IMPORTANT]
-
-These cache-related elements are actually part of an xsd hierarchy with
-abstract complexTypes *cache*, *clustered-cache*, and *shared-cache*. In
-order to simplify the presentation, we notate these as pseudo-elements
-*<abstract cache>*, *<abstract clustered-cache>* and *<abstract
-shared-cache>*. In what follows, we first describe the extension
-hierarchy of base elements, and then show how the cache type elements
-relate to them.
-
-[[abstract-cache]]
-==== <abstract cache>
-
-This abstract base element defines the attributes and child elements
-common to all non-clustered caches.
-
-* `name` This attribute configures the name of the cache. This name may
-be referenced by other subsystems.
-* `start` This attribute configured the cache container start mode and
-has since been deprecated, the only supported and the default value is
-LAZY (on-demand start).
-* `batching` This attribute configures batching. If enabled, the
-invocation batching API will be made available for this cache.
-* `indexing` This attribute configures indexing. If enabled, entries
-will be indexed when they are added to the cache. Indexes will be
-updated as entries change or are removed.
-* `jndi-name` This attribute is used to assign a name for the cache in
-the JNDI name service.
-* `module` This attribute configures the module whose class loader
-should be used when building this cache container's configuration.
-
-The <abstract cache> abstract base element has the following child
-elements: *<indexing-properties>, <locking>*, *<transaction>*,
-*<eviction>*, *<expiration>*, *<store>*, *<file-store>*,
-*<string-keyed-jdbc-store>*, *<binary-keyed-jdbc-store>*,
-*<mixed-keyed-jdbc-store>*, *<remote-store>*.
-
-[[indexing-properties]]
-===== <indexing-properties>
-
-This child element defines properties to control indexing behaviour.
-
-[[locking]]
-===== <locking>
-
-This child element configures the locking behaviour of the cache.
-
-* `isolation` This attribute the cache locking isolation level.
-Allowable values are NONE, SERIALIZABLE, REPEATABLE_READ,
-READ_COMMITTED, READ_UNCOMMITTED.
-* `striping` If true, a pool of shared locks is maintained for all
-entries that need to be locked. Otherwise, a lock is created per entry
-in the cache. Lock striping helps control memory footprint but may
-reduce concurrency in the system.
-* `acquire-timeout` This attribute configures the maximum time to
-attempt a particular lock acquisition.
-* `concurrency-level` This attribute is used to configure the
-concurrency level. Adjust this value according to the number of
-concurrent threads interacting with Infinispan.
-
-[[transaction]]
-===== <transaction>
-
-This child element configures the transactional behaviour of the cache.
-
-* `mode` This attribute configures the transaction mode, setting the
-cache transaction mode to one of NONE, NON_XA, NON_DURABLE_XA, FULL_XA.
-* `stop-timeout` If there are any ongoing transactions when a cache is
-stopped, Infinispan waits for ongoing remote and local transactions to
-finish. The amount of time to wait for is defined by the cache stop
-timeout.
-* `locking` This attribute configures the locking mode for this cache,
-one of OPTIMISTIC or PESSIMISTIC.
-
-[[eviction]]
-===== <eviction>
-
-This child element configures the eviction behaviour of the cache.
-
-* `strategy` This attribute configures the cache eviction strategy.
-Available options are 'UNORDERED', 'FIFO', 'LRU', 'LIRS' and 'NONE' (to
-disable eviction).
-* `max-entries` This attribute configures the maximum number of entries
-in a cache instance. If selected value is not a power of two the actual
-value will default to the least power of two larger than selected value.
--1 means no limit.
-
-[[expiration]]
-===== <expiration>
-
-This child element configures the expiration behaviour of the cache.
-
-* `max-idle` This attribute configures the maximum idle time a cache
-entry will be maintained in the cache, in milliseconds. If the idle time
-is exceeded, the entry will be expired cluster-wide. -1 means the
-entries never expire.
-* `lifespan` This attribute configures the maximum lifespan of a cache
-entry, after which the entry is expired cluster-wide, in milliseconds.
--1 means the entries never expire.
-* `interval` This attribute specifies the interval (in ms) between
-subsequent runs to purge expired entries from memory and any cache
-stores. If you wish to disable the periodic eviction process altogether,
-set wakeupInterval to -1.
-
-The remaining child elements of the abstract base element *<cache>*,
-namely *<store>*, *<file-store>*, *<remote-store>*,
-*<string-keyed-jdbc-store>*, *<binary-keyed-jdbc-store>* and
-*<mixed-keyed-jdbc-store>*, each configures one of six key cache store
-types.
-
-[IMPORTANT]
-
-These cache store-related elements are actually part of an xsd extension
-hierarchy with abstract complexTypes *base-store* and *base-jdbc-store*.
-As before, in order to simplify the presentation, we notate these as
-pseudo-elements *<abstract base-store>* and *<abstract
-base-jdbc-store>*. In what follows, we first describe the extension
-hierarchy of base elements, and then show how the cache store elements
-relate to them.
-
-[[abstract-base-store]]
-===== <abstract base-store>
-
-This abstract base element defines the attributes and child elements
-common to all cache stores.
-
-* `shared` This attribute should be set to true when multiple cache
-instances share the same cache store (e.g. multiple nodes in a cluster
-using a JDBC-based CacheStore pointing to the same, shared database)
-Setting this to true avoids multiple cache instances writing the same
-modification multiple times. If enabled, only the node where the
-modification originated will write to the cache store. If disabled, each
-individual cache reacts to a potential remote update by storing the data
-to the cache store.
-* `preload` This attribute configures whether or not, when the cache
-starts, data stored in the cache loader will be pre-loaded into memory.
-This is particularly useful when data in the cache loader is needed
-immediately after start-up and you want to avoid cache operations being
-delayed as a result of loading this data lazily. Can be used to provide
-a 'warm-cache' on start-up, however there is a performance penalty as
-start-up time is affected by this process. Note that pre-loading is done
-in a local fashion, so any data loaded is only stored locally in the
-node. No replication or distribution of the preloaded data happens.
-Also, Infinispan only pre-loads up to the maximum configured number of
-entries in eviction.
-* `passivation` If true, data is only written to the cache store when it
-is evicted from memory, a phenomenon known as _passivation_. Next time
-the data is requested, it will be 'activated' which means that data will
-be brought back to memory and removed from the persistent store. If
-false, the cache store contains a copy of the cache contents in memory,
-so writes to cache result in cache store writes. This essentially gives
-you a 'write-through' configuration.
-* `fetch-state` This attribute, if true, causes persistent state to be
-fetched when joining a cluster. If multiple cache stores are chained,
-only one of them can have this property enabled.
-* `purge` This attribute configures whether the cache store is purged
-upon start-up.
-* `singleton` This attribute configures whether or not the singleton
-store cache store is enabled. SingletonStore is a delegating cache store
-used for situations when only one instance in a cluster should interact
-with the underlying store.
-* `class` This attribute configures a custom store implementation class
-to use for this cache store.
-* `properties` This attribute is used to configure a list of cache store
-properties.
-
-The abstract base element has one child element: *<write-behind>*
-
-[[write-behind]]
-===== <write-behind>
-
-This element is used to configure a cache store as write-behind instead
-of write-through. In write-through mode, writes to the cache are also
-_synchronously_ written to the cache store, whereas in write-behind
-mode, writes to the cache are followed by _asynchronous_ writes to the
-cache store.
-
-* `flush-lock-timeout` This attribute configures the time-out for
-acquiring the lock which guards the state to be flushed to the cache
-store periodically.
-* `modification-queue-size` This attribute configures the maximum number
-of entries in the asynchronous queue. When the queue is full, the store
-becomes write-through until it can accept new entries.
-* `shutdown-timeout` This attribute configures the time-out (in ms) to
-stop the cache store.
-* `thread-pool` This attribute is used to configure the size of the
-thread pool whose threads are responsible for applying the modifications
-to the cache store.
-
-[[abstract-base-jdbc-store-extends-abstract-base-store]]
-===== <abstract base-jdbc-store> extends <abstract base-store>
-
-This abstract base element defines the attributes and child elements
-common to all JDBC-based cache stores.
-
-* `datasource` This attribute configures the datasource for the
-JDBC-based cache store.
-* `entry-table` This attribute configures the database table used to
-store cache entries.
-* `bucket-table` This attribute configures the database table used to
-store binary cache entries.
-
-[[file-store-extends-abstract-base-store]]
-===== <file-store> extends <abstract base-store>
-
-This child element is used to configure a file-based cache store. This
-requires specifying the name of the file to be used as backing storage
-for the cache store.
-
-* `relative-to` This attribute optionally configures a relative path
-prefix for the file store path. Can be null.
-* `path` This attribute configures an absolute path to a file if
-*relative-to* is null; configures a relative path to the file, in
-relation to the value for *relative-to*, otherwise.
-
-[[remote-store-extends-abstract-base-store]]
-===== <remote-store> extends <abstract base-store>
-
-This child element of cache is used to configure a remote cache store.
-It has a child <remote-servers>.
-
-* `cache` This attribute configures the name of the remote cache to use
-for this remote store.
-* `tcp-nodelay` This attribute configures a TCP_NODELAY value for
-communication with the remote cache.
-* `socket-timeout` This attribute configures a socket time-out for
-communication with the remote cache.
-
-[[remote-servers]]
-===== <remote-servers>
-
-This child element of cache configures a list of remote servers for this
-cache store.
-
-[[remote-server]]
-===== <remote-server>
-
-This element configures a remote server. A remote server is defined
-completely by a locally defined outbound socket binding, through which
-communication is made with the server.
-
-* `outbound-socket-binding` This attribute configures an outbound socket
-binding for a remote server.
-
-[[local-cache-extends-abstract-cache]]
-==== <local-cache> extends <abstract cache>
-
-This element configures a local cache.
-
-[[abstract-clustered-cache-extends-abstract-cache]]
-==== <abstract clustered-cache> extends <abstract cache>
-
-This abstract base element defines the attributes and child elements
-common to all clustered caches. A clustered cache is a cache which spans
-multiple nodes in a cluster. It inherits from <cache>, so that all
-attributes and elements of <cache> are also defined for
-<clustered-cache>.
-
-* `async-marshalling` This attribute configures async marshalling. If
-enabled, this will cause marshalling of entries to be performed
-asynchronously.
-* `mode` This attribute configures the clustered cache mode, ASYNC for
-asynchronous operation, or SYNC for synchronous operation.
-* `queue-size` In ASYNC mode, this attribute can be used to trigger
-flushing of the queue when it reaches a specific threshold.
-* `queue-flush-interval` In ASYNC mode, this attribute controls how
-often the asynchronous thread used to flush the replication queue runs.
-This should be a positive integer which represents thread wakeup time in
-milliseconds.
-* `remote-timeout` In SYNC mode, this attribute (in ms) used to wait for
-an acknowledgement when making a remote call, after which the call is
-aborted and an exception is thrown.
-
-[[invalidation-cache-extends-abstract-clustered-cache]]
-==== <invalidation-cache> extends <abstract clustered-cache>
-
-This element configures an invalidation cache.
-
-[[abstract-shared-cache-extends-abstract-clustered-cache]]
-==== <abstract shared-cache> extends <abstract clustered-cache>
-
-This abstract base element defines the attributes and child elements
-common to all shared caches. A shared cache is a clustered cache which
-shares state with its cache peers in the cluster. It inherits from
-<clustered-cache>, so that all attributes and elements of
-<clustered-cache> are also defined for <shared-cache>.
-
-[[state-transfer]]
-===== <state-transfer>
-
-* `enabled` If enabled, this will cause the cache to ask neighbouring
-caches for state when it starts up, so the cache starts 'warm', although
-it will impact start-up time.
-* `timeout` This attribute configures the maximum amount of time (ms) to
-wait for state from neighbouring caches, before throwing an exception
-and aborting start-up.
-* `chunk-size` This attribute configures the size, in bytes, in which to
-batch the transfer of cache entries.
-
-[[backups]]
-===== <backups>
-
-[[backup]]
-===== <backup>
-
-* `strategy` This attribute configures the backup strategy for this
-cache. Allowable values are SYNC, ASYNC.
-* `failure-policy` This attribute configures the policy to follow when
-connectivity to the backup site fails. Allowable values are IGNORE,
-WARN, FAIL, CUSTOM.
-* `enabled` This attribute configures whether or not this backup is
-enabled. If enabled, data will be sent to the backup site; otherwise,
-the backup site will be effectively ignored.
-* `timeout` This attribute configures the time-out for replicating to
-the backup site.
-* `after-failures` This attribute configures the number of failures
-after which this backup site should go off-line.
-* `min-wait` This attribute configures the minimum time (in
-milliseconds) to wait after the max number of failures is reached, after
-which this backup site should go off-line.
-
-[[backup-for]]
-===== <backup-for>
-
-* `remote-cache` This attribute configures the name of the remote cache
-for which this cache acts as a backup.
-* `remote-site` This attribute configures the site of the remote cache
-for which this cache acts as a backup.
-
-[[replicated-cache-extends-abstract-shared-cache]]
-==== <replicated-cache> extends <abstract shared-cache>
-
-This element configures a replicated cache. With a replicated cache, all
-contents (key-value pairs) of the cache are replicated on all nodes in
-the cluster.
-
-[[distributed-cache-extends-abstract-shared-cache]]
-==== <distributed-cache> extends <abstract shared-cache>
-
-This element configures a distributed cache. With a distributed cache,
-contents of the cache are selectively replicated on nodes in the
-cluster, according to the number of owners specified.
-
-* `owners` This attribute configures the number of cluster-wide replicas
-for each cache entry.
-* `segments` This attribute configures the number of hash space segments
-which is the granularity for key distribution in the cluster. Value must
-be strictly positive.
-* `l1-lifespan` This attribute configures the maximum lifespan of an
-entry placed in the L1 cache. Configures the L1 cache behaviour in
-'distributed' caches instances. In any other cache modes, this element
-is ignored.
-
-[[infinispan-use-cases]]
-== Use Cases
-
-In many cases, cache containers and caches will be configured via XML as
-in the example above, so that they will be available upon server
-start-up. However, cache containers and caches may also be added,
-removed or have their configurations changed in a running server by
-making use of the WildFly management API command-line interface (CLI).
-In this section, we present some key use cases for the Infinispan
-management API.
-
-The key use cases covered are:
-
-* adding a cache container
-* adding a cache to an existing cache container
-* configuring the transaction subsystem of a cache
-
-[IMPORTANT]
-
-The WildFly management API command-line interface (CLI) can be used to
-provide extensive information on the attributes and commands available
-in the Infinispan subsystem interface used in these examples.
-
-[[add-a-cache-container]]
-=== Add a cache container
+To create a JGroups transport using the default channel of the server:
 
 [source]
 ----
-/subsystem=infinispan/cache-container=mycontainer:add(default-cache=<default-cache-name>)
-/subsystem=infinispan/cache-container=mycontainer/transport=TRANSPORT:add(lock-timeout=<timeout>)
+/subsystem=infinispan/cache-container=foo/transport=jgroups:add()
 ----
 
-[[add-a-cache]]
-=== Add a cache
+To create a JGroups transport using a distinct "alpha" channel, that uses the "tcp" stack:
 
 [source]
 ----
-/subsystem=infinispan/cache-container=mycontainer/local-cache=mylocalcache:add()
+/subsystem=jgroups/channel=alpha:add(stack=tcp)
+/subsystem=infinispan/cache-container=foo/transport=jgroups:add(channel=alpha)
 ----
 
-[[configure-the-transaction-component-of-a-cache]]
-=== Configure the transaction component of a cache
+For a complete list of transport attributes, refer to the https://wildscribe.github.io/[WildFly management model documentation]
+
+To remove an existing JGroups transport, you can either use the standard remove resource operation:
 
 [source]
 ----
-/subsystem=infinispan/cache-container=mycontainer/local-cache=mylocalcache/transaction=TRANSACTION:add(mode=<transaction-mode>)
+/subsystem=infinispan/cache-container=foo/transport=jgroups:remove()
 ----
+
+{empty}... or by adding the "none" transport (which will auto-remove any existing transport):
+
+[source]
+----
+/subsystem=infinispan/cache-container=foo/transport=none:add(){allow-resource-service-restart=true}
+----
+
+=== Cache types
+
+Infinispan supports a number of cache types for use in both HA and non-HA server profiles.
+
+==== Local
+
+A local cache stores a given cache entry only on the local node.
+A local cache does not require a transport, as cache reads and writes are always local.
+
+To create a local cache:
+
+[source]
+----
+/subsystem=infinispan/cache-container=foo/local-cache=bar:add()
+----
+
+For a complete list of local-cache attributes, refer to the https://wildscribe.github.io/[WildFly management model documentation]
+
+==== Replicated
+
+A replicated cache stores a given cache entry on every node in the cluster.
+A replicated cache requires a transport, as cache writes are replicated to all nodes in the cluster on which the associated cache is running.
+
+To create a replicated cache:
+
+[source]
+----
+/subsystem=infinispan/cache-container=foo/replicated-cache=bar:add()
+----
+
+For a complete list of replicated-cache attributes, refer to the https://wildscribe.github.io/[WildFly management model documentation]
+
+==== Distributed
+
+A distributed cache stores a given cache entry on a fixed number of nodes in the cluster.
+Distributed caches utilize a consistent hash function to assign ownership of a given cache key.
+A distributed cache requires a transport, as cache writes are replicated to each owner, and cache reads from a non owner require a remote request.
+
+To create a distributed cache where a given entry is stored on 3 nodes:
+
+[source]
+----
+/subsystem=infinispan/cache-container=foo/distributed-cache=bar:add(owners=3)
+----
+
+For a complete list of distributed-cache attributes, refer to the https://wildscribe.github.io/[WildFly management model documentation]
+
+==== Invalidation
+
+An invalidation cache is a special type of clustered cache that does not share state, but instead ensures that remote state is invalidated any time a given entry is updated locally.
+An invalidation cache requires a transport, as cache writes trigger invalidation on remote nodes on which the associated cache is running.
+
+To create an invalidation cache:
+
+[source]
+----
+/subsystem=infinispan/cache-container=foo/invalidation-cache=bar:add()
+----
+
+For a complete list of invalidation-cache attributes, refer to the https://wildscribe.github.io/[WildFly management model documentation]
+
+=== Cache features
+
+The configuration of a cache is divided into several components, each defining a specific cache feature.
+Because a given cache configuration requires each component relevant to its cache type, cache add operations and cache component add operations are typically batched.
+Any undefined components are auto-created using their defaults.
+
+e.g. The following cache add operation:
+
+[source]
+----
+/subsystem=infinispan/cache-container=foo/local-cache=bar:add()
+----
+
+{empty}... is actually equivalent to the following sequence of operations:
+
+[source]
+----
+batch
+/subsystem=infinispan/cache-container=foo/local-cache=bar:add()
+/subsystem=infinispan/cache-container=foo/local-cache=bar/component=expiration:add()
+/subsystem=infinispan/cache-container=foo/local-cache=bar/component=locking:add()
+/subsystem=infinispan/cache-container=foo/local-cache=bar/component=transaction:add()
+/subsystem=infinispan/cache-container=foo/local-cache=bar/memory=object:add()
+/subsystem=infinispan/cache-container=foo/local-cache=bar/store=none:add()
+run-batch
+----
+
+Similarly, you can reset all the attributes of a component by simply removing the component.
+e.g.
+
+[source]
+----
+/subsystem=infinispan/cache-container=foo/local-cache=bar:component=expiration:remove(){allow-resource-service-restart=true}
+----
+
+{empty}... is equivalent to:
+
+[source]
+----
+/subsystem=infinispan/cache-container=foo/local-cache=bar:component=expiration:remove(){allow-resource-service-restart=true}
+/subsystem=infinispan/cache-container=foo/local-cache=bar:component=expiration:add(){allow-resource-service-restart=true}
+----
+
+==== Memory
+
+An Infinispan cache can be configured to store cache entries as Java objects or as binary data (i.e. byte[]), either on or off the JVM heap.
+The type of storage used has semantic implications for the user of the cache.
+When using object storage, the cache has store-as-reference semantics, whereas when using binary storage the cache has call-by-value semantics.
+Consider the following logic:
+
+[source,java]
+----
+List<String> list = new ArrayList<>();
+cache.startBatch();
+cache.put("a", list);
+list.add("test");
+cache.endBatch(true);
+
+List<String> result = cache.get("a");
+System.out.println(result.size());
+----
+
+How many elements are in the "result" list? The answer depends on how the cache is configured.
+
+When the cache is configured to use object memory, our result list has 1 element.
+When the cache is configured to use binary (or off-heap) memory, our result list is empty.
+When using binary memory, the cache value must be marshalled to a byte[] on write and unmarshalled on read, thus any mutations of the cache value in the interim are not reflected in the cache.
+
+===== Object storage
+
+When using object storage, cache keys and values are stored as Java object references.
+Object storage may be configured with a maximum size.
+When the number of entries in the cache exceeds this threshold, the least recently used entries are evicted from memory.
+
+e.g. To store a maximum of 100 objects in the Java heap:
+
+[source]
+----
+/subsystem=infinispan/cache-container=foo/local-cache=bar/memory=object:add(size=100)
+----
+
+For a complete list of memory=object attributes, refer to the https://wildscribe.github.io/[WildFly management model documentation]
+
+===== Binary storage (on-heap)
+
+When using binary storage, each cache entry is stored as a byte[] within the JVM heap.
+Binary storage may also be configured with a maximum size.
+This size can be specified either as a maximum number of entries (i.e. COUNT), or as a maximum number of bytes (i.e. MEMORY).
+When the number of entries in the cache exceeds this threshold, the least recently used entries are evicted from memory.
+
+e.g. To store a maximum of 1 MB of binary data in the Java heap:
+
+[source]
+----
+/subsystem=infinispan/cache-container=foo/local-cache=bar/memory=binary:add(size=1048576, eviction-type=MEMORY)
+----
+
+For a complete list of memory=binary attributes, refer to the https://wildscribe.github.io/[WildFly management model documentation]
+
+===== Off-heap binary storage
+
+When using off-heap storage, each cache entry is stored as a byte[] in native memory allocated via sun.misc.Unsafe.
+Off-heap memory storage may also be configured with a maximum size, specified either as a maximum number of entries (i.e. COUNT), or as a maximum number of bytes (i.e. MEMORY).
+When the number of entries in the cache exceeds this threshold, the least recently used entries are evicted from memory.
+
+e.g. To store a maximum of 1 GB of binary data in native memory outside of the Java heap:
+
+[source]
+----
+/subsystem=infinispan/cache-container=foo/local-cache=bar/memory=off-heap:add(size=1073741824)
+----
+
+For a complete list of memory=off-heap attributes, refer to the https://wildscribe.github.io/[WildFly management model documentation]
+
+==== Transactions
+
+An Infinispan cache can be configured as transactional or non-transactional.
+This behavior is determined by the mode attribute, which supports the following values:
+
+NONE::
+    Non-transactional cache (the default behavior).
+BATCH::
+    Transactional cache using a local Infinispan transaction manager.
+    Infinispan transactions are started/committed/rolled-back using http://docs.jboss.org/infinispan/9.2/apidocs/org/infinispan/commons/api/BatchingCache.html[Infinispan's batching API].
+NON_XA::
+    Transactional cache configured to use the server's transaction manager, registering as a Synchronization to the current transaction.
+    Cache commit/rollback happens after the associated transaction completes.
+NON_DURABLE_XA::
+    Transactional cache configured to use the server's transaction manager, enlisting as an XAResource to the current transaction, but without transaction recovery support.
+FULL_XA::
+    Transactional cache configured to use the server's transaction manager, with full transaction recovery support.
+
+Within the context of a transaction, cache write operations must obtain a lock on the affected keys.
+Locks may be acquired either pessimistically (the default), i.e. before invoking the operation, or optimistically, i.e. before transaction commit.
+
+e.g. To configure a transactional cache using local Infinispan transactions with OPTIMISTIC locking:
+
+[source]
+----
+/subsystem=infinispan/cache-container=foo/local-cache=bar/component=transaction(mode=BATCH, locking=OPTIMISTIC)
+----
+
+For a complete list of transaction attributes, refer to the https://wildscribe.github.io/[WildFly management model documentation]
+
+==== Locking
+
+Within the context of a transaction, entries read from the cache are isolated from other concurrent transactions according to the configured isolation level.
+Infinispan supports the following transaction isolation levels:
+
+READ_COMMITTED::
+    A cache read may return a different value than a previous read within the same transaction, even if a concurrent transaction updated the entry.
+    This is the default isolation level.
+REPEATABLE_READ::
+    A cache read will return the same value as a previous read within the same transaction, even if a concurrent transaction updated the entry.
+
+IMPORTANT: Cache reads are always lock-free unless invoked using Flag.FORCE_WRITE_LOCK.
+
+e.g. To configure a cache using REPEATABLE_READ isolation:
+
+[source]
+----
+/subsystem=infinispan/cache-container=foo/local-cache=bar/component=locking(isolation=REPEATABLE_READ)
+----
+
+For a complete list of locking attributes, refer to the https://wildscribe.github.io/[WildFly management model documentation]
+
+==== Expiration
+
+The expiration component configures expiration defaults for cache entries.
+Cache entries may be configured to expire after some duration since creation (i.e. lifespan) or since last accessed (i.e. max-idle).
+
+e.g. To configure expiration of entries older than 1 day, or that have not been accessed within the past hour:
+
+[source]
+----
+/subsystem=infinispan/cache-container=foo/local-cache=bar/component=expiration(lifespan=86400000, max-idle=3600000)
+----
+
+CAUTION: max-idle based expiration is not generally safe for use with clustered caches, as the meta data of a cache entry is not replicated by cache read operations
+
+For a complete list of expiration attributes, refer to the https://wildscribe.github.io/[WildFly management model documentation]
+
+==== Persistence
+
+An Infinispan cache can optionally load/store cache entries from an external storage.
+All cache stores support the following attributes:
+
+fetch-state::
+    Indicates whether to refresh persistent state from cluster members on cache start.
+    Does not apply to a local or invalidation cache, nor a shared store.
+    Default is true.
+passivation::
+    Indicates whether cache entries should only be persisted upon eviction from memory.
+    Default is true.
+preload::
+    Indicates whether cache entries should be loaded into memory on cache start.
+    Default is false.
+purge::
+    Indicates whether the cache store should be purged on cache start.
+    Purge should never be enabled on a shared store.
+    Default is true.
+shared::
+    Indicates that the same cache store endpoint (e.g. database, data grid, etc.) is used by all members of the cluster.
+    When using a shared cache store, cache entries are only persisted by the primary owner of a given cache entry.
+    Default is false.
+
+To remove an existing cache store, you can either use the standard resource remove operation:
+
+[source]
+----
+/subsystem=infinispan/cache-container=foo/local-cache=bar/store=file:remove()
+----
+
+{empty}... or by adding the "none" store (which auto-removes any existing store):
+
+[source]
+----
+/subsystem=infinispan/cache-container=foo/local-cache=bar/store=none:add(){allow-resource-service-restart=true}
+----
+
+===== File store
+
+A file store persists cache entries to the local filesystem.
+By default, files are stored in a file named "_cache-name_.dat" within a subdirectory named "infinispan/_container-name_" relative to the server's data directory.
+
+e.g. To persist cache entries to $HOME/foo/bar.dat:
+
+[source]
+----
+/subsystem=infinispan/cache-container=foo/local-cache=bar/store=file:add(path=foo, relative-to=user.home)
+----
+
+===== JDBC store
+
+A JDBC store persists cache entries to a database.
+
+e.g. To persist cache entries to an H2 database via the ExampleDS data-source:
+
+[source]
+----
+/subsystem=infinispan/cache-container=foo/local-cache=bar/store=jdbc:add(data-source=ExampleDS, dialect=H2)
+----
+
+===== Remote cache store
+
+A remote store persists cache entries to a set of remote Infinispan server instances via the HotRod protocol.
+
+[source]
+----
+/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=node1:add(host=server1, port=1000)
+/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=node2:add(host=server2, port=1000)
+/subsystem=infinispan/cache-container=foo/local-cache=bar/store=remote:add(remote-servers=[node1,node2])
+----
+
+==== State transfer
+
+The state transfer component defines the behavior for the initial transfer of state from remote cache on cache start.
+State transfer is only applicable to distributed and replicated caches.
+
+e.g. To configure a state-transfer timeout of 1 minute:
+
+[source]
+----
+/subsystem=infinispan/cache-container=foo/local-cache=bar/component=state-transfer:add(timeout=60000)
+----
+
+For a complete list of state-transfer attributes, refer to the https://wildscribe.github.io/[WildFly management model documentation]
