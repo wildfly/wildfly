@@ -21,15 +21,12 @@
  */
 package org.jboss.as.test.manualmode.jca.workmanager.distributed;
 
-import javax.naming.NamingException;
 import javax.resource.spi.work.Work;
 import javax.resource.spi.work.WorkException;
-import java.io.IOException;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
-import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.junit.Assert;
 import org.junit.Test;
@@ -42,21 +39,18 @@ import org.junit.runner.RunWith;
  * the threads it was occupying (if started via startWork or scheduleWork). The last two test cases could mess with
  * each other. The test methods will still run separately without issues.
  */
-@ServerSetup(DwmAlwaysTestCase.DwmAlwaysServerSetupTask.class)
 @RunWith(Arquillian.class)
 @RunAsClient
 public class DwmAlwaysTestCase extends AbstractDwmTestCase {
 
-    static class DwmAlwaysServerSetupTask extends DwmServerSetupTask {
-        @Override
-        protected Policy getPolicy() {
-            return Policy.ALWAYS;
-        }
+    @Override
+    protected Policy getPolicy() {
+        return Policy.ALWAYS;
+    }
 
-        @Override
-        protected Selector getSelector() {
-            return Selector.FIRST_AVAILABLE;
-        }
+    @Override
+    protected Selector getSelector() {
+        return Selector.FIRST_AVAILABLE;
     }
 
     /**
@@ -65,7 +59,7 @@ public class DwmAlwaysTestCase extends AbstractDwmTestCase {
      */
     @Test
     @InSequence(1)
-    public void testDoWork() throws IOException, NamingException, WorkException, InterruptedException {
+    public void testDoWork() throws WorkException, InterruptedException {
         int doWorkAccepted = server2Proxy.getDoWorkAccepted();
         int distributedDoWorkAccepted = server1Proxy.getDistributedDoWorkAccepted();
 
@@ -85,7 +79,7 @@ public class DwmAlwaysTestCase extends AbstractDwmTestCase {
      */
     @Test
     @InSequence(2)
-    public void testStartWork() throws IOException, NamingException, WorkException, InterruptedException {
+    public void testStartWork() throws WorkException, InterruptedException {
         int startWorkAccepted = server2Proxy.getStartWorkAccepted();
         int distributedStartWorkAccepted = server1Proxy.getDistributedStartWorkAccepted();
 
