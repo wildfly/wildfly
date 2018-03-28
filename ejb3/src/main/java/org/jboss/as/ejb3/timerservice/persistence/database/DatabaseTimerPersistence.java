@@ -92,6 +92,7 @@ import org.jboss.msc.value.InjectedValue;
  *
  * @author Stuart Douglas
  * @author Wolf-Dieter Fink
+ * @author Joerg Baesner
  */
 public class DatabaseTimerPersistence implements TimerPersistence, Service<DatabaseTimerPersistence> {
 
@@ -407,8 +408,9 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                     statement.setTimestamp(6, timestamp(timer.getNextExpiration()));
                 }
             } catch (SQLException e) {
-                // something wrong with the preparation
-                throw new RuntimeException(e);
+                // fix for WFLY-10130
+                EjbLogger.EJB3_TIMER_LOGGER.exceptionCheckingIfTimerShouldRun(timer, e);
+                return false;
             }
             tm.begin();
             int affected = statement.executeUpdate();
