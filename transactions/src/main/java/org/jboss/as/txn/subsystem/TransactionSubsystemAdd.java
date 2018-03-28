@@ -509,8 +509,16 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final boolean coordinatorEnableStatistics = TransactionSubsystemRootResourceDefinition.STATISTICS_ENABLED.resolveModelAttribute(context, coordEnvModel).asBoolean();
         final boolean transactionStatusManagerEnable = TransactionSubsystemRootResourceDefinition.ENABLE_TSM_STATUS.resolveModelAttribute(context, coordEnvModel).asBoolean();
         final int coordinatorDefaultTimeout = TransactionSubsystemRootResourceDefinition.DEFAULT_TIMEOUT.resolveModelAttribute(context, coordEnvModel).asInt();
+        final int maximumTimeout = TransactionSubsystemRootResourceDefinition.MAXIMUM_TIMEOUT.resolveModelAttribute(context, coordEnvModel).asInt();
 
-        ContextTransactionManager.setGlobalDefaultTransactionTimeout(coordinatorDefaultTimeout);
+        // WFLY-9955 Allow the timeout set to "0" while translating into the maximum timeout
+        TransactionSubsystemRootResourceDefinition.maximum_timeout = maximumTimeout;
+        if (coordinatorDefaultTimeout == 0) {
+            ContextTransactionManager.setGlobalDefaultTransactionTimeout(maximumTimeout);
+            TransactionLogger.ROOT_LOGGER.timeoutValueIsSetToMaximum(maximumTimeout);
+        } else {
+            ContextTransactionManager.setGlobalDefaultTransactionTimeout(coordinatorDefaultTimeout);
+        }
         final ArjunaTransactionManagerService transactionManagerService = new ArjunaTransactionManagerService(coordinatorEnableStatistics, coordinatorDefaultTimeout, transactionStatusManagerEnable, jts);
         final ServiceBuilder<com.arjuna.ats.jbossatx.jta.TransactionManagerService> transactionManagerServiceServiceBuilder = context.getServiceTarget().addService(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER, transactionManagerService);
         // add dependency on JTA environment bean service

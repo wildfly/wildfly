@@ -16,13 +16,17 @@
 package org.jboss.as.txn.subsystem;
 
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
 import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
+import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.ChainedTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
+import org.jboss.dmr.ModelNode;
 
 import static org.jboss.as.txn.subsystem.TransactionExtension.CURRENT_MODEL_VERSION;
 import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.MAXIMUM_TIMEOUT;
@@ -57,7 +61,13 @@ public class TransactionTransformers implements ExtensionTransformerRegistration
         ResourceTransformationDescriptionBuilder builderEap7 = chainedBuilder.createBuilder(CURRENT_MODEL_VERSION, MODEL_VERSION_EAP70);
         builderEap7.getAttributeBuilder()
                 .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(OBJECT_STORE_RELATIVE_TO), OBJECT_STORE_RELATIVE_TO)
-                .setDiscard(DiscardAttributeChecker.DiscardAttributeValueChecker.ALWAYS, MAXIMUM_TIMEOUT)
+                .setDiscard(new DiscardAttributeChecker.DefaultDiscardAttributeChecker(true, false) {
+                    @Override
+                    protected boolean isValueDiscardable(final PathAddress address, final String attributeName, final ModelNode attributeValue, final TransformationContext transformationContext) {
+                        return attributeValue.isDefined();
+                    }
+                }, MAXIMUM_TIMEOUT)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, MAXIMUM_TIMEOUT)
                 .end();
 
         builderEap7.addChildResource(TransactionExtension.LOG_STORE_PATH)
