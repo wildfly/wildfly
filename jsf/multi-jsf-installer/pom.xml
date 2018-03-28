@@ -41,25 +41,14 @@
     <name>WildFly: JSF Multi-JSF installer</name>
     <description>Creates a CLI deployment archive that can install new JSF versions to WildFly.</description>
 
-    <!-- All properties can be overridden on the command line.  If you override version.jboss.as then
-         you should also override version.weld.core for whatever weld version ships with the WildFly
-         server you are targeting. -->
-    <properties>
-        <version.jboss.as>${project.version}</version.jboss.as>
-        <version.weld.core>${version.org.jboss.weld.weld}</version.weld.core>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-jsf-injection</artifactId>
-            <version>${version.jboss.as}</version>
         </dependency>
         <dependency>
             <groupId>org.jboss.weld.module</groupId>
             <artifactId>weld-jsf</artifactId>
-            <version>${version.weld.core}</version>
         </dependency>
     </dependencies>
 
@@ -68,13 +57,12 @@
             <id>mojarra-2.x</id>
             <properties>
                 <jsf-impl-name>mojarra</jsf-impl-name>
-                <jsf-version>2.1.25</jsf-version>
+                <jsf-version>2.3.3.SP1</jsf-version>
             </properties>
             <dependencies>
                 <dependency>
-                    <groupId>com.sun.faces</groupId>
-                    <artifactId>jsf-api</artifactId>
-                    <version>${jsf-version}</version>
+                    <groupId>org.jboss.spec.javax.faces</groupId>
+                    <artifactId>jboss-jsf-api_2.2_spec</artifactId>
                 </dependency>
                 <dependency>
                     <groupId>com.sun.faces</groupId>
@@ -111,19 +99,16 @@
             </activation>
             <properties>
                 <jsf-impl-name>myfaces</jsf-impl-name>
-                <jsf-version>${version.org.apache.myfaces.core}</jsf-version>
             </properties>
             <dependencies>
                 <dependency>
                     <groupId>org.apache.myfaces.core</groupId>
                     <artifactId>myfaces-impl</artifactId>
-                    <version>${jsf-version}</version>
                 </dependency>
 
                 <dependency>
                     <groupId>org.apache.myfaces.core</groupId>
                     <artifactId>myfaces-api</artifactId>
-                    <version>${jsf-version}</version>
                 </dependency>
 
                 <dependency>

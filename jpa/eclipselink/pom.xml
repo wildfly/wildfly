@@ -51,15 +51,7 @@
         <dependency>
             <groupId>org.eclipse.persistence</groupId>
             <artifactId>eclipselink</artifactId>
-            <version>${version.org.eclipselink.version}</version>
             <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.eclipse.persistence</groupId>
-                    <artifactId>javax.persistence</artifactId>
-                </exclusion>
-            </exclusions>
-
         </dependency>
 
 

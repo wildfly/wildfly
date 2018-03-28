@@ -84,7 +84,8 @@
                 <dependency>
                     <groupId>rhino</groupId>
                     <artifactId>js</artifactId>
-                    <version>${version.rhino.js}</version>
+                    <version>1.7R2</version> <!-- we manage version here as exception as this this is only user of this dep
+                                             and whole testsuite needs to be dropped or completely refactored -->
                     <scope>test</scope>
                 </dependency>
             </dependencies>

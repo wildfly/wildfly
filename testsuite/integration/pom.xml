@@ -385,17 +385,7 @@
             <artifactId>wildfly-transaction-client</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.wildfly.wildfly-http-client</groupId>
-            <artifactId>wildfly-http-ejb-client</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-webservices-tests-integration</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
+      
         <dependency>
            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-model-test</artifactId>
@@ -422,10 +412,10 @@
             <artifactId>arquillian-junit-container</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
+      <!--  <dependency>
             <groupId>org.jboss.arquillian.testenricher</groupId>
             <artifactId>arquillian-testenricher-initialcontext</artifactId>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>org.wildfly.arquillian</groupId>
             <artifactId>wildfly-arquillian-container-managed</artifactId>
