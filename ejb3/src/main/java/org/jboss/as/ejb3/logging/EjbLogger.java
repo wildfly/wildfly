@@ -3146,4 +3146,8 @@ public interface EjbLogger extends BasicLogger {
 
     @Message(id = 501, value = "Failed to activate MDB %s")
     RuntimeException failedToActivateMdb(String componentName, @Cause Exception e);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 502, value = "Exception checking if timer %s should run")
+    void exceptionCheckingIfTimerShouldRun(Timer timer, @Cause Exception e);
 }
