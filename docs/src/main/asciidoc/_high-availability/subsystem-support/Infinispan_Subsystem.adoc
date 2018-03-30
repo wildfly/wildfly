@@ -74,6 +74,8 @@ Infinispan supports a number of cache types for use in both HA and non-HA server
 A local cache stores a given cache entry only on the local node.
 A local cache does not require a transport, as cache reads and writes are always local.
 
+For more information about this cache type, refer to the http://infinispan.org/docs/stable/user_guide/user_guide.html#local_mode[the Infinispan documentation].
+
 To create a local cache:
 
 [source]
@@ -88,6 +90,8 @@ For a complete list of local-cache attributes, refer to the https://wildscribe.g
 A replicated cache stores a given cache entry on every node in the cluster.
 A replicated cache requires a transport, as cache writes are replicated to all nodes in the cluster on which the associated cache is running.
 
+For more information about this cache type, refer to the http://infinispan.org/docs/stable/user_guide/user_guide.html#replicated_mode[the Infinispan documentation].
+
 To create a replicated cache:
 
 [source]
@@ -99,9 +103,10 @@ For a complete list of replicated-cache attributes, refer to the https://wildscr
 
 ==== Distributed
 
-A distributed cache stores a given cache entry on a fixed number of nodes in the cluster.
-Distributed caches utilize a consistent hash function to assign ownership of a given cache key.
-A distributed cache requires a transport, as cache writes are replicated to each owner, and cache reads from a non owner require a remote request.
+A distributed cache stores a given cache entry on a configurable number of nodes in the cluster, assigned via an algorithm based on consistent hashing.
+A distributed cache requires a transport, as cache writes need to forward to each owner, and cache reads from a non-owner require a remote request.
+
+For more information about this cache type, refer to the http://infinispan.org/docs/stable/user_guide/user_guide.html#distribution_mode[the Infinispan documentation].
 
 To create a distributed cache where a given entry is stored on 3 nodes:
 
@@ -112,10 +117,33 @@ To create a distributed cache where a given entry is stored on 3 nodes:
 
 For a complete list of distributed-cache attributes, refer to the https://wildscribe.github.io/[WildFly management model documentation]
 
+==== Scattered
+
+A scattered cache is a variation of a distributed cache that maintains 2 copies of a particular cache entry.
+Consequently, it can only tolerate failure of a single node at a time.
+Primary ownership of a cache entry is determined by the same mechanism used by a distributed cache,
+while the backup copy is the node that last updated the entry.
+
+This design means that a scattered cache only requires 1 remote invocation to write a given cache entry, regardless of which node initiated the cache operation.
+By comparison, a distributed cache (with 2 owners) uses 1 remote invocation to write a cache entry if and only if the primary owner initiated the cache operation, and otherwise requires 2 remote invocations.
+
+For more information about this cache type, refer to the http://infinispan.org/docs/stable/user_guide/user_guide.html#scattered_mode[the Infinispan documentation].
+
+To create a scattered cache:
+
+[source]
+----
+/subsystem=infinispan/cache-container=foo/scattered-cache=bar:add()
+----
+
+For a complete list of scattered-cache attributes, refer to the https://wildscribe.github.io/[WildFly management model documentation]
+
 ==== Invalidation
 
 An invalidation cache is a special type of clustered cache that does not share state, but instead ensures that remote state is invalidated any time a given entry is updated locally.
 An invalidation cache requires a transport, as cache writes trigger invalidation on remote nodes on which the associated cache is running.
+
+For more information about this cache type, refer to the http://infinispan.org/docs/stable/user_guide/user_guide.html#invalidation_mode[the Infinispan documentation].
 
 To create an invalidation cache:
 
