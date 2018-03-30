@@ -62,7 +62,7 @@ public class DynamicStubFactoryFactory extends StubFactoryFactoryDynamicBase {
             try {
                 final ClassFile clazz = IIOPStubCompiler.compile(myClass, stubClassName);
                 theClass = clazz.define(cl, myClass.getProtectionDomain());
-            } catch (RuntimeException ex) {
+            } catch (Throwable ex) {
                 //there is a possibility that another thread may have defined the same class in the meantime
                 try {
                     theClass = cl.loadClass(stubClassName);
