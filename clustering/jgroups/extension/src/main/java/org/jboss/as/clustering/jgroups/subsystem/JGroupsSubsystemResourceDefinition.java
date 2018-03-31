@@ -72,14 +72,24 @@ public class JGroupsSubsystemResourceDefinition extends SubsystemResourceDefinit
         }
     }
 
-    public enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        DEFAULT_CHANNEL("default-channel", ModelType.STRING, builder -> builder.setCapabilityReference(new CapabilityReference(CAPABILITIES.get(JGroupsRequirement.CHANNEL_FACTORY), JGroupsRequirement.CHANNEL_FACTORY))),
-        @Deprecated DEFAULT_STACK("default-stack", ModelType.STRING, builder -> builder.setDeprecated(JGroupsModel.VERSION_3_0_0.getVersion())),
+    public enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
+        DEFAULT_CHANNEL("default-channel", ModelType.STRING) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setCapabilityReference(new CapabilityReference(CAPABILITIES.get(JGroupsRequirement.CHANNEL_FACTORY), JGroupsRequirement.CHANNEL_FACTORY));
+            }
+        },
+        @Deprecated DEFAULT_STACK("default-stack", ModelType.STRING) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setDeprecated(JGroupsModel.VERSION_3_0_0.getVersion());
+            }
+        },
         ;
         private final AttributeDefinition definition;
 
-        Attribute(String name, ModelType type, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
-            this.definition = configurator.apply(new SimpleAttributeDefinitionBuilder(name, type)
+        Attribute(String name, ModelType type) {
+            this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, type)
                     .setRequired(false)
                     .setAllowExpression(false)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)

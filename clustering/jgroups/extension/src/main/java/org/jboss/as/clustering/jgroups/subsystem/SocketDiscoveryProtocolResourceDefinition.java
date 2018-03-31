@@ -46,15 +46,20 @@ import org.wildfly.clustering.jgroups.spi.ChannelFactory;
  */
 public class SocketDiscoveryProtocolResourceDefinition<A, P extends Discovery> extends ProtocolResourceDefinition<P> {
 
-    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        OUTBOUND_SOCKET_BINDINGS("socket-bindings", ModelType.LIST, builder -> builder
-                .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
-                .setCapabilityReference(new CapabilityReference(Capability.PROTOCOL, CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING))),
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<StringListAttributeDefinition.Builder> {
+        OUTBOUND_SOCKET_BINDINGS("socket-bindings", ModelType.LIST) {
+            @Override
+            public StringListAttributeDefinition.Builder apply(StringListAttributeDefinition.Builder builder) {
+                return builder.setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
+                        .setCapabilityReference(new CapabilityReference(Capability.PROTOCOL, CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING))
+                        ;
+            }
+        },
         ;
         private final AttributeDefinition definition;
 
-        Attribute(String name, ModelType type, UnaryOperator<StringListAttributeDefinition.Builder> configurator) {
-            this.definition = configurator.apply(new StringListAttributeDefinition.Builder(name)
+        Attribute(String name, ModelType type) {
+            this.definition = this.apply(new StringListAttributeDefinition.Builder(name)
                     .setRequired(true)
                     .setMinSize(1)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
