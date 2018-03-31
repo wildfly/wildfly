@@ -24,9 +24,9 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import static org.jboss.as.clustering.infinispan.subsystem.ClusteredCacheResourceDefinition.Attribute.*;
 
+import java.util.concurrent.TimeUnit;
+
 import org.infinispan.configuration.cache.CacheMode;
-import org.infinispan.configuration.cache.ClusteringConfiguration;
-import org.infinispan.configuration.cache.ClusteringConfigurationBuilder;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.jboss.as.controller.OperationContext;
@@ -43,7 +43,7 @@ public class ClusteredCacheBuilder extends CacheConfigurationBuilder {
 
     private final CacheMode mode;
 
-    private volatile ClusteringConfiguration clustering;
+    private volatile long remoteTimeout;
 
     ClusteredCacheBuilder(PathAddress address, CacheMode mode) {
         super(address);
@@ -52,18 +52,16 @@ public class ClusteredCacheBuilder extends CacheConfigurationBuilder {
 
     @Override
     public Builder<Configuration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        ClusteringConfigurationBuilder builder = new ConfigurationBuilder().clustering().cacheMode(this.mode);
-
-        builder.remoteTimeout(REMOTE_TIMEOUT.resolveModelAttribute(context, model).asLong());
-
-        this.clustering = builder.create();
-
+        this.remoteTimeout = REMOTE_TIMEOUT.resolveModelAttribute(context, model).asLong();
         return super.configure(context, model);
     }
 
     @Override
     public void accept(ConfigurationBuilder builder) {
-        builder.clustering().read(this.clustering);
+        builder.clustering()
+                .cacheMode(this.mode)
+                .remoteTimeout(this.remoteTimeout, TimeUnit.MILLISECONDS)
+                ;
         super.accept(builder);
     }
 }
