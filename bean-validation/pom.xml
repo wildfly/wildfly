@@ -119,5 +119,15 @@
             <artifactId>jboss-jaxb-api_2.3_spec</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>javax.activation</groupId>
+            <artifactId>activation</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 </project>
