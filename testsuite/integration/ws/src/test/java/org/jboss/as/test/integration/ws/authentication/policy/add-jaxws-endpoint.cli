@@ -1,0 +1,3 @@
+/subsystem=webservices/endpoint-config=SAML-WSSecurity-Endpoint:add
+/subsystem=webservices/endpoint-config=SAML-WSSecurity-Endpoint/post-handler-chain=SAML-WSSecurity-Handler:add(protocol-bindings="##SOAP11_HTTP ##SOAP11_HTTP_MTOM ##SOAP12_HTTP ##SOAP12_HTTP_MTOM")
+/subsystem=webservices/endpoint-config=SAML-WSSecurity-Endpoint/post-handler-chain=SAML-WSSecurity-Handler/handler=SAML-WSSecurity-Handler:add(class=org.picketlink.trust.jbossws.handler.SAML2Handler)

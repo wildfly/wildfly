@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<jaxws-config xmlns="urn:jboss:jbossws-jaxws-config:4.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:javaee="http://java.sun.com/xml/ns/javaee"
+	xsi:schemaLocation="urn:jboss:jbossws-jaxws-config:4.0 schema/jbossws-jaxws-config_4_0.xsd">
+
+	<client-config>
+		<config-name>SAML WSSecurity Client</config-name>
+		<post-handler-chains>
+			<javaee:handler-chain>
+				<javaee:protocol-bindings>##SOAP11_HTTP ##SOAP11_HTTP_MTOM ##SOAP12_HTTP ##SOAP12_HTTP_MTOM</javaee:protocol-bindings>
+				<javaee:handler>
+					<javaee:handler-name>SAML WSSecurity Client Handler</javaee:handler-name>
+					<javaee:handler-class>org.picketlink.trust.jbossws.handler.SAML2Handler</javaee:handler-class>
+				</javaee:handler>
+			</javaee:handler-chain>
+		</post-handler-chains>
+	</client-config>
+
+</jaxws-config>  
