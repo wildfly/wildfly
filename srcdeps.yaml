@@ -1,0 +1,600 @@
+#
+# JBoss, Home of Professional Open Source.
+# Copyright 2017, Red Hat, Inc., and individual contributors
+# as indicated by the @author tags. See the copyright.txt file in the
+# distribution for a full listing of individual contributors.
+#
+# This is free software; you can redistribute it and/or modify it
+# under the terms of the GNU Lesser General Public License as
+# published by the Free Software Foundation; either version 2.1 of
+# the License, or (at your option) any later version.
+#
+# This software is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License along with this software; if not, write to the Free
+# Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+# 02110-1301 USA, or see the FSF site: git:https://github.com///www.fsf.org.
+#
+# srcdeps.yaml - the srcdeps configuration file
+#
+# The full srcdeps.yaml reference can be found under git:git@github.coms://github.com/srcdeps/srcdeps-core/tree/master/doc/srcdeps.yaml
+#
+configModelVersion: 2.1
+
+maven:
+  failWithout:
+    properties:
+    - srcdeps.enabled # The builds containing source dependencies need to be started with -Dsrcdeps.enabled
+
+repositories:
+  io.undertow:
+    includes:
+    - io.undertow
+    urls:
+    - git:https://github.com/undertow-io/undertow.git
+  io.undertow.jastow:
+    includes:
+    - io.undertow.jastow
+    urls:
+    - git:https://github.com/undertow-io/jastow.git
+  io.undertow.js:
+    includes:
+    - io.undertow.js
+    urls:
+    - git:https://github.com/undertow-io/undertow.js.git
+  org.hibernate.hibernate-search-parent:
+    includes:
+    - org.hibernate:hibernate-search-backend-jgroups
+    - org.hibernate:hibernate-search-backend-jms
+    - org.hibernate:hibernate-search-engine
+    - org.hibernate:hibernate-search-orm
+    - org.hibernate:hibernate-search-parent
+    - org.hibernate:hibernate-search-serialization-avro
+    urls:
+    - git:https://github.com/hibernate/hibernate-search.git
+  org.hibernate.hibernate-validator:
+    includes:
+    - org.hibernate:hibernate-validator
+    - org.hibernate:hibernate-validator-cdi
+    - org.hibernate:hibernate-validator-parent
+    urls:
+    - git:https://github.com/hibernate/hibernate-validator.git
+  org.infinispan:
+    includes:
+    - org.infinispan
+    urls:
+    - git:https://github.com/infinispan/infinispan.git
+  org.jberet:
+    includes:
+    - org.jberet
+    urls:
+    - git:https://github.com/jberet/jsr352.git
+  org.jboss.activemq.artemis.integration:
+    includes:
+    - org.jboss.activemq.artemis.integration
+    urls:
+    - git@github.com:rh-messaging/artemis-wildfly-integration.git
+  org.jboss.aesh:
+    includes:
+    - org.jboss.aesh
+    urls:
+    - git:https://github.com/aeshell/aesh.git
+  org.jboss.arquillian:
+    includes:
+    - org.jboss.arquillian
+    - org.jboss.arquillian.container
+    - org.jboss.arquillian.core
+    - org.jboss.arquillian.junit
+    - org.jboss.arquillian.protocol
+    - org.jboss.arquillian.test
+    - org.jboss.arquillian.testenricher
+    - org.jboss.arquillian.testng
+    urls:
+    - git:https://github.com/arquillian/arquillian-core.git
+  org.jboss.byteman:
+    includes:
+    - org.jboss.byteman
+    urls:
+    - git:https://github.com/bytemanproject/byteman.git
+  org.jboss.classfilewriter:
+    includes:
+    - org.jboss.classfilewriter
+    urls:
+    - git:https://github.com/jbossas/jboss-classfilewriter.git
+  org.jboss.common:
+    includes:
+    - org.jboss.common
+    urls:
+    - git:https://github.com/jboss/jboss-common-beans.git
+  org.jboss.ejb3:
+    includes:
+    - org.jboss.ejb3
+    urls:
+    - git:https://github.com/jbossejb3/jboss-ejb3-ext-api.git
+  org.jboss.genericjms:
+    includes:
+    - org.jboss.genericjms
+    urls:
+    - git:https://github.com/jms-ra/generic-jms-ra.git
+  org.jboss.hal:
+    includes:
+    - org.jboss.hal
+    urls:
+    - git:https://github.com/hal/release-stream.git
+  org.jboss.invocation:
+    includes:
+    - org.jboss.invocation
+    urls:
+    - git:https://github.com/jbossas/jboss-invocation.git
+  org.jboss.jandex:
+    includes:
+    - org.jboss:jandex
+    urls:
+    - git:https://github.com/wildfly/jandex.git
+  org.jboss.jboss-dmr:
+    includes:
+    - org.jboss:jboss-dmr
+    urls:
+    - git:https://github.com/jbossas/jboss-dmr.git
+  org.jboss.jboss-ejb-client:
+    includes:
+    - org.jboss:jboss-ejb-client
+    - org.jboss:jboss-ejb-client-legacy
+    urls:
+    - git:https://github.com/jbossas/jboss-ejb-client.git
+  org.jboss.jboss-iiop-client:
+    includes:
+    - org.jboss:jboss-iiop-client
+    urls:
+    - git:https://github.com/jbossas/jboss-iiop-client.git
+  org.jboss.jboss-parent:
+    includes:
+    - org.jboss:jboss-parent
+    urls:
+    - git:https://github.com/jboss/jboss-parent-pom.git
+  org.jboss.jboss-transaction-spi:
+    includes:
+    - org.jboss:jboss-transaction-spi
+    urls:
+    - git:${jboss.as.scm.connection}
+  org.jboss.jboss-vfs:
+    includes:
+    - org.jboss:jboss-vfs
+    urls:
+    - git:https://github.com/jbossas/jboss-vfs.git
+  org.jboss.logging.jboss-logging-tools:
+    includes:
+    - org.jboss.logging:jboss-logging-tools*
+    - org.jboss.logging:jboss-logging-annotations
+    - org.jboss.logging:jboss-logging-processor-tests
+    - org.jboss.logging:jboss-logging-processor
+    urls:
+    - git:https://github.com/jboss-logging/jboss-logging-tools.git
+  org.jboss.logging.jul-to-slf4j-stub:
+    includes:
+    - org.jboss.logging:jul-to-slf4j-stub
+    urls:
+    - git:https://github.com/jboss-logging/jul-to-slf4j-stub.git
+  org.jboss.logmanager.commons-logging-jboss-logmanager:
+    includes:
+    - org.jboss.logmanager:commons-logging-jboss-logmanager
+    urls:
+    - git:https://github.com/jboss-logging/commons-logging-jboss-logmanager.git
+  org.jboss.logmanager.jboss-logmanager:
+    includes:
+    - org.jboss.logmanager:jboss-logmanager
+    urls:
+    - git:https://github.com/jboss-logging/jboss-logmanager.git
+  org.jboss.logmanager.log4j-jboss-logmanager:
+    includes:
+    - org.jboss.logmanager:log4j-jboss-logmanager
+    urls:
+    - git:https://github.com/jboss-logging/log4j-jboss-logmanager.git
+  org.jboss.logmanager.log4j-jboss-logmanager:
+    includes:
+    - org.jboss.logmanager:log4j-jboss-logmanager
+    urls:
+    - git:https://github.com/jboss-logging/log4j-jboss-logmanager.git
+  org.jboss.marshalling:
+    includes:
+    - org.jboss.marshalling
+    urls:
+    - git:https://github.com/jboss-remoting/jboss-marshalling.git
+  org.jboss.metadata:
+    includes:
+    - org.jboss.metadata
+    urls:
+    - git:https://github.com/jboss/metadata.git
+    buildArguments:
+    - -Dcheckstyle.skip=true
+  org.jboss.mod_cluster:
+    includes:
+    - org.jboss.mod_cluster
+    urls:
+    - git:https://github.com/modcluster/mod_cluster.git
+  org.jboss.modules:
+    includes:
+    - org.jboss.modules
+    urls:
+    - git:https://github.com/jboss-modules/jboss-modules.git
+    buildArguments:
+    - -Dcheckstyle.skip=true
+  org.jboss.msc:
+    includes:
+    - org.jboss.msc
+    urls:
+    - git:https://github.com/jboss-msc/jboss-msc.git
+  org.jboss.narayana:
+    includes:
+    - org.jboss.narayana
+    - org.jboss.narayana.compensations
+    - org.jboss.narayana.jts
+    - org.jboss.narayana.rts
+    - org.jboss.narayana.txframework
+    - org.jboss.narayana.xts
+    urls:
+    - git:https://github.com/jbosstm/narayana.git
+  org.jboss.openjdk-orb:
+    includes:
+    - org.jboss.openjdk-orb
+    urls:
+    - git:https://github.com/jboss/openjdk-orb.git
+  org.jboss.remoting:
+    includes:
+    - org.jboss.remoting
+    urls:
+    - git:https://github.com/jboss-remoting/jboss-remoting.git
+  org.jboss.remotingjmx:
+    includes:
+    - org.jboss.remotingjmx
+    urls:
+    - git:https://github.com/jbossas/remoting-jmx.git
+  org.jboss.resteasy:
+    includes:
+    - org.jboss.resteasy
+    urls:
+    - git:https://github.com/resteasy/Resteasy.git
+  org.jboss.sasl:
+    includes:
+    - org.jboss.sasl
+    urls:
+    - git@github.com:wildfly-security/jboss-sasl.git
+  org.jboss.shrinkwrap:
+    includes:
+    - org.jboss.shrinkwrap
+    urls:
+    - git:https://github.com/shrinkwrap/shrinkwrap.git
+    buildArguments:
+    - -Dcheckstyle.skip=true
+  org.jboss.shrinkwrap.descriptors:
+    includes:
+    - org.jboss.shrinkwrap.descriptors
+    urls:
+    - git:https://github.com/shrinkwrap/descriptors.git
+  org.jboss.slf4j:
+    includes:
+    - org.jboss.slf4j
+    urls:
+    - git:https://github.com/jboss-logging/slf4j-jboss-logmanager.git
+  org.jboss.spec.javax.annotation:
+    includes:
+    - org.jboss.spec.javax.annotation
+    urls:
+    - git:https://github.com/jboss/jboss-annotations-api_spec.git
+  org.jboss.spec.javax.batch:
+    includes:
+    - org.jboss.spec.javax.batch
+    urls:
+    - git:https://github.com/jboss/jboss-batch-api_spec.git
+  org.jboss.spec.javax.ejb:
+    includes:
+    - org.jboss.spec.javax.ejb
+    urls:
+    - git:https://github.com/jboss/jboss-ejb-api_spec.git
+  org.jboss.spec.javax.el:
+    includes:
+    - org.jboss.spec.javax.el
+    urls:
+    - git:https://github.com/jboss/jboss-el-api_spec.git
+  org.jboss.spec.javax.enterprise.concurrent:
+    includes:
+    - org.jboss.spec.javax.enterprise.concurrent
+    urls:
+    - git:https://github.com/jboss/jboss-javaee-concurrency-api_spec.git
+  org.jboss.spec.javax.faces:
+    includes:
+    - org.jboss.spec.javax.faces
+    urls:
+    - git:https://github.com/jboss/jboss-jsf-api_spec.git
+  org.jboss.spec.javax.interceptor:
+    includes:
+    - org.jboss.spec.javax.interceptor
+    urls:
+    - git:https://github.com/jboss/jboss-interceptors-api_spec.git
+  org.jboss.spec.javax.jms:
+    includes:
+    - org.jboss.spec.javax.jms
+    urls:
+    - git:https://github.com/jboss/jboss-jms-api_spec.git
+  org.jboss.spec.javax.management.j2ee:
+    includes:
+    - org.jboss.spec.javax.management.j2ee
+    urls:
+    - git:https://github.com/jboss/jboss-j2eemgmt-api_spec.git
+  org.jboss.spec.javax.resource:
+    includes:
+    - org.jboss.spec.javax.resource
+    urls:
+    - git:https://github.com/jboss/jboss-connector-api_spec.git
+  org.jboss.spec.javax.rmi:
+    includes:
+    - org.jboss.spec.javax.rmi
+    urls:
+    - git:https://github.com/jboss/jboss-rmi-api_spec.git
+  org.jboss.spec.javax.security.auth.message:
+    includes:
+    - org.jboss.spec.javax.security.auth.message
+    urls:
+    - git:https://github.com/jboss/jboss-jaspi-api_spec.git
+  org.jboss.spec.javax.security.jacc:
+    includes:
+    - org.jboss.spec.javax.security.jacc
+    urls:
+    - git:https://github.com/jboss/jboss-jacc-api_spec.git
+  org.jboss.spec.javax.servlet:
+    includes:
+    - org.jboss.spec.javax.servlet
+    urls:
+    - git:https://github.com/jboss/jboss-servlet-api_spec.git
+  org.jboss.spec.javax.servlet.jsp:
+    includes:
+    - org.jboss.spec.javax.servlet.jsp
+    urls:
+    - git:https://github.com/jboss/jboss-jsp-api_spec.git
+  org.jboss.spec.javax.transaction:
+    includes:
+    - org.jboss.spec.javax.transaction
+    urls:
+    - git:https://github.com/jboss/jboss-transaction-api_spec.git
+  org.jboss.spec.javax.websocket:
+    includes:
+    - org.jboss.spec.javax.websocket
+    urls:
+    - git:https://github.com/jboss/jboss-websocket-api_spec.git
+  org.jboss.spec.javax.ws.rs:
+    includes:
+    - org.jboss.spec.javax.ws.rs
+    urls:
+    - git:https://github.com/jboss/jboss-jaxrs-api_spec.git
+  org.jboss.spec.javax.xml.bind:
+    includes:
+    - org.jboss.spec.javax.xml.bind
+    urls:
+    - git:https://github.com/jboss/jboss-jaxb-api_spec.git
+  org.jboss.spec.javax.xml.rpc:
+    includes:
+    - org.jboss.spec.javax.xml.rpc
+    urls:
+    - git:https://github.com/jboss/jboss-jaxrpc-api_spec.git
+  org.jboss.spec.javax.xml.soap:
+    includes:
+    - org.jboss.spec.javax.xml.soap
+    urls:
+    - git:https://github.com/jboss/jboss-saaj-api_spec.git
+  org.jboss.spec.javax.xml.ws:
+    includes:
+    - org.jboss.spec.javax.xml.ws
+    urls:
+    - git:https://github.com/jboss/jboss-jaxws-api_spec.git
+  org.jboss.staxmapper:
+    includes:
+    - org.jboss:staxmapper
+    urls:
+    - git:https://github.com/jbossas/staxmapper.git
+    buildArguments:
+    - -Dcheckstyle.skip=true
+  org.jboss.stdio:
+    includes:
+    - org.jboss.stdio
+    urls:
+    - git:https://github.com/jboss-logging/jboss-stdio.git
+  org.jboss.threads:
+    includes:
+    - org.jboss.threads
+    urls:
+    - git:https://github.com/jbossas/jboss-threads.git
+  org.jboss.weld.weld-api-parent:
+    includes:
+    - org.jboss.weld:weld-api
+    - org.jboss.weld:weld-api-parent
+    - org.jboss.weld:weld-spi
+    urls:
+    - git:https://github.com/weld/api.git
+  org.jboss.weld.weld-core-parent:
+    includes:
+    - org.jboss.weld.probe
+    - org.jboss.weld:weld-core-impl
+    - org.jboss.weld:weld-core-jsf
+    - org.jboss.weld:weld-core-parent
+    urls:
+    - git:https://github.com/weld/core.git
+  org.jboss.ws.cxf:
+    includes:
+    - org.jboss.ws.cxf
+    urls:
+    - git:https://github.com/jbossws/jbossws-cxf.git
+  org.jboss.ws.jbossws-common:
+    includes:
+    - org.jboss.ws:jbossws-common
+    urls:
+    - git:https://github.com/jbossws/jbossws-common.git
+  org.jboss.ws.jbossws-common-tools:
+    includes:
+    - org.jboss.ws:jbossws-common-tools
+    urls:
+    - git:https://github.com/jbossws/jbossws-common-tools.git
+  org.jboss.ws.jbossws-spi:
+    includes:
+    - org.jboss.ws:jbossws-spi
+    urls:
+    - git:https://github.com/jbossws/jbossws-spi.git
+  org.jboss.xnio:
+    includes:
+    - org.jboss.xnio
+    urls:
+    - git:https://github.com/xnio/xnio.git
+  org.jboss.xnio.netty:
+    includes:
+    - org.jboss.xnio.netty
+    urls:
+    - git:https://github.com/xnio/netty-xnio-transport.git
+  org.jdom:
+    includes:
+    - org.jdom
+    urls:
+    - git:https://github.com/hunterhacker
+  org.jgroups:
+    includes:
+    - org.jgroups
+    urls:
+    - git:https://github.com/belaban/JGroups.git
+  org.jgroups.azure:
+    includes:
+    - org.jgroups.azure
+    urls:
+    - git:https://github.com/jgroups-extras/jgroups-azure.git
+  org.jmockit:
+    includes:
+    - org.jmockit
+    urls:
+    - git:https://github.com/jmockit/jmockit1
+  org.jsoup:
+    includes:
+    - org.jsoup
+    urls:
+    - git:https://github.com///github.com/jhy/jsoup.git
+  org.kohsuke.metainf-services:
+    includes:
+    - org.kohsuke.metainf-services
+    urls:
+    - git:https://github.com/kohsuke/metainf-services.git
+  org.ops4j.pax.exam-reactor:
+    includes:
+    - org.ops4j.pax.exam
+    - org.ops4j.pax:exam
+    - org.ops4j.pax:exam-reactor
+    urls:
+    - git:https://github.com/ops4j/org.ops4j.pax.exam2.git
+  org.ops4j.pax.url:
+    includes:
+    - org.ops4j.pax.url
+    - org.ops4j.pax:url
+    urls:
+    - git:https://github.com/ops4j/org.ops4j.pax.url.git
+  org.picketlink.picketlink-bindings-parent:
+    includes:
+    - org.picketlink.distribution
+    - org.picketlink:picketlink-bindings-parent
+    urls:
+    - git:https://github.com/picketlink/picketlink-bindings.git
+  org.picketlink.picketlink-parent:
+    includes:
+    - org.picketlink:picketlink-api
+    - org.picketlink:picketlink-base-parent
+    - org.picketlink:picketlink-common
+    - org.picketlink:picketlink-config
+    - org.picketlink:picketlink-federation
+    - org.picketlink:picketlink-idm-api
+    - org.picketlink:picketlink-idm-impl
+    - org.picketlink:picketlink-idm-parent
+    - org.picketlink:picketlink-idm-simple-schema
+    - org.picketlink:picketlink-impl
+    - org.picketlink:picketlink-parent
+    urls:
+    - git:https://github.com/picketlink/picketlink.git
+  org.projectodd.vdx:
+    includes:
+    - org.projectodd.vdx
+    urls:
+    - git:https://github.com/projectodd/vdx.git
+  org.wildfly.arquillian:
+    includes:
+    - org.wildfly.arquillian
+    urls:
+    - git:https://github.com/wildfly/wildfly-arquillian.git
+  org.wildfly.checkstyle:
+    includes:
+    - org.wildfly.checkstyle
+    urls:
+    - git:https://github.com/wildfly/wildfly-checkstyle-config.git
+  org.wildfly.client:
+    includes:
+    - org.wildfly.client
+    urls:
+    - git:https://github.com/wildfly/wildfly-client-config.git
+    buildArguments:
+    - -Dcheckstyle.skip=true
+  org.wildfly.common:
+    includes:
+    - org.wildfly.common
+    urls:
+    - git:https://github.com/wildfly/wildfly-common.git
+  org.wildfly.core:
+    includes:
+    - org.wildfly.core
+    urls:
+    - git:https://github.com/wildfly/wildfly-core.git
+  org.wildfly.discovery:
+    includes:
+    - org.wildfly.discovery
+    urls:
+    - git:https://github.com/wildfly/wildfly-discovery.git
+  org.wildfly.legacy.test:
+    includes:
+    - org.wildfly.legacy.test
+    urls:
+    - git:https://github.com/wildfly/wildfly-legacy-test.git
+  org.wildfly.openssl:
+    includes:
+    - org.wildfly.openssl
+    urls:
+    - git:https://github.com/wildfly/wildfly-openssl.git
+  org.wildfly.security.elytron-web:
+    includes:
+    - org.wildfly.security.elytron-web
+    urls:
+    - git:https://github.com/wildfly-security/elytron-web.git
+  org.wildfly.security.wildfly-elytron:
+    includes:
+    - org.wildfly.security:wildfly-elytron
+    urls:
+    - git:https://github.com/wildfly-security/wildfly-elytron.git
+  org.wildfly.security.wildfly-elytron-tool:
+    includes:
+    - org.wildfly.security:wildfly-elytron-tool
+    urls:
+    - git:https://github.com/wildfly-security/wildfly-elytron-tool.git
+  org.wildfly.transaction:
+    includes:
+    - org.wildfly.transaction
+    urls:
+    - git:https://github.com/wildfly/wildfly-transaction-client.git
+  org.wildfly.wildfly-http-client:
+    includes:
+    - org.wildfly.wildfly-http-client
+    urls:
+    - git:https://github.com/wildfly/wildfly-http-client.git
+  xalan:
+    includes:
+    - xalan
+    urls:
+    - git:https://github.com/jboss/xalan-j.git
+  xerces:
+    includes:
+    - xerces
+    urls:
+    - git:https://github.com/jboss/xerces
