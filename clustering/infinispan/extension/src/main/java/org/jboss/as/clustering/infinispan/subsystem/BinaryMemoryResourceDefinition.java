@@ -43,13 +43,18 @@ public class BinaryMemoryResourceDefinition extends MemoryResourceDefinition {
 
     static final PathElement PATH = pathElement("binary");
 
-    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        EVICTION_TYPE("eviction-type", ModelType.STRING, new ModelNode(EvictionType.COUNT.name()), builder -> builder.setValidator(new EnumValidator<>(EvictionType.class))),
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
+        EVICTION_TYPE("eviction-type", ModelType.STRING, new ModelNode(EvictionType.COUNT.name())) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setValidator(new EnumValidator<>(EvictionType.class));
+            }
+        },
         ;
         private final AttributeDefinition definition;
 
-        Attribute(String name, ModelType type, ModelNode defaultValue, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
-            this.definition = configurator.apply(new SimpleAttributeDefinitionBuilder(name, type)
+        Attribute(String name, ModelType type, ModelNode defaultValue) {
+            this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, type)
                     .setAllowExpression(true)
                     .setRequired(false)
                     .setDefaultValue(defaultValue)

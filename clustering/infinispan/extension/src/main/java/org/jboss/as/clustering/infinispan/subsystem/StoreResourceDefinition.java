@@ -92,24 +92,29 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition<Ma
         }
     }
 
-    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        FETCH_STATE("fetch-state", true, UnaryOperator.identity()),
-        MAX_BATCH_SIZE("max-batch-size", ModelType.INT, new ModelNode(100), UnaryOperator.identity()),
-        PASSIVATION("passivation", true, UnaryOperator.identity()),
-        PRELOAD("preload", false, UnaryOperator.identity()),
-        PURGE("purge", true, UnaryOperator.identity()),
-        SHARED("shared", false, UnaryOperator.identity()),
-        SINGLETON("singleton", false, builder -> builder.setDeprecated(InfinispanModel.VERSION_5_0_0.getVersion())),
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
+        FETCH_STATE("fetch-state", true),
+        MAX_BATCH_SIZE("max-batch-size", ModelType.INT, new ModelNode(100)),
+        PASSIVATION("passivation", true),
+        PRELOAD("preload", false),
+        PURGE("purge", true),
+        SHARED("shared", false),
+        SINGLETON("singleton", false) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setDeprecated(InfinispanModel.VERSION_5_0_0.getVersion());
+            }
+        },
         PROPERTIES("properties"),
         ;
         private final AttributeDefinition definition;
 
-        Attribute(String name, boolean defaultValue, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
-            this(name, ModelType.BOOLEAN, new ModelNode(defaultValue), configurator);
+        Attribute(String name, boolean defaultValue) {
+            this(name, ModelType.BOOLEAN, new ModelNode(defaultValue));
         }
 
-        Attribute(String name, ModelType type, ModelNode defaultValue, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
-            this.definition = configurator.apply(new SimpleAttributeDefinitionBuilder(name, type)
+        Attribute(String name, ModelType type, ModelNode defaultValue) {
+            this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, type)
                     .setAllowExpression(true)
                     .setRequired(false)
                     .setDefaultValue(defaultValue)
@@ -127,6 +132,11 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition<Ma
         @Override
         public AttributeDefinition getDefinition() {
             return this.definition;
+        }
+
+        @Override
+        public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+            return builder;
         }
     }
 

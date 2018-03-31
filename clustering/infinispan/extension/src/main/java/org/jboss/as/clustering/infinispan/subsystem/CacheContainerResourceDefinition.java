@@ -125,16 +125,33 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
             .setDeprecated(InfinispanModel.VERSION_3_0_0.getVersion())
             .build();
 
-    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
         ALIASES("aliases"),
-        DEFAULT_CACHE("default-cache", ModelType.STRING, builder -> builder.setAllowExpression(false).setCapabilityReference(new CapabilityReference(DEFAULT_CAPABILITIES.get(InfinispanCacheRequirement.CONFIGURATION), InfinispanCacheRequirement.CONFIGURATION))),
-        MODULE("module", ModelType.STRING, builder -> builder.setDefaultValue(new ModelNode("org.jboss.as.clustering.infinispan")).setValidator(new ModuleIdentifierValidatorBuilder().configure(builder).build())),
-        STATISTICS_ENABLED("statistics-enabled", ModelType.BOOLEAN, builder -> builder.setDefaultValue(new ModelNode(false))),
+        DEFAULT_CACHE("default-cache", ModelType.STRING) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setAllowExpression(false).setCapabilityReference(new CapabilityReference(DEFAULT_CAPABILITIES.get(InfinispanCacheRequirement.CONFIGURATION), InfinispanCacheRequirement.CONFIGURATION));
+            }
+        },
+        MODULE("module", ModelType.STRING) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setDefaultValue(new ModelNode("org.jboss.as.clustering.infinispan"))
+                        .setValidator(new ModuleIdentifierValidatorBuilder().configure(builder).build())
+                        ;
+            }
+        },
+        STATISTICS_ENABLED("statistics-enabled", ModelType.BOOLEAN) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setDefaultValue(new ModelNode(false));
+            }
+        },
         ;
         private final AttributeDefinition definition;
 
-        Attribute(String name, ModelType type, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
-            this.definition = configurator.apply(createBuilder(name, type)).build();
+        Attribute(String name, ModelType type) {
+            this.definition = this.apply(createBuilder(name, type)).build();
         }
 
         Attribute(String name) {
@@ -147,6 +164,11 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
         @Override
         public AttributeDefinition getDefinition() {
             return this.definition;
+        }
+
+        @Override
+        public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+            return builder;
         }
     }
 
@@ -169,19 +191,31 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
     }
 
     @Deprecated
-    enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
-        JNDI_NAME("jndi-name", ModelType.STRING, UnaryOperator.identity(), InfinispanModel.VERSION_6_0_0),
-        START("start", ModelType.STRING, builder -> builder.setDefaultValue(new ModelNode(StartMode.LAZY.name())).setValidator(new EnumValidator<>(StartMode.class)), InfinispanModel.VERSION_3_0_0),
+    enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
+        JNDI_NAME("jndi-name", ModelType.STRING, InfinispanModel.VERSION_6_0_0),
+        START("start", ModelType.STRING, InfinispanModel.VERSION_3_0_0) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setDefaultValue(new ModelNode(StartMode.LAZY.name()))
+                        .setValidator(new EnumValidator<>(StartMode.class))
+                        ;
+            }
+        },
         ;
         private final AttributeDefinition definition;
 
-        DeprecatedAttribute(String name, ModelType type, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator, InfinispanModel deprecation) {
-            this.definition = configurator.apply(createBuilder(name, type)).setDeprecated(deprecation.getVersion()).build();
+        DeprecatedAttribute(String name, ModelType type, InfinispanModel deprecation) {
+            this.definition = this.apply(createBuilder(name, type)).setDeprecated(deprecation.getVersion()).build();
         }
 
         @Override
         public AttributeDefinition getDefinition() {
             return this.definition;
+        }
+
+        @Override
+        public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+            return builder;
         }
     }
 

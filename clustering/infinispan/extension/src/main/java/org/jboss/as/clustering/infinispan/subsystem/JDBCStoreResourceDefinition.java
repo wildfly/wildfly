@@ -65,14 +65,32 @@ public abstract class JDBCStoreResourceDefinition extends StoreResourceDefinitio
 
     static final PathElement PATH = pathElement("jdbc");
 
-    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        DATA_SOURCE("data-source", ModelType.STRING, builder -> builder.setRequired(true).setCapabilityReference(new CapabilityReference(Capability.PERSISTENCE, CommonUnaryRequirement.DATA_SOURCE)).setAlternatives(DeprecatedAttribute.DATASOURCE.getName())),
-        DIALECT("dialect", ModelType.STRING, builder -> builder.setAllowExpression(true).setRequired(false).setValidator(new EnumValidator<>(DatabaseType.class))),
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
+        DATA_SOURCE("data-source", ModelType.STRING) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setRequired(true)
+                        .setCapabilityReference(new CapabilityReference(Capability.PERSISTENCE, CommonUnaryRequirement.DATA_SOURCE))
+                        .setAlternatives(DeprecatedAttribute.DATASOURCE.getName())
+                        ;
+            }
+        },
+        DIALECT("dialect", ModelType.STRING) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setAllowExpression(true)
+                        .setRequired(false)
+                        .setValidator(new EnumValidator<>(DatabaseType.class))
+                        ;
+            }
+        },
         ;
         private final AttributeDefinition definition;
 
-        Attribute(String name, ModelType type, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
-            this.definition = configurator.apply(new SimpleAttributeDefinitionBuilder(name, type).setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)).build();
+        Attribute(String name, ModelType type) {
+            this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, type)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES))
+                    .build();
         }
 
         @Override
@@ -81,13 +99,22 @@ public abstract class JDBCStoreResourceDefinition extends StoreResourceDefinitio
         }
     }
 
-    enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
-        DATASOURCE("datasource", ModelType.STRING, builder -> builder.setAllowExpression(true).setRequired(false), InfinispanModel.VERSION_4_0_0), // Defines data source as JNDI name
+    enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
+        // Defines data source as JNDI name
+        DATASOURCE("datasource", ModelType.STRING, InfinispanModel.VERSION_4_0_0) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setAllowExpression(true).setRequired(false);
+            }
+        },
         ;
         private final AttributeDefinition definition;
 
-        DeprecatedAttribute(String name, ModelType type, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator, InfinispanModel deprecation) {
-            this.definition = configurator.apply(new SimpleAttributeDefinitionBuilder(name, type).setDeprecated(deprecation.getVersion()).setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)).build();
+        DeprecatedAttribute(String name, ModelType type, InfinispanModel deprecation) {
+            this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, type)
+                    .setDeprecated(deprecation.getVersion())
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES))
+                    .build();
         }
 
         @Override
