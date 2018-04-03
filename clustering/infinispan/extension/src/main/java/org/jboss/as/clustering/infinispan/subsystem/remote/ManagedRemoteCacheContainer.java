@@ -29,6 +29,8 @@ import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.commons.marshall.Marshaller;
 import org.wildfly.clustering.infinispan.spi.RemoteCacheContainer;
 
+import java.util.Set;
+
 /**
  * Default implementation of container managed {@link RemoteCacheContainer}.
  *
@@ -97,6 +99,11 @@ public class ManagedRemoteCacheContainer implements RemoteCacheContainer {
     @Override
     public <K, V> RemoteCache<K, V> getCache(String cacheName) {
         return this.remoteCacheManager.getCache(cacheName);
+    }
+
+    @Override
+    public Set<String> getCacheNames() {
+        return this.remoteCacheManager.getCacheNames();
     }
 
     @Override
