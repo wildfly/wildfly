@@ -42,7 +42,6 @@ import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
-import org.infinispan.factories.GlobalComponentRegistry;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.remoting.transport.Address;
@@ -186,8 +185,6 @@ public class DefaultCacheContainerTestCase {
 
     @Test
     public void undefineConfiguration() {
-        when(this.manager.getGlobalComponentRegistry()).thenReturn(mock(GlobalComponentRegistry.class));
-
         this.subject.undefineConfiguration("test");
 
         verify(this.manager).undefineConfiguration("test");
