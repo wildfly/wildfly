@@ -78,14 +78,17 @@ public class InvalidationNearCacheResourceDefinition extends NearCacheResourceDe
         super(PATH);
     }
 
+
     @Override
-    public void register(ManagementResourceRegistration parentRegistration) {
-        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
+    public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
+        ManagementResourceRegistration registration = parent.registerSubModel(this);
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(InvalidationNearCacheResourceDefinition.Attribute.class)
                 ;
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(InvalidationNearCacheBuilder::new);
         new SimpleResourceRegistration(descriptor, handler).register(registration);
+
+        return registration;
     }
 }

@@ -136,13 +136,15 @@ public class RemoteClusterResourceDefinition extends ChildResourceDefinition<Man
     }
 
     @Override
-    public void register(ManagementResourceRegistration parentRegistration) {
-        ManagementResourceRegistration subModel = parentRegistration.registerSubModel(this);
+    public ManagementResourceRegistration register(ManagementResourceRegistration parentRegistration) {
+        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
                 .addCapabilities(Capability.class);
-        new RestartParentResourceRegistration<>(builderFactory, descriptor).register(subModel);
+        new RestartParentResourceRegistration<>(builderFactory, descriptor).register(registration);
+
+        return registration;
     }
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {

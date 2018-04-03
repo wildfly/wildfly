@@ -80,13 +80,28 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
         }
     }
 
-    public enum Attribute implements org.jboss.as.clustering.controller.Attribute {
+    public enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
         CONNECTION_TIMEOUT("connection-timeout", ModelType.INT, new ModelNode(60000)),
-        DEFAULT_REMOTE_CLUSTER("default-remote-cluster", ModelType.STRING, builder -> builder.setRequired(true).setCapabilityReference(new CapabilityReference(Capability.CONFIGURATION, RemoteClusterResourceDefinition.Requirement.REMOTE_CLUSTER))),
+        DEFAULT_REMOTE_CLUSTER("default-remote-cluster", ModelType.STRING) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setRequired(true).setCapabilityReference(new CapabilityReference(Capability.CONFIGURATION, RemoteClusterResourceDefinition.Requirement.REMOTE_CLUSTER));
+            }
+        },
         KEY_SIZE_ESTIMATE("key-size-estimate", ModelType.INT, new ModelNode(64)),
         MAX_RETRIES("max-retries", ModelType.INT, new ModelNode(10)),
-        MODULE("module", ModelType.STRING, builder -> builder.setDefaultValue(new ModelNode("org.jboss.as.clustering.infinispan")).setValidator(new ModuleIdentifierValidatorBuilder().configure(builder).build())),
-        PROTOCOL_VERSION("protocol-version", ModelType.STRING, builder -> builder.setDefaultValue(new ModelNode(ProtocolVersion.DEFAULT_PROTOCOL_VERSION.toString())).setValidator(new EnumValidator<>(ProtocolVersion.class))),
+        MODULE("module", ModelType.STRING) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setDefaultValue(new ModelNode("org.jboss.as.clustering.infinispan")).setValidator(new ModuleIdentifierValidatorBuilder().configure(builder).build());
+            }
+        },
+        PROTOCOL_VERSION("protocol-version", ModelType.STRING) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setDefaultValue(new ModelNode(ProtocolVersion.DEFAULT_PROTOCOL_VERSION.toString())).setValidator(new EnumValidator<>(ProtocolVersion.class));
+            }
+        },
         SOCKET_TIMEOUT("socket-timeout", ModelType.INT, new ModelNode(60000)),
         TCP_NO_DELAY("tcp-no-delay", ModelType.BOOLEAN, new ModelNode(true)),
         TCP_KEEP_ALIVE("tcp-keep-alive", ModelType.BOOLEAN, new ModelNode(false)),
@@ -95,8 +110,8 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
 
         private final AttributeDefinition definition;
 
-        Attribute(String name, ModelType type, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
-            this.definition = configurator.apply(createBuilder(name, type)).build();
+        Attribute(String name, ModelType type) {
+            this.definition = this.apply(createBuilder(name, type)).build();
         }
 
         Attribute(String name, ModelType type, ModelNode defaultValue) {
@@ -107,9 +122,14 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
         public AttributeDefinition getDefinition() {
             return this.definition;
         }
+
+        @Override
+        public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+            return builder;
+        }
     }
 
-    static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type) {
+    private static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type) {
         return new SimpleAttributeDefinitionBuilder(name, type)
                 .setAllowExpression(true)
                 .setRequired(false)
@@ -133,7 +153,7 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
     private final ResourceServiceBuilderFactory<Configuration> builderFactory = RemoteCacheContainerConfigurationBuilder::new;
 
     @Override
-    public void register(ManagementResourceRegistration parentRegistration) {
+    public ManagementResourceRegistration register(ManagementResourceRegistration parentRegistration) {
         ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
@@ -153,5 +173,7 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
         new NoNearCacheResourceDefinition().register(registration);
 
         ThreadPoolResourceDefinition.CLIENT.register(registration);
+
+        return registration;
     }
 }

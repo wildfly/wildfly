@@ -49,11 +49,13 @@ public class NoNearCacheResourceDefinition extends NearCacheResourceDefinition {
     }
 
     @Override
-    public void register(ManagementResourceRegistration parentRegistration) {
+    public ManagementResourceRegistration register(ManagementResourceRegistration parentRegistration) {
         ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver());
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(NoNearCacheBuilder::new);
         new SimpleResourceRegistration(descriptor, handler).register(registration);
+
+        return registration;
     }
 }

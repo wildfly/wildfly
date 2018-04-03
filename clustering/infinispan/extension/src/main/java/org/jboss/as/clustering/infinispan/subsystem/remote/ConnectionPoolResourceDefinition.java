@@ -94,13 +94,15 @@ public class ConnectionPoolResourceDefinition extends ComponentResourceDefinitio
     }
 
     @Override
-    public void register(ManagementResourceRegistration registration) {
-        ManagementResourceRegistration subModel = registration.registerSubModel(this);
+    public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
+        ManagementResourceRegistration registration = parent.registerSubModel(this);
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
                 ;
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(ConnectionPoolBuilder::new);
-        new SimpleResourceRegistration(descriptor, handler).register(subModel);
+        new SimpleResourceRegistration(descriptor, handler).register(registration);
+
+        return registration;
     }
 }
