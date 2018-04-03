@@ -1,0 +1,20 @@
+<PicketLink xmlns="urn:picketlink:identity-federation:config:2.1">
+	<PicketLinkSP xmlns="urn:picketlink:identity-federation:config:2.1"
+		ServerEnvironment="tomcat" BindingType="POST">
+		<IdentityURL>http://${node0.escaped}:8080/idp/</IdentityURL>
+		<ServiceURL>http://${node0.escaped}:8080/sp-post/</ServiceURL>
+        <Trust>
+			<Domains>${node0.escaped},jboss.com,jboss.org,amazonaws.com</Domains>
+		</Trust>
+	</PicketLinkSP>
+	<Handlers xmlns="urn:picketlink:identity-federation:handler:config:2.1">
+        <Handler
+            class="org.picketlink.identity.federation.web.handlers.saml2.SAML2IssuerTrustHandler" />
+		<Handler
+			class="org.picketlink.identity.federation.web.handlers.saml2.SAML2LogOutHandler" />
+		<Handler
+			class="org.picketlink.identity.federation.web.handlers.saml2.SAML2AuthenticationHandler" />
+		<Handler
+			class="org.picketlink.identity.federation.web.handlers.saml2.RolesGenerationHandler" />
+	</Handlers>
+</PicketLink>
