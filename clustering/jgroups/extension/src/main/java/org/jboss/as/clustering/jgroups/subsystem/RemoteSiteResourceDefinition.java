@@ -80,13 +80,19 @@ public class RemoteSiteResourceDefinition extends ChildResourceDefinition<Manage
         }
     }
 
-    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        CHANNEL("channel", ModelType.STRING, builder -> builder.setCapabilityReference(new CapabilityReference(Capability.REMOTE_SITE, JGroupsRequirement.CHANNEL_SOURCE))),
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
+        CHANNEL("channel", ModelType.STRING) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setCapabilityReference(new CapabilityReference(Capability.REMOTE_SITE, JGroupsRequirement.CHANNEL_SOURCE));
+            }
+        },
         ;
+
         private final AttributeDefinition definition;
 
-        Attribute(String name, ModelType type, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
-            this.definition = configurator.apply(new SimpleAttributeDefinitionBuilder(name, ModelType.STRING)
+        Attribute(String name, ModelType type) {
+            this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, ModelType.STRING)
                     .setRequired(true)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     ).build();

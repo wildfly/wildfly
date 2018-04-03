@@ -41,7 +41,6 @@ import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
-import org.jboss.as.controller.AbstractAttributeDefinitionBuilder;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
@@ -89,14 +88,24 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
         }
     }
 
-    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        MODULE("module", ModelType.STRING, builder -> builder.setValidator(new ModuleIdentifierValidatorBuilder().configure(builder).build())),
-        STATISTICS_ENABLED("statistics-enabled", ModelType.BOOLEAN, builder -> builder.setDefaultValue(new ModelNode(false))),
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
+        MODULE("module", ModelType.STRING) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setValidator(new ModuleIdentifierValidatorBuilder().configure(builder).build());
+            }
+        },
+        STATISTICS_ENABLED("statistics-enabled", ModelType.BOOLEAN) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setDefaultValue(new ModelNode(false));
+            }
+        },
         ;
         private final AttributeDefinition definition;
 
-        Attribute(String name, ModelType type, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
-            this.definition = configurator.apply(createBuilder(name, type)).build();
+        Attribute(String name, ModelType type) {
+            this.definition = this.apply(createBuilder(name, type)).build();
         }
 
         @Override
@@ -106,30 +115,53 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
     }
 
     @Deprecated
-    enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
-        @Deprecated BATCHING("batching", ModelType.BOOLEAN, builder -> builder.setDefaultValue(new ModelNode(false)), InfinispanModel.VERSION_3_0_0),
-        @Deprecated INDEXING("indexing", ModelType.STRING, builder -> builder.setDefaultValue(new ModelNode(Index.NONE.name())).setValidator(new EnumValidator<>(Index.class)), InfinispanModel.VERSION_4_0_0),
-        @Deprecated INDEXING_PROPERTIES("indexing-properties", InfinispanModel.VERSION_4_0_0),
-        @Deprecated JNDI_NAME("jndi-name", ModelType.STRING, UnaryOperator.identity(), InfinispanModel.VERSION_6_0_0),
-        @Deprecated START("start", ModelType.STRING, builder -> builder.setDefaultValue(new ModelNode(StartMode.LAZY.name())).setValidator(new EnumValidator<>(StartMode.class)), InfinispanModel.VERSION_3_0_0),
+    enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
+        BATCHING("batching", ModelType.BOOLEAN, InfinispanModel.VERSION_3_0_0) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setDefaultValue(new ModelNode(false));
+            }
+        },
+        INDEXING("indexing", ModelType.STRING, InfinispanModel.VERSION_4_0_0) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setDefaultValue(new ModelNode(Index.NONE.name()))
+                        .setValidator(new EnumValidator<>(Index.class))
+                        ;
+            }
+        },
+        INDEXING_PROPERTIES("indexing-properties", InfinispanModel.VERSION_4_0_0),
+        JNDI_NAME("jndi-name", ModelType.STRING, InfinispanModel.VERSION_6_0_0),
+        START("start", ModelType.STRING, InfinispanModel.VERSION_3_0_0) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setDefaultValue(new ModelNode(StartMode.LAZY.name()))
+                        .setValidator(new EnumValidator<>(StartMode.class))
+                        ;
+            }
+        },
         ;
         private final AttributeDefinition definition;
 
-        DeprecatedAttribute(String name, ModelType type, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator, InfinispanModel deprecation) {
-            this(configurator.apply(createBuilder(name, type)), deprecation);
+        DeprecatedAttribute(String name, ModelType type, InfinispanModel deprecation) {
+            this.definition = this.apply(createBuilder(name, type)).setDeprecated(deprecation.getVersion()).build();
         }
 
         DeprecatedAttribute(String name, InfinispanModel deprecation) {
-            this(new PropertiesAttributeDefinition.Builder(name).setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES), deprecation);
-        }
-
-        <A extends AttributeDefinition, B extends AbstractAttributeDefinitionBuilder<B, A>> DeprecatedAttribute(B builder, InfinispanModel deprecation) {
-            this.definition = builder.setDeprecated(deprecation.getVersion()).build();
+            this.definition = new PropertiesAttributeDefinition.Builder(name)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .setDeprecated(deprecation.getVersion())
+                    .build();
         }
 
         @Override
         public AttributeDefinition getDefinition() {
             return this.definition;
+        }
+
+        @Override
+        public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+            return builder;
         }
     }
 

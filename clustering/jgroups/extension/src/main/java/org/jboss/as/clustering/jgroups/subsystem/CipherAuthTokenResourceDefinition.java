@@ -42,16 +42,34 @@ public class CipherAuthTokenResourceDefinition extends AuthTokenResourceDefiniti
 
     static final PathElement PATH = pathElement("cipher");
 
-    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
         KEY_CREDENTIAL(CredentialReference.getAttributeBuilder("key-credential-reference", null, false, new CapabilityReference(Capability.AUTH_TOKEN, CommonUnaryRequirement.CREDENTIAL_STORE)).build()),
-        KEY_ALIAS("key-alias", ModelType.STRING, builder -> builder.setAllowExpression(true)),
-        KEY_STORE("key-store", ModelType.STRING, builder -> builder.setCapabilityReference(new CapabilityReference(Capability.AUTH_TOKEN, CommonUnaryRequirement.KEY_STORE))),
-        ALGORITHM("algorithm", ModelType.STRING, builder -> builder.setAllowExpression(true).setRequired(false).setDefaultValue(new ModelNode("RSA"))),
+        KEY_ALIAS("key-alias", ModelType.STRING) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setAllowExpression(true);
+            }
+        },
+        KEY_STORE("key-store", ModelType.STRING) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setCapabilityReference(new CapabilityReference(Capability.AUTH_TOKEN, CommonUnaryRequirement.KEY_STORE));
+            }
+        },
+        ALGORITHM("algorithm", ModelType.STRING) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setAllowExpression(true)
+                        .setRequired(false)
+                        .setDefaultValue(new ModelNode("RSA"))
+                        ;
+            }
+        },
         ;
         private final AttributeDefinition definition;
 
-        Attribute(String name, ModelType type, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
-            this.definition = configurator.apply(new SimpleAttributeDefinitionBuilder(name, type)
+        Attribute(String name, ModelType type) {
+            this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, type)
                     .setRequired(true)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     ).build();
@@ -64,6 +82,11 @@ public class CipherAuthTokenResourceDefinition extends AuthTokenResourceDefiniti
         @Override
         public AttributeDefinition getDefinition() {
             return this.definition;
+        }
+
+        @Override
+        public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+            return builder;
         }
     }
 

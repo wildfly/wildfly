@@ -49,18 +49,26 @@ public class FileStoreResourceDefinition extends StoreResourceDefinition {
     static final PathElement LEGACY_PATH = PathElement.pathElement("file-store", "FILE_STORE");
     static final PathElement PATH = pathElement("file");
 
-    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        RELATIVE_PATH("path", ModelType.STRING, builder -> builder.setAllowExpression(true)),
-        RELATIVE_TO("relative-to", ModelType.STRING, builder -> builder.setDefaultValue(new ModelNode(ServerEnvironment.SERVER_DATA_DIR)).setCapabilityReference(new CapabilityReference(Capability.PERSISTENCE, CommonUnaryRequirement.PATH))),
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
+        RELATIVE_PATH("path", ModelType.STRING) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setAllowExpression(true);
+            }
+        },
+        RELATIVE_TO("relative-to", ModelType.STRING) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setDefaultValue(new ModelNode(ServerEnvironment.SERVER_DATA_DIR))
+                        .setCapabilityReference(new CapabilityReference(Capability.PERSISTENCE, CommonUnaryRequirement.PATH))
+                        ;
+            }
+        },
         ;
         private final AttributeDefinition definition;
 
         Attribute(String name, ModelType type) {
-            this(name, type, UnaryOperator.identity());
-        }
-
-        Attribute(String name, ModelType type, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
-            this.definition = configurator.apply(new SimpleAttributeDefinitionBuilder(name, type).setRequired(false).setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)).build();
+            this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, type).setRequired(false).setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)).build();
         }
 
         @Override

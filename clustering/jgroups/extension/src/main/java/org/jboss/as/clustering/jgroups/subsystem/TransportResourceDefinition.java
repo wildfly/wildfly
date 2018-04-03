@@ -110,19 +110,32 @@ public class TransportResourceDefinition<T extends TP> extends AbstractProtocolR
         }
     }
 
-    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        @Deprecated SHARED("shared", ModelType.BOOLEAN, builder -> builder
-                .setDefaultValue(new ModelNode(false))
-                .setDeprecated(JGroupsModel.VERSION_4_0_0.getVersion())),
-        SOCKET_BINDING("socket-binding", ModelType.STRING, builder -> builder
-                .setAllowExpression(false)
-                .setRequired(true)
-                .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
-                .setCapabilityReference(new CapabilityReference(Capability.TRANSPORT, CommonUnaryRequirement.SOCKET_BINDING))),
-        DIAGNOSTICS_SOCKET_BINDING("diagnostics-socket-binding", ModelType.STRING, builder -> builder
-                .setAllowExpression(false)
-                .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
-                .setCapabilityReference(new CapabilityReference(Capability.TRANSPORT, CommonUnaryRequirement.SOCKET_BINDING))),
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
+        @Deprecated SHARED("shared", ModelType.BOOLEAN) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setDefaultValue(new ModelNode(false))
+                        .setDeprecated(JGroupsModel.VERSION_4_0_0.getVersion())
+                        ;
+            }
+        },
+        SOCKET_BINDING("socket-binding", ModelType.STRING) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setAllowExpression(false)
+                        .setRequired(true)
+                        .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
+                        .setCapabilityReference(new CapabilityReference(Capability.TRANSPORT, CommonUnaryRequirement.SOCKET_BINDING));
+            }
+        },
+        DIAGNOSTICS_SOCKET_BINDING("diagnostics-socket-binding", ModelType.STRING) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setAllowExpression(false)
+                        .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
+                        .setCapabilityReference(new CapabilityReference(Capability.TRANSPORT, CommonUnaryRequirement.SOCKET_BINDING));
+            }
+        },
         SITE("site", ModelType.STRING),
         RACK("rack", ModelType.STRING),
         MACHINE("machine", ModelType.STRING),
@@ -130,11 +143,7 @@ public class TransportResourceDefinition<T extends TP> extends AbstractProtocolR
         private final AttributeDefinition definition;
 
         Attribute(String name, ModelType type) {
-            this(name, type, UnaryOperator.identity());
-        }
-
-        Attribute(String name, ModelType type, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
-            this.definition = configurator.apply(new SimpleAttributeDefinitionBuilder(name, type)
+            this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, type)
                     .setAllowExpression(true)
                     .setRequired(false)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
@@ -144,6 +153,11 @@ public class TransportResourceDefinition<T extends TP> extends AbstractProtocolR
         @Override
         public AttributeDefinition getDefinition() {
             return this.definition;
+        }
+
+        @Override
+        public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+            return builder;
         }
     }
 

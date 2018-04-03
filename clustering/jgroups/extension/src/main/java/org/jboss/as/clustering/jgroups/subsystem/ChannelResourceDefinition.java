@@ -96,25 +96,36 @@ public class ChannelResourceDefinition extends ChildResourceDefinition<Managemen
         }
     }
 
-    public enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        STACK("stack", ModelType.STRING, builder -> builder
-                .setRequired(true)
-                .setAllowExpression(false)
-                .setCapabilityReference(new CapabilityReference(Capability.JCHANNEL_FACTORY, JGroupsRequirement.CHANNEL_FACTORY))),
-        MODULE("module", ModelType.STRING, builder -> builder
-                .setDefaultValue(new ModelNode("org.wildfly.clustering.server"))
-                .setValidator(new ModuleIdentifierValidatorBuilder().configure(builder).build())),
+    public enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
+        STACK("stack", ModelType.STRING) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setRequired(true)
+                        .setAllowExpression(false)
+                        .setCapabilityReference(new CapabilityReference(Capability.JCHANNEL_FACTORY, JGroupsRequirement.CHANNEL_FACTORY))
+                        ;
+            }
+        },
+        MODULE("module", ModelType.STRING) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setDefaultValue(new ModelNode("org.wildfly.clustering.server"))
+                        .setValidator(new ModuleIdentifierValidatorBuilder().configure(builder).build())
+                        ;
+            }
+        },
         CLUSTER("cluster", ModelType.STRING),
-        STATISTICS_ENABLED("statistics-enabled", ModelType.BOOLEAN, builder -> builder.setDefaultValue(new ModelNode(false))),
+        STATISTICS_ENABLED("statistics-enabled", ModelType.BOOLEAN) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setDefaultValue(new ModelNode(false));
+            }
+        },
         ;
         private final AttributeDefinition definition;
 
         Attribute(String name, ModelType type) {
-            this(name,  type, UnaryOperator.identity());
-        }
-
-        Attribute(String name, ModelType type, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
-            this.definition = configurator.apply(new SimpleAttributeDefinitionBuilder(name, type)
+            this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, type)
                     .setAllowExpression(true)
                     .setRequired(false)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
@@ -124,6 +135,11 @@ public class ChannelResourceDefinition extends ChildResourceDefinition<Managemen
         @Override
         public AttributeDefinition getDefinition() {
             return this.definition;
+        }
+
+        @Override
+        public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+            return builder;
         }
     }
 

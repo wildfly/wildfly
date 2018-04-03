@@ -65,21 +65,22 @@ import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
  */
 public class AbstractProtocolResourceDefinition<P extends Protocol, C extends ProtocolConfiguration<P>> extends ChildResourceDefinition<ManagementResourceRegistration> implements BiConsumer<ManagementResourceRegistration, ManagementResourceRegistration> {
 
-    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        MODULE(ModelDescriptionConstants.MODULE, ModelType.STRING, builder -> builder
-                .setDefaultValue(new ModelNode("org.jgroups"))
-                .setValidator(new ModuleIdentifierValidatorBuilder().configure(builder).build())),
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
+        MODULE(ModelDescriptionConstants.MODULE, ModelType.STRING) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setDefaultValue(new ModelNode("org.jgroups"))
+                        .setValidator(new ModuleIdentifierValidatorBuilder().configure(builder).build())
+                        ;
+            }
+        },
         PROPERTIES(ModelDescriptionConstants.PROPERTIES),
         STATISTICS_ENABLED(ModelDescriptionConstants.STATISTICS_ENABLED, ModelType.BOOLEAN),
         ;
         private final AttributeDefinition definition;
 
         Attribute(String name, ModelType type) {
-            this(name, type, UnaryOperator.identity());
-        }
-
-        Attribute(String name, ModelType type, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
-            this.definition = configurator.apply(new SimpleAttributeDefinitionBuilder(name, type)
+            this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, type)
                     .setAllowExpression(true)
                     .setRequired(false)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
@@ -96,6 +97,11 @@ public class AbstractProtocolResourceDefinition<P extends Protocol, C extends Pr
         @Override
         public AttributeDefinition getDefinition() {
             return this.definition;
+        }
+
+        @Override
+        public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+            return builder;
         }
     }
 

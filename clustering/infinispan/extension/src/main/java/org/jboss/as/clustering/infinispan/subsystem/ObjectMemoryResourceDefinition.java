@@ -52,14 +52,19 @@ public class ObjectMemoryResourceDefinition extends MemoryResourceDefinition {
     static final PathElement EVICTION_PATH = ComponentResourceDefinition.pathElement("eviction");
     static final PathElement LEGACY_PATH = PathElement.pathElement(EVICTION_PATH.getValue(), "EVICTION");
 
-    enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
-        STRATEGY("strategy", ModelType.STRING, new ModelNode(EvictionStrategy.NONE.name()), builder -> builder.setValidator(new EnumValidator<>(EvictionStrategy.class, EnumSet.complementOf(EnumSet.of(EvictionStrategy.MANUAL))))),
-        MAX_ENTRIES("max-entries", ModelType.LONG, new ModelNode(-1L), UnaryOperator.identity()),
+    enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
+        STRATEGY("strategy", ModelType.STRING, new ModelNode(EvictionStrategy.NONE.name())) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setValidator(new EnumValidator<>(EvictionStrategy.class, EnumSet.complementOf(EnumSet.of(EvictionStrategy.MANUAL))));
+            }
+        },
+        MAX_ENTRIES("max-entries", ModelType.LONG, new ModelNode(-1L)),
         ;
         private final AttributeDefinition definition;
 
-        DeprecatedAttribute(String name, ModelType type, ModelNode defaultValue, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
-            this.definition = configurator.apply(new SimpleAttributeDefinitionBuilder(name, type)
+        DeprecatedAttribute(String name, ModelType type, ModelNode defaultValue) {
+            this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, type)
                     .setAllowExpression(true)
                     .setRequired(false)
                     .setDefaultValue(defaultValue)
@@ -71,6 +76,11 @@ public class ObjectMemoryResourceDefinition extends MemoryResourceDefinition {
         @Override
         public AttributeDefinition getDefinition() {
             return this.definition;
+        }
+
+        @Override
+        public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+            return builder;
         }
     }
 
