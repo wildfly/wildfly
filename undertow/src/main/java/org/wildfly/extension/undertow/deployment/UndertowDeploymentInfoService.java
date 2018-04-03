@@ -1220,11 +1220,9 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         ManagedReferenceFactory creator = components.createInstanceFactory(listenerClass);
         if (creator != null) {
             InstanceFactory<EventListener> factory = createInstanceFactory(creator);
-            //l = new ListenerInfo((Class)listenerClass, (InstanceFactory<? extends EventListener>) factory, programatic); TODO: servlet 4.0
-            l = new ListenerInfo(listenerClass, factory);
+            l = new ListenerInfo(listenerClass, factory, programatic);
         } else {
-            //l = new ListenerInfo(listenerClass, programatic);TODO: servlet 4.0
-            l = new ListenerInfo(listenerClass);
+            l = new ListenerInfo(listenerClass, programatic);
         }
         d.addListener(l);
     }
