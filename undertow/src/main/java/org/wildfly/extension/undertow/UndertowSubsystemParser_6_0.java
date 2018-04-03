@@ -391,7 +391,8 @@ public class UndertowSubsystemParser_6_0 extends PersistentResourceXMLParser {
                         ListenerResourceDefinition.REQUEST_PARSE_TIMEOUT,
                         ListenerResourceDefinition.DISALLOWED_METHODS,
                         ListenerResourceDefinition.SECURE,
-                        ListenerResourceDefinition.RFC6265_COOKIE_VALIDATION);
+                        ListenerResourceDefinition.RFC6265_COOKIE_VALIDATION,
+                        ListenerResourceDefinition.ALLOW_UNESCAPED_CHARACTERS_IN_URL);
     }
 
     private static PersistentResourceXMLDescription.PersistentResourceXMLBuilder filterRefBuilder() {
