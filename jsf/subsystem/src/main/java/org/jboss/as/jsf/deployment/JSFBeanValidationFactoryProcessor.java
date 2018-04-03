@@ -42,7 +42,12 @@ public class JSFBeanValidationFactoryProcessor implements DeploymentUnitProcesso
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+
+        if(JsfVersionMarker.isJsfDisabled(deploymentUnit)) {
+            return;
+        }
 
         // Get the CDI-enabled ValidatorFactory and add it to the servlet context
         ValidatorFactory validatorFactory = deploymentUnit.getAttachment(BeanValidationAttachments.VALIDATOR_FACTORY);

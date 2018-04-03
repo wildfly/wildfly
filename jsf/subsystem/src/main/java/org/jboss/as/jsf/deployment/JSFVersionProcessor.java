@@ -21,20 +21,32 @@
  */
 package org.jboss.as.jsf.deployment;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.annotation.CompositeIndex;
+import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.web.common.WarMetaData;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.DotName;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
+import org.jboss.metadata.web.jboss.JBossServletMetaData;
+import org.jboss.metadata.web.jboss.JBossServletsMetaData;
+import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.WebFragmentMetaData;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import org.jboss.vfs.VirtualFile;
 
 /**
- * Determines the JSF version that will be used by a deployment.
+ * Determines the JSF version that will be used by a deployment, and if JSF should be used at all
  *
  * @author Stuart Douglas
  * @author Stan Silvert
@@ -44,13 +56,41 @@ public class JSFVersionProcessor implements DeploymentUnitProcessor {
     public static final String JSF_CONFIG_NAME_PARAM = "org.jboss.jbossfaces.JSF_CONFIG_NAME";
     public static final String WAR_BUNDLES_JSF_IMPL_PARAM = "org.jboss.jbossfaces.WAR_BUNDLES_JSF_IMPL";
 
+    private static final DotName[] JSF_ANNOTATIONS = {
+            DotName.createSimple("javax.faces.view.facelets.FaceletsResourceResolver"),
+            DotName.createSimple("javax.faces.component.behavior.FacesBehavior"),
+            DotName.createSimple("javax.faces.render.FacesBehaviorRenderer"),
+            DotName.createSimple("javax.faces.component.FacesComponent"),
+            DotName.createSimple("javax.faces.convert.FacesConverter"),
+            DotName.createSimple("javax.faces.annotation.FacesConfig"), // Should actually be check for enabled bean, but difficult to guarantee, see SERVLET_SPEC-79
+            DotName.createSimple("javax.faces.validator.FacesValidator"),
+            DotName.createSimple("javax.faces.event.ListenerFor"),
+            DotName.createSimple("javax.faces.event.ListenersFor"),
+            DotName.createSimple("javax.faces.bean.ManagedBean"),
+            DotName.createSimple("javax.faces.event.NamedEvent"),
+            DotName.createSimple("javax.annotation.Resource"),
+            DotName.createSimple("javax.faces.application.ResourceDependencies"),
+            DotName.createSimple("javax.faces.application.ResourceDependency")};
+
+
+    private static final DotName[] JSF_INTERFACES = {
+            DotName.createSimple("javax.faces.convert.Converter"),
+            DotName.createSimple("javax.faces.event.PhaseListener"),
+            DotName.createSimple("javax.faces.render.Renderer"),
+            DotName.createSimple("javax.faces.component.UIComponent"),
+            DotName.createSimple("javax.faces.validator.Validator")};
+
+    private static final String META_INF_FACES = "META-INF/faces-config.xml";
+    private static final String WEB_INF_FACES = "WEB-INF/faces-config.xml";
+
+
     /**
      * Create the JSFVersionProcessor and set the default JSF implementation slot.
      *
-     * @param model The model for the JSF subsystem.
+     * @param jsfSlot The model for the JSF subsystem.
      */
     public JSFVersionProcessor(String jsfSlot) {
-            JSFModuleIdFactory.getInstance().setDefaultSlot(jsfSlot);
+        JSFModuleIdFactory.getInstance().setDefaultSlot(jsfSlot);
     }
 
     @Override
@@ -58,6 +98,11 @@ public class JSFVersionProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final DeploymentUnit topLevelDeployment = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
         final WarMetaData metaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
+
+        if (!shouldJsfActivate(deploymentUnit, metaData)) {
+            JsfVersionMarker.setVersion(deploymentUnit, JsfVersionMarker.NONE);
+            return;
+        }
 
         if (metaData == null) {
             return;
@@ -95,6 +140,60 @@ public class JSFVersionProcessor implements DeploymentUnitProcessor {
                 break;
             }
         }
+    }
+
+
+    private boolean shouldJsfActivate(final DeploymentUnit deploymentUnit, WarMetaData warMetaData) {
+        if (warMetaData != null) {
+            JBossWebMetaData jBossWebMetaData = warMetaData.getMergedJBossWebMetaData();
+            if (jBossWebMetaData != null) {
+                JBossServletsMetaData servlets = jBossWebMetaData.getServlets();
+                if (servlets != null) {
+                    for (JBossServletMetaData servlet : servlets) {
+                        if ("javax.faces.webapp.FacesServlet".equals(servlet.getServletClass())) {
+                            return true;
+                        }
+                    }
+                }
+                List<ParamValueMetaData> sc = jBossWebMetaData.getContextParams();
+                if (sc != null) {
+                    for (ParamValueMetaData p : sc) {
+                        if ("javax.faces.application.CONFIG_FILES".equals(p.getParamName())) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        Set<ResourceRoot> roots = new HashSet<>();
+        roots.add(deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT));
+        roots.addAll(deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS));
+        for (ResourceRoot root : roots) {
+            VirtualFile c = root.getRoot().getChild(META_INF_FACES);
+            if (c.exists()) {
+                return true;
+            }
+            c = root.getRoot().getChild(WEB_INF_FACES);
+            if (c.exists()) {
+                return true;
+            }
+        }
+
+        CompositeIndex index = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
+        for (DotName annotation : JSF_ANNOTATIONS) {
+            List<AnnotationInstance> annotations = index.getAnnotations(annotation);
+            if (!annotations.isEmpty()) {
+                return true;
+            }
+        }
+        for (DotName annotation : JSF_INTERFACES) {
+            Set<ClassInfo> implementors = index.getAllKnownImplementors(annotation);
+            if (!implementors.isEmpty()) {
+                return true;
+            }
+        }
+        return false;
+
     }
 
     @Override

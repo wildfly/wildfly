@@ -102,6 +102,9 @@ public class JSFSharedTldsProcessor implements DeploymentUnitProcessor {
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final DeploymentUnit topLevelDeployment = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
+        if(JsfVersionMarker.isJsfDisabled(deploymentUnit)) {
+            return;
+        }
 
         String jsfVersion = JsfVersionMarker.getVersion(topLevelDeployment);
         if (jsfVersion.equals(JsfVersionMarker.WAR_BUNDLES_JSF_IMPL)) {

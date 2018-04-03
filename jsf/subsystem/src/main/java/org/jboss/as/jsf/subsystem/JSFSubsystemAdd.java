@@ -62,7 +62,6 @@ class JSFSubsystemAdd extends AbstractBoottimeAddStepHandler {
             protected void execute(DeploymentProcessorTarget processorTarget) {
                 processorTarget.addDeploymentProcessor(JSFExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_JSF_VERSION, new JSFVersionProcessor(defaultJSFSlot));
                 processorTarget.addDeploymentProcessor(JSFExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_JSF_SHARED_TLDS, new JSFSharedTldsProcessor());
-                processorTarget.addDeploymentProcessor(JSFExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_JSF_MANAGED_BEANS, new JSFComponentProcessor());
                 processorTarget.addDeploymentProcessor(JSFExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_JSF_METADATA, new JSFMetadataProcessor(disallowDoctypeDecl));
                 processorTarget.addDeploymentProcessor(JSFExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_JSF, new JSFDependencyProcessor());
                 processorTarget.addDeploymentProcessor(JSFExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_JSF_MANAGED_BEANS, new JSFComponentProcessor());

@@ -81,6 +81,9 @@ public class JSFComponentProcessor implements DeploymentUnitProcessor {
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
         final EEApplicationClasses applicationClassesDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
+        if(JsfVersionMarker.isJsfDisabled(deploymentUnit)) {
+            return;
+        }
         if (index == null) {
             return;
         }
