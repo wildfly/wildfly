@@ -83,6 +83,9 @@ public class JSFAnnotationProcessor implements DeploymentUnitProcessor {
 
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        if(JsfVersionMarker.isJsfDisabled(deploymentUnit)) {
+            return;
+        }
 
         final Map<Class<? extends Annotation>, Set<Class<?>>> instances = new HashMap<Class<? extends Annotation>, Set<Class<?>>>();
 

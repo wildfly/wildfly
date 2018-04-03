@@ -31,6 +31,9 @@ public class JSFMetadataProcessor implements DeploymentUnitProcessor {
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         WarMetaData metaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
+        if(JsfVersionMarker.isJsfDisabled(deploymentUnit)) {
+            return;
+        }
         if(metaData == null || metaData.getMergedJBossWebMetaData() == null || metaData.getMergedJBossWebMetaData().getServlets() == null) {
             return;
         }
