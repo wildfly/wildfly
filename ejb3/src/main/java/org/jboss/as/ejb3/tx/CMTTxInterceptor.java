@@ -33,7 +33,6 @@ import javax.ejb.NoSuchEntityException;
 import javax.ejb.TransactionAttributeType;
 import javax.transaction.HeuristicMixedException;
 import javax.transaction.HeuristicRollbackException;
-import javax.transaction.NotSupportedException;
 import javax.transaction.RollbackException;
 import javax.transaction.Status;
 import javax.transaction.SystemException;
@@ -48,6 +47,7 @@ import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
+import org.wildfly.transaction.client.AbstractTransaction;
 import org.wildfly.transaction.client.ContextTransactionManager;
 
 /**
@@ -217,7 +217,9 @@ public class CMTTxInterceptor implements Interceptor {
     }
 
     protected Object invokeInOurTx(InterceptorContext invocation, final EJBComponent component) throws Exception {
-        Transaction tx = beginTransaction();
+        final ContextTransactionManager tm = ContextTransactionManager.getInstance();
+        tm.begin();
+        final AbstractTransaction tx = tm.getTransaction();
         try {
             return invocation.proceed();
         } catch (Throwable t) {
@@ -225,12 +227,6 @@ public class CMTTxInterceptor implements Interceptor {
         } finally {
             endTransaction(tx);
         }
-    }
-
-    protected Transaction beginTransaction() throws NotSupportedException, SystemException {
-        final ContextTransactionManager tm = ContextTransactionManager.getInstance();
-        tm.begin();
-        return tm.getTransaction();
     }
 
     protected Object mandatory(InterceptorContext invocation, final EJBComponent component) throws Exception {
