@@ -48,6 +48,19 @@ import org.wildfly.security.password.interfaces.ClearPassword;
  * @author Paul Ferraro
  */
 public abstract class AuthTokenBuilder<T extends AuthToken> extends CapabilityServiceNameProvider implements ResourceServiceBuilder<T>, Function<String, T> {
+    private static final Function<CredentialSource, String> CREDENTIAL_SOURCE_MAPPER = new Function<CredentialSource, String>() {
+        @Override
+        public String apply(CredentialSource sharedSecretSource) {
+            try {
+                PasswordCredential credential = sharedSecretSource.getCredential(PasswordCredential.class);
+                ClearPassword password = credential.getPassword(ClearPassword.class);
+                return String.valueOf(password.getPassword());
+            } catch (IOException e) {
+                throw new IllegalArgumentException(e);
+            }
+        }
+    };
+
     private volatile ValueDependency<CredentialSource> sharedSecretSource;
 
     public AuthTokenBuilder(PathAddress address) {
@@ -62,15 +75,6 @@ public abstract class AuthTokenBuilder<T extends AuthToken> extends CapabilitySe
 
     @Override
     public ServiceBuilder<T> build(ServiceTarget target) {
-        Function<CredentialSource, String> sharedSecret = sharedSecretSource -> {
-            try {
-                PasswordCredential credential = sharedSecretSource.getCredential(PasswordCredential.class);
-                ClearPassword password = credential.getPassword(ClearPassword.class);
-                return String.valueOf(password.getPassword());
-            } catch (IOException e) {
-                throw new IllegalArgumentException(e);
-            }
-        };
-        return this.sharedSecretSource.register(target.addService(this.getServiceName(), new MappedValueService<>(sharedSecret.andThen(this), this.sharedSecretSource)));
+        return this.sharedSecretSource.register(target.addService(this.getServiceName(), new MappedValueService<>(CREDENTIAL_SOURCE_MAPPER.andThen(this), this.sharedSecretSource)));
     }
 }
