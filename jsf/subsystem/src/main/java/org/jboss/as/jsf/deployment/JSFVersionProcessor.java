@@ -39,9 +39,9 @@ import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
-import org.jboss.metadata.web.jboss.JBossServletMetaData;
-import org.jboss.metadata.web.jboss.JBossServletsMetaData;
-import org.jboss.metadata.web.jboss.JBossWebMetaData;
+import org.jboss.metadata.web.spec.ServletMetaData;
+import org.jboss.metadata.web.spec.ServletsMetaData;
+import org.jboss.metadata.web.spec.WebCommonMetaData;
 import org.jboss.metadata.web.spec.WebFragmentMetaData;
 import org.jboss.vfs.VirtualFile;
 
@@ -82,6 +82,8 @@ public class JSFVersionProcessor implements DeploymentUnitProcessor {
 
     private static final String META_INF_FACES = "META-INF/faces-config.xml";
     private static final String WEB_INF_FACES = "WEB-INF/faces-config.xml";
+    private static final String JAVAX_FACES_WEBAPP_FACES_SERVLET = "javax.faces.webapp.FacesServlet";
+    private static final String CONFIG_FILES = "javax.faces.application.CONFIG_FILES";
 
 
     /**
@@ -145,22 +147,14 @@ public class JSFVersionProcessor implements DeploymentUnitProcessor {
 
     private boolean shouldJsfActivate(final DeploymentUnit deploymentUnit, WarMetaData warMetaData) {
         if (warMetaData != null) {
-            JBossWebMetaData jBossWebMetaData = warMetaData.getMergedJBossWebMetaData();
-            if (jBossWebMetaData != null) {
-                JBossServletsMetaData servlets = jBossWebMetaData.getServlets();
-                if (servlets != null) {
-                    for (JBossServletMetaData servlet : servlets) {
-                        if ("javax.faces.webapp.FacesServlet".equals(servlet.getServletClass())) {
-                            return true;
-                        }
-                    }
-                }
-                List<ParamValueMetaData> sc = jBossWebMetaData.getContextParams();
-                if (sc != null) {
-                    for (ParamValueMetaData p : sc) {
-                        if ("javax.faces.application.CONFIG_FILES".equals(p.getParamName())) {
-                            return true;
-                        }
+            WebCommonMetaData jBossWebMetaData = warMetaData.getWebMetaData();
+            if (isJsfDeclarationsPresent(jBossWebMetaData)) {
+                return true;
+            }
+            if (warMetaData.getWebFragmentsMetaData() != null) {
+                for (WebFragmentMetaData fragmentMetaData : warMetaData.getWebFragmentsMetaData().values()) {
+                    if(isJsfDeclarationsPresent(fragmentMetaData)) {
+                        return true;
                     }
                 }
             }
@@ -194,6 +188,28 @@ public class JSFVersionProcessor implements DeploymentUnitProcessor {
         }
         return false;
 
+    }
+
+    private boolean isJsfDeclarationsPresent(WebCommonMetaData jBossWebMetaData) {
+        if (jBossWebMetaData != null) {
+            ServletsMetaData servlets = jBossWebMetaData.getServlets();
+            if (servlets != null) {
+                for (ServletMetaData servlet : servlets) {
+                    if (JAVAX_FACES_WEBAPP_FACES_SERVLET.equals(servlet.getServletClass())) {
+                        return true;
+                    }
+                }
+            }
+            List<ParamValueMetaData> sc = jBossWebMetaData.getContextParams();
+            if (sc != null) {
+                for (ParamValueMetaData p : sc) {
+                    if (CONFIG_FILES.equals(p.getParamName())) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     @Override
