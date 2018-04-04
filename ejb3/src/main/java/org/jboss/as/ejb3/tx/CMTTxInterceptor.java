@@ -252,6 +252,22 @@ public class CMTTxInterceptor implements Interceptor {
         }
     }
 
+    private void safeResume(final Transaction tx) {
+        try {
+            ContextTransactionManager.getInstance().resume(tx);
+        } catch (Exception e) {
+            throw new EJBException(e);
+        }
+    }
+
+    private void safeResume(final Transaction tx, final Throwable t) {
+        try {
+            ContextTransactionManager.getInstance().resume(tx);
+        } catch (Exception e) {
+            t.addSuppressed(e);
+        }
+    }
+
     protected void ourTxRolledBack() {
         // normally no operation
     }
@@ -278,11 +294,15 @@ public class CMTTxInterceptor implements Interceptor {
         Transaction tx = tm.getTransaction();
         if (tx != null) {
             safeSuspend();
+            final Object result;
             try {
-                return invokeInNoTx(invocation, component);
-            } finally {
-                tm.resume(tx);
+                result = invokeInNoTx(invocation, component);
+            } catch (Throwable t) {
+                safeResume(tx, t);
+                throw t;
             }
+            safeResume(tx);
+            return result;
         } else {
             return invokeInNoTx(invocation, component);
         }
@@ -314,11 +334,15 @@ public class CMTTxInterceptor implements Interceptor {
         Transaction tx = tm.getTransaction();
         if (tx != null) {
             safeSuspend();
+            final Object result;
             try {
-                return invokeInOurTx(invocation, component);
-            } finally {
-                tm.resume(tx);
+                result = invokeInOurTx(invocation, component);
+            } catch (Throwable t) {
+                safeResume(tx, t);
+                throw t;
             }
+            safeResume(tx);
+            return result;
         } else {
             return invokeInOurTx(invocation, component);
         }
