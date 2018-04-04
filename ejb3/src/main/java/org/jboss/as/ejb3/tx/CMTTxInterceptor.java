@@ -155,6 +155,31 @@ public class CMTTxInterceptor implements Interceptor {
         }
     }
 
+    protected Object invokeInImportedTx(InterceptorContext invocation, EJBComponent component) throws Exception {
+        Transaction tx;
+        try {
+            tx = invocation.getTransaction();
+        } catch (SystemException ex) {
+            // SystemException + server suspended equals the transaction is new and the request
+            // for new transaction is being rejected
+            if (component != null && component.getEjbSuspendHandlerService().isSuspended()) {
+                throw EjbLogger.ROOT_LOGGER.cannotBeginUserTransaction();
+            } else {
+                throw new EJBException(ex);
+            }
+        }
+        safeResume(tx);
+        final Object result;
+        try {
+            result = invokeInCallerTx(invocation, tx, component);
+        } catch (Throwable t) {
+            safeSuspend(t);
+            throw t;
+        }
+        safeSuspend();
+        return result;
+    }
+
     protected Object invokeInCallerTx(InterceptorContext invocation, Transaction tx, final EJBComponent component) throws Exception {
         try {
             return invocation.proceed();
@@ -254,6 +279,14 @@ public class CMTTxInterceptor implements Interceptor {
         }
     }
 
+    private void safeSuspend(final Throwable t) {
+        try {
+            ContextTransactionManager.getInstance().suspend();
+        } catch (SystemException e) {
+            t.addSuppressed(e);
+        }
+    }
+
     private void safeResume(final Transaction tx) {
         try {
             ContextTransactionManager.getInstance().resume(tx);
@@ -278,6 +311,9 @@ public class CMTTxInterceptor implements Interceptor {
         final ContextTransactionManager tm = ContextTransactionManager.getInstance();
         Transaction tx = tm.getTransaction();
         if (tx == null) {
+            if (invocation.hasTransaction()) {
+                return invokeInImportedTx(invocation, component);
+            }
             throw EjbLogger.ROOT_LOGGER.txRequiredForInvocation(invocation);
         }
         return invokeInCallerTx(invocation, tx, component);
@@ -285,7 +321,7 @@ public class CMTTxInterceptor implements Interceptor {
 
     protected Object never(InterceptorContext invocation, final EJBComponent component) throws Exception {
         final ContextTransactionManager tm = ContextTransactionManager.getInstance();
-        if (tm.getTransaction() != null) {
+        if (tm.getTransaction() != null || invocation.hasTransaction()) {
             throw EjbLogger.ROOT_LOGGER.txPresentForNeverTxAttribute();
         }
         return invokeInNoTx(invocation, component);
@@ -320,6 +356,9 @@ public class CMTTxInterceptor implements Interceptor {
         final Transaction tx = tm.getTransaction();
 
         if (tx == null) {
+            if (invocation.hasTransaction()) {
+                return invokeInImportedTx(invocation, component);
+            }
             return invokeInOurTx(invocation, component);
         } else {
             return invokeInCallerTx(invocation, tx, component);
@@ -373,6 +412,9 @@ public class CMTTxInterceptor implements Interceptor {
         final ContextTransactionManager tm = ContextTransactionManager.getInstance();
         Transaction tx = tm.getTransaction();
         if (tx == null) {
+            if (invocation.hasTransaction()) {
+                return invokeInImportedTx(invocation, component);
+            }
             return invokeInNoTx(invocation, component);
         } else {
             return invokeInCallerTx(invocation, tx, component);

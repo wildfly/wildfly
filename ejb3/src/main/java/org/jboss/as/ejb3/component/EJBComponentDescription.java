@@ -82,7 +82,6 @@ import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
 import org.jboss.as.ejb3.logging.EjbLogger;
-import org.jboss.as.ejb3.remote.EJBRemoteTransactionsViewConfigurator;
 import org.jboss.as.ejb3.security.ApplicationSecurityDomainConfig;
 import org.jboss.as.ejb3.security.EJBMethodSecurityAttribute;
 import org.jboss.as.ejb3.security.EJBSecurityViewConfigurator;
@@ -500,8 +499,6 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                     }
                 });
             }
-            // add the remote tx propagating interceptor
-            view.getConfigurators().add(new EJBRemoteTransactionsViewConfigurator());
         }
 
     }
