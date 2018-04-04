@@ -24,7 +24,6 @@ package org.jboss.as.ejb3.tx;
 import javax.ejb.TransactionAttributeType;
 import javax.transaction.Status;
 import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInterceptorFactory;
@@ -35,6 +34,7 @@ import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.proxy.MethodIdentifier;
+import org.wildfly.transaction.client.ContextTransactionManager;
 
 /**
  * Transaction interceptor for Singleton and Stateless beans,
@@ -75,8 +75,7 @@ public class LifecycleCMTTxInterceptor extends CMTTxInterceptor {
 
     @Override
     protected Object notSupported(InterceptorContext invocation, EJBComponent component) throws Exception {
-        TransactionManager tm = component.getTransactionManager();
-        Transaction tx = tm.getTransaction();
+        Transaction tx = ContextTransactionManager.getInstance().getTransaction();
         int status = (tx != null) ? tx.getStatus() : Status.STATUS_NO_TRANSACTION;
         // If invocation was triggered from Synchronization.afterCompletion(...)
         // then skip suspend/resume of associated tx since JTS refuses to resume a completed tx
@@ -84,17 +83,10 @@ public class LifecycleCMTTxInterceptor extends CMTTxInterceptor {
             case Status.STATUS_NO_TRANSACTION:
             case Status.STATUS_COMMITTED:
             case Status.STATUS_ROLLEDBACK: {
-                return this.invokeInNoTx(invocation, component);
+                return invokeInNoTx(invocation, component);
             }
             default: {
-                Transaction suspendedTx = tm.suspend();
-                try {
-                    return this.invokeInNoTx(invocation, component);
-                } finally {
-                    if (suspendedTx != null) {
-                        tm.resume(suspendedTx);
-                    }
-                }
+                return super.notSupported(invocation, component);
             }
         }
     }
