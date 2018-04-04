@@ -22,7 +22,6 @@
 package org.jboss.as.ejb3.tx;
 
 import javax.transaction.Status;
-import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 
 import org.jboss.as.ejb3.logging.EjbLogger;
@@ -56,15 +55,16 @@ public class TimerCMTTxInterceptor extends CMTTxInterceptor {
     protected void endTransaction(final Transaction tx) {
         try {
             boolean rolledBack = false;
+            final int status;
             try {
-                if (tx.getStatus() == Status.STATUS_MARKED_ROLLBACK) {
+                status = tx.getStatus();
+                if (status == Status.STATUS_MARKED_ROLLBACK) {
                     rolledBack = true;
                 }
-            } catch (SystemException e) {
-                throw new RuntimeException(e);
-            } finally {
-                super.endTransaction(tx);
+            } catch (Throwable ignored) {
+                // treat as STATUS_UNKNOWN
             }
+            super.endTransaction(tx);
             if (rolledBack && EXCEPTION.get() == null) {
                 throw EjbLogger.ROOT_LOGGER.timerInvocationRolledBack();
             }

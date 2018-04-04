@@ -555,7 +555,7 @@ public interface EjbLogger extends BasicLogger {
 
     @LogMessage(level = ERROR)
     @Message(id = 64, value = "Failed to set transaction for rollback only")
-    void failedToSetRollbackOnly(@Cause Exception e);
+    void failedToSetRollbackOnly(@Cause Throwable e);
 
     @Message(id = 65, value = "View interface cannot be null")
     IllegalArgumentException viewInterfaceCannotBeNull();

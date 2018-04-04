@@ -120,20 +120,21 @@ public class CMTTxInterceptor implements Interceptor {
     public Exception handleExceptionInOurTx(InterceptorContext invocation, Throwable t, Transaction tx, final EJBComponent component) {
         ApplicationExceptionDetails ae = component.getApplicationException(t.getClass(), invocation.getMethod());
         if (ae != null) {
-            if (ae.isRollback()) setRollbackOnly(tx);
+            if (ae.isRollback()) setRollbackOnly(tx, t);
             return (Exception) t;
         }
         try {
             throw t;
         } catch (EJBException | RemoteException e) {
-            setRollbackOnly(tx);
+            setRollbackOnly(tx, e);
             return e;
         } catch (RuntimeException e) {
-            setRollbackOnly(tx);
+            setRollbackOnly(tx, e);
             return new EJBException(e);
         } catch (Error e) {
-            setRollbackOnly(tx);
-            return EjbLogger.ROOT_LOGGER.unexpectedError(e);
+            final EJBException e2 = EjbLogger.ROOT_LOGGER.unexpectedError(e);
+            setRollbackOnly(tx, e2);
+            return e2;
         } catch (Exception e) {
             // an application exception
             return e;
@@ -176,23 +177,25 @@ public class CMTTxInterceptor implements Interceptor {
         try {
             return invocation.proceed();
         } catch (Error e) {
-            setRollbackOnly(tx);
-            throw EjbLogger.ROOT_LOGGER.unexpectedErrorRolledBack(e);
+            final EJBTransactionRolledbackException e2 = EjbLogger.ROOT_LOGGER.unexpectedErrorRolledBack(e);
+            setRollbackOnly(tx, e2);
+            throw e2;
         } catch (Exception e) {
             ApplicationExceptionDetails ae = component.getApplicationException(e.getClass(), invocation.getMethod());
 
             if (ae != null) {
-                if (ae.isRollback()) setRollbackOnly(tx);
+                if (ae.isRollback()) setRollbackOnly(tx, e);
                 throw e;
             }
             try {
                 throw e;
             } catch (EJBTransactionRolledbackException | NoSuchEJBException | NoSuchEntityException e2) {
-                setRollbackOnly(tx);
+                setRollbackOnly(tx, e2);
                 throw e2;
             } catch (RuntimeException e2) {
-                setRollbackOnly(tx);
-                throw new EJBTransactionRolledbackException(e2.getMessage(), e2);
+                final EJBTransactionRolledbackException e3 = new EJBTransactionRolledbackException(e2.getMessage(), e2);
+                setRollbackOnly(tx, e3);
+                throw e3;
             }
         } catch (Throwable t) {
             throw new EJBException(new UndeclaredThrowableException(t));
@@ -220,13 +223,20 @@ public class CMTTxInterceptor implements Interceptor {
         final ContextTransactionManager tm = ContextTransactionManager.getInstance();
         tm.begin();
         final AbstractTransaction tx = tm.getTransaction();
+        final Object result;
         try {
-            return invocation.proceed();
+            result = invocation.proceed();
         } catch (Throwable t) {
-            throw handleExceptionInOurTx(invocation, t, tx, component);
-        } finally {
-            endTransaction(tx);
+            final Exception e2 = handleExceptionInOurTx(invocation, t, tx, component);
+            try {
+                endTransaction(tx);
+            } catch (Throwable t2) {
+                e2.addSuppressed(t2);
+            }
+            throw e2;
         }
+        endTransaction(tx);
+        return result;
     }
 
     protected Object mandatory(InterceptorContext invocation, final EJBComponent component) throws Exception {
@@ -303,14 +313,16 @@ public class CMTTxInterceptor implements Interceptor {
      * occur.
      *
      * @param tx the transaction
+     * @param t the exception to add problems to (may be {@code null})
      */
-    protected void setRollbackOnly(Transaction tx) {
+    protected void setRollbackOnly(Transaction tx, final Throwable t) {
         try {
             tx.setRollbackOnly();
-        } catch (SystemException ex) {
-            EjbLogger.ROOT_LOGGER.failedToSetRollbackOnly(ex);
-        } catch (IllegalStateException ex) {
-            EjbLogger.ROOT_LOGGER.failedToSetRollbackOnly(ex);
+        } catch (Throwable t2) {
+            EjbLogger.ROOT_LOGGER.failedToSetRollbackOnly(t2);
+            if (t != null) {
+                t.addSuppressed(t2);
+            }
         }
     }
 
