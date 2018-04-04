@@ -62,7 +62,6 @@
         xmit_table_num_rows="50"
     />
     <UNICAST3
-        conn_expiry_timeout="0"
         xmit_interval="100"
         xmit_table_num_rows="50"
     />
