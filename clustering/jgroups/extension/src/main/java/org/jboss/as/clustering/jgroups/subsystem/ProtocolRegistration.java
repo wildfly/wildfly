@@ -25,14 +25,13 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import java.net.InetSocketAddress;
 import java.security.KeyStore;
 import java.util.EnumSet;
-import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.Registration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.RuntimeResourceRegistration;
-import org.jboss.as.clustering.function.Consumers;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -153,54 +152,67 @@ public class ProtocolRegistration implements Registration<ManagementResourceRegi
         }
     }
 
+    private static class ResourceDescriptorConfigurator implements UnaryOperator<ResourceDescriptor> {
+        private final RuntimeResourceRegistration runtimeResourceRegistration;
+
+        ResourceDescriptorConfigurator(RuntimeResourceRegistration runtimeResourceRegistration) {
+            this.runtimeResourceRegistration = runtimeResourceRegistration;
+        }
+
+        @Override
+        public ResourceDescriptor apply(ResourceDescriptor descriptor) {
+            return descriptor.addRuntimeResourceRegistration(this.runtimeResourceRegistration);
+        }
+    }
+
     private final ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory;
-    private final Consumer<ResourceDescriptor> descriptorConfigurator;
+    private final UnaryOperator<ResourceDescriptor> configurator;
 
     ProtocolRegistration(ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
         this.parentBuilderFactory = parentBuilderFactory;
-        this.descriptorConfigurator = Consumers.empty();
+        this.configurator = UnaryOperator.identity();
     }
 
     ProtocolRegistration(ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory, RuntimeResourceRegistration runtimeResourceRegistration) {
         this.parentBuilderFactory = parentBuilderFactory;
-        this.descriptorConfigurator = descriptor -> descriptor.addRuntimeResourceRegistration(runtimeResourceRegistration);
+        this.configurator = new ResourceDescriptorConfigurator(runtimeResourceRegistration);
     }
 
     @Override
     public void register(ManagementResourceRegistration registration) {
-        new GenericProtocolResourceDefinition<>(this.descriptorConfigurator, this.parentBuilderFactory).register(registration);
+        new GenericProtocolResourceDefinition<>(this.configurator, this.parentBuilderFactory).register(registration);
 
         // Override definitions for protocol types
         for (MulticastProtocol protocol : EnumSet.allOf(MulticastProtocol.class)) {
-            new SocketBindingProtocolResourceDefinition<>(protocol.name(), this.descriptorConfigurator, MulticastSocketProtocolConfigurationBuilder::new, this.parentBuilderFactory).register(registration);
+            new SocketBindingProtocolResourceDefinition<>(protocol.name(), this.configurator, MulticastSocketProtocolConfigurationBuilder::new, this.parentBuilderFactory).register(registration);
         }
 
         for (JdbcProtocol protocol : EnumSet.allOf(JdbcProtocol.class)) {
-            new JDBCProtocolResourceDefinition(protocol.name(), this.descriptorConfigurator, this.parentBuilderFactory).register(registration);
+            new JDBCProtocolResourceDefinition(protocol.name(), this.configurator, this.parentBuilderFactory).register(registration);
             // Add deprecated override definition for legacy variant
-            new GenericProtocolResourceDefinition<>(protocol.name(), JGroupsModel.VERSION_5_0_0, this.descriptorConfigurator, this.parentBuilderFactory).register(registration);
+            new GenericProtocolResourceDefinition<>(protocol.name(), JGroupsModel.VERSION_5_0_0, this.configurator, this.parentBuilderFactory).register(registration);
         }
 
         for (EncryptProtocol protocol : EnumSet.allOf(EncryptProtocol.class)) {
-            new EncryptProtocolResourceDefinition<>(protocol.name(), protocol.entryClass, this.descriptorConfigurator, this.parentBuilderFactory).register(registration);
+            new EncryptProtocolResourceDefinition<>(protocol.name(), protocol.entryClass, this.configurator, this.parentBuilderFactory).register(registration);
             // Add deprecated override definition for legacy variant
-            new GenericProtocolResourceDefinition<>(protocol.name(), JGroupsModel.VERSION_5_0_0, this.descriptorConfigurator, this.parentBuilderFactory).register(registration);
+            new GenericProtocolResourceDefinition<>(protocol.name(), JGroupsModel.VERSION_5_0_0, this.configurator, this.parentBuilderFactory).register(registration);
         }
 
         for (InitialHostsProtocol protocol : EnumSet.allOf(InitialHostsProtocol.class)) {
-            new SocketDiscoveryProtocolResourceDefinition<>(protocol.name(), protocol.hostTransformer, this.descriptorConfigurator, this.parentBuilderFactory).register(registration);
+            new SocketDiscoveryProtocolResourceDefinition<>(protocol.name(), protocol.hostTransformer, this.configurator, this.parentBuilderFactory).register(registration);
             // Add deprecated override definition for legacy variant
-            new GenericProtocolResourceDefinition<>(protocol.name(), JGroupsModel.VERSION_5_0_0, this.descriptorConfigurator, this.parentBuilderFactory).register(registration);
+            new GenericProtocolResourceDefinition<>(protocol.name(), JGroupsModel.VERSION_5_0_0, this.configurator, this.parentBuilderFactory).register(registration);
         }
 
         for (AuthProtocol protocol : EnumSet.allOf(AuthProtocol.class)) {
-            new AuthProtocolResourceDefinition(protocol.name(), this.descriptorConfigurator, this.parentBuilderFactory).register(registration);
+            new AuthProtocolResourceDefinition(protocol.name(), this.configurator, this.parentBuilderFactory).register(registration);
             // Add deprecated override definition for legacy variant
-            new GenericProtocolResourceDefinition<>(protocol.name(), JGroupsModel.VERSION_5_0_0, this.descriptorConfigurator, this.parentBuilderFactory).register(registration);
+            new GenericProtocolResourceDefinition<>(protocol.name(), JGroupsModel.VERSION_5_0_0, this.configurator, this.parentBuilderFactory).register(registration);
         }
 
         for (LegacyProtocol protocol : EnumSet.allOf(LegacyProtocol.class)) {
-            new LegacyProtocolResourceDefinition<>(protocol.name, protocol.targetName, protocol.deprecation, this.descriptorConfigurator, this.parentBuilderFactory).register(registration);
+            new LegacyProtocolResourceDefinition<>(protocol.name, protocol.targetName, protocol.deprecation, this.configurator, this.parentBuilderFactory).register(registration);
         }
     }
 }

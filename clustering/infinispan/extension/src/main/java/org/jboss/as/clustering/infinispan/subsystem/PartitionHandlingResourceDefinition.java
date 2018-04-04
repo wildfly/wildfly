@@ -75,8 +75,8 @@ public class PartitionHandlingResourceDefinition extends ComponentResourceDefini
     }
 
     @Override
-    public void register(ManagementResourceRegistration parentRegistration) {
-        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
+    public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
+        ManagementResourceRegistration registration = parent.registerSubModel(this);
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class);
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(PartitionHandlingBuilder::new);
@@ -87,5 +87,7 @@ public class PartitionHandlingResourceDefinition extends ComponentResourceDefini
 
             new MetricHandler<>(new PartitionHandlingMetricExecutor(), PartitionHandlingMetric.class).register(registration);
         }
+
+        return registration;
     }
 }

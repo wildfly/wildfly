@@ -22,8 +22,6 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
@@ -63,7 +61,7 @@ import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  * @author Paul Ferraro
  */
-public class AbstractProtocolResourceDefinition<P extends Protocol, C extends ProtocolConfiguration<P>> extends ChildResourceDefinition<ManagementResourceRegistration> implements BiConsumer<ManagementResourceRegistration, ManagementResourceRegistration> {
+public class AbstractProtocolResourceDefinition<P extends Protocol, C extends ProtocolConfiguration<P>> extends ChildResourceDefinition<ManagementResourceRegistration> {
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
         MODULE(ModelDescriptionConstants.MODULE, ModelType.STRING) {
@@ -166,35 +164,32 @@ public class AbstractProtocolResourceDefinition<P extends Protocol, C extends Pr
         PropertyResourceDefinition.buildTransformation(version, builder);
     }
 
-    private final Consumer<ResourceDescriptor> descriptorConfigurator;
+    private final UnaryOperator<ResourceDescriptor> configurator;
     private final ResourceServiceHandler handler;
     private final ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory;
-    private final BiConsumer<ManagementResourceRegistration, ManagementResourceRegistration> registrationConfigurator;
 
-    AbstractProtocolResourceDefinition(Parameters parameters, Consumer<ResourceDescriptor> descriptorConfigurator, ResourceServiceBuilderFactory<C> builderFactory, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory, BiConsumer<ManagementResourceRegistration, ManagementResourceRegistration> registrationConfigurator) {
+    AbstractProtocolResourceDefinition(Parameters parameters, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceBuilderFactory<C> builderFactory, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
         super(parameters);
-        this.descriptorConfigurator = descriptorConfigurator.andThen(descriptor -> descriptor.addAttributes(Attribute.class).addExtraParameters(DeprecatedAttribute.class));
+        this.configurator = configurator;
         this.handler = new SimpleResourceServiceHandler<>(builderFactory);
         this.parentBuilderFactory = parentBuilderFactory;
-        this.registrationConfigurator = registrationConfigurator.andThen(this);
-    }
-
-    @Override
-    public void register(ManagementResourceRegistration parent) {
-        ManagementResourceRegistration registration = parent.registerSubModel(this);
-
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver());
-        this.descriptorConfigurator.accept(descriptor);
-        new RestartParentResourceRegistration<>(this.parentBuilderFactory, descriptor, this.handler).register(registration);
-
-        this.registrationConfigurator.accept(parent, registration);
     }
 
     @SuppressWarnings("deprecation")
     @Override
-    public void accept(ManagementResourceRegistration parent, ManagementResourceRegistration registration) {
+    public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
+        ManagementResourceRegistration registration = parent.registerSubModel(this);
+
+        ResourceDescriptor descriptor = this.configurator.apply(new ResourceDescriptor(this.getResourceDescriptionResolver()))
+                .addAttributes(Attribute.class)
+                .addExtraParameters(DeprecatedAttribute.class)
+                ;
+        new RestartParentResourceRegistration<>(this.parentBuilderFactory, descriptor, this.handler).register(registration);
+
         if (registration.getPathAddress().getLastElement().isWildcard()) {
             new PropertyResourceDefinition().register(registration);
         }
+
+        return registration;
     }
 }

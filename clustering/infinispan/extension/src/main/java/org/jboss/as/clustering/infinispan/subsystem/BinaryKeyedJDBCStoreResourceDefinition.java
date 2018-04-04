@@ -25,8 +25,11 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.UnaryOperator;
 
+import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.Operations;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.transform.LegacyPropertyResourceTransformer;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
@@ -118,18 +121,31 @@ public class BinaryKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
         BinaryTableResourceDefinition.buildTransformation(version, builder);
     }
 
-    BinaryKeyedJDBCStoreResourceDefinition() {
-        super(PATH, LEGACY_PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, JDBCStoreResourceDefinition.PATH, WILDCARD_PATH), descriptor -> descriptor
-                .addExtraParameters(DeprecatedAttribute.class)
-                .addRequiredChildren(BinaryTableResourceDefinition.PATH)
-                // Translate deprecated TABLE attribute into separate add table operation
-                .setAddOperationTransformation(new TableAttributeTransformation(DeprecatedAttribute.TABLE, BinaryTableResourceDefinition.PATH))
-            , registration -> {
-                registration.registerReadWriteAttribute(DeprecatedAttribute.TABLE.getDefinition(), LEGACY_READ_TABLE_HANDLER, LEGACY_WRITE_TABLE_HANDLER);
+    static class ResourceDescriptorConfigurator implements UnaryOperator<ResourceDescriptor> {
+        @Override
+        public ResourceDescriptor apply(ResourceDescriptor descriptor) {
+            return descriptor.addExtraParameters(DeprecatedAttribute.class)
+                    .addRequiredChildren(BinaryTableResourceDefinition.PATH)
+                    // Translate deprecated TABLE attribute into separate add table operation
+                    .setAddOperationTransformation(new TableAttributeTransformation(DeprecatedAttribute.TABLE, BinaryTableResourceDefinition.PATH))
+                    ;
+        }
+    }
 
-                new BinaryTableResourceDefinition().register(registration);
-            });
+    BinaryKeyedJDBCStoreResourceDefinition() {
+        super(PATH, LEGACY_PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, JDBCStoreResourceDefinition.PATH, WILDCARD_PATH), new ResourceDescriptorConfigurator());
         this.setDeprecated(InfinispanModel.VERSION_5_0_0.getVersion());
+    }
+
+    @Override
+    public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
+        ManagementResourceRegistration registration = super.register(parent);
+
+        registration.registerReadWriteAttribute(DeprecatedAttribute.TABLE.getDefinition(), LEGACY_READ_TABLE_HANDLER, LEGACY_WRITE_TABLE_HANDLER);
+
+        new BinaryTableResourceDefinition().register(registration);
+
+        return registration;
     }
 
     static final OperationStepHandler LEGACY_READ_TABLE_HANDLER = new OperationStepHandler() {

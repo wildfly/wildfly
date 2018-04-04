@@ -23,11 +23,13 @@ package org.jboss.as.clustering.jgroups.subsystem;
 
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
+import org.jboss.as.clustering.controller.SimpleResourceDescriptorConfigurator;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelType;
 import org.jgroups.protocols.relay.RELAY2;
@@ -76,15 +78,25 @@ public class RelayResourceDefinition extends AbstractProtocolResourceDefinition<
         PropertyResourceDefinition.buildTransformation(version, builder);
     }
 
+    private final ResourceServiceBuilderFactory<RelayConfiguration> builderFactory;
+
     RelayResourceDefinition(ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
         this(RelayConfigurationBuilder::new, parentBuilderFactory);
     }
 
     private RelayResourceDefinition(ResourceServiceBuilderFactory<RelayConfiguration> builderFactory, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
-        super(new Parameters(PATH, JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(WILDCARD_PATH, ProtocolResourceDefinition.WILDCARD_PATH)), descriptor -> descriptor.addAttributes(Attribute.class), builderFactory, parentBuilderFactory, (parent, registration) -> {
-            parent.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
+        super(new Parameters(PATH, JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(WILDCARD_PATH, ProtocolResourceDefinition.WILDCARD_PATH)), new SimpleResourceDescriptorConfigurator<>(Attribute.class), builderFactory, parentBuilderFactory);
+        this.builderFactory = builderFactory;
+    }
 
-            new RemoteSiteResourceDefinition(builderFactory).register(registration);
-        });
+    @Override
+    public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
+        ManagementResourceRegistration registration = super.register(parent);
+
+        parent.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
+
+        new RemoteSiteResourceDefinition(this.builderFactory).register(registration);
+
+        return registration;
     }
 }

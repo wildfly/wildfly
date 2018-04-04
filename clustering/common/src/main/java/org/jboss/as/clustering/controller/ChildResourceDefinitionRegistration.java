@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,21 +20,19 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.clustering.singleton;
+package org.jboss.as.clustering.controller;
 
-import java.util.function.UnaryOperator;
-
-import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
 /**
+ * Registration interface for child resource definitions.
  * @author Paul Ferraro
  */
-public class RandomElectionPolicyResourceDefinition extends ElectionPolicyResourceDefinition {
-
-    static final String PATH_VALUE = "random";
-    static final PathElement PATH = pathElement(PATH_VALUE);
-
-    RandomElectionPolicyResourceDefinition() {
-        super(PATH, SingletonExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH), UnaryOperator.identity(), RandomElectionPolicyBuilder::new);
-    }
+public interface ChildResourceDefinitionRegistration<R extends ManagementResourceRegistration> {
+    /**
+     * Registers this child resource, returning the new registration
+     * @param parent the parent registration
+     * @return the child resource registration
+     */
+    R register(R parent);
 }

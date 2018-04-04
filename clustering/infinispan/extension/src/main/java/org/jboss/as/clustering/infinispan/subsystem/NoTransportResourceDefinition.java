@@ -22,7 +22,8 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.jboss.as.clustering.function.Consumers;
+import java.util.function.UnaryOperator;
+
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
@@ -38,6 +39,6 @@ public class NoTransportResourceDefinition extends TransportResourceDefinition {
     }
 
     NoTransportResourceDefinition() {
-        super(PATH, Consumers.empty(), new NoTransportServiceHandler());
+        super(PATH, UnaryOperator.identity(), new NoTransportServiceHandler());
     }
 }

@@ -26,6 +26,7 @@ import java.util.function.UnaryOperator;
 
 import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.eviction.EvictionType;
+import org.jboss.as.clustering.controller.SimpleResourceDescriptorConfigurator;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
@@ -75,6 +76,6 @@ public class BinaryMemoryResourceDefinition extends MemoryResourceDefinition {
     }
 
     BinaryMemoryResourceDefinition() {
-        super(StorageType.BINARY, PATH, descriptor -> descriptor.addAttributes(Attribute.class));
+        super(StorageType.BINARY, PATH, new SimpleResourceDescriptorConfigurator<>(Attribute.class));
     }
 }

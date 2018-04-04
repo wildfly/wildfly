@@ -22,7 +22,6 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.CapabilityReference;
@@ -142,16 +141,36 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
         CacheResourceDefinition.buildTransformation(version, builder);
     }
 
-    ClusteredCacheResourceDefinition(PathElement path, Consumer<ResourceDescriptor> descriptorConfigurator, ClusteredCacheServiceHandler handler, Consumer<ManagementResourceRegistration> registrationConfigurator) {
-        super(path, descriptorConfigurator.andThen(descriptor -> descriptor
-                .addAttributes(Attribute.class)
-                .addAttributes(DeprecatedAttribute.class)
-                .addCapabilities(Capability.class)
-                .addResourceCapabilityReference(new CapabilityReference(Capability.TRANSPORT, JGroupsTransportResourceDefinition.Requirement.CHANNEL), address -> address.getParent().getLastElement().getValue())
-            ), handler, registrationConfigurator.andThen(registration -> {
-                if (registration.isRuntimeOnlyRegistrationValid()) {
-                    new MetricHandler<>(new ClusteredCacheMetricExecutor(), ClusteredCacheMetric.class).register(registration);
-                }
-            }));
+    private static class ResourceDescriptorConfigurator implements UnaryOperator<ResourceDescriptor> {
+        private final UnaryOperator<ResourceDescriptor> configurator;
+
+        ResourceDescriptorConfigurator(UnaryOperator<ResourceDescriptor> configurator) {
+            this.configurator = configurator;
+        }
+
+        @Override
+        public ResourceDescriptor apply(ResourceDescriptor descriptor) {
+            return this.configurator.apply(descriptor)
+                    .addAttributes(Attribute.class)
+                    .addAttributes(DeprecatedAttribute.class)
+                    .addCapabilities(Capability.class)
+                    .addResourceCapabilityReference(new CapabilityReference(Capability.TRANSPORT, JGroupsTransportResourceDefinition.Requirement.CHANNEL), address -> address.getParent().getLastElement().getValue())
+                    ;
+        }
+    }
+
+    ClusteredCacheResourceDefinition(PathElement path, UnaryOperator<ResourceDescriptor> configurator, ClusteredCacheServiceHandler handler) {
+        super(path, new ResourceDescriptorConfigurator(configurator), handler);
+    }
+
+    @Override
+    public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
+        ManagementResourceRegistration registration = super.register(parent);
+
+        if (registration.isRuntimeOnlyRegistrationValid()) {
+            new MetricHandler<>(new ClusteredCacheMetricExecutor(), ClusteredCacheMetric.class).register(registration);
+        }
+
+        return registration;
     }
 }

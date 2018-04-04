@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.DefaultableCapabilityReference;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.clustering.controller.transform.SimpleAttributeConverter;
@@ -280,20 +281,27 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
         }
     }
 
+    static class ResourceDescriptorConfigurator implements UnaryOperator<ResourceDescriptor> {
+        @Override
+        public ResourceDescriptor apply(ResourceDescriptor descriptor) {
+            return descriptor.addAttributes(Attribute.class)
+                    .addAttributes(ExecutorAttribute.class)
+                    .addAttributes(DeprecatedAttribute.class)
+                    .addCapabilities(Capability.class)
+                    ;
+        }
+    }
+
     JGroupsTransportResourceDefinition() {
-        super(PATH, descriptor -> descriptor
-                .addAttributes(Attribute.class)
-                .addAttributes(ExecutorAttribute.class)
-                .addAttributes(DeprecatedAttribute.class)
-                .addCapabilities(Capability.class)
-            , new JGroupsTransportServiceHandler());
+        super(PATH, new ResourceDescriptorConfigurator(), new JGroupsTransportServiceHandler());
     }
 
     @Override
-    public void register(ManagementResourceRegistration parentRegistration) {
-        super.register(parentRegistration);
+    public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
+        ManagementResourceRegistration registration = super.register(parent);
 
-        ManagementResourceRegistration registration = parentRegistration.getSubModel(PathAddress.pathAddress(PATH));
-        parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
+        parent.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
+
+        return registration;
     }
 }

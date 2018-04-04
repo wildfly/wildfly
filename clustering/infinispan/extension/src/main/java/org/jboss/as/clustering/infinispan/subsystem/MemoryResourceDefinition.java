@@ -22,7 +22,7 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
 
 import org.infinispan.configuration.cache.StorageType;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
@@ -71,22 +71,21 @@ public class MemoryResourceDefinition extends ChildResourceDefinition<Management
     }
 
     private final StorageType type;
-    private final Consumer<ResourceDescriptor> descriptorConfigurator;
+    private final UnaryOperator<ResourceDescriptor> configurator;
 
-    MemoryResourceDefinition(StorageType type, PathElement path, Consumer<ResourceDescriptor> descriptorConfigurator) {
+    MemoryResourceDefinition(StorageType type, PathElement path, UnaryOperator<ResourceDescriptor> configurator) {
         super(path, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(path, WILDCARD_PATH));
         this.type = type;
-        this.descriptorConfigurator = descriptorConfigurator;
+        this.configurator = configurator;
     }
 
     @Override
-    public void register(ManagementResourceRegistration parentRegistration) {
-        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
+    public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
+        ManagementResourceRegistration registration = parent.registerSubModel(this);
 
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
+        ResourceDescriptor descriptor = this.configurator.apply(new ResourceDescriptor(this.getResourceDescriptionResolver()))
                 .addAttributes(Attribute.class)
                 ;
-        this.descriptorConfigurator.accept(descriptor);
 
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new MemoryBuilder(this.type, address));
         new SimpleResourceRegistration(descriptor, handler).register(registration);
@@ -94,5 +93,7 @@ public class MemoryResourceDefinition extends ChildResourceDefinition<Management
         if (registration.isRuntimeOnlyRegistrationValid()) {
             new MetricHandler<>(new EvictionMetricExecutor(), EvictionMetric.class).register(registration);
         }
+
+        return registration;
     }
 }

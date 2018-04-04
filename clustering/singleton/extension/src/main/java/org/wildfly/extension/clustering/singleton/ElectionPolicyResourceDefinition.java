@@ -22,7 +22,7 @@
 
 package org.wildfly.extension.clustering.singleton;
 
-import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
@@ -104,25 +104,26 @@ public abstract class ElectionPolicyResourceDefinition extends ChildResourceDefi
         }
     }
 
-    private final Consumer<ResourceDescriptor> configurator;
+    private final UnaryOperator<ResourceDescriptor> configurator;
     private final ResourceServiceBuilderFactory<SingletonElectionPolicy> builderFactory;
 
-    ElectionPolicyResourceDefinition(PathElement path, ResourceDescriptionResolver resolver, Consumer<ResourceDescriptor> configurator, ResourceServiceBuilderFactory<SingletonElectionPolicy> builderFactory) {
+    ElectionPolicyResourceDefinition(PathElement path, ResourceDescriptionResolver resolver, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceBuilderFactory<SingletonElectionPolicy> builderFactory) {
         super(path, resolver);
         this.configurator = configurator;
         this.builderFactory = builderFactory;
     }
 
     @Override
-    public void register(ManagementResourceRegistration parentRegistration) {
-        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
+    public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
+        ManagementResourceRegistration registration = parent.registerSubModel(this);
 
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
+        ResourceDescriptor descriptor = this.configurator.apply(new ResourceDescriptor(this.getResourceDescriptionResolver()))
                 .addAttributes(ElectionPolicyResourceDefinition.Attribute.class)
                 .addCapabilities(ElectionPolicyResourceDefinition.Capability.class)
                 ;
-        this.configurator.accept(descriptor);
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(this.builderFactory);
         new SimpleResourceRegistration(descriptor, handler).register(registration);
+
+        return registration;
     }
 }

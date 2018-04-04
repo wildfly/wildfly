@@ -22,7 +22,8 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import org.jboss.as.clustering.function.Consumers;
+import java.util.function.UnaryOperator;
+
 import org.jboss.as.clustering.jgroups.auth.BinaryAuthToken;
 import org.jboss.as.controller.PathElement;
 
@@ -34,6 +35,6 @@ public class PlainAuthTokenResourceDefinition extends AuthTokenResourceDefinitio
     static final PathElement PATH = pathElement("plain");
 
     PlainAuthTokenResourceDefinition() {
-        super(PATH, Consumers.empty(), PlainAuthTokenBuilder::new);
+        super(PATH, UnaryOperator.identity(), PlainAuthTokenBuilder::new);
     }
 }

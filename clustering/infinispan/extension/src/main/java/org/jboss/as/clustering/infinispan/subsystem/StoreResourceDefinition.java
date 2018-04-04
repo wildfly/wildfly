@@ -21,7 +21,6 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
 import org.infinispan.configuration.cache.PersistenceConfiguration;
@@ -167,43 +166,40 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition<Ma
     }
 
     private final PathElement legacyPath;
-    private final Consumer<ResourceDescriptor> descriptorConfigurator;
+    private final UnaryOperator<ResourceDescriptor> configurator;
     private final ResourceServiceHandler handler;
-    private final Consumer<ManagementResourceRegistration> registrationConfigurator;
 
-    @SuppressWarnings("deprecation")
-    StoreResourceDefinition(PathElement path, PathElement legacyPath, ResourceDescriptionResolver resolver, Consumer<ResourceDescriptor> descriptorConfigurator, ResourceServiceBuilderFactory<PersistenceConfiguration> builderFactory, Consumer<ManagementResourceRegistration> registrationConfigurator) {
+    StoreResourceDefinition(PathElement path, PathElement legacyPath, ResourceDescriptionResolver resolver, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceBuilderFactory<PersistenceConfiguration> builderFactory) {
         super(path, resolver);
         this.legacyPath = legacyPath;
-        this.descriptorConfigurator = descriptorConfigurator.andThen(descriptor -> descriptor
+        this.configurator = configurator;
+        this.handler = new SimpleResourceServiceHandler<>(builderFactory);
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
+        ManagementResourceRegistration registration = parent.registerSubModel(this);
+        if (this.legacyPath != null) {
+            parent.registerAlias(this.legacyPath, new SimpleAliasEntry(registration));
+        }
+
+        ResourceDescriptor descriptor = this.configurator.apply(new ResourceDescriptor(this.getResourceDescriptionResolver()))
                 .addAttributes(StoreResourceDefinition.Attribute.class)
                 .addCapabilities(Capability.class)
                 .addRequiredSingletonChildren(StoreWriteThroughResourceDefinition.PATH)
-        );
-        this.handler = new SimpleResourceServiceHandler<>(builderFactory);
-        this.registrationConfigurator = registrationConfigurator.andThen(registration -> {
-            if (registration.isRuntimeOnlyRegistrationValid()) {
-                new MetricHandler<>(new StoreMetricExecutor(), StoreMetric.class).register(registration);
-            }
-
-            new StoreWriteBehindResourceDefinition().register(registration);
-            new StoreWriteThroughResourceDefinition().register(registration);
-
-            new StorePropertyResourceDefinition().register(registration);
-        });
-    }
-
-    @Override
-    public void register(ManagementResourceRegistration parentRegistration) {
-        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
-        if (this.legacyPath != null) {
-            parentRegistration.registerAlias(this.legacyPath, new SimpleAliasEntry(registration));
-        }
-
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver());
-        this.descriptorConfigurator.accept(descriptor);
+                ;
         new SimpleResourceRegistration(descriptor, this.handler).register(registration);
 
-        this.registrationConfigurator.accept(registration);
+        if (registration.isRuntimeOnlyRegistrationValid()) {
+            new MetricHandler<>(new StoreMetricExecutor(), StoreMetric.class).register(registration);
+        }
+
+        new StoreWriteBehindResourceDefinition().register(registration);
+        new StoreWriteThroughResourceDefinition().register(registration);
+
+        new StorePropertyResourceDefinition().register(registration);
+
+        return registration;
     }
 }

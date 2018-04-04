@@ -240,9 +240,9 @@ public class TransactionResourceDefinition extends ComponentResourceDefinition {
     }
 
     @Override
-    public void register(ManagementResourceRegistration parentRegistration) {
-        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
-        parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
+    public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
+        ManagementResourceRegistration registration = parent.registerSubModel(this);
+        parent.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class);
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(TransactionBuilder::new);
@@ -251,5 +251,7 @@ public class TransactionResourceDefinition extends ComponentResourceDefinition {
         if (registration.isRuntimeOnlyRegistrationValid()) {
             new MetricHandler<>(new TransactionMetricExecutor(), TransactionMetric.class).register(registration);
         }
+
+        return registration;
     }
 }
