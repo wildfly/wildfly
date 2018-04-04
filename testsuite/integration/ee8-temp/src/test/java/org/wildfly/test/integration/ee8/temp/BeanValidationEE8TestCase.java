@@ -34,6 +34,7 @@ import javax.validation.valueextraction.ExtractedValue;
 import javax.validation.valueextraction.UnwrapByDefault;
 import javax.validation.valueextraction.ValueExtractor;
 
+import org.hibernate.validator.HibernateValidatorPermission;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -42,6 +43,8 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * A test validating the Bean Validation 2.0 support.
@@ -53,8 +56,13 @@ public class BeanValidationEE8TestCase {
 
     @Deployment
     public static WebArchive deployment() {
-        return ShrinkWrap.create(WebArchive.class, "beanvalidation-ee8-test-case.war")
-                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+        WebArchive war = ShrinkWrap.create(WebArchive.class, "beanvalidation-ee8-test-case.war");
+        war.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+        war.addAsManifestResource(createPermissionsXmlAsset(
+                HibernateValidatorPermission.ACCESS_PRIVATE_MEMBERS
+        ), "permissions.xml");
+
+        return war;
     }
 
     @Test
