@@ -44,6 +44,10 @@
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
         <surefire.forked.process.timeout>3600</surefire.forked.process.timeout>
         <test-group>org/jboss/as/test/clustering/cluster</test-group>
+
+        <!-- Workaround properties now not being inherited introduced with https://issues.jboss.org/browse/WFLY-9911 -->
+        <!-- Maven feature https://issues.apache.org/jira/browse/MNG-5102 -->
+        <version.org.infinispan>9.2.2.Final</version.org.infinispan>
     </properties>
 
     <profiles>
