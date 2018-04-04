@@ -23,6 +23,7 @@
 package org.jboss.as.test.integration.domain.mixed.eap710;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
@@ -58,6 +59,7 @@ public class DomainAdjuster710 extends DomainAdjuster {
             }
         }
 
+        list.addAll(removeEESecurity(profileAddress.append(SUBSYSTEM, "ee-security")));
         if (withMasterServers) {
             list.addAll(reconfigureServers());
         }
@@ -65,6 +67,14 @@ public class DomainAdjuster710 extends DomainAdjuster {
         return list;
     }
 
+
+    private Collection<? extends ModelNode> removeEESecurity(final PathAddress subsystem) {
+        final List<ModelNode> list = new ArrayList<>();
+        //io and extension don't exist so remove them
+        list.add(createRemoveOperation(subsystem));
+        list.add(createRemoveOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.ee-security")));
+        return list;
+    }
     private void adjustUndertow(PathAddress undertow, List<ModelNode> ops) {
         // EAP 7.0 and earlier required explicit SSL configuration. Wildfly 10.1 added support
         // for SSL by default, which automatically generates certs.
