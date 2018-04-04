@@ -21,13 +21,8 @@
  */
 package org.jboss.as.ejb3.tx;
 
-import javax.transaction.Status;
-import javax.transaction.Transaction;
-
 import org.jboss.as.ejb3.logging.EjbLogger;
-import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.invocation.ImmediateInterceptorFactory;
-import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 
 /**
@@ -38,38 +33,9 @@ import org.jboss.invocation.InterceptorFactory;
  */
 public class TimerCMTTxInterceptor extends CMTTxInterceptor {
 
-    /**
-     * This is a hack to make sure that the transaction interceptor does not swallow the underlying exception
-     */
-    private static final ThreadLocal<Throwable> EXCEPTION = new ThreadLocal<Throwable>();
-
     public static final InterceptorFactory FACTORY = new ImmediateInterceptorFactory(new TimerCMTTxInterceptor());
 
-    @Override
-    public Exception handleExceptionInOurTx(final InterceptorContext invocation, final Throwable t, final Transaction tx, final EJBComponent component) {
-        EXCEPTION.set(t);
-        return super.handleExceptionInOurTx(invocation, t, tx, component);
-    }
-
-    @Override
-    protected void endTransaction(final Transaction tx) {
-        try {
-            boolean rolledBack = false;
-            final int status;
-            try {
-                status = tx.getStatus();
-                if (status == Status.STATUS_MARKED_ROLLBACK) {
-                    rolledBack = true;
-                }
-            } catch (Throwable ignored) {
-                // treat as STATUS_UNKNOWN
-            }
-            super.endTransaction(tx);
-            if (rolledBack && EXCEPTION.get() == null) {
-                throw EjbLogger.ROOT_LOGGER.timerInvocationRolledBack();
-            }
-        } finally {
-            EXCEPTION.remove();
-        }
+    protected void ourTxRolledBack() {
+        throw EjbLogger.ROOT_LOGGER.timerInvocationRolledBack();
     }
 }
