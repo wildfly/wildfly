@@ -54,10 +54,10 @@ public interface TimerPersistence {
     /**
      * Invoked before running a timer in order to determine if this node should run the timer.
      * @param timer The timer
-     * @param txManager Transaction manager to be able to create a transaction
+     * @param txManager ignored
      * @return true if the timer should be run
      */
-    boolean shouldRun(TimerImpl timer, TransactionManager txManager);
+    boolean shouldRun(TimerImpl timer, @Deprecated TransactionManager txManager);
 
     /**
      * Signals that a timer is being undeployed, and all cached data relating to this object should
