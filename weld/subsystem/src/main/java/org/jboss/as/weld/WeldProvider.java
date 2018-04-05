@@ -24,8 +24,11 @@ package org.jboss.as.weld;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.CDI;
 import javax.enterprise.inject.spi.CDIProvider;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 import org.jboss.as.weld.deployment.WeldDeployment;
 import org.jboss.as.weld.services.ModuleGroupSingletonProvider;
@@ -87,7 +90,15 @@ public class WeldProvider implements CDIProvider {
         }
 
         @Override
-        public BeanManagerProxy getBeanManager() {
+        public BeanManager getBeanManager() {
+            try {
+                BeanManager bm = (BeanManager) new InitialContext().lookup("java:comp/BeanManager");
+                if(bm != null) {
+                    return bm;
+                }
+            } catch (NamingException e) {
+                //ignore
+            }
             checkContainerState(container);
             final String callerName = getCallingClassName();
 
