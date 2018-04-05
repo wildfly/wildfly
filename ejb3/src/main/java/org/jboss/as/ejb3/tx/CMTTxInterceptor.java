@@ -180,7 +180,9 @@ public class CMTTxInterceptor implements Interceptor {
                 throw e3;
             }
         } catch (Throwable t) {
-            throw new EJBException(new UndeclaredThrowableException(t));
+            final EJBException e = new EJBException(new UndeclaredThrowableException(t));
+            setRollbackOnly(tx, e);
+            throw e;
         }
     }
 
