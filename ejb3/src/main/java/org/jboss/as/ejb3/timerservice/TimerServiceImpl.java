@@ -604,10 +604,47 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                     EJB3_TIMER_LOGGER.timerPersistenceNotEnable();
                     return;
                 }
+
+                Transaction clientTX = transactionManager.getTransaction();
                 if (newTimer) {
-                    timerPersistence.getValue().addTimer(timer);
+                    if( clientTX == null ){
+                        transactionManager.begin();
+                    }
+                    try {
+                        timerPersistence.getValue().addTimer(timer);
+                        if(clientTX == null) transactionManager.commit();
+                    } catch (Exception e){
+                        if(clientTX == null) {
+                            try {
+                                transactionManager.rollback();
+                            } catch (Exception ee){
+                                EjbLogger.EJB3_TIMER_LOGGER.timerUpdateFailedAndRollbackNotPossible(ee);
+                            }
+                        }
+                        throw e;
+                    }
                 } else {
-                    timerPersistence.getValue().persistTimer(timer);
+                    if( clientTX != null ) transactionManager.suspend();
+                    for (int count = 3; count > 0; count--) {
+                        try {
+                            transactionManager.begin();
+                            timerPersistence.getValue().persistTimer(timer);
+                            transactionManager.commit();
+                            break;
+                        } catch (RuntimeException e) {
+                            try {
+                                transactionManager.rollback();
+                            } catch (Exception ee) {
+                                // omit;
+                            }
+                            if (count > 1) {
+                                EJB3_TIMER_LOGGER.debug("Failed to persist timer " + timer + " due to " + e.getCause());
+                            } else {
+                                throw e;
+                            }
+                        }
+                    }
+                    if( clientTX != null ) transactionManager.resume(clientTX);
                 }
 
             } catch (Throwable t) {
