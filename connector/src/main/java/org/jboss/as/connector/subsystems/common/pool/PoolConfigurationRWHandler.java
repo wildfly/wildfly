@@ -137,10 +137,10 @@ public class PoolConfigurationRWHandler {
                     pc.setMinSize(newValue.asInt());
                 }
                 if (INITIAL_POOL_SIZE.getName().equals(parameterName)) {
-                    pc.setInitialSize(newValue.asInt());
+                    pc.setInitialSize(newValue.isDefined()? newValue.asInt(): 0);
                 }
                 if (BLOCKING_TIMEOUT_WAIT_MILLIS.getName().equals(parameterName)) {
-                    pc.setBlockingTimeout(newValue.asLong());
+                    pc.setBlockingTimeout(newValue.isDefined()? newValue.asLong(): 0);
                 }
                 if (POOL_USE_STRICT_MIN.getName().equals(parameterName)) {
                     pc.setStrictMin(newValue.asBoolean());
