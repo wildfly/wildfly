@@ -594,15 +594,15 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                     EJB3_TIMER_LOGGER.timerPersistenceNotEnable();
                     return;
                 }
-
                 final ContextTransactionManager transactionManager = ContextTransactionManager.getInstance();
                 Transaction clientTX = transactionManager.getTransaction();
-                if (newTimer) {
+                if (newTimer || timer.isCanceled()) {
                     if( clientTX == null ){
                         transactionManager.begin();
                     }
                     try {
-                        timerPersistence.getValue().addTimer(timer);
+                        if( newTimer ) timerPersistence.getValue().addTimer(timer);
+                        else timerPersistence.getValue().persistTimer(timer);
                         if(clientTX == null) transactionManager.commit();
                     } catch (Exception e){
                         if(clientTX == null) {
@@ -615,27 +615,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                         throw e;
                     }
                 } else {
-                    if( clientTX != null ) transactionManager.suspend();
-                    for (int count = 3; count > 0; count--) {
-                        try {
-                            transactionManager.begin();
-                            timerPersistence.getValue().persistTimer(timer);
-                            transactionManager.commit();
-                            break;
-                        } catch (RuntimeException e) {
-                            try {
-                                transactionManager.rollback();
-                            } catch (Exception ee) {
-                                // omit;
-                            }
-                            if (count > 1) {
-                                EJB3_TIMER_LOGGER.debug("Failed to persist timer " + timer + " due to " + e.getCause());
-                            } else {
-                                throw e;
-                            }
-                        }
-                    }
-                    if( clientTX != null ) transactionManager.resume(clientTX);
+                    new TaskPostPersist(timer).persistTimer();
                 }
 
             } catch (Throwable t) {
@@ -981,8 +961,21 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             //if the persistence setting is null then there are no persistent timers
             return Collections.emptyList();
         }
-
-        final List<TimerImpl> persistedTimers = timerPersistence.getValue().loadActiveTimers(timedObjectId, this);
+        final ContextTransactionManager transactionManager = ContextTransactionManager.getInstance();
+        List<TimerImpl> persistedTimers;
+        try {
+            transactionManager.begin();
+            persistedTimers = timerPersistence.getValue().loadActiveTimers(timedObjectId, this);
+            transactionManager.commit();
+        } catch (Exception e){
+            try {
+                transactionManager.rollback();
+            } catch (Exception ee) {
+                // omit;
+            }
+            persistedTimers = Collections.emptyList();
+            EJB3_TIMER_LOGGER.timerReinstatementFailed(timedObjectId, "unavailable", e);
+        }
         final List<TimerImpl> activeTimers = new ArrayList<TimerImpl>();
         for (final TimerImpl persistedTimer : persistedTimers) {
             if (ineligibleTimerStates.contains(persistedTimer.getState())) {
@@ -1214,6 +1207,63 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                 }
             } finally {
                 timer.unlock();
+            }
+        }
+    }
+
+    private class TaskPostPersist extends java.util.TimerTask {
+        private final TimerImpl timer;
+        private int triesCounter = 0;
+
+        TaskPostPersist(TimerImpl timer) {
+            this.timer = timer;
+        }
+
+        TaskPostPersist(TimerImpl timer, int triesCounter) {
+            this.timer = timer;
+            this.triesCounter = triesCounter;
+        }
+
+        @Override
+        public void run() {
+            final ExecutorService executor = executorServiceInjectedValue.getOptionalValue();
+            if (executor != null) {
+                executor.submit(this::persistTimer);
+            }
+        }
+
+        void persistTimer() {
+            final ContextTransactionManager transactionManager = ContextTransactionManager.getInstance();
+            try {
+                transactionManager.begin();
+                timerPersistence.getValue().persistTimer(timer);
+                transactionManager.commit();
+            } catch (Exception e) {
+                try {
+                    transactionManager.rollback();
+                } catch (Exception ee) {
+                    // omit;
+                }
+                EJB3_TIMER_LOGGER.exceptionRunningTimerTask(timer, timer.getTimedObjectId(), e);
+                Date nextExpiration = timer.getNextExpiration();
+                if( nextExpiration != null ){
+                    int max = 10;
+                    String pMax = System.getProperty("jboss.timer.TaskPostPersist.maxRetry");
+                    if( pMax != null ) {
+                        try {
+                            max = Integer.parseInt(pMax);
+                        } catch (NumberFormatException nfe ){
+                            // omit
+                        }
+                    }
+                    if( triesCounter++ < max ) {
+                        long nextTryDelay = nextExpiration.getTime() - System.currentTimeMillis() / 5;
+                        if (nextTryDelay <= 0 || nextTryDelay > 60000L) nextTryDelay = 5000L;
+                        timerInjectedValue.getValue().schedule( new TaskPostPersist(timer, triesCounter), nextTryDelay);
+                    } else {
+                        EJB3_TIMER_LOGGER.exceptionPersistPostTimerState(timer, e);
+                    }
+                }
             }
         }
     }
