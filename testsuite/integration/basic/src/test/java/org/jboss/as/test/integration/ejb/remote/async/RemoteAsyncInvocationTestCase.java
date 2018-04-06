@@ -35,9 +35,12 @@ import org.junit.runner.RunWith;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import java.util.PropertyPermission;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * Simple remote ejb tests
@@ -55,6 +58,9 @@ public class RemoteAsyncInvocationTestCase {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
         jar.addPackage(RemoteAsyncInvocationTestCase.class.getPackage());
         jar.addClass(TimeoutUtil.class);
+        jar.addAsManifestResource(createPermissionsXmlAsset(
+                new PropertyPermission("ts.timeout.factor", "read")
+        ), "permissions.xml");
         return jar;
     }
 
