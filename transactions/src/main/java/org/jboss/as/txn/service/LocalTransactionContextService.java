@@ -26,12 +26,14 @@ import static java.security.AccessController.doPrivileged;
 
 import java.security.PrivilegedAction;
 
+import org.jboss.as.server.ServerEnvironment;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.tm.ExtendedJBossXATerminator;
+import org.jboss.tm.XAResourceRecoveryRegistry;
 import org.wildfly.transaction.client.LocalTransactionContext;
 import org.wildfly.transaction.client.provider.jboss.JBossLocalTransactionProvider;
 
@@ -44,6 +46,8 @@ public final class LocalTransactionContextService implements Service<LocalTransa
     private volatile LocalTransactionContext context;
     private final InjectedValue<ExtendedJBossXATerminator> extendedJBossXATerminatorInjector = new InjectedValue<>();
     private final InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService> transactionManagerInjector = new InjectedValue<>();
+    private final InjectedValue<XAResourceRecoveryRegistry> xaResourceRecoveryRegistryInjector = new InjectedValue<>();
+    private final InjectedValue<ServerEnvironment> serverEnvironmentInjector = new InjectedValue<>();
 
     public LocalTransactionContextService() {
     }
@@ -54,6 +58,8 @@ public final class LocalTransactionContextService implements Service<LocalTransa
         builder.setTransactionManager(transactionManagerInjector.getValue().getTransactionManager());
         builder.setTransactionSynchronizationRegistry(transactionManagerInjector.getValue().getTransactionSynchronizationRegistry());
         builder.setXATerminator(transactionManagerInjector.getValue().getJbossXATerminator());
+        builder.setXAResourceRecoveryRegistry(xaResourceRecoveryRegistryInjector.getValue());
+        builder.setXARecoveryLogDirRelativeToPath(serverEnvironmentInjector.getValue().getServerDataDir().toPath());
         final LocalTransactionContext transactionContext = this.context = new LocalTransactionContext(builder.build());
         // TODO: replace this with per-CL settings for embedded use and to support remote UserTransaction
         doPrivileged((PrivilegedAction<Void>) () -> {
@@ -77,6 +83,14 @@ public final class LocalTransactionContextService implements Service<LocalTransa
 
     public InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService> getTransactionManagerInjector() {
         return transactionManagerInjector;
+    }
+
+    public InjectedValue<XAResourceRecoveryRegistry> getXAResourceRecoveryRegistryInjector() {
+        return xaResourceRecoveryRegistryInjector;
+    }
+
+    public InjectedValue<ServerEnvironment> getServerEnvironmentInjector() {
+        return serverEnvironmentInjector;
     }
 
     public LocalTransactionContext getValue() throws IllegalStateException, IllegalArgumentException {
