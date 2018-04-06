@@ -33,7 +33,6 @@ import javax.ejb.NoSuchEntityException;
 import javax.ejb.TransactionAttributeType;
 import javax.transaction.HeuristicMixedException;
 import javax.transaction.HeuristicRollbackException;
-import javax.transaction.NotSupportedException;
 import javax.transaction.RollbackException;
 import javax.transaction.Status;
 import javax.transaction.SystemException;
@@ -48,6 +47,7 @@ import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
+import org.wildfly.transaction.client.AbstractTransaction;
 import org.wildfly.transaction.client.ContextTransactionManager;
 
 /**
@@ -111,34 +111,17 @@ public class CMTTxInterceptor implements Interceptor {
                 throw EjbLogger.ROOT_LOGGER.transactionInUnexpectedState(tx, statusAsString(txStatus));
             }
         } catch (RollbackException e) {
-            throw new EJBTransactionRolledbackException("Transaction rolled back", e);
+            throw new EJBTransactionRolledbackException(e.toString(), e);
         } catch (HeuristicMixedException | SystemException | HeuristicRollbackException e) {
             throw new EJBException(e);
         }
     }
 
-    public Exception handleExceptionInOurTx(InterceptorContext invocation, Throwable t, Transaction tx, final EJBComponent component) {
-        ApplicationExceptionDetails ae = component.getApplicationException(t.getClass(), invocation.getMethod());
-        if (ae != null) {
-            if (ae.isRollback()) setRollbackOnly(tx);
-            return (Exception) t;
-        }
+    private void endTransaction(final Transaction tx, final Throwable outerEx) {
         try {
-            throw t;
-        } catch (EJBException | RemoteException e) {
-            setRollbackOnly(tx);
-            return e;
-        } catch (RuntimeException e) {
-            setRollbackOnly(tx);
-            return new EJBException(e);
-        } catch (Error e) {
-            setRollbackOnly(tx);
-            return EjbLogger.ROOT_LOGGER.unexpectedError(e);
-        } catch (Exception e) {
-            // an application exception
-            return e;
-        } catch (Throwable e) {
-            throw new EJBException(new UndeclaredThrowableException(e));
+            endTransaction(tx);
+        } catch (Throwable t) {
+            outerEx.addSuppressed(t);
         }
     }
 
@@ -176,26 +159,30 @@ public class CMTTxInterceptor implements Interceptor {
         try {
             return invocation.proceed();
         } catch (Error e) {
-            setRollbackOnly(tx);
-            throw EjbLogger.ROOT_LOGGER.unexpectedErrorRolledBack(e);
+            final EJBTransactionRolledbackException e2 = EjbLogger.ROOT_LOGGER.unexpectedErrorRolledBack(e);
+            setRollbackOnly(tx, e2);
+            throw e2;
         } catch (Exception e) {
             ApplicationExceptionDetails ae = component.getApplicationException(e.getClass(), invocation.getMethod());
 
             if (ae != null) {
-                if (ae.isRollback()) setRollbackOnly(tx);
+                if (ae.isRollback()) setRollbackOnly(tx, e);
                 throw e;
             }
             try {
                 throw e;
             } catch (EJBTransactionRolledbackException | NoSuchEJBException | NoSuchEntityException e2) {
-                setRollbackOnly(tx);
+                setRollbackOnly(tx, e2);
                 throw e2;
             } catch (RuntimeException e2) {
-                setRollbackOnly(tx);
-                throw new EJBTransactionRolledbackException(e2.getMessage(), e2);
+                final EJBTransactionRolledbackException e3 = new EJBTransactionRolledbackException(e2.getMessage(), e2);
+                setRollbackOnly(tx, e3);
+                throw e3;
             }
         } catch (Throwable t) {
-            throw new EJBException(new UndeclaredThrowableException(t));
+            final EJBException e = new EJBException(new UndeclaredThrowableException(t));
+            setRollbackOnly(tx, e);
+            throw e;
         }
     }
 
@@ -217,20 +204,74 @@ public class CMTTxInterceptor implements Interceptor {
     }
 
     protected Object invokeInOurTx(InterceptorContext invocation, final EJBComponent component) throws Exception {
-        Transaction tx = beginTransaction();
+        final ContextTransactionManager tm = ContextTransactionManager.getInstance();
+        tm.begin();
+        final AbstractTransaction tx = tm.getTransaction();
+        final Object result;
         try {
-            return invocation.proceed();
+            result = invocation.proceed();
         } catch (Throwable t) {
-            throw handleExceptionInOurTx(invocation, t, tx, component);
-        } finally {
-            endTransaction(tx);
+            ApplicationExceptionDetails ae = component.getApplicationException(t.getClass(), invocation.getMethod());
+            try {
+                try {
+                    throw t;
+                } catch (EJBException | RemoteException e) {
+                    throw e;
+                } catch (RuntimeException e) {
+                    throw ae != null ? e : new EJBException(e);
+                } catch (Exception e) {
+                    throw e;
+                } catch (Error e) {
+                    throw EjbLogger.ROOT_LOGGER.unexpectedError(e);
+                } catch (Throwable e) {
+                    throw new EJBException(new UndeclaredThrowableException(e));
+                }
+            } catch (Throwable t2) {
+                if (ae == null || ae.isRollback()) setRollbackOnly(tx, t2);
+                endTransaction(tx, t2);
+                throw t2;
+            }
+        }
+        boolean rolledBack = safeGetStatus(tx) == Status.STATUS_MARKED_ROLLBACK;
+        endTransaction(tx);
+        if (rolledBack) ourTxRolledBack();
+        return result;
+    }
+
+    private int safeGetStatus(final AbstractTransaction tx) {
+        try {
+            return tx.getStatus();
+        } catch (SystemException e) {
+            return Status.STATUS_UNKNOWN;
         }
     }
 
-    protected Transaction beginTransaction() throws NotSupportedException, SystemException {
-        final ContextTransactionManager tm = ContextTransactionManager.getInstance();
-        tm.begin();
-        return tm.getTransaction();
+    private void safeSuspend() {
+        try {
+            ContextTransactionManager.getInstance().suspend();
+        } catch (SystemException e) {
+            throw new EJBException(e);
+        }
+    }
+
+    private void safeResume(final Transaction tx) {
+        try {
+            ContextTransactionManager.getInstance().resume(tx);
+        } catch (Exception e) {
+            throw new EJBException(e);
+        }
+    }
+
+    private void safeResume(final Transaction tx, final Throwable t) {
+        try {
+            ContextTransactionManager.getInstance().resume(tx);
+        } catch (Exception e) {
+            t.addSuppressed(e);
+        }
+    }
+
+    protected void ourTxRolledBack() {
+        // normally no operation
     }
 
     protected Object mandatory(InterceptorContext invocation, final EJBComponent component) throws Exception {
@@ -254,12 +295,16 @@ public class CMTTxInterceptor implements Interceptor {
         final ContextTransactionManager tm = ContextTransactionManager.getInstance();
         Transaction tx = tm.getTransaction();
         if (tx != null) {
-            tm.suspend();
+            safeSuspend();
+            final Object result;
             try {
-                return invokeInNoTx(invocation, component);
-            } finally {
-                tm.resume(tx);
+                result = invokeInNoTx(invocation, component);
+            } catch (Throwable t) {
+                safeResume(tx, t);
+                throw t;
             }
+            safeResume(tx);
+            return result;
         } else {
             return invokeInNoTx(invocation, component);
         }
@@ -290,12 +335,16 @@ public class CMTTxInterceptor implements Interceptor {
 
         Transaction tx = tm.getTransaction();
         if (tx != null) {
-            tm.suspend();
+            safeSuspend();
+            final Object result;
             try {
-                return invokeInOurTx(invocation, component);
-            } finally {
-                tm.resume(tx);
+                result = invokeInOurTx(invocation, component);
+            } catch (Throwable t) {
+                safeResume(tx, t);
+                throw t;
             }
+            safeResume(tx);
+            return result;
         } else {
             return invokeInOurTx(invocation, component);
         }
@@ -307,14 +356,16 @@ public class CMTTxInterceptor implements Interceptor {
      * occur.
      *
      * @param tx the transaction
+     * @param t the exception to add problems to (may be {@code null})
      */
-    protected void setRollbackOnly(Transaction tx) {
+    protected void setRollbackOnly(Transaction tx, final Throwable t) {
         try {
             tx.setRollbackOnly();
-        } catch (SystemException ex) {
-            EjbLogger.ROOT_LOGGER.failedToSetRollbackOnly(ex);
-        } catch (IllegalStateException ex) {
-            EjbLogger.ROOT_LOGGER.failedToSetRollbackOnly(ex);
+        } catch (Throwable t2) {
+            EjbLogger.ROOT_LOGGER.failedToSetRollbackOnly(t2);
+            if (t != null) {
+                t.addSuppressed(t2);
+            }
         }
     }
 
