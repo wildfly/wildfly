@@ -44,6 +44,7 @@
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
         <surefire.forked.process.timeout>3600</surefire.forked.process.timeout>
         <test-group>org/jboss/as/test/clustering/cluster</test-group>
+        <jvm.args.ip.tcpping>-Djgroups.tcpping.initial_hosts=${node0}[7600],${node1}[7700],${node2}[7800],${node3}[7900]</jvm.args.ip.tcpping>
     </properties>
 
     <profiles>
@@ -155,7 +156,7 @@
                                         <arquillian.launch>clustering-all</arquillian.launch>
                                         <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
                                         <!-- Override ${server.jvm.arg} to only include ${jvm.args.ip} but *not* include ${jvm.args.ip.server} -->
-                                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.other} ${jvm.args.timeouts} ${jvm.args.dirs} ${extra.server.jvm.args}</server.jvm.args>
+                                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.ip.tcpping} ${jvm.args.other} ${jvm.args.timeouts} ${jvm.args.dirs} ${extra.server.jvm.args}</server.jvm.args>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
@@ -188,7 +189,7 @@
                                         <mcast3>${mcast3}</mcast3>
                                         <arquillian.launch>clustering-all</arquillian.launch>
                                         <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
-                                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.other} ${jvm.args.timeouts} ${jvm.args.dirs} ${extra.server.jvm.args}</server.jvm.args>
+                                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.ip.tcpping} ${jvm.args.other} ${jvm.args.timeouts} ${jvm.args.dirs} ${extra.server.jvm.args}</server.jvm.args>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>

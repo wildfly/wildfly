@@ -3,7 +3,11 @@ embed-server --server-config=standalone-ha.xml
 /subsystem=jgroups/channel=ee:write-attribute(name=stack,value=tcp)
 
 /subsystem=jgroups/stack=udp/transport=UDP:map-put(name=properties,key=ip_ttl,value=0)
-/subsystem=jgroups/stack=tcp/protocol=MPING:map-put(name=properties,key=ip_ttl,value=0)
+
+/subsystem=jgroups/stack=tcp/protocol=MPING:remove()
+/subsystem=jgroups/stack=tcp/protocol=TCPPING:add(add-index=0)
+
+/subsystem=logging/logger=org.jgroups:add(level=TRACE)
 
 stop-embedded-server
 
@@ -13,6 +17,10 @@ embed-server --server-config=standalone-full-ha.xml
 /subsystem=jgroups/channel=ee:write-attribute(name=stack,value=tcp)
 
 /subsystem=jgroups/stack=udp/transport=UDP:map-put(name=properties,key=ip_ttl,value=0)
-/subsystem=jgroups/stack=tcp/protocol=MPING:map-put(name=properties,key=ip_ttl,value=0)
+
+/subsystem=jgroups/stack=tcp/protocol=MPING:remove()
+/subsystem=jgroups/stack=tcp/protocol=TCPPING:add(add-index=0)
+
+/subsystem=logging/logger=org.jgroups:add(level=TRACE)
 
 stop-embedded-server
