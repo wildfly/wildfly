@@ -38,6 +38,9 @@ import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -230,21 +233,13 @@ public class ChannelResourceDefinition extends ChildResourceDefinition<Managemen
         }
     }
 
-    ChannelResourceDefinition() {
-        super(WILDCARD_PATH, JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(WILDCARD_PATH));
-    }
-
-    @Override
-    public void register(ManagementResourceRegistration parentRegistration) {
-        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
-
-        @SuppressWarnings("deprecation")
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
-                .addAttributes(Attribute.class)
-                .addCapabilities(Capability.class)
-                .addCapabilities(CLUSTERING_CAPABILITIES.values())
-                .addAlias(DeprecatedAttribute.STATS_ENABLED, Attribute.STATISTICS_ENABLED)
-                .setAddOperationTransformation(handler -> (context, operation) -> {
+    static class AddOperationTransformation implements UnaryOperator<OperationStepHandler> {
+        @Override
+        public OperationStepHandler apply(OperationStepHandler handler) {
+            return new OperationStepHandler() {
+                @SuppressWarnings("deprecation")
+                @Override
+                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     // Handle recipe for version < 4.0 where stack was not required and the stack attribute would use default-stack for a default value
                     if (!operation.hasDefined(Attribute.STACK.getName())) {
                         ModelNode parentModel = context.readResourceFromRoot(context.getCurrentAddress().getParent(), false).getModel();
@@ -254,7 +249,25 @@ public class ChannelResourceDefinition extends ChildResourceDefinition<Managemen
                         }
                     }
                     handler.execute(context, operation);
-                })
+                }
+            };
+        }
+    }
+
+    ChannelResourceDefinition() {
+        super(WILDCARD_PATH, JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(WILDCARD_PATH));
+    }
+
+    @Override
+    public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
+        ManagementResourceRegistration registration = parent.registerSubModel(this);
+
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
+                .addAttributes(Attribute.class)
+                .addCapabilities(Capability.class)
+                .addCapabilities(CLUSTERING_CAPABILITIES.values())
+                .addAlias(DeprecatedAttribute.STATS_ENABLED, Attribute.STATISTICS_ENABLED)
+                .setAddOperationTransformation(new AddOperationTransformation())
                 .addRuntimeResourceRegistration(new ChannelRuntimeResourceRegistration())
                 ;
         ResourceServiceHandler handler = new ChannelServiceHandler();
@@ -265,5 +278,7 @@ public class ChannelResourceDefinition extends ChildResourceDefinition<Managemen
         }
 
         new ForkResourceDefinition().register(registration);
+
+        return registration;
     }
 }

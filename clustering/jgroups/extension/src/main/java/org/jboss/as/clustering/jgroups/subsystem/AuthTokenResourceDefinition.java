@@ -22,7 +22,7 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
@@ -92,23 +92,24 @@ public class AuthTokenResourceDefinition<T extends AuthToken> extends ChildResou
         ProtocolResourceDefinition.addTransformations(version, builder);
     }
 
-    private final Consumer<ResourceDescriptor> configurator;
+    private final UnaryOperator<ResourceDescriptor> configurator;
     private final ResourceServiceBuilderFactory<T> builderFactory;
 
-    AuthTokenResourceDefinition(PathElement path, Consumer<ResourceDescriptor> configurator, ResourceServiceBuilderFactory<T> builderFactory) {
+    AuthTokenResourceDefinition(PathElement path, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceBuilderFactory<T> builderFactory) {
         super(path, JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(path, WILDCARD_PATH));
         this.configurator = configurator;
         this.builderFactory = builderFactory;
     }
 
     @Override
-    public void register(ManagementResourceRegistration parentRegistration) {
-        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
+    public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
+        ManagementResourceRegistration registration = parent.registerSubModel(this);
+        ResourceDescriptor descriptor = this.configurator.apply(new ResourceDescriptor(this.getResourceDescriptionResolver()))
                 .addAttributes(Attribute.class)
                 .addCapabilities(Capability.class)
                 ;
-        this.configurator.accept(descriptor);
         new SimpleResourceRegistration(descriptor, new SimpleResourceServiceHandler<>(this.builderFactory)).register(registration);
+
+        return registration;
     }
 }

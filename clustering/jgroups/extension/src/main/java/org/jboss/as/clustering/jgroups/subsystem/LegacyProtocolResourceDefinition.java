@@ -22,7 +22,6 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.Operations;
@@ -42,16 +41,26 @@ import org.wildfly.clustering.jgroups.spi.ChannelFactory;
  */
 public class LegacyProtocolResourceDefinition<P extends Protocol> extends ProtocolResourceDefinition<P> {
 
-    private static class OperationTransformation implements Consumer<ResourceDescriptor>, UnaryOperator<OperationStepHandler>, OperationStepHandler {
+    private static class ResourceDescriptorConfigurator implements UnaryOperator<ResourceDescriptor> {
+        private final UnaryOperator<OperationStepHandler> operationTransformation;
+        private final UnaryOperator<ResourceDescriptor> configurator;
+
+        ResourceDescriptorConfigurator(String targetName, UnaryOperator<ResourceDescriptor> configurator) {
+            this.operationTransformation = new OperationTransformation(targetName);
+            this.configurator = configurator;
+        }
+
+        @Override
+        public ResourceDescriptor apply(ResourceDescriptor descriptor) {
+            return this.configurator.apply(descriptor).setAddOperationTransformation(this.operationTransformation).setOperationTransformation(this.operationTransformation);
+        }
+    }
+
+    private static class OperationTransformation implements UnaryOperator<OperationStepHandler>, OperationStepHandler {
         private final String targetName;
 
         OperationTransformation(String targetName) {
             this.targetName = targetName;
-        }
-
-        @Override
-        public void accept(ResourceDescriptor descriptor) {
-            descriptor.setAddOperationTransformation(this).setOperationTransformation(this);
         }
 
         @Override
@@ -71,8 +80,8 @@ public class LegacyProtocolResourceDefinition<P extends Protocol> extends Protoc
         }
     }
 
-    LegacyProtocolResourceDefinition(String name, String targetName, JGroupsModel deprecation, Consumer<ResourceDescriptor> descriptorConfigurator, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
-        super(pathElement(name), descriptorConfigurator.andThen(new OperationTransformation(targetName)), null, parentBuilderFactory);
+    LegacyProtocolResourceDefinition(String name, String targetName, JGroupsModel deprecation, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
+        super(pathElement(name), new ResourceDescriptorConfigurator(targetName, configurator), null, parentBuilderFactory);
         this.setDeprecated(deprecation.getVersion());
     }
 }

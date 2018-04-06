@@ -24,6 +24,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.function.UnaryOperator;
 
+import org.jboss.as.clustering.controller.SimpleResourceDescriptorConfigurator;
 import org.jboss.as.clustering.controller.validation.DoubleRangeValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.clustering.controller.validation.IntRangeValidatorBuilder;
@@ -107,6 +108,6 @@ public class DistributedCacheResourceDefinition extends SharedStateCacheResource
     }
 
     DistributedCacheResourceDefinition() {
-        super(WILDCARD_PATH, descriptor -> descriptor.addAttributes(Attribute.class), new ClusteredCacheServiceHandler(DistributedCacheBuilder::new));
+        super(WILDCARD_PATH, new SimpleResourceDescriptorConfigurator<>(Attribute.class), new ClusteredCacheServiceHandler(DistributedCacheBuilder::new));
     }
 }

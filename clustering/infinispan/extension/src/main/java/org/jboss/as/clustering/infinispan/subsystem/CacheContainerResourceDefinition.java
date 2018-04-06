@@ -297,8 +297,8 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
     }
 
     @Override
-    public void register(ManagementResourceRegistration parentRegistration) {
-        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
+    public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
+        ManagementResourceRegistration registration = parent.registerSubModel(this);
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
@@ -354,5 +354,7 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
         new InvalidationCacheResourceDefinition().register(registration);
         new ReplicatedCacheResourceDefinition().register(registration);
         new DistributedCacheResourceDefinition().register(registration);
+
+        return registration;
     }
 }

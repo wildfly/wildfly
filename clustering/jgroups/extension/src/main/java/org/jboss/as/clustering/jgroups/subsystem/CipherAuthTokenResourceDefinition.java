@@ -26,6 +26,7 @@ import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
+import org.jboss.as.clustering.controller.SimpleResourceDescriptorConfigurator;
 import org.jboss.as.clustering.jgroups.auth.CipherAuthToken;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
@@ -91,6 +92,6 @@ public class CipherAuthTokenResourceDefinition extends AuthTokenResourceDefiniti
     }
 
     CipherAuthTokenResourceDefinition() {
-        super(PATH, descriptor -> descriptor.addAttributes(Attribute.class), CipherAuthTokenBuilder::new);
+        super(PATH, new SimpleResourceDescriptorConfigurator<>(Attribute.class), CipherAuthTokenBuilder::new);
     }
 }

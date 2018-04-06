@@ -128,8 +128,8 @@ public class BackupResourceDefinition extends ChildResourceDefinition<Management
     }
 
     @Override
-    public void register(ManagementResourceRegistration parentRegistration) {
-        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
+    public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
+        ManagementResourceRegistration registration = parent.registerSubModel(this);
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
@@ -140,5 +140,7 @@ public class BackupResourceDefinition extends ChildResourceDefinition<Management
         if (registration.isRuntimeOnlyRegistrationValid()) {
             new OperationHandler<>(new BackupOperationExecutor(), BackupOperation.class).register(registration);
         }
+
+        return registration;
     }
 }

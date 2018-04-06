@@ -26,7 +26,6 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
 import org.infinispan.configuration.cache.Index;
@@ -63,7 +62,7 @@ import org.wildfly.clustering.spi.ClusteringCacheRequirement;
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class CacheResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> implements Consumer<ManagementResourceRegistration> {
+public class CacheResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
 
     enum Capability implements CapabilityProvider {
         CACHE(InfinispanCacheRequirement.CACHE),
@@ -220,26 +219,29 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
         CustomStoreResourceDefinition.buildTransformation(version, builder);
     }
 
-    private final Consumer<ResourceDescriptor> descriptorConfigurator;
+    private final UnaryOperator<ResourceDescriptor> configurator;
     private final ResourceServiceHandler handler;
-    private final Consumer<ManagementResourceRegistration> registrationConfigurator;
 
-    public CacheResourceDefinition(PathElement path, Consumer<ResourceDescriptor> descriptorConfigurator, CacheServiceHandler handler, Consumer<ManagementResourceRegistration> registrationConfigurator) {
+    public CacheResourceDefinition(PathElement path, UnaryOperator<ResourceDescriptor> configurator, CacheServiceHandler handler) {
         super(path, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(path, PathElement.pathElement("cache")));
-        this.descriptorConfigurator = descriptorConfigurator.andThen(descriptor -> descriptor
-            .addAttributes(Attribute.class)
-            .addAttributes(DeprecatedAttribute.class)
-            .addCapabilities(Capability.class)
-            .addCapabilities(CLUSTERING_CAPABILITIES.values())
-            .addRequiredChildren(ExpirationResourceDefinition.PATH, LockingResourceDefinition.PATH, TransactionResourceDefinition.PATH)
-            .addRequiredSingletonChildren(ObjectMemoryResourceDefinition.PATH, NoStoreResourceDefinition.PATH)
-        );
+        this.configurator = configurator;
         this.handler = handler;
-        this.registrationConfigurator = registrationConfigurator.andThen(this);
     }
 
     @Override
-    public void accept(ManagementResourceRegistration registration) {
+    public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
+        ManagementResourceRegistration registration = parent.registerSubModel(this);
+
+        ResourceDescriptor descriptor = this.configurator.apply(new ResourceDescriptor(this.getResourceDescriptionResolver()))
+                .addAttributes(Attribute.class)
+                .addAttributes(DeprecatedAttribute.class)
+                .addCapabilities(Capability.class)
+                .addCapabilities(CLUSTERING_CAPABILITIES.values())
+                .addRequiredChildren(ExpirationResourceDefinition.PATH, LockingResourceDefinition.PATH, TransactionResourceDefinition.PATH)
+                .addRequiredSingletonChildren(ObjectMemoryResourceDefinition.PATH, NoStoreResourceDefinition.PATH)
+                ;
+        new SimpleResourceRegistration(descriptor, this.handler).register(registration);
+
         if (registration.isRuntimeOnlyRegistrationValid()) {
             new MetricHandler<>(new CacheMetricExecutor(), CacheMetric.class).register(registration);
         }
@@ -259,16 +261,7 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
         new MixedKeyedJDBCStoreResourceDefinition().register(registration);
         new StringKeyedJDBCStoreResourceDefinition().register(registration);
         new RemoteStoreResourceDefinition().register(registration);
-    }
 
-    @Override
-    public void register(ManagementResourceRegistration parentRegistration) {
-        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
-
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver());
-        this.descriptorConfigurator.accept(descriptor);
-        new SimpleResourceRegistration(descriptor, this.handler).register(registration);
-
-        this.registrationConfigurator.accept(registration);
+        return registration;
     }
 }

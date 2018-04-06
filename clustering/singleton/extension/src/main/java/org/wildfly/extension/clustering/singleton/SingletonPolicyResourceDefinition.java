@@ -131,8 +131,8 @@ public class SingletonPolicyResourceDefinition extends ChildResourceDefinition<M
     }
 
     @Override
-    public void register(ManagementResourceRegistration parentRegistration) {
-        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
+    public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
+        ManagementResourceRegistration registration = parent.registerSubModel(this);
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
@@ -144,5 +144,7 @@ public class SingletonPolicyResourceDefinition extends ChildResourceDefinition<M
 
         new RandomElectionPolicyResourceDefinition().register(registration);
         new SimpleElectionPolicyResourceDefinition().register(registration);
+
+        return registration;
     }
 }

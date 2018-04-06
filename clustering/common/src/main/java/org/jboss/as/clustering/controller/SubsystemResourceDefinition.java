@@ -31,7 +31,7 @@ import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
  * Resource definition for subsystem resources that performs all registration via {@link #register(SubsystemRegistration)}.
  * @author Paul Ferraro
  */
-public abstract class SubsystemResourceDefinition<R extends SubsystemRegistration> extends AbstractResourceDefinition<R> {
+public abstract class SubsystemResourceDefinition<R extends SubsystemRegistration> extends AbstractResourceDefinition implements Registration<R> {
 
     protected static PathElement pathElement(String name) {
         return PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, name);

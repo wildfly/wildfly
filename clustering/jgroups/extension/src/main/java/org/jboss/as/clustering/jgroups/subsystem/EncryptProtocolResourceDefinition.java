@@ -23,15 +23,16 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.security.KeyStore;
-import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.security.CredentialReference;
@@ -39,6 +40,7 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
 import org.jboss.dmr.ModelType;
 import org.jgroups.protocols.Encrypt;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
+import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 
 /**
  * Resource definition override for protocols that require an encryption key.
@@ -90,11 +92,37 @@ public class EncryptProtocolResourceDefinition<E extends KeyStore.Entry, P exten
         ProtocolResourceDefinition.addTransformations(version, builder);
     }
 
-    public EncryptProtocolResourceDefinition(String name, Class<E> entryClass, Consumer<ResourceDescriptor> descriptorConfigurator, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
-        super(pathElement(name), descriptorConfigurator.andThen(descriptor -> descriptor
-                .addAttributes(Attribute.class)
-                .setAddOperationTransformation(new LegacyAddOperationTransformation(Attribute.class))
-                .setOperationTransformation(LEGACY_OPERATION_TRANSFORMER)
-                ), address -> new EncryptProtocolConfigurationBuilder<>(address, entryClass), parentBuilderFactory);
+    private static class ResourceDescriptorConfigurator implements UnaryOperator<ResourceDescriptor> {
+        private final UnaryOperator<ResourceDescriptor> configurator;
+
+        ResourceDescriptorConfigurator(UnaryOperator<ResourceDescriptor> configurator) {
+            this.configurator = configurator;
+        }
+
+        @Override
+        public ResourceDescriptor apply(ResourceDescriptor descriptor) {
+            return this.configurator.apply(descriptor)
+                    .addAttributes(Attribute.class)
+                    .setAddOperationTransformation(new LegacyAddOperationTransformation(Attribute.class))
+                    .setOperationTransformation(LEGACY_OPERATION_TRANSFORMER)
+                    ;
+        }
+    }
+
+    private static class EncryptProtocolConfigurationBuilderFactory<E extends KeyStore.Entry, P extends Encrypt<E>> implements ResourceServiceBuilderFactory<ProtocolConfiguration<P>> {
+        private final Class<E> entryClass;
+
+        EncryptProtocolConfigurationBuilderFactory(Class<E> entryClass) {
+            this.entryClass = entryClass;
+        }
+
+        @Override
+        public ResourceServiceBuilder<ProtocolConfiguration<P>> createBuilder(PathAddress address) {
+            return new EncryptProtocolConfigurationBuilder<>(address, this.entryClass);
+        }
+    }
+
+    public EncryptProtocolResourceDefinition(String name, Class<E> entryClass, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
+        super(pathElement(name), new ResourceDescriptorConfigurator(configurator), new EncryptProtocolConfigurationBuilderFactory<>(entryClass), parentBuilderFactory);
     }
 }

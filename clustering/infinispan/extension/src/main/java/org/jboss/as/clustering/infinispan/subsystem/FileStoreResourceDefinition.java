@@ -26,6 +26,8 @@ import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
+import org.jboss.as.clustering.controller.ManagementResourceRegistration;
+import org.jboss.as.clustering.controller.SimpleResourceDescriptorConfigurator;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
@@ -88,17 +90,22 @@ public class FileStoreResourceDefinition extends StoreResourceDefinition {
     }
 
     FileStoreResourceDefinition() {
-        super(PATH, LEGACY_PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH),
-                descriptor -> descriptor.addAttributes(Attribute.class),
-                FileStoreBuilder::new, registration -> {
-                    PathManager pathManager = registration.getPathManager().orElse(null);
-                    if (pathManager != null) {
-                        ResolvePathHandler pathHandler = ResolvePathHandler.Builder.of(pathManager)
-                                .setPathAttribute(Attribute.RELATIVE_PATH.getDefinition())
-                                .setRelativeToAttribute(Attribute.RELATIVE_TO.getDefinition())
-                                .build();
-                        registration.registerOperationHandler(pathHandler.getOperationDefinition(), pathHandler);
-                    }
-                });
+        super(PATH, LEGACY_PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH), new SimpleResourceDescriptorConfigurator<>(Attribute.class), FileStoreBuilder::new);
+    }
+
+    @Override
+    public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
+        ManagementResourceRegistration registration = super.register(parent);
+
+        PathManager pathManager = registration.getPathManager().orElse(null);
+        if (pathManager != null) {
+            ResolvePathHandler pathHandler = ResolvePathHandler.Builder.of(pathManager)
+                    .setPathAttribute(Attribute.RELATIVE_PATH.getDefinition())
+                    .setRelativeToAttribute(Attribute.RELATIVE_TO.getDefinition())
+                    .build();
+            registration.registerOperationHandler(pathHandler.getOperationDefinition(), pathHandler);
+        }
+
+        return registration;
     }
 }

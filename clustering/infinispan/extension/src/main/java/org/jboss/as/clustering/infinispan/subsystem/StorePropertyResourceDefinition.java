@@ -75,8 +75,8 @@ public class StorePropertyResourceDefinition extends ChildResourceDefinition<Man
 
 
     @Override
-    public void register(ManagementResourceRegistration parentRegistration) {
-        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
+    public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
+        ManagementResourceRegistration registration = parent.registerSubModel(this);
 
         AbstractAddStepHandler addHandler = new AbstractAddStepHandler() {
             @Override
@@ -127,6 +127,8 @@ public class StorePropertyResourceDefinition extends ChildResourceDefinition<Man
             }
         };
         registration.registerReadWriteAttribute(VALUE, readHandler, writeHandler);
+
+        return registration;
     }
 
     static void operationDeprecated(OperationContext context, ModelNode operation) {

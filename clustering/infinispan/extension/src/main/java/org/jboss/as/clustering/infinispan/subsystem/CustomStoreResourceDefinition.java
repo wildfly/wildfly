@@ -22,7 +22,7 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.jboss.as.clustering.function.Consumers;
+import org.jboss.as.clustering.controller.SimpleResourceDescriptorConfigurator;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
@@ -67,6 +67,6 @@ public class CustomStoreResourceDefinition extends StoreResourceDefinition {
     }
 
     CustomStoreResourceDefinition() {
-        super(PATH, LEGACY_PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH), descriptor -> descriptor.addAttributes(Attribute.class), CustomStoreBuilder::new, Consumers.empty());
+        super(PATH, LEGACY_PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH), new SimpleResourceDescriptorConfigurator<>(Attribute.class), CustomStoreBuilder::new);
     }
 }

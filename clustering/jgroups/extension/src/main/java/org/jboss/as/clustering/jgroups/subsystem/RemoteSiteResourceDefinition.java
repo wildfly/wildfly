@@ -180,8 +180,8 @@ public class RemoteSiteResourceDefinition extends ChildResourceDefinition<Manage
     }
 
     @Override
-    public void register(ManagementResourceRegistration parentRegistration) {
-        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
+    public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
+        ManagementResourceRegistration registration = parent.registerSubModel(this);
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
@@ -190,5 +190,7 @@ public class RemoteSiteResourceDefinition extends ChildResourceDefinition<Manage
                 ;
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(RemoteSiteConfigurationBuilder::new);
         new RestartParentResourceRegistration<>(this.parentBuilderFactory, descriptor, handler).register(registration);
+
+        return registration;
     }
 }

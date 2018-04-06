@@ -32,7 +32,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  * All other registerXXX(...) methods have been made final - to prevent misuse.
  * @author Paul Ferraro
  */
-public abstract class AbstractResourceDefinition<R> extends SimpleResourceDefinition implements Registration<R> {
+public abstract class AbstractResourceDefinition extends SimpleResourceDefinition {
 
     protected AbstractResourceDefinition(PathElement path, ResourceDescriptionResolver resolver) {
         super(new Parameters(path, resolver));

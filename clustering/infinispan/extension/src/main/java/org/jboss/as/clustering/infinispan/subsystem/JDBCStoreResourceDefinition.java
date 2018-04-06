@@ -23,7 +23,6 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.Arrays;
-import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
 import org.infinispan.persistence.jdbc.DatabaseType;
@@ -31,7 +30,6 @@ import org.jboss.as.clustering.controller.AttributeTranslation;
 import org.jboss.as.clustering.controller.AttributeValueTranslator;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
-import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.transform.SimpleAttributeConverter;
 import org.jboss.as.clustering.controller.transform.SimpleAttributeConverter.Converter;
@@ -253,11 +251,24 @@ public abstract class JDBCStoreResourceDefinition extends StoreResourceDefinitio
         }
     };
 
-    JDBCStoreResourceDefinition(PathElement path, PathElement legacyPath, ResourceDescriptionResolver resolver, Consumer<ResourceDescriptor> configurator, Consumer<ManagementResourceRegistration> registrationConfigurator) {
-        super(path, legacyPath, resolver, configurator.andThen(descriptor -> descriptor
-                .addAttributes(Attribute.class)
-                // Translate deprecated DATASOURCE attribute to DATA_SOURCE attribute
-                .addAttributeTranslation(DeprecatedAttribute.DATASOURCE, DATA_SOURCE_TRANSLATION)
-            ), JDBCStoreBuilder::new, registrationConfigurator);
+    private static class ResourceDescriptorConfigurator implements UnaryOperator<ResourceDescriptor> {
+        private final UnaryOperator<ResourceDescriptor> configurator;
+
+        ResourceDescriptorConfigurator(UnaryOperator<ResourceDescriptor> configurator) {
+            this.configurator = configurator;
+        }
+
+        @Override
+        public ResourceDescriptor apply(ResourceDescriptor descriptor) {
+            return this.configurator.apply(descriptor)
+                    .addAttributes(Attribute.class)
+                    // Translate deprecated DATASOURCE attribute to DATA_SOURCE attribute
+                    .addAttributeTranslation(DeprecatedAttribute.DATASOURCE, DATA_SOURCE_TRANSLATION)
+                    ;
+        }
+    }
+
+    JDBCStoreResourceDefinition(PathElement path, PathElement legacyPath, ResourceDescriptionResolver resolver, UnaryOperator<ResourceDescriptor> configurator) {
+        super(path, legacyPath, resolver, new ResourceDescriptorConfigurator(configurator), JDBCStoreBuilder::new);
     }
 }

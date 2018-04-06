@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.clustering.singleton;
 
+import org.jboss.as.clustering.controller.SimpleResourceDescriptorConfigurator;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -57,6 +58,6 @@ public class SimpleElectionPolicyResourceDefinition extends ElectionPolicyResour
     }
 
     SimpleElectionPolicyResourceDefinition() {
-        super(PATH, SingletonExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH), descriptor -> descriptor.addAttributes(Attribute.class), SimpleElectionPolicyBuilder::new);
+        super(PATH, SingletonExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH), new SimpleResourceDescriptorConfigurator<>(Attribute.class), SimpleElectionPolicyBuilder::new);
     }
 }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,21 +20,23 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.clustering.singleton;
+package org.jboss.as.clustering.controller;
 
 import java.util.function.UnaryOperator;
 
-import org.jboss.as.controller.PathElement;
-
 /**
+ * {@link ResourceDescriptor} configurator for the common case of adding an enumeration of attributes.
  * @author Paul Ferraro
  */
-public class RandomElectionPolicyResourceDefinition extends ElectionPolicyResourceDefinition {
+public class SimpleResourceDescriptorConfigurator<E extends Enum<E> & Attribute> implements UnaryOperator<ResourceDescriptor> {
+    private final Class<E> attributeClass;
 
-    static final String PATH_VALUE = "random";
-    static final PathElement PATH = pathElement(PATH_VALUE);
+    public SimpleResourceDescriptorConfigurator(Class<E> attributeClass) {
+        this.attributeClass = attributeClass;
+    }
 
-    RandomElectionPolicyResourceDefinition() {
-        super(PATH, SingletonExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH), UnaryOperator.identity(), RandomElectionPolicyBuilder::new);
+    @Override
+    public ResourceDescriptor apply(ResourceDescriptor descriptor) {
+        return descriptor.addAttributes(this.attributeClass);
     }
 }

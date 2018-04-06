@@ -62,7 +62,7 @@ import org.wildfly.clustering.service.ValueDependency;
  * Builder for a service that provides a {@link ChannelFactory} for creating channels.
  * @author Paul Ferraro
  */
-public class JChannelFactoryBuilder extends CapabilityServiceNameProvider implements ResourceServiceBuilder<ChannelFactory>, ProtocolStackConfiguration {
+public class JChannelFactoryBuilder extends CapabilityServiceNameProvider implements ResourceServiceBuilder<ChannelFactory>, ProtocolStackConfiguration, Value<ChannelFactory> {
 
     private final InjectedValue<ServerEnvironment> environment = new InjectedValue<>();
     private final PathAddress address;
@@ -79,9 +79,13 @@ public class JChannelFactoryBuilder extends CapabilityServiceNameProvider implem
     }
 
     @Override
+    public ChannelFactory getValue() {
+        return new JChannelFactory(this);
+    }
+
+    @Override
     public ServiceBuilder<ChannelFactory> build(ServiceTarget target) {
-        Value<ChannelFactory> value = () -> new JChannelFactory(this);
-        ServiceBuilder<ChannelFactory> builder = target.addService(this.getServiceName(), new ValueService<>(value))
+        ServiceBuilder<ChannelFactory> builder = target.addService(this.getServiceName(), new ValueService<>(this))
                 .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, this.environment)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND);
         for (Dependency dependency : this.protocols) {
