@@ -24,7 +24,6 @@ package org.jboss.as.ejb3.tx;
 import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
 
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
@@ -48,13 +47,13 @@ public class TimerCMTTxInterceptor extends CMTTxInterceptor {
     public static final InterceptorFactory FACTORY = new ImmediateInterceptorFactory(new TimerCMTTxInterceptor());
 
     @Override
-    public void handleExceptionInOurTx(final InterceptorContext invocation, final Throwable t, final Transaction tx, final EJBComponent component) throws Exception {
+    public Exception handleExceptionInOurTx(final InterceptorContext invocation, final Throwable t, final Transaction tx, final EJBComponent component) {
         EXCEPTION.set(t);
-        super.handleExceptionInOurTx(invocation, t, tx, component);
+        return super.handleExceptionInOurTx(invocation, t, tx, component);
     }
 
     @Override
-    protected void endTransaction(final TransactionManager tm, final Transaction tx) {
+    protected void endTransaction(final Transaction tx) {
         try {
             boolean rolledBack = false;
             try {
@@ -64,7 +63,7 @@ public class TimerCMTTxInterceptor extends CMTTxInterceptor {
             } catch (SystemException e) {
                 throw new RuntimeException(e);
             } finally {
-                super.endTransaction(tm, tx);
+                super.endTransaction(tx);
             }
             if (rolledBack && EXCEPTION.get() == null) {
                 throw EjbLogger.ROOT_LOGGER.timerInvocationRolledBack();
