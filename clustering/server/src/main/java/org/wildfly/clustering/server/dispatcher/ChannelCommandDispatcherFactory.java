@@ -241,6 +241,11 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
     }
 
     @Override
+    public Address getAddress(Node node) {
+        return ((AddressableNode) node).getAddress();
+    }
+
+    @Override
     public void viewAccepted(View view) {
         View oldView = this.view.getAndSet(view);
         if (oldView != null) {

@@ -34,6 +34,6 @@ import org.wildfly.clustering.spi.LocalCacheBuilderProvider;
 public class LocalCacheGroupBuilderProvider extends CacheGroupBuilderProvider implements LocalCacheBuilderProvider {
 
     public LocalCacheGroupBuilderProvider() {
-        super((name, containerName, cacheName) -> new LocalGroupBuilder(name));
+        super((name, containerName, cacheName) -> new LocalCacheGroupBuilder(name));
     }
 }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,24 +19,25 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.clustering.server.group;
 
-import org.jboss.as.server.ServerEnvironment;
-import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.group.Group;
+import org.infinispan.remoting.transport.Address;
+import org.infinispan.remoting.transport.LocalModeAddress;
+import org.wildfly.clustering.group.Node;
 
 /**
- * Builds a non-clustered {@link Group} service.
+ * Non-clustered cache group.
  * @author Paul Ferraro
  */
-public class LocalGroupBuilder extends AbstractLocalGroupBuilder {
+public class LocalCacheGroup extends AbstractLocalGroup<Address> {
 
-    public LocalGroupBuilder(ServiceName name) {
-        super(name);
+    public LocalCacheGroup(String nodeName) {
+        super(nodeName);
     }
 
     @Override
-    public Group apply(ServerEnvironment environment) {
-        return new LocalGroup(environment.getNodeName());
+    public Address getAddress(Node node) {
+        return LocalModeAddress.INSTANCE;
     }
 }

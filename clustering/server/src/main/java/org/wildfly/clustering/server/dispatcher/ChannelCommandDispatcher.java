@@ -43,7 +43,6 @@ import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherException;
 import org.wildfly.clustering.dispatcher.CommandResponse;
 import org.wildfly.clustering.group.Node;
-import org.wildfly.clustering.server.Addressable;
 import org.wildfly.clustering.server.group.Group;
 
 /**
@@ -123,7 +122,7 @@ public class ChannelCommandDispatcher<C> implements CommandDispatcher<C> {
         for (Node node : this.group.getMembership().getMembers()) {
             if (!excluded.contains(node)) {
                 try {
-                    results.put(node, this.dispatcher.sendMessageWithFuture(getAddress(node), buffer, options));
+                    results.put(node, this.dispatcher.sendMessageWithFuture(this.group.getAddress(node), buffer, options));
                 } catch (Exception e) {
                     throw new CommandDispatcherException(e);
                 }
@@ -142,7 +141,7 @@ public class ChannelCommandDispatcher<C> implements CommandDispatcher<C> {
         RequestOptions options = this.createRequestOptions();
         try {
             // Use sendMessageWithFuture(...) instead of sendMessage(...) since we want to differentiate between sender exceptions and receiver exceptions
-            Future<R> future = this.dispatcher.sendMessageWithFuture(getAddress(node), buffer, options);
+            Future<R> future = this.dispatcher.sendMessageWithFuture(this.group.getAddress(node), buffer, options);
             return new SimpleCommandResponse<>(future.get());
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -163,7 +162,7 @@ public class ChannelCommandDispatcher<C> implements CommandDispatcher<C> {
         Buffer buffer = this.createBuffer(command);
         RequestOptions options = this.createRequestOptions();
         try {
-            return this.dispatcher.sendMessageWithFuture(getAddress(node), buffer, options);
+            return this.dispatcher.sendMessageWithFuture(this.group.getAddress(node), buffer, options);
         } catch (Exception e) {
             throw new CommandDispatcherException(e);
         }
@@ -171,7 +170,7 @@ public class ChannelCommandDispatcher<C> implements CommandDispatcher<C> {
 
     public <R> Future<R> submit(Node node, Buffer buffer, RequestOptions options) throws CommandDispatcherException {
         try {
-            return this.dispatcher.sendMessageWithFuture(getAddress(node), buffer, options);
+            return this.dispatcher.sendMessageWithFuture(this.group.getAddress(node), buffer, options);
         } catch (Exception e) {
             throw new CommandDispatcherException(e);
         }
@@ -186,17 +185,13 @@ public class ChannelCommandDispatcher<C> implements CommandDispatcher<C> {
     }
 
     private boolean isLocal(Node node) {
-        return this.getLocalAddress().equals(getAddress(node));
-    }
-
-    private static Address getAddress(Node node) {
-        return (node instanceof Addressable) ? ((Addressable) node).getAddress() : null;
+        return this.getLocalAddress().equals(this.group.getAddress(node));
     }
 
     private RequestOptions createRequestOptions(Node... excludedNodes) {
         Address[] excludedAddresses = new Address[excludedNodes.length];
         for (int i = 0; i < excludedNodes.length; ++i) {
-            excludedAddresses[i] = getAddress(excludedNodes[i]);
+            excludedAddresses[i] = this.group.getAddress(excludedNodes[i]);
         }
         return this.createRequestOptions().exclusionList(excludedAddresses);
     }
