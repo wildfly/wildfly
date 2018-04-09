@@ -138,19 +138,24 @@ if [ "x$SECURITY_MANAGER_SET" != "x" ]; then
     exit 1
 fi
 
+# remove -secmgr from JAVA_OPTS. This flag must reside in a different location
+NEW_SECURITY_MANAGER_SET=`echo $JAVA_OPTS | $GREP "-secmgr"`
+if [ "x$NEW_SECURITY_MANAGER_SET" != "x" ]; then
+    SECMGR="true"
+    JAVA_OPTS=`echo $JAVA_OPTS | sed "s/-secmgr//" `
+fi
+
 # Set up the module arguments
 MODULE_OPTS=""
 if [ "$SECMGR" = "true" ]; then
     MODULE_OPTS="-secmgr";
 fi
 
-CLASSPATH="$CLASSPATH:\""$JBOSS_HOME"\"/jboss-modules.jar"
 # Execute the JVM in the foreground
 eval \"$JAVA\" $JAVA_OPTS \
- -cp "$CLASSPATH" \
  \"-Dorg.jboss.boot.log.file="$JBOSS_HOME"/appclient/log/appclient.log\" \
  \"-Dlogging.configuration=file:"$JBOSS_HOME"/appclient/configuration/logging.properties\" \
- org.jboss.modules.Main \
+ -jar \""$JBOSS_HOME"/jboss-modules.jar\" \
  $MODULE_OPTS \
  -mp \""${JBOSS_MODULEPATH}"\" \
  org.jboss.as.appclient \

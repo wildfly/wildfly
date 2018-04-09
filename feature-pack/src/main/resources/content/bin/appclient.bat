@@ -95,6 +95,16 @@ echo(%JAVA_OPTS% | findstr /r /c:"-Djava.security.manager" > nul && (
     GOTO :EOF
 )
 
+rem check for secmgr property
+setlocal EnableDelayedExpansion
+echo(!JAVA_OPTS! | findstr /r /c:"-secmgr" > nul
+if not errorlevel == 1 (
+   set "line=%JAVA_OPTS%"
+   set JAVA_OPTS=!line:-secmgr= !
+   set SECMGR=true
+)
+setlocal DisableDelayedExpansion
+
 rem Find run.jar, or we can't continue
 if exist "%JBOSS_HOME%\jboss-modules.jar" (
     set "RUNJAR=%JBOSS_HOME%\jboss-modules.jar"
