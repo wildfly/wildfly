@@ -30,7 +30,9 @@ import java.beans.FeatureDescriptor;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -43,20 +45,30 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class ImportedClassELResolver extends ELResolver {
 
+    private final Map<String, Object> cache = new ConcurrentHashMap<>();
+
+    private static final Object NULL_MARKER = new Object();
 
     @Override
     public Object getValue(final ELContext context, final Object base, final Object property) {
-        Objects.requireNonNull(context, UndertowLogger.ROOT_LOGGER.nullNotAllowed("ELContext"));
         if (base != null) {
             return null;
         }
         if (!(property instanceof String)) {
             return null;
         }
-        final String klassName = (String) property;
         final ImportHandler importHandler = context.getImportHandler();
         if (importHandler == null) {
             return null;
+        }
+        final String klassName = (String) property;
+        Object cacheResult = cache.get(klassName);
+        if(cacheResult != null) {
+            if(cacheResult == NULL_MARKER) {
+                return null;
+            } else {
+                return cacheResult;
+            }
         }
         final Class<?> klass;
         if (WildFlySecurityManager.isChecking()) {
@@ -71,8 +83,11 @@ public class ImportedClassELResolver extends ELResolver {
         }
 
         if (klass != null) {
+            cache.put(klassName, klass);
             context.setPropertyResolved(true);
             return new ELClass(klass);
+        } else {
+            cache.put(klassName, NULL_MARKER);
         }
         return null;
     }
