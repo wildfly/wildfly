@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 import org.infinispan.Cache;
+import org.infinispan.remoting.transport.Address;
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.clustering.function.Consumers;
 import org.jboss.as.clustering.function.Functions;
@@ -38,10 +39,9 @@ import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.infinispan.InfinispanBatcher;
-import org.wildfly.clustering.group.Group;
-import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.provider.ServiceProviderRegistry;
+import org.wildfly.clustering.server.group.Group;
 import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.CompositeDependency;
@@ -62,8 +62,8 @@ public class CacheServiceProviderRegistryBuilder<T> implements CapabilityService
     private final String cacheName;
 
     private volatile ValueDependency<CommandDispatcherFactory> dispatcherFactory;
-    private volatile ValueDependency<Group> group;
-    private volatile ValueDependency<Cache<T, Set<Node>>> cache;
+    private volatile ValueDependency<Group<Address>> group;
+    private volatile ValueDependency<Cache<T, Set<Address>>> cache;
 
     public CacheServiceProviderRegistryBuilder(ServiceName name, String containerName, String cacheName) {
         this.name = name;
@@ -84,9 +84,9 @@ public class CacheServiceProviderRegistryBuilder<T> implements CapabilityService
     @SuppressWarnings("unchecked")
     @Override
     public Builder<ServiceProviderRegistry<T>> configure(CapabilityServiceSupport support) {
-        this.cache = new InjectedValueDependency<>(InfinispanCacheRequirement.CACHE.getServiceName(support, this.containerName, this.cacheName), (Class<Cache<T, Set<Node>>>) (Class<?>) Cache.class);
+        this.cache = new InjectedValueDependency<>(InfinispanCacheRequirement.CACHE.getServiceName(support, this.containerName, this.cacheName), (Class<Cache<T, Set<Address>>>) (Class<?>) Cache.class);
         this.dispatcherFactory = new InjectedValueDependency<>(ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(support, this.containerName), CommandDispatcherFactory.class);
-        this.group = new InjectedValueDependency<>(ClusteringCacheRequirement.GROUP.getServiceName(support, this.containerName, this.cacheName), Group.class);
+        this.group = new InjectedValueDependency<>(ClusteringCacheRequirement.GROUP.getServiceName(support, this.containerName, this.cacheName), (Class<Group<Address>>) (Class<?>) Group.class);
         return this;
     }
 
@@ -103,12 +103,12 @@ public class CacheServiceProviderRegistryBuilder<T> implements CapabilityService
     }
 
     @Override
-    public Group getGroup() {
+    public Group<Address> getGroup() {
         return this.group.getValue();
     }
 
     @Override
-    public Cache<T, Set<Node>> getCache() {
+    public Cache<T, Set<Address>> getCache() {
         return this.cache.getValue();
     }
 

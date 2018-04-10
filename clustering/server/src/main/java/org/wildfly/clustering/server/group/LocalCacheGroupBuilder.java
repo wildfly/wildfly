@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,22 +19,25 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.server.registry;
 
-import java.util.Map;
+package org.wildfly.clustering.server.group;
 
-import org.infinispan.Cache;
-import org.infinispan.remoting.transport.Address;
-import org.wildfly.clustering.ee.Batch;
-import org.wildfly.clustering.ee.Batcher;
-import org.wildfly.clustering.server.group.Group;
+import org.jboss.as.server.ServerEnvironment;
+import org.jboss.msc.service.ServiceName;
+import org.wildfly.clustering.group.Group;
 
 /**
- * Configuration for a {@link CacheRegistryFactoryBuilder}.
+ * Builds a non-clustered cache {@link Group} service.
  * @author Paul Ferraro
  */
-public interface CacheRegistryConfiguration<K, V> {
-    Batcher<? extends Batch> getBatcher();
-    Group<Address> getGroup();
-    Cache<Address, Map.Entry<K, V>> getCache();
+public class LocalCacheGroupBuilder extends AbstractLocalGroupBuilder {
+
+    public LocalCacheGroupBuilder(ServiceName name) {
+        super(name);
+    }
+
+    @Override
+    public Group apply(ServerEnvironment environment) {
+        return new LocalCacheGroup(environment.getNodeName());
+    }
 }

@@ -37,7 +37,6 @@ import org.jboss.msc.value.Value;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.infinispan.InfinispanBatcher;
-import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.registry.RegistryFactory;
@@ -59,7 +58,7 @@ public class CacheRegistryFactoryBuilder<K, V> implements CapabilityServiceBuild
     private final String cacheName;
 
     private volatile ValueDependency<Group<Address>> group;
-    private volatile ValueDependency<Cache<Node, Map.Entry<K, V>>> cache;
+    private volatile ValueDependency<Cache<Address, Map.Entry<K, V>>> cache;
 
     public CacheRegistryFactoryBuilder(ServiceName name, String containerName, String cacheName) {
         this.name = name;
@@ -85,7 +84,7 @@ public class CacheRegistryFactoryBuilder<K, V> implements CapabilityServiceBuild
     @SuppressWarnings("unchecked")
     @Override
     public Builder<RegistryFactory<K, V>> configure(CapabilityServiceSupport support) {
-        this.cache = new InjectedValueDependency<>(InfinispanCacheRequirement.CACHE.getServiceName(support, this.containerName, this.cacheName), (Class<Cache<Node, Map.Entry<K, V>>>) (Class<?>) Cache.class);
+        this.cache = new InjectedValueDependency<>(InfinispanCacheRequirement.CACHE.getServiceName(support, this.containerName, this.cacheName), (Class<Cache<Address, Map.Entry<K, V>>>) (Class<?>) Cache.class);
         this.group = new InjectedValueDependency<>(ClusteringCacheRequirement.GROUP.getServiceName(support, this.containerName, this.cacheName), (Class<Group<Address>>) (Class<?>) Group.class);
         return this;
     }
@@ -107,7 +106,7 @@ public class CacheRegistryFactoryBuilder<K, V> implements CapabilityServiceBuild
     }
 
     @Override
-    public Cache<Node, Map.Entry<K, V>> getCache() {
+    public Cache<Address, Map.Entry<K, V>> getCache() {
         return this.cache.getValue();
     }
 }
