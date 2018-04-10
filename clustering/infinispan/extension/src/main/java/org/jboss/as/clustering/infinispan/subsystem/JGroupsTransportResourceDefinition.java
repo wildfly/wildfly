@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.CapabilityReference;
+import org.jboss.as.clustering.controller.DynamicCapabilityNameResolver;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
@@ -42,7 +43,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.capability.RuntimeCapability;
-import org.jboss.as.controller.capability.RuntimeCapability.Builder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -93,8 +93,8 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
     enum Capability implements org.jboss.as.clustering.controller.Capability, UnaryOperator<RuntimeCapability.Builder<Void>> {
         TRANSPORT_CHANNEL(Requirement.CHANNEL) {
             @Override
-            public Builder<Void> apply(Builder<Void> builder) {
-                return builder.addRequirements(JGroupsDefaultRequirement.CHANNEL_FACTORY.getName());
+            public RuntimeCapability.Builder<Void> apply(RuntimeCapability.Builder<Void> builder) {
+                return super.apply(builder).addRequirements(JGroupsDefaultRequirement.CHANNEL_FACTORY.getName());
             }
         },
         ;
@@ -110,8 +110,8 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
         }
 
         @Override
-        public RuntimeCapability<?> resolve(PathAddress address) {
-            return this.definition.fromBaseCapability(address.getParent().getLastElement().getValue());
+        public RuntimeCapability.Builder<Void> apply(RuntimeCapability.Builder<Void> builder) {
+            return builder.setDynamicNameMapper(DynamicCapabilityNameResolver.PARENT);
         }
     }
 

@@ -26,6 +26,7 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.SubsystemRegistration;
@@ -33,11 +34,11 @@ import org.jboss.as.clustering.controller.DeploymentChainContributingResourceReg
 import org.jboss.as.clustering.controller.RequirementCapability;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.SimpleCapabilityNameResolver;
 import org.jboss.as.clustering.controller.SubsystemResourceDefinition;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.clustering.infinispan.deployment.ClusteringDependencyProcessor;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
@@ -60,20 +61,27 @@ public class InfinispanSubsystemResourceDefinition extends SubsystemResourceDefi
 
     static final Map<ClusteringRequirement, org.jboss.as.clustering.controller.Capability> LOCAL_CLUSTERING_CAPABILITIES = new EnumMap<>(ClusteringRequirement.class);
     static {
+        UnaryOperator<RuntimeCapability.Builder<Void>> configurator = new UnaryOperator<RuntimeCapability.Builder<Void>>() {
+            @Override
+            public RuntimeCapability.Builder<Void> apply(RuntimeCapability.Builder<Void> builder) {
+                return builder.setDynamicNameMapper(new SimpleCapabilityNameResolver(LocalGroupBuilderProvider.LOCAL));
+            }
+        };
         for (ClusteringRequirement requirement : EnumSet.allOf(ClusteringRequirement.class)) {
-            LOCAL_CLUSTERING_CAPABILITIES.put(requirement, new UnaryRequirementCapability(requirement) {
-                @Override
-                public RuntimeCapability<Void> resolve(PathAddress address) {
-                    return this.getDefinition().fromBaseCapability(LocalGroupBuilderProvider.LOCAL);
-                }
-            });
+            LOCAL_CLUSTERING_CAPABILITIES.put(requirement, new UnaryRequirementCapability(requirement, configurator));
         }
     }
 
     static final Map<ClusteringRequirement, org.jboss.as.clustering.controller.Capability> CLUSTERING_CAPABILITIES = new EnumMap<>(ClusteringRequirement.class);
     static {
+        UnaryOperator<RuntimeCapability.Builder<Void>> configurator = new UnaryOperator<RuntimeCapability.Builder<Void>>() {
+            @Override
+            public RuntimeCapability.Builder<Void> apply(RuntimeCapability.Builder<Void> builder) {
+                return builder.setAllowMultipleRegistrations(true);
+            }
+        };
         for (ClusteringRequirement requirement : EnumSet.allOf(ClusteringRequirement.class)) {
-            CLUSTERING_CAPABILITIES.put(requirement, new RequirementCapability(requirement.getDefaultRequirement(), builder -> builder.setAllowMultipleRegistrations(true)));
+            CLUSTERING_CAPABILITIES.put(requirement, new RequirementCapability(requirement.getDefaultRequirement(), configurator));
         }
     }
 

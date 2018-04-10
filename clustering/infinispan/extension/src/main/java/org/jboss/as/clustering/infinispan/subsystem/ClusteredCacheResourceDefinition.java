@@ -25,13 +25,13 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.CapabilityReference;
+import org.jboss.as.clustering.controller.DynamicCapabilityNameResolver;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.capability.RuntimeCapability;
@@ -56,17 +56,12 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
         private final RuntimeCapability<Void> definition;
 
         Capability(String name) {
-            this.definition = RuntimeCapability.Builder.of(name, true).build();
+            this.definition = RuntimeCapability.Builder.of(name, true).setDynamicNameMapper(DynamicCapabilityNameResolver.PARENT_CHILD).build();
         }
 
         @Override
         public RuntimeCapability<?> getDefinition() {
             return this.definition;
-        }
-
-        @Override
-        public RuntimeCapability<?> resolve(PathAddress address) {
-            return this.definition.fromBaseCapability(address.getParent().getLastElement().getValue(), address.getLastElement().getValue());
         }
     }
 

@@ -27,13 +27,13 @@ import java.util.function.UnaryOperator;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
+import org.jboss.as.clustering.controller.DynamicCapabilityNameResolver;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -58,17 +58,12 @@ public class AuthTokenResourceDefinition<T extends AuthToken> extends ChildResou
         private final RuntimeCapability<Void> definition;
 
         Capability(String name, Class<?> type) {
-            this.definition = RuntimeCapability.Builder.of(name, true).setServiceType(type).setAllowMultipleRegistrations(true).build();
+            this.definition = RuntimeCapability.Builder.of(name, true).setServiceType(type).setAllowMultipleRegistrations(true).setDynamicNameMapper(DynamicCapabilityNameResolver.GRANDPARENT).build();
         }
 
         @Override
         public RuntimeCapability<?> getDefinition() {
             return this.definition;
-        }
-
-        @Override
-        public RuntimeCapability<?> resolve(PathAddress address) {
-            return this.definition.fromBaseCapability(address.getParent().getParent().getLastElement().getValue());
         }
     }
 
