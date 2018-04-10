@@ -22,17 +22,17 @@
 
 package org.wildfly.extension.clustering.singleton;
 
+import java.util.function.UnaryOperator;
+
 import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
-import org.jboss.as.clustering.controller.DefaultableCapabilityReference;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.clustering.controller.validation.IntRangeValidatorBuilder;
-import org.jboss.as.clustering.controller.validation.ParameterValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
@@ -63,8 +63,6 @@ public class SingletonPolicyResourceDefinition extends ChildResourceDefinition<M
 
     enum Capability implements CapabilityProvider {
         POLICY(SingletonRequirement.SINGLETON_POLICY),
-        DEFAULT_BUILDER("org.wildfly.clustering.singleton.policy.default-builder"),
-        BUILDER("org.wildfly.clustering.singleton.policy.builder"),
         ;
         private final org.jboss.as.clustering.controller.Capability capability;
 
@@ -82,32 +80,40 @@ public class SingletonPolicyResourceDefinition extends ChildResourceDefinition<M
         }
     }
 
-    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        CACHE_CONTAINER("cache-container", ModelType.STRING, new CapabilityReference(Capability.DEFAULT_BUILDER, ClusteringDefaultCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY)),
-        CACHE("cache", ModelType.STRING, new DefaultableCapabilityReference(Capability.BUILDER, ClusteringCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY, CACHE_CONTAINER)),
-        QUORUM("quorum", ModelType.INT, new ModelNode(1), new IntRangeValidatorBuilder().min(1)),
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
+        CACHE_CONTAINER("cache-container", ModelType.STRING) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setRequired(true)
+                        .setCapabilityReference(new CapabilityReference(Capability.POLICY, ClusteringDefaultCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY))
+                        ;
+            }
+        },
+        CACHE("cache", ModelType.STRING) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setRequired(false)
+                        .setCapabilityReference(new CapabilityReference(Capability.POLICY, ClusteringCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY, CACHE_CONTAINER))
+                        ;
+            }
+        },
+        QUORUM("quorum", ModelType.INT) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setRequired(false)
+                        .setAllowExpression(true)
+                        .setDefaultValue(new ModelNode(1))
+                        .setValidator(new IntRangeValidatorBuilder().min(1).configure(builder).build())
+                        ;
+            }
+        },
         ;
         private final AttributeDefinition definition;
 
-        Attribute(String name, ModelType type, DefaultableCapabilityReference reference) {
-            this.definition = createBuilder(name, type).setRequired(false).setCapabilityReference(reference).build();
-        }
-
-        Attribute(String name, ModelType type, CapabilityReference reference) {
-            this.definition = createBuilder(name, type).setRequired(true).setCapabilityReference(reference).build();
-        }
-
-        Attribute(String name, ModelType type, ModelNode defaultValue, ParameterValidatorBuilder validator) {
-            SimpleAttributeDefinitionBuilder builder = createBuilder(name, type)
-                    .setAllowExpression(true)
-                    .setRequired(false)
-                    .setDefaultValue(defaultValue)
-                    ;
-            this.definition = builder.setValidator(validator.configure(builder).build()).build();
-        }
-
-        private static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type) {
-            return new SimpleAttributeDefinitionBuilder(name, type).setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES);
+        Attribute(String name, ModelType type) {
+            this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, type))
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .build();
         }
 
         @Override
