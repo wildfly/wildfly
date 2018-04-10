@@ -851,4 +851,7 @@ public interface MessagingLogger extends BasicLogger {
 
     @Message(id = 96, value = "The %s operation can not be performed on a JDBC store journal")
     OperationFailedException operationNotAllowedOnJdbcStore(String operationName);
+
+    @Message(id = 97, value = "There is no socket-binding or outbound-socket-binding configured with the name %s")
+    OperationFailedException noSocketBinding(String connectorSocketBinding);
 }

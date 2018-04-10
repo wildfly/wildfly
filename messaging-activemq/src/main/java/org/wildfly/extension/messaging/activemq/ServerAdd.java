@@ -324,18 +324,17 @@ class ServerAdd extends AbstractAddStepHandler {
                     serviceBuilder.addDependency(socketName, SocketBinding.class, serverService.getSocketBindingInjector(socketBinding));
                 }
 
-                final Set<String> outboundSocketBindings = new HashSet<String>();
-                TransportConfigOperationHandlers.processConnectors(context, configuration, model, outboundSocketBindings);
-                for (final String outboundSocketBinding : outboundSocketBindings) {
-                    final ServiceName outboundSocketName = OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME.append(outboundSocketBinding);
-                    // Optional dependency so it won't fail if the user used a ref to socket-binding instead of
-                    // outgoing-socket-binding
-                    serviceBuilder.addDependency(DependencyType.OPTIONAL, outboundSocketName, OutboundSocketBinding.class, serverService.getOutboundSocketBindingInjector(outboundSocketBinding));
-                    if (!socketBindings.contains(outboundSocketBinding)) {
-                        // Add a dependency on the regular socket binding as well so users don't have to use
-                        // outgoing-socket-binding to configure a ref to the local server socket
-                        final ServiceName socketName = SocketBinding.JBOSS_BINDING_NAME.append(outboundSocketBinding);
-                        serviceBuilder.addDependency(DependencyType.OPTIONAL, socketName, SocketBinding.class, serverService.getSocketBindingInjector(outboundSocketBinding));
+                final Set<String> connectorsSocketBindings = new HashSet<String>();
+                TransportConfigOperationHandlers.processConnectors(context, configuration, model, connectorsSocketBindings);
+                for (final String connectorSocketBinding : connectorsSocketBindings) {
+                    // find whether the connectorSocketBinding references a SocketBinding or an OutboundSocketBinding
+                    boolean outbound = isOutBoundSocketBinding(context, connectorSocketBinding);
+                    if (outbound) {
+                        final ServiceName outboundSocketName = OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME.append(connectorSocketBinding);
+                        serviceBuilder.addDependency(outboundSocketName, OutboundSocketBinding.class, serverService.getOutboundSocketBindingInjector(connectorSocketBinding));
+                    } else {
+                        final ServiceName socketName = SocketBinding.JBOSS_BINDING_NAME.append(connectorSocketBinding);
+                        serviceBuilder.addDependency(socketName, SocketBinding.class, serverService.getSocketBindingInjector(connectorSocketBinding));
                     }
                 }
                 //this requires connectors
@@ -392,6 +391,24 @@ class ServerAdd extends AbstractAddStepHandler {
                 context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
             }
         }, OperationContext.Stage.RUNTIME);
+    }
+
+    /**
+     * Determines whether a socket-binding with the given name corresponds to a (local or remote) outbound-socket-binding
+     * or a socket-binding.
+     *
+     * If no socket-binding or outbound-socket-binding resources matches, throw an OperationFailedException.
+     */
+    private boolean isOutBoundSocketBinding(OperationContext context, String name) throws OperationFailedException {
+        Resource root = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS);
+        for (Resource.ResourceEntry resource : root.getChildren(ModelDescriptionConstants.SOCKET_BINDING_GROUP)) {
+            if (resource.getChildrenNames(ModelDescriptionConstants.SOCKET_BINDING).contains(name)) {
+                return false;
+            } else if (resource.getChildrenNames(ModelDescriptionConstants.LOCAL_DESTINATION_OUTBOUND_SOCKET_BINDING).contains(name)
+                    || resource.getChildrenNames(ModelDescriptionConstants.REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING).contains(name))
+                return true;
+        }
+        throw MessagingLogger.ROOT_LOGGER.noSocketBinding(name);
     }
 
     /**
