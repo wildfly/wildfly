@@ -25,7 +25,8 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 
-import org.jboss.as.clustering.controller.DefaultableCapabilityReference;
+import org.jboss.as.clustering.controller.CapabilityReference;
+import org.jboss.as.clustering.controller.DynamicCapabilityNameResolver;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
@@ -51,6 +52,7 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jgroups.JChannel;
+import org.wildfly.clustering.jgroups.spi.JGroupsDefaultRequirement;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 import org.wildfly.clustering.service.UnaryRequirement;
 
@@ -88,13 +90,18 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
         }
     }
 
-    enum Capability implements org.jboss.as.clustering.controller.Capability {
-        TRANSPORT_CHANNEL(Requirement.CHANNEL),
+    enum Capability implements org.jboss.as.clustering.controller.Capability, UnaryOperator<RuntimeCapability.Builder<Void>> {
+        TRANSPORT_CHANNEL(Requirement.CHANNEL) {
+            @Override
+            public RuntimeCapability.Builder<Void> apply(RuntimeCapability.Builder<Void> builder) {
+                return super.apply(builder).addRequirements(JGroupsDefaultRequirement.CHANNEL_FACTORY.getName());
+            }
+        },
         ;
         private final RuntimeCapability<Void> definition;
 
         Capability(UnaryRequirement requirement) {
-            this.definition = new UnaryRequirementCapability(requirement).getDefinition();
+            this.definition = new UnaryRequirementCapability(requirement, this).getDefinition();
         }
 
         @Override
@@ -103,8 +110,8 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
         }
 
         @Override
-        public RuntimeCapability<?> resolve(PathAddress address) {
-            return this.definition.fromBaseCapability(address.getParent().getLastElement().getValue());
+        public RuntimeCapability.Builder<Void> apply(RuntimeCapability.Builder<Void> builder) {
+            return builder.setDynamicNameMapper(DynamicCapabilityNameResolver.PARENT);
         }
     }
 
@@ -113,7 +120,7 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setAllowExpression(false)
-                        .setCapabilityReference(new DefaultableCapabilityReference(Capability.TRANSPORT_CHANNEL, JGroupsRequirement.CHANNEL_FACTORY))
+                        .setCapabilityReference(new CapabilityReference(Capability.TRANSPORT_CHANNEL, JGroupsRequirement.CHANNEL_FACTORY))
                         ;
             }
         },

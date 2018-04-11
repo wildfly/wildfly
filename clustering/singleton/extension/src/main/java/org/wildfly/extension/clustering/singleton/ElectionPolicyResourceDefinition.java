@@ -27,6 +27,7 @@ import java.util.function.UnaryOperator;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
+import org.jboss.as.clustering.controller.DynamicCapabilityNameResolver;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
@@ -34,7 +35,6 @@ import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CapabilityReferenceRecorder;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
@@ -60,17 +60,12 @@ public abstract class ElectionPolicyResourceDefinition extends ChildResourceDefi
         private final RuntimeCapability<Void> definition;
 
         Capability(String name, Class<?> type) {
-            this.definition = RuntimeCapability.Builder.of(name, true, type).build();
+            this.definition = RuntimeCapability.Builder.of(name, true).setServiceType(type).setDynamicNameMapper(DynamicCapabilityNameResolver.PARENT).build();
         }
 
         @Override
         public RuntimeCapability<Void> getDefinition() {
             return this.definition;
-        }
-
-        @Override
-        public RuntimeCapability<Void> resolve(PathAddress address) {
-            return this.definition.fromBaseCapability(address.getParent().getLastElement().getValue());
         }
     }
 

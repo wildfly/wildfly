@@ -28,11 +28,11 @@ import java.util.Map;
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
+import org.jboss.as.clustering.controller.DynamicCapabilityNameResolver;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -50,13 +50,14 @@ public abstract class TransportResourceDefinition extends ChildResourceDefinitio
 
     static final Map<ClusteringRequirement, org.jboss.as.clustering.controller.Capability> CLUSTERING_CAPABILITIES = new EnumMap<>(ClusteringRequirement.class);
     static {
+        UnaryOperator<RuntimeCapability.Builder<Void>> configurator = new UnaryOperator<RuntimeCapability.Builder<Void>>() {
+            @Override
+            public RuntimeCapability.Builder<Void> apply(RuntimeCapability.Builder<Void> builder) {
+                return builder.setDynamicNameMapper(DynamicCapabilityNameResolver.PARENT);
+            }
+        };
         for (ClusteringRequirement requirement : EnumSet.allOf(ClusteringRequirement.class)) {
-            CLUSTERING_CAPABILITIES.put(requirement, new UnaryRequirementCapability(requirement) {
-                @Override
-                public RuntimeCapability<?> resolve(PathAddress address) {
-                    return super.resolve(address.getParent());
-                }
-            });
+            CLUSTERING_CAPABILITIES.put(requirement, new UnaryRequirementCapability(requirement, configurator));
         }
     }
 
