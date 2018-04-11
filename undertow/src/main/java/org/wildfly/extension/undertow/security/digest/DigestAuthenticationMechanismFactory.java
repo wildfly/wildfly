@@ -41,7 +41,8 @@ public class DigestAuthenticationMechanismFactory implements AuthenticationMecha
 
     @Override
     public AuthenticationMechanism create(String mechanismName, FormParserFactory formParserFactory, Map<String, String> properties) {
-        return new DigestAuthenticationMechanism(properties.get(REALM), properties.get(CONTEXT_PATH), mechanismName);
+        return new DigestAuthenticationMechanism(properties.get(REALM), properties.get(CONTEXT_PATH), mechanismName,
+                Boolean.parseBoolean(System.getProperty("jboss.security.validate-digest-url", "true")));
     }
 
 }
