@@ -22,26 +22,25 @@
 
 package org.jboss.as.clustering.controller;
 
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import org.jboss.as.controller.CapabilityReferenceRecorder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.Resource;
 import org.wildfly.clustering.service.BinaryRequirement;
-import org.wildfly.clustering.service.Requirement;
 import org.wildfly.clustering.service.UnaryRequirement;
 
 /**
  * {@link CapabilityReferenceRecorder} that delegates to {@link Capability#resolve(org.jboss.as.controller.PathAddress)} to generate the name of the dependent capability.
  * @author Paul Ferraro
  */
-public class CapabilityReference implements CapabilityReferenceRecorder {
+public class CapabilityReference extends AbstractCapabilityReference {
 
-    private final Capability capability;
-    private final Requirement requirement;
-    private final BiFunction<OperationContext, String, String> requirementResolver;
+    private final Function<OperationContext, String> parentNameResolver;
+    private final String parentSegment;
 
     /**
      * Creates a new reference between the specified capability and the specified requirement
@@ -49,7 +48,9 @@ public class CapabilityReference implements CapabilityReferenceRecorder {
      * @param requirement the requirement of the specified capability
      */
     public CapabilityReference(Capability capability, UnaryRequirement requirement) {
-        this(capability, requirement, (context, value) -> (value != null) ? requirement.resolve(value) : null);
+        super(capability, requirement);
+        this.parentNameResolver = null;
+        this.parentSegment = null;
     }
 
     /**
@@ -57,8 +58,8 @@ public class CapabilityReference implements CapabilityReferenceRecorder {
      * @param capability the capability referencing the specified requirement
      * @param requirement the requirement of the specified capability
      */
-    public CapabilityReference(Capability capability, BinaryRequirement requirement) {
-        this(capability, requirement, OperationContext::getCurrentAddressValue);
+    public CapabilityReference(Capability capability, BinaryRequirement requirement, PathElement path) {
+        this(capability, requirement, OperationContext::getCurrentAddressValue, path.getKey());
     }
 
     /**
@@ -68,7 +69,7 @@ public class CapabilityReference implements CapabilityReferenceRecorder {
      * @param parentAttribute the attribute containing the value of the parent dynamic component of the requirement
      */
     public CapabilityReference(Capability capability, BinaryRequirement requirement, Attribute parentAttribute) {
-        this(capability, requirement, context -> context.readResource(PathAddress.EMPTY_ADDRESS, false).getModel().get(parentAttribute.getName()).asString());
+        this(capability, requirement, context -> context.readResource(PathAddress.EMPTY_ADDRESS, false).getModel().get(parentAttribute.getName()).asString(), parentAttribute.getName());
     }
 
     /**
@@ -77,63 +78,39 @@ public class CapabilityReference implements CapabilityReferenceRecorder {
      * @param requirement the requirement of the specified capability
      * @param parentResolver the resolver of the parent dynamic component of the requirement
      */
-    public CapabilityReference(Capability capability, BinaryRequirement requirement, Function<OperationContext, String> parentResolver) {
-        this(capability, requirement, (context, value) -> (value != null) ? requirement.resolve(parentResolver.apply(context), value) : null);
-    }
-
-    CapabilityReference(Capability capability, Requirement requirement, BiFunction<OperationContext, String, String> requirementResolver) {
-        this.capability = capability;
-        this.requirement = requirement;
-        this.requirementResolver = requirementResolver;
+    private CapabilityReference(Capability capability, BinaryRequirement requirement, Function<OperationContext, String> parentNameResolver, String parentSegment) {
+        super(capability, requirement);
+        this.parentNameResolver = parentNameResolver;
+        this.parentSegment = parentSegment;
     }
 
     @Override
     public void addCapabilityRequirements(OperationContext context, Resource resource,  String attributeName, String... values) {
-        String dependentName = this.capability.resolve(context.getCurrentAddress()).getName();
+        String dependentName = this.getDependentName(context);
         for (String value : values) {
-            String requirementName = this.requirementResolver.apply(context, value);
-            if (requirementName != null) {
-                context.registerAdditionalCapabilityRequirement(requirementName, dependentName, attributeName);
+            if (value != null) {
+                context.registerAdditionalCapabilityRequirement(this.getRequirementName(context, value), dependentName, attributeName);
             }
         }
     }
 
     @Override
     public void removeCapabilityRequirements(OperationContext context, Resource resource, String attributeName, String... values) {
-        String dependentName = this.capability.resolve(context.getCurrentAddress()).getName();
+        String dependentName = this.getDependentName(context);
         for (String value : values) {
-            String requirementName = this.requirementResolver.apply(context, value);
-            if (requirementName != null) {
-                context.deregisterCapabilityRequirement(requirementName, dependentName);
+            if (value != null) {
+                context.deregisterCapabilityRequirement(this.getRequirementName(context, value), dependentName);
             }
         }
     }
 
-    @Override
-    @Deprecated
-    public String getBaseDependentName() {
-        return this.capability.getDefinition().getName();
+    private String getRequirementName(OperationContext context, String value) {
+        String[] parts = (this.parentNameResolver != null) ? new String[] { this.parentNameResolver.apply(context), value } : new String[] { value };
+        return RuntimeCapability.buildDynamicCapabilityName(this.getBaseRequirementName(), parts);
     }
 
     @Override
-    public String getBaseRequirementName() {
-        return this.requirement.getName();
-    }
-
-    @Override
-    public boolean isDynamicDependent() {
-        return this.capability.getDefinition().isDynamicallyNamed();
-    }
-
-    @Override
-    public int hashCode() {
-        return this.capability.getDefinition().getName().hashCode();
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        if (!(object instanceof CapabilityReferenceRecorder)) return false;
-        CapabilityReference reference = (CapabilityReference) object;
-        return this.capability.getDefinition().getName().equals(reference.capability.getDefinition().getName());
+    public String[] getRequirementPatternSegments(String name, PathAddress address) {
+        return (this.parentSegment != null) ? new String[] { this.parentSegment, name } : new String[] { name };
     }
 }
