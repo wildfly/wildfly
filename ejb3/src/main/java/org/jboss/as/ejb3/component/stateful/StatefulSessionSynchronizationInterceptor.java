@@ -37,6 +37,7 @@ import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
+import org.wildfly.transaction.client.ContextTransactionSynchronizationRegistry;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -80,8 +81,8 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
         final Object threadLock = instance.getThreadLock();
         final AtomicInteger invocationSyncState = instance.getInvocationSynchState();
 
-        final TransactionSynchronizationRegistry transactionSynchronizationRegistry = component.getTransactionSynchronizationRegistry();
-        final Object lockOwner = getLockOwner(transactionSynchronizationRegistry);
+        final TransactionSynchronizationRegistry transactionSynchronizationRegistry = ContextTransactionSynchronizationRegistry.getInstance();
+        final Object lockOwner = getLockOwner();
         final AccessTimeoutDetails timeout = component.getAccessTimeout(context.getMethod());
         boolean toDiscard = false;
         if (ROOT_LOGGER.isTraceEnabled()) {
@@ -178,12 +179,10 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
     /**
      * Use either the active transaction or the current thread as the lock owner
      *
-     * @param transactionSynchronizationRegistry
-     *         The synronization registry
      * @return The lock owner
      */
-    private static Object getLockOwner(final TransactionSynchronizationRegistry transactionSynchronizationRegistry) {
-        Object owner = transactionSynchronizationRegistry.getTransactionKey();
+    private static Object getLockOwner() {
+        Object owner = ContextTransactionSynchronizationRegistry.getInstance().getTransactionKey();
         return owner != null ? owner : Thread.currentThread();
     }
 
@@ -210,7 +209,7 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
      * Releases the lock, held by this thread, on the stateful component instance.
      */
     static void releaseLock(final StatefulSessionComponentInstance instance) {
-        instance.getLock().unlock(getLockOwner(instance.getComponent().getTransactionSynchronizationRegistry()));
+        instance.getLock().unlock(getLockOwner());
         ROOT_LOGGER.tracef("Released lock: %s", instance.getLock());
     }
 

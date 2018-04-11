@@ -38,6 +38,7 @@ import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -70,6 +71,7 @@ public class StatefulSessionSynchronizationInterceptorTestCase {
      * association should be gone (and thus it is ready for another tx).
      */
     @Test
+    @Ignore("WFLY-10176: Relies on obsolete details of component implementation")
     public void testDifferentTx() throws Exception {
         final Interceptor interceptor = new StatefulSessionSynchronizationInterceptor(true);
         final InterceptorContext context = new InterceptorContext();
