@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.bouncycastle">
+<module xmlns="urn:jboss:module:1.8" name="org.bouncycastle">
 
     <properties>
         <property name="jboss.api" value="private"/>
@@ -38,5 +38,11 @@
         <module name="javax.mail.api" optional="true"/>
         <module name="javax.activation.api" optional="true"/>
     </dependencies>
+    <provides>
+        <service name="java.security.Provider">
+            <with-class name="org.bouncycastle.jce.provider.BouncyCastleProvider"/>
+            <with-class name="org.bouncycastle.pqc.jcajce.provider.BouncyCastlePQCProvider"/>
+        </service>
+    </provides>
 
 </module>
