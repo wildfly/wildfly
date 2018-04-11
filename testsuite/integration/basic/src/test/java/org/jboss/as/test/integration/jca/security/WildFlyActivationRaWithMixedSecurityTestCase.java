@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 import javax.annotation.Resource;
 import javax.resource.cci.Connection;
+import javax.security.auth.PrivateCredentialPermission;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
@@ -42,6 +43,7 @@ import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.jca.rar.MultipleConnectionFactory1;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
+import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -178,6 +180,12 @@ public class WildFlyActivationRaWithMixedSecurityTestCase {
         final ResourceAdapterArchive rar = ShrinkWrap.create(ResourceAdapterArchive.class, "wf-ra-ely-security.rar")
                 .addAsLibrary(jar)
                 .addAsManifestResource(WildFlyActivationRaWithMixedSecurityTestCase.class.getPackage(), "ra.xml", "ra.xml");
+        rar.addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
+                new PrivateCredentialPermission(
+                        "javax.resource.spi.security.PasswordCredential org.wildfly.security.auth.principal.NamePrincipal \"sa\"", "read"),
+                new PrivateCredentialPermission(
+                        "javax.resource.spi.security.PasswordCredential org.jboss.security.SimplePrincipal \"sa\"", "read")),
+                "permissions.xml");
 
         return rar;
     }
@@ -187,8 +195,15 @@ public class WildFlyActivationRaWithMixedSecurityTestCase {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "single.jar");
         jar.addClasses(AbstractElytronSetupTask.class, WildFlyActivationRaWithMixedSecurityTestCase.class,
                 AbstractLoginModuleSecurityDomainTestCaseSetup.class, AbstractSecurityDomainSetup.class);
-        return ShrinkWrap.create(EnterpriseArchive.class, "test.ear").addAsLibrary(jar)
+        final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "test.ear").addAsLibrary(jar)
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.dmr, org.jboss.as.controller, org.jboss.as.controller-client, deployment.wf-ra-ely-security.rar\n"), "MANIFEST.MF");
+        ear.addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
+                new PrivateCredentialPermission(
+                        "javax.resource.spi.security.PasswordCredential org.wildfly.security.auth.principal.NamePrincipal \"sa\"", "read"),
+                new PrivateCredentialPermission(
+                        "javax.resource.spi.security.PasswordCredential org.jboss.security.SimplePrincipal \"sa\"", "read")),
+                "permissions.xml");
+        return ear;
     }
 
     @Resource(mappedName = LEGACY_SECURITY_CONN_DEF_JNDI_NAME)
