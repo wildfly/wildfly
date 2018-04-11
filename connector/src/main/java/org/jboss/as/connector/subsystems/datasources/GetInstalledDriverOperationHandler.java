@@ -28,6 +28,7 @@ package org.jboss.as.connector.subsystems.datasources;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_CLASS_INFO;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DEPLOYMENT_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_DATASOURCE_CLASS_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MAJOR_VERSION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MINOR_VERSION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MODULE_NAME;
@@ -87,11 +88,14 @@ public class GetInstalledDriverOperationHandler implements OperationStepHandler 
                         driverNode.get(DEPLOYMENT_NAME.getName()).set(driver.getDriverName());
                         driverNode.get(DRIVER_MODULE_NAME.getName());
                         driverNode.get(MODULE_SLOT.getName());
+                        driverNode.get(DRIVER_DATASOURCE_CLASS_NAME.getName());
                         driverNode.get(DRIVER_XA_DATASOURCE_CLASS_NAME.getName());
                     } else {
                         driverNode.get(DEPLOYMENT_NAME.getName());
                         driverNode.get(DRIVER_MODULE_NAME.getName()).set(driver.getModuleName().getName());
                         driverNode.get(MODULE_SLOT.getName()).set(driver.getModuleName() != null ? driver.getModuleName().getSlot() : "");
+                        driverNode.get(DRIVER_DATASOURCE_CLASS_NAME.getName()).set(
+                                driver.getDataSourceClassName() != null ? driver.getDataSourceClassName() : "");
                         driverNode.get(DRIVER_XA_DATASOURCE_CLASS_NAME.getName()).set(driver.getXaDataSourceClassName());
 
                     }
