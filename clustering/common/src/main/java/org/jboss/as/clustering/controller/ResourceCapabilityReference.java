@@ -47,6 +47,16 @@ public class ResourceCapabilityReference extends AbstractCapabilityReference {
      * @param requirement the requirement of the specified capability
      * @param requirementNameResolver function for resolving the dynamic elements of the requirement name
      */
+    public ResourceCapabilityReference(Capability capability, Requirement requirement) {
+        this(capability, requirement, new SimpleCapabilityNameResolver());
+    }
+
+    /**
+     * Creates a new reference between the specified capability and the specified requirement
+     * @param capability the capability referencing the specified requirement
+     * @param requirement the requirement of the specified capability
+     * @param requirementNameResolver function for resolving the dynamic elements of the requirement name
+     */
     public ResourceCapabilityReference(Capability capability, UnaryRequirement requirement, Function<PathAddress, String[]> requirementNameResolver) {
         this(capability, (Requirement) requirement, requirementNameResolver);
     }
@@ -77,7 +87,8 @@ public class ResourceCapabilityReference extends AbstractCapabilityReference {
     }
 
     private String getRequirementName(OperationContext context) {
-        return RuntimeCapability.buildDynamicCapabilityName(this.getBaseRequirementName(), this.requirementNameResolver.apply(context.getCurrentAddress()));
+        String[] parts = this.requirementNameResolver.apply(context.getCurrentAddress());
+        return (parts.length > 0) ? RuntimeCapability.buildDynamicCapabilityName(this.getBaseRequirementName(), parts) : this.getBaseRequirementName();
     }
 
     @Override

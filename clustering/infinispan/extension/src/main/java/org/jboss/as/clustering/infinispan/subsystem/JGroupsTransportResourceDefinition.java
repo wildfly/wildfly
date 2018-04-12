@@ -27,6 +27,7 @@ import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.DynamicCapabilityNameResolver;
+import org.jboss.as.clustering.controller.ResourceCapabilityReference;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
@@ -91,12 +92,7 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
     }
 
     enum Capability implements org.jboss.as.clustering.controller.Capability, UnaryOperator<RuntimeCapability.Builder<Void>> {
-        TRANSPORT_CHANNEL(Requirement.CHANNEL) {
-            @Override
-            public RuntimeCapability.Builder<Void> apply(RuntimeCapability.Builder<Void> builder) {
-                return super.apply(builder).addRequirements(JGroupsDefaultRequirement.CHANNEL_FACTORY.getName());
-            }
-        },
+        TRANSPORT_CHANNEL(Requirement.CHANNEL),
         ;
         private final RuntimeCapability<Void> definition;
 
@@ -295,6 +291,7 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
                     .addAttributes(ExecutorAttribute.class)
                     .addAttributes(DeprecatedAttribute.class)
                     .addCapabilities(Capability.class)
+                    .addResourceCapabilityReference(new ResourceCapabilityReference(Capability.TRANSPORT_CHANNEL, JGroupsDefaultRequirement.CHANNEL_FACTORY))
                     ;
         }
     }
