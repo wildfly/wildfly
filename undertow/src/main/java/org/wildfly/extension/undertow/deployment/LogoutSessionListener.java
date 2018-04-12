@@ -23,6 +23,7 @@
 package org.wildfly.extension.undertow.deployment;
 
 import io.undertow.security.api.AuthenticatedSessionManager;
+import io.undertow.security.api.SecurityContext;
 import io.undertow.security.idm.Account;
 import io.undertow.server.session.Session;
 import io.undertow.servlet.handlers.ServletRequestContext;
@@ -79,9 +80,12 @@ class LogoutSessionListener implements HttpSessionListener {
         ServletRequestContext src = ServletRequestContext.current();
         Account requestAccount = null;
         if (src != null) {
-            requestAccount = src.getExchange().getSecurityContext().getAuthenticatedAccount();
-            if (requestAccount != null) {
-                clearAccount(requestAccount);
+            SecurityContext securityContext = src.getExchange().getSecurityContext();
+            if(securityContext != null) {
+                requestAccount = securityContext.getAuthenticatedAccount();
+                if (requestAccount != null) {
+                    clearAccount(requestAccount);
+                }
             }
         }
         if (se.getSession() instanceof HttpSessionImpl) {
