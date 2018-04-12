@@ -48,12 +48,12 @@ import org.jboss.as.txn.logging.TransactionLogger;
  * "Resources can be closed but no transactional work can be performed with them"
  */
 public class JCAOrderedLastSynchronizationList implements Synchronization {
-    private final com.arjuna.ats.jta.transaction.Transaction tx;
+    private final Transaction tx;
     private final Map<Transaction, JCAOrderedLastSynchronizationList> jcaOrderedLastSynchronizations;
     private final List<Synchronization> preJcaSyncs = new ArrayList<Synchronization>();
     private final List<Synchronization> jcaSyncs = new ArrayList<Synchronization>();
 
-    public JCAOrderedLastSynchronizationList(com.arjuna.ats.jta.transaction.Transaction tx,
+    public JCAOrderedLastSynchronizationList(Transaction tx,
         Map<Transaction, JCAOrderedLastSynchronizationList> jcaOrderedLastSynchronizations) {
         this.tx = tx;
         this.jcaOrderedLastSynchronizations = jcaOrderedLastSynchronizations;
