@@ -54,6 +54,7 @@
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
         <module name="org.jboss.logging"/>
+        <module name="org.jboss.logmanager"/>
         <module name="org.jboss.resteasy.resteasy-atom-provider" optional="true"/>
         <module name="org.jboss.resteasy.resteasy-cdi" optional="true"/>
         <module name="org.jboss.resteasy.resteasy-crypto" optional="true"/>
