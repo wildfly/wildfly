@@ -28,12 +28,14 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Resource;
 import javax.resource.cci.Connection;
+import javax.security.auth.PrivateCredentialPermission;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.jca.rar.MultipleConnectionFactory1;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
+import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -86,6 +88,8 @@ public class IronJacamarActivationRaWithSecurityDomainTestCase {
         final ResourceAdapterArchive rar = ShrinkWrap.create(ResourceAdapterArchive.class, "test.rar").addAsLibrary(jar)
                 .addAsManifestResource(IronJacamarActivationRaWithSecurityDomainTestCase.class.getPackage(), "ra.xml", "ra.xml")
                 .addAsManifestResource(IronJacamarActivationRaWithSecurityDomainTestCase.class.getPackage(), "ironjacamar.xml", "ironjacamar.xml");
+        rar.addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
+                new PrivateCredentialPermission("javax.resource.spi.security.PasswordCredential org.jboss.security.SimplePrincipal \"sa\"", "read")), "permissions.xml");
 
         return rar;
     }

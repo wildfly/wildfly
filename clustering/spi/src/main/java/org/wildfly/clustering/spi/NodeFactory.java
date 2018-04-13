@@ -31,4 +31,6 @@ import org.wildfly.clustering.group.Node;
 public interface NodeFactory<A> extends org.wildfly.clustering.group.NodeFactory<A> {
     @Override
     Node createNode(A address);
+
+    A getAddress(Node node);
 }

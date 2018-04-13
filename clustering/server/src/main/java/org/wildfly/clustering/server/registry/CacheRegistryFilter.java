@@ -25,7 +25,7 @@ package org.wildfly.clustering.server.registry;
 import java.util.function.Predicate;
 
 import org.infinispan.filter.KeyFilter;
-import org.wildfly.clustering.group.Node;
+import org.infinispan.remoting.transport.Address;
 
 /**
  * @author Paul Ferraro
@@ -34,7 +34,7 @@ public class CacheRegistryFilter implements KeyFilter<Object>, Predicate<Object>
 
     @Override
     public boolean accept(Object key) {
-        return key instanceof Node;
+        return key instanceof Address;
     }
 
     @Override

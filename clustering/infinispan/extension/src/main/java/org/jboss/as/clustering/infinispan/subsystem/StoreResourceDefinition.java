@@ -25,6 +25,7 @@ import java.util.function.UnaryOperator;
 
 import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
+import org.jboss.as.clustering.controller.DynamicCapabilityNameResolver;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.Operations;
@@ -42,7 +43,6 @@ import org.jboss.as.clustering.controller.transform.LegacyPropertyWriteOperation
 import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.capability.RuntimeCapability;
@@ -75,19 +75,12 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition<Ma
         private final RuntimeCapability<Void> definition;
 
         Capability(String name, Class<?> type) {
-            this.definition = RuntimeCapability.Builder.of(name, true, type).build();
+            this.definition = RuntimeCapability.Builder.of(name, true).setServiceType(type).setDynamicNameMapper(DynamicCapabilityNameResolver.GRANDPARENT_PARENT).build();
         }
 
         @Override
         public RuntimeCapability<Void> getDefinition() {
             return this.definition;
-        }
-
-        @Override
-        public RuntimeCapability<Void> resolve(PathAddress address) {
-            PathAddress cacheAddress = address.getParent();
-            PathAddress containerAddress = cacheAddress.getParent();
-            return this.definition.fromBaseCapability(containerAddress.getLastElement().getValue(), cacheAddress.getLastElement().getValue());
         }
     }
 

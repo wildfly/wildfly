@@ -44,8 +44,10 @@ import org.infinispan.notifications.cachemanagerlistener.annotation.Merged;
 import org.infinispan.notifications.cachemanagerlistener.annotation.ViewChanged;
 import org.infinispan.notifications.cachemanagerlistener.event.ViewChangedEvent;
 import org.infinispan.remoting.transport.Address;
+import org.infinispan.remoting.transport.LocalModeAddress;
 import org.infinispan.remoting.transport.Transport;
 import org.infinispan.remoting.transport.jgroups.JGroupsAddress;
+import org.infinispan.remoting.transport.jgroups.JGroupsAddressCache;
 import org.jboss.threads.JBossThreadFactory;
 import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.group.GroupListener;
@@ -124,8 +126,13 @@ public class CacheGroup implements Group<Address>, AutoCloseable {
         return this.nodeFactory.createNode(toJGroupsAddress(address));
     }
 
+    @Override
+    public Address getAddress(Node node) {
+        return (node instanceof AddressableNode) ? JGroupsAddressCache.fromJGroupsAddress(((AddressableNode) node).getAddress()) : LocalModeAddress.INSTANCE;
+    }
+
     private static org.jgroups.Address toJGroupsAddress(Address address) {
-        if (address == null) return null;
+        if ((address == null) || (address == LocalModeAddress.INSTANCE)) return null;
         if (address instanceof JGroupsAddress) {
             JGroupsAddress jgroupsAddress = (JGroupsAddress) address;
             return jgroupsAddress.getJGroupsAddress();

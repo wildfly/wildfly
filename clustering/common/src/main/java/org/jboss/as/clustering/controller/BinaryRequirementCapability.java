@@ -52,7 +52,7 @@ public class BinaryRequirementCapability implements Capability {
     public BinaryRequirementCapability(final BinaryRequirement requirement, UnaryOperator<RuntimeCapability.Builder<Void>> configurator) {
         RuntimeCapability.Builder<Void> builder = RuntimeCapability.Builder.of(requirement.getName(), true)
                 .setServiceType(requirement.getType())
-                .setDynamicNameMapper(address -> new String[] { address.getParent().getLastElement().getValue(), address.getLastElement().getValue() })
+                .setDynamicNameMapper(DynamicCapabilityNameResolver.PARENT_CHILD)
                 ;
         this.definition = configurator.apply(builder).build();
     }

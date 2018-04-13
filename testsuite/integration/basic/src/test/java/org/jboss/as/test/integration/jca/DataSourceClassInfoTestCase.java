@@ -117,6 +117,7 @@ public class DataSourceClassInfoTestCase extends ContainerResourceMgmtTestBase {
         Assert.assertEquals("success", result.get("outcome").asString());
         ModelNode dsInfoList = result.get("result");
         Assert.assertNotNull(dsInfoList);
+        Assert.assertTrue(dsInfoList.get(0).has("driver-datasource-class-name"));
         ModelNode dsInfo = dsInfoList.get(0).get("datasource-class-info").get(0).get("org.h2.jdbcx.JdbcDataSource");
         Assert.assertNotNull(dsInfo);
 
@@ -143,6 +144,7 @@ public class DataSourceClassInfoTestCase extends ContainerResourceMgmtTestBase {
         Assert.assertEquals("success", result.get("outcome").asString());
         ModelNode dsInfoList = result.get("result");
         Assert.assertNotNull(dsInfoList);
+        Assert.assertTrue(dsInfoList.get(0).has("driver-datasource-class-name"));
         ModelNode dsInfo = dsInfoList.get(0).get("datasource-class-info").get(0).get("org.h2.jdbcx.JdbcDataSource");
         Assert.assertNotNull(dsInfo);
 

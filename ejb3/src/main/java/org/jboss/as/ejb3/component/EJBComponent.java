@@ -84,6 +84,8 @@ import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.auth.server.SecurityIdentity;
 import org.wildfly.security.authz.Roles;
 import org.wildfly.security.manager.WildFlySecurityManager;
+import org.wildfly.transaction.client.ContextTransactionManager;
+import org.wildfly.transaction.client.ContextTransactionSynchronizationRegistry;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -118,8 +120,6 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
     private final InvocationMetrics invocationMetrics = new InvocationMetrics();
     private final EJBSuspendHandlerService ejbSuspendHandlerService;
     private final ShutDownInterceptorFactory shutDownInterceptorFactory;
-    private final TransactionManager transactionManager;
-    private final TransactionSynchronizationRegistry transactionSynchronizationRegistry;
     private final UserTransaction userTransaction;
     private final ServerSecurityManager serverSecurityManager;
     private final ControlPoint controlPoint;
@@ -184,8 +184,6 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
         this.timeoutInterceptors = Collections.unmodifiableMap(ejbComponentCreateService.getTimeoutInterceptors());
         this.shutDownInterceptorFactory = ejbComponentCreateService.getShutDownInterceptorFactory();
         this.ejbSuspendHandlerService = ejbComponentCreateService.getEJBSuspendHandler();
-        this.transactionManager = ejbComponentCreateService.getTransactionManager();
-        this.transactionSynchronizationRegistry = ejbComponentCreateService.getTransactionSynchronizationRegistry();
         this.userTransaction = ejbComponentCreateService.getUserTransaction();
         this.serverSecurityManager = ejbComponentCreateService.getServerSecurityManager();
         this.controlPoint = ejbComponentCreateService.getControlPoint();
@@ -412,12 +410,22 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
         return txAttr;
     }
 
+    /**
+     * @deprecated Use {@link ContextTransactionManager#getInstance()} instead.
+     * @return the value of {@link ContextTransactionManager#getInstance()}
+     */
+    @Deprecated
     public TransactionManager getTransactionManager() {
-        return this.transactionManager;
+        return ContextTransactionManager.getInstance();
     }
 
+    /**
+     * @deprecated Use {@link ContextTransactionSynchronizationRegistry#getInstance()} instead.
+     * @return the value of {@link ContextTransactionSynchronizationRegistry#getInstance()}
+     */
+    @Deprecated
     public TransactionSynchronizationRegistry getTransactionSynchronizationRegistry() {
-        return this.transactionSynchronizationRegistry;
+        return ContextTransactionSynchronizationRegistry.getInstance();
     }
 
     public int getTransactionTimeout(final MethodIntf methodIntf, final Method method) {

@@ -22,13 +22,17 @@
 
 package org.jboss.as.clustering.infinispan;
 
+import java.util.Collections;
 import java.util.EnumSet;
+import java.util.List;
 
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.manager.EmbeddedCacheManagerAdmin;
 import org.infinispan.manager.impl.AbstractDelegatingEmbeddedCacheManager;
+import org.infinispan.remoting.transport.Address;
+import org.infinispan.remoting.transport.LocalModeAddress;
 import org.wildfly.clustering.infinispan.spi.CacheContainer;
 
 /**
@@ -42,6 +46,24 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
     public DefaultCacheContainer(EmbeddedCacheManager container, BatcherFactory batcherFactory) {
         super(container);
         this.batcherFactory = batcherFactory;
+    }
+
+    @Override
+    public Address getAddress() {
+        Address address = super.getAddress();
+        return (address != null) ? address : LocalModeAddress.INSTANCE;
+    }
+
+    @Override
+    public Address getCoordinator() {
+        Address coordinator = super.getCoordinator();
+        return (coordinator != null) ? coordinator : LocalModeAddress.INSTANCE;
+    }
+
+    @Override
+    public List<Address> getMembers() {
+        List<Address> members = super.getMembers();
+        return (members != null) ? members : Collections.singletonList(LocalModeAddress.INSTANCE);
     }
 
     @Override

@@ -87,7 +87,7 @@ public interface ClusteringServerLogger extends BasicLogger {
 
     @LogMessage(level = WARN)
     @Message(id = 10, value = "Failed to purge %s/%s registry of old registry entries for: %s")
-    void registryPurgeFailed(@Cause Throwable e, String containerName, String cacheName, Collection<Node> nodes);
+    void registryPurgeFailed(@Cause Throwable e, String containerName, String cacheName, Collection<?> members);
 
     @LogMessage(level = WARN)
     @Message(id = 11, value = "Failed to notify %s/%s registry listener of %s(%s) event")

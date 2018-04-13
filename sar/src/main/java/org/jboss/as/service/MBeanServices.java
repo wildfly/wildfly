@@ -110,6 +110,7 @@ final class MBeanServices {
 
         for(SetupAction action : setupActions) {
             startStopServiceBuilder.addDependencies(action.dependencies());
+            createDestroyServiceBuilder.addDependencies(action.dependencies());
         }
 
         Services.addServerExecutorDependency(startStopServiceBuilder, ((StartStopService) startStopService).getExecutorInjector());
