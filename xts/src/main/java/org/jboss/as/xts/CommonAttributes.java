@@ -29,5 +29,6 @@ interface CommonAttributes {
     String HOST = "host";
     String XTS_ENVIRONMENT= "xts-environment";
     String DEFAULT_CONTEXT_PROPAGATION = "default-context-propagation";
+    String ASYNC_REGISTRATION = "async-registration";
     // TODO, many more!
 }

@@ -37,6 +37,7 @@ enum Element {
     HOST(CommonAttributes.HOST),
     XTS_ENVIRONMENT(CommonAttributes.XTS_ENVIRONMENT),
     DEFAULT_CONTEXT_PROPAGATION(CommonAttributes.DEFAULT_CONTEXT_PROPAGATION),
+    ASYNC_REGISTRATION(CommonAttributes.ASYNC_REGISTRATION),
     ;
 
     private final String name;

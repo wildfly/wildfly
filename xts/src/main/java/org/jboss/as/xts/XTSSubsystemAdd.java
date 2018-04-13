@@ -25,8 +25,11 @@ package org.jboss.as.xts;
 import static org.jboss.as.xts.XTSSubsystemDefinition.DEFAULT_CONTEXT_PROPAGATION;
 import static org.jboss.as.xts.XTSSubsystemDefinition.ENVIRONMENT_URL;
 import static org.jboss.as.xts.XTSSubsystemDefinition.HOST_NAME;
+import static org.jboss.as.xts.XTSSubsystemDefinition.ASYNC_REGISTRATION;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -48,7 +51,10 @@ import com.arjuna.webservices11.wsba.sei.BusinessAgreementWithCoordinatorComplet
 import com.arjuna.webservices11.wsba.sei.BusinessAgreementWithParticipantCompletionCoordinatorPortTypeImpl;
 import com.arjuna.webservices11.wsba.sei.BusinessAgreementWithParticipantCompletionParticipantPortTypeImpl;
 import com.arjuna.webservices11.wscoor.sei.ActivationPortTypeImpl;
+import com.arjuna.webservices11.wscoor.sei.CoordinationFaultPortTypeImpl;
 import com.arjuna.webservices11.wscoor.sei.RegistrationPortTypeImpl;
+import com.arjuna.webservices11.wscoor.sei.RegistrationResponsePortTypeImpl;
+
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -79,6 +85,8 @@ import org.oasis_open.docs.ws_tx.wsba._2006._06.BusinessAgreementWithCoordinator
 import org.oasis_open.docs.ws_tx.wsba._2006._06.BusinessAgreementWithParticipantCompletionCoordinatorService;
 import org.oasis_open.docs.ws_tx.wsba._2006._06.BusinessAgreementWithParticipantCompletionParticipantService;
 import org.oasis_open.docs.ws_tx.wscoor._2006._06.ActivationService;
+import org.oasis_open.docs.ws_tx.wscoor._2006._06.CoordinationFaultService;
+import org.oasis_open.docs.ws_tx.wscoor._2006._06.RegistrationResponseService;
 import org.oasis_open.docs.ws_tx.wscoor._2006._06.RegistrationService;
 
 
@@ -136,11 +144,7 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
      * publisher API rather than via war files containing web.xml descriptors
      */
     private static final ContextInfo[] contextDefinitions = {
-            new ContextInfo("ws-c11",
-                    new EndpointInfo[]{
-                            new EndpointInfo(ActivationPortTypeImpl.class.getName(), ActivationService.class.getSimpleName()),
-                            new EndpointInfo(RegistrationPortTypeImpl.class.getName(), RegistrationService.class.getSimpleName())
-                    }),
+            // ContextInfo ws-c11 filled at method getContextDefinitions
             new ContextInfo("ws-t11-coordinator",
                     new EndpointInfo[]{
                             new EndpointInfo(CoordinatorPortTypeImpl.class.getName(), CoordinatorService.class.getSimpleName()),
@@ -164,11 +168,29 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
                     })
     };
 
+    static final EndpointInfo[] wsC11 = new EndpointInfo[] {
+            new EndpointInfo(ActivationPortTypeImpl.class.getName(), ActivationService.class.getSimpleName()),
+            new EndpointInfo(RegistrationPortTypeImpl.class.getName(), RegistrationService.class.getSimpleName())
+    };
+    static final EndpointInfo[] wsC11Async = new EndpointInfo[] {
+            new EndpointInfo(RegistrationResponsePortTypeImpl.class.getName(), RegistrationResponseService.class.getSimpleName()),
+            new EndpointInfo(CoordinationFaultPortTypeImpl.class.getName(), CoordinationFaultService.class.getSimpleName())
+    };
+
     private XTSSubsystemAdd() {
     }
 
-    static ContextInfo[] getContextDefinitions() {
-        return contextDefinitions;
+    static Iterable<ContextInfo> getContextDefinitions(OperationContext context, ModelNode model) throws IllegalArgumentException, OperationFailedException {
+        Collection<ContextInfo> updatedContextDefinitions = new ArrayList<>(Arrays.asList(contextDefinitions));
+        Collection<EndpointInfo> wsC11EndpointInfos = new ArrayList<>(Arrays.asList(wsC11));
+        if(ASYNC_REGISTRATION.resolveModelAttribute(context, model).asBoolean()) {
+            wsC11EndpointInfos.addAll(Arrays.asList(wsC11Async));
+        }
+
+        ContextInfo wsC11ContextInfo = new ContextInfo("ws-c11", wsC11EndpointInfos.toArray(new EndpointInfo[wsC11EndpointInfos.size()]));
+        updatedContextDefinitions.add(wsC11ContextInfo);
+
+        return updatedContextDefinitions;
     }
 
     @Override
@@ -176,6 +198,7 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
         HOST_NAME.validateAndSet(operation, model);
         ENVIRONMENT_URL.validateAndSet(operation, model);
         DEFAULT_CONTEXT_PROPAGATION.validateAndSet(operation, model);
+        ASYNC_REGISTRATION.validateAndSet(operation, model);
     }
 
 
@@ -233,7 +256,7 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
         ArrayList<ServiceController<Context>> controllers = new ArrayList<ServiceController<Context>>();
         Map<Class<?>, Object> attachments = new HashMap<>();
         attachments.put(RejectionRule.class, new GracefulShutdownRejectionRule());
-        for (ContextInfo contextInfo : contextDefinitions) {
+        for (ContextInfo contextInfo : getContextDefinitions(context, model)) {
             String contextName = contextInfo.contextPath;
             Map<String, String> map = new HashMap<String, String>();
             for (EndpointInfo endpointInfo : contextInfo.endpointInfo) {

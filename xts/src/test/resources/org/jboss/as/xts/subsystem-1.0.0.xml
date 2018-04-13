@@ -20,8 +20,6 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<subsystem xmlns="urn:jboss:domain:xts:2.0">
-    <host name="default-host"/>
+<subsystem xmlns="urn:jboss:domain:xts:1.0">
     <xts-environment url="http://${jboss.bind.address:127.0.0.1}:8080/ws-c11/ActivationService"/>
-    <default-context-propagation enabled="false"/>
 </subsystem>
