@@ -33,6 +33,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.test.shared.IntermittentFailure;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -201,6 +202,7 @@ public class PassivationTestCase {
      */
     @Test
     public void testPassivationFailure() throws Exception {
+        IntermittentFailure.thisTestIsFailingIntermittently("WFLY-10231");
         PassivationInterceptor.reset();
 
         // create first bean
@@ -216,8 +218,9 @@ public class PassivationTestCase {
                         remote2.returnTrueString());
 
                 // verify that remote1 was prePassivated
-                Assert.assertTrue(PassivationInterceptor.getPrePassivateTarget() instanceof BeanWithSerializationIssue);
-                Assert.assertTrue(((BeanWithSerializationIssue) PassivationInterceptor.getPrePassivateTarget())
+                Object prePassivateTarget = PassivationInterceptor.getPrePassivateTarget();
+                Assert.assertTrue("pre passivation target was of incorrect type: " + prePassivateTarget, prePassivateTarget instanceof BeanWithSerializationIssue);
+                Assert.assertTrue(((BeanWithSerializationIssue) prePassivateTarget)
                         .hasBeenPassivated());
                 // verify that remote1 was not postActivated yet
                 Assert.assertTrue(PassivationInterceptor.getPostActivateTarget() == null);
