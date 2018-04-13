@@ -595,6 +595,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                     return;
                 }
 
+                final ContextTransactionManager transactionManager = ContextTransactionManager.getInstance();
                 Transaction clientTX = transactionManager.getTransaction();
                 if (newTimer) {
                     if( clientTX == null ){
