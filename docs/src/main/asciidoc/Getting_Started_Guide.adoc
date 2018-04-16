@@ -138,6 +138,7 @@ will remain at Java EE7 level.
 | Java API for JSON Processing | 1.0 | JSR-353 | 1.1 | https://jcp.org/en/jsr/detail?id=374[JSR-374]
 | Java API for JSON Binding | - | - | 1.0 | https://jcp.org/en/jsr/detail?id=367[JSR-367]
 | Common Annotations for the Java Platform | 1.2 | JSR-250 | 1.3 | http://download.oracle.com/otndocs/jcp/common_annotations-1_3-mrel3-spec/[JSR-250]
+| Java EE Security API | - | - | 1.0 | https://jcp.org/aboutJava/communityprocess/final/jsr375/index.html[JSR-375]
 |=======================================================================
 
 [[download]]

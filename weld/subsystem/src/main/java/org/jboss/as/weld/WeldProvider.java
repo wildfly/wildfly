@@ -24,8 +24,11 @@ package org.jboss.as.weld;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.CDI;
 import javax.enterprise.inject.spi.CDIProvider;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 import org.jboss.as.weld.deployment.WeldDeployment;
 import org.jboss.as.weld.services.ModuleGroupSingletonProvider;
@@ -87,9 +90,23 @@ public class WeldProvider implements CDIProvider {
         }
 
         @Override
-        public BeanManagerProxy getBeanManager() {
+        public BeanManager getBeanManager() {
             checkContainerState(container);
             final String callerName = getCallingClassName();
+            if(callerName.startsWith("org.glassfish.soteria")) {
+                //the Java EE Security RI uses CDI.current() to perform bean lookup, however
+                //as it is part of the container its bean archive does not have visibility to deployment beans
+                //we use this code path to enable it to get the bean manager of the current module
+                //so it can look up the deployment beans it needs to work
+                try {
+                    BeanManager bm = (BeanManager) new InitialContext().lookup("java:comp/BeanManager");
+                    if(bm != null) {
+                        return bm;
+                    }
+                } catch (NamingException e) {
+                    //ignore
+                }
+            }
 
             final ClassLoader tccl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
             final Class<?> callerClass = Reflections.loadClass(callerName, tccl);

@@ -99,6 +99,7 @@
         <version.javax.jws.jsr181-api>1.0-MR1</version.javax.jws.jsr181-api>
         <version.javax.mail>1.6.1</version.javax.mail>
         <version.javax.persistence>2.2</version.javax.persistence>
+        <version.javax.security.enterprise>1.0</version.javax.security.enterprise>
         <version.javax.validation>2.0.1.Final</version.javax.validation>
         <version.jaxen>1.1.6</version.jaxen>
         <version.jboss.jaxbintros>1.0.2.GA</version.jboss.jaxbintros>
@@ -136,6 +137,7 @@
         <version.org.glassfish.javax.enterprise.concurrent>1.0</version.org.glassfish.javax.enterprise.concurrent>
         <version.org.glassfish.javax.json>1.1.2</version.org.glassfish.javax.json>
         <version.org.glassfish.javax.json-1.0>1.0.4</version.org.glassfish.javax.json-1.0>
+        <version.org.glassfish.soteria>1.0</version.org.glassfish.soteria>
         <version.org.hibernate>5.1.13.Final</version.org.hibernate>
         <version.org.hibernate.commons.annotations>5.0.2.Final</version.org.hibernate.commons.annotations>
         <version.org.hibernate.search>5.5.8.Final</version.org.hibernate.search>
@@ -525,6 +527,12 @@
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-ee</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>wildfly-ee-security</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -1192,6 +1200,12 @@
                 <groupId>javax.persistence</groupId>
                 <artifactId>javax.persistence-api</artifactId>
                 <version>${version.javax.persistence}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>javax.security.enterprise</groupId>
+                <artifactId>javax.security.enterprise-api</artifactId>
+                <version>${version.javax.security.enterprise}</version>
             </dependency>
 
             <dependency>
@@ -3377,7 +3391,11 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-
+            <dependency>
+                <groupId>org.glassfish.soteria</groupId>
+                <artifactId>javax.security.enterprise</artifactId>
+                <version>${version.org.glassfish.soteria}</version>
+            </dependency>
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-core</artifactId>
