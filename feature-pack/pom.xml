@@ -1421,6 +1421,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.jgroups.kubernetes</groupId>
+            <artifactId>jgroups-kubernetes</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.picketlink</groupId>
             <artifactId>picketlink-api</artifactId>
         </dependency>
