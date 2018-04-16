@@ -173,14 +173,31 @@
             <filter pattern="*.sh" include="true"/>
             <filter pattern="*" include="false"/>
         </permission>
+        <permission value="771">
+            <filter pattern="*/tmp" include="true"/>
+        </permission>
+        <permission value="751">
+            <filter pattern="bin" include="true" />
+            <filter pattern="domain" include="true" />
+            <filter pattern="migration" include="true" />
+            <filter pattern="standalone" include="true" />
+            <filter pattern="bin/client" include="true" />
+            <filter pattern="docs/examples" include="true" />
+            <filter pattern="docs/schema" include="true" />
+            <filter pattern="docs/licenses" include="true" />
+        </permission>
         <permission value="700">
             <filter pattern="*/tmp/auth" include="true"/>
             <filter pattern="*" include="false"/>
         </permission>
+        <permission value="644">
+            <filter pattern="*.jar" include="true"/>
+        </permission>
         <permission value="600">
             <filter pattern="*-users.properties" include="true" />
-            <filter pattern="*/.installation" include="true"/>
-            <filter pattern="*" include="false"/>
+            <filter pattern=".installation" include="true"/>
+            <filter pattern="*/configuration/logging.properties" include="true"/>
+            <filter pattern="domain/configuration/default-server-logging.properties" include="true"/>
         </permission>
     </file-permissions>
     <line-endings>
