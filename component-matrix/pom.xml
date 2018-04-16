@@ -155,7 +155,7 @@
         <version.org.jboss.ejb-client-legacy>3.0.2.Final</version.org.jboss.ejb-client-legacy>
         <version.org.jboss.ejb3.ext-api>2.2.0.Final</version.org.jboss.ejb3.ext-api>
         <version.org.jboss.genericjms>2.0.1.Final</version.org.jboss.genericjms>
-        <version.org.jboss.hal.release-stream>2.9.16.Final</version.org.jboss.hal.release-stream>
+        <version.org.jboss.hal.console>3.0.0.Alpha3</version.org.jboss.hal.console>
         <version.org.jboss.iiop-client>1.0.1.Final</version.org.jboss.iiop-client>
         <version.org.jboss.ironjacamar>1.4.8.Final</version.org.jboss.ironjacamar>
         <version.org.jboss.jboss-transaction-spi>7.6.0.Final</version.org.jboss.jboss-transaction-spi>
@@ -3949,45 +3949,89 @@
 
             <dependency>
                 <groupId>org.jboss.hal</groupId>
-                <artifactId>release-stream</artifactId>
-                <version>${version.org.jboss.hal.release-stream}</version>
+                <artifactId>hal-console</artifactId>
+                <version>${version.org.jboss.hal.console}</version>
                 <classifier>resources</classifier>
                 <exclusions>
                     <exclusion>
-                        <artifactId>gin</artifactId>
-                        <groupId>com.google.gwt.inject</groupId>
+                        <artifactId>hal-ballroom</artifactId>
+                        <groupId>org.jboss.hal</groupId>
                     </exclusion>
                     <exclusion>
-                        <artifactId>guice</artifactId>
-                        <groupId>com.google.inject</groupId>
+                        <artifactId>hal-config</artifactId>
+                        <groupId>org.jboss.hal</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>hal-core</artifactId>
+                        <groupId>org.jboss.hal</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>hal-dmr</artifactId>
+                        <groupId>org.jboss.hal</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>hal-flow</artifactId>
+                        <groupId>org.jboss.hal</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>hal-js</artifactId>
+                        <groupId>org.jboss.hal</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>hal-meta</artifactId>
+                        <groupId>org.jboss.hal</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>hal-processors</artifactId>
+                        <groupId>org.jboss.hal</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>hal-resources</artifactId>
+                        <groupId>org.jboss.hal</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>hal-spi</artifactId>
+                        <groupId>org.jboss.hal</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>hal-theme-hal</artifactId>
+                        <groupId>org.jboss.hal</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>elemento-core</artifactId>
+                        <groupId>org.jboss.gwt.elemento</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>elemento-widget</artifactId>
+                        <groupId>org.jboss.gwt.elemento</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>elemento-template-api</artifactId>
+                        <groupId>org.jboss.gwt.elemento</groupId>
                     </exclusion>
                     <exclusion>
                         <artifactId>gwtp-all</artifactId>
                         <groupId>com.gwtplatform</groupId>
                     </exclusion>
                     <exclusion>
-                        <artifactId>gwt-visualization</artifactId>
-                        <groupId>com.google.code</groupId>
+                        <artifactId>gwt-elemental</artifactId>
+                        <groupId>com.google.gwt</groupId>
                     </exclusion>
                     <exclusion>
-                        <artifactId>gwt-log</artifactId>
-                        <groupId>com.google.code.gwt-log</groupId>
+                        <artifactId>guava-gwt</artifactId>
+                        <groupId>com.google.guava</groupId>
                     </exclusion>
                     <exclusion>
-                        <artifactId>guice-assistedinject</artifactId>
-                        <groupId>com.google.inject.extensions</groupId>
+                        <artifactId>rxgwt</artifactId>
+                        <groupId>com.intendia.gwt.rxgwt</groupId>
                     </exclusion>
                     <exclusion>
-                        <artifactId>guice-assisted-inject</artifactId>
-                        <groupId>com.mycila.com.google.inject.extensions</groupId>
+                        <artifactId>slf4j-gwt</artifactId>
+                        <groupId>ru.finam</groupId>
                     </exclusion>
                     <exclusion>
-                        <artifactId>jboss-as-console-dialogs</artifactId>
-                        <groupId>org.jboss.as</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>jboss-as-console-resources</artifactId>
-                        <groupId>org.jboss.as</groupId>
+                        <artifactId>gwt-user</artifactId>
+                        <groupId>com.google.gwt</groupId>
                     </exclusion>
                 </exclusions>
             </dependency>

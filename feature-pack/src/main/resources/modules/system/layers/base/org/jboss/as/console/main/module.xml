@@ -28,7 +28,7 @@
     </properties>
 
     <resources>
-        <artifact name="${org.jboss.hal:release-stream::resources}"/>
+        <artifact name="${org.jboss.hal:hal-console::resources}"/>
     </resources>
 
     <dependencies>
