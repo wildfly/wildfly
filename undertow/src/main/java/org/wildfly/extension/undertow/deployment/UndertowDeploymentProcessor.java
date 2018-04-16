@@ -23,6 +23,8 @@
 package org.wildfly.extension.undertow.deployment;
 
 import java.net.MalformedURLException;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -30,6 +32,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.function.BiFunction;
@@ -99,6 +102,8 @@ import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.security.SecurityUtil;
 import org.jboss.vfs.VirtualFile;
+import org.wildfly.extension.classchange.ClassChangeAttachments;
+import org.wildfly.extension.classchange.DeploymentClassChangeSupport;
 import org.wildfly.extension.io.IOServices;
 import org.wildfly.extension.requestcontroller.ControlPoint;
 import org.wildfly.extension.requestcontroller.ControlPointService;
@@ -127,7 +132,6 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
 
     public static final String OLD_URI_PREFIX = "http://java.sun.com";
     public static final String NEW_URI_PREFIX = "http://xmlns.jcp.org";
-
 
     private final String defaultServer;
     private final String defaultHost;
@@ -298,6 +302,15 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
             //ignore
         }
 
+        boolean useCache = true;
+        List<Path> priorityOVerlays = new ArrayList<>();
+        DeploymentClassChangeSupport deploymentClassChangeSupport = deploymentUnit.getAttachment(ClassChangeAttachments.DEPLOYMENT_CLASS_CHANGE_SUPPORT);
+        HotDeploymentHandlerWrapper hotDeploymentFilter = null;
+        if(deploymentClassChangeSupport != null) {
+            hotDeploymentFilter = handleHotDeployment(deploymentUnit, deploymentClassChangeSupport, priorityOVerlays, pathName);
+            useCache = false;
+        }
+
         final ServiceName hostServiceName = UndertowService.virtualHostName(serverInstanceName, hostName);
         final ServiceName legacyDeploymentServiceName = UndertowService.deploymentServiceName(serverInstanceName, hostName, pathName);
         final ServiceName deploymentServiceName = UndertowService.deploymentServiceName(deploymentUnit.getServiceName());
@@ -328,8 +341,10 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
                 .setExplodedDeployment(ExplodedDeploymentMarker.isExplodedDeployment(deploymentUnit))
                 .setWebSocketDeploymentInfo(deploymentUnit.getAttachment(UndertowAttachments.WEB_SOCKET_DEPLOYMENT_INFO))
                 .setTempDir(warMetaData.getTempDir())
+                .setUseResourceCache(useCache)
                 .setExternalResources(deploymentUnit.getAttachmentList(UndertowAttachments.EXTERNAL_RESOURCES))
                 .setAllowSuspendedRequests(deploymentUnit.getAttachmentList(UndertowAttachments.ALLOW_REQUEST_WHEN_SUSPENDED))
+                .setPriorityOverlays(priorityOVerlays)
                 .createUndertowDeploymentInfoService();
 
         final ServiceName deploymentInfoServiceName = deploymentServiceName.append(UndertowDeploymentInfoService.SERVICE_NAME);
@@ -407,7 +422,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
 
         infoBuilder.install();
 
-        final UndertowDeploymentService service = new UndertowDeploymentService(injectionContainer, true);
+        final UndertowDeploymentService service = new UndertowDeploymentService(injectionContainer, true, hotDeploymentFilter);
         final ServiceBuilder<UndertowDeploymentService> builder = serviceTarget.addService(deploymentServiceName, service)
                 .addAliases(legacyDeploymentServiceName)
                 .addDependencies(dependentComponents)
@@ -449,6 +464,16 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         node.get(DeploymentDefinition.VIRTUAL_HOST.getName()).set(hostName);
         node.get(DeploymentDefinition.SERVER.getName()).set(serverInstanceName);
         processManagement(deploymentUnit, metaData);
+    }
+
+    private HotDeploymentHandlerWrapper handleHotDeployment(DeploymentUnit deploymentUnit, DeploymentClassChangeSupport support, List<Path> priorityOverlays, String contextPath) {
+        Properties properties = deploymentUnit.getAttachment(ClassChangeAttachments.PROPERTIES);
+        if(support.getAdditionalWebResourcesRoot() != null) {
+            priorityOverlays.add(support.getAdditionalWebResourcesRoot());
+        }
+        final String remoteKey = properties == null ? null : properties.getProperty("remote.password");
+        return new HotDeploymentHandlerWrapper(remoteKey, support, contextPath);
+
     }
 
     private static CapabilityServiceConfigurator getSessionManagerFactoryServiceConfigurator(ServiceName deploymentServiceName, String serverName, String deploymentName, Module module, JBossWebMetaData metaData, ServletContainerService servletContainerService) {

@@ -30,6 +30,7 @@ import javax.persistence.EntityManagerFactory;
 
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.jpa.messages.JpaLogger;
+import org.jboss.as.jpa.service.EntityManagerFactoryDelegate;
 import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
@@ -105,6 +106,9 @@ public class PersistenceUnitInjectionSource extends InjectionSource {
             EntityManagerFactory emf = service.getEntityManagerFactory();
 
             if (!ENTITY_MANAGER_FACTORY_CLASS.equals(injectionTypeName)) { // inject non-standard wrapped class (e.g. org.hibernate.SessionFactory)
+                if(emf instanceof EntityManagerFactoryDelegate) {
+                    emf = ((EntityManagerFactoryDelegate) emf).getDelegate();
+                }
                 Class<?> extensionClass;
                 try {
                     // make sure we can access the target class type

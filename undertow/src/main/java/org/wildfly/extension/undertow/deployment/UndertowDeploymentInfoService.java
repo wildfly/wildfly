@@ -158,6 +158,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -240,33 +241,37 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final List<File> externalResources;
     private final InjectedValue<BiFunction> securityFunction = new InjectedValue<>();
     private final List<Predicate> allowSuspendedRequests;
+    private final boolean useResourceCache;
+    private final List<Path> priorityOverlays;
 
-    private UndertowDeploymentInfoService(final JBossWebMetaData mergedMetaData, final String deploymentName, final HashMap<String, TagLibraryInfo> tldInfo, final Module module, final ScisMetaData scisMetaData, final VirtualFile deploymentRoot, final String jaccContextId, final String securityDomain, final List<ServletContextAttribute> attributes, final String contextPath, final List<SetupAction> setupActions, final Set<VirtualFile> overlays, final List<ExpressionFactoryWrapper> expressionFactoryWrappers, List<PredicatedHandler> predicatedHandlers, List<HandlerWrapper> initialHandlerChainWrappers, List<HandlerWrapper> innerHandlerChainWrappers, List<HandlerWrapper> outerHandlerChainWrappers, List<ThreadSetupHandler> threadSetupActions, boolean explodedDeployment, List<ServletExtension> servletExtensions, SharedSessionManagerConfig sharedSessionManagerConfig, WebSocketDeploymentInfo webSocketDeploymentInfo, File tempDir, List<File> externalResources, List<Predicate> allowSuspendedRequests) {
-        this.mergedMetaData = mergedMetaData;
-        this.deploymentName = deploymentName;
-        this.tldInfo = tldInfo;
-        this.module = module;
-        this.scisMetaData = scisMetaData;
-        this.deploymentRoot = deploymentRoot;
-        this.jaccContextId = jaccContextId;
-        this.securityDomain = securityDomain;
-        this.attributes = attributes;
-        this.contextPath = contextPath;
-        this.setupActions = setupActions;
-        this.overlays = overlays;
-        this.expressionFactoryWrappers = expressionFactoryWrappers;
-        this.predicatedHandlers = predicatedHandlers;
-        this.initialHandlerChainWrappers = initialHandlerChainWrappers;
-        this.innerHandlerChainWrappers = innerHandlerChainWrappers;
-        this.outerHandlerChainWrappers = outerHandlerChainWrappers;
-        this.threadSetupActions = threadSetupActions;
-        this.explodedDeployment = explodedDeployment;
-        this.servletExtensions = servletExtensions;
-        this.sharedSessionManagerConfig = sharedSessionManagerConfig;
-        this.webSocketDeploymentInfo = webSocketDeploymentInfo;
-        this.tempDir = tempDir;
-        this.externalResources = externalResources;
-        this.allowSuspendedRequests = allowSuspendedRequests;
+    private UndertowDeploymentInfoService(Builder builder) {
+        this.mergedMetaData = builder.mergedMetaData;
+        this.deploymentName = builder.deploymentName;
+        this.tldInfo = builder.tldInfo;
+        this.module = builder.module;
+        this.scisMetaData = builder.scisMetaData;
+        this.deploymentRoot = builder.deploymentRoot;
+        this.jaccContextId = builder.jaccContextId;
+        this.securityDomain = builder.securityDomain;
+        this.attributes = builder.attributes;
+        this.contextPath = builder.contextPath;
+        this.setupActions = builder.setupActions;
+        this.overlays = builder.overlays;
+        this.expressionFactoryWrappers = builder.expressionFactoryWrappers;
+        this.predicatedHandlers = builder.predicatedHandlers;
+        this.initialHandlerChainWrappers = builder.initialHandlerChainWrappers;
+        this.innerHandlerChainWrappers = builder.innerHandlerChainWrappers;
+        this.outerHandlerChainWrappers = builder.outerHandlerChainWrappers;
+        this.threadSetupActions = builder.threadSetupActions;
+        this.explodedDeployment = builder.explodedDeployment;
+        this.servletExtensions = builder.servletExtensions;
+        this.sharedSessionManagerConfig = builder.sharedSessionManagerConfig;
+        this.webSocketDeploymentInfo = builder.webSocketDeploymentInfo;
+        this.tempDir = builder.tempDir;
+        this.externalResources = builder.externalResources;
+        this.allowSuspendedRequests = builder.allowSuspendedRequests;
+        this.useResourceCache = builder.useResourceCache;
+        this.priorityOverlays = builder.priorityOverlays;
     }
 
     @Override
@@ -580,9 +585,10 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 //TODO: make the caching limits configurable
                 List<String> externalOverlays = mergedMetaData.getOverlays();
 
-                ResourceManager resourceManager = new ServletResourceManager(deploymentRoot, overlays, explodedDeployment, mergedMetaData.isSymbolicLinkingEnabled(), servletContainer.isDisableFileWatchService(), externalOverlays);
-
-                resourceManager = new CachingResourceManager(servletContainer.getFileCacheMetadataSize(), servletContainer.getFileCacheMaxFileSize(), servletContainer.getBufferCache(), resourceManager, servletContainer.getFileCacheTimeToLive() == null ? (explodedDeployment ? 2000 : -1) : servletContainer.getFileCacheTimeToLive());
+                ResourceManager resourceManager = new ServletResourceManager(deploymentRoot, overlays, explodedDeployment, mergedMetaData.isSymbolicLinkingEnabled(), servletContainer.isDisableFileWatchService(), externalOverlays, priorityOverlays);
+                if(useResourceCache) {
+                    resourceManager = new CachingResourceManager(servletContainer.getFileCacheMetadataSize(), servletContainer.getFileCacheMaxFileSize(), servletContainer.getBufferCache(), resourceManager, servletContainer.getFileCacheTimeToLive() == null ? (explodedDeployment ? 2000 : -1) : servletContainer.getFileCacheTimeToLive());
+                }
                 if(externalResources != null && !externalResources.isEmpty()) {
                     //TODO: we don't cache external deployments, as they are intended for development use
                     //should be make this configurable or something?
@@ -1331,31 +1337,33 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     }
 
     public static class Builder {
-        private JBossWebMetaData mergedMetaData;
-        private String deploymentName;
-        private HashMap<String, TagLibraryInfo> tldInfo;
-        private Module module;
-        private ScisMetaData scisMetaData;
-        private VirtualFile deploymentRoot;
-        private String jaccContextId;
-        private List<ServletContextAttribute> attributes;
-        private String contextPath;
-        private String securityDomain;
-        private List<SetupAction> setupActions;
-        private Set<VirtualFile> overlays;
-        private List<ExpressionFactoryWrapper> expressionFactoryWrappers;
-        private List<PredicatedHandler> predicatedHandlers;
-        private List<HandlerWrapper> initialHandlerChainWrappers;
-        private List<HandlerWrapper> innerHandlerChainWrappers;
-        private List<HandlerWrapper> outerHandlerChainWrappers;
-        private List<ThreadSetupHandler> threadSetupActions;
-        private List<ServletExtension> servletExtensions;
-        private SharedSessionManagerConfig sharedSessionManagerConfig;
-        private boolean explodedDeployment;
-        private WebSocketDeploymentInfo webSocketDeploymentInfo;
-        private File tempDir;
-        private List<File> externalResources;
+        JBossWebMetaData mergedMetaData;
+        String deploymentName;
+        HashMap<String, TagLibraryInfo> tldInfo;
+        Module module;
+        ScisMetaData scisMetaData;
+        VirtualFile deploymentRoot;
+        String jaccContextId;
+        List<ServletContextAttribute> attributes;
+        String contextPath;
+        String securityDomain;
+        List<SetupAction> setupActions;
+        Set<VirtualFile> overlays;
+        List<ExpressionFactoryWrapper> expressionFactoryWrappers;
+        List<PredicatedHandler> predicatedHandlers;
+        List<HandlerWrapper> initialHandlerChainWrappers;
+        List<HandlerWrapper> innerHandlerChainWrappers;
+        List<HandlerWrapper> outerHandlerChainWrappers;
+        List<ThreadSetupHandler> threadSetupActions;
+        List<ServletExtension> servletExtensions;
+        SharedSessionManagerConfig sharedSessionManagerConfig;
+        boolean explodedDeployment;
+        WebSocketDeploymentInfo webSocketDeploymentInfo;
+        File tempDir;
+        List<File> externalResources;
         List<Predicate> allowSuspendedRequests;
+        boolean useResourceCache = true;
+        List<Path> priorityOverlays;
 
         Builder setMergedMetaData(final JBossWebMetaData mergedMetaData) {
             this.mergedMetaData = mergedMetaData;
@@ -1490,11 +1498,18 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             return this;
         }
 
+        public Builder setUseResourceCache(boolean useResourceCache) {
+            this.useResourceCache = useResourceCache;
+            return this;
+        }
+
+        public Builder setPriorityOverlays(List<Path> priorityOverlays) {
+            this.priorityOverlays = priorityOverlays;
+            return this;
+        }
+
         public UndertowDeploymentInfoService createUndertowDeploymentInfoService() {
-            return new UndertowDeploymentInfoService(mergedMetaData, deploymentName, tldInfo, module,
-                    scisMetaData, deploymentRoot, jaccContextId, securityDomain, attributes, contextPath, setupActions, overlays,
-                    expressionFactoryWrappers, predicatedHandlers, initialHandlerChainWrappers, innerHandlerChainWrappers, outerHandlerChainWrappers,
-                    threadSetupActions, explodedDeployment, servletExtensions, sharedSessionManagerConfig, webSocketDeploymentInfo, tempDir, externalResources, allowSuspendedRequests);
+            return new UndertowDeploymentInfoService(this);
         }
     }
 

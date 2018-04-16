@@ -100,41 +100,13 @@ public class PhaseOnePersistenceUnitServiceImpl implements Service<PhaseOnePersi
             @Override
             public void run() {
 
-                PrivilegedAction<Void> privilegedAction =
-                        new PrivilegedAction<Void>() {
-                            // run as security privileged action
-                            @Override
-                            public Void run() {
-                                try {
-                                    ROOT_LOGGER.startingPersistenceUnitService(1, pu.getScopedPersistenceUnitName());
-                                    pu.setTempClassLoaderFactory(new TempClassLoaderFactoryImpl(classLoader));
-                                    pu.setJtaDataSource(jtaDataSource.getOptionalValue());
-                                    pu.setNonJtaDataSource(nonJtaDataSource.getOptionalValue());
-
-                                    if (proxyBeanManager != null) {
-                                        if (wrapperBeanManagerLifeCycle != null) {
-                                          // pass the wrapper object representing the bean manager life cycle object
-                                          properties.getValue().put(CDI_BEAN_MANAGER, wrapperBeanManagerLifeCycle);
-                                        }
-                                        else {
-                                          properties.getValue().put(CDI_BEAN_MANAGER, proxyBeanManager);
-                                        }
-                                    }
-
-                                    WritableServiceBasedNamingStore.pushOwner(deploymentUnitServiceName);
-                                    entityManagerFactoryBuilder = createContainerEntityManagerFactoryBuilder();
-                                    context.complete();
-                                } catch (Throwable t) {
-                                    context.failed(new StartException(t));
-                                } finally {
-                                    pu.setTempClassLoaderFactory(null);    // release the temp classloader factory (only needed when creating the EMF)
-                                    WritableServiceBasedNamingStore.popOwner();
-                                }
-
-                                return null;
-                            }
-                        };
-                WildFlySecurityManager.doChecked(privilegedAction, accessControlContext);
+                try {
+                    PrivilegedAction<Void> privilegedAction = new StartAction();
+                    WildFlySecurityManager.doChecked(privilegedAction, accessControlContext);
+                    context.complete();
+                } catch (Exception e) {
+                    context.failed(new StartException(e));
+                }
             }
         };
         try {
@@ -156,37 +128,12 @@ public class PhaseOnePersistenceUnitServiceImpl implements Service<PhaseOnePersi
             // run async in a background thread
             @Override
             public void run() {
-
-                PrivilegedAction<Void> privilegedAction =
-                        new PrivilegedAction<Void>() {
-                            // run as security privileged action
-                            @Override
-                            public Void run() {
-
-                                ROOT_LOGGER.stoppingPersistenceUnitService(1, pu.getScopedPersistenceUnitName());
-                                if (entityManagerFactoryBuilder != null) {
-                                    WritableServiceBasedNamingStore.pushOwner(deploymentUnitServiceName);
-                                    try {
-                                        if (secondPhaseStarted == false) {
-                                            ROOT_LOGGER.tracef("PhaseOnePersistenceUnitServiceImpl cancelling %s " +
-                                                    "which didn't start (phase 2 not reached)", pu.getScopedPersistenceUnitName());
-                                            entityManagerFactoryBuilder.cancel();
-                                        }
-                                    } catch (Throwable t) {
-                                        ROOT_LOGGER.failedToStopPUService(t, pu.getScopedPersistenceUnitName());
-                                    } finally {
-                                        entityManagerFactoryBuilder = null;
-                                        pu.setTempClassLoaderFactory(null);
-                                        WritableServiceBasedNamingStore.popOwner();
-                                    }
-                                }
-                                properties.getValue().remove(CDI_BEAN_MANAGER);
-                                context.complete();
-
-                                return null;
-                            }
-                        };
-                WildFlySecurityManager.doChecked(privilegedAction, accessControlContext);
+                try {
+                    PrivilegedAction<Void> privilegedAction = new StopAction();
+                    WildFlySecurityManager.doChecked(privilegedAction, accessControlContext);
+                } finally {
+                    context.complete();
+                }
             }
 
         };
@@ -201,6 +148,10 @@ public class PhaseOnePersistenceUnitServiceImpl implements Service<PhaseOnePersi
 
     public InjectedValue<ExecutorService> getExecutorInjector() {
         return executorInjector;
+    }
+
+    void reload() {
+        new StartAction().run();
     }
 
     @Override
@@ -258,6 +209,64 @@ public class PhaseOnePersistenceUnitServiceImpl implements Service<PhaseOnePersi
             } finally {
                 pu.setAnnotationIndex(null);    // close reference to Annotation Index (only needed during call to createContainerEntityManagerFactory)
             }
+        }
+    }
+
+    private class StartAction implements PrivilegedAction<Void> {
+        // run as security privileged action
+        @Override
+        public Void run() {
+            try {
+                ROOT_LOGGER.startingPersistenceUnitService(1, pu.getScopedPersistenceUnitName());
+                pu.setTempClassLoaderFactory(new TempClassLoaderFactoryImpl(classLoader));
+                pu.setJtaDataSource(jtaDataSource.getOptionalValue());
+                pu.setNonJtaDataSource(nonJtaDataSource.getOptionalValue());
+
+                if (proxyBeanManager != null) {
+                    if (wrapperBeanManagerLifeCycle != null) {
+                      // pass the wrapper object representing the bean manager life cycle object
+                      properties.getValue().put(CDI_BEAN_MANAGER, wrapperBeanManagerLifeCycle);
+                    }
+                    else {
+                      properties.getValue().put(CDI_BEAN_MANAGER, proxyBeanManager);
+                    }
+                }
+
+                WritableServiceBasedNamingStore.pushOwner(deploymentUnitServiceName);
+                entityManagerFactoryBuilder = createContainerEntityManagerFactoryBuilder();
+            } finally {
+                pu.setTempClassLoaderFactory(null);    // release the temp classloader factory (only needed when creating the EMF)
+                WritableServiceBasedNamingStore.popOwner();
+            }
+
+            return null;
+        }
+    }
+
+    private class StopAction implements PrivilegedAction<Void> {
+        // run as security privileged action
+        @Override
+        public Void run() {
+
+            ROOT_LOGGER.stoppingPersistenceUnitService(1, pu.getScopedPersistenceUnitName());
+            if (entityManagerFactoryBuilder != null) {
+                WritableServiceBasedNamingStore.pushOwner(deploymentUnitServiceName);
+                try {
+                    if (secondPhaseStarted == false) {
+                        ROOT_LOGGER.tracef("PhaseOnePersistenceUnitServiceImpl cancelling %s " +
+                                "which didn't start (phase 2 not reached)", pu.getScopedPersistenceUnitName());
+                        entityManagerFactoryBuilder.cancel();
+                    }
+                } catch (Throwable t) {
+                    ROOT_LOGGER.failedToStopPUService(t, pu.getScopedPersistenceUnitName());
+                } finally {
+                    entityManagerFactoryBuilder = null;
+                    pu.setTempClassLoaderFactory(null);
+                    WritableServiceBasedNamingStore.popOwner();
+                }
+            }
+            properties.getValue().remove(CDI_BEAN_MANAGER);
+            return null;
         }
     }
 }

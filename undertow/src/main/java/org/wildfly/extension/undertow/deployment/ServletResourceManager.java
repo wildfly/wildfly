@@ -46,11 +46,12 @@ public class ServletResourceManager implements ResourceManager {
     private final PathResourceManager deploymentResourceManager;
     private final Collection<VirtualFile> overlays;
     private final ResourceManager[] externalOverlays;
+    private final ResourceManager[] priorityOverlays;
     private final boolean explodedDeployment;
 
     public ServletResourceManager(final VirtualFile resourcesRoot, final Collection<VirtualFile> overlays,
                                   boolean explodedDeployment, boolean followSymlink, boolean disableFileWatchService,
-                                  List<String> externalOverlays) throws IOException {
+                                  List<String> externalOverlays, List<Path> priorityOverlays) throws IOException {
         this.explodedDeployment = explodedDeployment;
         Path physicalFile = resourcesRoot.getPhysicalFile().toPath().toRealPath();
         deploymentResourceManager = new PathResourceManager(physicalFile, TRANSFER_MIN_SIZE, true,
@@ -67,10 +68,28 @@ public class ServletResourceManager implements ResourceManager {
                 this.externalOverlays[i] = pr;
             }
         }
+        if(priorityOverlays == null) {
+            this.priorityOverlays = new ResourceManager[0];
+        } else {
+            this.priorityOverlays = new ResourceManager[priorityOverlays.size()];
+            for (int i = 0; i < priorityOverlays.size(); ++i) {
+                Path path = priorityOverlays.get(i);
+                PathResourceManager pr = new PathResourceManager(path, TRANSFER_MIN_SIZE,
+                        true, followSymlink, !disableFileWatchService);
+                this.priorityOverlays[i] = pr;
+            }
+        }
     }
 
     @Override
     public Resource getResource(final String path) throws IOException {
+        for (int i = 0; i < priorityOverlays.length; ++i) {
+            ResourceManager manager = priorityOverlays[i];
+            Resource res = manager.getResource(path);
+            if(res != null) {
+                return res;
+            }
+        }
         Resource res = deploymentResourceManager.getResource(path);
         if (res != null) {
             return new ServletResource(this, res);
@@ -117,6 +136,11 @@ public class ServletResourceManager implements ResourceManager {
             deploymentResourceManager.registerResourceChangeListener(listener);
         }
         for(ResourceManager external : externalOverlays) {
+            if(external.isResourceChangeListenerSupported()) {
+                external.registerResourceChangeListener(listener);
+            }
+        }
+        for(ResourceManager external : priorityOverlays) {
             if(external.isResourceChangeListenerSupported()) {
                 external.registerResourceChangeListener(listener);
             }

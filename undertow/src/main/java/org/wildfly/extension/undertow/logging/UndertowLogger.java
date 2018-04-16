@@ -407,4 +407,13 @@ public interface UndertowLogger extends BasicLogger {
 
     @Message(id = 100, value = "Session %s not found")
     OperationFailedException sessionNotFound(String sessionId);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 101, value = "Failed to process remote hot deployment")
+    void failedToProcessRemoteHotDeployment(@Cause Throwable throwable);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 102, value = "Timed out processing remote hot deployment")
+    void timedOutProcessingRemoteHotDeployment();
+
 }

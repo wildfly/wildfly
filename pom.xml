@@ -56,6 +56,7 @@
         <module>bean-validation</module>
         <module>build</module>
         <module>build-legacy</module>
+        <module>class-change</module>
         <module>client/shade</module>
         <module>clustering</module>
         <module>component-matrix-builder</module>
@@ -285,6 +286,7 @@
         <version.org.eclipse.microprofile.rest.client.api>1.0</version.org.eclipse.microprofile.rest.client.api>
         <version.org.eclipse.yasson>1.0.1</version.org.eclipse.yasson>
         <version.org.eclipselink.version>2.7.1</version.org.eclipselink.version>
+        <version.org.fakereplace>1.0.0.Alpha7</version.org.fakereplace>
         <version.org.glassfish.javax.el>3.0.1-b08-jbossorg-1</version.org.glassfish.javax.el>
         <version.org.glassfish.javax.enterprise.concurrent>1.0</version.org.glassfish.javax.enterprise.concurrent>
         <version.org.glassfish.javax.json>1.1.2</version.org.glassfish.javax.json>
@@ -383,6 +385,7 @@
         <version.org.wildfly.bridge.servlet-api-bridge>1.0.1.Final</version.org.wildfly.bridge.servlet-api-bridge>
         <version.org.wildfly.cdi-api-bridge>1.0.1.Final</version.org.wildfly.cdi-api-bridge>
         <version.org.wildfly.core>6.0.0.Alpha1</version.org.wildfly.core>
+        <version.org.wildfly.class-change-agent>1.0.0.Alpha1-SNAPSHOT</version.org.wildfly.class-change-agent>
         <version.org.wildfly.http-client>1.0.12.Final</version.org.wildfly.http-client>
         <version.org.wildfly.naming-client>1.0.9.Final</version.org.wildfly.naming-client>
         <version.org.wildfly.transaction.client>1.1.2.Final</version.org.wildfly.transaction.client>
@@ -550,6 +553,12 @@
                 <artifactId>wildfly-build</artifactId>
                 <version>${project.version}</version>
                 <type>pom</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>wildfly-class-change</artifactId>
+                <version>${project.version}</version>
             </dependency>
 
             <dependency>
@@ -3538,6 +3547,18 @@
                 </exclusions>
             </dependency>
 
+            <dependency>
+                <groupId>org.fakereplace</groupId>
+                <artifactId>fakereplace</artifactId>
+                <version>${version.org.fakereplace}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.fakereplace</groupId>
+                <artifactId>fakereplace-partial-dist</artifactId>
+                <version>${version.org.fakereplace}</version>
+            </dependency>
+
             <!-- EL3 RI implementation -->
             <dependency>
                 <groupId>org.glassfish</groupId>
@@ -6091,6 +6112,12 @@
                 <groupId>org.wildfly.checkstyle</groupId>
                 <artifactId>wildfly-checkstyle-config</artifactId>
                 <version>${version.org.wildfly.checkstyle-config}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.class-change</groupId>
+                <artifactId>wildfly-class-change-agent</artifactId>
+                <version>${version.org.wildfly.class-change-agent}</version>
             </dependency>
 
             <dependency>

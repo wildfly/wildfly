@@ -26,13 +26,17 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.ws.rs.ApplicationPath;
+import javax.ws.rs.Path;
 import javax.ws.rs.core.Application;
 
 import org.jboss.as.ee.structure.DeploymentType;
@@ -45,11 +49,12 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.web.common.WarMetaData;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.DotName;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.jboss.JBossServletMetaData;
 import org.jboss.metadata.web.jboss.JBossServletsMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
-import org.jboss.metadata.web.spec.FilterMetaData;
 import org.jboss.metadata.web.spec.ServletMappingMetaData;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
@@ -59,6 +64,16 @@ import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
 import static org.jboss.as.jaxrs.logging.JaxrsLogger.JAXRS_LOGGER;
 
 import org.jboss.as.jaxrs.JaxrsExtension;
+import org.wildfly.extension.classchange.ClassChangeAttachments;
+import org.wildfly.extension.classchange.ClassChangeListener;
+import org.wildfly.extension.classchange.DeploymentClassChangeSupport;
+import org.wildfly.extension.undertow.deployment.UndertowAttachments;
+
+import io.undertow.server.HandlerWrapper;
+import io.undertow.server.HttpHandler;
+import io.undertow.server.HttpServerExchange;
+import io.undertow.servlet.core.ManagedServlet;
+import io.undertow.servlet.handlers.ServletRequestContext;
 
 
 /**
@@ -68,9 +83,7 @@ import org.jboss.as.jaxrs.JaxrsExtension;
 public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
     private static final String JAX_RS_SERVLET_NAME = "javax.ws.rs.core.Application";
     private static final String SERVLET_INIT_PARAM = "javax.ws.rs.Application";
-    public static final String RESTEASY_SCAN = "resteasy.scan";
-    public static final String RESTEASY_SCAN_RESOURCES = "resteasy.scan.resources";
-    public static final String RESTEASY_SCAN_PROVIDERS = "resteasy.scan.providers";
+    private static final String RESOURCES = "resteasy.scanned.resources";
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -186,6 +199,7 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
             }
         }
 
+        String servletName = JAX_RS_SERVLET_NAME;
         // add default servlet
         if (applicationClassSet.size() == 0) {
             JBossServletMetaData servlet = new JBossServletMetaData();
@@ -197,7 +211,6 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
         } else {
 
             for (Class<? extends Application> applicationClass : applicationClassSet) {
-                String servletName = null;
 
                 servletName = applicationClass.getName();
                 JBossServletMetaData servlet = new JBossServletMetaData();
@@ -240,6 +253,61 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
                 }
 
             }
+        }
+
+        DeploymentClassChangeSupport classChangeSupport = deploymentUnit.getAttachment(ClassChangeAttachments.DEPLOYMENT_CLASS_CHANGE_SUPPORT);
+        if(classChangeSupport != null) {
+            final String finalServletName = servletName;
+            final AtomicBoolean jaxrsRestartRequired = new AtomicBoolean();
+            final Deque<String> additionalResources = new LinkedBlockingDeque<>();
+            classChangeSupport.addListener(new ClassChangeListener() {
+                @Override
+                public void classesReplaced(List<ChangedClasssDefinition> replacedClasses, List<NewClassDefinition> newClassDefinitions) {
+//                    for(ChangedClasssDefinition c : replacedClasses) {
+//                        if(c.getJavaClass().isAnnotationPresent(Path.class)) {
+//                            jaxrsRestartRequired.set(true);
+//                        }
+//                    }
+                    //this is not great, but we can't be sure that any given class is not serialized as part of a JAX-RS
+                    //response, so we need to restart to clear any serialization caches
+                    for(NewClassDefinition c : newClassDefinitions) {
+                        List<AnnotationInstance> path = c.getClassInfo().annotations().get(DotName.createSimple(Path.class.getName()));
+                        if(path != null && !path.isEmpty()) {
+                            additionalResources.add(c.getName());
+                        }
+                    }
+                    jaxrsRestartRequired.set(true);
+                }
+            });
+
+            deploymentUnit.addToAttachmentList(UndertowAttachments.UNDERTOW_INNER_HANDLER_CHAIN_WRAPPERS, new HandlerWrapper() {
+                @Override
+                public HttpHandler wrap(HttpHandler handler) {
+                    return new HttpHandler() {
+                        @Override
+                        public void handleRequest(HttpServerExchange exchange) throws Exception {
+                            if(jaxrsRestartRequired.get()) {
+                                jaxrsRestartRequired.set(false);
+                                ServletRequestContext src = ServletRequestContext.requireCurrent();
+                                ManagedServlet managedServlet = src.getDeployment().getServlets().getManagedServlet(finalServletName);
+                                String res = src.getCurrentServletContext().getInitParameter(RESOURCES);
+                                if(res != null) {
+                                    StringBuilder sb = new StringBuilder(res);
+                                    String resource = additionalResources.poll();
+                                    while (resource != null) {
+                                        sb.append(',');
+                                        sb.append(resource);
+                                        resource = additionalResources.poll();
+                                    }
+                                    src.getCurrentServletContext().getDeployment().getDeploymentInfo().addInitParameter(RESOURCES, sb.toString());
+                                }
+                                managedServlet.stop();
+                            }
+                            handler.handleRequest(exchange);
+                        }
+                    };
+                }
+            });
         }
 
         // suppress warning for EAR deployments, as we can't easily tell here the app is properly declared
@@ -310,48 +378,6 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
         } catch (Exception e) {
             JAXRS_LOGGER.debugf("Failed to clear class utils LRU map");
         }
-    }
-
-    protected void setFilterInitParam(FilterMetaData filter, String name, String value) {
-        ParamValueMetaData param = new ParamValueMetaData();
-        param.setParamName(name);
-        param.setParamValue(value);
-        List<ParamValueMetaData> params = filter.getInitParam();
-        if (params == null) {
-            params = new ArrayList<ParamValueMetaData>();
-            filter.setInitParam(params);
-        }
-        params.add(param);
-
-    }
-
-    public static ParamValueMetaData findContextParam(JBossWebMetaData webdata, String name) {
-        List<ParamValueMetaData> params = webdata.getContextParams();
-        if (params == null)
-            return null;
-        for (ParamValueMetaData param : params) {
-            if (param.getParamName().equals(name)) {
-                return param;
-            }
-        }
-        return null;
-    }
-
-    public static ParamValueMetaData findInitParam(JBossWebMetaData webdata, String name) {
-        JBossServletsMetaData servlets = webdata.getServlets();
-        if (servlets == null)
-            return null;
-        for (JBossServletMetaData servlet : servlets) {
-            List<ParamValueMetaData> initParams = servlet.getInitParam();
-            if (initParams != null) {
-                for (ParamValueMetaData param : initParams) {
-                    if (param.getParamName().equals(name)) {
-                        return param;
-                    }
-                }
-            }
-        }
-        return null;
     }
 
     public static boolean servletMappingsExist(JBossWebMetaData webdata, String servletName) {

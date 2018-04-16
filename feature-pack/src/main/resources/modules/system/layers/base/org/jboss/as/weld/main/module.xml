@@ -74,6 +74,7 @@
         <module name="org.jboss.msc"/>
         <module name="org.jboss.threads"/>
         <module name="org.jboss.vfs"/>
+        <module name="org.wildfly.extension.class-change" />
     </dependencies>
 
 </module>

@@ -46,6 +46,7 @@
         <packages>
             <package name="product.conf" optional="true"/>
             <package name="misc.standalone"/>
+            <package name="org.fakereplace"/>
         </packages>
     </config>
 

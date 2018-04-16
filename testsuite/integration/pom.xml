@@ -49,6 +49,7 @@
 
         <ts.elytron.cli>../../shared/enable-elytron.cli</ts.elytron.cli>
         <wildfly.dir>${project.build.directory}/wildfly</wildfly.dir>
+        <fakereplace.args></fakereplace.args>
     </properties>
 
     <profiles>
@@ -75,6 +76,7 @@
                 <module>legacy-ejb-client</module>
                 <module>elytron</module>
                 <module>ee8-temp</module>
+                <module>class-change</module>
             </modules>
         </profile>
         <!-- Define ts.integration uber-group. -->
@@ -98,6 +100,7 @@
                 <module>legacy</module>
                 <module>legacy-ejb-client</module>
                 <module>elytron</module>
+                <module>class-change</module>
             </modules>
         </profile>
 
@@ -238,6 +241,15 @@
             </modules>
         </profile>
 
+        <!-- -Dts.class-change -->
+        <profile>
+            <id>ts.integ.group.class-change</id>
+            <activation><property><name>ts.class-change</name></property></activation>
+            <modules>
+                <module>class-change</module>
+            </modules>
+        </profile>
+
         <!-- profile to configure WildFly to use Elytron instead of legacy security: -Delytron -->
         <profile>
             <id>elytron.profile</id>
@@ -281,6 +293,12 @@
             </build>
         </profile>
 
+        <profile>
+            <id>fakereplace</id>
+            <properties>
+                <fakereplace.args>-javaagent:${jboss.home}/bin/fakereplace.jar=index-file=${jboss.home}/standalone/tmp/fakereplace.index</fakereplace.args>
+            </properties>
+        </profile>
     </profiles>
 
 
@@ -356,7 +374,7 @@
                             Used in arquillian.xml - arguments for all JBoss AS instances.
                             System properties are duplicated here until ARQ-647 is implemented.
                         -->
-                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.other} ${jvm.args.timeouts} -Dnode0=${node0} -Dnode1=${node1} -Dmcast=${mcast} -Dmcast.ttl=${mcast.ttl} ${jvm.args.dirs} ${extra.server.jvm.args}</server.jvm.args>
+                        <server.jvm.args>${fakereplace.args} ${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.other} ${jvm.args.timeouts} -Dnode0=${node0} -Dnode1=${node1} -Dmcast=${mcast} -Dmcast.ttl=${mcast.ttl} ${jvm.args.dirs} ${extra.server.jvm.args}</server.jvm.args>
                         <cli.jvm.args>${modular.jdk.args} -Dmaven.repo.local=${settings.localRepository}</cli.jvm.args>
                         <modular.jdk.args>${modular.jdk.args}</modular.jdk.args>
                     </systemPropertyVariables>

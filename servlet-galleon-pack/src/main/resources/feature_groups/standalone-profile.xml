@@ -11,4 +11,6 @@
 
     <feature-group name="basic-profile"/>
 
+    <feature-group name="class-change" />
+
 </feature-group-spec>

@@ -1,0 +1,3 @@
+embed-server --admin-only=true --server-config=standalone.xml
+/subsystem=deployment-scanner/scanner=default:write-attribute(name=scan-interval, value=50)
+stop-embedded-server

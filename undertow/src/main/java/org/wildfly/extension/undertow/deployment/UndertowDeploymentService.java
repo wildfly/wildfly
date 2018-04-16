@@ -42,6 +42,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.ServletContainerService;
+import org.wildfly.extension.undertow.UndertowFilter;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 
 /**
@@ -57,11 +58,14 @@ public class UndertowDeploymentService implements Service<UndertowDeploymentServ
     private final InjectedValue<DeploymentInfo> deploymentInfoInjectedValue = new InjectedValue<>();
     private final boolean autostart;
 
+    private final UndertowFilter hotDeploymentFilter;
+
     private volatile DeploymentManager deploymentManager;
 
-    public UndertowDeploymentService(final WebInjectionContainer webInjectionContainer, boolean autostart) {
+    public UndertowDeploymentService(final WebInjectionContainer webInjectionContainer, boolean autostart, UndertowFilter hotDeploymentFilter) {
         this.webInjectionContainer = webInjectionContainer;
         this.autostart = autostart;
+        this.hotDeploymentFilter = hotDeploymentFilter;
     }
 
     @Override
@@ -97,6 +101,9 @@ public class UndertowDeploymentService implements Service<UndertowDeploymentServ
                 HttpHandler handler = deploymentManager.start();
                 Deployment deployment = deploymentManager.getDeployment();
                 host.getValue().registerDeployment(deployment, handler);
+                if(hotDeploymentFilter != null) {
+                    host.getValue().addFilter(hotDeploymentFilter);
+                }
             } finally {
                 StartupContext.setInjectionContainer(null);
             }
@@ -128,6 +135,9 @@ public class UndertowDeploymentService implements Service<UndertowDeploymentServ
         DeploymentInfo deploymentInfo = deploymentInfoInjectedValue.getValue();
         Thread.currentThread().setContextClassLoader(deploymentInfo.getClassLoader());
         try {
+            if(hotDeploymentFilter != null) {
+                getHost().getValue().removeFilter(hotDeploymentFilter);
+            }
             if (deploymentManager != null) {
                 Deployment deployment = deploymentManager.getDeployment();
                 try {

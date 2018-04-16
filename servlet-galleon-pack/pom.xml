@@ -162,6 +162,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.fakereplace</groupId>
+            <artifactId>fakereplace-partial-dist</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>javax.enterprise.concurrent</artifactId>
         </dependency>
@@ -386,6 +391,17 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-class-change</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-common</artifactId>
             <exclusions>
                 <exclusion>
@@ -575,6 +591,7 @@
                                 <extension>org.jboss.as.logging</extension>
                                 <extension>org.jboss.as.naming</extension>
                                 <extension>org.jboss.as.security</extension>
+                                <extension>org.wildfly.extension.class-change</extension>
                                 <extension>org.wildfly.extension.core-management</extension>
                                 <extension>org.wildfly.extension.elytron</extension>
                                 <extension>org.wildfly.extension.io</extension>

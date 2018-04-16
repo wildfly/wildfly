@@ -148,7 +148,6 @@ public class WebParsingDeploymentProcessor implements DeploymentUnitProcessor {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(old);
         }
     }
-
     @Override
     public void undeploy(final DeploymentUnit context) {
     }

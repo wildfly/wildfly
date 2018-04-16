@@ -45,6 +45,9 @@
                 subsystems="configuration/host/subsystems.xml"
                 output-file="domain/configuration/host-slave.xml" />
     </config>
+    <copy-artifacts>
+        <copy-artifact artifact="org.fakereplace:fakereplace-partial-dist" to-location="bin/fakereplace.jar" />
+    </copy-artifacts>
     <file-permissions>
         <permission value="755">
             <filter pattern="*.sh" include="true"/>

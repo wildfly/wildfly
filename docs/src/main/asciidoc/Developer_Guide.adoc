@@ -33,6 +33,8 @@ include::_developer-guide/Deployment_Descriptors_used_In_WildFly.adoc[]
 
 include::_developer-guide/Development_Guidelines_and_Recommended_Practices.adoc[]
 
+include::_developer-guide/Rapid_Development_Guide.adoc[]
+
 include::_developer-guide/Application_Client_Reference.adoc[]
 
 include::_developer-guide/Embedded_API.adoc[]

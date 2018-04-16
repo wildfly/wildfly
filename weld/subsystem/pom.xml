@@ -48,6 +48,11 @@
 
       <dependency>
          <groupId>${project.groupId}</groupId>
+         <artifactId>wildfly-class-change</artifactId>
+      </dependency>
+
+      <dependency>
+         <groupId>${project.groupId}</groupId>
          <artifactId>wildfly-ee</artifactId>
       </dependency>
 

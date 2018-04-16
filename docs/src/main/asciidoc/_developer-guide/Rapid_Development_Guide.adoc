@@ -1,0 +1,107 @@
+= Rapid Development Guide
+
+WildFly supports rapid development using the Fakereplace java agent. This agent allows you to hot replace classes
+without performing a redeploy, which reduces time spent waiting for redeployment and increases developer productivity.
+
+This also allows for a scripting language like workflow, where all that is required is to modify the java files
+and then refresh the browser, and WildFly will transparently compile and replace changed classes in the background
+and show the results immediately.
+
+Note that at present this does not work with EAR based deployments, only WAR and JAR based deployments are supported.
+
+== Server Setup
+
+In order to use this feature the following conditions must be met:
+
+* You must be using a standalone (non domain mode) server
+* The class-change subsystem must be present in standalone.xml (present by default)
+* You must start the server with the Fakereplace java agent
+
+The easiest way to enable the Fakereplace agent is to execute the following command:
+
+```
+echo 'JAVA_OPTS="-javaagent:$JBOSS_HOME/bin/Fakereplace.jar $JAVA_OPTS"' >> $JBOSS_HOME/bin/standalone.conf
+```
+
+When this is enabled you should see a log message on boot warning you that hot class replacement is enabled, and that
+this is not suitable for production use.
+
+== Modes of Operation
+
+The class replacement gives quite a bit of flexibility in terms of what is supported. Each different option is covered
+here.
+
+=== Using a Debugger
+
+Fakereplace will automatically enhance the support that is provided to changes made via a debugger. While normally a
+debugger can only change method bytecode when Fakereplace is enable you can also change methods, fields and annotations,
+and supported frameworks will be updated to reflect these changes. No additional setup is needed, it should just work.
+
+Unfortunately the debugger wire protocol does not allow you to add new classes, or replace web resources, so this approach
+is somewhat limited.
+
+=== Copying to an Exploded Deployment
+
+If you are using an exploded deployment then you can simply copy new versions of the class files into the exploded
+deployment directory. When the next web request is served the updated class files will be replaced, and assuming this is
+successful will be used to process the request. You can also add new classes in a similar manner.
+
+=== Workspace based Replacement
+
+It is also possible to have changes applied directly from your local workspace, for both local and remote servers.
+To do this you need to include a `class-change.properties` file in your `META-INF` or `WEB-INF` dir. This file supports
+the following property names:
+
+* `web.resources.dir`: The directory containing web resources
+* `srcs.dir`: The directory containing Java source files
+* `classes.dir`: The directory containing Java class files
+* `remote.password`: A remote password for remote class replacement
+
+All of the above properties are optional, although if they are all missing then nothing will happen.
+
+The basic workflow for both remote and local replacement is very similar:
+
+* A HTTP request is sent to the deployment
+* Wildfly pauses the request to check for changes
+* A change check is performed, the exact way this is performed is different depending on if local or remote replacement is in use
+* If web resources have changed then local resources are updated
+* If Java files have changed then they are transparently compiled
+* An attempt is then made to update changed classes using the Fakereplace agent
+* If this fails then the deployment is redeployed to apply the changes
+* The HTTP request continues to the updated deployment
+
+The end result of this is that you can simply change your Java classes in your local workspace,
+refresh the browser and immediately see the results (immediately may involve a delay if a redeploy
+is required).
+
+==== Local Workspace Replacement
+
+All that is required is to omit the `remote.password` item in `class-change.properties` and point
+one or more of the other properties to the appropriate directory in your local workspace. WildFly will scan these
+directories looking for changes, and apply them to the deployment automatically.
+
+==== Remote Workspace Replacement
+
+To use remote workspace replacement the `remote.password` property must be set in the class-change.properties.
+
+This should never be set on a production machine, it is intended for cloud based development only. A secure password
+should be used, as if an adversary guesses this password they can modify the class files of your application.
+
+TODO: this section needs to be updated once the agent tool is finalised
+
+To use remote replacement you must build the remote agent from:
+
+https://github.com/stuartwdouglas/wildfly-class-change-agent[]
+
+To perform remote replacement run
+
+```
+java -jar target/wildfly-class-change-agent.jar target path/to/class-change.properties
+```
+
+The agent will connect to a remote server via a websocket, and assuming the passwords match (and the server has been
+set up for class replacement) the agent will start monitoring your local workspace. And changes will be uploaded
+to the remote server in much the same way as for local replacement.
+
+
+

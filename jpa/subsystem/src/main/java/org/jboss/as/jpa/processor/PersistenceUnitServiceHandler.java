@@ -35,6 +35,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import javax.enterprise.inject.spi.BeanManager;
+import javax.persistence.Entity;
 import javax.persistence.SynchronizationType;
 import javax.persistence.ValidationMode;
 import javax.persistence.spi.PersistenceProvider;
@@ -93,6 +94,9 @@ import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.weld.deployment.WeldPortableExtensions;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
@@ -113,6 +117,9 @@ import org.jipijapa.plugin.spi.Platform;
 import org.jipijapa.plugin.spi.TwoPhaseBootstrapCapable;
 import org.wildfly.transaction.client.ContextTransactionManager;
 import org.wildfly.transaction.client.ContextTransactionSynchronizationRegistry;
+import org.wildfly.extension.classchange.ClassChangeAttachments;
+import org.wildfly.extension.classchange.ClassChangeListener;
+import org.wildfly.extension.classchange.DeploymentClassChangeSupport;
 
 /**
  * Handle the installation of the Persistence Unit service
@@ -338,10 +345,13 @@ public class PersistenceUnitServiceHandler {
             }
             BeanManagerAfterDeploymentValidation beanManagerAfterDeploymentValidation = registerJPAEntityListenerRegister(deploymentUnit);
 
+            DeploymentClassChangeSupport classChangeSupport = deploymentUnit.getAttachment(ClassChangeAttachments.DEPLOYMENT_CLASS_CHANGE_SUPPORT);
+
             final PersistenceUnitServiceImpl service =
                     new PersistenceUnitServiceImpl(classLoader, pu, adaptor, provider, PersistenceUnitRegistryImpl.INSTANCE,
                             deploymentUnit.getServiceName(), validatorFactory, deploymentUnit.getAttachment(org.jboss.as.ee.naming.Attachments.JAVA_NAMESPACE_SETUP_ACTION),
-                            beanManagerAfterDeploymentValidation );
+                            beanManagerAfterDeploymentValidation, classChangeSupport != null);
+            handleClassChange(service, classChangeSupport);
 
             final PersistenceAdaptorRemoval persistenceAdaptorRemoval = new PersistenceAdaptorRemoval(pu, adaptor);
             deploymentUnit.addToAttachmentList(REMOVAL_KEY, persistenceAdaptorRemoval);
@@ -433,6 +443,41 @@ public class PersistenceUnitServiceHandler {
         } catch (ServiceRegistryException e) {
             throw JpaLogger.ROOT_LOGGER.failedToAddPersistenceUnit(e, pu.getPersistenceUnitName());
         }
+    }
+
+    private static void handleClassChange(PersistenceUnitServiceImpl service, DeploymentClassChangeSupport classChangeSupport) {
+        if(classChangeSupport == null) {
+            return;
+        }
+        classChangeSupport.addListener(new ClassChangeListener() {
+            @Override
+            public void classesReplaced(List<ChangedClasssDefinition> replacedClasses, List<NewClassDefinition> newClassDefinitions) {
+                boolean reloadRequired = false;
+                Map<URL, ClassInfo> newClassInfo = new HashMap<>();
+                for(ChangedClasssDefinition clazz : replacedClasses) {
+                    if(clazz.getJavaClass().isAnnotationPresent(Entity.class)) {
+                        reloadRequired = true;
+                        URL classFileUri = clazz.getJavaClass().getClassLoader().getResource(clazz.getJavaClass().getName().replace(".", "/") + ".class");
+                        if(classFileUri != null) {
+                            newClassInfo.put(classFileUri, clazz.getClassInfo());
+                        }
+                    }
+                }
+                for(NewClassDefinition clazz : newClassDefinitions) {
+                    List<AnnotationInstance> annotationInstances = clazz.getClassInfo().annotations().get(DotName.createSimple(Entity.class.getName()));
+                    if(annotationInstances != null && ! annotationInstances.isEmpty()) {
+                        reloadRequired = true;
+                        URL classFileUri = clazz.getClassLoader().getResource(clazz.getName().replace(".", "/") + ".class");
+                        if(classFileUri != null) {
+                            newClassInfo.put(classFileUri, clazz.getClassInfo());
+                        }
+                    }
+                }
+                if(reloadRequired) {
+                    service.reload();
+                }
+            }
+        });
     }
 
     /**
@@ -576,7 +621,9 @@ public class PersistenceUnitServiceHandler {
                 validatorFactory = deploymentUnit.getAttachment(BeanValidationAttachments.VALIDATOR_FACTORY);
             }
             BeanManagerAfterDeploymentValidation beanManagerAfterDeploymentValidation = registerJPAEntityListenerRegister(deploymentUnit);
-            final PersistenceUnitServiceImpl service = new PersistenceUnitServiceImpl(classLoader, pu, adaptor, provider, PersistenceUnitRegistryImpl.INSTANCE, deploymentUnit.getServiceName(), validatorFactory, deploymentUnit.getAttachment(org.jboss.as.ee.naming.Attachments.JAVA_NAMESPACE_SETUP_ACTION), beanManagerAfterDeploymentValidation);
+            DeploymentClassChangeSupport classChangeSupport = deploymentUnit.getAttachment(ClassChangeAttachments.DEPLOYMENT_CLASS_CHANGE_SUPPORT);
+            final PersistenceUnitServiceImpl service = new PersistenceUnitServiceImpl(classLoader, pu, adaptor, provider, PersistenceUnitRegistryImpl.INSTANCE, deploymentUnit.getServiceName(), validatorFactory, deploymentUnit.getAttachment(org.jboss.as.ee.naming.Attachments.JAVA_NAMESPACE_SETUP_ACTION), beanManagerAfterDeploymentValidation, classChangeSupport != null);
+            handleClassChange(service, classChangeSupport);
             final PersistenceAdaptorRemoval persistenceAdaptorRemoval =  new PersistenceAdaptorRemoval(pu, adaptor);
             deploymentUnit.addToAttachmentList(REMOVAL_KEY, persistenceAdaptorRemoval);
 

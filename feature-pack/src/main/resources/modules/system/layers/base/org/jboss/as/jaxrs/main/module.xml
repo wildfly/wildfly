@@ -46,6 +46,7 @@
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.as.web-common"/>
         <module name="org.wildfly.extension.undertow"/>
+        <module name="org.wildfly.extension.class-change" />
         <module name="io.undertow.core"/>
         <module name="io.undertow.servlet"/>
         <module name="org.jboss.jandex"/>

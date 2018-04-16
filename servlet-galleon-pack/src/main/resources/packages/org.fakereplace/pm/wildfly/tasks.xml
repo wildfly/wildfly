@@ -1,0 +1,5 @@
+<?xml version="1.0" ?>
+
+<tasks xmlns="urn:wildfly:wildfly-feature-pack-tasks:2.0">
+    <copy-artifact artifact="org.fakereplace:fakereplace-partial-dist" to-location="bin/fakereplace.jar" />
+</tasks>
