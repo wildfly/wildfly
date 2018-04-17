@@ -65,18 +65,41 @@ public class HttpsListenerService extends HttpListenerService {
     private volatile AcceptingChannel<SslConnection> sslServer;
     static final String PROTOCOL = "https";
     private final String cipherSuites;
+    private final boolean proxyProtocol;
 
-    public HttpsListenerService(final String name, String serverName, OptionMap listenerOptions, String cipherSuites, OptionMap socketOptions) {
-        this(name, serverName, listenerOptions, cipherSuites, socketOptions, false, false);
+    public HttpsListenerService(final String name, String serverName, OptionMap listenerOptions, String cipherSuites, OptionMap socketOptions, boolean proxyProtocol) {
+        this(name, serverName, listenerOptions, cipherSuites, socketOptions, false, false, proxyProtocol);
     }
 
-    HttpsListenerService(final String name, String serverName, OptionMap listenerOptions, String cipherSuites, OptionMap socketOptions, boolean certificateForwarding, boolean proxyAddressForwarding) {
-        super(name, serverName, listenerOptions, socketOptions, certificateForwarding, proxyAddressForwarding);
+    HttpsListenerService(final String name, String serverName, OptionMap listenerOptions, String cipherSuites, OptionMap socketOptions, boolean certificateForwarding, boolean proxyAddressForwarding, boolean proxyProtocol) {
+        super(name, serverName, listenerOptions, socketOptions, certificateForwarding, proxyAddressForwarding, proxyProtocol);
         this.cipherSuites = cipherSuites;
+        this.proxyProtocol = proxyProtocol;
     }
 
     void setSSLContextSupplier(Supplier<SSLContext> sslContextSupplier) {
         this.sslContextSupplier = sslContextSupplier;
+    }
+
+    @Override
+    protected UndertowXnioSsl getSsl() {
+        SSLContext sslContext = sslContextSupplier.get();
+        OptionMap combined = getSSLOptions(sslContext);
+
+        return new UndertowXnioSsl(worker.getValue().getXnio(), combined, sslContext);
+    }
+
+    protected OptionMap getSSLOptions(SSLContext sslContext) {
+        Builder builder = OptionMap.builder().addAll(commonOptions);
+        builder.addAll(socketOptions);
+        builder.set(Options.USE_DIRECT_BUFFERS, true);
+
+        if (cipherSuites != null) {
+            String[] cipherList = CipherSuiteSelector.fromString(cipherSuites).evaluate(sslContext.getSupportedSSLParameters().getCipherSuites());
+            builder.setSequence((Option<Sequence<String>>) HttpsListenerResourceDefinition.ENABLED_CIPHER_SUITES.getOption(), cipherList);
+        }
+
+        return builder.getMap();
     }
 
     @Override
@@ -109,22 +132,17 @@ public class HttpsListenerService extends HttpListenerService {
         return alpn;
     }
 
+
+
     @Override
     protected void startListening(XnioWorker worker, InetSocketAddress socketAddress, ChannelListener<AcceptingChannel<StreamConnection>> acceptListener) throws IOException {
-        SSLContext sslContext = sslContextSupplier.get();
-        Builder builder = OptionMap.builder().addAll(commonOptions);
-        builder.addAll(socketOptions);
-        builder.set(Options.USE_DIRECT_BUFFERS, true);
 
-        if (cipherSuites != null) {
-            String[] cipherList = CipherSuiteSelector.fromString(cipherSuites).evaluate(sslContext.getSupportedSSLParameters().getCipherSuites());
-            builder.setSequence((Option<Sequence<String>>) HttpsListenerResourceDefinition.ENABLED_CIPHER_SUITES.getOption(), cipherList);
+        if(proxyProtocol) {
+            sslServer = worker.createStreamConnectionServer(socketAddress, (ChannelListener) acceptListener, getSSLOptions(sslContextSupplier.get()));
+        } else {
+            XnioSsl ssl = getSsl();
+            sslServer = ssl.createSslConnectionServer(worker, socketAddress, (ChannelListener) acceptListener, getSSLOptions(sslContextSupplier.get()));
         }
-
-        OptionMap combined = builder.getMap();
-
-        XnioSsl xnioSsl = new UndertowXnioSsl(worker.getXnio(), combined, sslContext);
-        sslServer = xnioSsl.createSslConnectionServer(worker, socketAddress, (ChannelListener) acceptListener, combined);
         sslServer.resumeAccepts();
 
         final InetSocketAddress boundAddress = sslServer.getLocalAddress(InetSocketAddress.class);

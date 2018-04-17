@@ -62,8 +62,8 @@ public class HttpListenerService extends ListenerService {
 
     private final String serverName;
 
-    public HttpListenerService(String name, final String serverName, OptionMap listenerOptions, OptionMap socketOptions, boolean certificateForwarding, boolean proxyAddressForwarding) {
-        super(name, listenerOptions, socketOptions);
+    public HttpListenerService(String name, final String serverName, OptionMap listenerOptions, OptionMap socketOptions, boolean certificateForwarding, boolean proxyAddressForwarding, boolean proxyProtocol) {
+        super(name, listenerOptions, socketOptions, proxyProtocol);
         this.serverName = serverName;
         addWrapperHandler(handler -> {
             httpUpgradeHandler.setNonUpgradeHandler(handler);
