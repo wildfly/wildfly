@@ -1145,8 +1145,7 @@
 
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
-            <artifactId>resteasy-client</artifactId>
-            <classifier>jaxrs20</classifier>
+            <artifactId>resteasy-client-20</artifactId>
         </dependency>
 
         <dependency>
@@ -1162,8 +1161,7 @@
 
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
-            <artifactId>resteasy-jaxrs</artifactId>
-            <classifier>jaxrs20</classifier>
+            <artifactId>resteasy-jaxrs-20</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
