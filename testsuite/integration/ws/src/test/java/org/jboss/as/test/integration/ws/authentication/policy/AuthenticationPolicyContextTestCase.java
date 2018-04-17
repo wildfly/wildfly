@@ -73,9 +73,11 @@ import java.io.StringWriter;
 import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.security.SecurityPermission;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.fail;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * Before the fix web service with STS (Picketlink) returned wrong subject with PolicyContext("javax.security.auth.subject.container").
@@ -123,6 +125,10 @@ public class AuthenticationPolicyContextTestCase {
         war.addAsWebInfResource(AuthenticationPolicyContextTestCase.class.getPackage(), "resources/WEB-INF/web.xml", "web.xml");
         war.addAsManifestResource(AuthenticationPolicyContextTestCase.class.getPackage(), "resources/META-INF/jboss-deployment-structure.xml", "jboss-deployment-structure.xml");
         war.addAsManifestResource(AuthenticationPolicyContextTestCase.class.getPackage(), "resources/META-INF/jboss-webservices.xml", "jboss-webservices.xml");
+        war.addAsManifestResource(createPermissionsXmlAsset(
+                new SecurityPermission("getPolicy"),
+                new RuntimePermission("org.jboss.security.getSecurityContext")
+        ), "permissions.xml");
         return war;
     }
 
@@ -141,6 +147,10 @@ public class AuthenticationPolicyContextTestCase {
         war.addAsManifestResource(AuthenticationPolicyContextTestCase.class.getPackage(), "resources/META-INF/jboss-deployment-structure.xml", "jboss-deployment-structure.xml");
         war.addAsManifestResource(AuthenticationPolicyContextTestCase.class.getPackage(), "resources/META-INF/jboss-webservices.xml", "jboss-webservices.xml");
         war.addAsResource(AuthenticationPolicyContextTestCase.class.getPackage(), "dummmy-ws-handler.xml", "org/jboss/as/test/integration/ws/authentication/policy/resources/dummmy-ws-handler.xml");
+        war.addAsManifestResource(createPermissionsXmlAsset(
+                new SecurityPermission("getPolicy"),
+                new RuntimePermission("org.jboss.security.getSecurityContext")
+        ), "permissions.xml");
         return war;
     }
 
