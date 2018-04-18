@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.ejb.remote.client.api.interceptor;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
@@ -38,6 +40,7 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.common.context.ContextPermission;
 
 /**
  * Tests that JBoss EJB API specific client side EJB interceptors work as expected
@@ -55,6 +58,9 @@ public class EJBClientInterceptorTestCase {
     public static Archive createDeployment() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
         jar.addPackage(RemoteSFSB.class.getPackage());
+        jar.addAsManifestResource(
+                createPermissionsXmlAsset(new ContextPermission("org.wildfly.transaction.client.context.remote", "get")),
+                "permissions.xml");
 
         return jar;
     }
