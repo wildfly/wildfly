@@ -25,6 +25,7 @@ import org.jboss.as.web.session.SessionIdentifierCodec;
 
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.session.SessionConfig;
+import io.undertow.util.AttachmentKey;
 
 /**
  * {@link SessionConfig} decorator that performs encoding/decoding of the session identifier.
@@ -35,6 +36,7 @@ public class CodecSessionConfig implements SessionConfig {
 
     private final SessionConfig config;
     private final SessionIdentifierCodec codec;
+    private static final AttachmentKey<Boolean> SESSION_ID_SET = AttachmentKey.create(Boolean.class);
 
     public CodecSessionConfig(SessionConfig config, SessionIdentifierCodec codec) {
         this.config = config;
@@ -43,6 +45,7 @@ public class CodecSessionConfig implements SessionConfig {
 
     @Override
     public void setSessionId(HttpServerExchange exchange, String sessionId) {
+        exchange.putAttachment(SESSION_ID_SET, Boolean.TRUE);
         this.config.setSessionId(exchange, this.codec.encode(sessionId));
     }
 
@@ -58,7 +61,7 @@ public class CodecSessionConfig implements SessionConfig {
         String sessionId = this.codec.decode(encodedSessionId);
         // Check if the encoding for this session has changed
         String reencodedSessionId = this.codec.encode(sessionId);
-        if (!reencodedSessionId.equals(encodedSessionId)) {
+        if (!reencodedSessionId.equals(encodedSessionId) && exchange.getAttachment(SESSION_ID_SET) == null) {
             this.config.setSessionId(exchange, reencodedSessionId);
         }
         return sessionId;
