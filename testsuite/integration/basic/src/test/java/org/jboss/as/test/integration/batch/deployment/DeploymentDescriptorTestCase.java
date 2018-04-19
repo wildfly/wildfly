@@ -178,6 +178,7 @@ public class DeploymentDescriptorTestCase extends AbstractBatchTestCase {
 
             // Remove the data-source
             execute(managementClient.getControllerClient(), Operations.createRemoveOperation(Operations.createAddress("subsystem", "datasources", "data-source", "batch-ds")));
+            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
         }
 
         static ModelNode execute(final ModelControllerClient client, final Operation op) throws IOException {

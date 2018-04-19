@@ -30,6 +30,7 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 
@@ -49,6 +50,7 @@ public abstract class AbstractJcaSetup implements ServerSetupTask {
         ModelControllerClient mcc = managementClient.getControllerClient();
         removeBootstrapContextSilently(mcc);
         removeWMSilently(mcc);
+        ServerReload.executeReloadAndWaitForCompletion(managementClient);
     }
 
     private void addWM(ModelControllerClient client) throws IOException {

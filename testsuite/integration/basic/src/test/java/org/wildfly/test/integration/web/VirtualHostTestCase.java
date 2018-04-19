@@ -43,6 +43,7 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
@@ -111,6 +112,7 @@ public class VirtualHostTestCase {
             execute(client, createOpNode("subsystem=undertow/server=myserver/http-listener=myserver", "remove"));
             execute(client, createOpNode("subsystem=undertow/server=myserver", "remove"));
             execute(client, createOpNode("socket-binding-group=standard-sockets/socket-binding=myserver", "remove"));
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
     }
 
