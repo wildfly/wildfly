@@ -2607,7 +2607,7 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.hal</groupId>
-            <artifactId>release-stream</artifactId>
+            <artifactId>hal-console</artifactId>
             <classifier>resources</classifier>
         </dependency>
 
