@@ -234,6 +234,10 @@ public class DistributableSessionManagerTestCase {
 
         assertNull(sessionAdapter);
 
+        sessionAdapter = this.adapter.getSession(sessionId);
+
+        assertNull(sessionAdapter);
+
         verify(this.manager, never()).findSession(sessionId);
     }
 

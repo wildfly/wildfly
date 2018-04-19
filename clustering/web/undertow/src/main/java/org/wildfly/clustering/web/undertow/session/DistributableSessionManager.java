@@ -229,6 +229,12 @@ public class DistributableSessionManager implements UndertowSessionManager {
 
     @Override
     public io.undertow.server.session.Session getSession(String sessionId) {
+        // If requested id contains invalid characters, then session cannot exist and would otherwise cause session lookup to fail
+        try {
+            Base64.getUrlDecoder().decode(sessionId);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
         try (Batch batch = this.manager.getBatcher().createBatch()) {
             try {
                 ImmutableSession session = this.manager.viewSession(sessionId);
