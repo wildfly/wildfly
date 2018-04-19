@@ -75,6 +75,8 @@
             file. For JSF 2.3.x component upgrades, please update the property here.
         -->
         <version.com.sun.faces>2.3.3.SP1</version.com.sun.faces>
+        <!-- Hardcoded in module.xml for the dual EE7 and EE8 support -->
+        <version.com.sun.faces-2.2>2.2.13.SP5</version.com.sun.faces-2.2>
         <version.com.sun.istack>3.0.5</version.com.sun.istack>
         <version.com.sun.xml.fastinfoset>1.2.13</version.com.sun.xml.fastinfoset>
         <version.commons-beanutils>1.9.3</version.commons-beanutils>
@@ -94,13 +96,19 @@
         <version.io.undertow.js>1.0.2.Final</version.io.undertow.js>
         <version.javax.activation>1.1.1</version.javax.activation>
         <version.javax.enterprise>2.0</version.javax.enterprise>
+        <!-- Hardcoded in module.xml for the dual EE7 and EE8 support -->
+        <version.javax.enterprise-1.2>1.2</version.javax.enterprise-1.2>
         <version.javax.json.api>1.1.2</version.javax.json.api>
         <version.javax.json.bind.api>1.0</version.javax.json.bind.api>
         <version.javax.jws.jsr181-api>1.0-MR1</version.javax.jws.jsr181-api>
         <version.javax.mail>1.6.1</version.javax.mail>
+        <!-- Hardcoded in module.xml for the dual EE7 and EE8 support -->
+        <version.javax.mail-1.5>1.5.6</version.javax.mail-1.5>
         <version.javax.persistence>2.2</version.javax.persistence>
         <version.javax.security.enterprise>1.0</version.javax.security.enterprise>
         <version.javax.validation>2.0.1.Final</version.javax.validation>
+        <!-- Hardcoded in module.xml for the dual EE7 and EE8 support -->
+        <version.javax.validation-1.1>1.1.0.Final</version.javax.validation-1.1>
         <version.jaxen>1.1.6</version.jaxen>
         <version.jboss.jaxbintros>1.0.2.GA</version.jboss.jaxbintros>
         <version.joda-time>2.9.7</version.joda-time>
@@ -136,6 +144,7 @@
         <version.org.glassfish.javax.el>3.0.1-b08-jbossorg-1</version.org.glassfish.javax.el>
         <version.org.glassfish.javax.enterprise.concurrent>1.0</version.org.glassfish.javax.enterprise.concurrent>
         <version.org.glassfish.javax.json>1.1.2</version.org.glassfish.javax.json>
+        <!-- Hardcoded in module.xml for the dual EE7 and EE8 support -->
         <version.org.glassfish.javax.json-1.0>1.0.4</version.org.glassfish.javax.json-1.0>
         <version.org.glassfish.soteria>1.0</version.org.glassfish.soteria>
         <version.org.hibernate>5.1.13.Final</version.org.hibernate>
@@ -143,6 +152,7 @@
         <version.org.hibernate.search>5.5.8.Final</version.org.hibernate.search>
         <version.org.hibernate.validator>6.0.9.Final</version.org.hibernate.validator>
         <version.org.hibernate.validator.ee7>5.3.6.Final</version.org.hibernate.validator.ee7>
+        <!-- Hardcoded in module.xml for the dual EE7 and EE8 support -->
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>1.0.2.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>
         <version.org.hornetq>2.4.7.Final</version.org.hornetq>
         <version.org.infinispan>9.2.1.Final</version.org.infinispan>

@@ -49,7 +49,7 @@
             This EE 7 jsf-impl version is being hardcoded temporarily for now.
             This will be removed once EE 8 support is complete.
         -->
-        <artifact name="com.sun.faces:jsf-impl:2.2.13.SP5">
+        <artifact name="com.sun.faces:jsf-impl:2.2.13.SP5"> <!-- ${version.com.sun.faces-2.2} -->
             <conditions>
                 <property-not-equal name="ee8.preview.mode" value="true" />
             </conditions>
