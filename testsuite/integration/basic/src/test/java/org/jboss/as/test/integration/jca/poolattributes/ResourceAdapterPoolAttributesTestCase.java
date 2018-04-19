@@ -197,6 +197,7 @@ public class ResourceAdapterPoolAttributesTestCase extends JcaMgmtBase {
         @Override
         public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
             remove(RA_ADDRESS);
+            reload();
         }
     }
 
