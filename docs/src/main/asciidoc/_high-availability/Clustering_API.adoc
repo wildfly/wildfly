@@ -1,0 +1,410 @@
+[[Clustering_API]]
+
+= Clustering API
+
+WildFly exposes a public API to deployments for performing common clustering operations, such as:
+
+* <<group,Cluster membership introspection>>
+* <<command-dispatcher,Cluster command execution>>
+* <<service-provider-registry,A registry of service providers>>
+* <<registry,A member identification registry>>
+
+This zero-dependency API allows an application to perform basic clustering tasks, while remaining decoupled from the libraries that implement WildFly's clustering logic.
+
+[[group]]
+== Group membership
+
+The Group abstraction represents a logical cluster of nodes.
+The Group service provides the following capabilities:
+
+* View the current membership of a group.
+* Identifies a designated coordinator for a given group membership. This designated coordinator will be the same on every node for a given membership. Traditionally, the oldest member of the cluster is chosen as the coordinator.
+* Registration facility for notifications of changes to group membership.
+
+WildFly creates a Group instance for every defined channel defined in the JGroups subsystem, as well as a local implementation.
+The local Group implementation is effectively a singleton membership containing only the current node.
+e.g.
+[code,java]
+----
+@Resource(lookup = "java:jboss/clustering/group/ee") // A Group representing the cluster of the "ee" channel
+private Group group;
+
+@Resource(lookup = "java:jboss/clustering/group/local") // A non-clustered Group
+private Group localGroup;
+----
+
+To ensure that your application operates consistently regardless of server configuration, you are strongly recommended to reference a given Group using an alias.
+Most users should use the "default" alias, which references either:
+
+* A Group backed by the default channel of the server, if the JGroups subsystem is present
+* A non-clustered Group, if the JGroups subsystem is not present
+
+e.g.
+[code,java]
+----
+@Resource(lookup = "java:jboss/clustering/group/default")
+private Group group;
+----
+
+Additionally, WildFly creates a Group alias for every Infinispan cache-container, which references:
+
+* A Group backed by the transport channel of the cache container
+* A non-clustered Group, if the cache container has no transport
+
+This is useful when using a Group within the context of an Infinispan cache.
+
+e.g.
+[code,java]
+----
+@Resource(lookup = "java:jboss/clustering/group/server") // Backed by the transport of the "server" cache-container
+private Group group;
+----
+
+
+=== Node
+
+A Node encapsulates a member of a group (i.e. a JGroups address).
+A Node has the following distinct characteristics, which will be unique for each member of the group:
+
+getName:: The distinct logical name of this group member.
+This value inherently defaults to the hostname of the machine, and can be overridden via the "jboss.node.name" system property.
+You must override this value if you run multiple servers on the same host.
+getSocketAddress():: The distinct bind address/port used by this group member.
+This will be null if the group is non-clustered.
+
+
+=== Membership
+
+A Membership is an immutable encapsulation of a group membership (i.e. a JGroups view).
+Membership exposes the following properties:
+
+getMembers():: Returns the list of members comprising this group membership. The order of this list will be consistent on all nodes in the cluster.
+isCoordinator():: Indicates whether the current member is the coordinator of the group.
+getCoordinator():: Returns the member designated as coordinator of this group. This methods will return a consistent value for all nodes in the cluster.
+
+=== Usage
+
+The Group abstract is effectively a volatile reference to the current membership, and provides a facility for notification of membership changes.
+It exposes the following properties and operations:
+
+getName():: The logical name of this group.
+getLocalMember():: The Node instance corresponding to the local member.
+getMembership():: Returns the current membership of this group.
+register(GroupListener):: Registers the specific listener to be notified of changes to group membership.
+isSingleton():: Indicates whether the groups membership is non-clustered, i.e. will only ever contain a single member.
+
+=== Example
+
+A distributed "Hello world" example that prints joiners and leavers of a group membership:
+
+[code,java]
+----
+public class MyGroupListener implements GroupListener {
+    @Resource(lookup = "java:jboss/clustering/group/default") // <1>
+    private Group group;
+    private Registration<GroupListener> listenerRegistration;
+
+    @PostConstruct
+    public void init() {
+        this.listenerRegistration = this.group.register(this);
+        System.out.println("Initial membership: " + this.group.getMembership().getMembers());
+    }
+
+    @PreDestroy
+    public void destroy() {
+        this.listenerRegistration.close(); // <2>
+    }
+
+    @Override
+    public void membershipChanged(Membership previous, Membership current, boolean merged) {
+        List<Node> previousMembers = previous.getMembers();
+        List<Node> currentMembers = current.getMembers();
+        List<Node> joiners = currentMembers.stream().filter(member -> !previousMembers.contains(member)).collect(Collectors.toList());
+        if (!joiners.isEmpty()) {
+            System.out.println("Welcome: " + joiners);
+        }
+        List<Node> leavers = previousMembers.stream().filter(member -> !currentMembers.contains(member)).collect(Collectors.toList());
+        if (!leavers.isEmpty()) {
+            System.out.println("Goodbye: " + leavers);
+        }
+    }
+}
+----
+<1> Injects the default Group of the server
+<2> Make sure to close your listener registration!
+
+[[command-dispatcher]]
+== Command Dispatcher
+
+A command dispatcher is a mechanism for dispatching commands to be executed on members of a group.
+
+=== CommandDispatcherFactory
+
+A command dispatcher is created from a CommandDispatcherFactory, an instance of which is created for every defined channel defined in the JGroups subsystem, as well as a local implementation.
+e.g.
+[code,java]
+----
+@Resource(lookup = "java:jboss/clustering/dispatcher/ee") // A command dispatcher factory backed by the "ee" channel
+private CommandDispatcherFactory factory;
+
+@Resource(lookup = "java:jboss/clustering/dispatcher/local") // The non-clustered command dispatcher factory
+private CommandDispatcherFactory localFactory;
+----
+
+To ensure that your application functions consistently regardless of server configuration, we recommended that you reference the CommandDispatcherFactory using an alias.
+Most users should use the "default" alias, which references either:
+
+* A CommandDispatcherFactory backed by the default channel of the server, if the JGroups subsystem is present
+* A non-clustered CommandDispatcherFactory, if the JGroups subsystem is not present
+
+e.g.
+[code,java]
+----
+@Resource(lookup = "java:jboss/clustering/dispatcher/default")
+private CommandDispatcherFactory factory;
+----
+
+Additionally, WildFly creates a CommandDispatcherFactory alias for every Infinispan cache-container, which references:
+
+* A CommandDispatcherFactory backed by the transport channel of the cache container
+* A non-clustered CommandDispatcherFactory, if the cache container has no transport
+
+This is useful in the case where a CommandDispatcher is used to communicate with members on which a given cache is deployed.
+
+e.g.
+[code,java]
+----
+@Resource(lookup = "java:jboss/clustering/dispatcher/server") // Backed by the transport of the "server" cache-container
+private CommandDispatcherFactory factory;
+----
+
+=== Command
+
+A Command encapsulates logic to be executed on a group member.
+A Command can leverage 2 type of parameters during execution:
+
+Sender supplied parameters::
+These are member variables of the Command implementation itself, and are provided during construction of the Command object.
+As properties of a serializable object, these must also be serializable.
+Receiver supplied parameters, i.e. local context::
+These are encapsulated in a single object, supplied during construction of the CommandDispatcher.
+The command dispatcher passes the local context as a parameter to the Command.execute(...) method.
+
+
+=== CommandDispatcher
+
+The CommandDispatcherFactory creates a CommandDispatcher using a service identifier and a local context.
+This service identifier is used to segregate commands from multiple command dispatchers.
+A CommandDispatcher will only receive commands dispatched by a CommandDispatcher with the same service identifier.
+
+Once created, a CommandDispatcher will locally execute any received commands until it is closed.
+Once closed, a CommandDispatcher is no longer allowed to dispatch commands.
+
+The functionality of a CommandDispatcher boils down to 2 operations:
+
+executeOnMember(Command, Node):: Executes a given command on a specific group member.
+executeOnGroup(Command, Node...):: Executes a given command on all members of the group, optionally excluding specific members
+
+Both methods return responses as a https://docs.oracle.com/javase/8/docs/api/[CompletionStage], allowing for asynchronous processing of responses as they complete.
+
+
+=== Example
+
+To demonstrate how to use a CommandDispatcher, let's create a distributed "hello world" application.
+
+First, let's create a simple HelloWorld interface which enables the caller to send a specific message to the entire group:
+
+[code,java]
+----
+public interface HelloWorld {
+    void send(String message);
+}
+----
+
+Next, we need to define a local command execution context.
+This should encapsulate any local information we need to make available to the execution of any command received by our CommandDispatcher.
+For demonstration purposes, let's make this a separate interface:
+
+[code,java]
+----
+public interface LocalContext {
+    Node getLocalMember();
+}
+----
+
+Next we create a "hello world" Command that contains a message from the sender, and responds with a message of its own.
+
+[code,java]
+----
+public class HelloWorldCommand implements Command<String, LocalContext> {
+    private final String message;
+
+    public HelloWorldCommand(String message) {
+        this.message = message;
+    }
+
+    @Override
+    public String execute(LocalContext context) {
+        System.out.println(String.format("Received message: %s", this.message);
+        return String.format("Hello from %s", context.getLocalMember().getName());
+    }
+}
+----
+
+Finally, we create a @Singleton EJB that implements our HelloWorld interface:
+
+[code,java]
+----
+@Singleton
+@Startup
+@Local(HelloWorld.class)
+public class CommandDispatcherBean implements HelloWorld, LocalContext {
+
+    @Resource(lookup = "java:jboss/clustering/dispatcher/default") // <1>
+    private CommandDispatcherFactory factory;
+    private CommandDispatcher<LocalContext> dispatcher;
+
+    @PostConstruct
+    public void init() {
+        this.dispatcher = this.factory.createCommandDispatcher(this.getClass().getName(), this);
+    }
+
+    @PreDestroy
+    public void destroy() {
+        this.dispatcher.close(); // <2>
+    }
+
+    @Override
+    public Node getLocalMember() {
+        return this.factory.getGroup().getLocalMember();
+    }
+
+    @Override
+    public void send(String message) {
+        Map<Node, CompletionStage<String>> responses = this.dispatcher.executeOnGroup(new HelloWorldCommand(message), this.factory.getGroup().getLocalMember()); <3>
+        responses.values().forEach(stage -> stage.exceptionally(Exception::getLocalizedMessage).thenAccept(System.out::println));
+    }
+}
+----
+
+<1> Uses the default CommandDispatcherFactory of the server
+<2> Don't forget to close your CommandDispatcher!
+<3> We don't want to send the message to ourselves, so we exclude the local member
+
+Now you can use the HelloWorld.send(...) operation to say hello to your cluster.
+
+[[service-provider-registry]]
+== Service Provider Registry
+
+A service provider registry is a specialized cache that tracks the group members that provide a given service.
+The ServiceProviderRegistry might be used in concert with a CommandDispatcher to communicate between a subset of group members on which a given service is installed.
+It includes a registration facility to receive notifications when the set of nodes providing a given service changes.
+WildFly uses this internally in its Singleton service/deployment implementation to drive the primary election process.
+
+WildFly exposes a ServiceProviderRegistry (from which a ServiceProviderRegistration is created) for each cache defined by the Infinispan subsystem.
+
+=== Example
+
+The following is an example of using a ServiceProviderRegistry to publish the availability of a given singleton EJB.
+The getProviders() method will return the set of nodes on which the ServiceProviderRegistrationBean is deployed.
+
+----
+@Singleton
+@Startup
+@Local(ServiceProviderRegistry.class)
+public class ServiceProviderRegistrationBean implements ServiceProviderRegistration<String>, ServiceProviderRegistration.Listener {
+    @Resource(lookup = "java:jboss/clustering/providers/server/default") // <1>
+    private ServiceProviderRegistry registry;
+    private ServiceProviderRegistration registration;
+
+    @PostConstruct
+    public void init() {
+        this.registration = this.registry.register(this.getClass().getName(), this);
+    }
+
+    @PreDestroy
+    public void destroy() {
+        this.registration.close(); // <2>
+    }
+
+    @Override
+    public void providersChanged(Set<Node> providers) {
+        System.out.println("%s is now available on the following nodes: %s", this.getClass().getName(), providers);
+    }
+
+    @Override
+    public String getService() {
+        return this.registration.getService();
+    }
+
+    @Override
+    public Set<Node> getProviders() {
+        return this.registration.getProviders();
+    }
+
+    @Override
+    public void close() {
+        // Do nothing - registration is close on bean destroy
+    }
+}
+----
+
+<1> Uses the default cache of the "server" cache container.
+<2> Remember to close the registration!
+
+[[registry]]
+== Registry
+
+A registry is a specialized cache for storing a unique key/value pair for each member of a group.
+This is useful to bridge WildFly's Group members to an internal identification system used by an application.
+The Registry service includes a facility for notifying group members of new, updated, or obsolete registry entries.
+
+WildFly exposes a RegistryFactory (from which a Registry is created) for each cache defined by the Infinispan subsystem.
+
+=== Example
+
+The following Registry example assigns a UUID to each group member, allowing each member to query the identifier of any other member:
+
+----
+@Singleton
+@Startup
+@Local(Registry.class)
+public class RegistryBean implements Registry<UUID, Void> {
+    @Resource(lookup = "java:jboss/clustering/registry/server/default") // <1>
+    private RegistryFactory<UUID, Void> factory;
+    private Registry<UUID, Void> registry;
+
+    @PostConstruct
+    public void init() {
+        this.registry = this.factory.createRegistry(new AbstractMap.SimpleImmutableEntry<>(UUID.randomUUID(), null);
+    }
+
+    @PreDestroy
+    public void destroy() {
+        this.registry.close(); // <2>
+    }
+
+    @Override
+    public Group getGroup() {
+        return this.registry.getGroup();
+    }
+
+	@Override
+	public Map<UUID, Void> getEntries() {
+	    return this.registry.getEntries();
+	}
+
+    @Override
+    public Map.Entry<UUID, Void> getEntry(Node node) {
+        return this.registry.getEntry(node);
+    }
+
+    @Override
+    public void close() {
+        // Do nothing - registry is closed on bean destroy
+    }
+}
+----
+
+<1> Uses the default cache of the "server" cache container.
+<2> Remember to close the registry!
