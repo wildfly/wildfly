@@ -25,17 +25,13 @@ package org.jboss.as.clustering.infinispan;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
-import java.net.UnknownHostException;
-
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
-import org.jboss.msc.inject.InjectionException;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -110,8 +106,8 @@ public interface InfinispanLogger extends BasicLogger {
      *
      * @return a {@link org.jboss.as.controller.persistence.ConfigurationPersistenceException} for the error.
      */
-    @Message(id = 8, value = "Could not resolve destination address for outbound socket binding named '%s'")
-    InjectionException failedToInjectSocketBinding(@Cause UnknownHostException cause, OutboundSocketBinding binding);
+//    @Message(id = 8, value = "Could not resolve destination address for outbound socket binding named '%s'")
+//    InjectionException failedToInjectSocketBinding(@Cause UnknownHostException cause, OutboundSocketBinding binding);
 
     /**
      * Creates an exception indicating an invalid cache store.
