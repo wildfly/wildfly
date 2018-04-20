@@ -21,6 +21,8 @@
  */
 package org.wildfly.clustering.dispatcher;
 
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -29,6 +31,7 @@ import java.util.concurrent.ExecutionException;
  * @param <R> the response type
  * @author Paul Ferraro
  */
+@Deprecated
 public interface CommandResponse<R> {
 
     /**
@@ -36,4 +39,17 @@ public interface CommandResponse<R> {
      * @throws ExecutionException exception that was raised during execution
      */
     R get() throws ExecutionException;
+
+    static <R> CommandResponse<R> get(CompletionStage<R> stage) {
+        return new CommandResponse<R>() {
+            @Override
+            public R get() throws ExecutionException {
+                try {
+                    return stage.toCompletableFuture().join();
+                } catch (CompletionException e) {
+                    throw new ExecutionException(e.getCause());
+                }
+            }
+        };
+    }
 }
