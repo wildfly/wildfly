@@ -26,14 +26,15 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.CompletionStage;
 
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.wildfly.clustering.dispatcher.CommandDispatcherException;
-import org.wildfly.clustering.dispatcher.CommandResponse;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.server.logging.ClusteringServerLogger;
 
@@ -59,17 +60,21 @@ public class PrimaryProxyService<T> implements Service<T> {
             throw ClusteringServerLogger.ROOT_LOGGER.notStarted(context.getServiceName().getCanonicalName());
         }
         try {
-            Map<Node, CommandResponse<Optional<T>>> responses = context.getCommandDispatcher().executeOnCluster(new SingletonValueCommand<T>());
+            Map<Node, CompletionStage<Optional<T>>> responses = context.getCommandDispatcher().executeOnGroup(new SingletonValueCommand<>());
             // Prune non-primary (i.e. null) results
             Map<Node, Optional<T>> results = new HashMap<>();
             try {
-                for (Map.Entry<Node, CommandResponse<Optional<T>>> entry : responses.entrySet()) {
-                    Optional<T> response = entry.getValue().get();
-                    if (response != null) {
-                        results.put(entry.getKey(), response);
+                for (Map.Entry<Node, CompletionStage<Optional<T>>> entry : responses.entrySet()) {
+                    try {
+                        Optional<T> response = entry.getValue().toCompletableFuture().join();
+                        if (response != null) {
+                            results.put(entry.getKey(), response);
+                        }
+                    } catch (CancellationException e) {
+                        // Ignore
                     }
                 }
-            } catch (ExecutionException e) {
+            } catch (CompletionException e) {
                 throw new IllegalArgumentException(e);
             }
             // We expect only 1 result
