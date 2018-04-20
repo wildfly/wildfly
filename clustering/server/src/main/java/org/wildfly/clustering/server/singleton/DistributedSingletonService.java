@@ -26,6 +26,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.clustering.msc.ServiceContainerHelper;
@@ -126,9 +128,15 @@ public class DistributedSingletonService<T> implements SingletonService<T>, Sing
                     ClusteringServerLogger.ROOT_LOGGER.elected(elected.getName(), this.serviceName.getCanonicalName());
 
                     // Stop service on every node except elected node
-                    this.dispatcher.executeOnCluster(new StopCommand<>(), elected);
+                    for (CompletionStage<Void> result : this.dispatcher.executeOnGroup(new StopCommand<>(), elected).values()) {
+                        try {
+                            result.toCompletableFuture().join();
+                        } catch (CancellationException e) {
+                            // Ignore
+                        }
+                    }
                     // Start service on elected node
-                    this.dispatcher.executeOnNode(new StartCommand<>(), elected);
+                    this.dispatcher.executeOnMember(new StartCommand<>(), elected).toCompletableFuture().join();
                 } else {
                     if (quorumMet) {
                         ClusteringServerLogger.ROOT_LOGGER.noPrimaryElected(this.serviceName.getCanonicalName());
@@ -137,7 +145,13 @@ public class DistributedSingletonService<T> implements SingletonService<T>, Sing
                     }
 
                     // Stop service on every node
-                    this.dispatcher.executeOnCluster(new StopCommand<>());
+                    for (CompletionStage<Void> result : this.dispatcher.executeOnGroup(new StopCommand<>()).values()) {
+                        try {
+                            result.toCompletableFuture().join();
+                        } catch (CancellationException e) {
+                            // Ignore
+                        }
+                    }
                 }
             } catch (CommandDispatcherException e) {
                 throw new IllegalStateException(e);

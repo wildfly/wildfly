@@ -39,6 +39,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
 
 import org.infinispan.Cache;
 import org.infinispan.commons.util.CloseableIterator;
@@ -49,7 +50,9 @@ import org.infinispan.notifications.cachelistener.event.CacheEntryEvent;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.threads.JBossThreadFactory;
 import org.wildfly.clustering.Registration;
+import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
+import org.wildfly.clustering.dispatcher.CommandDispatcherException;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.group.GroupListener;
@@ -57,11 +60,11 @@ import org.wildfly.clustering.group.Membership;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.provider.ServiceProviderRegistration;
 import org.wildfly.clustering.provider.ServiceProviderRegistration.Listener;
-import org.wildfly.clustering.service.concurrent.ClassLoaderThreadFactory;
-import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.clustering.provider.ServiceProviderRegistry;
 import org.wildfly.clustering.server.group.Group;
 import org.wildfly.clustering.server.logging.ClusteringServerLogger;
+import org.wildfly.clustering.service.concurrent.ClassLoaderThreadFactory;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Infinispan {@link Cache} based {@link ServiceProviderRegistry}.
@@ -77,8 +80,8 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
         return WildFlySecurityManager.doUnchecked(action);
     }
 
+    final Batcher<? extends Batch> batcher;
     private final ConcurrentMap<T, Map.Entry<Listener, ExecutorService>> listeners = new ConcurrentHashMap<>();
-    private final Batcher<? extends Batch> batcher;
     private final Cache<T, Set<Address>> cache;
     private final Group<Address> group;
     private final Registration groupRegistration;
@@ -220,15 +223,25 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
             }
             if (merged) {
                 // Re-assert services for new members following merge since these may have been lost following split
+                Command<Collection<T>, Set<T>> command = new GetLocalServicesCommand<>();
                 for (Address joinedMember : joinedMembers) {
-                    try {
-                        Collection<T> services = this.dispatcher.executeOnNode(new GetLocalServicesCommand<>(), this.group.createNode(joinedMember)).get();
-                        try (Batch batch = this.batcher.createBatch()) {
-                            for (T service : services) {
-                                this.register(joinedMember, service);
+                    BiConsumer<Collection<T>, Throwable> completionHandler = new BiConsumer<Collection<T>, Throwable>() {
+                        @Override
+                        public void accept(Collection<T> services, Throwable exception) {
+                            if (services != null) {
+                                try (Batch batch = CacheServiceProviderRegistry.this.batcher.createBatch()) {
+                                    for (T service : services) {
+                                        CacheServiceProviderRegistry.this.register(joinedMember, service);
+                                    }
+                                }
+                            } else if (exception != null) {
+                                ClusteringServerLogger.ROOT_LOGGER.warn(exception.getLocalizedMessage(), exception);
                             }
                         }
-                    } catch (Exception e) {
+                    };
+                    try {
+                        this.dispatcher.executeOnMember(command, this.group.createNode(joinedMember)).whenComplete(completionHandler);
+                    } catch (CommandDispatcherException e) {
                         ClusteringServerLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
                     }
                 }

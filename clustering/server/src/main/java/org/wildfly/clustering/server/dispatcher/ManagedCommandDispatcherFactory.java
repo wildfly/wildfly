@@ -39,26 +39,16 @@ import org.wildfly.clustering.server.logging.ClusteringServerLogger;
  */
 public class ManagedCommandDispatcherFactory implements AutoCloseableCommandDispatcherFactory {
 
-    private final CommandDispatcherFactory factory;
+    private final AutoCloseableCommandDispatcherFactory factory;
     private final Map<Object, Map.Entry<CommandDispatcher<?>, Integer>> dispatchers = new HashMap<>();
-    private final Runnable closeTask;
 
     public ManagedCommandDispatcherFactory(AutoCloseableCommandDispatcherFactory factory) {
-        this(factory, () -> factory.close());
-    }
-
-    public ManagedCommandDispatcherFactory(CommandDispatcherFactory factory) {
-        this(factory, () -> {});
-    }
-
-    private ManagedCommandDispatcherFactory(CommandDispatcherFactory factory, Runnable closeTask) {
         this.factory = factory;
-        this.closeTask = closeTask;
     }
 
     @Override
     public void close() {
-        this.closeTask.run();
+        this.factory.close();
     }
 
     @Override

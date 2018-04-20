@@ -3,6 +3,8 @@ package org.jboss.as.test.clustering.cluster.dispatcher.bean;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.CompletionStage;
 
 import javax.ejb.EJB;
 import javax.ejb.Remote;
@@ -10,8 +12,8 @@ import javax.ejb.Stateless;
 
 import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
+import org.wildfly.clustering.dispatcher.CommandDispatcherException;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
-import org.wildfly.clustering.dispatcher.CommandResponse;
 import org.wildfly.clustering.group.Node;
 
 @Stateless
@@ -26,23 +28,31 @@ public class ClusterTopologyRetrieverBean implements ClusterTopologyRetriever {
     @Override
     public ClusterTopology getClusterTopology() {
         try {
-            Collection<CommandResponse<String>> responses = this.dispatcher.executeOnCluster(this.command).values();
+            Collection<CompletionStage<String>> responses = this.dispatcher.executeOnGroup(this.command).values();
             List<String> nodes = new ArrayList<>(responses.size());
-            for (CommandResponse<String> response: responses) {
-                nodes.add(response.get());
+            for (CompletionStage<String> response: responses) {
+                try {
+                    nodes.add(response.toCompletableFuture().join());
+                } catch (CancellationException e) {
+                    // Ignore
+                }
             }
 
             Node localNode = this.factory.getGroup().getLocalMember();
-            String local = this.dispatcher.executeOnNode(this.command, localNode).get();
+            String local = this.dispatcher.executeOnMember(this.command, localNode).toCompletableFuture().join();
 
-            responses = this.dispatcher.executeOnCluster(this.command, localNode).values();
+            responses = this.dispatcher.executeOnGroup(this.command, localNode).values();
             List<String> remote = new ArrayList<>(responses.size());
-            for (CommandResponse<String> response: responses) {
-                remote.add(response.get());
+            for (CompletionStage<String> response: responses) {
+                try {
+                    remote.add(response.toCompletableFuture().join());
+                } catch (CancellationException e) {
+                    // Ignore
+                }
             }
 
             return new ClusterTopology(nodes, local, remote);
-        } catch (Exception e) {
+        } catch (CommandDispatcherException e) {
             throw new IllegalStateException(e.getCause());
         }
     }
