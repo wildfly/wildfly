@@ -60,7 +60,9 @@ public interface Registry<K, V> extends Registrar<RegistryListener<K, V>>, AutoC
     /**
      * @deprecated Replaced by {@link org.wildfly.clustering.Registration#close()}.
      */
-    @Deprecated void removeListener(Listener<K, V> listener);
+    @Deprecated default void removeListener(Listener<K, V> listener) {
+        // Do nothing
+    }
 
     /**
      * Returns all registry entries in this group.
