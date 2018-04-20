@@ -59,12 +59,6 @@ public class LocalRegistry<K, V> implements Registry<K, V> {
         return () -> {};
     }
 
-    @Deprecated
-    @Override
-    public void removeListener(Registry.Listener<K, V> listener) {
-        // if there are no remote nodes, any registered listener would never get triggered
-    }
-
     @Override
     public Map<K, V> getEntries() {
         Map.Entry<K, V> entry = this.entry;
