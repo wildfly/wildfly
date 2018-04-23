@@ -735,13 +735,11 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 119, value = "[EJB3.1 spec, section 4.9.2] Session bean implementation class MUST be public, not abstract and not final - %s won't be considered as a session bean, since it doesn't meet that requirement")
     void sessionBeanClassMustBePublicNonAbstractNonFinal(String className);
 
-    @LogMessage(level = WARN)
     @Message(id = 120, value = "[EJB3.1 spec, section 5.6.2] Message driven bean implementation class MUST NOT be a interface - %s is an interface, hence won't be considered as a message driven bean")
-    void mdbClassCannotBeAnInterface(String className);
+    IllegalArgumentException mdbClassCannotBeAnInterface(String className);
 
-    @LogMessage(level = WARN)
     @Message(id = 121, value = "[EJB3.1 spec, section 5.6.2] Message driven bean implementation class MUST be public, not abstract and not final - %s won't be considered as a message driven bean, since it doesn't meet that requirement")
-    void mdbClassMustBePublicNonAbstractNonFinal(String className);
+    IllegalArgumentException mdbClassMustBePublicNonAbstractNonFinal(String className);
 
 //    @LogMessage(level = WARN)
 //    @Message(id = 122, value = "Method %s was a async method but the client could not be informed about the same. This will mean that the client might block till the method completes")
@@ -3154,4 +3152,16 @@ public interface EjbLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 502, value = "Exception checking if timer %s should run")
     void exceptionCheckingIfTimerShouldRun(Timer timer, @Cause Exception e);
+
+    @Message(id = 503, value = "[EJB3.2 spec, section 5.6.4] Message Driven Bean 'onMessage' method %s can not be final.")
+    IllegalArgumentException mdbOnMessageMethodCantBeFinal(String className);
+
+    @Message(id = 504, value = "[EJB3.2 spec, section 5.6.4] Message Driven Bean %s 'onMessage' method can not be private.")
+    IllegalArgumentException mdbOnMessageMethodCantBePrivate(String className);
+
+    @Message(id = 505, value = "[EJB3.2 spec, section 5.6.4] Message Driven Bean %s 'onMessage' method can not be static.")
+    IllegalArgumentException mdbOnMessageMethodCantBeStatic(String className);
+
+    @Message(id = 506, value = "[EJB3.2 spec, section 5.6.2] Message Driven Bean %s can not have a finalize method.")
+    IllegalArgumentException mdbCantHaveFinalizeMethod(String className);
 }
