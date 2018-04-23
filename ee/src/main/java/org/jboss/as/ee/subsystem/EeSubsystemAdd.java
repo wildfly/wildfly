@@ -45,6 +45,7 @@ import org.jboss.as.ee.component.deployers.EarApplicationNameProcessor;
 import org.jboss.as.ee.component.deployers.EarMessageDestinationProcessor;
 import org.jboss.as.ee.concurrent.deployers.EEConcurrentDefaultBindingProcessor;
 import org.jboss.as.ee.concurrent.deployers.EEConcurrentContextProcessor;
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.naming.InApplicationClientBindingProcessor;
 import org.jboss.as.ee.component.deployers.InterceptorAnnotationProcessor;
 import org.jboss.as.ee.component.deployers.LifecycleAnnotationParsingProcessor;
@@ -84,6 +85,7 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.jbossallxml.JBossAllXmlParserRegisteringProcessor;
 import org.jboss.dmr.ModelNode;
 import org.jboss.metadata.ear.jboss.JBossAppMetaData;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 import static org.jboss.as.ee.logging.EeLogger.ROOT_LOGGER;
 
@@ -211,5 +213,15 @@ public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         context.getServiceTarget().addService(ReflectiveClassIntrospector.SERVICE_NAME, new ReflectiveClassIntrospector()).install();
 
+        reportEEPreviewMode();
+    }
+
+    private void reportEEPreviewMode() {
+        String previewMode = WildFlySecurityManager.getPropertyPrivileged("ee8.preview.mode", null);
+        if ("true".equals(previewMode)) {
+            EeLogger.ROOT_LOGGER.usingEE8PreviewMode();
+        } else {
+            EeLogger.ROOT_LOGGER.notUsingEE8PreviewMode();
+        }
     }
 }
