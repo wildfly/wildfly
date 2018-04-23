@@ -27,13 +27,12 @@ import static org.mockito.Mockito.*;
 
 import java.util.Collections;
 import java.util.Map;
-import java.util.concurrent.Future;
+import java.util.concurrent.CompletionStage;
 
 import org.junit.Test;
 import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherException;
-import org.wildfly.clustering.dispatcher.CommandResponse;
 import org.wildfly.clustering.group.Node;
 
 /**
@@ -57,27 +56,16 @@ public class ManagedCommandDispatcherTestCase {
             Command<Void, String> command = mock(Command.class);
             Node node = mock(Node.class);
             Node[] nodes = new Node[] { node };
-            CommandResponse<Void> response = mock(CommandResponse.class);
-            Future<Void> future = mock(Future.class);
+            CompletionStage<Void> stage = mock(CompletionStage.class);
+            Map<Node, CompletionStage<Void>> stages = Collections.singletonMap(node, stage);
 
-            Map<Node, CommandResponse<Void>> responses = Collections.singletonMap(node, response);
-            Map<Node, Future<Void>> futures = Collections.singletonMap(node, future);
+            when(dispatcher.executeOnGroup(command, nodes)).thenReturn(stages);
 
-            when(dispatcher.executeOnCluster(command, nodes)).thenReturn(responses);
+            assertSame(stages, subject.executeOnGroup(command, nodes));
 
-            assertSame(responses, subject.executeOnCluster(command, nodes));
+            when(dispatcher.executeOnMember(command, node)).thenReturn(stage);
 
-            when(dispatcher.executeOnNode(command, node)).thenReturn(response);
-
-            assertSame(response, subject.executeOnNode(command, node));
-
-            when(dispatcher.submitOnCluster(command, nodes)).thenReturn(futures);
-
-            assertSame(futures, subject.submitOnCluster(command, nodes));
-
-            when(dispatcher.submitOnNode(command, node)).thenReturn(future);
-
-            assertSame(future, subject.submitOnNode(command, node));
+            assertSame(stage, subject.executeOnMember(command, node));
         }
 
         verify(dispatcher, never()).close();

@@ -177,7 +177,7 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
             throw ClusteringServerLogger.ROOT_LOGGER.commandDispatcherAlreadyExists(id);
         }
         CommandMarshaller<C> marshaller = new CommandDispatcherMarshaller<>(this.marshallingContext, id);
-        CommandDispatcher<C> localDispatcher = new LocalCommandDispatcher<>(this.getLocalMember(), context);
+        CommandDispatcher<C> localDispatcher = new LocalCommandDispatcher<>(this.getLocalMember(), context, this.executorService);
         return new ChannelCommandDispatcher<>(this.dispatcher, marshaller, this, this.timeout, localDispatcher, () -> {
             localDispatcher.close();
             this.contexts.remove(id);
@@ -262,13 +262,7 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
                     GroupListener listener = entry.getKey();
                     ExecutorService executor = entry.getValue();
                     try {
-                        executor.submit(() -> {
-                            try {
-                                listener.membershipChanged(oldMembership, membership, view instanceof MergeView);
-                            } catch (Throwable e) {
-                                ClusteringLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
-                            }
-                        });
+                        executor.submit(new ListenerTask(listener, oldMembership, membership, view instanceof MergeView));
                     } catch (RejectedExecutionException e) {
                         // Executor was shutdown
                     }
@@ -287,5 +281,28 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
 
     @Override
     public void unblock() {
+    }
+
+    private static class ListenerTask implements Runnable {
+        private final GroupListener listener;
+        private final Membership oldMembership;
+        private final Membership membership;
+        private final boolean merged;
+
+        ListenerTask(GroupListener listener, Membership oldMembership, Membership membership, boolean merged) {
+            this.listener = listener;
+            this.oldMembership = oldMembership;
+            this.membership = membership;
+            this.merged = merged;
+        }
+
+        @Override
+        public void run() {
+            try {
+                this.listener.membershipChanged(this.oldMembership, this.membership, this.merged);
+            } catch (Throwable e) {
+                ClusteringLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
+            }
+        }
     }
 }
