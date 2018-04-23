@@ -3154,4 +3154,20 @@ public interface EjbLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 502, value = "Exception checking if timer %s should run")
     void exceptionCheckingIfTimerShouldRun(Timer timer, @Cause Exception e);
+  
+    @LogMessage(level = WARN)
+    @Message(id = 503, value = "Message Driven Bean 'onMessage' method %s can not be final.")
+    void mdbOnMessageMethodCantBeFinal(String className);
+
+    @LogMessage(level = WARN)
+    @Message(id = 504, value = "Message Driven Bean %s 'onMessage' method can not be private.")
+    void mdbOnMessageMethodCantBePrivate(String className);
+
+    @LogMessage(level = WARN)
+    @Message(id = 505, value = "Message Driven Bean %s 'onMessage' method can not be static.")
+    void mdbOnMessageMethodCantBeStatic(String className);
+
+    @LogMessage(level = WARN)
+    @Message(id = 506, value = "Message Driven Bean %s can not have a finalize method.")
+    void mdbCantHaveFinalizeMethod(String className);
 }
