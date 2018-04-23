@@ -75,15 +75,30 @@ public class TransactionResourceDefinition extends ComponentResourceDefinition {
     static final PathElement PATH = pathElement("transaction");
     static final PathElement LEGACY_PATH = PathElement.pathElement(PATH.getValue(), "TRANSACTION");
 
-    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        LOCKING("locking", ModelType.STRING, new ModelNode(LockingMode.PESSIMISTIC.name()), builder -> builder.setValidator(new EnumValidator<>(LockingMode.class))),
-        MODE("mode", ModelType.STRING, new ModelNode(TransactionMode.NONE.name()), builder -> builder.setValidator(new EnumValidator<>(TransactionMode.class))),
-        STOP_TIMEOUT("stop-timeout", ModelType.LONG, new ModelNode(10000L), builder -> builder.setMeasurementUnit(MeasurementUnit.MILLISECONDS)),
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
+        LOCKING("locking", ModelType.STRING, new ModelNode(LockingMode.PESSIMISTIC.name())) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setValidator(new EnumValidator<>(LockingMode.class));
+            }
+        },
+        MODE("mode", ModelType.STRING, new ModelNode(TransactionMode.NONE.name())) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setValidator(new EnumValidator<>(TransactionMode.class));
+            }
+        },
+        STOP_TIMEOUT("stop-timeout", ModelType.LONG, new ModelNode(10000L)) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setMeasurementUnit(MeasurementUnit.MILLISECONDS);
+            }
+        },
         ;
         private final SimpleAttributeDefinition definition;
 
-        Attribute(String name, ModelType type, ModelNode defaultValue, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
-            this.definition = configurator.apply(new SimpleAttributeDefinitionBuilder(name, type)
+        Attribute(String name, ModelType type, ModelNode defaultValue) {
+            this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, type)
                     .setAllowExpression(true)
                     .setRequired(false)
                     .setDefaultValue(defaultValue)
@@ -225,9 +240,9 @@ public class TransactionResourceDefinition extends ComponentResourceDefinition {
     }
 
     @Override
-    public void register(ManagementResourceRegistration parentRegistration) {
-        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
-        parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
+    public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
+        ManagementResourceRegistration registration = parent.registerSubModel(this);
+        parent.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class);
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(TransactionBuilder::new);
@@ -236,5 +251,7 @@ public class TransactionResourceDefinition extends ComponentResourceDefinition {
         if (registration.isRuntimeOnlyRegistrationValid()) {
             new MetricHandler<>(new TransactionMetricExecutor(), TransactionMetric.class).register(registration);
         }
+
+        return registration;
     }
 }

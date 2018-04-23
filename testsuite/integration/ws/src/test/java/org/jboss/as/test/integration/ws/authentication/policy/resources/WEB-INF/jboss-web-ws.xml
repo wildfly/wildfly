@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jboss-web>
+  <context-root>/picketlink-sts-ws</context-root>
+  <security-domain>sp</security-domain>
+</jboss-web>

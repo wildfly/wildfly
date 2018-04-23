@@ -27,14 +27,13 @@ import java.net.InetSocketAddress;
 
 import org.jgroups.Address;
 import org.wildfly.clustering.group.Node;
-import org.wildfly.clustering.server.Addressable;
 
 /**
  * Node implementation that associates a JGroups {@link Address} with its logical name
  * and transport socket binding.
  * @author Paul Ferraro
  */
-public class AddressableNode implements Node, Addressable, Comparable<AddressableNode>, Serializable {
+public class AddressableNode implements Node, Comparable<AddressableNode>, Serializable {
     private static final long serialVersionUID = -7707210981640344598L;
 
     private transient Address address;
@@ -47,7 +46,6 @@ public class AddressableNode implements Node, Addressable, Comparable<Addressabl
         this.socketAddress = socketAddress;
     }
 
-    @Override
     public Address getAddress() {
         return this.address;
     }
@@ -64,11 +62,7 @@ public class AddressableNode implements Node, Addressable, Comparable<Addressabl
 
     @Override
     public boolean equals(Object object) {
-        if (object instanceof Addressable) {
-            Addressable node = (Addressable) object;
-            return this.address.equals(node.getAddress());
-        }
-        return false;
+        return (object instanceof AddressableNode) ? this.address.equals(((AddressableNode) object).address) : false;
     }
 
     @Override

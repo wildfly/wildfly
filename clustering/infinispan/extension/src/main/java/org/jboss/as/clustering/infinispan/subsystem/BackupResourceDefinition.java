@@ -57,21 +57,36 @@ public class BackupResourceDefinition extends ChildResourceDefinition<Management
         return PathElement.pathElement("backup", name);
     }
 
-    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        ENABLED("enabled", ModelType.BOOLEAN, new ModelNode(true), UnaryOperator.identity()),
-        FAILURE_POLICY("failure-policy", ModelType.STRING, new ModelNode(BackupFailurePolicy.WARN.name()), builder -> builder.setValidator(new EnumValidator<>(BackupFailurePolicy.class))),
-        STRATEGY("strategy", ModelType.STRING, new ModelNode(BackupStrategy.ASYNC.name()), builder -> builder.setValidator(new EnumValidator<>(BackupStrategy.class))),
-        TIMEOUT("timeout", ModelType.LONG, new ModelNode(10000L), UnaryOperator.identity()),
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
+        ENABLED("enabled", ModelType.BOOLEAN, new ModelNode(true)),
+        FAILURE_POLICY("failure-policy", ModelType.STRING, new ModelNode(BackupFailurePolicy.WARN.name())) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setValidator(new EnumValidator<>(BackupFailurePolicy.class));
+            }
+        },
+        STRATEGY("strategy", ModelType.STRING, new ModelNode(BackupStrategy.ASYNC.name())) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setValidator(new EnumValidator<>(BackupStrategy.class));
+            }
+        },
+        TIMEOUT("timeout", ModelType.LONG, new ModelNode(10000L)),
         ;
         private final AttributeDefinition definition;
 
-        Attribute(String name, ModelType type, ModelNode defaultValue, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
-            this.definition = configurator.apply(createBuilder(name, type, defaultValue)).build();
+        Attribute(String name, ModelType type, ModelNode defaultValue) {
+            this.definition = this.apply(createBuilder(name, type, defaultValue)).build();
         }
 
         @Override
         public AttributeDefinition getDefinition() {
             return this.definition;
+        }
+
+        @Override
+        public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+            return builder;
         }
     }
 
@@ -113,8 +128,8 @@ public class BackupResourceDefinition extends ChildResourceDefinition<Management
     }
 
     @Override
-    public void register(ManagementResourceRegistration parentRegistration) {
-        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
+    public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
+        ManagementResourceRegistration registration = parent.registerSubModel(this);
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
@@ -125,5 +140,7 @@ public class BackupResourceDefinition extends ChildResourceDefinition<Management
         if (registration.isRuntimeOnlyRegistrationValid()) {
             new OperationHandler<>(new BackupOperationExecutor(), BackupOperation.class).register(registration);
         }
+
+        return registration;
     }
 }

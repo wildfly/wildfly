@@ -1,0 +1,57 @@
+
+/subsystem=security/security-domain=idp:add
+
+/subsystem=security/security-domain=idp/authentication=classic:add( \
+    login-modules=[ \
+        { \
+            "code" => "UsersRoles", \
+            "flag" => "required", \
+            "module-options" => [ \
+                "usersProperties"=>"sts-users.properties", \
+                "rolesProperties"=>"sts-roles.properties" \
+            ] \
+        } \
+    ] \
+)
+
+/subsystem=security/security-domain=idp/authorization=classic:add( \
+    policy-modules=[ \
+        { \
+            "code" => "JACC", \
+            "flag" => "required" \
+        } \
+    ] \
+)
+
+/subsystem=security/security-domain=sp:add
+
+/subsystem=security/security-domain=sp/authentication=classic:add( \
+    login-modules=[ \
+        { \
+            "code" => "org.picketlink.identity.federation.bindings.jboss.auth.SAML2STSLoginModule", \
+            "flag" => "required", \
+            "module-options" => [ \
+                "configFile"=>"sts-config.properties", \
+                "password-stacking"=>"useFirstPass" \
+            ] \
+        }, \
+        { \
+            "code" => "UsersRoles", \
+            "flag" => "required", \
+            "module-options" => [ \
+                "usersProperties"=>"sp-users.properties", \
+                "rolesProperties"=>"sp-roles.properties", \
+                "password-stacking"=>"useFirstPass" \
+            ] \
+        } \
+    ] \
+)
+
+/subsystem=security/security-domain=sp/authorization=classic:add( \
+    policy-modules=[ \
+        { \
+            "code" => "JACC", \
+            "flag" => "required" \
+        } \
+    ] \
+)

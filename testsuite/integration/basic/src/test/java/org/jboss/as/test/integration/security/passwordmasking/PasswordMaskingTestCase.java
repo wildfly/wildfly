@@ -53,6 +53,7 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.VaultHandler;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -157,6 +158,7 @@ public class PasswordMaskingTestCase {
 
            // stop DB
            server.shutdown();
+           ServerReload.executeReloadAndWaitForCompletion(managementClient);
 
        }
 

@@ -41,6 +41,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.adapters.jdbc.WrappedConnection;
 import org.jboss.remoting3.security.RemotingPermission;
@@ -55,6 +56,7 @@ import org.junit.runner.RunWith;
 
 import static org.jboss.as.controller.client.helpers.ClientConstants.ADD;
 import static org.jboss.as.controller.client.helpers.ClientConstants.OP;
+import static org.jboss.as.controller.client.helpers.ClientConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.client.helpers.ClientConstants.OP_ADDR;
 import static org.jboss.as.controller.client.helpers.ClientConstants.OUTCOME;
 import static org.jboss.as.controller.client.helpers.ClientConstants.REMOVE_OPERATION;
@@ -148,6 +150,7 @@ public class FlushOperationsTestCase {
         final ModelNode removeOp = new ModelNode();
         removeOp.get(OP).set(REMOVE_OPERATION);
         removeOp.get(OP_ADDR).set(dsAddress.toModelNode());
+        removeOp.get(OPERATION_HEADERS, ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         executeAndAssertSuccess(removeOp);
     }
 

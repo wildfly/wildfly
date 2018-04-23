@@ -65,6 +65,5 @@
              Prior to WFLY-5922 they were exported by javax.ejb.api. -->
         <module name="javax.xml.rpc.api"/>
         <module name="javax.rmi.api"/>
-        <module name="org.omg.api"/>
     </dependencies>
 </module>

@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Resource;
 import javax.resource.cci.Connection;
+import javax.security.auth.PrivateCredentialPermission;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -40,6 +41,7 @@ import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.jca.rar.MultipleConnectionFactory1;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
+import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -138,6 +140,8 @@ public class WildFlyActivationRaWithSecurityDomainTestCase {
         jar.addClasses(AbstractLoginModuleSecurityDomainTestCaseSetup.class, AbstractSecurityDomainSetup.class);
         final ResourceAdapterArchive rar = ShrinkWrap.create(ResourceAdapterArchive.class, "wf-ra-security-domain.rar").addAsLibrary(jar)
                 .addAsManifestResource(WildFlyActivationRaWithSecurityDomainTestCase.class.getPackage(), "ra.xml", "ra.xml");
+        rar.addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
+                new PrivateCredentialPermission("javax.resource.spi.security.PasswordCredential org.jboss.security.SimplePrincipal \"sa\"", "read")), "permissions.xml");
 
         return rar;
     }

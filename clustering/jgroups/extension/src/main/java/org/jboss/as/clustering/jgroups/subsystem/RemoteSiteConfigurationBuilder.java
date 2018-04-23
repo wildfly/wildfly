@@ -24,8 +24,6 @@ package org.jboss.as.clustering.jgroups.subsystem;
 
 import static org.jboss.as.clustering.jgroups.subsystem.RemoteSiteResourceDefinition.Attribute.CHANNEL;
 
-import java.util.stream.Stream;
-
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -42,6 +40,7 @@ import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 import org.wildfly.clustering.jgroups.spi.RemoteSiteConfiguration;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.ServiceNameProvider;
 import org.wildfly.clustering.service.ValueDependency;
@@ -71,8 +70,7 @@ public class RemoteSiteConfigurationBuilder implements ResourceServiceBuilder<Re
     public ServiceBuilder<RemoteSiteConfiguration> build(ServiceTarget target) {
         Value<RemoteSiteConfiguration> value = new ImmediateValue<>(this);
         ServiceBuilder<RemoteSiteConfiguration> builder = target.addService(this.getServiceName(), new ValueService<>(value)).setInitialMode(ServiceController.Mode.ON_DEMAND);
-        Stream.of(this.cluster, this.factory).forEach(dependency -> dependency.register(builder));
-        return builder;
+        return new CompositeDependency(this.cluster, this.factory).register(builder);
     }
 
     @Override

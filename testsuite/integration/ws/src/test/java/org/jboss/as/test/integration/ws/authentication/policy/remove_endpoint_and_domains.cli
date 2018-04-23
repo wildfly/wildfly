@@ -1,0 +1,3 @@
+/subsystem=webservices/endpoint-config=SAML-WSSecurity-Endpoint:remove()
+/subsystem=security/security-domain=sp:remove()
+/subsystem=security/security-domain=idp:remove()

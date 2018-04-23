@@ -49,12 +49,14 @@ import org.apache.directory.api.ldap.util.tree.DnNode;
 import org.apache.directory.api.util.exception.Exceptions;
 import org.apache.directory.server.constants.ServerDNConstants;
 import org.apache.directory.server.core.DefaultDirectoryService;
+import org.apache.directory.server.core.api.AttributeTypeProvider;
 import org.apache.directory.server.core.api.CacheService;
 import org.apache.directory.server.core.api.CoreSession;
 import org.apache.directory.server.core.api.DirectoryService;
 import org.apache.directory.server.core.api.DnFactory;
 import org.apache.directory.server.core.api.InstanceLayout;
 import org.apache.directory.server.core.api.LdapPrincipal;
+import org.apache.directory.server.core.api.ObjectClassProvider;
 import org.apache.directory.server.core.api.OperationEnum;
 import org.apache.directory.server.core.api.OperationManager;
 import org.apache.directory.server.core.api.ReferralManager;
@@ -205,6 +207,9 @@ public class InMemoryDirectoryServiceFactory implements DirectoryServiceFactory 
         return partitionFactory;
     }
 
+    /**
+     * Delegating DirectoryService which ensure cacheManager shutdown on DirectoryService shutdown.
+     */
     private class WrapperDirectoryService implements DirectoryService {
 
         private final DirectoryService wrapped;
@@ -600,6 +605,16 @@ public class InMemoryDirectoryServiceFactory implements DirectoryServiceFactory 
         @Override
         public void setCacheService(CacheService cacheService) {
             wrapped.setCacheService(cacheService);
+        }
+
+        @Override
+        public AttributeTypeProvider getAtProvider() {
+            return wrapped.getAtProvider();
+        }
+
+        @Override
+        public ObjectClassProvider getOcProvider() {
+            return wrapped.getOcProvider();
         }
 
         @Override

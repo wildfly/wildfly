@@ -26,6 +26,8 @@ import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
+import org.jboss.as.clustering.controller.ManagementResourceRegistration;
+import org.jboss.as.clustering.controller.SimpleResourceDescriptorConfigurator;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
@@ -49,18 +51,26 @@ public class FileStoreResourceDefinition extends StoreResourceDefinition {
     static final PathElement LEGACY_PATH = PathElement.pathElement("file-store", "FILE_STORE");
     static final PathElement PATH = pathElement("file");
 
-    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        RELATIVE_PATH("path", ModelType.STRING, builder -> builder.setAllowExpression(true)),
-        RELATIVE_TO("relative-to", ModelType.STRING, builder -> builder.setDefaultValue(new ModelNode(ServerEnvironment.SERVER_DATA_DIR)).setCapabilityReference(new CapabilityReference(Capability.PERSISTENCE, CommonUnaryRequirement.PATH))),
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
+        RELATIVE_PATH("path", ModelType.STRING) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setAllowExpression(true);
+            }
+        },
+        RELATIVE_TO("relative-to", ModelType.STRING) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setDefaultValue(new ModelNode(ServerEnvironment.SERVER_DATA_DIR))
+                        .setCapabilityReference(new CapabilityReference(Capability.PERSISTENCE, CommonUnaryRequirement.PATH))
+                        ;
+            }
+        },
         ;
         private final AttributeDefinition definition;
 
         Attribute(String name, ModelType type) {
-            this(name, type, UnaryOperator.identity());
-        }
-
-        Attribute(String name, ModelType type, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
-            this.definition = configurator.apply(new SimpleAttributeDefinitionBuilder(name, type).setRequired(false).setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)).build();
+            this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, type).setRequired(false).setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)).build();
         }
 
         @Override
@@ -80,17 +90,22 @@ public class FileStoreResourceDefinition extends StoreResourceDefinition {
     }
 
     FileStoreResourceDefinition() {
-        super(PATH, LEGACY_PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH),
-                descriptor -> descriptor.addAttributes(Attribute.class),
-                FileStoreBuilder::new, registration -> {
-                    PathManager pathManager = registration.getPathManager().orElse(null);
-                    if (pathManager != null) {
-                        ResolvePathHandler pathHandler = ResolvePathHandler.Builder.of(pathManager)
-                                .setPathAttribute(Attribute.RELATIVE_PATH.getDefinition())
-                                .setRelativeToAttribute(Attribute.RELATIVE_TO.getDefinition())
-                                .build();
-                        registration.registerOperationHandler(pathHandler.getOperationDefinition(), pathHandler);
-                    }
-                });
+        super(PATH, LEGACY_PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH), new SimpleResourceDescriptorConfigurator<>(Attribute.class), FileStoreBuilder::new);
+    }
+
+    @Override
+    public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
+        ManagementResourceRegistration registration = super.register(parent);
+
+        PathManager pathManager = registration.getPathManager().orElse(null);
+        if (pathManager != null) {
+            ResolvePathHandler pathHandler = ResolvePathHandler.Builder.of(pathManager)
+                    .setPathAttribute(Attribute.RELATIVE_PATH.getDefinition())
+                    .setRelativeToAttribute(Attribute.RELATIVE_TO.getDefinition())
+                    .build();
+            registration.registerOperationHandler(pathHandler.getOperationDefinition(), pathHandler);
+        }
+
+        return registration;
     }
 }

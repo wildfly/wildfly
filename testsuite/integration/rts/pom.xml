@@ -72,7 +72,6 @@
                 <dependency>
                     <groupId>org.jboss.resteasy</groupId>
                     <artifactId>resteasy-client</artifactId>
-                    <version>${version.org.jboss.resteasy}</version>
                     <scope>test</scope>
                 </dependency>
             </dependencies>

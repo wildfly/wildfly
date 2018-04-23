@@ -29,7 +29,7 @@ import org.wildfly.clustering.group.Node;
  * Non-clustered {@link Node} implementation.
  * @author Paul Ferraro
  */
-public class LocalNode implements Node {
+public class LocalNode implements Node, Comparable<LocalNode> {
 
     private final String name;
 
@@ -62,5 +62,10 @@ public class LocalNode implements Node {
     @Override
     public String toString() {
         return this.name;
+    }
+
+    @Override
+    public int compareTo(LocalNode node) {
+        return this.name.compareTo(node.name);
     }
 }

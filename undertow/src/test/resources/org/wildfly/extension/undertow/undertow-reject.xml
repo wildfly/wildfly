@@ -20,15 +20,15 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<subsystem xmlns="urn:jboss:domain:undertow:4.0" default-server="some-server" default-servlet-container="myContainer" default-virtual-host="default-virtual-host" instance-id="some-id" statistics-enabled="true">
+<subsystem xmlns="urn:jboss:domain:undertow:6.0" default-server="some-server" default-servlet-container="myContainer" default-virtual-host="default-virtual-host" instance-id="some-id" statistics-enabled="true">
    <buffer-cache buffer-size="1025" buffers-per-region="1054" max-regions="15" name="default"/>
    <buffer-cache buffer-size="1025" buffers-per-region="1054" max-regions="15" name="extra"/>
    <server default-host="other-host" name="some-server" servlet-container="myContainer">
       <ajp-listener disallowed-methods="FOO TRACE" max-parameters="5000" name="ajp-connector" no-request-timeout="10000" receive-buffer="5000" redirect-socket="ajps" request-parse-timeout="2000" resolve-peer-address="true" secure="true" send-buffer="50000" socket-binding="ajp" tcp-backlog="500" tcp-keep-alive="true"/>
-      <http-listener always-set-keep-alive="${prop.smth:false}" certificate-forwarding="true" name="default" proxy-address-forwarding="${prop.smth:false}" redirect-socket="ajp" resolve-peer-address="true" socket-binding="http"/>
+      <http-listener always-set-keep-alive="${prop.smth:false}" allow-unescaped-characters-in-url="false" certificate-forwarding="true" name="default" proxy-address-forwarding="${prop.smth:false}" redirect-socket="ajp" resolve-peer-address="true" socket-binding="http"/>
       <http-listener max-cookies="100" max-headers="30" max-parameters="30" max-post-size="100000" name="second" redirect-socket="https-non-default" require-host-http11="true" socket-binding="http-2" url-charset="windows-1250"/>
       <http-listener max-cookies="100" max-headers="30" max-parameters="30" max-post-size="100000" name="no-redirect" socket-binding="http-3" url-charset="windows-1250" worker="non-default"/>
-      <https-listener disallowed-methods="" max-buffered-request-size="50000" max-connections="100" name="https" record-request-start-time="true" require-host-http11="true" resolve-peer-address="true" security-realm="UndertowRealm" socket-binding="https-non-default" verify-client="REQUESTED"/>
+      <https-listener disallowed-methods="" max-buffered-request-size="50000"  allow-unescaped-characters-in-url="true"  max-connections="100" name="https" record-request-start-time="true" require-host-http11="true" resolve-peer-address="true" security-realm="UndertowRealm" socket-binding="https-non-default" verify-client="REQUESTED"/>
       <https-listener certificate-forwarding="true" enabled-cipher-suites="ALL:!MD5:!DHA" enabled-protocols="SSLv3, TLSv1.2" name="https-2" proxy-address-forwarding="true" read-timeout="-1" security-realm="UndertowRealm" socket-binding="https-2" write-timeout="-1"/>
       <https-listener disallowed-methods="" max-buffered-request-size="50000" max-connections="100" name="https-4" record-request-start-time="true" resolve-peer-address="true" socket-binding="https-4" security-realm="UndertowRealm"/>
       <host alias="localhost,some.host" default-response-code="503" default-web-module="something.war" name="default-virtual-host">

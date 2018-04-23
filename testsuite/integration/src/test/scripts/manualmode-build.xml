@@ -98,16 +98,16 @@
             <fileset dir="${jboss.dist}/modules"/>
         </copy>
 
-        <echo message="Copying and configuring instances jbossas-dwm-0 and jbossas-dwm-1  =========  "/>
-        <copy todir="target/jbossas-dwm-0" overwrite="true">
+        <echo message="Copying and configuring instances jbossas-dwm-manual-0 and jbossas-dwm-manual-1  =========  "/>
+        <copy todir="target/jbossas-dwm-manual-0" overwrite="true">
             <fileset dir="target/wildfly"/>
         </copy>
-        <copy todir="target/jbossas-dwm-1" overwrite="true">
+        <copy todir="target/jbossas-dwm-manual-1" overwrite="true">
             <fileset dir="target/wildfly"/>
         </copy>
-        <ts.config-as.change-transport-stack name="jbossas-dwm-0"
+        <ts.config-as.change-transport-stack name="jbossas-dwm-manual-0"
                                              stack="tcp"/>
-        <ts.config-as.change-transport-stack name="jbossas-dwm-1"
+        <ts.config-as.change-transport-stack name="jbossas-dwm-manual-1"
                                              stack="tcp"/>
 
         <!-- Connects back to original host (node0) -->

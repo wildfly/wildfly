@@ -23,7 +23,7 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.util.EnumSet;
-import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
@@ -31,6 +31,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelType;
 import org.jgroups.stack.Protocol;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
@@ -64,22 +65,40 @@ public class GenericProtocolResourceDefinition<P extends Protocol> extends Proto
         }
     }
 
-    GenericProtocolResourceDefinition(Consumer<ResourceDescriptor> descriptorConfigurator, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
-        this(WILDCARD_PATH, descriptorConfigurator, parentBuilderFactory);
+    private static class ResourceDescriptorConfigurator implements UnaryOperator<ResourceDescriptor> {
+        private final UnaryOperator<ResourceDescriptor> configurator;
+
+        ResourceDescriptorConfigurator(UnaryOperator<ResourceDescriptor> configurator) {
+            this.configurator = configurator;
+        }
+
+        @Override
+        public ResourceDescriptor apply(ResourceDescriptor descriptor) {
+            return this.configurator.apply(descriptor).addExtraParameters(DeprecatedAttribute.class);
+        }
     }
 
-    GenericProtocolResourceDefinition(String name, JGroupsModel deprecation, Consumer<ResourceDescriptor> descriptorConfigurator, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
-        this(pathElement(name), descriptorConfigurator, parentBuilderFactory);
+    GenericProtocolResourceDefinition(UnaryOperator<ResourceDescriptor> configurator, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
+        this(WILDCARD_PATH, configurator, parentBuilderFactory);
+    }
+
+    GenericProtocolResourceDefinition(String name, JGroupsModel deprecation, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
+        this(pathElement(name), configurator, parentBuilderFactory);
         this.setDeprecated(deprecation.getVersion());
     }
 
-    private GenericProtocolResourceDefinition(PathElement path, Consumer<ResourceDescriptor> descriptorConfigurator, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
-        super(path, descriptorConfigurator.andThen(descriptor -> descriptor
-                .addExtraParameters(DeprecatedAttribute.class)
-                ), ProtocolConfigurationBuilder::new, parentBuilderFactory, (parent, registration) -> {
-                    for (org.jboss.as.clustering.controller.Attribute attribute : EnumSet.allOf(DeprecatedAttribute.class)) {
-                        registration.registerReadOnlyAttribute(attribute.getDefinition(), null);
-                    }
-                });
+    private GenericProtocolResourceDefinition(PathElement path, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
+        super(path, new ResourceDescriptorConfigurator(configurator), ProtocolConfigurationBuilder::new, parentBuilderFactory);
+    }
+
+    @Override
+    public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
+        ManagementResourceRegistration registration = super.register(parent);
+
+        for (org.jboss.as.clustering.controller.Attribute attribute : EnumSet.allOf(DeprecatedAttribute.class)) {
+            registration.registerReadOnlyAttribute(attribute.getDefinition(), null);
+        }
+
+        return registration;
     }
 }

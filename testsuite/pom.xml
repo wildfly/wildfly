@@ -165,8 +165,7 @@
 
         <!-- Arquillian dependency versions -->
         <version.arquillian_wildfly>${project.parent.version}</version.arquillian_wildfly>
-        <version.saxon>8.7</version.saxon>
-
+        
         <!-- Don't try to deploy the testsuite modules because they don't build jars -->
         <maven.deploy.skip>true</maven.deploy.skip>
 
@@ -174,15 +173,6 @@
         <trace>none</trace>
     </properties>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.syslog4j</groupId>
-                <artifactId>syslog4j</artifactId>
-                <version>${version.org.syslog4j}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
     <dependencies>
         <dependency>

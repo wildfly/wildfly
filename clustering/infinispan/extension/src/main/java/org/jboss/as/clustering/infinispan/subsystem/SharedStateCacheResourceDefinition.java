@@ -22,8 +22,9 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
 
+import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.transform.RequiredChildResourceDiscardPolicy;
 import org.jboss.as.controller.ModelVersion;
@@ -62,15 +63,35 @@ public class SharedStateCacheResourceDefinition extends ClusteredCacheResourceDe
         ClusteredCacheResourceDefinition.buildTransformation(version, builder);
     }
 
+    private static class ResourceDescriptorConfigurator implements UnaryOperator<ResourceDescriptor> {
+        private final UnaryOperator<ResourceDescriptor> configurator;
+
+        ResourceDescriptorConfigurator(UnaryOperator<ResourceDescriptor> configurator) {
+            this.configurator = configurator;
+        }
+
+        @SuppressWarnings("deprecation")
+        @Override
+        public ResourceDescriptor apply(ResourceDescriptor descriptor) {
+            return this.configurator.apply(descriptor).addRequiredChildren(PartitionHandlingResourceDefinition.PATH, StateTransferResourceDefinition.PATH, BackupForResourceDefinition.PATH, BackupsResourceDefinition.PATH);
+        }
+    }
+
+    SharedStateCacheResourceDefinition(PathElement path, UnaryOperator<ResourceDescriptor> configurator, ClusteredCacheServiceHandler handler) {
+        super(path, new ResourceDescriptorConfigurator(configurator), handler);
+    }
+
+
     @SuppressWarnings("deprecation")
-    SharedStateCacheResourceDefinition(PathElement path, Consumer<ResourceDescriptor> descriptorConfigurator, ClusteredCacheServiceHandler handler) {
-        super(path, descriptorConfigurator.andThen(descriptor -> descriptor
-                .addRequiredChildren(PartitionHandlingResourceDefinition.PATH, StateTransferResourceDefinition.PATH, BackupForResourceDefinition.PATH, BackupsResourceDefinition.PATH)
-            ), handler, registration -> {
-                new PartitionHandlingResourceDefinition().register(registration);
-                new StateTransferResourceDefinition().register(registration);
-                new BackupsResourceDefinition().register(registration);
-                new BackupForResourceDefinition().register(registration);
-            });
+    @Override
+    public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
+        ManagementResourceRegistration registration = super.register(parent);
+
+        new PartitionHandlingResourceDefinition().register(registration);
+        new StateTransferResourceDefinition().register(registration);
+        new BackupsResourceDefinition().register(registration);
+        new BackupForResourceDefinition().register(registration);
+
+        return registration;
     }
 }

@@ -22,6 +22,7 @@
 
 package org.jboss.as.security.deployment;
 
+import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -34,6 +35,7 @@ public class SecurityEnablementProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         phaseContext.getDeploymentUnit().putAttachment(SecurityAttachments.SECURITY_ENABLED, true);
+        phaseContext.getDeploymentUnit().addToAttachmentList(Attachments.ADDITIONAL_FACTORIES, SecurityContextHandleFactory.INSTANCE);
     }
 
     @Override

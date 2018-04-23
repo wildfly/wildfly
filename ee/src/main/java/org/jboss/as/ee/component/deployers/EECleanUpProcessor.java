@@ -28,6 +28,10 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.el.cache.FactoryFinderCache;
 import org.jboss.modules.Module;
+import org.jboss.msc.service.LifecycleEvent;
+import org.jboss.msc.service.LifecycleListener;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * Cleans up references to EE structures in the deployment unit
@@ -49,6 +53,18 @@ public class EECleanUpProcessor implements DeploymentUnitProcessor {
     @Override
     public void undeploy(final DeploymentUnit context) {
         final Module module = context.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
-        FactoryFinderCache.clearClassLoader(module.getClassLoader());
+        ServiceName deploymentService = context.getServiceName();
+        ServiceController<?> controller = context.getServiceRegistry().getRequiredService(deploymentService);
+        //WFLY-9666 we do this cleanup at the end of undeploy
+        //if we do it now any code in the undeploy sequence that attempts to use EL can cause it to be re-added
+        controller.addListener(new LifecycleListener() {
+            @Override
+            public void handleEvent(ServiceController<?> serviceController, LifecycleEvent lifecycleEvent) {
+                if(lifecycleEvent == LifecycleEvent.DOWN) {
+                    FactoryFinderCache.clearClassLoader(module.getClassLoader());
+                    controller.removeListener(this);
+                }
+            }
+        });
     }
 }

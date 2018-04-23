@@ -21,58 +21,21 @@
  */
 package org.wildfly.clustering.server.group;
 
-import org.wildfly.clustering.Registration;
-import org.wildfly.clustering.group.GroupListener;
-import org.wildfly.clustering.group.Membership;
+import org.jgroups.Address;
 import org.wildfly.clustering.group.Node;
 
 /**
  * Non-clustered {@link Group} implementation
  * @author Paul Ferraro
  */
-public class LocalGroup implements Group<Void> {
-    private static final String NAME = "local";
+public class LocalGroup extends AbstractLocalGroup<Address> {
 
-    private final Membership membership;
-
-    public LocalGroup(Node node) {
-        this.membership = new SingletonMembership(node);
+    public LocalGroup(String nodeName) {
+        super(nodeName);
     }
 
     @Override
-    public Registration register(GroupListener object) {
-        // membership of a non-clustered group will never change
-        return () -> {};
-    }
-
-    @Deprecated
-    @Override
-    public void removeListener(Listener listener) {
-        // membership of a non-clustered group will never change
-    }
-
-    @Override
-    public String getName() {
-        return NAME;
-    }
-
-    @Override
-    public Node getLocalMember() {
-        return this.membership.getCoordinator();
-    }
-
-    @Override
-    public Membership getMembership() {
-        return this.membership;
-    }
-
-    @Override
-    public boolean isSingleton() {
-        return true;
-    }
-
-    @Override
-    public Node createNode(Void address) {
-        return this.getLocalMember();
+    public Address getAddress(Node node) {
+        return null;
     }
 }

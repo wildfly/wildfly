@@ -22,6 +22,7 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import org.jboss.as.clustering.controller.SimpleResourceDescriptorConfigurator;
 import org.jboss.as.clustering.jgroups.auth.BinaryAuthToken;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
@@ -58,6 +59,6 @@ public class DigestAuthTokenResourceDefinition extends AuthTokenResourceDefiniti
     }
 
     DigestAuthTokenResourceDefinition() {
-        super(PATH, descriptor -> descriptor.addAttributes(Attribute.class), DigestAuthTokenBuilder::new);
+        super(PATH, new SimpleResourceDescriptorConfigurator<>(Attribute.class), DigestAuthTokenBuilder::new);
     }
 }

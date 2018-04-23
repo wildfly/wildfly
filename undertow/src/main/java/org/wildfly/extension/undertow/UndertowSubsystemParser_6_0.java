@@ -87,7 +87,8 @@ public class UndertowSubsystemParser_6_0 extends PersistentResourceXMLParser {
                                                         HttpListenerResourceDefinition.HTTP2_MAX_CONCURRENT_STREAMS,
                                                         HttpListenerResourceDefinition.HTTP2_MAX_FRAME_SIZE,
                                                         HttpListenerResourceDefinition.HTTP2_MAX_HEADER_LIST_SIZE,
-                                                        HttpListenerResourceDefinition.REQUIRE_HOST_HTTP11)
+                                                        HttpListenerResourceDefinition.REQUIRE_HOST_HTTP11,
+                                                        HttpListenerResourceDefinition.PROXY_PROTOCOL)
                                 ).addChild(
                                         listenerBuilder(HttpsListenerResourceDefinition.INSTANCE)
                                                 // xsd https-listener-type
@@ -110,7 +111,8 @@ public class UndertowSubsystemParser_6_0 extends PersistentResourceXMLParser {
                                                         HttpListenerResourceDefinition.HTTP2_MAX_CONCURRENT_STREAMS,
                                                         HttpListenerResourceDefinition.HTTP2_MAX_FRAME_SIZE,
                                                         HttpListenerResourceDefinition.HTTP2_MAX_HEADER_LIST_SIZE,
-                                                        HttpListenerResourceDefinition.REQUIRE_HOST_HTTP11)
+                                                        HttpListenerResourceDefinition.REQUIRE_HOST_HTTP11,
+                                                        HttpListenerResourceDefinition.PROXY_PROTOCOL)
                                 ).addChild(
                                         builder(HostDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(HostDefinition.ALIAS, HostDefinition.DEFAULT_WEB_MODULE, HostDefinition.DEFAULT_RESPONSE_CODE, HostDefinition.DISABLE_CONSOLE_REDIRECT)
@@ -391,7 +393,8 @@ public class UndertowSubsystemParser_6_0 extends PersistentResourceXMLParser {
                         ListenerResourceDefinition.REQUEST_PARSE_TIMEOUT,
                         ListenerResourceDefinition.DISALLOWED_METHODS,
                         ListenerResourceDefinition.SECURE,
-                        ListenerResourceDefinition.RFC6265_COOKIE_VALIDATION);
+                        ListenerResourceDefinition.RFC6265_COOKIE_VALIDATION,
+                        ListenerResourceDefinition.ALLOW_UNESCAPED_CHARACTERS_IN_URL);
     }
 
     private static PersistentResourceXMLDescription.PersistentResourceXMLBuilder filterRefBuilder() {

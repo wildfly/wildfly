@@ -26,7 +26,6 @@ import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.AttributeTranslation;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
-import org.jboss.as.clustering.controller.Registration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAttribute;
@@ -178,25 +177,26 @@ public abstract class TableResourceDefinition extends ChildResourceDefinition<Ma
         }
     };
 
-    private final Registration<ManagementResourceRegistration> registrar;
+    private final org.jboss.as.clustering.controller.Attribute prefixAttribute;
 
     TableResourceDefinition(PathElement path, org.jboss.as.clustering.controller.Attribute prefixAttribute) {
         super(path, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(path, WILDCARD_PATH));
+        this.prefixAttribute = prefixAttribute;
+    }
+
+    @Override
+    public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
+        ManagementResourceRegistration registration = parent.registerSubModel(this);
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
-                .addAttributes(prefixAttribute)
+                .addAttributes(this.prefixAttribute)
                 .addAttributes(Attribute.class)
                 .addAttributes(ColumnAttribute.class)
                 .addAttributeTranslation(DeprecatedAttribute.BATCH_SIZE, BATCH_SIZE_TRANSLATION)
                 ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new TableBuilder(prefixAttribute, address));
-        this.registrar = new SimpleResourceRegistration(descriptor, handler);
-    }
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new TableBuilder(this.prefixAttribute, address));
+        new SimpleResourceRegistration(descriptor, handler).register(registration);
 
-    @Override
-    public void register(ManagementResourceRegistration parentRegistration) {
-        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
-
-        this.registrar.register(registration);
+        return registration;
     }
 }

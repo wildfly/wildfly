@@ -25,6 +25,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import java.util.function.UnaryOperator;
 
 import org.infinispan.configuration.cache.StorageType;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
@@ -42,17 +43,17 @@ public class OffHeapMemoryResourceDefinition extends MemoryResourceDefinition {
     static final PathElement PATH = pathElement("off-heap");
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        CAPACITY("capacity", ModelType.INT, new ModelNode(1048576), UnaryOperator.identity()),
+        CAPACITY("capacity", ModelType.INT, new ModelNode(1048576)),
         ;
         private final AttributeDefinition definition;
 
-        Attribute(String name, ModelType type, ModelNode defaultValue, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
-            this.definition = configurator.apply(new SimpleAttributeDefinitionBuilder(name, type)
+        Attribute(String name, ModelType type, ModelNode defaultValue) {
+            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
                     .setAllowExpression(true)
                     .setRequired(false)
                     .setDefaultValue(defaultValue)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                    ).build();
+                    .build();
         }
 
         @Override
@@ -67,10 +68,16 @@ public class OffHeapMemoryResourceDefinition extends MemoryResourceDefinition {
         }
     }
 
+    static class ResourceDescriptorConfigurator implements UnaryOperator<ResourceDescriptor> {
+        @Override
+        public ResourceDescriptor apply(ResourceDescriptor descriptor) {
+            return descriptor.addAttributes(Attribute.class)
+                    .addAttributes(BinaryMemoryResourceDefinition.Attribute.class)
+                    ;
+        }
+    }
+
     OffHeapMemoryResourceDefinition() {
-        super(StorageType.OFF_HEAP, PATH, descriptor -> descriptor
-                .addAttributes(Attribute.class)
-                .addAttributes(BinaryMemoryResourceDefinition.Attribute.class)
-                );
+        super(StorageType.OFF_HEAP, PATH, new ResourceDescriptorConfigurator());
     }
 }

@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
+<config>
+   <extension-module>org.wildfly.extension.ee-security</extension-module>
+   <subsystem xmlns="urn:jboss:domain:ee-security:1.0"/>
+</config>

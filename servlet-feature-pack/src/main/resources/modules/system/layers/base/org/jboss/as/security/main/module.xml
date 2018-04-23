@@ -64,6 +64,7 @@
         <module name="org.wildfly.clustering.infinispan.spi" optional="true"/>
         <module name="org.wildfly.clustering.service" optional="true"/>
         <module name="org.wildfly.security.elytron-private"/>
+        <module name="org.wildfly.extension.undertow" />
         <module name="sun.jdk"/>
     </dependencies>
 </module>

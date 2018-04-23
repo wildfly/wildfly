@@ -100,6 +100,7 @@ public class UndertowTransformersTestCase extends AbstractSubsystemBaseTest {
         PathAddress serverAddress = subsystemAddress.append(UndertowExtension.SERVER_PATH);
         PathAddress hostAddress = serverAddress.append(UndertowExtension.HOST_PATH);
         PathAddress httpsAddress = serverAddress.append(UndertowExtension.HTTPS_LISTENER_PATH);
+        PathAddress ajpAddress = serverAddress.append(UndertowExtension.AJP_LISTENER_PATH);
         PathAddress httpAddress = serverAddress.append(UndertowExtension.HTTP_LISTENER_PATH);
         PathAddress reverseProxy = subsystemAddress.append(UndertowExtension.PATH_HANDLERS).append(Constants.REVERSE_PROXY);
         PathAddress reverseProxyServerAddress = reverseProxy.append(Constants.HOST);
@@ -108,14 +109,17 @@ public class UndertowTransformersTestCase extends AbstractSubsystemBaseTest {
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, targetVersion, ops, new FailedOperationTransformationConfig()
                 .addFailedAttribute(httpAddress,
                         new FailedOperationTransformationConfig.NewAttributesConfig(
-                                HttpListenerResourceDefinition.REQUIRE_HOST_HTTP11
+                                HttpListenerResourceDefinition.REQUIRE_HOST_HTTP11,
+                                HttpListenerResourceDefinition.PROXY_PROTOCOL
                         )
                 ).addFailedAttribute(httpsAddress,
                         new FailedOperationTransformationConfig.NewAttributesConfig(
                                 HttpListenerResourceDefinition.REQUIRE_HOST_HTTP11.getName(),
                                 HttpListenerResourceDefinition.PROXY_ADDRESS_FORWARDING.getName(),
                                 HttpListenerResourceDefinition.CERTIFICATE_FORWARDING.getName(),
-                                HttpsListenerResourceDefinition.SSL_CONTEXT.getName()
+                                HttpsListenerResourceDefinition.SSL_CONTEXT.getName(),
+                                HttpsListenerResourceDefinition.ALLOW_UNESCAPED_CHARACTERS_IN_URL.getName(),
+                                HttpListenerResourceDefinition.PROXY_PROTOCOL.getName()
                         )
                 )
                 .addFailedAttribute(reverseProxy, new FailedOperationTransformationConfig.NewAttributesConfig(ReverseProxyHandler.MAX_RETRIES))

@@ -340,28 +340,12 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         return moduleName;
     }
 
-    Injector<TransactionManager> getTransactionManagerInjector() {
-        return this.transactionManagerInjectedValue;
-    }
-
-    TransactionManager getTransactionManager() {
-        return this.transactionManagerInjectedValue.getValue();
-    }
-
     Injector<UserTransaction> getUserTransactionInjector() {
         return this.userTransactionInjectedValue;
     }
 
     UserTransaction getUserTransaction() {
         return this.userTransactionInjectedValue.getValue();
-    }
-
-    Injector<TransactionSynchronizationRegistry> getTransactionSynchronizationRegistryInjector() {
-        return transactionSynchronizationRegistryValue;
-    }
-
-    TransactionSynchronizationRegistry getTransactionSynchronizationRegistry() {
-        return transactionSynchronizationRegistryValue.getOptionalValue();
     }
 
     public Injector<EJBSuspendHandlerService> getEJBSuspendHandlerInjector() {

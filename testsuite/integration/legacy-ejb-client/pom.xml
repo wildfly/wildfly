@@ -32,17 +32,6 @@
         <dependency>
             <groupId>org.jboss</groupId>
             <artifactId>jboss-ejb-client-legacy</artifactId>
-            <version>${version.org.jboss.ejb-client-legacy}</version>
-            <exclusions>
-              <exclusion>
-                 <groupId>org.jboss.remoting3</groupId>
-                 <artifactId>jboss-remoting</artifactId>
-              </exclusion>
-              <exclusion>
-                 <groupId>org.jboss.spec.javax.transaction</groupId>
-                 <artifactId>jboss-transaction-api_1.1_spec</artifactId>
-              </exclusion>
-            </exclusions>
             <scope>test</scope>
         </dependency>
         <!-- HACK!!! We must override anything that brings in the standard jboss-ejb-client, and forcefully exclude it.

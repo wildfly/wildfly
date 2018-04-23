@@ -55,16 +55,26 @@ public class LockingResourceDefinition extends ComponentResourceDefinition {
     static final PathElement PATH = pathElement("locking");
     static final PathElement LEGACY_PATH = PathElement.pathElement(PATH.getValue(), "LOCKING");
 
-    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        ACQUIRE_TIMEOUT("acquire-timeout", ModelType.LONG, new ModelNode(15000L), builder -> builder.setMeasurementUnit(MeasurementUnit.MILLISECONDS)),
-        CONCURRENCY("concurrency-level", ModelType.INT, new ModelNode(1000), UnaryOperator.identity()),
-        ISOLATION("isolation", ModelType.STRING, new ModelNode(IsolationLevel.READ_COMMITTED.name()), builder -> builder.setValidator(new EnumValidator<>(IsolationLevel.class))),
-        STRIPING("striping", ModelType.BOOLEAN, new ModelNode(false), UnaryOperator.identity()),
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
+        ACQUIRE_TIMEOUT("acquire-timeout", ModelType.LONG, new ModelNode(15000L)) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setMeasurementUnit(MeasurementUnit.MILLISECONDS);
+            }
+        },
+        CONCURRENCY("concurrency-level", ModelType.INT, new ModelNode(1000)),
+        ISOLATION("isolation", ModelType.STRING, new ModelNode(IsolationLevel.READ_COMMITTED.name())) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setValidator(new EnumValidator<>(IsolationLevel.class));
+            }
+        },
+        STRIPING("striping", ModelType.BOOLEAN, new ModelNode(false)),
         ;
         private final AttributeDefinition definition;
 
-        Attribute(String name, ModelType type, ModelNode defaultValue, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
-            this.definition = configurator.apply(new SimpleAttributeDefinitionBuilder(name, type)
+        Attribute(String name, ModelType type, ModelNode defaultValue) {
+            this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, type)
                     .setAllowExpression(true)
                     .setRequired(false)
                     .setDefaultValue(defaultValue)
@@ -75,6 +85,11 @@ public class LockingResourceDefinition extends ComponentResourceDefinition {
         @Override
         public AttributeDefinition getDefinition() {
             return this.definition;
+        }
+
+        @Override
+        public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+            return builder;
         }
     }
 
@@ -91,9 +106,9 @@ public class LockingResourceDefinition extends ComponentResourceDefinition {
     }
 
     @Override
-    public void register(ManagementResourceRegistration parentRegistration) {
-        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
-        parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
+    public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
+        ManagementResourceRegistration registration = parent.registerSubModel(this);
+        parent.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class);
         ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(LockingBuilder::new);
@@ -102,5 +117,7 @@ public class LockingResourceDefinition extends ComponentResourceDefinition {
         if (registration.isRuntimeOnlyRegistrationValid()) {
             new MetricHandler<>(new LockingMetricExecutor(), LockingMetric.class).register(registration);
         }
+
+        return registration;
     }
 }

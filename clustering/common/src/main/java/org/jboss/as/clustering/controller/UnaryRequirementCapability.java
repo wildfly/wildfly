@@ -49,7 +49,11 @@ public class UnaryRequirementCapability implements Capability {
      * @param configurator configures the capability
      */
     public UnaryRequirementCapability(UnaryRequirement requirement, UnaryOperator<RuntimeCapability.Builder<Void>> configurator) {
-        this.definition = configurator.apply(RuntimeCapability.Builder.of(requirement.getName(), true).setServiceType(requirement.getType())).build();
+        RuntimeCapability.Builder<Void> builder = RuntimeCapability.Builder.of(requirement.getName(), true)
+                .setServiceType(requirement.getType())
+                .setDynamicNameMapper(DynamicCapabilityNameResolver.DEFAULT)
+                ;
+        this.definition = configurator.apply(builder).build();
     }
 
     @Override

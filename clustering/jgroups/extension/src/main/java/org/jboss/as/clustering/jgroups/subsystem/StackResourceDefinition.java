@@ -77,13 +77,18 @@ public class StackResourceDefinition extends ChildResourceDefinition<ManagementR
         return PathElement.pathElement("stack", name);
     }
 
-    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        STATISTICS_ENABLED(ModelDescriptionConstants.STATISTICS_ENABLED, ModelType.BOOLEAN, builder -> builder.setDefaultValue(new ModelNode(false))),
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
+        STATISTICS_ENABLED(ModelDescriptionConstants.STATISTICS_ENABLED, ModelType.BOOLEAN) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setDefaultValue(new ModelNode(false));
+            }
+        },
         ;
         private final AttributeDefinition definition;
 
-        Attribute(String name, ModelType type, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
-            this.definition = configurator.apply(new SimpleAttributeDefinitionBuilder(name, type)
+        Attribute(String name, ModelType type) {
+            this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, type)
                     .setRequired(false)
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
@@ -166,23 +171,13 @@ public class StackResourceDefinition extends ChildResourceDefinition<ManagementR
         ProtocolRegistration.buildTransformation(version, builder);
     }
 
-    private final ResourceServiceBuilderFactory<ChannelFactory> builderFactory = JChannelFactoryBuilder::new;
-
-    // registration
-    public StackResourceDefinition() {
-        super(WILDCARD_PATH, JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(WILDCARD_PATH));
-    }
-
-    @SuppressWarnings("deprecation")
-    @Override
-    public void register(ManagementResourceRegistration parentRegistration) {
-        ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
-
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
-                .addAttributes(Attribute.class)
-                .addExtraParameters(TRANSPORT, PROTOCOLS)
-                .addCapabilities(Capability.class)
-                .setAddOperationTransformation(handler -> (context, operation) -> {
+    static class AddOperationTransformation implements UnaryOperator<OperationStepHandler> {
+        @Override
+        public OperationStepHandler apply(OperationStepHandler handler) {
+            return new OperationStepHandler() {
+                @SuppressWarnings("deprecation")
+                @Override
+                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     if (operation.hasDefined(TRANSPORT.getName())) {
                         PathAddress address = context.getCurrentAddress();
                         ModelNode transport = operation.get(TRANSPORT.getName());
@@ -217,7 +212,28 @@ public class StackResourceDefinition extends ChildResourceDefinition<ManagementR
                         }
                     }
                     handler.execute(context, operation);
-                })
+                }
+            };
+        }
+    }
+
+    private final ResourceServiceBuilderFactory<ChannelFactory> builderFactory = JChannelFactoryBuilder::new;
+
+    // registration
+    public StackResourceDefinition() {
+        super(WILDCARD_PATH, JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(WILDCARD_PATH));
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
+        ManagementResourceRegistration registration = parent.registerSubModel(this);
+
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
+                .addAttributes(Attribute.class)
+                .addExtraParameters(TRANSPORT, PROTOCOLS)
+                .addCapabilities(Capability.class)
+                .setAddOperationTransformation(new AddOperationTransformation())
                 ;
         ResourceServiceHandler handler = new StackServiceHandler(this.builderFactory);
         new SimpleResourceRegistration(descriptor, handler).register(registration);
@@ -276,6 +292,8 @@ public class StackResourceDefinition extends ChildResourceDefinition<ManagementR
         new TransportRegistration(this.builderFactory).register(registration);
         new ProtocolRegistration(this.builderFactory).register(registration);
         new RelayResourceDefinition(this.builderFactory).register(registration);
+
+        return registration;
     }
 
     static void operationDeprecated(OperationContext context, ModelNode operation) {

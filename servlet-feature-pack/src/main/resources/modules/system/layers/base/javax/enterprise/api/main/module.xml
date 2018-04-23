@@ -34,7 +34,7 @@
     </dependencies>
 
     <resources>
-        <artifact name="javax.enterprise:cdi-api:1.2">
+        <artifact name="javax.enterprise:cdi-api:1.2"> <!-- ${version.javax.enterprise-1.2} -->
             <conditions>
                 <property-not-equal name="ee8.preview.mode" value="true" />
             </conditions>

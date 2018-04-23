@@ -23,8 +23,11 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.Set;
+import java.util.function.UnaryOperator;
 
-import org.jboss.as.clustering.controller.DefaultableCapabilityReference;
+import org.jboss.as.clustering.controller.CapabilityReference;
+import org.jboss.as.clustering.controller.DynamicCapabilityNameResolver;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.clustering.controller.transform.SimpleAttributeConverter;
@@ -35,7 +38,6 @@ import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelResourceDefinition;
 import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemResourceDefinition;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.CapabilityReferenceRecorder;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -50,6 +52,7 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jgroups.JChannel;
+import org.wildfly.clustering.jgroups.spi.JGroupsDefaultRequirement;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 import org.wildfly.clustering.service.UnaryRequirement;
 
@@ -87,13 +90,18 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
         }
     }
 
-    enum Capability implements org.jboss.as.clustering.controller.Capability {
-        TRANSPORT_CHANNEL(Requirement.CHANNEL),
+    enum Capability implements org.jboss.as.clustering.controller.Capability, UnaryOperator<RuntimeCapability.Builder<Void>> {
+        TRANSPORT_CHANNEL(Requirement.CHANNEL) {
+            @Override
+            public RuntimeCapability.Builder<Void> apply(RuntimeCapability.Builder<Void> builder) {
+                return super.apply(builder).addRequirements(JGroupsDefaultRequirement.CHANNEL_FACTORY.getName());
+            }
+        },
         ;
         private final RuntimeCapability<Void> definition;
 
         Capability(UnaryRequirement requirement) {
-            this.definition = new UnaryRequirementCapability(requirement).getDefinition();
+            this.definition = new UnaryRequirementCapability(requirement, this).getDefinition();
         }
 
         @Override
@@ -102,31 +110,36 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
         }
 
         @Override
-        public RuntimeCapability<?> resolve(PathAddress address) {
-            return this.definition.fromBaseCapability(address.getParent().getLastElement().getValue());
+        public RuntimeCapability.Builder<Void> apply(RuntimeCapability.Builder<Void> builder) {
+            return builder.setDynamicNameMapper(DynamicCapabilityNameResolver.PARENT);
         }
     }
 
-    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        CHANNEL("channel", ModelType.STRING, new DefaultableCapabilityReference(Capability.TRANSPORT_CHANNEL, JGroupsRequirement.CHANNEL_FACTORY)),
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
+        CHANNEL("channel", ModelType.STRING, null) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setAllowExpression(false)
+                        .setCapabilityReference(new CapabilityReference(Capability.TRANSPORT_CHANNEL, JGroupsRequirement.CHANNEL_FACTORY))
+                        ;
+            }
+        },
         LOCK_TIMEOUT("lock-timeout", ModelType.LONG, new ModelNode(240000L)),
         ;
         private final AttributeDefinition definition;
 
-        Attribute(String name, ModelType type, CapabilityReferenceRecorder reference) {
-            this.definition = createBuilder(name, type, null)
-                    .setAllowExpression(false)
-                    .setCapabilityReference(reference)
-                    .build();
-        }
-
         Attribute(String name, ModelType type, ModelNode defaultValue) {
-            this.definition = createBuilder(name, type, defaultValue).build();
+            this.definition = this.apply(createBuilder(name, type, defaultValue)).build();
         }
 
         @Override
         public AttributeDefinition getDefinition() {
             return this.definition;
+        }
+
+        @Override
+        public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+            return builder;
         }
     }
 
@@ -275,20 +288,27 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
         }
     }
 
+    static class ResourceDescriptorConfigurator implements UnaryOperator<ResourceDescriptor> {
+        @Override
+        public ResourceDescriptor apply(ResourceDescriptor descriptor) {
+            return descriptor.addAttributes(Attribute.class)
+                    .addAttributes(ExecutorAttribute.class)
+                    .addAttributes(DeprecatedAttribute.class)
+                    .addCapabilities(Capability.class)
+                    ;
+        }
+    }
+
     JGroupsTransportResourceDefinition() {
-        super(PATH, descriptor -> descriptor
-                .addAttributes(Attribute.class)
-                .addAttributes(ExecutorAttribute.class)
-                .addAttributes(DeprecatedAttribute.class)
-                .addCapabilities(Capability.class)
-            , new JGroupsTransportServiceHandler());
+        super(PATH, new ResourceDescriptorConfigurator(), new JGroupsTransportServiceHandler());
     }
 
     @Override
-    public void register(ManagementResourceRegistration parentRegistration) {
-        super.register(parentRegistration);
+    public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
+        ManagementResourceRegistration registration = super.register(parent);
 
-        ManagementResourceRegistration registration = parentRegistration.getSubModel(PathAddress.pathAddress(PATH));
-        parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
+        parent.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
+
+        return registration;
     }
 }

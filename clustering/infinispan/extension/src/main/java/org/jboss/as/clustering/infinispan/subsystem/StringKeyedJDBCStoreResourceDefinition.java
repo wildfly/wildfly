@@ -25,9 +25,11 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.Operations;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.clustering.controller.transform.LegacyPropertyResourceTransformer;
 import org.jboss.as.controller.AttributeDefinition;
@@ -122,24 +124,32 @@ public class StringKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
         StringTableResourceDefinition.buildTransformation(version, builder);
     }
 
-    StringKeyedJDBCStoreResourceDefinition() {
-        super(PATH, LEGACY_PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH), descriptor -> descriptor
-                .addExtraParameters(DeprecatedAttribute.class)
-                .addRequiredChildren(StringTableResourceDefinition.PATH)
-                // Translate deprecated TABLE attribute into separate add table operation
-                .setAddOperationTransformation(new TableAttributeTransformation(DeprecatedAttribute.TABLE, StringTableResourceDefinition.PATH))
-            , registration -> {
-                registration.registerReadWriteAttribute(DeprecatedAttribute.TABLE.getDefinition(), LEGACY_READ_TABLE_HANDLER, LEGACY_WRITE_TABLE_HANDLER);
+    static class ResourceDescriptorConfigurator implements UnaryOperator<ResourceDescriptor> {
+        @Override
+        public ResourceDescriptor apply(ResourceDescriptor descriptor) {
+            return descriptor.addExtraParameters(DeprecatedAttribute.class)
+                    .addRequiredChildren(StringTableResourceDefinition.PATH)
+                    // Translate deprecated TABLE attribute into separate add table operation
+                    .setAddOperationTransformation(new TableAttributeTransformation(DeprecatedAttribute.TABLE, StringTableResourceDefinition.PATH))
+                    ;
+        }
+    }
 
-                new StringTableResourceDefinition().register(registration);
-            });
+    StringKeyedJDBCStoreResourceDefinition() {
+        super(PATH, LEGACY_PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH), new ResourceDescriptorConfigurator());
     }
 
     @Override
-    public void register(ManagementResourceRegistration parentRegistration) {
-        super.register(parentRegistration);
-        org.jboss.as.controller.registry.ManagementResourceRegistration registration = parentRegistration.getSubModel(PathAddress.pathAddress(PATH));
-        parentRegistration.registerAlias(STRING_JDBC_PATH, new SimpleAliasEntry(registration));
+    public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
+        ManagementResourceRegistration registration = super.register(parent);
+
+        parent.registerAlias(STRING_JDBC_PATH, new SimpleAliasEntry(registration));
+
+        registration.registerReadWriteAttribute(DeprecatedAttribute.TABLE.getDefinition(), LEGACY_READ_TABLE_HANDLER, LEGACY_WRITE_TABLE_HANDLER);
+
+        new StringTableResourceDefinition().register(registration);
+
+        return registration;
     }
 
     static final OperationStepHandler LEGACY_READ_TABLE_HANDLER = new OperationStepHandler() {

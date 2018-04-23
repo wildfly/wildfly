@@ -42,6 +42,9 @@ public class JSFCdiExtensionDeploymentProcessor implements DeploymentUnitProcess
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final DeploymentUnit parent = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
+        if(JsfVersionMarker.isJsfDisabled(deploymentUnit)) {
+            return;
+        }
 
         if (WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
             WeldPortableExtensions extensions = WeldPortableExtensions.getPortableExtensions(parent);

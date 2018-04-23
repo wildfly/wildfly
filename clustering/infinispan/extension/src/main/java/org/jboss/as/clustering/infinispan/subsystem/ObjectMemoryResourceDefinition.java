@@ -28,13 +28,13 @@ import java.util.function.UnaryOperator;
 import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.eviction.EvictionStrategy;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.clustering.controller.transform.RequiredChildResourceDiscardPolicy;
 import org.jboss.as.clustering.controller.transform.SimpleAttributeConverter;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -52,14 +52,19 @@ public class ObjectMemoryResourceDefinition extends MemoryResourceDefinition {
     static final PathElement EVICTION_PATH = ComponentResourceDefinition.pathElement("eviction");
     static final PathElement LEGACY_PATH = PathElement.pathElement(EVICTION_PATH.getValue(), "EVICTION");
 
-    enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
-        STRATEGY("strategy", ModelType.STRING, new ModelNode(EvictionStrategy.NONE.name()), builder -> builder.setValidator(new EnumValidator<>(EvictionStrategy.class, EnumSet.complementOf(EnumSet.of(EvictionStrategy.MANUAL))))),
-        MAX_ENTRIES("max-entries", ModelType.LONG, new ModelNode(-1L), UnaryOperator.identity()),
+    enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
+        STRATEGY("strategy", ModelType.STRING, new ModelNode(EvictionStrategy.NONE.name())) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setValidator(new EnumValidator<>(EvictionStrategy.class, EnumSet.complementOf(EnumSet.of(EvictionStrategy.MANUAL))));
+            }
+        },
+        MAX_ENTRIES("max-entries", ModelType.LONG, new ModelNode(-1L)),
         ;
         private final AttributeDefinition definition;
 
-        DeprecatedAttribute(String name, ModelType type, ModelNode defaultValue, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
-            this.definition = configurator.apply(new SimpleAttributeDefinitionBuilder(name, type)
+        DeprecatedAttribute(String name, ModelType type, ModelNode defaultValue) {
+            this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, type)
                     .setAllowExpression(true)
                     .setRequired(false)
                     .setDefaultValue(defaultValue)
@@ -71,6 +76,11 @@ public class ObjectMemoryResourceDefinition extends MemoryResourceDefinition {
         @Override
         public AttributeDefinition getDefinition() {
             return this.definition;
+        }
+
+        @Override
+        public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+            return builder;
         }
     }
 
@@ -101,18 +111,26 @@ public class ObjectMemoryResourceDefinition extends MemoryResourceDefinition {
         }
     }
 
+    static class ResourceDescriptorConfigurator implements UnaryOperator<ResourceDescriptor> {
+        @Override
+        public ResourceDescriptor apply(ResourceDescriptor descriptor) {
+            return descriptor.addAttributes(EnumSet.complementOf(EnumSet.of(DeprecatedAttribute.MAX_ENTRIES)))
+                    .addAlias(DeprecatedAttribute.MAX_ENTRIES, Attribute.SIZE)
+                    ;
+        }
+    }
+
     ObjectMemoryResourceDefinition() {
-        super(StorageType.OBJECT, PATH, descriptor -> descriptor
-                .addAttributes(EnumSet.complementOf(EnumSet.of(DeprecatedAttribute.MAX_ENTRIES)))
-                .addAlias(DeprecatedAttribute.MAX_ENTRIES, Attribute.SIZE)
-                );
+        super(StorageType.OBJECT, PATH, new ResourceDescriptorConfigurator());
     }
 
     @Override
-    public void register(ManagementResourceRegistration parentRegistration) {
-        super.register(parentRegistration);
-        org.jboss.as.controller.registry.ManagementResourceRegistration registration = parentRegistration.getSubModel(PathAddress.pathAddress(PATH));
-        parentRegistration.registerAlias(EVICTION_PATH, new SimpleAliasEntry(registration));
-        parentRegistration.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
+    public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
+        ManagementResourceRegistration registration = super.register(parent);
+
+        parent.registerAlias(EVICTION_PATH, new SimpleAliasEntry(registration));
+        parent.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
+
+        return registration;
     }
 }

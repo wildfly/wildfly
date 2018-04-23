@@ -26,7 +26,6 @@ import javax.resource.spi.work.WorkException;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.junit.Assert;
 import org.junit.Test;
@@ -36,38 +35,35 @@ import org.junit.runner.RunWith;
  * Tests distributed work manager and whether it really distributes work over multiple nodes. Test cases use two servers
  * both with a deployed resource adapter configured to use the DWM. Tests with WATERMARK policy.
  */
-@ServerSetup(DwmWatermarkTestCase.DwmWatermarkServerSetupTask.class)
 @RunWith(Arquillian.class)
 @RunAsClient
 public class DwmWatermarkTestCase extends AbstractDwmTestCase {
 
     private static final int WATERMARK_MAX_THREADS = 2;
 
-    static class DwmWatermarkServerSetupTask extends AbstractDwmTestCase.DwmServerSetupTask {
-        @Override
-        protected Policy getPolicy() {
-            return Policy.WATERMARK;
-        }
+    @Override
+    protected Policy getPolicy() {
+        return Policy.WATERMARK;
+    }
 
-        @Override
-        protected Selector getSelector() {
-            return Selector.MAX_FREE_THREADS;
-        }
+    @Override
+    protected Selector getSelector() {
+        return Selector.MAX_FREE_THREADS;
+    }
 
-        @Override
-        protected int getWatermarkPolicyOption() {
-            return WATERMARK_MAX_THREADS - 1;
-        }
+    @Override
+    protected int getWatermarkPolicyOption() {
+        return WATERMARK_MAX_THREADS - 1;
+    }
 
-        @Override
-        protected int getSrtMaxThreads() {
-            return WATERMARK_MAX_THREADS;
-        }
+    @Override
+    protected int getSrtMaxThreads() {
+        return WATERMARK_MAX_THREADS;
+    }
 
-        @Override
-        protected int getSrtQueueLength() {
-            return WATERMARK_MAX_THREADS;
-        }
+    @Override
+    protected int getSrtQueueLength() {
+        return WATERMARK_MAX_THREADS;
     }
 
     /**

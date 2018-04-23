@@ -45,7 +45,10 @@ import org.junit.runner.RunWith;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
+
+import java.net.SocketPermission;
 import java.net.URI;
+import java.security.SecurityPermission;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -59,6 +62,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * Tests that timers are never doubled up
@@ -180,6 +184,11 @@ public class DatabaseTimerServiceMultiNodeTestCase {
         war.addAsResource(new StringAsset(client ? "client" : "server"), "node.txt");
         if (client) {
             war.addAsManifestResource(DatabaseTimerServiceMultiNodeExecutionDisabledTestCase.class.getPackage(), "jboss-ejb-client.xml", "jboss-ejb-client.xml");
+            war.addAsManifestResource(
+                    createPermissionsXmlAsset(
+                            new SocketPermission("*:9092", "connect,resolve"),
+                            new SecurityPermission("putProviderProperty.WildFlyElytron")),
+                    "permissions.xml");
         }
         return war;
     }

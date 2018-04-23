@@ -143,6 +143,7 @@ public class HttpsListenerResourceDefinition extends ListenerResourceDefinition 
         res.add(HttpListenerResourceDefinition.CERTIFICATE_FORWARDING);
         res.add(HttpListenerResourceDefinition.PROXY_ADDRESS_FORWARDING);
         res.add(HttpListenerResourceDefinition.REQUIRE_HOST_HTTP11);
+        res.add(HttpListenerResourceDefinition.PROXY_PROTOCOL);
         return res;
     }
 

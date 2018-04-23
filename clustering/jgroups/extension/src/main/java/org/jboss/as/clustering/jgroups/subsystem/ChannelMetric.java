@@ -21,8 +21,6 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import java.util.function.UnaryOperator;
-
 import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -112,15 +110,15 @@ public enum ChannelMetric implements Metric<JChannel> {
     private final AttributeDefinition definition;
 
     ChannelMetric(String name, ModelType type) {
-        this(name, type, UnaryOperator.identity());
+        this(name, type, null);
     }
 
     ChannelMetric(String name, ModelType type, JGroupsModel deprecation) {
-        this(name, type, builder -> builder.setDeprecated(deprecation.getVersion()));
-    }
-
-    ChannelMetric(String name, ModelType type, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
-        this.definition = configurator.apply(new SimpleAttributeDefinitionBuilder(name, type, true)).setStorageRuntime().build();
+        SimpleAttributeDefinitionBuilder builder = new SimpleAttributeDefinitionBuilder(name, type, true).setStorageRuntime();
+        if (deprecation != null) {
+            builder.setDeprecated(deprecation.getVersion());
+        }
+        this.definition = builder.build();
     }
 
     @Override

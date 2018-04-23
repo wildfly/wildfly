@@ -23,16 +23,17 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.net.InetSocketAddress;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -40,21 +41,27 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
 import org.jboss.dmr.ModelType;
 import org.jgroups.protocols.Discovery;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
+import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 
 /**
  * @author Paul Ferraro
  */
 public class SocketDiscoveryProtocolResourceDefinition<A, P extends Discovery> extends ProtocolResourceDefinition<P> {
 
-    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        OUTBOUND_SOCKET_BINDINGS("socket-bindings", ModelType.LIST, builder -> builder
-                .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
-                .setCapabilityReference(new CapabilityReference(Capability.PROTOCOL, CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING))),
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<StringListAttributeDefinition.Builder> {
+        OUTBOUND_SOCKET_BINDINGS("socket-bindings", ModelType.LIST) {
+            @Override
+            public StringListAttributeDefinition.Builder apply(StringListAttributeDefinition.Builder builder) {
+                return builder.setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
+                        .setCapabilityReference(new CapabilityReference(Capability.PROTOCOL, CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING))
+                        ;
+            }
+        },
         ;
         private final AttributeDefinition definition;
 
-        Attribute(String name, ModelType type, UnaryOperator<StringListAttributeDefinition.Builder> configurator) {
-            this.definition = configurator.apply(new StringListAttributeDefinition.Builder(name)
+        Attribute(String name, ModelType type) {
+            this.definition = this.apply(new StringListAttributeDefinition.Builder(name)
                     .setRequired(true)
                     .setMinSize(1)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
@@ -72,11 +79,37 @@ public class SocketDiscoveryProtocolResourceDefinition<A, P extends Discovery> e
         ProtocolResourceDefinition.addTransformations(version, builder);
     }
 
-    SocketDiscoveryProtocolResourceDefinition(String name, Function<InetSocketAddress, A> hostTransformer, Consumer<ResourceDescriptor> descriptorConfigurator, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
-        super(pathElement(name), descriptorConfigurator.andThen(descriptor -> descriptor
-                .addAttributes(Attribute.class)
-                .setAddOperationTransformation(new LegacyAddOperationTransformation(Attribute.class))
-                .setOperationTransformation(LEGACY_OPERATION_TRANSFORMER)
-            ), address -> new SocketDiscoveryProtocolConfigurationBuilder<>(address, hostTransformer), parentBuilderFactory);
+    private static class ResourceDescriptorConfigurator implements UnaryOperator<ResourceDescriptor> {
+        private final UnaryOperator<ResourceDescriptor> configurator;
+
+        ResourceDescriptorConfigurator(UnaryOperator<ResourceDescriptor> configurator) {
+            this.configurator = configurator;
+        }
+
+        @Override
+        public ResourceDescriptor apply(ResourceDescriptor descriptor) {
+            return this.configurator.apply(descriptor)
+                    .addAttributes(Attribute.class)
+                    .setAddOperationTransformation(new LegacyAddOperationTransformation(Attribute.class))
+                    .setOperationTransformation(LEGACY_OPERATION_TRANSFORMER)
+                    ;
+        }
+    }
+
+    private static class SocketDiscoveryProtocolConfigurationBuilderFactory<A, P extends Discovery> implements ResourceServiceBuilderFactory<ProtocolConfiguration<P>> {
+        private final Function<InetSocketAddress, A> hostTransformer;
+
+        SocketDiscoveryProtocolConfigurationBuilderFactory(Function<InetSocketAddress, A> hostTransformer) {
+            this.hostTransformer = hostTransformer;
+        }
+
+        @Override
+        public ResourceServiceBuilder<ProtocolConfiguration<P>> createBuilder(PathAddress address) {
+            return new SocketDiscoveryProtocolConfigurationBuilder<>(address, this.hostTransformer);
+        }
+    }
+
+    SocketDiscoveryProtocolResourceDefinition(String name, Function<InetSocketAddress, A> hostTransformer, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
+        super(pathElement(name), new ResourceDescriptorConfigurator(configurator), new SocketDiscoveryProtocolConfigurationBuilderFactory<>(hostTransformer), parentBuilderFactory);
     }
 }

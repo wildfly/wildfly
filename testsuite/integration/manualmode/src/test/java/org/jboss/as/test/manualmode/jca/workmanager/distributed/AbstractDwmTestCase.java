@@ -26,14 +26,20 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.test.shared.ServerReload.executeReloadAndWaitForCompletion;
+import static org.junit.Assert.assertTrue;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import java.io.File;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -41,10 +47,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
+import org.jboss.arquillian.container.test.api.ContainerController;
+import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.as.arquillian.api.ServerSetupTask;
-import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.integration.management.util.ModelUtil;
 import org.jboss.as.test.manualmode.jca.workmanager.distributed.ra.DistributedConnection1;
@@ -58,6 +65,7 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.wildfly.test.api.Authentication;
@@ -80,8 +88,9 @@ public abstract class AbstractDwmTestCase {
             .add("distributed-workmanager", DEFAULT_DWM_NAME);
     private static final String DEPLOYMENT_0 =  "deployment-0";
     private static final String DEPLOYMENT_1 =  "deployment-1";
-    private static final String CONTAINER_0 = "dwm-container-0";
-    private static final String CONTAINER_1 = "dwm-container-1";
+    private static final String CONTAINER_0 = "dwm-container-manual-0";
+    private static final String CONTAINER_1 = "dwm-container-manual-1";
+
     // can be used in extending test cases to control test logic
     protected static final int SRT_MAX_THREADS = 1;
     protected static final int SRT_QUEUE_LENGTH = 1;
@@ -99,17 +108,272 @@ public abstract class AbstractDwmTestCase {
         PING_TIME
     }
 
+    private String snapshotForServer1;
+    private String snapshotForServer2;
+
+    protected DwmAdminObjectEjb server1Proxy;
+    protected DwmAdminObjectEjb server2Proxy;
+
+    @ArquillianResource
+    protected static ContainerController containerController;
+
+    @ArquillianResource
+    protected static Deployer deployer;
+
+    // --------------------------------------------------------------------------------
+    // infrastructure preparation
+    // --------------------------------------------------------------------------------
+
+    private static ModelControllerClient createClient1() {
+        return TestSuiteEnvironment.getModelControllerClient();
+    }
+
+    private static ModelControllerClient createClient2() throws UnknownHostException {
+        return ModelControllerClient.Factory.create(InetAddress.getByName(TestSuiteEnvironment.getServerAddressNode1()),
+                TestSuiteEnvironment.getServerPort() + 100,
+                Authentication.getCallbackHandler());
+    }
+
+    private static String takeSnapshot(ModelControllerClient client) throws Exception {
+        ModelNode operation = new ModelNode();
+        operation.get(OP).set("take-snapshot");
+        ModelNode result = execute(client, operation);
+        log.info("Snapshot of current configuration taken: " + result.asString());
+        return result.asString();
+    }
+
+    private static ModelNode execute(ModelControllerClient client, ModelNode operation) throws Exception {
+        ModelNode response = client.execute(operation);
+        boolean success = SUCCESS.equals(response.get(OUTCOME).asString());
+        if (success) {
+            return response.get(RESULT);
+        }
+        throw new Exception("Operation failed");
+    }
+
+    private void restoreSnapshot(String snapshot) {
+        File snapshotFile = new File(snapshot);
+        File configurationDir = snapshotFile.getParentFile().getParentFile().getParentFile();
+        File standaloneConfiguration = new File(configurationDir, "standalone-ha.xml");
+        if (standaloneConfiguration.exists()) {
+            if (!standaloneConfiguration.delete()) {
+                log.warn("Could not delete file " + standaloneConfiguration.getAbsolutePath());
+            }
+        }
+        if (!snapshotFile.renameTo(standaloneConfiguration)) {
+            log.warn("File " + snapshotFile.getAbsolutePath() + " could not be renamed to " + standaloneConfiguration.getAbsolutePath());
+        }
+    }
+
+    private void executeReloadAndWaitForCompletionOfServer1(ModelControllerClient initialClient, boolean adminOnly) throws Exception {
+        executeReloadAndWaitForCompletion(initialClient, adminOnly);
+    }
+
+    private void executeReloadAndWaitForCompletionOfServer2(ModelControllerClient initialClient, boolean adminOnly) throws Exception {
+        executeReloadAndWaitForCompletion(initialClient, ServerReload.TIMEOUT,
+                adminOnly,
+                TestSuiteEnvironment.getServerAddressNode1(),
+                TestSuiteEnvironment.getServerPort() + 100);
+    }
+
+    // --------------------------------------------------------------------------------
+    // server set up and tear down
+    // --------------------------------------------------------------------------------
+
+    @Before
+    public void setUp() throws Exception {
+
+        // start server1 and reload it in admin-only
+        containerController.start(CONTAINER_0);
+        ModelControllerClient client1 = createClient1();
+        snapshotForServer1 = takeSnapshot(client1);
+        executeReloadAndWaitForCompletionOfServer1(client1, true);
+
+        // start server2 and reload it in admin-only
+        containerController.start(CONTAINER_1);
+        ModelControllerClient client2 = createClient2();
+        snapshotForServer2 = takeSnapshot(client2);
+        executeReloadAndWaitForCompletionOfServer2(client2, true);
+
+        // setup both servers
+        try {
+            setUpServer(client1, CONTAINER_0);
+            setUpServer(client2, CONTAINER_1);
+        } catch (Exception e) {
+            client1.close();
+            client2.close();
+            tearDown();
+            throw e;
+        }
+
+        // reload servers in normal mode
+        executeReloadAndWaitForCompletionOfServer1(client1, false);
+        executeReloadAndWaitForCompletionOfServer2(client2, false);
+
+        // both servers are started and configured
+        assertTrue(containerController.isStarted(CONTAINER_0));
+        assertTrue(containerController.isStarted(CONTAINER_1));
+        client1.close();
+        client2.close();
+
+        // now deploy the ejbs
+        deployer.deploy(DEPLOYMENT_0);
+        deployer.deploy(DEPLOYMENT_1);
+
+        // set up ejb proxies
+        try {
+            server1Proxy = lookupAdminObject(TestSuiteEnvironment.getServerAddress(), "8080");
+            server2Proxy = lookupAdminObject(TestSuiteEnvironment.getServerAddressNode1(), "8180");
+            Assert.assertNotNull(server1Proxy);
+            Assert.assertNotNull(server2Proxy);
+        } catch (Throwable e) {
+            tearDown();
+            throw e;
+        }
+    }
+
+    @After
+    public void tearDown() {
+        server1Proxy = null;
+        server2Proxy = null;
+
+        deployer.undeploy(DEPLOYMENT_0);
+        deployer.undeploy(DEPLOYMENT_1);
+
+        if (containerController.isStarted(CONTAINER_0)) {
+            containerController.stop(CONTAINER_0);
+        }
+        restoreSnapshot(snapshotForServer1);
+        if (containerController.isStarted(CONTAINER_1)) {
+            containerController.stop(CONTAINER_1);
+        }
+        restoreSnapshot(snapshotForServer2);
+    }
+
+    // --------------------------------------------------------------------------------
+    // set up helper methods
+    // --------------------------------------------------------------------------------
+
+    private ModelNode addBasicDwm() {
+        ModelNode setUpDwm = new ModelNode();
+
+        setUpDwm.get(OP_ADDR).set(DEFAULT_DWM_ADDRESS);
+        setUpDwm.get(OP).set(ADD);
+        setUpDwm.get(NAME).set(DEFAULT_DWM_NAME);
+
+        return setUpDwm;
+    }
+
+    private ModelNode setUpShortRunningThreads(int maxThreads, int queueLength) {
+        ModelNode setUpSrt = new ModelNode();
+
+        // the thread pool name must be the same as the DWM it belongs to
+        setUpSrt.get(OP_ADDR).set(DEFAULT_DWM_ADDRESS.clone().add("short-running-threads", DEFAULT_DWM_NAME));
+        setUpSrt.get(OP).set(ADD);
+        setUpSrt.get(MAX_THREADS).set(maxThreads);
+        setUpSrt.get("queue-length").set(queueLength);
+
+        return setUpSrt;
+    }
+
+    private ModelNode setUpCustomContext() {
+        ModelNode setUpCustomContext = new ModelNode();
+
+        setUpCustomContext.get(OP_ADDR).set(new ModelNode()
+                .add(SUBSYSTEM, "jca")
+                .add("bootstrap-context", DEFAULT_CONTEXT_NAME));
+        setUpCustomContext.get(OP).set(ADD);
+        setUpCustomContext.get(NAME).set(DEFAULT_CONTEXT_NAME);
+        setUpCustomContext.get("workmanager").set(DEFAULT_DWM_NAME);
+
+        return setUpCustomContext;
+    }
+
+    private ModelNode setUpPolicy(Policy policy) {
+        ModelNode setUpPolicy = new ModelNode();
+
+        setUpPolicy.get(OP_ADDR).set(DEFAULT_DWM_ADDRESS);
+        setUpPolicy.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
+        setUpPolicy.get(NAME).set("policy");
+        setUpPolicy.get(VALUE).set(policy.toString());
+
+        return setUpPolicy;
+    }
+
+    private ModelNode setUpWatermarkPolicyOption(int waterMarkPolicyOption) {
+        ModelNode setUpWatermarkPolicyOption = new ModelNode();
+
+        setUpWatermarkPolicyOption.get(OP_ADDR).set(DEFAULT_DWM_ADDRESS);
+        setUpWatermarkPolicyOption.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
+        setUpWatermarkPolicyOption.get(NAME).set("policy-options");
+        setUpWatermarkPolicyOption.get(VALUE).set(new ModelNode().add("watermark", waterMarkPolicyOption));
+
+        return setUpWatermarkPolicyOption;
+    }
+
+    private ModelNode setUpSelector(Selector selector) {
+        ModelNode setUpSelector = new ModelNode();
+
+        setUpSelector.get(OP_ADDR).set(DEFAULT_DWM_ADDRESS);
+        setUpSelector.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
+        setUpSelector.get(NAME).set("selector");
+        setUpSelector.get(VALUE).set(selector.toString());
+
+        return setUpSelector;
+    }
+
+    @SuppressWarnings("unused")
+    private void setUpServer(ModelControllerClient client ,String containerId) throws IOException {
+        ModelControllerClient mcc = CONTAINER_0.equals(containerId) ? createClient1() : createClient2();
+
+        log.info("Setting up Policy/Selector: " + getPolicy() + "/" + getSelector() + " on server " + containerId);
+        ModelNode addBasicDwm = addBasicDwm();
+        ModelNode setUpPolicy = setUpPolicy(getPolicy());
+        ModelNode setUpPolicyOptions = setUpWatermarkPolicyOption(getWatermarkPolicyOption());
+        ModelNode setUpSelector = setUpSelector(getSelector());
+        ModelNode setUpShortRunningThreads = setUpShortRunningThreads(getSrtMaxThreads(), getSrtQueueLength());
+
+        List<ModelNode> operationList = new ArrayList<>(Arrays.asList(addBasicDwm, setUpPolicy, setUpSelector, setUpShortRunningThreads));
+        if (getPolicy().equals(Policy.WATERMARK)) {
+            operationList.add(setUpPolicyOptions);
+        }
+        ModelNode compositeOp = ModelUtil.createCompositeNode(operationList.toArray(new ModelNode[1]));
+        ModelNode result = mcc.execute(compositeOp);
+        log.info("Setting up DWM on server " + containerId + ": " + result);
+
+        result = mcc.execute(setUpCustomContext());
+        log.info("Setting up CustomContext on server " + containerId + ": " + result);
+
+        mcc.close();
+    }
+
+    // --------------------------------------------------------------------------------
+    // abstract and other to-be-overwritten methods
+    // --------------------------------------------------------------------------------
+
+    protected abstract Policy getPolicy();
+    protected abstract Selector getSelector();
+    protected int getWatermarkPolicyOption() {
+        return 0;
+    }
+    protected int getSrtMaxThreads() {
+        return SRT_MAX_THREADS;
+    }
+    protected int getSrtQueueLength() {
+        return SRT_QUEUE_LENGTH;
+    }
+
     // --------------------------------------------------------------------------------
     // deployment setup
     // --------------------------------------------------------------------------------
 
-    @Deployment(name = DEPLOYMENT_0)
+    @Deployment(name = DEPLOYMENT_0, managed = false, testable = false)
     @TargetsContainer(CONTAINER_0)
     public static Archive<?> deploy0 () {
         return createDeployment();
     }
 
-    @Deployment(name = DEPLOYMENT_1)
+    @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
     public static Archive<?> deploy1 () {
         return createDeployment();
@@ -158,190 +422,12 @@ public abstract class AbstractDwmTestCase {
     }
 
     // --------------------------------------------------------------------------------
-    // test setup
-    // --------------------------------------------------------------------------------
-
-    private static ModelControllerClient client1;
-    private static ModelControllerClient client2;
-
-    static {
-        try {
-            client1 = createClient1();
-            client2 = createClient2();
-        } catch (UnknownHostException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static ModelControllerClient createClient1() throws UnknownHostException {
-        return ModelControllerClient.Factory.create(InetAddress.getByName(TestSuiteEnvironment.getServerAddress()),
-                TestSuiteEnvironment.getServerPort() + 200,
-                Authentication.getCallbackHandler());
-    }
-
-    private static ModelControllerClient createClient2() throws UnknownHostException {
-        return ModelControllerClient.Factory.create(InetAddress.getByName(TestSuiteEnvironment.getServerAddressNode1()),
-                TestSuiteEnvironment.getServerPort() + 300,
-                Authentication.getCallbackHandler());
-    }
-
-    abstract static class DwmServerSetupTask implements ServerSetupTask {
-
-        @Override
-        public void setup(ManagementClient managementClient, String containerId) throws Exception {
-            log.info("Setting up " + containerId);
-            setUpServer(containerId);
-        }
-
-        @Override
-        public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-            log.info("Tearing down " + containerId);
-            tearDownServer(containerId);
-        }
-
-        private void setUpServer(String containerId) throws Exception {
-            ModelControllerClient mcc = CONTAINER_0.equals(containerId) ? client1 : client2;
-
-            log.info("Setting up Policy/Selector: " + getPolicy() + "/" + getSelector());
-            ModelNode addBasicDwm = addBasicDwm();
-            ModelNode setUpPolicy = setUpPolicy(getPolicy());
-            ModelNode setUpPolicyOptions = setUpWatermarkPolicyOption(getWatermarkPolicyOption());
-            ModelNode setUpSelector = setUpSelector(getSelector());
-            ModelNode setUpShortRunningThreads = setUpShortRunningThreads(getSrtMaxThreads(), getSrtQueueLength());
-
-            List<ModelNode> operationList = new ArrayList<>(Arrays.asList(addBasicDwm, setUpPolicy, setUpSelector, setUpShortRunningThreads));
-            if (getPolicy().equals(Policy.WATERMARK)) {
-                operationList.add(setUpPolicyOptions);
-            }
-            ModelNode compositeOp = ModelUtil.createCompositeNode(operationList.toArray(new ModelNode[1]));
-            ModelNode result = mcc.execute(compositeOp);
-            log.info("Setting up DWM: " + result);
-
-            result = mcc.execute(setUpCustomContext());
-            log.info("Setting up CustomContext: " + result);
-        }
-
-        private void tearDownServer(String containerId) throws Exception {
-            ModelControllerClient mcc = CONTAINER_0.equals(containerId) ? client1 : client2;
-            int serverPort = CONTAINER_0.equals(containerId) ? TestSuiteEnvironment.getServerPort() + 200 : TestSuiteEnvironment.getServerPort() + 300;
-
-            ModelNode removeDwm = new ModelNode();
-            removeDwm.get(OP_ADDR).set(DEFAULT_DWM_ADDRESS);
-            removeDwm.get(OP).set(REMOVE);
-
-            ModelNode removeContext = new ModelNode();
-            removeContext.get(OP_ADDR).set((new ModelNode())
-                    .add(SUBSYSTEM, "jca")
-                    .add("bootstrap-context", DEFAULT_CONTEXT_NAME));
-            removeContext.get(OP).set(REMOVE);
-
-            ModelNode compositeOp = ModelUtil.createCompositeNode(
-                    new ModelNode[] { removeDwm, removeContext });
-            mcc.execute(compositeOp);
-            ServerReload.executeReloadAndWaitForCompletion(mcc, 60000, false,
-                    CONTAINER_0.equals(containerId) ? TestSuiteEnvironment.getServerAddress() : TestSuiteEnvironment.getServerAddressNode1(),
-                    serverPort);
-        }
-
-        protected abstract Policy getPolicy();
-        protected abstract Selector getSelector();
-        protected int getWatermarkPolicyOption() {
-            return 0;
-        }
-        protected int getSrtMaxThreads() {
-            return SRT_MAX_THREADS;
-        }
-        protected int getSrtQueueLength() {
-            return SRT_QUEUE_LENGTH;
-        }
-
-        private ModelNode addBasicDwm() {
-            ModelNode setUpDwm = new ModelNode();
-
-            setUpDwm.get(OP_ADDR).set(DEFAULT_DWM_ADDRESS);
-            setUpDwm.get(OP).set(ADD);
-            setUpDwm.get(NAME).set(DEFAULT_DWM_NAME);
-
-            return setUpDwm;
-        }
-
-        private ModelNode setUpShortRunningThreads(int maxThreads, int queueLength) {
-            ModelNode setUpSrt = new ModelNode();
-
-            // the thread pool name must be the same as the DWM it belongs to
-            setUpSrt.get(OP_ADDR).set(DEFAULT_DWM_ADDRESS.clone().add("short-running-threads", DEFAULT_DWM_NAME));
-            setUpSrt.get(OP).set(ADD);
-            setUpSrt.get(MAX_THREADS).set(maxThreads);
-            setUpSrt.get("queue-length").set(queueLength);
-
-            return setUpSrt;
-        }
-
-        private ModelNode setUpCustomContext() {
-            ModelNode setUpCustomContext = new ModelNode();
-
-            setUpCustomContext.get(OP_ADDR).set(new ModelNode()
-                    .add(SUBSYSTEM, "jca")
-                    .add("bootstrap-context", DEFAULT_CONTEXT_NAME));
-            setUpCustomContext.get(OP).set(ADD);
-            setUpCustomContext.get(NAME).set(DEFAULT_CONTEXT_NAME);
-            setUpCustomContext.get("workmanager").set(DEFAULT_DWM_NAME);
-
-            return setUpCustomContext;
-        }
-
-        private ModelNode setUpPolicy(Policy policy) {
-            ModelNode setUpPolicy = new ModelNode();
-
-            setUpPolicy.get(OP_ADDR).set(DEFAULT_DWM_ADDRESS);
-            setUpPolicy.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-            setUpPolicy.get(NAME).set("policy");
-            setUpPolicy.get(VALUE).set(policy.toString());
-
-            return setUpPolicy;
-        }
-
-        private ModelNode setUpWatermarkPolicyOption(int waterMarkPolicyOption) {
-            ModelNode setUpWatermarkPolicyOption = new ModelNode();
-
-            setUpWatermarkPolicyOption.get(OP_ADDR).set(DEFAULT_DWM_ADDRESS);
-            setUpWatermarkPolicyOption.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-            setUpWatermarkPolicyOption.get(NAME).set("policy-options");
-            setUpWatermarkPolicyOption.get(VALUE).set(new ModelNode().add("watermark", waterMarkPolicyOption));
-
-            return setUpWatermarkPolicyOption;
-        }
-
-        private ModelNode setUpSelector(Selector selector) {
-            ModelNode setUpSelector = new ModelNode();
-
-            setUpSelector.get(OP_ADDR).set(DEFAULT_DWM_ADDRESS);
-            setUpSelector.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-            setUpSelector.get(NAME).set("selector");
-            setUpSelector.get(VALUE).set(selector.toString());
-
-            return setUpSelector;
-        }
-    }
-
-    // --------------------------------------------------------------------------------
     // test related abstractions
     // --------------------------------------------------------------------------------
 
-    protected DwmAdminObjectEjb server1Proxy;
-    protected DwmAdminObjectEjb server2Proxy;
-
-    @Before
-    public void setUpAdminObjects() throws NamingException {
-        server1Proxy = lookupAdminObject(TestSuiteEnvironment.getServerAddress(), "8280");
-        server2Proxy = lookupAdminObject(TestSuiteEnvironment.getServerAddressNode1(), "8380");
-        Assert.assertNotNull(server1Proxy);
-        Assert.assertNotNull(server2Proxy);
-    }
-
     private DwmAdminObjectEjb lookupAdminObject(String address, String port) throws NamingException {
         Properties properties = new Properties();
-        properties.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
+        properties.put(Context.INITIAL_CONTEXT_FACTORY, "org.wildfly.naming.client.WildFlyInitialContextFactory");
         properties.put(Context.PROVIDER_URL, String.format("%s%s:%s", "http-remoting://", address, port));
         Context context = new InitialContext(properties);
 

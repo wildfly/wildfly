@@ -22,7 +22,8 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.jboss.as.clustering.function.Consumers;
+import java.util.function.UnaryOperator;
+
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
@@ -46,6 +47,6 @@ public class ReplicatedCacheResourceDefinition extends SharedStateCacheResourceD
     }
 
     ReplicatedCacheResourceDefinition() {
-        super(WILDCARD_PATH, Consumers.empty(), new ClusteredCacheServiceHandler(ReplicatedCacheBuilder::new));
+        super(WILDCARD_PATH, UnaryOperator.identity(), new ClusteredCacheServiceHandler(ReplicatedCacheBuilder::new));
     }
 }

@@ -43,6 +43,7 @@
     />
     <TCPPING port_range="0"/>
     <MPING ip_ttl="2"/>
+    <kubernetes.KUBE_PING port_range="0"/>
     <MERGE3
         min_interval="10000"
         max_interval="30000"
@@ -62,7 +63,6 @@
         xmit_table_num_rows="50"
     />
     <UNICAST3
-        conn_expiry_timeout="0"
         xmit_interval="100"
         xmit_table_num_rows="50"
     />

@@ -46,6 +46,7 @@ public class HttpListenerAdd extends ListenerAdd {
 
     @Override
     ListenerService createService(String name, final String serverName, final OperationContext context, ModelNode model, OptionMap listenerOptions, OptionMap socketOptions) throws OperationFailedException {
+        final boolean proxyProtocol = HttpListenerResourceDefinition.PROXY_PROTOCOL.resolveModelAttribute(context, model).asBoolean();
         final boolean certificateForwarding = HttpListenerResourceDefinition.CERTIFICATE_FORWARDING.resolveModelAttribute(context, model).asBoolean();
         final boolean proxyAddressForwarding = HttpListenerResourceDefinition.PROXY_ADDRESS_FORWARDING.resolveModelAttribute(context, model).asBoolean();
         OptionMap.Builder listenerBuilder = OptionMap.builder().addAll(listenerOptions);
@@ -55,7 +56,7 @@ public class HttpListenerAdd extends ListenerAdd {
 
         handleHttp2Options(context, model, listenerBuilder);
 
-        return new HttpListenerService(name, serverName, listenerBuilder.getMap(), socketOptions, certificateForwarding, proxyAddressForwarding);
+        return new HttpListenerService(name, serverName, listenerBuilder.getMap(), socketOptions, certificateForwarding, proxyAddressForwarding, proxyProtocol);
     }
 
     static void handleHttp2Options(OperationContext context, ModelNode model, OptionMap.Builder listenerBuilder) throws OperationFailedException {
