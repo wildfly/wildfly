@@ -286,10 +286,14 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
             handleDistributable(deploymentInfo);
             if (securityFunction.getOptionalValue() == null) {
-                handleIdentityManager(deploymentInfo);
-                handleJASPIMechanism(deploymentInfo);
-                handleJACCAuthorization(deploymentInfo);
-                handleAuthManagerLogout(deploymentInfo, mergedMetaData);
+                if (securityDomain != null) {
+                    handleIdentityManager(deploymentInfo);
+                    handleJASPIMechanism(deploymentInfo);
+                    handleJACCAuthorization(deploymentInfo);
+                    handleAuthManagerLogout(deploymentInfo, mergedMetaData);
+                } else {
+                    deploymentInfo.setSecurityDisabled(true);
+                }
 
                 if(mergedMetaData.isUseJBossAuthorization()) {
                     deploymentInfo.setAuthorizationManager(new JbossAuthorizationManager(deploymentInfo.getAuthorizationManager()));
@@ -431,9 +435,6 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     }
 
     private void handleAuthManagerLogout(DeploymentInfo deploymentInfo, JBossWebMetaData mergedMetaData) {
-        if(securityDomain == null) {
-            return;
-        }
         AuthenticationManager manager = securityDomainContextValue.getValue().getAuthenticationManager();
         deploymentInfo.addNotificationReceiver(new LogoutNotificationReceiver(manager, securityDomain));
         if(mergedMetaData.isFlushOnSessionInvalidation()) {
@@ -470,9 +471,6 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
      * @param deploymentInfo
      */
     private void handleJASPIMechanism(final DeploymentInfo deploymentInfo) {
-        if(securityDomain == null) {
-            return;
-        }
         ApplicationPolicy applicationPolicy = SecurityConfiguration.getApplicationPolicy(this.securityDomain);
 
         if (applicationPolicy != null && JASPIAuthenticationInfo.class.isInstance(applicationPolicy.getAuthenticationInfo())) {
@@ -496,9 +494,6 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
      * @param deploymentInfo the {@link DeploymentInfo} instance.
      */
     private void handleJACCAuthorization(final DeploymentInfo deploymentInfo) {
-        if(securityDomain == null) {
-            return;
-        }
         // TODO make the authorization manager implementation configurable in Undertow or jboss-web.xml
         ApplicationPolicy applicationPolicy = SecurityConfiguration.getApplicationPolicy(this.securityDomain);
         if (applicationPolicy != null) {
@@ -521,13 +516,11 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     }
 
     private void handleIdentityManager(final DeploymentInfo deploymentInfo) {
-        if(securityDomain != null) {
-            SecurityDomainContext sdc = securityDomainContextValue.getValue();
-            deploymentInfo.setIdentityManager(new JAASIdentityManagerImpl(sdc));
-            AuditManager auditManager = sdc.getAuditManager();
-            if (auditManager != null && !mergedMetaData.isDisableAudit()) {
-                deploymentInfo.addNotificationReceiver(new AuditNotificationReceiver(auditManager));
-            }
+        SecurityDomainContext sdc = securityDomainContextValue.getValue();
+        deploymentInfo.setIdentityManager(new JAASIdentityManagerImpl(sdc));
+        AuditManager auditManager = sdc.getAuditManager();
+        if (auditManager != null && !mergedMetaData.isDisableAudit()) {
+            deploymentInfo.addNotificationReceiver(new AuditNotificationReceiver(auditManager));
         }
     }
 
