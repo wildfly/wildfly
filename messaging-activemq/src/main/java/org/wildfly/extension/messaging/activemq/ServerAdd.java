@@ -138,6 +138,7 @@ import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.security.plugins.SecurityDomainContext;
+import org.jboss.as.security.service.SecurityBootstrapService;
 import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -298,7 +299,10 @@ class ServerAdd extends AbstractAddStepHandler {
                     serviceBuilder.addDependency(DependencyType.REQUIRED,
                             SecurityDomainService.SERVICE_NAME.append(domain),
                             SecurityDomainContext.class,
-                            serverService.getSecurityDomainContextInjector());
+                            serverService.getSecurityDomainContextInjector())
+                    // WFLY-6652 / WFLY-10292 this dependency ensures that Artemis will be able to destroy any queues created on behalf of a
+                    // pooled-connection-factory client during server stop
+                    .addDependency(SecurityBootstrapService.SERVICE_NAME);
                 }
 
                 // inject credential-references for bridges
