@@ -147,7 +147,6 @@ public class Constants {
             .setXmlName(Pool.Tag.INITIAL_POOL_SIZE.getLocalName())
             .setAllowExpression(true)
             .setRequired(false)
-            .setDefaultValue(new ModelNode(Defaults.MIN_POOL_SIZE))
             .build();
 
     public static SimpleAttributeDefinition CAPACITY_INCREMENTER_CLASS = new SimpleAttributeDefinitionBuilder(CAPACITY_INCREMENTER_CLASS_NAME, ModelType.STRING, true)

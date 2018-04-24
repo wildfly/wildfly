@@ -152,7 +152,7 @@ public class ResourceAdapterPoolAttributesTestCase extends JcaMgmtBase {
         Assert.assertNotNull(poolConfiguration);
         Assert.assertEquals(2, poolConfiguration.getMinSize());
         Assert.assertEquals(5, poolConfiguration.getMaxSize());
-        Assert.assertEquals(0, poolConfiguration.getInitialSize());
+        Assert.assertEquals(2, poolConfiguration.getInitialSize());
         Assert.assertEquals(30000, poolConfiguration.getBlockingTimeout());
         Assert.assertEquals(true, poolConfiguration.isFair());
         Assert.assertEquals(false, poolConfiguration.isStrictMin());
