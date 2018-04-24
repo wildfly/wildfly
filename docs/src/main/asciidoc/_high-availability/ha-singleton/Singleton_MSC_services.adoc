@@ -29,7 +29,7 @@ public class MyServiceActivator implements ServiceActivator {
         ServiceName name = ServiceName.parse("my.service.name");
         Service<?> service = new MyService();
         try {
-            SingletonPolicy policy = (SingletonPolicy) context.getServiceRegistry().getRequiredService(ServiceName.parse(SingletonPolicy.CAPABILITY_NAME)).awaitValue();
+            SingletonPolicy policy = (SingletonPolicy) context.getServiceRegistry().getRequiredService(ServiceName.parse(SingletonDefaultRequirement.SINGLETON_POLICY.getName())).awaitValue();
             policy.createSingletonServiceBuilder(name, service).build(context.getServiceTarget()).install();
         } catch (InterruptedException e) {
             throw new ServiceRegistryException(e);
@@ -60,7 +60,7 @@ public class MyServiceActivator implements ServiceActivator {
         ServiceName name = ServiceName.parse("my.service.name");
         Service<?> service = new MyService();
         try {
-            SingletonServiceBuilderFactory factory = (SingletonServiceBuilderFactory) context.getServiceRegistry().getRequiredService(SingletonServiceName.BUILDER.getServiceName(containerName))).awaitValue();
+            SingletonServiceBuilderFactory factory = (SingletonServiceBuilderFactory) context.getServiceRegistry().getRequiredService(ServiceName.parse(SingletonDefaultCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY.resolve(containerName))).awaitValue();
             factory.createSingletonServiceBuilder(name, service)
                 .electionPolicy(policy)
                 .quorum(quorum)
