@@ -24,7 +24,8 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.function.UnaryOperator;
 
-import org.jboss.as.clustering.controller.DynamicCapabilityNameResolver;
+import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
+import org.jboss.as.clustering.controller.BinaryCapabilityNameResolver;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.ResourceCapabilityReference;
@@ -56,7 +57,7 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
         private final RuntimeCapability<Void> definition;
 
         Capability(String name) {
-            this.definition = RuntimeCapability.Builder.of(name, true).setDynamicNameMapper(DynamicCapabilityNameResolver.PARENT_CHILD).build();
+            this.definition = RuntimeCapability.Builder.of(name, true).setDynamicNameMapper(BinaryCapabilityNameResolver.PARENT_CHILD).build();
         }
 
         @Override
@@ -149,7 +150,7 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
                     .addAttributes(Attribute.class)
                     .addAttributes(DeprecatedAttribute.class)
                     .addCapabilities(Capability.class)
-                    .addResourceCapabilityReference(new ResourceCapabilityReference(Capability.TRANSPORT, JGroupsTransportResourceDefinition.Requirement.CHANNEL, DynamicCapabilityNameResolver.PARENT))
+                    .addResourceCapabilityReference(new ResourceCapabilityReference(Capability.TRANSPORT, JGroupsTransportResourceDefinition.Requirement.CHANNEL, UnaryCapabilityNameResolver.PARENT))
                     ;
         }
     }

@@ -27,28 +27,10 @@ import java.util.function.Function;
 import org.jboss.as.controller.PathAddress;
 
 /**
- * Dynamic name mapper implementations.
+ * Dynamic name mapper implementations for binary capability names.
  * @author Paul Ferraro
  */
-public enum DynamicCapabilityNameResolver implements Function<PathAddress, String[]> {
-    DEFAULT() {
-        @Override
-        public String[] apply(PathAddress address) {
-            return new String[] { address.getLastElement().getValue() };
-        }
-    },
-    PARENT() {
-        @Override
-        public String[] apply(PathAddress address) {
-            return new String[] { address.getParent().getLastElement().getValue() };
-        }
-    },
-    GRANDPARENT() {
-        @Override
-        public String[] apply(PathAddress address) {
-            return new String[] { address.getParent().getParent().getLastElement().getValue() };
-        }
-    },
+public enum BinaryCapabilityNameResolver implements Function<PathAddress, String[]> {
     PARENT_CHILD() {
         @Override
         public String[] apply(PathAddress address) {

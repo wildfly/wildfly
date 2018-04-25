@@ -57,7 +57,7 @@ public class ResourceCapabilityReference extends AbstractCapabilityReference {
      * @param requirement the requirement of the specified capability
      * @param requirementNameResolver function for resolving the dynamic elements of the requirement name
      */
-    public ResourceCapabilityReference(Capability capability, UnaryRequirement requirement, Function<PathAddress, String[]> requirementNameResolver) {
+    public ResourceCapabilityReference(Capability capability, UnaryRequirement requirement, UnaryCapabilityNameResolver requirementNameResolver) {
         this(capability, (Requirement) requirement, requirementNameResolver);
     }
 
@@ -67,7 +67,7 @@ public class ResourceCapabilityReference extends AbstractCapabilityReference {
      * @param requirement the requirement of the specified capability
      * @param requirementNameResolver function for resolving the dynamic elements of the requirement name
      */
-    public ResourceCapabilityReference(Capability capability, BinaryRequirement requirement, Function<PathAddress, String[]> requirementNameResolver) {
+    public ResourceCapabilityReference(Capability capability, BinaryRequirement requirement, BinaryCapabilityNameResolver requirementNameResolver) {
         this(capability, (Requirement) requirement, requirementNameResolver);
     }
 

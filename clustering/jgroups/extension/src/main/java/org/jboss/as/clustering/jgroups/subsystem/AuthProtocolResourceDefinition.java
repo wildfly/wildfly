@@ -24,7 +24,7 @@ package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.util.function.UnaryOperator;
 
-import org.jboss.as.clustering.controller.DynamicCapabilityNameResolver;
+import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
 import org.jboss.as.clustering.controller.ResourceCapabilityReference;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
@@ -56,7 +56,7 @@ public class AuthProtocolResourceDefinition extends ProtocolResourceDefinition<A
             return this.configurator.apply(descriptor)
                     .setAddOperationTransformation(new LegacyAddOperationTransformation("auth_class"))
                     .setOperationTransformation(LEGACY_OPERATION_TRANSFORMER)
-                    .addResourceCapabilityReference(new ResourceCapabilityReference(Capability.PROTOCOL, AuthTokenResourceDefinition.Capability.AUTH_TOKEN, DynamicCapabilityNameResolver.PARENT))
+                    .addResourceCapabilityReference(new ResourceCapabilityReference(Capability.PROTOCOL, AuthTokenResourceDefinition.Capability.AUTH_TOKEN, UnaryCapabilityNameResolver.PARENT))
                     ;
         }
     }

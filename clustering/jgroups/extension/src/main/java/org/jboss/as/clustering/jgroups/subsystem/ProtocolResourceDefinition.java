@@ -26,7 +26,7 @@ import java.util.EnumSet;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
-import org.jboss.as.clustering.controller.DynamicCapabilityNameResolver;
+import org.jboss.as.clustering.controller.BinaryCapabilityNameResolver;
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
@@ -68,7 +68,7 @@ public class ProtocolResourceDefinition<P extends Protocol> extends AbstractProt
         private final RuntimeCapability<Void> definition;
 
         Capability(String name) {
-            this.definition = RuntimeCapability.Builder.of(name, true).setDynamicNameMapper(DynamicCapabilityNameResolver.PARENT_CHILD).setAllowMultipleRegistrations(true).build();
+            this.definition = RuntimeCapability.Builder.of(name, true).setDynamicNameMapper(BinaryCapabilityNameResolver.PARENT_CHILD).setAllowMultipleRegistrations(true).build();
         }
 
         @Override

@@ -27,7 +27,7 @@ import java.util.function.UnaryOperator;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
-import org.jboss.as.clustering.controller.DynamicCapabilityNameResolver;
+import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
@@ -58,7 +58,7 @@ public class AuthTokenResourceDefinition<T extends AuthToken> extends ChildResou
         private final RuntimeCapability<Void> definition;
 
         Capability(String name, Class<?> type) {
-            this.definition = RuntimeCapability.Builder.of(name, true).setServiceType(type).setAllowMultipleRegistrations(true).setDynamicNameMapper(DynamicCapabilityNameResolver.GRANDPARENT).build();
+            this.definition = RuntimeCapability.Builder.of(name, true).setServiceType(type).setAllowMultipleRegistrations(true).setDynamicNameMapper(UnaryCapabilityNameResolver.GRANDPARENT).build();
         }
 
         @Override
