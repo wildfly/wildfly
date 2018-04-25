@@ -219,8 +219,8 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
         this.invoker.invoke(() -> {
             // This should only go remote following a failover
             Node node = InfinispanBeanManager.this.locatePrimaryOwner(bean.getId());
-            return InfinispanBeanManager.this.dispatcher.executeOnNode(command, node);
-        }).get();
+            return InfinispanBeanManager.this.dispatcher.executeOnMember(command, node);
+        }).toCompletableFuture().join();
     }
 
     Node locatePrimaryOwner(I id) {

@@ -27,11 +27,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.activemq.artemis.api.core.BroadcastEndpoint;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
-import org.wildfly.clustering.dispatcher.CommandDispatcherException;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
-import org.wildfly.clustering.service.concurrent.ServiceExecutor;
-import org.wildfly.clustering.service.concurrent.StampedLockServiceExecutor;
-import org.wildfly.common.function.ExceptionRunnable;
 
 /**
  * A {@link BroadcastEndpoint} based on a {@link CommandDispatcher}.
@@ -47,7 +43,6 @@ public class CommandDispatcherBroadcastEndpoint implements BroadcastEndpoint {
     private final String name;
     private final BroadcastManager manager;
     private final AtomicReference<Mode> mode = new AtomicReference<>(Mode.CLOSED);
-    private final ServiceExecutor executor = new StampedLockServiceExecutor();
 
     private volatile CommandDispatcher<BroadcastReceiver> dispatcher;
 
@@ -78,7 +73,7 @@ public class CommandDispatcherBroadcastEndpoint implements BroadcastEndpoint {
     @Override
     public void close(boolean isBroadcast) throws Exception {
         if (this.mode.getAndSet(Mode.CLOSED) != Mode.CLOSED) {
-            this.executor.close(() -> this.dispatcher.close());
+            this.dispatcher.close();
             this.manager.clear();
         }
     }
@@ -86,8 +81,7 @@ public class CommandDispatcherBroadcastEndpoint implements BroadcastEndpoint {
     @Override
     public void broadcast(byte[] data) throws Exception {
         if (this.mode.get() == Mode.BROADCASTER) {
-            ExceptionRunnable<CommandDispatcherException> task = () -> this.dispatcher.executeOnCluster(new BroadcastCommand(data));
-            this.executor.execute(task);
+            this.dispatcher.executeOnGroup(new BroadcastCommand(data));
         }
     }
 
