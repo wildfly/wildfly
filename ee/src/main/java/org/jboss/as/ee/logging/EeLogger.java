@@ -23,6 +23,7 @@
 package org.jboss.as.ee.logging;
 
 import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
 import java.io.IOException;
@@ -1134,4 +1135,16 @@ public interface EeLogger extends BasicLogger {
 
     @Message(id = 117, value = "Field %s cannot be set - object of %s loaded by %s is not assignable to %s loaded by %s")
     IllegalArgumentException cannotSetField(String fieldName, Class<?> injectedClass, ClassLoader injectedClassloader, Class<?> fieldClass, ClassLoader fieldClassloader);
+
+    @LogMessage(level = INFO)
+    @Message(id = 118, value = "The system property 'ee8.preview.mode' is set to 'true'. For provided EE 8 APIs where the EE 8 " +
+            "version of the API differs from what is supported in EE 7, the EE 8 variant of the API will be used. " +
+            "Support for this setting will be removed once all EE 8 APIs are provided and certified.")
+    void usingEE8PreviewMode();
+
+    @LogMessage(level = INFO)
+    @Message(id = 119, value = "The system property 'ee8.preview.mode' is NOT set to 'true'. For provided EE 8 APIs where the EE 8 " +
+            "version of the API differs from what is supported in EE 7, the EE 7 variant of the API will be used. " +
+            "Support for this setting will be removed once all EE 8 APIs are provided and certified.")
+    void notUsingEE8PreviewMode();
 }
