@@ -88,7 +88,7 @@ public class JPAExtension implements Extension {
         }
 
         if (context.isRuntimeOnlyRegistrationValid()) {
-            registration.registerDeploymentModel(JPADefinition.INSTANCE);
+            registration.registerDeploymentModel(JPADefinition.DEPLOYMENT_INSTANCE);
         }
     }
 

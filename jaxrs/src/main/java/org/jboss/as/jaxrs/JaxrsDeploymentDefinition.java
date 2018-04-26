@@ -75,7 +75,7 @@ public class JaxrsDeploymentDefinition extends SimpleResourceDefinition {
             = new ObjectTypeAttributeDefinition.Builder("jaxrs-resource", CLASSNAME, PATH, METHODS).setStorageRuntime().build();
 
     private JaxrsDeploymentDefinition() {
-         super(JaxrsExtension.SUBSYSTEM_PATH, JaxrsExtension.getResolver());
+          super(new Parameters(JaxrsExtension.SUBSYSTEM_PATH, JaxrsExtension.getResolver()).setFeature(false));
     }
 
     @Override
