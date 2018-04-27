@@ -74,9 +74,8 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
      *
      */
     public static final ModuleIdentifier JACKSON_CORE_ASL = ModuleIdentifier.create("org.codehaus.jackson.jackson-core-asl");
-
     private static final String CLIENT_BUILDER = "META-INF/services/javax.ws.rs.client.ClientBuilder";
-
+    private static final boolean JAVA_EE8 = Boolean.getBoolean("ee8.preview.mode");
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
@@ -96,7 +95,9 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
         addDependency(moduleSpecification, moduleLoader, RESTEASY_JAXB, true, false);
         addDependency(moduleSpecification, moduleLoader, RESTEASY_JACKSON2, true, false);
         addDependency(moduleSpecification, moduleLoader, RESTEASY_JSON_P_PROVIDER, true, false);
-        addDependency(moduleSpecification, moduleLoader, RESTEASY_JSON_B_PROVIDER, true, false);
+        if (JAVA_EE8) {
+            addDependency(moduleSpecification, moduleLoader, RESTEASY_JSON_B_PROVIDER, true, false);
+        }
         //addDependency(moduleSpecification, moduleLoader, RESTEASY_JETTISON);
         addDependency(moduleSpecification, moduleLoader, RESTEASY_JSAPI, true, false);
         addDependency(moduleSpecification, moduleLoader, RESTEASY_MULTIPART, true, false);
