@@ -26,7 +26,6 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiPredicate;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -209,8 +208,8 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
             }
         }
 
-        for (Map.Entry<CapabilityReferenceRecorder, Function<PathAddress, String>> entry : this.descriptor.getResourceCapabilityReferences().entrySet()) {
-            entry.getKey().addCapabilityRequirements(context, resource, null, entry.getValue().apply(address));
+        for (CapabilityReferenceRecorder recorder : context.getResourceRegistration().getRequirements()) {
+            recorder.addCapabilityRequirements(context, resource, null);
         }
     }
 
