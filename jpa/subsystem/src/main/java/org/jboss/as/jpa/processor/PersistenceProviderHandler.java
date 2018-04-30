@@ -26,6 +26,7 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.persistence.spi.PersistenceProvider;
@@ -109,12 +110,15 @@ public class PersistenceProviderHandler {
     public static void finishDeploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         PersistenceProviderDeploymentHolder persistenceProviderDeploymentHolder  = PersistenceProviderDeploymentHolder.getPersistenceProviderDeploymentHolder(deploymentUnit);
-        List<PersistenceProvider> providerList = persistenceProviderDeploymentHolder != null ?
+        Map<String, PersistenceProvider> providerMap = persistenceProviderDeploymentHolder != null ?
                 persistenceProviderDeploymentHolder.getProviders() : null;
-        if (providerList != null) {
+
+        if (providerMap != null) {
             Set<ClassLoader> deploymentClassLoaders = allDeploymentModuleClassLoaders(deploymentUnit);
-            for (PersistenceProvider provider:providerList) {
-                PersistenceProviderResolverImpl.getInstance().addDeploymentSpecificPersistenceProvider(provider, deploymentClassLoaders);
+            synchronized (providerMap){
+                for(Map.Entry<String, PersistenceProvider> kv: providerMap.entrySet()){
+                    PersistenceProviderResolverImpl.getInstance().addDeploymentSpecificPersistenceProvider(kv.getValue(), deploymentClassLoaders);
+                }
             }
         }
     }
