@@ -63,8 +63,6 @@
 
     <domain-controller>
         <local/>
-        <!-- Alternative remote domain controller configuration with a host and port -->
-        <!-- <remote protocol="remote" host="${jboss.domain.master.address}" port="${jboss.domain.master.port:9999}" security-realm="ManagementRealm"/> -->
     </domain-controller>
 
     <interfaces>
@@ -92,25 +90,13 @@
     </jvms>
 
     <servers>
-        <server name="server-one" group="main-server-group">
-            <!-- Remote JPDA debugging for a specific server
-            <jvm name="default">
-              <jvm-options>
-                <option value="-agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=n"/>
-              </jvm-options>
-           </jvm>
-           -->
-        </server>
+        <server name="server-one" group="main-server-group"/>
         <server name="server-two" group="main-server-group" auto-start="true">
             <jvm name="default" />
-            <!-- server-two avoids port conflicts by incrementing the ports in
-                 the default socket-group declared in the server-group -->
             <socket-bindings port-offset="150"/>
         </server>
         <server name="server-three" group="other-server-group" auto-start="false">
             <jvm name="default" />
-            <!-- server-three avoids port conflicts by incrementing the ports in
-                 the default socket-group declared in the server-group -->
             <socket-bindings port-offset="250"/>
         </server>
     </servers>
