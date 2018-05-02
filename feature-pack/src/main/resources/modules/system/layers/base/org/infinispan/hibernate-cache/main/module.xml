@@ -31,6 +31,7 @@
 
     <resources>
         <artifact name="${org.infinispan:infinispan-hibernate-cache-commons}"/>
+        <artifact name="${org.infinispan:infinispan-hibernate-cache-spi}"/>
         <artifact name="${org.infinispan:infinispan-hibernate-cache-v51}"/>
     </resources>
 

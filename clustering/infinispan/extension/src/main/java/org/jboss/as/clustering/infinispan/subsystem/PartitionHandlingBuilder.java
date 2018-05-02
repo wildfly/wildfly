@@ -26,6 +26,7 @@ import static org.jboss.as.clustering.infinispan.subsystem.PartitionHandlingReso
 
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.PartitionHandlingConfiguration;
+import org.infinispan.conflict.MergePolicy;
 import org.infinispan.partitionhandling.PartitionHandling;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -49,6 +50,7 @@ public class PartitionHandlingBuilder extends ComponentBuilder<PartitionHandling
     public PartitionHandlingConfiguration getValue() {
         return new ConfigurationBuilder().clustering().partitionHandling()
                 .whenSplit(this.enabled ? PartitionHandling.DENY_READ_WRITES : PartitionHandling.ALLOW_READ_WRITES)
+                .mergePolicy(MergePolicy.NONE)
                 .create();
     }
 

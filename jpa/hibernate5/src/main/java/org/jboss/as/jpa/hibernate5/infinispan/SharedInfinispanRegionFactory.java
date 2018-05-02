@@ -21,7 +21,6 @@ import java.util.Properties;
 
 import org.hibernate.cache.CacheException;
 import org.hibernate.service.ServiceRegistry;
-import org.infinispan.AdvancedCache;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.jpa.hibernate5.HibernateSecondLevelCache;
 import org.jipijapa.cache.spi.Classification;
@@ -69,13 +68,5 @@ public class SharedInfinispanRegionFactory extends InfinispanRegionFactory {
     protected void stopCacheManager() {
         // notify that the cache is not used but skip the stop since its shared for all jpa applications.
         Notification.stopCache(Classification.INFINISPAN, wrapper);
-    }
-
-
-    @SuppressWarnings("rawtypes")
-    @Override
-    protected AdvancedCache createCacheWrapper(AdvancedCache cache) {
-        cache.start();
-        return cache;
     }
 }

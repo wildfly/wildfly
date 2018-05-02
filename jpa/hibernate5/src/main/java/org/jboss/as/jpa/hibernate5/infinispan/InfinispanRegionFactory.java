@@ -22,7 +22,6 @@ import java.util.Properties;
 import org.hibernate.cache.CacheException;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.service.ServiceRegistry;
-import org.infinispan.AdvancedCache;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.jpa.hibernate5.HibernateSecondLevelCache;
 import org.jipijapa.cache.spi.Classification;
@@ -34,7 +33,7 @@ import org.jipijapa.event.impl.internal.Notification;
  * @author Paul Ferraro
  * @author Scott Marlow
  */
-public class InfinispanRegionFactory extends org.infinispan.hibernate.cache.commons.InfinispanRegionFactory {
+public class InfinispanRegionFactory extends org.infinispan.hibernate.cache.v51.InfinispanRegionFactory {
     private static final long serialVersionUID = 6526170943015350422L;
 
     public static final String CACHE_CONTAINER = "hibernate.cache.infinispan.container";
@@ -79,11 +78,5 @@ public class InfinispanRegionFactory extends org.infinispan.hibernate.cache.comm
     protected void stopCacheManager() {
         // stop the private cache
         Notification.stopCache(Classification.INFINISPAN, wrapper);
-    }
-
-    @SuppressWarnings("rawtypes")
-    @Override
-    protected AdvancedCache createCacheWrapper(AdvancedCache cache) {
-        return cache;
     }
 }
