@@ -56,12 +56,12 @@ import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.AttributeConverter.DefaultValueAttributeConverter;
 import org.jboss.as.controller.transform.description.AttributeTransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.ChainedTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker.DiscardAttributeValueChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker.SimpleRejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.undertow.filters.ModClusterDefinition;
@@ -82,13 +82,17 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
 
     @Override
     public void registerTransformers(SubsystemTransformerRegistration subsystemRegistration) {
-        registerTransformers_EAP_7_0_0(subsystemRegistration);
-        registerTransformers_EAP_7_1_0(subsystemRegistration);
+
+        ChainedTransformationDescriptionBuilder chainedBuilder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(subsystemRegistration.getCurrentSubsystemVersion());
+
+        registerTransformers_EAP_7_1_0(chainedBuilder.createBuilder(subsystemRegistration.getCurrentSubsystemVersion(), MODEL_VERSION_EAP7_1_0));
+        registerTransformers_EAP_7_0_0(chainedBuilder.createBuilder(MODEL_VERSION_EAP7_1_0, MODEL_VERSION_EAP7_0_0));
+
+        chainedBuilder.buildAndRegister(subsystemRegistration, new ModelVersion[]{MODEL_VERSION_EAP7_1_0, MODEL_VERSION_EAP7_0_0});
     }
 
 
-    private static void registerTransformers_EAP_7_1_0(SubsystemTransformerRegistration subsystemRegistration) {
-        final ResourceTransformationDescriptionBuilder subsystemBuilder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+    private static void registerTransformers_EAP_7_1_0(ResourceTransformationDescriptionBuilder subsystemBuilder) {
         final ResourceTransformationDescriptionBuilder serverBuilder = subsystemBuilder.addChildResource(UndertowExtension.SERVER_PATH);
         final ResourceTransformationDescriptionBuilder hostBuilder = serverBuilder.addChildResource(UndertowExtension.HOST_PATH);
         subsystemBuilder
@@ -119,8 +123,6 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
                 .setDiscard(new DiscardAttributeValueChecker(QUEUE_REQUESTS_ON_START.getDefaultValue()), QUEUE_REQUESTS_ON_START)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, QUEUE_REQUESTS_ON_START)
                 .end();
-
-        TransformationDescription.Tools.register(subsystemBuilder.build(), subsystemRegistration, MODEL_VERSION_EAP7_1_0);
     }
 
     private static void addCommonListenerRules_EAP_7_1_0(AttributeTransformationDescriptionBuilder listener) {
@@ -130,8 +132,7 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
                 .addRejectCheck(RejectAttributeChecker.DEFINED, ALLOW_UNESCAPED_CHARACTERS_IN_URL);
     }
 
-    private static void registerTransformers_EAP_7_0_0(SubsystemTransformerRegistration subsystemRegistration) {
-        final ResourceTransformationDescriptionBuilder subsystemBuilder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+    private static void registerTransformers_EAP_7_0_0(ResourceTransformationDescriptionBuilder subsystemBuilder) {
         final ResourceTransformationDescriptionBuilder serverBuilder = subsystemBuilder.addChildResource(UndertowExtension.SERVER_PATH);
         final ResourceTransformationDescriptionBuilder hostBuilder = serverBuilder.addChildResource(UndertowExtension.HOST_PATH);
 
@@ -157,9 +158,9 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
         serverBuilder.addChildResource(UndertowExtension.AJP_LISTENER_PATH)
                 .getAttributeBuilder()
                 .setDiscard(FALSE_DISCARD_CHECKER,
-                        RFC6265_COOKIE_VALIDATION, ALLOW_UNESCAPED_CHARACTERS_IN_URL)
+                        RFC6265_COOKIE_VALIDATION)
                 .addRejectCheck(RejectAttributeChecker.DEFINED,
-                        RFC6265_COOKIE_VALIDATION, ALLOW_UNESCAPED_CHARACTERS_IN_URL)
+                        RFC6265_COOKIE_VALIDATION)
         .end();
 
 
@@ -167,13 +168,7 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
                 .addChildResource(UndertowExtension.PATH_SERVLET_CONTAINER)
                 .getAttributeBuilder()
                     .setDiscard(FALSE_DISCARD_CHECKER, DISABLE_FILE_WATCH_SERVICE, DISABLE_SESSION_ID_REUSE)
-                    .setDiscard(new DiscardAttributeValueChecker(new ModelNode(10 * 1024 * 1024)), FILE_CACHE_MAX_FILE_SIZE)
-                    .setDiscard(new DiscardAttributeValueChecker(new ModelNode(100)), FILE_CACHE_METADATA_SIZE)
-                    .setDiscard(DiscardAttributeChecker.UNDEFINED, FILE_CACHE_TIME_TO_LIVE)
-                    .setDiscard(new DiscardAttributeValueChecker(new ModelNode(0)), DEFAULT_COOKIE_VERSION)
-                    .addRejectCheck(RejectAttributeChecker.DEFINED,
-                            DISABLE_FILE_WATCH_SERVICE, DISABLE_SESSION_ID_REUSE, FILE_CACHE_MAX_FILE_SIZE,
-                            FILE_CACHE_METADATA_SIZE, FILE_CACHE_TIME_TO_LIVE, DEFAULT_COOKIE_VERSION)
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, DISABLE_FILE_WATCH_SERVICE, DISABLE_SESSION_ID_REUSE)
                 .end()
                 .addChildResource(UndertowExtension.PATH_WEBSOCKETS)
                 .getAttributeBuilder()
@@ -210,22 +205,16 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
                 .end();
 
         hostBuilder.rejectChildResource(UndertowExtension.PATH_HTTP_INVOKER);
-        hostBuilder.getAttributeBuilder()
-                .setDiscard(new DiscardAttributeValueChecker(QUEUE_REQUESTS_ON_START.getDefaultValue()), QUEUE_REQUESTS_ON_START)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, QUEUE_REQUESTS_ON_START)
-                .end();
 
         subsystemBuilder.rejectChildResource(UndertowExtension.PATH_APPLICATION_SECURITY_DOMAIN);
-
-        TransformationDescription.Tools.register(subsystemBuilder.build(), subsystemRegistration, MODEL_VERSION_EAP7_0_0);
     }
 
     private static AttributeTransformationDescriptionBuilder addCommonListenerRules_EAP_7_0_0(AttributeTransformationDescriptionBuilder builder) {
         return builder
                 .setDiscard(FALSE_DISCARD_CHECKER,
-                        REQUIRE_HOST_HTTP11, RFC6265_COOKIE_VALIDATION, ALLOW_UNESCAPED_CHARACTERS_IN_URL, PROXY_PROTOCOL)
+                        REQUIRE_HOST_HTTP11, RFC6265_COOKIE_VALIDATION)
                 .addRejectCheck(RejectAttributeChecker.DEFINED,
-                        RFC6265_COOKIE_VALIDATION, ALLOW_UNESCAPED_CHARACTERS_IN_URL, REQUIRE_HOST_HTTP11, PROXY_PROTOCOL)
+                        RFC6265_COOKIE_VALIDATION, REQUIRE_HOST_HTTP11)
                 .setValueConverter(new DefaultValueAttributeConverter(HTTP2_HEADER_TABLE_SIZE), HTTP2_HEADER_TABLE_SIZE)
                 .setValueConverter(new DefaultValueAttributeConverter(HTTP2_INITIAL_WINDOW_SIZE), HTTP2_INITIAL_WINDOW_SIZE)
                 .setValueConverter(new DefaultValueAttributeConverter(HTTP2_MAX_FRAME_SIZE), HTTP2_MAX_FRAME_SIZE);
