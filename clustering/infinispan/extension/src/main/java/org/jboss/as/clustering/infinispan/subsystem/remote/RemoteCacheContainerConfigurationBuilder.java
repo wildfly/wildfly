@@ -25,7 +25,6 @@ package org.jboss.as.clustering.infinispan.subsystem.remote;
 import static org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition.Attribute;
 import static org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition.Capability.CONFIGURATION;
 
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -41,7 +40,6 @@ import org.infinispan.client.hotrod.configuration.ExecutorFactoryConfiguration;
 import org.infinispan.client.hotrod.configuration.NearCacheConfiguration;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
-import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.clustering.infinispan.subsystem.ThreadPoolResourceDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -168,21 +166,13 @@ public class RemoteCacheContainerConfigurationBuilder implements ResourceService
             if (this.defaultRemoteCluster.equals(clusterName)) {
                 for (InjectedValueDependency<OutboundSocketBinding> bindingInjectedValueDependency : injectedValueDependencies) {
                     OutboundSocketBinding binding = bindingInjectedValueDependency.getValue();
-                    try {
-                        builder.addServer().host(binding.getResolvedDestinationAddress().getHostAddress()).port(binding.getDestinationPort());
-                    } catch (UnknownHostException e) {
-                        throw InfinispanLogger.ROOT_LOGGER.failedToInjectSocketBinding(e, binding);
-                    }
+                    builder.addServer().host(binding.getUnresolvedDestinationAddress()).port(binding.getDestinationPort());
                 }
             } else {
                 ClusterConfigurationBuilder clusterConfigurationBuilder = builder.addCluster(clusterName);
                 for (InjectedValueDependency<OutboundSocketBinding> bindingInjectedValueDependency : injectedValueDependencies) {
                     OutboundSocketBinding binding = bindingInjectedValueDependency.getValue();
-                    try {
-                        clusterConfigurationBuilder.addClusterNode(binding.getResolvedDestinationAddress().getHostAddress(), binding.getDestinationPort());
-                    } catch (UnknownHostException e) {
-                        throw InfinispanLogger.ROOT_LOGGER.failedToInjectSocketBinding(e, binding);
-                    }
+                    clusterConfigurationBuilder.addClusterNode(binding.getUnresolvedDestinationAddress(), binding.getDestinationPort());
                 }
             }
         }
