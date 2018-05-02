@@ -28,7 +28,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
-import javax.annotation.Resource;
 import javax.ejb.Stateful;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -44,7 +43,6 @@ import org.hibernate.engine.transaction.jta.platform.internal.JBossAppServerJtaP
 import org.hibernate.internal.util.config.ConfigurationHelper;
 import org.hibernate.stat.SessionStatistics;
 import org.hibernate.stat.Statistics;
-import org.infinispan.manager.CacheContainer;
 
 /**
  * @author Madhumita Sadhukhan
@@ -54,17 +52,6 @@ import org.infinispan.manager.CacheContainer;
 public class SFSBHibernate2LcacheStats {
 
     private static SessionFactory sessionFactory;
-
-    /**
-     * Lookup the Infinispan cache container to start it.
-     * <p>
-     * We also could change the following line in standalone.xml: <cache-container name="hibernate" default-cache="local-query">
-     * To: <cache-container name="hibernate" default-cache="local-query" start="EAGER">
-     */
-    private static final String CONTAINER_JNDI_NAME = "java:jboss/infinispan/container/hibernate";
-    @Resource(lookup = CONTAINER_JNDI_NAME)
-    private CacheContainer container;
-
 
     public void cleanup() {
         sessionFactory.close();
