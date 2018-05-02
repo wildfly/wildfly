@@ -22,9 +22,30 @@
 
 package org.wildfly.extension.undertow;
 
+import static org.wildfly.extension.undertow.Constants.ENABLE_HTTP2;
+import static org.wildfly.extension.undertow.HostDefinition.QUEUE_REQUESTS_ON_START;
+import static org.wildfly.extension.undertow.HttpListenerResourceDefinition.CERTIFICATE_FORWARDING;
+import static org.wildfly.extension.undertow.HttpListenerResourceDefinition.HTTP2_HEADER_TABLE_SIZE;
+import static org.wildfly.extension.undertow.HttpListenerResourceDefinition.HTTP2_INITIAL_WINDOW_SIZE;
+import static org.wildfly.extension.undertow.HttpListenerResourceDefinition.HTTP2_MAX_FRAME_SIZE;
+import static org.wildfly.extension.undertow.HttpListenerResourceDefinition.PROXY_ADDRESS_FORWARDING;
+import static org.wildfly.extension.undertow.HttpListenerResourceDefinition.PROXY_PROTOCOL;
+import static org.wildfly.extension.undertow.HttpListenerResourceDefinition.REQUIRE_HOST_HTTP11;
 import static org.wildfly.extension.undertow.HttpsListenerResourceDefinition.SSL_CONTEXT;
 import static org.wildfly.extension.undertow.ListenerResourceDefinition.ALLOW_UNESCAPED_CHARACTERS_IN_URL;
 import static org.wildfly.extension.undertow.ListenerResourceDefinition.RFC6265_COOKIE_VALIDATION;
+import static org.wildfly.extension.undertow.ServletContainerDefinition.DEFAULT_COOKIE_VERSION;
+import static org.wildfly.extension.undertow.ServletContainerDefinition.DISABLE_FILE_WATCH_SERVICE;
+import static org.wildfly.extension.undertow.ServletContainerDefinition.DISABLE_SESSION_ID_REUSE;
+import static org.wildfly.extension.undertow.ServletContainerDefinition.FILE_CACHE_MAX_FILE_SIZE;
+import static org.wildfly.extension.undertow.ServletContainerDefinition.FILE_CACHE_METADATA_SIZE;
+import static org.wildfly.extension.undertow.ServletContainerDefinition.FILE_CACHE_TIME_TO_LIVE;
+import static org.wildfly.extension.undertow.WebsocketsDefinition.DEFLATER_LEVEL;
+import static org.wildfly.extension.undertow.WebsocketsDefinition.PER_MESSAGE_DEFLATE;
+import static org.wildfly.extension.undertow.filters.ModClusterDefinition.FAILOVER_STRATEGY;
+import static org.wildfly.extension.undertow.filters.ModClusterDefinition.MAX_AJP_PACKET_SIZE;
+import static org.wildfly.extension.undertow.handlers.ReverseProxyHandler.CONNECTIONS_PER_THREAD;
+import static org.wildfly.extension.undertow.handlers.ReverseProxyHandler.MAX_RETRIES;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
@@ -33,22 +54,24 @@ import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
 import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.AttributeConverter;
+import org.jboss.as.controller.transform.description.AttributeConverter.DefaultValueAttributeConverter;
 import org.jboss.as.controller.transform.description.AttributeTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker.DiscardAttributeValueChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker.SimpleRejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.undertow.filters.ModClusterDefinition;
-import org.wildfly.extension.undertow.handlers.ReverseProxyHandler;
 
 
 /**
  * @author Tomaz Cerar (c) 2016 Red Hat Inc.
  */
 public class UndertowTransformers implements ExtensionTransformerRegistration {
-    public static final DiscardAttributeChecker.DiscardAttributeValueChecker FALSE_DISCARD_CHECKER = new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false));
+    public static final DiscardAttributeValueChecker FALSE_DISCARD_CHECKER = new DiscardAttributeValueChecker(new ModelNode(false));
     private static ModelVersion MODEL_VERSION_EAP7_0_0 = ModelVersion.create(3, 1, 0);
     private static ModelVersion MODEL_VERSION_EAP7_1_0 = ModelVersion.create(4, 0, 0);
 
@@ -71,34 +94,30 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
         subsystemBuilder
                 .addChildResource(UndertowExtension.PATH_SERVLET_CONTAINER)
                 .getAttributeBuilder()
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(10 * 1024 * 1024)), ServletContainerDefinition.FILE_CACHE_MAX_FILE_SIZE)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, ServletContainerDefinition.FILE_CACHE_MAX_FILE_SIZE)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(100)), ServletContainerDefinition.FILE_CACHE_METADATA_SIZE)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, ServletContainerDefinition.FILE_CACHE_METADATA_SIZE)
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, ServletContainerDefinition.FILE_CACHE_TIME_TO_LIVE)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, ServletContainerDefinition.FILE_CACHE_TIME_TO_LIVE)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(0)), ServletContainerDefinition.DEFAULT_COOKIE_VERSION)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, ServletContainerDefinition.DEFAULT_COOKIE_VERSION)
+                    .setDiscard(new DiscardAttributeValueChecker(new ModelNode(10 * 1024 * 1024)), FILE_CACHE_MAX_FILE_SIZE)
+                    .setDiscard(new DiscardAttributeValueChecker(new ModelNode(100)), FILE_CACHE_METADATA_SIZE)
+                    .setDiscard(DiscardAttributeChecker.UNDEFINED, FILE_CACHE_TIME_TO_LIVE)
+                    .setDiscard(new DiscardAttributeValueChecker(new ModelNode(0)), DEFAULT_COOKIE_VERSION)
+                    .addRejectCheck(RejectAttributeChecker.DEFINED,
+                            FILE_CACHE_MAX_FILE_SIZE, FILE_CACHE_METADATA_SIZE, FILE_CACHE_TIME_TO_LIVE, DEFAULT_COOKIE_VERSION)
                 .end();
 
         final AttributeTransformationDescriptionBuilder http = serverBuilder.addChildResource(UndertowExtension.HTTP_LISTENER_PATH).getAttributeBuilder()
-                .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(true)), HttpListenerResourceDefinition.PROXY_PROTOCOL.getName())
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), HttpListenerResourceDefinition.PROXY_PROTOCOL);
+                .setDiscard(new DiscardAttributeValueChecker(new ModelNode(false)), PROXY_PROTOCOL)
+                .addRejectCheck(new SimpleRejectAttributeChecker(new ModelNode(true)), PROXY_PROTOCOL.getName());
         addCommonListenerRules_EAP_7_1_0(http);
-        http.end();
+
         final AttributeTransformationDescriptionBuilder https = serverBuilder.addChildResource(UndertowExtension.HTTPS_LISTENER_PATH).getAttributeBuilder()
-                .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(true)), HttpListenerResourceDefinition.PROXY_PROTOCOL.getName())
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), HttpListenerResourceDefinition.PROXY_PROTOCOL);
+                .setDiscard(new DiscardAttributeValueChecker(new ModelNode(false)), PROXY_PROTOCOL)
+                .addRejectCheck(new SimpleRejectAttributeChecker(new ModelNode(true)), PROXY_PROTOCOL);
         addCommonListenerRules_EAP_7_1_0(https);
-        https.end();
+
         final AttributeTransformationDescriptionBuilder ajp = serverBuilder.addChildResource(UndertowExtension.AJP_LISTENER_PATH).getAttributeBuilder();
         addCommonListenerRules_EAP_7_1_0(ajp);
-        ajp.end();
-
 
         hostBuilder.getAttributeBuilder()
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(HostDefinition.QUEUE_REQUESTS_ON_START.getDefaultValue()), HostDefinition.QUEUE_REQUESTS_ON_START)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, HostDefinition.QUEUE_REQUESTS_ON_START)
+                .setDiscard(new DiscardAttributeValueChecker(QUEUE_REQUESTS_ON_START.getDefaultValue()), QUEUE_REQUESTS_ON_START)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, QUEUE_REQUESTS_ON_START)
                 .end();
 
         TransformationDescription.Tools.register(subsystemBuilder.build(), subsystemRegistration, MODEL_VERSION_EAP7_1_0);
@@ -106,8 +125,9 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
 
     private static void addCommonListenerRules_EAP_7_1_0(AttributeTransformationDescriptionBuilder listener) {
         convertCommonListenerAttributes(listener);
-        listener.addRejectCheck(RejectAttributeChecker.DEFINED, ALLOW_UNESCAPED_CHARACTERS_IN_URL)
-                .setDiscard(FALSE_DISCARD_CHECKER, ALLOW_UNESCAPED_CHARACTERS_IN_URL);
+        listener
+                .setDiscard(FALSE_DISCARD_CHECKER, ALLOW_UNESCAPED_CHARACTERS_IN_URL)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, ALLOW_UNESCAPED_CHARACTERS_IN_URL);
     }
 
     private static void registerTransformers_EAP_7_0_0(SubsystemTransformerRegistration subsystemRegistration) {
@@ -121,91 +141,78 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
         AttributeTransformationDescriptionBuilder https =
                 serverBuilder.addChildResource(UndertowExtension.HTTPS_LISTENER_PATH)
                         .getAttributeBuilder()
-                        .addRejectCheck(RejectAttributeChecker.DEFINED, RFC6265_COOKIE_VALIDATION)
-                        .setDiscard(FALSE_DISCARD_CHECKER, RFC6265_COOKIE_VALIDATION)
-                        .addRejectCheck(RejectAttributeChecker.DEFINED, ALLOW_UNESCAPED_CHARACTERS_IN_URL)
-                        .setDiscard(FALSE_DISCARD_CHECKER, ALLOW_UNESCAPED_CHARACTERS_IN_URL)
-                        .addRejectCheck(RejectAttributeChecker.DEFINED, SSL_CONTEXT)
-                        .addRejectCheck(RejectAttributeChecker.UNDEFINED, Constants.SECURITY_REALM)
+                        .setDiscard(FALSE_DISCARD_CHECKER,
+                                CERTIFICATE_FORWARDING, PROXY_ADDRESS_FORWARDING)
                         .setDiscard(DiscardAttributeChecker.UNDEFINED, SSL_CONTEXT)
-                        .setDiscard(FALSE_DISCARD_CHECKER, HttpListenerResourceDefinition.CERTIFICATE_FORWARDING)
-                        .addRejectCheck(RejectAttributeChecker.DEFINED, HttpListenerResourceDefinition.CERTIFICATE_FORWARDING)
-                        .setDiscard(FALSE_DISCARD_CHECKER, HttpListenerResourceDefinition.PROXY_ADDRESS_FORWARDING)
-                        .addRejectCheck(RejectAttributeChecker.DEFINED, HttpListenerResourceDefinition.PROXY_ADDRESS_FORWARDING);
+                        .addRejectCheck(RejectAttributeChecker.DEFINED,
+                                CERTIFICATE_FORWARDING, PROXY_ADDRESS_FORWARDING, SSL_CONTEXT)
+                        .addRejectCheck(RejectAttributeChecker.UNDEFINED, Constants.SECURITY_REALM);
         addCommonListenerRules_EAP_7_0_0(https).end();
 
-        AttributeTransformationDescriptionBuilder http = serverBuilder.addChildResource(UndertowExtension.HTTP_LISTENER_PATH)
-                .getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.DEFINED, RFC6265_COOKIE_VALIDATION)
-                .setDiscard(FALSE_DISCARD_CHECKER, RFC6265_COOKIE_VALIDATION)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, ALLOW_UNESCAPED_CHARACTERS_IN_URL)
-                .setDiscard(FALSE_DISCARD_CHECKER, ALLOW_UNESCAPED_CHARACTERS_IN_URL);
-        addCommonListenerRules_EAP_7_0_0(http).end();
+        AttributeTransformationDescriptionBuilder http =
+                serverBuilder.addChildResource(UndertowExtension.HTTP_LISTENER_PATH).getAttributeBuilder();
+        addCommonListenerRules_EAP_7_0_0(http);
+        http.end();
 
         serverBuilder.addChildResource(UndertowExtension.AJP_LISTENER_PATH)
                 .getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.DEFINED, RFC6265_COOKIE_VALIDATION)
-                .setDiscard(FALSE_DISCARD_CHECKER, RFC6265_COOKIE_VALIDATION)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, ALLOW_UNESCAPED_CHARACTERS_IN_URL)
-                .setDiscard(FALSE_DISCARD_CHECKER, ALLOW_UNESCAPED_CHARACTERS_IN_URL)
+                .setDiscard(FALSE_DISCARD_CHECKER,
+                        RFC6265_COOKIE_VALIDATION, ALLOW_UNESCAPED_CHARACTERS_IN_URL)
+                .addRejectCheck(RejectAttributeChecker.DEFINED,
+                        RFC6265_COOKIE_VALIDATION, ALLOW_UNESCAPED_CHARACTERS_IN_URL)
         .end();
 
 
         subsystemBuilder
                 .addChildResource(UndertowExtension.PATH_SERVLET_CONTAINER)
                 .getAttributeBuilder()
-                    .setDiscard(FALSE_DISCARD_CHECKER, ServletContainerDefinition.DISABLE_FILE_WATCH_SERVICE)
-                    .addRejectCheck(RejectAttributeChecker.DEFINED, ServletContainerDefinition.DISABLE_FILE_WATCH_SERVICE)
-                    .setDiscard(FALSE_DISCARD_CHECKER, ServletContainerDefinition.DISABLE_SESSION_ID_REUSE)
-                    .addRejectCheck(RejectAttributeChecker.DEFINED, ServletContainerDefinition.DISABLE_SESSION_ID_REUSE)
-                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(10 * 1024 * 1024)), ServletContainerDefinition.FILE_CACHE_MAX_FILE_SIZE)
-                    .addRejectCheck(RejectAttributeChecker.DEFINED, ServletContainerDefinition.FILE_CACHE_MAX_FILE_SIZE)
-                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(100)), ServletContainerDefinition.FILE_CACHE_METADATA_SIZE)
-                    .addRejectCheck(RejectAttributeChecker.DEFINED, ServletContainerDefinition.FILE_CACHE_METADATA_SIZE)
-                    .setDiscard(DiscardAttributeChecker.UNDEFINED, ServletContainerDefinition.FILE_CACHE_TIME_TO_LIVE)
-                    .addRejectCheck(RejectAttributeChecker.DEFINED, ServletContainerDefinition.FILE_CACHE_TIME_TO_LIVE)
-                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(0)), ServletContainerDefinition.DEFAULT_COOKIE_VERSION)
-                    .addRejectCheck(RejectAttributeChecker.DEFINED, ServletContainerDefinition.DEFAULT_COOKIE_VERSION)
+                    .setDiscard(FALSE_DISCARD_CHECKER, DISABLE_FILE_WATCH_SERVICE, DISABLE_SESSION_ID_REUSE)
+                    .setDiscard(new DiscardAttributeValueChecker(new ModelNode(10 * 1024 * 1024)), FILE_CACHE_MAX_FILE_SIZE)
+                    .setDiscard(new DiscardAttributeValueChecker(new ModelNode(100)), FILE_CACHE_METADATA_SIZE)
+                    .setDiscard(DiscardAttributeChecker.UNDEFINED, FILE_CACHE_TIME_TO_LIVE)
+                    .setDiscard(new DiscardAttributeValueChecker(new ModelNode(0)), DEFAULT_COOKIE_VERSION)
+                    .addRejectCheck(RejectAttributeChecker.DEFINED,
+                            DISABLE_FILE_WATCH_SERVICE, DISABLE_SESSION_ID_REUSE, FILE_CACHE_MAX_FILE_SIZE,
+                            FILE_CACHE_METADATA_SIZE, FILE_CACHE_TIME_TO_LIVE, DEFAULT_COOKIE_VERSION)
                 .end()
                 .addChildResource(UndertowExtension.PATH_WEBSOCKETS)
                 .getAttributeBuilder()
-                    .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.PER_MESSAGE_DEFLATE, Constants.DEFLATER_LEVEL)
-                    .setDiscard(FALSE_DISCARD_CHECKER, WebsocketsDefinition.PER_MESSAGE_DEFLATE)
-                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(0)), WebsocketsDefinition.DEFLATER_LEVEL)
-
+                    .setDiscard(FALSE_DISCARD_CHECKER, PER_MESSAGE_DEFLATE)
+                    .setDiscard(new DiscardAttributeValueChecker(new ModelNode(0)), DEFLATER_LEVEL)
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, PER_MESSAGE_DEFLATE, DEFLATER_LEVEL)
                 .end();
 
         subsystemBuilder.addChildResource(UndertowExtension.PATH_HANDLERS)
                 .addChildResource(PathElement.pathElement(Constants.REVERSE_PROXY))
                 .getAttributeBuilder()
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(1L)), Constants.MAX_RETRIES)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.MAX_RETRIES)
-                .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(ReverseProxyHandler.CONNECTIONS_PER_THREAD), ReverseProxyHandler.CONNECTIONS_PER_THREAD)
+                    .setDiscard(new DiscardAttributeValueChecker(new ModelNode(1L)), MAX_RETRIES)
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, MAX_RETRIES)
+                    .setValueConverter(new DefaultValueAttributeConverter(CONNECTIONS_PER_THREAD), CONNECTIONS_PER_THREAD)
                 .end()
                 .addChildResource(PathElement.pathElement(Constants.HOST))
                 .getAttributeBuilder()
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, SSL_CONTEXT)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.SSL_CONTEXT)
-                .setDiscard(DiscardAttributeChecker.ALWAYS, Constants.ENABLE_HTTP2) //we just discard, as older versions will just continue to use HTTP/1.1, and enabling this does not guarentee a HTTP/2 connection anyway (if the backend does not support it)
+                    .setDiscard(DiscardAttributeChecker.UNDEFINED, SSL_CONTEXT)
+                    .setDiscard(DiscardAttributeChecker.ALWAYS, ENABLE_HTTP2) //we just discard, as older versions will just continue to use HTTP/1.1, and enabling this does not guarentee a HTTP/2 connection anyway (if the backend does not support it)
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, SSL_CONTEXT)
                 .end();
 
         subsystemBuilder.addChildResource(UndertowExtension.PATH_FILTERS)
                 .addChildResource(PathElement.pathElement(Constants.MOD_CLUSTER))
                 .getAttributeBuilder()
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(ModClusterDefinition.FAILOVER_STRATEGY.getDefaultValue()), ModClusterDefinition.FAILOVER_STRATEGY)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(ModClusterDefinition.MAX_RETRIES.getDefaultValue()), ModClusterDefinition.MAX_RETRIES)
-                .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(ModClusterDefinition.MAX_AJP_PACKET_SIZE), ModClusterDefinition.MAX_AJP_PACKET_SIZE)
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, SSL_CONTEXT)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, ModClusterDefinition.MAX_RETRIES, ModClusterDefinition.FAILOVER_STRATEGY)
-                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ModClusterDefinition.MAX_AJP_PACKET_SIZE)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, SSL_CONTEXT)
-                .addRejectCheck(RejectAttributeChecker.UNDEFINED, Constants.SECURITY_REALM)
+                    .setDiscard(new DiscardAttributeValueChecker(FAILOVER_STRATEGY.getDefaultValue()), FAILOVER_STRATEGY)
+                    .setDiscard(new DiscardAttributeValueChecker(ModClusterDefinition.MAX_RETRIES.getDefaultValue()), ModClusterDefinition.MAX_RETRIES)
+                    .setDiscard(DiscardAttributeChecker.UNDEFINED, SSL_CONTEXT)
+                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, MAX_AJP_PACKET_SIZE)
+                    .addRejectCheck(RejectAttributeChecker.DEFINED,
+                            ModClusterDefinition.MAX_RETRIES, FAILOVER_STRATEGY, SSL_CONTEXT)
+                    .addRejectCheck(RejectAttributeChecker.UNDEFINED, Constants.SECURITY_REALM)
+                    .setValueConverter(new DefaultValueAttributeConverter(MAX_AJP_PACKET_SIZE), MAX_AJP_PACKET_SIZE)
                 .end();
 
         hostBuilder.rejectChildResource(UndertowExtension.PATH_HTTP_INVOKER);
         hostBuilder.getAttributeBuilder()
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(HostDefinition.QUEUE_REQUESTS_ON_START.getDefaultValue()), HostDefinition.QUEUE_REQUESTS_ON_START)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, HostDefinition.QUEUE_REQUESTS_ON_START)
+                .setDiscard(new DiscardAttributeValueChecker(QUEUE_REQUESTS_ON_START.getDefaultValue()), QUEUE_REQUESTS_ON_START)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, QUEUE_REQUESTS_ON_START)
                 .end();
 
         subsystemBuilder.rejectChildResource(UndertowExtension.PATH_APPLICATION_SECURITY_DOMAIN);
@@ -215,13 +222,13 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
 
     private static AttributeTransformationDescriptionBuilder addCommonListenerRules_EAP_7_0_0(AttributeTransformationDescriptionBuilder builder) {
         return builder
-                .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(true)), HttpListenerResourceDefinition.REQUIRE_HOST_HTTP11.getName())
-                .setDiscard(FALSE_DISCARD_CHECKER, HttpListenerResourceDefinition.REQUIRE_HOST_HTTP11)
-                .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(HttpListenerResourceDefinition.HTTP2_HEADER_TABLE_SIZE), HttpListenerResourceDefinition.HTTP2_HEADER_TABLE_SIZE)
-                .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(HttpListenerResourceDefinition.HTTP2_INITIAL_WINDOW_SIZE), HttpListenerResourceDefinition.HTTP2_INITIAL_WINDOW_SIZE)
-                .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(HttpListenerResourceDefinition.HTTP2_MAX_FRAME_SIZE), HttpListenerResourceDefinition.HTTP2_MAX_FRAME_SIZE)
-                .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(true)), HttpListenerResourceDefinition.PROXY_PROTOCOL.getName())
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), HttpListenerResourceDefinition.PROXY_PROTOCOL);
+                .setDiscard(FALSE_DISCARD_CHECKER,
+                        REQUIRE_HOST_HTTP11, RFC6265_COOKIE_VALIDATION, ALLOW_UNESCAPED_CHARACTERS_IN_URL, PROXY_PROTOCOL)
+                .addRejectCheck(RejectAttributeChecker.DEFINED,
+                        RFC6265_COOKIE_VALIDATION, ALLOW_UNESCAPED_CHARACTERS_IN_URL, REQUIRE_HOST_HTTP11, PROXY_PROTOCOL)
+                .setValueConverter(new DefaultValueAttributeConverter(HTTP2_HEADER_TABLE_SIZE), HTTP2_HEADER_TABLE_SIZE)
+                .setValueConverter(new DefaultValueAttributeConverter(HTTP2_INITIAL_WINDOW_SIZE), HTTP2_INITIAL_WINDOW_SIZE)
+                .setValueConverter(new DefaultValueAttributeConverter(HTTP2_MAX_FRAME_SIZE), HTTP2_MAX_FRAME_SIZE);
     }
 
     private static AttributeTransformationDescriptionBuilder convertCommonListenerAttributes(AttributeTransformationDescriptionBuilder builder) {
