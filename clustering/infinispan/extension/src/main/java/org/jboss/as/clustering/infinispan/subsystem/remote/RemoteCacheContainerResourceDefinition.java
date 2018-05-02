@@ -85,7 +85,7 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
         DEFAULT_REMOTE_CLUSTER("default-remote-cluster", ModelType.STRING) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setRequired(true).setCapabilityReference(new CapabilityReference(Capability.CONFIGURATION, RemoteClusterResourceDefinition.Requirement.REMOTE_CLUSTER));
+                return builder.setRequired(true).setCapabilityReference(new CapabilityReference(Capability.CONFIGURATION, RemoteClusterResourceDefinition.Requirement.REMOTE_CLUSTER, WILDCARD_PATH));
             }
         },
         KEY_SIZE_ESTIMATE("key-size-estimate", ModelType.INT, new ModelNode(64)),

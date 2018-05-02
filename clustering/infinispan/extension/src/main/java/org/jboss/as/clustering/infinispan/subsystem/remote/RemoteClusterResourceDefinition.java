@@ -23,13 +23,13 @@
 package org.jboss.as.clustering.infinispan.subsystem.remote;
 
 import org.infinispan.client.hotrod.configuration.Configuration;
+import org.jboss.as.clustering.controller.BinaryCapabilityNameResolver;
 import org.jboss.as.clustering.controller.BinaryRequirementServiceNameFactory;
 import org.jboss.as.clustering.controller.BinaryServiceNameFactory;
 import org.jboss.as.clustering.controller.BinaryServiceNameFactoryProvider;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
-import org.jboss.as.clustering.controller.DynamicCapabilityNameResolver;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
@@ -114,7 +114,7 @@ public class RemoteClusterResourceDefinition extends ChildResourceDefinition<Man
         private final RuntimeCapability<Void> definition;
 
         Capability(String name, Class<?> type) {
-            this.definition = RuntimeCapability.Builder.of(name, true, type).setDynamicNameMapper(DynamicCapabilityNameResolver.PARENT_CHILD).build();
+            this.definition = RuntimeCapability.Builder.of(name, true, type).setDynamicNameMapper(BinaryCapabilityNameResolver.PARENT_CHILD).build();
         }
 
         @Override

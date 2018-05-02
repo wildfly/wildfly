@@ -76,7 +76,7 @@ public class CapabilityReference extends AbstractCapabilityReference {
      * Creates a new reference between the specified capability and the specified requirement
      * @param capability the capability referencing the specified requirement
      * @param requirement the requirement of the specified capability
-     * @param parentResolver the resolver of the parent dynamic component of the requirement
+     * @param parentNameResolver the resolver of the parent dynamic component of the requirement
      */
     private CapabilityReference(Capability capability, BinaryRequirement requirement, Function<OperationContext, String> parentNameResolver, String parentSegment) {
         super(capability, requirement);
