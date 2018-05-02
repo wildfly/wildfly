@@ -78,6 +78,8 @@ public class Host implements Service<Host>, FilterLocation {
     private final InjectedValue<ControlledProcessStateService> controlledProcessStateServiceInjectedValue = new InjectedValue<>();
     private volatile GateHandlerWrapper gateHandlerWrapper;
     private final DefaultResponseCodeHandler defaultHandler;
+    private final boolean queueRequestsOnStart;
+    private final int defaultResponseCode;
 
     private final InjectedValue<SuspendController> suspendControllerInjectedValue = new InjectedValue<>();
 
@@ -100,25 +102,17 @@ public class Host implements Service<Host>, FilterLocation {
         }
     };
 
-    public Host(final String name, final List<String> aliases, final String defaultWebModule, final int defaultResponseCode ) {
+    public Host(final String name, final List<String> aliases, final String defaultWebModule, final int defaultResponseCode, final boolean queueRequestsOnStart ) {
         this.name = name;
         this.defaultWebModule = defaultWebModule;
         Set<String> hosts = new HashSet<>(aliases.size() + 1);
         hosts.add(name);
         hosts.addAll(aliases);
         allAliases = Collections.unmodifiableSet(hosts);
+        this.queueRequestsOnStart = queueRequestsOnStart;
         this.defaultHandler = new DefaultResponseCodeHandler(defaultResponseCode);
+        this.defaultResponseCode = defaultResponseCode;
         this.setupDefaultResponseCodeHandler();
-    }
-
-    public Host(final String name, final List<String> aliases, final String defaultWebModule ) {
-        this.name = name;
-        this.defaultWebModule = defaultWebModule;
-        Set<String> hosts = new HashSet<>(aliases.size() + 1);
-        hosts.add(name);
-        hosts.addAll(aliases);
-        this.allAliases = Collections.unmodifiableSet(hosts);
-        this.defaultHandler = null;
     }
 
     private String getDeployedContextPath(DeploymentInfo deploymentInfo) {
@@ -136,7 +130,7 @@ public class Host implements Service<Host>, FilterLocation {
         ControlledProcessStateService controlledProcessStateService = controlledProcessStateServiceInjectedValue.getValue();
         //may be null for tests
         if(controlledProcessStateService != null && controlledProcessStateService.getCurrentState() == ControlledProcessState.State.STARTING) {
-            gateHandlerWrapper = new GateHandlerWrapper();
+            gateHandlerWrapper = new GateHandlerWrapper(queueRequestsOnStart ? -1 : defaultResponseCode);
             controlledProcessStateService.addPropertyChangeListener(new PropertyChangeListener() {
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
