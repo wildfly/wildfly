@@ -97,7 +97,7 @@ public enum IndexSerializer implements IntSerializer {
      * @param size the size of the index
      * @return an index externalizer
      */
-    public static final IntSerializer select(int size) {
+    public static IntSerializer select(int size) {
         if (size < 256) return UNSIGNED_BYTE;
         if (size < 65536) return UNSIGNED_SHORT;
         if (size < 268435456) return VARIABLE;
