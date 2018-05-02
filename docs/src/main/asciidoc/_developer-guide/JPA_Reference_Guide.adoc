@@ -399,8 +399,8 @@ native API hibernate.cfg.xml file:
 
 [source,xml]
 ----
-<property name="hibernate.cache.region.factory_class" value="org.jboss.as.jpa.hibernate5.infinispan.InfinispanRegionFactory"/>
-<property name="hibernate.cache.infinispan.cachemanager" value="java:jboss/infinispan/container/hibernate"/>
+<property name="hibernate.cache.region.factory_class" value="org.infinispan.hibernate.cache.v51.InfinispanRegionFactory"/>
+<property name="hibernate.cache.infinispan.shared" value="false"/>
 <property name="hibernate.transaction.manager_lookup_class" value="org.hibernate.transaction.JBossTransactionManagerLookup"/>
 <property name="hibernate.cache.use_second_level_cache" value="true"/>
 ----
@@ -447,7 +447,7 @@ like:
 
 [source,xml]
 ----
- <cache-container name="hibernate" module="org.hibernate.infinispan" default-cache="immutable-entity">
+ <cache-container name="hibernate" module="org.infinispan.hibernate-cache" default-cache="immutable-entity">
     <local-cache name="entity">
         <transaction mode="NONE"/>
         <eviction max-entries="-1"/>
