@@ -39,5 +39,6 @@
         <module name="org.jboss.threads"/>
         <module name="org.wildfly.common"/>
         <module name="org.wildfly.security.elytron-private"/>
+        <module name="sun.jdk"/>
     </dependencies>
 </module>
