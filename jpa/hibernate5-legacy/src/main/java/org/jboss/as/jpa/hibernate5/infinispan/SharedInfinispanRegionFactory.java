@@ -17,11 +17,6 @@
 
 package org.jboss.as.jpa.hibernate5.infinispan;
 
-import java.util.Properties;
-
-import org.hibernate.boot.spi.SessionFactoryOptions;
-import org.hibernate.cache.CacheException;
-
 /**
  * Infinispan-backed region factory that retrieves its cache manager from the Infinispan subsystem.
  * This is used for (JPA) container managed persistence contexts.
@@ -32,12 +27,10 @@ import org.hibernate.cache.CacheException;
  * @deprecated Use {@link org.infinispan.hibernate.cache.v51.InfinispanRegionFactory} instead.
  */
 @Deprecated
-public class SharedInfinispanRegionFactory extends org.infinispan.hibernate.cache.v51.InfinispanRegionFactory {
+public class SharedInfinispanRegionFactory extends DeprecatedInfinispanRegionFactory {
     private static final long serialVersionUID = -3277051412715973863L;
 
-    @Override
-    public void start(SessionFactoryOptions settings, Properties properties) throws CacheException {
-        properties.setProperty("hibernate.cache.infinispan.shared", "true");
-        super.start(settings, properties);
+    public SharedInfinispanRegionFactory() {
+        super(true);
     }
 }
