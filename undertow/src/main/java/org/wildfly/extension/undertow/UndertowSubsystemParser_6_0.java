@@ -61,6 +61,10 @@ public class UndertowSubsystemParser_6_0 extends PersistentResourceXMLParser {
                         UndertowRootDefinition.DEFAULT_SECURITY_DOMAIN,
                         UndertowRootDefinition.STATISTICS_ENABLED)
                 .addChild(
+                        builder(ByteBufferPoolDefinition.INSTANCE.getPathElement())
+                                .addAttributes(ByteBufferPoolDefinition.DIRECT, ByteBufferPoolDefinition.BUFFER_SIZE, ByteBufferPoolDefinition.MAX_POOL_SIZE, ByteBufferPoolDefinition.THREAD_LOCAL_CACHE_SIZE, ByteBufferPoolDefinition.LEAK_DETECTION_PERCENT)
+                )
+                .addChild(
                         builder(BufferCacheDefinition.INSTANCE.getPathElement())
                                 .addAttributes(BufferCacheDefinition.BUFFER_SIZE, BufferCacheDefinition.BUFFERS_PER_REGION, BufferCacheDefinition.MAX_REGIONS)
                 )

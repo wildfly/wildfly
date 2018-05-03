@@ -24,12 +24,12 @@ package org.wildfly.extension.undertow;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
 import java.util.function.Supplier;
 
 import javax.net.ssl.SSLContext;
 
 import io.undertow.UndertowOptions;
+import io.undertow.connector.ByteBufferPool;
 import io.undertow.protocols.ssl.UndertowXnioSsl;
 import io.undertow.server.OpenListener;
 import io.undertow.server.protocol.http.AlpnOpenListener;
@@ -45,7 +45,6 @@ import org.xnio.Option;
 import org.xnio.OptionMap;
 import org.xnio.OptionMap.Builder;
 import org.xnio.Options;
-import org.xnio.Pool;
 import org.xnio.Sequence;
 import org.xnio.StreamConnection;
 import org.xnio.XnioWorker;
@@ -119,7 +118,7 @@ public class HttpsListenerService extends HttpListenerService {
 
     private OpenListener createAlpnOpenListener() {
         OptionMap undertowOptions = OptionMap.builder().addAll(commonOptions).addAll(listenerOptions).set(UndertowOptions.ENABLE_CONNECTOR_STATISTICS, getUndertowService().isStatisticsEnabled()).getMap();
-        Pool<ByteBuffer> bufferPool = getBufferPool().getValue();
+        ByteBufferPool bufferPool = getBufferPool().getValue();
         HttpOpenListener http =  new HttpOpenListener(bufferPool, undertowOptions);
         AlpnOpenListener alpn = new AlpnOpenListener(bufferPool, undertowOptions, http);
 

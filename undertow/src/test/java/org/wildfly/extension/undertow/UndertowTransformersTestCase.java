@@ -82,8 +82,10 @@ public class UndertowTransformersTestCase extends AbstractSubsystemTest {
         PathAddress reverseProxyServerAddress = reverseProxy.append(Constants.HOST);
         PathAddress modClusterPath = subsystemAddress.append(UndertowExtension.PATH_FILTERS).append(Constants.MOD_CLUSTER);
         PathAddress servletContainer = subsystemAddress.append(UndertowExtension.PATH_SERVLET_CONTAINER);
+        PathAddress byteBufferPath = subsystemAddress.append(UndertowExtension.BYTE_BUFFER_POOL_PATH);
 
         doRejectTest(ModelTestControllerVersion.EAP_7_0_0, EAP7_0_0, new FailedOperationTransformationConfig()
+                .addFailedAttribute(byteBufferPath, FailedOperationTransformationConfig.REJECTED_RESOURCE)
                 .addFailedAttribute(hostAddress, new FailedOperationTransformationConfig.NewAttributesConfig(HostDefinition.QUEUE_REQUESTS_ON_START))
                 .addFailedAttribute(httpAddress,
                         new FailedOperationTransformationConfig.NewAttributesConfig(
@@ -138,8 +140,10 @@ public class UndertowTransformersTestCase extends AbstractSubsystemTest {
         PathAddress ajpAddress = serverAddress.append(UndertowExtension.AJP_LISTENER_PATH);
         PathAddress httpAddress = serverAddress.append(UndertowExtension.HTTP_LISTENER_PATH);
         PathAddress servletContainer = subsystemAddress.append(UndertowExtension.PATH_SERVLET_CONTAINER);
+        PathAddress byteBufferPath = subsystemAddress.append(UndertowExtension.BYTE_BUFFER_POOL_PATH);
 
         doRejectTest(ModelTestControllerVersion.EAP_7_1_0, EAP7_1_0, new FailedOperationTransformationConfig()
+                .addFailedAttribute(byteBufferPath, FailedOperationTransformationConfig.REJECTED_RESOURCE)
                 .addFailedAttribute(hostAddress, new FailedOperationTransformationConfig.NewAttributesConfig(HostDefinition.QUEUE_REQUESTS_ON_START))
                 .addFailedAttribute(httpAddress,
                         new FailedOperationTransformationConfig.NewAttributesConfig(
