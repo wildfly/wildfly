@@ -21,11 +21,9 @@
 */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -55,28 +53,18 @@ import org.junit.runners.Parameterized.Parameters;
  * @author Richard Achmatowicz (c) 2013 Red Hat Inc.
  */
 @RunWith(value = Parameterized.class)
-public class JGroupsSubsystemParsingTestCase extends ClusteringSubsystemTest {
-
-    private final int expectedOperationCount;
-    private final JGroupsSchema schema;
-
-    public JGroupsSubsystemParsingTestCase(JGroupsSchema schema, int expectedOperationCount) {
-        super(JGroupsExtension.SUBSYSTEM_NAME, new JGroupsExtension(), String.format(Locale.ROOT, "subsystem-jgroups-%d_%d.xml", schema.major(), schema.minor()));
-        this.expectedOperationCount = expectedOperationCount;
-        this.schema = schema;
-    }
+public class JGroupsSubsystemTestCase extends ClusteringSubsystemTest<JGroupsSchema> {
 
     @Parameters
-    public static Collection<Object[]> data() {
-        Object[][] data = new Object[][] {
-                { JGroupsSchema.VERSION_1_1, 20 },
-                { JGroupsSchema.VERSION_2_0, 22 },
-                { JGroupsSchema.VERSION_3_0, 29 },
-                { JGroupsSchema.VERSION_4_0, 29 },
-                { JGroupsSchema.VERSION_5_0, 33 },
-                { JGroupsSchema.VERSION_6_0, 30 },
-        };
-        return Arrays.asList(data);
+    public static Iterable<JGroupsSchema> parameters() {
+        return EnumSet.allOf(JGroupsSchema.class);
+    }
+
+    private final JGroupsSchema schema;
+
+    public JGroupsSubsystemTestCase(JGroupsSchema schema) {
+        super(JGroupsExtension.SUBSYSTEM_NAME, new JGroupsExtension(), schema, JGroupsSchema.CURRENT, "subsystem-jgroups-%d_%d.xml", "schema/jboss-as-jgroups_%d_%d.xsd");
+        this.schema = schema;
     }
 
     private KernelServices buildKernelServices() throws Exception {
@@ -98,28 +86,11 @@ public class JGroupsSubsystemParsingTestCase extends ClusteringSubsystemTest {
     @Override
     protected org.jboss.as.subsystem.test.AdditionalInitialization createAdditionalInitialization() {
         return new AdditionalInitialization()
-                .require(CommonUnaryRequirement.SOCKET_BINDING, "jgroups-udp", "some-binding", "jgroups-diagnostics", "jgroups-mping", "jgroups-tcp-fd")
+                .require(CommonUnaryRequirement.SOCKET_BINDING, "jgroups-tcp", "jgroups-udp", "some-binding", "jgroups-diagnostics", "jgroups-mping", "jgroups-tcp-fd")
                 .require(CommonUnaryRequirement.KEY_STORE, "my-key-store")
                 .require(CommonUnaryRequirement.CREDENTIAL_STORE, "my-credential-store")
+                .require(CommonUnaryRequirement.DATA_SOURCE, "ExampleDS")
                 ;
-    }
-
-    @Override
-    protected String getSubsystemXsdPath() throws Exception {
-        return String.format("schema/jboss-as-jgroups_%d_%d.xsd", this.schema.major(), this.schema.minor());
-    }
-
-    /**
-     * Tests that the xml is parsed into the correct operations
-     */
-    @Test
-    public void testParseSubsystem() throws Exception {
-        // Parse the subsystem xml into operations
-        List<ModelNode> operations = super.parse(getSubsystemXml());
-
-        // Check that we have the expected number of operations
-        // one for each resource instance
-        Assert.assertEquals(this.expectedOperationCount, operations.size());
     }
 
     @Test

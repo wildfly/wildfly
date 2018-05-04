@@ -21,9 +21,7 @@
 */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.EnumSet;
 import java.util.Properties;
 
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
@@ -34,10 +32,10 @@ import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.junit.Assert;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+import org.wildfly.clustering.jgroups.spi.JGroupsDefaultRequirement;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 
 /**
@@ -49,32 +47,18 @@ import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
  * @author Richard Achmatowicz (c) 2013 Red Hat Inc.
  */
 @RunWith(value = Parameterized.class)
-public class InfinispanSubsystemParsingTestCase extends ClusteringSubsystemTest {
-
-    private final InfinispanSchema schema;
-    private final int operations;
-
-    public InfinispanSubsystemParsingTestCase(InfinispanSchema schema, int operations) {
-        super(InfinispanExtension.SUBSYSTEM_NAME, new InfinispanExtension(), String.format("subsystem-infinispan-%d_%d.xml", schema.major(), schema.minor()));
-        this.schema = schema;
-        this.operations = operations;
-    }
+public class InfinispanSubsystemTestCase extends ClusteringSubsystemTest<InfinispanSchema> {
 
     @Parameters
-    public static Collection<Object[]> data() {
-        Object[][] data = new Object[][] {
-            { InfinispanSchema.VERSION_1_0, 33 },
-            { InfinispanSchema.VERSION_1_1, 33 },
-            { InfinispanSchema.VERSION_1_2, 37 },
-            { InfinispanSchema.VERSION_1_3, 37 },
-            { InfinispanSchema.VERSION_1_4, 37 },
-            { InfinispanSchema.VERSION_1_5, 37 },
-            { InfinispanSchema.VERSION_2_0, 41 },
-            { InfinispanSchema.VERSION_3_0, 41 },
-            { InfinispanSchema.VERSION_4_0, 50 },
-            { InfinispanSchema.VERSION_5_0, 49 },
-        };
-        return Arrays.asList(data);
+    public static Iterable<InfinispanSchema> parameters() {
+        return EnumSet.allOf(InfinispanSchema.class);
+    }
+
+    private final InfinispanSchema schema;
+
+    public InfinispanSubsystemTestCase(InfinispanSchema schema) {
+        super(InfinispanExtension.SUBSYSTEM_NAME, new InfinispanExtension(), schema, InfinispanSchema.CURRENT, "subsystem-infinispan-%d_%d.xml", "schema/jboss-as-infinispan_%d_%d.xsd");
+        this.schema = schema;
     }
 
     @Override
@@ -82,8 +66,16 @@ public class InfinispanSubsystemParsingTestCase extends ClusteringSubsystemTest 
         return new InfinispanSubsystemInitialization()
                 .require(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING, "hotrod-server-1", "hotrod-server-2")
                 .require(CommonUnaryRequirement.DATA_SOURCE, "ExampleDS")
+                .require(CommonUnaryRequirement.PATH, "jboss.server.temp.dir")
                 .require(JGroupsRequirement.CHANNEL, "maximal-channel")
+                .require(JGroupsRequirement.CHANNEL_FACTORY, "ee-maximal", "maximal-channel", "maximal-cluster")
+                .require(JGroupsDefaultRequirement.CHANNEL_FACTORY)
                 ;
+    }
+
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        // Skip
     }
 
     @Override
@@ -98,44 +90,16 @@ public class InfinispanSubsystemParsingTestCase extends ClusteringSubsystemTest 
     }
 
     @Override
-    protected String getSubsystemXsdPath() throws Exception {
-        return String.format("schema/jboss-as-infinispan_%d_%d.xsd", this.schema.major(), this.schema.minor());
-    }
-
-    @Override
     protected Properties getResolvedProperties() {
         Properties properties = new Properties();
         properties.put("java.io.tmpdir", "/tmp");
         return properties;
     }
 
-    /**
-     * Tests that the xml is parsed into the correct operations
-     */
-    @Test
-    public void testParseSubsystem() throws Exception {
-        // Parse the subsystem xml into operations
-        List<ModelNode> operations = this.parse(this.createAdditionalInitialization(), getSubsystemXml());
-
-        // Check that we have the expected number of operations
-        // one for each resource instance
-        Assert.assertEquals(operations.toString(), this.operations, operations.size());
-    }
-
-    /**
-     * Does the normal test with some extra model validation.
-     */
     @Override
-    @Test
-    public void testSubsystem() throws Exception {
-        // Perform the standard test
-        KernelServices services = standardSubsystemTest(null, true);
+    protected KernelServices standardSubsystemTest(String configId, String configIdResolvedModel, boolean compareXml, AdditionalInitialization additionalInit) throws Exception {
+        KernelServices services = super.standardSubsystemTest(configId, configIdResolvedModel, compareXml, additionalInit);
 
-        // Do some extra model validation
-        checkLegacyParserStatisticsTrue(services);
-    }
-
-    private void checkLegacyParserStatisticsTrue(KernelServices services) {
         if (!this.schema.since(InfinispanSchema.VERSION_1_5)) {
             ModelNode model = services.readWholeModel();
 
@@ -159,5 +123,7 @@ public class InfinispanSubsystemParsingTestCase extends ClusteringSubsystemTest 
                 }
             }
         }
+
+        return services;
     }
 }
