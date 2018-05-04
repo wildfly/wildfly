@@ -233,6 +233,7 @@
         <version.org.wildfly.arquillian>2.1.0.Final</version.org.wildfly.arquillian>
         <version.org.wildfly.bridge.servlet-api-bridge>1.0.1.Final</version.org.wildfly.bridge.servlet-api-bridge>
         <version.org.wildfly.cdi-api-bridge>1.0.1.Final</version.org.wildfly.cdi-api-bridge>
+        <version.org.wildfly.checkstyle-config>1.0.7.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.http-client>1.0.12.Final</version.org.wildfly.http-client>
         <version.org.wildfly.maven.plugins>1.0.0</version.org.wildfly.maven.plugins>
         <version.org.wildfly.naming-client>1.0.7.Final</version.org.wildfly.naming-client>
@@ -1278,6 +1279,10 @@
                     <exclusion>
                         <artifactId>jaxb-api</artifactId>
                         <groupId>javax.xml.bind</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.xml.bind</groupId>
+                        <artifactId>jboss-jaxb-api_2.2_spec</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
