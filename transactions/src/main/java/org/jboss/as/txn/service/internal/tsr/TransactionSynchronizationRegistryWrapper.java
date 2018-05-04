@@ -21,13 +21,13 @@
  */
 package org.jboss.as.txn.service.internal.tsr;
 
-import java.util.concurrent.ConcurrentHashMap;
-
 import javax.transaction.Synchronization;
 import javax.transaction.SystemException;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
+
+import org.wildfly.transaction.client.AbstractTransaction;
+import org.wildfly.transaction.client.ContextTransactionManager;
+import org.wildfly.transaction.client.ContextTransactionSynchronizationRegistry;
 
 /**
  * Most of this implementation delegates down to the underlying transactions implementation to provide the services of the
@@ -51,28 +51,26 @@ import javax.transaction.TransactionSynchronizationRegistry;
  */
 public class TransactionSynchronizationRegistryWrapper implements TransactionSynchronizationRegistry {
 
-    private TransactionSynchronizationRegistry delegate;
-    private TransactionManager transactionManager;
-    private ConcurrentHashMap<Transaction, JCAOrderedLastSynchronizationList> interposedSyncs = new ConcurrentHashMap<Transaction, JCAOrderedLastSynchronizationList>();
+    private final Object key = new Object();
 
-    public TransactionSynchronizationRegistryWrapper(TransactionSynchronizationRegistry delegate) {
-        this.delegate = delegate;
-        transactionManager = com.arjuna.ats.jta.TransactionManager
-            .transactionManager();
+    public TransactionSynchronizationRegistryWrapper() {
     }
 
     @Override
     public void registerInterposedSynchronization(Synchronization sync)
         throws IllegalStateException {
         try {
-            Transaction tx = transactionManager.getTransaction();
-            JCAOrderedLastSynchronizationList jcaOrderedLastSynchronization = interposedSyncs.get(tx);
+            AbstractTransaction tx = ContextTransactionManager.getInstance().getTransaction();
+            JCAOrderedLastSynchronizationList jcaOrderedLastSynchronization = (JCAOrderedLastSynchronizationList) tx.getResource(key);
             if (jcaOrderedLastSynchronization == null) {
-                JCAOrderedLastSynchronizationList toPut = new JCAOrderedLastSynchronizationList((com.arjuna.ats.jta.transaction.Transaction) tx, interposedSyncs);
-                jcaOrderedLastSynchronization = interposedSyncs.putIfAbsent(tx, toPut);
-                if (jcaOrderedLastSynchronization == null) {
-                    jcaOrderedLastSynchronization = toPut;
-                    delegate.registerInterposedSynchronization(jcaOrderedLastSynchronization);
+                final ContextTransactionSynchronizationRegistry tsr = ContextTransactionSynchronizationRegistry.getInstance();
+                synchronized (key) {
+                    jcaOrderedLastSynchronization = (JCAOrderedLastSynchronizationList) tx.getResource(key);
+                    if (jcaOrderedLastSynchronization == null) {
+                        jcaOrderedLastSynchronization = new JCAOrderedLastSynchronizationList();
+                        tx.putResource(key, jcaOrderedLastSynchronization);
+                        tsr.registerInterposedSynchronization(jcaOrderedLastSynchronization);
+                    }
                 }
             }
             jcaOrderedLastSynchronization.registerInterposedSynchronization(sync);
@@ -83,33 +81,33 @@ public class TransactionSynchronizationRegistryWrapper implements TransactionSyn
 
     @Override
     public Object getTransactionKey() {
-        return delegate.getTransactionKey();
+        return ContextTransactionSynchronizationRegistry.getInstance().getTransactionKey();
     }
 
     @Override
     public int getTransactionStatus() {
-        return delegate.getTransactionStatus();
+        return ContextTransactionSynchronizationRegistry.getInstance().getTransactionStatus();
     }
 
     @Override
     public boolean getRollbackOnly() throws IllegalStateException {
-        return delegate.getRollbackOnly();
+        return ContextTransactionSynchronizationRegistry.getInstance().getRollbackOnly();
     }
 
     @Override
     public void setRollbackOnly() throws IllegalStateException {
-        delegate.setRollbackOnly();
+        ContextTransactionSynchronizationRegistry.getInstance().setRollbackOnly();
     }
 
     @Override
     public Object getResource(Object key) throws IllegalStateException {
-        return delegate.getResource(key);
+        return ContextTransactionSynchronizationRegistry.getInstance().getResource(key);
     }
 
     @Override
     public void putResource(Object key, Object value)
         throws IllegalStateException {
-        delegate.putResource(key, value);
+        ContextTransactionSynchronizationRegistry.getInstance().putResource(key, value);
     }
 
 }
