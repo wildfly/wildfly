@@ -35,6 +35,8 @@ include::_developer-guide/Development_Guidelines_and_Recommended_Practices.adoc[
 
 include::_developer-guide/Application_Client_Reference.adoc[]
 
+include::_developer-guide/Embedded_API.adoc[]
+
 include::_developer-guide/CDI_Reference.adoc[]
 
 include::_developer-guide/EE_Concurrency_Utilities.adoc[]
