@@ -3821,11 +3821,6 @@
 
             <dependency>
                 <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-hibernate-cache-spi</artifactId>
-                <version>${version.org.infinispan}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.infinispan</groupId>
                 <artifactId>infinispan-hibernate-cache-commons</artifactId>
                 <version>${version.org.infinispan}</version>
                 <exclusions>
