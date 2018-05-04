@@ -90,7 +90,6 @@ public class ConstantPermissionMapperTestCase {
     private static final String SD_LOGIN = "login-permission";
     private static final String SD_ALL = "all-permission";
     private static final String SD_MODULES = "permissions-in-modules";
-    private static final String SD_WRONG_CONFIG = "wrong-config";
 
     private static final String TARGET_NAME = "name";
     private static final String TARGET_NAME_START = "start";
@@ -119,11 +118,6 @@ public class ConstantPermissionMapperTestCase {
     @Deployment(testable = false, name = SD_MODULES)
     public static WebArchive deployment5() {
         return createWar(SD_MODULES);
-    }
-
-    @Deployment(testable = false, name = SD_WRONG_CONFIG)
-    public static WebArchive deployment6() {
-        return createWar(SD_WRONG_CONFIG);
     }
 
     /**
@@ -212,19 +206,6 @@ public class ConstantPermissionMapperTestCase {
         assertUserHasPermission(url, "guest", "guest", JodaTimePermission.class.getName(), TARGET_NAME, null);
     }
 
-    /**
-     * Tests security domain which contains constant-permission-mapper with permission with non-fitting module name or wrong
-     * classname.
-     */
-    @Test
-    @OperateOnDeployment(SD_WRONG_CONFIG)
-    public void testWrongPermissionModule(@ArquillianResource URL url) throws Exception {
-        assertUserHasntPermission(url, null, null, AllPermission.class.getName(), null, null);
-        assertUserHasntPermission(url, null, null, BatchPermission.class.getName(), TARGET_NAME_START, null);
-        // correct permission has to stay working
-        assertUserHasPermission(url, null, null, LoginPermission.class.getName(), null, null);
-    }
-
     private void assertUserHasPermission(URL webappUrl, String user, String password, String className, String target,
             String action) throws Exception {
         assertEquals("true", doPermissionCheckPostReq(webappUrl, user, password, className, target, action));
@@ -307,10 +288,6 @@ public class ConstantPermissionMapperTestCase {
             addSecurityDomain(elements, SD_MODULES, PermissionRef.fromPermission(new LoginPermission()),
                     PermissionRef.fromPermission(new BatchPermission(TARGET_NAME_START), "org.wildfly.extension.batch.jberet"),
                     PermissionRef.fromPermission(new JodaTimePermission(TARGET_NAME), "org.joda.time"));
-            addSecurityDomain(elements, SD_WRONG_CONFIG,
-                    PermissionRef.fromPermission(new BatchPermission(TARGET_NAME_START), "org.joda.time"),
-                    PermissionRef.builder().className("java.typo.AllPermission").build(),
-                    PermissionRef.fromPermission(new LoginPermission()));
 
             return elements.toArray(new ConfigurableElement[elements.size()]);
         }
