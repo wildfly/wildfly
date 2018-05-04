@@ -155,7 +155,7 @@
         <!-- Hardcoded in module.xml for the dual EE7 and EE8 support -->
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>1.0.2.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>
         <version.org.hornetq>2.4.7.Final</version.org.hornetq>
-        <version.org.infinispan>9.2.1.Final</version.org.infinispan>
+        <version.org.infinispan>9.2.2.Final</version.org.infinispan>
         <version.org.jasypt>1.9.2</version.org.jasypt>
         <version.org.javassist>3.22.0-GA</version.org.javassist>
         <version.org.jberet>1.2.4.Final</version.org.jberet>
@@ -321,6 +321,11 @@
                         <groupId>org.hibernate</groupId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>jipijapa-hibernate5-legacy</artifactId>
+                <version>${project.version}</version>
             </dependency>
 
             <dependency>
@@ -3813,6 +3818,12 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+
+            <dependency>
+                <groupId>org.infinispan</groupId>
+                <artifactId>infinispan-hibernate-cache-spi</artifactId>
+                <version>${version.org.infinispan}</version>
+            </dependency>
             <dependency>
                 <groupId>org.infinispan</groupId>
                 <artifactId>infinispan-hibernate-cache-commons</artifactId>
@@ -3823,6 +3834,11 @@
                         <groupId>org.hibernate</groupId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.infinispan</groupId>
+                <artifactId>infinispan-hibernate-cache-spi</artifactId>
+                <version>${version.org.infinispan}</version>
             </dependency>
             <dependency>
                 <groupId>org.infinispan</groupId>
