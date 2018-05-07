@@ -45,12 +45,14 @@ import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.clustering.NodeUtil;
+import org.jboss.as.test.shared.IntermittentFailure;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.api.Authentication;
@@ -107,6 +109,11 @@ public class ClusteredJPA2LCTestCase {
         CACHE_ADDRESS.get("subsystem").set("infinispan");
         CACHE_ADDRESS.get("cache-container").set("hibernate");
         CACHE_ADDRESS.get("replicated-cache").set("entity-replicated");
+    }
+
+    @BeforeClass
+    public static void ignore() {
+        IntermittentFailure.thisTestIsFailingIntermittently("WFLY-10099");
     }
 
     @Test
