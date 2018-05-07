@@ -33,6 +33,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 
 import javax.naming.InitialContext;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -43,6 +44,7 @@ import org.junit.runner.RunWith;
  * @author Antti Laisi
  */
 @RunWith(Arquillian.class)
+@Ignore("WFLY-10340")
 public class OpenJPASharedModuleProviderTestCase {
 
     private static final String ARCHIVE_NAME = "openjpa_module_test";
