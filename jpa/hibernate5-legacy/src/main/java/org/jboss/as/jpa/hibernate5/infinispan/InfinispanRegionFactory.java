@@ -21,7 +21,7 @@ package org.jboss.as.jpa.hibernate5.infinispan;
  * Infinispan-backed region factory for use with standalone (i.e. non-JPA) Hibernate applications.
  * @author Paul Ferraro
  * @author Scott Marlow
- * @deprecated Use {@link org.infinispan.hibernate.cache.v51.InfinispanRegionFactory} instead in conjunction with "hibernate.cache.infinispan.shared" set to false.
+ * @deprecated Use {@link org.infinispan.hibernate.cache.main.InfinispanRegionFactory} instead in conjunction with "hibernate.cache.infinispan.shared" set to false.
  */
 @Deprecated
 public class InfinispanRegionFactory extends DeprecatedInfinispanRegionFactory {

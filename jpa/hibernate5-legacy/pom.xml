@@ -45,7 +45,7 @@
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-hibernate-cache-v51</artifactId>
+            <artifactId>infinispan-hibernate-cache</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>

@@ -24,7 +24,7 @@ package org.jboss.as.jpa.hibernate5.infinispan;
  *
  * @author Paul Ferraro
  * @author Scott Marlow
- * @deprecated Use {@link org.infinispan.hibernate.cache.v51.InfinispanRegionFactory} instead.
+ * @deprecated Use {@link org.infinispan.hibernate.cache.main.InfinispanRegionFactory} instead.
  */
 @Deprecated
 public class SharedInfinispanRegionFactory extends DeprecatedInfinispanRegionFactory {
