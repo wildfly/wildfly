@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.transaction.Status;
 import javax.transaction.Synchronization;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
@@ -72,6 +73,9 @@ public class JCAOrderedLastSynchronizationList implements Synchronization {
             case javax.transaction.Status.STATUS_ACTIVE:
             case javax.transaction.Status.STATUS_PREPARING:
                 break;
+            case Status.STATUS_MARKED_ROLLBACK:
+                // do nothing; we can pretend like it was registered, but it'll never be run anyway.
+                return;
             default:
                 throw TransactionLogger.ROOT_LOGGER.syncsnotallowed(status);
         }
