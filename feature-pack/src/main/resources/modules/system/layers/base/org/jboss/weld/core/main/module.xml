@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.jboss.weld.core">
+<module xmlns="urn:jboss:module:1.8" name="org.jboss.weld.core">
 
     <properties>
         <property name="jboss.api" value="private"/>
@@ -36,7 +36,6 @@
     </resources>
 
     <dependencies>
-        <module name="javax.api"/>
         <module name="javax.annotation.api"/>
         <module name="javax.ejb.api" />
         <module name="javax.enterprise.api"/>
@@ -52,6 +51,10 @@
         <module name="org.jboss.weld.api" export="true"/>
         <module name="org.jboss.weld.spi" export="true"/>
         <module name="org.jboss.logging" />
-        <module name="sun.jdk" optional="true" />
+        <module name="jdk.unsupported"/>
+        <module name="java.desktop"/>
+        <module name="java.logging"/>
+        <module name="java.naming"/>
+        <module name="java.xml"/>
     </dependencies>
 </module>
