@@ -12,8 +12,8 @@
         <subsystem>ee-security.xml</subsystem>
         <subsystem>ejb3.xml</subsystem>
         <subsystem supplement="domain-wildfly">elytron.xml</subsystem>
-        <subsystem>io.xml</subsystem>
         <subsystem>infinispan.xml</subsystem>
+        <subsystem>io.xml</subsystem>
         <subsystem>jaxrs.xml</subsystem>
         <subsystem>jca.xml</subsystem>
         <subsystem>jdr.xml</subsystem>
@@ -24,8 +24,8 @@
         <subsystem>naming.xml</subsystem>
         <subsystem>pojo.xml</subsystem>
         <subsystem>remoting.xml</subsystem>
-        <subsystem>resource-adapters.xml</subsystem>
         <subsystem>request-controller.xml</subsystem>
+        <subsystem>resource-adapters.xml</subsystem>
         <subsystem>sar.xml</subsystem>
         <subsystem>security.xml</subsystem>
         <subsystem>security-manager.xml</subsystem>
@@ -45,8 +45,8 @@
         <subsystem>ee-security.xml</subsystem>
         <subsystem supplement="ha">ejb3.xml</subsystem>
         <subsystem supplement="domain-wildfly">elytron.xml</subsystem>
-        <subsystem>io.xml</subsystem>
         <subsystem supplement="ha">infinispan.xml</subsystem>
+        <subsystem>io.xml</subsystem>
         <subsystem>jaxrs.xml</subsystem>
         <subsystem>jca.xml</subsystem>
         <subsystem>jdr.xml</subsystem>
@@ -59,8 +59,8 @@
         <subsystem>naming.xml</subsystem>
         <subsystem>pojo.xml</subsystem>
         <subsystem>remoting.xml</subsystem>
-        <subsystem>resource-adapters.xml</subsystem>
         <subsystem>request-controller.xml</subsystem>
+        <subsystem>resource-adapters.xml</subsystem>
         <subsystem>sar.xml</subsystem>
         <subsystem>security.xml</subsystem>
         <subsystem>security-manager.xml</subsystem>
@@ -81,9 +81,9 @@
         <subsystem>ee-security.xml</subsystem>
         <subsystem supplement="full">ejb3.xml</subsystem>
         <subsystem supplement="domain-wildfly">elytron.xml</subsystem>
-        <subsystem>io.xml</subsystem>
-        <subsystem>infinispan.xml</subsystem>
         <subsystem>iiop-openjdk.xml</subsystem>
+        <subsystem>infinispan.xml</subsystem>
+        <subsystem>io.xml</subsystem>
         <subsystem>jaxrs.xml</subsystem>
         <subsystem>jca.xml</subsystem>
         <subsystem>jdr.xml</subsystem>
@@ -96,8 +96,8 @@
         <subsystem>naming.xml</subsystem>
         <subsystem>pojo.xml</subsystem>
         <subsystem>remoting.xml</subsystem>
-        <subsystem>resource-adapters.xml</subsystem>
         <subsystem>request-controller.xml</subsystem>
+        <subsystem>resource-adapters.xml</subsystem>
         <subsystem>sar.xml</subsystem>
         <subsystem>security.xml</subsystem>
         <subsystem>security-manager.xml</subsystem>
@@ -117,9 +117,9 @@
         <subsystem>ee-security.xml</subsystem>
         <subsystem supplement="full-ha">ejb3.xml</subsystem>
         <subsystem supplement="domain-wildfly">elytron.xml</subsystem>
-        <subsystem>io.xml</subsystem>
-        <subsystem supplement="ha">infinispan.xml</subsystem>
         <subsystem>iiop-openjdk.xml</subsystem>
+        <subsystem supplement="ha">infinispan.xml</subsystem>
+        <subsystem>io.xml</subsystem>
         <subsystem>jaxrs.xml</subsystem>
         <subsystem>jca.xml</subsystem>
         <subsystem>jdr.xml</subsystem>
@@ -134,8 +134,8 @@
         <subsystem>naming.xml</subsystem>
         <subsystem>pojo.xml</subsystem>
         <subsystem>remoting.xml</subsystem>
-        <subsystem>resource-adapters.xml</subsystem>
         <subsystem>request-controller.xml</subsystem>
+        <subsystem>resource-adapters.xml</subsystem>
         <subsystem>sar.xml</subsystem>
         <subsystem>security.xml</subsystem>
         <subsystem>security-manager.xml</subsystem>
