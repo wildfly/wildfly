@@ -60,6 +60,7 @@ public class DomainAdjuster710 extends DomainAdjuster {
         }
 
         list.addAll(removeEESecurity(profileAddress.append(SUBSYSTEM, "ee-security")));
+        list.addAll(removeDiscovery(profileAddress.append(SUBSYSTEM, "discovery")));
         if (withMasterServers) {
             list.addAll(reconfigureServers());
         }
@@ -116,4 +117,12 @@ public class DomainAdjuster710 extends DomainAdjuster {
         return list;
     }
 
+    private Collection<? extends ModelNode> removeDiscovery(final PathAddress subsystem) {
+        final List<ModelNode> list = new ArrayList<>();
+
+        //discovery subsystem and extension do not exist in previous versions, so remove it
+        list.add(createRemoveOperation(subsystem));
+        list.add(createRemoveOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.discovery")));
+        return list;
+    }
 }
