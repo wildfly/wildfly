@@ -40,7 +40,6 @@ import org.jboss.tm.JBossXATerminator;
 import org.jboss.tm.TransactionManagerLocator;
 import org.jboss.tm.usertx.UserTransactionRegistry;
 import org.omg.CORBA.ORB;
-import org.wildfly.transaction.client.ContextTransactionSynchronizationRegistry;
 import org.wildfly.transaction.client.LocalUserTransaction;
 
 import java.lang.reflect.Field;
@@ -103,7 +102,7 @@ public final class ArjunaTransactionManagerService implements Service<com.arjuna
             final LocalUserTransaction userTransaction = LocalUserTransaction.getInstance();
             jtaEnvironmentBean.getValue().setUserTransaction(userTransaction);
             service.setJbossXATerminator(xaTerminatorInjector.getValue());
-            service.setTransactionSynchronizationRegistry(new TransactionSynchronizationRegistryWrapper(ContextTransactionSynchronizationRegistry.getInstance()));
+            service.setTransactionSynchronizationRegistry(new TransactionSynchronizationRegistryWrapper());
 
             try {
                 service.create();
@@ -121,7 +120,7 @@ public final class ArjunaTransactionManagerService implements Service<com.arjuna
             final LocalUserTransaction userTransaction = LocalUserTransaction.getInstance();
             jtaEnvironmentBean.getValue().setUserTransaction(userTransaction);
             service.setJbossXATerminator(xaTerminatorInjector.getValue());
-            service.setTransactionSynchronizationRegistry(new TransactionSynchronizationRegistryWrapper(ContextTransactionSynchronizationRegistry.getInstance()));
+            service.setTransactionSynchronizationRegistry(new TransactionSynchronizationRegistryWrapper());
             service.setPropagateFullContext(true);
 
             // this is not great, but it's the only way presently to influence the behavior of com.arjuna.ats.internal.jbossatx.jts.InboundTransactionCurrentImple
