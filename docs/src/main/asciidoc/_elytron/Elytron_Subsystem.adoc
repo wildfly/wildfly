@@ -408,13 +408,15 @@ EAP_HOME/standalone/configuration. They are also the same files used by
 the legacy security default configuration.
 
 |default-permission-mapper |The default-permission-mapper mapper is a
-constant permission mapper that uses
-org.wildfly.security.auth.permission.LoginPermission to assign the login
-permission and
-org.wildfly.extension.batch.jberet.deployment.BatchPermission to assign
-permission for batch jobs. The batch permissions are start, stop,
-restart, abandon, and read which aligns with
-javax.batch.operations.JobOperator.
+simple permission mapper that uses the default-permissions permission set
+to assign the full set of permissions that an identity would require to
+access any services on the server. For example, the default-permission-mapper
+mapper uses org.wildfly.extension.batch.jberet.deployment.BatchPermission
+specified by the default-permissions permission set to assign permission for
+batch jobs. The batch permissions are start, stop, restart, abandon, and read
+which aligns with javax.batch.operations.JobOperator. The default-permission-mapper
+mapper also uses org.wildfly.security.auth.permission.LoginPermission specified
+by the the login-permission permission set to assign the login permission.
 
 |local (mapper) |The local mapper is a constant role mapper that maps to
 the local security realm. This is used to map authentication to the
@@ -492,8 +494,10 @@ and openssl provider loaders.
     "outcome" => "success",
     "result" => {
         "default-authentication-context" => undefined,
-        "final-providers" => undefined,
-        "initial-providers" => "combined-providers",
+        "disallowed-providers" => ["OracleUcrypto"],
+        "final-providers" => "combined-providers",
+        "initial-providers" => undefined,
+        "security-properties" => undefined,
         "add-prefix-role-mapper" => undefined,
         "add-suffix-role-mapper" => undefined,
         "aggregate-http-server-mechanism-factory" => undefined,
@@ -506,6 +510,7 @@ and openssl provider loaders.
         "aggregate-realm" => undefined,
         "aggregate-role-mapper" => undefined,
         "aggregate-sasl-server-factory" => undefined,
+        "aggregate-security-event-listener" => undefined,
         "authentication-configuration" => undefined,
         "authentication-context" => undefined,
         "caching-realm" => undefined,
@@ -514,23 +519,13 @@ and openssl provider loaders.
         "concatenating-principal-decoder" => undefined,
         "configurable-http-server-mechanism-factory" => undefined,
         "configurable-sasl-server-factory" => {"configured" => {
-            "filters" => [
-                {"pattern-filter" => "JBOSS-LOCAL-USER"},
-                {"pattern-filter" => "DIGEST-MD5"}
-            ],
+            "filters" => undefined,
             "properties" => {"wildfly.sasl.local-user.default-user" => "$local"},
             "protocol" => undefined,
             "sasl-server-factory" => "elytron",
             "server-name" => undefined
         }},
-        "constant-permission-mapper" => {"default-permission-mapper" => {"permissions" => [
-            {"class-name" => "org.wildfly.security.auth.permission.LoginPermission"},
-            {
-                "class-name" => "org.wildfly.extension.batch.jberet.deployment.BatchPermission",
-                "module" => "org.wildfly.extension.batch.jberet",
-                "target-name" => "*"
-            }
-        ]}},
+        "constant-permission-mapper" => undefined,
         "constant-principal-decoder" => undefined,
         "constant-principal-transformer" => undefined,
         "constant-realm-mapper" => {"local" => {"realm-name" => "local"}},
@@ -546,6 +541,12 @@ and openssl provider loaders.
         "custom-role-decoder" => undefined,
         "custom-role-mapper" => undefined,
         "dir-context" => undefined,
+        "file-audit-log" => {"local-audit" => {
+            "format" => "JSON",
+            "path" => "audit.log",
+            "relative-to" => "jboss.server.log.dir",
+            "synchronized" => true
+        }},
         "filesystem-realm" => undefined,
         "filtering-key-store" => undefined,
         "http-authentication-factory" => {
@@ -576,7 +577,7 @@ and openssl provider loaders.
         }},
         "jdbc-realm" => undefined,
         "kerberos-security-factory" => undefined,
-        "key-managers" => undefined,
+        "key-manager" => undefined,
         "key-store" => undefined,
         "key-store-realm" => undefined,
         "ldap-key-store" => undefined,
@@ -589,6 +590,26 @@ and openssl provider loaders.
             "filters" => [{"provider-name" => "WildFlyElytron"}],
             "sasl-server-factory" => "global"
         }},
+        "periodic-rotating-file-audit-log" => undefined,
+        "permission-set" => {
+            "login-permission" => {"permissions" => [{"class-name" => "org.wildfly.security.auth.permission.LoginPermission"}]},
+            "default-permissions" => {"permissions" => [
+                {
+                    "class-name" => "org.wildfly.extension.batch.jberet.deployment.BatchPermission",
+                    "module" => "org.wildfly.extension.batch.jberet",
+                    "target-name" => "*"
+                },
+                {
+                    "class-name" => "org.wildfly.transaction.client.RemoteTransactionPermission",
+                    "module" => "org.wildfly.transaction.client"
+                },
+                {
+                    "class-name" => "org.jboss.ejb.client.RemoteEJBPermission",
+                    "module" => "org.jboss.ejb-client"
+                }
+            ]}
+        },
+        "policy" => undefined,
         "properties-realm" => {
             "ApplicationRealm" => {
                 "groups-attribute" => "groups",
@@ -618,6 +639,7 @@ and openssl provider loaders.
         "provider-http-server-mechanism-factory" => {"global" => {"providers" => undefined}},
         "provider-loader" => {
             "elytron" => {
+                "argument" => undefined,
                 "class-names" => undefined,
                 "configuration" => undefined,
                 "module" => "org.wildfly.security.elytron",
@@ -625,6 +647,7 @@ and openssl provider loaders.
                 "relative-to" => undefined
             },
             "openssl" => {
+                "argument" => undefined,
                 "class-names" => undefined,
                 "configuration" => undefined,
                 "module" => "org.wildfly.openssl",
@@ -651,7 +674,16 @@ and openssl provider loaders.
                 "security-domain" => "ManagementDomain"
             },
             "application-sasl-authentication" => {
-                "mechanism-configurations" => undefined,
+                "mechanism-configurations" => [
+                    {
+                        "mechanism-name" => "JBOSS-LOCAL-USER",
+                        "realm-mapper" => "local"
+                    },
+                    {
+                        "mechanism-name" => "DIGEST-MD5",
+                        "mechanism-realm-configurations" => [{"realm-name" => "ApplicationRealm"}]
+                    }
+                ],
                 "sasl-server-factory" => "configured",
                 "security-domain" => "ApplicationDomain"
             }
@@ -659,20 +691,28 @@ and openssl provider loaders.
         "security-domain" => {
             "ApplicationDomain" => {
                 "default-realm" => "ApplicationRealm",
+                "outflow-anonymous" => false,
+                "outflow-security-domains" => undefined,
                 "permission-mapper" => "default-permission-mapper",
                 "post-realm-principal-transformer" => undefined,
                 "pre-realm-principal-transformer" => undefined,
                 "principal-decoder" => undefined,
                 "realm-mapper" => undefined,
-                "realms" => [{
-                    "realm" => "ApplicationRealm",
-                    "role-decoder" => "groups-to-roles"
-                }],
+                "realms" => [
+                    {
+                        "realm" => "ApplicationRealm",
+                        "role-decoder" => "groups-to-roles"
+                    },
+                    {"realm" => "local"}
+                ],
                 "role-mapper" => undefined,
+                "security-event-listener" => undefined,
                 "trusted-security-domains" => undefined
             },
             "ManagementDomain" => {
                 "default-realm" => "ManagementRealm",
+                "outflow-anonymous" => false,
+                "outflow-security-domains" => undefined,
                 "permission-mapper" => "default-permission-mapper",
                 "post-realm-principal-transformer" => undefined,
                 "pre-realm-principal-transformer" => undefined,
@@ -689,18 +729,35 @@ and openssl provider loaders.
                     }
                 ],
                 "role-mapper" => undefined,
+                "security-event-listener" => undefined,
                 "trusted-security-domains" => undefined
             }
         },
-        "security-property" => undefined,
         "server-ssl-context" => undefined,
         "service-loader-http-server-mechanism-factory" => undefined,
         "service-loader-sasl-server-factory" => undefined,
-        "simple-permission-mapper" => undefined,
+        "simple-permission-mapper" => {"default-permission-mapper" => {
+            "mapping-mode" => "first",
+            "permission-mappings" => [
+                {
+                    "principals" => ["anonymous"],
+                    "permission-sets" => [{"permission-set" => "default-permissions"}]
+                },
+                {
+                    "match-all" => true,
+                    "permission-sets" => [
+                        {"permission-set" => "login-permission"},
+                        {"permission-set" => "default-permissions"}
+                    ]
+                }
+            ]
+        }},
         "simple-regex-realm-mapper" => undefined,
         "simple-role-decoder" => {"groups-to-roles" => {"attribute" => "groups"}},
+        "size-rotating-file-audit-log" => undefined,
+        "syslog-audit-log" => undefined,
         "token-realm" => undefined,
-        "trust-managers" => undefined,
+        "trust-manager" => undefined,
         "x500-attribute-principal-decoder" => undefined
     }
 }
