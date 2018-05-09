@@ -30,6 +30,7 @@ import org.wildfly.clustering.service.Builder;
  * Builds a capability-dependent service.
  * @author Paul Ferraro
  */
+@Deprecated
 public interface CapabilityServiceBuilder<T> extends Builder<T> {
     default Builder<T> configure(CapabilityServiceSupport support) {
         return this;

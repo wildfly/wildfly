@@ -28,6 +28,7 @@ import org.jboss.msc.service.ServiceBuilder;
  * A trivial {@link ValueDependency} whose value is immediately available.
  * @author Paul Ferraro
  */
+@Deprecated
 public class ImmediateValueDependency<V> implements ValueDependency<V> {
 
     private final V value;

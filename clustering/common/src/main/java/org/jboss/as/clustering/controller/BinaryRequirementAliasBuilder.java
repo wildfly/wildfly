@@ -36,6 +36,7 @@ import org.wildfly.clustering.service.ValueDependency;
  * Similar to {@link org.wildfly.clustering.service.AliasServiceBuilder} but resolves {@link ServiceName} of dependent requirement during {@link #configure(CapabilityServiceSupport)}.
  * @author Paul Ferraro
  */
+@Deprecated
 public class BinaryRequirementAliasBuilder<T> implements CapabilityServiceBuilder<T> {
 
     private final ServiceName name;

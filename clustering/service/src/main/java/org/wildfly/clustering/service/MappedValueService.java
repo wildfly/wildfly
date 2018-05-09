@@ -30,6 +30,7 @@ import org.jboss.msc.value.Value;
  * A generic {@link org.jboss.msc.service.Service} whose value is the result of applying a mapping function to a provided {@link Value}.
  * @author Paul Ferraro
  */
+@Deprecated
 public class MappedValueService<T, V> extends FunctionalValueService<T, V> {
 
     /**

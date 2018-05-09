@@ -30,6 +30,7 @@ import org.wildfly.clustering.service.Builder;
 /**
  * @author Paul Ferraro
  */
+@Deprecated
 public class BuilderAdapter<T> implements CapabilityServiceBuilder<T>, ResourceServiceBuilder<T> {
 
     private final Builder<T> builder;

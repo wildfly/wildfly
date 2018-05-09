@@ -28,5 +28,6 @@ import org.jboss.msc.value.Value;
  * @author Paul Ferraro
  * @param <T> the dependency type
  */
+@Deprecated
 public interface ValueDependency<T> extends Value<T>, Dependency {
 }

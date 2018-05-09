@@ -43,6 +43,7 @@ import org.wildfly.clustering.service.Builder;
 /**
  * @author Paul Ferraro
  */
+@Deprecated
 public class ModuleBuilder implements ResourceServiceBuilder<Module>, Service<Module> {
 
     private final InjectedValue<ModuleLoader> loader = new InjectedValue<>();

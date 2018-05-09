@@ -29,6 +29,7 @@ import org.jboss.msc.service.ServiceTarget;
  * @author Paul Ferraro
  * @param <T> the type of value provided by services built by this builder
  */
+@Deprecated
 public interface Builder<T> extends ServiceNameProvider {
     /**
      * Builds a service into the specified target.

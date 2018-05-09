@@ -31,6 +31,7 @@ import org.wildfly.clustering.service.Builder;
  * Service builder that can be configured via a resource model.
  * @author Paul Ferraro
  */
+@Deprecated
 public interface ResourceServiceBuilder<T> extends Builder<T> {
 
     /**

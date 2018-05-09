@@ -34,6 +34,7 @@ import org.jboss.msc.value.InjectedValue;
  * @author Paul Ferraro
  * @param <T> the type of the target service
  */
+@Deprecated
 public class AliasServiceBuilder<T> implements Builder<T> {
 
     private final InjectedValue<T> value = new InjectedValue<>();

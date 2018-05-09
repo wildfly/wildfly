@@ -45,6 +45,7 @@ import org.wildfly.clustering.service.Builder;
  * Builds a ManagedReferenceFactory JNDI binding.
  * @author Paul Ferraro
  */
+@Deprecated
 public class BinderServiceBuilder<T> implements CapabilityServiceBuilder<ManagedReferenceFactory> {
 
     private final ContextNames.BindInfo binding;

@@ -30,6 +30,7 @@ import java.util.function.Supplier;
  * Generic {@link org.jboss.msc.service.Service} whose provided value is a mapping of a supplied value.
  * @author Paul Ferraro
  */
+@Deprecated
 public class SuppliedValueService<T, V> extends FunctionalValueService<T, V> {
 
     /**

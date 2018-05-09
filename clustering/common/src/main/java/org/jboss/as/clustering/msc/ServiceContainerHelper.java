@@ -39,6 +39,7 @@ import org.jboss.msc.service.StartException;
  * @author Paul Ferraro
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
+@Deprecated
 public class ServiceContainerHelper {
     // Mapping of service controller mode changes that appropriate for toggling to a given controller state
     private static final Map<State, Map<Mode, Mode>> modeToggle = new EnumMap<>(State.class);

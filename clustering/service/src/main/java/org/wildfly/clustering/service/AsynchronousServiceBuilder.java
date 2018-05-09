@@ -38,6 +38,7 @@ import org.jboss.msc.value.InjectedValue;
  * @author Paul Ferraro
  * @param <T> the type of value provided by services built by this builder
  */
+@Deprecated
 public class AsynchronousServiceBuilder<T> implements Builder<T>, Service<T> {
 
     private static final ServiceName EXECUTOR_SERVICE_NAME = ServiceName.JBOSS.append("as", "server-executor");

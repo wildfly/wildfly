@@ -29,6 +29,7 @@ import org.jboss.as.controller.PathAddress;
  * @author Paul Ferraro
  */
 @FunctionalInterface
+@Deprecated
 public interface ResourceServiceBuilderFactory<T> {
 
     /**

@@ -35,6 +35,7 @@ import org.wildfly.common.function.ExceptionConsumer;
  * Generic {@link Service} that provides no value.
  * @author Paul Ferraro
  */
+@Deprecated
 public class FunctionalVoidService implements Service<Void> {
     private static final Logger LOGGER = Logger.getLogger(FunctionalVoidService.class);
 

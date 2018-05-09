@@ -42,6 +42,7 @@ import org.wildfly.clustering.service.SuppliedValueService;
  * Service that provides an {@link Executor} that uses a cached thread pool.
  * @author Paul Ferraro
  */
+@Deprecated
 public class CachedThreadPoolExecutorServiceBuilder implements Builder<ExecutorService>, Function<ExecutorService, ExecutorService>, Supplier<ExecutorService>, Consumer<ExecutorService> {
 
     private final ServiceName name;

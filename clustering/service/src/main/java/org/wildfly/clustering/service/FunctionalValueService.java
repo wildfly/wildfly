@@ -36,6 +36,7 @@ import org.wildfly.common.function.ExceptionFunction;
  * Generic {@link Service} whose value is created and destroyed by contextual functions.
  * @author Paul Ferraro
  */
+@Deprecated
 public class FunctionalValueService<T, V> implements Service<V> {
     private static final Logger LOGGER = Logger.getLogger(FunctionalValueService.class);
 

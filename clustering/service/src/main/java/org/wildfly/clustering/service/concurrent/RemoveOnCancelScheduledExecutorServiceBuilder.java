@@ -42,6 +42,7 @@ import org.wildfly.clustering.service.SuppliedValueService;
  * Service that provides a {@link ScheduledThreadPoolExecutor} that removes tasks from the task queue upon cancellation.
  * @author Paul Ferraro
  */
+@Deprecated
 public class RemoveOnCancelScheduledExecutorServiceBuilder implements Builder<ScheduledExecutorService>, Function<ScheduledExecutorService, ScheduledExecutorService>, Supplier<ScheduledExecutorService>, Consumer<ScheduledExecutorService> {
 
     private final ServiceName name;

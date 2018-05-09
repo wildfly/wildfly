@@ -30,6 +30,7 @@ import org.wildfly.clustering.service.SimpleBuilder;
 /**
  * @author Paul Ferraro
  */
+@Deprecated
 public class SimpleCapabilityServiceBuilder<T> extends SimpleBuilder<T> implements CapabilityServiceBuilder<T> {
 
     public SimpleCapabilityServiceBuilder(ServiceName name, T value) {
