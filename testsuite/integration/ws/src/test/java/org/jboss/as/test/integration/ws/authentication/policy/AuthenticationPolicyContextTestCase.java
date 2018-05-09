@@ -324,7 +324,7 @@ public class AuthenticationPolicyContextTestCase {
         }
 
         try {
-            URL wsdl = new URL("http://localhost:8080/picketlink-sts-ws/EchoService?wsdl");
+            URL wsdl = new URL("http://" + TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getHttpPort() +"/picketlink-sts-ws/EchoService?wsdl");
             QName serviceName = new QName("http://ws.picketlink.sts.jboss.org/", "EchoServiceService");
             Service service = Service.create(wsdl, serviceName);
             EchoServiceRemote port = service.getPort(new QName("http://ws.picketlink.sts.jboss.org/", "EchoServicePort"),
