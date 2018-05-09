@@ -64,7 +64,7 @@
                     <file-store/>
                 </distributed-cache>
             </cache-container>
-            <cache-container name="hibernate" default-cache="local-query" module="org.infinispan.hibernate-cache">
+            <cache-container name="hibernate" module="org.infinispan.hibernate-cache">
                 <transport lock-timeout="60000"/>
                 <local-cache name="local-query">
                     <object-memory size="10000"/>
