@@ -31,11 +31,13 @@ import org.wildfly.clustering.service.Builder;
  * @author Paul Ferraro
  */
 @Deprecated
-public interface CapabilityServiceBuilder<T> extends Builder<T> {
+public interface CapabilityServiceBuilder<T> extends CapabilityServiceConfigurator, Builder<T> {
+    @Override
     default Builder<T> configure(CapabilityServiceSupport support) {
         return this;
     }
 
+    @Override
     default Builder<T> configure(OperationContext context) {
         return this.configure(context.getCapabilityServiceSupport());
     }

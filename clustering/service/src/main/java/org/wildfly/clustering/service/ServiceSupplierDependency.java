@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,30 +22,35 @@
 
 package org.wildfly.clustering.service;
 
+import java.util.function.Supplier;
+
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
 
 /**
- * A trivial {@link ValueDependency} whose value is immediately available.
+ * Encapsulates a {@link Dependency} on a {@link org.jboss.msc.Service} that supplies a value.
  * @author Paul Ferraro
- * @deprecated Replaced by {@link SimpleSupplierDependency}.
  */
-@Deprecated
-public class ImmediateValueDependency<V> implements ValueDependency<V> {
+public class ServiceSupplierDependency<V> extends SimpleServiceNameProvider implements SupplierDependency<V> {
 
-    private final V value;
+    private volatile Supplier<V> supplier;
 
-    public ImmediateValueDependency(V value) {
-        this.value = value;
+    public ServiceSupplierDependency(ServiceName name) {
+        super(name);
+    }
+
+    public ServiceSupplierDependency(ServiceNameProvider provider) {
+        super(provider.getServiceName());
     }
 
     @Override
-    public V getValue() {
-        return this.value;
+    public V get() {
+        return this.supplier.get();
     }
 
     @Override
     public <T> ServiceBuilder<T> register(ServiceBuilder<T> builder) {
-        // Nothing to register
+        this.supplier = builder.requires(this.getServiceName());
         return builder;
     }
 }

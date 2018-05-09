@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,32 +20,27 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.service;
+package org.jboss.as.clustering.controller;
 
-import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.dmr.ModelNode;
+import org.wildfly.clustering.service.ServiceConfigurator;
 
 /**
- * A trivial {@link ValueDependency} whose value is immediately available.
+ * Configures a {@link org.jboss.msc.Service} using the model of a resource.
  * @author Paul Ferraro
- * @deprecated Replaced by {@link SimpleSupplierDependency}.
  */
-@Deprecated
-public class ImmediateValueDependency<V> implements ValueDependency<V> {
+public interface ResourceServiceConfigurator extends ServiceConfigurator {
 
-    private final V value;
-
-    public ImmediateValueDependency(V value) {
-        this.value = value;
-    }
-
-    @Override
-    public V getValue() {
-        return this.value;
-    }
-
-    @Override
-    public <T> ServiceBuilder<T> register(ServiceBuilder<T> builder) {
-        // Nothing to register
-        return builder;
+    /**
+     * Configures a service using the specified operation context and model.
+     * @param context an operation context, used to resolve capabilities and expressions
+     * @param model the resource model
+     * @return the reference to this configurator
+     * @throws OperationFailedException if there was a failure reading the model or resolving expressions/capabilities
+     */
+    default ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        return this;
     }
 }

@@ -28,6 +28,7 @@ import org.jboss.msc.value.InjectedValue;
 /**
  * Service dependency whose provided value is made available via injection.
  * @author Paul Ferraro
+ * @deprecated Replaced by {@link ServiceSupplierDependency}.
  */
 @Deprecated
 public class InjectedValueDependency<T> extends InjectorDependency<T> implements ValueDependency<T> {

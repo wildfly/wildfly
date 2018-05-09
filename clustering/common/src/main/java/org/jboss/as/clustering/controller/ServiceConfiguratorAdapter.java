@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,32 +20,31 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.service;
+package org.jboss.as.clustering.controller;
 
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.clustering.service.ServiceConfigurator;
 
 /**
- * A trivial {@link ValueDependency} whose value is immediately available.
  * @author Paul Ferraro
- * @deprecated Replaced by {@link SimpleSupplierDependency}.
  */
-@Deprecated
-public class ImmediateValueDependency<V> implements ValueDependency<V> {
+public class ServiceConfiguratorAdapter implements CapabilityServiceConfigurator, ResourceServiceConfigurator {
 
-    private final V value;
+    private final ServiceConfigurator configurator;
 
-    public ImmediateValueDependency(V value) {
-        this.value = value;
+    public ServiceConfiguratorAdapter(ServiceConfigurator configurator) {
+        this.configurator = configurator;
     }
 
     @Override
-    public V getValue() {
-        return this.value;
+    public ServiceName getServiceName() {
+        return this.configurator.getServiceName();
     }
 
     @Override
-    public <T> ServiceBuilder<T> register(ServiceBuilder<T> builder) {
-        // Nothing to register
-        return builder;
+    public ServiceBuilder<?> build(ServiceTarget target) {
+        return this.configurator.build(target);
     }
 }

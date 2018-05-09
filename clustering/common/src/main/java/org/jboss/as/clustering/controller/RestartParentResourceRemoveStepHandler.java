@@ -35,11 +35,11 @@ public class RestartParentResourceRemoveStepHandler<T> extends RemoveStepHandler
 
     private final OperationStepHandler handler;
 
-    public RestartParentResourceRemoveStepHandler(ResourceServiceBuilderFactory<T> parentFactory, RemoveStepHandlerDescriptor descriptor) {
+    public RestartParentResourceRemoveStepHandler(ResourceServiceConfiguratorFactory parentFactory, RemoveStepHandlerDescriptor descriptor) {
         this(parentFactory, descriptor, null);
     }
 
-    public RestartParentResourceRemoveStepHandler(ResourceServiceBuilderFactory<T> parentFactory, RemoveStepHandlerDescriptor descriptor, ResourceServiceHandler handler) {
+    public RestartParentResourceRemoveStepHandler(ResourceServiceConfiguratorFactory parentFactory, RemoveStepHandlerDescriptor descriptor, ResourceServiceHandler handler) {
         super(descriptor, handler);
         this.handler = new RestartParentResourceStepHandler<>(parentFactory);
     }

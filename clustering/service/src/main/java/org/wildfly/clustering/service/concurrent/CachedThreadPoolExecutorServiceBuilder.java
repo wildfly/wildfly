@@ -21,61 +21,30 @@
  */
 package org.wildfly.clustering.service.concurrent;
 
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
-import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.threads.JBossExecutors;
-import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.service.SuppliedValueService;
 
 /**
  * Service that provides an {@link Executor} that uses a cached thread pool.
  * @author Paul Ferraro
+ * @deprecated Replaced by {@link CachedThreadPoolExecutorServiceConfigurator}.
  */
 @Deprecated
-public class CachedThreadPoolExecutorServiceBuilder implements Builder<ExecutorService>, Function<ExecutorService, ExecutorService>, Supplier<ExecutorService>, Consumer<ExecutorService> {
-
-    private final ServiceName name;
-    private final ThreadFactory factory;
+public class CachedThreadPoolExecutorServiceBuilder extends CachedThreadPoolExecutorServiceConfigurator implements Builder<ExecutorService> {
 
     public CachedThreadPoolExecutorServiceBuilder(ServiceName name, ThreadFactory factory) {
-        this.name = name;
-        this.factory = factory;
+        super(name, factory);
     }
 
-    @Override
-    public ExecutorService apply(ExecutorService executor) {
-        return JBossExecutors.protectedExecutorService(executor);
-    }
-
-    @Override
-    public ExecutorService get() {
-        return Executors.newCachedThreadPool(this.factory);
-    }
-
-    @Override
-    public void accept(ExecutorService executor) {
-        executor.shutdownNow();
-    }
-
-    @Override
-    public ServiceName getServiceName() {
-        return this.name;
-    }
-
+    @SuppressWarnings("unchecked")
     @Override
     public ServiceBuilder<ExecutorService> build(ServiceTarget target) {
-        Service<ExecutorService> service = new SuppliedValueService<>(this, this, this);
-        return new AsynchronousServiceBuilder<>(this.name, service).startSynchronously().build(target).setInitialMode(ServiceController.Mode.ON_DEMAND);
+        return (ServiceBuilder<ExecutorService>) super.build(target);
     }
 }

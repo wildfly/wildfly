@@ -41,9 +41,9 @@ import org.jboss.msc.service.ServiceName;
 public class RestartParentResourceWriteAttributeHandler<T> extends RestartParentWriteAttributeHandler implements Registration<ManagementResourceRegistration> {
 
     private final WriteAttributeStepHandlerDescriptor descriptor;
-    private final ResourceServiceBuilderFactory<T> parentFactory;
+    private final ResourceServiceConfiguratorFactory parentFactory;
 
-    public RestartParentResourceWriteAttributeHandler(ResourceServiceBuilderFactory<T> parentFactory, WriteAttributeStepHandlerDescriptor descriptor) {
+    public RestartParentResourceWriteAttributeHandler(ResourceServiceConfiguratorFactory parentFactory, WriteAttributeStepHandlerDescriptor descriptor) {
         super(null, descriptor.getAttributes());
         this.descriptor = descriptor;
         this.parentFactory = parentFactory;
@@ -51,12 +51,12 @@ public class RestartParentResourceWriteAttributeHandler<T> extends RestartParent
 
     @Override
     protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
-        this.parentFactory.createBuilder(parentAddress).configure(context, parentModel).build(context.getServiceTarget()).install();
+        this.parentFactory.createServiceConfigurator(parentAddress).configure(context, parentModel).build(context.getServiceTarget()).install();
     }
 
     @Override
     protected ServiceName getParentServiceName(PathAddress parentAddress) {
-        return this.parentFactory.createBuilder(parentAddress).getServiceName();
+        return this.parentFactory.createServiceConfigurator(parentAddress).getServiceName();
     }
 
     @Override

@@ -30,7 +30,7 @@ import org.jboss.as.controller.PathAddress;
  */
 @FunctionalInterface
 @Deprecated
-public interface ResourceServiceBuilderFactory<T> {
+public interface ResourceServiceBuilderFactory<T> extends ResourceServiceConfiguratorFactory {
 
     /**
      * Creates a builder for this resource's service.
@@ -38,4 +38,9 @@ public interface ResourceServiceBuilderFactory<T> {
      * @return a builder
      */
     ResourceServiceBuilder<T> createBuilder(PathAddress address);
+
+    @Override
+    default ResourceServiceConfigurator createServiceConfigurator(PathAddress address) {
+        return this.createBuilder(address);
+    }
 }

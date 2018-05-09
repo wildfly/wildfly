@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,52 +22,50 @@
 
 package org.wildfly.clustering.service;
 
-import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.Service;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.wildfly.common.function.ExceptionFunction;
 
 /**
- * Generic {@link Service} whose value is created and destroyed by contextual functions.
  * @author Paul Ferraro
- * @deprecated Replaced by {@link FunctionalService}.
  */
-@Deprecated
-public class FunctionalValueService<T, V> implements Service<V> {
-    private static final Logger LOGGER = Logger.getLogger(FunctionalValueService.class);
+public class FunctionalService<T, V> implements Service {
+    private static final Logger LOGGER = Logger.getLogger(FunctionalService.class);
 
+    private final Consumer<V> consumer;
     private final Function<T, V> mapper;
-    private final ExceptionFunction<StartContext, T, StartException> factory;
-    private final BiConsumer<StopContext, T> destroyer;
+    private final Supplier<T> factory;
+    private final Consumer<T> destroyer;
 
     private volatile T value;
 
-    /**
-     * Constructs a new functional value service.
-     * @param mapper a function that maps the result of the factory function to the service value
-     * @param factory a function that creates a value
-     * @param destroyer a consumer that destroys the value created by the factory function
-     */
-    public FunctionalValueService(Function<T, V> mapper, ExceptionFunction<StartContext, T, StartException> factory, BiConsumer<StopContext, T> destroyer) {
+    public FunctionalService(Consumer<V> consumer, Function<T, V> mapper, Supplier<T> factory) {
+        this(consumer, mapper, factory, new Consumer<T>() {
+            @Override
+            public void accept(T value) {
+                // Do nothing
+            }
+        });
+    }
+
+    public FunctionalService(Consumer<V> consumer, Function<T, V> mapper, Supplier<T> factory, Consumer<T> destroyer) {
+        this.consumer = consumer;
         this.mapper = mapper;
         this.factory = factory;
         this.destroyer = destroyer;
     }
 
     @Override
-    public V getValue() {
-        return this.mapper.apply(this.value);
-    }
-
-    @Override
     public void start(StartContext context) throws StartException {
         try {
-            this.value = this.factory.apply(context);
+            this.value = this.factory.get();
+            this.consumer.accept(this.mapper.apply(this.value));
         } catch (RuntimeException | Error e) {
             throw new StartException(e);
         }
@@ -75,14 +73,12 @@ public class FunctionalValueService<T, V> implements Service<V> {
 
     @Override
     public void stop(StopContext context) {
-        if (this.destroyer != null) {
-            try {
-                this.destroyer.accept(context, this.value);
-            } catch (RuntimeException | Error e) {
-                LOGGER.warn(e.getLocalizedMessage(), e);
-            } finally {
-                this.value = null;
-            }
+        try {
+            this.destroyer.accept(this.value);
+        } catch (RuntimeException | Error e) {
+            LOGGER.warn(e.getLocalizedMessage(), e);
+        } finally {
+            this.value = null;
         }
     }
 }

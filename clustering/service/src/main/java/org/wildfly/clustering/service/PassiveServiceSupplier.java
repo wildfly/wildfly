@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,30 +22,18 @@
 
 package org.wildfly.clustering.service;
 
-import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.Service;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
 
 /**
- * A trivial {@link ValueDependency} whose value is immediately available.
+ * Returns the value supplied by a {@link Service}, or null if service is not installed or not started.
  * @author Paul Ferraro
- * @deprecated Replaced by {@link SimpleSupplierDependency}.
  */
-@Deprecated
-public class ImmediateValueDependency<V> implements ValueDependency<V> {
+public class PassiveServiceSupplier<T> extends ServiceSupplier<T> {
 
-    private final V value;
-
-    public ImmediateValueDependency(V value) {
-        this.value = value;
-    }
-
-    @Override
-    public V getValue() {
-        return this.value;
-    }
-
-    @Override
-    public <T> ServiceBuilder<T> register(ServiceBuilder<T> builder) {
-        // Nothing to register
-        return builder;
+    public PassiveServiceSupplier(ServiceRegistry target, ServiceName name) {
+        super(target, name, ServiceController.Mode.PASSIVE);
     }
 }

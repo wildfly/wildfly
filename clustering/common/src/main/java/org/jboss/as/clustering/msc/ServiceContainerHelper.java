@@ -66,6 +66,7 @@ public class ServiceContainerHelper {
      * @param registry the service registry
      * @param name the service name
      * @return the service value, if the service exists and is started, null otherwise
+     * @deprecated Replaced by {@link org.wildfly.clustering.service.PassiveServiceSupplier}.
      */
     public static <T> T findValue(ServiceRegistry registry, ServiceName name) {
         ServiceController<T> service = findService(registry, name);
@@ -100,6 +101,7 @@ public class ServiceContainerHelper {
      * @param controller a service controller
      * @return the service value of the specified service
      * @throws StartException if the specified service could not be started
+     * @deprecated Replaced by {@link org.wildfly.clustering.service.ActiveServiceSupplier}.
      */
     public static <T> T getValue(ServiceController<T> controller) throws StartException {
         start(controller);

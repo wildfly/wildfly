@@ -34,8 +34,8 @@ import org.jboss.dmr.ModelNode;
  */
 public class ParentResourceServiceHandler<T> extends SimpleResourceServiceHandler<T> {
 
-    public ParentResourceServiceHandler(ResourceServiceBuilderFactory<T> builderFactory) {
-        super(builderFactory);
+    public ParentResourceServiceHandler(ResourceServiceConfiguratorFactory factory) {
+        super(factory);
     }
 
     @Override

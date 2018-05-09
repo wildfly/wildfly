@@ -34,6 +34,7 @@ import org.wildfly.common.function.ExceptionConsumer;
 /**
  * Generic {@link Service} that provides no value.
  * @author Paul Ferraro
+ * @deprecated Replaced by {@link FunctionalService}.
  */
 @Deprecated
 public class FunctionalVoidService implements Service<Void> {

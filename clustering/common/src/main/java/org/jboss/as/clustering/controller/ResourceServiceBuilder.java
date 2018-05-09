@@ -32,7 +32,7 @@ import org.wildfly.clustering.service.Builder;
  * @author Paul Ferraro
  */
 @Deprecated
-public interface ResourceServiceBuilder<T> extends Builder<T> {
+public interface ResourceServiceBuilder<T> extends ResourceServiceConfigurator, Builder<T> {
 
     /**
      * Configures this builder using the specified expression resolver and model.
@@ -41,6 +41,7 @@ public interface ResourceServiceBuilder<T> extends Builder<T> {
      * @return the reference to this builder
      * @throws OperationFailedException if there was a failure reading the model
      */
+    @Override
     default Builder<T> configure(OperationContext context, ModelNode model) throws OperationFailedException {
         return this;
     }
