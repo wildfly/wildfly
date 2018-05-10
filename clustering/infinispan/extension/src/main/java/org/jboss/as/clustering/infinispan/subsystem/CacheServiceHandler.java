@@ -32,7 +32,7 @@ import java.util.ServiceLoader;
 
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
-import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.clustering.controller.ModuleBuilder;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
@@ -49,7 +49,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.infinispan.spi.service.CacheBuilder;
 import org.wildfly.clustering.service.AliasServiceBuilder;
 import org.wildfly.clustering.service.ServiceNameProvider;
-import org.wildfly.clustering.spi.CacheBuilderProvider;
+import org.wildfly.clustering.spi.CacheServiceConfiguratorProvider;
 import org.wildfly.clustering.spi.CapabilityServiceNameRegistry;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 import org.wildfly.clustering.spi.ServiceNameRegistry;
@@ -60,9 +60,9 @@ import org.wildfly.clustering.spi.ServiceNameRegistry;
 public class CacheServiceHandler implements ResourceServiceHandler {
 
     private final ResourceServiceBuilderFactory<Configuration> builderFactory;
-    private final Class<? extends CacheBuilderProvider> providerClass;
+    private final Class<? extends CacheServiceConfiguratorProvider> providerClass;
 
-    CacheServiceHandler(ResourceServiceBuilderFactory<Configuration> builderFactory, Class<? extends CacheBuilderProvider> providerClass) {
+    CacheServiceHandler(ResourceServiceBuilderFactory<Configuration> builderFactory, Class<? extends CacheServiceConfiguratorProvider> providerClass) {
         this.builderFactory = builderFactory;
         this.providerClass = providerClass;
     }
@@ -94,9 +94,9 @@ public class CacheServiceHandler implements ResourceServiceHandler {
 
         ServiceNameRegistry<ClusteringCacheRequirement> registry = new CapabilityServiceNameRegistry<>(CLUSTERING_CAPABILITIES, cacheAddress);
 
-        for (CacheBuilderProvider provider : ServiceLoader.load(this.providerClass, this.providerClass.getClassLoader())) {
-            for (CapabilityServiceBuilder<?> builder : provider.getBuilders(registry, containerName, cacheName)) {
-                builder.configure(context).build(target).install();
+        for (CacheServiceConfiguratorProvider provider : ServiceLoader.load(this.providerClass, this.providerClass.getClassLoader())) {
+            for (CapabilityServiceConfigurator configurator : provider.getServiceConfigurators(registry, containerName, cacheName)) {
+                configurator.configure(context).build(target).install();
             }
         }
     }
@@ -111,9 +111,9 @@ public class CacheServiceHandler implements ResourceServiceHandler {
 
         ServiceNameRegistry<ClusteringCacheRequirement> registry = new CapabilityServiceNameRegistry<>(CLUSTERING_CAPABILITIES, cacheAddress);
 
-        for (CacheBuilderProvider provider : ServiceLoader.load(this.providerClass, this.providerClass.getClassLoader())) {
-            for (ServiceNameProvider builder : provider.getBuilders(registry, containerName, cacheName)) {
-                context.removeService(builder.getServiceName());
+        for (CacheServiceConfiguratorProvider provider : ServiceLoader.load(this.providerClass, this.providerClass.getClassLoader())) {
+            for (ServiceNameProvider configurator : provider.getServiceConfigurators(registry, containerName, cacheName)) {
+                context.removeService(configurator.getServiceName());
             }
         }
 

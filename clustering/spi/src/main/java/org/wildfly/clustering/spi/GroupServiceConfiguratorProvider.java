@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,18 +20,15 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.infinispan.subsystem;
+package org.wildfly.clustering.spi;
 
-import org.infinispan.configuration.cache.Configuration;
-import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
-import org.wildfly.clustering.spi.DistributedCacheServiceConfiguratorProvider;
+import java.util.Collection;
+
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 
 /**
  * @author Paul Ferraro
  */
-public class ClusteredCacheServiceHandler extends CacheServiceHandler {
-
-    ClusteredCacheServiceHandler(ResourceServiceBuilderFactory<Configuration> builderFactory) {
-        super(builderFactory, DistributedCacheServiceConfiguratorProvider.class);
-    }
+public interface GroupServiceConfiguratorProvider {
+    Collection<CapabilityServiceConfigurator> getServiceConfigurators(ServiceNameRegistry<ClusteringRequirement> registry, String group);
 }

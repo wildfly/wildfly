@@ -33,7 +33,7 @@ import java.util.EnumSet;
 import java.util.ServiceLoader;
 
 import org.jboss.as.clustering.controller.Capability;
-import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.naming.BinderServiceBuilder;
@@ -45,10 +45,10 @@ import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 import org.wildfly.clustering.service.AliasServiceBuilder;
-import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.ServiceNameProvider;
 import org.wildfly.clustering.spi.CapabilityServiceNameRegistry;
 import org.wildfly.clustering.spi.ClusteringRequirement;
-import org.wildfly.clustering.spi.GroupAliasBuilderProvider;
+import org.wildfly.clustering.spi.IdentityGroupServiceConfiguratorProvider;
 import org.wildfly.clustering.spi.ServiceNameRegistry;
 
 /**
@@ -81,9 +81,9 @@ public class ForkServiceHandler extends SimpleResourceServiceHandler {
 
         ServiceNameRegistry<ClusteringRequirement> registry = new CapabilityServiceNameRegistry<>(CLUSTERING_CAPABILITIES, address);
 
-        for (GroupAliasBuilderProvider provider : ServiceLoader.load(GroupAliasBuilderProvider.class, GroupAliasBuilderProvider.class.getClassLoader())) {
-            for (CapabilityServiceBuilder<?> builder : provider.getBuilders(registry, name, channel)) {
-                builder.configure(context).build(target).install();
+        for (IdentityGroupServiceConfiguratorProvider provider : ServiceLoader.load(IdentityGroupServiceConfiguratorProvider.class, IdentityGroupServiceConfiguratorProvider.class.getClassLoader())) {
+            for (CapabilityServiceConfigurator configurator : provider.getServiceConfigurators(registry, name, channel)) {
+                configurator.configure(context).build(target).install();
             }
         }
     }
@@ -97,9 +97,9 @@ public class ForkServiceHandler extends SimpleResourceServiceHandler {
 
         ServiceNameRegistry<ClusteringRequirement> registry = new CapabilityServiceNameRegistry<>(CLUSTERING_CAPABILITIES, address);
 
-        for (GroupAliasBuilderProvider provider : ServiceLoader.load(GroupAliasBuilderProvider.class, GroupAliasBuilderProvider.class.getClassLoader())) {
-            for (Builder<?> builder : provider.getBuilders(registry, name, channel)) {
-                context.removeService(builder.getServiceName());
+        for (IdentityGroupServiceConfiguratorProvider provider : ServiceLoader.load(IdentityGroupServiceConfiguratorProvider.class, IdentityGroupServiceConfiguratorProvider.class.getClassLoader())) {
+            for (ServiceNameProvider configurator : provider.getServiceConfigurators(registry, name, channel)) {
+                context.removeService(configurator.getServiceName());
             }
         }
 

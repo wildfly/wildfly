@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,7 +19,8 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.infinispan.session;
+
+package org.wildfly.clustering.ejb.infinispan;
 
 import java.util.Collection;
 import java.util.LinkedList;
@@ -35,45 +36,45 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.eviction.EvictionStrategy;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.msc.service.ServiceName;
-import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.spi.service.CacheBuilder;
 import org.wildfly.clustering.infinispan.spi.service.TemplateConfigurationBuilder;
-import org.wildfly.clustering.service.SupplierDependency;
+import org.wildfly.clustering.spi.IdentityCacheServiceConfiguratorProvider;
 import org.wildfly.clustering.spi.CacheServiceConfiguratorProvider;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
-import org.wildfly.clustering.spi.DistributedCacheServiceConfiguratorProvider;
 import org.wildfly.clustering.spi.ServiceNameRegistry;
-import org.wildfly.clustering.web.session.RouteLocator;
-import org.wildfly.clustering.web.session.RouteLocatorServiceConfiguratorProvider;
 
 /**
- * Provides a builder for a {@link RouteLocator} service.
+ * Creates client mapping services.
  * @author Paul Ferraro
  */
-@MetaInfServices(RouteLocatorServiceConfiguratorProvider.class)
-public class InfinispanRouteLocatorServiceConfiguratorProvider implements RouteLocatorServiceConfiguratorProvider, Consumer<ConfigurationBuilder> {
+public class ClientMappingsCacheServiceConfiguratorProvider implements CacheServiceConfiguratorProvider, IdentityCacheServiceConfiguratorProvider, Consumer<ConfigurationBuilder> {
 
-    @Override
-    public CapabilityServiceConfigurator getRouteLocatorServiceConfigurator(String serverName, String deploymentName) {
-        return new InfinispanRouteLocatorBuilder(serverName, deploymentName);
+    private final Class<? extends CacheServiceConfiguratorProvider> providerClass;
+
+    ClientMappingsCacheServiceConfiguratorProvider(Class<? extends CacheServiceConfiguratorProvider> providerClass) {
+        this.providerClass = providerClass;
     }
 
     @Override
-    public Collection<CapabilityServiceConfigurator> getRouteLocatorConfigurationServiceConfigurators(String serverName, SupplierDependency<String> routeDependency) {
-        String containerName = InfinispanSessionManagerFactoryBuilder.DEFAULT_CACHE_CONTAINER;
-
-        List<CapabilityServiceConfigurator> builders = new LinkedList<>();
-
-        builders.add(new RouteRegistryEntryProviderBuilder(serverName, routeDependency));
-        builders.add(new TemplateConfigurationBuilder(ServiceName.parse(InfinispanCacheRequirement.CONFIGURATION.resolve(containerName, serverName)), containerName, serverName, null, this));
-        builders.add(new CacheBuilder<>(ServiceName.parse(InfinispanCacheRequirement.CACHE.resolve(containerName, serverName)), containerName, serverName));
-        ServiceNameRegistry<ClusteringCacheRequirement> registry = requirement -> ServiceName.parse(requirement.resolve(containerName, serverName));
-        for (CacheServiceConfiguratorProvider provider : ServiceLoader.load(DistributedCacheServiceConfiguratorProvider.class, DistributedCacheServiceConfiguratorProvider.class.getClassLoader())) {
-            builders.addAll(provider.getServiceConfigurators(registry, containerName, serverName));
+    public Collection<CapabilityServiceConfigurator> getServiceConfigurators(ServiceNameRegistry<ClusteringCacheRequirement> registry, String containerName, String aliasCacheName) {
+        List<CapabilityServiceConfigurator> configurators = new LinkedList<>();
+        if (aliasCacheName == null) {
+            String cacheName = BeanManagerFactoryServiceConfiguratorConfiguration.CLIENT_MAPPINGS_CACHE_NAME;
+            configurators.add(new TemplateConfigurationBuilder(ServiceName.parse(InfinispanCacheRequirement.CONFIGURATION.resolve(containerName, cacheName)), containerName, cacheName, aliasCacheName, this));
+            configurators.add(new CacheBuilder<>(ServiceName.parse(InfinispanCacheRequirement.CACHE.resolve(containerName, cacheName)), containerName, cacheName));
+            ServiceNameRegistry<ClusteringCacheRequirement> routingRegistry = requirement -> ServiceName.parse(requirement.resolve(containerName, cacheName));
+            for (CacheServiceConfiguratorProvider provider : ServiceLoader.load(this.providerClass, this.providerClass.getClassLoader())) {
+                configurators.addAll(provider.getServiceConfigurators(routingRegistry, containerName, cacheName));
+            }
         }
+        return configurators;
+    }
 
-        return builders;
+    @Override
+    public Collection<CapabilityServiceConfigurator> getServiceConfigurators(ServiceNameRegistry<ClusteringCacheRequirement> registry, String containerName, String aliasCacheName, String targetCacheName) {
+        return this.getServiceConfigurators(registry, containerName, aliasCacheName);
     }
 
     @SuppressWarnings("deprecation")

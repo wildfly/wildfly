@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,18 +20,19 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.infinispan.subsystem;
+package org.wildfly.clustering.server.singleton;
 
-import org.infinispan.configuration.cache.Configuration;
-import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
-import org.wildfly.clustering.spi.DistributedCacheServiceConfiguratorProvider;
+import org.wildfly.clustering.server.CacheCapabilityServiceBuilderFactory;
+import org.wildfly.clustering.server.CacheRequirementServiceConfiguratorProvider;
+import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
+import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 
 /**
  * @author Paul Ferraro
  */
-public class ClusteredCacheServiceHandler extends CacheServiceHandler {
+public class SingletonServiceBuilderFactoryServiceConfiguratorProvider extends CacheRequirementServiceConfiguratorProvider<SingletonServiceBuilderFactory> {
 
-    ClusteredCacheServiceHandler(ResourceServiceBuilderFactory<Configuration> builderFactory) {
-        super(builderFactory, DistributedCacheServiceConfiguratorProvider.class);
+    protected SingletonServiceBuilderFactoryServiceConfiguratorProvider(CacheCapabilityServiceBuilderFactory<SingletonServiceBuilderFactory> factory) {
+        super(ClusteringCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY, factory);
     }
 }

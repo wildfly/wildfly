@@ -34,7 +34,7 @@ import static org.jboss.as.clustering.jgroups.subsystem.ChannelResourceDefinitio
 import java.util.EnumSet;
 import java.util.ServiceLoader;
 
-import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.clustering.controller.ModuleBuilder;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
@@ -51,8 +51,8 @@ import org.wildfly.clustering.service.AliasServiceBuilder;
 import org.wildfly.clustering.service.ServiceNameProvider;
 import org.wildfly.clustering.spi.CapabilityServiceNameRegistry;
 import org.wildfly.clustering.spi.ClusteringRequirement;
-import org.wildfly.clustering.spi.DistributedGroupBuilderProvider;
-import org.wildfly.clustering.spi.GroupBuilderProvider;
+import org.wildfly.clustering.spi.DistributedGroupServiceConfiguratorProvider;
+import org.wildfly.clustering.spi.GroupServiceConfiguratorProvider;
 import org.wildfly.clustering.spi.ServiceNameRegistry;
 
 /**
@@ -80,10 +80,10 @@ public class ChannelServiceHandler implements ResourceServiceHandler {
         // Install group services for channel
         ServiceNameRegistry<ClusteringRequirement> registry = new CapabilityServiceNameRegistry<>(CLUSTERING_CAPABILITIES, address);
 
-        for (GroupBuilderProvider provider : ServiceLoader.load(DistributedGroupBuilderProvider.class, DistributedGroupBuilderProvider.class.getClassLoader())) {
-            for (CapabilityServiceBuilder<?> builder : provider.getBuilders(registry, name)) {
-                JGroupsLogger.ROOT_LOGGER.debugf("Installing %s for channel %s", builder.getServiceName(), name);
-                builder.configure(context).build(target).install();
+        for (GroupServiceConfiguratorProvider provider : ServiceLoader.load(DistributedGroupServiceConfiguratorProvider.class, DistributedGroupServiceConfiguratorProvider.class.getClassLoader())) {
+            for (CapabilityServiceConfigurator configurator : provider.getServiceConfigurators(registry, name)) {
+                JGroupsLogger.ROOT_LOGGER.debugf("Installing %s for channel %s", configurator.getServiceName(), name);
+                configurator.configure(context).build(target).install();
             }
         }
     }
@@ -102,10 +102,10 @@ public class ChannelServiceHandler implements ResourceServiceHandler {
 
         ServiceNameRegistry<ClusteringRequirement> registry = new CapabilityServiceNameRegistry<>(CLUSTERING_CAPABILITIES, address);
 
-        for (GroupBuilderProvider provider : ServiceLoader.load(DistributedGroupBuilderProvider.class, DistributedGroupBuilderProvider.class.getClassLoader())) {
-            for (ServiceNameProvider builder : provider.getBuilders(registry, name)) {
-                JGroupsLogger.ROOT_LOGGER.debugf("Removing %s for channel %s", builder.getServiceName(), name);
-                context.removeService(builder.getServiceName());
+        for (GroupServiceConfiguratorProvider provider : ServiceLoader.load(DistributedGroupServiceConfiguratorProvider.class, DistributedGroupServiceConfiguratorProvider.class.getClassLoader())) {
+            for (ServiceNameProvider configurator : provider.getServiceConfigurators(registry, name)) {
+                JGroupsLogger.ROOT_LOGGER.debugf("Removing %s for channel %s", configurator.getServiceName(), name);
+                context.removeService(configurator.getServiceName());
             }
         }
     }

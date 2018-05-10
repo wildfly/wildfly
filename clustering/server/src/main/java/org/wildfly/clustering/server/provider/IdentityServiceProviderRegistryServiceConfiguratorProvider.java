@@ -20,18 +20,21 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.infinispan.subsystem;
+package org.wildfly.clustering.server.provider;
 
-import org.infinispan.configuration.cache.Configuration;
-import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
-import org.wildfly.clustering.spi.DistributedCacheServiceConfiguratorProvider;
+import org.jboss.as.clustering.naming.JndiNameFactory;
+import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.spi.IdentityCacheServiceConfiguratorProvider;
+import org.wildfly.clustering.spi.ClusteringCacheRequirement;
+import org.wildfly.clustering.server.IdentityCacheRequirementServiceConfiguratorProvider;
 
 /**
  * @author Paul Ferraro
  */
-public class ClusteredCacheServiceHandler extends CacheServiceHandler {
+@MetaInfServices(IdentityCacheServiceConfiguratorProvider.class)
+public class IdentityServiceProviderRegistryServiceConfiguratorProvider extends IdentityCacheRequirementServiceConfiguratorProvider {
 
-    ClusteredCacheServiceHandler(ResourceServiceBuilderFactory<Configuration> builderFactory) {
-        super(builderFactory, DistributedCacheServiceConfiguratorProvider.class);
+    public IdentityServiceProviderRegistryServiceConfiguratorProvider() {
+        super(ClusteringCacheRequirement.SERVICE_PROVIDER_REGISTRY, (containerName, cacheName) -> JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, "clustering", "providers", containerName, cacheName));
     }
 }

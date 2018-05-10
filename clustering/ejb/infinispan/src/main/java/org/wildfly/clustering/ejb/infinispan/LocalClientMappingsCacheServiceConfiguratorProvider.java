@@ -20,18 +20,18 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.infinispan.subsystem;
+package org.wildfly.clustering.ejb.infinispan;
 
-import org.infinispan.configuration.cache.Configuration;
-import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
-import org.wildfly.clustering.spi.DistributedCacheServiceConfiguratorProvider;
+import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.spi.LocalCacheServiceConfiguratorProvider;
 
 /**
  * @author Paul Ferraro
  */
-public class ClusteredCacheServiceHandler extends CacheServiceHandler {
+@MetaInfServices(LocalCacheServiceConfiguratorProvider.class)
+public class LocalClientMappingsCacheServiceConfiguratorProvider extends ClientMappingsCacheServiceConfiguratorProvider implements LocalCacheServiceConfiguratorProvider {
 
-    ClusteredCacheServiceHandler(ResourceServiceBuilderFactory<Configuration> builderFactory) {
-        super(builderFactory, DistributedCacheServiceConfiguratorProvider.class);
+    public LocalClientMappingsCacheServiceConfiguratorProvider() {
+        super(LocalCacheServiceConfiguratorProvider.class);
     }
 }

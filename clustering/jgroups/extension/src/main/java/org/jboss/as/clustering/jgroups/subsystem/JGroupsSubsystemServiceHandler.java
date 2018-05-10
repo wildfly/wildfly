@@ -23,15 +23,15 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import static org.jboss.as.clustering.jgroups.logging.JGroupsLogger.ROOT_LOGGER;
-import static org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_CHANNEL;
 import static org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemResourceDefinition.CAPABILITIES;
 import static org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemResourceDefinition.CLUSTERING_CAPABILITIES;
+import static org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_CHANNEL;
 
 import java.util.Map;
 import java.util.ServiceLoader;
 
 import org.jboss.as.clustering.controller.Capability;
-import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.naming.BinderServiceBuilder;
 import org.jboss.as.clustering.naming.JndiNameFactory;
@@ -48,7 +48,7 @@ import org.wildfly.clustering.service.AliasServiceBuilder;
 import org.wildfly.clustering.service.ServiceNameProvider;
 import org.wildfly.clustering.spi.CapabilityServiceNameRegistry;
 import org.wildfly.clustering.spi.ClusteringRequirement;
-import org.wildfly.clustering.spi.GroupAliasBuilderProvider;
+import org.wildfly.clustering.spi.IdentityGroupServiceConfiguratorProvider;
 import org.wildfly.clustering.spi.ServiceNameRegistry;
 
 /**
@@ -91,9 +91,9 @@ public class JGroupsSubsystemServiceHandler implements ResourceServiceHandler {
 
             ServiceNameRegistry<ClusteringRequirement> registry = new CapabilityServiceNameRegistry<>(CLUSTERING_CAPABILITIES, address);
 
-            for (GroupAliasBuilderProvider provider : ServiceLoader.load(GroupAliasBuilderProvider.class, GroupAliasBuilderProvider.class.getClassLoader())) {
-                for (CapabilityServiceBuilder<?> builder : provider.getBuilders(registry, null, defaultChannel)) {
-                    builder.configure(context).build(target).install();
+            for (IdentityGroupServiceConfiguratorProvider provider : ServiceLoader.load(IdentityGroupServiceConfiguratorProvider.class, IdentityGroupServiceConfiguratorProvider.class.getClassLoader())) {
+                for (CapabilityServiceConfigurator configurator : provider.getServiceConfigurators(registry, null, defaultChannel)) {
+                    configurator.configure(context).build(target).install();
                 }
             }
         }
@@ -106,9 +106,9 @@ public class JGroupsSubsystemServiceHandler implements ResourceServiceHandler {
         if (defaultChannel != null) {
             ServiceNameRegistry<ClusteringRequirement> registry = new CapabilityServiceNameRegistry<>(CLUSTERING_CAPABILITIES, address);
 
-            for (GroupAliasBuilderProvider provider : ServiceLoader.load(GroupAliasBuilderProvider.class, GroupAliasBuilderProvider.class.getClassLoader())) {
-                for (ServiceNameProvider builder : provider.getBuilders(registry, null, defaultChannel)) {
-                    context.removeService(builder.getServiceName());
+            for (IdentityGroupServiceConfiguratorProvider provider : ServiceLoader.load(IdentityGroupServiceConfiguratorProvider.class, IdentityGroupServiceConfiguratorProvider.class.getClassLoader())) {
+                for (ServiceNameProvider configurator : provider.getServiceConfigurators(registry, null, defaultChannel)) {
+                    context.removeService(configurator.getServiceName());
                 }
             }
 

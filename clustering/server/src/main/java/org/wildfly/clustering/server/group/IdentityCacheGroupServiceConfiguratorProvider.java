@@ -20,18 +20,20 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.infinispan.subsystem;
+package org.wildfly.clustering.server.group;
 
-import org.infinispan.configuration.cache.Configuration;
-import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
-import org.wildfly.clustering.spi.DistributedCacheServiceConfiguratorProvider;
+import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.server.IdentityCacheRequirementServiceConfiguratorProvider;
+import org.wildfly.clustering.spi.IdentityCacheServiceConfiguratorProvider;
+import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 
 /**
  * @author Paul Ferraro
  */
-public class ClusteredCacheServiceHandler extends CacheServiceHandler {
+@MetaInfServices(IdentityCacheServiceConfiguratorProvider.class)
+public class IdentityCacheGroupServiceConfiguratorProvider extends IdentityCacheRequirementServiceConfiguratorProvider {
 
-    ClusteredCacheServiceHandler(ResourceServiceBuilderFactory<Configuration> builderFactory) {
-        super(builderFactory, DistributedCacheServiceConfiguratorProvider.class);
+    public IdentityCacheGroupServiceConfiguratorProvider() {
+        super(ClusteringCacheRequirement.GROUP);
     }
 }

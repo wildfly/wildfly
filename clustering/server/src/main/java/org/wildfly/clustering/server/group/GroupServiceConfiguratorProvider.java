@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,18 +20,21 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.infinispan.subsystem;
+package org.wildfly.clustering.server.group;
 
-import org.infinispan.configuration.cache.Configuration;
-import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
-import org.wildfly.clustering.spi.DistributedCacheServiceConfiguratorProvider;
+import org.wildfly.clustering.group.Group;
+import org.wildfly.clustering.server.GroupCapabilityServiceBuilderFactory;
+import org.wildfly.clustering.server.GroupJndiNameFactory;
+import org.wildfly.clustering.server.GroupRequirementServiceConfiguratorProvider;
+import org.wildfly.clustering.spi.ClusteringRequirement;
 
 /**
+ * Provides the requisite builders for a {@link Group} service created from a specified factory.
  * @author Paul Ferraro
  */
-public class ClusteredCacheServiceHandler extends CacheServiceHandler {
+public class GroupServiceConfiguratorProvider extends GroupRequirementServiceConfiguratorProvider<Group> {
 
-    ClusteredCacheServiceHandler(ResourceServiceBuilderFactory<Configuration> builderFactory) {
-        super(builderFactory, DistributedCacheServiceConfiguratorProvider.class);
+    public GroupServiceConfiguratorProvider(GroupCapabilityServiceBuilderFactory<Group> factory) {
+        super(ClusteringRequirement.GROUP, factory, GroupJndiNameFactory.GROUP);
     }
 }

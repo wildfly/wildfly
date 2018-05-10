@@ -87,11 +87,11 @@ public class SharedSessionManagerDeploymentProcessor implements DeploymentUnitPr
                 });
 
         ServiceName codecServiceName = deploymentServiceName.append(SharedSessionManagerConfig.SHARED_SESSION_IDENTIFIER_CODEC_SERVICE_NAME);
-        CapabilityServiceConfigurator codecBuilder = DistributableSessionIdentifierCodecServiceConfiguratorProvider.INSTANCE
+        CapabilityServiceConfigurator codecConfigurator = DistributableSessionIdentifierCodecServiceConfiguratorProvider.INSTANCE
                 .map(provider -> provider.getDeploymentServiceConfigurator(codecServiceName, serverName, deploymentUnit.getName()))
                 .orElse(new SimpleSessionIdentifierCodecBuilder(codecServiceName, serverName));
 
-        for (CapabilityServiceConfigurator configurator : Arrays.asList(factoryConfigurator, codecBuilder)) {
+        for (CapabilityServiceConfigurator configurator : Arrays.asList(factoryConfigurator, codecConfigurator)) {
             configurator.configure(support).build(target).setInitialMode(Mode.ON_DEMAND).install();
         }
     }
