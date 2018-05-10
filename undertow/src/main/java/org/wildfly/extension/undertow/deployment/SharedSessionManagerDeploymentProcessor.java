@@ -22,15 +22,12 @@
 
 package org.wildfly.extension.undertow.deployment;
 
-import io.undertow.server.session.InMemorySessionManager;
-import io.undertow.servlet.api.SessionManagerFactory;
-
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 
-import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
-import org.jboss.as.clustering.controller.SimpleCapabilityServiceBuilder;
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
+import org.jboss.as.clustering.controller.SimpleCapabilityServiceConfigurator;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -38,16 +35,17 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.web.common.WarMetaData;
-import org.jboss.as.web.session.SessionIdentifierCodec;
 import org.jboss.modules.Module;
+import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ServiceController.Mode;
-import org.wildfly.extension.undertow.session.DistributableSessionIdentifierCodecBuilderProvider;
-import org.wildfly.extension.undertow.session.DistributableSessionManagerFactoryBuilderProvider;
+import org.wildfly.extension.undertow.session.DistributableSessionIdentifierCodecServiceConfiguratorProvider;
+import org.wildfly.extension.undertow.session.DistributableSessionManagerFactoryServiceConfiguratorProvider;
 import org.wildfly.extension.undertow.session.SharedSessionManagerConfig;
 import org.wildfly.extension.undertow.session.SimpleDistributableSessionManagerConfiguration;
 import org.wildfly.extension.undertow.session.SimpleSessionIdentifierCodecBuilder;
+
+import io.undertow.server.session.InMemorySessionManager;
 
 /**
  * @author Stuart Douglas
@@ -76,8 +74,8 @@ public class SharedSessionManagerDeploymentProcessor implements DeploymentUnitPr
         ServiceName deploymentServiceName = deploymentUnit.getServiceName();
 
         ServiceName managerServiceName = deploymentServiceName.append(SharedSessionManagerConfig.SHARED_SESSION_MANAGER_SERVICE_NAME);
-        CapabilityServiceBuilder<SessionManagerFactory> factoryBuilder = DistributableSessionManagerFactoryBuilderProvider.INSTANCE
-                .map(provider -> provider.getBuilder(managerServiceName, new SimpleDistributableSessionManagerConfiguration(sharedConfig, serverName, deploymentUnit.getName(), module)))
+        CapabilityServiceConfigurator factoryConfigurator = DistributableSessionManagerFactoryServiceConfiguratorProvider.INSTANCE
+                .map(provider -> provider.getServiceConfigurator(managerServiceName, new SimpleDistributableSessionManagerConfiguration(sharedConfig, serverName, deploymentUnit.getName(), module)))
                 .orElseGet(() -> {
                     InMemorySessionManager manager = new InMemorySessionManager(deploymentUnit.getName(), sharedConfig.getMaxActiveSessions());
                     if (sharedConfig.getSessionConfig() != null) {
@@ -85,16 +83,16 @@ public class SharedSessionManagerDeploymentProcessor implements DeploymentUnitPr
                             manager.setDefaultSessionTimeout(sharedConfig.getSessionConfig().getSessionTimeout());
                         }
                     }
-                    return new SimpleCapabilityServiceBuilder<>(managerServiceName, new ImmediateSessionManagerFactory(manager));
+                    return new SimpleCapabilityServiceConfigurator<>(managerServiceName, new ImmediateSessionManagerFactory(manager));
                 });
 
         ServiceName codecServiceName = deploymentServiceName.append(SharedSessionManagerConfig.SHARED_SESSION_IDENTIFIER_CODEC_SERVICE_NAME);
-        CapabilityServiceBuilder<SessionIdentifierCodec> codecBuilder = DistributableSessionIdentifierCodecBuilderProvider.INSTANCE
-                .map(provider -> provider.getDeploymentBuilder(codecServiceName, serverName, deploymentUnit.getName()))
+        CapabilityServiceConfigurator codecBuilder = DistributableSessionIdentifierCodecServiceConfiguratorProvider.INSTANCE
+                .map(provider -> provider.getDeploymentServiceConfigurator(codecServiceName, serverName, deploymentUnit.getName()))
                 .orElse(new SimpleSessionIdentifierCodecBuilder(codecServiceName, serverName));
 
-        for (CapabilityServiceBuilder<?> builder : Arrays.asList(factoryBuilder, codecBuilder)) {
-            builder.configure(support).build(target).setInitialMode(Mode.ON_DEMAND).install();
+        for (CapabilityServiceConfigurator configurator : Arrays.asList(factoryConfigurator, codecBuilder)) {
+            configurator.configure(support).build(target).setInitialMode(Mode.ON_DEMAND).install();
         }
     }
 

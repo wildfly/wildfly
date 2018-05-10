@@ -26,7 +26,7 @@ import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.stream.StreamSupport;
 
-import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.msc.service.ServiceName;
 
 import io.undertow.security.impl.SingleSignOnManager;
@@ -46,5 +46,5 @@ public interface DistributableHostSingleSignOnManagerBuilderProvider {
      * @param hostName the name of the target host
      * @return builder for a service providing a {@link SingleSignOnManager}
      */
-    CapabilityServiceBuilder<SingleSignOnManager> getBuilder(ServiceName name, String serverName, String hostName);
+    CapabilityServiceConfigurator getServiceConfigurator(ServiceName name, String serverName, String hostName);
 }

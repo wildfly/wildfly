@@ -27,16 +27,16 @@ import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.stream.StreamSupport;
 
-import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.msc.service.ServiceName;
 
 /**
  * SPI for building a factory for creating a distributable session manager.
  * @author Paul Ferraro
  */
-public interface DistributableSessionManagerFactoryBuilderProvider {
+public interface DistributableSessionManagerFactoryServiceConfiguratorProvider {
 
-    Optional<DistributableSessionManagerFactoryBuilderProvider> INSTANCE = StreamSupport.stream(ServiceLoader.load(DistributableSessionManagerFactoryBuilderProvider.class, DistributableSessionManagerFactoryBuilderProvider.class.getClassLoader()).spliterator(), false).findFirst();
+    Optional<DistributableSessionManagerFactoryServiceConfiguratorProvider> INSTANCE = StreamSupport.stream(ServiceLoader.load(DistributableSessionManagerFactoryServiceConfiguratorProvider.class, DistributableSessionManagerFactoryServiceConfiguratorProvider.class.getClassLoader()).spliterator(), false).findFirst();
 
     /**
      * Builds a {@link SessionManagerFactory} service.
@@ -47,5 +47,5 @@ public interface DistributableSessionManagerFactoryBuilderProvider {
      * @param metaData the web application meta data
      * @return a session manager factory service builder
      */
-    CapabilityServiceBuilder<SessionManagerFactory> getBuilder(ServiceName name, DistributableSessionManagerConfiguration configuration);
+    CapabilityServiceConfigurator getServiceConfigurator(ServiceName name, DistributableSessionManagerConfiguration configuration);
 }

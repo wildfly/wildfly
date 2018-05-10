@@ -26,43 +26,42 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.ServiceLoader;
 
-import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
-import org.jboss.as.web.session.SessionIdentifierCodec;
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.msc.service.ServiceName;
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.service.InjectedValueDependency;
-import org.wildfly.clustering.service.ValueDependency;
-import org.wildfly.clustering.web.session.RouteLocatorBuilderProvider;
+import org.wildfly.clustering.service.ServiceSupplierDependency;
+import org.wildfly.clustering.service.SupplierDependency;
+import org.wildfly.clustering.web.session.RouteLocatorServiceConfiguratorProvider;
 import org.wildfly.extension.undertow.session.SimpleSessionIdentifierCodecBuilder;
 
 /**
  * @author Paul Ferraro
  */
-@MetaInfServices(org.wildfly.extension.undertow.session.DistributableSessionIdentifierCodecBuilderProvider.class)
-public class DistributableSessionIdentifierCodecBuilderProvider implements org.wildfly.extension.undertow.session.DistributableSessionIdentifierCodecBuilderProvider {
+@MetaInfServices(org.wildfly.extension.undertow.session.DistributableSessionIdentifierCodecServiceConfiguratorProvider.class)
+public class DistributableSessionIdentifierCodecServiceConfiguratorProvider implements org.wildfly.extension.undertow.session.DistributableSessionIdentifierCodecServiceConfiguratorProvider {
 
-    private static final RouteLocatorBuilderProvider PROVIDER = loadProvider();
+    private static final RouteLocatorServiceConfiguratorProvider PROVIDER = loadProvider();
 
-    private static RouteLocatorBuilderProvider loadProvider() {
-        for (RouteLocatorBuilderProvider provider : ServiceLoader.load(RouteLocatorBuilderProvider.class, RouteLocatorBuilderProvider.class.getClassLoader())) {
+    private static RouteLocatorServiceConfiguratorProvider loadProvider() {
+        for (RouteLocatorServiceConfiguratorProvider provider : ServiceLoader.load(RouteLocatorServiceConfiguratorProvider.class, RouteLocatorServiceConfiguratorProvider.class.getClassLoader())) {
             return provider;
         }
         return null;
     }
 
     @Override
-    public CapabilityServiceBuilder<SessionIdentifierCodec> getDeploymentBuilder(ServiceName name, String serverName, String deploymentName) {
+    public CapabilityServiceConfigurator getDeploymentServiceConfigurator(ServiceName name, String serverName, String deploymentName) {
         return (PROVIDER != null) ? new DistributableSessionIdentifierCodecBuilder(name, serverName, deploymentName, PROVIDER) : new SimpleSessionIdentifierCodecBuilder(name, serverName);
     }
 
     @Override
-    public Collection<CapabilityServiceBuilder<?>> getServerBuilders(String serverName) {
-        Collection<CapabilityServiceBuilder<?>> builders = new LinkedList<>();
-        CapabilityServiceBuilder<String> routeBuilder = new RouteBuilder(serverName);
+    public Collection<CapabilityServiceConfigurator> getServerServiceConfigurators(String serverName) {
+        Collection<CapabilityServiceConfigurator> builders = new LinkedList<>();
+        CapabilityServiceConfigurator routeBuilder = new RouteBuilder(serverName);
         builders.add(routeBuilder);
-        ValueDependency<String> routeDependency = new InjectedValueDependency<>(routeBuilder, String.class);
+        SupplierDependency<String> routeDependency = new ServiceSupplierDependency<>(routeBuilder.getServiceName());
         if (PROVIDER != null) {
-            builders.addAll(PROVIDER.getRouteLocatorConfigurationBuilders(serverName, routeDependency));
+            builders.addAll(PROVIDER.getRouteLocatorConfigurationServiceConfigurators(serverName, routeDependency));
         }
         return builders;
     }

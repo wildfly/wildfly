@@ -30,6 +30,7 @@ import java.util.Map.Entry;
 import java.util.function.Function;
 
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -44,7 +45,7 @@ import org.wildfly.clustering.service.MappedValueService;
 import org.wildfly.clustering.service.ValueDependency;
 import org.wildfly.clustering.web.sso.SSOManager;
 import org.wildfly.clustering.web.sso.SSOManagerFactory;
-import org.wildfly.clustering.web.sso.SSOManagerFactoryBuilderProvider;
+import org.wildfly.clustering.web.sso.SSOManagerFactoryServiceConfiguratorProvider;
 import org.wildfly.clustering.web.undertow.sso.SSOManagerBuilder;
 import org.wildfly.security.http.util.sso.SingleSignOnManager;
 
@@ -58,13 +59,13 @@ public class DistributableSingleSignOnManagerBuilder implements CapabilityServic
     private final ServiceName name;
     private final ValueDependency<SSOManager<ElytronAuthentication, String, Map.Entry<String, URI>, LocalSSOContext, Batch>> manager;
 
-    private final Collection<CapabilityServiceBuilder<?>> builders;
+    private final Collection<CapabilityServiceConfigurator> configurators;
 
     @SuppressWarnings("unchecked")
-    public DistributableSingleSignOnManagerBuilder(ServiceName name, String securityDomainName, SessionIdGenerator generator, SSOManagerFactoryBuilderProvider<Batch> provider) {
+    public DistributableSingleSignOnManagerBuilder(ServiceName name, String securityDomainName, SessionIdGenerator generator, SSOManagerFactoryServiceConfiguratorProvider provider) {
         this.name = name;
 
-        CapabilityServiceBuilder<SSOManagerFactory<ElytronAuthentication, String, Map.Entry<String, URI>, Batch>> factoryBuilder = provider.<ElytronAuthentication, String, Map.Entry<String, URI>>getBuilder(securityDomainName);
+        CapabilityServiceConfigurator factoryBuilder = provider.getServiceConfigurator(securityDomainName);
         ValueDependency<SSOManagerFactory<ElytronAuthentication, String, Map.Entry<String, URI>, Batch>> factoryDependency = new InjectedValueDependency<>(factoryBuilder, (Class<SSOManagerFactory<ElytronAuthentication, String, Map.Entry<String, URI>, Batch>>) (Class<?>) SSOManagerFactory.class);
         ValueDependency<SessionIdGenerator> generatorDependency = new ImmediateValueDependency<>(generator);
         ServiceName managerServiceName = this.name.append("manager");
@@ -72,7 +73,7 @@ public class DistributableSingleSignOnManagerBuilder implements CapabilityServic
 
         this.manager = new InjectedValueDependency<>(managerServiceName, (Class<SSOManager<ElytronAuthentication, String, Map.Entry<String, URI>, LocalSSOContext, Batch>>) (Class<?>) SSOManager.class);
 
-        this.builders = Arrays.asList(factoryBuilder, managerBuilder);
+        this.configurators = Arrays.asList(factoryBuilder, managerBuilder);
     }
 
     @Override
@@ -87,16 +88,16 @@ public class DistributableSingleSignOnManagerBuilder implements CapabilityServic
 
     @Override
     public Builder<SingleSignOnManager> configure(CapabilityServiceSupport support) {
-        for (CapabilityServiceBuilder<?> builder : this.builders) {
-            builder.configure(support);
+        for (CapabilityServiceConfigurator configurator : this.configurators) {
+            configurator.configure(support);
         }
         return this;
     }
 
     @Override
     public ServiceBuilder<SingleSignOnManager> build(ServiceTarget target) {
-        for (CapabilityServiceBuilder<?> builder : this.builders) {
-            builder.build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        for (CapabilityServiceConfigurator configurator : this.configurators) {
+            configurator.build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
         }
         Service<SingleSignOnManager> service = new MappedValueService<>(this, this.manager);
         return this.manager.register(target.addService(this.name, service)).setInitialMode(ServiceController.Mode.ON_DEMAND);

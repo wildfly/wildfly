@@ -24,38 +24,36 @@ package org.wildfly.clustering.web.undertow.session;
 
 import java.util.ServiceLoader;
 
-import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
-import org.jboss.as.clustering.controller.SimpleCapabilityServiceBuilder;
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
+import org.jboss.as.clustering.controller.SimpleCapabilityServiceConfigurator;
 import org.jboss.msc.service.ServiceName;
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.ee.Batch;
-import org.wildfly.clustering.web.session.SessionManagerFactoryBuilderProvider;
+import org.wildfly.clustering.web.session.SessionManagerFactoryServiceConfiguratorProvider;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.extension.undertow.session.DistributableSessionManagerConfiguration;
 
-import io.undertow.servlet.api.SessionManagerFactory;
 import io.undertow.servlet.core.InMemorySessionManagerFactory;
 
 /**
  * @author Paul Ferraro
  */
-@MetaInfServices(org.wildfly.extension.undertow.session.DistributableSessionManagerFactoryBuilderProvider.class)
-public class DistributableSessionManagerFactoryBuilderProvider implements org.wildfly.extension.undertow.session.DistributableSessionManagerFactoryBuilderProvider {
+@MetaInfServices(org.wildfly.extension.undertow.session.DistributableSessionManagerFactoryServiceConfiguratorProvider.class)
+public class DistributableSessionManagerFactoryServiceConfiguratorProvider implements org.wildfly.extension.undertow.session.DistributableSessionManagerFactoryServiceConfiguratorProvider {
 
-    private static final SessionManagerFactoryBuilderProvider<Batch> PROVIDER = loadProvider();
+    private static final SessionManagerFactoryServiceConfiguratorProvider PROVIDER = loadProvider();
 
-    private static SessionManagerFactoryBuilderProvider<Batch> loadProvider() {
-        for (SessionManagerFactoryBuilderProvider<Batch> provider : ServiceLoader.load(SessionManagerFactoryBuilderProvider.class, SessionManagerFactoryBuilderProvider.class.getClassLoader())) {
+    private static SessionManagerFactoryServiceConfiguratorProvider loadProvider() {
+        for (SessionManagerFactoryServiceConfiguratorProvider provider : ServiceLoader.load(SessionManagerFactoryServiceConfiguratorProvider.class, SessionManagerFactoryServiceConfiguratorProvider.class.getClassLoader())) {
             return provider;
         }
         return null;
     }
 
     @Override
-    public CapabilityServiceBuilder<SessionManagerFactory> getBuilder(ServiceName name, DistributableSessionManagerConfiguration configuration) {
+    public CapabilityServiceConfigurator getServiceConfigurator(ServiceName name, DistributableSessionManagerConfiguration configuration) {
         if (PROVIDER == null) {
             UndertowLogger.ROOT_LOGGER.clusteringNotSupported();
-            return new SimpleCapabilityServiceBuilder<>(name, new InMemorySessionManagerFactory(configuration.getMaxActiveSessions()));
+            return new SimpleCapabilityServiceConfigurator<>(name, new InMemorySessionManagerFactory(configuration.getMaxActiveSessions()));
         }
         return new DistributableSessionManagerFactoryBuilder(name, configuration, PROVIDER);
     }

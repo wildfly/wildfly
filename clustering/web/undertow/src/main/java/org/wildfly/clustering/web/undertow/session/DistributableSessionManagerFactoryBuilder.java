@@ -28,12 +28,10 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.ModularClassResolver;
-
-import io.undertow.servlet.api.SessionManagerFactory;
-
 import org.jboss.metadata.web.jboss.ReplicationGranularity;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.Service;
@@ -53,9 +51,11 @@ import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.MappedValueService;
 import org.wildfly.clustering.web.LocalContextFactory;
-import org.wildfly.clustering.web.session.SessionManagerFactoryBuilderProvider;
 import org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration;
+import org.wildfly.clustering.web.session.SessionManagerFactoryServiceConfiguratorProvider;
 import org.wildfly.extension.undertow.session.DistributableSessionManagerConfiguration;
+
+import io.undertow.servlet.api.SessionManagerFactory;
 
 /**
  * Distributable {@link SessionManagerFactory} builder for Undertow.
@@ -95,9 +95,9 @@ public class DistributableSessionManagerFactoryBuilder implements CapabilityServ
 
     private final ServiceName name;
     private final DistributableSessionManagerConfiguration config;
-    private final CapabilityServiceBuilder<org.wildfly.clustering.web.session.SessionManagerFactory<LocalSessionContext, Batch>> factoryBuilder;
+    private final CapabilityServiceConfigurator configurator;
 
-    public DistributableSessionManagerFactoryBuilder(ServiceName name, DistributableSessionManagerConfiguration config, SessionManagerFactoryBuilderProvider<Batch> provider) {
+    public DistributableSessionManagerFactoryBuilder(ServiceName name, DistributableSessionManagerConfiguration config, SessionManagerFactoryServiceConfiguratorProvider provider) {
         this.name = name;
         this.config = config;
 
@@ -146,7 +146,7 @@ public class DistributableSessionManagerFactoryBuilder implements CapabilityServ
                 return localContextFactory;
             }
         };
-        this.factoryBuilder = provider.getBuilder(configuration);
+        this.configurator = provider.getServiceConfigurator(configuration);
     }
 
     @Override
@@ -161,18 +161,18 @@ public class DistributableSessionManagerFactoryBuilder implements CapabilityServ
 
     @Override
     public Builder<SessionManagerFactory> configure(CapabilityServiceSupport support) {
-        this.factoryBuilder.configure(support);
+        this.configurator.configure(support);
         return this;
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public ServiceBuilder<SessionManagerFactory> build(ServiceTarget target) {
-        this.factoryBuilder.build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        this.configurator.build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
         InjectedValue<org.wildfly.clustering.web.session.SessionManagerFactory<LocalSessionContext, Batch>> sessionManagerFactoryValue = new InjectedValue<>();
         Service<SessionManagerFactory> service = new MappedValueService<>(this, sessionManagerFactoryValue);
         return target.addService(this.name, service)
-                .addDependency(this.factoryBuilder.getServiceName(), (Class<org.wildfly.clustering.web.session.SessionManagerFactory<LocalSessionContext, Batch>>) (Class<?>) org.wildfly.clustering.web.session.SessionManagerFactory.class, sessionManagerFactoryValue)
+                .addDependency(this.configurator.getServiceName(), (Class<org.wildfly.clustering.web.session.SessionManagerFactory<LocalSessionContext, Batch>>) (Class<?>) org.wildfly.clustering.web.session.SessionManagerFactory.class, sessionManagerFactoryValue)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 }

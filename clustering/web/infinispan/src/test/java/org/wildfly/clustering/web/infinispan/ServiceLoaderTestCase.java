@@ -31,9 +31,9 @@ import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.spi.CacheAliasBuilderProvider;
 import org.wildfly.clustering.spi.DistributedCacheBuilderProvider;
 import org.wildfly.clustering.spi.LocalCacheBuilderProvider;
-import org.wildfly.clustering.web.session.RouteLocatorBuilderProvider;
-import org.wildfly.clustering.web.session.SessionManagerFactoryBuilderProvider;
-import org.wildfly.clustering.web.sso.SSOManagerFactoryBuilderProvider;
+import org.wildfly.clustering.web.session.RouteLocatorServiceConfiguratorProvider;
+import org.wildfly.clustering.web.session.SessionManagerFactoryServiceConfiguratorProvider;
+import org.wildfly.clustering.web.sso.SSOManagerFactoryServiceConfiguratorProvider;
 
 /**
  * Validates loading of services.
@@ -51,9 +51,9 @@ public class ServiceLoaderTestCase {
     @Test
     public void load() {
         load(Externalizer.class);
-        load(RouteLocatorBuilderProvider.class);
-        load(SessionManagerFactoryBuilderProvider.class);
-        load(SSOManagerFactoryBuilderProvider.class);
+        load(RouteLocatorServiceConfiguratorProvider.class);
+        load(SessionManagerFactoryServiceConfiguratorProvider.class);
+        load(SSOManagerFactoryServiceConfiguratorProvider.class);
         load(DistributedCacheBuilderProvider.class);
         load(LocalCacheBuilderProvider.class);
         load(CacheAliasBuilderProvider.class);

@@ -72,7 +72,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 import javax.servlet.http.HttpSession;
 
-import org.jboss.as.clustering.controller.SimpleCapabilityServiceBuilder;
+import org.jboss.as.clustering.controller.SimpleCapabilityServiceConfigurator;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CapabilityServiceBuilder;
@@ -311,8 +311,8 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
                 SessionIdGenerator generator = new SecureRandomSessionIdGenerator();
 
                 DistributableSecurityDomainSingleSignOnManagerBuilderProvider.INSTANCE
-                        .map(provider -> provider.getBuilder(managerServiceName, securityDomainName, generator))
-                        .orElse(new SimpleCapabilityServiceBuilder<>(managerServiceName, new DefaultSingleSignOnManager(new ConcurrentHashMap<>(), generator::createSessionId)))
+                        .map(provider -> provider.getServiceConfigurator(managerServiceName, securityDomainName, generator))
+                        .orElse(new SimpleCapabilityServiceConfigurator<>(managerServiceName, new DefaultSingleSignOnManager(new ConcurrentHashMap<>(), generator::createSessionId)))
                         .configure(context).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 
                 Builder<SingleSignOnSessionFactory> factoryBuilder = new SingleSignOnSessionFactoryBuilder(securityDomainName).configure(context, ssoModel);

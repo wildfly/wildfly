@@ -19,25 +19,15 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.infinispan.session;
+package org.wildfly.clustering.web.session;
 
-import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
-import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.ee.infinispan.TransactionBatch;
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.wildfly.clustering.marshalling.spi.Marshallability;
-import org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration;
-import org.wildfly.clustering.web.session.SessionManagerFactory;
-import org.wildfly.clustering.web.session.SessionManagerFactoryBuilderProvider;
 
 /**
- * Service building strategy the Infinispan session manager factory.
+ * Interface for building a session manager factory.
  * @author Paul Ferraro
  */
-@MetaInfServices(SessionManagerFactoryBuilderProvider.class)
-public class InfinispanSessionManagerFactoryBuilderProvider implements SessionManagerFactoryBuilderProvider<TransactionBatch> {
-
-    @Override
-    public <C extends Marshallability, L> CapabilityServiceBuilder<SessionManagerFactory<L, TransactionBatch>> getBuilder(SessionManagerFactoryConfiguration<C, L> config) {
-        return new InfinispanSessionManagerFactoryBuilder<>(config);
-    }
+public interface SessionManagerFactoryServiceConfiguratorProvider {
+    <C extends Marshallability, L> CapabilityServiceConfigurator getServiceConfigurator(SessionManagerFactoryConfiguration<C, L> configuration);
 }

@@ -24,6 +24,7 @@ package org.wildfly.clustering.web.undertow.session;
 import java.util.function.Function;
 
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.web.session.RoutingSupport;
 import org.jboss.as.web.session.SessionIdentifierCodec;
@@ -37,7 +38,7 @@ import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.MappedValueService;
 import org.wildfly.clustering.web.session.RouteLocator;
-import org.wildfly.clustering.web.session.RouteLocatorBuilderProvider;
+import org.wildfly.clustering.web.session.RouteLocatorServiceConfiguratorProvider;
 
 /**
  * Builds a distributable {@link SessionIdentifierCodec} service.
@@ -46,12 +47,12 @@ import org.wildfly.clustering.web.session.RouteLocatorBuilderProvider;
 public class DistributableSessionIdentifierCodecBuilder implements CapabilityServiceBuilder<SessionIdentifierCodec>, Function<RouteLocator, SessionIdentifierCodec> {
 
     private final ServiceName name;
-    private final CapabilityServiceBuilder<RouteLocator> locatorBuilder;
+    private final CapabilityServiceConfigurator configurator;
     private final RoutingSupport routing = new SimpleRoutingSupport();
 
-    public DistributableSessionIdentifierCodecBuilder(ServiceName name, String serverName, String deploymentName, RouteLocatorBuilderProvider provider) {
+    public DistributableSessionIdentifierCodecBuilder(ServiceName name, String serverName, String deploymentName, RouteLocatorServiceConfiguratorProvider provider) {
         this.name = name;
-        this.locatorBuilder = provider.getRouteLocatorBuilder(serverName, deploymentName);
+        this.configurator = provider.getRouteLocatorServiceConfigurator(serverName, deploymentName);
     }
 
     @Override
@@ -66,17 +67,17 @@ public class DistributableSessionIdentifierCodecBuilder implements CapabilitySer
 
     @Override
     public Builder<SessionIdentifierCodec> configure(CapabilityServiceSupport support) {
-        this.locatorBuilder.configure(support);
+        this.configurator.configure(support);
         return this;
     }
 
     @Override
     public ServiceBuilder<SessionIdentifierCodec> build(ServiceTarget target) {
-        this.locatorBuilder.build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        this.configurator.build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
         InjectedValue<RouteLocator> locatorValue = new InjectedValue<>();
         Service<SessionIdentifierCodec> service = new MappedValueService<>(this, locatorValue);
         return target.addService(this.name, service)
-                .addDependency(this.locatorBuilder.getServiceName(), RouteLocator.class, locatorValue)
+                .addDependency(this.configurator.getServiceName(), RouteLocator.class, locatorValue)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 ;
     }

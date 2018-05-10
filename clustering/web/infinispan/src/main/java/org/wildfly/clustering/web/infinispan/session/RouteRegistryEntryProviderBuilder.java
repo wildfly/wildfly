@@ -31,8 +31,8 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.service.MappedValueService;
-import org.wildfly.clustering.service.ValueDependency;
+import org.wildfly.clustering.service.SuppliedValueService;
+import org.wildfly.clustering.service.SupplierDependency;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 
 /**
@@ -42,9 +42,9 @@ import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 public class RouteRegistryEntryProviderBuilder implements CapabilityServiceBuilder<Map.Entry<String, Void>>, Function<String, Map.Entry<String, Void>> {
 
     private final String serverName;
-    private final ValueDependency<String> route;
+    private final SupplierDependency<String> route;
 
-    public RouteRegistryEntryProviderBuilder(String serverName, ValueDependency<String> route) {
+    public RouteRegistryEntryProviderBuilder(String serverName, SupplierDependency<String> route) {
         this.serverName = serverName;
         this.route = route;
     }
@@ -61,6 +61,6 @@ public class RouteRegistryEntryProviderBuilder implements CapabilityServiceBuild
 
     @Override
     public ServiceBuilder<Map.Entry<String, Void>> build(ServiceTarget target) {
-        return this.route.register(target.addService(this.getServiceName(), new MappedValueService<>(this, this.route))).setInitialMode(ServiceController.Mode.ON_DEMAND);
+        return this.route.register(target.addService(this.getServiceName(), new SuppliedValueService<>(this, this.route, route -> {}))).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 }

@@ -21,17 +21,15 @@
  */
 package org.wildfly.clustering.web.infinispan.sso;
 
-import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.ee.infinispan.TransactionBatch;
-import org.wildfly.clustering.web.sso.SSOManagerFactory;
-import org.wildfly.clustering.web.sso.SSOManagerFactoryBuilderProvider;
+import org.wildfly.clustering.web.sso.SSOManagerFactoryServiceConfiguratorProvider;
 
-@MetaInfServices(SSOManagerFactoryBuilderProvider.class)
-public class InfinispanSSOManagerFactoryBuilderProvider implements SSOManagerFactoryBuilderProvider<TransactionBatch> {
+@MetaInfServices(SSOManagerFactoryServiceConfiguratorProvider.class)
+public class InfinispanSSOManagerFactoryServiceConfiguratorProvider implements SSOManagerFactoryServiceConfiguratorProvider {
 
     @Override
-    public <A, D, S> CapabilityServiceBuilder<SSOManagerFactory<A, D, S, TransactionBatch>> getBuilder(String name) {
+    public CapabilityServiceConfigurator getServiceConfigurator(String name) {
         return new InfinispanSSOManagerFactoryBuilder<>(name);
     }
 }

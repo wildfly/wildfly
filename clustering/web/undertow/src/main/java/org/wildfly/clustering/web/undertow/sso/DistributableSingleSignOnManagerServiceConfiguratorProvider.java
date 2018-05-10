@@ -24,34 +24,32 @@ package org.wildfly.clustering.web.undertow.sso;
 
 import java.util.ServiceLoader;
 
-import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
-import org.jboss.as.clustering.controller.SimpleCapabilityServiceBuilder;
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
+import org.jboss.as.clustering.controller.SimpleCapabilityServiceConfigurator;
 import org.jboss.msc.service.ServiceName;
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.ee.Batch;
-import org.wildfly.clustering.web.sso.SSOManagerFactoryBuilderProvider;
+import org.wildfly.clustering.web.sso.SSOManagerFactoryServiceConfiguratorProvider;
 import org.wildfly.extension.undertow.security.sso.DistributableHostSingleSignOnManagerBuilderProvider;
 
 import io.undertow.security.impl.InMemorySingleSignOnManager;
-import io.undertow.security.impl.SingleSignOnManager;
 
 /**
  * @author Paul Ferraro
  */
 @MetaInfServices(DistributableHostSingleSignOnManagerBuilderProvider.class)
-public class DistributableSingleSignOnManagerBuilderProvider implements DistributableHostSingleSignOnManagerBuilderProvider {
+public class DistributableSingleSignOnManagerServiceConfiguratorProvider implements DistributableHostSingleSignOnManagerBuilderProvider {
 
-    private static final SSOManagerFactoryBuilderProvider<Batch> PROVIDER = loadProvider();
+    private static final SSOManagerFactoryServiceConfiguratorProvider PROVIDER = loadProvider();
 
-    private static SSOManagerFactoryBuilderProvider<Batch> loadProvider() {
-        for (SSOManagerFactoryBuilderProvider<Batch> provider : ServiceLoader.load(SSOManagerFactoryBuilderProvider.class, SSOManagerFactoryBuilderProvider.class.getClassLoader())) {
+    private static SSOManagerFactoryServiceConfiguratorProvider loadProvider() {
+        for (SSOManagerFactoryServiceConfiguratorProvider provider : ServiceLoader.load(SSOManagerFactoryServiceConfiguratorProvider.class, SSOManagerFactoryServiceConfiguratorProvider.class.getClassLoader())) {
             return provider;
         }
         return null;
     }
 
     @Override
-    public CapabilityServiceBuilder<SingleSignOnManager> getBuilder(ServiceName name, String serverName, String hostName) {
-        return (PROVIDER != null) ? new DistributableSingleSignOnManagerBuilder(name, serverName, hostName, PROVIDER) : new SimpleCapabilityServiceBuilder<>(name, new InMemorySingleSignOnManager());
+    public CapabilityServiceConfigurator getServiceConfigurator(ServiceName name, String serverName, String hostName) {
+        return (PROVIDER != null) ? new DistributableSingleSignOnManagerBuilder(name, serverName, hostName, PROVIDER) : new SimpleCapabilityServiceConfigurator<>(name, new InMemorySingleSignOnManager());
     }
 }

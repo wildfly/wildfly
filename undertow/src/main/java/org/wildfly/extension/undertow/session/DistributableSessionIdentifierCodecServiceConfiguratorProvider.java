@@ -26,7 +26,7 @@ import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.stream.StreamSupport;
 
-import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.web.session.SessionIdentifierCodec;
 import org.jboss.msc.service.ServiceName;
 
@@ -34,9 +34,9 @@ import org.jboss.msc.service.ServiceName;
  * Builds a {@link SessionIdentifierCodec} service.
  * @author Paul Ferraro
  */
-public interface DistributableSessionIdentifierCodecBuilderProvider {
+public interface DistributableSessionIdentifierCodecServiceConfiguratorProvider {
 
-    Optional<DistributableSessionIdentifierCodecBuilderProvider> INSTANCE = StreamSupport.stream(ServiceLoader.load(DistributableSessionIdentifierCodecBuilderProvider.class, DistributableSessionIdentifierCodecBuilderProvider.class.getClassLoader()).spliterator(), false).findFirst();
+    Optional<DistributableSessionIdentifierCodecServiceConfiguratorProvider> INSTANCE = StreamSupport.stream(ServiceLoader.load(DistributableSessionIdentifierCodecServiceConfiguratorProvider.class, DistributableSessionIdentifierCodecServiceConfiguratorProvider.class.getClassLoader()).spliterator(), false).findFirst();
 
     /**
      * Builds a {@link SessionIdentifierCodec} service.
@@ -45,12 +45,12 @@ public interface DistributableSessionIdentifierCodecBuilderProvider {
      * @param deploymentServiceName the service name of the deployment
      * @return a service builder
      */
-    CapabilityServiceBuilder<SessionIdentifierCodec> getDeploymentBuilder(ServiceName name, String serverName, String deploymentName);
+    CapabilityServiceConfigurator getDeploymentServiceConfigurator(ServiceName name, String serverName, String deploymentName);
 
     /**
      * Builds cross-deployment dependencies needed for route handling
      * @param target the service target
      * @return a service builder
      */
-    Collection<CapabilityServiceBuilder<?>> getServerBuilders(String serverName);
+    Collection<CapabilityServiceConfigurator> getServerServiceConfigurators(String serverName);
 }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -21,14 +21,27 @@
  */
 package org.wildfly.clustering.web.session;
 
-import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
-import org.wildfly.clustering.ee.Batch;
-import org.wildfly.clustering.marshalling.spi.Marshallability;
+import java.util.Collection;
+
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
+import org.wildfly.clustering.service.SupplierDependency;
 
 /**
- * Interface for building a session manager factory.
+ * Builds a {@link RouteLocator} service.
  * @author Paul Ferraro
  */
-public interface SessionManagerFactoryBuilderProvider<B extends Batch> {
-    <C extends Marshallability, L> CapabilityServiceBuilder<SessionManagerFactory<L, B>> getBuilder(SessionManagerFactoryConfiguration<C, L> configuration);
+public interface RouteLocatorServiceConfiguratorProvider {
+    /**
+     * Builds a {@link RouteLocator} service.
+     * @param deploymentName the name of the web deployment
+     * @return a service builder
+     */
+    CapabilityServiceConfigurator getRouteLocatorServiceConfigurator(String serverName, String deploymentName);
+
+    /**
+     * Builds the server dependencies to be made available to every deployment.
+     * @param route the injected route source
+     * @return a service builder
+     */
+    Collection<CapabilityServiceConfigurator> getRouteLocatorConfigurationServiceConfigurators(String serverName, SupplierDependency<String> routeDependencyProvider);
 }

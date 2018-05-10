@@ -26,7 +26,7 @@ import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.stream.StreamSupport;
 
-import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.security.http.util.sso.SingleSignOnManager;
 
@@ -46,5 +46,5 @@ public interface DistributableSecurityDomainSingleSignOnManagerBuilderProvider {
      * @param generator a generator of unique identifiers
      * @return builder for a service providing a {@link SingleSignOnManager}
      */
-    CapabilityServiceBuilder<SingleSignOnManager> getBuilder(ServiceName name, String securityDomainName, SessionIdGenerator generator);
+    CapabilityServiceConfigurator getServiceConfigurator(ServiceName name, String securityDomainName, SessionIdGenerator generator);
 }

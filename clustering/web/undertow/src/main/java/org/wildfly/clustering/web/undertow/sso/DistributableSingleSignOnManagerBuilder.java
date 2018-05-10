@@ -22,15 +22,11 @@
 
 package org.wildfly.clustering.web.undertow.sso;
 
-import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession;
-import io.undertow.security.impl.SingleSignOnManager;
-import io.undertow.server.session.SessionIdGenerator;
-import io.undertow.server.session.SessionListener;
-
 import java.util.Arrays;
 import java.util.Collection;
 
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -45,7 +41,12 @@ import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.ValueDependency;
 import org.wildfly.clustering.web.sso.SSOManager;
 import org.wildfly.clustering.web.sso.SSOManagerFactory;
-import org.wildfly.clustering.web.sso.SSOManagerFactoryBuilderProvider;
+import org.wildfly.clustering.web.sso.SSOManagerFactoryServiceConfiguratorProvider;
+
+import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession;
+import io.undertow.security.impl.SingleSignOnManager;
+import io.undertow.server.session.SessionIdGenerator;
+import io.undertow.server.session.SessionListener;
 
 
 /**
@@ -59,13 +60,13 @@ public class DistributableSingleSignOnManagerBuilder implements CapabilityServic
     private final ValueDependency<SSOManager<AuthenticatedSession, String, String, Void, Batch>> manager;
     private final ValueDependency<SessionManagerRegistry> registry;
 
-    private final Collection<CapabilityServiceBuilder<?>> builders;
+    private final Collection<CapabilityServiceConfigurator> configurators;
 
     @SuppressWarnings("unchecked")
-    public DistributableSingleSignOnManagerBuilder(ServiceName name, String serverName, String hostName, SSOManagerFactoryBuilderProvider<Batch> provider) {
+    public DistributableSingleSignOnManagerBuilder(ServiceName name, String serverName, String hostName, SSOManagerFactoryServiceConfiguratorProvider provider) {
         this.name = name;
 
-        CapabilityServiceBuilder<SSOManagerFactory<AuthenticatedSession, String, String, Batch>> factoryBuilder = provider.<AuthenticatedSession, String, String>getBuilder(hostName);
+        CapabilityServiceConfigurator factoryBuilder = provider.getServiceConfigurator(hostName);
         ServiceName generatorServiceName = this.name.append("generator");
         CapabilityServiceBuilder<SessionIdGenerator> generatorBuilder = new SessionIdGeneratorBuilder(generatorServiceName, serverName);
 
@@ -85,7 +86,7 @@ public class DistributableSingleSignOnManagerBuilder implements CapabilityServic
         this.manager = new InjectedValueDependency<>(managerBuilder, (Class<SSOManager<AuthenticatedSession, String, String, Void, Batch>>) (Class<?>) SSOManager.class);
         this.registry = new InjectedValueDependency<>(registryBuilder, SessionManagerRegistry.class);
 
-        this.builders = Arrays.asList(factoryBuilder, generatorBuilder, managerBuilder, listenerBuilder, registryBuilder);
+        this.configurators = Arrays.asList(factoryBuilder, generatorBuilder, managerBuilder, listenerBuilder, registryBuilder);
     }
 
     @Override
@@ -100,16 +101,16 @@ public class DistributableSingleSignOnManagerBuilder implements CapabilityServic
 
     @Override
     public Builder<SingleSignOnManager> configure(CapabilityServiceSupport support) {
-        for (CapabilityServiceBuilder<?> builder : this.builders) {
-            builder.configure(support);
+        for (CapabilityServiceConfigurator configurator : this.configurators) {
+            configurator.configure(support);
         }
         return this;
     }
 
     @Override
     public ServiceBuilder<SingleSignOnManager> build(ServiceTarget target) {
-        for (CapabilityServiceBuilder<?> builder : this.builders) {
-            builder.build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        for (CapabilityServiceConfigurator configurator : this.configurators) {
+            configurator.build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
         }
         ServiceBuilder<SingleSignOnManager> builder = target.addService(this.name, new ValueService<>(this)).setInitialMode(ServiceController.Mode.ON_DEMAND);
         return new CompositeDependency(this.manager, this.registry).register(builder);
