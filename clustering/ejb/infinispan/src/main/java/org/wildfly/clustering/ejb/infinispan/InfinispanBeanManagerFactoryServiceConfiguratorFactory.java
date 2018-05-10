@@ -33,8 +33,8 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.ExpirationConfiguration;
 import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.eviction.EvictionType;
-import org.jboss.as.clustering.controller.BuilderAdapter;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
+import org.jboss.as.clustering.controller.ServiceConfiguratorAdapter;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.deployment.Services;
 import org.jboss.msc.service.ServiceName;
@@ -50,7 +50,7 @@ import org.wildfly.clustering.infinispan.spi.service.CacheServiceConfigurator;
 import org.wildfly.clustering.infinispan.spi.service.TemplateConfigurationServiceConfigurator;
 import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.ServiceDependency;
-import org.wildfly.clustering.service.concurrent.RemoveOnCancelScheduledExecutorServiceBuilder;
+import org.wildfly.clustering.service.concurrent.RemoveOnCancelScheduledExecutorServiceConfigurator;
 
 /**
  * Builds an infinispan-based {@link BeanManagerFactory}.
@@ -60,7 +60,7 @@ import org.wildfly.clustering.service.concurrent.RemoveOnCancelScheduledExecutor
  * @param <G> the group identifier type
  * @param <I> the bean identifier type
  */
-public class InfinispanBeanManagerFactoryBuilderFactory<I> implements BeanManagerFactoryServiceConfiguratorFactory {
+public class InfinispanBeanManagerFactoryServiceConfiguratorFactory<I> implements BeanManagerFactoryServiceConfiguratorFactory {
 
     private static final ThreadFactory EXPIRATION_THREAD_FACTORY = createThreadFactory();
 
@@ -84,7 +84,7 @@ public class InfinispanBeanManagerFactoryBuilderFactory<I> implements BeanManage
     private final String name;
     private final BeanManagerFactoryServiceConfiguratorConfiguration config;
 
-    public InfinispanBeanManagerFactoryBuilderFactory(CapabilityServiceSupport support, String name, BeanManagerFactoryServiceConfiguratorConfiguration config) {
+    public InfinispanBeanManagerFactoryServiceConfiguratorFactory(CapabilityServiceSupport support, String name, BeanManagerFactoryServiceConfiguratorConfiguration config) {
         this.support = support;
         this.name = name;
         this.config = config;
@@ -118,12 +118,12 @@ public class InfinispanBeanManagerFactoryBuilderFactory<I> implements BeanManage
         List<CapabilityServiceConfigurator> builders = new ArrayList<>(4);
         builders.add(new TemplateConfigurationServiceConfigurator(ServiceName.parse(InfinispanCacheRequirement.CONFIGURATION.resolve(containerName, cacheName)), containerName, cacheName, templateCacheName, configurator));
         builders.add(new CacheServiceConfigurator<>(ServiceName.parse(InfinispanCacheRequirement.CACHE.resolve(containerName, cacheName)), containerName, cacheName).require(new ServiceDependency(name.append("marshalling"))));
-        builders.add(new BuilderAdapter<>(new RemoveOnCancelScheduledExecutorServiceBuilder(name.append(this.name, "expiration"), EXPIRATION_THREAD_FACTORY)));
+        builders.add(new ServiceConfiguratorAdapter(new RemoveOnCancelScheduledExecutorServiceConfigurator(name.append(this.name, "expiration"), EXPIRATION_THREAD_FACTORY)));
         return builders;
     }
 
     @Override
     public ServiceConfigurator getBeanManagerFactoryServiceConfigurator(BeanContext context) {
-        return new InfinispanBeanManagerFactoryBuilder<>(this.support, this.name, context, this.config);
+        return new InfinispanBeanManagerFactoryServiceConfigurator<>(this.support, this.name, context, this.config);
     }
 }

@@ -31,10 +31,10 @@ import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorFactoryPr
  * @author Paul Ferraro
  */
 @MetaInfServices(BeanManagerFactoryServiceConfiguratorFactoryProvider.class)
-public class InfinispanBeanManagerFactoryBuilderFactoryProvider implements BeanManagerFactoryServiceConfiguratorFactoryProvider {
+public class InfinispanBeanManagerFactoryServiceConfiguratorFactoryProvider implements BeanManagerFactoryServiceConfiguratorFactoryProvider {
 
     @Override
     public BeanManagerFactoryServiceConfiguratorFactory getBeanManagerFactoryBuilder(CapabilityServiceSupport support, String name, BeanManagerFactoryServiceConfiguratorConfiguration config) {
-        return new InfinispanBeanManagerFactoryBuilderFactory<>(support, name, config);
+        return new InfinispanBeanManagerFactoryServiceConfiguratorFactory<>(support, name, config);
     }
 }
