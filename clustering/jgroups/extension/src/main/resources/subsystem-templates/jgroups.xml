@@ -59,46 +59,78 @@
     <supplement name="s3-ping">
         <replacement placeholder="TCP-DISCOVERY">
             <protocol type="S3_PING">
-                <property name="access_key">${jboss.jgroups.s3_ping.access_key}</property>
-                <property name="secret_access_key">${jboss.jgroups.s3_ping.secret_access_key}</property>
-                <property name="location">${jboss.jgroups.s3_ping.bucket}</property>
+                <property name="access_key">
+                    ${jboss.jgroups.s3_ping.access_key}
+                </property>
+                <property name="secret_access_key">
+                    ${jboss.jgroups.s3_ping.secret_access_key}
+                </property>
+                <property name="location">
+                    ${jboss.jgroups.s3_ping.bucket}
+                </property>
             </protocol>
         </replacement>
         <replacement placeholder="UDP-DISCOVERY">
             <protocol type="S3_PING">
-                <property name="access_key">${jboss.jgroups.s3_ping.access_key}</property>
-                <property name="secret_access_key">${jboss.jgroups.s3_ping.secret_access_key}</property>
-                <property name="location">${jboss.jgroups.s3_ping.bucket}</property>
+                <property name="access_key">
+                    ${jboss.jgroups.s3_ping.access_key}
+                </property>
+                <property name="secret_access_key">
+                    ${jboss.jgroups.s3_ping.secret_access_key}
+                </property>
+                <property name="location">
+                    ${jboss.jgroups.s3_ping.bucket}
+                </property>
             </protocol>
         </replacement>
     </supplement>
     <supplement name="azure-ping">
         <replacement placeholder="TCP-DISCOVERY">
             <protocol type="azure.AZURE_PING">
-                <property name="storage_account_name">${jboss.jgroups.azure_ping.storage_account_name}</property>
-                <property name="storage_access_key">${jboss.jgroups.azure_ping.storage_access_key}</property>
-                <property name="container">${jboss.jgroups.azure_ping.container}</property>
+                <property name="storage_account_name">
+                    ${jboss.jgroups.azure_ping.storage_account_name}
+                </property>
+                <property name="storage_access_key">
+                    ${jboss.jgroups.azure_ping.storage_access_key}
+                </property>
+                <property name="container">
+                    ${jboss.jgroups.azure_ping.container}
+                </property>
             </protocol>
         </replacement>
         <replacement placeholder="UDP-DISCOVERY">
             <protocol type="azure.AZURE_PING">
-                <property name="storage_account_name">${jboss.jgroups.azure_ping.storage_account_name}</property>
-                <property name="storage_access_key">${jboss.jgroups.azure_ping.storage_access_key}</property>
-                <property name="container">${jboss.jgroups.azure_ping.container}</property>
+                <property name="storage_account_name">
+                    ${jboss.jgroups.azure_ping.storage_account_name}
+                </property>
+                <property name="storage_access_key">
+                    ${jboss.jgroups.azure_ping.storage_access_key}
+                </property>
+                <property name="container">
+                    ${jboss.jgroups.azure_ping.container}
+                </property>
             </protocol>
         </replacement>
     </supplement>
     <supplement name="gossip-discovery">
         <replacement placeholder="TCP-DISCOVERY">
             <protocol type="TCPGOSSIP">
-                <property name="initial_hosts">${jboss.jgroups.gossip.initial_hosts}</property>
-                <property name="num_initial_members">${jboss.jgroups.gossip.num_initial_members}</property>
+                <property name="initial_hosts">
+                    ${jboss.jgroups.gossip.initial_hosts}
+                </property>
+                <property name="num_initial_members">
+                    ${jboss.jgroups.gossip.num_initial_members}
+                </property>
             </protocol>
         </replacement>
         <replacement placeholder="UDP-DISCOVERY">
             <protocol type="TCPGOSSIP">
-                <property name="initial_hosts">${jboss.jgroups.gossip.initial_hosts}</property>
-                <property name="num_initial_members">${jboss.jgroups.gossip.num_initial_members}</property>
+                <property name="initial_hosts">
+                    ${jboss.jgroups.gossip.initial_hosts}
+                </property>
+                <property name="num_initial_members">
+                    ${jboss.jgroups.gossip.num_initial_members}
+                </property>
             </protocol>
         </replacement>
     </supplement>
