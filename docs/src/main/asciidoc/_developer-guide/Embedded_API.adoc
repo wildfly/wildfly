@@ -46,6 +46,31 @@ try {
 }
 ----
 
+.Server in admin-only Example
+[source,java]
+----
+final StandaloneServer server = EmbeddedProcessFactory.createStandaloneServer(
+    Configuration.Builder.of(jbossHome)
+        .addCommandArgument("--admin-only")
+        .build());
+server.start();
+
+try {
+    // Print the listening address
+    final ModelControllerClient client = server.getModelControllerClient();
+    final ModelNode address = Operations.createAddress();
+    final ModelNode op = Operations.createReadAttributeOperation(address, "running-mode");
+    op.get("resolve-expressions").set(true);
+    final ModelNode result = client.execute(op);
+    if (!Operations.isSuccessfulOutcome((result))) {
+        throw new RuntimeException("Failed to get the running-mode: " + Operations.getFailureDescription(result));
+    }
+    System.out.printf("Running mode is %s%n", Operations.readResult(result).asString());
+} finally {
+    server.stop();
+}
+----
+
 .log4j2 Hint
 [source,java]
 ----
