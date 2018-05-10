@@ -47,6 +47,9 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.jboss.tm.XAResourceRecovery;
+import org.jboss.tm.XAResourceRecoveryRegistry;
+
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -116,6 +119,13 @@ public class EJBClientXidTransactionTestCase {
         builder.setXATerminator(xat).setExtendedJBossXATerminator(xat);
         builder.setTransactionManager(narayanaTm);
         builder.setTransactionSynchronizationRegistry(narayanaTsr);
+        builder.setXAResourceRecoveryRegistry(new XAResourceRecoveryRegistry() {
+            @Override public void addXAResourceRecovery(
+                  XAResourceRecovery xaResourceRecovery) {}
+
+            @Override public void removeXAResourceRecovery(
+                  XAResourceRecovery xaResourceRecovery) {}
+        });
         LocalTransactionContext.getContextManager().setGlobalDefault(new LocalTransactionContext(builder.build()));
         txManager = ContextTransactionManager.getInstance();
         txSyncRegistry = ContextTransactionSynchronizationRegistry.getInstance();
