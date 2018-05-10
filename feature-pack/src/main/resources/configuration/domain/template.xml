@@ -26,14 +26,14 @@
         <profile name="default">
             <?SUBSYSTEMS socket-binding-group="standard-sockets"?>
         </profile>
-        <profile name="ha">
-            <?SUBSYSTEMS socket-binding-group="ha-sockets"?>
-        </profile>
         <profile name="full">
             <?SUBSYSTEMS socket-binding-group="full-sockets"?>
         </profile>
         <profile name="full-ha">
             <?SUBSYSTEMS socket-binding-group="full-ha-sockets"?>
+        </profile>
+        <profile name="ha">
+            <?SUBSYSTEMS socket-binding-group="ha-sockets"?>
         </profile>
         <profile name="load-balancer">
             <?SUBSYSTEMS socket-binding-group="load-balancer-sockets"?>
@@ -50,13 +50,13 @@
         <socket-binding-group name="standard-sockets" default-interface="public">
             <?SOCKET-BINDINGS?>
         </socket-binding-group>
-        <socket-binding-group name="ha-sockets" default-interface="public">
-            <?SOCKET-BINDINGS?>
-        </socket-binding-group>
         <socket-binding-group name="full-sockets" default-interface="public">
             <?SOCKET-BINDINGS?>
         </socket-binding-group>
         <socket-binding-group name="full-ha-sockets" default-interface="public">
+            <?SOCKET-BINDINGS?>
+        </socket-binding-group>
+        <socket-binding-group name="ha-sockets" default-interface="public">
             <?SOCKET-BINDINGS?>
         </socket-binding-group>
         <socket-binding-group name="load-balancer-sockets" default-interface="public">
