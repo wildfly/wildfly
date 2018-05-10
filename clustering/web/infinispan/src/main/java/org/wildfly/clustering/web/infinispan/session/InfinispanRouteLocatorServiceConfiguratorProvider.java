@@ -37,8 +37,8 @@ import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.msc.service.ServiceName;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
-import org.wildfly.clustering.infinispan.spi.service.CacheBuilder;
-import org.wildfly.clustering.infinispan.spi.service.TemplateConfigurationBuilder;
+import org.wildfly.clustering.infinispan.spi.service.CacheServiceConfigurator;
+import org.wildfly.clustering.infinispan.spi.service.TemplateConfigurationServiceConfigurator;
 import org.wildfly.clustering.service.SupplierDependency;
 import org.wildfly.clustering.spi.CacheServiceConfiguratorProvider;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
@@ -66,8 +66,8 @@ public class InfinispanRouteLocatorServiceConfiguratorProvider implements RouteL
         List<CapabilityServiceConfigurator> builders = new LinkedList<>();
 
         builders.add(new RouteRegistryEntryProviderBuilder(serverName, routeDependency));
-        builders.add(new TemplateConfigurationBuilder(ServiceName.parse(InfinispanCacheRequirement.CONFIGURATION.resolve(containerName, serverName)), containerName, serverName, null, this));
-        builders.add(new CacheBuilder<>(ServiceName.parse(InfinispanCacheRequirement.CACHE.resolve(containerName, serverName)), containerName, serverName));
+        builders.add(new TemplateConfigurationServiceConfigurator(ServiceName.parse(InfinispanCacheRequirement.CONFIGURATION.resolve(containerName, serverName)), containerName, serverName, null, this));
+        builders.add(new CacheServiceConfigurator<>(ServiceName.parse(InfinispanCacheRequirement.CACHE.resolve(containerName, serverName)), containerName, serverName));
         ServiceNameRegistry<ClusteringCacheRequirement> registry = requirement -> ServiceName.parse(requirement.resolve(containerName, serverName));
         for (CacheServiceConfiguratorProvider provider : ServiceLoader.load(DistributedCacheServiceConfiguratorProvider.class, DistributedCacheServiceConfiguratorProvider.class.getClassLoader())) {
             builders.addAll(provider.getServiceConfigurators(registry, containerName, serverName));
@@ -86,7 +86,7 @@ public class InfinispanRouteLocatorServiceConfiguratorProvider implements RouteL
         clustering.hash().consistentHashFactory(null);
         clustering.l1().disable();
         // Workaround for ISPN-8722
-        AttributeSet attributes = TemplateConfigurationBuilder.getAttributes(clustering);
+        AttributeSet attributes = TemplateConfigurationServiceConfigurator.getAttributes(clustering);
         attributes.attribute(ClusteringConfiguration.BIAS_ACQUISITION).reset();
         attributes.attribute(ClusteringConfiguration.BIAS_LIFESPAN).reset();
         attributes.attribute(ClusteringConfiguration.INVALIDATION_BATCH_SIZE).reset();

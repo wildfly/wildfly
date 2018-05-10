@@ -26,9 +26,9 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.infinispan.Cache;
-import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
-import org.jboss.msc.service.Service;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -36,14 +36,15 @@ import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.infinispan.spi.CacheContainer;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
-import org.wildfly.clustering.service.AsynchronousServiceBuilder;
-import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.AsyncServiceConfigurator;
 import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.Dependency;
-import org.wildfly.clustering.service.InjectedValueDependency;
-import org.wildfly.clustering.service.SimpleDependency;
-import org.wildfly.clustering.service.SuppliedValueService;
-import org.wildfly.clustering.service.ValueDependency;
+import org.wildfly.clustering.service.FunctionalService;
+import org.wildfly.clustering.service.ServiceConfigurator;
+import org.wildfly.clustering.service.ServiceDependency;
+import org.wildfly.clustering.service.ServiceSupplierDependency;
+import org.wildfly.clustering.service.SimpleServiceNameProvider;
+import org.wildfly.clustering.service.SupplierDependency;
 
 /**
  * Service that provides a cache and handles its lifecycle
@@ -51,24 +52,29 @@ import org.wildfly.clustering.service.ValueDependency;
  * @param <K> the cache key type
  * @param <V> the cache value type
  */
-public class CacheBuilder<K, V> implements CapabilityServiceBuilder<Cache<K, V>>, Supplier<Cache<K, V>>, Consumer<Cache<K, V>> {
+public class CacheServiceConfigurator<K, V> extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, Supplier<Cache<K, V>>, Consumer<Cache<K, V>> {
 
-    private final ServiceName name;
     private final String containerName;
     private final String cacheName;
 
-    private volatile ValueDependency<CacheContainer> container;
+    private volatile SupplierDependency<CacheContainer> container;
     private volatile Dependency configuration;
+    private volatile Dependency dependency;
 
-    public CacheBuilder(ServiceName name, String containerName, String cacheName) {
-        this.name = name;
+    public CacheServiceConfigurator(ServiceName name, String containerName, String cacheName) {
+        super(name);
         this.containerName = containerName;
         this.cacheName = cacheName;
     }
 
+    public CacheServiceConfigurator<K, V> require(Dependency dependency) {
+        this.dependency = dependency;
+        return this;
+    }
+
     @Override
     public Cache<K, V> get() {
-        Cache<K, V> cache = this.container.getValue().getCache(this.cacheName);
+        Cache<K, V> cache = this.container.get().getCache(this.cacheName);
         cache.start();
         return cache;
     }
@@ -79,21 +85,17 @@ public class CacheBuilder<K, V> implements CapabilityServiceBuilder<Cache<K, V>>
     }
 
     @Override
-    public ServiceName getServiceName() {
-        return this.name;
-    }
-
-    @Override
-    public Builder<Cache<K, V>> configure(CapabilityServiceSupport support) {
-        this.container = new InjectedValueDependency<>(InfinispanRequirement.CONTAINER.getServiceName(support, this.containerName), CacheContainer.class);
-        this.configuration = new SimpleDependency(InfinispanCacheRequirement.CONFIGURATION.getServiceName(support, this.containerName, this.cacheName));
+    public ServiceConfigurator configure(CapabilityServiceSupport support) {
+        this.container = new ServiceSupplierDependency<>(InfinispanRequirement.CONTAINER.getServiceName(support, this.containerName));
+        this.configuration = new ServiceDependency(InfinispanCacheRequirement.CONFIGURATION.getServiceName(support, this.containerName, this.cacheName));
         return this;
     }
 
     @Override
-    public ServiceBuilder<Cache<K, V>> build(ServiceTarget target) {
-        Service<Cache<K, V>> service = new SuppliedValueService<>(Function.identity(), this, this);
-        ServiceBuilder<Cache<K, V>> builder = new AsynchronousServiceBuilder<>(this.getServiceName(), service).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND);
-        return new CompositeDependency(this.configuration, this.container).register(builder);
+    public final ServiceBuilder<?> build(ServiceTarget target) {
+        ServiceBuilder<?> builder = new AsyncServiceConfigurator(this.getServiceName()).build(target);
+        Consumer<Cache<K, V>> cache = new CompositeDependency(this.configuration, this.container, this.dependency).register(builder).provides(this.getServiceName());
+        Service service = new FunctionalService<>(cache, Function.identity(), this, this);
+        return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 }

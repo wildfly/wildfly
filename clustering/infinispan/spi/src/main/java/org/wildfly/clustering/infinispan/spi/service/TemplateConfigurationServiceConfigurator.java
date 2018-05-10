@@ -28,28 +28,29 @@ import java.util.function.Consumer;
 import org.infinispan.commons.configuration.attributes.AttributeSet;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationChildBuilder;
-import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
-import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.service.InjectedValueDependency;
-import org.wildfly.clustering.service.ValueDependency;
+import org.wildfly.clustering.service.ServiceConfigurator;
+import org.wildfly.clustering.service.ServiceSupplierDependency;
+import org.wildfly.clustering.service.SupplierDependency;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
- * Builds a cache configuration based on the configuration of a template cache.
+ * Configures a {@link Service} providing a cache configuration based on a configuration template.
  * @author Paul Ferraro
  */
-public class TemplateConfigurationBuilder implements CapabilityServiceBuilder<Configuration>, Consumer<org.infinispan.configuration.cache.ConfigurationBuilder> {
+public class TemplateConfigurationServiceConfigurator implements CapabilityServiceConfigurator, Consumer<org.infinispan.configuration.cache.ConfigurationBuilder> {
 
-    private final CapabilityServiceBuilder<Configuration> builder;
+    private final ConfigurationServiceConfigurator configurator;
     private final String containerName;
     private final String templateCacheName;
 
-    private volatile ValueDependency<Configuration> template;
+    private volatile SupplierDependency<Configuration> template;
 
     /**
      * Constructs a new cache configuration builder.
@@ -57,36 +58,36 @@ public class TemplateConfigurationBuilder implements CapabilityServiceBuilder<Co
      * @param cacheName the name of the target cache
      * @param templateCacheName the name of the template cache
      */
-    public TemplateConfigurationBuilder(ServiceName name, String containerName, String cacheName, String templateCacheName) {
+    public TemplateConfigurationServiceConfigurator(ServiceName name, String containerName, String cacheName, String templateCacheName) {
         this(name, containerName, cacheName, templateCacheName, builder -> {});
     }
 
-    public TemplateConfigurationBuilder(ServiceName name, String containerName, String cacheName, String templateCacheName, Consumer<org.infinispan.configuration.cache.ConfigurationBuilder> templateConsumer) {
-        this.builder = new ConfigurationBuilder(name, containerName, cacheName, this.andThen(templateConsumer));
+    public TemplateConfigurationServiceConfigurator(ServiceName name, String containerName, String cacheName, String templateCacheName, Consumer<org.infinispan.configuration.cache.ConfigurationBuilder> templateConsumer) {
+        this.configurator = new ConfigurationServiceConfigurator(name, containerName, cacheName, this.andThen(templateConsumer));
         this.containerName = containerName;
         this.templateCacheName = templateCacheName;
     }
 
     @Override
     public void accept(org.infinispan.configuration.cache.ConfigurationBuilder builder) {
-        builder.read(this.template.getValue());
+        builder.read(this.template.get());
     }
 
     @Override
     public ServiceName getServiceName() {
-        return this.builder.getServiceName();
+        return this.configurator.getServiceName();
     }
 
     @Override
-    public Builder<Configuration> configure(CapabilityServiceSupport support) {
-        this.template = new InjectedValueDependency<>(InfinispanCacheRequirement.CONFIGURATION.getServiceName(support, this.containerName, this.templateCacheName), Configuration.class);
-        this.builder.configure(support);
+    public ServiceConfigurator configure(CapabilityServiceSupport support) {
+        this.template = new ServiceSupplierDependency<>(InfinispanCacheRequirement.CONFIGURATION.getServiceName(support, this.containerName, this.templateCacheName));
+        this.configurator.configure(support);
         return this;
     }
 
     @Override
-    public ServiceBuilder<Configuration> build(ServiceTarget target) {
-        return this.template.register(this.builder.build(target));
+    public ServiceBuilder<?> build(ServiceTarget target) {
+        return this.configurator.require(this.template).build(target);
     }
 
     public static AttributeSet getAttributes(ConfigurationChildBuilder builder) {

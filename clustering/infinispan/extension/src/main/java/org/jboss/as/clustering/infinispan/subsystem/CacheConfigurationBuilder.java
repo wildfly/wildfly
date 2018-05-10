@@ -22,8 +22,8 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.clustering.infinispan.subsystem.CacheResourceDefinition.Attribute.*;
-import static org.jboss.as.clustering.infinispan.subsystem.CacheResourceDefinition.Capability.*;
+import static org.jboss.as.clustering.infinispan.subsystem.CacheResourceDefinition.Attribute.STATISTICS_ENABLED;
+import static org.jboss.as.clustering.infinispan.subsystem.CacheResourceDefinition.Capability.CONFIGURATION;
 
 import java.util.function.Consumer;
 
@@ -47,9 +47,11 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.clustering.infinispan.spi.service.ConfigurationServiceConfigurator;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.InjectedValueDependency;
+import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.ValueDependency;
 
 /**
@@ -67,7 +69,7 @@ public class CacheConfigurationBuilder extends CapabilityServiceNameProvider imp
     private final String containerName;
     private final String cacheName;
 
-    private volatile Builder<Configuration> builder;
+    private volatile ConfigurationServiceConfigurator configurator;
     private volatile JMXStatisticsConfiguration statistics;
 
     CacheConfigurationBuilder(PathAddress address) {
@@ -84,8 +86,7 @@ public class CacheConfigurationBuilder extends CapabilityServiceNameProvider imp
 
     @Override
     public ServiceBuilder<Configuration> build(ServiceTarget target) {
-        ServiceBuilder<Configuration> builder = this.builder.build(target);
-        return new CompositeDependency(this.memory, this.expiration, this.locking, this.persistence, this.transaction, this.module).register(builder);
+        return (ServiceBuilder<Configuration>) this.configurator.require(new CompositeDependency(this.memory, this.expiration, this.locking, this.persistence, this.transaction, this.module)).build(target);
     }
 
     @Override
@@ -93,13 +94,13 @@ public class CacheConfigurationBuilder extends CapabilityServiceNameProvider imp
         boolean enabled = STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean();
         this.statistics = new ConfigurationBuilder().jmxStatistics().enabled(enabled).available(enabled).create();
 
-        this.builder = new org.wildfly.clustering.infinispan.spi.service.ConfigurationBuilder(CONFIGURATION.getServiceName(context.getCurrentAddress()), this.containerName, this.cacheName, this.andThen(builder -> {
+        this.configurator = new ConfigurationServiceConfigurator(CONFIGURATION.getServiceName(context.getCurrentAddress()), this.containerName, this.cacheName, this.andThen(builder -> {
             GroupsConfigurationBuilder groupsBuilder = builder.clustering().hash().groups().enabled();
             for (Grouper<?> grouper : this.module.getValue().loadService(Grouper.class)) {
                 groupsBuilder.addGrouper(grouper);
             }
-        })).configure(context);
-        return this;
+        }));
+        return (Builder<Configuration>) this.configurator.configure(context);
     }
 
     @SuppressWarnings("deprecation")

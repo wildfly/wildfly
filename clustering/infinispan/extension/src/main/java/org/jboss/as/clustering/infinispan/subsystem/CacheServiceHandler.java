@@ -46,7 +46,7 @@ import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.infinispan.spi.service.CacheBuilder;
+import org.wildfly.clustering.infinispan.spi.service.CacheServiceConfigurator;
 import org.wildfly.clustering.service.AliasServiceBuilder;
 import org.wildfly.clustering.service.ServiceNameProvider;
 import org.wildfly.clustering.spi.CacheServiceConfiguratorProvider;
@@ -86,7 +86,7 @@ public class CacheServiceHandler implements ResourceServiceHandler {
 
         this.builderFactory.createBuilder(cacheAddress).configure(context, model).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 
-        new CacheBuilder<>(CACHE.getServiceName(cacheAddress), containerName, cacheName).configure(context).build(target).install();
+        new CacheServiceConfigurator<>(CACHE.getServiceName(cacheAddress), containerName, cacheName).configure(context).build(target).install();
         new XAResourceRecoveryBuilder(cacheAddress).build(target).install();
 
         new BinderServiceBuilder<>(InfinispanBindingFactory.createCacheConfigurationBinding(containerName, cacheName), CONFIGURATION.getServiceName(cacheAddress), Configuration.class).build(target).install();

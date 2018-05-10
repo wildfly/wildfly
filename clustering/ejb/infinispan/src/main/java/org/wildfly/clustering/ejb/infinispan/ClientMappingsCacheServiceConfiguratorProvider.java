@@ -38,11 +38,11 @@ import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
-import org.wildfly.clustering.infinispan.spi.service.CacheBuilder;
-import org.wildfly.clustering.infinispan.spi.service.TemplateConfigurationBuilder;
-import org.wildfly.clustering.spi.IdentityCacheServiceConfiguratorProvider;
+import org.wildfly.clustering.infinispan.spi.service.CacheServiceConfigurator;
+import org.wildfly.clustering.infinispan.spi.service.TemplateConfigurationServiceConfigurator;
 import org.wildfly.clustering.spi.CacheServiceConfiguratorProvider;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
+import org.wildfly.clustering.spi.IdentityCacheServiceConfiguratorProvider;
 import org.wildfly.clustering.spi.ServiceNameRegistry;
 
 /**
@@ -62,8 +62,8 @@ public class ClientMappingsCacheServiceConfiguratorProvider implements CacheServ
         List<CapabilityServiceConfigurator> configurators = new LinkedList<>();
         if (aliasCacheName == null) {
             String cacheName = BeanManagerFactoryServiceConfiguratorConfiguration.CLIENT_MAPPINGS_CACHE_NAME;
-            configurators.add(new TemplateConfigurationBuilder(ServiceName.parse(InfinispanCacheRequirement.CONFIGURATION.resolve(containerName, cacheName)), containerName, cacheName, aliasCacheName, this));
-            configurators.add(new CacheBuilder<>(ServiceName.parse(InfinispanCacheRequirement.CACHE.resolve(containerName, cacheName)), containerName, cacheName));
+            configurators.add(new TemplateConfigurationServiceConfigurator(ServiceName.parse(InfinispanCacheRequirement.CONFIGURATION.resolve(containerName, cacheName)), containerName, cacheName, aliasCacheName, this));
+            configurators.add(new CacheServiceConfigurator<>(ServiceName.parse(InfinispanCacheRequirement.CACHE.resolve(containerName, cacheName)), containerName, cacheName));
             ServiceNameRegistry<ClusteringCacheRequirement> routingRegistry = requirement -> ServiceName.parse(requirement.resolve(containerName, cacheName));
             for (CacheServiceConfiguratorProvider provider : ServiceLoader.load(this.providerClass, this.providerClass.getClassLoader())) {
                 configurators.addAll(provider.getServiceConfigurators(routingRegistry, containerName, cacheName));
@@ -73,8 +73,8 @@ public class ClientMappingsCacheServiceConfiguratorProvider implements CacheServ
     }
 
     @Override
-    public Collection<CapabilityServiceConfigurator> getServiceConfigurators(ServiceNameRegistry<ClusteringCacheRequirement> registry, String containerName, String aliasCacheName, String targetCacheName) {
-        return this.getServiceConfigurators(registry, containerName, aliasCacheName);
+    public Collection<CapabilityServiceConfigurator> getServiceConfigurators(ServiceNameRegistry<ClusteringCacheRequirement> registry, String containerName, String cacheName, String targetCacheName) {
+        return this.getServiceConfigurators(registry, containerName, cacheName);
     }
 
     @SuppressWarnings("deprecation")
@@ -87,7 +87,7 @@ public class ClientMappingsCacheServiceConfiguratorProvider implements CacheServ
         clustering.hash().consistentHashFactory(null);
         clustering.l1().disable();
         // Workaround for ISPN-8722
-        AttributeSet attributes = TemplateConfigurationBuilder.getAttributes(clustering);
+        AttributeSet attributes = TemplateConfigurationServiceConfigurator.getAttributes(clustering);
         attributes.attribute(ClusteringConfiguration.BIAS_ACQUISITION).reset();
         attributes.attribute(ClusteringConfiguration.BIAS_LIFESPAN).reset();
         attributes.attribute(ClusteringConfiguration.INVALIDATION_BATCH_SIZE).reset();
