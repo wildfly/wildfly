@@ -21,14 +21,24 @@
  */
 package org.wildfly.clustering.ejb;
 
-/**
- * Configuration of a bean manager factory builder.
- * @author Paul Ferraro
- */
-public interface BeanManagerFactoryBuilderConfiguration extends BeanPassivationConfiguration {
-    String DEFAULT_CONTAINER_NAME = "ejb";
-    String CLIENT_MAPPINGS_CACHE_NAME = "client-mappings";
+import java.util.Collection;
 
-    String getContainerName();
-    String getCacheName();
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
+import org.jboss.msc.service.ServiceName;
+import org.wildfly.clustering.service.ServiceConfigurator;
+
+public interface BeanManagerFactoryServiceConfiguratorFactory {
+
+    /**
+     * Installs dependencies for a deployment unit
+     * @param name the service name of the deployment unit
+     */
+    Collection<CapabilityServiceConfigurator> getDeploymentServiceConfigurators(ServiceName name);
+
+    /**
+     * Builds a bean manager factory for an EJB within a deployment.
+     * @param context the bean context
+     * @return a service builder
+     */
+    ServiceConfigurator getBeanManagerFactoryServiceConfigurator(BeanContext context);
 }

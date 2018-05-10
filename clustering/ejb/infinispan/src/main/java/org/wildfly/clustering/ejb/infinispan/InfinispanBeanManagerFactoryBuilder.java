@@ -38,7 +38,7 @@ import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.ejb.BeanContext;
 import org.wildfly.clustering.ejb.BeanManagerFactory;
-import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderConfiguration;
+import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
 import org.wildfly.clustering.ejb.BeanPassivationConfiguration;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
@@ -58,7 +58,7 @@ public class InfinispanBeanManagerFactoryBuilder<I, T> implements Builder<BeanMa
     private final CapabilityServiceSupport support;
     private final String name;
     private final BeanContext context;
-    private final BeanManagerFactoryBuilderConfiguration configuration;
+    private final BeanManagerFactoryServiceConfiguratorConfiguration configuration;
 
     @SuppressWarnings("rawtypes")
     private final InjectedValue<Cache> cache = new InjectedValue<>();
@@ -71,7 +71,7 @@ public class InfinispanBeanManagerFactoryBuilder<I, T> implements Builder<BeanMa
     private final InjectedValue<Registry> registry = new InjectedValue<>();
     private final InjectedValue<CommandDispatcherFactory> dispatcherFactory = new InjectedValue<>();
 
-    public InfinispanBeanManagerFactoryBuilder(CapabilityServiceSupport support, String name, BeanContext context, BeanManagerFactoryBuilderConfiguration configuration) {
+    public InfinispanBeanManagerFactoryBuilder(CapabilityServiceSupport support, String name, BeanContext context, BeanManagerFactoryServiceConfiguratorConfiguration configuration) {
         this.support = support;
         this.name = name;
         this.context = context;
@@ -93,8 +93,8 @@ public class InfinispanBeanManagerFactoryBuilder<I, T> implements Builder<BeanMa
                 .addDependency(deploymentUnitServiceName.append("marshalling"), MarshallingConfigurationRepository.class, this.repository)
                 .addDependency(deploymentUnitServiceName.append(this.name, "expiration"), ScheduledExecutorService.class, this.scheduler)
                 .addDependency(ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(this.support, containerName), CommandDispatcherFactory.class, this.dispatcherFactory)
-                .addDependency(ClusteringCacheRequirement.REGISTRY.getServiceName(this.support, containerName, BeanManagerFactoryBuilderConfiguration.CLIENT_MAPPINGS_CACHE_NAME), Registry.class, this.registry)
-                .addDependency(ClusteringCacheRequirement.GROUP.getServiceName(this.support, containerName, BeanManagerFactoryBuilderConfiguration.CLIENT_MAPPINGS_CACHE_NAME), NodeFactory.class, this.group)
+                .addDependency(ClusteringCacheRequirement.REGISTRY.getServiceName(this.support, containerName, BeanManagerFactoryServiceConfiguratorConfiguration.CLIENT_MAPPINGS_CACHE_NAME), Registry.class, this.registry)
+                .addDependency(ClusteringCacheRequirement.GROUP.getServiceName(this.support, containerName, BeanManagerFactoryServiceConfiguratorConfiguration.CLIENT_MAPPINGS_CACHE_NAME), NodeFactory.class, this.group)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
         ;
     }

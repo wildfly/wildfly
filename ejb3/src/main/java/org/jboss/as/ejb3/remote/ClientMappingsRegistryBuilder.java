@@ -31,7 +31,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.Value;
-import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderConfiguration;
+import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.InjectedValueDependency;
@@ -62,7 +62,7 @@ public class ClientMappingsRegistryBuilder implements CapabilityServiceBuilder<R
 
     @Override
     public Builder<Registry<String, List<ClientMapping>>> configure(OperationContext context) {
-        this.registry = new InjectedValueDependency<>(ClusteringCacheRequirement.REGISTRY.getServiceName(context, this.clientMappingsClusterName, BeanManagerFactoryBuilderConfiguration.CLIENT_MAPPINGS_CACHE_NAME), Registry.class);
+        this.registry = new InjectedValueDependency<>(ClusteringCacheRequirement.REGISTRY.getServiceName(context, this.clientMappingsClusterName, BeanManagerFactoryServiceConfiguratorConfiguration.CLIENT_MAPPINGS_CACHE_NAME), Registry.class);
         return this;
     }
 

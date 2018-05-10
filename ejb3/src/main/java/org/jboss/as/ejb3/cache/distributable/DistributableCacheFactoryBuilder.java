@@ -23,7 +23,7 @@ package org.jboss.as.ejb3.cache.distributable;
 
 import org.jboss.as.ejb3.cache.CacheFactoryBuilder;
 import org.jboss.as.ejb3.cache.Identifiable;
-import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderConfiguration;
+import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
 
 /**
  * Builds a service that provides a distributable {@link org.jboss.as.ejb3.cache.CacheFactory}.
@@ -34,5 +34,5 @@ import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderConfiguration;
  * @param <V> the cache value type
  */
 public interface DistributableCacheFactoryBuilder<K, V extends Identifiable<K>> extends CacheFactoryBuilder<K, V> {
-    BeanManagerFactoryBuilderConfiguration getConfiguration();
+    BeanManagerFactoryServiceConfiguratorConfiguration getConfiguration();
 }

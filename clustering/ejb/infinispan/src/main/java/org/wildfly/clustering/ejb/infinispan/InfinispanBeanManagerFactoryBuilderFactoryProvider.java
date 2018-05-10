@@ -23,19 +23,18 @@ package org.wildfly.clustering.ejb.infinispan;
 
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.ee.infinispan.TransactionBatch;
-import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderFactory;
-import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderConfiguration;
-import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderFactoryProvider;
+import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorFactory;
+import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
+import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorFactoryProvider;
 
 /**
  * @author Paul Ferraro
  */
-@MetaInfServices(BeanManagerFactoryBuilderFactoryProvider.class)
-public class InfinispanBeanManagerFactoryBuilderFactoryProvider implements BeanManagerFactoryBuilderFactoryProvider<TransactionBatch> {
+@MetaInfServices(BeanManagerFactoryServiceConfiguratorFactoryProvider.class)
+public class InfinispanBeanManagerFactoryBuilderFactoryProvider implements BeanManagerFactoryServiceConfiguratorFactoryProvider {
 
     @Override
-    public <I> BeanManagerFactoryBuilderFactory<I, TransactionBatch> getBeanManagerFactoryBuilder(CapabilityServiceSupport support, String name, BeanManagerFactoryBuilderConfiguration config) {
+    public BeanManagerFactoryServiceConfiguratorFactory getBeanManagerFactoryBuilder(CapabilityServiceSupport support, String name, BeanManagerFactoryServiceConfiguratorConfiguration config) {
         return new InfinispanBeanManagerFactoryBuilderFactory<>(support, name, config);
     }
 }

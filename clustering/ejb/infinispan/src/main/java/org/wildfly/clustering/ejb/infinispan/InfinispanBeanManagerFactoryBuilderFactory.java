@@ -35,7 +35,7 @@ import org.infinispan.configuration.cache.ExpirationConfiguration;
 import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.eviction.EvictionType;
 import org.jboss.as.clustering.controller.BuilderAdapter;
-import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.deployment.Services;
 import org.jboss.msc.service.ServiceBuilder;
@@ -45,14 +45,14 @@ import org.jboss.threads.JBossThreadFactory;
 import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.ejb.BeanContext;
 import org.wildfly.clustering.ejb.BeanManagerFactory;
-import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderConfiguration;
-import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderFactory;
+import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
+import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorFactory;
 import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
 import org.wildfly.clustering.infinispan.spi.EvictableDataContainer;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.spi.service.CacheBuilder;
 import org.wildfly.clustering.infinispan.spi.service.TemplateConfigurationBuilder;
-import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.concurrent.RemoveOnCancelScheduledExecutorServiceBuilder;
 
 /**
@@ -63,7 +63,7 @@ import org.wildfly.clustering.service.concurrent.RemoveOnCancelScheduledExecutor
  * @param <G> the group identifier type
  * @param <I> the bean identifier type
  */
-public class InfinispanBeanManagerFactoryBuilderFactory<I> implements BeanManagerFactoryBuilderFactory<I, TransactionBatch> {
+public class InfinispanBeanManagerFactoryBuilderFactory<I> implements BeanManagerFactoryServiceConfiguratorFactory {
 
     private static final ThreadFactory EXPIRATION_THREAD_FACTORY = createThreadFactory();
 
@@ -85,16 +85,16 @@ public class InfinispanBeanManagerFactoryBuilderFactory<I> implements BeanManage
 
     private final CapabilityServiceSupport support;
     private final String name;
-    private final BeanManagerFactoryBuilderConfiguration config;
+    private final BeanManagerFactoryServiceConfiguratorConfiguration config;
 
-    public InfinispanBeanManagerFactoryBuilderFactory(CapabilityServiceSupport support, String name, BeanManagerFactoryBuilderConfiguration config) {
+    public InfinispanBeanManagerFactoryBuilderFactory(CapabilityServiceSupport support, String name, BeanManagerFactoryServiceConfiguratorConfiguration config) {
         this.support = support;
         this.name = name;
         this.config = config;
     }
 
     @Override
-    public Collection<CapabilityServiceBuilder<?>> getDeploymentBuilders(final ServiceName name) {
+    public Collection<CapabilityServiceConfigurator> getDeploymentServiceConfigurators(final ServiceName name) {
         String cacheName = getCacheName(name);
         String containerName = this.config.getContainerName();
         String templateCacheName = this.config.getCacheName();
@@ -118,7 +118,7 @@ public class InfinispanBeanManagerFactoryBuilderFactory<I> implements BeanManage
             }
         };
 
-        List<CapabilityServiceBuilder<?>> builders = new ArrayList<>(4);
+        List<CapabilityServiceConfigurator> builders = new ArrayList<>(4);
         builders.add(new TemplateConfigurationBuilder(ServiceName.parse(InfinispanCacheRequirement.CONFIGURATION.resolve(containerName, cacheName)), containerName, cacheName, templateCacheName, configurator));
         builders.add(new CacheBuilder<Object, Object>(ServiceName.parse(InfinispanCacheRequirement.CACHE.resolve(containerName, cacheName)), containerName, cacheName) {
             @Override
@@ -131,7 +131,7 @@ public class InfinispanBeanManagerFactoryBuilderFactory<I> implements BeanManage
     }
 
     @Override
-    public <T> Builder<? extends BeanManagerFactory<I, T, TransactionBatch>> getBeanManagerFactoryBuilder(BeanContext context) {
+    public ServiceConfigurator getBeanManagerFactoryServiceConfigurator(BeanContext context) {
         return new InfinispanBeanManagerFactoryBuilder<>(this.support, this.name, context, this.config);
     }
 }

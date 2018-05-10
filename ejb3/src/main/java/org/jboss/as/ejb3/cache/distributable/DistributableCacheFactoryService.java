@@ -24,6 +24,7 @@ import org.wildfly.clustering.ejb.BeanManagerFactory;
 import org.wildfly.clustering.ejb.IdentifierFactory;
 import org.wildfly.clustering.ejb.PassivationListener;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.ServiceConfigurator;
 
 /**
  * Service that provides a distributable {@link CacheFactory}.
@@ -35,14 +36,14 @@ import org.wildfly.clustering.service.Builder;
 public class DistributableCacheFactoryService<K, V extends Identifiable<K> & Contextual<Batch>> implements Builder<CacheFactory<K, V>>, Value<CacheFactory<K, V>>, CacheFactory<K, V> {
 
     private final ServiceName name;
-    private final Builder<? extends BeanManagerFactory<K, V, Batch>> builder;
+    private final ServiceConfigurator configurator;
     @SuppressWarnings("rawtypes")
     private final InjectedValue<BeanManagerFactory> factory = new InjectedValue<>();
     private final InjectedValue<TransactionSynchronizationRegistry> tsr = new InjectedValue<>();
 
-    public DistributableCacheFactoryService(ServiceName name, Builder<? extends BeanManagerFactory<K, V, Batch>> builder) {
+    public DistributableCacheFactoryService(ServiceName name, ServiceConfigurator configurator) {
         this.name = name;
-        this.builder = builder;
+        this.configurator = configurator;
     }
 
     @Override
@@ -52,9 +53,9 @@ public class DistributableCacheFactoryService<K, V extends Identifiable<K> & Con
 
     @Override
     public ServiceBuilder<CacheFactory<K, V>> build(ServiceTarget target) {
-        this.builder.build(target).install();
+        this.configurator.build(target).install();
         return target.addService(this.name, new ValueService<>(this))
-                .addDependency(this.builder.getServiceName(), BeanManagerFactory.class, this.factory)
+                .addDependency(this.configurator.getServiceName(), BeanManagerFactory.class, this.factory)
                 .addDependency(TxnServices.JBOSS_TXN_SYNCHRONIZATION_REGISTRY, TransactionSynchronizationRegistry.class, this.tsr)
         ;
     }

@@ -21,12 +21,14 @@
  */
 package org.wildfly.clustering.ejb;
 
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
-import org.wildfly.clustering.ee.Batch;
-
 /**
+ * Configuration of a bean manager factory builder.
  * @author Paul Ferraro
  */
-public interface BeanManagerFactoryBuilderFactoryProvider<B extends Batch> {
-    <I> BeanManagerFactoryBuilderFactory<I, B> getBeanManagerFactoryBuilder(CapabilityServiceSupport support, String name, BeanManagerFactoryBuilderConfiguration config);
+public interface BeanManagerFactoryServiceConfiguratorConfiguration extends BeanPassivationConfiguration {
+    String DEFAULT_CONTAINER_NAME = "ejb";
+    String CLIENT_MAPPINGS_CACHE_NAME = "client-mappings";
+
+    String getContainerName();
+    String getCacheName();
 }
