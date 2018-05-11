@@ -28,8 +28,8 @@ import java.util.function.UnaryOperator;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ResourceServiceBuilder;
-import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
+import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
+import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
@@ -38,15 +38,12 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelType;
-import org.jgroups.protocols.Encrypt;
-import org.wildfly.clustering.jgroups.spi.ChannelFactory;
-import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 
 /**
  * Resource definition override for protocols that require an encryption key.
  * @author Paul Ferraro
  */
-public class EncryptProtocolResourceDefinition<E extends KeyStore.Entry, P extends Encrypt<E>> extends ProtocolResourceDefinition<P> {
+public class EncryptProtocolResourceDefinition<E extends KeyStore.Entry> extends ProtocolResourceDefinition {
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
         KEY_CREDENTIAL(CredentialReference.getAttributeBuilder("key-credential-reference", null, false, new CapabilityReference(Capability.PROTOCOL, CommonUnaryRequirement.CREDENTIAL_STORE)).build()),
@@ -109,20 +106,20 @@ public class EncryptProtocolResourceDefinition<E extends KeyStore.Entry, P exten
         }
     }
 
-    private static class EncryptProtocolConfigurationBuilderFactory<E extends KeyStore.Entry, P extends Encrypt<E>> implements ResourceServiceBuilderFactory<ProtocolConfiguration<P>> {
+    private static class EncryptProtocolConfigurationConfiguratorFactory<E extends KeyStore.Entry> implements ResourceServiceConfiguratorFactory {
         private final Class<E> entryClass;
 
-        EncryptProtocolConfigurationBuilderFactory(Class<E> entryClass) {
+        EncryptProtocolConfigurationConfiguratorFactory(Class<E> entryClass) {
             this.entryClass = entryClass;
         }
 
         @Override
-        public ResourceServiceBuilder<ProtocolConfiguration<P>> createBuilder(PathAddress address) {
-            return new EncryptProtocolConfigurationBuilder<>(address, this.entryClass);
+        public ResourceServiceConfigurator createServiceConfigurator(PathAddress address) {
+            return new EncryptProtocolConfigurationServiceConfigurator<>(address, this.entryClass);
         }
     }
 
-    public EncryptProtocolResourceDefinition(String name, Class<E> entryClass, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
-        super(pathElement(name), new ResourceDescriptorConfigurator(configurator), new EncryptProtocolConfigurationBuilderFactory<>(entryClass), parentBuilderFactory);
+    public EncryptProtocolResourceDefinition(String name, Class<E> entryClass, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory) {
+        super(pathElement(name), new ResourceDescriptorConfigurator(configurator), new EncryptProtocolConfigurationConfiguratorFactory<>(entryClass), parentServiceConfiguratorFactory);
     }
 }

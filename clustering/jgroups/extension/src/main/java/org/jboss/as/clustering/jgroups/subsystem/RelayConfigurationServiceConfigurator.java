@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -37,30 +38,28 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.Value;
 import org.jgroups.JChannel;
 import org.jgroups.protocols.FORK;
 import org.jgroups.protocols.relay.RELAY2;
 import org.jgroups.protocols.relay.config.RelayConfig;
 import org.wildfly.clustering.jgroups.spi.RelayConfiguration;
 import org.wildfly.clustering.jgroups.spi.RemoteSiteConfiguration;
-import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.Dependency;
-import org.wildfly.clustering.service.InjectedValueDependency;
+import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.ServiceNameProvider;
-import org.wildfly.clustering.service.ValueDependency;
+import org.wildfly.clustering.service.ServiceSupplierDependency;
+import org.wildfly.clustering.service.SupplierDependency;
 
 /**
  * @author Paul Ferraro
  */
-public class RelayConfigurationBuilder extends AbstractProtocolConfigurationBuilder<RELAY2, RelayConfiguration> implements RelayConfiguration {
+public class RelayConfigurationServiceConfigurator extends AbstractProtocolConfigurationServiceConfigurator<RELAY2, RelayConfiguration> implements RelayConfiguration {
 
     private final ServiceNameProvider provider;
-    private volatile List<ValueDependency<RemoteSiteConfiguration>> sites;
+    private volatile List<SupplierDependency<RemoteSiteConfiguration>> sites;
     private volatile String siteName = null;
 
-    public RelayConfigurationBuilder(PathAddress address) {
+    public RelayConfigurationServiceConfigurator(PathAddress address) {
         super(address.getLastElement().getValue());
         this.provider = new SingletonProtocolServiceNameProvider(address);
     }
@@ -71,16 +70,15 @@ public class RelayConfigurationBuilder extends AbstractProtocolConfigurationBuil
     }
 
     @Override
-    public ServiceBuilder<RelayConfiguration> build(ServiceTarget target) {
-        ServiceBuilder<RelayConfiguration> builder = super.build(target);
+    public <T> ServiceBuilder<T> register(ServiceBuilder<T> builder) {
         for (Dependency dependency : this.sites) {
             dependency.register(builder);
         }
-        return builder;
+        return super.register(builder);
     }
 
     @Override
-    public Builder<RelayConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
+    public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.siteName = SITE.resolveModelAttribute(context, model).asString();
 
         PathAddress address = context.getCurrentAddress();
@@ -88,14 +86,14 @@ public class RelayConfigurationBuilder extends AbstractProtocolConfigurationBuil
         Set<Resource.ResourceEntry> entries = resource.getChildren(RemoteSiteResourceDefinition.WILDCARD_PATH.getKey());
         this.sites = new ArrayList<>(entries.size());
         for (Resource.ResourceEntry entry : entries) {
-            this.sites.add(new InjectedValueDependency<>(new RemoteSiteServiceNameProvider(address, entry.getPathElement()), RemoteSiteConfiguration.class));
+            this.sites.add(new ServiceSupplierDependency<>(new RemoteSiteServiceNameProvider(address, entry.getPathElement())));
         }
 
         return super.configure(context, model);
     }
 
     @Override
-    public RelayConfiguration getValue() {
+    public RelayConfiguration get() {
         return this;
     }
 
@@ -107,8 +105,8 @@ public class RelayConfigurationBuilder extends AbstractProtocolConfigurationBuil
     @Override
     public List<RemoteSiteConfiguration> getRemoteSites() {
         List<RemoteSiteConfiguration> result = new ArrayList<>(this.sites.size());
-        for (Value<RemoteSiteConfiguration> site : this.sites) {
-            result.add(site.getValue());
+        for (Supplier<RemoteSiteConfiguration> site : this.sites) {
+            result.add(site.get());
         }
         return result;
     }

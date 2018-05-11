@@ -28,8 +28,8 @@ import java.util.Collection;
 import org.jboss.as.clustering.controller.Attribute;
 import org.jboss.as.clustering.controller.ResourceDefinitionProvider;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ResourceServiceBuilder;
-import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
+import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
+import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAttribute;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
@@ -57,7 +57,7 @@ import org.jboss.dmr.ModelType;
  * @author Paul Ferraro
  * @version Aug 2014
  */
-public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, ThreadPoolDefinition, ResourceServiceBuilderFactory<ThreadPoolFactory> {
+public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, ThreadPoolDefinition, ResourceServiceConfiguratorFactory {
 
     DEFAULT("default", 0, 200, 0, 60000L) {
         @Override
@@ -135,8 +135,8 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, 
     }
 
     @Override
-    public ResourceServiceBuilder<ThreadPoolFactory> createBuilder(PathAddress address) {
-        return new ThreadPoolFactoryBuilder(this, address);
+    public ResourceServiceConfigurator createServiceConfigurator(PathAddress address) {
+        return new ThreadPoolFactoryServiceConfigurator(this, address);
     }
 
     Collection<Attribute> getAttributes() {

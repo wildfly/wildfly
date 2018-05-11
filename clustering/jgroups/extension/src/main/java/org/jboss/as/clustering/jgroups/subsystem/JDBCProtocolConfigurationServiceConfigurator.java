@@ -22,7 +22,7 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import static org.jboss.as.clustering.jgroups.subsystem.JDBCProtocolResourceDefinition.Attribute.*;
+import static org.jboss.as.clustering.jgroups.subsystem.JDBCProtocolResourceDefinition.Attribute.DATA_SOURCE;
 
 import javax.sql.DataSource;
 
@@ -32,37 +32,35 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceTarget;
 import org.jgroups.protocols.JDBC_PING;
-import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
-import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.service.InjectedValueDependency;
-import org.wildfly.clustering.service.ValueDependency;
+import org.wildfly.clustering.service.ServiceConfigurator;
+import org.wildfly.clustering.service.ServiceSupplierDependency;
+import org.wildfly.clustering.service.SupplierDependency;
 
 /**
  * @author Paul Ferraro
  */
-public class JDBCProtocolConfigurationBuilder extends ProtocolConfigurationBuilder<JDBC_PING> {
+public class JDBCProtocolConfigurationServiceConfigurator extends ProtocolConfigurationServiceConfigurator<JDBC_PING> {
 
-    private volatile ValueDependency<DataSource> dataSource;
+    private volatile SupplierDependency<DataSource> dataSource;
 
-    public JDBCProtocolConfigurationBuilder(PathAddress address) {
+    public JDBCProtocolConfigurationServiceConfigurator(PathAddress address) {
         super(address);
     }
 
     @Override
-    public ServiceBuilder<ProtocolConfiguration<JDBC_PING>> build(ServiceTarget target) {
-        return this.dataSource.register(super.build(target));
+    public <T> ServiceBuilder<T> register(ServiceBuilder<T> builder) {
+        return super.register(this.dataSource.register(builder));
     }
 
     @Override
-    public Builder<ProtocolConfiguration<JDBC_PING>> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.dataSource = new InjectedValueDependency<>(CommonUnaryRequirement.DATA_SOURCE.getServiceName(context, DATA_SOURCE.resolveModelAttribute(context, model).asString()), DataSource.class);
+    public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        this.dataSource = new ServiceSupplierDependency<>(CommonUnaryRequirement.DATA_SOURCE.getServiceName(context, DATA_SOURCE.resolveModelAttribute(context, model).asString()));
         return super.configure(context, model);
     }
 
     @Override
     public void accept(JDBC_PING protocol) {
-        protocol.setDataSource(this.dataSource.getValue());
+        protocol.setDataSource(this.dataSource.get());
     }
 }

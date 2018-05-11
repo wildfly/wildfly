@@ -28,7 +28,7 @@ import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.PropertiesAttributeDefinition;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
+import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.RestartParentResourceRegistration;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
@@ -51,9 +51,6 @@ import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jgroups.stack.Protocol;
-import org.wildfly.clustering.jgroups.spi.ChannelFactory;
-import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 
 /**
  * Resource description for /subsystem=jgroups/stack=X/protocol=Y
@@ -61,7 +58,7 @@ import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  * @author Paul Ferraro
  */
-public class AbstractProtocolResourceDefinition<P extends Protocol, C extends ProtocolConfiguration<P>> extends ChildResourceDefinition<ManagementResourceRegistration> {
+public class AbstractProtocolResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
         MODULE(ModelDescriptionConstants.MODULE, ModelType.STRING) {
@@ -166,13 +163,13 @@ public class AbstractProtocolResourceDefinition<P extends Protocol, C extends Pr
 
     private final UnaryOperator<ResourceDescriptor> configurator;
     private final ResourceServiceHandler handler;
-    private final ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory;
+    private final ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory;
 
-    AbstractProtocolResourceDefinition(Parameters parameters, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceBuilderFactory<C> builderFactory, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
+    AbstractProtocolResourceDefinition(Parameters parameters, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfiguratorFactory serviceConfiguratorFactory, ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory) {
         super(parameters);
         this.configurator = configurator;
-        this.handler = new SimpleResourceServiceHandler(builderFactory);
-        this.parentBuilderFactory = parentBuilderFactory;
+        this.handler = new SimpleResourceServiceHandler(serviceConfiguratorFactory);
+        this.parentServiceConfiguratorFactory = parentServiceConfiguratorFactory;
     }
 
     @SuppressWarnings("deprecation")
@@ -184,7 +181,7 @@ public class AbstractProtocolResourceDefinition<P extends Protocol, C extends Pr
                 .addAttributes(Attribute.class)
                 .addExtraParameters(DeprecatedAttribute.class)
                 ;
-        new RestartParentResourceRegistration(this.parentBuilderFactory, descriptor, this.handler).register(registration);
+        new RestartParentResourceRegistration(this.parentServiceConfiguratorFactory, descriptor, this.handler).register(registration);
 
         if (registration.getPathAddress().getLastElement().isWildcard()) {
             new PropertyResourceDefinition().register(registration);

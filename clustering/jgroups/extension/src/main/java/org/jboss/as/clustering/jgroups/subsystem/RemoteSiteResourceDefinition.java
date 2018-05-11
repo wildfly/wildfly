@@ -27,7 +27,7 @@ import org.jboss.as.clustering.controller.BinaryCapabilityNameResolver;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
+import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.RestartParentResourceRegistration;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
@@ -46,7 +46,6 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
-import org.wildfly.clustering.jgroups.spi.RelayConfiguration;
 
 /**
  * Resource definition for subsystem=jgroups/stack=X/relay=RELAY/remote-site=Y
@@ -168,11 +167,11 @@ public class RemoteSiteResourceDefinition extends ChildResourceDefinition<Manage
         }
     }
 
-    private final ResourceServiceBuilderFactory<RelayConfiguration> parentBuilderFactory;
+    private final ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory;
 
-    RemoteSiteResourceDefinition(ResourceServiceBuilderFactory<RelayConfiguration> parentBuilderFactory) {
+    RemoteSiteResourceDefinition(ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory) {
         super(WILDCARD_PATH, JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(WILDCARD_PATH));
-        this.parentBuilderFactory = parentBuilderFactory;
+        this.parentServiceConfiguratorFactory = parentServiceConfiguratorFactory;
     }
 
     @Override
@@ -184,8 +183,8 @@ public class RemoteSiteResourceDefinition extends ChildResourceDefinition<Manage
                 .addAttributes(DeprecatedAttribute.class)
                 .addCapabilities(Capability.class)
                 ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler(RemoteSiteConfigurationBuilder::new);
-        new RestartParentResourceRegistration(this.parentBuilderFactory, descriptor, handler).register(registration);
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler(RemoteSiteConfigurationServiceConfigurator::new);
+        new RestartParentResourceRegistration(this.parentServiceConfiguratorFactory, descriptor, handler).register(registration);
 
         return registration;
     }

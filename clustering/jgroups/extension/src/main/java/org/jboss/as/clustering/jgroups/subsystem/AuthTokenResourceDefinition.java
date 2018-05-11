@@ -27,11 +27,11 @@ import java.util.function.UnaryOperator;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
-import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
+import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
+import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
@@ -88,12 +88,12 @@ public class AuthTokenResourceDefinition<T extends AuthToken> extends ChildResou
     }
 
     private final UnaryOperator<ResourceDescriptor> configurator;
-    private final ResourceServiceBuilderFactory<T> builderFactory;
+    private final ResourceServiceConfiguratorFactory serviceConfiguratorFactory;
 
-    AuthTokenResourceDefinition(PathElement path, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceBuilderFactory<T> builderFactory) {
+    AuthTokenResourceDefinition(PathElement path, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfiguratorFactory serviceConfiguratorFactory) {
         super(path, JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(path, WILDCARD_PATH));
         this.configurator = configurator;
-        this.builderFactory = builderFactory;
+        this.serviceConfiguratorFactory = serviceConfiguratorFactory;
     }
 
     @Override
@@ -103,7 +103,7 @@ public class AuthTokenResourceDefinition<T extends AuthToken> extends ChildResou
                 .addAttributes(Attribute.class)
                 .addCapabilities(Capability.class)
                 ;
-        new SimpleResourceRegistration(descriptor, new SimpleResourceServiceHandler(this.builderFactory)).register(registration);
+        new SimpleResourceRegistration(descriptor, new SimpleResourceServiceHandler(this.serviceConfiguratorFactory)).register(registration);
 
         return registration;
     }

@@ -29,26 +29,30 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.jboss.as.clustering.jgroups.ProtocolDefaults;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.Value;
 import org.jgroups.conf.ProtocolStackConfigurator;
 import org.jgroups.conf.XmlConfigurator;
 import org.jgroups.stack.Protocol;
-import org.wildfly.clustering.service.AsynchronousServiceBuilder;
-import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.AsyncServiceConfigurator;
+import org.wildfly.clustering.service.FunctionalService;
+import org.wildfly.clustering.service.ServiceConfigurator;
+import org.wildfly.clustering.service.SimpleServiceNameProvider;
 
 /**
  * Service that provides protocol property defaults per protocol type.
  * @author Paul Ferraro
  */
-public class ProtocolDefaultsBuilder implements Builder<ProtocolDefaults>, Value<ProtocolDefaults>, ProtocolDefaults {
+public class ProtocolDefaultsServiceConfigurator extends SimpleServiceNameProvider implements ServiceConfigurator, ProtocolDefaults, Supplier<ProtocolDefaults> {
 
     static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append(JGroupsExtension.SUBSYSTEM_NAME, "defaults");
     private static final String DEFAULTS = "jgroups-defaults.xml";
@@ -78,27 +82,26 @@ public class ProtocolDefaultsBuilder implements Builder<ProtocolDefaults>, Value
     private final String resource;
     private final Map<Class<? extends Protocol>, Map<String, String>> map = new IdentityHashMap<>();
 
-    public ProtocolDefaultsBuilder() {
+    public ProtocolDefaultsServiceConfigurator() {
         this(DEFAULTS);
     }
 
-    public ProtocolDefaultsBuilder(String resource) {
+    public ProtocolDefaultsServiceConfigurator(String resource) {
+        super(SERVICE_NAME);
         this.resource = resource;
     }
 
     @Override
-    public ServiceName getServiceName() {
-        return SERVICE_NAME;
+    public ServiceBuilder<?> build(ServiceTarget target) {
+        ServiceBuilder<?> builder = new AsyncServiceConfigurator(SERVICE_NAME).build(target);
+        Consumer<ProtocolDefaults> defaults = builder.provides(SERVICE_NAME);
+        Service service = new FunctionalService<>(defaults, Function.identity(), this);
+        return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 
     @Override
-    public ServiceBuilder<ProtocolDefaults> build(ServiceTarget target) {
-        return new AsynchronousServiceBuilder<>(this.getServiceName(), new ValueService<>(this)).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND);
-    }
-
-    @Override
-    public ProtocolDefaults getValue() {
-        ProtocolStackConfigurator configurator = load(ProtocolDefaultsBuilder.this.resource);
+    public ProtocolDefaults get() {
+        ProtocolStackConfigurator configurator = load(ProtocolDefaultsServiceConfigurator.this.resource);
         try {
             for (org.jgroups.conf.ProtocolConfiguration config: configurator.getProtocolStack()) {
                 String protocolClassName = String.join(".", org.jgroups.conf.ProtocolConfiguration.protocol_prefix, config.getProtocolName());

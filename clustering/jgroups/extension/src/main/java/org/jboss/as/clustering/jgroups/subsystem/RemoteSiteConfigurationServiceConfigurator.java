@@ -24,60 +24,53 @@ package org.jboss.as.clustering.jgroups.subsystem;
 
 import static org.jboss.as.clustering.jgroups.subsystem.RemoteSiteResourceDefinition.Attribute.CHANNEL;
 
-import org.jboss.as.clustering.controller.ResourceServiceBuilder;
+import java.util.function.Consumer;
+
+import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.ImmediateValue;
-import org.jboss.msc.value.Value;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 import org.wildfly.clustering.jgroups.spi.RemoteSiteConfiguration;
-import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.CompositeDependency;
-import org.wildfly.clustering.service.InjectedValueDependency;
-import org.wildfly.clustering.service.ServiceNameProvider;
-import org.wildfly.clustering.service.ValueDependency;
+import org.wildfly.clustering.service.ServiceConfigurator;
+import org.wildfly.clustering.service.ServiceSupplierDependency;
+import org.wildfly.clustering.service.SupplierDependency;
 
 /**
  * @author Paul Ferraro
  */
-public class RemoteSiteConfigurationBuilder implements ResourceServiceBuilder<RemoteSiteConfiguration>, RemoteSiteConfiguration {
+public class RemoteSiteConfigurationServiceConfigurator extends RemoteSiteServiceNameProvider implements ResourceServiceConfigurator, RemoteSiteConfiguration {
 
-    private final ServiceNameProvider provider;
     private final String siteName;
 
-    private volatile ValueDependency<String> cluster;
-    private volatile ValueDependency<ChannelFactory> factory;
+    private volatile SupplierDependency<String> cluster;
+    private volatile SupplierDependency<ChannelFactory> factory;
 
-    public RemoteSiteConfigurationBuilder(PathAddress address) {
-        this.provider = new RemoteSiteServiceNameProvider(address);
+    public RemoteSiteConfigurationServiceConfigurator(PathAddress address) {
+        super(address);
         this.siteName = address.getLastElement().getValue();
     }
 
     @Override
-    public ServiceName getServiceName() {
-        return this.provider.getServiceName();
+    public ServiceBuilder<?> build(ServiceTarget target) {
+        ServiceBuilder<?> builder = target.addService(this.getServiceName());
+        Consumer<RemoteSiteConfiguration> configuration = new CompositeDependency(this.cluster, this.factory).register(builder).provides(this.getServiceName());
+        Service service = Service.newInstance(configuration, this);
+        return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 
     @Override
-    public ServiceBuilder<RemoteSiteConfiguration> build(ServiceTarget target) {
-        Value<RemoteSiteConfiguration> value = new ImmediateValue<>(this);
-        ServiceBuilder<RemoteSiteConfiguration> builder = target.addService(this.getServiceName(), new ValueService<>(value)).setInitialMode(ServiceController.Mode.ON_DEMAND);
-        return new CompositeDependency(this.cluster, this.factory).register(builder);
-    }
-
-    @Override
-    public Builder<RemoteSiteConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
+    public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
         String channel = CHANNEL.resolveModelAttribute(context, model).asString();
-        this.cluster = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL_CLUSTER.getServiceName(context, channel), String.class);
-        this.factory = new InjectedValueDependency<>(JGroupsRequirement.CHANNEL_SOURCE.getServiceName(context, channel), ChannelFactory.class);
+        this.cluster = new ServiceSupplierDependency<>(JGroupsRequirement.CHANNEL_CLUSTER.getServiceName(context, channel));
+        this.factory = new ServiceSupplierDependency<>(JGroupsRequirement.CHANNEL_SOURCE.getServiceName(context, channel));
         return this;
     }
 
@@ -88,11 +81,11 @@ public class RemoteSiteConfigurationBuilder implements ResourceServiceBuilder<Re
 
     @Override
     public ChannelFactory getChannelFactory() {
-        return this.factory.getValue();
+        return this.factory.get();
     }
 
     @Override
     public String getClusterName() {
-        return this.cluster.getValue();
+        return this.cluster.get();
     }
 }

@@ -23,12 +23,13 @@ package org.jboss.as.clustering.jgroups.subsystem;
 
 import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.clustering.controller.MetricExecutor;
-import org.jboss.as.clustering.msc.ServiceContainerHelper;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceName;
 import org.jgroups.JChannel;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
+import org.wildfly.clustering.service.PassiveServiceSupplier;
 
 /**
  * Handler for reading run-time only attributes from an underlying channel service.
@@ -41,8 +42,8 @@ public class ChannelMetricExecutor implements MetricExecutor<JChannel> {
     @Override
     public ModelNode execute(OperationContext context, Metric<JChannel> metric) throws OperationFailedException {
         String channelName = context.getCurrentAddressValue();
-
-        JChannel channel = ServiceContainerHelper.findValue(context.getServiceRegistry(false), JGroupsRequirement.CHANNEL.getServiceName(context, channelName));
+        ServiceName serviceName = JGroupsRequirement.CHANNEL.getServiceName(context, channelName);
+        JChannel channel = new PassiveServiceSupplier<JChannel>(context.getServiceRegistry(true), serviceName).get();
 
         return (channel != null) ? metric.execute(channel) : null;
     }

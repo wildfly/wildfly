@@ -22,13 +22,15 @@
 
 package org.wildfly.extension.undertow;
 
-import static org.wildfly.extension.undertow.ApplicationSecurityDomainSingleSignOnDefinition.Attribute.*;
+import static org.wildfly.extension.undertow.ApplicationSecurityDomainSingleSignOnDefinition.Attribute.CREDENTIAL;
+import static org.wildfly.extension.undertow.ApplicationSecurityDomainSingleSignOnDefinition.Attribute.KEY_ALIAS;
+import static org.wildfly.extension.undertow.ApplicationSecurityDomainSingleSignOnDefinition.Attribute.KEY_STORE;
+import static org.wildfly.extension.undertow.ApplicationSecurityDomainSingleSignOnDefinition.Attribute.SSL_CONTEXT;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.security.KeyStore;
-import java.util.Arrays;
 import java.util.Optional;
 
 import javax.net.ssl.SSLContext;
@@ -45,7 +47,9 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.Value;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.InjectedValueDependency;
+import org.wildfly.clustering.service.SupplierDependency;
 import org.wildfly.clustering.service.ValueDependency;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.security.credential.PasswordCredential;
@@ -64,7 +68,7 @@ public class SingleSignOnSessionFactoryBuilder extends SingleSignOnSessionFactor
 
     private volatile ValueDependency<KeyStore> keyStore;
     private volatile ValueDependency<SSLContext> sslContext;
-    private volatile ValueDependency<CredentialSource> credentialSource;
+    private volatile SupplierDependency<CredentialSource> credentialSource;
     private volatile String keyAlias;
 
     public SingleSignOnSessionFactoryBuilder(String securityDomainName) {
@@ -86,19 +90,14 @@ public class SingleSignOnSessionFactoryBuilder extends SingleSignOnSessionFactor
     @Override
     public ServiceBuilder<SingleSignOnSessionFactory> build(ServiceTarget target) {
         ServiceBuilder<SingleSignOnSessionFactory> builder = target.addService(this.getServiceName(), new ValueService<>(this));
-        for (ValueDependency<?> dependency : Arrays.asList(this.manager, this.keyStore, this.credentialSource, this.sslContext)) {
-            if (dependency != null) {
-                dependency.register(builder);
-            }
-        }
-        return builder;
+        return new CompositeDependency(this.manager, this.keyStore, this.credentialSource, this.sslContext).register(builder);
     }
 
     @Override
     public SingleSignOnSessionFactory getValue() {
         KeyStore store = this.keyStore.getValue();
         String alias = this.keyAlias;
-        CredentialSource source = this.credentialSource.getValue();
+        CredentialSource source = this.credentialSource.get();
         try {
             if (!store.containsAlias(alias)) {
                 throw UndertowLogger.ROOT_LOGGER.missingKeyStoreEntry(alias);

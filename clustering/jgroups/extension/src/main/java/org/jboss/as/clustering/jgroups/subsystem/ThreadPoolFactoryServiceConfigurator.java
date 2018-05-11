@@ -22,28 +22,30 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import org.jboss.as.clustering.controller.ResourceServiceBuilder;
+import java.util.function.Consumer;
+
+import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.ImmediateValue;
-import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.ServiceNameProvider;
 
 /**
  * @author Paul Ferraro
  */
-public class ThreadPoolFactoryBuilder extends QueuelessThreadPoolFactory implements ResourceServiceBuilder<ThreadPoolFactory> {
+public class ThreadPoolFactoryServiceConfigurator extends QueuelessThreadPoolFactory implements ResourceServiceConfigurator {
 
     private final ThreadPoolDefinition definition;
     private final ServiceNameProvider serviceNameProvider;
 
-    public ThreadPoolFactoryBuilder(ThreadPoolDefinition definition, PathAddress address) {
+    public ThreadPoolFactoryServiceConfigurator(ThreadPoolDefinition definition, PathAddress address) {
         this.definition = definition;
         this.serviceNameProvider = new ThreadPoolServiceNameProvider(address);
     }
@@ -54,7 +56,7 @@ public class ThreadPoolFactoryBuilder extends QueuelessThreadPoolFactory impleme
     }
 
     @Override
-    public Builder<ThreadPoolFactory> configure(OperationContext context, ModelNode model) throws OperationFailedException {
+    public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.setMinThreads(this.definition.getMinThreads().resolveModelAttribute(context, model).asInt());
         this.setMaxThreads(this.definition.getMaxThreads().resolveModelAttribute(context, model).asInt());
         this.setKeepAliveTime(this.definition.getKeepAliveTime().resolveModelAttribute(context, model).asLong());
@@ -62,7 +64,10 @@ public class ThreadPoolFactoryBuilder extends QueuelessThreadPoolFactory impleme
     }
 
     @Override
-    public ServiceBuilder<ThreadPoolFactory> build(ServiceTarget target) {
-        return target.addService(this.getServiceName(), new ValueService<>(new ImmediateValue<>(this)));
+    public ServiceBuilder<?> build(ServiceTarget target) {
+        ServiceBuilder<?> builder = target.addService(this.getServiceName());
+        Consumer<ThreadPoolFactory> factory = builder.provides(this.getServiceName());
+        Service service = Service.newInstance(factory, this);
+        return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 }

@@ -27,9 +27,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
-import org.jboss.as.clustering.controller.ResourceServiceBuilder;
+import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
 import org.jboss.as.clustering.jgroups.JChannelFactory;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.controller.OperationContext;
@@ -39,12 +41,10 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.InjectedValue;
-import org.jboss.msc.value.Value;
 import org.jgroups.protocols.TP;
 import org.jgroups.stack.Protocol;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
@@ -52,51 +52,46 @@ import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 import org.wildfly.clustering.jgroups.spi.ProtocolStackConfiguration;
 import org.wildfly.clustering.jgroups.spi.RelayConfiguration;
 import org.wildfly.clustering.jgroups.spi.TransportConfiguration;
-import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.Dependency;
-import org.wildfly.clustering.service.InjectedValueDependency;
-import org.wildfly.clustering.service.ValueDependency;
+import org.wildfly.clustering.service.ServiceConfigurator;
+import org.wildfly.clustering.service.ServiceSupplierDependency;
+import org.wildfly.clustering.service.SupplierDependency;
 
 /**
  * Builder for a service that provides a {@link ChannelFactory} for creating channels.
  * @author Paul Ferraro
  */
-public class JChannelFactoryBuilder extends CapabilityServiceNameProvider implements ResourceServiceBuilder<ChannelFactory>, ProtocolStackConfiguration, Value<ChannelFactory> {
+public class JChannelFactoryServiceConfigurator extends CapabilityServiceNameProvider implements ResourceServiceConfigurator, ProtocolStackConfiguration {
 
-    private final InjectedValue<ServerEnvironment> environment = new InjectedValue<>();
     private final PathAddress address;
 
     private volatile boolean statisticsEnabled;
 
-    private volatile ValueDependency<TransportConfiguration<? extends TP>> transport = null;
-    private volatile List<ValueDependency<ProtocolConfiguration<? extends Protocol>>> protocols = null;
-    private volatile ValueDependency<RelayConfiguration> relay = null;
+    private volatile SupplierDependency<TransportConfiguration<? extends TP>> transport = null;
+    private volatile List<SupplierDependency<ProtocolConfiguration<? extends Protocol>>> protocols = null;
+    private volatile SupplierDependency<RelayConfiguration> relay = null;
+    private volatile Supplier<ServerEnvironment> environment;
 
-    public JChannelFactoryBuilder(PathAddress address) {
+    public JChannelFactoryServiceConfigurator(PathAddress address) {
         super(StackResourceDefinition.Capability.JCHANNEL_FACTORY, address);
         this.address = address;
     }
 
     @Override
-    public ChannelFactory getValue() {
-        return new JChannelFactory(this);
-    }
-
-    @Override
-    public ServiceBuilder<ChannelFactory> build(ServiceTarget target) {
-        ServiceBuilder<ChannelFactory> builder = target.addService(this.getServiceName(), new ValueService<>(this))
-                .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, this.environment)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND);
+    public ServiceBuilder<?> build(ServiceTarget target) {
+        ServiceBuilder<?> builder = target.addService(this.getServiceName());
+        Consumer<ChannelFactory> factory = new CompositeDependency(this.transport, this.relay).register(builder).provides(this.getServiceName());
+        this.environment = builder.requires(ServerEnvironmentService.SERVICE_NAME);
         for (Dependency dependency : this.protocols) {
             dependency.register(builder);
         }
-        return new CompositeDependency(this.transport, this.relay).register(builder);
+        Service service = Service.newInstance(factory, new JChannelFactory(this));
+        return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public Builder<ChannelFactory> configure(OperationContext context, ModelNode model) throws OperationFailedException {
+    public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.statisticsEnabled = StackResourceDefinition.Attribute.STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean();
 
         Resource resource = context.readResourceFromRoot(this.address, false);
@@ -105,13 +100,13 @@ public class JChannelFactoryBuilder extends CapabilityServiceNameProvider implem
             throw JGroupsLogger.ROOT_LOGGER.transportNotDefined(this.getName());
         }
 
-        this.transport = new InjectedValueDependency<>(new SingletonProtocolServiceNameProvider(this.address, transports.next().getPathElement()), (Class<TransportConfiguration<? extends TP>>) (Class<?>) TransportConfiguration.class);
+        this.transport = new ServiceSupplierDependency<>(new SingletonProtocolServiceNameProvider(this.address, transports.next().getPathElement()));
         Set<Resource.ResourceEntry> entries = resource.getChildren(ProtocolResourceDefinition.WILDCARD_PATH.getKey());
         this.protocols = new ArrayList<>(entries.size());
         for (Resource.ResourceEntry entry : entries) {
-            this.protocols.add(new InjectedValueDependency<>(new ProtocolServiceNameProvider(this.address, entry.getPathElement()), (Class<ProtocolConfiguration<? extends Protocol>>) (Class<?>) ProtocolConfiguration.class));
+            this.protocols.add(new ServiceSupplierDependency<>(new ProtocolServiceNameProvider(this.address, entry.getPathElement())));
         }
-        this.relay = resource.hasChild(RelayResourceDefinition.PATH) ? new InjectedValueDependency<>(new SingletonProtocolServiceNameProvider(this.address, RelayResourceDefinition.PATH), RelayConfiguration.class) : null;
+        this.relay = resource.hasChild(RelayResourceDefinition.PATH) ? new ServiceSupplierDependency<>(new SingletonProtocolServiceNameProvider(this.address, RelayResourceDefinition.PATH)) : null;
 
         return this;
     }
@@ -123,14 +118,14 @@ public class JChannelFactoryBuilder extends CapabilityServiceNameProvider implem
 
     @Override
     public TransportConfiguration<? extends TP> getTransport() {
-        return this.transport.getValue();
+        return this.transport.get();
     }
 
     @Override
     public List<ProtocolConfiguration<? extends Protocol>> getProtocols() {
         List<ProtocolConfiguration<? extends Protocol>> protocols = new ArrayList<>(this.protocols.size());
-        for (Value<ProtocolConfiguration<? extends Protocol>> protocolValue : this.protocols) {
-            ProtocolConfiguration<? extends Protocol> protocol = protocolValue.getValue();
+        for (Supplier<ProtocolConfiguration<? extends Protocol>> protocolValue : this.protocols) {
+            ProtocolConfiguration<? extends Protocol> protocol = protocolValue.get();
             protocols.add(protocol);
         }
         return protocols;
@@ -138,12 +133,12 @@ public class JChannelFactoryBuilder extends CapabilityServiceNameProvider implem
 
     @Override
     public String getNodeName() {
-        return this.environment.getValue().getNodeName();
+        return this.environment.get().getNodeName();
     }
 
     @Override
     public Optional<RelayConfiguration> getRelay() {
-        return (this.relay != null) ? Optional.of(this.relay.getValue()) : Optional.empty();
+        return (this.relay != null) ? Optional.of(this.relay.get()) : Optional.empty();
     }
 
     @Override

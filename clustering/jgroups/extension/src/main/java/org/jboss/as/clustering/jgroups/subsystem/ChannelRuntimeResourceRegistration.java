@@ -22,8 +22,8 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import static org.jboss.as.clustering.jgroups.subsystem.ChannelResourceDefinition.Attribute.STACK;
 import static org.jboss.as.clustering.jgroups.subsystem.AbstractProtocolResourceDefinition.Attribute.MODULE;
+import static org.jboss.as.clustering.jgroups.subsystem.ChannelResourceDefinition.Attribute.STACK;
 
 import java.util.Collections;
 import java.util.Locale;
@@ -45,11 +45,9 @@ import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.PlaceholderResource;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.server.Services;
 import org.jboss.dmr.ModelNode;
+import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoadException;
-import org.jboss.modules.ModuleLoader;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jgroups.JChannel;
 import org.jgroups.protocols.TP;
@@ -60,6 +58,7 @@ import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 import org.wildfly.clustering.jgroups.spi.ProtocolStackConfiguration;
 import org.wildfly.clustering.jgroups.spi.RelayConfiguration;
+import org.wildfly.clustering.service.PassiveServiceSupplier;
 
 /**
  * @author Paul Ferraro
@@ -72,25 +71,21 @@ public class ChannelRuntimeResourceRegistration implements RuntimeResourceRegist
         String channelName = address.getParent().getLastElement().getValue();
         String protocolName = address.getLastElement().getValue();
 
-        ServiceRegistry registry = context.getServiceRegistry(false);
-        ServiceController<?> controller = registry.getService(JGroupsRequirement.CHANNEL.getServiceName(context, channelName));
-        if (controller != null) {
-            JChannel channel = (JChannel) controller.getValue();
-            if (channel != null) {
-                controller = registry.getService(JGroupsRequirement.CHANNEL_SOURCE.getServiceName(context, channelName));
-                ChannelFactory factory = (ChannelFactory) controller.getValue();
-                if (factory != null) {
-                    ProtocolStackConfiguration configuration = factory.getProtocolStackConfiguration();
-                    ProtocolConfiguration<? extends TP> transport = configuration.getTransport();
-                    if (transport.getName().equals(protocolName)) {
-                        Class<? extends Protocol> protocolClass = transport.createProtocol(configuration).getClass();
+        ServiceRegistry registry = context.getServiceRegistry(true);
+        JChannel channel = new PassiveServiceSupplier<JChannel>(registry, JGroupsRequirement.CHANNEL.getServiceName(context, channelName)).get();
+        if (channel != null) {
+            ChannelFactory factory = new PassiveServiceSupplier<ChannelFactory>(registry, JGroupsRequirement.CHANNEL_SOURCE.getServiceName(context, channelName)).get();
+            if (factory != null) {
+                ProtocolStackConfiguration configuration = factory.getProtocolStackConfiguration();
+                ProtocolConfiguration<? extends TP> transport = configuration.getTransport();
+                if (transport.getName().equals(protocolName)) {
+                    Class<? extends Protocol> protocolClass = transport.createProtocol(configuration).getClass();
+                    return channel.getProtocolStack().findProtocol(protocolClass);
+                }
+                for (ProtocolConfiguration<? extends Protocol> protocol : configuration.getProtocols()) {
+                    if (protocol.getName().equals(protocolName)) {
+                        Class<? extends Protocol> protocolClass = protocol.createProtocol(configuration).getClass();
                         return channel.getProtocolStack().findProtocol(protocolClass);
-                    }
-                    for (ProtocolConfiguration<? extends Protocol> protocol : configuration.getProtocols()) {
-                        if (protocol.getName().equals(protocolName)) {
-                            Class<? extends Protocol> protocolClass = protocol.createProtocol(configuration).getClass();
-                            return channel.getProtocolStack().findProtocol(protocolClass);
-                        }
                     }
                 }
             }
@@ -177,8 +172,7 @@ public class ChannelRuntimeResourceRegistration implements RuntimeResourceRegist
         }
 
         try {
-            ModuleLoader loader = (ModuleLoader) context.getServiceRegistry(false).getRequiredService(Services.JBOSS_SERVICE_MODULE_LOADER).getValue();
-            return loader.loadModule(moduleName).getClassLoader().loadClass(className).asSubclass(Protocol.class);
+            return Module.getContextModuleLoader().loadModule(moduleName).getClassLoader().loadClass(className).asSubclass(Protocol.class);
         } catch (ClassNotFoundException | ModuleLoadException e) {
             throw JGroupsLogger.ROOT_LOGGER.unableToLoadProtocolClass(className);
         }

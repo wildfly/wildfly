@@ -34,17 +34,16 @@ import java.util.ServiceLoader;
 
 import org.jboss.as.clustering.controller.Capability;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
-import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
+import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
-import org.jboss.as.clustering.naming.BinderServiceBuilder;
+import org.jboss.as.clustering.naming.BinderServiceConfigurator;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
-import org.wildfly.clustering.service.AliasServiceBuilder;
+import org.wildfly.clustering.service.IdentityServiceConfigurator;
 import org.wildfly.clustering.service.ServiceNameProvider;
 import org.wildfly.clustering.spi.CapabilityServiceNameRegistry;
 import org.wildfly.clustering.spi.ClusteringRequirement;
@@ -56,7 +55,7 @@ import org.wildfly.clustering.spi.ServiceNameRegistry;
  */
 public class ForkServiceHandler extends SimpleResourceServiceHandler {
 
-    ForkServiceHandler(ResourceServiceBuilderFactory<ChannelFactory> factory) {
+    ForkServiceHandler(ResourceServiceConfiguratorFactory factory) {
         super(factory);
     }
 
@@ -71,13 +70,13 @@ public class ForkServiceHandler extends SimpleResourceServiceHandler {
 
         ServiceTarget target = context.getServiceTarget();
 
-        new AliasServiceBuilder<>(FORK_CHANNEL_SOURCE.getServiceName(address), JGroupsRequirement.CHANNEL_FACTORY.getServiceName(context, channel), JGroupsRequirement.CHANNEL_FACTORY.getType()).build(target).install();
-        new AliasServiceBuilder<>(FORK_CHANNEL_MODULE.getServiceName(address), JGroupsRequirement.CHANNEL_MODULE.getServiceName(context, channel), JGroupsRequirement.CHANNEL_MODULE.getType()).build(target).install();
-        new AliasServiceBuilder<>(FORK_CHANNEL_CLUSTER.getServiceName(address), JGroupsRequirement.CHANNEL_CLUSTER.getServiceName(context, channel), JGroupsRequirement.CHANNEL_CLUSTER.getType()).build(target).install();
-        new ChannelBuilder(FORK_CHANNEL, address).configure(context, model).build(target).install();
+        new IdentityServiceConfigurator<>(FORK_CHANNEL_SOURCE.getServiceName(address), JGroupsRequirement.CHANNEL_FACTORY.getServiceName(context, channel)).build(target).install();
+        new IdentityServiceConfigurator<>(FORK_CHANNEL_MODULE.getServiceName(address), JGroupsRequirement.CHANNEL_MODULE.getServiceName(context, channel)).build(target).install();
+        new IdentityServiceConfigurator<>(FORK_CHANNEL_CLUSTER.getServiceName(address), JGroupsRequirement.CHANNEL_CLUSTER.getServiceName(context, channel)).build(target).install();
+        new ChannelServiceConfigurator(FORK_CHANNEL, address).configure(context, model).build(target).install();
 
-        new BinderServiceBuilder<>(JGroupsBindingFactory.createChannelBinding(name), JGroupsRequirement.CHANNEL.getServiceName(context, name), JGroupsRequirement.CHANNEL.getType()).build(target).install();
-        new BinderServiceBuilder<>(JGroupsBindingFactory.createChannelFactoryBinding(name), JGroupsRequirement.CHANNEL_FACTORY.getServiceName(context, name), JGroupsRequirement.CHANNEL_FACTORY.getType()).build(target).install();
+        new BinderServiceConfigurator(JGroupsBindingFactory.createChannelBinding(name), JGroupsRequirement.CHANNEL.getServiceName(context, name)).build(target).install();
+        new BinderServiceConfigurator(JGroupsBindingFactory.createChannelFactoryBinding(name), JGroupsRequirement.CHANNEL_FACTORY.getServiceName(context, name)).build(target).install();
 
         ServiceNameRegistry<ClusteringRequirement> registry = new CapabilityServiceNameRegistry<>(CLUSTERING_CAPABILITIES, address);
 

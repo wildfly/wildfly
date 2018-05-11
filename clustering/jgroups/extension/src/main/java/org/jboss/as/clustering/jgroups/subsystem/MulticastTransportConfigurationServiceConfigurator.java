@@ -23,33 +23,27 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import org.jboss.as.controller.PathAddress;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceTarget;
-import org.jgroups.auth.AuthToken;
-import org.jgroups.protocols.AUTH;
-import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
-import org.wildfly.clustering.service.InjectedValueDependency;
-import org.wildfly.clustering.service.ValueDependency;
+import org.jboss.as.network.SocketBinding;
+import org.jgroups.protocols.UDP;
 
 /**
+ * Custom builder for transports that need to configure a multicast socket.
  * @author Paul Ferraro
  */
-public class AuthProtocolConfigurationBuilder extends ProtocolConfigurationBuilder<AUTH> {
+public class MulticastTransportConfigurationServiceConfigurator extends TransportConfigurationServiceConfigurator<UDP> {
 
-    private final ValueDependency<AuthToken> token;
-
-    public AuthProtocolConfigurationBuilder(PathAddress address) {
+    public MulticastTransportConfigurationServiceConfigurator(PathAddress address) {
         super(address);
-        this.token = new InjectedValueDependency<>(AuthTokenResourceDefinition.Capability.AUTH_TOKEN.getServiceName(address.append(AuthTokenResourceDefinition.WILDCARD_PATH)), AuthToken.class);
     }
 
     @Override
-    public ServiceBuilder<ProtocolConfiguration<AUTH>> build(ServiceTarget target) {
-        return this.token.register(super.build(target));
-    }
-
-    @Override
-    public void accept(AUTH protocol) {
-        protocol.setAuthToken(this.token.getValue());
+    public void accept(UDP protocol) {
+        SocketBinding binding = this.getSocketBinding();
+        protocol.setMulticasting(binding.getMulticastAddress() != null);
+        if (protocol.supportsMulticasting()) {
+            protocol.setMulticastAddress(binding.getMulticastAddress());
+            protocol.setMulticastPort(binding.getMulticastPort());
+        }
+        super.accept(protocol);
     }
 }

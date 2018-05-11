@@ -25,13 +25,10 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import java.util.EnumSet;
 
 import org.jboss.as.clustering.controller.Registration;
-import org.jboss.as.clustering.controller.ResourceServiceBuilder;
-import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
+import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
+import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jgroups.protocols.TP;
-import org.wildfly.clustering.jgroups.spi.ChannelFactory;
-import org.wildfly.clustering.jgroups.spi.TransportConfiguration;
 
 /**
  * Registers transport definitions, including any definition overrides.
@@ -52,22 +49,21 @@ public class TransportRegistration implements Registration<ManagementResourceReg
         }
     }
 
-    static class TransportResourceServiceBuilderFactory<T extends TP> implements ResourceServiceBuilderFactory<TransportConfiguration<T>> {
-        @SuppressWarnings("unchecked")
+    static class TransportResourceServiceConfiguratorFactory implements ResourceServiceConfiguratorFactory {
         @Override
-        public ResourceServiceBuilder<TransportConfiguration<T>> createBuilder(PathAddress address) {
-            return MulticastTransport.contains(address.getLastElement().getValue()) ? (TransportConfigurationBuilder<T>) new MulticastTransportConfigurationBuilder(address) : new TransportConfigurationBuilder<>(address);
+        public ResourceServiceConfigurator createServiceConfigurator(PathAddress address) {
+            return MulticastTransport.contains(address.getLastElement().getValue()) ? new MulticastTransportConfigurationServiceConfigurator(address) : new TransportConfigurationServiceConfigurator<>(address);
         }
     }
 
-    private final ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory;
+    private final ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory;
 
-    public TransportRegistration(ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
-        this.parentBuilderFactory = parentBuilderFactory;
+    public TransportRegistration(ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory) {
+        this.parentServiceConfiguratorFactory = parentServiceConfiguratorFactory;
     }
 
     @Override
     public void register(ManagementResourceRegistration registration) {
-        new TransportResourceDefinition<>(new TransportResourceServiceBuilderFactory<>(), this.parentBuilderFactory).register(registration);
+        new TransportResourceDefinition(new TransportResourceServiceConfiguratorFactory(), this.parentServiceConfiguratorFactory).register(registration);
     }
 }

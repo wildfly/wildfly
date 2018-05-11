@@ -22,7 +22,7 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import static org.jboss.as.clustering.jgroups.subsystem.DigestAuthTokenResourceDefinition.Attribute.*;
+import static org.jboss.as.clustering.jgroups.subsystem.DigestAuthTokenResourceDefinition.Attribute.ALGORITHM;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -34,22 +34,22 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jgroups.auth.MD5Token;
-import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.ServiceConfigurator;
 
 /**
  * Builds an AUTH token, functionally equivalent to {@link MD5Token}, but can use any digest algorithm supported by the default security provider.
  * @author Paul Ferraro
  */
-public class DigestAuthTokenBuilder extends AuthTokenBuilder<BinaryAuthToken> {
+public class DigestAuthTokenServiceConfigurator extends AuthTokenServiceConfigurator<BinaryAuthToken> {
 
     private volatile String algorithm;
 
-    public DigestAuthTokenBuilder(PathAddress address) {
+    public DigestAuthTokenServiceConfigurator(PathAddress address) {
         super(address);
     }
 
     @Override
-    public Builder<BinaryAuthToken> configure(OperationContext context, ModelNode model) throws OperationFailedException {
+    public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.algorithm = ALGORITHM.resolveModelAttribute(context, model).asString();
         return super.configure(context, model);
     }

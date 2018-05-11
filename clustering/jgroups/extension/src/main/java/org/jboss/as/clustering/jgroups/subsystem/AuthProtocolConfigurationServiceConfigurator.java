@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -23,33 +23,31 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import org.jboss.as.controller.PathAddress;
-import org.jboss.msc.service.ServiceName;
-import org.jgroups.stack.Protocol;
-import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jgroups.auth.AuthToken;
+import org.jgroups.protocols.AUTH;
+import org.wildfly.clustering.service.ServiceSupplierDependency;
+import org.wildfly.clustering.service.SupplierDependency;
 
 /**
  * @author Paul Ferraro
  */
-public class ProtocolConfigurationBuilder<P extends Protocol> extends AbstractProtocolConfigurationBuilder<P, ProtocolConfiguration<P>> {
+public class AuthProtocolConfigurationServiceConfigurator extends ProtocolConfigurationServiceConfigurator<AUTH> {
 
-    private final PathAddress address;
+    private final SupplierDependency<AuthToken> token;
 
-    public ProtocolConfigurationBuilder(PathAddress address) {
-        super(address.getLastElement().getValue());
-        this.address = address;
+    public AuthProtocolConfigurationServiceConfigurator(PathAddress address) {
+        super(address);
+        this.token = new ServiceSupplierDependency<>(AuthTokenResourceDefinition.Capability.AUTH_TOKEN.getServiceName(address.append(AuthTokenResourceDefinition.WILDCARD_PATH)));
     }
 
     @Override
-    public ServiceName getServiceName() {
-        return new ProtocolServiceNameProvider(this.address).getServiceName();
+    public <T> ServiceBuilder<T> register(ServiceBuilder<T> builder) {
+        return super.register(this.token.register(builder));
     }
 
     @Override
-    public ProtocolConfiguration<P> getValue() {
-        return this;
-    }
-
-    @Override
-    public void accept(P protocol) {
+    public void accept(AUTH protocol) {
+        protocol.setAuthToken(this.token.get());
     }
 }

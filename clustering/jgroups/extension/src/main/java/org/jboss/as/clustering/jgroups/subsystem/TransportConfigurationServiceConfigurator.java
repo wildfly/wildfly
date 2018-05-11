@@ -22,7 +22,11 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import static org.jboss.as.clustering.jgroups.subsystem.TransportResourceDefinition.Attribute.*;
+import static org.jboss.as.clustering.jgroups.subsystem.TransportResourceDefinition.Attribute.DIAGNOSTICS_SOCKET_BINDING;
+import static org.jboss.as.clustering.jgroups.subsystem.TransportResourceDefinition.Attribute.MACHINE;
+import static org.jboss.as.clustering.jgroups.subsystem.TransportResourceDefinition.Attribute.RACK;
+import static org.jboss.as.clustering.jgroups.subsystem.TransportResourceDefinition.Attribute.SITE;
+import static org.jboss.as.clustering.jgroups.subsystem.TransportResourceDefinition.Attribute.SOCKET_BINDING;
 
 import java.net.InetSocketAddress;
 
@@ -36,49 +40,53 @@ import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
 import org.jgroups.protocols.TP;
 import org.jgroups.util.DefaultThreadFactory;
 import org.wildfly.clustering.jgroups.spi.TransportConfiguration;
-import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.CompositeDependency;
-import org.wildfly.clustering.service.InjectedValueDependency;
-import org.wildfly.clustering.service.ValueDependency;
+import org.wildfly.clustering.service.ServiceConfigurator;
+import org.wildfly.clustering.service.ServiceNameProvider;
+import org.wildfly.clustering.service.ServiceSupplierDependency;
+import org.wildfly.clustering.service.SupplierDependency;
 
 /**
  * @author Paul Ferraro
  */
-public class TransportConfigurationBuilder<T extends TP> extends AbstractProtocolConfigurationBuilder<T, TransportConfiguration<T>> implements TransportConfiguration<T> {
+public class TransportConfigurationServiceConfigurator<T extends TP> extends AbstractProtocolConfigurationServiceConfigurator<T, TransportConfiguration<T>> implements TransportConfiguration<T> {
 
-    private final PathAddress address;
-    private final ValueDependency<ThreadPoolFactory> threadPoolFactory;
+    private final ServiceNameProvider provider;
+    private final SupplierDependency<ThreadPoolFactory> threadPoolFactory;
 
-    private volatile ValueDependency<SocketBinding> socketBinding;
-    private volatile ValueDependency<SocketBinding> diagnosticsSocketBinding;
+    private volatile SupplierDependency<SocketBinding> socketBinding;
+    private volatile SupplierDependency<SocketBinding> diagnosticsSocketBinding;
     private volatile Topology topology = null;
 
-    public TransportConfigurationBuilder(PathAddress address) {
+    public TransportConfigurationServiceConfigurator(PathAddress address) {
         super(address.getLastElement().getValue());
-        this.address = address;
-        this.threadPoolFactory = new InjectedValueDependency<>(new ThreadPoolServiceNameProvider(address, ThreadPoolResourceDefinition.DEFAULT.getPathElement()), ThreadPoolFactory.class);
+        this.provider = new SingletonProtocolServiceNameProvider(address);
+        this.threadPoolFactory = new ServiceSupplierDependency<>(new ThreadPoolServiceNameProvider(address, ThreadPoolResourceDefinition.DEFAULT.getPathElement()));
     }
 
     @Override
     public ServiceName getServiceName() {
-        return new SingletonProtocolServiceNameProvider(this.address).getServiceName();
+        return this.provider.getServiceName();
     }
 
     @Override
-    public ServiceBuilder<TransportConfiguration<T>> build(ServiceTarget target) {
-        ServiceBuilder<TransportConfiguration<T>> builder = super.build(target);
-        return new CompositeDependency(this.threadPoolFactory, this.socketBinding, this.diagnosticsSocketBinding).register(builder);
+    public TransportConfiguration<T> get() {
+        return this;
     }
 
     @Override
-    public Builder<TransportConfiguration<T>> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.socketBinding = new InjectedValueDependency<>(CommonUnaryRequirement.SOCKET_BINDING.getServiceName(context, SOCKET_BINDING.resolveModelAttribute(context, model).asString()), SocketBinding.class);
+    public <B> ServiceBuilder<B> register(ServiceBuilder<B> builder) {
+        return super.register(new CompositeDependency(this.threadPoolFactory, this.socketBinding, this.diagnosticsSocketBinding).register(builder));
+    }
+
+    @Override
+    public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        this.socketBinding = new ServiceSupplierDependency<>(CommonUnaryRequirement.SOCKET_BINDING.getServiceName(context, SOCKET_BINDING.resolveModelAttribute(context, model).asString()));
         String diagnosticsSocketBinding = DIAGNOSTICS_SOCKET_BINDING.resolveModelAttribute(context, model).asStringOrNull();
-        this.diagnosticsSocketBinding = (diagnosticsSocketBinding != null) ? new InjectedValueDependency<>(CommonUnaryRequirement.SOCKET_BINDING.getServiceName(context, diagnosticsSocketBinding), SocketBinding.class) : null;
+        this.diagnosticsSocketBinding = (diagnosticsSocketBinding != null) ? new ServiceSupplierDependency<>(CommonUnaryRequirement.SOCKET_BINDING.getServiceName(context, diagnosticsSocketBinding)) : null;
 
         ModelNode machine = MACHINE.resolveModelAttribute(context, model);
         ModelNode rack = RACK.resolveModelAttribute(context, model);
@@ -112,7 +120,7 @@ public class TransportConfigurationBuilder<T extends TP> extends AbstractProtoco
         protocol.setBindPort(socketAddress.getPort());
 
         protocol.setThreadFactory(new ClassLoaderThreadFactory(new DefaultThreadFactory("jgroups", false, true), JChannelFactory.class.getClassLoader()));
-        protocol.setThreadPool(this.threadPoolFactory.getValue().apply(protocol.getThreadFactory()));
+        protocol.setThreadPool(this.threadPoolFactory.get().apply(protocol.getThreadFactory()));
 
         protocol.setInternalThreadPoolThreadFactory(new ClassLoaderThreadFactory(new DefaultThreadFactory("jgroups-int", false, false), JChannelFactory.class.getClassLoader()));
         // Because we provide the transport with a thread pool, TP.init() won't auto-create the internal thread pool
@@ -125,20 +133,15 @@ public class TransportConfigurationBuilder<T extends TP> extends AbstractProtoco
 
         protocol.setValue("enable_diagnostics", this.diagnosticsSocketBinding != null);
         if (this.diagnosticsSocketBinding != null) {
-            InetSocketAddress address = this.diagnosticsSocketBinding.getValue().getSocketAddress();
+            InetSocketAddress address = this.diagnosticsSocketBinding.get().getSocketAddress();
             protocol.setValue("diagnostics_addr", address.getAddress());
             protocol.setValue("diagnostics_port", address.getPort());
         }
     }
 
     @Override
-    public TransportConfiguration<T> getValue() {
-        return this;
-    }
-
-    @Override
     public SocketBinding getSocketBinding() {
-        return this.socketBinding.getValue();
+        return this.socketBinding.get();
     }
 
     @Override
