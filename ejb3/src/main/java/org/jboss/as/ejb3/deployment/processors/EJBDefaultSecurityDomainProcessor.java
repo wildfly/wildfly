@@ -82,7 +82,7 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
         }
 
         String knownSecurityDomainName = null;
-        boolean gotKnownSecurityDomain = false;
+        String defaultKnownSecurityDomainName = null;
         for (ComponentDescription componentDescription : componentDescriptions) {
             if (componentDescription instanceof EJBComponentDescription) {
                 EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) componentDescription;
@@ -92,14 +92,20 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
 
                 // Ensure the EJB components within a deployment are associated with at most one Elytron security domain
                 if (ejbComponentDescription.isSecurityDomainKnown()) {
-                    if (! gotKnownSecurityDomain) {
-                        knownSecurityDomainName = ejbComponentDescription.getSecurityDomain();
-                        gotKnownSecurityDomain = true;
-                    } else if (! knownSecurityDomainName.equals(ejbComponentDescription.getSecurityDomain())) {
-                        throw EjbLogger.ROOT_LOGGER.multipleSecurityDomainsDetected();
+                    if (ejbComponentDescription.isExplicitSecurityDomainConfigured()) {
+                        if (knownSecurityDomainName == null) {
+                            knownSecurityDomainName = ejbComponentDescription.getSecurityDomain();
+                        } else if (! knownSecurityDomainName.equals(ejbComponentDescription.getSecurityDomain())) {
+                            throw EjbLogger.ROOT_LOGGER.multipleSecurityDomainsDetected();
+                        }
+                    } else {
+                        defaultKnownSecurityDomainName = ejbComponentDescription.getSecurityDomain();
                     }
                 }
             }
+        }
+        if (knownSecurityDomainName == null) {
+            knownSecurityDomainName = defaultKnownSecurityDomainName;
         }
 
         // If this EJB deployment is associated with an Elytron security domain, set up the security domain mapping
