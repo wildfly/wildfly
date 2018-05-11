@@ -162,11 +162,6 @@
         <version.jacoco.plugin>0.7.9</version.jacoco.plugin>
         <version.org.jboss.galleon>1.0.0.CR3</version.org.jboss.galleon>
 
-        <!-- TODO This is an unusual case where we override the version only for this client. The parent pom version is
-                  using the 1.1 version for the Java EE 8 tech preview though the client still currently expects 1.0.
-                  Once we fully move to Java EE 8 this can be removed.
-             -->
-        <version.org.glassfish.javax.json-1.0>1.0.4</version.org.glassfish.javax.json-1.0>
         <version.org.wildfly.build-tools>1.2.10.Final</version.org.wildfly.build-tools>
         <version.org.wildfly.checkstyle-config>1.0.7.Final</version.org.wildfly.checkstyle-config>
 
@@ -370,12 +365,9 @@
         <version.org.wildfly.arquillian>2.1.0.Final</version.org.wildfly.arquillian>
         <version.org.wildfly.bridge.servlet-api-bridge>1.0.1.Final</version.org.wildfly.bridge.servlet-api-bridge>
         <version.org.wildfly.cdi-api-bridge>1.0.1.Final</version.org.wildfly.cdi-api-bridge>
-        <version.org.wildfly.checkstyle-config>1.0.7.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.core>5.0.0.Beta3</version.org.wildfly.core>
         <version.org.wildfly.http-client>1.0.12.Final</version.org.wildfly.http-client>
-        <version.org.wildfly.maven.plugins>1.0.0</version.org.wildfly.maven.plugins>
         <version.org.wildfly.naming-client>1.0.8.Final</version.org.wildfly.naming-client>
-        <version.org.wildfly.plugin>1.2.1.Final</version.org.wildfly.plugin>
         <version.org.wildfly.transaction.client>1.0.3.Final</version.org.wildfly.transaction.client>
         <version.org.yaml.snakeyaml>1.17</version.org.yaml.snakeyaml>
         <version.rhino.js>1.7R2</version.rhino.js>
