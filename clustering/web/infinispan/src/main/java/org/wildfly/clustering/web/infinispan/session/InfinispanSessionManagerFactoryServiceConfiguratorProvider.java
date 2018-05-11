@@ -36,6 +36,6 @@ public class InfinispanSessionManagerFactoryServiceConfiguratorProvider implemen
 
     @Override
     public <C extends Marshallability, L> CapabilityServiceConfigurator getServiceConfigurator(SessionManagerFactoryConfiguration<C, L> config) {
-        return new InfinispanSessionManagerFactoryBuilder<>(config);
+        return new InfinispanSessionManagerFactoryServiceConfigurator<>(config);
     }
 }

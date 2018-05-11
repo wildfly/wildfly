@@ -30,6 +30,6 @@ public class InfinispanSSOManagerFactoryServiceConfiguratorProvider implements S
 
     @Override
     public CapabilityServiceConfigurator getServiceConfigurator(String name) {
-        return new InfinispanSSOManagerFactoryBuilder<>(name);
+        return new InfinispanSSOManagerFactoryServiceConfigurator<>(name);
     }
 }

@@ -56,12 +56,12 @@ public class InfinispanRouteLocatorServiceConfiguratorProvider implements RouteL
 
     @Override
     public CapabilityServiceConfigurator getRouteLocatorServiceConfigurator(String serverName, String deploymentName) {
-        return new InfinispanRouteLocatorBuilder(serverName, deploymentName);
+        return new InfinispanRouteLocatorServiceConfigurator(serverName, deploymentName);
     }
 
     @Override
     public Collection<CapabilityServiceConfigurator> getRouteLocatorConfigurationServiceConfigurators(String serverName, SupplierDependency<String> routeDependency) {
-        String containerName = InfinispanSessionManagerFactoryBuilder.DEFAULT_CACHE_CONTAINER;
+        String containerName = InfinispanSessionManagerFactoryServiceConfigurator.DEFAULT_CACHE_CONTAINER;
 
         List<CapabilityServiceConfigurator> builders = new LinkedList<>();
 

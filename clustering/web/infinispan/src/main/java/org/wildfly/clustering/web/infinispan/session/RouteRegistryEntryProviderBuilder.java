@@ -24,14 +24,17 @@ package org.wildfly.clustering.web.infinispan.session;
 
 import java.util.AbstractMap;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
-import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.service.SuppliedValueService;
+import org.wildfly.clustering.service.FunctionalService;
+import org.wildfly.clustering.service.SimpleServiceNameProvider;
 import org.wildfly.clustering.service.SupplierDependency;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 
@@ -39,13 +42,12 @@ import org.wildfly.clustering.spi.ClusteringCacheRequirement;
  * Service that provides the {@link Map.Entry} for the routing {@link org.wildfly.clustering.registry.Registry}.
  * @author Paul Ferraro
  */
-public class RouteRegistryEntryProviderBuilder implements CapabilityServiceBuilder<Map.Entry<String, Void>>, Function<String, Map.Entry<String, Void>> {
+public class RouteRegistryEntryProviderBuilder extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, Function<String, Map.Entry<String, Void>> {
 
-    private final String serverName;
     private final SupplierDependency<String> route;
 
     public RouteRegistryEntryProviderBuilder(String serverName, SupplierDependency<String> route) {
-        this.serverName = serverName;
+        super(ServiceName.parse(ClusteringCacheRequirement.REGISTRY_ENTRY.resolve(InfinispanSessionManagerFactoryServiceConfigurator.DEFAULT_CACHE_CONTAINER, serverName)));
         this.route = route;
     }
 
@@ -55,12 +57,10 @@ public class RouteRegistryEntryProviderBuilder implements CapabilityServiceBuild
     }
 
     @Override
-    public ServiceName getServiceName() {
-        return ServiceName.parse(ClusteringCacheRequirement.REGISTRY_ENTRY.resolve(InfinispanSessionManagerFactoryBuilder.DEFAULT_CACHE_CONTAINER, this.serverName));
-    }
-
-    @Override
-    public ServiceBuilder<Map.Entry<String, Void>> build(ServiceTarget target) {
-        return this.route.register(target.addService(this.getServiceName(), new SuppliedValueService<>(this, this.route, route -> {}))).setInitialMode(ServiceController.Mode.ON_DEMAND);
+    public ServiceBuilder<?> build(ServiceTarget target) {
+        ServiceBuilder<?> builder = target.addService(this.getServiceName());
+        Consumer<Map.Entry<String, Void>> entry = this.route.register(builder).provides(this.getServiceName());
+        Service service = new FunctionalService<>(entry, this, this.route);
+        return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 }
