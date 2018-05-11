@@ -1,8 +1,8 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
+ * JBoss, Home of Professional Open Source
+ * Copyright 2010, Red Hat Inc., and individual contributors as indicated
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -41,13 +41,13 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class SimpleApplicationClientTestCase extends AbstractSimpleApplicationClientTestCase {
+public class SimpleApplicationClientTestCase2 extends AbstractSimpleApplicationClientTestCase {
 
     private static Archive archive;
 
     @Override
     public Archive<?> getArchive() {
-        return SimpleApplicationClientTestCase.archive;
+        return SimpleApplicationClientTestCase2.archive;
     }
 
     @Deployment(testable = false)
@@ -55,10 +55,10 @@ public class SimpleApplicationClientTestCase extends AbstractSimpleApplicationCl
         final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, APP_NAME + ".ear");
 
         final JavaArchive lib = ShrinkWrap.create(JavaArchive.class, "lib.jar");
-        lib.addClasses(AppClientSingletonRemote.class, AppClientWrapper.class, CallbackHandler.class);
+        lib.addClasses(AppClientSingletonRemote.class, AppClientWrapper.class, CallbackHandler.class, ClientInterceptor.class);
         ear.addAsLibrary(lib);
         final JavaArchive ejb = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
-        ejb.addClasses(SimpleApplicationClientTestCase.class, AppClientStateSingleton.class);
+        ejb.addClasses(SimpleApplicationClientTestCase2.class, AppClientStateSingleton.class);
         ear.addAsModule(ejb);
 
         final JavaArchive appClient = ShrinkWrap.create(JavaArchive.class, "client-annotation.jar");
@@ -66,19 +66,18 @@ public class SimpleApplicationClientTestCase extends AbstractSimpleApplicationCl
         appClient.addAsManifestResource(new StringAsset("Main-Class: " + AppClientMain.class.getName() + "\n"), "MANIFEST.MF");
         ear.addAsModule(appClient);
 
-        final JavaArchive clientDD = ShrinkWrap.create(JavaArchive.class, "client-dd.jar");
-        clientDD.addClasses(DescriptorClientMain.class);
-        clientDD.addAsManifestResource(new StringAsset("Main-Class: " + DescriptorClientMain.class.getName() + "\n"), "MANIFEST.MF");
-        clientDD.addAsManifestResource(SimpleApplicationClientTestCase.class.getPackage(), "application-client.xml", "application-client.xml");
-        ear.addAsModule(clientDD);
-
         final JavaArchive clientOverride = ShrinkWrap.create(JavaArchive.class, "client-override.jar");
         clientOverride.addClasses(DescriptorClientMain.class);
-        clientOverride.addAsManifestResource(new StringAsset("Main-Class: " + DescriptorClientMain.class.getName() + "\n"), "MANIFEST.MF");
-        clientOverride.addAsManifestResource(SimpleApplicationClientTestCase.class.getPackage(), "application-client.xml", "application-client.xml");
-        clientOverride.addAsManifestResource(SimpleApplicationClientTestCase.class.getPackage(), "jboss-client.xml", "jboss-client.xml");
-        ear.addAsModule(clientOverride);
+        clientOverride.addAsManifestResource(new StringAsset("Main-Class: " + DescriptorClientMain.class.getName() + "\n"),
+                "MANIFEST.MF");
+        clientOverride.addAsManifestResource(SimpleApplicationClientTestCase2.class.getPackage(), "application-client.xml",
+                "application-client.xml");
+        clientOverride.addAsManifestResource(SimpleApplicationClientTestCase2.class.getPackage(), "jboss-client.xml",
+                "jboss-client.xml");
+        clientOverride.addAsResource(new StringAsset(ClientInterceptor.class.getCanonicalName()),
+                "META-INF/services/org.jboss.ejb.client.EJBClientInterceptor");
 
+        ear.addAsModule(clientOverride);
         archive = ear;
         return ear;
     }
@@ -88,13 +87,4 @@ public class SimpleApplicationClientTestCase extends AbstractSimpleApplicationCl
         super.simpleAppClientTest();
     }
 
-    @Test
-    public void descriptorBasedAppClientTest() throws Exception {
-        super.descriptorBasedAppClientTest();
-    }
-
-    @Test
-    public void testAppClientJBossDescriptor() throws Exception {
-        super.testAppClientJBossDescriptor();
-    }
 }
