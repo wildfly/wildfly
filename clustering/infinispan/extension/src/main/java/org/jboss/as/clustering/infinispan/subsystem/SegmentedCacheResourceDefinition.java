@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -24,15 +24,13 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.function.UnaryOperator;
 
-import org.jboss.as.clustering.controller.SimpleResourceDescriptorConfigurator;
-import org.jboss.as.clustering.controller.validation.DoubleRangeValidatorBuilder;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.clustering.controller.validation.IntRangeValidatorBuilder;
-import org.jboss.as.clustering.controller.validation.LongRangeValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
@@ -42,34 +40,18 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * Resource description for the addressable resource /subsystem=infinispan/cache-container=X/distributed-cache=*
- *
- * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
- * @author Radoslav Husar
+ * @author Paul Ferraro
  */
-public class DistributedCacheResourceDefinition extends SegmentedCacheResourceDefinition {
-
-    static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
-    static PathElement pathElement(String name) {
-        return PathElement.pathElement("distributed-cache", name);
-    }
+public class SegmentedCacheResourceDefinition extends SharedStateCacheResourceDefinition {
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
-        CAPACITY_FACTOR("capacity-factor", ModelType.DOUBLE, new ModelNode(1.0f)) {
+        CONSISTENT_HASH_STRATEGY("consistent-hash-strategy", ModelType.STRING, new ModelNode(ConsistentHashStrategy.INTER_CACHE.name())) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setValidator(new DoubleRangeValidatorBuilder().lowerBound(0).upperBound(Float.MAX_VALUE).configure(builder).build());
+                return builder.setValidator(new EnumValidator<>(ConsistentHashStrategy.class));
             }
         },
-        L1_LIFESPAN("l1-lifespan", ModelType.LONG, new ModelNode(0L)) {
-            @Override
-            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setValidator(new LongRangeValidatorBuilder().min(0).configure(builder).build())
-                        .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
-                        ;
-            }
-        },
-        OWNERS("owners", ModelType.INT, new ModelNode(2)) {
+        SEGMENTS("segments", ModelType.INT, new ModelNode(256)) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setValidator(new IntRangeValidatorBuilder().min(1).configure(builder).build());
@@ -93,26 +75,39 @@ public class DistributedCacheResourceDefinition extends SegmentedCacheResourceDe
         }
     }
 
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
+    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
 
-        if (InfinispanModel.VERSION_5_0_0.requiresTransformation(version)) {
+        if (InfinispanModel.VERSION_4_1_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
-                    .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(Attribute.L1_LIFESPAN.getDefinition()), Attribute.L1_LIFESPAN.getDefinition())
+                    .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(Attribute.CONSISTENT_HASH_STRATEGY.getDefinition()), Attribute.CONSISTENT_HASH_STRATEGY.getDefinition())
+                    .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(Attribute.SEGMENTS.getDefinition()), Attribute.SEGMENTS.getDefinition())
                     .end();
         }
 
         if (InfinispanModel.VERSION_3_0_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
-                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(Attribute.CAPACITY_FACTOR.getDefinition().getDefaultValue()), Attribute.CAPACITY_FACTOR.getDefinition())
-                    .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.CAPACITY_FACTOR.getDefinition())
+                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(ConsistentHashStrategy.INTRA_CACHE.name())), Attribute.CONSISTENT_HASH_STRATEGY.getDefinition())
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.CONSISTENT_HASH_STRATEGY.getDefinition())
                     .end();
         }
 
-        SegmentedCacheResourceDefinition.buildTransformation(version, builder);
+        SharedStateCacheResourceDefinition.buildTransformation(version, builder);
     }
 
-    DistributedCacheResourceDefinition() {
-        super(WILDCARD_PATH, new SimpleResourceDescriptorConfigurator<>(Attribute.class), new ClusteredCacheServiceHandler(DistributedCacheBuilder::new));
+    private static class ResourceDescriptorConfigurator implements UnaryOperator<ResourceDescriptor> {
+        private final UnaryOperator<ResourceDescriptor> configurator;
+
+        ResourceDescriptorConfigurator(UnaryOperator<ResourceDescriptor> configurator) {
+            this.configurator = configurator;
+        }
+
+        @Override
+        public ResourceDescriptor apply(ResourceDescriptor descriptor) {
+            return this.configurator.apply(descriptor).addAttributes(Attribute.class);
+        }
+    }
+
+    SegmentedCacheResourceDefinition(PathElement path, UnaryOperator<ResourceDescriptor> configurator, ClusteredCacheServiceHandler handler) {
+        super(path, new ResourceDescriptorConfigurator(configurator), handler);
     }
 }

@@ -52,7 +52,7 @@ public class InfinispanRouteLocator implements RouteLocator {
     @Override
     public String locate(String sessionId) {
         DistributionManager dist = this.cache.getAdvancedCache().getDistributionManager();
-        Address address = (dist != null) ? dist.getCacheTopology().getDistribution(new Key<>(sessionId)).primary() : this.cache.getCacheManager().getAddress();
+        Address address = (dist != null) && !this.cache.getCacheConfiguration().clustering().cacheMode().isScattered() ? dist.getCacheTopology().getDistribution(new Key<>(sessionId)).primary() : this.cache.getCacheManager().getAddress();
         Node node = (address != null) ? this.factory.createNode(address) : null;
         Map.Entry<String, Void> entry = this.registry.getEntry((node != null) ? node : this.registry.getGroup().getLocalMember());
         return (entry != null) ? entry.getKey() : null;
