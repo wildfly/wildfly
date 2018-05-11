@@ -131,10 +131,10 @@ public class AuthenticationTestCase {
         return war;
     }
 
-    @EJB(mappedName = "java:global/ejb3security/WhoAmIBean!org.jboss.as.test.integration.ejb.security.WhoAmI")
+    @EJB(mappedName = "java:global/ejb3security/WhoAmIBean!org.wildfly.test.integration.elytron.ejb.WhoAmI")
     private WhoAmI whoAmIBean;
 
-    @EJB(mappedName = "java:global/ejb3security/EntryBean!org.jboss.as.test.integration.ejb.security.Entry")
+    @EJB(mappedName = "java:global/ejb3security/EntryBean!org.wildfly.test.integration.elytron.ejb.Entry")
     private Entry entryBean;
 
     @Test
