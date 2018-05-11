@@ -104,7 +104,7 @@ public class SecurityResourceDefinition extends ComponentResourceDefinition {
                 .addAttributes(Attribute.class)
                 .addCapabilities(Capability.class)
                 ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(SecurityBuilder::new);
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler(SecurityBuilder::new);
         new SimpleResourceRegistration(descriptor, handler).register(registration);
 
         return registration;

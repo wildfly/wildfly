@@ -38,7 +38,7 @@ import org.jboss.msc.service.ServiceName;
  * {@link org.jboss.as.controller.RestartParentWriteAttributeHandler} that leverages a {@link ResourceServiceBuilderFactory} for service recreation.
  * @author Paul Ferraro
  */
-public class RestartParentResourceWriteAttributeHandler<T> extends RestartParentWriteAttributeHandler implements Registration<ManagementResourceRegistration> {
+public class RestartParentResourceWriteAttributeHandler extends RestartParentWriteAttributeHandler implements Registration<ManagementResourceRegistration> {
 
     private final WriteAttributeStepHandlerDescriptor descriptor;
     private final ResourceServiceConfiguratorFactory parentFactory;

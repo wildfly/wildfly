@@ -26,13 +26,13 @@ package org.jboss.as.clustering.controller;
  * Registers a {@link RestartParentResourceAddStepHandler}, {@link RestartParentResourceRemoveStepHandler}, and {@link RestartParentResourceWriteAttributeHandler} on behalf of a resource definition.
  * @author Paul Ferraro
  */
-public class RestartParentResourceRegistration<T> extends ResourceRegistration {
+public class RestartParentResourceRegistration extends ResourceRegistration {
 
     public RestartParentResourceRegistration(ResourceServiceConfiguratorFactory parentFactory, ResourceDescriptor descriptor) {
         this(parentFactory, descriptor, null);
     }
 
     public RestartParentResourceRegistration(ResourceServiceConfiguratorFactory parentFactory, ResourceDescriptor descriptor, ResourceServiceHandler handler) {
-        super(descriptor, new RestartParentResourceAddStepHandler<>(parentFactory, descriptor, handler), new RestartParentResourceRemoveStepHandler<>(parentFactory, descriptor, handler), new RestartParentResourceWriteAttributeHandler<>(parentFactory, descriptor));
+        super(descriptor, new RestartParentResourceAddStepHandler(parentFactory, descriptor, handler), new RestartParentResourceRemoveStepHandler(parentFactory, descriptor, handler), new RestartParentResourceWriteAttributeHandler(parentFactory, descriptor));
     }
 }

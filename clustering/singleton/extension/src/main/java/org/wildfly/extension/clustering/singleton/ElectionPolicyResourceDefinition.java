@@ -116,7 +116,7 @@ public abstract class ElectionPolicyResourceDefinition extends ChildResourceDefi
                 .addAttributes(ElectionPolicyResourceDefinition.Attribute.class)
                 .addCapabilities(ElectionPolicyResourceDefinition.Capability.class)
                 ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(this.builderFactory);
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler(this.builderFactory);
         new SimpleResourceRegistration(descriptor, handler).register(registration);
 
         return registration;

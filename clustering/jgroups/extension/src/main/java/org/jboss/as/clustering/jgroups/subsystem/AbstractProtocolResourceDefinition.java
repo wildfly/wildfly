@@ -171,7 +171,7 @@ public class AbstractProtocolResourceDefinition<P extends Protocol, C extends Pr
     AbstractProtocolResourceDefinition(Parameters parameters, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceBuilderFactory<C> builderFactory, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
         super(parameters);
         this.configurator = configurator;
-        this.handler = new SimpleResourceServiceHandler<>(builderFactory);
+        this.handler = new SimpleResourceServiceHandler(builderFactory);
         this.parentBuilderFactory = parentBuilderFactory;
     }
 
@@ -184,7 +184,7 @@ public class AbstractProtocolResourceDefinition<P extends Protocol, C extends Pr
                 .addAttributes(Attribute.class)
                 .addExtraParameters(DeprecatedAttribute.class)
                 ;
-        new RestartParentResourceRegistration<>(this.parentBuilderFactory, descriptor, this.handler).register(registration);
+        new RestartParentResourceRegistration(this.parentBuilderFactory, descriptor, this.handler).register(registration);
 
         if (registration.getPathAddress().getLastElement().isWildcard()) {
             new PropertyResourceDefinition().register(registration);

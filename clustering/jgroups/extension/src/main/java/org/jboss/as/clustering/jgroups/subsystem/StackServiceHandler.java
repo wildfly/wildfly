@@ -35,7 +35,7 @@ import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 /**
  * @author Paul Ferraro
  */
-public class StackServiceHandler extends SimpleResourceServiceHandler<ChannelFactory> {
+public class StackServiceHandler extends SimpleResourceServiceHandler {
 
     StackServiceHandler(ResourceServiceBuilderFactory<ChannelFactory> factory) {
         super(factory);

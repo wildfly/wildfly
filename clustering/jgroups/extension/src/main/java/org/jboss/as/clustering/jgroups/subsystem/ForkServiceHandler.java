@@ -54,7 +54,7 @@ import org.wildfly.clustering.spi.ServiceNameRegistry;
 /**
  * @author Paul Ferraro
  */
-public class ForkServiceHandler extends SimpleResourceServiceHandler<ChannelFactory> {
+public class ForkServiceHandler extends SimpleResourceServiceHandler {
 
     ForkServiceHandler(ResourceServiceBuilderFactory<ChannelFactory> factory) {
         super(factory);

@@ -184,8 +184,8 @@ public class RemoteSiteResourceDefinition extends ChildResourceDefinition<Manage
                 .addAttributes(DeprecatedAttribute.class)
                 .addCapabilities(Capability.class)
                 ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(RemoteSiteConfigurationBuilder::new);
-        new RestartParentResourceRegistration<>(this.parentBuilderFactory, descriptor, handler).register(registration);
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler(RemoteSiteConfigurationBuilder::new);
+        new RestartParentResourceRegistration(this.parentBuilderFactory, descriptor, handler).register(registration);
 
         return registration;
     }

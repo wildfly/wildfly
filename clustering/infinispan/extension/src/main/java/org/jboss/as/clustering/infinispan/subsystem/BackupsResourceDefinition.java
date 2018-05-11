@@ -70,7 +70,7 @@ public class BackupsResourceDefinition extends ComponentResourceDefinition {
         ManagementResourceRegistration registration = parent.registerSubModel(this);
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver());
-        ResourceServiceHandler handler = new ParentResourceServiceHandler<>(this.builderFactory);
+        ResourceServiceHandler handler = new ParentResourceServiceHandler(this.builderFactory);
         new SimpleResourceRegistration(descriptor, handler).register(registration);
 
         new BackupResourceDefinition(this.builderFactory).register(registration);

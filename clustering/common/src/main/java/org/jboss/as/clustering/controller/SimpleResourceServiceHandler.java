@@ -30,7 +30,7 @@ import org.jboss.dmr.ModelNode;
  * Simple {@link ResourceServiceHandler} that installs/removes a single service via a {@link ResourceServiceBuilderFactory}.
  * @author Paul Ferraro
  */
-public class SimpleResourceServiceHandler<T> implements ResourceServiceHandler {
+public class SimpleResourceServiceHandler implements ResourceServiceHandler {
 
     private ResourceServiceConfiguratorFactory factory;
 

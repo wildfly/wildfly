@@ -31,7 +31,7 @@ import org.jboss.dmr.ModelNode;
  * Remove operation handler that leverages a {@link ResourceServiceBuilderFactory} to restart a parent resource..
  * @author Paul Ferraro
  */
-public class RestartParentResourceRemoveStepHandler<T> extends RemoveStepHandler {
+public class RestartParentResourceRemoveStepHandler extends RemoveStepHandler {
 
     private final OperationStepHandler handler;
 

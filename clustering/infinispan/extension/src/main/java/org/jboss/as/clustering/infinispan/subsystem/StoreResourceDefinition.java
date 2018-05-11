@@ -166,7 +166,7 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition<Ma
         super(path, resolver);
         this.legacyPath = legacyPath;
         this.configurator = configurator;
-        this.handler = new SimpleResourceServiceHandler<>(builderFactory);
+        this.handler = new SimpleResourceServiceHandler(builderFactory);
     }
 
     @SuppressWarnings("deprecation")

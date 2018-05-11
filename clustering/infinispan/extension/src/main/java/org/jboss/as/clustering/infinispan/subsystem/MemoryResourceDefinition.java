@@ -87,7 +87,7 @@ public class MemoryResourceDefinition extends ChildResourceDefinition<Management
                 .addAttributes(Attribute.class)
                 ;
 
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> new MemoryBuilder(this.type, address));
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler(address -> new MemoryBuilder(this.type, address));
         new SimpleResourceRegistration(descriptor, handler).register(registration);
 
         if (registration.isRuntimeOnlyRegistrationValid()) {

@@ -103,7 +103,7 @@ public class AuthTokenResourceDefinition<T extends AuthToken> extends ChildResou
                 .addAttributes(Attribute.class)
                 .addCapabilities(Capability.class)
                 ;
-        new SimpleResourceRegistration(descriptor, new SimpleResourceServiceHandler<>(this.builderFactory)).register(registration);
+        new SimpleResourceRegistration(descriptor, new SimpleResourceServiceHandler(this.builderFactory)).register(registration);
 
         return registration;
     }

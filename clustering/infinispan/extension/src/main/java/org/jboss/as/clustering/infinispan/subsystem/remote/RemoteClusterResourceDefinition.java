@@ -128,7 +128,7 @@ public class RemoteClusterResourceDefinition extends ChildResourceDefinition<Man
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
                 .addCapabilities(Capability.class);
-        new RestartParentResourceRegistration<>(builderFactory, descriptor).register(registration);
+        new RestartParentResourceRegistration(builderFactory, descriptor).register(registration);
 
         return registration;
     }

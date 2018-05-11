@@ -141,7 +141,7 @@ public class StateTransferResourceDefinition extends ComponentResourceDefinition
                 .addAttributes(Attribute.class)
                 .addAttributes(DeprecatedAttribute.class)
                 ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(StateTransferBuilder::new);
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler(StateTransferBuilder::new);
         new SimpleResourceRegistration(descriptor, handler).register(registration);
 
         return registration;

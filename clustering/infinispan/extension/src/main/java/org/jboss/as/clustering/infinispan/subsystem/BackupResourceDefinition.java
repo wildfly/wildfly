@@ -135,7 +135,7 @@ public class BackupResourceDefinition extends ChildResourceDefinition<Management
                 .addAttributes(Attribute.class)
                 .addAttributes(TakeOfflineAttribute.class)
                 ;
-        new RestartParentResourceRegistration<>(this.parentBuilderFactory, descriptor).register(registration);
+        new RestartParentResourceRegistration(this.parentBuilderFactory, descriptor).register(registration);
 
         if (registration.isRuntimeOnlyRegistrationValid()) {
             new OperationHandler<>(new BackupOperationExecutor(), BackupOperation.class).register(registration);

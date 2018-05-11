@@ -125,7 +125,7 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, 
     public void register(ManagementResourceRegistration parent) {
         ManagementResourceRegistration registration = parent.registerSubModel(this);
         ResourceDescriptor descriptor = new ResourceDescriptor(this.definition.getResourceDescriptionResolver()).addAttributes(this.getAttributes());
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(address -> builderSupplier.apply(this, address));
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler(address -> this.builderSupplier.apply(this, address));
         new SimpleResourceRegistration(descriptor, handler).register(registration);
     }
 

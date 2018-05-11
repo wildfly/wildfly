@@ -44,7 +44,7 @@ import org.wildfly.clustering.infinispan.spi.RemoteCacheContainer;
 /**
  * @author Radoslav Husar
  */
-public class RemoteCacheContainerServiceHandler extends SimpleResourceServiceHandler<Configuration> {
+public class RemoteCacheContainerServiceHandler extends SimpleResourceServiceHandler {
 
     RemoteCacheContainerServiceHandler(ResourceServiceBuilderFactory<Configuration> builderFactory) {
         super(builderFactory);

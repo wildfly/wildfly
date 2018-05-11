@@ -111,7 +111,7 @@ public class LockingResourceDefinition extends ComponentResourceDefinition {
         parent.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class);
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(LockingBuilder::new);
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler(LockingBuilder::new);
         new SimpleResourceRegistration(descriptor, handler).register(registration);
 
         if (registration.isRuntimeOnlyRegistrationValid()) {
