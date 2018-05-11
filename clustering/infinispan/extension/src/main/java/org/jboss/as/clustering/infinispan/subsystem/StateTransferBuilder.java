@@ -47,10 +47,12 @@ public class StateTransferBuilder extends ComponentBuilder<StateTransferConfigur
 
     @Override
     public StateTransferConfiguration getValue() {
+        boolean timeoutEnabled = this.timeout > 0;
         return new ConfigurationBuilder().clustering().stateTransfer()
                 .chunkSize(this.chunkSize)
                 .fetchInMemoryState(true)
-                .timeout(this.timeout)
+                .awaitInitialTransfer(timeoutEnabled)
+                .timeout(timeoutEnabled ? this.timeout : Long.MAX_VALUE)
                 .create();
     }
 

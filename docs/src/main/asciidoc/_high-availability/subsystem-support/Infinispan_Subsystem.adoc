@@ -410,14 +410,26 @@ A remote store persists cache entries to a set of remote Infinispan server insta
 
 ==== State transfer
 
-The state transfer component defines the behavior for the initial transfer of state from remote cache on cache start.
+The state transfer component defines the behavior for the initial transfer of state from remote caches on cache start.
 State transfer is only applicable to distributed and replicated caches.
+When configured with a timeout, a cache is only available after its initial state transfer completes.
+If state transfer does not complete within the configured timeout, the cache will fail to start.
 
 e.g. To configure a state-transfer timeout of 1 minute:
 
 [source]
 ----
 /subsystem=infinispan/cache-container=foo/local-cache=bar/component=state-transfer:add(timeout=60000)
+----
+
+Alternatively, state transfer can be configured to be non-blocking, by configuring a timeout of 0.
+While this prevents timeouts due to large state transfers, cache operations on the new node will require remote invocations to retrieve the requisite state until state transfer is complete.
+
+e.g. To configure a non-blocking state transfer:
+
+[source]
+----
+/subsystem=infinispan/cache-container=foo/local-cache=bar/component=state-transfer:add(timeout=0)
 ----
 
 For a complete list of state-transfer attributes, refer to the https://wildscribe.github.io/[WildFly management model documentation]

@@ -37,6 +37,7 @@ import java.util.List;
 import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemInitialization;
+import org.jboss.as.clustering.subsystem.RejectedValueConfig;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -410,6 +411,8 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
         PathAddress containerAddress = subsystemAddress.append(CacheContainerResourceDefinition.WILDCARD_PATH);
 
         if (InfinispanModel.VERSION_7_0_0.requiresTransformation(version)) {
+            config.addFailedAttribute(containerAddress.append(ReplicatedCacheResourceDefinition.WILDCARD_PATH, StateTransferResourceDefinition.PATH), new RejectedValueConfig(StateTransferResourceDefinition.Attribute.TIMEOUT, value -> value.asLong() <= 0));
+
             PathAddress cacheAddress = containerAddress.append(ScatteredCacheResourceDefinition.WILDCARD_PATH);
             config.addFailedAttribute(cacheAddress, FailedOperationTransformationConfig.REJECTED_RESOURCE);
             for (PathElement path : Arrays.asList(LockingResourceDefinition.PATH, TransactionResourceDefinition.PATH, ObjectMemoryResourceDefinition.PATH, ExpirationResourceDefinition.PATH, StateTransferResourceDefinition.PATH, PartitionHandlingResourceDefinition.PATH)) {
