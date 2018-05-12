@@ -32,6 +32,6 @@ import org.wildfly.clustering.spi.LocalCacheServiceConfiguratorProvider;
 public class LocalServiceProviderRegistryServiceConfiguratorProvider extends ServiceProviderRegistryServiceConfiguratorProvider implements LocalCacheServiceConfiguratorProvider {
 
     public LocalServiceProviderRegistryServiceConfiguratorProvider() {
-        super(LocalServiceProviderRegistryBuilder::new);
+        super(LocalServiceProviderRegistryServiceConfigurator::new);
     }
 }

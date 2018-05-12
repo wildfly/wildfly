@@ -33,6 +33,6 @@ import org.wildfly.clustering.spi.DistributedGroupServiceConfiguratorProvider;
 public class ChannelGroupServiceConfiguratorProvider extends GroupServiceConfiguratorProvider implements DistributedGroupServiceConfiguratorProvider {
 
     public ChannelGroupServiceConfiguratorProvider() {
-        super((registry, group) -> new ChannelGroupBuilder(registry, group));
+        super((registry, group) -> new ChannelGroupServiceConfigurator(registry, group));
     }
 }

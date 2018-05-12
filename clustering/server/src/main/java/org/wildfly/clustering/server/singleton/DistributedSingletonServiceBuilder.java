@@ -23,17 +23,17 @@
 package org.wildfly.clustering.server.singleton;
 
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.Value;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.provider.ServiceProviderRegistry;
 import org.wildfly.clustering.server.logging.ClusteringServerLogger;
 import org.wildfly.clustering.service.CompositeDependency;
-import org.wildfly.clustering.service.ValueDependency;
+import org.wildfly.clustering.service.SupplierDependency;
 import org.wildfly.clustering.singleton.SingletonElectionPolicy;
 import org.wildfly.clustering.singleton.SingletonService;
 import org.wildfly.clustering.singleton.SingletonServiceBuilder;
@@ -45,8 +45,8 @@ import org.wildfly.clustering.singleton.election.SimpleSingletonElectionPolicy;
  */
 public class DistributedSingletonServiceBuilder<T> implements SingletonServiceBuilder<T>, DistributedSingletonServiceContext<T> {
 
-    private final ValueDependency<ServiceProviderRegistry<ServiceName>> registry;
-    private final ValueDependency<CommandDispatcherFactory> dispatcherFactory;
+    private final SupplierDependency<ServiceProviderRegistry<ServiceName>> registry;
+    private final SupplierDependency<CommandDispatcherFactory> dispatcherFactory;
     private final ServiceName serviceName;
     private final Service<T> primaryService;
     private final Optional<Service<T>> backupService;
@@ -54,7 +54,7 @@ public class DistributedSingletonServiceBuilder<T> implements SingletonServiceBu
     private volatile SingletonElectionPolicy electionPolicy = new SimpleSingletonElectionPolicy();
     private volatile int quorum = 1;
 
-    public DistributedSingletonServiceBuilder(DistributedSingletonServiceBuilderContext context, ServiceName serviceName, Service<T> primaryService, Service<T> backupService) {
+    public DistributedSingletonServiceBuilder(DistributedSingletonServiceConfiguratorContext context, ServiceName serviceName, Service<T> primaryService, Service<T> backupService) {
         this.registry = context.getServiceProviderRegistryDependency();
         this.dispatcherFactory = context.getCommandDispatcherFactoryDependency();
         this.serviceName = serviceName;
@@ -90,12 +90,12 @@ public class DistributedSingletonServiceBuilder<T> implements SingletonServiceBu
     }
 
     @Override
-    public Value<ServiceProviderRegistry<ServiceName>> getServiceProviderRegistry() {
+    public Supplier<ServiceProviderRegistry<ServiceName>> getServiceProviderRegistry() {
         return this.registry;
     }
 
     @Override
-    public Value<CommandDispatcherFactory> getCommandDispatcherFactory() {
+    public Supplier<CommandDispatcherFactory> getCommandDispatcherFactory() {
         return this.dispatcherFactory;
     }
 

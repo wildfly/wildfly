@@ -27,7 +27,7 @@ import java.util.List;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.wildfly.clustering.registry.RegistryFactory;
-import org.wildfly.clustering.server.CacheCapabilityServiceBuilderFactory;
+import org.wildfly.clustering.server.CacheCapabilityServiceConfiguratorFactory;
 import org.wildfly.clustering.server.CacheJndiNameFactory;
 import org.wildfly.clustering.server.CacheRequirementServiceConfiguratorProvider;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
@@ -39,7 +39,7 @@ import org.wildfly.clustering.spi.ServiceNameRegistry;
  */
 public class RegistryFactoryServiceConfiguratorProvider extends CacheRequirementServiceConfiguratorProvider<RegistryFactory<Object, Object>> {
 
-    protected RegistryFactoryServiceConfiguratorProvider(CacheCapabilityServiceBuilderFactory<RegistryFactory<Object, Object>> factory) {
+    protected RegistryFactoryServiceConfiguratorProvider(CacheCapabilityServiceConfiguratorFactory<RegistryFactory<Object, Object>> factory) {
         super(ClusteringCacheRequirement.REGISTRY_FACTORY, factory, CacheJndiNameFactory.REGISTRY_FACTORY);
     }
 
@@ -48,7 +48,7 @@ public class RegistryFactoryServiceConfiguratorProvider extends CacheRequirement
         Collection<CapabilityServiceConfigurator> builders = super.getServiceConfigurators(registry, containerName, cacheName);
         List<CapabilityServiceConfigurator> result = new ArrayList<>(builders.size() + 1);
         result.addAll(builders);
-        result.add(new RegistryBuilder<>(registry.getServiceName(ClusteringCacheRequirement.REGISTRY), containerName, cacheName));
+        result.add(new RegistryServiceConfigurator<>(registry.getServiceName(ClusteringCacheRequirement.REGISTRY), containerName, cacheName));
         return result;
     }
 }

@@ -32,6 +32,6 @@ import org.wildfly.clustering.spi.DistributedCacheServiceConfiguratorProvider;
 public class CacheServiceProviderRegistryServiceConfiguratorProvider extends ServiceProviderRegistryServiceConfiguratorProvider implements DistributedCacheServiceConfiguratorProvider {
 
     public CacheServiceProviderRegistryServiceConfiguratorProvider() {
-        super(CacheServiceProviderRegistryBuilder::new);
+        super(CacheServiceProviderRegistryServiceConfigurator::new);
     }
 }

@@ -27,15 +27,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.function.Function;
 
-import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
-import org.jboss.as.clustering.controller.UnaryRequirementAliasBuilder;
-import org.jboss.as.clustering.naming.BinderServiceBuilder;
+import org.jboss.as.clustering.controller.IdentityCapabilityServiceConfigurator;
+import org.jboss.as.clustering.naming.BinderServiceConfigurator;
 import org.jboss.as.clustering.naming.JndiNameFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.deployment.JndiName;
-import org.wildfly.clustering.spi.IdentityGroupServiceConfiguratorProvider;
 import org.wildfly.clustering.spi.ClusteringRequirement;
+import org.wildfly.clustering.spi.IdentityGroupServiceConfiguratorProvider;
 import org.wildfly.clustering.spi.ServiceNameRegistry;
 
 /**
@@ -57,13 +56,13 @@ public class IdentityGroupRequirementServiceConfiguratorProvider implements Iden
 
     @Override
     public Collection<CapabilityServiceConfigurator> getServiceConfigurators(ServiceNameRegistry<ClusteringRequirement> registry, String group, String targetGroup) {
-        CapabilityServiceBuilder<?> builder = new UnaryRequirementAliasBuilder<>(registry.getServiceName(this.requirement), this.requirement, targetGroup, this.requirement.getType());
+        CapabilityServiceConfigurator configurator = new IdentityCapabilityServiceConfigurator<>(registry.getServiceName(this.requirement), this.requirement, targetGroup);
         if ((this.jndiNameFactory == null) || JndiNameFactory.DEFAULT_LOCAL_NAME.equals(targetGroup)) {
-            return Collections.singleton(builder);
+            return Collections.singleton(configurator);
         }
         ContextNames.BindInfo binding = ContextNames.bindInfoFor(this.jndiNameFactory.apply(group).getAbsoluteName());
-        CapabilityServiceBuilder<?> binderBuilder = new BinderServiceBuilder<>(binding, builder.getServiceName(), this.requirement.getType());
-        return Arrays.asList(builder, binderBuilder);
+        CapabilityServiceConfigurator binderConfigurator = new BinderServiceConfigurator(binding, configurator.getServiceName());
+        return Arrays.asList(configurator, binderConfigurator);
     }
 
     @Override

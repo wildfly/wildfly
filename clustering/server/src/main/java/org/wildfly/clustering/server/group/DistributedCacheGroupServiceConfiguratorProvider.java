@@ -34,6 +34,6 @@ import org.wildfly.clustering.spi.DistributedCacheServiceConfiguratorProvider;
 public class DistributedCacheGroupServiceConfiguratorProvider extends CacheGroupServiceConfiguratorProvider implements org.wildfly.clustering.spi.DistributedCacheServiceConfiguratorProvider {
 
     public DistributedCacheGroupServiceConfiguratorProvider() {
-        super(CacheGroupBuilder::new);
+        super(CacheGroupServiceConfigurator::new);
     }
 }

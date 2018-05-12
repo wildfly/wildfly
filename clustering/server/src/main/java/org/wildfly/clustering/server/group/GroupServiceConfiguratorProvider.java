@@ -23,7 +23,7 @@
 package org.wildfly.clustering.server.group;
 
 import org.wildfly.clustering.group.Group;
-import org.wildfly.clustering.server.GroupCapabilityServiceBuilderFactory;
+import org.wildfly.clustering.server.GroupCapabilityServiceConfiguratorFactory;
 import org.wildfly.clustering.server.GroupJndiNameFactory;
 import org.wildfly.clustering.server.GroupRequirementServiceConfiguratorProvider;
 import org.wildfly.clustering.spi.ClusteringRequirement;
@@ -34,7 +34,7 @@ import org.wildfly.clustering.spi.ClusteringRequirement;
  */
 public class GroupServiceConfiguratorProvider extends GroupRequirementServiceConfiguratorProvider<Group> {
 
-    public GroupServiceConfiguratorProvider(GroupCapabilityServiceBuilderFactory<Group> factory) {
+    public GroupServiceConfiguratorProvider(GroupCapabilityServiceConfiguratorFactory<Group> factory) {
         super(ClusteringRequirement.GROUP, factory, GroupJndiNameFactory.GROUP);
     }
 }

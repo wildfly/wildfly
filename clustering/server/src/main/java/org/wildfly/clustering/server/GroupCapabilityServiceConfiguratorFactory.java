@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2018, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,25 +19,15 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.wildfly.clustering.server;
 
-package org.wildfly.clustering.server.group;
-
-import org.jboss.as.server.ServerEnvironment;
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.group.Group;
 
 /**
- * Builds a non-clustered cache {@link Group} service.
+ * Builds a group-based service.
  * @author Paul Ferraro
  */
-public class LocalCacheGroupBuilder extends AbstractLocalGroupBuilder {
-
-    public LocalCacheGroupBuilder(ServiceName name) {
-        super(name);
-    }
-
-    @Override
-    public Group apply(ServerEnvironment environment) {
-        return new LocalCacheGroup(environment.getNodeName());
-    }
+public interface GroupCapabilityServiceConfiguratorFactory<T> {
+    CapabilityServiceConfigurator createServiceConfigurator(ServiceName name, String group);
 }

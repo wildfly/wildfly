@@ -22,7 +22,7 @@
 package org.wildfly.clustering.server.group;
 
 import org.wildfly.clustering.group.Group;
-import org.wildfly.clustering.server.CacheCapabilityServiceBuilderFactory;
+import org.wildfly.clustering.server.CacheCapabilityServiceConfiguratorFactory;
 import org.wildfly.clustering.server.CacheRequirementServiceConfiguratorProvider;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 
@@ -32,7 +32,7 @@ import org.wildfly.clustering.spi.ClusteringCacheRequirement;
  */
 public class CacheGroupServiceConfiguratorProvider extends CacheRequirementServiceConfiguratorProvider<Group> {
 
-    protected CacheGroupServiceConfiguratorProvider(CacheCapabilityServiceBuilderFactory<Group> factory) {
+    protected CacheGroupServiceConfiguratorProvider(CacheCapabilityServiceConfiguratorFactory<Group> factory) {
         super(ClusteringCacheRequirement.GROUP, factory);
     }
 }

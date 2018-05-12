@@ -21,14 +21,15 @@
  */
 package org.wildfly.clustering.server.group;
 
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.infinispan.Cache;
-import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.clustering.function.Consumers;
 import org.jboss.as.clustering.function.Functions;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
-import org.jboss.msc.service.Service;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -36,11 +37,12 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jgroups.Address;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
-import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.CompositeDependency;
-import org.wildfly.clustering.service.InjectedValueDependency;
-import org.wildfly.clustering.service.SuppliedValueService;
-import org.wildfly.clustering.service.ValueDependency;
+import org.wildfly.clustering.service.FunctionalService;
+import org.wildfly.clustering.service.ServiceConfigurator;
+import org.wildfly.clustering.service.ServiceSupplierDependency;
+import org.wildfly.clustering.service.SimpleServiceNameProvider;
+import org.wildfly.clustering.service.SupplierDependency;
 import org.wildfly.clustering.spi.ClusteringRequirement;
 import org.wildfly.clustering.spi.NodeFactory;
 
@@ -48,17 +50,16 @@ import org.wildfly.clustering.spi.NodeFactory;
  * Builds a {@link Group} service for a cache.
  * @author Paul Ferraro
  */
-public class CacheGroupBuilder implements CapabilityServiceBuilder<Group>, CacheGroupConfiguration, Supplier<CacheGroup> {
+public class CacheGroupServiceConfigurator extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, CacheGroupConfiguration, Supplier<CacheGroup> {
 
-    private final ServiceName name;
     private final String containerName;
     private final String cacheName;
 
-    private volatile ValueDependency<Cache<?, ?>> cache;
-    private volatile ValueDependency<NodeFactory<Address>> factory;
+    private volatile SupplierDependency<Cache<?, ?>> cache;
+    private volatile SupplierDependency<NodeFactory<Address>> factory;
 
-    public CacheGroupBuilder(ServiceName name, String containerName, String cacheName) {
-        this.name = name;
+    public CacheGroupServiceConfigurator(ServiceName name, String containerName, String cacheName) {
+        super(name);
         this.containerName = containerName;
         this.cacheName = cacheName;
     }
@@ -69,32 +70,27 @@ public class CacheGroupBuilder implements CapabilityServiceBuilder<Group>, Cache
     }
 
     @Override
-    public ServiceName getServiceName() {
-        return this.name;
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public Builder<Group> configure(CapabilityServiceSupport support) {
-        this.cache = new InjectedValueDependency<>(InfinispanCacheRequirement.CACHE.getServiceName(support, this.containerName, this.cacheName), (Class<Cache<?, ?>>) (Class<?>) Cache.class);
-        this.factory = new InjectedValueDependency<>(ClusteringRequirement.GROUP.getServiceName(support, this.containerName), (Class<NodeFactory<Address>>) (Class<?>) NodeFactory.class);
+    public ServiceConfigurator configure(CapabilityServiceSupport support) {
+        this.cache = new ServiceSupplierDependency<>(InfinispanCacheRequirement.CACHE.getServiceName(support, this.containerName, this.cacheName));
+        this.factory = new ServiceSupplierDependency<>(ClusteringRequirement.GROUP.getServiceName(support, this.containerName));
         return this;
     }
 
     @Override
-    public ServiceBuilder<Group> build(ServiceTarget target) {
-        Service<Group> service = new SuppliedValueService<>(Functions.identity(), this, Consumers.close());
-        ServiceBuilder<Group> builder = target.addService(this.name, service).setInitialMode(ServiceController.Mode.ON_DEMAND);
-        return new CompositeDependency(this.cache, this.factory).register(builder);
+    public ServiceBuilder<?> build(ServiceTarget target) {
+        ServiceBuilder<?> builder = target.addService(this.getServiceName());
+        Consumer<Group> group = new CompositeDependency(this.cache, this.factory).register(builder).provides(this.getServiceName());
+        Service service = new FunctionalService<>(group, Functions.identity(), this, Consumers.close());
+        return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 
     @Override
     public Cache<?, ?> getCache() {
-        return this.cache.getValue();
+        return this.cache.get();
     }
 
     @Override
     public NodeFactory<Address> getMemberFactory() {
-        return this.factory.getValue();
+        return this.factory.get();
     }
 }

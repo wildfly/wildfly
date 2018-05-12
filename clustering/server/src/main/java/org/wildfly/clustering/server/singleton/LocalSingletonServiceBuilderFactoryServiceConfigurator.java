@@ -23,39 +23,31 @@
 package org.wildfly.clustering.server.singleton;
 
 import java.io.Serializable;
+import java.util.function.Consumer;
 
-import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.Value;
+import org.wildfly.clustering.service.SimpleServiceNameProvider;
 import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
 
 /**
  * Builds a non-clustered {@link SingletonServiceBuilderFactory}.
  * @author Paul Ferraro
  */
-public class LocalSingletonServiceBuilderFactoryBuilder<T extends Serializable> implements CapabilityServiceBuilder<SingletonServiceBuilderFactory>, Value<SingletonServiceBuilderFactory> {
+public class LocalSingletonServiceBuilderFactoryServiceConfigurator<T extends Serializable> extends SimpleServiceNameProvider implements CapabilityServiceConfigurator {
 
-    private final ServiceName name;
-
-    public LocalSingletonServiceBuilderFactoryBuilder(ServiceName name) {
-        this.name = name;
+    public LocalSingletonServiceBuilderFactoryServiceConfigurator(ServiceName name) {
+        super(name);
     }
 
     @Override
-    public SingletonServiceBuilderFactory getValue() {
-        return new LocalSingletonServiceBuilderFactory();
-    }
-
-    @Override
-    public ServiceName getServiceName() {
-        return this.name;
-    }
-
-    @Override
-    public ServiceBuilder<SingletonServiceBuilderFactory> build(ServiceTarget target) {
-        return target.addService(this.name, new ValueService<>(this));
+    public ServiceBuilder<?> build(ServiceTarget target) {
+        ServiceBuilder<?> builder = target.addService(this.getServiceName());
+        Consumer<SingletonServiceBuilderFactory> factory = builder.provides(this.getServiceName());
+        Service service = Service.newInstance(factory, new LocalSingletonServiceBuilderFactory());
+        return builder.setInstance(service);
     }
 }

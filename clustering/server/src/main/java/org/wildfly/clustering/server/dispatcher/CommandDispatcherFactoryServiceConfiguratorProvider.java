@@ -22,7 +22,7 @@
 package org.wildfly.clustering.server.dispatcher;
 
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
-import org.wildfly.clustering.server.GroupCapabilityServiceBuilderFactory;
+import org.wildfly.clustering.server.GroupCapabilityServiceConfiguratorFactory;
 import org.wildfly.clustering.server.GroupJndiNameFactory;
 import org.wildfly.clustering.server.GroupRequirementServiceConfiguratorProvider;
 import org.wildfly.clustering.spi.ClusteringRequirement;
@@ -33,7 +33,7 @@ import org.wildfly.clustering.spi.ClusteringRequirement;
  */
 public class CommandDispatcherFactoryServiceConfiguratorProvider extends GroupRequirementServiceConfiguratorProvider<CommandDispatcherFactory> {
 
-    protected CommandDispatcherFactoryServiceConfiguratorProvider(GroupCapabilityServiceBuilderFactory<CommandDispatcherFactory> factory) {
+    protected CommandDispatcherFactoryServiceConfiguratorProvider(GroupCapabilityServiceConfiguratorFactory<CommandDispatcherFactory> factory) {
         super(ClusteringRequirement.COMMAND_DISPATCHER_FACTORY, factory, GroupJndiNameFactory.COMMAND_DISPATCHER_FACTORY);
     }
 }

@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 
 import org.jboss.as.clustering.msc.ServiceContainerHelper;
 import org.jboss.msc.service.Service;
@@ -36,7 +37,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.Value;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherException;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
@@ -54,8 +54,8 @@ import org.wildfly.clustering.singleton.SingletonService;
  */
 public class DistributedSingletonService<T> implements SingletonService<T>, SingletonContext<T>, ServiceProviderRegistration.Listener, PrimaryProxyContext<T> {
 
-    private final Value<ServiceProviderRegistry<ServiceName>> registry;
-    private final Value<CommandDispatcherFactory> dispatcherFactory;
+    private final Supplier<ServiceProviderRegistry<ServiceName>> registry;
+    private final Supplier<CommandDispatcherFactory> dispatcherFactory;
     private final ServiceName serviceName;
     private final Service<T> primaryService;
     private final Service<T> backupService;
@@ -85,8 +85,8 @@ public class DistributedSingletonService<T> implements SingletonService<T>, Sing
         ServiceTarget target = context.getChildTarget();
         this.primaryController = target.addService(this.serviceName.append("primary"), this.primaryService).setInitialMode(ServiceController.Mode.NEVER).install();
         this.backupController = target.addService(this.serviceName.append("backup"), this.backupService).setInitialMode(ServiceController.Mode.ACTIVE).install();
-        this.dispatcher = this.dispatcherFactory.getValue().<SingletonContext<T>>createCommandDispatcher(this.serviceName, this);
-        this.registration = this.registry.getValue().register(this.serviceName, this);
+        this.dispatcher = this.dispatcherFactory.get().<SingletonContext<T>>createCommandDispatcher(this.serviceName, this);
+        this.registration = this.registry.get().register(this.serviceName, this);
         this.started = true;
     }
 
@@ -104,7 +104,7 @@ public class DistributedSingletonService<T> implements SingletonService<T>, Sing
 
     @Override
     public void providersChanged(Set<Node> nodes) {
-        Group group = this.registry.getValue().getGroup();
+        Group group = this.registry.get().getGroup();
         List<Node> candidates = new ArrayList<>(group.getMembership().getMembers());
         candidates.retainAll(nodes);
 

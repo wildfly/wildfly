@@ -27,9 +27,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.function.BiFunction;
 
-import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
-import org.jboss.as.clustering.naming.BinderServiceBuilder;
+import org.jboss.as.clustering.naming.BinderServiceConfigurator;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.deployment.JndiName;
 import org.jboss.msc.service.ServiceName;
@@ -43,14 +42,14 @@ import org.wildfly.clustering.spi.ServiceNameRegistry;
 public class CacheRequirementServiceConfiguratorProvider<T> implements CacheServiceConfiguratorProvider {
 
     private final ClusteringCacheRequirement requirement;
-    private final CacheCapabilityServiceBuilderFactory<T> factory;
+    private final CacheCapabilityServiceConfiguratorFactory<T> factory;
     private final BiFunction<String, String, JndiName> jndiNameFactory;
 
-    protected CacheRequirementServiceConfiguratorProvider(ClusteringCacheRequirement requirement, CacheCapabilityServiceBuilderFactory<T> factory) {
+    protected CacheRequirementServiceConfiguratorProvider(ClusteringCacheRequirement requirement, CacheCapabilityServiceConfiguratorFactory<T> factory) {
         this(requirement, factory, null);
     }
 
-    protected CacheRequirementServiceConfiguratorProvider(ClusteringCacheRequirement requirement, CacheCapabilityServiceBuilderFactory<T> factory, BiFunction<String, String, JndiName> jndiNameFactory) {
+    protected CacheRequirementServiceConfiguratorProvider(ClusteringCacheRequirement requirement, CacheCapabilityServiceConfiguratorFactory<T> factory, BiFunction<String, String, JndiName> jndiNameFactory) {
         this.requirement = requirement;
         this.factory = factory;
         this.jndiNameFactory = jndiNameFactory;
@@ -59,13 +58,13 @@ public class CacheRequirementServiceConfiguratorProvider<T> implements CacheServ
     @Override
     public Collection<CapabilityServiceConfigurator> getServiceConfigurators(ServiceNameRegistry<ClusteringCacheRequirement> registry, String containerName, String cacheName) {
         ServiceName name = registry.getServiceName(this.requirement);
-        CapabilityServiceBuilder<?> builder = this.factory.createBuilder(name, containerName, cacheName);
+        CapabilityServiceConfigurator configurator = this.factory.createServiceConfigurator(name, containerName, cacheName);
         if (this.jndiNameFactory == null) {
-            return Collections.singleton(builder);
+            return Collections.singleton(configurator);
         }
         ContextNames.BindInfo binding = ContextNames.bindInfoFor(this.jndiNameFactory.apply(containerName, cacheName).getAbsoluteName());
-        CapabilityServiceBuilder<?> binderBuilder = new BinderServiceBuilder<>(binding, builder.getServiceName(), this.requirement.getType());
-        return Arrays.asList(builder, binderBuilder);
+        CapabilityServiceConfigurator binderConfigurator = new BinderServiceConfigurator(binding, configurator.getServiceName());
+        return Arrays.asList(configurator, binderConfigurator);
     }
 
     @Override

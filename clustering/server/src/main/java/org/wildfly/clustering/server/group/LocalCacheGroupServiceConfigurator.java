@@ -22,40 +22,22 @@
 
 package org.wildfly.clustering.server.group;
 
-import java.util.function.Function;
-
-import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.server.ServerEnvironment;
-import org.jboss.as.server.ServerEnvironmentService;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.group.Group;
-import org.wildfly.clustering.service.InjectedValueDependency;
-import org.wildfly.clustering.service.MappedValueService;
-import org.wildfly.clustering.service.ValueDependency;
 
 /**
- * Builds a non-clustered {@link Group}.
+ * Builds a non-clustered cache {@link Group} service.
  * @author Paul Ferraro
  */
-public abstract class AbstractLocalGroupBuilder implements CapabilityServiceBuilder<Group>, Function<ServerEnvironment, Group> {
+public class LocalCacheGroupServiceConfigurator extends AbstractLocalGroupServiceConfigurator {
 
-    private final ServiceName name;
-    private final ValueDependency<ServerEnvironment> environment = new InjectedValueDependency<>(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class);
-
-    public AbstractLocalGroupBuilder(ServiceName name) {
-        this.name = name;
+    public LocalCacheGroupServiceConfigurator(ServiceName name) {
+        super(name);
     }
 
     @Override
-    public ServiceName getServiceName() {
-        return this.name;
-    }
-
-    @Override
-    public ServiceBuilder<Group> build(ServiceTarget target) {
-        return this.environment.register(target.addService(this.name, new MappedValueService<>(this, this.environment))).setInitialMode(ServiceController.Mode.ON_DEMAND);
+    public Group apply(ServerEnvironment environment) {
+        return new LocalCacheGroup(environment.getNodeName());
     }
 }

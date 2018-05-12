@@ -22,7 +22,7 @@
 
 package org.wildfly.clustering.server.singleton;
 
-import org.wildfly.clustering.server.CacheCapabilityServiceBuilderFactory;
+import org.wildfly.clustering.server.CacheCapabilityServiceConfiguratorFactory;
 import org.wildfly.clustering.server.CacheRequirementServiceConfiguratorProvider;
 import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
@@ -32,7 +32,7 @@ import org.wildfly.clustering.spi.ClusteringCacheRequirement;
  */
 public class SingletonServiceBuilderFactoryServiceConfiguratorProvider extends CacheRequirementServiceConfiguratorProvider<SingletonServiceBuilderFactory> {
 
-    protected SingletonServiceBuilderFactoryServiceConfiguratorProvider(CacheCapabilityServiceBuilderFactory<SingletonServiceBuilderFactory> factory) {
+    protected SingletonServiceBuilderFactoryServiceConfiguratorProvider(CacheCapabilityServiceConfiguratorFactory<SingletonServiceBuilderFactory> factory) {
         super(ClusteringCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY, factory);
     }
 }

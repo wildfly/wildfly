@@ -27,9 +27,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.function.Function;
 
-import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
-import org.jboss.as.clustering.naming.BinderServiceBuilder;
+import org.jboss.as.clustering.naming.BinderServiceConfigurator;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.deployment.JndiName;
 import org.wildfly.clustering.spi.ClusteringRequirement;
@@ -42,14 +41,14 @@ import org.wildfly.clustering.spi.ServiceNameRegistry;
 public class GroupRequirementServiceConfiguratorProvider<T> implements GroupServiceConfiguratorProvider {
 
     private final ClusteringRequirement requirement;
-    private final GroupCapabilityServiceBuilderFactory<T> factory;
+    private final GroupCapabilityServiceConfiguratorFactory<T> factory;
     private final Function<String, JndiName> jndiNameFactory;
 
-    protected GroupRequirementServiceConfiguratorProvider(ClusteringRequirement requirement, GroupCapabilityServiceBuilderFactory<T> factory) {
+    protected GroupRequirementServiceConfiguratorProvider(ClusteringRequirement requirement, GroupCapabilityServiceConfiguratorFactory<T> factory) {
         this(requirement, factory, null);
     }
 
-    protected GroupRequirementServiceConfiguratorProvider(ClusteringRequirement requirement, GroupCapabilityServiceBuilderFactory<T> factory, Function<String, JndiName> jndiNameFactory) {
+    protected GroupRequirementServiceConfiguratorProvider(ClusteringRequirement requirement, GroupCapabilityServiceConfiguratorFactory<T> factory, Function<String, JndiName> jndiNameFactory) {
         this.requirement = requirement;
         this.factory = factory;
         this.jndiNameFactory = jndiNameFactory;
@@ -57,13 +56,13 @@ public class GroupRequirementServiceConfiguratorProvider<T> implements GroupServ
 
     @Override
     public Collection<CapabilityServiceConfigurator> getServiceConfigurators(ServiceNameRegistry<ClusteringRequirement> registry, String group) {
-        CapabilityServiceBuilder<?> builder = this.factory.createBuilder(registry.getServiceName(this.requirement), group);
+        CapabilityServiceConfigurator configurator = this.factory.createServiceConfigurator(registry.getServiceName(this.requirement), group);
         if (this.jndiNameFactory == null) {
-            return Collections.singleton(builder);
+            return Collections.singleton(configurator);
         }
         ContextNames.BindInfo binding = ContextNames.bindInfoFor(this.jndiNameFactory.apply(group).getAbsoluteName());
-        CapabilityServiceBuilder<?> binderBuilder = new BinderServiceBuilder<>(binding, builder.getServiceName(), this.requirement.getType());
-        return Arrays.asList(builder, binderBuilder);
+        CapabilityServiceConfigurator binderConfigurator = new BinderServiceConfigurator(binding, configurator.getServiceName());
+        return Arrays.asList(configurator, binderConfigurator);
     }
 
     @Override

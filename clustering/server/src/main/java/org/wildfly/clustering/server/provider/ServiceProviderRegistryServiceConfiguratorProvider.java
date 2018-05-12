@@ -22,7 +22,7 @@
 package org.wildfly.clustering.server.provider;
 
 import org.wildfly.clustering.provider.ServiceProviderRegistry;
-import org.wildfly.clustering.server.CacheCapabilityServiceBuilderFactory;
+import org.wildfly.clustering.server.CacheCapabilityServiceConfiguratorFactory;
 import org.wildfly.clustering.server.CacheJndiNameFactory;
 import org.wildfly.clustering.server.CacheRequirementServiceConfiguratorProvider;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
@@ -33,7 +33,7 @@ import org.wildfly.clustering.spi.ClusteringCacheRequirement;
  */
 public class ServiceProviderRegistryServiceConfiguratorProvider extends CacheRequirementServiceConfiguratorProvider<ServiceProviderRegistry<Object>> {
 
-    public ServiceProviderRegistryServiceConfiguratorProvider(CacheCapabilityServiceBuilderFactory<ServiceProviderRegistry<Object>> factory) {
+    public ServiceProviderRegistryServiceConfiguratorProvider(CacheCapabilityServiceConfiguratorFactory<ServiceProviderRegistry<Object>> factory) {
         super(ClusteringCacheRequirement.SERVICE_PROVIDER_REGISTRY, factory, CacheJndiNameFactory.SERVICE_PROVIDER_REGISTRY);
     }
 }

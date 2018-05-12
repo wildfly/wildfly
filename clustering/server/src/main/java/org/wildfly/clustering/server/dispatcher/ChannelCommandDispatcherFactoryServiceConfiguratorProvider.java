@@ -32,6 +32,6 @@ import org.wildfly.clustering.spi.DistributedGroupServiceConfiguratorProvider;
 public class ChannelCommandDispatcherFactoryServiceConfiguratorProvider extends CommandDispatcherFactoryServiceConfiguratorProvider implements DistributedGroupServiceConfiguratorProvider {
 
     public ChannelCommandDispatcherFactoryServiceConfiguratorProvider() {
-        super(ChannelCommandDispatcherFactoryBuilder::new);
+        super(ChannelCommandDispatcherFactoryServiceConfigurator::new);
     }
 }

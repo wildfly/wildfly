@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,15 +20,18 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.server;
+package org.wildfly.clustering.server.singleton;
 
-import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.provider.ServiceProviderRegistry;
+import org.wildfly.clustering.service.SupplierDependency;
 
 /**
- * Builds a service for a cache.
+ * Context for building singleton services.
  * @author Paul Ferraro
  */
-public interface CacheCapabilityServiceBuilderFactory<T> {
-    CapabilityServiceBuilder<T> createBuilder(ServiceName name, String containerName, String cacheName);
+public interface DistributedSingletonServiceConfiguratorContext {
+    SupplierDependency<ServiceProviderRegistry<ServiceName>> getServiceProviderRegistryDependency();
+    SupplierDependency<CommandDispatcherFactory> getCommandDispatcherFactoryDependency();
 }

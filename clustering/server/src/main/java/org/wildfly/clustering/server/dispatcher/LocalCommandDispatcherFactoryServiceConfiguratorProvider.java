@@ -32,6 +32,6 @@ import org.wildfly.clustering.spi.LocalGroupServiceConfiguratorProvider;
 public class LocalCommandDispatcherFactoryServiceConfiguratorProvider extends CommandDispatcherFactoryServiceConfiguratorProvider implements LocalGroupServiceConfiguratorProvider {
 
     public LocalCommandDispatcherFactoryServiceConfiguratorProvider() {
-        super(LocalCommandDispatcherFactoryBuilder::new);
+        super(LocalCommandDispatcherFactoryServiceConfigurator::new);
     }
 }

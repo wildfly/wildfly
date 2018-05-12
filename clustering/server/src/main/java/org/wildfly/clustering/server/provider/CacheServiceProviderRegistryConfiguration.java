@@ -31,7 +31,7 @@ import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.server.group.Group;
 
 /**
- * Configuration for a {@link CacheServiceProviderRegistryBuilder}.
+ * Configuration for a {@link CacheServiceProviderRegistryServiceConfigurator}.
  * @author Paul Ferraro
  */
 public interface CacheServiceProviderRegistryConfiguration<T> {

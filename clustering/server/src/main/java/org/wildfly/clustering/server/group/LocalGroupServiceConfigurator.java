@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,19 +19,24 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.wildfly.clustering.server.group;
 
-package org.wildfly.clustering.server.singleton;
-
+import org.jboss.as.server.ServerEnvironment;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
-import org.wildfly.clustering.provider.ServiceProviderRegistry;
-import org.wildfly.clustering.service.ValueDependency;
+import org.wildfly.clustering.group.Group;
 
 /**
- * Context for building singleton services.
+ * Builds a non-clustered {@link Group} service.
  * @author Paul Ferraro
  */
-public interface DistributedSingletonServiceBuilderContext {
-    ValueDependency<ServiceProviderRegistry<ServiceName>> getServiceProviderRegistryDependency();
-    ValueDependency<CommandDispatcherFactory> getCommandDispatcherFactoryDependency();
+public class LocalGroupServiceConfigurator extends AbstractLocalGroupServiceConfigurator {
+
+    public LocalGroupServiceConfigurator(ServiceName name) {
+        super(name);
+    }
+
+    @Override
+    public Group apply(ServerEnvironment environment) {
+        return new LocalGroup(environment.getNodeName());
+    }
 }

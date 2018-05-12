@@ -26,8 +26,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.jboss.as.clustering.controller.BinaryRequirementAliasBuilder;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
+import org.jboss.as.clustering.controller.IdentityCapabilityServiceConfigurator;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.server.IdentityCacheRequirementServiceConfiguratorProvider;
 import org.wildfly.clustering.spi.IdentityCacheServiceConfiguratorProvider;
@@ -49,8 +49,8 @@ public class IdentityRegistryFactoryServiceConfiguratorProvider extends Identity
         Collection<CapabilityServiceConfigurator> builders = super.getServiceConfigurators(registry, containerName, aliasCacheName, targetCacheName);
         List<CapabilityServiceConfigurator> result = new ArrayList<>(builders.size() + 2);
         result.addAll(builders);
-        result.add(new BinaryRequirementAliasBuilder<>(registry.getServiceName(ClusteringCacheRequirement.REGISTRY), ClusteringCacheRequirement.REGISTRY, containerName, targetCacheName, ClusteringCacheRequirement.REGISTRY.getType()));
-        result.add(new BinaryRequirementAliasBuilder<>(registry.getServiceName(ClusteringCacheRequirement.REGISTRY_ENTRY), ClusteringCacheRequirement.REGISTRY_ENTRY, containerName, targetCacheName, ClusteringCacheRequirement.REGISTRY_ENTRY.getType()));
+        result.add(new IdentityCapabilityServiceConfigurator<>(registry.getServiceName(ClusteringCacheRequirement.REGISTRY), ClusteringCacheRequirement.REGISTRY, containerName, targetCacheName));
+        result.add(new IdentityCapabilityServiceConfigurator<>(registry.getServiceName(ClusteringCacheRequirement.REGISTRY_ENTRY), ClusteringCacheRequirement.REGISTRY_ENTRY, containerName, targetCacheName));
         return result;
     }
 }

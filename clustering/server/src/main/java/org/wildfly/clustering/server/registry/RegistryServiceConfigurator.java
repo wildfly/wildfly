@@ -23,68 +23,64 @@
 package org.wildfly.clustering.server.registry;
 
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.clustering.function.Consumers;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
-import org.jboss.msc.service.Service;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.registry.RegistryFactory;
-import org.wildfly.clustering.service.AsynchronousServiceBuilder;
-import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.AsyncServiceConfigurator;
 import org.wildfly.clustering.service.CompositeDependency;
-import org.wildfly.clustering.service.InjectedValueDependency;
-import org.wildfly.clustering.service.SuppliedValueService;
-import org.wildfly.clustering.service.ValueDependency;
+import org.wildfly.clustering.service.FunctionalService;
+import org.wildfly.clustering.service.ServiceConfigurator;
+import org.wildfly.clustering.service.ServiceSupplierDependency;
+import org.wildfly.clustering.service.SimpleServiceNameProvider;
+import org.wildfly.clustering.service.SupplierDependency;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 
 /**
  * Builds a {@link Registry} service.
  * @author Paul Ferraro
  */
-public class RegistryBuilder<K, V> implements CapabilityServiceBuilder<Registry<K, V>>, Supplier<Registry<K, V>> {
+public class RegistryServiceConfigurator<K, V> extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, Supplier<Registry<K, V>> {
 
-    private final ServiceName name;
     private final String containerName;
     private final String cacheName;
 
-    private volatile ValueDependency<RegistryFactory<K, V>> factory;
-    private volatile ValueDependency<Map.Entry<K, V>> entry;
+    private volatile SupplierDependency<RegistryFactory<K, V>> factory;
+    private volatile SupplierDependency<Map.Entry<K, V>> entry;
 
-    public RegistryBuilder(ServiceName name, String containerName, String cacheName) {
-        this.name = name;
+    public RegistryServiceConfigurator(ServiceName name, String containerName, String cacheName) {
+        super(name);
         this.containerName = containerName;
         this.cacheName = cacheName;
     }
 
     @Override
     public Registry<K, V> get() {
-        return this.factory.getValue().createRegistry(this.entry.getValue());
+        return this.factory.get().createRegistry(this.entry.get());
     }
 
     @Override
-    public ServiceName getServiceName() {
-        return this.name;
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public Builder<Registry<K, V>> configure(CapabilityServiceSupport support) {
-        this.factory = new InjectedValueDependency<>(ClusteringCacheRequirement.REGISTRY_FACTORY.getServiceName(support, this.containerName, this.cacheName), (Class<RegistryFactory<K, V>>) (Class<?>) RegistryFactory.class);
-        this.entry = new InjectedValueDependency<>(ClusteringCacheRequirement.REGISTRY_ENTRY.getServiceName(support, this.containerName, this.cacheName), (Class<Map.Entry<K, V>>) (Class<?>) Map.Entry.class);
+    public ServiceConfigurator configure(CapabilityServiceSupport support) {
+        this.factory = new ServiceSupplierDependency<>(ClusteringCacheRequirement.REGISTRY_FACTORY.getServiceName(support, this.containerName, this.cacheName));
+        this.entry = new ServiceSupplierDependency<>(ClusteringCacheRequirement.REGISTRY_ENTRY.getServiceName(support, this.containerName, this.cacheName));
         return this;
     }
 
     @Override
-    public ServiceBuilder<Registry<K, V>> build(ServiceTarget target) {
-        Service<Registry<K, V>> service = new SuppliedValueService<>(Function.identity(), this, Consumers.close());
-        ServiceBuilder<Registry<K, V>> builder = new AsynchronousServiceBuilder<>(this.name, service).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND);
-        return new CompositeDependency(this.factory, this.entry).register(builder);
+    public ServiceBuilder<?> build(ServiceTarget target) {
+        ServiceBuilder<?> builder = new AsyncServiceConfigurator(this.getServiceName()).build(target);
+        Consumer<Registry<K, V>> registry = new CompositeDependency(this.factory, this.entry).register(builder).provides(this.getServiceName());
+        Service service = new FunctionalService<>(registry, Function.identity(), this, Consumers.close());
+        return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 }

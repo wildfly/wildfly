@@ -21,55 +21,57 @@
  */
 package org.wildfly.clustering.server.group;
 
-import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
+
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.Value;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.group.Group;
-import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.service.InjectedValueDependency;
-import org.wildfly.clustering.service.ValueDependency;
+import org.wildfly.clustering.service.FunctionalService;
+import org.wildfly.clustering.service.ServiceConfigurator;
+import org.wildfly.clustering.service.ServiceSupplierDependency;
+import org.wildfly.clustering.service.SimpleServiceNameProvider;
+import org.wildfly.clustering.service.SupplierDependency;
 import org.wildfly.clustering.spi.ClusteringRequirement;
 
 /**
  * Builds a channel-based {@link Group} service.
  * @author Paul Ferraro
  */
-public class ChannelGroupBuilder implements CapabilityServiceBuilder<Group>, Value<Group> {
+public class ChannelGroupServiceConfigurator extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, Supplier<Group> {
 
-    private final ServiceName name;
     private final String group;
 
-    private volatile ValueDependency<CommandDispatcherFactory> factory;
+    private volatile SupplierDependency<CommandDispatcherFactory> factory;
 
-    public ChannelGroupBuilder(ServiceName name, String group) {
-        this.name = name;
+    public ChannelGroupServiceConfigurator(ServiceName name, String group) {
+        super(name);
         this.group = group;
     }
 
     @Override
-    public Group getValue() {
-        return this.factory.getValue().getGroup();
+    public Group get() {
+        return this.factory.get().getGroup();
     }
 
     @Override
-    public ServiceName getServiceName() {
-        return this.name;
-    }
-
-    @Override
-    public Builder<Group> configure(CapabilityServiceSupport support) {
-        this.factory = new InjectedValueDependency<>(ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(support, this.group), CommandDispatcherFactory.class);
+    public ServiceConfigurator configure(CapabilityServiceSupport support) {
+        this.factory = new ServiceSupplierDependency<>(ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(support, this.group));
         return this;
     }
 
     @Override
-    public ServiceBuilder<Group> build(ServiceTarget target) {
-        return this.factory.register(target.addService(this.getServiceName(), new ValueService<>(this)).setInitialMode(ServiceController.Mode.ON_DEMAND));
+    public ServiceBuilder<?> build(ServiceTarget target) {
+        ServiceBuilder<?> builder = target.addService(this.getServiceName());
+        Consumer<Group> group = this.factory.register(builder).provides(this.getServiceName());
+        Service service = new FunctionalService<>(group, Function.identity(), this);
+        return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 }

@@ -21,60 +21,58 @@
  */
 package org.wildfly.clustering.server.dispatcher;
 
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.clustering.function.Consumers;
 import org.jboss.as.clustering.function.Functions;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
-import org.jboss.msc.service.Service;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.group.Group;
-import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.service.InjectedValueDependency;
-import org.wildfly.clustering.service.SuppliedValueService;
-import org.wildfly.clustering.service.ValueDependency;
+import org.wildfly.clustering.service.FunctionalService;
+import org.wildfly.clustering.service.ServiceConfigurator;
+import org.wildfly.clustering.service.ServiceSupplierDependency;
+import org.wildfly.clustering.service.SimpleServiceNameProvider;
+import org.wildfly.clustering.service.SupplierDependency;
 import org.wildfly.clustering.spi.ClusteringRequirement;
 
 /**
  * Builds a non-clustered {@link org.wildfly.clustering.dispatcher.CommandDispatcherFactory} service.
  * @author Paul Ferraro
  */
-public class LocalCommandDispatcherFactoryBuilder implements CapabilityServiceBuilder<CommandDispatcherFactory>, Supplier<AutoCloseableCommandDispatcherFactory> {
+public class LocalCommandDispatcherFactoryServiceConfigurator extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, Supplier<AutoCloseableCommandDispatcherFactory> {
 
-    private final ServiceName name;
     private final String groupName;
 
-    private volatile ValueDependency<Group> group;
+    private volatile SupplierDependency<Group> group;
 
-    public LocalCommandDispatcherFactoryBuilder(ServiceName name, String groupName) {
-        this.name = name;
+    public LocalCommandDispatcherFactoryServiceConfigurator(ServiceName name, String groupName) {
+        super(name);
         this.groupName = groupName;
     }
 
     @Override
     public AutoCloseableCommandDispatcherFactory get() {
-        return new ManagedCommandDispatcherFactory(new LocalCommandDispatcherFactory(this.group.getValue()));
+        return new ManagedCommandDispatcherFactory(new LocalCommandDispatcherFactory(this.group.get()));
     }
 
     @Override
-    public ServiceName getServiceName() {
-        return this.name;
-    }
-
-    @Override
-    public Builder<CommandDispatcherFactory> configure(CapabilityServiceSupport support) {
-        this.group = new InjectedValueDependency<>(ClusteringRequirement.GROUP.getServiceName(support, this.groupName), Group.class);
+    public ServiceConfigurator configure(CapabilityServiceSupport support) {
+        this.group = new ServiceSupplierDependency<>(ClusteringRequirement.GROUP.getServiceName(support, this.groupName));
         return this;
     }
 
     @Override
-    public ServiceBuilder<CommandDispatcherFactory> build(ServiceTarget target) {
-        Service<CommandDispatcherFactory> service = new SuppliedValueService<>(Functions.identity(), this, Consumers.close());
-        return this.group.register(target.addService(this.name, service).setInitialMode(ServiceController.Mode.ON_DEMAND));
+    public ServiceBuilder<?> build(ServiceTarget target) {
+        ServiceBuilder<?> builder = target.addService(this.getServiceName());
+        Consumer<CommandDispatcherFactory> factory = this.group.register(builder).provides(this.getServiceName());
+        Service service = new FunctionalService<>(factory, Functions.identity(), this, Consumers.close());
+        return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 }

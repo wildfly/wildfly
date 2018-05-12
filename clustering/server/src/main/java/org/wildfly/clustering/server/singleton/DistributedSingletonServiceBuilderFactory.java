@@ -23,6 +23,10 @@ package org.wildfly.clustering.server.singleton;
 
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.provider.ServiceProviderRegistry;
+import org.wildfly.clustering.service.InjectedValueDependency;
+import org.wildfly.clustering.service.SupplierDependency;
 import org.wildfly.clustering.singleton.SingletonServiceBuilder;
 import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
 
@@ -30,11 +34,11 @@ import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
  * Service for building {@link DistributedSingletonServiceBuilder} instances.
  * @author Paul Ferraro
  */
-public class DistributedSingletonServiceBuilderFactory implements SingletonServiceBuilderFactory {
+public class DistributedSingletonServiceBuilderFactory implements SingletonServiceBuilderFactory, DistributedSingletonServiceConfiguratorContext {
 
-    private final DistributedSingletonServiceBuilderContext context;
+    private final DistributedSingletonServiceConfiguratorFactoryContext context;
 
-    public DistributedSingletonServiceBuilderFactory(DistributedSingletonServiceBuilderContext context) {
+    public DistributedSingletonServiceBuilderFactory(DistributedSingletonServiceConfiguratorFactoryContext context) {
         this.context = context;
     }
 
@@ -45,6 +49,16 @@ public class DistributedSingletonServiceBuilderFactory implements SingletonServi
 
     @Override
     public <T> SingletonServiceBuilder<T> createSingletonServiceBuilder(ServiceName name, Service<T> primaryService, Service<T> backupService) {
-        return new DistributedSingletonServiceBuilder<>(this.context, name, primaryService, backupService);
+        return new DistributedSingletonServiceBuilder<>(this, name, primaryService, backupService);
+    }
+
+    @Override
+    public SupplierDependency<ServiceProviderRegistry<ServiceName>> getServiceProviderRegistryDependency() {
+        return new InjectedValueDependency<>(this.context.getServiceProviderRegistryServiceName(), (Class<ServiceProviderRegistry<ServiceName>>) (Class<?>) ServiceProviderRegistry.class);
+    }
+
+    @Override
+    public SupplierDependency<CommandDispatcherFactory> getCommandDispatcherFactoryDependency() {
+        return new InjectedValueDependency<>(this.context.getCommandDispatcherFactoryServiceName(), CommandDispatcherFactory.class);
     }
 }

@@ -32,6 +32,6 @@ import org.wildfly.clustering.group.Group;
 public class LocalGroupServiceConfiguratorProvider extends GroupServiceConfiguratorProvider implements org.wildfly.clustering.spi.LocalGroupServiceConfiguratorProvider {
 
     public LocalGroupServiceConfiguratorProvider() {
-        super((name, group) -> new LocalGroupBuilder(name));
+        super((name, group) -> new LocalGroupServiceConfigurator(name));
     }
 }

@@ -32,6 +32,6 @@ import org.wildfly.clustering.spi.DistributedCacheServiceConfiguratorProvider;
 public class CacheSingletonServiceBuilderFactoryServiceConfiguratorProvider extends SingletonServiceBuilderFactoryServiceConfiguratorProvider implements DistributedCacheServiceConfiguratorProvider {
 
     public CacheSingletonServiceBuilderFactoryServiceConfiguratorProvider() {
-        super(CacheSingletonServiceBuilderFactoryBuilder::new);
+        super(CacheSingletonServiceBuilderFactoryServiceConfigurator::new);
     }
 }
