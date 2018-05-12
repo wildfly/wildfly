@@ -113,6 +113,6 @@ public class DistributedCacheResourceDefinition extends SegmentedCacheResourceDe
     }
 
     DistributedCacheResourceDefinition() {
-        super(WILDCARD_PATH, new SimpleResourceDescriptorConfigurator<>(Attribute.class), new ClusteredCacheServiceHandler(DistributedCacheBuilder::new));
+        super(WILDCARD_PATH, new SimpleResourceDescriptorConfigurator<>(Attribute.class), new ClusteredCacheServiceHandler(DistributedCacheServiceConfigurator::new));
     }
 }

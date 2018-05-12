@@ -26,12 +26,11 @@ import java.util.function.UnaryOperator;
 
 import org.infinispan.configuration.cache.BackupConfiguration.BackupStrategy;
 import org.infinispan.configuration.cache.BackupFailurePolicy;
-import org.infinispan.configuration.cache.SitesConfiguration;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.OperationHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
+import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.RestartParentResourceRegistration;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.controller.AttributeDefinition;
@@ -120,11 +119,11 @@ public class BackupResourceDefinition extends ChildResourceDefinition<Management
         // Nothing to transform
     }
 
-    private final ResourceServiceBuilderFactory<SitesConfiguration> parentBuilderFactory;
+    private final ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory;
 
-    BackupResourceDefinition(ResourceServiceBuilderFactory<SitesConfiguration> parentBuilderFactory) {
+    BackupResourceDefinition(ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory) {
         super(WILDCARD_PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(WILDCARD_PATH));
-        this.parentBuilderFactory = parentBuilderFactory;
+        this.parentServiceConfiguratorFactory = parentServiceConfiguratorFactory;
     }
 
     @Override
@@ -135,7 +134,7 @@ public class BackupResourceDefinition extends ChildResourceDefinition<Management
                 .addAttributes(Attribute.class)
                 .addAttributes(TakeOfflineAttribute.class)
                 ;
-        new RestartParentResourceRegistration(this.parentBuilderFactory, descriptor).register(registration);
+        new RestartParentResourceRegistration(this.parentServiceConfiguratorFactory, descriptor).register(registration);
 
         if (registration.isRuntimeOnlyRegistrationValid()) {
             new OperationHandler<>(new BackupOperationExecutor(), BackupOperation.class).register(registration);

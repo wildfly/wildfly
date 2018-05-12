@@ -22,14 +22,13 @@
 
 package org.jboss.as.clustering.infinispan.subsystem.remote;
 
-import org.infinispan.client.hotrod.configuration.Configuration;
 import org.jboss.as.clustering.controller.BinaryCapabilityNameResolver;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
+import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.RestartParentResourceRegistration;
 import org.jboss.as.clustering.infinispan.subsystem.InfinispanExtension;
 import org.jboss.as.controller.AttributeDefinition;
@@ -114,11 +113,11 @@ public class RemoteClusterResourceDefinition extends ChildResourceDefinition<Man
         }
     }
 
-    private final ResourceServiceBuilderFactory<Configuration> builderFactory;
+    private final ResourceServiceConfiguratorFactory serviceConfiguratorFactory;
 
-    RemoteClusterResourceDefinition(ResourceServiceBuilderFactory<Configuration> builderFactory) {
+    RemoteClusterResourceDefinition(ResourceServiceConfiguratorFactory serviceConfiguratorFactory) {
         super(WILDCARD_PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(WILDCARD_PATH));
-        this.builderFactory = builderFactory;
+        this.serviceConfiguratorFactory = serviceConfiguratorFactory;
     }
 
     @Override
@@ -128,7 +127,7 @@ public class RemoteClusterResourceDefinition extends ChildResourceDefinition<Man
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
                 .addCapabilities(Capability.class);
-        new RestartParentResourceRegistration(builderFactory, descriptor).register(registration);
+        new RestartParentResourceRegistration(this.serviceConfiguratorFactory, descriptor).register(registration);
 
         return registration;
     }

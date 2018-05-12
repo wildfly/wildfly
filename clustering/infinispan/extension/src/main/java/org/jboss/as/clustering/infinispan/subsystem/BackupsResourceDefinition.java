@@ -22,14 +22,13 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.infinispan.configuration.cache.SitesConfiguration;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ParentResourceServiceHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
+import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.transform.RequiredChildResourceDiscardPolicy;
-import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
-import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -59,8 +58,6 @@ public class BackupsResourceDefinition extends ComponentResourceDefinition {
         BackupResourceDefinition.buildTransformation(version, builder);
     }
 
-    private final ResourceServiceBuilderFactory<SitesConfiguration> builderFactory = BackupsBuilder::new;
-
     public BackupsResourceDefinition() {
         super(PATH);
     }
@@ -70,10 +67,11 @@ public class BackupsResourceDefinition extends ComponentResourceDefinition {
         ManagementResourceRegistration registration = parent.registerSubModel(this);
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver());
-        ResourceServiceHandler handler = new ParentResourceServiceHandler(this.builderFactory);
+        ResourceServiceConfiguratorFactory serviceConfiguratorFactory = BackupsServiceConfigurator::new;
+        ResourceServiceHandler handler = new ParentResourceServiceHandler(serviceConfiguratorFactory);
         new SimpleResourceRegistration(descriptor, handler).register(registration);
 
-        new BackupResourceDefinition(this.builderFactory).register(registration);
+        new BackupResourceDefinition(serviceConfiguratorFactory).register(registration);
 
         return registration;
     }

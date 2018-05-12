@@ -126,7 +126,7 @@ public class HotRodStore<K, V> implements AdvancedLoadWriteStore<K, V> {
     @Override
     public void writeBatch(Iterable<MarshalledEntry<? extends K, ? extends V>> marshalledEntries) {
         Map<byte[], byte[]> batch = new HashMap<>();
-        for (MarshalledEntry entry : marshalledEntries) {
+        for (MarshalledEntry<? extends K, ? extends V> entry : marshalledEntries) {
             batch.put(this.marshall(entry.getKey()), this.marshall(entry));
         }
 
@@ -190,7 +190,7 @@ public class HotRodStore<K, V> implements AdvancedLoadWriteStore<K, V> {
         }
     }
 
-    private byte[] marshall(MarshalledEntry entry) {
+    private byte[] marshall(MarshalledEntry<?, ?> entry) {
         return this.marshall(new KeyValuePair<>(entry.getValueBytes(), entry.getMetadataBytes()));
     }
 

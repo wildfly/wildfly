@@ -102,7 +102,7 @@ public enum ScheduledThreadPoolResourceDefinition implements ResourceDefinitionP
     public void register(ManagementResourceRegistration parent) {
         ManagementResourceRegistration registration = parent.registerSubModel(this);
         ResourceDescriptor descriptor = new ResourceDescriptor(this.definition.getResourceDescriptionResolver()).addAttributes(this.getAttributes());
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler(address -> new ScheduledThreadPoolBuilder(this, address));
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler(address -> new ScheduledThreadPoolServiceConfigurator(this, address));
         new SimpleResourceRegistration(descriptor, handler).register(registration);
     }
 

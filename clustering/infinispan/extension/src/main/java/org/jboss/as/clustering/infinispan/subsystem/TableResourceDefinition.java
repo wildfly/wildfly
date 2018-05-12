@@ -194,7 +194,7 @@ public abstract class TableResourceDefinition extends ChildResourceDefinition<Ma
                 .addAttributes(ColumnAttribute.class)
                 .addAttributeTranslation(DeprecatedAttribute.BATCH_SIZE, BATCH_SIZE_TRANSLATION)
                 ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler(address -> new TableBuilder(this.prefixAttribute, address));
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler(address -> new TableServiceConfigurator(this.prefixAttribute, address));
         new SimpleResourceRegistration(descriptor, handler).register(registration);
 
         return registration;

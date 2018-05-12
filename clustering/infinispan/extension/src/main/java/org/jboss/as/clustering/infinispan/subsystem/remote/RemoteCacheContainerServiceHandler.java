@@ -26,12 +26,11 @@ import static org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheCon
 
 import java.util.EnumSet;
 
-import org.infinispan.client.hotrod.configuration.Configuration;
-import org.jboss.as.clustering.controller.ModuleBuilder;
-import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
+import org.jboss.as.clustering.controller.ModuleServiceConfigurator;
+import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.infinispan.subsystem.InfinispanBindingFactory;
-import org.jboss.as.clustering.naming.BinderServiceBuilder;
+import org.jboss.as.clustering.naming.BinderServiceConfigurator;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -39,15 +38,15 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.infinispan.spi.RemoteCacheContainer;
+import org.wildfly.clustering.service.ServiceConfigurator;
 
 /**
  * @author Radoslav Husar
  */
 public class RemoteCacheContainerServiceHandler extends SimpleResourceServiceHandler {
 
-    RemoteCacheContainerServiceHandler(ResourceServiceBuilderFactory<Configuration> builderFactory) {
-        super(builderFactory);
+    RemoteCacheContainerServiceHandler(ResourceServiceConfiguratorFactory configuratorFactory) {
+        super(configuratorFactory);
     }
 
     @Override
@@ -59,12 +58,12 @@ public class RemoteCacheContainerServiceHandler extends SimpleResourceServiceHan
 
         ServiceTarget target = context.getServiceTarget();
 
-        new ModuleBuilder(RemoteCacheContainerComponent.MODULE.getServiceName(address), MODULE).configure(context, model).build(target).setInitialMode(ServiceController.Mode.PASSIVE).install();
+        new ModuleServiceConfigurator(RemoteCacheContainerComponent.MODULE.getServiceName(address), MODULE).configure(context, model).build(target).setInitialMode(ServiceController.Mode.PASSIVE).install();
 
-        RemoteCacheContainerBuilder containerBuilder = new RemoteCacheContainerBuilder(address).configure(context, model);
+        ServiceConfigurator containerBuilder = new RemoteCacheContainerServiceConfigurator(address).configure(context, model);
         containerBuilder.build(target).install();
 
-        new BinderServiceBuilder<>(InfinispanBindingFactory.createRemoteCacheContainerBinding(name), containerBuilder.getServiceName(), RemoteCacheContainer.class).build(target).install();
+        new BinderServiceConfigurator(InfinispanBindingFactory.createRemoteCacheContainerBinding(name), containerBuilder.getServiceName()).build(target).install();
     }
 
     @Override

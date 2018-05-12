@@ -34,12 +34,11 @@ import org.infinispan.distribution.LocalizedCacheTopology;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.TopologyChanged;
 import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
-import org.jboss.as.clustering.msc.ServiceContainerHelper;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceRegistry;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
+import org.wildfly.clustering.service.PassiveServiceSupplier;
 
 /**
  * EJB that establishes a stable topology.
@@ -55,15 +54,13 @@ public class TopologyChangeListenerBean implements TopologyChangeListener {
     @Override
     public void establishTopology(String containerName, String cacheName, long timeout, String... nodes) throws InterruptedException {
         Set<String> expectedMembers = Stream.of(nodes).sorted().collect(Collectors.toSet());
-        ServiceRegistry registry = CurrentServiceContainer.getServiceContainer();
         ServiceName name = ServiceName.parse(InfinispanCacheRequirement.CACHE.resolve(containerName, cacheName));
-        Cache<?, ?> cache = ServiceContainerHelper.findValue(registry, name);
+        Cache<?, ?> cache = new PassiveServiceSupplier<Cache<?, ?>>(CurrentServiceContainer.getServiceContainer(), name).get();
         if (cache == null) {
             throw new IllegalStateException(String.format("Cache %s not found", name));
         }
         cache.addListener(this);
-        try
-        {
+        try {
             synchronized (this) {
                 DistributionManager dist = cache.getAdvancedCache().getDistributionManager();
                 LocalizedCacheTopology topology = dist.getCacheTopology();

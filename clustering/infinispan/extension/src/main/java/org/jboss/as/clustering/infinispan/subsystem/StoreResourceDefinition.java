@@ -31,7 +31,7 @@ import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.PropertiesAttributeDefinition;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
+import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
@@ -162,11 +162,11 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition<Ma
     private final UnaryOperator<ResourceDescriptor> configurator;
     private final ResourceServiceHandler handler;
 
-    protected StoreResourceDefinition(PathElement path, PathElement legacyPath, ResourceDescriptionResolver resolver, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceBuilderFactory<PersistenceConfiguration> builderFactory) {
+    protected StoreResourceDefinition(PathElement path, PathElement legacyPath, ResourceDescriptionResolver resolver, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfiguratorFactory serviceConfiguratorFactory) {
         super(path, resolver);
         this.legacyPath = legacyPath;
         this.configurator = configurator;
-        this.handler = new SimpleResourceServiceHandler(builderFactory);
+        this.handler = new SimpleResourceServiceHandler(serviceConfiguratorFactory);
     }
 
     @SuppressWarnings("deprecation")

@@ -33,7 +33,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.service.ServiceNameProvider;
 import org.wildfly.clustering.spi.CapabilityServiceNameRegistry;
@@ -53,10 +52,10 @@ public class JGroupsTransportServiceHandler implements ResourceServiceHandler {
         String name = containerAddress.getLastElement().getValue();
         ServiceTarget target = context.getServiceTarget();
 
-        JGroupsTransportBuilder transportBuilder = new JGroupsTransportBuilder(address).configure(context, model);
+        JGroupsTransportServiceConfigurator transportBuilder = new JGroupsTransportServiceConfigurator(address).configure(context, model);
         transportBuilder.build(target).install();
 
-        new SiteBuilder(address).configure(context, model).build(target).install();
+        new SiteServiceConfigurator(address).configure(context, model).build(target).install();
 
         String channel = transportBuilder.getChannel();
 
@@ -64,7 +63,7 @@ public class JGroupsTransportServiceHandler implements ResourceServiceHandler {
 
         for (IdentityGroupServiceConfiguratorProvider provider : ServiceLoader.load(IdentityGroupServiceConfiguratorProvider.class, IdentityGroupServiceConfiguratorProvider.class.getClassLoader())) {
             for (CapabilityServiceConfigurator configurator : provider.getServiceConfigurators(registry, name, channel)) {
-                configurator.configure(context).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+                configurator.configure(context).build(target).install();
             }
         }
     }

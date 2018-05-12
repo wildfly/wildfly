@@ -88,7 +88,7 @@ public class ExpirationResourceDefinition extends ComponentResourceDefinition {
         parent.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class);
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler(ExpirationBuilder::new);
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler(ExpirationServiceConfigurator::new);
         new SimpleResourceRegistration(descriptor, handler).register(registration);
 
         return registration;

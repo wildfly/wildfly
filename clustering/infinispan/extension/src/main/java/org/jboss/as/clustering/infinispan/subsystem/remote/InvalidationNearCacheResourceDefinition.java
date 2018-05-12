@@ -82,7 +82,7 @@ public class InvalidationNearCacheResourceDefinition extends NearCacheResourceDe
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(InvalidationNearCacheResourceDefinition.Attribute.class)
                 ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler(InvalidationNearCacheBuilder::new);
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler(InvalidationNearCacheServiceConfigurator::new);
         new SimpleResourceRegistration(descriptor, handler).register(registration);
 
         return registration;

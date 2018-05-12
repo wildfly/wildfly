@@ -30,7 +30,8 @@ import org.jboss.as.clustering.controller.Attribute;
 import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.ResourceDefinitionProvider;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ResourceServiceBuilder;
+import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
+import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAttribute;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
@@ -39,7 +40,7 @@ import org.jboss.as.clustering.controller.transform.UndefinedAttributesDiscardPo
 import org.jboss.as.clustering.controller.validation.IntRangeValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.LongRangeValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.ParameterValidatorBuilder;
-import org.jboss.as.clustering.infinispan.subsystem.remote.ClientThreadPoolBuilder;
+import org.jboss.as.clustering.infinispan.subsystem.remote.ClientThreadPoolServiceConfigurator;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
@@ -73,7 +74,7 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, 
     STATE_TRANSFER("state-transfer", 1, 60, 0, 60000L),
     TRANSPORT("transport", 25, 25, 100000, 60000L),
     // remote-cache-container
-    CLIENT("async", 99, 99, 10000, 0L, RemoteCacheContainerResourceDefinition.Capability.CONFIGURATION, ClientThreadPoolBuilder::new),
+    CLIENT("async", 99, 99, 10000, 0L, RemoteCacheContainerResourceDefinition.Capability.CONFIGURATION, ClientThreadPoolServiceConfigurator::new),
     ;
 
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
@@ -88,13 +89,13 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, 
     private final Attribute queueLength;
     private final Attribute keepAliveTime;
     private final CapabilityProvider baseCapability;
-    private final BiFunction<ThreadPoolDefinition, PathAddress, ResourceServiceBuilder<?>> builderSupplier;
+    private final ResourceServiceConfiguratorFactory serviceConfiguratorFactory;
 
     ThreadPoolResourceDefinition(String name, int defaultMinThreads, int defaultMaxThreads, int defaultQueueLength, long defaultKeepaliveTime) {
-        this(name, defaultMinThreads, defaultMaxThreads, defaultQueueLength, defaultKeepaliveTime, CacheContainerResourceDefinition.Capability.CONFIGURATION, ThreadPoolBuilder::new);
+        this(name, defaultMinThreads, defaultMaxThreads, defaultQueueLength, defaultKeepaliveTime, CacheContainerResourceDefinition.Capability.CONFIGURATION, ThreadPoolServiceConfigurator::new);
     }
 
-    ThreadPoolResourceDefinition(String name, int defaultMinThreads, int defaultMaxThreads, int defaultQueueLength, long defaultKeepaliveTime, CapabilityProvider baseCapability, BiFunction<ThreadPoolDefinition, PathAddress, ResourceServiceBuilder<?>> builderSupplier) {
+    ThreadPoolResourceDefinition(String name, int defaultMinThreads, int defaultMaxThreads, int defaultQueueLength, long defaultKeepaliveTime, CapabilityProvider baseCapability, BiFunction<ThreadPoolDefinition, PathAddress, ResourceServiceConfigurator> serviceConfiguratorFunction) {
         PathElement path = pathElement(name);
         this.definition = new SimpleResourceDefinition(path, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(path, pathElement(PathElement.WILDCARD_VALUE)));
         this.minThreads = new SimpleAttribute(createBuilder("min-threads", ModelType.INT, new ModelNode(defaultMinThreads), new IntRangeValidatorBuilder().min(0)).build());
@@ -102,7 +103,12 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, 
         this.queueLength = new SimpleAttribute(createBuilder("queue-length", ModelType.INT, new ModelNode(defaultQueueLength), new IntRangeValidatorBuilder().min(0)).build());
         this.keepAliveTime = new SimpleAttribute(createBuilder("keepalive-time", ModelType.LONG, new ModelNode(defaultKeepaliveTime), new LongRangeValidatorBuilder().min(0)).build());
         this.baseCapability = baseCapability;
-        this.builderSupplier = builderSupplier;
+        this.serviceConfiguratorFactory = new ResourceServiceConfiguratorFactory() {
+            @Override
+            public ResourceServiceConfigurator createServiceConfigurator(PathAddress address) {
+                return serviceConfiguratorFunction.apply(ThreadPoolResourceDefinition.this, address);
+            }
+        };
     }
 
     private static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type, ModelNode defaultValue, ParameterValidatorBuilder validatorBuilder) {
@@ -125,7 +131,7 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, 
     public void register(ManagementResourceRegistration parent) {
         ManagementResourceRegistration registration = parent.registerSubModel(this);
         ResourceDescriptor descriptor = new ResourceDescriptor(this.definition.getResourceDescriptionResolver()).addAttributes(this.getAttributes());
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler(address -> this.builderSupplier.apply(this, address));
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler(this.serviceConfiguratorFactory);
         new SimpleResourceRegistration(descriptor, handler).register(registration);
     }
 
