@@ -361,7 +361,7 @@
         <version.org.wildfly.bridge.servlet-api-bridge>1.0.1.Final</version.org.wildfly.bridge.servlet-api-bridge>
         <version.org.wildfly.cdi-api-bridge>1.0.1.Final</version.org.wildfly.cdi-api-bridge>
         <version.org.wildfly.checkstyle-config>1.0.7.Final</version.org.wildfly.checkstyle-config>
-        <version.org.wildfly.core>5.0.0.Alpha7</version.org.wildfly.core>
+        <version.org.wildfly.core>5.0.0.Beta1</version.org.wildfly.core>
         <version.org.wildfly.http-client>1.0.12.Final</version.org.wildfly.http-client>
         <version.org.wildfly.maven.plugins>1.0.0</version.org.wildfly.maven.plugins>
         <version.org.wildfly.naming-client>1.0.8.Final</version.org.wildfly.naming-client>
