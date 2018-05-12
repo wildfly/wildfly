@@ -3,7 +3,7 @@
 @if not "%ECHO%" == ""  echo %ECHO%
 @if "%OS%" == "Windows_NT" setlocal
 
-set SERVER_OPTS=%*
+set "SERVER_OPTS=%*"
 
 if "%OS%" == "Windows_NT" (
   set "DIRNAME=%~dp0%"
@@ -22,7 +22,7 @@ setlocal DisableDelayedExpansion
 
 rem If the -Djava.security.manager is found, enable the -secmgr and include a bogus security manager for JBoss Modules to replace
 setlocal EnableDelayedExpansion
-echo(%JAVA_OPTS% | findstr /r /c:"-Djava.security.manager" > nul && (
+echo(!JAVA_OPTS! | findstr /r /c:"-Djava.security.manager" > nul && (
     echo ERROR: The use of -Djava.security.manager has been removed. Please use the -secmgr command line argument or SECMGR=true environment variable.
     GOTO :EOF
 )

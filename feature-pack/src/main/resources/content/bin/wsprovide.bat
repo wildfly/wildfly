@@ -3,7 +3,7 @@
 @if not "%ECHO%" == ""  echo %ECHO%
 @if "%OS%" == "Windows_NT" setlocal
 
-set SERVER_OPTS=%*
+set "SERVER_OPTS=%*"
 
 if "%OS%" == "Windows_NT" (
   set "DIRNAME=%~dp0%"

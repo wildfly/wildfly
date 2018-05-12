@@ -8,7 +8,7 @@ rem $Id$
 @if not "%ECHO%" == ""  echo %ECHO%
 @if "%OS%" == "Windows_NT" setlocal
 rem Set to all parameters by default
-set SERVER_OPTS=%*
+set "SERVER_OPTS=%*"
 
 if "%OS%" == "Windows_NT" (
   set "DIRNAME=%~dp0%"
@@ -41,14 +41,14 @@ if "%~1" == "" (
 ) else if "%~1" == "-secmgr" (
    set SECMGR=true
 ) else (
-    set outParam=%outParam% "%~1"
+    set "outParam=%outParam% %~1"
 )
 shift
 goto READ-ARGS
 
 :MAIN
 setlocal DisableDelayedExpansion
-set SERVER_OPTS=%outParam%
+set "SERVER_OPTS=%outParam%"
 
 rem Read an optional configuration file.
 if "x%APPCLIENT_CONF%" == "x" (

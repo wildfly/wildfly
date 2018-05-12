@@ -26,13 +26,6 @@ do
     shift
 done
 
-# Process the JAVA_OPTS failing if the java.security.manager is set.
-SECURITY_MANAGER_SET=`echo $JAVA_OPTS | $GREP "java\.security\.manager"`
-if [ "x$SECURITY_MANAGER_SET" != "x" ]; then
-    echo "ERROR: The use of -Djava.security.manager has been removed. Please use the -secmgr command line argument or SECMGR=true environment variable."
-    exit 1
-fi
-
 # Use the maximum available, or set MAX_FD != -1 to use that
 MAX_FD="maximum"
 
@@ -122,9 +115,14 @@ if [ "x$SERVER_SET" = "x" ]; then
 
     # Enable -server if we have Hotspot or OpenJDK, unless we can't
     if [ "x$HAS_HOTSPOT" != "x" ] || [ "x$HAS_OPENJDK" != "x" ]; then
-        JAVA_OPTS="-server $JAVA_OPTS"
-        JVM_OPTVERSION="-server $JVM_OPTVERSION"
+        # MacOS does not support -server flag
+        if [ "$darwin" != "true" ]; then
+            JAVA_OPTS="-server $JAVA_OPTS"
+            JVM_OPTVERSION="-server $JVM_OPTVERSION"
+        fi
     fi
+else
+    JVM_OPTVERSION="-server $JVM_OPTVERSION"
 fi
 
 if [ "x$JBOSS_MODULEPATH" = "x" ]; then
@@ -135,6 +133,13 @@ fi
 if $cygwin; then
     JBOSS_HOME=`cygpath --path --windows "$JBOSS_HOME"`
     JBOSS_MODULEPATH=`cygpath --path --windows "$JBOSS_MODULEPATH"`
+fi
+
+# Process the JAVA_OPTS failing if the java.security.manager is set.
+SECURITY_MANAGER_SET=`echo $JAVA_OPTS | $GREP "java\.security\.manager"`
+if [ "x$SECURITY_MANAGER_SET" != "x" ]; then
+    echo "ERROR: The use of -Djava.security.manager has been removed. Please use the -secmgr command line argument or SECMGR=true environment variable."
+    exit 1
 fi
 
 # Set up the module arguments

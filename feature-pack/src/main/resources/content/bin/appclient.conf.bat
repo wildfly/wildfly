@@ -39,11 +39,6 @@ rem # Specify options to pass to the Java VM. Note, there are some additional
 rem # options that are always passed by run.bat.
 rem #
 
-if not "x%JAVA_OPTS%" == "x" (
-rem  echo "JAVA_OPTS already set in environment; overriding default settings with values: %JAVA_OPTS%"
-  goto JAVA_OPTS_SET
-)
-
 rem # JVM memory allocation pool parameters - modify as appropriate.
 set "JAVA_OPTS=-Xms64M -Xmx512M -XX:MaxMetaspaceSize=256m"
 
