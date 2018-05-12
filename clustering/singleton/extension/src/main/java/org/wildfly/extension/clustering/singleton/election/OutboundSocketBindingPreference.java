@@ -23,9 +23,9 @@
 package org.wildfly.extension.clustering.singleton.election;
 
 import java.net.UnknownHostException;
+import java.util.function.Supplier;
 
 import org.jboss.as.network.OutboundSocketBinding;
-import org.jboss.msc.value.Value;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.singleton.election.Preference;
 
@@ -35,15 +35,15 @@ import org.wildfly.clustering.singleton.election.Preference;
  */
 public class OutboundSocketBindingPreference implements Preference {
 
-    private final Value<OutboundSocketBinding> binding;
+    private final Supplier<OutboundSocketBinding> binding;
 
-    public OutboundSocketBindingPreference(Value<OutboundSocketBinding> binding) {
+    public OutboundSocketBindingPreference(Supplier<OutboundSocketBinding> binding) {
         this.binding = binding;
     }
 
     @Override
     public boolean preferred(Node node) {
-        OutboundSocketBinding binding = this.binding.getValue();
+        OutboundSocketBinding binding = this.binding.get();
         try {
             return binding.getResolvedDestinationAddress().equals(node.getSocketAddress().getAddress()) && (binding.getDestinationPort() == node.getSocketAddress().getPort());
         } catch (UnknownHostException e) {

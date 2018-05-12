@@ -22,20 +22,22 @@
 
 package org.jboss.as.test.clustering.cluster.singleton.service;
 
+import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.NODE_2;
+
+import java.time.Duration;
+
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.group.Group;
+import org.wildfly.clustering.service.ActiveServiceSupplier;
 import org.wildfly.clustering.singleton.SingletonDefaultCacheRequirement;
 import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
 import org.wildfly.clustering.singleton.election.NamePreference;
 import org.wildfly.clustering.singleton.election.PreferredSingletonElectionPolicy;
 import org.wildfly.clustering.singleton.election.SimpleSingletonElectionPolicy;
-
-import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.NODE_2;
 
 /**
  * @author Paul Ferraro
@@ -51,13 +53,9 @@ public class NodeServiceActivator implements ServiceActivator {
     @Override
     public void activate(ServiceActivatorContext context) {
         ServiceTarget target = context.getServiceTarget();
-        try {
-            SingletonServiceBuilderFactory factory = (SingletonServiceBuilderFactory) context.getServiceRegistry().getRequiredService(ServiceName.parse(SingletonDefaultCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY.resolve(CONTAINER_NAME))).awaitValue();
-            install(target, factory, DEFAULT_SERVICE_NAME, 1);
-            install(target, factory, QUORUM_SERVICE_NAME, 2);
-        } catch (InterruptedException e) {
-            throw new ServiceRegistryException(e);
-        }
+        SingletonServiceBuilderFactory factory = new ActiveServiceSupplier<SingletonServiceBuilderFactory>(context.getServiceRegistry(), ServiceName.parse(SingletonDefaultCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY.resolve(CONTAINER_NAME))).timeout(Duration.ofSeconds(30)).get();
+        install(target, factory, DEFAULT_SERVICE_NAME, 1);
+        install(target, factory, QUORUM_SERVICE_NAME, 2);
     }
 
     private static void install(ServiceTarget target, SingletonServiceBuilderFactory factory, ServiceName name, int quorum) {

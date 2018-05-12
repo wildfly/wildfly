@@ -145,7 +145,7 @@ public class SingletonPolicyResourceDefinition extends ChildResourceDefinition<M
                 .addCapabilities(Capability.class)
                 .addRequiredSingletonChildren(SimpleElectionPolicyResourceDefinition.PATH)
                 ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler(SingletonPolicyBuilder::new);
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler(SingletonPolicyServiceConfigurator::new);
         new SimpleResourceRegistration(descriptor, handler).register(registration);
 
         new RandomElectionPolicyResourceDefinition().register(registration);

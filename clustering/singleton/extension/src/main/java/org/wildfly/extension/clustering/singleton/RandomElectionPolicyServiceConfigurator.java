@@ -29,14 +29,14 @@ import org.wildfly.clustering.singleton.election.RandomSingletonElectionPolicy;
 /**
  * @author Paul Ferraro
  */
-public class RandomElectionPolicyBuilder extends ElectionPolicyBuilder {
+public class RandomElectionPolicyServiceConfigurator extends ElectionPolicyServiceConfigurator {
 
-    public RandomElectionPolicyBuilder(PathAddress policyAddress) {
+    public RandomElectionPolicyServiceConfigurator(PathAddress policyAddress) {
         super(policyAddress);
     }
 
     @Override
-    public SingletonElectionPolicy getValue() {
+    public SingletonElectionPolicy get() {
         return new RandomSingletonElectionPolicy();
     }
 }

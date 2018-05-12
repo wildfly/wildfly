@@ -22,12 +22,15 @@
 
 package org.jboss.as.test.clustering.cluster.singleton.service;
 
+import java.time.Duration;
+
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceRegistryException;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.group.Group;
+import org.wildfly.clustering.service.ActiveServiceSupplier;
 import org.wildfly.clustering.singleton.SingletonDefaultRequirement;
 import org.wildfly.clustering.singleton.SingletonPolicy;
 
@@ -39,16 +42,13 @@ public class NodeServicePolicyActivator implements ServiceActivator {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("test", "service", "default-policy");
 
     @Override
-    public void activate(ServiceActivatorContext context) throws ServiceRegistryException {
-        try {
-            SingletonPolicy policy = (SingletonPolicy) context.getServiceRegistry().getRequiredService(ServiceName.parse(SingletonDefaultRequirement.SINGLETON_POLICY.getName())).awaitValue();
-            InjectedValue<Group> group = new InjectedValue<>();
-            NodeService service = new NodeService(group);
-            policy.createSingletonServiceBuilder(SERVICE_NAME, service).build(context.getServiceTarget())
-                    .addDependency(ServiceName.parse("org.wildfly.clustering.default-group"), Group.class, group)
-                    .install();
-        } catch (InterruptedException e) {
-            throw new ServiceRegistryException(e);
-        }
+    public void activate(ServiceActivatorContext context) {
+        ServiceTarget target = context.getServiceTarget();
+        SingletonPolicy policy = new ActiveServiceSupplier<SingletonPolicy>(context.getServiceRegistry(), ServiceName.parse(SingletonDefaultRequirement.SINGLETON_POLICY.getName())).timeout(Duration.ofSeconds(30)).get();
+        InjectedValue<Group> group = new InjectedValue<>();
+        NodeService service = new NodeService(group);
+        policy.createSingletonServiceBuilder(SERVICE_NAME, service).build(target)
+                .addDependency(ServiceName.parse("org.wildfly.clustering.default-group"), Group.class, group)
+                .install();
     }
 }

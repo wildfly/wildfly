@@ -27,12 +27,12 @@ import java.util.function.UnaryOperator;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
-import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
+import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
+import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CapabilityReferenceRecorder;
 import org.jboss.as.controller.PathElement;
@@ -100,12 +100,12 @@ public abstract class ElectionPolicyResourceDefinition extends ChildResourceDefi
     }
 
     private final UnaryOperator<ResourceDescriptor> configurator;
-    private final ResourceServiceBuilderFactory<SingletonElectionPolicy> builderFactory;
+    private final ResourceServiceConfiguratorFactory serviceConfiguratorFactory;
 
-    ElectionPolicyResourceDefinition(PathElement path, ResourceDescriptionResolver resolver, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceBuilderFactory<SingletonElectionPolicy> builderFactory) {
+    ElectionPolicyResourceDefinition(PathElement path, ResourceDescriptionResolver resolver, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfiguratorFactory serviceConfiguratorFactory) {
         super(path, resolver);
         this.configurator = configurator;
-        this.builderFactory = builderFactory;
+        this.serviceConfiguratorFactory = serviceConfiguratorFactory;
     }
 
     @Override
@@ -116,7 +116,7 @@ public abstract class ElectionPolicyResourceDefinition extends ChildResourceDefi
                 .addAttributes(ElectionPolicyResourceDefinition.Attribute.class)
                 .addCapabilities(ElectionPolicyResourceDefinition.Capability.class)
                 ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler(this.builderFactory);
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler(this.serviceConfiguratorFactory);
         new SimpleResourceRegistration(descriptor, handler).register(registration);
 
         return registration;
