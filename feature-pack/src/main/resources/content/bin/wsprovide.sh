@@ -2,6 +2,34 @@
 
 GREP="grep"
 
+# Parsing incoming parameters
+while [ "$#" -gt 0 ]
+do
+    case "$1" in
+      -secmgr)
+          SECMGR="true"
+          ;;
+      -Djava.security.manager)
+          echo "ERROR: The use of -Djava.security.manager has been removed. Please use the -secmgr command line argument or SECMGR=true environment variable."
+          exit 1
+          ;;
+      --)
+          shift
+          break;;
+      *)
+          SERVER_OPTS="$SERVER_OPTS '$1'"
+          ;;
+    esac
+    shift
+done
+
+# Process the JAVA_OPTS failing if the java.security.manager is set.
+SECURITY_MANAGER_SET=`echo $JAVA_OPTS | $GREP "java\.security\.manager"`
+if [ "x$SECURITY_MANAGER_SET" != "x" ]; then
+    echo "ERROR: The use of -Djava.security.manager has been removed. Please use the -secmgr command line argument or SECMGR=true environment variable."
+    exit 1
+fi
+
 # Extract the directory and the program name
 # takes care of symlinks
 PRG="$0"
@@ -72,20 +100,6 @@ if [ "x$JBOSS_MODULEPATH" = "x" ]; then
     JBOSS_MODULEPATH="$JBOSS_HOME/modules"
 fi
 
-# Process the JAVA_OPTS and fail the script of a java.security.manager was found
-SECURITY_MANAGER_SET=`echo $JAVA_OPTS | $GREP "java\.security\.manager"`
-if [ "x$SECURITY_MANAGER_SET" != "x" ]; then
-    echo "ERROR: The use of -Djava.security.manager has been removed. Please use the -secmgr command line argument or SECMGR=true environment variable."
-    exit 1
-fi
-
-# remove -secmgr from JAVA_OPTS. This flag must reside in a different location
-NEW_SECURITY_MANAGER_SET=`echo $JAVA_OPTS | $GREP "-secmgr"`
-if [ "x$NEW_SECURITY_MANAGER_SET" != "x" ]; then
-    SECMGR="true"
-    JAVA_OPTS=`echo $JAVA_OPTS | sed "s/-secmgr//" `
-fi
-
 # Set up the module arguments
 MODULE_OPTS=""
 if [ "$SECMGR" = "true" ]; then
@@ -98,4 +112,4 @@ eval \"$JAVA\" $JAVA_OPTS \
     $MODULE_OPTS \
     -mp \""${JBOSS_MODULEPATH}"\" \
     org.jboss.ws.tools.wsprovide \
-    '"$@"'
+    "$SERVER_OPTS"

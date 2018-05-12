@@ -27,6 +27,12 @@ if not errorlevel == 1 (
 )
 setlocal DisableDelayedExpansion
 
+rem If the -Djava.security.manager is found, enable the -secmgr and include a bogus security manager for JBoss Modules to replace
+echo(%JAVA_OPTS% | findstr /r /c:"-Djava.security.manager" > nul && (
+    echo ERROR: The use of -Djava.security.manager has been removed. Please use the -secmgr command line argument or SECMGR=true environment variable.
+    GOTO :EOF
+)
+
 rem Read command-line args, the ~ removes the quotes from the parameter
 :READ-ARGS
 if "%~1" == "" (
@@ -88,22 +94,6 @@ rem Add -server to the JVM options, if supported
 if not errorlevel == 1 (
   set "JAVA_OPTS=%JAVA_OPTS% -server"
 )
-
-rem If the -Djava.security.manager is found, enable the -secmgr and include a bogus security manager for JBoss Modules to replace
-echo(%JAVA_OPTS% | findstr /r /c:"-Djava.security.manager" > nul && (
-    echo ERROR: The use of -Djava.security.manager has been removed. Please use the -secmgr command line argument or SECMGR=true environment variable.
-    GOTO :EOF
-)
-
-rem check for secmgr property
-setlocal EnableDelayedExpansion
-echo(!JAVA_OPTS! | findstr /r /c:"-secmgr" > nul
-if not errorlevel == 1 (
-   set "line=%JAVA_OPTS%"
-   set JAVA_OPTS=!line:-secmgr= !
-   set SECMGR=true
-)
-setlocal DisableDelayedExpansion
 
 rem Find run.jar, or we can't continue
 if exist "%JBOSS_HOME%\jboss-modules.jar" (

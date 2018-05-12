@@ -26,6 +26,13 @@ do
     shift
 done
 
+# Process the JAVA_OPTS failing if the java.security.manager is set.
+SECURITY_MANAGER_SET=`echo $JAVA_OPTS | $GREP "java\.security\.manager"`
+if [ "x$SECURITY_MANAGER_SET" != "x" ]; then
+    echo "ERROR: The use of -Djava.security.manager has been removed. Please use the -secmgr command line argument or SECMGR=true environment variable."
+    exit 1
+fi
+
 # Use the maximum available, or set MAX_FD != -1 to use that
 MAX_FD="maximum"
 
@@ -129,20 +136,6 @@ fi
 if $cygwin; then
     JBOSS_HOME=`cygpath --path --windows "$JBOSS_HOME"`
     JBOSS_MODULEPATH=`cygpath --path --windows "$JBOSS_MODULEPATH"`
-fi
-
-# Process the JAVA_OPTS failing if the java.security.manager is set.
-SECURITY_MANAGER_SET=`echo $JAVA_OPTS | $GREP "java\.security\.manager"`
-if [ "x$SECURITY_MANAGER_SET" != "x" ]; then
-    echo "ERROR: The use of -Djava.security.manager has been removed. Please use the -secmgr command line argument or SECMGR=true environment variable."
-    exit 1
-fi
-
-# remove -secmgr from JAVA_OPTS. This flag must reside in a different location
-NEW_SECURITY_MANAGER_SET=`echo $JAVA_OPTS | $GREP "-secmgr"`
-if [ "x$NEW_SECURITY_MANAGER_SET" != "x" ]; then
-    SECMGR="true"
-    JAVA_OPTS=`echo $JAVA_OPTS | sed "s/-secmgr//" `
 fi
 
 # Set up the module arguments

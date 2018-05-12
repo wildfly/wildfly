@@ -3,6 +3,8 @@
 @if not "%ECHO%" == ""  echo %ECHO%
 @if "%OS%" == "Windows_NT" setlocal
 
+set SERVER_OPTS=%*
+
 if "%OS%" == "Windows_NT" (
   set "DIRNAME=%~dp0%"
 ) else (
@@ -18,15 +20,25 @@ if not errorlevel == 1 (
 )
 setlocal DisableDelayedExpansion
 
-rem check for secmgr property
+rem If the -Djava.security.manager is found, enable the -secmgr and include a bogus security manager for JBoss Modules to replace
 setlocal EnableDelayedExpansion
-echo(!JAVA_OPTS! | findstr /r /c:"-secmgr" > nul
-if not errorlevel == 1 (
-   set "line=%JAVA_OPTS%"
-   set JAVA_OPTS=!line:-secmgr= !
-   set SECMGR=true
+echo(%JAVA_OPTS% | findstr /r /c:"-Djava.security.manager" > nul && (
+    echo ERROR: The use of -Djava.security.manager has been removed. Please use the -secmgr command line argument or SECMGR=true environment variable.
+    GOTO :EOF
 )
 setlocal DisableDelayedExpansion
+
+rem Read command-line args, the ~ removes the quotes from the parameter
+:READ-ARGS
+if "%~1" == "" (
+   goto MAIN
+) else if "%~1" == "-secmgr" (
+   set SECMGR=true
+)
+shift
+goto READ-ARGS
+
+:MAIN
 
 pushd "%DIRNAME%.."
 set "RESOLVED_JBOSS_HOME=%CD%"
@@ -65,13 +77,11 @@ if not exist "%JBOSS_RUNJAR%" (
   goto END
 )
 
-
 rem Set the module options
 set "MODULE_OPTS="
 if "%SECMGR%" == "true" (
     set "MODULE_OPTS=-secmgr"
 )
-
 
 rem Set default module root paths
 if "x%JBOSS_MODULEPATH%" == "x" (
