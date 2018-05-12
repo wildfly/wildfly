@@ -107,14 +107,14 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.elytron.web.undertow.server.ElytronContextAssociationHandler;
 import org.wildfly.elytron.web.undertow.server.ElytronHttpExchange;
 import org.wildfly.elytron.web.undertow.server.ElytronRunAsHandler;
 import org.wildfly.elytron.web.undertow.server.ScopeSessionListener;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.extension.undertow.security.jacc.JACCAuthorizationManager;
-import org.wildfly.extension.undertow.security.sso.DistributableSecurityDomainSingleSignOnManagerBuilderProvider;
+import org.wildfly.extension.undertow.security.sso.DistributableSecurityDomainSingleSignOnManagerServiceConfiguratorProvider;
 import org.wildfly.security.auth.server.HttpAuthenticationFactory;
 import org.wildfly.security.auth.server.RealmIdentity;
 import org.wildfly.security.auth.server.RealmUnavailableException;
@@ -310,16 +310,16 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
                 ServiceName managerServiceName = new SingleSignOnManagerServiceNameProvider(securityDomainName).getServiceName();
                 SessionIdGenerator generator = new SecureRandomSessionIdGenerator();
 
-                DistributableSecurityDomainSingleSignOnManagerBuilderProvider.INSTANCE
+                DistributableSecurityDomainSingleSignOnManagerServiceConfiguratorProvider.INSTANCE
                         .map(provider -> provider.getServiceConfigurator(managerServiceName, securityDomainName, generator))
                         .orElse(new SimpleCapabilityServiceConfigurator<>(managerServiceName, new DefaultSingleSignOnManager(new ConcurrentHashMap<>(), generator::createSessionId)))
                         .configure(context).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 
-                Builder<SingleSignOnSessionFactory> factoryBuilder = new SingleSignOnSessionFactoryBuilder(securityDomainName).configure(context, ssoModel);
-                factoryBuilder.build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+                ServiceConfigurator factoryConfigurator = new SingleSignOnSessionFactoryServiceConfigurator(securityDomainName).configure(context, ssoModel);
+                factoryConfigurator.build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 
                 InjectedValue<SingleSignOnSessionFactory> singleSignOnSessionFactory = new InjectedValue<>();
-                serviceBuilder.addDependency(factoryBuilder.getServiceName(), SingleSignOnSessionFactory.class, singleSignOnSessionFactory);
+                serviceBuilder.addDependency(factoryConfigurator.getServiceName(), SingleSignOnSessionFactory.class, singleSignOnSessionFactory);
 
                 applicationSecurityDomainService.getSingleSignOnSessionFactoryInjector().inject(factory -> new SingleSignOnServerMechanismFactory(factory, singleSignOnSessionFactory.getValue(), singleSignOnConfiguration));
             }

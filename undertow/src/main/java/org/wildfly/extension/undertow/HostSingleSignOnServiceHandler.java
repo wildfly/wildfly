@@ -38,7 +38,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.extension.undertow.security.sso.DistributableHostSingleSignOnManagerBuilderProvider;
+import org.wildfly.extension.undertow.security.sso.DistributableHostSingleSignOnManagerServiceConfiguratorProvider;
 
 import io.undertow.security.impl.InMemorySingleSignOnManager;
 import io.undertow.security.impl.SingleSignOnManager;
@@ -69,7 +69,7 @@ class HostSingleSignOnServiceHandler implements ResourceServiceHandler {
         CapabilityServiceTarget target = context.getCapabilityServiceTarget();
 
         ServiceName managerServiceName = serviceName.append("manager");
-        DistributableHostSingleSignOnManagerBuilderProvider.INSTANCE.map(provider -> provider.getServiceConfigurator(managerServiceName, serverName, hostName))
+        DistributableHostSingleSignOnManagerServiceConfiguratorProvider.INSTANCE.map(provider -> provider.getServiceConfigurator(managerServiceName, serverName, hostName))
                 .orElse(new SimpleCapabilityServiceConfigurator<>(managerServiceName, new InMemorySingleSignOnManager()))
                 .configure(context).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 

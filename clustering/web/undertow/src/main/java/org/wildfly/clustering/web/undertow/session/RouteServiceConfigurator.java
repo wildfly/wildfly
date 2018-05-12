@@ -22,19 +22,21 @@
 
 package org.wildfly.clustering.web.undertow.session;
 
+import java.util.function.Consumer;
 import java.util.function.Function;
 
-import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
-import org.jboss.msc.service.Service;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.service.InjectedValueDependency;
-import org.wildfly.clustering.service.MappedValueService;
-import org.wildfly.clustering.service.ValueDependency;
+import org.wildfly.clustering.service.FunctionalService;
+import org.wildfly.clustering.service.ServiceConfigurator;
+import org.wildfly.clustering.service.ServiceSupplierDependency;
+import org.wildfly.clustering.service.SimpleServiceNameProvider;
+import org.wildfly.clustering.service.SupplierDependency;
 import org.wildfly.clustering.web.undertow.UndertowUnaryRequirement;
 import org.wildfly.extension.undertow.Server;
 
@@ -42,13 +44,14 @@ import org.wildfly.extension.undertow.Server;
  * Builds a service providing the route of a server.
  * @author Paul Ferraro
  */
-public class RouteBuilder implements CapabilityServiceBuilder<String>, Function<Server, String> {
+public class RouteServiceConfigurator extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, Function<Server, String> {
 
     private final String serverName;
 
-    private volatile ValueDependency<Server> server;
+    private volatile SupplierDependency<Server> server;
 
-    public RouteBuilder(String serverName) {
+    public RouteServiceConfigurator(String serverName) {
+        super(ServiceName.JBOSS.append("clustering", "web", "route", serverName));
         this.serverName = serverName;
     }
 
@@ -58,19 +61,16 @@ public class RouteBuilder implements CapabilityServiceBuilder<String>, Function<
     }
 
     @Override
-    public ServiceName getServiceName() {
-        return ServiceName.JBOSS.append("clustering", "web", "route", this.serverName);
-    }
-
-    @Override
-    public Builder<String> configure(CapabilityServiceSupport support) {
-        this.server = new InjectedValueDependency<>(UndertowUnaryRequirement.SERVER.getServiceName(support, this.serverName), Server.class);
+    public ServiceConfigurator configure(CapabilityServiceSupport support) {
+        this.server = new ServiceSupplierDependency<>(UndertowUnaryRequirement.SERVER.getServiceName(support, this.serverName));
         return this;
     }
 
     @Override
-    public ServiceBuilder<String> build(ServiceTarget target) {
-        Service<String> service = new MappedValueService<>(this, this.server);
-        return this.server.register(target.addService(this.getServiceName(), service)).setInitialMode(ServiceController.Mode.ON_DEMAND);
+    public ServiceBuilder<?> build(ServiceTarget target) {
+        ServiceBuilder<?> builder = target.addService(this.getServiceName());
+        Consumer<String> route = this.server.register(builder).provides(this.getServiceName());
+        Service service = new FunctionalService<>(route, this, this.server);
+        return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 }

@@ -35,9 +35,9 @@ import io.undertow.security.impl.SingleSignOnManager;
  * Builds a distrubutable {@link SingleSignOnManagerFactory} service.
  * @author Paul Ferraro
  */
-public interface DistributableHostSingleSignOnManagerBuilderProvider {
+public interface DistributableHostSingleSignOnManagerServiceConfiguratorProvider {
 
-    Optional<DistributableHostSingleSignOnManagerBuilderProvider> INSTANCE = StreamSupport.stream(ServiceLoader.load(DistributableHostSingleSignOnManagerBuilderProvider.class, DistributableHostSingleSignOnManagerBuilderProvider.class.getClassLoader()).spliterator(), false).findFirst();
+    Optional<DistributableHostSingleSignOnManagerServiceConfiguratorProvider> INSTANCE = StreamSupport.stream(ServiceLoader.load(DistributableHostSingleSignOnManagerServiceConfiguratorProvider.class, DistributableHostSingleSignOnManagerServiceConfiguratorProvider.class.getClassLoader()).spliterator(), false).findFirst();
 
     /**
      * Returns a builder of a SingleSignOnManagerFactory service for a host.

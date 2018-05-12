@@ -29,15 +29,15 @@ import org.jboss.as.clustering.controller.SimpleCapabilityServiceConfigurator;
 import org.jboss.msc.service.ServiceName;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.web.sso.SSOManagerFactoryServiceConfiguratorProvider;
-import org.wildfly.extension.undertow.security.sso.DistributableHostSingleSignOnManagerBuilderProvider;
+import org.wildfly.extension.undertow.security.sso.DistributableHostSingleSignOnManagerServiceConfiguratorProvider;
 
 import io.undertow.security.impl.InMemorySingleSignOnManager;
 
 /**
  * @author Paul Ferraro
  */
-@MetaInfServices(DistributableHostSingleSignOnManagerBuilderProvider.class)
-public class DistributableSingleSignOnManagerServiceConfiguratorProvider implements DistributableHostSingleSignOnManagerBuilderProvider {
+@MetaInfServices(DistributableHostSingleSignOnManagerServiceConfiguratorProvider.class)
+public class DistributableSingleSignOnManagerServiceConfiguratorProvider implements DistributableHostSingleSignOnManagerServiceConfiguratorProvider {
 
     private static final SSOManagerFactoryServiceConfiguratorProvider PROVIDER = loadProvider();
 
@@ -50,6 +50,6 @@ public class DistributableSingleSignOnManagerServiceConfiguratorProvider impleme
 
     @Override
     public CapabilityServiceConfigurator getServiceConfigurator(ServiceName name, String serverName, String hostName) {
-        return (PROVIDER != null) ? new DistributableSingleSignOnManagerBuilder(name, serverName, hostName, PROVIDER) : new SimpleCapabilityServiceConfigurator<>(name, new InMemorySingleSignOnManager());
+        return (PROVIDER != null) ? new DistributableSingleSignOnManagerServiceConfigurator(name, serverName, hostName, PROVIDER) : new SimpleCapabilityServiceConfigurator<>(name, new InMemorySingleSignOnManager());
     }
 }

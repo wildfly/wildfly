@@ -24,20 +24,20 @@ package org.wildfly.clustering.web.undertow.sso;
 
 import java.io.Externalizable;
 import java.io.Serializable;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
-import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
-import org.jboss.msc.service.Service;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.marshalling.jboss.DynamicClassTable;
 import org.wildfly.clustering.marshalling.jboss.ExternalizerObjectTable;
@@ -48,7 +48,9 @@ import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingConfigurationRe
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingContextFactory;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
 import org.wildfly.clustering.service.CompositeDependency;
-import org.wildfly.clustering.service.ValueDependency;
+import org.wildfly.clustering.service.FunctionalService;
+import org.wildfly.clustering.service.SimpleServiceNameProvider;
+import org.wildfly.clustering.service.SupplierDependency;
 import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.sso.SSOManager;
@@ -61,7 +63,7 @@ import io.undertow.server.session.SessionIdGenerator;
 /**
  * @author Paul Ferraro
  */
-public class SSOManagerBuilder<A, D, S, L> implements CapabilityServiceBuilder<SSOManager<A, D, S, L, Batch>>, Service<SSOManager<A, D, S, L, Batch>>, SSOManagerConfiguration<L, MarshallingContext> {
+public class SSOManagerServiceConfigurator<A, D, S, L> extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, Supplier<SSOManager<A, D, S, L, Batch>>, Consumer<SSOManager<A, D, S, L, Batch>>, SSOManagerConfiguration<L, MarshallingContext> {
 
     enum MarshallingVersion implements Function<Module, MarshallingConfiguration> {
         VERSION_1() {
@@ -89,56 +91,45 @@ public class SSOManagerBuilder<A, D, S, L> implements CapabilityServiceBuilder<S
         static final MarshallingVersion CURRENT = VERSION_2;
     }
 
-    private final ServiceName name;
-    private final ValueDependency<SSOManagerFactory<A, D, S, Batch>> factory;
-    private final ValueDependency<SessionIdGenerator> generator;
+    private final SupplierDependency<SSOManagerFactory<A, D, S, Batch>> factory;
+    private final SupplierDependency<SessionIdGenerator> generator;
     private final LocalContextFactory<L> localContextFactory;
 
-    private volatile SSOManager<A, D, S, L, Batch> manager;
     private volatile MarshallingContext context;
 
-    public SSOManagerBuilder(ServiceName name, ValueDependency<SSOManagerFactory<A, D, S, Batch>> factory, ValueDependency<SessionIdGenerator> generator, LocalContextFactory<L> localContextFactory) {
-        this.name = name;
+    public SSOManagerServiceConfigurator(ServiceName name, SupplierDependency<SSOManagerFactory<A, D, S, Batch>> factory, SupplierDependency<SessionIdGenerator> generator, LocalContextFactory<L> localContextFactory) {
+        super(name);
         this.factory = factory;
         this.generator = generator;
         this.localContextFactory = localContextFactory;
     }
 
     @Override
-    public ServiceName getServiceName() {
-        return this.name;
+    public ServiceBuilder<?> build(ServiceTarget target) {
+        ServiceBuilder<?> builder = target.addService(this.getServiceName());
+        Consumer<SSOManager<A, D, S, L, Batch>> manager = new CompositeDependency(this.factory, this.generator).register(builder).provides(this.getServiceName());
+        Service service = new FunctionalService<>(manager, Function.identity(), this, this);
+        return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 
     @Override
-    public ServiceBuilder<SSOManager<A, D, S, L, Batch>> build(ServiceTarget target) {
-        ServiceBuilder<SSOManager<A, D, S, L, Batch>> builder = target.addService(this.getServiceName(), this);
-        return new CompositeDependency(this.factory, this.generator).register(builder);
-    }
-
-    @Override
-    public void start(StartContext context) throws StartException {
-        SSOManagerFactory<A, D, S, Batch> factory = this.factory.getValue();
+    public SSOManager<A, D, S, L, Batch> get() {
+        SSOManagerFactory<A, D, S, Batch> factory = this.factory.get();
         Module module = Module.forClass(this.getClass());
         this.context = new SimpleMarshallingContextFactory().createMarshallingContext(new SimpleMarshallingConfigurationRepository(MarshallingVersion.class, MarshallingVersion.CURRENT, module), null);
-        this.manager = factory.createSSOManager(this);
-        this.manager.start();
+        SSOManager<A, D, S, L, Batch> manager = factory.createSSOManager(this);
+        manager.start();
+        return manager;
     }
 
     @Override
-    public void stop(StopContext context) {
-        this.manager.stop();
-        this.manager = null;
-        this.context = null;
-    }
-
-    @Override
-    public SSOManager<A, D, S, L, Batch> getValue() {
-        return this.manager;
+    public void accept(SSOManager<A, D, S, L, Batch> manager) {
+        manager.stop();
     }
 
     @Override
     public IdentifierFactory<String> getIdentifierFactory() {
-        return new IdentifierFactoryAdapter(this.generator.getValue());
+        return new IdentifierFactoryAdapter(this.generator.get());
     }
 
     @Override

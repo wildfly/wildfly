@@ -32,25 +32,27 @@ import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.security.KeyStore;
 import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import javax.net.ssl.SSLContext;
 
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.CredentialSourceDependency;
-import org.jboss.as.clustering.controller.ResourceServiceBuilder;
+import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.Value;
-import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.CompositeDependency;
-import org.wildfly.clustering.service.InjectedValueDependency;
+import org.wildfly.clustering.service.FunctionalService;
+import org.wildfly.clustering.service.ServiceConfigurator;
+import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SupplierDependency;
-import org.wildfly.clustering.service.ValueDependency;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.security.credential.PasswordCredential;
 import org.wildfly.security.credential.source.CredentialSource;
@@ -62,40 +64,42 @@ import org.wildfly.security.password.interfaces.ClearPassword;
 /**
  * @author Paul Ferraro
  */
-public class SingleSignOnSessionFactoryBuilder extends SingleSignOnSessionFactoryServiceNameProvider implements ResourceServiceBuilder<SingleSignOnSessionFactory>, Value<SingleSignOnSessionFactory> {
+public class SingleSignOnSessionFactoryServiceConfigurator extends SingleSignOnSessionFactoryServiceNameProvider implements ResourceServiceConfigurator, Supplier<SingleSignOnSessionFactory> {
 
-    private final ValueDependency<SingleSignOnManager> manager;
+    private final SupplierDependency<SingleSignOnManager> manager;
 
-    private volatile ValueDependency<KeyStore> keyStore;
-    private volatile ValueDependency<SSLContext> sslContext;
+    private volatile SupplierDependency<KeyStore> keyStore;
+    private volatile SupplierDependency<SSLContext> sslContext;
     private volatile SupplierDependency<CredentialSource> credentialSource;
     private volatile String keyAlias;
 
-    public SingleSignOnSessionFactoryBuilder(String securityDomainName) {
+    public SingleSignOnSessionFactoryServiceConfigurator(String securityDomainName) {
         super(securityDomainName);
-        this.manager = new InjectedValueDependency<>(new SingleSignOnManagerServiceNameProvider(securityDomainName), SingleSignOnManager.class);
+        this.manager = new ServiceSupplierDependency<>(new SingleSignOnManagerServiceNameProvider(securityDomainName));
     }
 
     @Override
-    public Builder<SingleSignOnSessionFactory> configure(OperationContext context, ModelNode model) throws OperationFailedException {
+    public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
         String keyStore = KEY_STORE.resolveModelAttribute(context, model).asString();
-        this.keyStore = new InjectedValueDependency<>(CommonUnaryRequirement.KEY_STORE.getServiceName(context, keyStore), KeyStore.class);
+        this.keyStore = new ServiceSupplierDependency<>(CommonUnaryRequirement.KEY_STORE.getServiceName(context, keyStore));
         this.keyAlias = KEY_ALIAS.resolveModelAttribute(context, model).asString();
         this.credentialSource = new CredentialSourceDependency(context, CREDENTIAL, model);
         Optional<String> sslContext = ModelNodes.optionalString(SSL_CONTEXT.resolveModelAttribute(context, model));
-        this.sslContext = sslContext.map(value -> new InjectedValueDependency<>(CommonUnaryRequirement.SSL_CONTEXT.getServiceName(context, value), SSLContext.class)).orElse(null);
+        this.sslContext = sslContext.map(value -> new ServiceSupplierDependency<SSLContext>(CommonUnaryRequirement.SSL_CONTEXT.getServiceName(context, value))).orElse(null);
         return this;
     }
 
     @Override
-    public ServiceBuilder<SingleSignOnSessionFactory> build(ServiceTarget target) {
-        ServiceBuilder<SingleSignOnSessionFactory> builder = target.addService(this.getServiceName(), new ValueService<>(this));
-        return new CompositeDependency(this.manager, this.keyStore, this.credentialSource, this.sslContext).register(builder);
+    public ServiceBuilder<?> build(ServiceTarget target) {
+        ServiceBuilder<?> builder = target.addService(this.getServiceName());
+        Consumer<SingleSignOnSessionFactory> factory = new CompositeDependency(this.manager, this.keyStore, this.credentialSource, this.sslContext).register(builder).provides(this.getServiceName());
+        Service service = new FunctionalService<>(factory, Function.identity(), this);
+        return builder.setInstance(service);
     }
 
     @Override
-    public SingleSignOnSessionFactory getValue() {
-        KeyStore store = this.keyStore.getValue();
+    public SingleSignOnSessionFactory get() {
+        KeyStore store = this.keyStore.get();
         String alias = this.keyAlias;
         CredentialSource source = this.credentialSource.get();
         try {
@@ -115,8 +119,8 @@ public class SingleSignOnSessionFactoryBuilder extends SingleSignOnSessionFactor
             }
             KeyStore.PrivateKeyEntry entry = (KeyStore.PrivateKeyEntry) store.getEntry(alias, new KeyStore.PasswordProtection(password.getPassword()));
             KeyPair keyPair = new KeyPair(entry.getCertificate().getPublicKey(), entry.getPrivateKey());
-            Optional<SSLContext> context = Optional.ofNullable(this.sslContext).map(dependency -> dependency.getValue());
-            return new DefaultSingleSignOnSessionFactory(this.manager.getValue(), keyPair, connection -> context.ifPresent(ctx -> connection.setSSLSocketFactory(ctx.getSocketFactory())));
+            Optional<SSLContext> context = Optional.ofNullable(this.sslContext).map(dependency -> dependency.get());
+            return new DefaultSingleSignOnSessionFactory(this.manager.get(), keyPair, connection -> context.ifPresent(ctx -> connection.setSSLSocketFactory(ctx.getSocketFactory())));
         } catch (GeneralSecurityException | IOException e) {
             throw new IllegalArgumentException(e);
         }

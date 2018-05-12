@@ -22,14 +22,17 @@
 
 package org.wildfly.clustering.web.undertow.sso;
 
-import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import java.util.function.Consumer;
+
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.Value;
 import org.wildfly.clustering.ee.Batch;
-import org.wildfly.clustering.service.ValueDependency;
+import org.wildfly.clustering.service.SimpleServiceNameProvider;
+import org.wildfly.clustering.service.SupplierDependency;
 import org.wildfly.clustering.web.sso.SSOManager;
 import org.wildfly.clustering.web.sso.Sessions;
 
@@ -41,34 +44,26 @@ import io.undertow.server.session.SessionListener;
 /**
  * @author Paul Ferraro
  */
-public class SessionListenerBuilder implements CapabilityServiceBuilder<SessionListener>, Value<SessionListener>, SessionListener {
+public class SessionListenerServiceConfigurator extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, SessionListener {
 
-    private final ServiceName name;
-    private final ValueDependency<SSOManager<AuthenticatedSession, String, String, Void, Batch>> manager;
+    private final SupplierDependency<SSOManager<AuthenticatedSession, String, String, Void, Batch>> manager;
 
-    public SessionListenerBuilder(ServiceName name, ValueDependency<SSOManager<AuthenticatedSession, String, String, Void, Batch>> manager) {
-        this.name = name;
+    public SessionListenerServiceConfigurator(ServiceName name, SupplierDependency<SSOManager<AuthenticatedSession, String, String, Void, Batch>> manager) {
+        super(name);
         this.manager = manager;
     }
 
     @Override
-    public ServiceName getServiceName() {
-        return this.name;
-    }
-
-    @Override
-    public SessionListener getValue() {
-        return this;
-    }
-
-    @Override
-    public ServiceBuilder<SessionListener> build(ServiceTarget target) {
-        return this.manager.register(target.addService(this.getServiceName(), new ValueService<>(this)));
+    public ServiceBuilder<?> build(ServiceTarget target) {
+        ServiceBuilder<?> builder = target.addService(this.getServiceName());
+        Consumer<SessionListener> listener = this.manager.register(builder).provides(this.getServiceName());
+        Service service = Service.newInstance(listener, this);
+        return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 
     @Override
     public void sessionIdChanged(Session session, String oldSessionId) {
-        SSOManager<AuthenticatedSession, String, String, Void, Batch> manager = this.manager.getValue();
+        SSOManager<AuthenticatedSession, String, String, Void, Batch> manager = this.manager.get();
         try (Batch batch = manager.getBatcher().createBatch()) {
             Sessions<String, String> sessions = manager.findSessionsContaining(oldSessionId);
             if (sessions != null) {

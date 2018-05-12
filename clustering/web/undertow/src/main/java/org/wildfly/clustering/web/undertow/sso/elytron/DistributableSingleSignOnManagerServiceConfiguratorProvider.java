@@ -30,7 +30,7 @@ import org.jboss.as.clustering.controller.SimpleCapabilityServiceConfigurator;
 import org.jboss.msc.service.ServiceName;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.web.sso.SSOManagerFactoryServiceConfiguratorProvider;
-import org.wildfly.extension.undertow.security.sso.DistributableSecurityDomainSingleSignOnManagerBuilderProvider;
+import org.wildfly.extension.undertow.security.sso.DistributableSecurityDomainSingleSignOnManagerServiceConfiguratorProvider;
 import org.wildfly.security.http.util.sso.DefaultSingleSignOnManager;
 
 import io.undertow.server.session.SessionIdGenerator;
@@ -38,8 +38,8 @@ import io.undertow.server.session.SessionIdGenerator;
 /**
  * @author Paul Ferraro
  */
-@MetaInfServices(DistributableSecurityDomainSingleSignOnManagerBuilderProvider.class)
-public class DistributableSingleSignOnManagerServiceConfiguratorProvider implements DistributableSecurityDomainSingleSignOnManagerBuilderProvider {
+@MetaInfServices(DistributableSecurityDomainSingleSignOnManagerServiceConfiguratorProvider.class)
+public class DistributableSingleSignOnManagerServiceConfiguratorProvider implements DistributableSecurityDomainSingleSignOnManagerServiceConfiguratorProvider {
 
     private static final SSOManagerFactoryServiceConfiguratorProvider PROVIDER = loadProvider();
 
@@ -52,6 +52,6 @@ public class DistributableSingleSignOnManagerServiceConfiguratorProvider impleme
 
     @Override
     public CapabilityServiceConfigurator getServiceConfigurator(ServiceName name, String securityDomainName, SessionIdGenerator generator) {
-        return (PROVIDER != null) ? new DistributableSingleSignOnManagerBuilder(name, securityDomainName, generator, PROVIDER) : new SimpleCapabilityServiceConfigurator<>(name, new DefaultSingleSignOnManager(new ConcurrentHashMap<>(), generator::createSessionId));
+        return (PROVIDER != null) ? new DistributableSingleSignOnManagerServiceConfigurator(name, securityDomainName, generator, PROVIDER) : new SimpleCapabilityServiceConfigurator<>(name, new DefaultSingleSignOnManager(new ConcurrentHashMap<>(), generator::createSessionId));
    }
 }

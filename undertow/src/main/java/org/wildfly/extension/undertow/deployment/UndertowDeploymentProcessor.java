@@ -117,7 +117,7 @@ import org.wildfly.extension.undertow.session.DistributableSessionManagerConfigu
 import org.wildfly.extension.undertow.session.DistributableSessionManagerFactoryServiceConfiguratorProvider;
 import org.wildfly.extension.undertow.session.SharedSessionManagerConfig;
 import org.wildfly.extension.undertow.session.SimpleDistributableSessionManagerConfiguration;
-import org.wildfly.extension.undertow.session.SimpleSessionIdentifierCodecBuilder;
+import org.wildfly.extension.undertow.session.SimpleSessionIdentifierCodecServiceConfigurator;
 
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.SessionManagerFactory;
@@ -401,7 +401,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
             infoBuilder.addDependency(codecConfigurator.getServiceName(), SessionIdentifierCodec.class, undertowDeploymentInfoService.getSessionIdentifierCodecInjector());
 
             for (CapabilityServiceConfigurator configurator : Arrays.asList(factoryConfigurator, codecConfigurator)) {
-                configurator.configure(support).build(serviceTarget).setInitialMode(Mode.ON_DEMAND).install();
+                configurator.configure(support).build(serviceTarget).install();
             }
         }
 
@@ -477,7 +477,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
             }
             // Fallback to simple codec if server does not support clustering
         }
-        return new SimpleSessionIdentifierCodecBuilder(name, serverName);
+        return new SimpleSessionIdentifierCodecServiceConfigurator(name, serverName);
     }
 
     static String pathNameOfDeployment(final DeploymentUnit deploymentUnit, final JBossWebMetaData metaData) {

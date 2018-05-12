@@ -22,21 +22,25 @@
 
 package org.wildfly.extension.undertow.session;
 
-import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import java.util.function.Consumer;
+import java.util.function.Function;
+
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.web.session.RoutingSupport;
 import org.jboss.as.web.session.SessionIdentifierCodec;
 import org.jboss.as.web.session.SimpleRoutingSupport;
 import org.jboss.as.web.session.SimpleSessionIdentifierCodec;
-import org.jboss.msc.service.Service;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.service.InjectedValueDependency;
-import org.wildfly.clustering.service.MappedValueService;
-import org.wildfly.clustering.service.ValueDependency;
+import org.wildfly.clustering.service.FunctionalService;
+import org.wildfly.clustering.service.ServiceConfigurator;
+import org.wildfly.clustering.service.ServiceSupplierDependency;
+import org.wildfly.clustering.service.SimpleServiceNameProvider;
+import org.wildfly.clustering.service.SupplierDependency;
 import org.wildfly.extension.undertow.Capabilities;
 import org.wildfly.extension.undertow.Server;
 
@@ -44,33 +48,34 @@ import org.wildfly.extension.undertow.Server;
  * Service providing a non-distributable {@link SessionIdentifierCodec} implementation.
  * @author Paul Ferraro
  */
-public class SimpleSessionIdentifierCodecBuilder implements CapabilityServiceBuilder<SessionIdentifierCodec> {
+public class SimpleSessionIdentifierCodecServiceConfigurator extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, Function<Server, SessionIdentifierCodec> {
 
-    private final ServiceName name;
     private final String serverName;
     private final RoutingSupport routing = new SimpleRoutingSupport();
 
-    private volatile ValueDependency<Server> server;
+    private volatile SupplierDependency<Server> server;
 
-    public SimpleSessionIdentifierCodecBuilder(ServiceName name, String serverName) {
-        this.name = name;
+    public SimpleSessionIdentifierCodecServiceConfigurator(ServiceName name, String serverName) {
+        super(name);
         this.serverName = serverName;
     }
 
     @Override
-    public ServiceName getServiceName() {
-        return this.name;
+    public SessionIdentifierCodec apply(Server server) {
+        return new SimpleSessionIdentifierCodec(this.routing, server.getRoute());
     }
 
     @Override
-    public Builder<SessionIdentifierCodec> configure(CapabilityServiceSupport support) {
-        this.server = new InjectedValueDependency<>(support.getCapabilityServiceName(Capabilities.CAPABILITY_SERVER, this.serverName), Server.class);
+    public ServiceConfigurator configure(CapabilityServiceSupport support) {
+        this.server = new ServiceSupplierDependency<>(support.getCapabilityServiceName(Capabilities.CAPABILITY_SERVER, this.serverName));
         return this;
     }
 
     @Override
-    public ServiceBuilder<SessionIdentifierCodec> build(ServiceTarget target) {
-        Service<SessionIdentifierCodec> service = new MappedValueService<>(server -> new SimpleSessionIdentifierCodec(this.routing, server.getRoute()), this.server);
-        return this.server.register(target.addService(this.name, service)).setInitialMode(ServiceController.Mode.ON_DEMAND);
+    public ServiceBuilder<?> build(ServiceTarget target) {
+        ServiceBuilder<?> builder = target.addService(this.getServiceName());
+        Consumer<SessionIdentifierCodec> codec = this.server.register(builder).provides(this.getServiceName());
+        Service service = new FunctionalService<>(codec, this, this.server);
+        return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 }

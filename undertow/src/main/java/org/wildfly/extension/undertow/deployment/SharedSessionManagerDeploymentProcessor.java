@@ -36,14 +36,13 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.web.common.WarMetaData;
 import org.jboss.modules.Module;
-import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.extension.undertow.session.DistributableSessionIdentifierCodecServiceConfiguratorProvider;
 import org.wildfly.extension.undertow.session.DistributableSessionManagerFactoryServiceConfiguratorProvider;
 import org.wildfly.extension.undertow.session.SharedSessionManagerConfig;
 import org.wildfly.extension.undertow.session.SimpleDistributableSessionManagerConfiguration;
-import org.wildfly.extension.undertow.session.SimpleSessionIdentifierCodecBuilder;
+import org.wildfly.extension.undertow.session.SimpleSessionIdentifierCodecServiceConfigurator;
 
 import io.undertow.server.session.InMemorySessionManager;
 
@@ -89,10 +88,10 @@ public class SharedSessionManagerDeploymentProcessor implements DeploymentUnitPr
         ServiceName codecServiceName = deploymentServiceName.append(SharedSessionManagerConfig.SHARED_SESSION_IDENTIFIER_CODEC_SERVICE_NAME);
         CapabilityServiceConfigurator codecConfigurator = DistributableSessionIdentifierCodecServiceConfiguratorProvider.INSTANCE
                 .map(provider -> provider.getDeploymentServiceConfigurator(codecServiceName, serverName, deploymentUnit.getName()))
-                .orElse(new SimpleSessionIdentifierCodecBuilder(codecServiceName, serverName));
+                .orElse(new SimpleSessionIdentifierCodecServiceConfigurator(codecServiceName, serverName));
 
         for (CapabilityServiceConfigurator configurator : Arrays.asList(factoryConfigurator, codecConfigurator)) {
-            configurator.configure(support).build(target).setInitialMode(Mode.ON_DEMAND).install();
+            configurator.configure(support).build(target).install();
         }
     }
 

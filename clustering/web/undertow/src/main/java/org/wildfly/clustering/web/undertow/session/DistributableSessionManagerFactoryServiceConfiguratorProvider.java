@@ -55,6 +55,6 @@ public class DistributableSessionManagerFactoryServiceConfiguratorProvider imple
             UndertowLogger.ROOT_LOGGER.clusteringNotSupported();
             return new SimpleCapabilityServiceConfigurator<>(name, new InMemorySessionManagerFactory(configuration.getMaxActiveSessions()));
         }
-        return new DistributableSessionManagerFactoryBuilder(name, configuration, PROVIDER);
+        return new DistributableSessionManagerFactoryServiceConfigurator(name, configuration, PROVIDER);
     }
 }

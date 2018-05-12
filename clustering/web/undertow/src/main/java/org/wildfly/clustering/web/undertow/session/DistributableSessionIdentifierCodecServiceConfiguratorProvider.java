@@ -32,7 +32,7 @@ import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SupplierDependency;
 import org.wildfly.clustering.web.session.RouteLocatorServiceConfiguratorProvider;
-import org.wildfly.extension.undertow.session.SimpleSessionIdentifierCodecBuilder;
+import org.wildfly.extension.undertow.session.SimpleSessionIdentifierCodecServiceConfigurator;
 
 /**
  * @author Paul Ferraro
@@ -51,18 +51,18 @@ public class DistributableSessionIdentifierCodecServiceConfiguratorProvider impl
 
     @Override
     public CapabilityServiceConfigurator getDeploymentServiceConfigurator(ServiceName name, String serverName, String deploymentName) {
-        return (PROVIDER != null) ? new DistributableSessionIdentifierCodecBuilder(name, serverName, deploymentName, PROVIDER) : new SimpleSessionIdentifierCodecBuilder(name, serverName);
+        return (PROVIDER != null) ? new DistributableSessionIdentifierCodecServiceConfigurator(name, serverName, deploymentName, PROVIDER) : new SimpleSessionIdentifierCodecServiceConfigurator(name, serverName);
     }
 
     @Override
     public Collection<CapabilityServiceConfigurator> getServerServiceConfigurators(String serverName) {
-        Collection<CapabilityServiceConfigurator> builders = new LinkedList<>();
-        CapabilityServiceConfigurator routeBuilder = new RouteBuilder(serverName);
-        builders.add(routeBuilder);
-        SupplierDependency<String> routeDependency = new ServiceSupplierDependency<>(routeBuilder.getServiceName());
+        Collection<CapabilityServiceConfigurator> configurators = new LinkedList<>();
+        CapabilityServiceConfigurator routeConfigurator = new RouteServiceConfigurator(serverName);
+        configurators.add(routeConfigurator);
+        SupplierDependency<String> routeDependency = new ServiceSupplierDependency<>(routeConfigurator.getServiceName());
         if (PROVIDER != null) {
-            builders.addAll(PROVIDER.getRouteLocatorConfigurationServiceConfigurators(serverName, routeDependency));
+            configurators.addAll(PROVIDER.getRouteLocatorConfigurationServiceConfigurators(serverName, routeDependency));
         }
-        return builders;
+        return configurators;
     }
 }

@@ -22,18 +22,21 @@
 
 package org.wildfly.clustering.web.undertow.sso;
 
+import java.util.function.Consumer;
 import java.util.function.Function;
 
-import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
-import org.jboss.msc.service.Service;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.service.InjectedValueDependency;
-import org.wildfly.clustering.service.MappedValueService;
-import org.wildfly.clustering.service.ValueDependency;
+import org.wildfly.clustering.service.FunctionalService;
+import org.wildfly.clustering.service.ServiceConfigurator;
+import org.wildfly.clustering.service.ServiceSupplierDependency;
+import org.wildfly.clustering.service.SimpleServiceNameProvider;
+import org.wildfly.clustering.service.SupplierDependency;
 import org.wildfly.clustering.web.undertow.UndertowUnaryRequirement;
 import org.wildfly.extension.undertow.Server;
 
@@ -43,15 +46,14 @@ import io.undertow.server.session.SessionIdGenerator;
 /**
  * @author Paul Ferraro
  */
-public class SessionIdGeneratorBuilder implements CapabilityServiceBuilder<SessionIdGenerator>, Function<Server, SessionIdGenerator> {
+public class SessionIdGeneratorServiceConfigurator extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, Function<Server, SessionIdGenerator> {
 
-    private final ServiceName name;
     private final String serverName;
 
-    private volatile ValueDependency<Server> server;
+    private volatile SupplierDependency<Server> server;
 
-    public SessionIdGeneratorBuilder(ServiceName name, String serverName) {
-        this.name = name;
+    public SessionIdGeneratorServiceConfigurator(ServiceName name, String serverName) {
+        super(name);
         this.serverName = serverName;
     }
 
@@ -63,19 +65,16 @@ public class SessionIdGeneratorBuilder implements CapabilityServiceBuilder<Sessi
     }
 
     @Override
-    public ServiceName getServiceName() {
-        return this.name;
-    }
-
-    @Override
-    public Builder<SessionIdGenerator> configure(CapabilityServiceSupport support) {
-        this.server = new InjectedValueDependency<>(UndertowUnaryRequirement.SERVER.getServiceName(support, this.serverName), Server.class);
+    public ServiceConfigurator configure(CapabilityServiceSupport support) {
+        this.server = new ServiceSupplierDependency<>(UndertowUnaryRequirement.SERVER.getServiceName(support, this.serverName));
         return this;
     }
 
     @Override
-    public ServiceBuilder<SessionIdGenerator> build(ServiceTarget target) {
-        Service<SessionIdGenerator> service = new MappedValueService<>(this, this.server);
-        return this.server.register(target.addService(this.getServiceName(), service));
+    public ServiceBuilder<?> build(ServiceTarget target) {
+        ServiceBuilder<?> builder = target.addService(this.getServiceName());
+        Consumer<SessionIdGenerator> generator = this.server.register(builder).provides(this.getServiceName());
+        Service service = new FunctionalService<>(generator, this, this.server);
+        return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 }

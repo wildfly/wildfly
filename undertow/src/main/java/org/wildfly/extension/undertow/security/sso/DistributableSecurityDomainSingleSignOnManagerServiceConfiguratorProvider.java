@@ -35,9 +35,9 @@ import io.undertow.server.session.SessionIdGenerator;
 /**
  * @author Paul Ferraro
  */
-public interface DistributableSecurityDomainSingleSignOnManagerBuilderProvider {
+public interface DistributableSecurityDomainSingleSignOnManagerServiceConfiguratorProvider {
 
-    Optional<DistributableSecurityDomainSingleSignOnManagerBuilderProvider> INSTANCE = StreamSupport.stream(ServiceLoader.load(DistributableSecurityDomainSingleSignOnManagerBuilderProvider.class, DistributableSecurityDomainSingleSignOnManagerBuilderProvider.class.getClassLoader()).spliterator(), false).findFirst();
+    Optional<DistributableSecurityDomainSingleSignOnManagerServiceConfiguratorProvider> INSTANCE = StreamSupport.stream(ServiceLoader.load(DistributableSecurityDomainSingleSignOnManagerServiceConfiguratorProvider.class, DistributableSecurityDomainSingleSignOnManagerServiceConfiguratorProvider.class.getClassLoader()).spliterator(), false).findFirst();
 
     /**
      * Returns a builder of a SingleSignOnManagerFactory service for a security domain.
