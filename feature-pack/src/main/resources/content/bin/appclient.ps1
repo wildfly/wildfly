@@ -8,6 +8,8 @@ $scripts = (Get-ChildItem $MyInvocation.MyCommand.Path).Directory.FullName;
 . $scripts'\common.ps1'
 $SERVER_OPTS = Process-Script-Parameters -Params $ARGS
 
+Process-Java-Opts-Parameters -Params $JAVA_OPTS
+
 # Read an optional running configuration file
 $APPCLIENT_CONF_FILE = $scripts + '.\appclient.conf.ps1'
 $APPCLIENT_CONF_FILE = Get-Env RUN_CONF $APPCLIENT_CONF_FILE

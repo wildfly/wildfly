@@ -6,6 +6,8 @@
 $scripts = (Get-ChildItem $MyInvocation.MyCommand.Path).Directory.FullName;
 . $scripts'\common.ps1'
 
+Process-Java-Opts-Parameters -Params $JAVA_OPTS
+
 $JAVA_OPTS = @()
 
 # Sample JPDA settings for remote socket debugging
