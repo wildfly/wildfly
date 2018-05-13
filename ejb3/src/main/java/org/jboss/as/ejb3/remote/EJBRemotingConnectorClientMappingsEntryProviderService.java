@@ -28,40 +28,42 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
-import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.network.ClientMapping;
 import org.jboss.as.remoting.RemotingConnectorBindingInfoService;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.InjectedValue;
-import org.jboss.msc.value.Value;
 import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
 import org.wildfly.clustering.group.Group;
-import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.service.InjectedValueDependency;
-import org.wildfly.clustering.service.ValueDependency;
+import org.wildfly.clustering.service.CompositeDependency;
+import org.wildfly.clustering.service.FunctionalService;
+import org.wildfly.clustering.service.ServiceConfigurator;
+import org.wildfly.clustering.service.ServiceSupplierDependency;
+import org.wildfly.clustering.service.SupplierDependency;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 import org.wildfly.clustering.spi.ClusteringRequirement;
 
 /**
  * @author Jaikiran Pai
  */
-public class EJBRemotingConnectorClientMappingsEntryProviderService implements CapabilityServiceBuilder<Map.Entry<String, List<ClientMapping>>>, Value<Map.Entry<String, List<ClientMapping>>> {
+public class EJBRemotingConnectorClientMappingsEntryProviderService implements CapabilityServiceConfigurator, Supplier<Map.Entry<String, List<ClientMapping>>> {
 
-    private final InjectedValue<RemotingConnectorBindingInfoService.RemotingConnectorInfo> remotingConnectorInfo = new InjectedValue<>();
-    private final ServiceName remotingServerInfoServiceName;
+    private final SupplierDependency<RemotingConnectorBindingInfoService.RemotingConnectorInfo> remotingConnectorInfo;
 
-    private volatile ValueDependency<Group> group;
+    private volatile SupplierDependency<Group> group;
     private volatile String clientMappingsClusterName;
     private volatile ServiceName name;
 
-    public EJBRemotingConnectorClientMappingsEntryProviderService(String clientMappingsClusterName, ServiceName remotingServerInfoServiceName) {
+    public EJBRemotingConnectorClientMappingsEntryProviderService(String clientMappingsClusterName, ServiceName remotingConnectorInfoServiceName) {
         this.clientMappingsClusterName = clientMappingsClusterName;
-        this.remotingServerInfoServiceName = remotingServerInfoServiceName;
+        this.remotingConnectorInfo = new ServiceSupplierDependency<>(remotingConnectorInfoServiceName);
     }
 
     @Override
@@ -70,28 +72,28 @@ public class EJBRemotingConnectorClientMappingsEntryProviderService implements C
     }
 
     @Override
-    public Builder<Map.Entry<String, List<ClientMapping>>> configure(OperationContext context) {
+    public ServiceConfigurator configure(OperationContext context) {
         this.name = ClusteringCacheRequirement.REGISTRY_ENTRY.getServiceName(context, this.clientMappingsClusterName, BeanManagerFactoryServiceConfiguratorConfiguration.CLIENT_MAPPINGS_CACHE_NAME);
-        this.group = new InjectedValueDependency<>(ClusteringRequirement.GROUP.getServiceName(context, this.clientMappingsClusterName), Group.class);
+        this.group = new ServiceSupplierDependency<>(ClusteringRequirement.GROUP.getServiceName(context, this.clientMappingsClusterName));
         return this;
     }
 
     @Override
-    public ServiceBuilder<Map.Entry<String, List<ClientMapping>>> build(ServiceTarget target) {
-        ServiceBuilder<Map.Entry<String, List<ClientMapping>>> builder = target.addService(this.name, new ValueService<>(this))
-                .addDependency(this.remotingServerInfoServiceName, RemotingConnectorBindingInfoService.RemotingConnectorInfo.class, this.remotingConnectorInfo)
-                ;
-        return this.group.register(builder);
+    public ServiceBuilder<?> build(ServiceTarget target) {
+        ServiceBuilder<?> builder = target.addService(this.name);
+        Consumer<Map.Entry<String, List<ClientMapping>>> entry = new CompositeDependency(this.group, this.remotingConnectorInfo).register(builder).provides(this.name);
+        Service service = new FunctionalService<>(entry, Function.identity(), this);
+        return builder.setInstance(service);
     }
 
     @Override
-    public Map.Entry<String, List<ClientMapping>> getValue() {
-        return new AbstractMap.SimpleImmutableEntry<>(this.group.getValue().getLocalMember().getName(), this.getClientMappings());
+    public Map.Entry<String, List<ClientMapping>> get() {
+        return new AbstractMap.SimpleImmutableEntry<>(this.group.get().getLocalMember().getName(), this.getClientMappings());
     }
 
     List<ClientMapping> getClientMappings() {
         final List<ClientMapping> ret = new ArrayList<>();
-        RemotingConnectorBindingInfoService.RemotingConnectorInfo info = this.remotingConnectorInfo.getValue();
+        RemotingConnectorBindingInfoService.RemotingConnectorInfo info = this.remotingConnectorInfo.get();
         if (info.getSocketBinding().getClientMappings() != null && !info.getSocketBinding().getClientMappings().isEmpty()) {
             ret.addAll(info.getSocketBinding().getClientMappings());
         } else {

@@ -38,7 +38,7 @@ import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.remote.AssociationService;
 import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
 import org.jboss.as.ejb3.remote.EJBRemotingConnectorClientMappingsEntryProviderService;
-import org.jboss.as.ejb3.remote.ClientMappingsRegistryBuilder;
+import org.jboss.as.ejb3.remote.ClientMappingsRegistryServiceConfigurator;
 import org.jboss.as.remoting.RemotingConnectorBindingInfoService;
 import org.jboss.as.remoting.RemotingServices;
 import org.jboss.as.txn.service.TxnServices;
@@ -89,7 +89,7 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install();
 
-        new ClientMappingsRegistryBuilder(clientMappingsClusterName).configure(context).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        new ClientMappingsRegistryServiceConfigurator(clientMappingsClusterName).configure(context).build(target).install();
 
         // Handle case where no infinispan subsystem exists or does not define an ejb cache-container
         PathElement infinispanPath = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "infinispan");
