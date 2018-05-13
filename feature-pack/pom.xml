@@ -3120,44 +3120,19 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-resources-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>copy-licenses-xml</id>
-                                <phase>prepare-package</phase>
-                                <goals>
-                                    <goal>copy-resources</goal>
-                                </goals>
-                                <configuration>
-                                    <outputDirectory>${license.directory}</outputDirectory>
-                                    <resources>
-                                        <resource>
-                                            <directory>${project.basedir}/src/license</directory>
-                                            <includes>
-                                                <include>*licenses.xml</include>
-                                            </includes>
-                                            <filtering>false</filtering>
-                                        </resource>
-                                    </resources>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
                         <groupId>org.wildfly.maven.plugins</groupId>
                         <artifactId>licenses-plugin</artifactId>
                         <inherited>false</inherited>
                         <executions>
                             <execution>
-                                <id>update-licenses-xml</id>
+                                <id>generate-licenses-xml</id>
                                 <goals>
                                     <goal>insert-versions</goal>
                                 </goals>
-                                <phase>prepare-package</phase>
+                                <phase>prepare-package</phase><!-- TODO why not generate-resources phase?-->
                                 <configuration>
                                     <sortByGroupIdAndArtifactId>true</sortByGroupIdAndArtifactId>
-                                    <licensesOutputDirectory>${license.directory}</licensesOutputDirectory>
+                                    <licensesConfigFile>${project.basedir}/src/license/full-feature-pack-licenses.xml</licensesConfigFile>
                                     <licensesOutputFile>${license.directory}/full-feature-pack-licenses.xml</licensesOutputFile>
                                 </configuration>
                             </execution>
