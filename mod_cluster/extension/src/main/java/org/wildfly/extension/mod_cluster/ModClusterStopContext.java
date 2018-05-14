@@ -22,6 +22,11 @@
 
 package org.wildfly.extension.mod_cluster;
 
+import static org.wildfly.extension.mod_cluster.ModClusterLogger.ROOT_LOGGER;
+import static org.wildfly.extension.mod_cluster.ModClusterSubsystemResourceDefinition.CONTEXT;
+import static org.wildfly.extension.mod_cluster.ModClusterSubsystemResourceDefinition.VIRTUAL_HOST;
+import static org.wildfly.extension.mod_cluster.ModClusterSubsystemResourceDefinition.WAIT_TIME;
+
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.OperationContext;
@@ -32,12 +37,7 @@ import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modcluster.ModClusterServiceMBean;
-import org.jboss.msc.service.ServiceController;
-
-import static org.wildfly.extension.mod_cluster.ModClusterLogger.ROOT_LOGGER;
-import static org.wildfly.extension.mod_cluster.ModClusterSubsystemResourceDefinition.CONTEXT;
-import static org.wildfly.extension.mod_cluster.ModClusterSubsystemResourceDefinition.VIRTUAL_HOST;
-import static org.wildfly.extension.mod_cluster.ModClusterSubsystemResourceDefinition.WAIT_TIME;
+import org.wildfly.clustering.service.ActiveServiceSupplier;
 
 /**
  * {@link OperationStepHandler} that handles stopping of the web context.
@@ -60,12 +60,11 @@ public class ModClusterStopContext implements OperationStepHandler {
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        if (context.isNormalServer() && context.getServiceRegistry(false).getService(ContainerEventHandlerService.SERVICE_NAME) != null) {
+        if (context.isNormalServer() && context.getServiceRegistry(false).getService(ContainerEventHandlerServiceConfigurator.SERVICE_NAME) != null) {
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    ServiceController<?> controller = context.getServiceRegistry(false).getService(ContainerEventHandlerService.SERVICE_NAME);
-                    final ModClusterServiceMBean service = (ModClusterServiceMBean) controller.getValue();
+                    ModClusterServiceMBean service = new ActiveServiceSupplier<ModClusterServiceMBean>(context.getServiceRegistry(true), ContainerEventHandlerServiceConfigurator.SERVICE_NAME).get();
                     ROOT_LOGGER.debugf("stop-context: %s", operation);
 
                     final String webHost = VIRTUAL_HOST.resolveModelAttribute(context, operation).asString();

@@ -23,38 +23,39 @@
 package org.wildfly.mod_cluster.undertow;
 
 import java.time.Duration;
-import java.util.Arrays;
+import java.util.function.Supplier;
 
-import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.modcluster.container.ContainerEventHandler;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.InjectedValue;
-import org.wildfly.clustering.service.AsynchronousServiceBuilder;
-import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.service.InjectedValueDependency;
-import org.wildfly.clustering.service.ValueDependency;
-import org.wildfly.extension.mod_cluster.ContainerEventHandlerService;
+import org.wildfly.clustering.service.AsyncServiceConfigurator;
+import org.wildfly.clustering.service.CompositeDependency;
+import org.wildfly.clustering.service.ServiceConfigurator;
+import org.wildfly.clustering.service.ServiceSupplierDependency;
+import org.wildfly.clustering.service.SupplierDependency;
+import org.wildfly.extension.mod_cluster.ContainerEventHandlerServiceConfigurator;
 import org.wildfly.extension.undertow.Capabilities;
 import org.wildfly.extension.undertow.UndertowListener;
 import org.wildfly.extension.undertow.UndertowService;
 
-public class UndertowEventHandlerAdapterBuilder implements CapabilityServiceBuilder<Void>, UndertowEventHandlerAdapterConfiguration {
-    static final ServiceName SERVICE_NAME = ContainerEventHandlerService.SERVICE_NAME.append("undertow");
+public class UndertowEventHandlerAdapterServiceConfigurator implements CapabilityServiceConfigurator, UndertowEventHandlerAdapterConfiguration {
+    static final ServiceName SERVICE_NAME = ContainerEventHandlerServiceConfigurator.SERVICE_NAME.append("undertow");
 
     private final String listenerName;
     private final Duration statusInterval;
 
-    private final InjectedValue<ContainerEventHandler> eventHandler = new InjectedValue<>();
-    private final InjectedValue<SuspendController> suspendController = new InjectedValue<>();
+    private volatile Supplier<ContainerEventHandler> eventHandler;
+    private volatile Supplier<SuspendController> suspendController;
 
-    private volatile ValueDependency<UndertowService> service;
-    private volatile ValueDependency<UndertowListener> listener;
+    private volatile SupplierDependency<UndertowService> service;
+    private volatile SupplierDependency<UndertowListener> listener;
 
-    public UndertowEventHandlerAdapterBuilder(String listenerName, Duration statusInterval) {
+    public UndertowEventHandlerAdapterServiceConfigurator(String listenerName, Duration statusInterval) {
         this.listenerName = listenerName;
         this.statusInterval = statusInterval;
     }
@@ -65,22 +66,20 @@ public class UndertowEventHandlerAdapterBuilder implements CapabilityServiceBuil
     }
 
     @Override
-    public Builder<Void> configure(CapabilityServiceSupport support) {
-        this.service = new InjectedValueDependency<>(support.getCapabilityServiceName(Capabilities.CAPABILITY_UNDERTOW), UndertowService.class);
-        this.listener = new InjectedValueDependency<>(support.getCapabilityServiceName(Capabilities.CAPABILITY_LISTENER, this.listenerName), UndertowListener.class);
+    public ServiceConfigurator configure(CapabilityServiceSupport support) {
+        this.service = new ServiceSupplierDependency<>(support.getCapabilityServiceName(Capabilities.CAPABILITY_UNDERTOW));
+        this.listener = new ServiceSupplierDependency<>(support.getCapabilityServiceName(Capabilities.CAPABILITY_LISTENER, this.listenerName));
         return this;
     }
 
     @Override
-    public ServiceBuilder<Void> build(ServiceTarget target) {
-        ServiceBuilder<Void> builder = new AsynchronousServiceBuilder<>(SERVICE_NAME, new UndertowEventHandlerAdapter(this)).build(target)
-                .addDependency(ContainerEventHandlerService.SERVICE_NAME, ContainerEventHandler.class, this.eventHandler)
-                .addDependency(SuspendController.SERVICE_NAME, SuspendController.class, this.suspendController)
-                ;
-        for (ValueDependency<?> dependency : Arrays.asList(this.service, this.listener)) {
-            dependency.register(builder);
-        }
-        return builder;
+    public ServiceBuilder<?> build(ServiceTarget target) {
+        ServiceBuilder<?> builder = new AsyncServiceConfigurator(SERVICE_NAME).build(target);
+        new CompositeDependency(this.service, this.listener).register(builder);
+        this.eventHandler = builder.requires(ContainerEventHandlerServiceConfigurator.SERVICE_NAME);
+        this.suspendController = builder.requires(SuspendController.SERVICE_NAME);
+        Service service = new UndertowEventHandlerAdapterService(this);
+        return builder.setInstance(service);
     }
 
     @Override
@@ -90,21 +89,21 @@ public class UndertowEventHandlerAdapterBuilder implements CapabilityServiceBuil
 
     @Override
     public UndertowService getUndertowService() {
-        return this.service.getValue();
+        return this.service.get();
     }
 
     @Override
     public ContainerEventHandler getContainerEventHandler() {
-        return this.eventHandler.getValue();
+        return this.eventHandler.get();
     }
 
     @Override
     public SuspendController getSuspendController() {
-        return this.suspendController.getValue();
+        return this.suspendController.get();
     }
 
     @Override
     public UndertowListener getListener() {
-        return this.listener.getValue();
+        return this.listener.get();
     }
 }

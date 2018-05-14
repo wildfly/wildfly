@@ -22,6 +22,11 @@
 
 package org.wildfly.extension.mod_cluster;
 
+import static org.wildfly.extension.mod_cluster.ModClusterLogger.ROOT_LOGGER;
+
+import java.net.InetSocketAddress;
+import java.util.Map;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
@@ -31,12 +36,7 @@ import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.modcluster.ModClusterServiceMBean;
-import org.jboss.msc.service.ServiceController;
-
-import java.net.InetSocketAddress;
-import java.util.Map;
-
-import static org.wildfly.extension.mod_cluster.ModClusterLogger.ROOT_LOGGER;
+import org.wildfly.clustering.service.ActiveServiceSupplier;
 
 public class ModClusterListProxies implements OperationStepHandler {
 
@@ -55,12 +55,11 @@ public class ModClusterListProxies implements OperationStepHandler {
     @Override
     public void execute(OperationContext context, ModelNode operation)
             throws OperationFailedException {
-        if (context.isNormalServer() && context.getServiceRegistry(false).getService(ContainerEventHandlerService.SERVICE_NAME) != null) {
+        if (context.isNormalServer() && context.getServiceRegistry(false).getService(ContainerEventHandlerServiceConfigurator.SERVICE_NAME) != null) {
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    ServiceController<?> controller = context.getServiceRegistry(false).getService(ContainerEventHandlerService.SERVICE_NAME);
-                    ModClusterServiceMBean service = (ModClusterServiceMBean) controller.getValue();
+                    ModClusterServiceMBean service = new ActiveServiceSupplier<ModClusterServiceMBean>(context.getServiceRegistry(true), ContainerEventHandlerServiceConfigurator.SERVICE_NAME).get();
                     Map<InetSocketAddress, String> map = service.getProxyInfo();
                     ROOT_LOGGER.debugf("Mod_cluster ListProxies %s", map);
                     if (!map.isEmpty()) {

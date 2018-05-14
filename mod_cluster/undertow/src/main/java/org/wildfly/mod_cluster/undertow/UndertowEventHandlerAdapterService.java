@@ -42,7 +42,7 @@ import org.jboss.modcluster.container.ContainerEventHandler;
 import org.jboss.modcluster.container.Context;
 import org.jboss.modcluster.container.Engine;
 import org.jboss.modcluster.container.Server;
-import org.jboss.msc.service.Service;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.jboss.threads.JBossThreadFactory;
@@ -55,7 +55,7 @@ import org.wildfly.extension.undertow.UndertowService;
  *
  * @author Paul Ferraro
  */
-public class UndertowEventHandlerAdapter implements UndertowEventListener, Service<Void>, Runnable, ServerActivity {
+public class UndertowEventHandlerAdapterService implements UndertowEventListener, Service, Runnable, ServerActivity {
     // No logger interface for this module and no reason to create one for this class only
     private static final Logger log = Logger.getLogger("org.jboss.mod_cluster.undertow");
 
@@ -65,13 +65,8 @@ public class UndertowEventHandlerAdapter implements UndertowEventListener, Servi
     private volatile Server server;
     private volatile Connector connector;
 
-    public UndertowEventHandlerAdapter(UndertowEventHandlerAdapterConfiguration configuration) {
+    public UndertowEventHandlerAdapterService(UndertowEventHandlerAdapterConfiguration configuration) {
         this.configuration = configuration;
-    }
-
-    @Override
-    public Void getValue() {
-        return null;
     }
 
     @Override
@@ -89,7 +84,7 @@ public class UndertowEventHandlerAdapter implements UndertowEventListener, Servi
         eventHandler.start(this.server);
 
         // Start the periodic STATUS thread
-        ThreadGroup group = new ThreadGroup(UndertowEventHandlerAdapter.class.getSimpleName());
+        ThreadGroup group = new ThreadGroup(UndertowEventHandlerAdapterService.class.getSimpleName());
         ThreadFactory factory = doPrivileged(new PrivilegedAction<ThreadFactory>() {
             @Override
             public ThreadFactory run() {

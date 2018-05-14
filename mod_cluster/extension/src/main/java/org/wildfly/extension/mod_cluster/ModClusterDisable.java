@@ -30,7 +30,7 @@ import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modcluster.ModClusterServiceMBean;
-import org.jboss.msc.service.ServiceController;
+import org.wildfly.clustering.service.ActiveServiceSupplier;
 
 public class ModClusterDisable implements OperationStepHandler {
 
@@ -45,12 +45,11 @@ public class ModClusterDisable implements OperationStepHandler {
     @Override
     public void execute(OperationContext context, ModelNode operation)
             throws OperationFailedException {
-        if (context.isNormalServer() && context.getServiceRegistry(false).getService(ContainerEventHandlerService.SERVICE_NAME) != null) {
+        if (context.isNormalServer() && context.getServiceRegistry(false).getService(ContainerEventHandlerServiceConfigurator.SERVICE_NAME) != null) {
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    ServiceController<?> controller = context.getServiceRegistry(false).getService(ContainerEventHandlerService.SERVICE_NAME);
-                    final ModClusterServiceMBean service = (ModClusterServiceMBean) controller.getValue();
+                    ModClusterServiceMBean service = new ActiveServiceSupplier<ModClusterServiceMBean>(context.getServiceRegistry(true), ContainerEventHandlerServiceConfigurator.SERVICE_NAME).get();
                     service.disable();
 
                     context.completeStep(new OperationContext.RollbackHandler() {

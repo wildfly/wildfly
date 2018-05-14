@@ -66,15 +66,16 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import javax.net.ssl.SSLContext;
 
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
-import org.jboss.as.clustering.controller.ResourceServiceBuilder;
+import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.network.OutboundSocketBinding;
@@ -86,38 +87,40 @@ import org.jboss.modcluster.config.builder.ModClusterConfigurationBuilder;
 import org.jboss.modcluster.config.impl.ModClusterConfig;
 import org.jboss.modcluster.config.impl.SessionDrainingStrategyEnum;
 import org.jboss.modcluster.mcmp.impl.JSSESocketFactory;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.Value;
-import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.service.InjectedValueDependency;
-import org.wildfly.clustering.service.ValueDependency;
+import org.wildfly.clustering.service.CompositeDependency;
+import org.wildfly.clustering.service.Dependency;
+import org.wildfly.clustering.service.FunctionalService;
+import org.wildfly.clustering.service.ServiceConfigurator;
+import org.wildfly.clustering.service.ServiceSupplierDependency;
+import org.wildfly.clustering.service.SupplierDependency;
 
 /**
  * @author Radoslav Husar
  */
-public class ModClusterConfigurationServiceBuilder implements ResourceServiceBuilder<ModClusterConfiguration>, Value<ModClusterConfiguration> {
+public class ModClusterConfigurationServiceConfigurator implements ResourceServiceConfigurator, Supplier<ModClusterConfiguration> {
 
     private final ModClusterConfigurationBuilder builder = new ModClusterConfigurationBuilder();
+    private final List<SupplierDependency<OutboundSocketBinding>> outboundSocketBindings = new LinkedList<>();
 
-    private ValueDependency<SocketBinding> advertiseSocketDependency = null;
-    private final List<ValueDependency<OutboundSocketBinding>> outboundSocketBindings = new LinkedList<>();
-    private ValueDependency<SSLContext> sslContextDependency = null;
+    private volatile SupplierDependency<SocketBinding> advertiseSocketDependency = null;
+    private volatile SupplierDependency<SSLContext> sslContextDependency = null;
 
     @Override
     public ServiceName getServiceName() {
-        return ContainerEventHandlerService.CONFIG_SERVICE_NAME;
+        return ContainerEventHandlerServiceConfigurator.CONFIG_SERVICE_NAME;
     }
 
     @Override
-    public Builder<ModClusterConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
+    public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
 
         // Advertise
         optionalString(ADVERTISE_SOCKET.resolveModelAttribute(context, model))
-                .ifPresent(advertiseSocketRef -> this.advertiseSocketDependency = new InjectedValueDependency<>(context.getCapabilityServiceName(CommonUnaryRequirement.SOCKET_BINDING.getName(), advertiseSocketRef, SocketBinding.class), SocketBinding.class));
+                .ifPresent(advertiseSocketRef -> this.advertiseSocketDependency = new ServiceSupplierDependency<>(context.getCapabilityServiceName(CommonUnaryRequirement.SOCKET_BINDING.getName(), advertiseSocketRef, SocketBinding.class)));
         optionalString(ADVERTISE_SECURITY_KEY.resolveModelAttribute(context, model))
                 .ifPresent(securityKey -> builder.advertise().setAdvertiseSecurityKey(securityKey));
 
@@ -216,7 +219,7 @@ public class ModClusterConfigurationServiceBuilder implements ResourceServiceBui
         if (node.isDefined()) {
             for (ModelNode ref : node.asList()) {
                 String asString = ref.asString();
-                this.outboundSocketBindings.add(new InjectedValueDependency<>(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING.getServiceName(context, asString), OutboundSocketBinding.class));
+                this.outboundSocketBindings.add(new ServiceSupplierDependency<>(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING.getServiceName(context, asString)));
             }
         }
 
@@ -229,7 +232,7 @@ public class ModClusterConfigurationServiceBuilder implements ResourceServiceBui
 
         node = SSL_CONTEXT.resolveModelAttribute(context, model);
         if (node.isDefined()) {
-            this.sslContextDependency = new InjectedValueDependency<>(CommonUnaryRequirement.SSL_CONTEXT.getServiceName(context, node.asString()), SSLContext.class);
+            this.sslContextDependency = new ServiceSupplierDependency<>(CommonUnaryRequirement.SSL_CONTEXT.getServiceName(context, node.asString()));
         }
 
         // Legacy security support
@@ -280,20 +283,22 @@ public class ModClusterConfigurationServiceBuilder implements ResourceServiceBui
     }
 
     @Override
-    public ServiceBuilder<ModClusterConfiguration> build(ServiceTarget target) {
-        ServiceBuilder<ModClusterConfiguration> builder = target.addService(this.getServiceName(), new ValueService<>(this));
-        Stream.concat(Stream.of(advertiseSocketDependency, sslContextDependency), outboundSocketBindings.stream()).filter(Objects::nonNull).forEach(dependency -> dependency.register(builder));
-        builder.setInitialMode(ServiceController.Mode.PASSIVE);
-
-        return builder;
+    public ServiceBuilder<?> build(ServiceTarget target) {
+        ServiceBuilder<?> builder = target.addService(this.getServiceName());
+        Consumer<ModClusterConfiguration> config = new CompositeDependency(this.advertiseSocketDependency, this.sslContextDependency).register(builder).provides(this.getServiceName());
+        for (Dependency dependency : this.outboundSocketBindings) {
+            dependency.register(builder);
+        }
+        Service service = new FunctionalService<>(config, Function.identity(), this);
+        return builder.setInstance(service).setInitialMode(ServiceController.Mode.PASSIVE);
     }
 
     @Override
-    public ModClusterConfiguration getValue() throws IllegalStateException, IllegalArgumentException {
+    public ModClusterConfiguration get() {
 
         // Advertise
         if (advertiseSocketDependency != null) {
-            final SocketBinding binding = advertiseSocketDependency.getValue();
+            final SocketBinding binding = advertiseSocketDependency.get();
             builder.advertise()
                     .setAdvertiseSocketAddress(binding.getMulticastSocketAddress())
                     .setAdvertiseInterface(binding.getNetworkInterfaceBinding().getAddress())
@@ -305,8 +310,8 @@ public class ModClusterConfigurationServiceBuilder implements ResourceServiceBui
 
         // Proxies
         List<ProxyConfiguration> proxies = new LinkedList<>();
-        for (final ValueDependency<OutboundSocketBinding> outboundSocketBindingValueDependency : outboundSocketBindings) {
-            OutboundSocketBinding binding = outboundSocketBindingValueDependency.getValue();
+        for (final Supplier<OutboundSocketBinding> outboundSocketBindingValueDependency : outboundSocketBindings) {
+            OutboundSocketBinding binding = outboundSocketBindingValueDependency.get();
             proxies.add(new ProxyConfiguration() {
 
                 @Override
@@ -334,7 +339,7 @@ public class ModClusterConfigurationServiceBuilder implements ResourceServiceBui
 
         // SSL
         if (sslContextDependency != null) {
-            builder.mcmp().setSocketFactory(sslContextDependency.getValue().getSocketFactory());
+            builder.mcmp().setSocketFactory(sslContextDependency.get().getSocketFactory());
         }
 
         return builder.build();
