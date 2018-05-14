@@ -39,6 +39,7 @@ import org.jboss.msc.service.ServiceTarget;
 public class IdentityServiceConfigurator<T> extends SimpleServiceNameProvider implements ServiceConfigurator {
 
     private final ServiceName requirementName;
+    private final ServiceController.Mode initialMode;
 
     /**
      * Constructs a new service configurator.
@@ -46,8 +47,20 @@ public class IdentityServiceConfigurator<T> extends SimpleServiceNameProvider im
      * @param targetName the target service
      */
     public IdentityServiceConfigurator(ServiceName name, ServiceName requirementName) {
+        this(name, requirementName, ServiceController.Mode.PASSIVE);
+    }
+
+    /**
+     * Constructs a new service configurator.
+     * @param name the target service name
+     * @param targetName the target service
+     * @param initialMode the initial mode of the configured service.
+     */
+    public IdentityServiceConfigurator(ServiceName name, ServiceName requirementName, ServiceController.Mode initialMode) {
         super(name);
+        assert initialMode != ServiceController.Mode.REMOVE;
         this.requirementName = requirementName;
+        this.initialMode = initialMode;
     }
 
     @Override
@@ -56,6 +69,6 @@ public class IdentityServiceConfigurator<T> extends SimpleServiceNameProvider im
         Consumer<T> injector = builder.provides(this.getServiceName());
         Supplier<T> requirement = builder.requires(this.requirementName);
         Service service = new FunctionalService<>(injector, Function.identity(), requirement);
-        return builder.setInstance(service).setInitialMode(ServiceController.Mode.PASSIVE);
+        return builder.setInstance(service).setInitialMode(this.initialMode);
     }
 }
