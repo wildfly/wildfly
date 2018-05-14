@@ -28,16 +28,16 @@
     <extension-module>org.wildfly.extension.picketlink</extension-module>
     <subsystem xmlns="urn:jboss:domain:picketlink-identity-management:2.0">
 
-        <partition-manager jndi-name="picketlink/FileCompletePartitionManager" name="file.complete.partition.manager">
+        <partition-manager name="file.complete.partition.manager" jndi-name="picketlink/FileCompletePartitionManager">
             <identity-configuration name="file.config">
-                <file-store relative-to="jboss.server.data.dir" working-dir="pl-idm-complete" always-create-files="true" async-write="true"
+                <file-store working-dir="pl-idm-complete" relative-to="jboss.server.data.dir" always-create-files="true" async-write="true"
                             async-write-thread-pool="10">
                     <supported-types supports-all="true"/>
                 </file-store>
             </identity-configuration>
         </partition-manager>
 
-        <partition-manager jndi-name="picketlink/FileSimplePartitionManager" name="file.simple.partition.manager">
+        <partition-manager name="file.simple.partition.manager" jndi-name="picketlink/FileSimplePartitionManager">
             <identity-configuration name="file.config">
                 <file-store>
                     <supported-types supports-all="true"/>
@@ -45,7 +45,7 @@
             </identity-configuration>
         </partition-manager>
 
-        <partition-manager jndi-name="picketlink/JPADSBasedPartitionManager" name="jpa.ds.based.partition.manager">
+        <partition-manager name="jpa.ds.based.partition.manager" jndi-name="picketlink/JPADSBasedPartitionManager">
             <identity-configuration name="jpa.config">
                 <jpa-store data-source="jboss/datasources/ExampleDS">
                     <supported-types supports-all="true"/>
@@ -53,7 +53,7 @@
             </identity-configuration>
         </partition-manager>
 
-        <partition-manager jndi-name="picketlink/JPAEMFBasedPartitionManager" name="jpa.emf.based.partition.manager">
+        <partition-manager name="jpa.emf.based.partition.manager" jndi-name="picketlink/JPAEMFBasedPartitionManager">
             <identity-configuration name="jpa.config">
                 <jpa-store entity-manager-factory="jboss/TestingIDMEMF">
                     <supported-types>
@@ -65,7 +65,7 @@
           </identity-configuration>
         </partition-manager>
 
-        <partition-manager jndi-name="picketlink/JPAEMFModulePartitionManager" name="jpa.emf.modules.partition.manager">
+        <partition-manager name="jpa.emf.modules.partition.manager" jndi-name="picketlink/JPAEMFModulePartitionManager">
             <identity-configuration name="jpa.config">
                 <jpa-store entity-module="my.module" entity-module-unit-name="my-persistence-unit-name">
                     <supported-types supports-all="true"/>
@@ -144,7 +144,7 @@
             </identity-configuration>
         </partition-manager>
 
-        <partition-manager jndi-name="picketlink/MultipleConfigurationPartitionManager" name="multiple.config.partition.manager">
+        <partition-manager name="multiple.config.partition.manager" jndi-name="picketlink/MultipleConfigurationPartitionManager">
             <identity-configuration name="partition.jboss.config">
                 <jpa-store data-source="jboss/datasources/JBossIdentityDS">
                     <supported-types supports-all="true"/>
