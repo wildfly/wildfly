@@ -167,11 +167,11 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
                     }
                     final ContextNames.BindInfo bindInfo = ContextNames.bindInfoForEnvEntry(moduleConfiguration.getApplicationName(), moduleConfiguration.getModuleName(), null, false, binding.getName());
 
-                    ROOT_LOGGER.tracef("Binding %s using service %s", binding.getName(), bindInfo.getBinderServiceName());
 
                     if (deploymentDescriptorBindings.containsKey(bindInfo.getBinderServiceName())) {
                         continue; //this has been overridden by a DD binding
                     }
+                    ROOT_LOGGER.tracef("Binding %s using service %s", binding.getName(), bindInfo.getBinderServiceName());
                     addJndiBinding(moduleConfiguration, binding, phaseContext, dependencies);
                 }
             }
@@ -208,11 +208,10 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
                             }
                             final ContextNames.BindInfo bindInfo = ContextNames.bindInfoForEnvEntry(moduleConfiguration.getApplicationName(), moduleConfiguration.getModuleName(), null, false, binding.getName());
 
-                            ROOT_LOGGER.tracef("Binding %s using service %s", binding.getName(), bindInfo.getBinderServiceName());
-
                             if (deploymentDescriptorBindings.containsKey(bindInfo.getBinderServiceName())) {
                                 continue; //this has been overridden by a DD binding
                             }
+                            ROOT_LOGGER.tracef("Binding %s using service %s", binding.getName(), bindInfo.getBinderServiceName());
                             addJndiBinding(moduleConfiguration, binding, phaseContext, dependencies);
                         }
                     }
