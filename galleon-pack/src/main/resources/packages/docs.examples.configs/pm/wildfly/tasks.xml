@@ -1,0 +1,87 @@
+<?xml version="1.0" ?>
+
+<tasks xmlns="urn:wildfly:wildfly-feature-pack-tasks:2.0">
+    <example-configs>
+        <config model="standalone" name="standalone-genericjms.xml">
+            <feature-group name="standalone-genericjms"/>
+        </config>
+        <config model="standalone" name="standalone-jts.xml">
+            <feature-group name="standalone-jts"/>
+        </config>
+        <config model="standalone" name="standalone-minimalistic.xml">
+            <feature-group name="standalone-minimalistic"/>
+        </config>
+        <config model="standalone" name="standalone-picketlink.xml">
+        <!--
+            <props>
+                <prop name="config.branch-per-spec" value="false"/>
+            </props>
+            -->
+            <feature-group name="standalone-picketlink"/>
+        </config>
+        <config model="standalone" name="standalone-rts.xml">
+            <feature-group name="standalone-rts"/>
+        </config>
+        <config model="standalone" name="standalone-xts.xml">
+            <feature-group name="standalone-xts"/>
+        </config>
+        <config model="standalone" name="standalone-azure-ha.xml">
+            <feature-group name="standalone-azure-ha"/>
+        </config>
+        <config model="standalone" name="standalone-azure-full-ha.xml">
+            <feature-group name="standalone-azure-full-ha"/>
+        </config>
+        <config model="standalone" name="standalone-ec2-ha.xml">
+            <feature-group name="standalone-ec2-ha"/>
+        </config>
+        <config model="standalone" name="standalone-ec2-full-ha.xml">
+            <feature-group name="standalone-ec2-full-ha"/>
+        </config>
+        <config model="standalone" name="standalone-gossip-ha.xml">
+            <feature-group name="standalone-gossip-ha"/>
+        </config>
+        <config model="standalone" name="standalone-gossip-full-ha.xml">
+            <feature-group name="standalone-gossip-full-ha"/>
+        </config>
+        <config model="standalone" name="standalone-activemq-colocated.xml">
+            <feature-group name="standalone-activemq-colocated"/>
+        </config>
+        <config model="domain" name="domain-ec2.xml">
+            <feature-group name="domain">
+                <exclude spec="domain.server-group"/>
+            </feature-group>
+            <feature-group name="domain-ec2-ha">
+                <exclude spec="domain.server-group"/>
+            </feature-group>
+            <feature-group name="domain-full">
+                <exclude spec="domain.server-group"/>
+            </feature-group>
+            <feature-group name="domain-ec2-full-ha">
+                <exclude spec="domain.server-group"/>
+            </feature-group>
+            <feature-group name="domain-load-balancer">
+                <exclude spec="domain.server-group"/>
+            </feature-group>
+            <feature spec="domain.server-group">
+                <param name="server-group" value="main-server-group"/>
+                <param name="profile" value="full" />
+                <param name="socket-binding-group" value="full-sockets" />
+                <feature spec="domain.server-group.jvm">
+                    <param name="jvm" value="default"/>
+                    <param name="heap-size" value="64m"/>
+                    <param name="max-heap-size" value="512m"/>
+                </feature>
+            </feature>
+            <feature spec="domain.server-group">
+                <param name="server-group" value="other-server-group"/>
+                <param name="profile" value="full-ha" />
+                <param name="socket-binding-group" value="full-ha-sockets" />
+                <feature spec="domain.server-group.jvm">
+                    <param name="jvm" value="default"/>
+                    <param name="heap-size" value="64m"/>
+                    <param name="max-heap-size" value="512m"/>
+                </feature>
+            </feature>
+        </config>
+    </example-configs>
+</tasks>

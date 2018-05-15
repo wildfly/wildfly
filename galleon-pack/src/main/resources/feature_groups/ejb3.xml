@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="ejb3" xmlns="urn:jboss:galleon:feature-group:1.0">
+    <feature spec="subsystem.ejb3">
+        <param name="default-slsb-instance-pool" value="slsb-strict-max-pool"/>
+        <param name="default-sfsb-cache" value="simple"/>
+        <param name="default-sfsb-passivation-disabled-cache" value="simple"/>
+        <param name="default-security-domain" value="other"/>
+        <param name="default-stateful-bean-access-timeout" value="5000"/>
+        <param name="default-singleton-bean-access-timeout" value="5000"/>
+        <param name="default-missing-method-permissions-deny-access" value="true"/>
+        <param name="log-system-exceptions" value="true"/>
+        <feature spec="subsystem.ejb3.cache">
+            <param name="cache" value="simple"/>
+        </feature>
+        <feature spec="subsystem.ejb3.cache">
+            <param name="cache" value="distributable"/>
+            <param name="passivation-store" value="infinispan"/>
+            <param name="aliases" value="[passivating,clustered]"/>
+        </feature>
+        <feature spec="subsystem.ejb3.strict-max-bean-instance-pool">
+            <param name="strict-max-bean-instance-pool" value="mdb-strict-max-pool"/>
+            <param name="derive-size" value="from-cpu-count"/>
+            <param name="timeout" value="5"/>
+            <param name="timeout-unit" value="MINUTES"/>
+        </feature>
+        <feature spec="subsystem.ejb3.strict-max-bean-instance-pool">
+            <param name="strict-max-bean-instance-pool" value="slsb-strict-max-pool"/>
+            <param name="derive-size" value="from-worker-pools"/>
+            <param name="timeout" value="5"/>
+            <param name="timeout-unit" value="MINUTES"/>
+        </feature>
+        <feature spec="subsystem.ejb3.passivation-store">
+            <param name="passivation-store" value="infinispan"/>
+            <param name="cache-container" value="ejb"/>
+            <param name="max-size" value="10000"/>
+        </feature>
+        <feature spec="subsystem.ejb3.service.async">
+            <param name="thread-pool-name" value="default"/>
+        </feature>
+        <feature spec="subsystem.ejb3.service.remote">
+            <param name="connector-ref" value="http-remoting-connector"/>
+            <param name="thread-pool-name" value="default"/>
+            <feature spec="subsystem.ejb3.service.remote.channel-creation-options">
+                <param name="channel-creation-options" value="READ_TIMEOUT"/>
+                <param name="value" value="${prop.remoting-connector.read.timeout:20}"/>
+                <param name="type" value="xnio"/>
+            </feature>
+            <feature spec="subsystem.ejb3.service.remote.channel-creation-options">
+                <param name="channel-creation-options" value="MAX_OUTBOUND_MESSAGES"/>
+                <param name="value" value="1234"/>
+                <param name="type" value="remoting"/>
+            </feature>
+        </feature>
+        <feature spec="subsystem.ejb3.service.timer-service">
+            <param name="default-data-store" value="default-file-store"/>
+            <param name="thread-pool-name" value="default"/>
+            <feature spec="subsystem.ejb3.service.timer-service.file-data-store">
+                <param name="file-data-store" value="default-file-store"/>
+                <param name="path" value="timer-service-data" />
+                <param name="relative-to" value="jboss.server.data.dir" />
+            </feature>
+        </feature>
+        <feature spec="subsystem.ejb3.thread-pool">
+            <param name="thread-pool" value="default"/>
+            <param name="max-threads" value="10"/>
+            <param name="keepalive-time" value="{time=100,unit=MILLISECONDS}"/>
+        </feature>
+    </feature>
+    <feature spec="subsystem.elytron.permission-set.permissions">
+        <param name="subsystem" value="elytron"/>
+        <param name="permission-set" value="default-permissions"/>
+        <param name="module" value="org.jboss.ejb-client"/>
+        <param name="class-name" value="org.jboss.ejb.client.RemoteEJBPermission"/>
+    </feature>
+</feature-group-spec>

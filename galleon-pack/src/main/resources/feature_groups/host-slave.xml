@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="host-slave" xmlns="urn:jboss:galleon:feature-group:1.0">
+    <origin name="org.wildfly:wildfly-servlet-galleon-pack">
+        <feature-group name="host-slave">
+            <exclude feature-id="host.interface:host=slave,interface=unsecure"/>
+            <exclude feature-id="host.interface:host=slave,interface=private"/>
+        </feature-group>
+    </origin>
+    <feature spec="host">
+        <param name="host" value="slave"/>
+        <feature spec="host.jvm">
+            <param name="jvm" value="default"/>
+            <param name="jvm-options" value="[&quot;-server&quot;,&quot;-XX:MetaspaceSize=96m&quot;,&quot;-XX:MaxMetaspaceSize=256m&quot;,&quot;--add-exports=java.base/sun.nio.ch=ALL-UNNAMED&quot;]"/>
+        </feature>
+    </feature>
+</feature-group-spec>

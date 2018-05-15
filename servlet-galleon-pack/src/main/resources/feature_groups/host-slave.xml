@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="host-slave" xmlns="urn:jboss:galleon:feature-group:1.0">
+
+    <origin name="org.wildfly.core:wildfly-core-galleon-pack">
+        <feature-group name="host-slave">
+            <exclude spec="host.core-service.management.management-interface.http-interface"/>
+            <include feature-id="host:host=slave">
+                <feature spec="host.jvm">
+                    <param name="jvm" value="default"/>
+                    <param name="heap-size" value="64m"/>
+                    <param name="max-heap-size" value="256m"/>
+                    <param name="jvm-options" value="[&quot;-server&quot;,&quot;-XX:MetaspaceSize=96m&quot;,&quot;-XX:MaxMetaspaceSize=256m&quot;]"/>
+                    <unset param="environment-variables"/>
+                </feature>
+            </include>
+        </feature-group>
+    </origin>
+
+    <feature spec="host">
+        <param name="host" value="slave"/>
+        <feature spec="core-service.management.security-realm">
+            <param name="security-realm" value="ManagementRealm"/>
+            <feature spec="core-service.management.security-realm.server-identity.secret">
+                <param name="value" value="&quot;c2xhdmVfdXMzcl9wYXNzd29yZA==&quot;"/>
+            </feature>
+        </feature>
+
+        <feature spec="core-service.management.security-realm">
+            <param name="security-realm" value="ApplicationRealm"/>
+            <feature spec="core-service.management.security-realm.server-identity.ssl">
+                <param name="keystore-path" value="application.keystore"/>
+                <param name="keystore-relative-to" value="jboss.domain.config.dir"/>
+                <param name="keystore-password" value="password"/>
+                <param name="key-password" value="password"/>
+                <param name="alias" value="server"/>
+                <param name="generate-self-signed-certificate-host" value="localhost"/>
+            </feature>
+        </feature>
+
+        <feature spec="host.core-service.management.management-interface.native-interface">
+            <param name="security-realm" value="ManagementRealm"/>
+            <param name="interface" value="management"/>
+            <param name="port" value="${jboss.management.native.port:9999}"/>
+        </feature>
+
+        <feature spec="host.interface">
+            <param name="interface" value="private"/>
+            <param name="inet-address" value="${jboss.bind.address.private:127.0.0.1}"/>
+        </feature>
+
+        <feature spec="host.core-service.discovery-options">
+            <feature spec="host.core-service.discovery-options.static-discovery">
+                <param name="static-discovery" value="primary"/>
+                <param name="protocol" value="${jboss.domain.master.protocol:remote}"/>
+                <param name="port" value="${jboss.domain.master.port:9999}"/>
+            </feature>
+        </feature>
+    </feature>
+
+</feature-group-spec>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="load-balancer-sockets" xmlns="urn:jboss:galleon:feature-group:1.0">
+
+    <feature spec="socket-binding-group.socket-binding">
+        <param name="socket-binding" value="http"/>
+        <param name="port" value="${jboss.http.port:8080}"/>
+    </feature>
+    <feature spec="socket-binding-group.socket-binding">
+        <param name="socket-binding" value="https"/>
+        <param name="port" value="${jboss.https.port:8443}"/>
+    </feature>
+    <feature spec="socket-binding-group.socket-binding">
+        <param name="socket-binding" value="mcmp-management"/>
+        <param name="interface" value="private"/>
+        <param name="port" value="${jboss.mcmp.port:8090}"/>
+    </feature>
+    <feature spec="socket-binding-group.socket-binding">
+        <param name="socket-binding" value="modcluster"/>
+        <param name="interface" value="private"/>
+        <param name="multicast-address" value="${jboss.modcluster.multicast.address:224.0.1.105}"/>
+        <param name="multicast-port" value="23364"/>
+    </feature>
+
+</feature-group-spec>

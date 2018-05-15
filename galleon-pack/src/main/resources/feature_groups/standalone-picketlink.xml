@@ -1,0 +1,599 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="standalone-picketlink" xmlns="urn:jboss:galleon:feature-group:1.0">
+
+    <feature-group name="standalone-full">
+        <exclude spec="subsystem.batch-jberet"/>
+        <exclude feature-id="subsystem.security.security-domain:subsystem=security,security-domain=jboss-ejb-policy"/>
+        <exclude feature-id="subsystem.security.security-domain:subsystem=security,security-domain=jboss-web-policy"/>
+        <exclude feature-id="subsystem.security.security-domain:subsystem=security,security-domain=jaspitest"/>
+    </feature-group>
+
+    <!-- uncomment to make it the match the legacy configs
+    <feature spec="subsystem.ee">
+        <feature spec="subsystem.ee.service.default-bindings">
+            <unset param="jms-connection-factory"/>
+        </feature>
+    </feature>
+    -->
+
+    <feature spec="subsystem.security.security-domain">
+        <param name="security-domain" value="idp"/>
+        <param name="cache-type" value="default"/>
+        <feature spec="subsystem.security.security-domain.authentication.classic">
+            <feature spec="subsystem.security.security-domain.authentication.classic.login-module">
+                <param name="login-module" value="UsersRoles"/>
+                <param name="code" value="UsersRoles"/>
+                <param name="flag" value="required"/>
+                <param name="module-options" value="{usersProperties=users.properties,rolesProperties=roles.properties}"/>
+            </feature>
+        </feature>
+    </feature>
+    <feature spec="subsystem.security.security-domain">
+        <param name="security-domain" value="sp"/>
+        <param name="cache-type" value="default"/>
+        <feature spec="subsystem.security.security-domain.authentication.classic">
+            <feature spec="subsystem.security.security-domain.authentication.classic.login-module">
+                <param name="login-module" value="org.picketlink.identity.federation.bindings.jboss.auth.SAML2LoginModule"/>
+                <param name="code" value="org.picketlink.identity.federation.bindings.jboss.auth.SAML2LoginModule"/>
+                <param name="flag" value="required"/>
+            </feature>
+        </feature>
+    </feature>
+
+    <feature spec="subsystem.picketlink-federation">
+        <feature spec="subsystem.picketlink-federation.federation">
+            <param name="federation" value="federation-simple-redirect-binding"/>
+            <feature spec="subsystem.picketlink-federation.federation.identity-provider">
+                <param name="identity-provider" value="idp-redirect.war"/>
+                <param name="security-domain" value="idp"/>
+                <param name="support-signatures" value="false"/>
+                <param name="url" value="http://${jboss.bind.address:127.0.0.1}:8080/idp-redirect/"/>
+                <param name="strict-post-binding" value="false"/>
+                <feature spec="subsystem.picketlink-federation.federation.identity-provider.trust-domain">
+                    <param name="trust-domain" value="${jboss.bind.address:127.0.0.1}"/>
+                </feature>
+            </feature>
+            <feature spec="subsystem.picketlink-federation.federation.service-provider">
+                <param name="service-provider" value="sp-redirect1.war"/>
+                <param name="security-domain" value="sp"/>
+                <param name="post-binding" value="false"/>
+                <param name="support-signatures" value="false"/>
+                <param name="url" value="http://${jboss.bind.address:127.0.0.1}:8080/sp-redirect1/"/>
+            </feature>
+            <feature spec="subsystem.picketlink-federation.federation.service-provider">
+                <param name="service-provider" value="sp-redirect2.war"/>
+                <param name="security-domain" value="sp"/>
+                <param name="post-binding" value="false"/>
+                <param name="support-signatures" value="false"/>
+                <param name="url" value="http://${jboss.bind.address:127.0.0.1}:8080/sp-redirect2/"/>
+            </feature>
+        </feature>
+
+        <feature spec="subsystem.picketlink-federation.federation">
+            <param name="federation" value="federation-redirect-with-signatures"/>
+            <feature spec="subsystem.picketlink-federation.federation.key-store.key-store">
+                <param name="sign-key-password" value="test123"/>
+                <param name="password" value="store123"/>
+                <param name="file" value="/jbid_test_keystore.jks"/>
+                <param name="sign-key-alias" value="servercert"/>
+                <feature spec="subsystem.picketlink-federation.federation.key-store.key-store.key">
+                    <param name="key" value="servercert"/>
+                    <param name="host-feature" value="&quot;${jboss.bind.address:localhost},127.0.0.1&quot;"/>
+                </feature>
+            </feature>
+            <feature spec="subsystem.picketlink-federation.federation.identity-provider">
+                <param name="identity-provider" value="idp-redirect-sig.war"/>
+                <param name="security-domain" value="idp"/>
+                <param name="support-signatures" value="true"/>
+                <param name="url" value="http://${jboss.bind.address:127.0.0.1}:8080/idp-redirect-sig/"/>
+                <param name="strict-post-binding" value="false"/>
+                <feature spec="subsystem.picketlink-federation.federation.identity-provider.trust-domain">
+                    <param name="trust-domain" value="${jboss.bind.address:127.0.0.1}"/>
+                </feature>
+            </feature>
+            <feature spec="subsystem.picketlink-federation.federation.service-provider">
+                <param name="service-provider" value="sp-redirect-sig1.war"/>
+                <param name="security-domain" value="sp"/>
+                <param name="post-binding" value="false"/>
+                <param name="support-signatures" value="true"/>
+                <param name="url" value="http://${jboss.bind.address:127.0.0.1}:8080/sp-redirect-sig1/"/>
+            </feature>
+            <feature spec="subsystem.picketlink-federation.federation.service-provider">
+                <param name="service-provider" value="sp-redirect-sig2.war"/>
+                <param name="security-domain" value="sp"/>
+                <param name="post-binding" value="false"/>
+                <param name="support-signatures" value="true"/>
+                <param name="url" value="http://${jboss.bind.address:127.0.0.1}:8080/sp-redirect-sig2/"/>
+            </feature>
+        </feature>
+
+        <feature spec="subsystem.picketlink-federation.federation">
+            <param name="federation" value="federation-simple-post-binding"/>
+            <feature spec="subsystem.picketlink-federation.federation.identity-provider">
+                <param name="identity-provider" value="idp-post.war"/>
+                <param name="security-domain" value="idp"/>
+                <param name="url" value="http://${jboss.bind.address:127.0.0.1}:8080/idp-post/"/>
+                <feature spec="subsystem.picketlink-federation.federation.identity-provider.trust-domain">
+                    <param name="trust-domain" value="${jboss.bind.address:127.0.0.1}"/>
+                </feature>
+            </feature>
+            <feature spec="subsystem.picketlink-federation.federation.service-provider">
+                <param name="service-provider" value="sp-post1.war"/>
+                <param name="security-domain" value="sp"/>
+                <param name="url" value="http://${jboss.bind.address:127.0.0.1}:8080/sp-post1/"/>
+            </feature>
+            <feature spec="subsystem.picketlink-federation.federation.service-provider">
+                <param name="service-provider" value="sp-post2.war"/>
+                <param name="security-domain" value="sp"/>
+                <param name="url" value="http://${jboss.bind.address:127.0.0.1}:8080/sp-post2/"/>
+            </feature>
+        </feature>
+
+        <feature spec="subsystem.picketlink-federation.federation">
+            <param name="federation" value="federation-post-with-signatures"/>
+            <feature spec="subsystem.picketlink-federation.federation.key-store.key-store">
+                <param name="sign-key-password" value="test123"/>
+                <param name="password" value="store123"/>
+                <param name="file" value="/jbid_test_keystore.jks"/>
+                <param name="sign-key-alias" value="servercert"/>
+                <feature spec="subsystem.picketlink-federation.federation.key-store.key-store.key">
+                    <param name="key" value="servercert"/>
+                    <param name="host-feature" value="&quot;${jboss.bind.address:localhost},127.0.0.1&quot;"/>
+                </feature>
+            </feature>
+            <feature spec="subsystem.picketlink-federation.federation.identity-provider">
+                <param name="identity-provider" value="idp-post-sig.war"/>
+                <param name="security-domain" value="idp"/>
+                <param name="support-signatures" value="true"/>
+                <param name="url" value="http://${jboss.bind.address:127.0.0.1}:8080/idp-post-sig/"/>
+                <feature spec="subsystem.picketlink-federation.federation.identity-provider.trust-domain">
+                    <param name="trust-domain" value="${jboss.bind.address:127.0.0.1}"/>
+                </feature>
+            </feature>
+            <feature spec="subsystem.picketlink-federation.federation.service-provider">
+                <param name="service-provider" value="sp-post-sig1.war"/>
+                <param name="security-domain" value="sp"/>
+                <param name="support-signatures" value="true"/>
+                <param name="url" value="http://${jboss.bind.address:127.0.0.1}:8080/sp-post-sig1/"/>
+            </feature>
+            <feature spec="subsystem.picketlink-federation.federation.service-provider">
+                <param name="service-provider" value="sp-post-sig2.war"/>
+                <param name="security-domain" value="sp"/>
+                <param name="support-signatures" value="true"/>
+                <param name="url" value="http://${jboss.bind.address:127.0.0.1}:8080/sp-post-sig2/"/>
+            </feature>
+        </feature>
+
+        <feature spec="subsystem.picketlink-federation.federation">
+            <param name="federation" value="federation-with-metadata"/>
+            <feature spec="subsystem.picketlink-federation.federation.key-store.key-store">
+                <param name="sign-key-password" value="test123"/>
+                <param name="password" value="store123"/>
+                <param name="file" value="/jbid_test_keystore.jks"/>
+                <param name="sign-key-alias" value="servercert"/>
+                <feature spec="subsystem.picketlink-federation.federation.key-store.key-store.key">
+                    <param name="key" value="servercert"/>
+                    <param name="host-feature" value="&quot;${jboss.bind.address:localhost},127.0.0.1&quot;"/>
+                </feature>
+            </feature>
+            <feature spec="subsystem.picketlink-federation.federation.identity-provider">
+                <param name="identity-provider" value="idp-metadata.war"/>
+                <param name="security-domain" value="idp"/>
+                <param name="support-signatures" value="true"/>
+                <param name="support-metadata" value="true"/>
+                <param name="url" value="http://${jboss.bind.address:127.0.0.1}:8080/idp-metadata/"/>
+                <feature spec="subsystem.picketlink-federation.federation.identity-provider.trust-domain">
+                    <param name="trust-domain" value="${jboss.bind.address:127.0.0.1}"/>
+                </feature>
+            </feature>
+            <feature spec="subsystem.picketlink-federation.federation.service-provider">
+                <param name="service-provider" value="sp-metadata1.war"/>
+                <param name="security-domain" value="sp"/>
+                <param name="support-signatures" value="true"/>
+                <param name="support-metadata" value="true"/>
+                <param name="url" value="http://${jboss.bind.address:127.0.0.1}:8080/sp-metadata1/"/>
+            </feature>
+            <feature spec="subsystem.picketlink-federation.federation.service-provider">
+                <param name="service-provider" value="sp-metadata2.war"/>
+                <param name="security-domain" value="sp"/>
+                <param name="support-signatures" value="true"/>
+                <param name="support-metadata" value="true"/>
+                <param name="url" value="http://${jboss.bind.address:127.0.0.1}:8080/sp-metadata2/"/>
+            </feature>
+        </feature>
+
+        <feature spec="subsystem.picketlink-federation.federation">
+            <param name="federation" value="federation-with-external-idp"/>
+            <feature spec="subsystem.picketlink-federation.federation.identity-provider">
+                <param name="identity-provider" value="idp-external"/>
+                <param name="external" value="true"/>
+                <param name="url" value="http://idp.external.com/"/>
+            </feature>
+            <feature spec="subsystem.picketlink-federation.federation.service-provider">
+                <param name="service-provider" value="sales-on-external.war"/>
+                <param name="security-domain" value="sp"/>
+                <param name="support-signatures" value="false"/>
+                <param name="post-binding" value="false"/>
+                <param name="url" value="http://${jboss.bind.address:127.0.0.1}:8080/sales-on-external/"/>
+            </feature>
+        </feature>
+    </feature>
+    
+    <feature spec="subsystem.picketlink-identity-management">
+        <feature spec="subsystem.picketlink-identity-management.partition-manager">
+            <param name="partition-manager" value="file.complete.partition.manager"/>
+            <param name="jndi-name" value="picketlink/FileCompletePartitionManager"/>
+            <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration">
+                <param name="identity-configuration" value="file.config"/>
+                <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.file-store">
+                    <param name="file-store" value="file-store"/>
+                    <param name="async-write-thread-pool" value="10"/>
+                    <param name="always-create-files" value="true"/>
+                    <param name="working-dir" value="pl-idm-complete"/>
+                    <param name="async-write" value="true"/>
+                    <param name="relative-to" value="jboss.server.data.dir"/>
+                    <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.file-store.supported-types">
+                        <param name="supported-types" value="supported-types"/>
+                        <param name="supports-all" value="true"/>
+                    </feature>
+                </feature>
+            </feature>
+        </feature>
+
+        <feature spec="subsystem.picketlink-identity-management.partition-manager">
+            <param name="partition-manager" value="file.simple.partition.manager"/>
+            <param name="jndi-name" value="picketlink/FileSimplePartitionManager"/>
+            <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration">
+                <param name="identity-configuration" value="file.config"/>
+                <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.file-store">
+                    <param name="file-store" value="file-store"/>
+                    <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.file-store.supported-types">
+                        <param name="supported-types" value="supported-types"/>
+                        <param name="supports-all" value="true"/>
+                    </feature>
+                </feature>
+            </feature>
+        </feature>
+
+        <feature spec="subsystem.picketlink-identity-management.partition-manager">
+            <param name="partition-manager" value="jpa.ds.based.partition.manager"/>
+            <param name="jndi-name" value="picketlink/JPADSBasedPartitionManager"/>
+            <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration">
+                <param name="identity-configuration" value="jpa.config"/>
+                <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.jpa-store">
+                    <param name="jpa-store" value="jpa-store"/>
+                    <param name="data-source" value="jboss/datasources/ExampleDS"/>
+                    <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.jpa-store.supported-types">
+                        <param name="supported-types" value="supported-types"/>
+                        <param name="supports-all" value="true"/>
+                    </feature>
+                </feature>
+            </feature>
+        </feature>
+
+        <feature spec="subsystem.picketlink-identity-management.partition-manager">
+            <param name="partition-manager" value="jpa.emf.based.partition.manager"/>
+            <param name="jndi-name" value="picketlink/JPAEMFBasedPartitionManager"/>
+            <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration">
+                <param name="identity-configuration" value="jpa.config"/>
+                <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.jpa-store">
+                    <param name="jpa-store" value="jpa-store"/>
+                    <param name="entity-manager-factory" value="jboss/TestingIDMEMF"/>
+                    <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.jpa-store.supported-types">
+                        <param name="supported-types" value="supported-types"/>
+                        <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.jpa-store.supported-types.supported-type">
+                            <param name="supported-type" value="Partition"/>
+                            <param name="code" value="Partition"/>
+                        </feature>
+                        <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.jpa-store.supported-types.supported-type">
+                            <param name="supported-type" value="IdentityType"/>
+                            <param name="code" value="IdentityType"/>
+                        </feature>
+                        <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.jpa-store.supported-types.supported-type">
+                            <param name="supported-type" value="Relationship"/>
+                            <param name="code" value="Relationship"/>
+                        </feature>
+                    </feature>
+                </feature>
+            </feature>
+        </feature>
+
+        <feature spec="subsystem.picketlink-identity-management.partition-manager">
+            <param name="partition-manager" value="jpa.emf.modules.partition.manager"/>
+            <param name="jndi-name" value="picketlink/JPAEMFModulePartitionManager"/>
+            <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration">
+                <param name="identity-configuration" value="jpa.config"/>
+                <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.jpa-store">
+                    <param name="jpa-store" value="jpa-store"/>
+                    <param name="entity-module" value="my.module"/>
+                    <param name="entity-module-unit-name" value="my-persistence-unit-name"/>
+                    <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.jpa-store.supported-types">
+                        <param name="supported-types" value="supported-types"/>
+                        <param name="supports-all" value="true"/>
+                    </feature>
+                </feature>
+            </feature>
+        </feature>
+
+        <feature spec="subsystem.picketlink-identity-management.partition-manager">
+            <param name="partition-manager" value="ldap.idm"/>
+            <param name="jndi-name" value="picketlink/LDAPBasedPartitionManager"/>
+            <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration">
+                <param name="identity-configuration" value="ldap.store"/>
+                <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.ldap-store">
+                    <param name="ldap-store" value="ldap-store"/>
+                    <param name="bind-credential" value="secret"/>
+                    <param name="base-dn-suffix" value="&quot;dc=jboss,dc=org&quot;"/>
+                    <param name="bind-dn" value="&quot;uid=admin,ou=system&quot;"/>
+                    <param name="url" value="ldap://${jboss.bind.address:127.0.0.1}:10389"/>
+                    <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.ldap-store.supported-types">
+                        <param name="supported-types" value="supported-types"/>
+                        <param name="supports-all" value="false"/>
+                        <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.ldap-store.supported-types.supported-type">
+                            <param name="supported-type" value="IdentityType"/>
+                            <param name="code" value="IdentityType"/>
+                        </feature>
+                        <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.ldap-store.supported-types.supported-type">
+                            <param name="supported-type" value="Relationship"/>
+                            <param name="code" value="Relationship"/>
+                        </feature>
+                    </feature>
+                    <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.ldap-store.mapping">
+                        <param name="mapping" value="Agent"/>
+                        <param name="base-dn-suffix" value="&quot;ou=Agent,dc=jboss,dc=org&quot;"/>
+                        <param name="code" value="Agent"/>
+                        <param name="object-classes" value="account"/>
+                        <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.ldap-store.mapping.attribute">
+                            <param name="name" value="loginName"/>
+                            <param name="attribute" value="loginName"/>
+                            <param name="ldap-name" value="uid"/>
+                            <param name="is-identifier" value="true"/>
+                        </feature>
+                        <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.ldap-store.mapping.attribute">
+                            <param name="name" value="createdDate"/>
+                            <param name="attribute" value="createdDate"/>
+                            <param name="ldap-name" value="createTimeStamp"/>
+                            <param name="read-only" value="true"/>
+                        </feature>
+                    </feature>
+                    <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.ldap-store.mapping">
+                        <param name="mapping" value="User"/>
+                        <param name="base-dn-suffix" value="&quot;ou=People,dc=jboss,dc=org&quot;"/>
+                        <param name="code" value="User"/>
+                        <param name="object-classes" value="&quot;inetOrgPerson, organizationalPerson&quot;"/>
+                        <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.ldap-store.mapping.attribute">
+                            <param name="name" value="loginName"/>
+                            <param name="attribute" value="loginName"/>
+                            <param name="ldap-name" value="uid"/>
+                            <param name="is-identifier" value="true"/>
+                        </feature>
+                        <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.ldap-store.mapping.attribute">
+                            <param name="name" value="firstName"/>
+                            <param name="attribute" value="firstName"/>
+                            <param name="ldap-name" value="cn"/>
+                        </feature>
+                        <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.ldap-store.mapping.attribute">
+                            <param name="name" value="lastName"/>
+                            <param name="attribute" value="lastName"/>
+                            <param name="ldap-name" value="sn"/>
+                        </feature>
+                        <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.ldap-store.mapping.attribute">
+                            <param name="name" value="email"/>
+                            <param name="attribute" value="email"/>
+                            <param name="ldap-name" value="mail"/>
+                        </feature>
+                        <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.ldap-store.mapping.attribute">
+                            <param name="name" value="createdDate"/>
+                            <param name="attribute" value="createdDate"/>
+                            <param name="ldap-name" value="createTimeStamp"/>
+                            <param name="read-only" value="true"/>
+                        </feature>
+                    </feature>
+                    <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.ldap-store.mapping">
+                        <param name="mapping" value="Role"/>
+                        <param name="base-dn-suffix" value="&quot;ou=Roles,dc=jboss,dc=org&quot;"/>
+                        <param name="code" value="Role"/>
+                        <param name="object-classes" value="groupOfNames"/>
+                        <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.ldap-store.mapping.attribute">
+                            <param name="name" value="name"/>
+                            <param name="attribute" value="name"/>
+                            <param name="ldap-name" value="cn"/>
+                            <param name="is-identifier" value="true"/>
+                        </feature>
+                        <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.ldap-store.mapping.attribute">
+                            <param name="name" value="createdDate"/>
+                            <param name="attribute" value="createdDate"/>
+                            <param name="ldap-name" value="createTimeStamp"/>
+                            <param name="read-only" value="true"/>
+                        </feature>
+                    </feature>
+                    <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.ldap-store.mapping">
+                        <param name="mapping" value="Group"/>
+                        <param name="base-dn-suffix" value="&quot;ou=Groups,dc=jboss,dc=org&quot;"/>
+                        <param name="code" value="Group"/>
+                        <param name="object-classes" value="groupOfNames"/>
+                        <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.ldap-store.mapping.attribute">
+                            <param name="name" value="name"/>
+                            <param name="attribute" value="name"/>
+                            <param name="ldap-name" value="cn"/>
+                            <param name="is-identifier" value="true"/>
+                        </feature>
+                        <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.ldap-store.mapping.attribute">
+                            <param name="name" value="createdDate"/>
+                            <param name="attribute" value="createdDate"/>
+                            <param name="ldap-name" value="createTimeStamp"/>
+                            <param name="read-only" value="true"/>
+                        </feature>
+                    </feature>
+                    <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.ldap-store.mapping">
+                        <param name="mapping" value="Grant"/>
+                        <param name="code" value="Grant"/>
+                        <param name="relates-to" value="Role"/>
+                        <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.ldap-store.mapping.attribute">
+                            <param name="name" value="assignee"/>
+                            <param name="attribute" value="assignee"/>
+                            <param name="ldap-name" value="member"/>
+                        </feature>
+                    </feature>
+                </feature>
+            </feature>
+        </feature>
+
+        <feature spec="subsystem.picketlink-identity-management.partition-manager">
+            <param name="partition-manager" value="multiple.store.idm"/>
+            <param name="jndi-name" value="picketlink/MultipleStoreBasedPartitionManager"/>
+            <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration">
+                <param name="identity-configuration" value="multiple.store"/>
+                <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.jpa-store">
+                    <param name="jpa-store" value="jpa-store"/>
+                    <param name="data-source" value="jboss/datasources/ExampleDS"/>
+                    <param name="support-credential" value="false"/>
+                    <param name="support-attribute" value="false"/>
+                    <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.jpa-store.supported-types">
+                        <param name="supported-types" value="supported-types"/>
+                        <param name="supports-all" value="false"/>
+                        <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.jpa-store.supported-types.supported-type">
+                            <param name="supported-type" value="Relationship"/>
+                            <param name="class-name" value="org.picketlink.idm.model.Relationship"/>
+                        </feature>
+                    </feature>
+                </feature>
+                <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.ldap-store">
+                    <param name="ldap-store" value="ldap-store"/>
+                    <param name="bind-credential" value="secret"/>
+                    <param name="base-dn-suffix" value="&quot;dc=jboss,dc=org&quot;"/>
+                    <param name="bind-dn" value="&quot;uid=admin,ou=system&quot;"/>
+                    <param name="url" value="ldap://${jboss.bind.address:127.0.0.1}:10389"/>
+                    <param name="support-credential" value="true"/>
+                    <param name="support-attribute" value="false"/>
+                    <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.ldap-store.supported-types">
+                        <param name="supported-types" value="supported-types"/>
+                        <param name="supports-all" value="false"/>
+                        <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.ldap-store.supported-types.supported-type">
+                            <param name="supported-type" value="IdentityType"/>
+                            <param name="code" value="IdentityType"/>
+                        </feature>
+                    </feature>
+                    <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.ldap-store.mapping">
+                        <param name="mapping" value="Agent"/>
+                        <param name="base-dn-suffix" value="&quot;ou=Agent,dc=jboss,dc=org&quot;"/>
+                        <param name="code" value="Agent"/>
+                        <param name="object-classes" value="account"/>
+                        <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.ldap-store.mapping.attribute">
+                            <param name="name" value="loginName"/>
+                            <param name="attribute" value="loginName"/>
+                            <param name="ldap-name" value="uid"/>
+                            <param name="is-identifier" value="true"/>
+                        </feature>
+                        <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.ldap-store.mapping.attribute">
+                            <param name="name" value="createdDate"/>
+                            <param name="attribute" value="createdDate"/>
+                            <param name="ldap-name" value="createTimeStamp"/>
+                            <param name="read-only" value="true"/>
+                        </feature>
+                    </feature>
+                    <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.ldap-store.mapping">
+                        <param name="mapping" value="User"/>
+                        <param name="base-dn-suffix" value="&quot;ou=People,dc=jboss,dc=org&quot;"/>
+                        <param name="code" value="User"/>
+                        <param name="object-classes" value="&quot;inetOrgPerson, organizationalPerson&quot;"/>
+                        <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.ldap-store.mapping.attribute">
+                            <param name="name" value="loginName"/>
+                            <param name="attribute" value="loginName"/>
+                            <param name="ldap-name" value="uid"/>
+                            <param name="is-identifier" value="true"/>
+                        </feature>
+                        <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.ldap-store.mapping.attribute">
+                            <param name="name" value="firstName"/>
+                            <param name="attribute" value="firstName"/>
+                            <param name="ldap-name" value="cn"/>
+                            <param name="read-only" value="false"/>
+                        </feature>
+                        <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.ldap-store.mapping.attribute">
+                            <param name="name" value="lastName"/>
+                            <param name="attribute" value="lastName"/>
+                            <param name="ldap-name" value="sn"/>
+                            <param name="read-only" value="false"/>
+                        </feature>
+                        <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.ldap-store.mapping.attribute">
+                            <param name="name" value="email"/>
+                            <param name="attribute" value="email"/>
+                            <param name="ldap-name" value="mail"/>
+                            <param name="read-only" value="false"/>
+                        </feature>
+                        <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.ldap-store.mapping.attribute">
+                            <param name="name" value="createdDate"/>
+                            <param name="attribute" value="createdDate"/>
+                            <param name="ldap-name" value="createTimeStamp"/>
+                            <param name="read-only" value="true"/>
+                        </feature>
+                    </feature>
+                    <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.ldap-store.mapping">
+                        <param name="mapping" value="Role"/>
+                        <param name="base-dn-suffix" value="&quot;ou=Roles,dc=jboss,dc=org&quot;"/>
+                        <param name="code" value="Role"/>
+                        <param name="object-classes" value="groupOfNames"/>
+                        <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.ldap-store.mapping.attribute">
+                            <param name="name" value="name"/>
+                            <param name="attribute" value="name"/>
+                            <param name="ldap-name" value="cn"/>
+                            <param name="is-identifier" value="true"/>
+                        </feature>
+                        <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.ldap-store.mapping.attribute">
+                            <param name="name" value="createdDate"/>
+                            <param name="attribute" value="createdDate"/>
+                            <param name="ldap-name" value="createTimeStamp"/>
+                            <param name="read-only" value="true"/>
+                        </feature>
+                    </feature>
+                    <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.ldap-store.mapping">
+                        <param name="mapping" value="Group"/>
+                        <param name="base-dn-suffix" value="&quot;ou=Groups,dc=jboss,dc=org&quot;"/>
+                        <param name="code" value="Group"/>
+                        <param name="object-classes" value="groupOfNames"/>
+                        <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.ldap-store.mapping.attribute">
+                            <param name="name" value="name"/>
+                            <param name="attribute" value="name"/>
+                            <param name="ldap-name" value="cn"/>
+                            <param name="is-identifier" value="true"/>
+                        </feature>
+                        <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.ldap-store.mapping.attribute">
+                            <param name="name" value="createdDate"/>
+                            <param name="attribute" value="createdDate"/>
+                            <param name="ldap-name" value="createTimeStamp"/>
+                            <param name="read-only" value="true"/>
+                        </feature>
+                    </feature>
+                </feature>
+            </feature>
+        </feature>
+
+        <feature spec="subsystem.picketlink-identity-management.partition-manager">
+            <param name="partition-manager" value="multiple.config.partition.manager"/>
+            <param name="jndi-name" value="picketlink/MultipleConfigurationPartitionManager"/>
+            <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration">
+                <param name="identity-configuration" value="partition.jboss.config"/>
+                <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.jpa-store">
+                    <param name="jpa-store" value="jpa-store"/>
+                    <param name="data-source" value="jboss/datasources/JBossIdentityDS"/>
+                    <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.jpa-store.supported-types">
+                        <param name="supported-types" value="supported-types"/>
+                        <param name="supports-all" value="true"/>
+                    </feature>
+                </feature>
+            </feature>
+            <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration">
+                <param name="identity-configuration" value="partition.redhat.config"/>
+                <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.jpa-store">
+                    <param name="jpa-store" value="jpa-store"/>
+                    <param name="data-source" value="jboss/datasources/RedHatIdentityDS"/>
+                    <feature spec="subsystem.picketlink-identity-management.partition-manager.identity-configuration.jpa-store.supported-types">
+                        <param name="supported-types" value="supported-types"/>
+                        <param name="supports-all" value="true"/>
+                    </feature>
+                </feature>
+            </feature>
+        </feature>
+    </feature>
+    
+</feature-group-spec>

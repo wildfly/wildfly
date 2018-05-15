@@ -1,0 +1,151 @@
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2014, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
+<build xmlns="urn:wildfly:feature-pack-build:2.0">
+    <dependencies>
+        <dependency group-id="org.wildfly.core" artifact-id="wildfly-core-galleon-pack">
+            <name>org.wildfly.core:wildfly-core-galleon-pack</name>
+            <packages inherit="false">
+                <exclude name="product.conf"/>
+            </packages>
+            <default-configs inherit="false"/>
+        </dependency>
+        <dependency group-id="org.wildfly" artifact-id="wildfly-servlet-galleon-pack">
+            <name>org.wildfly:wildfly-servlet-galleon-pack</name>
+            <packages inherit="false">
+                <exclude name="product.conf"/>
+            </packages>
+            <default-configs inherit="false">
+                <include name="standalone-load-balancer.xml" model="standalone"/>
+            </default-configs>
+        </dependency>
+    </dependencies>
+    <default-packages>
+        <package name="modules.all"/>
+        <package name="docs"/>
+        <package name="docs.licenses.merge"/>
+    </default-packages>
+    <package-schemas>
+        <group name="org.jboss.as"/>
+        <group name="org.jboss.metadata"/>
+        <group name="org.wildfly"/>
+        <group name="org.wildfly.core"/>
+        <group name="org.wildfly.security"/>
+    </package-schemas>
+
+    <config model="standalone">
+        <packages>
+            <package name="product.conf" optional="true"/>
+            <package name="misc.standalone"/>
+        </packages>
+    </config>
+
+    <config model="domain">
+        <packages>
+            <package name="product.conf" optional="true"/>
+            <package name="misc.domain"/>
+        </packages>
+    </config>
+
+    <config name="standalone.xml" model="standalone">
+        <feature-group name="standalone"/>
+    </config>
+
+    <config name="standalone-ee8.xml" model="standalone">
+        <feature-group name="standalone"/>
+        <feature spec="system-property">
+            <param name="system-property" value="ee8.preview.mode"/>
+            <param name="value" value="true"/>
+        </feature>
+    </config>
+
+    <config name="standalone-ha.xml" model="standalone">
+        <feature-group name="standalone-ha"/>
+     </config>
+
+    <config name="standalone-full.xml" model="standalone">
+        <feature-group name="standalone-full"/>
+    </config>
+
+    <config name="standalone-full-ha.xml" model="standalone">
+        <feature-group name="standalone-full-ha"/>
+    </config>
+
+
+    <config name="domain.xml" model="domain">
+        <!-- domain.server-group features are excluded from every domain group below
+             simply to preserve the order of the profiles specified here.
+             Not excluding the server groups will work but profiles full and full-ha
+             will appear in the resulting config before ha because the server groups that are
+             introduced into the config by the first domain group and overriden to reference
+             full and full-ha below will make those profiles installed before ha.
+        -->
+        <feature-group name="domain">
+            <exclude spec="domain.server-group"/>
+        </feature-group>
+        <feature-group name="domain-ha">
+            <exclude spec="domain.server-group"/>
+        </feature-group>
+        <feature-group name="domain-full">
+            <exclude spec="domain.server-group"/>
+        </feature-group>
+        <feature-group name="domain-full-ha">
+            <exclude spec="domain.server-group"/>
+        </feature-group>
+        <feature-group name="domain-load-balancer">
+            <exclude spec="domain.server-group"/>
+        </feature-group>
+
+        <feature spec="domain.server-group">
+            <param name="server-group" value="main-server-group"/>
+            <param name="profile" value="full" />
+            <param name="socket-binding-group" value="full-sockets" />
+            <feature spec="domain.server-group.jvm">
+                <param name="jvm" value="default"/>
+                <param name="heap-size" value="64m"/>
+                <param name="max-heap-size" value="512m"/>
+            </feature>
+        </feature>
+        <feature spec="domain.server-group">
+            <param name="server-group" value="other-server-group"/>
+            <param name="profile" value="full-ha" />
+            <param name="socket-binding-group" value="full-ha-sockets" />
+            <feature spec="domain.server-group.jvm">
+                <param name="jvm" value="default"/>
+                <param name="heap-size" value="64m"/>
+                <param name="max-heap-size" value="512m"/>
+            </feature>
+        </feature>
+    </config>
+
+    <config name="host.xml" model="host">
+        <feature-group name="host"/>
+    </config>
+
+    <config name="host-master.xml" model="host">
+        <feature-group name="host-master"/>
+    </config>
+
+    <config name="host-slave.xml" model="host">
+        <feature-group name="host-slave"/>
+    </config>
+</build>

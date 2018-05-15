@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="jca" xmlns="urn:jboss:galleon:feature-group:1.0">
+    <feature spec="subsystem.jca">
+        <feature spec="subsystem.jca.archive-validation.archive-validation">
+            <param name="enabled" value="true"/>
+            <param name="fail-on-error" value="true"/>
+            <param name="fail-on-warn" value="false"/>
+        </feature>
+        <feature spec="subsystem.jca.bean-validation.bean-validation">
+            <param name="enabled" value="true"/>
+        </feature>
+        <feature spec="subsystem.jca.cached-connection-manager.cached-connection-manager">
+            <param name="install" value="true" />
+        </feature>
+        <feature spec="subsystem.jca.workmanager">
+            <param name="workmanager" value="default" />
+            <param name="name" value="default" />
+            <feature spec="subsystem.jca.workmanager.short-running-threads">
+                <param name="short-running-threads" value="default"/>
+                <param name="max-threads" value="50"/>
+                <param name="queue-length" value="50"/>
+                <param name="core-threads" value="50"/>
+                <param name="keepalive-time" value="{time=10,unit=SECONDS}"/>
+            </feature>
+            <feature spec="subsystem.jca.workmanager.long-running-threads">
+                <param name="long-running-threads" value="default"/>
+                <param name="max-threads" value="50"/>
+                <param name="queue-length" value="50"/>
+                <param name="core-threads" value="50"/>
+                <param name="keepalive-time" value="{time=10,unit=SECONDS}"/>
+            </feature>
+        </feature>
+    </feature>
+</feature-group-spec>

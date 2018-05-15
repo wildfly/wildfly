@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+
+<tasks xmlns="urn:wildfly:wildfly-feature-pack-tasks:2.0">
+    <copy-artifact artifact="org.apache.activemq:artemis-native" to-location="modules/system/layers/base/org/apache/activemq/artemis/journal/main" extract="true" >
+        <filter pattern="lib/*" include="true" />
+        <filter pattern="*" include="false"/>
+    </copy-artifact>
+</tasks>

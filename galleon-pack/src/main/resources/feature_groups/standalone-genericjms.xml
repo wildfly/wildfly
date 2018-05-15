@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="standalone-genericjms" xmlns="urn:jboss:galleon:feature-group:1.0">
+
+    <feature-group name="standalone">
+        <feature spec="subsystem.resource-adapters">
+            <feature spec="subsystem.resource-adapters.resource-adapter">
+                <param name="resource-adapter" value="generic-jms-ra.rar"/>
+                <param name="module" value="org.jboss.genericjms"/>
+                <param name="transaction-support" value="NoTransaction"/>
+                <feature spec="subsystem.resource-adapters.resource-adapter.connection-definitions">
+                    <param name="class-name" value="org.jboss.resource.adapter.jms.JmsManagedConnectionFactory"/>
+                    <param name="jndi-name" value="${genericjms.cf.jndi-name}"/>
+                    <param name="connection-definitions" value="${genericjms.cf.pool-name}"/>
+                    <param name="security-application" value="true"/>
+                    <feature spec="subsystem.resource-adapters.resource-adapter.connection-definitions.config-properties">
+                        <param name="config-properties" value="JndiParameters"/>
+                        <param name="value" value="&quot;java.naming.factory.initial=${genericjms.cf.jndi.contextfactory};java.naming.provider.url=${genericjms.cf.jndi.url}&quot;"/>
+                    </feature>
+                    <feature spec="subsystem.resource-adapters.resource-adapter.connection-definitions.config-properties">
+                        <param name="config-properties" value="ConnectionFactory"/>
+                        <param name="value" value="${genericjms.cf.jndi.lookup}"/>
+                    </feature>
+                </feature>
+            </feature>
+        </feature>
+    </feature-group>
+
+    <feature spec="interface">
+        <param name="interface" value="unsecure"/>
+        <param name="inet-address" value="${jboss.bind.address.unsecure:127.0.0.1}"/>
+    </feature>
+    <feature spec="socket-binding-group">
+        <param name="socket-binding-group" value="standard-sockets" />
+        <param name="port-offset" value="${jboss.socket.binding.port-offset:0}"/>
+        <param name="default-interface" value="public"/>
+        <feature-group name="iiop-sockets"/>
+    </feature>
+
+    <feature-group name="jsr77"/>
+    <feature-group name="iiop-openjdk"/>
+
+    <feature spec="subsystem.ejb3">
+        <feature spec="subsystem.ejb3.service.iiop">
+            <param name="use-qualified-name" value="false"/>
+            <param name="enable-by-default" value="false"/>
+        </feature>
+    </feature>
+    <feature spec="subsystem.ejb3">
+        <param name="default-resource-adapter-name" value="${ejb.resource-adapter-name:activemq-ra.rar}"/>
+        <param name="default-mdb-instance-pool" value="mdb-strict-max-pool"/>
+    </feature>
+</feature-group-spec>

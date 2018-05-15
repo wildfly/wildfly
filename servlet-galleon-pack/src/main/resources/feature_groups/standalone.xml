@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="standalone" xmlns="urn:jboss:galleon:feature-group:1.0">
+
+    <feature spec="server-root">
+        <param name="server-root" value="/" />
+    </feature>
+
+    <feature spec="socket-binding-group">
+        <param name="socket-binding-group" value="standard-sockets" />
+        <param name="default-interface" value="public" />
+        <param name="port-offset" value="${jboss.socket.binding.port-offset:0}"/>
+        <feature-group name="standalone-sockets"/>
+    </feature>
+
+    <feature-group name="security-realms"/>
+    <feature-group name="management-audit"/>
+    <feature-group name="interfaces"/>
+    <feature-group name="management-interfaces"/>
+    <feature-group name="access-control"/>
+
+    <feature-group name="standalone-profile"/>
+
+</feature-group-spec>

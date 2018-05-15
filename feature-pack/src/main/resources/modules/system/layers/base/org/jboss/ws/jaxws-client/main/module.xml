@@ -71,6 +71,5 @@
         <module name="org.apache.commons.beanutils"/>
         <module name="javax.wsdl4j.api" />
         <module name="org.bouncycastle" />
-        <module name="org.jboss.modules"/>
     </dependencies>
 </module>
