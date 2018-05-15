@@ -27,6 +27,7 @@ import java.util.Map;
 
 import org.jboss.as.clustering.controller.Attribute;
 import org.jboss.as.clustering.infinispan.subsystem.remote.ConnectionPoolResourceDefinition;
+import org.jboss.as.clustering.infinispan.subsystem.remote.HotRodStoreResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteClusterResourceDefinition;
 import org.jboss.as.controller.PathElement;
@@ -129,6 +130,9 @@ public enum XMLAttribute {
     TYPE(TableResourceDefinition.ColumnAttribute.ID.getColumnType()),
     @Deprecated VIRTUAL_NODES("virtual-nodes"),
 
+    // hotrod store
+    CACHE_CONFIGURATION(HotRodStoreResourceDefinition.Attribute.CACHE_CONFIGURATION),
+
     // remote-cache-container
     REMOTE_CACHE_CONTAINER(RemoteCacheContainerResourceDefinition.WILDCARD_PATH),
     CONNECTION_TIMEOUT(RemoteCacheContainerResourceDefinition.Attribute.CONNECTION_TIMEOUT),
@@ -149,7 +153,7 @@ public enum XMLAttribute {
     MIN_IDLE(ConnectionPoolResourceDefinition.Attribute.MIN_IDLE),
 
     // remote-cache-container -> remote-clusters
-    SOCKET_BINDINGS(RemoteClusterResourceDefinition.Attribute.SOCKET_BINDINGS)
+    SOCKET_BINDINGS(RemoteClusterResourceDefinition.Attribute.SOCKET_BINDINGS),
     ;
     private final String name;
 

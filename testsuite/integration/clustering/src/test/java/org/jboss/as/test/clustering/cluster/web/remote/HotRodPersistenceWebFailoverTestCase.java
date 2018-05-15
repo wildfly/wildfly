@@ -107,7 +107,7 @@ public class HotRodPersistenceWebFailoverTestCase extends AbstractWebFailoverTes
                     .setup("/subsystem=infinispan/remote-cache-container=web-sessions/remote-cluster=infinispan-server-cluster:add(socket-bindings=[infinispan-server-1])")
                     // store=hotrod
                     .setup("/subsystem=infinispan/cache-container=web/invalidation-cache=hotrod-persistence:add")
-                    .setup("/subsystem=infinispan/cache-container=web/invalidation-cache=hotrod-persistence/store=hotrod:add(remote-cache-container=web-sessions,fetch-state=false,purge=false,passivation=false,shared=true")
+                    .setup("/subsystem=infinispan/cache-container=web/invalidation-cache=hotrod-persistence/store=hotrod:add(remote-cache-container=web-sessions,cache-configuration=default,fetch-state=false,purge=false,passivation=false,shared=true")
                     .setup("/subsystem=infinispan/cache-container=web/invalidation-cache=hotrod-persistence/component=transaction:add(mode=BATCH)")
                     .setup("/subsystem=infinispan/cache-container=web/invalidation-cache=hotrod-persistence/component=locking:add(isolation=REPEATABLE_READ)")
                     .teardown("/subsystem=infinispan/cache-container=web/invalidation-cache=hotrod-persistence:remove")

@@ -610,6 +610,13 @@
     <xs:complexType name="hotrod-store">
         <xs:complexContent>
             <xs:extension base="tns:store">
+                <xs:attribute name="cache-configuration" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Name of the cache configuration template defined in Infinispan Server to create caches from.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
                 <xs:attribute name="remote-cache-container" type="xs:string" use="required">
                     <xs:annotation>
                         <xs:documentation>

@@ -23,6 +23,7 @@
 package org.jboss.as.clustering.infinispan.subsystem.remote;
 
 
+import static org.jboss.as.clustering.infinispan.subsystem.remote.HotRodStoreConfiguration.CACHE_CONFIGURATION;
 import static org.jboss.as.clustering.infinispan.subsystem.remote.HotRodStoreConfiguration.REMOTE_CACHE_CONTAINER;
 
 import org.infinispan.commons.configuration.attributes.AttributeSet;
@@ -37,7 +38,12 @@ import org.wildfly.clustering.infinispan.spi.RemoteCacheContainer;
 public class HotRodStoreConfigurationBuilder extends AbstractStoreConfigurationBuilder<HotRodStoreConfiguration, HotRodStoreConfigurationBuilder> {
 
     public HotRodStoreConfigurationBuilder(PersistenceConfigurationBuilder builder) {
-        super(builder, new AttributeSet(HotRodStoreConfiguration.class, AbstractStoreConfiguration.attributeDefinitionSet(), REMOTE_CACHE_CONTAINER));
+        super(builder, new AttributeSet(HotRodStoreConfiguration.class, AbstractStoreConfiguration.attributeDefinitionSet(), CACHE_CONFIGURATION, REMOTE_CACHE_CONTAINER));
+    }
+
+    public HotRodStoreConfigurationBuilder cacheConfiguration(String cacheConfiguration) {
+        this.attributes.attribute(CACHE_CONFIGURATION).set(cacheConfiguration);
+        return this;
     }
 
     public HotRodStoreConfigurationBuilder remoteCacheContainer(RemoteCacheContainer remoteCacheContainer) {

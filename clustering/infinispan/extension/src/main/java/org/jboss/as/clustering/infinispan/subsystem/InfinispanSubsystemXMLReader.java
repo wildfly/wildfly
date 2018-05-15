@@ -1310,6 +1310,10 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
+                case CACHE_CONFIGURATION: {
+                    readAttribute(reader, i, operation, HotRodStoreResourceDefinition.Attribute.CACHE_CONFIGURATION);
+                    break;
+                }
                 case REMOTE_CACHE_CONTAINER: {
                     readAttribute(reader, i, operation, HotRodStoreResourceDefinition.Attribute.REMOTE_CACHE_CONTAINER);
                     break;

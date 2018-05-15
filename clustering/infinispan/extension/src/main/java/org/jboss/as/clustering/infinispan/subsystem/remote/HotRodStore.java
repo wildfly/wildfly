@@ -76,6 +76,7 @@ public class HotRodStore<K, V> implements AdvancedLoadWriteStore<K, V> {
 
         HotRodStoreConfiguration configuration = ctx.getConfiguration();
         RemoteCacheContainer remoteCacheContainer = configuration.attributes().attribute(HotRodStoreConfiguration.REMOTE_CACHE_CONTAINER).get();
+        String cacheConfiguration = configuration.attributes().attribute(HotRodStoreConfiguration.CACHE_CONFIGURATION).get();
         String cacheName = ctx.getCache().getName();
 
         try {
@@ -87,8 +88,8 @@ public class HotRodStore<K, V> implements AdvancedLoadWriteStore<K, V> {
                 InfinispanLogger.ROOT_LOGGER.remoteCacheMustBeDefined(protocolVersion.toString(), cacheName);
                 this.remoteCache = remoteCacheContainer.getCache(cacheName, false);
             } else {
-                InfinispanLogger.ROOT_LOGGER.remoteCacheCreated(cacheName);
-                this.remoteCache = remoteCacheContainer.administration().getOrCreateCache(cacheName, (String) null);
+                InfinispanLogger.ROOT_LOGGER.remoteCacheCreated(cacheName, cacheConfiguration);
+                this.remoteCache = remoteCacheContainer.administration().getOrCreateCache(cacheName, cacheConfiguration);
             }
         } catch (HotRodClientException ex) {
             throw new PersistenceException(ex);

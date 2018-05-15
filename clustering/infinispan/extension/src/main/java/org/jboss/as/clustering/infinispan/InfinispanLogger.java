@@ -139,6 +139,6 @@ public interface InfinispanLogger extends BasicLogger {
     void remoteCacheMustBeDefined(String protocolVersion, String remoteCacheName);
 
     @LogMessage(level = INFO)
-    @Message(id = 32, value = "Getting remote cache named '%s'; if it does not exist a new persistent cache configuration will be created from default configuration on the Infinispan Server.")
-    void remoteCacheCreated(String remoteCacheName);
+    @Message(id = 32, value = "Getting remote cache named '%s'. If it does not exist a new cache will be created from configuration template named '%s'; null value uses default cache configuration on the Infinispan Server.")
+    void remoteCacheCreated(String remoteCacheName, String cacheConfiguration);
 }

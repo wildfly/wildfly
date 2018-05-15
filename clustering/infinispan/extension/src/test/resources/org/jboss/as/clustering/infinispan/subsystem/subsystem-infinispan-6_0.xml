@@ -71,7 +71,7 @@
             </remote-store>
         </invalidation-cache>
         <invalidation-cache name="invalidation-hotrod">
-            <hotrod-store remote-cache-container="my-remote-container"/>
+            <hotrod-store cache-configuration="transactional" remote-cache-container="my-remote-container"/>
         </invalidation-cache>
         <replicated-cache name="repl" statistics-enabled="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="SERIALIZABLE" striping="true"/>

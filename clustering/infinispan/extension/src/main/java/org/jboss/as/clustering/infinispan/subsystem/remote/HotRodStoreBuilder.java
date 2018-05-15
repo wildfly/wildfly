@@ -23,6 +23,7 @@
 package org.jboss.as.clustering.infinispan.subsystem.remote;
 
 
+import static org.jboss.as.clustering.infinispan.subsystem.remote.HotRodStoreResourceDefinition.Attribute.CACHE_CONFIGURATION;
 import static org.jboss.as.clustering.infinispan.subsystem.remote.HotRodStoreResourceDefinition.Attribute.REMOTE_CACHE_CONTAINER;
 
 import org.infinispan.configuration.cache.PersistenceConfiguration;
@@ -44,6 +45,7 @@ import org.wildfly.clustering.service.InjectedValueDependency;
 public class HotRodStoreBuilder extends StoreBuilder<HotRodStoreConfiguration, HotRodStoreConfigurationBuilder> {
 
     private volatile InjectedValueDependency<RemoteCacheContainer> remoteCacheContainer;
+    private volatile String cacheConfiguration;
 
     HotRodStoreBuilder(PathAddress address) {
         super(address, HotRodStoreConfigurationBuilder.class);
@@ -51,6 +53,7 @@ public class HotRodStoreBuilder extends StoreBuilder<HotRodStoreConfiguration, H
 
     @Override
     public Builder<PersistenceConfiguration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        cacheConfiguration = CACHE_CONFIGURATION.resolveModelAttribute(context, model).asStringOrNull();
         String remoteCacheContainerName = REMOTE_CACHE_CONTAINER.resolveModelAttribute(context, model).asString();
         this.remoteCacheContainer = new InjectedValueDependency<>(InfinispanRequirement.REMOTE_CONTAINER.getServiceName(context, remoteCacheContainerName), RemoteCacheContainer.class);
         return super.configure(context, model);
@@ -63,6 +66,8 @@ public class HotRodStoreBuilder extends StoreBuilder<HotRodStoreConfiguration, H
 
     @Override
     public void accept(HotRodStoreConfigurationBuilder builder) {
-        builder.remoteCacheContainer(this.remoteCacheContainer.getValue());
+        builder.cacheConfiguration(cacheConfiguration)
+                .remoteCacheContainer(this.remoteCacheContainer.getValue())
+        ;
     }
 }

@@ -40,6 +40,8 @@ public class HotRodStoreConfiguration extends AbstractStoreConfiguration {
 
     static final AttributeDefinition<RemoteCacheContainer> REMOTE_CACHE_CONTAINER = AttributeDefinition.builder("remoteCacheContainer", null, RemoteCacheContainer.class).build();
 
+    static final AttributeDefinition<String> CACHE_CONFIGURATION = AttributeDefinition.builder("cacheConfiguration", null, String.class).build();
+
     public HotRodStoreConfiguration(AttributeSet attributes, AsyncStoreConfiguration async, @SuppressWarnings("deprecation") SingletonStoreConfiguration singletonStore) {
         super(attributes, async, singletonStore);
     }
