@@ -22,7 +22,6 @@
 
 package org.jboss.as.clustering.infinispan.subsystem.remote;
 
-import static org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition.Attribute;
 import static org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition.Capability.CONFIGURATION;
 
 import java.util.ArrayList;
@@ -42,13 +41,14 @@ import org.infinispan.client.hotrod.configuration.SecurityConfiguration;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.infinispan.subsystem.ThreadPoolResourceDefinition;
+import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition.Attribute;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.StringListAttributeDefinition;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -109,16 +109,18 @@ public class RemoteCacheContainerConfigurationBuilder implements ResourceService
         this.valueSizeEstimate = Attribute.VALUE_SIZE_ESTIMATE.resolveModelAttribute(context, model).asInt();
 
         this.clusters.clear();
-        if (model.hasDefined(RemoteClusterResourceDefinition.WILDCARD_PATH.getKey())) {
-            for (Property property : model.get(RemoteClusterResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
-                String clusterName = property.getName();
-                List<InjectedValueDependency<OutboundSocketBinding>> valueDependencies = new ArrayList<>();
-                for (String binding : StringListAttributeDefinition.unwrapValue(context, RemoteClusterResourceDefinition.Attribute.SOCKET_BINDINGS.resolveModelAttribute(context, property.getValue()))) {
-                    InjectedValueDependency<OutboundSocketBinding> outboundSocketBindingInjectedValueDependency = new InjectedValueDependency<>(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING.getServiceName(context, binding), OutboundSocketBinding.class);
-                    valueDependencies.add(outboundSocketBindingInjectedValueDependency);
-                }
-                this.clusters.put(clusterName, valueDependencies);
+
+        Resource container = context.readResource(PathAddress.EMPTY_ADDRESS);
+        for (Resource.ResourceEntry entry : container.getChildren(RemoteClusterResourceDefinition.WILDCARD_PATH.getKey())) {
+            String clusterName = entry.getName();
+            ModelNode cluster = entry.getModel();
+            List<String> bindings = StringListAttributeDefinition.unwrapValue(context, RemoteClusterResourceDefinition.Attribute.SOCKET_BINDINGS.resolveModelAttribute(context, cluster));
+            List<InjectedValueDependency<OutboundSocketBinding>> valueDependencies = new ArrayList<>(bindings.size());
+            for (String binding : bindings) {
+                InjectedValueDependency<OutboundSocketBinding> outboundSocketBindingInjectedValueDependency = new InjectedValueDependency<>(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING.getServiceName(context, binding), OutboundSocketBinding.class);
+                valueDependencies.add(outboundSocketBindingInjectedValueDependency);
             }
+            this.clusters.put(clusterName, valueDependencies);
         }
 
         return this;
