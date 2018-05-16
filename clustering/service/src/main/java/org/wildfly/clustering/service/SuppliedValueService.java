@@ -27,7 +27,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
- * Generic {@link org.jboss.msc.Service} whose provided value is a mapping of a supplied value.
+ * Generic {@link org.jboss.msc.service.Service} whose provided value is a mapping of a supplied value.
  * @author Paul Ferraro
  */
 public class SuppliedValueService<T, V> extends FunctionalValueService<T, V> {

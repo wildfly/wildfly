@@ -82,6 +82,9 @@ public abstract class AbstractClusteringTestCase {
     public static final String[] TWO_DEPLOYMENT_HELPERS = new String[] { DEPLOYMENT_HELPER_1, DEPLOYMENT_HELPER_2 };
     public static final String[] FOUR_DEPLOYMENT_HELPERS = new String[] {DEPLOYMENT_HELPER_1, DEPLOYMENT_HELPER_2, DEPLOYMENT_HELPER_3, DEPLOYMENT_HELPER_4 };
 
+    // Infinispan Server
+    public static final String INFINISPAN_SERVER_1 = "infinispan-server-1";
+
     // Timeouts
     public static final int GRACE_TIME_TO_REPLICATE = TimeoutUtil.adjust(3000);
     public static final int GRACE_TIME_TOPOLOGY_CHANGE = TimeoutUtil.adjust(3000);

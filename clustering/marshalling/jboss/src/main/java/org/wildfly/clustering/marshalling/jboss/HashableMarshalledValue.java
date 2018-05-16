@@ -36,11 +36,6 @@ public class HashableMarshalledValue<T> extends SimpleMarshalledValue<T> {
 
     private transient int hashCode;
 
-    /**
-     * @param object
-     * @param context
-     * @throws IOException
-     */
     public HashableMarshalledValue(T object, MarshallingContext context) {
         super(object, context);
         this.hashCode = (object != null ) ? object.hashCode() : 0;

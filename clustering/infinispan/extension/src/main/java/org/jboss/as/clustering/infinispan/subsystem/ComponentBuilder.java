@@ -40,7 +40,7 @@ public abstract class ComponentBuilder<C> implements ResourceServiceBuilder<C>, 
 
     private final ServiceName name;
 
-    ComponentBuilder(ResourceServiceNameFactory factory, PathAddress address) {
+    public ComponentBuilder(ResourceServiceNameFactory factory, PathAddress address) {
         this.name = factory.getServiceName(address.getParent());
     }
 

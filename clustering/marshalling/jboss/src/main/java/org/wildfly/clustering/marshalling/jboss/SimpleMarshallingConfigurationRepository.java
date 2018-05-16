@@ -41,7 +41,7 @@ public class SimpleMarshallingConfigurationRepository implements MarshallingConf
     /**
      * Create a marshalling configuration repository using the specified enumeration of marshalling configuration suppliers.
      * @param enumClass an enum class
-     * @param currentConfiguration the supplier of the current marshalling configuration
+     * @param current the supplier of the current marshalling configuration
      * @param context the context with which to obtain the marshalling configuration
      */
     public <C, E extends Enum<E> & Function<C, MarshallingConfiguration>> SimpleMarshallingConfigurationRepository(Class<E> enumClass, E current, C context) {

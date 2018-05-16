@@ -40,7 +40,6 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author Radoslav Husar
- * @version August 2015
  */
 public class ThreadPoolBuilder extends GlobalComponentBuilder<ThreadPoolConfiguration> {
     static final PrivilegedAction<ClassLoader> GET_CLASS_LOADER_ACTION = () -> ThreadPoolExecutorFactory.class.getClassLoader();

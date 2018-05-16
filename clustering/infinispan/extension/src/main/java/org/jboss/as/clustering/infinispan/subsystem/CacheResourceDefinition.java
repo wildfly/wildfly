@@ -40,6 +40,7 @@ import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
+import org.jboss.as.clustering.infinispan.subsystem.remote.HotRodStoreResourceDefinition;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
@@ -172,6 +173,7 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
                 ;
     }
 
+    @SuppressWarnings("deprecation")
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
 
         if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
@@ -207,6 +209,12 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
         ObjectMemoryResourceDefinition.buildTransformation(version, builder);
         OffHeapMemoryResourceDefinition.buildTransformation(version, builder);
 
+        if (InfinispanModel.VERSION_7_0_0.requiresTransformation(version)) {
+            builder.rejectChildResource(HotRodStoreResourceDefinition.WILDCARD_PATH);
+        } else {
+            HotRodStoreResourceDefinition.buildTransformation(version, builder);
+        }
+
         LockingResourceDefinition.buildTransformation(version, builder);
         ExpirationResourceDefinition.buildTransformation(version, builder);
         TransactionResourceDefinition.buildTransformation(version, builder);
@@ -228,6 +236,7 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
         this.handler = handler;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
         ManagementResourceRegistration registration = parent.registerSubModel(this);
@@ -261,6 +270,7 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
         new MixedKeyedJDBCStoreResourceDefinition().register(registration);
         new StringKeyedJDBCStoreResourceDefinition().register(registration);
         new RemoteStoreResourceDefinition().register(registration);
+        new HotRodStoreResourceDefinition().register(registration);
 
         return registration;
     }

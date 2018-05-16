@@ -63,13 +63,13 @@ import org.jboss.dmr.ModelType;
  */
 public abstract class StoreResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
 
-    static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
+    protected static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
-    static PathElement pathElement(String value) {
+    protected static PathElement pathElement(String value) {
         return PathElement.pathElement("store", value);
     }
 
-    enum Capability implements org.jboss.as.clustering.controller.Capability {
+    protected enum Capability implements org.jboss.as.clustering.controller.Capability {
         PERSISTENCE("org.wildfly.clustering.infinispan.cache.store", PersistenceConfiguration.class),
         ;
         private final RuntimeCapability<Void> definition;
@@ -132,7 +132,7 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition<Ma
         }
     }
 
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder, PathElement path) {
+    public static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder, PathElement path) {
         if (InfinispanModel.VERSION_6_0_0.requiresTransformation(version)) {
             builder.getAttributeBuilder().setDiscard(DiscardAttributeChecker.ALWAYS, Attribute.MAX_BATCH_SIZE.getDefinition());
         }
@@ -162,7 +162,7 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition<Ma
     private final UnaryOperator<ResourceDescriptor> configurator;
     private final ResourceServiceHandler handler;
 
-    StoreResourceDefinition(PathElement path, PathElement legacyPath, ResourceDescriptionResolver resolver, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceBuilderFactory<PersistenceConfiguration> builderFactory) {
+    protected StoreResourceDefinition(PathElement path, PathElement legacyPath, ResourceDescriptionResolver resolver, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceBuilderFactory<PersistenceConfiguration> builderFactory) {
         super(path, resolver);
         this.legacyPath = legacyPath;
         this.configurator = configurator;
