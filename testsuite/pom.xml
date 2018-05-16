@@ -75,8 +75,6 @@
     <!-- Global testsuite system properties defaults. -->
 
     <properties>
-<!--    the following hibernate version is hardcoded for the dual EE7 and EE8 support, so that we build tests against ORM 5.1.14.Final -->
-        <version.org.hibernate>5.1.14.Final</version.org.hibernate>
         <!-- Current module's directory. Will automatically pick up sub-module's basedir. -->
         <jbossas.ts.submodule.dir>${basedir}</jbossas.ts.submodule.dir>
         <!-- Integration module's directory. To be overriden in sub-modules. -->

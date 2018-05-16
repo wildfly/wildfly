@@ -35,9 +35,6 @@
     <artifactId>jipijapa-hibernate5</artifactId>
 
     <name>jipijapa Hibernate 5.1.x (JPA 2.1) integration</name>
-    <properties>
-        <version.org.hibernate5_1>5.1.14.Final</version.org.hibernate5_1>
-    </properties>
 
     <dependencies>
         <!-- testing -->
@@ -98,7 +95,6 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>
-            <!-- <version>${version.org.hibernate5_1}</version> --> 
             <scope>provided</scope>
             <exclusions>
               <exclusion>
@@ -112,7 +108,6 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-entitymanager</artifactId>
-            <version>${version.org.hibernate5_1}</version>
             <scope>provided</scope>
             <exclusions>
               <exclusion>
@@ -128,6 +123,19 @@
             <artifactId>infinispan-hibernate-cache-spi</artifactId>
             <scope>provided</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-hibernate-cache-commons</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-core</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
 
         <dependency>
             <groupId>org.hibernate.validator</groupId>

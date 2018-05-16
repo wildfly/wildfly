@@ -280,9 +280,9 @@
         <!-- Hardcoded in module.xml for the dual EE7 and EE8 support -->
         <version.org.glassfish.javax.json-1.0>1.0.4</version.org.glassfish.javax.json-1.0>
         <version.org.glassfish.soteria>1.0</version.org.glassfish.soteria>
-        <version.org.hibernate>5.3.0.Final</version.org.hibernate>
+        <!-- <version.org.hibernate53>5.3.0.Final</version.org.hibernate53> -->
         <!-- Hardcoded in module.xml for the dual EE7 and EE8 support -->
-        <version.org.hibernate51>5.1.14.Final</version.org.hibernate51>
+        <version.org.hibernate>5.1.14.Final</version.org.hibernate>
         <version.org.hibernate.commons.annotations>5.0.2.Final</version.org.hibernate.commons.annotations>
         <version.org.hibernate.search>5.5.8.Final</version.org.hibernate.search>
         <!-- Hardcoded in module.xml for the dual EE7 and EE8 support -->
@@ -3885,6 +3885,12 @@
                 <groupId>org.infinispan</groupId>
                 <artifactId>infinispan-hibernate-cache-spi</artifactId>
                 <version>${version.org.infinispan}</version>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>*</artifactId>
+                        <groupId>*</groupId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.infinispan</groupId>
@@ -3999,8 +4005,8 @@
                 <version>${version.org.infinispan}</version>
                 <exclusions>
                     <exclusion>
-                        <artifactId>hibernate-core</artifactId>
-                        <groupId>org.hibernate</groupId>
+                        <artifactId>*</artifactId>
+                        <groupId>*</groupId>
                     </exclusion>
                 </exclusions>
             </dependency>
