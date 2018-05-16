@@ -25,34 +25,34 @@
 <!-- Represents Hibernate 5.1.x, will later become 5.3.x for WF 14  -->
 <module xmlns="urn:jboss:module:1.7" name="org.hibernate">
     <resources>
-        <artifact name="${org.hibernate:hibernate-core}">
+        <artifact name="org.hibernate:hibernate-core:5.3.0.Final">
             <conditions>
-              <property-equal name="ee8.preview.mode" value="true"/>
+              <property-equal name="ee8.preview.mode" value="true"/> <!-- ${version.org.hibernate53} -->
             </conditions>
         </artifact>
-        <artifact name="org.hibernate:hibernate-core:5.1.14.Final"> <!-- ${version.org.hibernate51} -->
+        <artifact name="${org.hibernate:hibernate-core}"> 
             <conditions>
               <property-not-equal name="ee8.preview.mode" value="true"/>
             </conditions>
         </artifact>
-        <artifact name="${org.hibernate:hibernate-envers}">
+        <artifact name="org.hibernate:hibernate-envers:5.3.0.Final">  <!-- ${version.org.hibernate53} -->
             <conditions>
               <property-equal name="ee8.preview.mode" value="true"/>
             </conditions>
         </artifact>
-        <artifact name="org.hibernate:hibernate-envers:5.1.14.Final"> <!-- ${version.org.hibernate51} -->
+        <artifact name="${org.hibernate:hibernate-envers}"> 
             <conditions>
               <property-not-equal name="ee8.preview.mode" value="true"/>
             </conditions>
         </artifact>
 
-        <artifact name="org.hibernate:hibernate-entitymanager:5.1.14.Final"> <!-- ${version.org.hibernate51} -->
+        <artifact name="${org.hibernate:hibernate-entitymanager}"> 
             <conditions>
               <property-not-equal name="ee8.preview.mode" value="true"/>
             </conditions>
         </artifact>    
 
-        <artifact name="org.hibernate:hibernate-java8:5.1.14.Final"> <!-- ${version.org.hibernate51} -->
+        <artifact name="${org.hibernate:hibernate-java8}"> 
             <conditions>
               <property-not-equal name="ee8.preview.mode" value="true"/>
             </conditions>

@@ -96,25 +96,13 @@
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>
             <scope>provided</scope>
+        <version>5.3.0.Final</version> 
             <exclusions>
               <exclusion>
-                 <groupId>org.hibernate.common</groupId>
-                 <artifactId>hibernate-commons-annotations</artifactId>
+                 <groupId>*</groupId>
+                 <artifactId>*</artifactId>
               </exclusion>
            </exclusions>
-
-        </dependency>
-
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-entitymanager</artifactId>
-            <scope>provided</scope>
-            <exclusions>
-              <exclusion>
-                 <groupId>org.hibernate.common</groupId>
-                 <artifactId>hibernate-commons-annotations</artifactId>
-              </exclusion>
-          </exclusions>
 
         </dependency>
 
@@ -122,6 +110,24 @@
             <groupId>org.infinispan</groupId>
             <artifactId>infinispan-hibernate-cache-spi</artifactId>
             <scope>provided</scope>
+            <exclusions>
+              <exclusion>
+                 <groupId>*</groupId>
+                 <artifactId>*</artifactId>
+              </exclusion>
+           </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-hibernate-cache-commons</artifactId>
+            <scope>provided</scope>
+             <exclusions>
+              <exclusion>
+                 <groupId>*</groupId>
+                 <artifactId>*</artifactId>
+              </exclusion>
+           </exclusions>
         </dependency>
 
         <dependency>
