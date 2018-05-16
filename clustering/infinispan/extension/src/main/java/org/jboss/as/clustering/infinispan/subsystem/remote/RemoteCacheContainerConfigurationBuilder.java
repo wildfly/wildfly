@@ -22,8 +22,6 @@
 
 package org.jboss.as.clustering.infinispan.subsystem.remote;
 
-import static org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition.Capability.CONFIGURATION;
-
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -38,6 +36,7 @@ import org.infinispan.client.hotrod.configuration.ConnectionPoolConfiguration;
 import org.infinispan.client.hotrod.configuration.ExecutorFactoryConfiguration;
 import org.infinispan.client.hotrod.configuration.NearCacheConfiguration;
 import org.infinispan.client.hotrod.configuration.SecurityConfiguration;
+import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.infinispan.subsystem.ThreadPoolResourceDefinition;
@@ -52,7 +51,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.InjectedValue;
@@ -64,7 +62,7 @@ import org.wildfly.clustering.service.ValueDependency;
 /**
  * @author Radoslav Husar
  */
-public class RemoteCacheContainerConfigurationBuilder implements ResourceServiceBuilder<Configuration>, Value<Configuration> {
+public class RemoteCacheContainerConfigurationBuilder extends CapabilityServiceNameProvider implements ResourceServiceBuilder<Configuration>, Value<Configuration> {
 
     private final PathAddress address;
 
@@ -86,14 +84,10 @@ public class RemoteCacheContainerConfigurationBuilder implements ResourceService
     private volatile int valueSizeEstimate;
 
     RemoteCacheContainerConfigurationBuilder(PathAddress address) {
+        super(RemoteCacheContainerResourceDefinition.Capability.CONFIGURATION, address);
         this.address = address;
         this.threadPools.put(ThreadPoolResourceDefinition.CLIENT, new InjectedValueDependency<>(ThreadPoolResourceDefinition.CLIENT.getServiceName(address), ExecutorFactoryConfiguration.class));
         this.module = new InjectedValueDependency<>(RemoteCacheContainerComponent.MODULE.getServiceName(address), Module.class);
-    }
-
-    @Override
-    public ServiceName getServiceName() {
-        return CONFIGURATION.getServiceName(this.address);
     }
 
     @Override

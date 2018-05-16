@@ -28,6 +28,7 @@ import java.util.function.Supplier;
 
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.configuration.Configuration;
+import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.controller.OperationContext;
@@ -37,7 +38,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
 import org.wildfly.clustering.infinispan.spi.RemoteCacheContainer;
@@ -49,20 +49,14 @@ import org.wildfly.clustering.service.ValueDependency;
 /**
  * @author Radoslav Husar
  */
-public class RemoteCacheContainerBuilder implements ResourceServiceBuilder<RemoteCacheContainer>, Function<RemoteCacheManager, RemoteCacheContainer>, Supplier<RemoteCacheManager>, Consumer<RemoteCacheManager> {
+public class RemoteCacheContainerBuilder extends CapabilityServiceNameProvider implements ResourceServiceBuilder<RemoteCacheContainer>, Function<RemoteCacheManager, RemoteCacheContainer>, Supplier<RemoteCacheManager>, Consumer<RemoteCacheManager> {
 
     private ValueDependency<Configuration> configuration;
-    private final PathAddress address;
     private final String name;
 
     public RemoteCacheContainerBuilder(PathAddress address) {
-        this.address = address;
+        super(RemoteCacheContainerResourceDefinition.Capability.CONTAINER, address);
         this.name = address.getLastElement().getValue();
-    }
-
-    @Override
-    public ServiceName getServiceName() {
-        return RemoteCacheContainerResourceDefinition.Capability.CONTAINER.getServiceName(this.address);
     }
 
     @Override
