@@ -51,7 +51,6 @@
         <module name="org.hibernate.jipijapa-hibernate5" services="import"/>
         <module name="org.infinispan" services="import"/>
         <module name="org.infinispan.commons"/>
-        <module name="org.infinispan.hibernate-cache-commons" services="import"/>
         <module name="org.jboss.as.jpa.spi"/>
         <module name="org.jboss.logging"/>
     </dependencies>
