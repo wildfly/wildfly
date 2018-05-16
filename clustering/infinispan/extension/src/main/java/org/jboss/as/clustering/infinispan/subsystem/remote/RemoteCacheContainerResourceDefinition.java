@@ -33,7 +33,7 @@ import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.RestartParentResourceRegistration;
+import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
@@ -151,8 +151,6 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
         super(WILDCARD_PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(WILDCARD_PATH));
     }
 
-    private final ResourceServiceBuilderFactory<Configuration> builderFactory = RemoteCacheContainerConfigurationBuilder::new;
-
     @Override
     public ManagementResourceRegistration register(ManagementResourceRegistration parentRegistration) {
         ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
@@ -165,8 +163,9 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
                 .addRequiredSingletonChildren(NoNearCacheResourceDefinition.PATH)
                 .addRequiredChildren(SecurityResourceDefinition.PATH)
                 ;
+        ResourceServiceBuilderFactory<Configuration> builderFactory = RemoteCacheContainerConfigurationBuilder::new;
         ResourceServiceHandler handler = new RemoteCacheContainerServiceHandler(builderFactory);
-        new RestartParentResourceRegistration<>(builderFactory, descriptor, handler).register(registration);
+        new SimpleResourceRegistration(descriptor, handler).register(registration);
 
         new ConnectionPoolResourceDefinition().register(registration);
         new RemoteClusterResourceDefinition(builderFactory).register(registration);
