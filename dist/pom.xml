@@ -94,7 +94,7 @@
                             <install-dir>${basedir}/target/${project.build.finalName}</install-dir>
                             <feature-packs>
                                 <feature-pack>
-                                    <groupId>org.wildfly</groupId>
+                                    <groupId>${project.groupId}</groupId>
                                     <artifactId>wildfly-galleon-pack</artifactId>
                                     <version>${project.version}</version>
                                     <included-packages>

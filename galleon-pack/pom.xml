@@ -131,7 +131,7 @@
                                     <extension>zip</extension>
                                 </feature-pack>
                                 <feature-pack>
-                                    <groupId>org.wildfly</groupId>
+                                    <groupId>${project.groupId}</groupId>
                                     <artifactId>wildfly-servlet-galleon-pack</artifactId>
                                     <version>${project.version}</version>
                                     <type>zip</type>
