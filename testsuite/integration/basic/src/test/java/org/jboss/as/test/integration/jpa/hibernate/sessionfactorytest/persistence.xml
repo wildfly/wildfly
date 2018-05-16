@@ -29,6 +29,7 @@
             <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
             <property name="hibernate.show_sql" value="false"/>
             <property name="hibernate.session_factory_name" value="modelSessionFactory"/>
+           <!-- <property name="hibernate.allow_update_outside_transaction" value="true"/> only needed for ORM 5.3.0 --> 
         </properties>
     </persistence-unit>
 </persistence>
