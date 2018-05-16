@@ -56,7 +56,10 @@ import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 public class HibernateSearchProcessor implements DeploymentUnitProcessor {
 
     private static final DotName SEARCH_INDEXED_ANNOTATION_NAME = DotName.createSimple("org.hibernate.search.annotations.Indexed");
-    private static final ModuleIdentifier defaultSearchModule = ModuleIdentifier.fromString(Configuration.PROVIDER_MODULE_HIBERNATE_SEARCH);
+    private static final ModuleIdentifier defaultSearchModule = Boolean.getBoolean("ee8.preview.mode") ?
+            ModuleIdentifier.fromString(Configuration.PROVIDER_MODULE_HIBERNATE_SEARCH_EE8)
+            : ModuleIdentifier.fromString(Configuration.PROVIDER_MODULE_HIBERNATE_SEARCH_EE7);
+
     private static final String NONE = "none";
     private static final String IGNORE = "auto";  // if set to `auto`, will behave like not having set the property
 

@@ -1,44 +1,38 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
+ * JBoss, Home of Professional Open Source
+ * Copyright 2013, Red Hat Middleware LLC, and individual contributors
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
-package org.jboss.as.jpa.hibernate4;
+package org.jboss.as.jpa.hibernate5;
 
-import static org.hibernate.cache.infinispan.InfinispanRegionFactory.COLLECTION_CACHE_RESOURCE_PROP;
-import static org.hibernate.cache.infinispan.InfinispanRegionFactory.DEF_ENTITY_RESOURCE;
-import static org.hibernate.cache.infinispan.InfinispanRegionFactory.DEF_QUERY_RESOURCE;
-import static org.hibernate.cache.infinispan.InfinispanRegionFactory.ENTITY_CACHE_RESOURCE_PROP;
-import static org.hibernate.cache.infinispan.InfinispanRegionFactory.INFINISPAN_CONFIG_RESOURCE_PROP;
-import static org.hibernate.cache.infinispan.InfinispanRegionFactory.NATURAL_ID_CACHE_RESOURCE_PROP;
-import static org.hibernate.cache.infinispan.InfinispanRegionFactory.QUERY_CACHE_RESOURCE_PROP;
-import static org.hibernate.cache.infinispan.InfinispanRegionFactory.TIMESTAMPS_CACHE_RESOURCE_PROP;
-import static org.jboss.as.jpa.hibernate4.infinispan.InfinispanRegionFactory.CACHE_CONTAINER;
+import static org.infinispan.hibernate.cache.spi.InfinispanProperties.COLLECTION_CACHE_RESOURCE_PROP;
+import static org.infinispan.hibernate.cache.spi.InfinispanProperties.DEF_ENTITY_RESOURCE;
+import static org.infinispan.hibernate.cache.spi.InfinispanProperties.DEF_QUERY_RESOURCE;
+import static org.infinispan.hibernate.cache.spi.InfinispanProperties.ENTITY_CACHE_RESOURCE_PROP;
+import static org.infinispan.hibernate.cache.spi.InfinispanProperties.IMMUTABLE_ENTITY_CACHE_RESOURCE_PROP;
+import static org.infinispan.hibernate.cache.spi.InfinispanProperties.INFINISPAN_CONFIG_RESOURCE_PROP;
+import static org.infinispan.hibernate.cache.spi.InfinispanProperties.NATURAL_ID_CACHE_RESOURCE_PROP;
+import static org.infinispan.hibernate.cache.spi.InfinispanProperties.PENDING_PUTS_CACHE_RESOURCE_PROP;
+import static org.infinispan.hibernate.cache.spi.InfinispanProperties.QUERY_CACHE_RESOURCE_PROP;
+import static org.infinispan.hibernate.cache.spi.InfinispanProperties.TIMESTAMPS_CACHE_RESOURCE_PROP;
 
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
 import org.hibernate.cfg.AvailableSettings;
-import org.jboss.as.jpa.hibernate4.infinispan.InfinispanRegionFactory;
-import org.jboss.as.jpa.hibernate4.infinispan.SharedInfinispanRegionFactory;
 import org.jipijapa.cache.spi.Classification;
 import org.jipijapa.event.impl.internal.Notification;
 
@@ -49,9 +43,10 @@ import org.jipijapa.event.impl.internal.Notification;
  */
 public class HibernateSecondLevelCache {
 
-    private static final String DEFAULT_REGION_FACTORY = SharedInfinispanRegionFactory.class.getName();
+    private static final String DEFAULT_REGION_FACTORY = "org.infinispan.hibernate.cache.v53.InfinispanRegionFactory";
 
     public static final String CACHE_TYPE = "cachetype";    // shared (jpa) or private (for native applications)
+    public static final String CACHE_PRIVATE = "private";
     public static final String CONTAINER = "container";
     public static final String NAME = "name";
     public static final String CACHES = "caches";
@@ -70,12 +65,12 @@ public class HibernateSecondLevelCache {
             regionFactory = DEFAULT_REGION_FACTORY;
             mutableProperties.setProperty(AvailableSettings.CACHE_REGION_FACTORY, regionFactory);
         }
-        if (regionFactory.equals(DEFAULT_REGION_FACTORY)) {
+        if (Boolean.parseBoolean(mutableProperties.getProperty(ManagedEmbeddedCacheManagerProvider.SHARED, ManagedEmbeddedCacheManagerProvider.DEFAULT_SHARED))) {
             // Set infinispan defaults
-            String container = mutableProperties.getProperty(CACHE_CONTAINER);
+            String container = mutableProperties.getProperty(ManagedEmbeddedCacheManagerProvider.CACHE_CONTAINER);
             if (container == null) {
-                container = InfinispanRegionFactory.DEFAULT_CACHE_CONTAINER;
-                mutableProperties.setProperty(CACHE_CONTAINER, container);
+                container = ManagedEmbeddedCacheManagerProvider.DEFAULT_CACHE_CONTAINER;
+                mutableProperties.setProperty(ManagedEmbeddedCacheManagerProvider.CACHE_CONTAINER, container);
             }
 
             /**
@@ -93,8 +88,13 @@ public class HibernateSecondLevelCache {
         Set<String> caches = new HashSet<>();
 
         caches.add(properties.getProperty(ENTITY_CACHE_RESOURCE_PROP, DEF_ENTITY_RESOURCE));
+        caches.add(properties.getProperty(IMMUTABLE_ENTITY_CACHE_RESOURCE_PROP, DEF_ENTITY_RESOURCE));
         caches.add(properties.getProperty(COLLECTION_CACHE_RESOURCE_PROP, DEF_ENTITY_RESOURCE));
         caches.add(properties.getProperty(NATURAL_ID_CACHE_RESOURCE_PROP, DEF_ENTITY_RESOURCE));
+
+        if (properties.containsKey(PENDING_PUTS_CACHE_RESOURCE_PROP)) {
+            caches.add(properties.getProperty(PENDING_PUTS_CACHE_RESOURCE_PROP));
+        }
         if (Boolean.parseBoolean(properties.getProperty(AvailableSettings.USE_QUERY_CACHE))) {
             caches.add(properties.getProperty(QUERY_CACHE_RESOURCE_PROP, DEF_QUERY_RESOURCE));
             caches.add(properties.getProperty(TIMESTAMPS_CACHE_RESOURCE_PROP, DEF_QUERY_RESOURCE));
