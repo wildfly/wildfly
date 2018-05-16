@@ -281,7 +281,7 @@
         <version.org.hibernate>5.1.14.Final</version.org.hibernate>
         <version.org.hibernate.commons.annotations>5.0.2.Final</version.org.hibernate.commons.annotations>
         <version.org.hibernate.search>5.5.8.Final</version.org.hibernate.search>
-        <version.org.hibernate.validator>6.0.9.Final</version.org.hibernate.validator>
+        <version.org.hibernate.validator>6.0.10.Final</version.org.hibernate.validator>
         <version.org.hibernate.validator.ee7>5.3.6.Final</version.org.hibernate.validator.ee7>
         <!-- Hardcoded in module.xml for the dual EE7 and EE8 support -->
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>1.0.2.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>
