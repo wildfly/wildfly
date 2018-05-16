@@ -71,9 +71,8 @@ public class SecurityBuilder extends ComponentBuilder<SecurityConfiguration> imp
     @Override
     public SecurityConfiguration getValue() throws IllegalStateException, IllegalArgumentException {
         SecurityConfigurationBuilder securityBuilder = new ConfigurationBuilder().security();
-        if (sslContextDependency != null) {
-            securityBuilder.ssl().sslContext(sslContextDependency.getValue()).enable();
-        }
+        SSLContext sslContext = (this.sslContextDependency != null) ? this.sslContextDependency.getValue() : null;
+        securityBuilder.ssl().sslContext(sslContext).enabled(sslContext != null);
         return securityBuilder.create();
     }
 }
