@@ -38,14 +38,17 @@ public class WildFlyCustomRegionFactoryInitiator extends RegionFactoryInitiator 
 
         // treat Hibernate 2lc as off, if not specified.
         // Note that Hibernate 2lc in 5.1.x, defaults to disabled, so this code is only needed in 5.3.x+.
-        if(Boolean.parseBoolean((String)use_second_level_cache) ||
-                (jpa_shared_code_mode != null || !"NONE".equals(jpa_shared_code_mode.toString()))) {
+        if(Boolean.parseBoolean((String)use_second_level_cache)) {
             configurationValues.put("hibernate.cache.region.factory_class", "org.infinispan.hibernate.cache.v53.InfinispanRegionFactory");
             return super.resolveRegionFactory(configurationValues, registry);
-        }
-        else {
+        } else if("UNSPECIFIED".equals(jpa_shared_code_mode.toString())
+             || "NONE".equals(jpa_shared_code_mode.toString())) {
             // explicitly disable 2lc cache
             return NoCachingRegionFactory.INSTANCE;
+        }
+        else {
+            configurationValues.put("hibernate.cache.region.factory_class", "org.infinispan.hibernate.cache.v53.InfinispanRegionFactory");
+            return super.resolveRegionFactory(configurationValues, registry);
         }
     }
 }
