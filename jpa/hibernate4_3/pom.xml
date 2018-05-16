@@ -106,13 +106,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-infinispan</artifactId>
-            <version>${version.org.hibernate4_3}</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
             <groupId>org.jboss</groupId>
             <artifactId>jboss-vfs</artifactId>
         </dependency>

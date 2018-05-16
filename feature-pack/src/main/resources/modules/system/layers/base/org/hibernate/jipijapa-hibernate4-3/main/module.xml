@@ -45,7 +45,5 @@
         <module name="org.jboss.logging"/>
         <module name="org.jboss.vfs"/>
         <module name="org.hibernate.commons-annotations"/>
-        <module name="org.hibernate.infinispan" services="import"/>
-        <module name="org.infinispan" services="import"/>
     </dependencies>
 </module>
