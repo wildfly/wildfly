@@ -23,6 +23,8 @@
 package org.jboss.as.test.integration.xerces.unit;
 
 import java.net.URL;
+import java.nio.file.Paths;
+import java.util.List;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -38,6 +40,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.xerces.JSFManagedBean;
 import org.jboss.as.test.integration.xerces.XercesUsageServlet;
 import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
+import org.jboss.as.test.shared.maven.MavenUtil;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
@@ -75,7 +78,7 @@ public class XercesUsageTestCase {
      * @return
      */
     @Deployment(name = "app-without-jsf", testable = false)
-    public static EnterpriseArchive createDeployment() {
+    public static EnterpriseArchive createDeployment() throws Exception {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, WEB_APP_CONTEXT + ".war");
         war.addClasses(XercesUsageServlet.class);
         // add a dummy xml to parse
@@ -85,7 +88,14 @@ public class XercesUsageTestCase {
         // add the .war
         ear.addAsModule(war);
         // add the xerces jar in the .ear/lib
-        ear.addAsLibrary("xerces/xercesImpl.jar", "xercesImpl.jar");
+        final List<URL> xercesJars = MavenUtil.create(false).createMavenGavRecursiveURLs("xerces:xercesImpl:2.11.0");
+        if (xercesJars == null || xercesJars.isEmpty()) {
+            throw new RuntimeException("Could not locate Xerces dependencies");
+        }
+        for (final URL xercesDep : xercesJars) {
+            ear.addAsLibrary(xercesDep, Paths.get(xercesDep.toURI()).getFileName().toString());
+        }
+
         ear.addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
             new RuntimePermission("accessClassInPackage.org.apache.xerces.util"),
             new RuntimePermission("accessClassInPackage.org.apache.xerces.xni.grammars"),
