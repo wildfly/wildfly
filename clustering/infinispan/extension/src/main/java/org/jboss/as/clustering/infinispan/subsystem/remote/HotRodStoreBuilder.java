@@ -38,13 +38,14 @@ import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
 import org.wildfly.clustering.infinispan.spi.RemoteCacheContainer;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.InjectedValueDependency;
+import org.wildfly.clustering.service.ValueDependency;
 
 /**
  * @author Radoslav Husar
  */
 public class HotRodStoreBuilder extends StoreBuilder<HotRodStoreConfiguration, HotRodStoreConfigurationBuilder> {
 
-    private volatile InjectedValueDependency<RemoteCacheContainer> remoteCacheContainer;
+    private volatile ValueDependency<RemoteCacheContainer> remoteCacheContainer;
     private volatile String cacheConfiguration;
 
     HotRodStoreBuilder(PathAddress address) {
