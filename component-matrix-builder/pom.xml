@@ -33,14 +33,7 @@
         <version>13.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.wildfly</groupId>
     <artifactId>wildfly-component-matrix-builder</artifactId>
-    <!--
-        Maintain separation between the artifact id and the version to help prevent
-        merge conflicts between commits changing the GA and those changing the V.
-    -->
-    <version>13.0.0.Alpha1-SNAPSHOT</version>
-
     <packaging>pom</packaging>
 
     <name>WildFly: Component matrix builder</name>
