@@ -28,8 +28,8 @@
     </properties>
 
     <resources>
-        <artifact name="org.apache.lucene:lucene-misc:5.5.5"/>
-        <artifact name="org.apache.lucene:lucene-backward-codecs:5.5.5"/>
+        <artifact name="org.apache.lucene:lucene-misc:5.5.5"/> <!-- ${version.org.apache.lucene55} -->
+        <artifact name="org.apache.lucene:lucene-backward-codecs:5.5.5"/> <!-- ${version.org.apache.lucene55} -->
     </resources>
 
     <dependencies>
