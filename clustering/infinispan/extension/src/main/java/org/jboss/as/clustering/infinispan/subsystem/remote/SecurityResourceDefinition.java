@@ -29,10 +29,10 @@ import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
+import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
 import org.jboss.as.clustering.infinispan.subsystem.ComponentResourceDefinition;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
@@ -80,17 +80,12 @@ public class SecurityResourceDefinition extends ComponentResourceDefinition {
         private final RuntimeCapability<Void> definition;
 
         Capability(String name) {
-            this.definition = RuntimeCapability.Builder.of(name, true).build();
+            this.definition = RuntimeCapability.Builder.of(name, true).setDynamicNameMapper(UnaryCapabilityNameResolver.PARENT).build();
         }
 
         @Override
         public RuntimeCapability<Void> getDefinition() {
             return this.definition;
-        }
-
-        @Override
-        public RuntimeCapability<Void> resolve(PathAddress address) {
-            return this.definition.fromBaseCapability(address.getParent().getLastElement().getValue());
         }
     }
 
