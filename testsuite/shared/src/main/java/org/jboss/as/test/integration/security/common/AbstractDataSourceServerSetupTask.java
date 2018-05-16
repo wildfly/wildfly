@@ -127,6 +127,7 @@ public abstract class AbstractDataSourceServerSetupTask implements ServerSetupTa
         }
 
         CoreUtils.applyUpdates(updates, managementClient.getControllerClient());
+        ServerReload.executeReloadAndWaitForCompletion(managementClient);
     }
 
     // Protected methods -----------------------------------------------------

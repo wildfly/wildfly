@@ -25,15 +25,19 @@ package org.wildfly.extension.undertow;
 import java.io.IOException;
 import java.net.BindException;
 import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
+import javax.net.ssl.SSLContext;
+
 import io.undertow.UndertowOptions;
+import io.undertow.protocols.ssl.UndertowXnioSsl;
+import io.undertow.connector.ByteBufferPool;
 import io.undertow.server.HandlerWrapper;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.OpenListener;
+import io.undertow.server.protocol.proxy.ProxyProtocolOpenListener;
 
 import org.jboss.as.network.ManagedBinding;
 import org.jboss.as.network.SocketBinding;
@@ -49,7 +53,6 @@ import org.xnio.ChannelListener;
 import org.xnio.ChannelListeners;
 import org.xnio.OptionMap;
 import org.xnio.Options;
-import org.xnio.Pool;
 import org.xnio.StreamConnection;
 import org.xnio.XnioWorker;
 import org.xnio.channels.AcceptingChannel;
@@ -70,7 +73,7 @@ public abstract class ListenerService implements Service<UndertowListener>, Unde
     protected final InjectedValue<SocketBinding> binding = new InjectedValue<>();
     protected final InjectedValue<SocketBinding> redirectSocket = new InjectedValue<>();
     @SuppressWarnings("rawtypes")
-    protected final InjectedValue<Pool<ByteBuffer>> bufferPool = new InjectedValue<>();
+    protected final InjectedValue<ByteBufferPool> bufferPool = new InjectedValue<>();
     protected final InjectedValue<Server> serverService = new InjectedValue<>();
     private final List<HandlerWrapper> listenerHandlerWrappers = new ArrayList<>();
 
@@ -81,11 +84,13 @@ public abstract class ListenerService implements Service<UndertowListener>, Unde
     private volatile boolean enabled;
     private volatile boolean started;
     private Consumer<Boolean> statisticsChangeListener;
+    private final boolean proxyProtocol;
 
-    protected ListenerService(String name, OptionMap listenerOptions, OptionMap socketOptions) {
+    protected ListenerService(String name, OptionMap listenerOptions, OptionMap socketOptions, boolean proxyProtocol) {
         this.name = name;
         this.listenerOptions = listenerOptions;
         this.socketOptions = socketOptions;
+        this.proxyProtocol = proxyProtocol;
     }
 
     public InjectedValue<XnioWorker> getWorker() {
@@ -101,7 +106,7 @@ public abstract class ListenerService implements Service<UndertowListener>, Unde
     }
 
     @SuppressWarnings("rawtypes")
-    public InjectedValue<Pool<ByteBuffer>> getBufferPool() {
+    public InjectedValue<ByteBufferPool> getBufferPool() {
         return bufferPool;
     }
 
@@ -119,6 +124,14 @@ public abstract class ListenerService implements Service<UndertowListener>, Unde
 
     public boolean isEnabled() {
         return enabled;
+    }
+
+    protected UndertowXnioSsl getSsl() {
+        return null;
+    }
+
+    protected OptionMap getSSLOptions(SSLContext sslContext) {
+        return OptionMap.EMPTY;
     }
 
     public synchronized void setEnabled(boolean enabled) {
@@ -165,7 +178,15 @@ public abstract class ListenerService implements Service<UndertowListener>, Unde
             openListener.setRootHandler(handler);
             if(enabled) {
                 final InetSocketAddress socketAddress = binding.getValue().getSocketAddress();
-                final ChannelListener<AcceptingChannel<StreamConnection>> acceptListener = ChannelListeners.openListenerAdapter(openListener);
+
+
+                final ChannelListener<AcceptingChannel<StreamConnection>> acceptListener;
+                if(proxyProtocol) {
+                    UndertowXnioSsl xnioSsl = getSsl();
+                    acceptListener = ChannelListeners.openListenerAdapter(new ProxyProtocolOpenListener(openListener, xnioSsl, bufferPool.getValue(), xnioSsl != null ? getSSLOptions(xnioSsl.getSslContext()) : null));
+                } else {
+                    acceptListener = ChannelListeners.openListenerAdapter(openListener);
+                }
                 startListening(worker.getValue(), socketAddress, acceptListener);
             }
             registerBinding();

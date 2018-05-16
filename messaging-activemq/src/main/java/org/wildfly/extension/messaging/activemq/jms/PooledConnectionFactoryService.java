@@ -55,7 +55,6 @@ import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.network.SocketBinding;
-import org.jboss.as.security.service.SecurityBootstrapService;
 import org.jboss.as.server.Services;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.dmr.ModelNode;
@@ -319,9 +318,6 @@ public class PooledConnectionFactoryService implements Service<Void> {
                 .addDependency(JMSServices.getJmsManagerBaseServiceName(serverServiceName))
                 // ensures that Artemis client thread pools are not stopped before any deployment depending on a pooled-connection-factory
                 .addDependency(MessagingServices.ACTIVEMQ_CLIENT_THREAD_POOL)
-                // WFLY-6652 this dependency ensures that Artemis will be able to destroy any queues created on behalf of a
-                // pooled-connection-factory client during server stop
-                .addDependency(SecurityBootstrapService.SERVICE_NAME)
                 .setInitialMode(ServiceController.Mode.PASSIVE);
         return serviceBuilder;
     }

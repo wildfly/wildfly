@@ -43,6 +43,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireSingleAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -244,26 +245,33 @@ public class JcaExtension implements Extension {
         }
 
         private void writeWorkManagers(XMLExtendedStreamWriter writer, ModelNode parentNode) throws XMLStreamException {
-            if (parentNode.hasDefined(WORKMANAGER) && parentNode.get(WORKMANAGER).asList().size() != 0) {
-                ModelNode workManagers = parentNode.get(WORKMANAGER);
-                for (String name : workManagers.keys()) {
-                    ModelNode workManager = workManagers.get(name);
+            List<Property> workManagers;
+            if (parentNode.hasDefined(WORKMANAGER) && (workManagers = parentNode.get(WORKMANAGER).asPropertyList()).size() != 0) {
+                List<ModelNode> defaultFirst = new ArrayList<>();
+                for (Property prop : workManagers) {
+                    ModelNode workManager = prop.getValue();
                     if ("default".equals(workManager.get(NAME).asString())) {
+                        defaultFirst.add(0, workManager);
+                    } else {
+                        defaultFirst.add(workManager);
+                    }
+                }
+                for (int i = 0; i < defaultFirst.size(); i++) {
+                    ModelNode workManager = defaultFirst.get(i);
+                    if (i == 0 && "default".equals(workManager.get(NAME).asString())) {
                         writer.writeStartElement(Element.DEFAULT_WORKMANAGER.getLocalName());
                     } else {
                         writer.writeStartElement(Element.WORKMANAGER.getLocalName());
                         JcaWorkManagerDefinition.WmParameters.NAME.getAttribute().marshallAsAttribute(workManager, writer);
-
                     }
+
                     JcaWorkManagerDefinition.WmParameters.ELYTRON_ENABLED.getAttribute().marshallAsElement(workManager, writer);
-                    for (String propName : workManager.keys()) {
-                        ModelNode propVal = workManager.get(propName);
-                        if (WORKMANAGER_LONG_RUNNING.equals(propName) && propVal.isDefined() && propVal.asPropertyList().size() != 0) {
-                            ThreadsParser.getInstance().writeBoundedQueueThreadPool(writer, propVal.asProperty(), Element.LONG_RUNNING_THREADS.getLocalName(), false);
-                        }
-                        if (WORKMANAGER_SHORT_RUNNING.equals(propName) && propVal.isDefined() && propVal.asPropertyList().size() != 0) {
-                            ThreadsParser.getInstance().writeBoundedQueueThreadPool(writer, propVal.asProperty(), Element.SHORT_RUNNING_THREADS.getLocalName(), false);
-                        }
+
+                    if (workManager.hasDefined(WORKMANAGER_SHORT_RUNNING))  {
+                        ThreadsParser.getInstance().writeBoundedQueueThreadPool(writer, workManager.get(WORKMANAGER_SHORT_RUNNING).asProperty(), Element.SHORT_RUNNING_THREADS.getLocalName(), false);
+                    }
+                    if (workManager.hasDefined(WORKMANAGER_LONG_RUNNING)) {
+                        ThreadsParser.getInstance().writeBoundedQueueThreadPool(writer, workManager.get(WORKMANAGER_LONG_RUNNING).asProperty(), Element.LONG_RUNNING_THREADS.getLocalName(), false);
                     }
                     writer.writeEndElement();
                 }

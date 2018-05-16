@@ -58,9 +58,9 @@ public class JsseTestCase extends AbstractCliTestBase {
 
     @AfterClass
     public static void cleanSecurityDomains() throws Exception {
-        cli.sendLine("/subsystem=security/security-domain=empty-jsse:remove()", true);
-        cli.sendLine("/subsystem=security/security-domain=empty-jsse-valid:remove()", true);
-        cli.sendLine("/subsystem=security/security-domain=empty-jsse-missing-pwd:remove()", true);
+        cli.sendLine("/subsystem=security/security-domain=empty-jsse:remove(){allow-resource-service-restart=true}", true);
+        cli.sendLine("/subsystem=security/security-domain=empty-jsse-valid:remove(){allow-resource-service-restart=true}", true);
+        cli.sendLine("/subsystem=security/security-domain=empty-jsse-missing-pwd:remove(){allow-resource-service-restart=true}", true);
         AbstractCliTestBase.closeCLI();
     }
 

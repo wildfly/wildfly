@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="jgroups" xmlns="urn:jboss:galleon:feature-group:1.0">
+    <feature spec="subsystem.jgroups">
+      <param name="default-channel" value="ee"/>
+      <feature spec="subsystem.jgroups.stack">
+        <param name="stack" value="tcp"/>
+        <feature spec="subsystem.jgroups.stack.transport">
+          <param name="transport" value="TCP"/>
+          <param name="socket-binding" value="jgroups-tcp"/>
+        </feature>
+        <feature spec="subsystem.jgroups.stack.protocol.MPING">
+          <param name="socket-binding" value="jgroups-mping"/>
+        </feature>
+        <feature spec="subsystem.jgroups.stack.protocol">
+          <param name="protocol" value="MERGE3"/>
+        </feature>
+        <feature spec="subsystem.jgroups.stack.protocol">
+          <param name="protocol" value="FD_SOCK"/>
+        </feature>
+        <feature spec="subsystem.jgroups.stack.protocol">
+          <param name="protocol" value="FD_ALL"/>
+        </feature>
+        <feature spec="subsystem.jgroups.stack.protocol">
+          <param name="protocol" value="VERIFY_SUSPECT"/>
+        </feature>
+        <feature spec="subsystem.jgroups.stack.protocol">
+          <param name="protocol" value="pbcast.NAKACK2"/>
+        </feature>
+        <feature spec="subsystem.jgroups.stack.protocol">
+          <param name="protocol" value="UNICAST3"/>
+        </feature>
+        <feature spec="subsystem.jgroups.stack.protocol">
+          <param name="protocol" value="pbcast.STABLE"/>
+        </feature>
+        <feature spec="subsystem.jgroups.stack.protocol">
+          <param name="protocol" value="pbcast.GMS"/>
+        </feature>
+        <feature spec="subsystem.jgroups.stack.protocol">
+          <param name="protocol" value="MFC"/>
+        </feature>
+        <feature spec="subsystem.jgroups.stack.protocol">
+          <param name="protocol" value="FRAG3"/>
+        </feature>
+      </feature>
+      <feature spec="subsystem.jgroups.stack">
+        <param name="stack" value="udp"/>
+        <feature spec="subsystem.jgroups.stack.transport">
+          <param name="transport" value="UDP"/>
+          <param name="socket-binding" value="jgroups-udp"/>
+        </feature>
+        <feature spec="subsystem.jgroups.stack.protocol">
+          <param name="protocol" value="PING"/>
+        </feature>
+        <feature spec="subsystem.jgroups.stack.protocol">
+          <param name="protocol" value="MERGE3"/>
+        </feature>
+        <feature spec="subsystem.jgroups.stack.protocol">
+          <param name="protocol" value="FD_SOCK"/>
+        </feature>
+        <feature spec="subsystem.jgroups.stack.protocol">
+          <param name="protocol" value="FD_ALL"/>
+        </feature>
+        <feature spec="subsystem.jgroups.stack.protocol">
+          <param name="protocol" value="VERIFY_SUSPECT"/>
+        </feature>
+        <feature spec="subsystem.jgroups.stack.protocol">
+          <param name="protocol" value="pbcast.NAKACK2"/>
+        </feature>
+        <feature spec="subsystem.jgroups.stack.protocol">
+          <param name="protocol" value="UNICAST3"/>
+        </feature>
+        <feature spec="subsystem.jgroups.stack.protocol">
+          <param name="protocol" value="pbcast.STABLE"/>
+        </feature>
+        <feature spec="subsystem.jgroups.stack.protocol">
+          <param name="protocol" value="pbcast.GMS"/>
+        </feature>
+        <feature spec="subsystem.jgroups.stack.protocol">
+          <param name="protocol" value="UFC"/>
+        </feature>
+        <feature spec="subsystem.jgroups.stack.protocol">
+          <param name="protocol" value="MFC"/>
+        </feature>
+        <feature spec="subsystem.jgroups.stack.protocol">
+          <param name="protocol" value="FRAG3"/>
+        </feature>
+      </feature>
+      <feature spec="subsystem.jgroups.channel">
+        <param name="channel" value="ee"/>
+        <param name="stack" value="udp"/>
+        <param name="cluster" value="ejb"/>
+      </feature>
+    </feature>
+</feature-group-spec>

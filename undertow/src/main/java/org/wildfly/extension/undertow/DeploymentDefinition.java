@@ -143,8 +143,8 @@ public class DeploymentDefinition extends SimpleResourceDefinition {
             .build();
 
     private DeploymentDefinition() {
-        super(PathElement.pathElement(SUBSYSTEM, UndertowExtension.SUBSYSTEM_NAME),
-                DEFAULT_RESOLVER);
+        super(new Parameters(PathElement.pathElement(SUBSYSTEM, UndertowExtension.SUBSYSTEM_NAME), DEFAULT_RESOLVER)
+                .setFeature(false));
     }
 
 

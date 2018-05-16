@@ -77,7 +77,8 @@ public class ResourceAdaptersExtension implements Extension {
             ManagementResourceRegistration deployments = registration.registerDeploymentModel(new SimpleResourceDefinition(
                     new SimpleResourceDefinition.Parameters(SUBSYSTEM_PATH,
                             new StandardResourceDescriptionResolver(Constants.STATISTICS_NAME,
-                                    CommonAttributes.RESOURCE_NAME, CommonAttributes.class.getClassLoader()))));
+                                    CommonAttributes.RESOURCE_NAME, CommonAttributes.class.getClassLoader()))
+                            .setFeature(false)));
             deployments.registerSubModel(new IronJacamarResourceDefinition());
         }
     }

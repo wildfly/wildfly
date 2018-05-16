@@ -23,7 +23,6 @@
 package org.wildfly.extension.undertow;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.wildfly.extension.undertow.Capabilities.REF_BUFFER_POOL;
 import static org.wildfly.extension.undertow.Capabilities.REF_IO_WORKER;
 import static org.wildfly.extension.undertow.Capabilities.REF_SOCKET_BINDING;
 
@@ -91,13 +90,15 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
             .setDefaultValue(new ModelNode("default"))
             .setCapabilityReference(REF_IO_WORKER, LISTENER_CAPABILITY)
             .build();
+
     protected static final SimpleAttributeDefinition BUFFER_POOL = new SimpleAttributeDefinitionBuilder(Constants.BUFFER_POOL, ModelType.STRING)
             .setRequired(false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setValidator(new StringLengthValidator(1))
             .setDefaultValue(new ModelNode("default"))
-            .setCapabilityReference(REF_BUFFER_POOL, LISTENER_CAPABILITY)
+            .setCapabilityReference(Capabilities.CAPABILITY_BYTE_BUFFER_POOL, LISTENER_CAPABILITY)
             .build();
+
     protected static final SimpleAttributeDefinition ENABLED = new SimpleAttributeDefinitionBuilder(Constants.ENABLED, ModelType.BOOLEAN)
             .setRequired(false)
             .setDeprecated(ModelVersion.create(3, 2))

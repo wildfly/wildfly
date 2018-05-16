@@ -55,8 +55,8 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class Hibernate2LCacheStatsTestCase {
 
-    private static final String FACTORY_CLASS = "<property name=\"hibernate.cache.region.factory_class\">org.jboss.as.jpa.hibernate5.infinispan.InfinispanRegionFactory</property>";
-    private static final String MODULE_DEPENDENCIES = "Dependencies: org.infinispan export,org.hibernate.envers export,org.hibernate\n";
+    private static final String FACTORY_CLASS = "<property name=\"hibernate.cache.region.factory_class\">org.infinispan.hibernate.cache.v51.InfinispanRegionFactory</property>";
+    private static final String MODULE_DEPENDENCIES = "Dependencies: org.hibernate.envers export,org.hibernate\n";
 
     private static final String ARCHIVE_NAME = "hibernateSecondLevelStats_test";
 
@@ -66,7 +66,7 @@ public class Hibernate2LCacheStatsTestCase {
             + "<hibernate-configuration><session-factory>" + "<property name=\"show_sql\">false</property>"
             + "<property name=\"hibernate.cache.use_second_level_cache\">true</property>"
             + "<property name=\"hibernate.show_sql\">false</property>" + FACTORY_CLASS
-            + "<property name=\"hibernate.cache.infinispan.cachemanager\">java:jboss/infinispan/container/hibernate</property>"
+            + "<property name=\"hibernate.cache.infinispan.shared\">false</property>"
             + "<mapping resource=\"testmapping.hbm.xml\"/>" + "</session-factory></hibernate-configuration>";
 
     public static final String testmapping = "<?xml version=\"1.0\"?>" + "<!DOCTYPE hibernate-mapping PUBLIC "

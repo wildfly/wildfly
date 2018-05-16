@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.jgroups">
+<module xmlns="urn:jboss:module:1.7" name="org.jgroups">
 
     <resources>
         <artifact name="${org.jgroups:jgroups}"/>
@@ -31,5 +31,7 @@
     <dependencies>
         <module name="javax.api"/>
         <module name="org.jgroups.azure"/>
+        <module name="org.jgroups.kubernetes"/>
     </dependencies>
+
 </module>

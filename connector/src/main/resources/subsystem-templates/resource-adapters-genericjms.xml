@@ -10,8 +10,12 @@
                 <transaction-support>NoTransaction</transaction-support>
                 <connection-definitions>
                     <connection-definition class-name="org.jboss.resource.adapter.jms.JmsManagedConnectionFactory" jndi-name="${genericjms.cf.jndi-name}" pool-name="${genericjms.cf.pool-name}">
-                        <config-property name="JndiParameters">java.naming.factory.initial=${genericjms.cf.jndi.contextfactory};java.naming.provider.url=${genericjms.cf.jndi.url}</config-property>
-                        <config-property name="ConnectionFactory">${genericjms.cf.jndi.lookup}</config-property>
+                        <config-property name="JndiParameters">
+                            java.naming.factory.initial=${genericjms.cf.jndi.contextfactory};java.naming.provider.url=${genericjms.cf.jndi.url}
+                        </config-property>
+                        <config-property name="ConnectionFactory">
+                            ${genericjms.cf.jndi.lookup}
+                        </config-property>
                         <security>
                             <application/>
                         </security>

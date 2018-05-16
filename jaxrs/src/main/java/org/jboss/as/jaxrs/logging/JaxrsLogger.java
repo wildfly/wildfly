@@ -28,8 +28,10 @@ import static org.jboss.logging.Logger.Level.WARN;
 
 import java.util.List;
 
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.jaxrs.deployment.JaxrsSpringProcessor;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.dmr.ModelNode;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
@@ -171,4 +173,8 @@ public interface JaxrsLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 16, value = "RESTEasy version %s")
     void resteasyVersion(String version);
+
+    @LogMessage(level = WARN)
+    @Message(id = 17, value = "Failed to read attribute from JAX-RS deployment at %s with name %s")
+    void failedToReadAttribute(@Cause Exception ex, PathAddress address, ModelNode modelNode);
 }

@@ -25,62 +25,33 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import static org.jboss.as.clustering.infinispan.subsystem.DistributedCacheResourceDefinition.Attribute.*;
 
 import org.infinispan.configuration.cache.CacheMode;
-import org.infinispan.configuration.cache.ClusteringConfigurationBuilder;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.infinispan.configuration.cache.HashConfiguration;
-import org.infinispan.configuration.cache.HashConfigurationBuilder;
-import org.infinispan.configuration.cache.L1Configuration;
-import org.infinispan.configuration.global.GlobalConfiguration;
-import org.infinispan.distribution.ch.impl.DefaultConsistentHashFactory;
-import org.infinispan.distribution.ch.impl.TopologyAwareConsistentHashFactory;
-import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.service.Builder;
-import org.wildfly.clustering.service.InjectedValueDependency;
-import org.wildfly.clustering.service.ValueDependency;
 
 /**
  * Builds the configuration for a distributed cache.
  * @author Paul Ferraro
  */
-public class DistributedCacheBuilder extends SharedStateCacheBuilder {
+public class DistributedCacheBuilder extends SegmentedCacheBuilder {
 
-    private final ValueDependency<GlobalConfiguration> global;
-
-    private volatile HashConfiguration hash;
-    private volatile L1Configuration l1;
-    private volatile ConsistentHashStrategy consistentHashStrategy;
+    private volatile int capacityFactor;
+    private volatile int owners;
+    private volatile long l1Lifespan;
 
     DistributedCacheBuilder(PathAddress address) {
         super(address, CacheMode.DIST_SYNC);
-        this.global = new InjectedValueDependency<>(CacheContainerResourceDefinition.Capability.CONFIGURATION.getServiceName(address.getParent()), GlobalConfiguration.class);
-    }
-
-    @Override
-    public ServiceBuilder<Configuration> build(ServiceTarget target) {
-        return this.global.register(super.build(target));
     }
 
     @Override
     public Builder<Configuration> configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.consistentHashStrategy = ModelNodes.asEnum(CONSISTENT_HASH_STRATEGY.resolveModelAttribute(context, model), ConsistentHashStrategy.class);
-
-        ClusteringConfigurationBuilder builder = new ConfigurationBuilder().clustering();
-
-        this.hash = builder.hash()
-                .capacityFactor(CAPACITY_FACTOR.resolveModelAttribute(context, model).asInt())
-                .numOwners(OWNERS.resolveModelAttribute(context, model).asInt())
-                .numSegments(SEGMENTS.resolveModelAttribute(context, model).asInt())
-                .create();
-
-        long l1Lifespan = L1_LIFESPAN.resolveModelAttribute(context, model).asLong();
-        this.l1 = builder.l1().enabled(l1Lifespan > 0).lifespan(l1Lifespan).create();
+        this.capacityFactor = CAPACITY_FACTOR.resolveModelAttribute(context, model).asInt();
+        this.l1Lifespan = L1_LIFESPAN.resolveModelAttribute(context, model).asLong();
+        this.owners = OWNERS.resolveModelAttribute(context, model).asInt();
 
         return super.configure(context, model);
     }
@@ -89,13 +60,9 @@ public class DistributedCacheBuilder extends SharedStateCacheBuilder {
     public void accept(ConfigurationBuilder builder) {
         super.accept(builder);
 
-        HashConfigurationBuilder hash = builder.clustering()
-                .l1().read(this.l1)
-                .hash().read(this.hash);
-
-        // ConsistentHashStrategy.INTER_CACHE is Infinispan's default behavior
-        if (this.consistentHashStrategy == ConsistentHashStrategy.INTRA_CACHE) {
-            hash.consistentHashFactory(this.global.getValue().transport().hasTopologyInfo() ? new TopologyAwareConsistentHashFactory() : new DefaultConsistentHashFactory());
-        }
+        builder.clustering()
+                .hash().capacityFactor(this.capacityFactor).numOwners(this.owners)
+                .l1().enabled(this.l1Lifespan > 0).lifespan(this.l1Lifespan)
+                ;
     }
 }

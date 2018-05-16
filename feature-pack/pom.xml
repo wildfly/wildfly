@@ -313,6 +313,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.glassfish.soteria</groupId>
+            <artifactId>javax.security.enterprise</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.wildfly.wildfly-http-client</groupId>
             <artifactId>wildfly-http-ejb-client</artifactId>
             <exclusions>
@@ -568,6 +573,13 @@
         <dependency>
             <groupId>org.jboss.ws.cxf</groupId>
             <artifactId>jbossws-cxf-transports-udp</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+
         </dependency>
 
         <dependency>
@@ -895,6 +907,10 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>jipijapa-hibernate5-legacy</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -1140,8 +1156,7 @@
 
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
-            <artifactId>resteasy-client</artifactId>
-            <classifier>jaxrs20</classifier>
+            <artifactId>resteasy-client-20</artifactId>
         </dependency>
 
         <dependency>
@@ -1157,8 +1172,7 @@
 
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
-            <artifactId>resteasy-jaxrs</artifactId>
-            <classifier>jaxrs20</classifier>
+            <artifactId>resteasy-jaxrs-20</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -1349,6 +1363,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.jboss.spec.javax.xml.ws</groupId>
+            <artifactId>jboss-jaxws-api_2.3_spec</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.weld</groupId>
             <artifactId>weld-api</artifactId>
             <exclusions>
@@ -1418,6 +1437,11 @@
         <dependency>
             <groupId>org.jgroups.azure</groupId>
             <artifactId>jgroups-azure</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jgroups.kubernetes</groupId>
+            <artifactId>jgroups-kubernetes</artifactId>
         </dependency>
 
         <dependency>
@@ -2160,6 +2184,11 @@
         </dependency>
 
         <dependency>
+            <groupId>javax.security.enterprise</groupId>
+            <artifactId>javax.security.enterprise-api</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.hornetq</groupId>
             <artifactId>hornetq-commons</artifactId>
             <exclusions>
@@ -2227,6 +2256,10 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-hibernate-cache-spi</artifactId>
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
@@ -2594,7 +2627,7 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.hal</groupId>
-            <artifactId>release-stream</artifactId>
+            <artifactId>hal-console</artifactId>
             <classifier>resources</classifier>
         </dependency>
 
@@ -2642,7 +2675,16 @@
             </exclusions>
         </dependency>
 
-
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-ee-security</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -2971,6 +3013,12 @@
         <dependency>
             <groupId>org.jboss.ws.cxf</groupId>
             <artifactId>jbossws-cxf-transports-undertow</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -3072,44 +3120,19 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-resources-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>copy-licenses-xml</id>
-                                <phase>prepare-package</phase>
-                                <goals>
-                                    <goal>copy-resources</goal>
-                                </goals>
-                                <configuration>
-                                    <outputDirectory>${license.directory}</outputDirectory>
-                                    <resources>
-                                        <resource>
-                                            <directory>${project.basedir}/src/license</directory>
-                                            <includes>
-                                                <include>*licenses.xml</include>
-                                            </includes>
-                                            <filtering>false</filtering>
-                                        </resource>
-                                    </resources>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
                         <groupId>org.wildfly.maven.plugins</groupId>
                         <artifactId>licenses-plugin</artifactId>
                         <inherited>false</inherited>
                         <executions>
                             <execution>
-                                <id>update-licenses-xml</id>
+                                <id>generate-licenses-xml</id>
                                 <goals>
                                     <goal>insert-versions</goal>
                                 </goals>
-                                <phase>prepare-package</phase>
+                                <phase>prepare-package</phase><!-- TODO why not generate-resources phase?-->
                                 <configuration>
                                     <sortByGroupIdAndArtifactId>true</sortByGroupIdAndArtifactId>
-                                    <licensesOutputDirectory>${license.directory}</licensesOutputDirectory>
+                                    <licensesConfigFile>${project.basedir}/src/license/full-feature-pack-licenses.xml</licensesConfigFile>
                                     <licensesOutputFile>${license.directory}/full-feature-pack-licenses.xml</licensesOutputFile>
                                 </configuration>
                             </execution>

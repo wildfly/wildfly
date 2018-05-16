@@ -1,0 +1,3 @@
+/host=${host:master}/core-service=management/management-interface=native-interface:add(security-realm="ManagementRealm",interface="management",port="\${jboss.management.native.port:9999}")
+
+/host=${host:master}/core-service=management/security-realm=ApplicationRealm/server-identity=ssl:add(keystore-path="application.keystore",keystore-relative-to="jboss.domain.config.dir",keystore-password="password",alias="server",key-password="password",generate-self-signed-certificate-host="localhost")

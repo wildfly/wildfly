@@ -1,0 +1,13 @@
+<?xml version="1.0" ?>
+
+<tasks xmlns="urn:wildfly:wildfly-feature-pack-tasks:2.0">
+    <line-endings>
+        <windows>
+            <filter pattern="*.bat" include="true"/>
+        </windows>
+        <unix>
+            <filter pattern="*.sh" include="true"/>
+            <filter pattern="*.conf" include="true"/>
+        </unix>
+    </line-endings>
+</tasks>

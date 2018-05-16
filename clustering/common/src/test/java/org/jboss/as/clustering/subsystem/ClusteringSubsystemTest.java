@@ -24,29 +24,43 @@ package org.jboss.as.clustering.subsystem;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.Locale;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamReader;
 
+import org.jboss.as.clustering.controller.Schema;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.junit.Test;
 
 /**
  * Base class for clustering subsystem tests.
  * @author Paul Ferraro
  */
-public abstract class ClusteringSubsystemTest extends AbstractSubsystemBaseTest {
-    private final String path;
+public abstract class ClusteringSubsystemTest<S extends Schema<S>> extends AbstractSubsystemBaseTest {
+    private final Schema<S> testSchema;
+    private final Schema<S> currentSchema;
+    private final String xmlPattern;
+    private final String xsdPattern;
 
-    protected ClusteringSubsystemTest(String name, Extension extension, String path) {
+    protected ClusteringSubsystemTest(String name, Extension extension, Schema<S> testSchema, Schema<S> currentSchema, String xmlPattern, String xsdPattern) {
         super(name, extension);
-        this.path = path;
+        this.testSchema = testSchema;
+        this.currentSchema = currentSchema;
+        this.xmlPattern = xmlPattern;
+        this.xsdPattern = xsdPattern;
     }
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource(this.path);
+        return readResource(String.format(Locale.ROOT, this.xmlPattern, this.testSchema.major(), this.testSchema.minor()));
+    }
+
+    @Override
+    protected String getSubsystemXsdPath() throws Exception {
+        return String.format(Locale.ROOT, this.xsdPattern, this.testSchema.major(), this.testSchema.minor());
     }
 
     /**
@@ -75,6 +89,19 @@ public abstract class ClusteringSubsystemTest extends AbstractSubsystemBaseTest 
         // only compare if namespace URIs are the same
         if (originalNS.equals(marshalledNS)) {
             compareXml(configId, original, marshalled, true);
+        }
+    }
+
+    @Override
+    protected String[] getSubsystemTemplatePaths() {
+        return new String[] { String.format("/subsystem-templates/%s.xml", this.getMainSubsystemName()) };
+    }
+
+    @Test
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        if (this.testSchema == this.currentSchema) {
+            super.testSchemaOfSubsystemTemplates();
         }
     }
 }

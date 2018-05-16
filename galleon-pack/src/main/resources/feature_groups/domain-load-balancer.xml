@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="domain-load-balancer" xmlns="urn:jboss:galleon:feature-group:1.0">
+    <feature-group name="domain-interfaces"/>
+
+    <feature spec="domain.socket-binding-group">
+        <param name="default-interface" value="public" />
+        <param name="socket-binding-group" value="load-balancer-sockets"/>
+        <feature-group name="domain-load-balancer-sockets"/>
+        <feature-group name="domain-server-groups"/>
+    </feature>
+
+    <feature spec="profile">
+        <param name="profile" value="load-balancer"/>
+            <feature-group name="logging">
+                <include feature-id="subsystem.logging.root-logger.ROOT:subsystem=logging,root-logger=ROOT">
+                    <param name="handlers" value="[&quot;FILE&quot;]"/>
+                </include>
+                <exclude spec="subsystem.logging.console-handler"/>
+            </feature-group>
+            <feature-group name="io"/>
+            <feature-group name="undertow-load-balancer"/>        
+        <feature-group name="domain-server-groups"/>
+    </feature>
+
+    <feature spec="domain.system-property">
+        <param name="system-property" value="java.net.preferIPv4Stack"/>
+        <param name="value" value="true"/>
+    </feature>
+    <feature-group name="access-control"/>
+    <feature-group name="domain-host-excludes"/>
+
+</feature-group-spec>

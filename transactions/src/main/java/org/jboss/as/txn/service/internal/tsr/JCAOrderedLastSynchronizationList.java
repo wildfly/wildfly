@@ -22,16 +22,15 @@
 package org.jboss.as.txn.service.internal.tsr;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
+import javax.transaction.Status;
 import javax.transaction.Synchronization;
 import javax.transaction.SystemException;
-import javax.transaction.Transaction;
 
 import org.jboss.as.txn.logging.TransactionLogger;
+import org.wildfly.transaction.client.ContextTransactionManager;
+import org.wildfly.transaction.client.ContextTransactionSynchronizationRegistry;
 
 /**
  * This class was added to:
@@ -48,15 +47,10 @@ import org.jboss.as.txn.logging.TransactionLogger;
  * "Resources can be closed but no transactional work can be performed with them"
  */
 public class JCAOrderedLastSynchronizationList implements Synchronization {
-    private final com.arjuna.ats.jta.transaction.Transaction tx;
-    private final Map<Transaction, JCAOrderedLastSynchronizationList> jcaOrderedLastSynchronizations;
     private final List<Synchronization> preJcaSyncs = new ArrayList<Synchronization>();
     private final List<Synchronization> jcaSyncs = new ArrayList<Synchronization>();
 
-    public JCAOrderedLastSynchronizationList(com.arjuna.ats.jta.transaction.Transaction tx,
-        Map<Transaction, JCAOrderedLastSynchronizationList> jcaOrderedLastSynchronizations) {
-        this.tx = tx;
-        this.jcaOrderedLastSynchronizations = jcaOrderedLastSynchronizations;
+    public JCAOrderedLastSynchronizationList() {
     }
 
     /**
@@ -67,11 +61,14 @@ public class JCAOrderedLastSynchronizationList implements Synchronization {
      * @throws SystemException In case the transaction status was not known
      */
     public void registerInterposedSynchronization(Synchronization synchronization) throws IllegalStateException, SystemException {
-        int status = tx.getStatus();
+        int status = ContextTransactionSynchronizationRegistry.getInstance().getTransactionStatus();
         switch (status) {
             case javax.transaction.Status.STATUS_ACTIVE:
             case javax.transaction.Status.STATUS_PREPARING:
                 break;
+            case Status.STATUS_MARKED_ROLLBACK:
+                // do nothing; we can pretend like it was registered, but it'll never be run anyway.
+                return;
             default:
                 throw TransactionLogger.ROOT_LOGGER.syncsnotallowed(status);
         }
@@ -148,7 +145,7 @@ public class JCAOrderedLastSynchronizationList implements Synchronization {
             } catch (Exception e) {
                 // Trap these exceptions so the rest of the synchronizations get the chance to complete
                 // https://github.com/jbosstm/narayana/blob/5.0.4.Final/ArjunaJTA/jta/classes/com/arjuna/ats/internal/jta/resources/arjunacore/SynchronizationImple.java#L102
-                TransactionLogger.ROOT_LOGGER.preJcaSyncAfterCompletionFailed(preJcaSync, tx, e);
+                TransactionLogger.ROOT_LOGGER.preJcaSyncAfterCompletionFailed(preJcaSync, ContextTransactionManager.getInstance().getTransaction(), e);
             }
         }
         for (int i = jcaSyncs.size() - 1; i>= 0; --i) {
@@ -164,29 +161,7 @@ public class JCAOrderedLastSynchronizationList implements Synchronization {
             } catch (Exception e) {
                 // Trap these exceptions so the rest of the synchronizations get the chance to complete
                 // https://github.com/jbosstm/narayana/blob/5.0.4.Final/ArjunaJTA/jta/classes/com/arjuna/ats/internal/jta/resources/arjunacore/SynchronizationImple.java#L102
-                TransactionLogger.ROOT_LOGGER.jcaSyncAfterCompletionFailed(jcaSync, tx, e);
-            }
-        }
-
-        if (jcaOrderedLastSynchronizations.remove(tx) == null) {
-            // The identifier wasn't stable - scan for it - this can happen in JTS propagation when the UID needs retrieving
-            // from the parent and the parent has been deactivated
-            Transaction altKey = null;
-            Iterator<Entry<Transaction, JCAOrderedLastSynchronizationList>> iterator = jcaOrderedLastSynchronizations.entrySet().iterator();
-            while (altKey == null && iterator.hasNext()) {
-                Map.Entry<Transaction, JCAOrderedLastSynchronizationList> next = iterator.next();
-                if (next.getValue().equals(this)) {
-                    altKey = next.getKey();
-                    iterator.remove();
-                    if (TransactionLogger.ROOT_LOGGER.isTraceEnabled()) {
-                        TransactionLogger.ROOT_LOGGER.tracef("Removed: %s [%s]", System.identityHashCode(tx), tx.toString());
-                    }
-                    break;
-                }
-            }
-
-            if (altKey == null) {
-                TransactionLogger.ROOT_LOGGER.transactionNotFound(tx);
+                TransactionLogger.ROOT_LOGGER.jcaSyncAfterCompletionFailed(jcaSync, ContextTransactionManager.getInstance().getTransaction(), e);
             }
         }
     }

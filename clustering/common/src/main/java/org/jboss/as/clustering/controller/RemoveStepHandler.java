@@ -23,7 +23,6 @@
 package org.jboss.as.clustering.controller;
 
 import java.util.Map;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
@@ -89,8 +88,8 @@ public class RemoveStepHandler extends AbstractRemoveStepHandler implements Regi
                 }
             }
 
-            for (Map.Entry<CapabilityReferenceRecorder, Function<PathAddress, String>> entry : this.descriptor.getResourceCapabilityReferences().entrySet()) {
-                entry.getKey().removeCapabilityRequirements(context, resource, null, entry.getValue().apply(address));
+            for (CapabilityReferenceRecorder recorder : registration.getRequirements()) {
+                recorder.removeCapabilityRequirements(context, resource, null);
             }
 
             if (this.requiresRuntime(context)) {

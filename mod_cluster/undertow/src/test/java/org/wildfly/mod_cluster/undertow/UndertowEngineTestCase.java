@@ -39,12 +39,15 @@ import org.wildfly.extension.undertow.Server;
 import org.wildfly.extension.undertow.UndertowService;
 import org.xnio.OptionMap;
 
+import io.undertow.util.StatusCodes;
+
 public class UndertowEngineTestCase {
     private final String serverName = "default-server";
     private final String hostName = "default-host";
     private final String route = "route";
-    private final Host host = new Host(this.hostName, Collections.emptyList(), "ROOT.war");
-    private final HttpsListenerService listener = new HttpsListenerService("default", "https", OptionMap.EMPTY, null, OptionMap.EMPTY);
+    private final Host host = new Host(this.hostName, Collections.emptyList(), "ROOT.war", StatusCodes.NOT_FOUND, false);
+    private final HttpsListenerService listener = new HttpsListenerService("default", "https", OptionMap.EMPTY, null, OptionMap.EMPTY, false);
+
     private final UndertowService service = new TestUndertowService("default-container", this.serverName, this.hostName, this.route, this.server);
     private final Server server = new TestServer(this.serverName, this.hostName, this.service, this.host, this.listener);
     private final Connector connector = mock(Connector.class);

@@ -29,6 +29,7 @@
 
     <resources>
         <artifact name="${org.wildfly:jipijapa-hibernate5}"/>
+        <artifact name="${org.wildfly:jipijapa-hibernate5-legacy}"/>
     </resources>
 
     <dependencies>

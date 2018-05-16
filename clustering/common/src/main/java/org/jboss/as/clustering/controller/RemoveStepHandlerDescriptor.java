@@ -23,13 +23,11 @@ package org.jboss.as.clustering.controller;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Map;
-import java.util.function.Function;
+import java.util.Set;
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.controller.CapabilityReferenceRecorder;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 
 /**
@@ -57,8 +55,8 @@ public interface RemoveStepHandlerDescriptor extends OperationStepHandlerDescrip
      * Returns a mapping of capability references to an ancestor resource.
      * @return a tuple of capability references and requirement resolvers.
      */
-    default Map<CapabilityReferenceRecorder, Function<PathAddress, String>> getResourceCapabilityReferences() {
-        return Collections.emptyMap();
+    default Set<CapabilityReferenceRecorder> getResourceCapabilityReferences() {
+        return Collections.emptySet();
     }
 
     /**

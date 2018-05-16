@@ -267,4 +267,6 @@ include::ejb3/Message_Driven_Beans_Controlled_Delivery.adoc[]
 
 include::ejb3/Securing_EJBs.adoc[]
 
+include::ejb3/EJB_Client_Interceptors.adoc[]
+
 :leveloffset: -1

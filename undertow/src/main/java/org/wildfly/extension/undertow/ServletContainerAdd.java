@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.undertow;
 
+import io.undertow.connector.ByteBufferPool;
 import io.undertow.security.api.AuthenticationMechanismFactory;
 import io.undertow.server.handlers.cache.DirectBufferCache;
 import io.undertow.servlet.api.CrawlerSessionManagerConfig;
@@ -37,10 +38,8 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.value.InjectedValue;
 import org.jboss.security.negotiation.NegotiationMechanismFactory;
 import org.wildfly.extension.undertow.security.digest.DigestAuthenticationMechanismFactory;
-import org.xnio.Pool;
 import org.xnio.XnioWorker;
 
 import java.util.ArrayList;
@@ -151,7 +150,7 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
         }
         if(webSocketInfo != null) {
             builder.addCapabilityRequirement(Capabilities.REF_IO_WORKER, XnioWorker.class, container.getWebsocketsWorker(), webSocketInfo.getWorker());
-            builder.addCapabilityRequirement(Capabilities.REF_BUFFER_POOL, Pool.class, (InjectedValue) container.getWebsocketsBufferPool(), webSocketInfo.getBufferPool());
+            builder.addCapabilityRequirement(Capabilities.CAPABILITY_BYTE_BUFFER_POOL, ByteBufferPool.class, container.getWebsocketsBufferPool(), webSocketInfo.getBufferPool());
         }
 
         builder.setInitialMode(ServiceController.Mode.ON_DEMAND)

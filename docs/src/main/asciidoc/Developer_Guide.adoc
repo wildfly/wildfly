@@ -9,7 +9,7 @@ WildFly developer team;
 :doctype: book
 :icons: font
 :source-highlighter: coderay
-:wildflyVersion: 12
+:wildflyVersion: 13
 
 ifndef::ebook-format[:leveloffset: 1]
 
@@ -34,6 +34,8 @@ include::_developer-guide/Deployment_Descriptors_used_In_WildFly.adoc[]
 include::_developer-guide/Development_Guidelines_and_Recommended_Practices.adoc[]
 
 include::_developer-guide/Application_Client_Reference.adoc[]
+
+include::_developer-guide/Embedded_API.adoc[]
 
 include::_developer-guide/CDI_Reference.adoc[]
 

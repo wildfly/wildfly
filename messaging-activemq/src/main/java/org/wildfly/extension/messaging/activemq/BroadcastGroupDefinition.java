@@ -88,11 +88,11 @@ public class BroadcastGroupDefinition extends PersistentResourceDefinition {
             .build();
 
     @Deprecated public static final SimpleAttributeDefinition JGROUPS_CHANNEL_FACTORY = create(CommonAttributes.JGROUPS_CHANNEL_FACTORY)
-            .setCapabilityReference("org.wildfly.clustering.jgroups.channel-factory", CAPABILITY)
+            .setCapabilityReference("org.wildfly.clustering.jgroups.channel-factory")
             .build();
 
     public static final SimpleAttributeDefinition JGROUPS_CHANNEL = create(CommonAttributes.JGROUPS_CHANNEL)
-            .setCapabilityReference(ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getName(), CAPABILITY)
+            .setCapabilityReference(ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getName())
             .build();
 
     public static final AttributeDefinition[] ATTRIBUTES = { JGROUPS_CHANNEL_FACTORY, JGROUPS_CHANNEL, JGROUPS_CLUSTER, SOCKET_BINDING,

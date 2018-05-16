@@ -26,7 +26,6 @@ import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.SimpleResourceDescriptorConfigurator;
 import org.jboss.as.clustering.controller.validation.DoubleRangeValidatorBuilder;
-import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.clustering.controller.validation.IntRangeValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.LongRangeValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
@@ -48,24 +47,39 @@ import org.jboss.dmr.ModelType;
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  * @author Radoslav Husar
  */
-public class DistributedCacheResourceDefinition extends SharedStateCacheResourceDefinition {
+public class DistributedCacheResourceDefinition extends SegmentedCacheResourceDefinition {
 
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
     static PathElement pathElement(String name) {
         return PathElement.pathElement("distributed-cache", name);
     }
 
-    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        CAPACITY_FACTOR("capacity-factor", ModelType.DOUBLE, new ModelNode(1.0f), builder -> builder.setValidator(new DoubleRangeValidatorBuilder().lowerBound(0).upperBound(Float.MAX_VALUE).configure(builder).build())),
-        CONSISTENT_HASH_STRATEGY("consistent-hash-strategy", ModelType.STRING, new ModelNode(ConsistentHashStrategy.INTER_CACHE.name()), builder -> builder.setValidator(new EnumValidator<>(ConsistentHashStrategy.class))),
-        L1_LIFESPAN("l1-lifespan", ModelType.LONG, new ModelNode(0L), builder -> builder.setMeasurementUnit(MeasurementUnit.MILLISECONDS).setValidator(new LongRangeValidatorBuilder().min(0).configure(builder).build())),
-        OWNERS("owners", ModelType.INT, new ModelNode(2), builder -> builder.setValidator(new IntRangeValidatorBuilder().min(1).configure(builder).build())),
-        SEGMENTS("segments", ModelType.INT, new ModelNode(256), builder -> builder.setValidator(new IntRangeValidatorBuilder().min(1).configure(builder).build())),
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
+        CAPACITY_FACTOR("capacity-factor", ModelType.DOUBLE, new ModelNode(1.0f)) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setValidator(new DoubleRangeValidatorBuilder().lowerBound(0).upperBound(Float.MAX_VALUE).configure(builder).build());
+            }
+        },
+        L1_LIFESPAN("l1-lifespan", ModelType.LONG, new ModelNode(0L)) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setValidator(new LongRangeValidatorBuilder().min(0).configure(builder).build())
+                        .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
+                        ;
+            }
+        },
+        OWNERS("owners", ModelType.INT, new ModelNode(2)) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setValidator(new IntRangeValidatorBuilder().min(1).configure(builder).build());
+            }
+        },
         ;
         private final AttributeDefinition definition;
 
-        Attribute(String name, ModelType type, ModelNode defaultValue, UnaryOperator<SimpleAttributeDefinitionBuilder> configurator) {
-            this.definition = configurator.apply(new SimpleAttributeDefinitionBuilder(name, type)
+        Attribute(String name, ModelType type, ModelNode defaultValue) {
+            this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, type)
                     .setAllowExpression(true)
                     .setRequired(false)
                     .setDefaultValue(defaultValue)
@@ -88,23 +102,14 @@ public class DistributedCacheResourceDefinition extends SharedStateCacheResource
                     .end();
         }
 
-        if (InfinispanModel.VERSION_4_1_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder()
-                    .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(Attribute.CONSISTENT_HASH_STRATEGY.getDefinition()), Attribute.CONSISTENT_HASH_STRATEGY.getDefinition())
-                    .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(Attribute.SEGMENTS.getDefinition()), Attribute.SEGMENTS.getDefinition())
-                    .end();
-        }
-
         if (InfinispanModel.VERSION_3_0_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
                     .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(Attribute.CAPACITY_FACTOR.getDefinition().getDefaultValue()), Attribute.CAPACITY_FACTOR.getDefinition())
                     .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.CAPACITY_FACTOR.getDefinition())
-                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(ConsistentHashStrategy.INTRA_CACHE.name())), Attribute.CONSISTENT_HASH_STRATEGY.getDefinition())
-                    .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.CONSISTENT_HASH_STRATEGY.getDefinition())
                     .end();
         }
 
-        SharedStateCacheResourceDefinition.buildTransformation(version, builder);
+        SegmentedCacheResourceDefinition.buildTransformation(version, builder);
     }
 
     DistributedCacheResourceDefinition() {

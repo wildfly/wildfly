@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="messaging-activemq-ha" xmlns="urn:jboss:galleon:feature-group:1.0">
+    <feature-group name="messaging-activemq"/>
+    <feature spec="subsystem.messaging-activemq">
+        <feature spec="subsystem.messaging-activemq.server">
+            <param name="server" value="default"/>
+            <param name="cluster-password" value="${jboss.messaging.cluster.password:CHANGE ME!!}"/>
+            <feature spec="subsystem.messaging-activemq.server.address-setting">
+                <param name="address-setting" value="#"/>
+                <param name="dead-letter-address" value="jms.queue.DLQ"/>
+                <param name="expiry-address" value="jms.queue.ExpiryQueue"/>
+                <param name="max-size-bytes" value="10485760"/>
+                <param name="page-size-bytes" value="2097152"/>
+                <param name="message-counter-history-day-limit" value="10"/>
+                <param name="redistribution-delay" value="1000"/>
+            </feature>
+            <feature spec="subsystem.messaging-activemq.server.connection-factory">
+                <param name="connection-factory" value="RemoteConnectionFactory"/>
+                <param name="ha" value="true"/>
+                <param name="reconnect-attempts" value="-1"/>
+                <param name="block-on-acknowledge" value="true"/>
+            </feature>
+            <feature spec="subsystem.messaging-activemq.server.broadcast-group">
+                <param name="broadcast-group" value="bg-group1"/>
+                <param name="jgroups-cluster" value="activemq-cluster"/>
+                <param name="connectors" value="[http-connector]"/>
+            </feature>
+            <feature spec="subsystem.messaging-activemq.server.discovery-group">
+                <param name="discovery-group" value="dg-group1"/>
+                <param name="jgroups-cluster" value="activemq-cluster"/>
+            </feature>
+            <feature spec="subsystem.messaging-activemq.server.cluster-connection">
+                <param name="cluster-connection" value="my-cluster"/>
+                <param name="cluster-connection-address" value="jms"/>
+                <param name="connector-name" value="http-connector"/>
+                <param name="discovery-group" value="dg-group1"/>
+            </feature>
+        </feature>
+    </feature>
+</feature-group-spec>

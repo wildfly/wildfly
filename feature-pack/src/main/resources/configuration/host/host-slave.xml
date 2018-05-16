@@ -9,7 +9,6 @@
         <security-realms>
             <security-realm name="ManagementRealm">
                 <server-identities>
-                    <!-- Replace this with either a base64 password of your own, or use a vault with a vault expression -->
                     <secret value="c2xhdmVfdXMzcl9wYXNzd29yZA=="/>
                 </server-identities>
 
@@ -97,8 +96,6 @@
     <servers>
         <server name="server-one" group="main-server-group"/>
         <server name="server-two" group="other-server-group">
-            <!-- server-two avoids port conflicts by incrementing the ports in
-                 the default socket-group declared in the server-group -->
             <socket-bindings port-offset="150"/>
         </server>
     </servers>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="singleton" xmlns="urn:jboss:galleon:feature-group:1.0">
+    <feature spec="subsystem.singleton">
+        <param name="default" value="default"/>
+        <feature spec="subsystem.singleton.singleton-policy">
+            <param name="singleton-policy" value="default"/>
+            <param name="cache-container" value="server"/>
+            <feature spec="subsystem.singleton.singleton-policy.election-policy.simple"/>
+        </feature>
+    </feature>
+</feature-group-spec>

@@ -61,6 +61,10 @@ public class UndertowSubsystemParser_6_0 extends PersistentResourceXMLParser {
                         UndertowRootDefinition.DEFAULT_SECURITY_DOMAIN,
                         UndertowRootDefinition.STATISTICS_ENABLED)
                 .addChild(
+                        builder(ByteBufferPoolDefinition.INSTANCE.getPathElement())
+                                .addAttributes(ByteBufferPoolDefinition.DIRECT, ByteBufferPoolDefinition.BUFFER_SIZE, ByteBufferPoolDefinition.MAX_POOL_SIZE, ByteBufferPoolDefinition.THREAD_LOCAL_CACHE_SIZE, ByteBufferPoolDefinition.LEAK_DETECTION_PERCENT)
+                )
+                .addChild(
                         builder(BufferCacheDefinition.INSTANCE.getPathElement())
                                 .addAttributes(BufferCacheDefinition.BUFFER_SIZE, BufferCacheDefinition.BUFFERS_PER_REGION, BufferCacheDefinition.MAX_REGIONS)
                 )
@@ -87,7 +91,8 @@ public class UndertowSubsystemParser_6_0 extends PersistentResourceXMLParser {
                                                         HttpListenerResourceDefinition.HTTP2_MAX_CONCURRENT_STREAMS,
                                                         HttpListenerResourceDefinition.HTTP2_MAX_FRAME_SIZE,
                                                         HttpListenerResourceDefinition.HTTP2_MAX_HEADER_LIST_SIZE,
-                                                        HttpListenerResourceDefinition.REQUIRE_HOST_HTTP11)
+                                                        HttpListenerResourceDefinition.REQUIRE_HOST_HTTP11,
+                                                        HttpListenerResourceDefinition.PROXY_PROTOCOL)
                                 ).addChild(
                                         listenerBuilder(HttpsListenerResourceDefinition.INSTANCE)
                                                 // xsd https-listener-type
@@ -110,10 +115,15 @@ public class UndertowSubsystemParser_6_0 extends PersistentResourceXMLParser {
                                                         HttpListenerResourceDefinition.HTTP2_MAX_CONCURRENT_STREAMS,
                                                         HttpListenerResourceDefinition.HTTP2_MAX_FRAME_SIZE,
                                                         HttpListenerResourceDefinition.HTTP2_MAX_HEADER_LIST_SIZE,
-                                                        HttpListenerResourceDefinition.REQUIRE_HOST_HTTP11)
+                                                        HttpListenerResourceDefinition.REQUIRE_HOST_HTTP11,
+                                                        HttpListenerResourceDefinition.PROXY_PROTOCOL)
                                 ).addChild(
                                         builder(HostDefinition.INSTANCE.getPathElement())
-                                                .addAttributes(HostDefinition.ALIAS, HostDefinition.DEFAULT_WEB_MODULE, HostDefinition.DEFAULT_RESPONSE_CODE, HostDefinition.DISABLE_CONSOLE_REDIRECT)
+                                                .addAttributes(HostDefinition.ALIAS,
+                                                        HostDefinition.DEFAULT_WEB_MODULE,
+                                                        HostDefinition.DEFAULT_RESPONSE_CODE,
+                                                        HostDefinition.DISABLE_CONSOLE_REDIRECT,
+                                                        HostDefinition.QUEUE_REQUESTS_ON_START)
                                                 .addChild(
                                                         builder(LocationDefinition.INSTANCE.getPathElement())
                                                                 .addAttributes(LocationDefinition.HANDLER)

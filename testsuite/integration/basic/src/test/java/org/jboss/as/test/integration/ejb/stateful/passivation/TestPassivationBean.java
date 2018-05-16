@@ -107,6 +107,13 @@ public class TestPassivationBean extends PassivationSuperClass implements TestPa
     }
 
     @Override
+    public void removeEntity(final int id) {
+        Employee e = entityManager.find(Employee.class, id);
+        entityManager.remove(e);
+        entityManager.flush();
+    }
+
+    @Override
     public void setManagedBeanMessage(String message) {
         this.managedBean.setMessage(message);
     }

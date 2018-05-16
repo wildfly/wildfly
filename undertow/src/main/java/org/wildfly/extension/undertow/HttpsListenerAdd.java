@@ -52,6 +52,7 @@ public class HttpsListenerAdd extends ListenerAdd {
         OptionMap.Builder builder = OptionMap.builder().addAll(socketOptions);
 
         ModelNode securityRealmModel = HttpsListenerResourceDefinition.SECURITY_REALM.resolveModelAttribute(context, model);
+        final boolean proxyProtocol = HttpListenerResourceDefinition.PROXY_PROTOCOL.resolveModelAttribute(context, model).asBoolean();
         String cipherSuites = null;
         if(securityRealmModel.isDefined()) {
             //we only support setting these options for security realms
@@ -73,7 +74,7 @@ public class HttpsListenerAdd extends ListenerAdd {
 
         final boolean certificateForwarding = HttpListenerResourceDefinition.CERTIFICATE_FORWARDING.resolveModelAttribute(context, model).asBoolean();
         final boolean proxyAddressForwarding = HttpListenerResourceDefinition.PROXY_ADDRESS_FORWARDING.resolveModelAttribute(context, model).asBoolean();
-        return new HttpsListenerService(name, serverName, listenerBuilder.getMap(), cipherSuites, builder.getMap(), certificateForwarding, proxyAddressForwarding);
+        return new HttpsListenerService(name, serverName, listenerBuilder.getMap(), cipherSuites, builder.getMap(), certificateForwarding, proxyAddressForwarding, proxyProtocol);
     }
 
     @Override

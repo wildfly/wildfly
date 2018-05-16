@@ -28,7 +28,10 @@ import java.util.List;
 import java.util.ServiceLoader;
 import java.util.function.Consumer;
 
+import org.infinispan.commons.configuration.attributes.AttributeSet;
 import org.infinispan.configuration.cache.CacheMode;
+import org.infinispan.configuration.cache.ClusteringConfiguration;
+import org.infinispan.configuration.cache.ClusteringConfigurationBuilder;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.eviction.EvictionStrategy;
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
@@ -77,11 +80,17 @@ public class ClientMappingsCacheBuilderProvider implements CacheBuilderProvider,
     @SuppressWarnings("deprecation")
     @Override
     public void accept(ConfigurationBuilder builder) {
-        CacheMode mode = builder.clustering().cacheMode();
-        builder.clustering().cacheMode(mode.isClustered() ? CacheMode.REPL_SYNC : CacheMode.LOCAL);
+        ClusteringConfigurationBuilder clustering = builder.clustering();
+        CacheMode mode = clustering.cacheMode();
+        clustering.cacheMode(mode.isClustered() ? CacheMode.REPL_SYNC : CacheMode.LOCAL);
         // don't use DefaultConsistentHashFactory for REPL caches (WFLY-9276)
-        builder.clustering().hash().consistentHashFactory(null);
-        builder.clustering().l1().disable();
+        clustering.hash().consistentHashFactory(null);
+        clustering.l1().disable();
+        // Workaround for ISPN-8722
+        AttributeSet attributes = TemplateConfigurationBuilder.getAttributes(clustering);
+        attributes.attribute(ClusteringConfiguration.BIAS_ACQUISITION).reset();
+        attributes.attribute(ClusteringConfiguration.BIAS_LIFESPAN).reset();
+        attributes.attribute(ClusteringConfiguration.INVALIDATION_BATCH_SIZE).reset();
         // Ensure we use the default data container
         builder.dataContainer().dataContainer(null);
         // Disable expiration

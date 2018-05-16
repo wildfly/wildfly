@@ -87,6 +87,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 final class AssociationImpl implements Association, AutoCloseable {
 
+    private static final String RETURNED_CONTEXT_DATA_KEY = "jboss.returned.keys";
     private final DeploymentRepository deploymentRepository;
     private final ClusterTopologyRegistrar clusterTopologyRegistrar;
     private final Registry<String, List<ClientMapping>> clientMappingRegistry;
@@ -525,15 +526,29 @@ final class AssociationImpl implements Association, AutoCloseable {
         final boolean isAsync = componentView.isAsynchronous(method);
         final boolean oneWay = isAsync && method.getReturnType() == void.class;
         final boolean isSessionBean = componentView.getComponent() instanceof SessionBeanComponent;
-        contextDataHolder.putAll(interceptorContext.getContextData());
         if (isAsync && isSessionBean) {
             if (! oneWay) {
                 interceptorContext.putPrivateData(CancellationFlag.class, cancellationFlag);
             }
             final Object result = invokeWithIdentity(componentView, interceptorContext, securityIdentity);
+            handleReturningContextData(contextDataHolder, interceptorContext, content);
             return result == null ? null : ((Future<?>) result).get();
         } else {
-            return invokeWithIdentity(componentView, interceptorContext, securityIdentity);
+            Object result = invokeWithIdentity(componentView, interceptorContext, securityIdentity);
+            handleReturningContextData(contextDataHolder, interceptorContext, content);
+            return result;
+        }
+    }
+
+    private static void handleReturningContextData(Map<String, Object> contextDataHolder, InterceptorContext interceptorContext, InvocationRequest.Resolved content) {
+        Set<String> returnKeys = (Set<String>) content.getAttachments().get(RETURNED_CONTEXT_DATA_KEY);
+        if(returnKeys == null) {
+            return;
+        }
+        for(String key : returnKeys) {
+            if(interceptorContext.getContextData().containsKey(key)) {
+                contextDataHolder.put(key, interceptorContext.getContextData().get(key));
+            }
         }
     }
 

@@ -130,7 +130,7 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
         DEFAULT_CACHE("default-cache", ModelType.STRING) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setAllowExpression(false).setCapabilityReference(new CapabilityReference(DEFAULT_CAPABILITIES.get(InfinispanCacheRequirement.CONFIGURATION), InfinispanCacheRequirement.CONFIGURATION));
+                return builder.setAllowExpression(false).setCapabilityReference(new CapabilityReference(DEFAULT_CAPABILITIES.get(InfinispanCacheRequirement.CONFIGURATION), InfinispanCacheRequirement.CONFIGURATION, WILDCARD_PATH));
             }
         },
         MODULE("module", ModelType.STRING) {
@@ -286,6 +286,7 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
 
         JGroupsTransportResourceDefinition.buildTransformation(version, builder);
 
+        ScatteredCacheResourceDefinition.buildTransformation(version, builder);
         DistributedCacheResourceDefinition.buildTransformation(version, builder);
         ReplicatedCacheResourceDefinition.buildTransformation(version, builder);
         InvalidationCacheResourceDefinition.buildTransformation(version, builder);
@@ -354,6 +355,7 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
         new InvalidationCacheResourceDefinition().register(registration);
         new ReplicatedCacheResourceDefinition().register(registration);
         new DistributedCacheResourceDefinition().register(registration);
+        new ScatteredCacheResourceDefinition().register(registration);
 
         return registration;
     }

@@ -37,12 +37,14 @@ import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
  * @author Scott Marlow
  */
+@Ignore("WFLY-10177")
 @RunWith(Arquillian.class)
 public class EclipseLinkSharedModuleProviderTestCase {
 

@@ -22,7 +22,7 @@
 
 package org.wildfly.extension.undertow;
 
-import static org.wildfly.extension.undertow.Capabilities.REF_BUFFER_POOL;
+import static org.wildfly.extension.undertow.Capabilities.CAPABILITY_BYTE_BUFFER_POOL;
 import static org.wildfly.extension.undertow.Capabilities.REF_IO_WORKER;
 
 import java.util.Arrays;
@@ -64,7 +64,7 @@ class WebsocketsDefinition extends PersistentResourceDefinition {
             new SimpleAttributeDefinitionBuilder("buffer-pool", ModelType.STRING, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode("default"))
-                    .setCapabilityReference(REF_BUFFER_POOL)
+                    .setCapabilityReference(CAPABILITY_BYTE_BUFFER_POOL)
                     .build();
 
     protected static final SimpleAttributeDefinition WORKER =

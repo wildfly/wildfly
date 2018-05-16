@@ -24,9 +24,10 @@ package org.wildfly.extension.undertow;
 
 import static org.junit.Assert.assertTrue;
 import static org.wildfly.extension.undertow.HttpsListenerResourceDefinition.SSL_CONTEXT;
+import static org.wildfly.extension.undertow.ListenerResourceDefinition.ALLOW_UNESCAPED_CHARACTERS_IN_URL;
+import static org.wildfly.extension.undertow.ListenerResourceDefinition.RFC6265_COOKIE_VALIDATION;
 import static org.wildfly.extension.undertow.filters.ModClusterDefinition.MAX_AJP_PACKET_SIZE;
 
-import java.io.IOException;
 import java.util.List;
 
 import org.jboss.as.controller.ModelVersion;
@@ -35,10 +36,11 @@ import org.jboss.as.controller.transform.OperationTransformer.TransformedOperati
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
-import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
+import org.jboss.as.subsystem.test.LegacyKernelServicesInitializer;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
@@ -50,17 +52,12 @@ import org.wildfly.extension.undertow.handlers.ReverseProxyHandler;
  *
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
-public class UndertowTransformersTestCase extends AbstractSubsystemBaseTest {
+public class UndertowTransformersTestCase extends AbstractSubsystemTest {
     private static final ModelVersion EAP7_0_0 = ModelVersion.create(3, 1, 0);
     private static final ModelVersion EAP7_1_0 = ModelVersion.create(4, 0, 0);
 
     public UndertowTransformersTestCase() {
         super(UndertowExtension.SUBSYSTEM_NAME, new UndertowExtension());
-    }
-
-    @Override
-    protected String getSubsystemXml() throws IOException {
-        return readResource("undertow-transformers.xml");
     }
 
     @Test
@@ -69,54 +66,44 @@ public class UndertowTransformersTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testRejectTransformersEAP_7_0_0() throws Exception {
-        doRejectTest(ModelTestControllerVersion.EAP_7_0_0, EAP7_0_0);
+    public void testTransformersEAP_7_1_0() throws Exception {
+        testTransformers(ModelTestControllerVersion.EAP_7_1_0, EAP7_1_0);
     }
 
     @Test
-    public void testConvertTransformersEAP_7_1_0() throws Exception {
-        // https://issues.jboss.org/browse/WFLY-9675 Fix max-post-size LongRangeValidator min to 0.
-        // Test Listener attribute max-post-size value 0 is converted to Long.MAX
-        doConvertTest(ModelTestControllerVersion.EAP_7_1_0, EAP7_1_0);
-    }
-
-    private void doRejectTest(ModelTestControllerVersion controllerVersion, ModelVersion targetVersion) throws Exception {
-        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
-        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, targetVersion)
-                .configureReverseControllerCheck(createAdditionalInitialization(), null)
-                //.skipReverseControllerCheck()
-                .addSingleChildFirstClass(DefaultInitialization.class)
-                .addMavenResourceURL(String.format("%s:wildfly-undertow:%s", controllerVersion.getMavenGroupId(), controllerVersion.getMavenGavVersion()))
-                .dontPersistXml();
-
-        KernelServices mainServices = builder.build();
-        Assert.assertTrue(mainServices.isSuccessfulBoot());
-        KernelServices legacyServices = mainServices.getLegacyServices(targetVersion);
-        Assert.assertTrue(legacyServices.isSuccessfulBoot());
-        Assert.assertNotNull(legacyServices);
-
-        List<ModelNode> ops = builder.parseXmlResource("undertow-reject.xml");
+    public void testRejectTransformersEAP_7_0_0() throws Exception {
         PathAddress subsystemAddress = PathAddress.pathAddress(UndertowExtension.SUBSYSTEM_PATH);
         PathAddress serverAddress = subsystemAddress.append(UndertowExtension.SERVER_PATH);
         PathAddress hostAddress = serverAddress.append(UndertowExtension.HOST_PATH);
         PathAddress httpsAddress = serverAddress.append(UndertowExtension.HTTPS_LISTENER_PATH);
+        PathAddress ajpAddress = serverAddress.append(UndertowExtension.AJP_LISTENER_PATH);
         PathAddress httpAddress = serverAddress.append(UndertowExtension.HTTP_LISTENER_PATH);
         PathAddress reverseProxy = subsystemAddress.append(UndertowExtension.PATH_HANDLERS).append(Constants.REVERSE_PROXY);
         PathAddress reverseProxyServerAddress = reverseProxy.append(Constants.HOST);
         PathAddress modClusterPath = subsystemAddress.append(UndertowExtension.PATH_FILTERS).append(Constants.MOD_CLUSTER);
+        PathAddress servletContainer = subsystemAddress.append(UndertowExtension.PATH_SERVLET_CONTAINER);
+        PathAddress byteBufferPath = subsystemAddress.append(UndertowExtension.BYTE_BUFFER_POOL_PATH);
 
-        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, targetVersion, ops, new FailedOperationTransformationConfig()
+        doRejectTest(ModelTestControllerVersion.EAP_7_0_0, EAP7_0_0, new FailedOperationTransformationConfig()
+                .addFailedAttribute(byteBufferPath, FailedOperationTransformationConfig.REJECTED_RESOURCE)
+                .addFailedAttribute(hostAddress, new FailedOperationTransformationConfig.NewAttributesConfig(HostDefinition.QUEUE_REQUESTS_ON_START))
                 .addFailedAttribute(httpAddress,
                         new FailedOperationTransformationConfig.NewAttributesConfig(
-                                HttpListenerResourceDefinition.REQUIRE_HOST_HTTP11
+                                HttpListenerResourceDefinition.REQUIRE_HOST_HTTP11,
+                                HttpListenerResourceDefinition.PROXY_PROTOCOL,
+                                HttpListenerResourceDefinition.ALLOW_UNESCAPED_CHARACTERS_IN_URL,
+                                HttpListenerResourceDefinition.RFC6265_COOKIE_VALIDATION
                         )
                 ).addFailedAttribute(httpsAddress,
                         new FailedOperationTransformationConfig.NewAttributesConfig(
-                                HttpListenerResourceDefinition.REQUIRE_HOST_HTTP11.getName(),
-                                HttpListenerResourceDefinition.PROXY_ADDRESS_FORWARDING.getName(),
-                                HttpListenerResourceDefinition.CERTIFICATE_FORWARDING.getName(),
-                                HttpsListenerResourceDefinition.SSL_CONTEXT.getName(),
-                                HttpsListenerResourceDefinition.ALLOW_UNESCAPED_CHARACTERS_IN_URL.getName()
+                                HttpListenerResourceDefinition.REQUIRE_HOST_HTTP11,
+                                HttpListenerResourceDefinition.PROXY_ADDRESS_FORWARDING,
+                                HttpListenerResourceDefinition.CERTIFICATE_FORWARDING,
+                                HttpsListenerResourceDefinition.SSL_CONTEXT,
+                                HttpsListenerResourceDefinition.ALLOW_UNESCAPED_CHARACTERS_IN_URL,
+                                HttpListenerResourceDefinition.PROXY_PROTOCOL,
+                                HttpListenerResourceDefinition.RFC6265_COOKIE_VALIDATION
+
                         )
                 )
                 .addFailedAttribute(reverseProxy, new FailedOperationTransformationConfig.NewAttributesConfig(ReverseProxyHandler.MAX_RETRIES))
@@ -130,8 +117,84 @@ public class UndertowTransformersTestCase extends AbstractSubsystemBaseTest {
                         .build())
                 .addFailedAttribute(subsystemAddress.append(UndertowExtension.PATH_APPLICATION_SECURITY_DOMAIN).append(UndertowExtension.PATH_SSO), FailedOperationTransformationConfig.REJECTED_RESOURCE)
                 .addFailedAttribute(subsystemAddress.append(UndertowExtension.PATH_APPLICATION_SECURITY_DOMAIN), FailedOperationTransformationConfig.REJECTED_RESOURCE)
-
+                .addFailedAttribute(servletContainer,
+                        new FailedOperationTransformationConfig.NewAttributesConfig(
+                                ServletContainerDefinition.DEFAULT_COOKIE_VERSION,
+                                ServletContainerDefinition.FILE_CACHE_MAX_FILE_SIZE,
+                                ServletContainerDefinition.FILE_CACHE_METADATA_SIZE,
+                                ServletContainerDefinition.FILE_CACHE_TIME_TO_LIVE,
+                                ServletContainerDefinition.DISABLE_FILE_WATCH_SERVICE,
+                                ServletContainerDefinition.DISABLE_SESSION_ID_REUSE))
+                .addFailedAttribute(ajpAddress,
+                        new FailedOperationTransformationConfig.NewAttributesConfig(
+                                ALLOW_UNESCAPED_CHARACTERS_IN_URL, RFC6265_COOKIE_VALIDATION))
         );
+    }
+
+    @Test
+    public void testRejectTransformersEAP_7_1_0() throws Exception {
+        PathAddress subsystemAddress = PathAddress.pathAddress(UndertowExtension.SUBSYSTEM_PATH);
+        PathAddress serverAddress = subsystemAddress.append(UndertowExtension.SERVER_PATH);
+        PathAddress hostAddress = serverAddress.append(UndertowExtension.HOST_PATH);
+        PathAddress httpsAddress = serverAddress.append(UndertowExtension.HTTPS_LISTENER_PATH);
+        PathAddress ajpAddress = serverAddress.append(UndertowExtension.AJP_LISTENER_PATH);
+        PathAddress httpAddress = serverAddress.append(UndertowExtension.HTTP_LISTENER_PATH);
+        PathAddress servletContainer = subsystemAddress.append(UndertowExtension.PATH_SERVLET_CONTAINER);
+        PathAddress byteBufferPath = subsystemAddress.append(UndertowExtension.BYTE_BUFFER_POOL_PATH);
+
+        doRejectTest(ModelTestControllerVersion.EAP_7_1_0, EAP7_1_0, new FailedOperationTransformationConfig()
+                .addFailedAttribute(byteBufferPath, FailedOperationTransformationConfig.REJECTED_RESOURCE)
+                .addFailedAttribute(hostAddress, new FailedOperationTransformationConfig.NewAttributesConfig(HostDefinition.QUEUE_REQUESTS_ON_START))
+                .addFailedAttribute(httpAddress,
+                        new FailedOperationTransformationConfig.NewAttributesConfig(
+                                HttpListenerResourceDefinition.PROXY_PROTOCOL,
+                                HttpListenerResourceDefinition.ALLOW_UNESCAPED_CHARACTERS_IN_URL
+                        )
+                ).addFailedAttribute(httpsAddress,
+                        new FailedOperationTransformationConfig.NewAttributesConfig(
+                                HttpListenerResourceDefinition.PROXY_PROTOCOL,
+                                HttpsListenerResourceDefinition.ALLOW_UNESCAPED_CHARACTERS_IN_URL
+                        )
+                )
+                .addFailedAttribute(servletContainer,
+                        new FailedOperationTransformationConfig.NewAttributesConfig(
+                                ServletContainerDefinition.DEFAULT_COOKIE_VERSION,
+                                ServletContainerDefinition.FILE_CACHE_MAX_FILE_SIZE,
+                                ServletContainerDefinition.FILE_CACHE_METADATA_SIZE,
+                                ServletContainerDefinition.FILE_CACHE_TIME_TO_LIVE))
+                .addFailedAttribute(ajpAddress,
+                        new FailedOperationTransformationConfig.NewAttributesConfig(
+                                ALLOW_UNESCAPED_CHARACTERS_IN_URL))
+        );
+    }
+
+    @Test
+    public void testConvertTransformersEAP_7_1_0() throws Exception {
+        // https://issues.jboss.org/browse/WFLY-9675 Fix max-post-size LongRangeValidator min to 0.
+        // Test Listener attribute max-post-size value 0 is converted to Long.MAX
+        doConvertTest(ModelTestControllerVersion.EAP_7_1_0, EAP7_1_0);
+    }
+
+    private void doRejectTest(ModelTestControllerVersion controllerVersion, ModelVersion targetVersion, FailedOperationTransformationConfig config) throws Exception {
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
+        LegacyKernelServicesInitializer init = builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, targetVersion)
+                .configureReverseControllerCheck(createAdditionalInitialization(), null)
+                //.skipReverseControllerCheck()
+                .addSingleChildFirstClass(DefaultInitialization.class)
+                .addMavenResourceURL(String.format("%s:wildfly-undertow:%s", controllerVersion.getMavenGroupId(), controllerVersion.getMavenGavVersion()))
+                .dontPersistXml();
+
+        addExtraMavenUrls(controllerVersion, init);
+
+        KernelServices mainServices = builder.build();
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
+        KernelServices legacyServices = mainServices.getLegacyServices(targetVersion);
+        Assert.assertTrue(legacyServices.isSuccessfulBoot());
+        Assert.assertNotNull(legacyServices);
+
+        List<ModelNode> ops = builder.parseXmlResource("undertow-reject.xml");
+
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, targetVersion, ops, config);
     }
 
     private void doConvertTest(ModelTestControllerVersion controllerVersion, ModelVersion targetVersion) throws Exception {
@@ -162,13 +225,27 @@ public class UndertowTransformersTestCase extends AbstractSubsystemBaseTest {
 
     private void testTransformers(ModelTestControllerVersion controllerVersion, ModelVersion undertowVersion) throws Exception {
         //Boot up empty controllers with the resources needed for the ops coming from the xml to work
+        final String eapVersion;
+        switch (controllerVersion) {
+            case EAP_7_0_0:
+                eapVersion = "7.0";
+                break;
+            case EAP_7_1_0:
+                eapVersion = "7.1";
+                break;
+            default:
+                Assert.fail(controllerVersion + " not yet configured");
+                return;
+        }
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
-                .setSubsystemXmlResource("undertow-transformers.xml");
-        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, undertowVersion)
+                .setSubsystemXmlResource(String.format("undertow-%s-transformers.xml", eapVersion));
+        LegacyKernelServicesInitializer init = builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, undertowVersion)
                 .addMavenResourceURL(String.format("%s:wildfly-undertow:%s", controllerVersion.getMavenGroupId(), controllerVersion.getMavenGavVersion()))
                 .addSingleChildFirstClass(DefaultInitialization.class)
                 .configureReverseControllerCheck(createAdditionalInitialization(), null)
                 .dontPersistXml();
+
+        addExtraMavenUrls(controllerVersion, init);
 
         KernelServices mainServices = builder.build();
         assertTrue(mainServices.isSuccessfulBoot());
@@ -177,12 +254,16 @@ public class UndertowTransformersTestCase extends AbstractSubsystemBaseTest {
         checkSubsystemModelTransformation(mainServices, undertowVersion, null);
     }
 
-    @Override
     protected AdditionalInitialization createAdditionalInitialization() {
         return AbstractUndertowSubsystemTestCase.DEFAULT;
     }
 
-    @Override
-    public void testSchema() throws Exception {
+    private void addExtraMavenUrls(ModelTestControllerVersion controllerVersion, LegacyKernelServicesInitializer init) throws Exception {
+        if (controllerVersion == ModelTestControllerVersion.EAP_7_1_0) {
+            init.addMavenResourceURL(controllerVersion.getMavenGroupId() + ":wildfly-clustering-common:" + controllerVersion.getMavenGavVersion());
+            init.addMavenResourceURL(controllerVersion.getMavenGroupId() + ":wildfly-web-common:" + controllerVersion.getMavenGavVersion());
+            init.addMavenResourceURL("io.undertow:undertow-servlet:2.0.4.Final");
+            init.addMavenResourceURL("io.undertow:undertow-core:2.0.4.Final");
+        }
     }
 }

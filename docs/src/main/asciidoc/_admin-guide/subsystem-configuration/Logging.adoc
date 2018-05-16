@@ -315,6 +315,8 @@ on the next boot.
 
 :leveloffset: +1
 
+include::Logging_Formatters.adoc[]
+
 include::Logging_Handlers.adoc[]
 
 include::Logging_How_To.adoc[]

@@ -124,6 +124,13 @@ public class HttpListenerResourceDefinition extends ListenerResourceDefinition {
             .setDefaultValue(new ModelNode(false))
             .build();
 
+    protected static final SimpleAttributeDefinition PROXY_PROTOCOL = new SimpleAttributeDefinitionBuilder(Constants.PROXY_PROTOCOL, ModelType.BOOLEAN)
+            .setDefaultValue(new ModelNode(false))
+            .setRequired(false)
+            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+            .setAllowExpression(true)
+            .build();
+
     private HttpListenerResourceDefinition() {
         super(UndertowExtension.HTTP_LISTENER_PATH);
     }
@@ -146,6 +153,7 @@ public class HttpListenerResourceDefinition extends ListenerResourceDefinition {
         attrs.add(HTTP2_MAX_HEADER_LIST_SIZE);
         attrs.add(HTTP2_MAX_FRAME_SIZE);
         attrs.add(REQUIRE_HOST_HTTP11);
+        attrs.add(PROXY_PROTOCOL);
         return attrs;
     }
 

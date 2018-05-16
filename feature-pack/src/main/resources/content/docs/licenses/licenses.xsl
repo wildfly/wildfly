@@ -6,7 +6,7 @@
     <xsl:param name="version"/>
     <xsl:variable name="lowercase" select="'abcdefghijklmnopqrstuvwxyz '" />
     <xsl:variable name="uppercase" select="'ABCDEFGHIJKLMNOPQRSTUVWXYZ!'" />
-    
+
     <xsl:template match="/">
         <html>
             <head>
@@ -72,8 +72,11 @@
             <xsl:when test="$name = 'Creative Commons Attribution 2.5'">
                 <xsl:text>creative commons attribution 2.5.html</xsl:text>
             </xsl:when>
-            <xsl:when test="$name = 'GNU Lesser General Public License v2.1 or later'">
-                <xsl:text>gnu lesser general public license v2.1 or later.html</xsl:text>
+            <xsl:when test="$name = 'Creative Commons Zero v1.0 Universal'">
+                <xsl:text>creative commons zero v1.0 universal.html</xsl:text>
+            </xsl:when>
+            <xsl:when test="$name = 'GNU Lesser General Public License v3.0 or later'">
+                <xsl:text>gnu lesser general public license v3.0 or later.html</xsl:text>
             </xsl:when>
             <xsl:when test="$name = 'Mozilla Public License 2.0'">
                 <xsl:text>mozilla public license 2.0.html</xsl:text>

@@ -87,7 +87,9 @@ public class BatchDeploymentResourceDefinition extends SimpleResourceDefinition 
             .build();
 
     public BatchDeploymentResourceDefinition() {
-        super(new Parameters(BatchSubsystemDefinition.SUBSYSTEM_PATH, DEFAULT_RESOLVER).setRuntime());
+        super(new Parameters(BatchSubsystemDefinition.SUBSYSTEM_PATH, DEFAULT_RESOLVER)
+                .setRuntime()
+                .setFeature(false));
     }
 
     @Override

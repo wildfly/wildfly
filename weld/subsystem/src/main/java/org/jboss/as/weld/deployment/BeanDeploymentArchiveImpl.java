@@ -38,6 +38,8 @@ import org.jboss.as.weld.util.ServiceLoaders;
 import org.jboss.modules.DependencySpec;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleDependencySpec;
+import org.jboss.modules.ModuleLoadException;
+import org.jboss.modules.ModuleLoader;
 import org.jboss.weld.bootstrap.api.Service;
 import org.jboss.weld.bootstrap.api.ServiceRegistry;
 import org.jboss.weld.bootstrap.api.helpers.SimpleServiceRegistry;
@@ -244,6 +246,12 @@ public class BeanDeploymentArchiveImpl implements WildFlyBeanDeploymentArchive {
                 if (moduleDependency.getIdentifier().equals(that.getModule().getIdentifier())) {
                     return true;
                 }
+
+                // moduleDependency might be an alias - try to load it to get lined module
+                Module module = loadModule(moduleDependency);
+                if (module != null && module.getIdentifier().equals(that.getModule().getIdentifier())) {
+                    return true;
+                }
             }
         }
 
@@ -261,6 +269,19 @@ public class BeanDeploymentArchiveImpl implements WildFlyBeanDeploymentArchive {
             }
         }
         return false;
+    }
+
+    private Module loadModule(ModuleDependencySpec moduleDependency) {
+        try {
+            ModuleLoader moduleLoader = moduleDependency.getModuleLoader();
+            if (moduleLoader == null) {
+                return null;
+            } else {
+                return moduleLoader.loadModule(moduleDependency.getIdentifier());
+            }
+        } catch (ModuleLoadException e) {
+            return null;
+        }
     }
 
     public BeanArchiveType getBeanArchiveType() {

@@ -2,7 +2,7 @@
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
 <config default-supplement="default">
     <extension-module>org.jboss.as.clustering.infinispan</extension-module>
-    <subsystem xmlns="urn:jboss:domain:infinispan:5.0">
+    <subsystem xmlns="urn:jboss:domain:infinispan:6.0">
         <?CACHE-CONTAINERS?>
     </subsystem>
     <supplement name="default">
@@ -64,7 +64,7 @@
                     <file-store/>
                 </distributed-cache>
             </cache-container>
-            <cache-container name="hibernate" default-cache="local-query" module="org.infinispan.hibernate-cache">
+            <cache-container name="hibernate" module="org.infinispan.hibernate-cache">
                 <transport lock-timeout="60000"/>
                 <local-cache name="local-query">
                     <object-memory size="10000"/>

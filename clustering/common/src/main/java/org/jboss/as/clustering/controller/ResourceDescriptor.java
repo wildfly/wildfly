@@ -27,13 +27,13 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
@@ -41,7 +41,6 @@ import org.jboss.as.clustering.function.Predicates;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CapabilityReferenceRecorder;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
@@ -72,7 +71,7 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
     private final Set<PathElement> requiredSingletonChildren = new TreeSet<>(PATH_COMPARATOR);
     private final Map<AttributeDefinition, AttributeTranslation> attributeTranslations = new TreeMap<>(ATTRIBUTE_COMPARATOR);
     private final List<RuntimeResourceRegistration> runtimeResourceRegistrations = new LinkedList<>();
-    private final Map<CapabilityReferenceRecorder, Function<PathAddress, String>> resourceCapabilityReferences = new HashMap<>();
+    private final Set<CapabilityReferenceRecorder> resourceCapabilityReferences = new HashSet<>();
     private volatile UnaryOperator<OperationStepHandler> addOperationTransformer = UnaryOperator.identity();
     private volatile UnaryOperator<OperationStepHandler> operationTransformer = UnaryOperator.identity();
 
@@ -222,12 +221,12 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
     }
 
     @Override
-    public Map<CapabilityReferenceRecorder, Function<PathAddress, String>> getResourceCapabilityReferences() {
+    public Set<CapabilityReferenceRecorder> getResourceCapabilityReferences() {
         return this.resourceCapabilityReferences;
     }
 
-    public ResourceDescriptor addResourceCapabilityReference(CapabilityReferenceRecorder reference, Function<PathAddress, String> resolver) {
-        this.resourceCapabilityReferences.put(reference, resolver);
+    public ResourceDescriptor addResourceCapabilityReference(CapabilityReferenceRecorder reference) {
+        this.resourceCapabilityReferences.add(reference);
         return this;
     }
 

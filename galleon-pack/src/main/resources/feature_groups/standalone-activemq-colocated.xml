@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="standalone-activemq-colocated" xmlns="urn:jboss:galleon:feature-group:1.0">
+    <feature spec="interface">
+        <param name="interface" value="private"/>
+        <param name="inet-address" value="${jboss.bind.address.private:127.0.0.1}"/>
+    </feature>
+    <feature spec="socket-binding-group">
+        <param name="socket-binding-group" value="standard-sockets" />
+        <feature-group name="jgroups-sockets"/>
+    </feature>
+    <feature-group name="standalone-full">
+        <exclude spec="subsystem.messaging-activemq"/>
+    </feature-group>
+    <feature-group name="messaging-activemq">
+        <exclude feature-id="subsystem.messaging-activemq.server.http-acceptor:server=default,subsystem=messaging-activemq,http-acceptor=http-acceptor-throughput"/>
+        <exclude feature-id="subsystem.messaging-activemq.server.http-connector:http-connector=http-connector-throughput,server=default,subsystem=messaging-activemq"/>
+        <feature spec="subsystem.messaging-activemq">
+            <feature spec="subsystem.messaging-activemq.server">
+                <param name="server" value="default"/>
+                <param name="persistence-enabled" value="true"/>
+                <param name="cluster-password" value="${jboss.messaging.cluster.password:CHANGE ME!!}"/>
+                <param name="journal-file-size" value="102400"/>
+                <param name="journal-min-files" value="2"/>
+                <param name="journal-type" value="ASYNCIO"/>
+                <feature spec="subsystem.messaging-activemq.server.ha-policy.shared-store-master"/>
+
+                <feature spec="subsystem.messaging-activemq.server.in-vm-connector">
+                    <param name="in-vm-connector" value="in-vm"/>
+                    <unset param="params"/>
+                </feature>
+                <feature spec="subsystem.messaging-activemq.server.in-vm-acceptor">
+                    <param name="in-vm-acceptor" value="in-vm"/>
+                    <unset param="params"/>
+                </feature>
+
+                <feature spec="subsystem.messaging-activemq.server.broadcast-group">
+                    <param name="broadcast-group" value="bg-group1"/>
+                    <param name="jgroups-cluster" value="activemq-cluster"/>
+                    <param name="connectors" value="[http-connector]"/>
+                </feature>
+                <feature spec="subsystem.messaging-activemq.server.discovery-group">
+                    <param name="discovery-group" value="dg-group1"/>
+                    <param name="jgroups-cluster" value="activemq-cluster"/>
+                </feature>
+                <feature spec="subsystem.messaging-activemq.server.cluster-connection">
+                    <param name="cluster-connection" value="my-cluster"/>
+                    <param name="cluster-connection-address" value="jms"/>
+                    <param name="connector-name" value="http-connector"/>
+                    <param name="discovery-group" value="dg-group1"/>
+                </feature>
+
+                <feature spec="subsystem.messaging-activemq.server.jms-queue">
+                    <param name="jms-queue" value="testQueue"/>
+                    <param name="entries" value="[queue/test,java:jboss/exported/jms/queue/test]"/>
+                </feature>
+                <feature spec="subsystem.messaging-activemq.server.jms-topic">
+                    <param name="jms-topic" value="testTopic"/>
+                    <param name="entries" value="[topic/test,java:jboss/exported/jms/topic/test]"/>
+                </feature>
+            </feature>
+            <!-- Backup server -->
+            <feature spec="subsystem.messaging-activemq.server">
+                <param name="server" value="backuper-server"/>
+                <param name="persistence-enabled" value="true"/>
+                <param name="cluster-password" value="${jboss.messaging.cluster.password:CHANGE ME!!}"/>
+                <param name="journal-file-size" value="102400"/>
+                <param name="journal-min-files" value="2"/>
+                <param name="journal-type" value="ASYNCIO"/>
+                <feature spec="subsystem.messaging-activemq.server.ha-policy.shared-store-slave"/>
+                <feature spec="subsystem.messaging-activemq.server.path.bindings-directory">
+                    <param name="path-feature" value="activemq-backup/bindings"/>
+                </feature>
+                <feature spec="subsystem.messaging-activemq.server.path.journal-directory">
+                    <param name="path-feature" value="activemq-backup/journal"/>
+                </feature>
+                <feature spec="subsystem.messaging-activemq.server.path.large-messages-directory">
+                    <param name="path-feature" value="activemq-backup/largemessages"/>
+                </feature>
+                <feature spec="subsystem.messaging-activemq.server.path.paging-directory">
+                    <param name="path-feature" value="activemq-backup/paging"/>
+                </feature>
+                <feature spec="subsystem.messaging-activemq.server.http-connector">
+                    <param name="http-connector" value="http-connector-backup"/>
+                    <param name="socket-binding" value="http"/>
+                    <param name="endpoint" value="http-acceptor-backup"/>
+                </feature>
+                <feature spec="subsystem.messaging-activemq.server.http-acceptor">
+                    <param name="http-acceptor" value="http-acceptor-backup"/>
+                    <param name="http-listener" value="default"/>
+                </feature>
+                <feature spec="subsystem.messaging-activemq.server.broadcast-group">
+                    <param name="broadcast-group" value="bg-group1"/>
+                    <param name="jgroups-cluster" value="activemq-cluster"/>
+                    <param name="connectors" value="[http-connector-backup]"/>
+                </feature>
+                <feature spec="subsystem.messaging-activemq.server.discovery-group">
+                    <param name="discovery-group" value="dg-group1"/>
+                    <param name="jgroups-cluster" value="activemq-cluster"/>
+                </feature>
+                <feature spec="subsystem.messaging-activemq.server.cluster-connection">
+                    <param name="cluster-connection" value="my-cluster"/>
+                    <param name="cluster-connection-address" value="jms"/>
+                    <param name="connector-name" value="http-connector-backup"/>
+                    <param name="discovery-group" value="dg-group1"/>
+                </feature>
+            </feature>
+        </feature>
+    </feature-group>
+    <feature-group name="jgroups"/>
+
+</feature-group-spec>

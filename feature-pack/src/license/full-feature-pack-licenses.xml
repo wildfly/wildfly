@@ -13,17 +13,6 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>asm</groupId>
-      <artifactId>asm</artifactId>
-      <licenses>
-        <license>
-          <name>The Asm BSD License</name>
-          <url>http://asm.ow2.org/license.html</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
       <groupId>com.fasterxml</groupId>
       <artifactId>classmate</artifactId>
       <licenses>
@@ -134,11 +123,33 @@
       </licenses>
     </dependency>
     <dependency>
+      <groupId>com.github.fge</groupId>
+      <artifactId>jackson-coreutils</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License v3.0 or later</name>
+          <url>https://spdx.org/licenses/LGPL-3.0+.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>com.github.fge</groupId>
+      <artifactId>json-patch</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License v3.0 or later</name>
+          <url>https://spdx.org/licenses/LGPL-3.0+.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
       <groupId>com.github.relaxng</groupId>
       <artifactId>relaxngDatatype</artifactId>
       <licenses>
         <license>
-          <name>BSD 3-clause "New" or "Revised" License</name>
+          <name>BSD 3-Clause "New" or "Revised" License</name>
           <url>http://www.opensource.org/licenses/BSD-3-Clause</url>
           <distribution>repo</distribution>
         </license>
@@ -257,8 +268,8 @@
       <artifactId>javax.mail</artifactId>
       <licenses>
         <license>
-          <name>Common Development and Distribution License 1.0</name>
-          <url>https://opensource.org/licenses/cddl1.txt</url>
+          <name>Common Development and Distribution License 1.1</name>
+          <url>https://javaee.github.io/glassfish/LICENSE</url>
           <distribution>repo</distribution>
         </license>
         <license>
@@ -273,8 +284,13 @@
       <artifactId>rngom</artifactId>
       <licenses>
         <license>
-          <name>MIT License</name>
-          <url>http://www.opensource.org/licenses/MIT</url>
+          <name>Common Development and Distribution License 1.1</name>
+          <url>https://javaee.github.io/glassfish/LICENSE</url>
+          <distribution>repo</distribution>
+        </license>
+        <license>
+          <name>GNU General Public License v2.0 only, with Classpath exception</name>
+          <url>http://openjdk.java.net/legal/gplv2+ce.html</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -293,22 +309,6 @@
     <dependency>
       <groupId>com.sun.xml.messaging.saaj</groupId>
       <artifactId>saaj-impl</artifactId>
-      <licenses>
-        <license>
-          <name>Common Development and Distribution License 1.1</name>
-          <url>https://javaee.github.io/glassfish/LICENSE</url>
-          <distribution>repo</distribution>
-        </license>
-        <license>
-          <name>GNU General Public License v2.0 only, with Classpath exception</name>
-          <url>http://openjdk.java.net/legal/gplv2+ce.html</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>com.sun.xsom</groupId>
-      <artifactId>xsom</artifactId>
       <licenses>
         <license>
           <name>Common Development and Distribution License 1.1</name>
@@ -464,7 +464,7 @@
       <artifactId>jaxen</artifactId>
       <licenses>
         <license>
-          <name>BSD 3-clause "New" or "Revised" License</name>
+          <name>BSD 3-Clause "New" or "Revised" License</name>
           <url>http://www.opensource.org/licenses/BSD-3-Clause</url>
           <distribution>repo</distribution>
         </license>
@@ -687,6 +687,17 @@
     <dependency>
       <groupId>org.apache.avro</groupId>
       <artifactId>avro</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
@@ -1481,6 +1492,17 @@
       </licenses>
     </dependency>
     <dependency>
+      <groupId>org.eclipse.microprofile.rest.client</groupId>
+      <artifactId>microprofile-rest-client-api</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
       <groupId>org.glassfish.jaxb</groupId>
       <artifactId>codemodel</artifactId>
       <licenses>
@@ -1563,6 +1585,22 @@
     <dependency>
       <groupId>org.glassfish.jaxb</groupId>
       <artifactId>txw2</artifactId>
+      <licenses>
+        <license>
+          <name>Common Development and Distribution License 1.1</name>
+          <url>https://javaee.github.io/glassfish/LICENSE</url>
+          <distribution>repo</distribution>
+        </license>
+        <license>
+          <name>GNU General Public License v2.0 only, with Classpath exception</name>
+          <url>http://openjdk.java.net/legal/gplv2+ce.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.jaxb</groupId>
+      <artifactId>xsom</artifactId>
       <licenses>
         <license>
           <name>Common Development and Distribution License 1.1</name>
@@ -1676,7 +1714,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.hibernate.validator</groupId>
+      <groupId>org.hibernate</groupId>
       <artifactId>hibernate-validator</artifactId>
       <licenses>
         <license>
@@ -1687,7 +1725,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.hibernate.validator</groupId>
+      <groupId>org.hibernate</groupId>
       <artifactId>hibernate-validator-cdi</artifactId>
       <licenses>
         <license>
@@ -1720,6 +1758,28 @@
         <license>
           <name>Eclipse Public License 1.0</name>
           <url>http://repository.jboss.org/licenses/epl-1.0.txt</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.hibernate.validator</groupId>
+      <artifactId>hibernate-validator</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.hibernate.validator</groupId>
+      <artifactId>hibernate-validator-cdi</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -1804,6 +1864,17 @@
     <dependency>
       <groupId>org.infinispan</groupId>
       <artifactId>infinispan-core</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.infinispan</groupId>
+      <artifactId>infinispan-hibernate-cache</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
@@ -2720,11 +2791,11 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.hal</groupId>
-      <artifactId>release-stream</artifactId>
+      <artifactId>hal-console</artifactId>
       <licenses>
         <license>
-          <name>GNU Lesser General Public License v2.1 only</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -3028,6 +3099,17 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.resteasy</groupId>
+      <artifactId>resteasy-client-20</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.resteasy</groupId>
       <artifactId>resteasy-crypto</artifactId>
       <licenses>
         <license>
@@ -3083,6 +3165,17 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.resteasy</groupId>
+      <artifactId>resteasy-jaxrs-20</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.resteasy</groupId>
       <artifactId>resteasy-jettison-provider</artifactId>
       <licenses>
         <license>
@@ -3095,6 +3188,17 @@
     <dependency>
       <groupId>org.jboss.resteasy</groupId>
       <artifactId>resteasy-jsapi</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.resteasy</groupId>
+      <artifactId>resteasy-json-binding-provider</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
@@ -3197,7 +3301,7 @@
       <licenses>
         <license>
           <name>Common Development and Distribution License 1.0</name>
-          <url>https://opensource.org/licenses/cddl1.txt</url>
+          <url>http://repository.jboss.org/licenses/cddl.txt</url>
           <distribution>repo</distribution>
         </license>
         <license>
@@ -3315,7 +3419,23 @@
       <licenses>
         <license>
           <name>Common Development and Distribution License 1.0</name>
-          <url>https://opensource.org/licenses/cddl1.txt</url>
+          <url>http://repository.jboss.org/licenses/cddl.txt</url>
+          <distribution>repo</distribution>
+        </license>
+        <license>
+          <name>GNU General Public License, Version 2 with the Classpath Exception</name>
+          <url>http://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.spec.javax.ws.rs</groupId>
+      <artifactId>jboss-jaxrs-api_2.1_spec</artifactId>
+      <licenses>
+        <license>
+          <name>Common Development and Distribution License 1.0</name>
+          <url>http://repository.jboss.org/licenses/cddl.txt</url>
           <distribution>repo</distribution>
         </license>
         <license>
@@ -3342,12 +3462,33 @@
       </licenses>
     </dependency>
     <dependency>
+      <groupId>org.jboss.spec.javax.xml.bind</groupId>
+      <artifactId>jboss-jaxb-api_2.3_spec</artifactId>
+      <licenses>
+        <license>
+          <name>Common Development and Distribution License 1.1</name>
+          <url>https://javaee.github.io/glassfish/LICENSE</url>
+          <distribution>repo</distribution>
+        </license>
+        <license>
+          <name>GNU General Public License, Version 2 with the Classpath Exception</name>
+          <url>http://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
       <groupId>org.jboss.spec.javax.xml.rpc</groupId>
       <artifactId>jboss-jaxrpc-api_1.1_spec</artifactId>
       <licenses>
         <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <name>Common Development and Distribution License 1.0</name>
+          <url>http://repository.jboss.org/licenses/cddl.txt</url>
+          <distribution>repo</distribution>
+        </license>
+        <license>
+          <name>GNU General Public License, Version 2 with the Classpath Exception</name>
+          <url>http://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -3358,7 +3499,7 @@
       <licenses>
         <license>
           <name>Common Development and Distribution License 1.0</name>
-          <url>https://opensource.org/licenses/cddl1.txt</url>
+          <url>http://repository.jboss.org/licenses/cddl.txt</url>
           <distribution>repo</distribution>
         </license>
         <license>
@@ -3374,7 +3515,23 @@
       <licenses>
         <license>
           <name>Common Development and Distribution License 1.0</name>
-          <url>https://opensource.org/licenses/cddl1.txt</url>
+          <url>http://repository.jboss.org/licenses/cddl.txt</url>
+          <distribution>repo</distribution>
+        </license>
+        <license>
+          <name>GNU General Public License, Version 2 with the Classpath Exception</name>
+          <url>http://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.spec.javax.xml.ws</groupId>
+      <artifactId>jboss-jaxws-api_2.3_spec</artifactId>
+      <licenses>
+        <license>
+          <name>Common Development and Distribution License 1.1</name>
+          <url>http://repository.jboss.org/licenses/cddl-v1.1.txt</url>
           <distribution>repo</distribution>
         </license>
         <license>
@@ -3407,6 +3564,28 @@
       </licenses>
     </dependency>
     <dependency>
+      <groupId>org.jboss.weld</groupId>
+      <artifactId>weld-spi</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.weld.module</groupId>
+      <artifactId>weld-ejb</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
       <groupId>org.jboss.weld.module</groupId>
       <artifactId>weld-jsf</artifactId>
       <licenses>
@@ -3418,8 +3597,19 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.jboss.weld</groupId>
-      <artifactId>weld-spi</artifactId>
+      <groupId>org.jboss.weld.module</groupId>
+      <artifactId>weld-jta</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.weld.module</groupId>
+      <artifactId>weld-web</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
@@ -3775,6 +3965,17 @@
       </licenses>
     </dependency>
     <dependency>
+      <groupId>org.ow2.asm</groupId>
+      <artifactId>asm</artifactId>
+      <licenses>
+        <license>
+          <name>BSD 3-Clause "New" or "Revised" License</name>
+          <url>http://www.opensource.org/licenses/BSD-3-Clause</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
       <groupId>org.picketlink</groupId>
       <artifactId>picketlink-api</artifactId>
       <licenses>
@@ -3874,8 +4075,30 @@
       </licenses>
     </dependency>
     <dependency>
+      <groupId>org.reactivestreams</groupId>
+      <artifactId>reactive-streams</artifactId>
+      <licenses>
+        <license>
+          <name>Creative Commons Zero v1.0 Universal</name>
+          <url>http://creativecommons.org/publicdomain/zero/1.0/legalcode</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
       <groupId>org.wildfly</groupId>
       <artifactId>wildfly-naming-client</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.wildfly.bridge</groupId>
+      <artifactId>cdi-api-bridge</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
@@ -3999,7 +4222,7 @@
       <licenses>
         <license>
           <name>Common Public License 1.0</name>
-          <url>http://opensource.org/licenses/CPL-1.0</url>
+          <url>http://www.eclipse.org/legal/cpl-v10.html</url>
           <distribution>repo</distribution>
         </license>
       </licenses>

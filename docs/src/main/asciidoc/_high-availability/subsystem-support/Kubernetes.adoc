@@ -1,0 +1,22 @@
+== Discovery for Kubernetes
+
+`KUBE_PING` is a discovery protocol for JGroups cluster nodes managed by Kubernetes.
+Since Kubernetes is in charge of launching nodes, it knows the addresses of all pods it started,
+and is therefore an ideal place to ask for cluster discovery.
+Discovery is therefore done by asking Kubernetes for a list of addresses of all cluster nodes.
+Combined with `bind_port` / `port_range`, the protocol will then send a discovery request to all instances and wait for the responses.
+
+To reconfigure an existing server profile with `KUBE_PING` use the following CLI batch replacing the namespace,
+labels and stack name (`tcp`) with the target stack:
+
+[source]
+----
+batch
+/subsystem=jgroups/stack=tcp/protocol=MPING:remove()
+/subsystem=jgroups/stack=tcp/protocol=kubernetes.KUBE_PING:add(add-index=0,properties={namespace="production",labels="cluster=nyc"})
+run-batch
+----
+
+NOTE: To be able to query the Kubernetes server ensure view permissions are granted on the service account.
+
+For advanced configuration options, please visit protocol's documentation https://github.com/jgroups-extras/jgroups-kubernetes/blob/master/README.adoc[here].

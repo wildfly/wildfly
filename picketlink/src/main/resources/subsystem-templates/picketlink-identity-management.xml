@@ -28,18 +28,16 @@
     <extension-module>org.wildfly.extension.picketlink</extension-module>
     <subsystem xmlns="urn:jboss:domain:picketlink-identity-management:2.0">
 
-        <!-- A complete configuration using a file-based identity store. -->
-        <partition-manager jndi-name="picketlink/FileCompletePartitionManager" name="file.complete.partition.manager">
+        <partition-manager name="file.complete.partition.manager" jndi-name="picketlink/FileCompletePartitionManager">
             <identity-configuration name="file.config">
-                <file-store relative-to="jboss.server.data.dir" working-dir="pl-idm-complete" always-create-files="true" async-write="true"
+                <file-store working-dir="pl-idm-complete" relative-to="jboss.server.data.dir" always-create-files="true" async-write="true"
                             async-write-thread-pool="10">
                     <supported-types supports-all="true"/>
                 </file-store>
             </identity-configuration>
         </partition-manager>
 
-        <!-- A simple configuration using a file-based identity store. -->
-        <partition-manager jndi-name="picketlink/FileSimplePartitionManager" name="file.simple.partition.manager">
+        <partition-manager name="file.simple.partition.manager" jndi-name="picketlink/FileSimplePartitionManager">
             <identity-configuration name="file.config">
                 <file-store>
                     <supported-types supports-all="true"/>
@@ -47,8 +45,7 @@
             </identity-configuration>
         </partition-manager>
 
-        <!-- A configuration using a JPA-based identity store. The store is configured using a existing datasource. -->
-        <partition-manager jndi-name="picketlink/JPADSBasedPartitionManager" name="jpa.ds.based.partition.manager">
+        <partition-manager name="jpa.ds.based.partition.manager" jndi-name="picketlink/JPADSBasedPartitionManager">
             <identity-configuration name="jpa.config">
                 <jpa-store data-source="jboss/datasources/ExampleDS">
                     <supported-types supports-all="true"/>
@@ -56,8 +53,7 @@
             </identity-configuration>
         </partition-manager>
 
-        <!-- A configuration using a JPA-based identity store. The store is configured using a existing JPA EntityManagerFactory, obtained via JNDI. -->
-        <partition-manager jndi-name="picketlink/JPAEMFBasedPartitionManager" name="jpa.emf.based.partition.manager">
+        <partition-manager name="jpa.emf.based.partition.manager" jndi-name="picketlink/JPAEMFBasedPartitionManager">
             <identity-configuration name="jpa.config">
                 <jpa-store entity-manager-factory="jboss/TestingIDMEMF">
                     <supported-types>
@@ -69,8 +65,7 @@
           </identity-configuration>
         </partition-manager>
 
-        <!-- A configuration using a JPA-based identity store. The store is configured using a existing JPA Persistence Unit from a static module. -->
-        <partition-manager jndi-name="picketlink/JPAEMFModulePartitionManager" name="jpa.emf.modules.partition.manager">
+        <partition-manager name="jpa.emf.modules.partition.manager" jndi-name="picketlink/JPAEMFModulePartitionManager">
             <identity-configuration name="jpa.config">
                 <jpa-store entity-module="my.module" entity-module-unit-name="my-persistence-unit-name">
                     <supported-types supports-all="true"/>
@@ -78,7 +73,6 @@
           </identity-configuration>
         </partition-manager>
 
-        <!-- A configuration using a LDAP-based identity store. -->
         <partition-manager name="ldap.idm" jndi-name="picketlink/LDAPBasedPartitionManager">
             <identity-configuration name="ldap.store">
                 <ldap-store url="ldap://${jboss.bind.address:127.0.0.1}:10389" bind-dn="uid=admin,ou=system" bind-credential="secret" base-dn-suffix="dc=jboss,dc=org">
@@ -114,7 +108,6 @@
             </identity-configuration>
         </partition-manager>
 
-        <!-- A configuration using a LDAP and JPA identity store. In this example we use JPA to store relationships and LDAP for users, roles and groups. -->
         <partition-manager name="multiple.store.idm" jndi-name="picketlink/MultipleStoreBasedPartitionManager">
             <identity-configuration name="multiple.store">
                 <jpa-store data-source="jboss/datasources/ExampleDS" support-credential="false" support-attribute="false">
@@ -151,8 +144,7 @@
             </identity-configuration>
         </partition-manager>
 
-        <!-- A configuration using two identity configurations. Each identity configuration has a JPA store. -->
-        <partition-manager jndi-name="picketlink/MultipleConfigurationPartitionManager" name="multiple.config.partition.manager">
+        <partition-manager name="multiple.config.partition.manager" jndi-name="picketlink/MultipleConfigurationPartitionManager">
             <identity-configuration name="partition.jboss.config">
                 <jpa-store data-source="jboss/datasources/JBossIdentityDS">
                     <supported-types supports-all="true"/>

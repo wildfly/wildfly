@@ -1,0 +1,83 @@
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2014, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
+<build xmlns="urn:wildfly:feature-pack-build:2.0">
+    <dependencies>
+        <dependency group-id="org.wildfly.core" artifact-id="wildfly-core-galleon-pack">
+            <name>org.wildfly.core:wildfly-core-galleon-pack</name>
+            <packages inherit="false">
+                <exclude name="product.conf"/>
+            </packages>
+            <default-configs inherit="false"/>
+        </dependency>
+    </dependencies>
+    <default-packages>
+        <package name="modules.all"/>
+        <package name="docs"/>
+    </default-packages>
+    <package-schemas>
+        <group name="org.jboss.as"/>
+        <group name="org.wildfly"/>
+        <group name="org.wildfly.core"/>
+<!--        <group name="org.jboss.metadata"/> -->
+<!--        <group name="org.wildfly.security"/> -->
+    </package-schemas>
+
+    <config model="standalone">
+        <packages>
+            <package name="product.conf" optional="true"/>
+            <package name="misc.standalone"/>
+        </packages>
+    </config>
+
+    <config model="domain">
+        <packages>
+            <package name="product.conf" optional="true"/>
+            <package name="misc.domain"/>
+        </packages>
+    </config>
+
+    <config name="standalone.xml" model="standalone">
+        <feature-group name="standalone"/>
+    </config>
+
+    <config name="standalone-load-balancer.xml" model="standalone">
+        <feature-group name="standalone-load-balancer"/>
+    </config>
+
+    <config name="domain.xml" model="domain">
+        <feature-group name="domain"/>
+    </config>
+
+    <config name="host.xml" model="host">
+        <feature-group name="host"/>
+    </config>
+
+    <config name="host-master.xml" model="host">
+        <feature-group name="host-master"/>
+    </config>
+
+    <config name="host-slave.xml" model="host">
+        <feature-group name="host-slave"/>
+    </config>
+
+</build>

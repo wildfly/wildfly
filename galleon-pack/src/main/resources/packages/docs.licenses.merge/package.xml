@@ -1,0 +1,12 @@
+<?xml version="1.0" ?>
+
+<package-spec xmlns="urn:jboss:galleon:package:1.0" name="docs.licenses.merge">
+    <dependencies>
+    <!--
+        <origin name="org.wildfly.core:wildfly-core-galleon-pack">
+            <package name="docs.licenses.merge"/>
+        </origin>
+    -->
+        <package name="docs.licenses"/>
+    </dependencies>
+</package-spec>

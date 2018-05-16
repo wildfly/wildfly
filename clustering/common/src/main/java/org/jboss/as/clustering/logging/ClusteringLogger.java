@@ -24,6 +24,8 @@ package org.jboss.as.clustering.logging;
 
 import static org.jboss.logging.Logger.Level.WARN;
 
+import java.util.Set;
+
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
@@ -51,4 +53,10 @@ public interface ClusteringLogger extends BasicLogger {
     @Message(id = 2, value = "Failed to close %s")
     @LogMessage(level = WARN)
     void failedToClose(@Cause Throwable cause, Object value);
+
+    @Message(id = 3, value = "The following attributes do not support negative values: %s")
+    String attributesDoNotSupportNegativeValues(Set<String> attributes);
+
+    @Message(id = 4, value = "The following attributes do not support zero values: %s")
+    String attributesDoNotSupportZeroValues(Set<String> attributes);
 }

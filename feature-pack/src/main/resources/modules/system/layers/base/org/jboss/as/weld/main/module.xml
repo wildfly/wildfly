@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.jboss.as.weld">
+<module xmlns="urn:jboss:module:1.8" name="org.jboss.as.weld">
 
     <properties>
         <property name="jboss.api" value="private"/>
@@ -44,7 +44,8 @@
         <module name="org.jboss.as.weld.beanvalidation" optional="true" services="import" />
         <module name="org.jboss.as.weld.webservices" optional="true" services="import" />
         <module name="org.jboss.as.weld.transactions" optional="true" services="import" />
-        <module name="javax.api"/>
+        <module name="java.naming"/>
+        <module name="java.xml"/>
         <module name="javax.annotation.api"/>
         <module name="javax.enterprise.api"/>
         <module name="org.wildfly.cdi-api-bridge"/>

@@ -1996,6 +1996,28 @@ Adding a role decoder takes the general form:
 /subsystem=elytron/ROLE-DECODER-TYPE=roleDeoderName:add(....)
 ----
 
+[[create-an-elytron-permission-set]]
+=== Create an Elytron Permission Set
+
+Permission sets can be used to assign permissions to an identity.
+
+Adding a permission set takes the general form:
+
+[source, ruby]
+----
+/subsystem=elytron/permission-set=PermissionSetName:add(permissions=[{class-name="...", module="...", target-name="...", action="..."}...])
+----
+
+where _permissions_ consists of a set of permissions, where each permission has the following attributes:
+
+* _class-name_ is the fully qualified class name of the permission. This is the only permission attribute that is required.
+
+* _module_ is the optional module to use to load the permission.
+
+* _target-name_ is the optional target name to pass to the permission as it is constructed.
+
+* _action_ is the optional action to pass to the permission as it is constructed.
+
 [[create-an-elytron-permission-mapper]]
 === Create an Elytron Permission Mapper
 

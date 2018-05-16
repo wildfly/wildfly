@@ -22,14 +22,19 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
+import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
+import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
+import org.jboss.as.clustering.controller.transform.RejectAttributeValueChecker;
+import org.jboss.as.clustering.controller.validation.IntRangeValidatorBuilder;
+import org.jboss.as.clustering.controller.validation.LongRangeValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
@@ -54,14 +59,24 @@ public class StateTransferResourceDefinition extends ComponentResourceDefinition
     static final PathElement LEGACY_PATH = PathElement.pathElement("state-transfer", "STATE_TRANSFER");
     static final PathElement PATH = pathElement("state-transfer");
 
-    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        CHUNK_SIZE("chunk-size", ModelType.INT, new ModelNode(512)),
-        TIMEOUT("timeout", ModelType.LONG, new ModelNode(TimeUnit.MINUTES.toMillis(4))),
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
+        CHUNK_SIZE("chunk-size", ModelType.INT, new ModelNode(512)) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setValidator(new IntRangeValidatorBuilder().min(1).configure(builder).build());
+            }
+        },
+        TIMEOUT("timeout", ModelType.LONG, new ModelNode(TimeUnit.MINUTES.toMillis(4))) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setValidator(new LongRangeValidatorBuilder().min(0).configure(builder).build());
+            }
+        },
         ;
         private final AttributeDefinition definition;
 
         Attribute(String name, ModelType type, ModelNode defaultValue) {
-            this.definition = createBuilder(name, type, defaultValue).build();
+            this.definition = this.apply(createBuilder(name, type, defaultValue)).build();
         }
 
         @Override
@@ -99,11 +114,17 @@ public class StateTransferResourceDefinition extends ComponentResourceDefinition
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH) : parent.addChildResource(PATH);
 
+        if (InfinispanModel.VERSION_7_0_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder()
+                    .addRejectChecks(Arrays.asList(RejectAttributeValueChecker.NEGATIVE, RejectAttributeValueChecker.ZERO), Attribute.TIMEOUT.getDefinition())
+                    .end();
+        }
+
         if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
                     .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(Attribute.TIMEOUT.getDefinition()), Attribute.TIMEOUT.getDefinition())
                     .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(Attribute.CHUNK_SIZE.getDefinition()), Attribute.CHUNK_SIZE.getDefinition())
-            ;
+                    .end();
         }
     }
 

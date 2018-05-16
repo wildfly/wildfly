@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="iiop-openjdk" xmlns="urn:jboss:galleon:feature-group:1.0">
+    <feature spec="subsystem.iiop-openjdk">
+        <param name="socket-binding" value="iiop"/>
+        <param name="security" value="identity"/>
+        <param name="transactions" value="spec"/>
+        <param name="server-requires-ssl" value="false"/>
+        <param name="client-requires-ssl" value="false"/>
+    </feature>
+</feature-group-spec>

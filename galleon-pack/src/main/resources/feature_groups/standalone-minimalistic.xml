@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="standalone-minimalistic" xmlns="urn:jboss:galleon:feature-group:1.0">
+
+    <feature spec="server-root">
+        <param name="server-root" value="/" />
+    </feature>
+
+    <feature-group name="interfaces"/>
+
+    <feature spec="socket-binding-group">
+        <param name="socket-binding-group" value="standard-sockets" />
+        <param name="default-interface" value="public"/>
+        <feature spec="socket-binding-group.socket-binding">
+            <param name="socket-binding" value="management-http"/>
+            <param name="interface" value="management"/>
+            <param name="port" value="9990"/>
+        </feature>
+    </feature>
+
+    <origin name="org.wildfly:wildfly-servlet-galleon-pack">
+        <feature-group name="security-realms">
+            <exclude feature-id="core-service.management.security-realm:security-realm=ApplicationRealm"/>
+            <exclude spec="core-service.management.security-realm.authorization.properties" />
+            <include feature-id="core-service.management.security-realm:core-service=management,security-realm=ManagementRealm">
+                <unset param="map-groups-to-roles"/>
+            </include>
+        </feature-group>
+    </origin>
+
+    <origin name="org.wildfly.core:wildfly-core-galleon-pack">
+        <feature-group name="management-interfaces">
+            <feature spec="core-service.management.management-interface.http-interface">
+                <param name="console-enabled" value="false"/>
+            </feature>
+        </feature-group>
+    </origin>
+</feature-group-spec>

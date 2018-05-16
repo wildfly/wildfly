@@ -22,9 +22,6 @@
 
 package org.jboss.as.clustering.controller;
 
-
-import java.util.function.UnaryOperator;
-
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.wildfly.clustering.service.BinaryRequirement;
 
@@ -41,7 +38,7 @@ public class BinaryRequirementCapability implements Capability {
      * @param requirement the requirement basis
      */
     public BinaryRequirementCapability(BinaryRequirement requirement) {
-        this(requirement, UnaryOperator.identity());
+        this(requirement, BinaryCapabilityNameResolver.PARENT_CHILD);
     }
 
     /**
@@ -49,12 +46,11 @@ public class BinaryRequirementCapability implements Capability {
      * @param requirement the requirement basis
      * @param configurator configures the capability
      */
-    public BinaryRequirementCapability(final BinaryRequirement requirement, UnaryOperator<RuntimeCapability.Builder<Void>> configurator) {
-        RuntimeCapability.Builder<Void> builder = RuntimeCapability.Builder.of(requirement.getName(), true)
+    public BinaryRequirementCapability(BinaryRequirement requirement, BinaryCapabilityNameResolver resolver) {
+        this.definition = RuntimeCapability.Builder.of(requirement.getName(), true)
                 .setServiceType(requirement.getType())
-                .setDynamicNameMapper(DynamicCapabilityNameResolver.PARENT_CHILD)
-                ;
-        this.definition = configurator.apply(builder).build();
+                .setDynamicNameMapper(resolver)
+                .build();
     }
 
     @Override

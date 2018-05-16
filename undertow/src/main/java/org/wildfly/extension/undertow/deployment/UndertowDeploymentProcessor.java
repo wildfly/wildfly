@@ -261,21 +261,14 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
 
         boolean securityEnabled = deploymentUnit.hasAttachment(SecurityAttachments.SECURITY_ENABLED);
 
-        String metaDataSecurityDomain = metaData.getSecurityDomain();
-        if (metaDataSecurityDomain == null) {
-            metaDataSecurityDomain = getJBossAppSecurityDomain(deploymentUnit);
+        String tempSecurityDomain = metaData.getSecurityDomain();
+        if (tempSecurityDomain == null) {
+            tempSecurityDomain = getJBossAppSecurityDomain(deploymentUnit);
         }
-        if (metaDataSecurityDomain != null) {
-            metaDataSecurityDomain = metaDataSecurityDomain.trim();
-        }
+        tempSecurityDomain = tempSecurityDomain == null ? defaultSecurityDomain : SecurityUtil.unprefixSecurityDomain(tempSecurityDomain);
+        boolean known = tempSecurityDomain != null && knownSecurityDomain.test(tempSecurityDomain);
 
-        final String securityDomain;
-        if(securityEnabled) {
-            securityDomain = metaDataSecurityDomain == null ? defaultSecurityDomain : SecurityUtil
-                    .unprefixSecurityDomain(metaDataSecurityDomain);
-        } else {
-            securityDomain = null;
-        }
+        final String securityDomain = (securityEnabled || known) ? tempSecurityDomain : null;
 
         final Set<ServiceName> additionalDependencies = new HashSet<>();
         for (final SetupAction setupAction : setupActions) {
@@ -345,7 +338,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
                 .addDependency(SuspendController.SERVICE_NAME, SuspendController.class, undertowDeploymentInfoService.getSuspendControllerInjectedValue())
                 .addDependencies(additionalDependencies);
         if(securityDomain != null) {
-            if (knownSecurityDomain.test(securityDomain)) {
+            if (known) {
                 infoBuilder.addDependency(
                         deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT)
                                 .getCapabilityServiceName(
@@ -529,7 +522,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
                 securityDomain = ((JBossAppMetaData) jbossAppMetaData).getSecurityDomain();
             }
         }
-        return securityDomain;
+        return securityDomain != null ? securityDomain.trim() : null;
     }
 
     @Override

@@ -9,7 +9,7 @@ WildFly team;
 :doctype: book
 :icons: font
 :source-highlighter: coderay
-:wildflyVersion: 12
+:wildflyVersion: 13
 
 ifndef::ebook-format[:leveloffset: 1]
 
@@ -33,7 +33,7 @@ server configuration profiles.
 [cols=",,,,",options="header"]
 |=======================================================================
 |Java EE 7 Platform Technology |Java EE 7Full Profile |Java EE 7Web
-Profile |WildFly 12 Full Profile |WildFly 12 Web Profile
+Profile |WildFly {wildflyVersion} Full Profile |WildFly {wildflyVersion} Web Profile
 
 |JSR-356: Java API for Web Socket |X |X |X |X
 
@@ -112,8 +112,8 @@ default. If you want to use messaging, make sure you start the server
 using the "Full Profile" configuration.
 
 This document provides a quick overview on how to download and get
-started using WildFly 12 for your application development. For in-depth
-content on administrative features, refer to the WildFly 12 Admin Guide.
+started using WildFly {wildflyVersion} for your application development. For in-depth
+content on administrative features, refer to the WildFly {wildflyVersion} Admin Guide.
 
 [[ee8-preview]]
 === EE8 Preview ===
@@ -137,13 +137,16 @@ will remain at Java EE7 level.
 | Java API for RESTFul Web Services | 2.0 | JSR-339 | 2.1 | https://jcp.org/en/jsr/detail?id=370[JSR-370]
 | Java API for JSON Processing | 1.0 | JSR-353 | 1.1 | https://jcp.org/en/jsr/detail?id=374[JSR-374]
 | Java API for JSON Binding | - | - | 1.0 | https://jcp.org/en/jsr/detail?id=367[JSR-367]
+| Java Architecture for XML Binding (JAXB) | 2.2 | JSR-222 | 2.3 | https://jcp.org/en/jsr/detail?id=222[JSR-222]
+| Java API for XML-Based Web Services | 2.2 | JSR-224 | 2.3 | https://jcp.org/en/jsr/detail?id=224[JSR-224]
 | Common Annotations for the Java Platform | 1.2 | JSR-250 | 1.3 | http://download.oracle.com/otndocs/jcp/common_annotations-1_3-mrel3-spec/[JSR-250]
+| Java EE Security API | - | - | 1.0 | https://jcp.org/aboutJava/communityprocess/final/jsr375/index.html[JSR-375]
 |=======================================================================
 
 [[download]]
 === Download
 
-WildFly 12 distributions can be obtained from:
+WildFly {wildflyVersion} distributions can be obtained from:
 
 http://www.wildfly.org/downloads/[wildfly.org/downloads]
 
@@ -163,14 +166,14 @@ available)
 === Installation
 
 Simply extract your chosen download to the directory of your choice. You
-can install WildFly 12 on any operating system that supports the zip or
+can install WildFly {wildflyVersion} on any operating system that supports the zip or
 tar formats. Refer to the Release Notes for additional information
 related to the release.
 
 [[wildfly---a-quick-tour]]
 === WildFly - A Quick Tour
 
-Now that you've downloaded WildFly 12, the next thing to discuss is the
+Now that you've downloaded WildFly {wildflyVersion}, the next thing to discuss is the
 layout of the distribution and explore the server directory structure,
 key configuration files, log files, user deployments and so on. It's
 worth familiarizing yourself with the layout so that you'll be able to
@@ -212,7 +215,7 @@ used by the single standalone server run from this installation.
 [[standalone-directory-structure]]
 ===== Standalone Directory Structure
 
-In " *_standalone_* " mode each WildFly 12 server instance is an
+In " *_standalone_* " mode each WildFly {wildflyVersion} server instance is an
 independent process (similar to previous JBoss AS versions; e.g., 3, 4,
 5, or 6). The configuration files, deployment content and writable areas
 used by the single standalone server run from a WildFly installation are
@@ -252,7 +255,7 @@ process.
 [[domain-directory-structure]]
 ===== Domain Directory Structure
 
-A key feature of WildFly 12 is the managing multiple servers from a
+A key feature of WildFly {wildflyVersion} is the managing multiple servers from a
 single control point. A collection of multiple servers are referred to
 as a " *_domain_* ". Domains can span multiple physical (or virtual)
 machines with all WildFly instances on a given host under the control of
@@ -302,7 +305,7 @@ process.
 |=======================================================================
 
 [[wildfly-10-configurations]]
-==== WildFly 12 Configurations
+==== WildFly {wildflyVersion} Configurations
 
 [[standalone-server-configurations]]
 ===== Standalone Server Configurations
@@ -339,9 +342,9 @@ determine how the servers are managed not what capabilities they
 provide.
 
 [[starting-wildfly-10]]
-==== Starting WildFly 12
+==== Starting WildFly {wildflyVersion}
 
-To start WildFly 12 using the default web profile configuration in "
+To start WildFly {wildflyVersion} using the default web profile configuration in "
 _standalone_" mode, change directory to $JBOSS_HOME/bin.
 
 [source]
@@ -421,12 +424,12 @@ discussion in the user forum and access the enhanced web-based
 Administration Console. Or, if you uncover a defect while using WildFly,
 report an issue to inform us (attached patches will be reviewed). This
 landing page is recommended for convenient access to information about
-WildFly 12 but can easily be replaced with your own if desired.
+WildFly {wildflyVersion} but can easily be replaced with your own if desired.
 
 [[managing-your-wildfly-10]]
-==== Managing your WildFly 12
+==== Managing your WildFly {wildflyVersion}
 
-WildFly 12 offers two administrative mechanisms for managing your
+WildFly {wildflyVersion} offers two administrative mechanisms for managing your
 running instance:
 
 * web-based Administration Console
@@ -434,7 +437,7 @@ running instance:
 
 ===== Authentication
 
-By default WildFly 12 is now distributed with security enabled for the
+By default WildFly {wildflyVersion} is now distributed with security enabled for the
 management interfaces, this means that before you connect using the
 administration console or remotely using the CLI you will need to add a
 new user, this can be achieved simply by using the _add-user.sh_ script

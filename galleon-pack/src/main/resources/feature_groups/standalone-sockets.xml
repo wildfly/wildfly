@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="standalone-sockets" xmlns="urn:jboss:galleon:feature-group:1.0">
+    <origin name="org.wildfly:wildfly-servlet-galleon-pack">
+        <feature-group name="standalone-sockets"/>
+    </origin>
+    <feature-group name="transactions-sockets"/>
+    <feature-group name="mail-sockets"/>
+</feature-group-spec>

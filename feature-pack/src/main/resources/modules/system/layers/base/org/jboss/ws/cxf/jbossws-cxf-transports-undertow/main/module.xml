@@ -35,6 +35,7 @@
     <dependencies>
         <module name="org.jboss.ws.spi" />
         <module name="org.jboss.ws.common" />
+        <module name="org.jboss.logging" />
         <module name="javax.annotation.api" />
         <module name="javax.xml.ws.api" />
         <module name="org.jboss.ws.jaxws-undertow-httpspi" />

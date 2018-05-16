@@ -1,0 +1,130 @@
+[[embedded-api]]
+= Embedded API
+:author:            James R. Perkins
+:email:             jperkins@redhat.com
+:idprefix:
+:idseparator:       -
+
+include::../common_attributes.adoc[]
+
+The embedded API can be used to launch {appservername} within a currently running process.
+
+The embedded server can be reinitialized with a different JBoss Home. However the module directory, `module.path`
+system property, and the modules system packages, `jboss.modules.system.pkgs` system property, are effectively static.
+This means that creating a new embedded server or host controller within the same VM will not allow overriding the
+modules directory or the system packages.
+
+You can also set a hint to indicate which log manager is being used. The hint attempts to ensure that JBoss Logging
+will bind to the correct log manager. It also adds the hinted logging package to the modules system packages.
+
+== Standalone API
+
+A standalone server allows you to manage the lifecycle of a server within the currently running process. The server
+can be configured in admin-only mode or fully started and applications can be deployed.
+
+=== Examples
+
+.Simple Example
+[source,java]
+----
+final StandaloneServer server = EmbeddedProcessFactory.createStandaloneServer(Configuration.Builder.of(jbossHome).build());
+server.start();
+
+try {
+    // Print the listening address
+    final ModelControllerClient client = server.getModelControllerClient();
+    final ModelNode address = Operations.createAddress("interface", "public");
+    final ModelNode op = Operations.createReadAttributeOperation(address, "inet-address");
+    op.get("resolve-expressions").set(true);
+    final ModelNode result = client.execute(op);
+    if (!Operations.isSuccessfulOutcome((result))) {
+        throw new RuntimeException("Failed to get the public inet-address: " + Operations.getFailureDescription(result));
+    }
+    System.out.printf("Listening on %s%n", Operations.readResult(result).asString());
+} finally {
+    server.stop();
+}
+----
+
+.Server in admin-only Example
+[source,java]
+----
+final StandaloneServer server = EmbeddedProcessFactory.createStandaloneServer(
+    Configuration.Builder.of(jbossHome)
+        .addCommandArgument("--admin-only")
+        .build());
+server.start();
+
+try {
+    // Print the listening address
+    final ModelControllerClient client = server.getModelControllerClient();
+    final ModelNode address = Operations.createAddress();
+    final ModelNode op = Operations.createReadAttributeOperation(address, "running-mode");
+    op.get("resolve-expressions").set(true);
+    final ModelNode result = client.execute(op);
+    if (!Operations.isSuccessfulOutcome((result))) {
+        throw new RuntimeException("Failed to get the running-mode: " + Operations.getFailureDescription(result));
+    }
+    System.out.printf("Running mode is %s%n", Operations.readResult(result).asString());
+} finally {
+    server.stop();
+}
+----
+
+.log4j2 Hint
+[source,java]
+----
+final StandaloneServer server = EmbeddedProcessFactory.createStandaloneServer(Configuration.Builder.of(jbossHome)
+        .setLoggerHint(Configuration.LoggerHint.LOG4J2)
+        .build()
+);
+server.start();
+
+try {
+    // Print the listening address
+    final ModelControllerClient client = server.getModelControllerClient();
+    final ModelNode address = Operations.createAddress("interface", "public");
+    final ModelNode op = Operations.createReadAttributeOperation(address, "inet-address");
+    op.get("resolve-expressions").set(true);
+    final ModelNode result = client.execute(op);
+    if (!Operations.isSuccessfulOutcome((result))) {
+        throw new RuntimeException("Failed to get the public inet-address: " + Operations.getFailureDescription(result));
+    }
+    org.apache.logging.log4j.LogManager.getFormatterLogger(Main.class).info("Listening on %s%n", Operations.readResult(result).asString());
+} finally {
+    server.stop();
+}
+----
+
+== Host Controller API
+
+The host controller API creates a host controller in the current process. The host controller is started in `admin-only`
+mode therefore servers within the domain cannot be started. However the server configuration can be altered via
+management operations.
+
+=== Example
+
+.Simple Example
+[source,java]
+----
+final HostController server = EmbeddedProcessFactory.createHostController(Configuration.Builder.of(jbossHome).build());
+server.start();
+
+try {
+    // Print the listening address
+    final ModelControllerClient client = server.getModelControllerClient();
+    final ModelNode address = new ModelNode().setEmptyList();
+    final ModelNode op = Operations.createOperation(ClientConstants.READ_CHILDREN_NAMES_OPERATION, address);
+    op.get(ClientConstants.CHILD_TYPE).set(ClientConstants.SERVER_GROUP);
+    final ModelNode result = client.execute(op);
+    if (!Operations.isSuccessfulOutcome(result)) {
+        throw new RuntimeException("Failed to get the public inet-address: " + Operations.getFailureDescription(result));
+    }
+    System.out.println("Available server groups:");
+    for (ModelNode value : Operations.readResult(result).asList()) {
+        System.out.printf("\t%s%n", value.asString());
+    }
+} finally {
+    server.stop();
+}
+----

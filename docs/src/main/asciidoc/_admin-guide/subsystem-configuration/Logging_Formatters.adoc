@@ -1,0 +1,322 @@
+= Logging Formatters
+:author:            James R. Perkins
+:email:             jperkins@redhat.com
+:idprefix:
+:idseparator:       -
+:oracle-javadoc:     https://docs.oracle.com/javase/8/docs/api/java
+
+Formatters are used to format a log message. A formatter can be assigned to a logging handler.
+
+The logging subsystem includes 4 types of handlers:
+
+* <<json-formatter>>
+* <<pattern-formatter>>
+* <<xml-formatter>>
+* <<custom-formatter>>
+
+== JSON Formatter
+
+A formatter used to format log messages in JSON.
+
+=== Examples
+
+.Simple JSON Formatter
+----
+/subsystem=logging/json-formatter=json:add(pretty-print=true, exception-output-type=formatted)
+----
+
+.Logstash Formatter
+----
+/subsystem=logging/json-formatter=logstash:add(exception-output-type=formatted, key-overrides=[timestamp="@timestamp"],
+meta-data=[@version=1])
+----
+
+== Pattern Formatter
+
+A formatter used to format log messages in plain text. The following table describes the format characters for the
+pattern formatter.
+
+NOTE: #Highlighted# symbols indicate the calculation of the caller is required which can be expensive to resolve.
+
+[cols="1*^,5,2a", options="header"]
+.Pattern Syntax
+|===
+|Symbol |Description |Examples
+|%c
+|The category of the logging event. A precision specifier can be used to alter the dot delimited category
+|
+----
+%c      org.jboss.example.Foo
+%c{1}   Foo
+%c{2}   example.Foo
+%c{.}   ...Foo
+%c{1.}  o.j.e.Foo
+%c{1~.} o.~.~.Foo
+----
+
+|#%C#
+|The class of the code calling the log method. A precision specifier can be used to alter the dot delimited class name.
+|
+----
+%C      org.jboss.example.Foo
+%C{1}   Foo
+%C{2}   example.Foo
+%C{.}   ...Foo
+%C{1.}  o.j.e.Foo
+%C{1~.} o.~.~.Foo
+----
+|[[timestamp]]%d
+|The timestamp the log message. Any valid {oracle-javadoc}/text/SimpleDateFormat.html[`SimpleDateFormat`] pattern. The
+ default is `yyyy-MM-dd HH:mm:ss,SSS`.
+|
+----
+%d{HH:mm:ss,SSS}
+%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX}
+----
+
+|#%D#
+|The name of the module the log message came from. A precision specifier can be used to alter the dot delimited module
+ name.
+|
+----
+%D      org.jboss.example
+%D{1}   example
+%D{2}   jboss.example
+%D{.}   ..example
+%D{1.}  o.j.example
+%D{1~.} o.~.example
+----
+
+|%e
+|The exception stack trace. Accepts an argument to indicate how many levels of suppressed messages to print.
+|
+[cols="1,5", frame=none, grid=none]
+!===
+!`%e`
+!Prints the full stack trace.
+
+!`%e{0}`
+!Prints the stack trace ignoring any suppressed messages.
+
+!`%e{1}`
+!Prints the stack trace with a maximum of one suppressed message.
+
+!===
+
+|#%F#
+|The name of the file the class that logged the message.
+|&nbsp;
+
+|%h
+|The host name. A precision specifier can be used to alter the dot delimited host name.
+|
+----
+%h     localhost
+%h{2}  localdomain.localhost
+----
+
+|%H
+|The qualified host name. A precision specifier can be used to alter the dot delimited host name.
+|
+----
+%H    developer.jboss.org
+%H{2} jboss.org
+----
+
+
+|%i
+|The process id.
+|&nbsp;
+
+|%k
+|The resource bundle key.
+|&nbsp;
+
+|%K
+|If colored output is supported defines the colors to map to the log message.
+|
+[cols="1,5", frame=none, grid=none]
+!===
+!`%K{level}`
+!The level determines the color of the output.
+
+!`%K{red}`
+!All messages will be colored red.
+!===
+
+|#%l#
+|The location information. This includes the callers class name, method name, file name and line number.
+|
+----
+%l    org.jboss.example.Foo.bar(Foo.java:33)
+----
+
+|#%L#
+|The line number of the caller.
+|&nbsp;
+
+|%m
+|The formatted message including any stack traces.
+|&nbsp;
+
+|#%M#
+|The callers method name.
+|&nbsp;
+
+|%n
+|A platform independent line separator.
+|&nbsp;
+
+|%N
+|The name of the process.
+|&nbsp;
+
+|%p
+|The level of the logged message.
+|&nbsp;
+
+|%P
+|The localized level of the logged message.
+|&nbsp;
+
+|%r
+|The relative number of milliseconds since the given base time from the log message.
+|&nbsp;
+
+|%s
+|The simple formatted message. This will not include the stack trace if a cause was logged.
+|&nbsp;
+
+|%t
+|The name of the callers thread.
+|&nbsp;
+
+|#%v#
+|The version of the module. A precision specifier can be used to alter the dot delimited module version.
+|&nbsp;
+
+|%x
+|The nested diagnostic context entries. A precision specifier can be used to specify the number of entries to print.
+|
+----
+%x      value1.value2.value3
+%x{1}   value3
+%x{2}   value2.value3
+----
+
+|%X
+|The mapped diagnostic context entry. The entry must be followed by the key for the MDC entry.
+|`%X{key}`
+
+|%z
+|Allows the timezone to be overridden when formatting the <<timestamp,timestamp>>. This must precede the
+ <<timestamp,timestamp>>.
+|`%z{GMT}%d{yyyy-MM-dd'T'HH:mm:ssSSSXXX}`
+
+|%#
+|Allows a system property to be appended to the log message.
+|`%#{jboss.server.name}`
+
+|%$
+|Allows a system property to be appended to the log message.
+|`%${jboss.server.name}`
+
+|%%
+|Escapes the `%` symbol.
+|&nbsp;
+
+|===
+
+You can also modify the format by placing the optional format modifier between the percent sign and the symbol.
+
+.Format Modifier Examples
+[cols="1*^,1*^,1*>,1*>,3a" options=header]
+|===
+|Modifier |Left Justify |Min Width |Max Width |Example
+
+|[%20c]
+|false
+|20
+|&nbsp;
+|
+----
+[  org.jboss.example]
+----
+
+|[%-20c]
+|true
+|20
+|&nbsp;
+|
+----
+[org.jboss.example  ]
+----
+
+|[%.10c]
+|&nbsp;
+|&nbsp;
+|10
+|
+----
+[org.jboss]
+----
+
+|[%20.30c]
+|false
+|20
+|30
+|
+----
+[  org.jboss.example]
+----
+
+|[%-20.30c]
+|true
+|20
+|30
+|
+----
+[org.jboss.example  ]
+----
+
+|===
+
+=== Examples
+
+.Simple Pattern Formatter
+----
+/subsystem=logging/pattern-formatter=DEFAULT:add(pattern="%d{HH:mm:ssSSSXXX} %-5p [%c] (%t) %10.10#{jboss.node.name} %s%e%n")
+----
+
+.Color Pattern Formatter
+----
+/subsystem=logging/pattern-formatter=DEFAULT:add(color-map="info:cyan,warn:brightyellow,error:brightred,debug:magenta", pattern="%K{level}%d{yyyy-MM-dd'T'HH:mm:ssSSSXXX} %-5p [%c] (%t) %s%e%n")
+----
+
+== XML Formatter
+
+A formatter used to format log messages in XML.
+
+=== Examples
+
+.Simple XML Formatter
+----
+/subsystem=logging/xml-formatter=xml:add(pretty-print=true, exception-output-type=detailed-and-formatted)
+----
+
+.Key Overrides XML Formatter
+----
+/subsystem=logging/xml-formatter=xml:add(pretty-print=true, print-namespace=true, namespace-uri="urn:custom:1.0", key-overrides={message=msg, record=logRecord, timestamp=date}, print-details=true)
+----
+
+== Custom Formatter
+
+A custom formatter to be used with handlers. Note that most log records are formatted in the printf format. Formatters
+may require invocation of the `org.jboss.logmanager.ExtLogRecord#getFormattedMessage()` for the message to be properly
+formatted.
+
+=== Examples
+
+----
+/subsystem=logging/custom-formatter=custom:add(class=org.jboss.example.CustomFormatter, module=org.jboss.example, properties={prettyPrint=true,printDetails=true,bufferSize=1024})
+----

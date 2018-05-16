@@ -83,6 +83,14 @@ public class MessagingActiveMQSubsystem_3_0_TestCase extends AbstractSubsystemBa
     }
 
     @Override
+    protected String[] getSubsystemTemplatePaths() throws IOException {
+        return new String[] {
+                "/subsystem-templates/messaging-activemq.xml",
+                "/subsystem-templates/messaging-activemq-colocated.xml",
+        };
+    }
+
+    @Override
     protected Properties getResolvedProperties() {
         Properties properties = new Properties();
         properties.put("messaging.cluster.user.name", "myClusterUser");
@@ -90,10 +98,12 @@ public class MessagingActiveMQSubsystem_3_0_TestCase extends AbstractSubsystemBa
         return properties;
     }
 
+    @Test
     @Override
-    protected KernelServices standardSubsystemTest(String configId, boolean compareXml) throws Exception {
-        return super.standardSubsystemTest(configId, false);
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        super.testSchemaOfSubsystemTemplates();
     }
+
     /////////////////////////////////////////
     //  Tests for HA Policy Configuration  //
     /////////////////////////////////////////

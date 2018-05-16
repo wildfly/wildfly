@@ -57,7 +57,7 @@ class HostAdd extends AbstractAddStepHandler {
     static final HostAdd INSTANCE = new HostAdd();
 
     private HostAdd() {
-        super(HostDefinition.ALIAS, HostDefinition.DEFAULT_WEB_MODULE, HostDefinition.DEFAULT_RESPONSE_CODE, HostDefinition.DISABLE_CONSOLE_REDIRECT);
+        super(HostDefinition.ALIAS, HostDefinition.DEFAULT_WEB_MODULE, HostDefinition.DEFAULT_RESPONSE_CODE, HostDefinition.DISABLE_CONSOLE_REDIRECT, HostDefinition.QUEUE_REQUESTS_ON_START);
     }
 
     @Override
@@ -86,11 +86,12 @@ class HostAdd extends AbstractAddStepHandler {
         final boolean isDefaultHost = defaultServerName.equals(serverName) && name.equals(defaultHostName);
         final int defaultResponseCode = HostDefinition.DEFAULT_RESPONSE_CODE.resolveModelAttribute(context, model).asInt();
         final boolean enableConsoleRedirect = !HostDefinition.DISABLE_CONSOLE_REDIRECT.resolveModelAttribute(context, model).asBoolean();
+        final boolean queueRequestsOnStart = HostDefinition.QUEUE_REQUESTS_ON_START.resolveModelAttribute(context, model).asBoolean();
         DefaultDeploymentMappingProvider.instance().addMapping(defaultWebModule, serverName, name);
 
         final ServiceName virtualHostServiceName = HostDefinition.HOST_CAPABILITY.fromBaseCapability(address).getCapabilityServiceName();
 
-        final Host service = new Host(name, aliases == null ? new LinkedList<>(): aliases, defaultWebModule, defaultResponseCode);
+        final Host service = new Host(name, aliases == null ? new LinkedList<>(): aliases, defaultWebModule, defaultResponseCode, queueRequestsOnStart);
 
         final ServiceBuilder<Host> builder = context.getCapabilityServiceTarget().addCapability(HostDefinition.HOST_CAPABILITY, service)
                 .addCapabilityRequirement(Capabilities.CAPABILITY_SERVER, Server.class, service.getServerInjection(), serverName)

@@ -1,0 +1,7 @@
+org.jboss.as:jboss-as-controller-client
+org.jboss:jboss-dmr
+org.jboss.jbossts:jbossxts
+org.jboss.jbossts:jbossxts-api
+org.jboss.weld:weld-core
+org.picketbox:picketbox-commons
+xalan:serializer

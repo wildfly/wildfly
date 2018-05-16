@@ -22,6 +22,12 @@
 
 package org.jboss.as.test.integration.management.console;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.Arrays;
+
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
@@ -40,12 +46,6 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.http.Authentication;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -68,7 +68,7 @@ public class XFrameOptionsHeaderTestCase {
 
     @Test
     public void checkManagementConsoleForXFrameOptionsHeader() throws IOException, URISyntaxException {
-        URL url = new URL("http", managementClient.getMgmtAddress(), MGMT_PORT, "/console/App.html");
+        URL url = new URL("http", managementClient.getMgmtAddress(), MGMT_PORT, "/console/index.html");
         checkURLForHeader(url, "X-Frame-Options", "SAMEORIGIN");
     }
 
