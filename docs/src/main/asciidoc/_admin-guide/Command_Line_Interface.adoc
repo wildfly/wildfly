@@ -467,6 +467,45 @@ two ways to make the CLI to display JSON:
 * _--output-json_ option when launching the CLI.
 * _<output-json>_ XML element added to _jboss-cli.xml_ configuration file.
 
+[[color-output]]
+== Color output
+
+The CLI outputs results of commands and the prompt in color. To disable this, there are two possible ways to disable it:
+
+* _--no-color-output_ will disable color output;
+* Change _<enabled>_ to `false` in `jboss-cli.xml`.
+
+The _<color-output>_ block is  used to configure the  colors of the six basic elements that do support it
+
+- Output messages: error, warning and success;
+- Required configuration options when using the auto-complete functionality;
+- The color of the default prompt;
+- The color of the prompt when using `batch` and any of the workflow commands, `if`, `for` and `try`.
+
+[source,xml]
+----
+<color-output>
+    <enabled>true</enabled>
+    <error-color>red</error-color>
+    <warn-color>yellow</warn-color>
+    <success-color>default</success-color>
+    <required-color>magenta</required-color>
+    <workflow-color>green</workflow-color>
+    <prompt-color>blue</prompt-color>
+</color-output>
+----
+
+There are eight available colors:
+
+|===
+|Black|Magenta
+|Blue|Red
+|Cyan|White
+|Green|Yellow
+|===
+
+There is also the possibility of using the _default_ color, which is the terminal's configured foreground color.
+
 [[batch-processing]]
 == Batch Processing
 
