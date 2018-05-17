@@ -22,9 +22,6 @@
 
 package org.jboss.as.clustering.infinispan.subsystem.remote;
 
-import static org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition.Attribute;
-import static org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition.Capability.CONFIGURATION;
-
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -39,46 +36,46 @@ import org.infinispan.client.hotrod.configuration.ConnectionPoolConfiguration;
 import org.infinispan.client.hotrod.configuration.ExecutorFactoryConfiguration;
 import org.infinispan.client.hotrod.configuration.NearCacheConfiguration;
 import org.infinispan.client.hotrod.configuration.SecurityConfiguration;
+import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.ResourceServiceBuilder;
 import org.jboss.as.clustering.infinispan.subsystem.ThreadPoolResourceDefinition;
+import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition.Attribute;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.StringListAttributeDefinition;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.CompositeDependency;
+import org.wildfly.clustering.service.Dependency;
 import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.ValueDependency;
 
 /**
  * @author Radoslav Husar
  */
-public class RemoteCacheContainerConfigurationBuilder implements ResourceServiceBuilder<Configuration>, Value<Configuration> {
+public class RemoteCacheContainerConfigurationBuilder extends CapabilityServiceNameProvider implements ResourceServiceBuilder<Configuration>, Value<Configuration> {
 
-    private final PathAddress address;
-
-    private final Map<String, List<InjectedValueDependency<OutboundSocketBinding>>> clusters = new HashMap<>();
-    private final InjectedValue<ConnectionPoolConfiguration> connectionPool = new InjectedValue<>();
-    private final InjectedValue<NearCacheConfiguration> nearCache = new InjectedValue<>();
-    private final InjectedValue<SecurityConfiguration> security = new InjectedValue<>();
+    private final Map<String, List<ValueDependency<OutboundSocketBinding>>> clusters = new HashMap<>();
     private final Map<ThreadPoolResourceDefinition, ValueDependency<ExecutorFactoryConfiguration>> threadPools = new EnumMap<>(ThreadPoolResourceDefinition.class);
+    private final ValueDependency<Module> module;
+    private final ValueDependency<ConnectionPoolConfiguration> connectionPool;
+    private final ValueDependency<NearCacheConfiguration> nearCache;
+    private final ValueDependency<SecurityConfiguration> security;
 
     private volatile int connectionTimeout;
     private volatile String defaultRemoteCluster;
     private volatile int keySizeEstimate;
     private volatile int maxRetries;
-    private final ValueDependency<Module> module;
     private volatile String protocolVersion;
     private volatile int socketTimeout;
     private volatile boolean tcpNoDelay;
@@ -86,14 +83,12 @@ public class RemoteCacheContainerConfigurationBuilder implements ResourceService
     private volatile int valueSizeEstimate;
 
     RemoteCacheContainerConfigurationBuilder(PathAddress address) {
-        this.address = address;
+        super(RemoteCacheContainerResourceDefinition.Capability.CONFIGURATION, address);
         this.threadPools.put(ThreadPoolResourceDefinition.CLIENT, new InjectedValueDependency<>(ThreadPoolResourceDefinition.CLIENT.getServiceName(address), ExecutorFactoryConfiguration.class));
         this.module = new InjectedValueDependency<>(RemoteCacheContainerComponent.MODULE.getServiceName(address), Module.class);
-    }
-
-    @Override
-    public ServiceName getServiceName() {
-        return CONFIGURATION.getServiceName(this.address);
+        this.connectionPool = new InjectedValueDependency<>(RemoteCacheContainerComponent.CONNECTION_POOL.getServiceName(address), ConnectionPoolConfiguration.class);
+        this.nearCache = new InjectedValueDependency<>(RemoteCacheContainerComponent.NEAR_CACHE.getServiceName(address), NearCacheConfiguration.class);
+        this.security = new InjectedValueDependency<>(RemoteCacheContainerComponent.SECURITY.getServiceName(address), SecurityConfiguration.class);
     }
 
     @Override
@@ -109,16 +104,17 @@ public class RemoteCacheContainerConfigurationBuilder implements ResourceService
         this.valueSizeEstimate = Attribute.VALUE_SIZE_ESTIMATE.resolveModelAttribute(context, model).asInt();
 
         this.clusters.clear();
-        if (model.hasDefined(RemoteClusterResourceDefinition.WILDCARD_PATH.getKey())) {
-            for (Property property : model.get(RemoteClusterResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
-                String clusterName = property.getName();
-                List<InjectedValueDependency<OutboundSocketBinding>> valueDependencies = new ArrayList<>();
-                for (String binding : StringListAttributeDefinition.unwrapValue(context, RemoteClusterResourceDefinition.Attribute.SOCKET_BINDINGS.resolveModelAttribute(context, property.getValue()))) {
-                    InjectedValueDependency<OutboundSocketBinding> outboundSocketBindingInjectedValueDependency = new InjectedValueDependency<>(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING.getServiceName(context, binding), OutboundSocketBinding.class);
-                    valueDependencies.add(outboundSocketBindingInjectedValueDependency);
-                }
-                this.clusters.put(clusterName, valueDependencies);
+
+        Resource container = context.readResource(PathAddress.EMPTY_ADDRESS);
+        for (Resource.ResourceEntry entry : container.getChildren(RemoteClusterResourceDefinition.WILDCARD_PATH.getKey())) {
+            String clusterName = entry.getName();
+            ModelNode cluster = entry.getModel();
+            List<String> bindings = StringListAttributeDefinition.unwrapValue(context, RemoteClusterResourceDefinition.Attribute.SOCKET_BINDINGS.resolveModelAttribute(context, cluster));
+            List<ValueDependency<OutboundSocketBinding>> bindingDependencies = new ArrayList<>(bindings.size());
+            for (String binding : bindings) {
+                bindingDependencies.add(new InjectedValueDependency<>(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING.getServiceName(context, binding), OutboundSocketBinding.class));
             }
+            this.clusters.put(clusterName, bindingDependencies);
         }
 
         return this;
@@ -126,23 +122,16 @@ public class RemoteCacheContainerConfigurationBuilder implements ResourceService
 
     @Override
     public ServiceBuilder<Configuration> build(ServiceTarget target) {
-        ServiceBuilder<Configuration> builder = target.addService(this.getServiceName(), new ValueService<>(this))
-                .addDependency(RemoteCacheContainerComponent.CONNECTION_POOL.getServiceName(this.address), ConnectionPoolConfiguration.class, this.connectionPool)
-                .addDependency(RemoteCacheContainerComponent.NEAR_CACHE.getServiceName(address), NearCacheConfiguration.class, this.nearCache)
-                .addDependency(RemoteCacheContainerComponent.SECURITY.getServiceName(address), SecurityConfiguration.class, this.security)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                ;
-        this.module.register(builder);
-        for (ValueDependency<ExecutorFactoryConfiguration> dependency : this.threadPools.values()) {
+        ServiceBuilder<Configuration> builder = target.addService(this.getServiceName(), new ValueService<>(this)).setInitialMode(ServiceController.Mode.ON_DEMAND);
+        for (Dependency dependency : this.threadPools.values()) {
             dependency.register(builder);
         }
-        for (List<InjectedValueDependency<OutboundSocketBinding>> dependencies : this.clusters.values()) {
-            for (InjectedValueDependency<OutboundSocketBinding> dependency : dependencies) {
+        for (List<ValueDependency<OutboundSocketBinding>> dependencies : this.clusters.values()) {
+            for (Dependency dependency : dependencies) {
                 dependency.register(builder);
             }
         }
-
-        return builder;
+        return new CompositeDependency(this.module, this.connectionPool, this.nearCache, this.security).register(builder);
     }
 
     @Override
@@ -162,19 +151,19 @@ public class RemoteCacheContainerConfigurationBuilder implements ResourceService
         builder.nearCache().read(this.nearCache.getValue());
         builder.asyncExecutorFactory().read(this.threadPools.get(ThreadPoolResourceDefinition.CLIENT).getValue());
 
-        for (Map.Entry<String, List<InjectedValueDependency<OutboundSocketBinding>>> cluster : this.clusters.entrySet()) {
+        for (Map.Entry<String, List<ValueDependency<OutboundSocketBinding>>> cluster : this.clusters.entrySet()) {
             String clusterName = cluster.getKey();
-            List<InjectedValueDependency<OutboundSocketBinding>> injectedValueDependencies = cluster.getValue();
+            List<ValueDependency<OutboundSocketBinding>> bindingDependencies = cluster.getValue();
 
             if (this.defaultRemoteCluster.equals(clusterName)) {
-                for (InjectedValueDependency<OutboundSocketBinding> bindingInjectedValueDependency : injectedValueDependencies) {
-                    OutboundSocketBinding binding = bindingInjectedValueDependency.getValue();
+                for (Value<OutboundSocketBinding> bindingDependency : bindingDependencies) {
+                    OutboundSocketBinding binding = bindingDependency.getValue();
                     builder.addServer().host(binding.getUnresolvedDestinationAddress()).port(binding.getDestinationPort());
                 }
             } else {
                 ClusterConfigurationBuilder clusterConfigurationBuilder = builder.addCluster(clusterName);
-                for (InjectedValueDependency<OutboundSocketBinding> bindingInjectedValueDependency : injectedValueDependencies) {
-                    OutboundSocketBinding binding = bindingInjectedValueDependency.getValue();
+                for (Value<OutboundSocketBinding> bindingDependency : bindingDependencies) {
+                    OutboundSocketBinding binding = bindingDependency.getValue();
                     clusterConfigurationBuilder.addClusterNode(binding.getUnresolvedDestinationAddress(), binding.getDestinationPort());
                 }
             }

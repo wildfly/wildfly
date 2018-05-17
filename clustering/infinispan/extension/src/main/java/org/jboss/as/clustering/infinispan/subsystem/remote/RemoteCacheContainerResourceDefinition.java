@@ -33,7 +33,7 @@ import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.RestartParentResourceRegistration;
+import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
@@ -82,24 +82,24 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
 
     public enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
         CONNECTION_TIMEOUT("connection-timeout", ModelType.INT, new ModelNode(60000)),
-        DEFAULT_REMOTE_CLUSTER("default-remote-cluster", ModelType.STRING) {
+        DEFAULT_REMOTE_CLUSTER("default-remote-cluster", ModelType.STRING, null) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setRequired(true).setCapabilityReference(new CapabilityReference(Capability.CONFIGURATION, RemoteClusterResourceDefinition.Requirement.REMOTE_CLUSTER, WILDCARD_PATH));
+                return builder.setAllowExpression(false).setCapabilityReference(new CapabilityReference(Capability.CONFIGURATION, RemoteClusterResourceDefinition.Requirement.REMOTE_CLUSTER, WILDCARD_PATH));
             }
         },
         KEY_SIZE_ESTIMATE("key-size-estimate", ModelType.INT, new ModelNode(64)),
         MAX_RETRIES("max-retries", ModelType.INT, new ModelNode(10)),
-        MODULE("module", ModelType.STRING) {
+        MODULE("module", ModelType.STRING, new ModelNode("org.jboss.as.clustering.infinispan")) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setDefaultValue(new ModelNode("org.jboss.as.clustering.infinispan")).setValidator(new ModuleIdentifierValidatorBuilder().configure(builder).build());
+                return builder.setValidator(new ModuleIdentifierValidatorBuilder().configure(builder).build());
             }
         },
-        PROTOCOL_VERSION("protocol-version", ModelType.STRING) {
+        PROTOCOL_VERSION("protocol-version", ModelType.STRING, new ModelNode(ProtocolVersion.DEFAULT_PROTOCOL_VERSION.toString())) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setDefaultValue(new ModelNode(ProtocolVersion.DEFAULT_PROTOCOL_VERSION.toString())).setValidator(new EnumValidator<>(ProtocolVersion.class));
+                return builder.setValidator(new EnumValidator<>(ProtocolVersion.class));
             }
         },
         SOCKET_TIMEOUT("socket-timeout", ModelType.INT, new ModelNode(60000)),
@@ -110,12 +110,13 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
 
         private final AttributeDefinition definition;
 
-        Attribute(String name, ModelType type) {
-            this.definition = this.apply(createBuilder(name, type)).build();
-        }
-
         Attribute(String name, ModelType type, ModelNode defaultValue) {
-            this.definition = createBuilder(name, type).setDefaultValue(defaultValue).build();
+            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
+                        .setAllowExpression(true)
+                        .setRequired(defaultValue == null)
+                        .setDefaultValue(defaultValue)
+                        .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                        .build();
         }
 
         @Override
@@ -127,14 +128,6 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
         public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
             return builder;
         }
-    }
-
-    private static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type) {
-        return new SimpleAttributeDefinitionBuilder(name, type)
-                .setAllowExpression(true)
-                .setRequired(false)
-                .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                ;
     }
 
     public static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
@@ -151,8 +144,6 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
         super(WILDCARD_PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(WILDCARD_PATH));
     }
 
-    private final ResourceServiceBuilderFactory<Configuration> builderFactory = RemoteCacheContainerConfigurationBuilder::new;
-
     @Override
     public ManagementResourceRegistration register(ManagementResourceRegistration parentRegistration) {
         ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
@@ -165,8 +156,9 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
                 .addRequiredSingletonChildren(NoNearCacheResourceDefinition.PATH)
                 .addRequiredChildren(SecurityResourceDefinition.PATH)
                 ;
+        ResourceServiceBuilderFactory<Configuration> builderFactory = RemoteCacheContainerConfigurationBuilder::new;
         ResourceServiceHandler handler = new RemoteCacheContainerServiceHandler(builderFactory);
-        new RestartParentResourceRegistration<>(builderFactory, descriptor, handler).register(registration);
+        new SimpleResourceRegistration(descriptor, handler).register(registration);
 
         new ConnectionPoolResourceDefinition().register(registration);
         new RemoteClusterResourceDefinition(builderFactory).register(registration);

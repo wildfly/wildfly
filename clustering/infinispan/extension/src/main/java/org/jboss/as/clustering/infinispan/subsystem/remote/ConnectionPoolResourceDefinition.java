@@ -22,6 +22,8 @@
 
 package org.jboss.as.clustering.infinispan.subsystem.remote;
 
+import java.util.function.UnaryOperator;
+
 import org.infinispan.client.hotrod.configuration.ExhaustedAction;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
@@ -35,7 +37,6 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
-import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
@@ -50,8 +51,13 @@ public class ConnectionPoolResourceDefinition extends ComponentResourceDefinitio
 
     public static final PathElement PATH = pathElement("connection-pool");
 
-    public enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        EXHAUSTED_ACTION("exhausted-action", ModelType.STRING, new ModelNode(ExhaustedAction.WAIT.name()), new EnumValidator<>(ExhaustedAction.class)),
+    public enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
+        EXHAUSTED_ACTION("exhausted-action", ModelType.STRING, new ModelNode(ExhaustedAction.WAIT.name())) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setValidator(new EnumValidator<>(ExhaustedAction.class));
+            }
+        },
         MAX_ACTIVE("max-active", ModelType.INT, new ModelNode(-1)),
         MAX_WAIT("max-wait", ModelType.LONG, new ModelNode(-1L)),
         MIN_EVICTABLE_IDLE_TIME("min-evictable-idle-time", ModelType.LONG, new ModelNode(1800000L)),
@@ -61,27 +67,23 @@ public class ConnectionPoolResourceDefinition extends ComponentResourceDefinitio
         private final AttributeDefinition definition;
 
         Attribute(String name, ModelType type, ModelNode defaultValue) {
-            this.definition = createBuilder(name, type, defaultValue).build();
-        }
-
-        Attribute(String name, ModelType type, ModelNode defaultValue, ModelTypeValidator validator) {
-            SimpleAttributeDefinitionBuilder builder = createBuilder(name, type, defaultValue);
-            this.definition = builder.setValidator(validator).build();
-        }
-
-        private static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type, ModelNode defaultValue) {
-            return new SimpleAttributeDefinitionBuilder(name, type)
+            this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, type)
                     .setAllowExpression(true)
                     .setRequired(false)
                     .setDefaultValue(defaultValue)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .setMeasurementUnit((type == ModelType.LONG) ? MeasurementUnit.MILLISECONDS : null)
-                    ;
+                    ).build();
         }
 
         @Override
         public AttributeDefinition getDefinition() {
             return this.definition;
+        }
+
+        @Override
+        public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+            return builder;
         }
     }
 

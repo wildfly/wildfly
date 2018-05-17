@@ -24,6 +24,8 @@ package org.jboss.as.clustering.infinispan.subsystem.remote;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.Properties;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -31,7 +33,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.ExecutorFactoryConfiguration;
-import org.infinispan.client.hotrod.configuration.ExecutorFactoryConfigurationBuilder;
 import org.infinispan.client.hotrod.impl.async.DefaultAsyncExecutorFactory;
 import org.infinispan.commons.executors.ExecutorFactory;
 import org.jboss.as.clustering.infinispan.subsystem.ComponentBuilder;
@@ -46,10 +47,11 @@ import org.wildfly.clustering.service.concurrent.ClassLoaderThreadFactory;
 /**
  * @author Radoslav Husar
  */
-public class ClientThreadPoolBuilder extends ComponentBuilder<ExecutorFactoryConfiguration> {
+public class ClientThreadPoolBuilder extends ComponentBuilder<ExecutorFactoryConfiguration> implements ThreadFactory {
 
-    private final ExecutorFactoryConfigurationBuilder builder = new ConfigurationBuilder().asyncExecutorFactory();
     private final ThreadPoolDefinition definition;
+
+    private volatile ExecutorFactory factory;
 
     public ClientThreadPoolBuilder(ThreadPoolDefinition definition, PathAddress address) {
         super(definition, address);
@@ -63,23 +65,28 @@ public class ClientThreadPoolBuilder extends ComponentBuilder<ExecutorFactoryCon
         int queueLength = this.definition.getQueueLength().resolveModelAttribute(context, model).asInt();
         long keepAliveTime = this.definition.getKeepAliveTime().resolveModelAttribute(context, model).asLong();
 
-        ExecutorFactory factory = properties -> {
-            ThreadFactory clThreadFactory = new ClassLoaderThreadFactory(runnable -> {
-                Thread thread = new Thread(runnable, DefaultAsyncExecutorFactory.THREAD_NAME + "-" + DefaultAsyncExecutorFactory.counter.getAndIncrement());
-                thread.setDaemon(true);
-                return thread;
-            }, AccessController.doPrivileged((PrivilegedAction<ClassLoader>) ClassLoaderThreadFactory.class::getClassLoader));
+        this.factory = new ExecutorFactory() {
+            @Override
+            public ExecutorService getExecutor(Properties property) {
+                ThreadFactory clThreadFactory = new ClassLoaderThreadFactory(ClientThreadPoolBuilder.this, AccessController.doPrivileged((PrivilegedAction<ClassLoader>) ClassLoaderThreadFactory.class::getClassLoader));
 
-            return new ThreadPoolExecutor(minThreads, maxThreads, keepAliveTime, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(queueLength), clThreadFactory);
+                return new ThreadPoolExecutor(minThreads, maxThreads, keepAliveTime, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(queueLength), clThreadFactory);
+            }
         };
-        this.builder.factory(factory);
 
         return this;
     }
 
     @Override
     public ExecutorFactoryConfiguration getValue() {
-        return this.builder.create();
+        return new ConfigurationBuilder().asyncExecutorFactory().factory(this.factory).create();
+    }
+
+    @Override
+    public Thread newThread(Runnable task) {
+        Thread thread = new Thread(task, DefaultAsyncExecutorFactory.THREAD_NAME + "-" + DefaultAsyncExecutorFactory.counter.getAndIncrement());
+        thread.setDaemon(true);
+        return thread;
     }
 }
 

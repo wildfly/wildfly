@@ -47,24 +47,16 @@ public class HotRodStoreResourceDefinition extends StoreResourceDefinition {
     public static final PathElement PATH = pathElement("hotrod");
 
     public enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        CACHE_CONFIGURATION("cache-configuration", ModelType.STRING),
+        CACHE_CONFIGURATION("cache-configuration", ModelType.STRING, null),
         REMOTE_CACHE_CONTAINER("remote-cache-container", ModelType.STRING, new CapabilityReference(Capability.PERSISTENCE, InfinispanRequirement.REMOTE_CONTAINER)),
         ;
 
         private final AttributeDefinition definition;
 
-        Attribute(String attributeName, ModelType type) {
-            this.definition = new SimpleAttributeDefinitionBuilder(attributeName, type)
-                    .setAllowExpression(true)
-                    .setRequired(false)
-                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                    .build();
-        }
-
         Attribute(String attributeName, ModelType type, CapabilityReference capabilityReference) {
             this.definition = new SimpleAttributeDefinitionBuilder(attributeName, type)
-                    .setAllowExpression(false)
-                    .setRequired(true)
+                    .setAllowExpression(capabilityReference == null)
+                    .setRequired(capabilityReference != null)
                     .setCapabilityReference(capabilityReference)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();

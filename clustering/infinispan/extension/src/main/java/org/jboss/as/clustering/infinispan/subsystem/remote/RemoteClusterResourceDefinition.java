@@ -24,9 +24,6 @@ package org.jboss.as.clustering.infinispan.subsystem.remote;
 
 import org.infinispan.client.hotrod.configuration.Configuration;
 import org.jboss.as.clustering.controller.BinaryCapabilityNameResolver;
-import org.jboss.as.clustering.controller.BinaryRequirementServiceNameFactory;
-import org.jboss.as.clustering.controller.BinaryServiceNameFactory;
-import org.jboss.as.clustering.controller.BinaryServiceNameFactoryProvider;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
@@ -79,12 +76,11 @@ public class RemoteClusterResourceDefinition extends ChildResourceDefinition<Man
         }
     }
 
-    enum Requirement implements BinaryRequirement, BinaryServiceNameFactoryProvider {
+    enum Requirement implements BinaryRequirement {
         REMOTE_CLUSTER("org.wildfly.clustering.infinispan.remote-cache-container.remote-cluster", Void.class),
         ;
         private final String name;
         private final Class<?> type;
-        private final BinaryServiceNameFactory factory = new BinaryRequirementServiceNameFactory(this);
 
         Requirement(String name, Class<?> type) {
             this.name = name;
@@ -100,21 +96,16 @@ public class RemoteClusterResourceDefinition extends ChildResourceDefinition<Man
         public Class<?> getType() {
             return this.type;
         }
-
-        @Override
-        public BinaryServiceNameFactory getServiceNameFactory() {
-            return this.factory;
-        }
     }
 
 
     enum Capability implements org.jboss.as.clustering.controller.Capability {
-        REMOTE_CLUSTER("org.wildfly.clustering.infinispan.remote-cache-container.remote-cluster", Void.class),
+        REMOTE_CLUSTER("org.wildfly.clustering.infinispan.remote-cache-container.remote-cluster"),
         ;
         private final RuntimeCapability<Void> definition;
 
-        Capability(String name, Class<?> type) {
-            this.definition = RuntimeCapability.Builder.of(name, true, type).setDynamicNameMapper(BinaryCapabilityNameResolver.PARENT_CHILD).build();
+        Capability(String name) {
+            this.definition = RuntimeCapability.Builder.of(name, true).setDynamicNameMapper(BinaryCapabilityNameResolver.PARENT_CHILD).build();
         }
 
         @Override

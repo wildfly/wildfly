@@ -28,8 +28,8 @@ import java.util.EnumSet;
 
 import org.infinispan.client.hotrod.configuration.Configuration;
 import org.jboss.as.clustering.controller.ModuleBuilder;
-import org.jboss.as.clustering.controller.ParentResourceServiceHandler;
 import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
+import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.infinispan.subsystem.InfinispanBindingFactory;
 import org.jboss.as.clustering.naming.BinderServiceBuilder;
 import org.jboss.as.controller.OperationContext;
@@ -44,7 +44,7 @@ import org.wildfly.clustering.infinispan.spi.RemoteCacheContainer;
 /**
  * @author Radoslav Husar
  */
-public class RemoteCacheContainerServiceHandler extends ParentResourceServiceHandler<Configuration> {
+public class RemoteCacheContainerServiceHandler extends SimpleResourceServiceHandler<Configuration> {
 
     RemoteCacheContainerServiceHandler(ResourceServiceBuilderFactory<Configuration> builderFactory) {
         super(builderFactory);
