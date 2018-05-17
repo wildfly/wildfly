@@ -77,7 +77,7 @@ public class HibernatePersistenceProviderAdaptor implements PersistenceProviderA
 
     @Override
     public void addProviderDependencies(PersistenceUnitMetadata pu) {
-        JPA_LOGGER.tracef("second level cache not integrated for Hibernate 4.x - %s", pu.getScopedPersistenceUnitName());
+        JPA_LOGGER.cannotUseSecondLevelCache(pu.getScopedPersistenceUnitName());
     }
 
     private void putPropertyIfAbsent(PersistenceUnitMetadata pu, Map properties, String property, Object value) {

@@ -45,7 +45,7 @@ class DeprecatedInfinispanRegionFactory extends org.infinispan.hibernate.cache.v
     @Override
     public void start(SessionFactoryOptions settings, Properties properties) throws CacheException {
         Logger.LOGGER.deprecatedRegionFactory(this.getClass().getName(), this.getClass().getSuperclass().getSuperclass().getName(), SHARED, this.shared);
-        properties.put(SHARED, this.shared);
+        properties.setProperty(SHARED, this.shared);
         super.start(settings, properties);
     }
 }

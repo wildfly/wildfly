@@ -116,4 +116,13 @@ public interface JipiLogger extends BasicLogger {
     @Message(id = 20251, value = "URI syntax error")
     IllegalArgumentException uriSyntaxException(@Cause Throwable cause);
 
+    /**
+     * warn that the 2nd is not integrated
+     *
+     * @param scopedPuName identifies the app specific persistence unit name
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 20252, value = "second level cache not integrated - %s")
+    void cannotUseSecondLevelCache(String scopedPuName);
+
 }

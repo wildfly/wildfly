@@ -27,7 +27,7 @@ import org.jboss.logging.annotations.MessageLogger;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  * @author Scott Marlow
  */
-@MessageLogger(projectCode = "JIPI")
+@MessageLogger(projectCode = "JIPIORMV53")
 public interface JpaLogger extends BasicLogger {
 
     /**
