@@ -21,7 +21,6 @@
  */
 package org.jboss.as.test.clustering.cluster.singleton;
 
-import static org.jboss.as.test.shared.IntermittentFailure.thisTestIsFailingIntermittently;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 import java.io.IOException;
@@ -58,7 +57,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -74,11 +72,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class SingletonPartitionTestCase extends AbstractClusteringTestCase {
-
-    @BeforeClass
-    public static void beforeClass() {
-        thisTestIsFailingIntermittently("https://issues.jboss.org/browse/WFLY-9771");
-    }
 
     private static final long TOPOLOGY_CHANGE_TIMEOUT = TimeoutUtil.adjust(120_000); // maximum time in ms to wait for cluster topology change
     private static final int SERVICE_TIMEOUT = TimeoutUtil.adjust(5_000); // it takes a little extra time after merge for the singleton service to migrate
