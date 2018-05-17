@@ -26,7 +26,7 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import org.jboss.as.naming.logging.NamingLogger;
-import org.wildfly.security.util.CodePointIterator;
+import org.wildfly.common.iteration.CodePointIterator;
 
 final class JndiPermissionNameParser {
     private JndiPermissionNameParser() {
