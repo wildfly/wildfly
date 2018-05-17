@@ -113,7 +113,6 @@
     </scm>
 
     <properties>
-        <jboss.as.release.codename>N/A</jboss.as.release.codename>
         <!-- Release Info.
              Drives properties that end up in MANIFEST.mf files produced by this build
              and some are also used in the pom 'scm' element.
@@ -121,8 +120,19 @@
              a general purpose release version shorthand.
         -->
         <jboss.as.release.version>${project.version}</jboss.as.release.version>
+        <jboss.as.release.codename>N/A</jboss.as.release.codename>
         <jboss.as.scm.connection>git@github.com:wildfly/wildfly.git</jboss.as.scm.connection>
         <jboss.as.scm.url>https://github.com/wildfly/wildfly</jboss.as.scm.url>
+
+        <!-- Other release identification information that drives how the built server identifies itself -->
+        <full.dist.product.release.name>WildFly Full</full.dist.product.release.name>
+        <full.dist.product.slot>wildfly-full</full.dist.product.slot>
+        <servlet.dist.product.release.name>WildFly Servlet</servlet.dist.product.release.name>
+        <servlet.dist.product.slot>wildfly-web</servlet.dist.product.slot>
+        <product.release.version>${project.version}</product.release.version>
+        <!-- A short variant of product.release.version used in 'startsWith' tests done by dist verification logic -->
+        <verifier.product.release.version>13.0</verifier.product.release.version>
+
         <!-- Checkstyle configuration -->
         <linkXRef>false</linkXRef>
 
@@ -150,12 +160,13 @@
         <server.output.dir.prefix>wildfly</server.output.dir.prefix>
         <!-- Version suffix that is appended to directories. Default is the maven GAV version but this can be edited to use a short form version -->
         <server.output.dir.version>${project.version}</server.output.dir.version>
-        <surefire.extra.args></surefire.extra.args>
-
+        
         <!-- Surefire args -->
+        <surefire.extra.args></surefire.extra.args>
         <surefire.jpda.args></surefire.jpda.args>
         <surefire.system.args>${modular.jdk.args} ${modular.jdk.props} -ea -Duser.region=US -Duser.language=en -XX:MaxMetaspaceSize=256m ${surefire.jpda.args} ${surefire.extra.args} ${surefire.jacoco.args}</surefire.system.args>
         <version.asciidoctor.plugin>1.5.6</version.asciidoctor.plugin>
+        
         <!-- use older version of checkstyle as otherwise lots of checks fail -->
         <version.checkstyle>8.5</version.checkstyle>
         <version.help.plugin>2.2</version.help.plugin>

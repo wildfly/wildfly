@@ -40,6 +40,7 @@
     <artifactId>wildfly-servlet-dist</artifactId>
     <name>WildFly: Servlet Distribution</name>
     <packaging>jar</packaging>
+
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -60,12 +61,6 @@
         </dependency>
     </dependencies>
 
-    <properties>
-        <product.release.name>WildFly Servlet</product.release.name>
-        <verifier.slot.name>wildfly-web</verifier.slot.name>
-        <verifier.product.release.name>WildFly Servlet</verifier.product.release.name>
-        <verifier.product.release.version>13.0</verifier.product.release.version>
-    </properties>
     <build>
         <finalName>${server.output.dir.prefix}-servlet-${server.output.dir.version}</finalName>
         <plugins>

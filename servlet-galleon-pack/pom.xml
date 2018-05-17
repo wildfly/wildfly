@@ -613,7 +613,7 @@
                         </goals>
                         <phase>prepare-package</phase>
                         <configuration>
-                            <release-name>WildFly Servlet</release-name>
+                            <release-name>${servlet.dist.product.release.name}</release-name>
                         </configuration>
                     </execution>
                 </executions>

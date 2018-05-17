@@ -246,7 +246,7 @@
                         </goals>
                         <phase>prepare-package</phase>
                         <configuration>
-                            <release-name>WildFly Full</release-name>
+                            <release-name>${full.dist.product.release.name}</release-name>
                         </configuration>
                     </execution>
                 </executions>
