@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="domain-host-excludes" xmlns="urn:jboss:galleon:feature-group:1.0">
+
+    <origin name="org.wildfly.core:wildfly-core-galleon-pack">
+        <feature-group name="domain-host-excludes"/>
+    </origin>
+
+    <feature spec="domain.host-exclude">
+        <param name="host-exclude" value="WildFly10.0"/>
+        <param name="excluded-extensions" value="[&quot;org.wildfly.extension.core-management&quot;,&quot;org.wildfly.extension.discovery&quot;,&quot;org.wildfly.extension.ee-security&quot;,&quot;org.wildfly.extension.elytron&quot;]"/>
+    </feature>
+    <feature spec="domain.host-exclude">
+        <param name="host-exclude" value="WildFly10.1"/>
+        <param name="excluded-extensions" value="[&quot;org.wildfly.extension.core-management&quot;,&quot;org.wildfly.extension.discovery&quot;,&quot;org.wildfly.extension.ee-security&quot;,&quot;org.wildfly.extension.elytron&quot;]"/>
+    </feature>
+    <feature spec="domain.host-exclude">
+        <param name="host-exclude" value="WildFly11.0"/>
+        <param name="host-release" value="WildFly11.0"/>
+        <param name="excluded-extensions" value="[&quot;org.wildfly.extension.ee-security&quot;]"/>
+    </feature>
+    <feature spec="domain.host-exclude">
+        <param name="host-exclude" value="WildFly12.0"/>
+        <param name="host-release" value="WildFly12.0"/>
+        <param name="excluded-extensions" value="[&quot;org.wildfly.extension.ee-security&quot;]"/>
+    </feature>
+</feature-group-spec>
