@@ -24,10 +24,6 @@
 
 package org.jboss.as.ejb3.logging;
 
-import static org.jboss.logging.Logger.Level.ERROR;
-import static org.jboss.logging.Logger.Level.INFO;
-import static org.jboss.logging.Logger.Level.WARN;
-
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -105,6 +101,8 @@ import org.jboss.logging.annotations.Signature;
 import org.jboss.metadata.ejb.spec.MethodParametersMetaData;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+
+import static org.jboss.logging.Logger.Level.*;
 
 /**
  * @author <a href="mailto:Flemming.Harms@gmail.com">Flemming Harms</a>
@@ -3170,4 +3168,8 @@ public interface EjbLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 506, value = "[EJB3.2 spec, section 5.6.2] Message Driven Bean can not have a 'finalize' method. (MDB: %s)")
     void mdbCantHaveFinalizeMethod(String className);
+
+    @LogMessage(level = FATAL)
+    @Message(id = 507, value = "Failed to persist timer's state %s. Timer has to be restored manually")
+    void exceptionPersistPostTimerState(Timer timer, @Cause Exception e);
 }
