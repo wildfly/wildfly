@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,17 +19,17 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.server.singleton;
 
-import java.util.Optional;
+package org.wildfly.clustering.singleton.service;
 
-import org.wildfly.clustering.dispatcher.Command;
+import org.jboss.msc.service.ServiceName;
 
-public class SingletonValueCommand<T> implements Command<Optional<T>, LegacySingletonContext<T>> {
-    private static final long serialVersionUID = -2849349352107418635L;
+/**
+ * Extension of {@link SingletonPolicy} for customizing singleton service behavior.
+ * @author Paul Ferraro
+ */
+public interface SingletonServiceConfiguratorFactory extends SingletonPolicy {
 
     @Override
-    public Optional<T> execute(LegacySingletonContext<T> context) {
-        return context.getLocalValue();
-    }
+    SingletonServiceConfigurator createSingletonServiceConfigurator(ServiceName name);
 }

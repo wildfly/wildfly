@@ -23,16 +23,21 @@
 package org.jboss.as.test.clustering.cluster.singleton.service;
 
 import java.time.Duration;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
+import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.group.Group;
+import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.service.ActiveServiceSupplier;
+import org.wildfly.clustering.service.FunctionalService;
 import org.wildfly.clustering.singleton.SingletonDefaultRequirement;
-import org.wildfly.clustering.singleton.SingletonPolicy;
+import org.wildfly.clustering.singleton.service.SingletonPolicy;
 
 /**
  * @author Paul Ferraro
@@ -44,11 +49,11 @@ public class NodeServicePolicyActivator implements ServiceActivator {
     @Override
     public void activate(ServiceActivatorContext context) {
         ServiceTarget target = context.getServiceTarget();
-        SingletonPolicy policy = new ActiveServiceSupplier<SingletonPolicy>(context.getServiceRegistry(), ServiceName.parse(SingletonDefaultRequirement.SINGLETON_POLICY.getName())).timeout(Duration.ofSeconds(30)).get();
-        InjectedValue<Group> group = new InjectedValue<>();
-        NodeService service = new NodeService(group);
-        policy.createSingletonServiceBuilder(SERVICE_NAME, service).build(target)
-                .addDependency(ServiceName.parse("org.wildfly.clustering.default-group"), Group.class, group)
-                .install();
+        SingletonPolicy policy = new ActiveServiceSupplier<SingletonPolicy>(context.getServiceRegistry(), ServiceName.parse(SingletonDefaultRequirement.SINGLETON_POLICY.getName())).setTimeout(Duration.ofSeconds(30)).get();
+        ServiceBuilder<?> builder = policy.createSingletonServiceConfigurator(SERVICE_NAME).build(target);
+        Consumer<Node> member = builder.provides(SERVICE_NAME);
+        Supplier<Group> group = builder.requires(ServiceName.parse("org.wildfly.clustering.default-group"));
+        Service service = new FunctionalService<>(member, Group::getLocalMember, group);
+        builder.setInstance(service).install();
     }
 }

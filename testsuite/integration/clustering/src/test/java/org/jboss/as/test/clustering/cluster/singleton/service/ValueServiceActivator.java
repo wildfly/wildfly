@@ -45,7 +45,7 @@ public class ValueServiceActivator implements ServiceActivator {
     public void activate(ServiceActivatorContext context) {
         ServiceTarget target = context.getServiceTarget();
         System.out.println(SingletonDefaultRequirement.SINGLETON_POLICY.getName() + " state = " + context.getServiceRegistry().getService(ServiceName.parse(SingletonDefaultRequirement.SINGLETON_POLICY.getName())).getState());
-        SingletonPolicy policy = new ActiveServiceSupplier<SingletonPolicy>(context.getServiceRegistry(), ServiceName.parse(SingletonDefaultRequirement.SINGLETON_POLICY.getName())).timeout(Duration.ofSeconds(30)).get();
+        SingletonPolicy policy = new ActiveServiceSupplier<SingletonPolicy>(context.getServiceRegistry(), ServiceName.parse(SingletonDefaultRequirement.SINGLETON_POLICY.getName())).setTimeout(Duration.ofSeconds(30)).get();
         policy.createSingletonServiceBuilder(SERVICE_NAME, new ValueService<>(new ImmediateValue<>(Boolean.TRUE)), new ValueService<>(new ImmediateValue<>(Boolean.FALSE))).build(target).install();
     }
 }

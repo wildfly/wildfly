@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,17 +19,21 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.clustering.server.singleton;
 
-import java.util.Optional;
+import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.server.IdentityCacheRequirementServiceConfiguratorProvider;
+import org.wildfly.clustering.spi.IdentityCacheServiceConfiguratorProvider;
+import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 
-import org.wildfly.clustering.dispatcher.Command;
+/**
+ * @author Paul Ferraro
+ */
+@MetaInfServices(IdentityCacheServiceConfiguratorProvider.class)
+public class IdentitySingletonServiceConfiguratorFactoryServiceConfiguratorProvider extends IdentityCacheRequirementServiceConfiguratorProvider {
 
-public class SingletonValueCommand<T> implements Command<Optional<T>, LegacySingletonContext<T>> {
-    private static final long serialVersionUID = -2849349352107418635L;
-
-    @Override
-    public Optional<T> execute(LegacySingletonContext<T> context) {
-        return context.getLocalValue();
+    public IdentitySingletonServiceConfiguratorFactoryServiceConfiguratorProvider() {
+        super(ClusteringCacheRequirement.SINGLETON_SERVICE_CONFIGURATOR_FACTORY);
     }
 }

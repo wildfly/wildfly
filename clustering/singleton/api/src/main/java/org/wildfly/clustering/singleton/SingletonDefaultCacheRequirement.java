@@ -23,13 +23,15 @@
 package org.wildfly.clustering.singleton;
 
 import org.wildfly.clustering.service.UnaryRequirement;
+import org.wildfly.clustering.singleton.service.SingletonServiceConfiguratorFactory;
 
 /**
  * @author Paul Ferraro
  */
 public enum SingletonDefaultCacheRequirement implements UnaryRequirement {
 
-    SINGLETON_SERVICE_BUILDER_FACTORY("org.wildfly.clustering.cache.default-singleton-service-builder-factory", SingletonServiceBuilderFactory.class),
+    @Deprecated SINGLETON_SERVICE_BUILDER_FACTORY("org.wildfly.clustering.cache.default-singleton-service-builder-factory", SingletonServiceBuilderFactory.class),
+    SINGLETON_SERVICE_CONFIGURATOR_FACTORY("org.wildfly.clustering.cache.default-singleton-service-configurator-factory", SingletonServiceConfiguratorFactory.class),
     ;
     private final String name;
     private final Class<?> type;

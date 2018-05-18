@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,19 +19,28 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.server.singleton;
 
-import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.spi.DistributedCacheServiceConfiguratorProvider;
+package org.wildfly.clustering.singleton.service;
+
+import org.wildfly.clustering.singleton.SingletonElectionPolicy;
 
 /**
- * Provides the requisite builders for a clustered {@link org.wildfly.clustering.singleton.SingletonServiceBuilderFactory}.
+ * Extension of {@link ImmutableSingletonServiceConfigurator} for customizing singleton service behavior.
  * @author Paul Ferraro
  */
-@MetaInfServices(DistributedCacheServiceConfiguratorProvider.class)
-public class CacheSingletonServiceBuilderFactoryServiceConfiguratorProvider extends SingletonServiceBuilderFactoryServiceConfiguratorProvider implements DistributedCacheServiceConfiguratorProvider {
+public interface SingletonServiceConfigurator extends ImmutableSingletonServiceConfigurator {
 
-    public CacheSingletonServiceBuilderFactoryServiceConfiguratorProvider() {
-        super(CacheSingletonServiceBuilderFactoryServiceConfigurator::new);
-    }
+    /**
+     * Defines the minimum number of members required before a singleton election will take place.
+     * @param quorum the quorum required for electing a primary singleton provider
+     * @return a reference to this builder
+     */
+    SingletonServiceConfigurator requireQuorum(int quorum);
+
+    /**
+     * Defines the policy for electing a primary singleton provider.
+     * @param policy an election policy
+     * @return a reference to this builder
+     */
+    SingletonServiceConfigurator electionPolicy(SingletonElectionPolicy policy);
 }

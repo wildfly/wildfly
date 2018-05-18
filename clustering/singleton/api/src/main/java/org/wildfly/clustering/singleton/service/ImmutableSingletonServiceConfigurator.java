@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,39 +19,18 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.clustering.cluster.singleton.service;
 
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.Value;
-import org.wildfly.clustering.group.Group;
-import org.wildfly.clustering.group.Node;
+package org.wildfly.clustering.singleton.service;
 
-public class NodeService implements Service<Node> {
+import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.clustering.service.ServiceConfigurator;
 
-    private final Value<Group> group;
-    private volatile boolean started = false;
-
-    public NodeService(Value<Group> group) {
-        this.group = group;
-    }
+/**
+ * An immutable {@link ServiceConfigurator} used to build a singleton service.
+ * @author Paul Ferraro
+ */
+public interface ImmutableSingletonServiceConfigurator extends ServiceConfigurator {
 
     @Override
-    public Node getValue() {
-        if (!this.started) {
-            throw new IllegalStateException();
-        }
-        return this.group.getValue().getLocalMember();
-    }
-
-    @Override
-    public void start(StartContext context) {
-        this.started = true;
-    }
-
-    @Override
-    public void stop(StopContext context) {
-        this.started = false;
-    }
+    SingletonServiceBuilder<?> build(ServiceTarget target);
 }

@@ -22,21 +22,21 @@
 
 package org.wildfly.clustering.server.singleton;
 
-import org.jboss.msc.service.Service;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.wildfly.clustering.singleton.SingletonService;
+import org.wildfly.clustering.singleton.service.SingletonService;
 
 /**
- * Local singleton service implementation.
+ * Local {@link SingletonService} implementation created using JBoss MSC 1.4.x service installation.
  * @author Paul Ferraro
  */
-public class LocalSingletonService<T> implements SingletonService<T> {
+public class LocalSingletonService implements SingletonService {
 
-    private final Service<T> service;
+    private final Service service;
 
-    public LocalSingletonService(Service<T> service) {
+    public LocalSingletonService(Service service) {
         this.service = service;
     }
 
@@ -48,11 +48,6 @@ public class LocalSingletonService<T> implements SingletonService<T> {
     @Override
     public void stop(StopContext context) {
         this.service.stop(context);
-    }
-
-    @Override
-    public T getValue() {
-        return this.service.getValue();
     }
 
     @Override

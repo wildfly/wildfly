@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,19 +19,21 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.clustering.server.singleton;
 
-import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.spi.LocalCacheServiceConfiguratorProvider;
-
 /**
- * Provides the requisite builders for a non-clustered {@link org.wildfly.clustering.singleton.SingletonServiceBuilderFactory}.
+ * Encapsulates behavior associated with a lifecycle sensitive object.
  * @author Paul Ferraro
  */
-@MetaInfServices(LocalCacheServiceConfiguratorProvider.class)
-public class LocalSingletonServiceBuilderFactoryServiceConfiguratorProvider extends SingletonServiceBuilderFactoryServiceConfiguratorProvider implements LocalCacheServiceConfiguratorProvider {
+public interface Lifecycle {
+    /**
+     * Start this object.
+     */
+    void start();
 
-    public LocalSingletonServiceBuilderFactoryServiceConfiguratorProvider() {
-        super((name, containerName, cacheName) -> new LocalSingletonServiceBuilderFactoryServiceConfigurator<>(name));
-    }
+    /**
+     * Stop this object.
+     */
+    void stop();
 }

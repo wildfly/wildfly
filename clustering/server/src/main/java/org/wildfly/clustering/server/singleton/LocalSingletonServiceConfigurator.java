@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,45 +22,52 @@
 
 package org.wildfly.clustering.server.singleton;
 
-import org.jboss.msc.service.Service;
+import org.jboss.msc.Service;
+import org.jboss.msc.service.DelegatingServiceBuilder;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.service.SimpleServiceNameProvider;
 import org.wildfly.clustering.singleton.SingletonElectionPolicy;
-import org.wildfly.clustering.singleton.SingletonService;
-import org.wildfly.clustering.singleton.SingletonServiceBuilder;
+import org.wildfly.clustering.singleton.service.SingletonServiceBuilder;
 import org.wildfly.clustering.singleton.service.SingletonServiceConfigurator;
 
 /**
- * Local {@link SingletonServiceConfigurator} implementation that uses JBoss MSC 1.3.x service installation.
+ * Local {@link SingletonServiceConfigurator} implementation that uses JBoss MSC 1.4.x service installation.
  * @author Paul Ferraro
  */
-@Deprecated
-public class LocalSingletonServiceBuilder<T> extends SimpleServiceNameProvider implements SingletonServiceBuilder<T> {
+public class LocalSingletonServiceConfigurator extends SimpleServiceNameProvider implements SingletonServiceConfigurator {
 
-    private final Service<T> service;
-
-    public LocalSingletonServiceBuilder(ServiceName name, Service<T> service) {
+    public LocalSingletonServiceConfigurator(ServiceName name) {
         super(name);
-        this.service = service;
     }
 
     @Override
-    public SingletonServiceBuilder<T> requireQuorum(int quorum) {
+    public SingletonServiceBuilder<?> build(ServiceTarget target) {
+        return new LocalSingletonServiceBuilder<>(target.addService(this.getServiceName()));
+    }
+
+    @Override
+    public SingletonServiceConfigurator requireQuorum(int quorum) {
         // Quorum requirements are inconsequential to a local singleton
         return this;
     }
 
     @Override
-    public SingletonServiceBuilder<T> electionPolicy(SingletonElectionPolicy policy) {
+    public SingletonServiceConfigurator electionPolicy(SingletonElectionPolicy policy) {
         // Election policies are inconsequential to a local singleton
         return this;
     }
 
-    @Override
-    public ServiceBuilder<T> build(ServiceTarget target) {
-        SingletonService<T> service = new LocalLegacySingletonService<>(this.service);
-        return target.addService(this.getServiceName(), service);
+    private static class LocalSingletonServiceBuilder<T> extends DelegatingServiceBuilder<T> implements SingletonServiceBuilder<T> {
+
+        LocalSingletonServiceBuilder(ServiceBuilder<T> builder) {
+            super(builder);
+        }
+
+        @Override
+        public ServiceBuilder<T> setInstance(Service service) {
+            return super.setInstance(new LocalSingletonService(service));
+        }
     }
 }

@@ -30,6 +30,7 @@ import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 /**
  * @author Paul Ferraro
  */
+@Deprecated
 @MetaInfServices(IdentityCacheServiceConfiguratorProvider.class)
 public class IdentitySingletonServiceBuilderFactoryBuilderProvider extends IdentityCacheRequirementServiceConfiguratorProvider {
 

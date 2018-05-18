@@ -31,22 +31,22 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.service.SimpleServiceNameProvider;
-import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
+import org.wildfly.clustering.singleton.service.SingletonServiceConfiguratorFactory;
 
 /**
- * Builds a non-clustered {@link SingletonServiceBuilderFactory}.
+ * Configures a service providing a local {@link org.wildfly.clustering.singleton.service.SingletonServiceConfiguratorFactory}.
  * @author Paul Ferraro
  */
-public class LocalSingletonServiceBuilderFactoryServiceConfigurator<T extends Serializable> extends SimpleServiceNameProvider implements CapabilityServiceConfigurator {
+public class LocalSingletonServiceConfiguratorFactoryServiceConfigurator<T extends Serializable> extends SimpleServiceNameProvider implements CapabilityServiceConfigurator {
 
-    public LocalSingletonServiceBuilderFactoryServiceConfigurator(ServiceName name) {
+    public LocalSingletonServiceConfiguratorFactoryServiceConfigurator(ServiceName name) {
         super(name);
     }
 
     @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
         ServiceBuilder<?> builder = target.addService(this.getServiceName());
-        Consumer<SingletonServiceBuilderFactory> factory = builder.provides(this.getServiceName());
+        Consumer<SingletonServiceConfiguratorFactory> factory = builder.provides(this.getServiceName());
         Service service = Service.newInstance(factory, new LocalSingletonServiceBuilderFactory());
         return builder.setInstance(service);
     }

@@ -85,6 +85,14 @@ public class SingletonPolicyServiceConfigurator extends CapabilityServiceNamePro
     }
 
     @Override
+    public ServiceConfigurator createSingletonServiceConfigurator(ServiceName name) {
+        return this.factory.get().createSingletonServiceConfigurator(name)
+                .electionPolicy(this.policy.get())
+                .requireQuorum(this.quorum)
+                ;
+    }
+
+    @Override
     public <T> Builder<T> createSingletonServiceBuilder(ServiceName name, org.jboss.msc.service.Service<T> service) {
         return this.factory.get().createSingletonServiceBuilder(name, service)
                 .electionPolicy(this.policy.get())

@@ -31,15 +31,17 @@ import org.wildfly.clustering.singleton.SingletonServiceBuilder;
 import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
 
 /**
- * Service for building {@link DistributedSingletonServiceBuilder} instances.
+ * Factory for creating distributed {@link SingletonServiceBuilder} instances.
  * @author Paul Ferraro
  */
-public class DistributedSingletonServiceBuilderFactory implements SingletonServiceBuilderFactory, DistributedSingletonServiceConfiguratorContext {
+@Deprecated
+public class DistributedSingletonServiceBuilderFactory extends DistributedSingletonServiceConfiguratorFactory implements SingletonServiceBuilderFactory {
 
-    private final DistributedSingletonServiceConfiguratorFactoryContext context;
+    private final DistributedSingletonServiceConfiguratorContext context;
 
     public DistributedSingletonServiceBuilderFactory(DistributedSingletonServiceConfiguratorFactoryContext context) {
-        this.context = context;
+        super(context);
+        this.context = new LegacyDistributedSingletonServiceConfiguratorContext(context);
     }
 
     @Override
@@ -49,16 +51,25 @@ public class DistributedSingletonServiceBuilderFactory implements SingletonServi
 
     @Override
     public <T> SingletonServiceBuilder<T> createSingletonServiceBuilder(ServiceName name, Service<T> primaryService, Service<T> backupService) {
-        return new DistributedSingletonServiceBuilder<>(this, name, primaryService, backupService);
+        return new DistributedSingletonServiceBuilder<>(this.context, name, primaryService, backupService);
     }
 
-    @Override
-    public SupplierDependency<ServiceProviderRegistry<ServiceName>> getServiceProviderRegistryDependency() {
-        return new InjectedValueDependency<>(this.context.getServiceProviderRegistryServiceName(), (Class<ServiceProviderRegistry<ServiceName>>) (Class<?>) ServiceProviderRegistry.class);
-    }
+    private class LegacyDistributedSingletonServiceConfiguratorContext implements DistributedSingletonServiceConfiguratorContext {
+        private final DistributedSingletonServiceConfiguratorFactoryContext context;
 
-    @Override
-    public SupplierDependency<CommandDispatcherFactory> getCommandDispatcherFactoryDependency() {
-        return new InjectedValueDependency<>(this.context.getCommandDispatcherFactoryServiceName(), CommandDispatcherFactory.class);
+        LegacyDistributedSingletonServiceConfiguratorContext(DistributedSingletonServiceConfiguratorFactoryContext context) {
+            this.context = context;
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public SupplierDependency<ServiceProviderRegistry<ServiceName>> getServiceProviderRegistryDependency() {
+            return new InjectedValueDependency<>(this.context.getServiceProviderRegistryServiceName(), (Class<ServiceProviderRegistry<ServiceName>>) (Class<?>) ServiceProviderRegistry.class);
+        }
+
+        @Override
+        public SupplierDependency<CommandDispatcherFactory> getCommandDispatcherFactoryDependency() {
+            return new InjectedValueDependency<>(this.context.getCommandDispatcherFactoryServiceName(), CommandDispatcherFactory.class);
+        }
     }
 }

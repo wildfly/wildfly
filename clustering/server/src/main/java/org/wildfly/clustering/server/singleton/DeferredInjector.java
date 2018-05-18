@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,17 +19,25 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.clustering.server.singleton;
 
-import java.util.Optional;
+import java.util.function.Consumer;
 
-import org.wildfly.clustering.dispatcher.Command;
+/**
+ * An injector whose source can be defined after service installation, but before the service is started.
+ * @author Paul Ferraro
+ */
+public class DeferredInjector<T> implements Consumer<T> {
 
-public class SingletonValueCommand<T> implements Command<Optional<T>, LegacySingletonContext<T>> {
-    private static final long serialVersionUID = -2849349352107418635L;
+    private volatile Consumer<? super T> consumer;
 
     @Override
-    public Optional<T> execute(LegacySingletonContext<T> context) {
-        return context.getLocalValue();
+    public void accept(T value) {
+        this.consumer.accept(value);
+    }
+
+    void setConsumer(Consumer<? super T> consumer) {
+        this.consumer = consumer;
     }
 }

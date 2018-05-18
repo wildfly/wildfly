@@ -23,13 +23,11 @@ package org.wildfly.clustering.server.singleton;
 
 import java.util.Optional;
 
-import org.wildfly.clustering.dispatcher.Command;
+/**
+ * Context for singleton commands.
+ * @author Paul Ferraro
+ */
+public interface LegacySingletonContext<T> extends Lifecycle {
 
-public class SingletonValueCommand<T> implements Command<Optional<T>, LegacySingletonContext<T>> {
-    private static final long serialVersionUID = -2849349352107418635L;
-
-    @Override
-    public Optional<T> execute(LegacySingletonContext<T> context) {
-        return context.getLocalValue();
-    }
+    Optional<T> getLocalValue();
 }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -21,15 +21,17 @@
  */
 package org.wildfly.clustering.server.singleton;
 
-import java.util.Optional;
+import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.spi.DistributedCacheServiceConfiguratorProvider;
 
-import org.wildfly.clustering.dispatcher.Command;
+/**
+ * Provides the requisite service configurators for installing a service providing a distributed {@link org.wildfly.clustering.singleton.service.SingletonServiceConfiguratorFactory}.
+ * @author Paul Ferraro
+ */
+@MetaInfServices(DistributedCacheServiceConfiguratorProvider.class)
+public class CacheSingletonServiceConfiguratorFactoryServiceConfiguratorProvider extends SingletonServiceConfiguratorFactoryServiceConfiguratorProvider implements DistributedCacheServiceConfiguratorProvider {
 
-public class SingletonValueCommand<T> implements Command<Optional<T>, LegacySingletonContext<T>> {
-    private static final long serialVersionUID = -2849349352107418635L;
-
-    @Override
-    public Optional<T> execute(LegacySingletonContext<T> context) {
-        return context.getLocalValue();
+    public CacheSingletonServiceConfiguratorFactoryServiceConfiguratorProvider() {
+        super(CacheSingletonServiceConfiguratorFactoryServiceConfigurator::new);
     }
 }

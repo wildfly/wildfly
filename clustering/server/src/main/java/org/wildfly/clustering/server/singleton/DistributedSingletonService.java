@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,194 +22,49 @@
 
 package org.wildfly.clustering.server.singleton;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Supplier;
+import java.util.Map;
+import java.util.function.Function;
 
-import org.jboss.as.clustering.msc.ServiceContainerHelper;
-import org.jboss.msc.service.Service;
+import org.jboss.msc.Service;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
-import org.wildfly.clustering.dispatcher.CommandDispatcher;
-import org.wildfly.clustering.dispatcher.CommandDispatcherException;
-import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
-import org.wildfly.clustering.group.Group;
-import org.wildfly.clustering.group.Node;
-import org.wildfly.clustering.provider.ServiceProviderRegistration;
-import org.wildfly.clustering.provider.ServiceProviderRegistry;
-import org.wildfly.clustering.server.logging.ClusteringServerLogger;
-import org.wildfly.clustering.singleton.SingletonElectionPolicy;
-import org.wildfly.clustering.singleton.SingletonService;
 
 /**
- * Decorates an MSC service ensuring that it is only started on one node in the cluster at any given time.
+ * Distributed {@link org.wildfly.clustering.singleton.service.SingletonService} implementation that uses JBoss MSC 1.4.x service installation.
  * @author Paul Ferraro
  */
-public class DistributedSingletonService<T> implements SingletonService<T>, SingletonContext<T>, ServiceProviderRegistration.Listener, PrimaryProxyContext<T> {
+public class DistributedSingletonService extends AbstractDistributedSingletonService<Lifecycle> {
 
-    private final Supplier<ServiceProviderRegistry<ServiceName>> registry;
-    private final Supplier<CommandDispatcherFactory> dispatcherFactory;
-    private final ServiceName serviceName;
-    private final Service<T> primaryService;
-    private final Service<T> backupService;
-    private final SingletonElectionPolicy electionPolicy;
-    private final int quorum;
-
-    private final AtomicBoolean primary = new AtomicBoolean(false);
-
-    private volatile ServiceController<T> primaryController;
-    private volatile ServiceController<T> backupController;
-    private volatile CommandDispatcher<SingletonContext<T>> dispatcher;
-    private volatile ServiceProviderRegistration<ServiceName> registration;
-    private volatile boolean started = false;
-
-    public DistributedSingletonService(DistributedSingletonServiceContext<T> context) {
-        this.registry = context.getServiceProviderRegistry();
-        this.dispatcherFactory = context.getCommandDispatcherFactory();
-        this.serviceName = context.getServiceName();
-        this.primaryService = context.getPrimaryService();
-        this.backupService = context.getBackupService().orElse(new PrimaryProxyService<>(this));
-        this.electionPolicy = context.getElectionPolicy();
-        this.quorum = context.getQuorum();
+    public DistributedSingletonService(DistributedSingletonServiceContext context, Service service, List<Map.Entry<ServiceName[], DeferredInjector<?>>> injectors) {
+        super(context, new PrimaryServiceLifecycleFactory(context.getServiceName(), service, injectors));
     }
 
     @Override
-    public void start(StartContext context) throws StartException {
-        ServiceTarget target = context.getChildTarget();
-        this.primaryController = target.addService(this.serviceName.append("primary"), this.primaryService).setInitialMode(ServiceController.Mode.NEVER).install();
-        this.backupController = target.addService(this.serviceName.append("backup"), this.backupService).setInitialMode(ServiceController.Mode.ACTIVE).install();
-        this.dispatcher = this.dispatcherFactory.get().<SingletonContext<T>>createCommandDispatcher(this.serviceName, this);
-        this.registration = this.registry.get().register(this.serviceName, this);
-        this.started = true;
+    public Lifecycle get() {
+        return this;
     }
 
-    @Override
-    public void stop(StopContext context) {
-        this.started = false;
-        this.registration.close();
-        this.dispatcher.close();
-    }
+    private static class PrimaryServiceLifecycleFactory implements Function<ServiceTarget, Lifecycle> {
+        private final ServiceName name;
+        private final Service service;
+        private final List<Map.Entry<ServiceName[], DeferredInjector<?>>> injectors;
 
-    @Override
-    public boolean isPrimary() {
-        return this.primary.get();
-    }
+        PrimaryServiceLifecycleFactory(ServiceName name, Service service, List<Map.Entry<ServiceName[], DeferredInjector<?>>> injectors) {
+            this.name = name;
+            this.service = service;
+            this.injectors = injectors;
+        }
 
-    @Override
-    public void providersChanged(Set<Node> nodes) {
-        Group group = this.registry.get().getGroup();
-        List<Node> candidates = new ArrayList<>(group.getMembership().getMembers());
-        candidates.retainAll(nodes);
-
-        // Only run election on a single node
-        if (candidates.isEmpty() || candidates.get(0).equals(group.getLocalMember())) {
-            // First validate that quorum was met
-            int size = candidates.size();
-            boolean quorumMet = size >= this.quorum;
-
-            if ((this.quorum > 1) && (size == this.quorum)) {
-                // Log fragility of singleton availability
-                ClusteringServerLogger.ROOT_LOGGER.quorumJustReached(this.serviceName.getCanonicalName(), this.quorum);
+        @Override
+        public Lifecycle apply(ServiceTarget target) {
+            ServiceBuilder<?> builder = target.addService(this.name);
+            for (Map.Entry<ServiceName[], DeferredInjector<?>> entry : this.injectors) {
+                entry.getValue().setConsumer(builder.provides(entry.getKey()));
             }
-
-            Node elected = quorumMet ? this.electionPolicy.elect(candidates) : null;
-
-            try {
-                if (elected != null) {
-                    ClusteringServerLogger.ROOT_LOGGER.elected(elected.getName(), this.serviceName.getCanonicalName());
-
-                    // Stop service on every node except elected node
-                    this.dispatcher.executeOnCluster(new StopCommand<>(), elected);
-                    // Start service on elected node
-                    this.dispatcher.executeOnNode(new StartCommand<>(), elected);
-                } else {
-                    if (quorumMet) {
-                        ClusteringServerLogger.ROOT_LOGGER.noPrimaryElected(this.serviceName.getCanonicalName());
-                    } else {
-                        ClusteringServerLogger.ROOT_LOGGER.quorumNotReached(this.serviceName.getCanonicalName(), this.quorum);
-                    }
-
-                    // Stop service on every node
-                    this.dispatcher.executeOnCluster(new StopCommand<>());
-                }
-            } catch (CommandDispatcherException e) {
-                throw new IllegalStateException(e);
-            }
+            return new ServiceLifecycle(builder.setInstance(this.service).setInitialMode(ServiceController.Mode.NEVER).install());
         }
-    }
-
-    @Override
-    public void start() {
-        // If we were not already the primary node
-        if (this.primary.compareAndSet(false, true)) {
-            ClusteringServerLogger.ROOT_LOGGER.startSingleton(this.serviceName.getCanonicalName());
-            toggle(this.backupController, this.primaryController);
-        }
-    }
-
-    @Override
-    public void stop() {
-        // If we were the previous the primary node
-        if (this.primary.compareAndSet(true, false)) {
-            ClusteringServerLogger.ROOT_LOGGER.stopSingleton(this.serviceName.getCanonicalName());
-            toggle(this.primaryController, this.backupController);
-        }
-    }
-
-    private static synchronized void toggle(ServiceController<?> controllerToStop, ServiceController<?> controllerToStart) {
-        ServiceContainerHelper.stop(controllerToStop);
-        try {
-            ServiceContainerHelper.start(controllerToStart);
-        } catch (StartException e) {
-            ClusteringServerLogger.ROOT_LOGGER.serviceStartFailed(e, controllerToStart.getName().getCanonicalName());
-            ServiceContainerHelper.stop(controllerToStart);
-        }
-    }
-
-    @Override
-    public T getValue() {
-        while (this.started) {
-            try {
-                return (this.primary.get() ? this.primaryController : this.backupController).getValue();
-            } catch (IllegalStateException e) {
-                // Verify whether ISE is due to unmet quorum in the previous election
-                if (this.registration.getProviders().size() < this.quorum) {
-                    throw ClusteringServerLogger.ROOT_LOGGER.notStarted(this.serviceName.getCanonicalName());
-                }
-                if (Thread.currentThread().isInterrupted()) {
-                    throw e;
-                }
-                // Otherwise, we're in the midst of a new election, so just try again
-                Thread.yield();
-            }
-        }
-        throw ClusteringServerLogger.ROOT_LOGGER.notStarted(this.serviceName.getCanonicalName());
-    }
-
-    @Override
-    public Optional<T> getLocalValue() {
-        try {
-            return this.primary.get() ? Optional.ofNullable(this.primaryController.getValue()) : null;
-        } catch (IllegalStateException e) {
-            // This might happen if primary service has not yet started, or if node is no longer the primary node
-            return null;
-        }
-    }
-
-    @Override
-    public CommandDispatcher<SingletonContext<T>> getCommandDispatcher() {
-        return this.dispatcher;
-    }
-
-    @Override
-    public ServiceName getServiceName() {
-        return this.serviceName;
     }
 }

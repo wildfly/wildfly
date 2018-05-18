@@ -32,15 +32,15 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.SimpleServiceNameProvider;
-import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
+import org.wildfly.clustering.singleton.service.SingletonServiceConfiguratorFactory;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 import org.wildfly.clustering.spi.ClusteringRequirement;
 
 /**
- * Builds a clustered {@link SingletonServiceBuilderFactory}.
+ * Configures a service providing a distributed {@link org.wildfly.clustering.singleton.service.SingletonServiceConfiguratorFactory}.
  * @author Paul Ferraro
  */
-public class CacheSingletonServiceBuilderFactoryServiceConfigurator extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, DistributedSingletonServiceConfiguratorFactoryContext {
+public class CacheSingletonServiceConfiguratorFactoryServiceConfigurator extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, DistributedSingletonServiceConfiguratorFactoryContext {
 
     private final String containerName;
     private final String cacheName;
@@ -48,7 +48,7 @@ public class CacheSingletonServiceBuilderFactoryServiceConfigurator extends Simp
     private volatile ServiceName registryServiceName;
     private volatile ServiceName dispatcherFactoryServiceName;
 
-    public CacheSingletonServiceBuilderFactoryServiceConfigurator(ServiceName name, String containerName, String cacheName) {
+    public CacheSingletonServiceConfiguratorFactoryServiceConfigurator(ServiceName name, String containerName, String cacheName) {
         super(name);
         this.containerName = containerName;
         this.cacheName = cacheName;
@@ -64,7 +64,8 @@ public class CacheSingletonServiceBuilderFactoryServiceConfigurator extends Simp
     @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
         ServiceBuilder<?> builder = target.addService(this.getServiceName());
-        Consumer<SingletonServiceBuilderFactory> factory = builder.provides(this.getServiceName());
+        Consumer<SingletonServiceConfiguratorFactory> factory = builder.provides(this.getServiceName());
+        @SuppressWarnings("deprecation")
         Service service = Service.newInstance(factory, new DistributedSingletonServiceBuilderFactory(this));
         return builder.setInstance(service);
     }
