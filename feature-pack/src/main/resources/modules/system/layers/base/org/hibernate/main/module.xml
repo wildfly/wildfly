@@ -25,9 +25,9 @@
 <!-- Represents Hibernate 5.1.x, will later become 5.3.x for WF 14  -->
 <module xmlns="urn:jboss:module:1.7" name="org.hibernate">
     <resources>
-        <artifact name="org.hibernate:hibernate-core:5.3.0.Final">
+        <artifact name="org.hibernate:hibernate-core:5.3.0.Final"> <!-- ${version.org.hibernate53} -->
             <conditions>
-              <property-equal name="ee8.preview.mode" value="true"/> <!-- ${version.org.hibernate53} -->
+              <property-equal name="ee8.preview.mode" value="true"/>
             </conditions>
         </artifact>
         <artifact name="${org.hibernate:hibernate-core}"> 
