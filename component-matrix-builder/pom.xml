@@ -44,7 +44,6 @@
             <plugin>
                 <groupId>org.wildfly.plugins</groupId>
                 <artifactId>wildfly-component-matrix-plugin</artifactId>
-                <version>${version.org.wildfly.component-matrix-plugin}</version>
                 <executions>
                     <execution>
                         <id>build-bom</id>
@@ -55,7 +54,6 @@
                             <parent>
                                 <groupId>org.jboss</groupId>
                                 <artifactId>jboss-parent</artifactId>
-                                <version>26</version>
                                 <relativePath/>
                             </parent>
                             <bomGroupId>${project.groupId}</bomGroupId>
