@@ -102,7 +102,6 @@
                                     <artifactId>wildfly-galleon-pack</artifactId>
                                     <version>${project.version}</version>
                                     <excluded-packages>
-                                        <name>product.conf</name>
                                         <name>docs</name>
                                         <name>docs.licenses.merge</name>
                                     </excluded-packages>
