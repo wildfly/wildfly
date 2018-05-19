@@ -27,7 +27,6 @@ import org.hibernate.service.spi.ServiceContributor;
 public class ServiceContributorImpl implements ServiceContributor {
     @Override
     public void contribute(StandardServiceRegistryBuilder serviceRegistryBuilder) {
-        serviceRegistryBuilder.addInitiator(new WildFlyCustomJtaPlatformInitiator());
         serviceRegistryBuilder.addInitiator(new WildFlyCustomRegionFactoryInitiator());
     }
 }
