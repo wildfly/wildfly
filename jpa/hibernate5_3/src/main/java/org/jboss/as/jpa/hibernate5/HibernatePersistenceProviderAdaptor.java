@@ -50,9 +50,10 @@ public class HibernatePersistenceProviderAdaptor implements PersistenceProviderA
     private static final String SHARED_CACHE_MODE = "javax.persistence.sharedCache.mode";
     private static final String NONE = SharedCacheMode.NONE.name();
     private static final String HIBERNATE_EXTENDED_BEANMANAGER = "org.hibernate.jpa.event.spi.jpa.ExtendedBeanManager";
-
+    private volatile JtaManager jtaManager;
     @Override
     public void injectJtaManager(JtaManager jtaManager) {
+        this.jtaManager = jtaManager;
     }
 
     @Override
@@ -70,6 +71,7 @@ public class HibernatePersistenceProviderAdaptor implements PersistenceProviderA
         putPropertyIfAbsent(pu, properties, AvailableSettings.KEYWORD_AUTO_QUOTING_ENABLED,"false");
         putPropertyIfAbsent(pu, properties, AvailableSettings.IMPLICIT_NAMING_STRATEGY, NAMING_STRATEGY_JPA_COMPLIANT_IMPL);
         putPropertyIfAbsent(pu, properties, AvailableSettings.SCANNER, HibernateArchiveScanner.class);
+        putPropertyIfAbsent(pu, properties, AvailableSettings.JTA_PLATFORM,  new JBossAppServerJtaPlatform(jtaManager));
         properties.put(AvailableSettings.APP_CLASSLOADER, pu.getClassLoader());
         putPropertyIfAbsent(pu,properties, org.hibernate.ejb.AvailableSettings.ENTITY_MANAGER_FACTORY_NAME, pu.getScopedPersistenceUnitName());
         putPropertyIfAbsent(pu, properties, AvailableSettings.SESSION_FACTORY_NAME, pu.getScopedPersistenceUnitName());
