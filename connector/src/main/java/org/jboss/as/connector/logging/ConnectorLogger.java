@@ -44,6 +44,8 @@ import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
+import org.jboss.msc.service.ServiceController.State;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
 import org.jboss.vfs.VirtualFile;
 
@@ -911,4 +913,8 @@ public interface ConnectorLogger extends BasicLogger {
 
     @Message(id = 114, value = "Failed to load datasource class: %s")
     IllegalStateException failedToLoadDataSourceClass(String clsName, @Cause Throwable t);
+
+    @LogMessage(level = WARN)
+    @Message(id = 115, value = "The required service '%s' is not UP, it is currently '%s'.")
+    void requiredServiceNotUp(ServiceName name, State state);
 }
