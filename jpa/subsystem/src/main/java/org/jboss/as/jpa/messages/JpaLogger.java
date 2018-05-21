@@ -178,7 +178,7 @@ public interface JpaLogger extends BasicLogger {
      */
     @LogMessage(level = WARN)
     @Message(id = 12, value = "Unexpected problem gathering statistics")
-    void unexpectedStatisticsProblem(@Cause IllegalStateException cause);
+    void unexpectedStatisticsProblem(@Cause RuntimeException cause);
 
 //    /**
 //     * Creates an exception indicating the inability ot add the integration, represented by the {@code name} parameter,
