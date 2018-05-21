@@ -48,8 +48,8 @@ import org.jgroups.protocols.pbcast.GMS;
 import org.jgroups.stack.ProtocolStack;
 
 /**
- * Servlet used to simulate network partitions. Responds to {@code /partitioner?partition=true} by inserting DISCARD protocol to the stack
- * and installing new view directly on the {@link GMS} and responds to {@code /partitioner?partition=false} by removing previously inserted
+ * Servlet used to simulate network partitions. Responds to {@code /partition?partition=true} by inserting DISCARD protocol to the stack
+ * and installing new view directly on the {@link GMS} and responds to {@code /partition?partition=false} by removing previously inserted
  * {@link DISCARD} protocol and passing MERGE event up the stack.
  * <p>
  * Note that while it would be desirable for the tests to leave splitting and merging to the servers themselves, this is not practical in a
@@ -59,18 +59,17 @@ import org.jgroups.stack.ProtocolStack;
  *
  * @author Radoslav Husar
  */
-@WebServlet(urlPatterns = {PartitionerServlet.SERVLET_PATH})
-public class PartitionerServlet extends HttpServlet {
+@WebServlet(urlPatterns = {PartitionServlet.PARTITION})
+public class PartitionServlet extends HttpServlet {
     private static final long serialVersionUID = 3034138469210308974L;
 
     private static final long VIEWS_TIMEOUT = 3_000;
-    public static final String SERVLET_PATH = "partitioner";
-    private static final String PARTITION = "partition";
+    public static final String PARTITION = "partition";
 
     private static Map<Address, View> mergeViews;
 
     public static URI createURI(URL baseURL, boolean partition) throws URISyntaxException {
-        return baseURL.toURI().resolve(SERVLET_PATH + '?' + PARTITION + '=' + partition);
+        return baseURL.toURI().resolve(PARTITION + '?' + PARTITION + '=' + partition);
     }
 
     @Override
@@ -81,11 +80,12 @@ public class PartitionerServlet extends HttpServlet {
 
         ServiceController<?> service = CurrentServiceContainer.getServiceContainer().getService(ServiceName.parse("org.wildfly.clustering.jgroups.default-channel"));
         try {
+            // TODO adapt to new MSC API once org.wildfly.clustering.jgroups.default-channel is converted to it
             JChannel channel = (JChannel) service.awaitValue();
 
             if (partition) {
                 // Store views for future merge event
-                GMS gms = (GMS) channel.getProtocolStack().findProtocol(GMS.class);
+                GMS gms = channel.getProtocolStack().findProtocol(GMS.class);
                 mergeViews = new HashMap<>();
                 channel.getView().getMembers().forEach(
                         address -> mergeViews.put(address, View.create(address, gms.getViewId().getId() + 1, address))
@@ -110,7 +110,7 @@ public class PartitionerServlet extends HttpServlet {
                 // let just all nodes send the merge..
                 this.log("Passing event up the stack: " + new Event(Event.MERGE, mergeViews));
 
-                GMS gms = (GMS) channel.getProtocolStack().findProtocol(GMS.class);
+                GMS gms = channel.getProtocolStack().findProtocol(GMS.class);
                 gms.up(new Event(Event.MERGE, mergeViews));
                 mergeViews = null;
             }

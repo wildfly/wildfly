@@ -21,7 +21,6 @@
  */
 package org.jboss.as.test.clustering.cluster.singleton;
 
-import static org.jboss.as.test.shared.IntermittentFailure.thisTestIsFailingIntermittently;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 import java.io.IOException;
@@ -46,7 +45,7 @@ import org.jboss.as.server.security.ServerPermission;
 import org.jboss.as.test.clustering.ClusterHttpClientUtil;
 import org.jboss.as.test.clustering.ClusterTestUtil;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
-import org.jboss.as.test.clustering.cluster.singleton.partition.PartitionerServlet;
+import org.jboss.as.test.clustering.cluster.singleton.partition.PartitionServlet;
 import org.jboss.as.test.clustering.cluster.singleton.partition.SingletonServiceActivator;
 import org.jboss.as.test.clustering.cluster.singleton.service.NodeService;
 import org.jboss.as.test.clustering.cluster.singleton.service.NodeServiceServlet;
@@ -58,7 +57,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -75,13 +73,10 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class SingletonPartitionTestCase extends AbstractClusteringTestCase {
 
-    @BeforeClass
-    public static void beforeClass() {
-        thisTestIsFailingIntermittently("https://issues.jboss.org/browse/WFLY-9771");
-    }
-
-    private static final long TOPOLOGY_CHANGE_TIMEOUT = TimeoutUtil.adjust(120_000); // maximum time in ms to wait for cluster topology change
-    private static final int SERVICE_TIMEOUT = TimeoutUtil.adjust(5_000); // it takes a little extra time after merge for the singleton service to migrate
+    // maximum time in ms to wait for cluster topology change in case the injected merge event fails for some reason
+    private static final long TOPOLOGY_CHANGE_TIMEOUT = TimeoutUtil.adjust(150_000);
+    // it takes a little extra time after merge for the singleton service to migrate
+    private static final int SERVICE_TIMEOUT = TimeoutUtil.adjust(5_000);
     private static final String CONTAINER = "server";
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
@@ -99,11 +94,9 @@ public class SingletonPartitionTestCase extends AbstractClusteringTestCase {
     private static Archive<?> createDeployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, SingletonPartitionTestCase.class.getSimpleName() + ".war");
         war.addPackage(NodeService.class.getPackage());
-        war.addClass(SingletonServiceActivator.class);
+        war.addPackage(SingletonServiceActivator.class.getPackage());
         war.addAsServiceProvider(ServiceActivator.class, SingletonServiceActivator.class);
         ClusterTestUtil.addTopologyListenerDependencies(war);
-        // partitioner
-        war.addClass(PartitionerServlet.class);
         war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.as.clustering.common, org.jboss.as.controller, org.jboss.as.server, org.jgroups, org.infinispan, org.wildfly.clustering.infinispan.spi\n"));
         war.addAsManifestResource(createPermissionsXmlAsset(
                 new ServerPermission("useServiceRegistry"),
@@ -223,7 +216,7 @@ public class SingletonPartitionTestCase extends AbstractClusteringTestCase {
     private static void partition(boolean partition, URL... baseURIs) {
         Arrays.stream(baseURIs).parallel().forEach(baseURI -> {
             try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
-                HttpResponse response = client.execute(new HttpGet(PartitionerServlet.createURI(baseURI, partition)));
+                HttpResponse response = client.execute(new HttpGet(PartitionServlet.createURI(baseURI, partition)));
                 try {
                     Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 } finally {
