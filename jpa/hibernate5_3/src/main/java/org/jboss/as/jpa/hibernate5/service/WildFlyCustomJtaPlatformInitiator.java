@@ -16,18 +16,21 @@
  */
 package org.jboss.as.jpa.hibernate5.service;
 
-import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
-import org.hibernate.service.spi.ServiceContributor;
+import java.util.Map;
+
+import org.hibernate.engine.transaction.jta.platform.internal.JtaPlatformInitiator;
+import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
+import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 /**
- * Contribute specialized Hibernate Service impls
+ * Custom JtaPlatform initiator for use inside WildFly picking an appropriate
+ * fallback JtaPlatform.
  *
  * @author Steve Ebersole
  */
-public class ServiceContributorImpl implements ServiceContributor {
+public class WildFlyCustomJtaPlatformInitiator extends JtaPlatformInitiator {
     @Override
-    public void contribute(StandardServiceRegistryBuilder serviceRegistryBuilder) {
-        serviceRegistryBuilder.addInitiator(new WildFlyCustomJtaPlatformInitiator());
-        serviceRegistryBuilder.addInitiator(new WildFlyCustomRegionFactoryInitiator());
+    public JtaPlatform initiateService(Map configurationValues, ServiceRegistryImplementor registry) {
+        return new WildFlyCustomJtaPlatform();
     }
 }
