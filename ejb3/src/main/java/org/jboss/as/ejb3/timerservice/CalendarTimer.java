@@ -197,6 +197,23 @@ public class CalendarTimer extends TimerImpl {
         return new Builder();
     }
 
+    /**
+     * Makes sure that the timer is only run once after being restored.
+     */
+    public void handleRestorationCalculation() {
+        if(nextExpiration == null) {
+            return;
+        }
+        //next expiration in the future, we don't care
+        if(nextExpiration.getTime() >= System.currentTimeMillis()) {
+            return;
+        }
+        //just set the next expiration to 1ms in the past
+        //this means it will run to catch up the missed expiration
+        //and then the next calculated expiration will be in the future
+        nextExpiration = new Date(System.currentTimeMillis() - 1);
+    }
+
     public static class Builder extends TimerImpl.Builder {
         private String scheduleExprSecond;
         private String scheduleExprMinute;
