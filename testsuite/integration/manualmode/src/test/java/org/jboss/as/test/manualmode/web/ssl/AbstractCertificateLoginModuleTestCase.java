@@ -175,7 +175,7 @@ public abstract class AbstractCertificateLoginModuleTestCase {
         @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
 
-            FileUtils.deleteDirectory(WORK_DIR);
+            deleteWorkDir();
             WORK_DIR.mkdirs();
             Utils.createKeyMaterial(WORK_DIR);
 
@@ -230,11 +230,16 @@ public abstract class AbstractCertificateLoginModuleTestCase {
             operation = createOpNode("core-service=management/security-realm=" + HTTPS_REALM, ModelDescriptionConstants.REMOVE);
             Utils.applyUpdate(operation, managementClient.getControllerClient());
 
-            FileUtils.deleteDirectory(WORK_DIR);
+            deleteWorkDir();
+            return;
             // Uncomment if TRACE logging is necessary. Don't leave it on all the time; CI resources aren't free.
             //TRACE_SECURITY.tearDown(managementClient, null);
 
         }
+    }
+
+    protected static void deleteWorkDir() throws IOException {
+        FileUtils.deleteDirectory(WORK_DIR);
     }
 
 }

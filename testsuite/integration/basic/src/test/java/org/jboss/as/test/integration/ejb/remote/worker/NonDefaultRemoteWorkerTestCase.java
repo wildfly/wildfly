@@ -26,7 +26,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LEVEL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
@@ -53,7 +52,7 @@ import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.test.integration.ejb.jndi.Echo;
 import org.jboss.as.test.integration.ejb.jndi.EchoBean;
 import org.jboss.as.test.integration.ejb.jndi.RemoteEcho;
-import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.shared.ServerSnapshot;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -85,21 +84,17 @@ public class NonDefaultRemoteWorkerTestCase {
             PathElement.pathElement("http-listener", "default"));
     private static final String BAD_LEVEL = "X_X";
 
+    private AutoCloseable serverSnapshot;
+
     @Before
     public void before() throws Exception {
+        serverSnapshot = ServerSnapshot.takeSnapshot(managementClient);
         addWorker();
     }
 
     @After
-    public void after() {
-        try {
-            setHttpListenerWorkerTo("default","OFF");
-        } catch (Exception e) {}
-
-        try{
-            removeWorker();
-        } catch(Exception e){}
-        ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+    public void after() throws Exception {
+        serverSnapshot.close();
     }
 
     @Test
@@ -154,14 +149,6 @@ public class NonDefaultRemoteWorkerTestCase {
         ModelNode op = new ModelNode();
         op.get(ModelDescriptionConstants.OP_ADDR).set(ADDRESS_WORKER.toModelNode());
         op.get(ModelDescriptionConstants.OP).set(ADD);
-        ModelNode result = managementClient.getControllerClient().execute(op);
-        Assert.assertTrue(result.toString(), Operations.isSuccessfulOutcome(result));
-    }
-
-    private void removeWorker() throws Exception {
-        ModelNode op = new ModelNode();
-        op.get(ModelDescriptionConstants.OP_ADDR).set(ADDRESS_WORKER.toModelNode());
-        op.get(ModelDescriptionConstants.OP).set(REMOVE);
         ModelNode result = managementClient.getControllerClient().execute(op);
         Assert.assertTrue(result.toString(), Operations.isSuccessfulOutcome(result));
     }

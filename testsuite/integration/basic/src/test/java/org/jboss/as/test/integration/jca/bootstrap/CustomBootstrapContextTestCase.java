@@ -100,15 +100,6 @@ public class CustomBootstrapContextTestCase extends JcaMgmtBase {
             }
         }
 
-        @Override
-        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
-
-            remove(wmAddress);
-            remove(bsAddress);
-            reload();
-
-        }
-
     }
 
     /**

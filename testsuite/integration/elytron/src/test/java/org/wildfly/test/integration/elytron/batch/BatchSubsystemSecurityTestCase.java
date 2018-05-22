@@ -24,7 +24,6 @@ package org.wildfly.test.integration.elytron.batch;
 
 import static org.jboss.as.controller.client.helpers.ClientConstants.ADDRESS;
 import static org.jboss.as.controller.client.helpers.ClientConstants.OP;
-import static org.jboss.as.controller.client.helpers.ClientConstants.UNDEFINE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.client.helpers.ClientConstants.WRITE_ATTRIBUTE_OPERATION;
 
 import java.security.AllPermission;
@@ -42,10 +41,10 @@ import javax.batch.runtime.BatchStatus;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
 import org.jboss.dmr.ModelNode;
@@ -358,13 +357,13 @@ public class BatchSubsystemSecurityTestCase {
         }
     }
 
-    static class ActivateBatchSecurityDomainSetupTask implements ServerSetupTask {
+    static class ActivateBatchSecurityDomainSetupTask extends SnapshotRestoreSetupTask {
 
         final ModelNode BATCH_SUBSYSTEM_ADDRESS = PathAddress.pathAddress("subsystem", "batch-jberet")
                 .toModelNode();
 
         @Override
-        public void setup(ManagementClient managementClient, String s) throws Exception {
+        public void doSetup(ManagementClient managementClient, String s) throws Exception {
             final ModelNode setOp = new ModelNode();
             setOp.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
             setOp.get(ADDRESS).set(BATCH_SUBSYSTEM_ADDRESS);
@@ -372,19 +371,6 @@ public class BatchSubsystemSecurityTestCase {
             setOp.get("value").set(BATCH_SECURITY_DOMAIN_NAME);
 
             final ModelNode result = managementClient.getControllerClient().execute(setOp);
-            Assert.assertTrue(result.get("outcome").asString().equals("success"));
-
-            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
-        }
-
-        @Override
-        public void tearDown(ManagementClient managementClient, String s) throws Exception {
-            final ModelNode undefineOp = new ModelNode();
-            undefineOp.get(OP).set(UNDEFINE_ATTRIBUTE_OPERATION);
-            undefineOp.get(ADDRESS).set(BATCH_SUBSYSTEM_ADDRESS);
-            undefineOp.get("name").set("security-domain");
-
-            final ModelNode result = managementClient.getControllerClient().execute(undefineOp);
             Assert.assertTrue(result.get("outcome").asString().equals("success"));
 
             ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());

@@ -31,12 +31,12 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.integration.management.ManagementOperations;
 import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -57,11 +57,11 @@ public class UnescapedURITestCase {
     private static final int PORT = 7645;
     private static final String NEWBINDING = "newbinding";
 
-    static class Setup implements ServerSetupTask {
+    static class Setup extends SnapshotRestoreSetupTask {
 
 
         @Override
-        public void setup(ManagementClient managementClient, String containerId) throws Exception {
+        public void doSetup(ManagementClient managementClient, String containerId) throws Exception {
             ModelNode node = Operations.createAddOperation(PathAddress.parseCLIStyleAddress("/socket-binding-group=standard-sockets/socket-binding=" + NEWBINDING).toModelNode());
             node.get("port").set(PORT);
             ManagementOperations.executeOperation(managementClient.getControllerClient(), node);
@@ -70,19 +70,6 @@ public class UnescapedURITestCase {
             node.get("socket-binding").set(NEWBINDING);
             node.get("allow-unescaped-characters-in-url").set(true);
             ManagementOperations.executeOperation(managementClient.getControllerClient(), node);
-            ServerReload.executeReloadAndWaitForCompletion(managementClient);
-        }
-
-        @Override
-        public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-
-            ModelNode node = Operations.createRemoveOperation(PathAddress.parseCLIStyleAddress("/subsystem=undertow/server=default-server/http-listener=newlistener").toModelNode());
-            ManagementOperations.executeOperation(managementClient.getControllerClient(), node);
-
-            node = Operations.createRemoveOperation(PathAddress.parseCLIStyleAddress("/socket-binding-group=standard-sockets/socket-binding=" + NEWBINDING).toModelNode());
-
-            ManagementOperations.executeOperation(managementClient.getControllerClient(), node);
-
             ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
     }

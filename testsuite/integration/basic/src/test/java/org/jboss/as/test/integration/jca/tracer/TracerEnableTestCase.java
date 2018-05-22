@@ -22,7 +22,6 @@
 package org.jboss.as.test.integration.jca.tracer;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
@@ -40,10 +39,10 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.management.ManagementOperations;
 import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -89,27 +88,17 @@ public class TracerEnableTestCase {
                 logContent.contains("IJTRACER-ExampleDS"));
     }
 
-    static final class TracerEnableSetup implements ServerSetupTask {
+    static final class TracerEnableSetup extends SnapshotRestoreSetupTask {
         private static final ModelNode TRACER_ADDRESS = new ModelNode()
             .add(SUBSYSTEM, "jca")
             .add("tracer", "tracer");
 
         @Override
-        public void setup(ManagementClient managementClient, String containerId) throws Exception {
+        public void doSetup(ManagementClient managementClient, String containerId) throws Exception {
             ModelNode operation = new ModelNode();
             operation.get(OP).set(ADD);
             operation.get(OP_ADDR).set(TRACER_ADDRESS);
             operation.get("enabled").set("true");
-            ManagementOperations.executeOperation(managementClient.getControllerClient(), operation);
-
-            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient(), 30_000);
-        }
-
-        @Override
-        public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-            ModelNode operation = new ModelNode();
-            operation.get(OP).set(REMOVE);
-            operation.get(OP_ADDR).set(TRACER_ADDRESS);
             ManagementOperations.executeOperation(managementClient.getControllerClient(), operation);
 
             ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient(), 30_000);

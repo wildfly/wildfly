@@ -26,7 +26,6 @@ package org.jboss.as.test.integration.jca.poolattributes;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
@@ -199,23 +198,6 @@ public class DatasourcePoolAttributesTestCase extends JcaMgmtBase {
             operation.get("connection-url").set(ds.getConnectionUrl());
             managementClient.getControllerClient().execute(operation);
         }
-
-        @Override
-        public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-            removeDs(managementClient, DS_NAME);
-            reload();
-        }
-
-        private void removeDs(ManagementClient managementClient, String dsName) throws Exception {
-            ModelNode address = new ModelNode();
-            address.add("subsystem", "datasources");
-            address.add("data-source", dsName);
-            ModelNode operation = new ModelNode();
-            operation.get(OP).set(REMOVE);
-            operation.get(OP_ADDR).set(address);
-            managementClient.getControllerClient().execute(operation);
-        }
-
     }
 
 

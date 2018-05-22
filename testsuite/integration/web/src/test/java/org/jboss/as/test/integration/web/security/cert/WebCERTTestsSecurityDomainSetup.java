@@ -28,7 +28,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.security.Constants.CODE;
@@ -50,7 +49,6 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.security.Constants;
 import org.jboss.as.test.integration.security.common.AbstractSecurityRealmsServerSetupTask;
@@ -59,6 +57,7 @@ import org.jboss.as.test.integration.security.common.config.realm.RealmKeystore;
 import org.jboss.as.test.integration.security.common.config.realm.SecurityRealm;
 import org.jboss.as.test.integration.security.common.config.realm.ServerIdentity;
 import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.shared.ServerSnapshot;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 
@@ -71,6 +70,8 @@ public class WebCERTTestsSecurityDomainSetup extends AbstractSecurityRealmsServe
 
     private static final Logger log = Logger.getLogger(WebCERTTestsSecurityDomainSetup.class);
     private static final String APP_SECURITY_DOMAIN = "cert-test";
+
+    private AutoCloseable snapshot;
 
     protected static void applyUpdates(final ModelControllerClient client, final List<ModelNode> updates) {
         for (ModelNode update : updates) {
@@ -98,6 +99,7 @@ public class WebCERTTestsSecurityDomainSetup extends AbstractSecurityRealmsServe
 
     @Override
     public void setup(ManagementClient managementClient, String containerId) {
+        snapshot = ServerSnapshot.takeSnapshot(managementClient);
         try {
             super.setup(managementClient, containerId);
             log.debug("start of the domain creation");
@@ -170,44 +172,8 @@ public class WebCERTTestsSecurityDomainSetup extends AbstractSecurityRealmsServe
     }
 
     @Override
-    public void tearDown(ManagementClient managementClient, String containerId) {
-        try {
-            final List<ModelNode> updates = new ArrayList<ModelNode>();
-
-            // remove the security domains.
-            ModelNode op = new ModelNode();
-            op.get(OP).set(REMOVE);
-            op.get(OP_ADDR).add(SUBSYSTEM, "security");
-            op.get(OP_ADDR).add(Constants.SECURITY_DOMAIN, APP_SECURITY_DOMAIN);
-            // Don't rollback when the AS detects the war needs the module
-            op.get(OPERATION_HEADERS, ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE).set(false);
-            op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-            updates.add(op);
-
-            // remove the HTTPS connector and the socket binding.
-            op = new ModelNode();
-            op.get(OP).set(REMOVE);
-            op.get(OP_ADDR).add(SUBSYSTEM, "undertow");
-            op.get(OP_ADDR).add("server", "default-server");
-            op.get(OP_ADDR).add("https-listener", "testConnector");
-            op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-            updates.add(op);
-
-            op = new ModelNode();
-            op.get(OP).set(REMOVE);
-            op.get(OP_ADDR).add("socket-binding-group", "standard-sockets");
-            op.get(OP_ADDR).add("socket-binding", "https-test");
-            op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-            updates.add(op);
-
-            applyUpdates(managementClient.getControllerClient(), updates);
-
-            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
-
-            super.tearDown(managementClient, containerId);
-        } catch (Exception e) {
-            log.error("Failed to clean domain setup.", e);
-        }
+    public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
+        snapshot.close();
     }
 
     @Override

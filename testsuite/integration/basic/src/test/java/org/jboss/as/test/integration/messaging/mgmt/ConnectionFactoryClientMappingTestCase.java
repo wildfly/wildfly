@@ -21,12 +21,12 @@ import org.apache.activemq.artemis.jms.client.ActiveMQJMSConnectionFactory;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -56,11 +56,11 @@ public class ConnectionFactoryClientMappingTestCase {
 
     private static final String CONNECTION_FACTORY_JNDI_NAME = "java:jboss/exported/jms/TestConnectionFactory";
 
-    static class SetupTask implements ServerSetupTask {
+    static class SetupTask extends SnapshotRestoreSetupTask {
         private static final Logger logger = Logger.getLogger(ConnectionFactoryClientMappingTestCase.SetupTask.class);
 
         @Override
-        public void setup(org.jboss.as.arquillian.container.ManagementClient managementClient, String s) throws Exception {
+        public void doSetup(org.jboss.as.arquillian.container.ManagementClient managementClient, String s) throws Exception {
             JMSOperations ops = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
 
             addSocketBinding(managementClient, "test-binding", clientMapping("test", "8000"));
@@ -77,17 +77,6 @@ public class ConnectionFactoryClientMappingTestCase {
             clientMapping.get("destination-address").set(destAddr);
             clientMapping.get("destination-port").set(destPort);
             return clientMapping;
-        }
-
-        @Override
-        public void tearDown(org.jboss.as.arquillian.container.ManagementClient managementClient, String s) throws Exception {
-            JMSOperations ops = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
-
-            ops.removeJmsConnectionFactory("TestConnectionFactory");
-            ops.removeHttpConnector("http-test-connector");
-            removeSocketBinding(managementClient, "test-binding");
-
-            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
         }
 
         private void addSocketBinding(ManagementClient managementClient, String bindingName, ModelNode clientMapping) throws Exception {
@@ -108,17 +97,6 @@ public class ConnectionFactoryClientMappingTestCase {
             clientMappingOp.get(VALUE).add(clientMapping);
 
             execute(managementClient, clientMappingOp);
-        }
-
-        private void removeSocketBinding(ManagementClient managementClient, String bindingName) throws Exception {
-            ModelNode address = new ModelNode();
-            address.add("socket-binding-group", "standard-sockets");
-
-            ModelNode socketBindingOp = new ModelNode();
-            socketBindingOp.get(OP).set(REMOVE_OPERATION);
-            socketBindingOp.get(OP_ADDR).set(address);
-
-            execute(managementClient, socketBindingOp);
         }
 
         static void execute(ManagementClient managementClient, final ModelNode operation) throws IOException {

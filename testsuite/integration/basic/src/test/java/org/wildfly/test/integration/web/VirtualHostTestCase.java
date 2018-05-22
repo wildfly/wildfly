@@ -40,10 +40,9 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
@@ -70,9 +69,9 @@ import org.junit.runner.RunWith;
 //todo this test could probably be done in manual mode test with wildfly runner
 public class VirtualHostTestCase {
 
-    public static class VirtualHostSetupTask implements ServerSetupTask {
+    public static class VirtualHostSetupTask extends SnapshotRestoreSetupTask {
         @Override
-        public void setup(ManagementClient managementClient, String containerId) throws Exception {
+        public void doSetup(ManagementClient managementClient, String containerId) throws Exception {
             ModelControllerClient client = managementClient.getControllerClient();
             ModelNode addOp = createOpNode("subsystem=undertow/server=default-server/host=test", "add");
             addOp.get("default-web-module").set("test.war");
@@ -102,17 +101,6 @@ public class VirtualHostTestCase {
             if (!SUCCESS.equals(response.get(OUTCOME).asString())) {
                 Assert.fail("Could not execute op: '" + op + "', result: " + response);
             }
-        }
-
-        @Override
-        public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-            ModelControllerClient client = managementClient.getControllerClient();
-            execute(client, createOpNode("subsystem=undertow/server=default-server/host=test", "remove"));
-            execute(client, createOpNode("subsystem=undertow/server=myserver/host=another", "remove"));
-            execute(client, createOpNode("subsystem=undertow/server=myserver/http-listener=myserver", "remove"));
-            execute(client, createOpNode("subsystem=undertow/server=myserver", "remove"));
-            execute(client, createOpNode("socket-binding-group=standard-sockets/socket-binding=myserver", "remove"));
-            ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
     }
 

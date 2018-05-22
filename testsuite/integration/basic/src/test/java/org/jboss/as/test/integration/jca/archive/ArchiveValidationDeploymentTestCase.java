@@ -69,13 +69,6 @@ public class ArchiveValidationDeploymentTestCase extends JcaMgmtBase {
             log.trace("//save//" + enabled + "//" + failingOnError + "//" + failingOnWarning);
         }
 
-        @Override
-        public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-            log.trace("//restore//" + enabled + "//" + failingOnError + "//" + failingOnWarning);
-            setArchiveValidation(enabled, failingOnError, failingOnWarning);
-
-        }
-
     }
 
     @ArquillianResource

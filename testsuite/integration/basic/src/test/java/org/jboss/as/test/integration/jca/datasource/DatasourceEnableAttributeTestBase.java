@@ -32,6 +32,7 @@ import java.io.IOException;
 
 import org.jboss.as.test.integration.management.jca.DsMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.junit.Assert;
@@ -198,7 +199,7 @@ public abstract class DatasourceEnableAttributeTestBase extends DsMgmtTestBase {
         ModelNode address = getDataSourceAddress(ds);
         writeAttribute(address, "enabled", "true");
         // enabling datasource requires reload
-        reload();
+        ServerReload.executeReloadAndWaitForCompletion(getManagementClient());
     }
 
     protected ModelNode writeAttribute(ModelNode address, String attribute, String value) throws Exception {

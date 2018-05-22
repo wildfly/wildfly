@@ -129,18 +129,6 @@ public class LongRunningThreadsCheckTestCase extends JcaMgmtBase {
                 }
             }
         }
-
-        @Override
-        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
-            for (int i = 1; i <= 2; i++) {
-                ModelNode wmAddress = subsystemAddress.clone().add("workmanager", wm + i);
-                ModelNode bsAddress = subsystemAddress.clone().add("bootstrap-context", ctx + i);
-                remove(wmAddress);
-                remove(bsAddress);
-            }
-            setArchiveValidation(enabled, failingOnError, failingOnWarning);
-            reload();
-        }
     }
 
     /**

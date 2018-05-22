@@ -38,6 +38,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
+import org.jboss.as.test.shared.ServerSnapshot;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -84,15 +85,16 @@ public class DefaultResponseCodeTestCase extends ContainerResourceMgmtTestBase {
 
     @Test
     public void testDefaultResponseCode() throws Exception {
-        ModelNode operation = createOpNode("subsystem=undertow/server=default-server/host=default-host", "write-attribute");
-        operation.get("name").set("default-response-code");
-        operation.get("value").set(506);
-        executeOperation(operation);
-        operation = createOpNode("subsystem=undertow/server=default-server/host=default-host", "remove");
-        operation.get("address").add("location","/");
-        executeOperation(operation);
-        executeReloadAndWaitForCompletion(getModelControllerClient());
-        try {
+
+        try (AutoCloseable snapshot = ServerSnapshot.takeSnapshot(getManagementClient())){
+            ModelNode operation = createOpNode("subsystem=undertow/server=default-server/host=default-host", "write-attribute");
+            operation.get("name").set("default-response-code");
+            operation.get("value").set(506);
+            executeOperation(operation);
+            operation = createOpNode("subsystem=undertow/server=default-server/host=default-host", "remove");
+            operation.get("address").add("location","/");
+            executeOperation(operation);
+            executeReloadAndWaitForCompletion(getModelControllerClient());
             HttpGet httpget = new HttpGet(url.toString() + URL_PATTERN);
             HttpResponse response = this.httpclient.execute(httpget);
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
@@ -101,15 +103,6 @@ public class DefaultResponseCodeTestCase extends ContainerResourceMgmtTestBase {
             httpget = new HttpGet(badUrl + "xxx/xxx");
             response = this.httpclient.execute(httpget);
             Assert.assertEquals(506, response.getStatusLine().getStatusCode());
-        } finally {
-            operation = createOpNode("subsystem=undertow/server=default-server/host=default-host", "undefine-attribute");
-            operation.get("name").set("default-response-code");
-            executeOperation(operation);
-            operation = createOpNode("subsystem=undertow/server=default-server/host=default-host", "add");
-            operation.get("address").add("location","/");
-            operation.get("handler").set("welcome-content");
-            executeOperation(operation);
-            executeReloadAndWaitForCompletion(getModelControllerClient());
         }
     }
 

@@ -26,7 +26,6 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -36,6 +35,7 @@ import org.jboss.as.test.integration.security.common.SecurityTestConstants;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.web.websocket.WebSocketTestCase;
 import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -55,7 +55,7 @@ import org.junit.runner.RunWith;
 @ServerSetup(RequestDumpingHandlerTestCase.RequestDumpingHandlerTestCaseSetupAction.class)
 public class RequestDumpingHandlerTestCase {
 
-    public static class RequestDumpingHandlerTestCaseSetupAction implements ServerSetupTask {
+    public static class RequestDumpingHandlerTestCaseSetupAction extends SnapshotRestoreSetupTask {
 
         private static String relativeTo;
         private static ModelNode originalValue;
@@ -94,7 +94,7 @@ public class RequestDumpingHandlerTestCase {
         private static final String HTTPS_REALM_SSL_PATH = HTTPS_REALM_PATH + "/server-identity=ssl";
 
         @Override
-        public void setup(ManagementClient managementClient, String containerId) throws Exception {
+        public void doSetup(ManagementClient managementClient, String containerId) throws Exception {
             // Retrieve original path to server log files
             ModelNode op = Util.getReadAttributeOperation(aLogAddr, "file");
             originalValue = ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
@@ -149,38 +149,12 @@ public class RequestDumpingHandlerTestCase {
         }
 
         @Override
-        public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-            // Remove custom logger and file-handler
-            ModelNode op = Util.createRemoveOperation(ADDR_LOGGER);
-            ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
-
-            op = Util.createRemoveOperation(ADDR_FILE_HANDLER);
-            ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
-
+        protected void nonManagementCleanUp() throws Exception {
             // Delete custom server log file
             Files.delete(logFilePath);
 
             // Delete folder with HTTPS files
             FileUtils.deleteDirectory(WORK_DIR);
-
-            // Delete HTTPS specific configuration
-            op = createOpNode(HTTPS_REALM_SSL_PATH, ModelDescriptionConstants.REMOVE);
-            ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
-
-            op = createOpNode(HTTPS_REALM_AUTH_PATH, ModelDescriptionConstants.REMOVE);
-            ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
-
-            //ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
-
-            op = createOpNode(HTTPS_LISTENER_PATH, ModelDescriptionConstants.REMOVE);
-            ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
-
-            //ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
-
-            op = createOpNode(HTTPS_REALM_PATH, ModelDescriptionConstants.REMOVE);
-            ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
-
-            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
         }
     }
 

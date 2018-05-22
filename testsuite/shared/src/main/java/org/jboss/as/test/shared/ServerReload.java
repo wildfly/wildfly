@@ -59,6 +59,9 @@ public class ServerReload {
         executeReloadAndWaitForCompletion(client, TIMEOUT);
     }
 
+    public static void executeReloadAndWaitForCompletion(ModelControllerClient client, String serverConfig) {
+        executeReloadAndWaitForCompletion(client, TIMEOUT, false, null, -1, serverConfig);
+    }
     public static void executeReloadAndWaitForCompletion(ModelControllerClient client, boolean adminOnly) {
         executeReloadAndWaitForCompletion(client, TIMEOUT, adminOnly, null, -1);
     }
@@ -80,17 +83,34 @@ public class ServerReload {
      * @param serverPort if {@code -1}, use {@code TestSuiteEnvironment.getServerPort()} to create the ModelControllerClient
      */
     public static void executeReloadAndWaitForCompletion(ModelControllerClient client, int timeout, boolean adminOnly, String serverAddress, int serverPort) {
-        executeReload(client, adminOnly);
+        executeReload(client, adminOnly, null);
+        waitForLiveServerToReload(timeout,
+                serverAddress != null ? serverAddress : TestSuiteEnvironment.getServerAddress(),
+                serverPort != -1 ? serverPort : TestSuiteEnvironment.getServerPort());
+    }
+    /**
+     *
+     * @param client
+     * @param timeout
+     * @param adminOnly if {@code true}, the server will be reloaded in admin-only mode
+     * @param serverAddress if {@code null}, use {@code TestSuiteEnvironment.getServerAddress()} to create the ModelControllerClient
+     * @param serverPort if {@code -1}, use {@code TestSuiteEnvironment.getServerPort()} to create the ModelControllerClient
+     */
+    public static void executeReloadAndWaitForCompletion(ModelControllerClient client, int timeout, boolean adminOnly, String serverAddress, int serverPort, String serverConfig) {
+        executeReload(client, adminOnly, serverConfig);
         waitForLiveServerToReload(timeout,
                 serverAddress != null ? serverAddress : TestSuiteEnvironment.getServerAddress(),
                 serverPort != -1 ? serverPort : TestSuiteEnvironment.getServerPort());
     }
 
-    private static void executeReload(ModelControllerClient client, boolean adminOnly) {
+    private static void executeReload(ModelControllerClient client, boolean adminOnly, String serverConfig) {
         ModelNode operation = new ModelNode();
         operation.get(OP_ADDR).setEmptyList();
         operation.get(OP).set("reload");
         operation.get("admin-only").set(adminOnly);
+        if(serverConfig != null) {
+            operation.get("server-config").set(serverConfig);
+        }
         try {
             ModelNode result = client.execute(operation);
             if (!"success".equals(result.get(ClientConstants.OUTCOME).asString())) {

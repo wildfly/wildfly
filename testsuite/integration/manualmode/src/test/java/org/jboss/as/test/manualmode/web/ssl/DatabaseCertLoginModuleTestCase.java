@@ -52,6 +52,7 @@ import org.jboss.as.test.integration.security.common.config.SecurityModule;
 import org.jboss.as.test.integration.security.common.servlets.PrincipalPrintingServlet;
 import org.jboss.as.test.integration.security.common.servlets.SimpleSecuredServlet;
 import org.jboss.as.test.integration.security.common.servlets.SimpleServlet;
+import org.jboss.as.test.shared.ServerSnapshot;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.logging.Logger;
 import org.jboss.security.auth.spi.DatabaseCertLoginModule;
@@ -84,6 +85,10 @@ public class DatabaseCertLoginModuleTestCase extends AbstractCertificateLoginMod
     @ArquillianResource
     private Deployer deployer;
 
+    private static ManagementClient managementClient;
+
+    private static AutoCloseable snapshot;
+
     @Deployment(name = APP_NAME, testable = false, managed = false)
     public static WebArchive deployment() {
         LOGGER.trace("Start deployment " + APP_NAME);
@@ -103,8 +108,9 @@ public class DatabaseCertLoginModuleTestCase extends AbstractCertificateLoginMod
         LOGGER.trace("*** starting server");
         containerController.start(CONTAINER);
         ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient();
-        ManagementClient managementClient = new ManagementClient(client, TestSuiteEnvironment.getServerAddress(),
+        managementClient = new ManagementClient(client, TestSuiteEnvironment.getServerAddress(),
                 TestSuiteEnvironment.getServerPort(), "http-remoting");
+        snapshot = ServerSnapshot.takeSnapshot(managementClient);
 
         LOGGER.trace("*** will configure server now");
         AbstractCertificateLoginModuleTestCase.HTTPSConnectorSetup.INSTANCE.setup(managementClient, CONTAINER);
@@ -134,15 +140,11 @@ public class DatabaseCertLoginModuleTestCase extends AbstractCertificateLoginMod
     public void stopContainer() throws Exception {
 
         deployer.undeploy(APP_NAME);
-        final ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient();
-        final ManagementClient managementClient = new ManagementClient(client, TestSuiteEnvironment.getServerAddress(),
-                TestSuiteEnvironment.getServerPort(), "http-remoting");
 
         LOGGER.trace("*** reseting test configuration");
-        AbstractCertificateLoginModuleTestCase.HTTPSConnectorSetup.INSTANCE.tearDown(managementClient, CONTAINER);
-        SecurityDomainsSetup.INSTANCE.tearDown(managementClient, CONTAINER);
-        DBSetup.INSTANCE.tearDown(managementClient, CONTAINER);
-        DataSourcesSetup.INSTANCE.tearDown(managementClient, CONTAINER);
+        deleteWorkDir();
+        snapshot.close();
+        managementClient.close();
 
         LOGGER.trace("*** stopping container");
         containerController.stop(CONTAINER);

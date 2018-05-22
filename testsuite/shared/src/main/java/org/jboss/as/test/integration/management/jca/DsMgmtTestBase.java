@@ -29,8 +29,6 @@ import org.jboss.as.connector.subsystems.datasources.Namespace;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
-import org.jboss.as.test.shared.ServerReload;
-import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -48,15 +46,6 @@ public class DsMgmtTestBase extends ContainerResourceMgmtTestBase {
         baseAddress.add("subsystem", "datasources");
         baseAddress.add(dsType, dsName);
         baseAddress.protect();
-    }
-
-    /**
-     * Provide reload operation on server
-     *
-     * @throws Exception
-     */
-    public void reload() throws Exception {
-        ServerReload.executeReloadAndWaitForCompletion(getModelControllerClient(), TimeoutUtil.adjust(50000));
     }
 
     //@After - called after each test
