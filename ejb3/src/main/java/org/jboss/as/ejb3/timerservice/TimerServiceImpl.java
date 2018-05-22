@@ -147,6 +147,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         ineligibleTimerStates = Collections.unmodifiableSet(states);
     }
 
+    private static final Integer MAX_RETRY = Integer.getInteger("jboss.timer.TaskPostPersist.maxRetry", 5);
     /**
      * Creates a {@link TimerServiceImpl}
      *
@@ -1247,17 +1248,8 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                 EJB3_TIMER_LOGGER.exceptionRunningTimerTask(timer, timer.getTimedObjectId(), e);
                 Date nextExpiration = timer.getNextExpiration();
                 if( nextExpiration != null ){
-                    int max = 10;
-                    String pMax = System.getProperty("jboss.timer.TaskPostPersist.maxRetry");
-                    if( pMax != null ) {
-                        try {
-                            max = Integer.parseInt(pMax);
-                        } catch (NumberFormatException nfe ){
-                            // omit
-                        }
-                    }
-                    if( triesCounter++ < max ) {
-                        long nextTryDelay = nextExpiration.getTime() - System.currentTimeMillis() / 5;
+                    if( triesCounter++ < MAX_RETRY ) {
+                        long nextTryDelay = nextExpiration.getTime() - System.currentTimeMillis() / 2;
                         if (nextTryDelay <= 0 || nextTryDelay > 60000L) nextTryDelay = 5000L;
                         timerInjectedValue.getValue().schedule( new TaskPostPersist(timer, triesCounter), nextTryDelay);
                     } else {
