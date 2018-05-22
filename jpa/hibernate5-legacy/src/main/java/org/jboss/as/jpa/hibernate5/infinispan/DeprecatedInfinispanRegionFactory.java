@@ -30,6 +30,8 @@ import org.hibernate.cache.CacheException;
 /**
  * Common implementation class for deprecated region factory implementations.
  * @author Paul Ferraro
+ *
+ * TODO: remove for WildFly 14
  */
 class DeprecatedInfinispanRegionFactory extends org.infinispan.hibernate.cache.v51.InfinispanRegionFactory {
     private static final long serialVersionUID = 6795961780643120068L;

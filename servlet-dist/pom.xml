@@ -34,12 +34,13 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>13.0.0.Alpha1-SNAPSHOT</version>
+        <version>13.0.0.Beta2-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-servlet-dist</artifactId>
     <name>WildFly: Servlet Distribution</name>
     <packaging>jar</packaging>
+
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -60,12 +61,6 @@
         </dependency>
     </dependencies>
 
-    <properties>
-        <product.release.name>WildFly Servlet</product.release.name>
-        <verifier.slot.name>wildfly-web</verifier.slot.name>
-        <verifier.product.release.name>WildFly Servlet</verifier.product.release.name>
-        <verifier.product.release.version>13.0</verifier.product.release.version>
-    </properties>
     <build>
         <finalName>${server.output.dir.prefix}-servlet-${server.output.dir.version}</finalName>
         <plugins>
@@ -83,7 +78,7 @@
                             <install-dir>${basedir}/target/${project.build.finalName}</install-dir>
                             <feature-packs>
                                 <feature-pack>
-                                    <groupId>org.wildfly</groupId>
+                                    <groupId>${project.groupId}</groupId>
                                     <artifactId>wildfly-servlet-galleon-pack</artifactId>
                                     <version>${project.version}</version>
                                 </feature-pack>

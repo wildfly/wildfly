@@ -25,14 +25,14 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import org.infinispan.commons.configuration.attributes.AttributeSet;
 import org.infinispan.configuration.cache.AbstractStoreConfiguration;
 import org.infinispan.configuration.cache.AsyncStoreConfiguration;
+import org.infinispan.configuration.cache.SingletonStoreConfiguration;
 
 /**
  * @author Paul Ferraro
  */
 public class CustomStoreConfiguration extends AbstractStoreConfiguration {
 
-    @SuppressWarnings("deprecation")
-    public CustomStoreConfiguration(AttributeSet attributes, AsyncStoreConfiguration async, org.infinispan.configuration.cache.SingletonStoreConfiguration singletonStore) {
+    public CustomStoreConfiguration(AttributeSet attributes, AsyncStoreConfiguration async, @SuppressWarnings("deprecation") SingletonStoreConfiguration singletonStore) {
         super(attributes, async, singletonStore);
     }
 }

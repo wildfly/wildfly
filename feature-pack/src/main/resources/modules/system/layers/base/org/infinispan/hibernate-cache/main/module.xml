@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.infinispan.hibernate-cache">
+<module xmlns="urn:jboss:module:1.7" name="org.infinispan.hibernate-cache">
 
     <properties>
         <property name="jboss.api" value="private"/>
@@ -32,8 +32,16 @@
     <resources>
         <artifact name="${org.infinispan:infinispan-hibernate-cache-spi}"/>
         <artifact name="${org.infinispan:infinispan-hibernate-cache-commons}"/>
-        <artifact name="${org.infinispan:infinispan-hibernate-cache-spi}"/>
-        <artifact name="${org.infinispan:infinispan-hibernate-cache-v51}"/>
+        <artifact name="${org.infinispan:infinispan-hibernate-cache-v53}">
+            <conditions>
+              <property-equal name="ee8.preview.mode" value="true"/>
+            </conditions>
+        </artifact>
+        <artifact name="${org.infinispan:infinispan-hibernate-cache-v51}">
+            <conditions>
+              <property-not-equal name="ee8.preview.mode" value="true"/>
+            </conditions>
+        </artifact>
     </resources>
 
     <dependencies>

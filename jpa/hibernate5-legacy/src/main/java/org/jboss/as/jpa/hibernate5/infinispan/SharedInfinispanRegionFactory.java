@@ -17,6 +17,7 @@
 
 package org.jboss.as.jpa.hibernate5.infinispan;
 
+
 /**
  * Infinispan-backed region factory that retrieves its cache manager from the Infinispan subsystem.
  * This is used for (JPA) container managed persistence contexts.

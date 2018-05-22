@@ -38,8 +38,6 @@
     </resources>
 
     <dependencies>
-        <module name="org.infinispan" services="import"/>
-        <module name="org.hibernate.infinispan" services="import"/>
         <module name="org.hibernate"/>
     </dependencies>
 </module>

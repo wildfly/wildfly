@@ -28,6 +28,7 @@ import org.jboss.as.controller.PathAddress;
  * Create a service builder that can be configured via a resource model.
  * @author Paul Ferraro
  */
+@FunctionalInterface
 public interface ResourceServiceBuilderFactory<T> {
 
     /**

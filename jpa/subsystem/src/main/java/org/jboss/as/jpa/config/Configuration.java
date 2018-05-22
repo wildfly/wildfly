@@ -42,9 +42,9 @@ public class Configuration {
     public static final String PROVIDER_MODULE = "jboss.as.jpa.providerModule";
 
     /**
-     * Hibernate 4.3.x (default) persistence provider
+     * Hibernate main module (default) persistence provider
      */
-    public static final String PROVIDER_MODULE_HIBERNATE4_3 = "org.hibernate";
+    public static final String PROVIDER_MODULE_HIBERNATE = "org.hibernate";
 
     /**
      * Hibernate 4.1.x persistence provider, note that Hibernate 4.1.x is expected to be in the 4.1 slot
@@ -69,7 +69,7 @@ public class Configuration {
     /**
      * default if no PROVIDER_MODULE is specified.
      */
-    public static final String PROVIDER_MODULE_DEFAULT = PROVIDER_MODULE_HIBERNATE4_3;
+    public static final String PROVIDER_MODULE_DEFAULT = PROVIDER_MODULE_HIBERNATE;
 
     /**
      * Hibernate 4.1.x persistence provider class
@@ -183,9 +183,15 @@ public class Configuration {
     public static final String HIBERNATE_SEARCH_MODULE = "wildfly.jpa.hibernate.search.module";
 
     /**
-     * name of the Hibernate Search module name
+     * name of the Hibernate Search module name used in EE7 mode
      */
-    public static final String PROVIDER_MODULE_HIBERNATE_SEARCH = "org.hibernate.search.orm:main";
+    public static final String PROVIDER_MODULE_HIBERNATE_SEARCH_EE7 = "org.hibernate.search.orm:main";
+
+    /**
+     * name of the Hibernate Search module name used in EE8 mode
+     */
+    public static final String PROVIDER_MODULE_HIBERNATE_SEARCH_EE8 = "org.hibernate.search.orm:5.10";
+
 
     private static final String EE_DEFAULT_DATASOURCE = "java:comp/DefaultDataSource";
     // key = provider class name, value = module name
@@ -194,13 +200,13 @@ public class Configuration {
     static {
         // always choose the default hibernate version for the Hibernate provider class mapping
         // if the user wants a different version. they can specify the provider module name
-        providerClassToModuleName.put(PROVIDER_CLASS_HIBERNATE, PROVIDER_MODULE_HIBERNATE4_3);
+        providerClassToModuleName.put(PROVIDER_CLASS_HIBERNATE, PROVIDER_MODULE_HIBERNATE);
         // WFLY-2136/HHH-8543 to make migration to Hibernate 4.3.x easier, we also map the (now)
         // deprecated PROVIDER_CLASS_HIBERNATE4_1 to the org.hibernate:main module
         // when PROVIDER_CLASS_HIBERNATE4_1 is no longer in a future Hibernate version (5.x?)
         // we can map PROVIDER_CLASS_HIBERNATE4_1 to org.hibernate:4.3 at that time.
         // persistence units can set "jboss.as.jpa.providerModule=org.hibernate:4.1" to use Hibernate 4.1.x/4.2.x
-        providerClassToModuleName.put(PROVIDER_CLASS_HIBERNATE4_1, PROVIDER_MODULE_HIBERNATE4_3);
+        providerClassToModuleName.put(PROVIDER_CLASS_HIBERNATE4_1, PROVIDER_MODULE_HIBERNATE);
         providerClassToModuleName.put(PROVIDER_CLASS_HIBERNATE_OGM, PROVIDER_MODULE_HIBERNATE_OGM);
         providerClassToModuleName.put(PROVIDER_CLASS_TOPLINK_ESSENTIALS, PROVIDER_MODULE_TOPLINK);
         providerClassToModuleName.put(PROVIDER_CLASS_TOPLINK, PROVIDER_MODULE_TOPLINK);

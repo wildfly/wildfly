@@ -30,17 +30,10 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>13.0.0.Alpha1-SNAPSHOT</version>
+        <version>13.0.0.Beta2-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.wildfly</groupId>
     <artifactId>wildfly-component-matrix-builder</artifactId>
-    <!--
-        Maintain separation between the artifact id and the version to help prevent
-        merge conflicts between commits changing the GA and those changing the V.
-    -->
-    <version>13.0.0.Alpha1-SNAPSHOT</version>
-
     <packaging>pom</packaging>
 
     <name>WildFly: Component matrix builder</name>
@@ -51,7 +44,6 @@
             <plugin>
                 <groupId>org.wildfly.plugins</groupId>
                 <artifactId>wildfly-component-matrix-plugin</artifactId>
-                <version>${version.org.wildfly.component-matrix-plugin}</version>
                 <executions>
                     <execution>
                         <id>build-bom</id>
@@ -62,7 +54,6 @@
                             <parent>
                                 <groupId>org.jboss</groupId>
                                 <artifactId>jboss-parent</artifactId>
-                                <version>26</version>
                                 <relativePath/>
                             </parent>
                             <bomGroupId>${project.groupId}</bomGroupId>

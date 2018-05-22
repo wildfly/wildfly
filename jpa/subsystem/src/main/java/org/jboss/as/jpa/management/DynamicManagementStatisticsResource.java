@@ -84,7 +84,9 @@ public class DynamicManagementStatisticsResource extends PlaceholderResource.Pla
                 return super.hasChild(element);
             }
         }
-        catch( IllegalStateException e) {  // WFLY-2436 ignore unexpected exceptions (e.g. JIPI-27 may throw an IllegalStateException)
+        catch (RuntimeException e) {
+            // WFLY-2436 ignore unexpected exceptions (e.g. JIPI-27 may throw an IllegalStateException)
+            // WFLY-10413 : also make sure to catch HibernateExceptions
             ROOT_LOGGER.unexpectedStatisticsProblem(e);
             return false;
         }
@@ -103,7 +105,9 @@ public class DynamicManagementStatisticsResource extends PlaceholderResource.Pla
                 return super.getChild(element);
             }
         }
-        catch( IllegalStateException e) {  // WFLY-2436 ignore unexpected exceptions (e.g. JIPI-27 may throw an IllegalStateException)
+        catch (RuntimeException e) {
+            // WFLY-2436 ignore unexpected exceptions (e.g. JIPI-27 may throw an IllegalStateException)
+            // WFLY-10413 : also make sure to catch HibernateExceptions
             ROOT_LOGGER.unexpectedStatisticsProblem(e);
             return super.getChild(element);
         }
@@ -123,7 +127,9 @@ public class DynamicManagementStatisticsResource extends PlaceholderResource.Pla
                 return super.requireChild(element);
             }
         }
-        catch( IllegalStateException e) {  // WFLY-2436 ignore unexpected exceptions (e.g. JIPI-27 may throw an IllegalStateException)
+        catch (RuntimeException e) {
+            // WFLY-2436 ignore unexpected exceptions (e.g. JIPI-27 may throw an IllegalStateException)
+            // WFLY-10413 : also make sure to catch HibernateExceptions
             ROOT_LOGGER.unexpectedStatisticsProblem(e);
             return super.requireChild(element);
         }
@@ -140,7 +146,9 @@ public class DynamicManagementStatisticsResource extends PlaceholderResource.Pla
                 return super.hasChildren(childType);
             }
         }
-        catch( IllegalStateException e) {  // WFLY-2436 ignore unexpected exceptions (e.g. JIPI-27 may throw an IllegalStateException)
+        catch (RuntimeException e) {
+            // WFLY-2436 ignore unexpected exceptions (e.g. JIPI-27 may throw an IllegalStateException)
+            // WFLY-10413 : also make sure to catch HibernateExceptions
             ROOT_LOGGER.unexpectedStatisticsProblem(e);
             return false;
         }
@@ -167,7 +175,9 @@ public class DynamicManagementStatisticsResource extends PlaceholderResource.Pla
             result.addAll(statistics.getChildrenNames());
             return result;
         }
-        catch( IllegalStateException e) {  // WFLY-2436 ignore unexpected exceptions (e.g. JIPI-27 may throw an IllegalStateException)
+        catch (RuntimeException e) {
+            // WFLY-2436 ignore unexpected exceptions (e.g. JIPI-27 may throw an IllegalStateException)
+            // WFLY-10413 : also make sure to catch HibernateExceptions
             ROOT_LOGGER.unexpectedStatisticsProblem(e);
             return Collections.emptySet();
         }
@@ -188,7 +198,9 @@ public class DynamicManagementStatisticsResource extends PlaceholderResource.Pla
                 return super.getChildrenNames(childType);
             }
         }
-        catch( IllegalStateException e) {  // WFLY-2436 ignore unexpected exceptions (e.g. JIPI-27 may throw an IllegalStateException)
+        catch (RuntimeException e) {
+            // WFLY-2436 ignore unexpected exceptions (e.g. JIPI-27 may throw an IllegalStateException)
+            // WFLY-10413 : also make sure to catch HibernateExceptions
             ROOT_LOGGER.unexpectedStatisticsProblem(e);
             return Collections.emptySet();
         }
@@ -209,11 +221,12 @@ public class DynamicManagementStatisticsResource extends PlaceholderResource.Pla
                 return super.getChildren(childType);
             }
         }
-        catch( IllegalStateException e) {  // WFLY-2436 ignore unexpected exceptions (e.g. JIPI-27 may throw an IllegalStateException)
+        catch (RuntimeException e) {
+            // WFLY-2436 ignore unexpected exceptions (e.g. JIPI-27 may throw an IllegalStateException)
+            // WFLY-10413 : also make sure to catch HibernateExceptions
             ROOT_LOGGER.unexpectedStatisticsProblem(e);
             return Collections.emptySet();
         }
-
     }
 
     @Override
@@ -226,7 +239,9 @@ public class DynamicManagementStatisticsResource extends PlaceholderResource.Pla
                 super.registerChild(address, resource);
             }
         }
-        catch( IllegalStateException e) {  // WFLY-2436 ignore unexpected exceptions (e.g. JIPI-27 may throw an IllegalStateException)
+        catch (RuntimeException e) {
+            // WFLY-2436 ignore unexpected exceptions (e.g. JIPI-27 may throw an IllegalStateException)
+            // WFLY-10413 : also make sure to catch HibernateExceptions
             ROOT_LOGGER.unexpectedStatisticsProblem(e);
         }
     }

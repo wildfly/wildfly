@@ -34,7 +34,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>13.0.0.Alpha1-SNAPSHOT</version>
+        <version>13.0.0.Beta2-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-servlet-galleon-pack</artifactId>
@@ -613,7 +613,7 @@
                         </goals>
                         <phase>prepare-package</phase>
                         <configuration>
-                            <release-name>WildFly Servlet</release-name>
+                            <release-name>${servlet.dist.product.release.name}</release-name>
                         </configuration>
                     </execution>
                 </executions>

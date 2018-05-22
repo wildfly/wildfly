@@ -68,7 +68,7 @@ public class SimpleClassTable implements ClassTable {
     }
 
     @Override
-    public Class<?> readClass(Unmarshaller input) throws IOException, ClassNotFoundException {
+    public Class<?> readClass(Unmarshaller input) throws IOException {
         return this.classes.get(this.indexSerializer.readInt(input));
     }
 

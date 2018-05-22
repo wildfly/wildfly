@@ -86,6 +86,7 @@ public class DefaultCacheContainerTestCase {
 
     @Test
     public void getDefaultCache() {
+        @SuppressWarnings("unchecked")
         AdvancedCache<Object, Object> cache = mock(AdvancedCache.class);
 
         when(this.manager.getCache()).thenReturn(cache);
@@ -100,6 +101,7 @@ public class DefaultCacheContainerTestCase {
 
     @Test
     public void getCache() {
+        @SuppressWarnings("unchecked")
         AdvancedCache<Object, Object> cache = mock(AdvancedCache.class);
 
         when(this.manager.getCache("other")).thenReturn(cache);
@@ -115,6 +117,7 @@ public class DefaultCacheContainerTestCase {
     @Deprecated
     @Test
     public void getCacheFromTemplate() {
+        @SuppressWarnings("unchecked")
         AdvancedCache<Object, Object> cache = mock(AdvancedCache.class);
         String templateName = "template";
 

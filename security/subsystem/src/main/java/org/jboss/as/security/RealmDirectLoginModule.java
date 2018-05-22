@@ -59,13 +59,13 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.security.SimpleGroup;
 import org.jboss.security.auth.callback.ObjectCallback;
 import org.jboss.security.auth.spi.UsernamePasswordLoginModule;
+import org.wildfly.common.iteration.ByteIterator;
 import org.wildfly.security.auth.callback.CredentialCallback;
 import org.wildfly.security.auth.callback.EvidenceVerifyCallback;
 import org.wildfly.security.credential.PasswordCredential;
 import org.wildfly.security.evidence.PasswordGuessEvidence;
 import org.wildfly.security.password.interfaces.DigestPassword;
 import org.wildfly.security.sasl.util.UsernamePasswordHashUtil;
-import org.wildfly.security.util.ByteIterator;
 
 /**
  * A login module implementation to interface directly with the security realm.

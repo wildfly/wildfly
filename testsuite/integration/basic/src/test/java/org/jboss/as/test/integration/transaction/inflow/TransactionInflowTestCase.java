@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.transaction.inflow;
 
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
+import java.net.SocketPermission;
 import java.util.Hashtable;
 import java.util.PropertyPermission;
 
@@ -81,8 +82,8 @@ public class TransactionInflowTestCase {
                     new RuntimePermission("accessDeclaredMembers"),
                     new RuntimePermission("getClassLoader"),
                     new RuntimePermission("defineClassInPackage.org.jboss.as.test.integration.transaction.inflow"),
-                    new PropertyPermission("ts.timeout.factor", "read"))
-                    , "jboss-permissions.xml")
+                    new PropertyPermission("ts.timeout.factor", "read")
+                ) , "jboss-permissions.xml")
             .addAsLibrary(jar);
         return rar;
     }
@@ -100,7 +101,11 @@ public class TransactionInflowTestCase {
             // module dependency on rar is added because we want to share class of TransactionInflowTextMessage
             // and arquillian packs this testcase class to container here and it needs to see rar classes as well
             .addAsManifestResource(new StringAsset("Dependencies: deployment."
-                + TransactionInflowMdb.RESOURCE_ADAPTER_NAME+ ".rar\n"), "MANIFEST.MF");
+                + TransactionInflowMdb.RESOURCE_ADAPTER_NAME+ ".rar\n"), "MANIFEST.MF")
+            .addAsManifestResource(createPermissionsXmlAsset(
+                    new RuntimePermission("accessDeclaredMembers"),
+                    new SocketPermission("*", "resolve") // #getXid calls InetAddress#getLocalHost
+                ) , "jboss-permissions.xml");
     }
 
     @Deployment(name = EJB_MODULE_NAME + COMMIT, managed = false, testable = false)

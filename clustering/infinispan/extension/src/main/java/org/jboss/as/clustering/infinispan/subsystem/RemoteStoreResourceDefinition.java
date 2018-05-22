@@ -48,7 +48,9 @@ import org.jboss.dmr.ModelType;
  * /subsystem=infinispan/cache-container=X/cache=Y/remote-store=REMOTE_STORE
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
+ * @deprecated Use {@link org.jboss.as.clustering.infinispan.subsystem.remote.HotRodStoreResourceDefinition} instead.
  */
+@Deprecated
 public class RemoteStoreResourceDefinition extends StoreResourceDefinition {
 
     static final PathElement LEGACY_PATH = PathElement.pathElement("remote-store", "REMOTE_STORE");
@@ -113,5 +115,6 @@ public class RemoteStoreResourceDefinition extends StoreResourceDefinition {
 
     RemoteStoreResourceDefinition() {
         super(PATH, LEGACY_PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH), new SimpleResourceDescriptorConfigurator<>(Attribute.class), RemoteStoreBuilder::new);
+        this.setDeprecated(InfinispanModel.VERSION_7_0_0.getVersion());
     }
 }

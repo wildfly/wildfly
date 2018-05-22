@@ -286,7 +286,9 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
             }
             deploymentUnit.putAttachment(EjbDeploymentAttachmentKeys.EJB_REMOTING_PROFILE_SERVICE_NAME, profileServiceName);
         } else {
-            serviceBuilder.addDependency(LocalTransportProvider.DEFAULT_LOCAL_TRANSPORT_PROVIDER_SERVICE_NAME, EJBTransportProvider.class, service.getLocalProviderInjector());
+            if(!appclient) {
+                serviceBuilder.addDependency(LocalTransportProvider.DEFAULT_LOCAL_TRANSPORT_PROVIDER_SERVICE_NAME, EJBTransportProvider.class, service.getLocalProviderInjector());
+            }
         }
 
         if (interceptorsDefined) {

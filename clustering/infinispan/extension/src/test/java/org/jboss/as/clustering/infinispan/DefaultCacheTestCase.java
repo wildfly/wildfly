@@ -46,6 +46,7 @@ public class DefaultCacheTestCase {
 
     private final EmbeddedCacheManager manager = mock(EmbeddedCacheManager.class);
     private final BatcherFactory batcherFactory = mock(BatcherFactory.class);
+    @SuppressWarnings("unchecked")
     private final AdvancedCache<Object, Object> cache = mock(AdvancedCache.class);
 
     @After
@@ -73,6 +74,7 @@ public class DefaultCacheTestCase {
 
     @Test
     public void batcher() {
+        @SuppressWarnings("unchecked")
         Batcher<TransactionBatch> batcher = mock(Batcher.class);
         TransactionBatch batch = mock(TransactionBatch.class);
 
