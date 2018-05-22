@@ -122,6 +122,7 @@
                         <phase>prepare-package</phase>
                         <configuration>
                             <output-dir>${basedir}/target/resources/features</output-dir>
+                            <fork-embedded>true</fork-embedded>
                             <feature-packs>
                                 <feature-pack>
                                     <groupId>org.wildfly.core</groupId>
