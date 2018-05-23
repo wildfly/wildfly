@@ -139,7 +139,7 @@ public class AuthenticationPolicyContextTestCase {
         war.addClasses(EchoService.class);
         war.addAsResource(AuthenticationPolicyContextTestCase.class.getPackage(), "resources/sp-users.properties", "sp-users.properties");
         war.addAsResource(AuthenticationPolicyContextTestCase.class.getPackage(), "resources/sp-roles.properties", "sp-roles.properties");
-        war.addAsResource(AuthenticationPolicyContextTestCase.class.getPackage(), "resources/sts-config.properties", "sts-config.properties");
+        war.addAsResource(createFilteredAsset("resources/sts-config.properties"), "sts-config.properties");
         war.addAsWebInfResource(createFilteredAsset("resources/WEB-INF/wsdl/PicketLinkSTS.wsdl"), "wsdl/PicketLinkSTS.wsdl");
         war.addAsWebInfResource(AuthenticationPolicyContextTestCase.class.getPackage(), "resources/WEB-INF/beans.xml", "beans.xml");
         war.addAsWebInfResource(AuthenticationPolicyContextTestCase.class.getPackage(), "resources/WEB-INF/jboss-web-ws.xml", "jboss-web-ws.xml");
