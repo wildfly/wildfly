@@ -1,24 +1,22 @@
 [[Singleton_MSC_services]]
 = Singleton MSC services
 
-WildFly allows any user MSC service to be installed as a singleton MSC
-service via a public API. Once installed, the service will only ever
-start on 1 node in the cluster at a time. If the node providing the
-service is shutdown, or fails, another node on which the service was
-installed will start automatically.
+The singleton service facility exposes a mechanism for installing an MSC service such that the service only starts on a single member of a cluster at a time.
+If the member providing the singleton service is shutdown or crashes, the facility automatically elects a new primary provider and starts the service on that node.
+In general, a singleton election happens in response to any change of membership, where the membership is defined as the set of cluster nodes on which the given service was installed.
 
 [[installing-an-msc-service-using-an-existing-singleton-policy]]
 == Installing an MSC service using an existing singleton policy
 
-While singleton MSC services have been around since AS7, WildFly adds
-the ability to leverage the singleton subsystem to create singleton MSC
-services from existing singleton policies.
+While singleton MSC services have been around since AS7, WildFly adds the ability to leverage the singleton subsystem to create singleton MSC services from existing singleton policies.
 
-The singleton subsystem exposes capabilities for each singleton policy
-it defines. These policies, represented via the
-`org.wildfly.clustering.singleton.SingletonPolicy` interface, can be
-referenced via the following name:
-"org.wildfly.clustering.singleton.policy" +
+The singleton subsystem exposes capabilities for each singleton policy it defines. 
+
+These policies, encapsulated by the `org.wildfly.clustering.singleton.service.SingletonPolicy` interface, can be referenced via the following capability name:
+"org.wildfly.clustering.singleton.policy" + _policy-name_
+
+You can reference the default singleton policy of the server via the name:
+"org.wildfly.clustering.singleton.default-policy"
 e.g.
 
 [source, java]
@@ -27,13 +25,11 @@ public class MyServiceActivator implements ServiceActivator {
     @Override
     public void activate(ServiceActivatorContext context) {
         ServiceName name = ServiceName.parse("my.service.name");
-        Service<?> service = new MyService();
-        try {
-            SingletonPolicy policy = (SingletonPolicy) context.getServiceRegistry().getRequiredService(ServiceName.parse(SingletonPolicy.CAPABILITY_NAME)).awaitValue();
-            policy.createSingletonServiceBuilder(name, service).build(context.getServiceTarget()).install();
-        } catch (InterruptedException e) {
-            throw new ServiceRegistryException(e);
-        }
+        // Use default singleton policy
+        Supplier<SingletonPolicy> policy = new ActiveServiceSupplier<>(context.getServiceTarget(), ServiceName.parse(SingletonDefaultRequirement.SINGLETON_POLICY.getName()));
+        ServiceBuilder<?> builder = policy.get().createSingletonServiceConfigurator(name).build(context.getServiceTarget());
+        Service service = new MyService();
+        builder.setInstance(service).install();
     }
 }
 ----
@@ -41,12 +37,16 @@ public class MyServiceActivator implements ServiceActivator {
 [[installing-an-msc-service-using-dynamic-singleton-policy]]
 == Installing an MSC service using dynamic singleton policy
 
-Alternatively, you can build singleton policy dynamically, which is
-particularly useful if you want to use a custom singleton election
-policy. Specifically, `SingletonPolicy` is a generalization of the
-`org.wildfly.clustering.singleton.SingletonServiceBuilderFactory`
-interface, which includes support for specifying an election policy and,
-optionally, a quorum. +
+Alternatively, you can configure a singleton policy dynamically, which is particularly useful if you want to use a custom singleton election policy.
+`org.wildfly.clustering.singleton.service.SingletonPolicy` is a generalization of the `org.wildfly.clustering.singleton.service.SingletonServiceConfiguratorFactory` interface,
+which includes support for specifying an election policy and, optionally, a quorum.
+
+The 'SingletonServiceConfiguratorFactory' capability may be references using the following capability name:
+"org.wildfly.clustering.cache.singleton-service-configurator-factory" + _container-name_ + "." + _cache-name_
+
+You can reference a 'SingletonServiceConfiguratorFactory' using the default cache of a given cache container via the name:
+"org.wildfly.clustering.cache.default-singleton-service-configurator-factory" + _container-name_
+
 e.g.
 
 [source, java]
@@ -54,20 +54,18 @@ e.g.
 public class MyServiceActivator implements ServiceActivator {
     @Override
     public void activate(ServiceActivatorContext context) {
-        String containerName = "server";
+        String containerName = "foo";
         ElectionPolicy policy = new MySingletonElectionPolicy();
         int quorum = 3;
         ServiceName name = ServiceName.parse("my.service.name");
-        Service<?> service = new MyService();
-        try {
-            SingletonServiceBuilderFactory factory = (SingletonServiceBuilderFactory) context.getServiceRegistry().getRequiredService(SingletonServiceName.BUILDER.getServiceName(containerName))).awaitValue();
-            factory.createSingletonServiceBuilder(name, service)
+        // Use a SingletonServiceConfiguratorFactory backed by default cache of "foo" container
+        Supplier<SingletonServiceConfiguratorFactory> factory = new ActiveServiceSupplier<>(context.getServiceTarget(), ServiceName.parse(SingletonDefaultCacheRequirement.SINGLETON_SERVICE_CONFIGURATOR_FACTORY.resolve(containerName).getName()));
+        ServiceBuilder<?> builder = factory.get().createSingletonServiceConfigurator(name)
                 .electionPolicy(policy)
-                .quorum(quorum)
-                .build(context.getServiceTarget()).install();
-        } catch (InterruptedException e) {
-            throw new ServiceRegistryException(e);
-        }
+                .requireQuorum(quorum)
+        		.build(context.getServiceTarget());
+        Service service = new MyService();
+        builder.setInstance(service).install();
     }
 }
 ----
