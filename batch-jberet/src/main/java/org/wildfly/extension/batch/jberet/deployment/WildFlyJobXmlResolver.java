@@ -249,6 +249,13 @@ public class WildFlyJobXmlResolver implements JobXmlResolver {
     }
 
     private static void merge(final WildFlyJobXmlResolver target, final WildFlyJobXmlResolver toCopy) {
+        for (Map.Entry<String, Set<String>> entry : toCopy.jobNames.entrySet()) {
+            if (target.jobNames.containsKey(entry.getKey())) {
+                target.jobNames.get(entry.getKey()).addAll(entry.getValue());
+            } else {
+                target.jobNames.put(entry.getKey(), entry.getValue());
+            }
+        }
         toCopy.jobXmlNames.forEach(target.jobXmlNames::putIfAbsent);
         toCopy.jobXmlFiles.forEach(target.jobXmlFiles::putIfAbsent);
         target.jobXmlResolvers.addAll(toCopy.jobXmlResolvers);
