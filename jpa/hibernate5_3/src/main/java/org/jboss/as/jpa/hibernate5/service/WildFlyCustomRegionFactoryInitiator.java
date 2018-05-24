@@ -34,19 +34,21 @@ public class WildFlyCustomRegionFactoryInitiator extends RegionFactoryInitiator 
 
     private static final String HIBERNATE_REGION_FACTORY_CLASS = "hibernate.cache.region.factory_class";
     private static final String V53_INFINISPAN_REGION_FACTORY = "org.infinispan.hibernate.cache.v53.InfinispanRegionFactory";
+    private static final String UNSPECIFIED = "UNSPECIFIED";
+    private static final String NONE = "NONE";
     @Override
     protected RegionFactory resolveRegionFactory(Map configurationValues, ServiceRegistryImplementor registry) {
-        final Object use_second_level_cache = configurationValues.get(USE_SECOND_LEVEL_CACHE);
-        final String jpa_shared_code_mode_value = configurationValues.get(JPA_SHARED_CACHE_MODE) != null ? configurationValues.get(JPA_SHARED_CACHE_MODE).toString() : "";
+        final Object useSecondLevelCache = configurationValues.get(USE_SECOND_LEVEL_CACHE);
+        final String jpaSharedCodeModeValue = configurationValues.get(JPA_SHARED_CACHE_MODE) != null ? configurationValues.get(JPA_SHARED_CACHE_MODE).toString() : UNSPECIFIED;
 
 
         // treat Hibernate 2lc as off, if not specified.
         // Note that Hibernate 2lc in 5.1.x, defaults to disabled, so this code is only needed in 5.3.x+.
-        if(Boolean.parseBoolean((String)use_second_level_cache)) {
+        if(Boolean.parseBoolean((String)useSecondLevelCache)) {
             configurationValues.put(HIBERNATE_REGION_FACTORY_CLASS, V53_INFINISPAN_REGION_FACTORY);
             return super.resolveRegionFactory(configurationValues, registry);
-        } else if("UNSPECIFIED".equals(jpa_shared_code_mode_value)
-             || "NONE".equals(jpa_shared_code_mode_value)) {
+        } else if(UNSPECIFIED.equals(jpaSharedCodeModeValue)
+             || NONE.equals(jpaSharedCodeModeValue)) {
             // explicitly disable 2lc cache
             return NoCachingRegionFactory.INSTANCE;
         }
