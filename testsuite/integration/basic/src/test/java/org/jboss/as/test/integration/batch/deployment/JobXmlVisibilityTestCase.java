@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -30,6 +31,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.integration.batch.common.AbstractBatchTestCase;
 import org.jboss.as.test.integration.batch.common.BatchExecutionService;
@@ -109,7 +111,7 @@ public class JobXmlVisibilityTestCase extends AbstractBatchTestCase {
      */
     @Test
     public void testJobXmlIsVisible() throws Exception {
-        validateJobNames(deploymentAddress(EAR, "war-in-ear-visible.war"), Arrays.asList("test-war.xml", "test-ejb.xml"));
+        validateJobXmlNames(deploymentAddress(EAR, "war-in-ear-visible.war"), Arrays.asList("test-war.xml", "test-ejb.xml"));
     }
 
     /**
@@ -117,9 +119,9 @@ public class JobXmlVisibilityTestCase extends AbstractBatchTestCase {
      */
     @Test
     public void testJobXmlIsIsolated() throws Exception {
-        validateJobNames(deploymentAddress(EAR_ISOLATED, "war-in-ear-isolated.war"), Collections.singleton("test-war.xml"));
+        validateJobXmlNames(deploymentAddress(EAR_ISOLATED, "war-in-ear-isolated.war"), Collections.singleton("test-war.xml"));
 
-        validateJobNames(deploymentAddress(EAR_ISOLATED, "ejb-in-ear-isolated.jar"), Collections.singleton("test-ejb.xml"));
+        validateJobXmlNames(deploymentAddress(EAR_ISOLATED, "ejb-in-ear-isolated.jar"), Collections.singleton("test-ejb.xml"));
     }
 
     /**
@@ -128,9 +130,9 @@ public class JobXmlVisibilityTestCase extends AbstractBatchTestCase {
      */
     @Test
     public void testJobXmlIsVisibleJar() throws Exception {
-        validateJobNames(deploymentAddress(EAR_WITH_LIB, "war-in-ear-with-lib.war"), Arrays.asList("test-war.xml", "test-ejb.xml", "test-jar.xml"));
+        validateJobXmlNames(deploymentAddress(EAR_WITH_LIB, "war-in-ear-with-lib.war"), Arrays.asList("test-war.xml", "test-ejb.xml", "test-jar.xml"));
 
-        validateJobNames(deploymentAddress(EAR_WITH_LIB, "ejb-in-ear-with-lib.jar"), Arrays.asList("test-ejb.xml", "test-jar.xml"));
+        validateJobXmlNames(deploymentAddress(EAR_WITH_LIB, "ejb-in-ear-with-lib.jar"), Arrays.asList("test-ejb.xml", "test-jar.xml"));
     }
 
     /**
@@ -139,9 +141,9 @@ public class JobXmlVisibilityTestCase extends AbstractBatchTestCase {
      */
     @Test
     public void testJobXmlIsIsolatedJar() throws Exception {
-        validateJobNames(deploymentAddress(EAR_WITH_LIB_ISOLATED, "war-in-ear-isolated-with-lib.war"), Arrays.asList("test-war.xml", "test-jar.xml"));
+        validateJobXmlNames(deploymentAddress(EAR_WITH_LIB_ISOLATED, "war-in-ear-isolated-with-lib.war"), Arrays.asList("test-war.xml", "test-jar.xml"));
 
-        validateJobNames(deploymentAddress(EAR_WITH_LIB_ISOLATED, "ejb-in-ear-isolated-with-lib.jar"), Arrays.asList("test-ejb.xml", "test-jar.xml"));
+        validateJobXmlNames(deploymentAddress(EAR_WITH_LIB_ISOLATED, "ejb-in-ear-isolated-with-lib.jar"), Arrays.asList("test-ejb.xml", "test-jar.xml"));
     }
 
     /**
@@ -149,17 +151,35 @@ public class JobXmlVisibilityTestCase extends AbstractBatchTestCase {
      */
     @Test
     public void testJobXmlInWar() throws Exception {
-        validateJobNames(deploymentAddress(WAR_WITH_LIB, null), Arrays.asList("test-war.xml", "test-jar.xml"));
+        validateJobXmlNames(deploymentAddress(WAR_WITH_LIB, null), Arrays.asList("test-war.xml", "test-jar.xml"));
     }
 
-    private void validateJobNames(final ModelNode address, final Collection<String> expected) throws IOException {
-        Set<String> jobXmlNames = getJobNames(address);
+    private void validateJobXmlNames(final ModelNode address, final Collection<String> expected) throws IOException {
+        Set<String> jobXmlNames = getJobXmlNames(address);
         Assert.assertEquals(expected.size(), jobXmlNames.size());
         Assert.assertTrue("Expected the following job XML names: " + expected, jobXmlNames.containsAll(expected));
+        final Collection<String> expectedJobNames = new LinkedHashSet<>();
+        for (String jobXmlName : expected) {
+            final int end = jobXmlName.indexOf(".xml");
+            expectedJobNames.add(jobXmlName.substring(0, end));
+        }
+        final Set<String> jobNames = getJobNames(address);
+        Assert.assertEquals(expectedJobNames.size(), jobNames.size());
+        Assert.assertTrue("Expected the following job names: " + expectedJobNames, jobNames.containsAll(expectedJobNames));
+    }
+
+    private Set<String> getJobXmlNames(final ModelNode address) throws IOException {
+        final ModelNode op = Operations.createReadAttributeOperation(address, "job-xml-names");
+        final ModelNode result = executeOperation(op);
+        return result.asList()
+                .stream()
+                .map(ModelNode::asString)
+                .collect(Collectors.toSet());
     }
 
     private Set<String> getJobNames(final ModelNode address) throws IOException {
-        final ModelNode op = Operations.createReadAttributeOperation(address, "job-xml-names");
+        final ModelNode op = Operations.createOperation(ClientConstants.READ_CHILDREN_NAMES_OPERATION, address);
+        op.get(ClientConstants.CHILD_TYPE).set("job");
         final ModelNode result = executeOperation(op);
         return result.asList()
                 .stream()
