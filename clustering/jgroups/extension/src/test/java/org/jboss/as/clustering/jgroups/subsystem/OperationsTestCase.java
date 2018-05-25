@@ -26,16 +26,17 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
+import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
 
 /**
-* Test case for testing individual management operations.
-*
-* @author Richard Achmatowicz (c) 2011 Red Hat Inc.
-*/
+ * Test case for testing individual management operations.
+ *
+ * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
+ */
 public class OperationsTestCase extends OperationTestCaseBase {
 
     /**
@@ -48,16 +49,16 @@ public class OperationsTestCase extends OperationTestCaseBase {
 
         // read the default stack
         ModelNode result = services.executeOperation(getSubsystemReadOperation(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_CHANNEL));
-        Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(),SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertEquals("ee", result.get(RESULT).resolve().asString());
+        Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(), SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals("ee", result.get(RESULT).asString());
 
         // write the default stack
         result = services.executeOperation(getSubsystemWriteOperation(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_CHANNEL, "bridge"));
-        Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(),SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(), SUCCESS, result.get(OUTCOME).asString());
 
         // re-read the default stack
         result = services.executeOperation(getSubsystemReadOperation(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_CHANNEL));
-        Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(),SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals("bridge", result.get(RESULT).asString());
     }
 
@@ -72,7 +73,7 @@ public class OperationsTestCase extends OperationTestCaseBase {
         // read the transport rack attribute
         ModelNode result = services.executeOperation(getTransportReadOperation("maximal", "TCP", TransportResourceDefinition.Attribute.RACK));
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertEquals("rack1", result.get(RESULT).resolve().asString());
+        Assert.assertEquals("rack1", ExpressionResolver.TEST_RESOLVER.resolveExpressions(result.get(RESULT)).asString());
 
         // write the rack attribute
         result = services.executeOperation(getTransportWriteOperation("maximal", "TCP", TransportResourceDefinition.Attribute.RACK, "new-rack"));
@@ -88,7 +89,7 @@ public class OperationsTestCase extends OperationTestCaseBase {
     public void testTransportReadWriteWithParameters() throws Exception {
         // Parse and install the XML into the controller
         KernelServices services = this.buildKernelServices();
-        Assert.assertTrue("Could not create services",services.isSuccessfulBoot());
+        Assert.assertTrue("Could not create services", services.isSuccessfulBoot());
 
         // add a protocol stack specifying TRANSPORT and PROTOCOLS parameters
         ModelNode result = services.executeOperation(getProtocolStackAddOperationWithParameters("maximal2"));
@@ -111,7 +112,7 @@ public class OperationsTestCase extends OperationTestCaseBase {
         // read the enable_bundling transport property
         ModelNode result = services.executeOperation(getTransportGetPropertyOperation("maximal", "TCP", "enable_bundling"));
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertEquals("true", result.get(RESULT).resolve().asString());
+        Assert.assertEquals("true", ExpressionResolver.TEST_RESOLVER.resolveExpressions(result.get(RESULT)).asString());
 
         // write the enable_bundling transport property
         result = services.executeOperation(getTransportPutPropertyOperation("maximal", "TCP", "enable_bundling", "false"));
@@ -192,7 +193,7 @@ public class OperationsTestCase extends OperationTestCaseBase {
         // read the name protocol property
         ModelNode result = services.executeOperation(getProtocolGetPropertyOperation("maximal", "MPING", "name"));
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertEquals("value", result.get(RESULT).resolve().asString());
+        Assert.assertEquals("value", ExpressionResolver.TEST_RESOLVER.resolveExpressions(result.get(RESULT)).asString());
 
         // write the property
         result = services.executeOperation(getProtocolPutPropertyOperation("maximal", "MPING", "name", "new-value"));
