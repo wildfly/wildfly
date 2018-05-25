@@ -615,6 +615,9 @@
                         <phase>prepare-package</phase>
                         <configuration>
                             <release-name>${servlet.dist.product.release.name}</release-name>
+                            <task-properties>
+                                <product.release.version>${product.release.version}</product.release.version>
+                            </task-properties>
                         </configuration>
                     </execution>
                 </executions>
