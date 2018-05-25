@@ -30,7 +30,7 @@ import org.hibernate.engine.transaction.jta.platform.internal.JtaSynchronization
  */
 public class WildFlyCustomJtaPlatform extends JBossAppServerJtaPlatform {
 
-    public static final String TSR_NAME = "java:jboss/TransactionSynchronizationRegistry";
+    private static final String TSR_NAME = "java:jboss/TransactionSynchronizationRegistry";
 
     @Override
     protected JtaSynchronizationStrategy getSynchronizationStrategy() {
