@@ -76,6 +76,9 @@
                         <phase>prepare-package</phase>
                         <configuration>
                             <install-dir>${basedir}/target/${project.build.finalName}</install-dir>
+                            <plugin-options>
+                                <jboss-fork-embedded/>
+                            </plugin-options>
                             <feature-packs>
                                 <feature-pack>
                                     <groupId>${project.groupId}</groupId>

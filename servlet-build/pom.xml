@@ -97,6 +97,7 @@
                             </feature-packs>
                             <plugin-options>
                                 <jboss-maven-dist/>
+                                <jboss-fork-embedded/>
                             </plugin-options>
                         </configuration>
                     </execution>
