@@ -32,10 +32,10 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
-* Test case for testing individual management operations.
-*
-* @author Richard Achmatowicz (c) 2011 Red Hat Inc.
-*/
+ * Test case for testing individual management operations.
+ *
+ * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
+ */
 public class OperationsTestCase extends OperationTestCaseBase {
 
     /**
@@ -48,16 +48,16 @@ public class OperationsTestCase extends OperationTestCaseBase {
 
         // read the default stack
         ModelNode result = services.executeOperation(getSubsystemReadOperation(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_CHANNEL));
-        Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(),SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals("ee", result.get(RESULT).resolve().asString());
 
         // write the default stack
         result = services.executeOperation(getSubsystemWriteOperation(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_CHANNEL, "bridge"));
-        Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(),SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(), SUCCESS, result.get(OUTCOME).asString());
 
         // re-read the default stack
         result = services.executeOperation(getSubsystemReadOperation(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_CHANNEL));
-        Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(),SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals("bridge", result.get(RESULT).asString());
     }
 
@@ -88,7 +88,7 @@ public class OperationsTestCase extends OperationTestCaseBase {
     public void testTransportReadWriteWithParameters() throws Exception {
         // Parse and install the XML into the controller
         KernelServices services = this.buildKernelServices();
-        Assert.assertTrue("Could not create services",services.isSuccessfulBoot());
+        Assert.assertTrue("Could not create services", services.isSuccessfulBoot());
 
         // add a protocol stack specifying TRANSPORT and PROTOCOLS parameters
         ModelNode result = services.executeOperation(getProtocolStackAddOperationWithParameters("maximal2"));
