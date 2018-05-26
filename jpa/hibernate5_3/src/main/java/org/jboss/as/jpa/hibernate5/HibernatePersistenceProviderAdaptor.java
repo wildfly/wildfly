@@ -88,7 +88,7 @@ public class HibernatePersistenceProviderAdaptor implements PersistenceProviderA
         putPropertyIfAbsent( pu, properties, AvailableSettings.JPA_ID_GENERATOR_GLOBAL_SCOPE_COMPLIANCE, true);
 
         // Search hint
-        putPropertyIfAbsent( pu, properties,"hibernate.search.index_uninverting_allowed", true);
+        putPropertyIfAbsent( pu, properties,"hibernate.search.index_uninverting_allowed", "true" );
     }
 
     @Override
