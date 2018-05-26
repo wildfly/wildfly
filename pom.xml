@@ -216,7 +216,7 @@
             2.2.x component upgrades, please update the hardcoded version in the module.xml
             file. For JSF 2.3.x component upgrades, please update the property here.
         -->
-        <version.com.sun.faces>2.3.3.SP1</version.com.sun.faces>
+        <version.com.sun.faces>2.3.5.SP1</version.com.sun.faces>
         <!-- Hardcoded in module.xml for the dual EE7 and EE8 support -->
         <version.com.sun.faces-2.2>2.2.13.SP5</version.com.sun.faces-2.2>
         <version.com.sun.istack>3.0.5</version.com.sun.istack>
@@ -339,7 +339,7 @@
         <version.org.jboss.spec.javax.el.jboss-el-api_3.0_spec>1.0.11.Final</version.org.jboss.spec.javax.el.jboss-el-api_3.0_spec>
         <version.org.jboss.spec.javax.enterprise.concurrent.jboss-concurrency-api_1.0_spec>1.0.2.Final</version.org.jboss.spec.javax.enterprise.concurrent.jboss-concurrency-api_1.0_spec>
         <version.org.jboss.spec.javax.faces.jboss-jsf-api_2.2_spec>2.2.13.SP2</version.org.jboss.spec.javax.faces.jboss-jsf-api_2.2_spec>
-        <version.org.jboss.spec.javax.faces.jboss-jsf-api_2.3_spec>2.3.3.SP1</version.org.jboss.spec.javax.faces.jboss-jsf-api_2.3_spec>
+        <version.org.jboss.spec.javax.faces.jboss-jsf-api_2.3_spec>2.3.5.SP1</version.org.jboss.spec.javax.faces.jboss-jsf-api_2.3_spec>
         <version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>1.0.2.Final</version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>
         <version.org.jboss.spec.javax.management.j2ee.jboss-j2eemgmt-api_1.1_spec>1.0.2.Final</version.org.jboss.spec.javax.management.j2ee.jboss-j2eemgmt-api_1.1_spec>
         <version.org.jboss.spec.javax.resource.jboss-connector-api_1.7_spec>1.0.1.Final</version.org.jboss.spec.javax.resource.jboss-connector-api_1.7_spec>
