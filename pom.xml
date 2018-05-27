@@ -291,7 +291,7 @@
         <!-- Hardcoded in module.xml for the dual EE7 and EE8 support -->
         <version.org.glassfish.javax.json-1.0>1.0.4</version.org.glassfish.javax.json-1.0>
         <version.org.glassfish.soteria>1.0</version.org.glassfish.soteria>
-        <version.org.hibernate53>5.3.0.Final</version.org.hibernate53> 
+        <version.org.hibernate53>5.3.1.Final</version.org.hibernate53>
         <!-- Hardcoded in module.xml for the dual EE7 and EE8 support -->
         <version.org.hibernate>5.1.14.Final</version.org.hibernate>
         <version.org.hibernate.commons.annotations>5.0.2.Final</version.org.hibernate.commons.annotations>
