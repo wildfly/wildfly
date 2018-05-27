@@ -297,7 +297,7 @@
         <version.org.hibernate.commons.annotations>5.0.2.Final</version.org.hibernate.commons.annotations>
         <version.org.hibernate.search>5.5.8.Final</version.org.hibernate.search>
         <!-- Hardcoded in module.xml for the dual EE7 and EE8 support -->
-        <version.org.hibernate.search5_10>5.10.0.Final</version.org.hibernate.search5_10>
+        <version.org.hibernate.search5_10>5.10.1.Final</version.org.hibernate.search5_10>
         <version.org.hibernate.validator>6.0.10.Final</version.org.hibernate.validator>
         <version.org.hibernate.validator.ee7>5.3.6.Final</version.org.hibernate.validator.ee7>
         <!-- Hardcoded in module.xml for the dual EE7 and EE8 support -->

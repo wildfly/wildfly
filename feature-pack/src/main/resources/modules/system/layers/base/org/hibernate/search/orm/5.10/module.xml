@@ -26,7 +26,7 @@
      JPA Applications -->
 <module xmlns="urn:jboss:module:1.7" name="org.hibernate.search.orm:5.10">
     <resources>
-        <artifact name="org.hibernate:hibernate-search-orm:5.10.0.Final"/> <!-- ${version.org.hibernate.search5_10} -->
+        <artifact name="org.hibernate:hibernate-search-orm:5.10.1.Final"/> <!-- ${version.org.hibernate.search5_10} -->
     </resources>
 
     <dependencies>
