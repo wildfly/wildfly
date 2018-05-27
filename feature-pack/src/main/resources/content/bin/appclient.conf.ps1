@@ -31,29 +31,29 @@
 # Uncomment the following line to disable manipulation of JAVA_OPTS (JVM parameters)
 # $PRESERVE_JAVA_OPTS=true
 
-if (-Not(test-path env:JBOSS_MODULES_SYSTEM_PKGS )) {
-  $JBOSS_MODULES_SYSTEM_PKGS="org.jboss.byteman"
-}
+# if (-Not(test-path env:JBOSS_MODULES_SYSTEM_PKGS )) {
+#   $JBOSS_MODULES_SYSTEM_PKGS="org.jboss.byteman"
+# }
 
-
-$JAVA_OPTS = @()
+# Uncomment this statement to override any existing JAVA_OPTS settings
+# $JAVA_OPTS = @()
 
 # JVM memory allocation pool parameters - modify as appropriate.
-$JAVA_OPTS += '-Xms64M'
-$JAVA_OPTS += '-Xmx512M'
-$JAVA_OPTS += '-XX:MaxMetaspaceSize=256m'
+# $JAVA_OPTS += '-Xms64M'
+# $JAVA_OPTS += '-Xmx512M'
+# $JAVA_OPTS += '-XX:MaxMetaspaceSize=256m'
 
 # Reduce the RMI GCs to once per hour for Sun JVMs.
-$JAVA_OPTS += '-Dsun.rmi.dgc.client.gcInterval=3600000'
-$JAVA_OPTS += '-Dsun.rmi.dgc.server.gcInterval=3600000'
-$JAVA_OPTS += '-Djava.net.preferIPv4Stack=true'
+# $JAVA_OPTS += '-Dsun.rmi.dgc.client.gcInterval=3600000'
+# $JAVA_OPTS += '-Dsun.rmi.dgc.server.gcInterval=3600000'
+# $JAVA_OPTS += '-Djava.net.preferIPv4Stack=true'
 
 # Warn when resolving remote XML DTDs or schemas.
-$JAVA_OPTS += '-Dorg.jboss.resolver.warning=true'
+# $JAVA_OPTS += '-Dorg.jboss.resolver.warning=true'
 
 # Make Byteman classes visible in all module loaders
 # This is necessary to inject Byteman rules into AS7 deployments
-$JAVA_OPTS += "-Djboss.modules.system.pkgs=$JBOSS_MODULES_SYSTEM_PKGS"
+# $JAVA_OPTS += "-Djboss.modules.system.pkgs=$JBOSS_MODULES_SYSTEM_PKGS"
 
 # Sample JPDA settings for remote socket debugging
 # $JAVA_OPTS += '-Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=n'

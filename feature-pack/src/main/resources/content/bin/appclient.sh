@@ -99,8 +99,12 @@ fi
 JVM_OPTVERSION="-version"
 JVM_D64_OPTION=`echo $JAVA_OPTS | $GREP "\-d64"`
 JVM_D32_OPTION=`echo $JAVA_OPTS | $GREP "\-d32"`
-test "x$JVM_D64_OPTION" != "x" && JVM_OPTVERSION="-d64 $JVM_OPTVERSION"
-test "x$JVM_D32_OPTION" != "x" && JVM_OPTVERSION="-d32 $JVM_OPTVERSION"
+
+if [ "x$JVM_D64_OPTION" != "x" ]; then
+    JVM_OPTVERSION="-d64 $JVM_OPTVERSION"
+ elif [ "x$JVM_D32_OPTION" != "x" ]; then
+    JVM_OPTVERSION="-d32 $JVM_OPTVERSION"
+fi
 
 # If -server not set in JAVA_OPTS, set it, if supported
 SERVER_SET=`echo $JAVA_OPTS | $GREP "\-server"`
@@ -118,14 +122,9 @@ if [ "x$SERVER_SET" = "x" ]; then
 
     # Enable -server if we have Hotspot or OpenJDK, unless we can't
     if [ "x$HAS_HOTSPOT" != "x" ] || [ "x$HAS_OPENJDK" != "x" ]; then
-        # MacOS does not support -server flag
-        if [ "$darwin" != "true" ]; then
-            JAVA_OPTS="-server $JAVA_OPTS"
-            JVM_OPTVERSION="-server $JVM_OPTVERSION"
-        fi
+        JAVA_OPTS="-server $JAVA_OPTS"
+        JVM_OPTVERSION="-server $JVM_OPTVERSION"
     fi
-else
-    JVM_OPTVERSION="-server $JVM_OPTVERSION"
 fi
 
 if [ "x$JBOSS_MODULEPATH" = "x" ]; then

@@ -33,17 +33,22 @@ echo(%JAVA_OPTS% | findstr /r /c:"-Djava.security.manager" > nul && (
     GOTO :EOF
 )
 
+set outParam=
 rem Read command-line args, the ~ removes the quotes from the parameter
 :READ-ARGS
 if "%~1" == "" (
    goto MAIN
 ) else if "%~1" == "-secmgr" (
    set SECMGR=true
+) else (
+    set outParam=%outParam% "%~1"
 )
 shift
 goto READ-ARGS
 
 :MAIN
+setlocal DisableDelayedExpansion
+set SERVER_OPTS=%outParam%
 
 rem Read an optional configuration file.
 if "x%APPCLIENT_CONF%" == "x" (
@@ -93,7 +98,13 @@ rem Add -server to the JVM options, if supported
 "%JAVA%" -server -version 2>&1 | findstr /I hotspot > nul
 if not errorlevel == 1 (
   set "JAVA_OPTS=%JAVA_OPTS% -server"
+) else (
+    "%JAVA%" -server -version 2>&1 | findstr /I openJDK > nul
+    if not errorlevel == 1 (
+      set "JAVA_OPTS=%JAVA_OPTS% -server"
+    )
 )
+
 
 rem Find run.jar, or we can't continue
 if exist "%JBOSS_HOME%\jboss-modules.jar" (
@@ -126,4 +137,4 @@ if "%SECMGR%" == "true" (
      org.jboss.as.appclient ^
     "-Djboss.home.dir=%JBOSS_HOME%" ^
     "-Djboss.server.base.dir=%JBOSS_HOME%\appclient" ^
-     %*
+     %SERVER_OPTS%

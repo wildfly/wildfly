@@ -6,16 +6,19 @@
 $scripts = (Get-ChildItem $MyInvocation.MyCommand.Path).Directory.FullName;
 . $scripts'\common.ps1'
 
+$JAVA_OPTS = Get-Java-Opts
 Process-Java-Opts-Parameters -Params $JAVA_OPTS
+$SERVER_OPTS = Process-Script-Parameters -Params $ARGS
 
-$JAVA_OPTS = @()
+if ($global:SECMGR -eq 'true') {
+    $global:MODULE_OPTS = '-secmgr'
+}
 
 # Sample JPDA settings for remote socket debugging
 #$JAVA_OPTS+="-agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=y"
 
-$JAVA_OPTS+="-Dprogram.name=wsconsume.ps1"
+$PROG_ARGS = Jbossws-Get-Java-Arguments -scriptName "wsconsume.ps1"  -entryModule "org.jboss.ws.tools.wsconsume" -javaOpts $JAVA_OPTS -logFileProperties $null -serverOpts $SERVER_OPTS
 
-$PROG_ARGS = Get-Java-Arguments -entryModule "org.jboss.ws.tools.wsconsume" -logFileProperties $null -serverOpts $ARGS
-& $JAVA $PROG_ARGS
+Start-WildFly-Process -programArguments $PROG_ARGS
 
 Env-Clean-Up
