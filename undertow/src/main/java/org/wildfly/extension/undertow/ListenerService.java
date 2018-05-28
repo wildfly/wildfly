@@ -36,12 +36,15 @@ import io.undertow.protocols.ssl.UndertowXnioSsl;
 import io.undertow.connector.ByteBufferPool;
 import io.undertow.server.HandlerWrapper;
 import io.undertow.server.HttpHandler;
+import io.undertow.server.HttpServerExchange;
 import io.undertow.server.OpenListener;
 import io.undertow.server.protocol.proxy.ProxyProtocolOpenListener;
+import io.undertow.util.StatusCodes;
 
 import org.jboss.as.network.ManagedBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -85,6 +88,7 @@ public abstract class ListenerService implements Service<UndertowListener>, Unde
     private volatile boolean started;
     private Consumer<Boolean> statisticsChangeListener;
     private final boolean proxyProtocol;
+    private volatile HandlerWrapper stoppingWrapper;
 
     protected ListenerService(String name, OptionMap listenerOptions, OptionMap socketOptions, boolean proxyProtocol) {
         this.name = name;
@@ -165,7 +169,7 @@ public abstract class ListenerService implements Service<UndertowListener>, Unde
     protected abstract void preStart(StartContext context);
 
     @Override
-    public void start(StartContext context) throws StartException {
+    public void start(final StartContext context) throws StartException {
         started = true;
         preStart(context);
         serverService.getValue().registerListener(this);
@@ -209,6 +213,26 @@ public abstract class ListenerService implements Service<UndertowListener>, Unde
             openListener.setUndertowOptions(builder.getMap());
         };
         getUndertowService().registerStatisticsListener(statisticsChangeListener);
+        final ServiceContainer container = context.getController().getServiceContainer();
+        this.stoppingWrapper = new HandlerWrapper() {
+            @Override
+            public HttpHandler wrap(HttpHandler handler) {
+                return new HttpHandler() {
+                    @Override
+                    public void handleRequest(HttpServerExchange exchange) throws Exception {
+                        //graceful shutdown is handled by the host service, so if the container is actually shutting down there
+                        //is a brief window where this will result in a 404 rather than a 503
+                        //even without graceful shutdown we start returning 503 once the container has started shutting down
+                        if(container.isShutdown()) {
+                            exchange.setStatusCode(StatusCodes.SERVICE_UNAVAILABLE);
+                            return;
+                        }
+                        handler.handleRequest(exchange);
+                    }
+                };
+            }
+        };
+        addWrapperHandler(stoppingWrapper);
     }
 
     protected abstract void cleanFailedStart();
@@ -223,6 +247,8 @@ public abstract class ListenerService implements Service<UndertowListener>, Unde
         unregisterBinding();
         getUndertowService().unregisterStatisticsListener(statisticsChangeListener);
         statisticsChangeListener = null;
+        listenerHandlerWrappers.remove(stoppingWrapper);
+        stoppingWrapper = null;
     }
 
     void addWrapperHandler(HandlerWrapper wrapper){
