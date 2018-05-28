@@ -30,7 +30,7 @@
         <property name="jboss.api" value="private"/>
     </properties>
     <resources>
-        <artifact name="org.hibernate:hibernate-search-engine:5.10.0.Final"/>  <!-- ${version.org.hibernate.search5_10} -->
+        <artifact name="org.hibernate:hibernate-search-engine:5.10.1.Final"/>  <!-- ${version.org.hibernate.search5_10} -->
     </resources>
 
     <dependencies>
