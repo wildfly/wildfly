@@ -56,6 +56,8 @@ import org.jboss.as.network.SocketBindingManager;
 import org.jboss.as.remoting.RemotingServices;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
+import org.jboss.as.server.ServerEnvironment;
+import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.as.txn.deployment.TransactionDependenciesProcessor;
@@ -94,6 +96,7 @@ import org.jboss.msc.value.ImmediateValue;
 import org.jboss.remoting3.Endpoint;
 import org.jboss.tm.ExtendedJBossXATerminator;
 import org.jboss.tm.JBossXATerminator;
+import org.jboss.tm.XAResourceRecoveryRegistry;
 import org.jboss.tm.usertx.UserTransactionRegistry;
 import org.omg.CORBA.ORB;
 import org.wildfly.iiop.openjdk.service.CorbaNamingService;
@@ -426,7 +429,8 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         context.getServiceTarget().addService(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT, localTransactionContextService)
                 .addDependency(TxnServices.JBOSS_TXN_EXTENDED_JBOSS_XA_TERMINATOR, ExtendedJBossXATerminator.class, localTransactionContextService.getExtendedJBossXATerminatorInjector())
                 .addDependency(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER, com.arjuna.ats.jbossatx.jta.TransactionManagerService.class, localTransactionContextService.getTransactionManagerInjector())
-                .addDependency(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER) // no injection
+                .addDependency(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER, XAResourceRecoveryRegistry.class, localTransactionContextService.getXAResourceRecoveryRegistryInjector())
+                .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, localTransactionContextService.getServerEnvironmentInjector())
                 .setInitialMode(Mode.ACTIVE)
                 .install();
 
