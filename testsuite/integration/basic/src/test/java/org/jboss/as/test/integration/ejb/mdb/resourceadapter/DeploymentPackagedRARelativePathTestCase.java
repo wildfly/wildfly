@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.ejb.mdb.resourceadapter;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
+import org.jboss.arquillian.container.test.api.OverProtocol;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -53,7 +54,12 @@ public class DeploymentPackagedRARelativePathTestCase {
 
     private static final String DEPLOYMENT_WITH_DEPLOYMENT_DESCRIPTOR = "deployment-descriptor";
 
-    @Deployment(name = DEPLOYMENT_ANNOTATED)
+    /*
+     * Please note that only one EAR deployment can be deployed with the Servlet 3.0 protocol. It needs to be the first
+     * application deployed and is required due to the @OperateOnDeployment to execute tests on the correct deployment.
+     */
+    @OverProtocol("Servlet 3.0")
+    @Deployment(name = DEPLOYMENT_ANNOTATED, order = 1)
     public static Archive createDeplyomentAnnotated() {
         final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, EAR_NAME + ".ear");
 
@@ -73,7 +79,8 @@ public class DeploymentPackagedRARelativePathTestCase {
         return ear;
     }
 
-    @Deployment(name = DEPLOYMENT_WITH_DEPLOYMENT_DESCRIPTOR)
+    // See above comment on why the order is required
+    @Deployment(name = DEPLOYMENT_WITH_DEPLOYMENT_DESCRIPTOR, order = 2)
     public static Archive createDeplyomentWithDeploymentDescriptor() {
         final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, EAR_NAME + "-deployment-descriptor.ear");
 
