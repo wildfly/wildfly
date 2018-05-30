@@ -46,6 +46,11 @@ public enum IdentifierSerializer implements Serializer<String> {
         public String read(DataInput input) throws IOException {
             return input.readUTF();
         }
+
+        @Override
+        public boolean validate(String id) {
+            return true;
+        }
     },
     /**
      * Specific optimization for Base64-encoded identifiers (e.g. Undertow).
@@ -53,9 +58,13 @@ public enum IdentifierSerializer implements Serializer<String> {
     BASE64() {
         @Override
         public void write(DataOutput output, String id) throws IOException {
-            byte[] bytes = Base64.getUrlDecoder().decode(id);
-            output.writeByte(bytes.length);
-            output.write(bytes);
+            try {
+                byte[] bytes = Base64.getUrlDecoder().decode(id);
+                output.writeByte(bytes.length);
+                output.write(bytes);
+            } catch (IllegalArgumentException e) {
+                throw new IOException(e);
+            }
         }
 
         @Override
@@ -71,9 +80,13 @@ public enum IdentifierSerializer implements Serializer<String> {
     HEX() {
         @Override
         public void write(DataOutput output, String id) throws IOException {
-            byte[] bytes = DatatypeConverter.parseHexBinary(id);
-            output.writeByte(bytes.length);
-            output.write(bytes);
+            try {
+                byte[] bytes = DatatypeConverter.parseHexBinary(id);
+                output.writeByte(bytes.length);
+                output.write(bytes);
+            } catch (IllegalArgumentException e) {
+                throw new IOException(e);
+            }
         }
 
         @Override
@@ -84,4 +97,77 @@ public enum IdentifierSerializer implements Serializer<String> {
         }
     },
     ;
+
+    /**
+     * Indicates whether or not the specified identifier is valid for this serializer.
+     * @param id an identifier
+     * @return true, if the specified identifier is valid, false otherwise.
+     */
+    public boolean validate(String id) {
+        try {
+            this.write(NULL_SINK, id);
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
+    private static final DataOutput NULL_SINK = new DataOutput() {
+
+        @Override
+        public void write(int b) throws IOException {
+        }
+
+        @Override
+        public void write(byte[] b) throws IOException {
+        }
+
+        @Override
+        public void write(byte[] b, int off, int len) throws IOException {
+        }
+
+        @Override
+        public void writeBoolean(boolean v) throws IOException {
+        }
+
+        @Override
+        public void writeByte(int v) throws IOException {
+        }
+
+        @Override
+        public void writeShort(int v) throws IOException {
+        }
+
+        @Override
+        public void writeChar(int v) throws IOException {
+        }
+
+        @Override
+        public void writeInt(int v) throws IOException {
+        }
+
+        @Override
+        public void writeLong(long v) throws IOException {
+        }
+
+        @Override
+        public void writeFloat(float v) throws IOException {
+        }
+
+        @Override
+        public void writeDouble(double v) throws IOException {
+        }
+
+        @Override
+        public void writeBytes(String s) throws IOException {
+        }
+
+        @Override
+        public void writeChars(String s) throws IOException {
+        }
+
+        @Override
+        public void writeUTF(String s) throws IOException {
+        }
+    };
 }
