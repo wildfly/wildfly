@@ -65,6 +65,8 @@ public class UndertowService implements Service<UndertowService> {
      * service name under which default host of default server is bound.
      */
     public static final ServiceName DEFAULT_HOST = DEFAULT_SERVER.append("default-host");
+
+    public static final ServiceName UNDERTOW_DEPLOYMENT = ServiceName.of("undertow-deployment");
     /**
      * The base name for listener/handler/filter services.
      */
@@ -93,6 +95,19 @@ public class UndertowService implements Service<UndertowService> {
         this.statisticsEnabled = statisticsEnabled;
     }
 
+    public static ServiceName deploymentServiceName(ServiceName deploymentServiceName) {
+        return deploymentServiceName.append(UNDERTOW_DEPLOYMENT);
+    }
+
+    /**
+     * The old deployment unit service name. This is still registered as an alias, however {{@link #deploymentServiceName(ServiceName)}}
+     * should be used instead.
+     * @param serverName The server name
+     * @param virtualHost The virtual host
+     * @param contextPath The context path
+     * @return The legacy deployment service alias
+     */
+    @Deprecated
     public static ServiceName deploymentServiceName(final String serverName, final String virtualHost, final String contextPath) {
         return WEB_DEPLOYMENT_BASE.append(serverName).append(virtualHost).append("".equals(contextPath) ? "/" : contextPath);
     }
