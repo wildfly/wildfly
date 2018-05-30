@@ -167,34 +167,17 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         if (warMetaData == null) {
             return;
         }
-        String deploymentName;
-        if (deploymentUnit.getParent() == null) {
-            deploymentName = deploymentUnit.getName();
-        } else {
-            deploymentName = deploymentUnit.getParent().getName() + "." + deploymentUnit.getName();
-        }
 
-        final Map.Entry<String,String> severHost = defaultModuleMappingProvider.getMapping(deploymentName);
-        String defaultHostForDeployment;
-        String defaultServerForDeployment;
-        if (severHost != null) {
-            defaultServerForDeployment = severHost.getKey();
-            defaultHostForDeployment = severHost.getValue();
-        } else {
-            defaultServerForDeployment = this.defaultServer;
-            defaultHostForDeployment = this.defaultHost;
-        }
+        final DeploymentNames deploymentNames = createDeploymentNames(deploymentUnit, warMetaData.getMergedJBossWebMetaData());
+        deploymentUnit.putAttachment(DeploymentNames.ATTACHMENT_KEY, deploymentNames);
 
-        String serverInstanceName = warMetaData.getMergedJBossWebMetaData().getServerInstanceName() == null ? defaultServerForDeployment : warMetaData.getMergedJBossWebMetaData().getServerInstanceName();
-        String hostName = hostNameOfDeployment(warMetaData, defaultHostForDeployment);
-        processDeployment(warMetaData, deploymentUnit, phaseContext.getServiceTarget(), deploymentName, hostName, serverInstanceName);
+        processDeployment(warMetaData, deploymentUnit, phaseContext.getServiceTarget(), deploymentNames);
     }
 
-
-    private String hostNameOfDeployment(final WarMetaData metaData, String defaultHost) {
+    private static String hostNameOfDeployment(final JBossWebMetaData metaData, String defaultHost) {
         Collection<String> hostNames = null;
-        if (metaData.getMergedJBossWebMetaData() != null) {
-            hostNames = metaData.getMergedJBossWebMetaData().getVirtualHosts();
+        if (metaData != null) {
+            hostNames = metaData.getVirtualHosts();
         }
         if (hostNames == null || hostNames.isEmpty()) {
             hostNames = Collections.singleton(defaultHost);
@@ -206,8 +189,36 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         return hostName;
     }
 
+    private DeploymentNames createDeploymentNames(DeploymentUnit deploymentUnit, JBossWebMetaData metaData) {
+        final String deploymentName;
+        if (deploymentUnit.getParent() == null) {
+            deploymentName = deploymentUnit.getName();
+        } else {
+            deploymentName = deploymentUnit.getParent().getName() + "." + deploymentUnit.getName();
+        }
+
+        final Map.Entry<String,String> severHost = defaultModuleMappingProvider.getMapping(deploymentName);
+        final String defaultHostForDeployment;
+        final String defaultServerForDeployment;
+        if (severHost != null) {
+            defaultServerForDeployment = severHost.getKey();
+            defaultHostForDeployment = severHost.getValue();
+        } else {
+            defaultServerForDeployment = this.defaultServer;
+            defaultHostForDeployment = this.defaultHost;
+        }
+
+        final String serverName = metaData == null || metaData.getServerInstanceName() == null
+                ? defaultServerForDeployment
+                : metaData.getServerInstanceName();
+        final String hostName = hostNameOfDeployment(metaData, defaultHostForDeployment);
+        final String containerName = metaData == null || metaData.getServletContainerName() == null ? defaultContainer : metaData.getServletContainerName();
+        final String pathName = pathNameOfDeployment(deploymentUnit, metaData);
+        return new DeploymentNames(serverName, containerName, hostName, deploymentName, pathName);
+    }
+
     private void processDeployment(final WarMetaData warMetaData, final DeploymentUnit deploymentUnit, final ServiceTarget serviceTarget,
-                                   final String deploymentName, final String hostName, final String serverInstanceName)
+                                   final DeploymentNames deploymentNames)
             throws DeploymentUnitProcessingException {
         ResourceRoot deploymentResourceRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
         final VirtualFile deploymentRoot = deploymentResourceRoot.getRoot();
@@ -232,10 +243,6 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
                 dependentComponents.add(component);
             }
         }
-        String servletContainerName = metaData.getServletContainerName();
-        if(servletContainerName == null) {
-            servletContainerName = defaultContainer;
-        }
 
         boolean componentRegistryExists = true;
         ComponentRegistry componentRegistry = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.COMPONENT_REGISTRY);
@@ -256,8 +263,6 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         if (deploymentUnit.getParent() != null) {
             jaccContextId = deploymentUnit.getParent().getName() + "!" + jaccContextId;
         }
-
-        final String pathName = pathNameOfDeployment(deploymentUnit, metaData);
 
         boolean securityEnabled = deploymentUnit.hasAttachment(SecurityAttachments.SECURITY_ENABLED);
 
@@ -291,20 +296,20 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
 
         additionalDependencies.addAll(warMetaData.getAdditionalDependencies());
         try {
-            String capability = HostSingleSignOnDefinition.HOST_SSO_CAPABILITY.fromBaseCapability(serverInstanceName, hostName).getName();
+            String capability = HostSingleSignOnDefinition.HOST_SSO_CAPABILITY.fromBaseCapability(deploymentNames.getServerName(), deploymentNames.getHostName()).getName();
             capabilitySupport.getCapabilityRuntimeAPI(capability, Object.class);
             additionalDependencies.add(capabilitySupport.getCapabilityServiceName(capability));
         } catch (CapabilityServiceSupport.NoSuchCapabilityException e) {
             //ignore
         }
 
-        final ServiceName hostServiceName = UndertowService.virtualHostName(serverInstanceName, hostName);
-        final ServiceName deploymentServiceName = UndertowService.deploymentServiceName(serverInstanceName, hostName, pathName);
+        final ServiceName hostServiceName = UndertowService.virtualHostName(deploymentNames.getServerName(), deploymentNames.getHostName());
+        final ServiceName deploymentServiceName = UndertowService.deploymentServiceName(deploymentNames.getServerName(), deploymentNames.getHostName(), deploymentNames.getContextPath());
         TldsMetaData tldsMetaData = deploymentUnit.getAttachment(TldsMetaData.ATTACHMENT_KEY);
         UndertowDeploymentInfoService undertowDeploymentInfoService = UndertowDeploymentInfoService.builder()
                 .setAttributes(deploymentUnit.getAttachmentList(ServletContextAttribute.ATTACHMENT_KEY))
-                .setContextPath(pathName)
-                .setDeploymentName(deploymentName) //todo: is this deployment name concept really applicable?
+                .setContextPath(deploymentNames.getContextPath())
+                .setDeploymentName(deploymentNames.getDeploymentName()) //todo: is this deployment name concept really applicable?
                 .setDeploymentRoot(deploymentRoot)
                 .setMergedMetaData(warMetaData.getMergedJBossWebMetaData())
                 .setModule(module)
@@ -331,7 +336,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
 
         final ServiceName deploymentInfoServiceName = deploymentServiceName.append(UndertowDeploymentInfoService.SERVICE_NAME);
         ServiceBuilder<DeploymentInfo> infoBuilder = serviceTarget.addService(deploymentInfoServiceName, undertowDeploymentInfoService)
-                .addDependency(UndertowService.SERVLET_CONTAINER.append(servletContainerName), ServletContainerService.class, undertowDeploymentInfoService.getContainer())
+                .addDependency(UndertowService.SERVLET_CONTAINER.append(deploymentNames.getServletContainerName()), ServletContainerService.class, undertowDeploymentInfoService.getContainer())
                 .addDependency(UndertowService.UNDERTOW, UndertowService.class, undertowDeploymentInfoService.getUndertowService())
                 .addDependency(hostServiceName, Host.class, undertowDeploymentInfoService.getHost())
                 .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, undertowDeploymentInfoService.getServerEnvironmentInjectedValue())
@@ -389,10 +394,10 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         } else {
             CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
 
-            CapabilityServiceBuilder<SessionManagerFactory> factoryBuilder = getSessionManagerFactoryBuilder(deploymentServiceName, serverInstanceName, deploymentName, module, metaData, deploymentUnit.getAttachment(UndertowAttachments.SERVLET_CONTAINER_SERVICE));
+            CapabilityServiceBuilder<SessionManagerFactory> factoryBuilder = getSessionManagerFactoryBuilder(deploymentServiceName, deploymentNames.getServerName(), deploymentNames.getDeploymentName(), module, metaData, deploymentUnit.getAttachment(UndertowAttachments.SERVLET_CONTAINER_SERVICE));
             infoBuilder.addDependency(factoryBuilder.getServiceName(), SessionManagerFactory.class, undertowDeploymentInfoService.getSessionManagerFactoryInjector());
 
-            CapabilityServiceBuilder<SessionIdentifierCodec> codecBuilder = getSessionIdentifierCodecBuilder(deploymentServiceName, serverInstanceName, deploymentName, metaData);
+            CapabilityServiceBuilder<SessionIdentifierCodec> codecBuilder = getSessionIdentifierCodecBuilder(deploymentServiceName, deploymentNames.getServerName(), deploymentNames.getDeploymentName(), metaData);
             infoBuilder.addDependency(codecBuilder.getServiceName(), SessionIdentifierCodec.class, undertowDeploymentInfoService.getSessionIdentifierCodecInjector());
 
             for (CapabilityServiceBuilder<?> builder : Arrays.asList(factoryBuilder, codecBuilder)) {
@@ -405,7 +410,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         final UndertowDeploymentService service = new UndertowDeploymentService(injectionContainer, true);
         final ServiceBuilder<UndertowDeploymentService> builder = serviceTarget.addService(deploymentServiceName, service)
                 .addDependencies(dependentComponents)
-                .addDependency(UndertowService.SERVLET_CONTAINER.append(defaultContainer), ServletContainerService.class, service.getContainer())
+                .addDependency(UndertowService.SERVLET_CONTAINER.append(deploymentNames.getServletContainerName()), ServletContainerService.class, service.getContainer())
                 .addDependency(hostServiceName, Host.class, service.getHost())
                 .addDependencies(deploymentUnit.getAttachmentList(Attachments.WEB_DEPENDENCIES))
                 .addDependency(deploymentInfoServiceName, DeploymentInfo.class, service.getDeploymentInfoInjectedValue());
@@ -439,9 +444,9 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         // Process the web related mgmt information
         final DeploymentResourceSupport deploymentResourceSupport = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_RESOURCE_SUPPORT);
         final ModelNode node = deploymentResourceSupport.getDeploymentSubsystemModel(UndertowExtension.SUBSYSTEM_NAME);
-        node.get(DeploymentDefinition.CONTEXT_ROOT.getName()).set("".equals(pathName) ? "/" : pathName);
-        node.get(DeploymentDefinition.VIRTUAL_HOST.getName()).set(hostName);
-        node.get(DeploymentDefinition.SERVER.getName()).set(serverInstanceName);
+        node.get(DeploymentDefinition.CONTEXT_ROOT.getName()).set("".equals(deploymentNames.getContextPath()) ? "/" : deploymentNames.getContextPath());
+        node.get(DeploymentDefinition.VIRTUAL_HOST.getName()).set(deploymentNames.getHostName());
+        node.get(DeploymentDefinition.SERVER.getName()).set(deploymentNames.getServerName());
         processManagement(deploymentUnit, metaData);
     }
 
