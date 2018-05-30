@@ -21,8 +21,14 @@
  */
 package org.jboss.as.test.integration.ee.suspend;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUSPEND_STATE;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
+import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.SocketPermission;
 import java.net.URL;
@@ -38,6 +44,8 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
@@ -53,9 +61,6 @@ import org.junit.runner.RunWith;
 
 /**
  * Tests for suspend/resume functionality with EE concurrency
- *
- * TODO: this test needs to be able to read the suspend state in order to really test anything,
- * at the moment it just tests that it does not blow up
  */
 @RunWith(Arquillian.class)
 public class EEConcurrencySuspendTestCase {
@@ -104,10 +109,20 @@ public class EEConcurrencySuspendTestCase {
 
             ModelNode op = new ModelNode();
             op.get(ModelDescriptionConstants.OP).set("suspend");
-            managementClient.getControllerClient().execute(op);
+            execute(managementClient.getControllerClient(), op);
+
+            op = new ModelNode();
+            op.get(OP).set(READ_ATTRIBUTE_OPERATION);
+            op.get(NAME).set(SUSPEND_STATE);
+            Assert.assertEquals("SUSPENDING", executeForStringResult(managementClient.getControllerClient(), op));
 
             ShutdownServlet.requestLatch.countDown();
             Assert.assertEquals(ShutdownServlet.TEXT, result.get());
+
+            op = new ModelNode();
+            op.get(OP).set(READ_ATTRIBUTE_OPERATION);
+            op.get(NAME).set(SUSPEND_STATE);
+            Assert.assertEquals("SUSPENDED", executeForStringResult(managementClient.getControllerClient(), op));
 
             final HttpURLConnection conn = (HttpURLConnection) new URL(address).openConnection();
             try {
@@ -124,10 +139,19 @@ public class EEConcurrencySuspendTestCase {
 
             ModelNode op = new ModelNode();
             op.get(ModelDescriptionConstants.OP).set("resume");
-            managementClient.getControllerClient().execute(op);
+            execute(managementClient.getControllerClient(), op);
         }
-
-
     }
 
+    static ModelNode execute(final ModelControllerClient client, final ModelNode op) throws IOException {
+        ModelNode result = client.execute(op);
+        if (!Operations.isSuccessfulOutcome(result)) {
+            Assert.fail(Operations.getFailureDescription(result).asString());
+        }
+        return result;
+    }
+
+    static String executeForStringResult(final ModelControllerClient client, final ModelNode op) throws IOException {
+        return execute(client,op).get(RESULT).asString();
+    }
 }
