@@ -45,6 +45,7 @@
         <module name="org.jboss.msc"/>
         <module name="javax.enterprise.api"/>
         <module name="org.wildfly.cdi-api-bridge"/>
+        <module name="org.wildfly.transaction.client"/>
         <module name="javax.persistence.api"/>
         <module name="javax.transaction.api"/>
     </dependencies>
