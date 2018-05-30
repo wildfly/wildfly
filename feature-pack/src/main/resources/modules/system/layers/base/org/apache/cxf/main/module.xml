@@ -26,6 +26,7 @@
 
     <resources>
         <artifact name="${org.apache.cxf:cxf-core}"/>
+        <artifact name="${org.apache.cxf:cxf-rt-features-logging}"/>
     </resources>
 
     <dependencies>
@@ -35,6 +36,7 @@
                 <include path="META-INF"/>
             </imports>
         </module>
+        <module name="org.slf4j"/>
         <module name="asm.asm" />
         <module name="javax.api" />
         <module name="javax.annotation.api" />
