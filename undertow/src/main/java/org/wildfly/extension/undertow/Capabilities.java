@@ -59,5 +59,4 @@ public final class Capabilities {
     public static final String REF_JACC_POLICY = "org.wildfly.security.jacc-policy";
     public static final String REF_OUTBOUND_SOCKET = "org.wildfly.network.outbound-socket-binding";
     public static final String REF_REQUEST_CONTROLLER = "org.wildfly.request-controller";
-    public static final String REF_MOD_CLUSTER = "org.wildfly.mod_cluster";
 }

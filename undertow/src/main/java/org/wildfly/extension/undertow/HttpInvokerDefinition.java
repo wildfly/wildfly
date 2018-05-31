@@ -21,7 +21,6 @@
  */
 package org.wildfly.extension.undertow;
 
-import static org.wildfly.extension.undertow.Capabilities.REF_MOD_CLUSTER;
 import static org.wildfly.extension.undertow.UndertowRootDefinition.HTTP_INVOKER_RUNTIME_CAPABILITY;
 import static org.wildfly.extension.undertow.Capabilities.CAPABILITY_HTTP_INVOKER_HOST;
 
@@ -62,7 +61,6 @@ public class HttpInvokerDefinition extends PersistentResourceDefinition {
                                 address.getLastElement().getValue()})
                         //.addDynamicRequirements(Capabilities.CAPABILITY_HOST)
                         .addRequirements(Capabilities.CAPABILITY_HTTP_INVOKER)
-                        //.addOptionalRequirements(REF_MOD_CLUSTER)
                         .build();
 
     static final SimpleAttributeDefinition HTTP_AUTHENTICATION_FACTORY = new SimpleAttributeDefinitionBuilder(Constants.HTTP_AUTHENITCATION_FACTORY, ModelType.STRING, true)
@@ -145,15 +143,6 @@ public class HttpInvokerDefinition extends PersistentResourceDefinition {
             } else  if(securityRealmString != null) {
                 final ServiceName realmServiceName = SecurityRealm.ServiceUtil.createServiceName(securityRealmString);
                 builder.addDependency(realmServiceName, SecurityRealmService.class, service.getRealmService());
-            }
-            if (context.hasOptionalCapability(REF_MOD_CLUSTER, HTTP_INVOKER_HOST_CAPABILITY.getDynamicName(address), null )){
-                // Our mod_cluster integration installs its service using the mod_cluster capability's service
-                // name with "undertow" appended.
-                // TODO formalize this. Is UndertowEventHandlerAdapterBuilder a capability itself? If so, how can we register it?
-                // Or is UndertowEventHandlerAdapterBuilder and its module part of undertow, not mod_cluster,
-                // and these names are just internal details?
-                ServiceName svcName = context.getCapabilityServiceName(REF_MOD_CLUSTER, Void.class).append("undertow");
-                builder.addDependency(svcName);
             }
 
             builder.setInitialMode(ServiceController.Mode.ACTIVE)
