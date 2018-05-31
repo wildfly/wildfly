@@ -131,7 +131,7 @@
         <servlet.dist.product.slot>wildfly-web</servlet.dist.product.slot>
         <product.release.version>${project.version}</product.release.version>
         <!-- A short variant of product.release.version used in 'startsWith' tests done by dist verification logic -->
-        <verifier.product.release.version>13.0</verifier.product.release.version>
+        <verifier.product.release.version>14.0</verifier.product.release.version>
 
         <!-- Checkstyle configuration -->
         <linkXRef>false</linkXRef>
