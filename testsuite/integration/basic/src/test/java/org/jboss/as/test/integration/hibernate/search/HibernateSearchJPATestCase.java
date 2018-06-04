@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.integration.hibernate.search;
 
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 
 import javax.ejb.EJB;
@@ -63,6 +64,10 @@ public class HibernateSearchJPATestCase {
         jar.addAsManifestResource(HibernateSearchJPATestCase.class.getPackage(), "persistence.xml", "persistence.xml");
         // add testing Bean and entities
         jar.addClasses(SearchBean.class, Book.class, HibernateSearchJPATestCase.class);
+        // WFLY-10195: temporary - should be possible to remove after upgrade to Lucene 6
+        jar.addAsManifestResource(createPermissionsXmlAsset(
+                new RuntimePermission("accessDeclaredMembers")
+        ), "permissions.xml");
 
         return jar;
     }
