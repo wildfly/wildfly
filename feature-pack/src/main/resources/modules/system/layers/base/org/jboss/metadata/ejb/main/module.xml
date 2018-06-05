@@ -50,6 +50,5 @@
         <module name="javax.transaction.api" optional="true"/>
         <module name="javax.xml.rpc.api" optional="true"/>
         <module name="javax.rmi.api" optional="true"/>
-        <module name="org.omg.api" optional="true"/>
     </dependencies>
 </module>
