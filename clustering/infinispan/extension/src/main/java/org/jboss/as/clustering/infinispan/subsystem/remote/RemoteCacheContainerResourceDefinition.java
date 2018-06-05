@@ -110,12 +110,12 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
         private final AttributeDefinition definition;
 
         Attribute(String name, ModelType type, ModelNode defaultValue) {
-            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
+            this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, type)
                     .setAllowExpression(true)
                     .setRequired(defaultValue == null)
                     .setDefaultValue(defaultValue)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                    .build();
+            ).build();
         }
 
         @Override
