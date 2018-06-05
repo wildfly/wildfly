@@ -7223,5 +7223,20 @@
                 <surefire.jacoco.args></surefire.jacoco.args>
             </properties>
         </profile>
+        <profile>
+            <!-- this profile can be used to test component releases available in Nexus staging repositories -->
+            <id>staged-releases</id>
+            <properties>
+                <jboss.staging.repository.group>true</jboss.staging.repository.group>
+            </properties>
+            <repositories>
+                <repository>
+                    <id>jboss-staging-repository-group</id>
+                    <name>JBoss Staging Reposiry Group</name>
+                    <url>https://repository.jboss.org/nexus/content/groups/staging/</url>
+                    <layout>default</layout>
+                </repository>
+            </repositories>
+        </profile>
     </profiles>
 </project>
