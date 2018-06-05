@@ -40,6 +40,9 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECUR
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.STATISTICS_ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 import org.jboss.as.connector._private.Capabilities;
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.services.resourceadapters.statistics.ConnectionDefinitionStatisticsService;
@@ -173,8 +176,13 @@ public class ConnectionDefinitionAdd extends AbstractAddStepHandler {
             }
 
             // Install the ConnectionDefinitionService
-            cdServiceBuilder.install();
-
+            ServiceController<ModifiableConnDef> serviceController = cdServiceBuilder.install();
+            // give it a chance to wait at most 500 mill-seconds for service to come up
+            try {
+                serviceController.awaitValue(500, TimeUnit.MILLISECONDS);
+            } catch (IllegalStateException | InterruptedException | TimeoutException e) {
+                ConnectorLogger.ROOT_LOGGER.requiredServiceNotUp(serviceController.getName(), serviceController.getState());
+            }
 
             ServiceRegistry registry = context.getServiceRegistry(true);
 
