@@ -29,7 +29,6 @@ import io.undertow.server.session.SessionListeners;
 import io.undertow.server.session.SessionManagerStatistics;
 
 import java.time.Duration;
-import java.util.Base64;
 import java.util.Collections;
 import java.util.OptionalLong;
 import java.util.Set;
@@ -37,9 +36,11 @@ import java.util.concurrent.locks.StampedLock;
 
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
+import org.wildfly.clustering.web.IdentifierSerializer;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionManager;
+import org.wildfly.clustering.web.undertow.UndertowIdentifierSerializerProvider;
 import org.wildfly.clustering.web.undertow.logging.UndertowClusteringLogger;
 
 /**
@@ -47,6 +48,8 @@ import org.wildfly.clustering.web.undertow.logging.UndertowClusteringLogger;
  * @author Paul Ferraro
  */
 public class DistributableSessionManager implements UndertowSessionManager {
+
+    private static final IdentifierSerializer IDENTIFIER_SERIALIZER = new UndertowIdentifierSerializerProvider().getSerializer();
 
     private final String deploymentName;
     private final SessionListeners listeners;
@@ -161,9 +164,7 @@ public class DistributableSessionManager implements UndertowSessionManager {
         }
 
         // If requested id contains invalid characters, then session cannot exist and would otherwise cause session lookup to fail
-        try {
-            Base64.getUrlDecoder().decode(id);
-        } catch (IllegalArgumentException e) {
+        if (!IDENTIFIER_SERIALIZER.validate(id)) {
             return null;
         }
 
@@ -230,9 +231,7 @@ public class DistributableSessionManager implements UndertowSessionManager {
     @Override
     public io.undertow.server.session.Session getSession(String sessionId) {
         // If requested id contains invalid characters, then session cannot exist and would otherwise cause session lookup to fail
-        try {
-            Base64.getUrlDecoder().decode(sessionId);
-        } catch (IllegalArgumentException e) {
+        if (!IDENTIFIER_SERIALIZER.validate(sessionId)) {
             return null;
         }
         try (Batch batch = this.manager.getBatcher().createBatch()) {
