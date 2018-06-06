@@ -91,6 +91,10 @@ public class SFSB2LC {
 
     /**
      * Checking entity 2LC in one EntityManager session
+     * TODO: rewrite to separate transaction used to createEmployee, and either load entities outside tx or
+     * start new tx for loading entities.  Maybe simplest to have calling code, handle creating the Employees first.
+     * TODO: need conclusion to discussion about whether createEmployee should cause 2lc PutCount to be incremented,
+     *       as no data is loaded into the cache.
      */
     public String sameSessionCheck(String CACHE_REGION_NAME) {
 

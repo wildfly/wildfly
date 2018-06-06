@@ -26,11 +26,16 @@ import static org.junit.Assert.assertEquals;
 
 import javax.ejb.EJB;
 
+import org.hibernate.search.SearchFactory;
+import org.hibernate.search.engine.impl.MutableSearchFactory;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -54,6 +59,13 @@ public class HibernateSearchJPATestCase {
         searchBean.storeNewBook("Hello planet Mars");
         assertEquals(3, searchBean.findByKeyword("hello").size());
         assertEquals(1, searchBean.findByKeyword("mars").size());
+    }
+
+    @Test
+    public void testCustomConfigurationApplied() {
+        SearchFactory searchFactory = searchBean.retrieveHibernateSearchEngine();
+        MutableSearchFactory internalSearchEngine = searchFactory.unwrap( MutableSearchFactory.class );
+        Assert.assertTrue(internalSearchEngine.isIndexUninvertingAllowed());
     }
 
     @Deployment

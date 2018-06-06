@@ -189,14 +189,9 @@ public class Configuration {
     public static final String HIBERNATE_SEARCH_MODULE = "wildfly.jpa.hibernate.search.module";
 
     /**
-     * name of the Hibernate Search module name used in EE7 mode
+     * name of the Hibernate Search module name
      */
-    public static final String PROVIDER_MODULE_HIBERNATE_SEARCH_EE7 = "org.hibernate.search.orm:main";
-
-    /**
-     * name of the Hibernate Search module name used in EE8 mode
-     */
-    public static final String PROVIDER_MODULE_HIBERNATE_SEARCH_EE8 = "org.hibernate.search.orm:5.10";
+    public static final String PROVIDER_MODULE_HIBERNATE_SEARCH = "org.hibernate.search.orm";
 
 
     private static final String EE_DEFAULT_DATASOURCE = "java:comp/DefaultDataSource";

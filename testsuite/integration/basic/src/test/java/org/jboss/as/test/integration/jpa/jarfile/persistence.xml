@@ -30,8 +30,9 @@
             <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
             <property name="hibernate.show_sql" value="false"/>
             <property name="hibernate.session_factory_name" value="modelSessionFactory"/>
-            <!-- ensure that the alias for the org:hibernate module can be used -->
-            <property name="jboss.as.jpa.providerModule" value="org.hibernate:5.0"/>
+            <!-- ensure that the alias for the org:hibernate module can be used,
+                 this needs to be bumped to the current Hibernate ORM module name alias. -->
+            <property name="jboss.as.jpa.providerModule" value="org.hibernate:5.3"/>
         </properties>
     </persistence-unit>
 </persistence>

@@ -57,7 +57,12 @@ public class HibernateNativeAPINaturalIdTestCase {
             + "\"http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd\">"
             + "<hibernate-configuration><session-factory>" + "<property name=\"show_sql\">false</property>"
             + "<property name=\"current_session_context_class\">thread</property>"
-// only needed for ORM 5.3.0  + "<property name=\"hibernate.allow_update_outside_transaction\">true</property>"
+            /* Hibernate 5.2+ (see https://hibernate.atlassian.net/browse/HHH-10877 +
+                 https://hibernate.atlassian.net/browse/HHH-12665) no longer defaults
+                 to allowing a DML operation outside of a started transaction.
+                 The application workaround is to configure new property hibernate.allow_update_outside_transaction=true.
+            */
+            + "<property name=\"hibernate.allow_update_outside_transaction\">true</property>"
             + "<mapping resource=\"testmapping.hbm.xml\"/>" + "</session-factory></hibernate-configuration>";
 
     public static final String testmapping = "<?xml version=\"1.0\"?>"
