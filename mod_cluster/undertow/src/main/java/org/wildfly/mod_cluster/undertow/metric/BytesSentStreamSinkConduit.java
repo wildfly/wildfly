@@ -1,4 +1,4 @@
-/**
+/*
  * JBoss, Home of Professional Open Source.
  * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
@@ -33,10 +33,9 @@ import org.xnio.conduits.StreamSinkConduit;
 
 /**
  * Implementation of {@link StreamSinkConduit} wrapping that wraps around byte-transferring methods to calculate total
- * number of bytes transferred leveraging JDK 8 version of {@link LongAdder} (via Infinispan).
+ * number of bytes transferred leveraging {@link LongAdder}.
  *
  * @author Radoslav Husar
- * @version Aug 2013
  * @since 8.0
  */
 public class BytesSentStreamSinkConduit extends AbstractSinkConduit implements StreamSinkConduit {

@@ -35,8 +35,8 @@ import org.jboss.dmr.ModelNode;
 /**
  * Generic operation handler for an executable management object.
  * @author Paul Ferraro
- * @param C the execution context
- * @param E the contextual executable
+ * @param <C> the execution context
+ * @param <E> the contextual executable
  */
 public class ExecutionHandler<C, E extends Executable<C>> extends AbstractRuntimeOnlyHandler {
 
@@ -48,7 +48,7 @@ public class ExecutionHandler<C, E extends Executable<C>> extends AbstractRuntim
      * Constructs a new ExecutionHandler
      * @param executor an executor
      * @param executables the executables sharing this handler
-     * @param name a function returning the name of an executable
+     * @param nameFactory a function returning the name of an executable
      */
     public ExecutionHandler(Executor<C, E> executor, Collection<? extends E> executables, Function<E, String> nameFactory, Function<ModelNode, String> nameExtractor) {
         this.executor = executor;
@@ -63,7 +63,7 @@ public class ExecutionHandler<C, E extends Executable<C>> extends AbstractRuntim
         String name = this.nameExtractor.apply(operation);
         E executable = this.executables.get(name);
         try {
-            ModelNode result = this.executor.execute(context, executable);
+            ModelNode result = this.executor.execute(context, operation, executable);
             if (result != null) {
                 context.getResult().set(result);
             }

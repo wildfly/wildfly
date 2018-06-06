@@ -61,6 +61,13 @@ public interface UndertowListener {
     String getName();
 
     /**
+     * Returns the server this listener is registered with.
+     *
+     * @return the server this listener is registered with
+     */
+    Server getServer();
+
+    /**
      * Returns true if the listener has shut down.
      *
      * @return <code>true</code> if the listener has been shutdown

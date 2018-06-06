@@ -1,4 +1,4 @@
-/**
+/*
  * JBoss, Home of Professional Open Source.
  * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
@@ -33,7 +33,6 @@ import org.xnio.conduits.StreamSinkConduit;
  * wrapping.
  *
  * @author Radoslav Husar
- * @version Aug 2013
  * @since 8.0
  */
 public class BytesSentHttpHandler implements HttpHandler {

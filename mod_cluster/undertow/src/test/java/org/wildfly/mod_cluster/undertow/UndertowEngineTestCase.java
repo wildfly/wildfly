@@ -41,6 +41,10 @@ import org.xnio.OptionMap;
 
 import io.undertow.util.StatusCodes;
 
+/**
+ * @author Paul Ferraro
+ * @author Radoslav Husar
+ */
 public class UndertowEngineTestCase {
     private final String serverName = "default-server";
     private final String hostName = "default-host";
@@ -51,7 +55,7 @@ public class UndertowEngineTestCase {
     private final UndertowService service = new TestUndertowService("default-container", this.serverName, this.hostName, this.route, this.server);
     private final Server server = new TestServer(this.serverName, this.hostName, this.service, this.host, this.listener);
     private final Connector connector = mock(Connector.class);
-    private final Engine engine = new UndertowEngine(this.server, this.service, this.connector);
+    private final Engine engine = new UndertowEngine(this.serverName, this.server, this.service, this.connector);
 
     @Test
     public void getName() {

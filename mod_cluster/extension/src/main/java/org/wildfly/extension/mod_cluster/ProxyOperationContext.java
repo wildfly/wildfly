@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,29 +19,29 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.wildfly.extension.mod_cluster;
 
-import static org.wildfly.extension.mod_cluster.ModClusterLogger.ROOT_LOGGER;
 
-import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.registry.Resource;
+import org.jboss.modcluster.ModClusterServiceMBean;
 
-class SSLContextWriteAttributeHandler extends ReloadRequiredWriteAttributeHandler {
+/**
+ * Execution context for proxy operations. A {@code ProxyOperation} implementations call all methods corresponding to the
+ * required operation parameters.
+ *
+ * @author Radoslav Husar
+ */
+public interface ProxyOperationContext {
 
-    SSLContextWriteAttributeHandler(AttributeDefinition attribute) {
-        super(attribute);
-    }
+    ModClusterServiceMBean getModClusterService();
 
-    @Override
-    protected void validateUpdatedModel(OperationContext context, Resource model) throws OperationFailedException {
-        context.addStep((ctx, op) -> {
-            if (model.hasChild(ModClusterSSLResourceDefinition.PATH)) {
-                throw new OperationFailedException(ROOT_LOGGER.bothElytronAndLegacySslContextDefined());
-            }
-        }, OperationContext.Stage.MODEL);
-    }
+    String getVirtualHost() throws OperationFailedException;
+
+    String getContext() throws OperationFailedException;
+
+    int getWaitTime() throws OperationFailedException;
+
+    String getProxyHost() throws OperationFailedException;
+
+    int getProxyPort() throws OperationFailedException;
 }

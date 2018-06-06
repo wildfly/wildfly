@@ -48,7 +48,6 @@ public class AsyncServiceConfigurator extends SimpleServiceNameProvider implemen
     /**
      * Constructs a new builder for building asynchronous service
      * @param name the target service name
-     * @param service the target service
      */
     public AsyncServiceConfigurator(ServiceName name) {
         super(name);

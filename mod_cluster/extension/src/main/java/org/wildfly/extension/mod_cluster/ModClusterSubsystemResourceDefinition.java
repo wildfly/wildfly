@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,128 +22,60 @@
 
 package org.wildfly.extension.mod_cluster;
 
+import org.jboss.as.clustering.controller.ManagementResourceRegistration;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.SimpleResourceRegistration;
+import org.jboss.as.clustering.controller.SubsystemRegistration;
+import org.jboss.as.clustering.controller.SubsystemResourceDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.client.helpers.MeasurementUnit;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
-import org.jboss.as.controller.operations.validation.IntRangeValidator;
-import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
- * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
+ * Resource definition for mod_cluster subsystem resource, children of which are respective proxy configurations.
+ * Also registers wrong, legacy and deprecated proxy operations (WFLY-10439).
+ *
+ * @author Radoslav Husar
  */
-public class ModClusterSubsystemResourceDefinition extends SimpleResourceDefinition {
+class ModClusterSubsystemResourceDefinition extends SubsystemResourceDefinition<SubsystemRegistration> {
 
-    static final PathElement PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, ModClusterExtension.SUBSYSTEM_NAME);
+    public static final PathElement PATH = pathElement(ModClusterExtension.SUBSYSTEM_NAME);
 
-    public static final SimpleAttributeDefinition PORT = SimpleAttributeDefinitionBuilder.create(CommonAttributes.PORT, ModelType.INT, false)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setValidator(new IntRangeValidator(1, Short.MAX_VALUE - Short.MIN_VALUE, false, false))
-            .setStorageRuntime()
-            .build();
+    ModClusterSubsystemResourceDefinition() {
+        super(PATH, ModClusterExtension.SUBSYSTEM_RESOLVER);
+    }
 
-    public static final SimpleAttributeDefinition HOST = SimpleAttributeDefinitionBuilder.create(CommonAttributes.HOST, ModelType.STRING, false)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setStorageRuntime()
-            .build();
+    @SuppressWarnings("deprecation")
+    @Override
+    public void register(SubsystemRegistration parent) {
+        ManagementResourceRegistration registration = parent.registerSubsystemModel(this);
 
-    public static final SimpleAttributeDefinition VIRTUAL_HOST = SimpleAttributeDefinitionBuilder.create(CommonAttributes.VIRTUAL_HOST, ModelType.STRING, false)
-            .addFlag(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setStorageRuntime()
-            .build();
+        registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
 
-    public static final SimpleAttributeDefinition CONTEXT = SimpleAttributeDefinitionBuilder.create(CommonAttributes.CONTEXT, ModelType.STRING, false)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setStorageRuntime()
-            .build();
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver());
 
-    public static final SimpleAttributeDefinition WAIT_TIME = SimpleAttributeDefinitionBuilder.create(CommonAttributes.WAIT_TIME, ModelType.INT, true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setStorageRuntime()
-            .setDefaultValue(new ModelNode(10))
-            .setMeasurementUnit(MeasurementUnit.SECONDS)
-            .build();
+        ResourceServiceHandler handler = new ModClusterSubsystemServiceHandler();
+        new SimpleResourceRegistration(descriptor, handler).register(registration);
 
-    private final boolean runtimeOnly;
+        new ProxyConfigurationResourceDefinition().register(registration);
+
+        // Deprecated legacy operations which are exposed at the wrong location
+        if (parent.isRuntimeOnlyRegistrationValid()) {
+            for (LegacyProxyOperation legacyProxyOperation : LegacyProxyOperation.values()) {
+                registration.registerOperationHandler(legacyProxyOperation.getDefinition(), legacyProxyOperation);
+            }
+        }
+    }
 
     static TransformationDescription buildTransformation(ModelVersion version) {
         ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
-        ModClusterConfigResourceDefinition.buildTransformation(version, builder);
+        ProxyConfigurationResourceDefinition.buildTransformation(version, builder);
 
         return builder.build();
     }
-
-    protected ModClusterSubsystemResourceDefinition(boolean runtimeOnly) {
-        super(PATH,
-                ModClusterExtension.getResourceDescriptionResolver(),
-                ModClusterSubsystemAdd.INSTANCE,
-                new ReloadRequiredRemoveStepHandler()
-        );
-        this.runtimeOnly = runtimeOnly;
-    }
-
-    /**
-     * {@inheritDoc}
-     * Registers an add operation handler or a remove operation handler if one was provided to the constructor.
-     */
-    @Override
-    public void registerOperations(ManagementResourceRegistration registration) {
-        super.registerOperations(registration);
-        registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
-
-        if (runtimeOnly) {
-            registerRuntimeOperations(registration);
-        }
-
-    }
-
-    public void registerRuntimeOperations(ManagementResourceRegistration registration) {
-
-        final ResourceDescriptionResolver rootResolver = getResourceDescriptionResolver();
-
-        registration.registerOperationHandler(ModClusterListProxies.getDefinition(rootResolver), ModClusterListProxies.INSTANCE);
-
-        registration.registerOperationHandler(ModClusterGetProxyInfo.getDefinition(rootResolver), ModClusterGetProxyInfo.INSTANCE);
-
-        registration.registerOperationHandler(ModClusterGetProxyConfiguration.getDefinition(rootResolver), ModClusterGetProxyConfiguration.INSTANCE);
-
-        // add/remove a proxy from the proxy-list (it is not persisted operation).
-        registration.registerOperationHandler(ModClusterAddProxy.getDefinition(rootResolver), ModClusterAddProxy.INSTANCE);
-
-        registration.registerOperationHandler(ModClusterRemoveProxy.getDefinition(rootResolver), ModClusterRemoveProxy.INSTANCE);
-
-        // node related operations.
-        registration.registerOperationHandler(ModClusterRefresh.getDefinition(rootResolver), ModClusterRefresh.INSTANCE);
-
-        registration.registerOperationHandler(ModClusterReset.getDefinition(rootResolver), ModClusterReset.INSTANCE);
-
-        // node (all contexts) related operations.
-        registration.registerOperationHandler(ModClusterEnable.getDefinition(rootResolver), ModClusterEnable.INSTANCE);
-
-        registration.registerOperationHandler(ModClusterDisable.getDefinition(rootResolver), ModClusterDisable.INSTANCE);
-
-        registration.registerOperationHandler(ModClusterStop.getDefinition(rootResolver), ModClusterStop.INSTANCE);
-
-        // Context related operations.
-        registration.registerOperationHandler(ModClusterEnableContext.getDefinition(rootResolver), ModClusterEnableContext.INSTANCE);
-
-        registration.registerOperationHandler(ModClusterDisableContext.getDefinition(rootResolver), ModClusterDisableContext.INSTANCE);
-
-        registration.registerOperationHandler(ModClusterStopContext.getDefinition(rootResolver), ModClusterStopContext.INSTANCE);
-    }
-
-
 }

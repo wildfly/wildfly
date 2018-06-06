@@ -23,42 +23,46 @@
 package org.wildfly.extension.mod_cluster;
 
 import static org.jboss.as.clustering.dmr.ModelNodes.optionalString;
-import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.ADVERTISE;
-import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.ADVERTISE_SECURITY_KEY;
-import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.ADVERTISE_SOCKET;
-import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.AUTO_ENABLE_CONTEXTS;
-import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.BALANCER;
-import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.EXCLUDED_CONTEXTS;
-import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.FLUSH_PACKETS;
-import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.FLUSH_WAIT;
-import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.LOAD_BALANCING_GROUP;
-import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.MAX_ATTEMPTS;
-import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.NODE_TIMEOUT;
-import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.PING;
-import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.PROXIES;
-import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.PROXY_URL;
-import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.SESSION_DRAINING_STRATEGY;
-import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.SMAX;
-import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.SOCKET_TIMEOUT;
-import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.SSL_CONTEXT;
-import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.STICKY_SESSION;
-import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.STICKY_SESSION_FORCE;
-import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.STICKY_SESSION_REMOVE;
-import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.STOP_CONTEXT_TIMEOUT;
-import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.TTL;
-import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.WORKER_TIMEOUT;
 import static org.wildfly.extension.mod_cluster.ModClusterLogger.ROOT_LOGGER;
-import static org.wildfly.extension.mod_cluster.ModClusterSSLResourceDefinition.CA_CERTIFICATE_FILE;
-import static org.wildfly.extension.mod_cluster.ModClusterSSLResourceDefinition.CA_REVOCATION_URL;
-import static org.wildfly.extension.mod_cluster.ModClusterSSLResourceDefinition.CERTIFICATE_KEY_FILE;
-import static org.wildfly.extension.mod_cluster.ModClusterSSLResourceDefinition.CIPHER_SUITE;
-import static org.wildfly.extension.mod_cluster.ModClusterSSLResourceDefinition.KEY_ALIAS;
-import static org.wildfly.extension.mod_cluster.ModClusterSSLResourceDefinition.PASSWORD;
-import static org.wildfly.extension.mod_cluster.ModClusterSSLResourceDefinition.PROTOCOL;
+import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefinition.Attribute.ADVERTISE;
+import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefinition.Attribute.ADVERTISE_SECURITY_KEY;
+import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefinition.Attribute.ADVERTISE_SOCKET;
+import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefinition.Attribute.AUTO_ENABLE_CONTEXTS;
+import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefinition.Attribute.BALANCER;
+import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefinition.Attribute.EXCLUDED_CONTEXTS;
+import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefinition.Attribute.FLUSH_PACKETS;
+import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefinition.Attribute.FLUSH_WAIT;
+import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefinition.Attribute.LOAD_BALANCING_GROUP;
+import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefinition.Attribute.MAX_ATTEMPTS;
+import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefinition.Attribute.NODE_TIMEOUT;
+import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefinition.Attribute.PING;
+import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefinition.Attribute.PROXIES;
+import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefinition.Attribute.PROXY_LIST;
+import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefinition.Attribute.PROXY_URL;
+import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefinition.Attribute.SESSION_DRAINING_STRATEGY;
+import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefinition.Attribute.SMAX;
+import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefinition.Attribute.SOCKET_TIMEOUT;
+import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefinition.Attribute.SSL_CONTEXT;
+import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefinition.Attribute.STICKY_SESSION;
+import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefinition.Attribute.STICKY_SESSION_FORCE;
+import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefinition.Attribute.STICKY_SESSION_REMOVE;
+import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefinition.Attribute.STOP_CONTEXT_TIMEOUT;
+import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefinition.Attribute.TTL;
+import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefinition.Attribute.WORKER_TIMEOUT;
+import static org.wildfly.extension.mod_cluster.SSLResourceDefinition.Attribute.CA_CERTIFICATE_FILE;
+import static org.wildfly.extension.mod_cluster.SSLResourceDefinition.Attribute.CA_REVOCATION_URL;
+import static org.wildfly.extension.mod_cluster.SSLResourceDefinition.Attribute.CERTIFICATE_KEY_FILE;
+import static org.wildfly.extension.mod_cluster.SSLResourceDefinition.Attribute.CIPHER_SUITE;
+import static org.wildfly.extension.mod_cluster.SSLResourceDefinition.Attribute.KEY_ALIAS;
+import static org.wildfly.extension.mod_cluster.SSLResourceDefinition.Attribute.PASSWORD;
+import static org.wildfly.extension.mod_cluster.SSLResourceDefinition.Attribute.PROTOCOL;
 
+import javax.net.ssl.SSLContext;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -72,15 +76,17 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import javax.net.ssl.SSLContext;
-
+import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
+import org.jboss.modcluster.ModClusterService;
+import org.jboss.modcluster.Utils;
 import org.jboss.modcluster.config.ModClusterConfiguration;
 import org.jboss.modcluster.config.ProxyConfiguration;
 import org.jboss.modcluster.config.builder.ModClusterConfigurationBuilder;
@@ -102,19 +108,24 @@ import org.wildfly.clustering.service.SupplierDependency;
 /**
  * @author Radoslav Husar
  */
-public class ModClusterConfigurationServiceConfigurator implements ResourceServiceConfigurator, Supplier<ModClusterConfiguration> {
-
-    private final ModClusterConfigurationBuilder builder = new ModClusterConfigurationBuilder();
-    private final List<SupplierDependency<OutboundSocketBinding>> outboundSocketBindings = new LinkedList<>();
+ public class ProxyConfigurationServiceConfigurator extends CapabilityServiceNameProvider implements ResourceServiceConfigurator, Supplier<ModClusterConfiguration> {
 
     private volatile SupplierDependency<SocketBinding> advertiseSocketDependency = null;
+    private final List<SupplierDependency<OutboundSocketBinding>> outboundSocketBindings = new LinkedList<>();
     private volatile SupplierDependency<SSLContext> sslContextDependency = null;
+
+    private final ModClusterConfigurationBuilder builder = new ModClusterConfigurationBuilder();
+
+    ProxyConfigurationServiceConfigurator(PathAddress address) {
+        super(ProxyConfigurationResourceDefinition.Capability.SERVICE, address);
+    }
 
     @Override
     public ServiceName getServiceName() {
-        return ContainerEventHandlerServiceConfigurator.CONFIG_SERVICE_NAME;
+        return super.getServiceName().append("configuration");
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
 
@@ -131,12 +142,12 @@ public class ModClusterConfigurationServiceConfigurator implements ResourceServi
                 .setProxyURL(PROXY_URL.resolveModelAttribute(context, model).asString())
                 .setAutoEnableContexts(AUTO_ENABLE_CONTEXTS.resolveModelAttribute(context, model).asBoolean())
                 .setStopContextTimeout(STOP_CONTEXT_TIMEOUT.resolveModelAttribute(context, model).asInt())
-                .setStopContextTimeoutUnit(TimeUnit.valueOf(STOP_CONTEXT_TIMEOUT.getMeasurementUnit().getName()))
+                .setStopContextTimeoutUnit(TimeUnit.valueOf(STOP_CONTEXT_TIMEOUT.getDefinition().getMeasurementUnit().getName()))
                 .setSocketTimeout(SOCKET_TIMEOUT.resolveModelAttribute(context, model).asInt() * 1000)
                 .setSessionDrainingStrategy(Enum.valueOf(SessionDrainingStrategyEnum.class, SESSION_DRAINING_STRATEGY.resolveModelAttribute(context, model).asString()))
         ;
 
-        if (model.hasDefined(CommonAttributes.EXCLUDED_CONTEXTS)) {
+        if (model.hasDefined(EXCLUDED_CONTEXTS.getName())) {
             String contexts = EXCLUDED_CONTEXTS.resolveModelAttribute(context, model).asString();
             Map<String, Set<String>> excludedContextsPerHost;
             if (contexts == null) {
@@ -223,8 +234,33 @@ public class ModClusterConfigurationServiceConfigurator implements ResourceServi
             }
         }
 
-        if (model.hasDefined(CommonAttributes.PROXY_LIST)) {
-            throw new OperationFailedException(ROOT_LOGGER.proxyListNotAllowedInCurrentModel());
+        String proxyList = PROXY_LIST.resolveModelAttribute(context, model).asStringOrNull();
+        if (proxyList != null && proxyList.length() != 0) {
+            Collection<ProxyConfiguration> proxyConfigurations;
+
+            String[] tokens = proxyList.split(",");
+            proxyConfigurations = new ArrayList<>(tokens.length);
+
+            for (String token : tokens) {
+                try {
+                    final InetSocketAddress remoteAddress = Utils.parseSocketAddress(token.trim(), ModClusterService.DEFAULT_PORT);
+                    proxyConfigurations.add(new ProxyConfiguration() {
+                        @Override
+                        public InetSocketAddress getRemoteAddress() {
+                            return remoteAddress;
+                        }
+
+                        @Override
+                        public InetSocketAddress getLocalAddress() {
+                            return null;
+                        }
+                    });
+                } catch (UnknownHostException e) {
+                    throw new IllegalArgumentException(e);
+                }
+            }
+
+            builder.mcmp().setProxyConfigurations(proxyConfigurations);
         }
 
 
@@ -237,11 +273,11 @@ public class ModClusterConfigurationServiceConfigurator implements ResourceServi
 
         // Legacy security support
 
-        if (model.get(ModClusterSSLResourceDefinition.PATH.getKeyValuePair()).isDefined()) {
+        if (model.get(SSLResourceDefinition.PATH.getKeyValuePair()).isDefined()) {
             if (node.isDefined()) {
                 throw ROOT_LOGGER.bothElytronAndLegacySslContextDefined();
             }
-            ModelNode sslModel = model.get(ModClusterSSLResourceDefinition.PATH.getKeyValuePair());
+            ModelNode sslModel = model.get(SSLResourceDefinition.PATH.getKeyValuePair());
 
             ModClusterConfig sslConfiguration = new ModClusterConfig();
 

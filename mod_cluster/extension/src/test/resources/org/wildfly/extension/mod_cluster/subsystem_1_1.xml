@@ -29,20 +29,32 @@
                         load-balancing-group="mydomain"
                         proxy-list="example.com:6666"
                         socket-timeout="20"
-                        stop-context-timeout="10"
-            >
-        <dynamic-load-provider decay="2" history="10">
-            <load-metric capacity="1000" type="sessions" weight="2"/>
-            <load-metric capacity="512" type="send-traffic" weight="3"/>
-            <load-metric capacity="1024" type="receive-traffic"/>
-            <load-metric capacity="1000" type="requests"/>
-            <load-metric type="mem" capacity="1"/>
-            <load-metric type="cpu" capacity="1"/>
-            <load-metric type="heap" capacity="1"/>
-            <load-metric type="busyness" capacity="1">
-                <property name="name" value="value"/>
+                        stop-context-timeout="10">
+        <dynamic-load-provider decay="2"
+                               history="10">
+            <load-metric capacity="1000"
+                         type="sessions"
+                         weight="2"/>
+            <load-metric capacity="512"
+                         type="send-traffic"
+                         weight="3"/>
+            <load-metric capacity="1024"
+                         type="receive-traffic"/>
+            <load-metric capacity="1000"
+                         type="requests"/>
+            <load-metric type="mem"
+                         capacity="1"/>
+            <load-metric type="cpu"
+                         capacity="1"/>
+            <load-metric type="heap"
+                         capacity="1"/>
+            <load-metric type="busyness"
+                         capacity="1">
+                <property name="name"
+                          value="value"/>
             </load-metric>
-            <custom-load-metric class="org.jboss.modcluster.SomeFakeLoadMetricClass" weight="5"/>
+            <custom-load-metric class="org.jboss.modcluster.SomeFakeLoadMetricClass"
+                                weight="5"/>
         </dynamic-load-provider>
         <ssl ca-certificate-file="/home/rhusar/client-keystore.jks"
              ca-revocation-url="/home/rhusar/revocations"

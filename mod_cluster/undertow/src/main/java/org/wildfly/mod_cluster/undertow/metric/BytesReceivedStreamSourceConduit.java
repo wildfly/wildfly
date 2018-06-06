@@ -1,4 +1,4 @@
-/**
+/*
  * JBoss, Home of Professional Open Source.
  * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
@@ -33,10 +33,9 @@ import org.xnio.conduits.StreamSourceConduit;
 
 /**
  * Implementation of {@link StreamSourceConduit} wrapping that wraps around byte-transferring methods to calculate total
- * number of bytes transferred leveraging JDK 8 version of {@link LongAdder} (via Infinispan).
+ * number of bytes transferred leveraging {@link LongAdder}.
  *
  * @author Radoslav Husar
- * @version Aug 2013
  * @since 8.0
  */
 public class BytesReceivedStreamSourceConduit extends AbstractSourceConduit implements StreamSourceConduit {
@@ -47,12 +46,6 @@ public class BytesReceivedStreamSourceConduit extends AbstractSourceConduit impl
     public BytesReceivedStreamSourceConduit(StreamSourceConduit next) {
         super(next);
         this.next = next;
-    }
-
-    public BytesReceivedStreamSourceConduit(StreamSourceConduit next, long alreadyReceivedBytes) {
-        super(next);
-        this.next = next;
-        bytesReceived.add(alreadyReceivedBytes);
     }
 
     @Override

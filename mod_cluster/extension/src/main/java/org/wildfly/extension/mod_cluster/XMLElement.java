@@ -24,29 +24,39 @@ package org.wildfly.extension.mod_cluster;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+
 /**
+ * Enumeration of XML elements used by {@link ModClusterSubsystemXMLReader} and {@link ModClusterSubsystemXMLWriter}.
+ *
  * @author Jean-Frederic Clere
+ * @author Radoslav Husar
  */
-enum Element {
-    // must be first
-    UNKNOWN(null),
-    MOD_CLUSTER_CONFIG(CommonAttributes.MOD_CLUSTER_CONFIG),
-    LOAD_PROVIDER(CommonAttributes.LOAD_PROVIDER),
-    PROXY_CONF(CommonAttributes.PROXY_CONF),
-    HTTPD_CONF(CommonAttributes.HTTPD_CONF),
-    NODES_CONF(CommonAttributes.NODES_CONF),
-    ADVERTISE_SOCKET(CommonAttributes.ADVERTISE_SOCKET),
-    SSL(CommonAttributes.SSL),
-    DYNAMIC_LOAD_PROVIDER(CommonAttributes.DYNAMIC_LOAD_PROVIDER),
-    SIMPLE_LOAD_PROVIDER(CommonAttributes.SIMPLE_LOAD_PROVIDER_FACTOR),
-    LOAD_METRIC(CommonAttributes.LOAD_METRIC),
-    CUSTOM_LOAD_METRIC(CommonAttributes.CUSTOM_LOAD_METRIC),
-    PROPERTY(CommonAttributes.PROPERTY),;
+enum XMLElement {
+    UNKNOWN((String) null),
+
+    @Deprecated MOD_CLUSTER_CONFIG(ProxyConfigurationResourceDefinition.LEGACY_PATH),
+    PROXY(ProxyConfigurationResourceDefinition.WILDCARD_PATH),
+
+    DYNAMIC_LOAD_PROVIDER(DynamicLoadProviderResourceDefinition.PATH),
+    SIMPLE_LOAD_PROVIDER(ProxyConfigurationResourceDefinition.Attribute.SIMPLE_LOAD_PROVIDER.getName()),
+
+    CUSTOM_LOAD_METRIC(CustomLoadMetricResourceDefinition.WILDCARD_PATH),
+    LOAD_METRIC(LoadMetricResourceDefinition.WILDCARD_PATH),
+    PROPERTY(ModelDescriptionConstants.PROPERTY),
+
+    @Deprecated SSL(SSLResourceDefinition.PATH),
+    ;
 
     private final String name;
 
-    Element(final String name) {
+    XMLElement(final String name) {
         this.name = name;
+    }
+
+    XMLElement(PathElement path) {
+        this.name = path.getKey();
     }
 
     /**
@@ -58,19 +68,21 @@ enum Element {
         return name;
     }
 
-    private static final Map<String, Element> MAP;
+    private static final Map<String, XMLElement> MAP;
 
     static {
-        final Map<String, Element> map = new HashMap<String, Element>();
-        for (Element element : values()) {
+        Map<String, XMLElement> map = new HashMap<>();
+        for (XMLElement element : values()) {
             final String name = element.getLocalName();
-            if (name != null) { map.put(name, element); }
+            if (name != null) {
+                map.put(name, element);
+            }
         }
         MAP = map;
     }
 
-    public static Element forName(String localName) {
-        final Element element = MAP.get(localName);
+    public static XMLElement forName(String localName) {
+        XMLElement element = MAP.get(localName);
         return element == null ? UNKNOWN : element;
     }
 

@@ -126,6 +126,11 @@ public abstract class ListenerService implements Service<UndertowListener>, Unde
         return name;
     }
 
+    @Override
+    public Server getServer() {
+        return this.serverService.getValue();
+    }
+
     public boolean isEnabled() {
         return enabled;
     }

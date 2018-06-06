@@ -1,4 +1,4 @@
-/**
+/*
  * JBoss, Home of Professional Open Source.
  * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
@@ -33,7 +33,6 @@ import io.undertow.server.HttpServerExchange;
  * metric.
  *
  * @author Radoslav Husar
- * @version Aug 2013
  * @since 8.0
  */
 public class RunningRequestsHttpHandler implements HttpHandler {
@@ -48,9 +47,6 @@ public class RunningRequestsHttpHandler implements HttpHandler {
 
     /**
      * Increments the counter and registers a listener to decrement the counter upon exchange complete event.
-     *
-     * @param exchange
-     * @throws Exception
      */
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {

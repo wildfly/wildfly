@@ -164,61 +164,29 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, parse(subsystemXml), createFailedOperationConfig(modelVersion));
     }
 
-    /**
-     * Changed attributes:
-     *
-     * - proxies configuration
-     * - status-interval is rejected if set to value other than 10
-     * - session-draining-strategy configuration
-     */
     private static FailedOperationTransformationConfig createFailedOperationConfig(ModelVersion version) {
         FailedOperationTransformationConfig config = new FailedOperationTransformationConfig();
 
         PathAddress subsystemAddress = PathAddress.pathAddress(ModClusterSubsystemResourceDefinition.PATH);
-        PathAddress configurationAddress = subsystemAddress.append(ModClusterConfigResourceDefinition.PATH);
+        PathAddress configurationAddress = subsystemAddress.append(ProxyConfigurationResourceDefinition.pathElement("default"));
+
+//        if (ModClusterModel.VERSION_6_0_0.requiresTransformation(version)) {
+//            config.addFailedAttribute(subsystemAddress.append(ProxyConfigurationResourceDefinition.pathElement("other")), FailedOperationTransformationConfig.REJECTED_RESOURCE);
+//        }
 
         if (ModClusterModel.VERSION_3_0_0.requiresTransformation(version)) {
-            config.addFailedAttribute(configurationAddress, FailedOperationTransformationConfig.ChainedConfig.createBuilder(CommonAttributes.STATUS_INTERVAL, CommonAttributes.PROXIES)
-                    .addConfig(new StatusIntervalConfig(CommonAttributes.STATUS_INTERVAL))
-                    .addConfig(new ProxiesConfig(CommonAttributes.PROXIES))
-                    .build());
-        }
-
-        if (ModClusterModel.VERSION_1_5_0.requiresTransformation(version)) {
-            config.addFailedAttribute(configurationAddress, FailedOperationTransformationConfig.ChainedConfig.createBuilder(CommonAttributes.STATUS_INTERVAL, CommonAttributes.PROXIES, CommonAttributes.SESSION_DRAINING_STRATEGY)
-                    .addConfig(new StatusIntervalConfig(CommonAttributes.STATUS_INTERVAL))
-                    .addConfig(new ProxiesConfig(CommonAttributes.PROXIES))
-                    .addConfig(new SessionDrainingStrategyConfig(CommonAttributes.SESSION_DRAINING_STRATEGY))
+            config.addFailedAttribute(configurationAddress, FailedOperationTransformationConfig.ChainedConfig.createBuilder(ProxyConfigurationResourceDefinition.Attribute.STATUS_INTERVAL.getName(), ProxyConfigurationResourceDefinition.Attribute.PROXIES.getName())
+                    .addConfig(new StatusIntervalConfig())
+                    .addConfig(new ProxiesConfig())
                     .build());
         }
 
         return config;
     }
 
-    private static class SessionDrainingStrategyConfig extends FailedOperationTransformationConfig.AttributesPathAddressConfig<SessionDrainingStrategyConfig> {
-        public SessionDrainingStrategyConfig(String... attributes) {
-            super(attributes);
-        }
-
-        @Override
-        protected boolean isAttributeWritable(String attributeName) {
-            return true;
-        }
-
-        @Override
-        protected boolean checkValue(String attrName, ModelNode attribute, boolean isWriteAttribute) {
-            return !(attribute.equals(new ModelNode()) || attribute.equals(new ModelNode("DEFAULT")));
-        }
-
-        @Override
-        protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
-            return new ModelNode("DEFAULT");
-        }
-    }
-
-    private static class ProxiesConfig extends FailedOperationTransformationConfig.AttributesPathAddressConfig<ProxiesConfig> {
-        public ProxiesConfig(String... attributes) {
-            super(attributes);
+    static class ProxiesConfig extends FailedOperationTransformationConfig.AttributesPathAddressConfig<ProxiesConfig> {
+        ProxiesConfig() {
+            super(ProxyConfigurationResourceDefinition.Attribute.PROXIES.getName());
         }
 
         @Override
@@ -237,9 +205,9 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
         }
     }
 
-    private static class StatusIntervalConfig extends FailedOperationTransformationConfig.AttributesPathAddressConfig<StatusIntervalConfig> {
-        public StatusIntervalConfig(String... attributes) {
-            super(attributes);
+    static class StatusIntervalConfig extends FailedOperationTransformationConfig.AttributesPathAddressConfig<StatusIntervalConfig> {
+        StatusIntervalConfig() {
+            super(ProxyConfigurationResourceDefinition.Attribute.STATUS_INTERVAL.getName());
         }
 
         @Override

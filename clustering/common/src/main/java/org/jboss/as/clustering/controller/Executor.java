@@ -28,9 +28,9 @@ import org.jboss.dmr.ModelNode;
 
 /**
  * Encapsulates the execution of a contextual executable.
+ * @param <C> the execution context
+ * @param <E> the contextual executable
  * @author Paul Ferraro
- * @param C the execution context
- * @param E the contextual executable
  */
 public interface Executor<C, E extends Executable<C>> {
     /**
@@ -40,5 +40,18 @@ public interface Executor<C, E extends Executable<C>> {
      * @return the result of the execution (possibly null).
      * @throws OperationFailedException if execution fails
      */
+    @Deprecated
     ModelNode execute(OperationContext context, E executable) throws OperationFailedException;
+
+    /**
+     * Executes the specified executable against the specified operation context.
+     * @param context an operation context
+     * @param operation the operation being executed
+     * @param executable the contextual executable object
+     * @return the result of the execution (possibly null).
+     * @throws OperationFailedException if execution fails
+     */
+    default ModelNode execute(OperationContext context, ModelNode operation, E executable) throws OperationFailedException {
+        return this.execute(context, executable);
+    }
 }

@@ -25,7 +25,6 @@ package org.wildfly.extension.mod_cluster;
 import java.util.EnumSet;
 
 import org.jboss.as.clustering.subsystem.ClusteringSubsystemTest;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
@@ -43,18 +42,8 @@ public class ModClusterSubsystemTestCase extends ClusteringSubsystemTest<ModClus
         return EnumSet.allOf(ModClusterSchema.class);
     }
 
-    private final ModClusterSchema schema;
-
     public ModClusterSubsystemTestCase(ModClusterSchema schema) {
         super(ModClusterExtension.SUBSYSTEM_NAME, new ModClusterExtension(), schema, ModClusterSchema.CURRENT, "subsystem_%d_%d.xml", "schema/jboss-as-mod-cluster_%d_%d.xsd");
-        this.schema = schema;
-    }
-
-    @Test
-    public void testSubsystemWithSimpleLoadProvider() throws Exception {
-        if (this.schema == ModClusterSchema.MODCLUSTER_2_0) {
-            super.standardSubsystemTest("subsystem_2_0_simple-load-provider.xml");
-        }
     }
 
     @Override

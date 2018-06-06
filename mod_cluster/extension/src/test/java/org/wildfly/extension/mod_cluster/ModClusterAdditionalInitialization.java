@@ -52,6 +52,7 @@ public class ModClusterAdditionalInitialization extends AdditionalInitialization
     @Override
     protected void initializeExtraSubystemsAndModel(ExtensionRegistry extensionRegistry, Resource rootResource, ManagementResourceRegistration rootRegistration, RuntimeCapabilityRegistry capabilityRegistry) {
         registerCapabilities(capabilityRegistry, "org.wildfly.undertow.listener.ajp");
+        registerCapabilities(capabilityRegistry, "org.wildfly.undertow.listener.default");
     }
 
     @Override

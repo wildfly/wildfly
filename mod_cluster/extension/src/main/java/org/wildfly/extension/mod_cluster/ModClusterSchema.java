@@ -21,13 +21,9 @@
  */
 package org.wildfly.extension.mod_cluster;
 
-import org.jboss.as.clustering.controller.Schema;
-import org.jboss.dmr.ModelNode;
-import org.jboss.staxmapper.XMLElementReader;
-
-import java.util.List;
 import java.util.Locale;
-import java.util.function.Supplier;
+
+import org.jboss.as.clustering.controller.Schema;
 
 /**
  * @author Jean-Frederic Clere
@@ -36,22 +32,21 @@ import java.util.function.Supplier;
  */
 public enum ModClusterSchema implements Schema<ModClusterSchema> {
 
-    MODCLUSTER_1_0(1, 0, ModClusterSubsystemXMLReader_1_0::new),
-    MODCLUSTER_1_1(1, 1, ModClusterSubsystemXMLReader_1_1::new),
-    MODCLUSTER_1_2(1, 2, ModClusterSubsystemXMLReader_1_2::new),
-    MODCLUSTER_2_0(2, 0, ModClusterSubsystemXMLReader_2_0::new),
-    MODCLUSTER_3_0(3, 0, ModClusterSubsystemXMLReader_3_0::new),
+    MODCLUSTER_1_0(1, 0), // AS 7.0
+    MODCLUSTER_1_1(1, 1), // EAP 6.0 & 6.1 & 6.2
+    MODCLUSTER_1_2(1, 2), // EAP 6.3 & 6.4
+    MODCLUSTER_2_0(2, 0), // WildFly 10, EAP 7.0
+    MODCLUSTER_3_0(3, 0), // WildFly 11 & 12 & 13, EAP 7.1
+    MODCLUSTER_4_0(4, 0), // WildFly 14
     ;
-    public static final ModClusterSchema CURRENT = MODCLUSTER_3_0;
+    public static final ModClusterSchema CURRENT = MODCLUSTER_4_0;
 
     private final int major;
     private final int minor;
-    private final Supplier<XMLElementReader<List<ModelNode>>> readerSupplier;
 
-    ModClusterSchema(int major, int minor, Supplier<XMLElementReader<List<ModelNode>>> readerSupplier) {
+    ModClusterSchema(int major, int minor) {
         this.major = major;
         this.minor = minor;
-        this.readerSupplier = readerSupplier;
     }
 
     @Override
@@ -67,9 +62,5 @@ public enum ModClusterSchema implements Schema<ModClusterSchema> {
     @Override
     public String getNamespaceUri() {
         return String.format(Locale.ROOT, "urn:jboss:domain:%s:%d.%d", ModClusterExtension.SUBSYSTEM_NAME, this.major, this.minor);
-    }
-
-    public Supplier<XMLElementReader<List<ModelNode>>> getXMLReaderSupplier() {
-        return this.readerSupplier;
     }
 }

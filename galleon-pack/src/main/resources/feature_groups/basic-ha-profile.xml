@@ -4,7 +4,7 @@
     <feature-group name="basic-profile">
         <include feature-id="subsystem.undertow:subsystem=undertow">
             <feature spec="subsystem.undertow.server">
-                <param name="server" value="default-server" />
+                <param name="server" value="default-server"/>
                 <feature spec="subsystem.undertow.server.ajp-listener">
                     <param name="ajp-listener" value="ajp"/>
                     <param name="socket-binding" value="ajp"/>
