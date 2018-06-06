@@ -22,6 +22,8 @@
 
 package org.jboss.as.jpa.classloader;
 
+import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
+
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
@@ -45,6 +47,11 @@ public class JPADelegatingClassFileTransformer implements ClassFileTransformer {
         IllegalClassFormatException {
         byte[] transformedBuffer = originalBuffer;
         for (javax.persistence.spi.ClassTransformer transformer : persistenceUnitMetadata.getTransformers()) {
+            if (ROOT_LOGGER.isTraceEnabled())
+                ROOT_LOGGER.tracef("rewrite entity class '%s' using transformer '%s' for '%s'", className,
+                        transformer.getClass().getName(),
+                        persistenceUnitMetadata.getScopedPersistenceUnitName());
+
             byte[] result = transformer.transform(classLoader, className, aClass, protectionDomain, transformedBuffer);
             if (result != null) {
                 transformedBuffer = result;
