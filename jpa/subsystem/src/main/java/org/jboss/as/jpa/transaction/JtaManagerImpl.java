@@ -26,6 +26,8 @@ import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.jpa.spi.JtaManager;
+import org.wildfly.transaction.client.ContextTransactionManager;
+import org.wildfly.transaction.client.ContextTransactionSynchronizationRegistry;
 
 /**
  * passes the TM and TSR into the persistence provider integration classes
@@ -34,21 +36,22 @@ import org.jboss.as.jpa.spi.JtaManager;
  */
 public class JtaManagerImpl implements JtaManager {
 
-    private final TransactionManager transactionManager;
-    private final TransactionSynchronizationRegistry transactionSynchronizationRegistry;
+    private static final JtaManagerImpl instance = new JtaManagerImpl();
 
-    public JtaManagerImpl(TransactionManager transactionManager, TransactionSynchronizationRegistry transactionSynchronizationRegistry) {
-        this.transactionManager = transactionManager;
-        this.transactionSynchronizationRegistry = transactionSynchronizationRegistry;
+    private JtaManagerImpl() {
+    }
+
+    public static JtaManagerImpl getInstance() {
+        return instance;
     }
 
     @Override
     public TransactionSynchronizationRegistry getSynchronizationRegistry() {
-        return transactionSynchronizationRegistry;
+        return ContextTransactionSynchronizationRegistry.getInstance();
     }
 
     @Override
     public TransactionManager locateTransactionManager() {
-        return transactionManager;
+        return ContextTransactionManager.getInstance();
     }
 }
