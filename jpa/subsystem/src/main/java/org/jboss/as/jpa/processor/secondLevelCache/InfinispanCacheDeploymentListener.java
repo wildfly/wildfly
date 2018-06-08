@@ -105,7 +105,6 @@ public class InfinispanCacheDeploymentListener implements EventListener {
                 Thread.yield();
                 monitor.awaitStability();
             }
-            System.out.println("Post-stability: " + controller.getName() + " state = " + controller.getState() + ", substate = " + controller.getSubstate());
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw e;
