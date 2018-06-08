@@ -88,7 +88,9 @@ public class IIOPSecurityInvocationTestCase {
                 .addAsManifestResource(IIOPSecurityInvocationTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
                 .addAsManifestResource(new StringAsset(PropertiesValueResolver.replaceProperties(ejbJar, properties)), "ejb-jar.xml")
                 // the following permission is needed because of usage of LoginContext in the test
-                .addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(new RuntimePermission("accessDeclaredMembers"), new ElytronPermission("getSecurityDomain"), new AuthPermission("modifyPrincipals")), "permissions.xml");
+                .addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(new RuntimePermission("accessDeclaredMembers"),
+                        new RuntimePermission("accessClassInPackage.sun.misc"), new ElytronPermission("getSecurityDomain"),
+                        new AuthPermission("modifyPrincipals")), "permissions.xml");
 
         return jar;
     }
