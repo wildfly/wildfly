@@ -38,7 +38,6 @@ import java.net.HttpURLConnection;
 import java.net.SocketPermission;
 import java.net.URL;
 import java.security.Principal;
-import java.util.PropertyPermission;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -52,6 +51,7 @@ import javax.security.auth.AuthPermission;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.ejb.security.authentication.EntryBean;
@@ -82,9 +82,6 @@ import org.wildfly.security.permission.ElytronPermission;
 @Category(CommonCriteria.class)
 public class AuthenticationTestCase {
 
-    private static final String SERVER_HOST_PORT = TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getHttpPort();
-    private static final String WAR_URL = "http://" + SERVER_HOST_PORT + "/ejb3security/";
-
     private static final Logger log = Logger.getLogger(AuthenticationTestCase.class.getName());
 
     /*
@@ -99,8 +96,12 @@ public class AuthenticationTestCase {
      * Client -> Servlet -> Bean (Re Auth) -> Bean
      */
 
+    @ArquillianResource
+    private URL url;
+
     @Deployment
     public static Archive<?> deployment() {
+        final String SERVER_HOST_PORT = TestSuiteEnvironment.getHttpAddress() + ":" + TestSuiteEnvironment.getHttpPort();
         final Package currentPackage = AuthenticationTestCase.class.getPackage();
         // using JavaArchive doesn't work, because of a bug in Arquillian, it only deploys wars properly
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "ejb3security.war")
@@ -108,7 +109,6 @@ public class AuthenticationTestCase {
                 .addClass(WhoAmI.class).addClass(Util.class).addClass(Entry.class)
                 .addClasses(WhoAmIServlet.class, AuthenticationTestCase.class)
                 .addClasses(AbstractSecurityDomainSetup.class, EjbSecurityDomainSetup.class)
-                .addClass(TestSuiteEnvironment.class)
                 .addAsResource(currentPackage, "users.properties", "users.properties")
                 .addAsResource(currentPackage, "roles.properties", "roles.properties")
                 .addAsWebInfResource(currentPackage, "web.xml", "web.xml")
@@ -116,23 +116,12 @@ public class AuthenticationTestCase {
                 .addAsWebInfResource(currentPackage, "jboss-ejb3.xml", "jboss-ejb3.xml")
                 .addAsManifestResource(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.as.controller-client,org.jboss.dmr\n"), "MANIFEST.MF")
                 .addAsManifestResource(createPermissionsXmlAsset(
-                        // login module needs to modify pricipal to commit logging in
+                        // login module needs to modify principal to commit logging in
                         new AuthPermission("modifyPrincipals"),
-                        // AuthenticationTestCase#testAuthenticatedCall calls org.jboss.security.client.JBossSecurityClient#performSimpleLogin
-                        new RuntimePermission("org.jboss.security.getSecurityContext"),
-                        new RuntimePermission("org.jboss.security.SecurityContextFactory.createSecurityContext"),
-                        new RuntimePermission("org.jboss.security.SecurityContextFactory.createUtil"),
-                        new RuntimePermission("org.jboss.security.plugins.JBossSecurityContext.setSubjectInfo"),
-                        new RuntimePermission("org.jboss.security.setSecurityContext"),
                         // AuthenticationTestCase#execute calls ExecutorService#shutdownNow
                         new RuntimePermission("modifyThread"),
                         // AuthenticationTestCase#execute calls sun.net.www.http.HttpClient#openServer under the hood
                         new SocketPermission(SERVER_HOST_PORT, "connect,resolve"),
-                        // TestSuiteEnvironment reads system properties
-                        new PropertyPermission("management.address", "read"),
-                        new PropertyPermission("node0", "read"),
-                        new PropertyPermission("jboss.http.port", "read"),
-                        new PropertyPermission("jboss.bind.address", "read"),
                         new ElytronPermission("getSecurityDomain"),
                         new ElytronPermission("authenticate")
                         ),
@@ -349,7 +338,7 @@ public class AuthenticationTestCase {
 
 
     private String getWhoAmI(String queryString) throws Exception {
-        return get(WAR_URL + "whoAmI" + queryString, "user1", "password1", 10, SECONDS);
+        return get(url + "whoAmI" + queryString, "user1", "password1", 10, SECONDS);
     }
 
     public static String get(final String spec, final String username, final String password, final long timeout, final TimeUnit unit) throws IOException, TimeoutException {
