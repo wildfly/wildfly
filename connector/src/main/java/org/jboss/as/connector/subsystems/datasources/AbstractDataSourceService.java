@@ -164,7 +164,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
             DS_DEPLOYER_LOGGER.debugf("Adding datasource: %s", deploymentMD.getCfJndiNames()[0]);
             CommonDeploymentService cdService = new CommonDeploymentService(deploymentMD);
             final ServiceName cdServiceName = CommonDeploymentService.getServiceName(jndiName);
-            startContext.getController().getServiceContainer().addService(cdServiceName, cdService)
+            startContext.getChildTarget().addService(cdServiceName, cdService)
                     // The dependency added must be the JNDI name which for subsystem resources is an alias. This service
                     // is also used in deployments where the capability service name is not registered for the service.
                     .addDependency(getServiceName(jndiName))
@@ -177,10 +177,6 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
     protected abstract AS7DataSourceDeployer getDeployer() throws ValidateException ;
 
     public void stop(final StopContext stopContext) {
-        final ServiceController<?> serviceController = stopContext.getController().getServiceContainer().getService(CommonDeploymentService.getServiceName(jndiName));
-        if (serviceController != null) {
-            serviceController.setMode(ServiceController.Mode.REMOVE);
-        }
         ExecutorService executorService = executor.getValue();
         Runnable r = new Runnable() {
             @Override
