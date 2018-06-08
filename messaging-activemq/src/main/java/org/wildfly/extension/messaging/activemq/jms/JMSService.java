@@ -160,7 +160,7 @@ public class JMSService implements Service<JMSServerManager> {
                         return;
                     }
                     if (activeMQActivationController == null) {
-                        activeMQActivationController = serviceContainer.addService(ActiveMQActivationService.getServiceName(serverServiceName), new ActiveMQActivationService())
+                        activeMQActivationController = context.getChildTarget().addService(ActiveMQActivationService.getServiceName(serverServiceName), new ActiveMQActivationService())
                                 .setInitialMode(Mode.ACTIVE)
                                 .install();
                     } else {
