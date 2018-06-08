@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.clustering.cluster.web;
 
+import static org.jboss.as.test.shared.IntermittentFailure.thisTestIsFailingIntermittently;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -46,9 +48,15 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class ReplicationForNegotiationAuthenticatorTestCase extends AbstractWebFailoverTestCase {
+
+    @BeforeClass
+    public static void beforeClass() {
+        thisTestIsFailingIntermittently("WFLY-10532");
+    }
 
     private static final String MODULE_NAME = ReplicationForNegotiationAuthenticatorTestCase.class.getSimpleName();
     private static final String DEPLOYMENT_NAME = MODULE_NAME + ".war";
