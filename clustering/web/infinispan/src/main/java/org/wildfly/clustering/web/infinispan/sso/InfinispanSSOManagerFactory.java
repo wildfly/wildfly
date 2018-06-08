@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.infinispan.Cache;
-import org.jboss.msc.service.AbstractService;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.infinispan.CacheProperties;
 import org.wildfly.clustering.ee.infinispan.InfinispanBatcher;
@@ -41,7 +40,7 @@ import org.wildfly.clustering.web.sso.SSOManager;
 import org.wildfly.clustering.web.sso.SSOManagerConfiguration;
 import org.wildfly.clustering.web.sso.SSOManagerFactory;
 
-public class InfinispanSSOManagerFactory<A, D, S> extends AbstractService<SSOManagerFactory<A, D, S, TransactionBatch>> implements SSOManagerFactory<A, D, S, TransactionBatch> {
+public class InfinispanSSOManagerFactory<A, D, S> implements SSOManagerFactory<A, D, S, TransactionBatch> {
 
     private final InfinispanSSOManagerFactoryConfiguration configuration;
 

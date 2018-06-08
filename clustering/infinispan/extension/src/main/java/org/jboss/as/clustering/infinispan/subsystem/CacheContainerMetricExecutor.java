@@ -21,12 +21,12 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.clustering.controller.MetricExecutor;
-import org.jboss.as.clustering.msc.ServiceContainerHelper;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.infinispan.spi.CacheContainer;
 import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
+import org.wildfly.clustering.service.PassiveServiceSupplier;
 
 /**
  * A handler for cache-container metrics.
@@ -38,7 +38,7 @@ public class CacheContainerMetricExecutor implements MetricExecutor<EmbeddedCach
     @Override
     public ModelNode execute(OperationContext context, Metric<EmbeddedCacheManager> metric) throws OperationFailedException {
         String containerName = context.getCurrentAddressValue();
-        CacheContainer container = ServiceContainerHelper.findValue(context.getServiceRegistry(false), InfinispanRequirement.CONTAINER.getServiceName(context, containerName));
+        CacheContainer container = new PassiveServiceSupplier<CacheContainer>(context.getServiceRegistry(true), InfinispanRequirement.CONTAINER.getServiceName(context, containerName)).get();
         return (container != null) ? metric.execute(container) : null;
     }
 }

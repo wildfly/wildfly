@@ -58,6 +58,6 @@ public class SimpleElectionPolicyResourceDefinition extends ElectionPolicyResour
     }
 
     SimpleElectionPolicyResourceDefinition() {
-        super(PATH, SingletonExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH), new SimpleResourceDescriptorConfigurator<>(Attribute.class), SimpleElectionPolicyBuilder::new);
+        super(PATH, SingletonExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH), new SimpleResourceDescriptorConfigurator<>(Attribute.class), SimpleElectionPolicyServiceConfigurator::new);
     }
 }

@@ -28,17 +28,17 @@ import org.jboss.msc.service.ServiceName;
 /**
  * Simple {@link Dependency} that does not provide a value.
  * @author Paul Ferraro
+ * @deprecated Replaced by {@link ServiceDependency}.
  */
-public class SimpleDependency implements Dependency {
-
-    private final ServiceName name;
+@Deprecated
+public class SimpleDependency extends ServiceDependency {
 
     public SimpleDependency(ServiceName name) {
-        this.name = name;
+        super(name);
     }
 
     @Override
     public <T> ServiceBuilder<T> register(ServiceBuilder<T> builder) {
-        return builder.addDependency(this.name);
+        return builder.addDependency(this.getServiceName());
     }
 }

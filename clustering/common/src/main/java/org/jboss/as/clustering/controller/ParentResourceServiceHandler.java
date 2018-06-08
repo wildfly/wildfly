@@ -32,10 +32,10 @@ import org.jboss.dmr.ModelNode;
  * A {@link SimpleResourceServiceHandler} that uses a recursively read model, to include child resources.
  * @author Paul Ferraro
  */
-public class ParentResourceServiceHandler<T> extends SimpleResourceServiceHandler<T> {
+public class ParentResourceServiceHandler extends SimpleResourceServiceHandler {
 
-    public ParentResourceServiceHandler(ResourceServiceBuilderFactory<T> builderFactory) {
-        super(builderFactory);
+    public ParentResourceServiceHandler(ResourceServiceConfiguratorFactory factory) {
+        super(factory);
     }
 
     @Override

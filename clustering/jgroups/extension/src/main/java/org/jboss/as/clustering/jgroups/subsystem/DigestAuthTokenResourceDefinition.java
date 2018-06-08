@@ -59,6 +59,6 @@ public class DigestAuthTokenResourceDefinition extends AuthTokenResourceDefiniti
     }
 
     DigestAuthTokenResourceDefinition() {
-        super(PATH, new SimpleResourceDescriptorConfigurator<>(Attribute.class), DigestAuthTokenBuilder::new);
+        super(PATH, new SimpleResourceDescriptorConfigurator<>(Attribute.class), DigestAuthTokenServiceConfigurator::new);
     }
 }

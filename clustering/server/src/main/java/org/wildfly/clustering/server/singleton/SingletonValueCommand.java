@@ -23,11 +23,13 @@ package org.wildfly.clustering.server.singleton;
 
 import java.util.Optional;
 
-public class SingletonValueCommand<T> implements SingletonCommand<Optional<T>, T> {
+import org.wildfly.clustering.dispatcher.Command;
+
+public class SingletonValueCommand<T> implements Command<Optional<T>, LegacySingletonContext<T>> {
     private static final long serialVersionUID = -2849349352107418635L;
 
     @Override
-    public Optional<T> execute(SingletonContext<T> context) {
+    public Optional<T> execute(LegacySingletonContext<T> context) {
         return context.getLocalValue();
     }
 }

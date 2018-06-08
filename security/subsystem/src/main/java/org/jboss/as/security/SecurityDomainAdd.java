@@ -115,8 +115,8 @@ import org.jboss.security.mapping.config.MappingModuleEntry;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.spi.InfinispanDefaultCacheRequirement;
 import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
-import org.wildfly.clustering.infinispan.spi.service.CacheBuilder;
-import org.wildfly.clustering.infinispan.spi.service.TemplateConfigurationBuilder;
+import org.wildfly.clustering.infinispan.spi.service.CacheServiceConfigurator;
+import org.wildfly.clustering.infinispan.spi.service.TemplateConfigurationServiceConfigurator;
 
 /**
  * Add a security domain configuration.
@@ -202,9 +202,9 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             context.requireOptionalCapability(InfinispanCacheRequirement.CONFIGURATION.resolve(CACHE_CONTAINER_NAME, templateCacheName), capabilityName, cacheTypeAttributeName);
 
             ServiceName configurationServiceName = InfinispanCacheRequirement.CONFIGURATION.getServiceName(context, CACHE_CONTAINER_NAME, securityDomain);
-            new TemplateConfigurationBuilder(configurationServiceName, CACHE_CONTAINER_NAME, securityDomain, templateCacheName).configure(context).build(target).install();
+            new TemplateConfigurationServiceConfigurator(configurationServiceName, CACHE_CONTAINER_NAME, securityDomain, templateCacheName).configure(context).build(target).install();
             ServiceName cacheServiceName = InfinispanCacheRequirement.CACHE.getServiceName(context, CACHE_CONTAINER_NAME, securityDomain);
-            new CacheBuilder<>(cacheServiceName, CACHE_CONTAINER_NAME, securityDomain).configure(context).build(target).install();
+            new CacheServiceConfigurator<>(cacheServiceName, CACHE_CONTAINER_NAME, securityDomain).configure(context).build(target).install();
 
             builder.addDependency(cacheServiceName, ConcurrentMap.class, securityDomainService.getCacheInjector());
         }

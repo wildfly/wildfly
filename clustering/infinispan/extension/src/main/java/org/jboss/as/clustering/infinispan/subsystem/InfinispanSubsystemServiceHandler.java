@@ -27,7 +27,7 @@ import static org.jboss.as.clustering.infinispan.subsystem.InfinispanSubsystemRe
 
 import java.util.ServiceLoader;
 
-import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.controller.OperationContext;
@@ -39,9 +39,9 @@ import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 import org.wildfly.clustering.service.ServiceNameProvider;
 import org.wildfly.clustering.spi.CapabilityServiceNameRegistry;
 import org.wildfly.clustering.spi.ClusteringRequirement;
-import org.wildfly.clustering.spi.GroupAliasBuilderProvider;
-import org.wildfly.clustering.spi.GroupBuilderProvider;
-import org.wildfly.clustering.spi.LocalGroupBuilderProvider;
+import org.wildfly.clustering.spi.IdentityGroupServiceConfiguratorProvider;
+import org.wildfly.clustering.spi.GroupServiceConfiguratorProvider;
+import org.wildfly.clustering.spi.LocalGroupServiceConfiguratorProvider;
 import org.wildfly.clustering.spi.ServiceNameRegistry;
 
 /**
@@ -59,10 +59,10 @@ public class InfinispanSubsystemServiceHandler implements ResourceServiceHandler
         // Install local group services
         ServiceNameRegistry<ClusteringRequirement> localRegistry = new CapabilityServiceNameRegistry<>(LOCAL_CLUSTERING_CAPABILITIES, address);
 
-        for (GroupBuilderProvider provider : ServiceLoader.load(LocalGroupBuilderProvider.class, LocalGroupBuilderProvider.class.getClassLoader())) {
-            InfinispanLogger.ROOT_LOGGER.debugf("Installing %s for %s group", provider.getClass().getSimpleName(), LocalGroupBuilderProvider.LOCAL);
-            for (CapabilityServiceBuilder<?> builder : provider.getBuilders(localRegistry, LocalGroupBuilderProvider.LOCAL)) {
-                builder.configure(context).build(target).install();
+        for (GroupServiceConfiguratorProvider provider : ServiceLoader.load(LocalGroupServiceConfiguratorProvider.class, LocalGroupServiceConfiguratorProvider.class.getClassLoader())) {
+            InfinispanLogger.ROOT_LOGGER.debugf("Installing %s for %s group", provider.getClass().getSimpleName(), LocalGroupServiceConfiguratorProvider.LOCAL);
+            for (CapabilityServiceConfigurator configurator : provider.getServiceConfigurators(localRegistry, LocalGroupServiceConfiguratorProvider.LOCAL)) {
+                configurator.configure(context).build(target).install();
             }
         }
 
@@ -70,9 +70,9 @@ public class InfinispanSubsystemServiceHandler implements ResourceServiceHandler
         if (!context.hasOptionalCapability(JGroupsRequirement.CHANNEL.getDefaultRequirement().getName(), null, null)) {
             ServiceNameRegistry<ClusteringRequirement> registry = new CapabilityServiceNameRegistry<>(CLUSTERING_CAPABILITIES, address);
 
-            for (GroupAliasBuilderProvider provider : ServiceLoader.load(GroupAliasBuilderProvider.class, GroupAliasBuilderProvider.class.getClassLoader())) {
-                for (CapabilityServiceBuilder<?> builder : provider.getBuilders(registry, null, LocalGroupBuilderProvider.LOCAL)) {
-                    builder.configure(context).build(target).install();
+            for (IdentityGroupServiceConfiguratorProvider provider : ServiceLoader.load(IdentityGroupServiceConfiguratorProvider.class, IdentityGroupServiceConfiguratorProvider.class.getClassLoader())) {
+                for (CapabilityServiceConfigurator configurator : provider.getServiceConfigurators(registry, null, LocalGroupServiceConfiguratorProvider.LOCAL)) {
+                    configurator.configure(context).build(target).install();
                 }
             }
         }
@@ -84,18 +84,18 @@ public class InfinispanSubsystemServiceHandler implements ResourceServiceHandler
 
         ServiceNameRegistry<ClusteringRequirement> localRegistry = new CapabilityServiceNameRegistry<>(LOCAL_CLUSTERING_CAPABILITIES, address);
 
-        for (GroupBuilderProvider provider : ServiceLoader.load(LocalGroupBuilderProvider.class, LocalGroupBuilderProvider.class.getClassLoader())) {
-            for (ServiceNameProvider builder : provider.getBuilders(localRegistry, LocalGroupBuilderProvider.LOCAL)) {
-                context.removeService(builder.getServiceName());
+        for (GroupServiceConfiguratorProvider provider : ServiceLoader.load(LocalGroupServiceConfiguratorProvider.class, LocalGroupServiceConfiguratorProvider.class.getClassLoader())) {
+            for (ServiceNameProvider configurator : provider.getServiceConfigurators(localRegistry, LocalGroupServiceConfiguratorProvider.LOCAL)) {
+                context.removeService(configurator.getServiceName());
             }
         }
 
         if (!context.hasOptionalCapability(JGroupsRequirement.CHANNEL.getDefaultRequirement().getName(), null, null)) {
             ServiceNameRegistry<ClusteringRequirement> registry = new CapabilityServiceNameRegistry<>(CLUSTERING_CAPABILITIES, address);
 
-            for (GroupAliasBuilderProvider provider : ServiceLoader.load(GroupAliasBuilderProvider.class, GroupAliasBuilderProvider.class.getClassLoader())) {
-                for (CapabilityServiceBuilder<?> builder : provider.getBuilders(registry, null, LocalGroupBuilderProvider.LOCAL)) {
-                    context.removeService(builder.getServiceName());
+            for (IdentityGroupServiceConfiguratorProvider provider : ServiceLoader.load(IdentityGroupServiceConfiguratorProvider.class, IdentityGroupServiceConfiguratorProvider.class.getClassLoader())) {
+                for (CapabilityServiceConfigurator configurator : provider.getServiceConfigurators(registry, null, LocalGroupServiceConfiguratorProvider.LOCAL)) {
+                    context.removeService(configurator.getServiceName());
                 }
             }
         }

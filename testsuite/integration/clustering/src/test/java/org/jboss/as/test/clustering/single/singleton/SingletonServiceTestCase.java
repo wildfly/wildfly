@@ -39,7 +39,6 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.server.security.ServerPermission;
-import org.jboss.as.test.clustering.cluster.singleton.service.NodeService;
 import org.jboss.as.test.clustering.cluster.singleton.service.NodeServiceActivator;
 import org.jboss.as.test.clustering.cluster.singleton.service.NodeServiceServlet;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
@@ -62,7 +61,7 @@ public class SingletonServiceTestCase {
     @Deployment(testable = false)
     public static Archive<?> deployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, MODULE_NAME + ".war");
-        war.addPackage(NodeService.class.getPackage());
+        war.addPackage(NodeServiceServlet.class.getPackage());
         war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.as.server\n"));
         war.addAsManifestResource(createPermissionsXmlAsset(
                 new RuntimePermission("getClassLoader"), // See org.jboss.as.server.deployment.service.ServiceActivatorProcessor#deploy()

@@ -25,13 +25,12 @@ package org.jboss.as.clustering.infinispan.subsystem.remote;
 import java.util.function.UnaryOperator;
 
 import org.infinispan.client.hotrod.ProtocolVersion;
-import org.infinispan.client.hotrod.configuration.Configuration;
 import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
+import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
@@ -112,11 +111,11 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
 
         Attribute(String name, ModelType type, ModelNode defaultValue) {
             this.definition = new SimpleAttributeDefinitionBuilder(name, type)
-                        .setAllowExpression(true)
-                        .setRequired(defaultValue == null)
-                        .setDefaultValue(defaultValue)
-                        .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                        .build();
+                    .setAllowExpression(true)
+                    .setRequired(defaultValue == null)
+                    .setDefaultValue(defaultValue)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .build();
         }
 
         @Override
@@ -156,12 +155,12 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
                 .addRequiredSingletonChildren(NoNearCacheResourceDefinition.PATH)
                 .addRequiredChildren(SecurityResourceDefinition.PATH)
                 ;
-        ResourceServiceBuilderFactory<Configuration> builderFactory = RemoteCacheContainerConfigurationBuilder::new;
-        ResourceServiceHandler handler = new RemoteCacheContainerServiceHandler(builderFactory);
+        ResourceServiceConfiguratorFactory serviceConfiguratorFactory = RemoteCacheContainerConfigurationServiceConfigurator::new;
+        ResourceServiceHandler handler = new RemoteCacheContainerServiceHandler(serviceConfiguratorFactory);
         new SimpleResourceRegistration(descriptor, handler).register(registration);
 
         new ConnectionPoolResourceDefinition().register(registration);
-        new RemoteClusterResourceDefinition(builderFactory).register(registration);
+        new RemoteClusterResourceDefinition(serviceConfiguratorFactory).register(registration);
         new SecurityResourceDefinition().register(registration);
 
         new InvalidationNearCacheResourceDefinition().register(registration);

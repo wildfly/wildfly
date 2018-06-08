@@ -36,7 +36,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.jboss.as.server.CurrentServiceContainer;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jgroups.Address;
 import org.jgroups.Event;
@@ -46,6 +45,7 @@ import org.jgroups.protocols.DISCARD;
 import org.jgroups.protocols.TP;
 import org.jgroups.protocols.pbcast.GMS;
 import org.jgroups.stack.ProtocolStack;
+import org.wildfly.clustering.service.PassiveServiceSupplier;
 
 /**
  * Servlet used to simulate network partitions. Responds to {@code /partition?partition=true} by inserting DISCARD protocol to the stack
@@ -78,11 +78,8 @@ public class PartitionServlet extends HttpServlet {
 
         this.log("Simulating network partitions? " + partition);
 
-        ServiceController<?> service = CurrentServiceContainer.getServiceContainer().getService(ServiceName.parse("org.wildfly.clustering.jgroups.default-channel"));
+        JChannel channel = new PassiveServiceSupplier<JChannel>(CurrentServiceContainer.getServiceContainer(), ServiceName.parse("org.wildfly.clustering.jgroups.default-channel")).get();
         try {
-            // TODO adapt to new MSC API once org.wildfly.clustering.jgroups.default-channel is converted to it
-            JChannel channel = (JChannel) service.awaitValue();
-
             if (partition) {
                 // Store views for future merge event
                 GMS gms = channel.getProtocolStack().findProtocol(GMS.class);
@@ -114,10 +111,12 @@ public class PartitionServlet extends HttpServlet {
                 gms.up(new Event(Event.MERGE, mergeViews));
                 mergeViews = null;
             }
+
+            response.getWriter().write("Success");
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         } catch (Exception e) {
             throw new ServletException(e);
         }
-
-        response.getWriter().write("Success");
     }
 }

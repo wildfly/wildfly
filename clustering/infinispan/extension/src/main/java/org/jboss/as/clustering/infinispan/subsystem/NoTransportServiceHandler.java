@@ -27,19 +27,18 @@ import static org.jboss.as.clustering.infinispan.subsystem.TransportResourceDefi
 import java.util.EnumSet;
 import java.util.ServiceLoader;
 
-import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.service.ServiceNameProvider;
 import org.wildfly.clustering.spi.CapabilityServiceNameRegistry;
 import org.wildfly.clustering.spi.ClusteringRequirement;
-import org.wildfly.clustering.spi.GroupAliasBuilderProvider;
-import org.wildfly.clustering.spi.LocalGroupBuilderProvider;
+import org.wildfly.clustering.spi.IdentityGroupServiceConfiguratorProvider;
+import org.wildfly.clustering.spi.LocalGroupServiceConfiguratorProvider;
 import org.wildfly.clustering.spi.ServiceNameRegistry;
 
 /**
@@ -55,14 +54,14 @@ public class NoTransportServiceHandler implements ResourceServiceHandler {
 
         ServiceTarget target = context.getServiceTarget();
 
-        new NoTransportBuilder(address).build(target).install();
-        new SiteBuilder(address).build(target).install();
+        new NoTransportServiceConfigurator(address).build(target).install();
+        new SiteServiceConfigurator(address).build(target).install();
 
         ServiceNameRegistry<ClusteringRequirement> registry = new CapabilityServiceNameRegistry<>(CLUSTERING_CAPABILITIES, address);
 
-        for (GroupAliasBuilderProvider provider : ServiceLoader.load(GroupAliasBuilderProvider.class, GroupAliasBuilderProvider.class.getClassLoader())) {
-            for (CapabilityServiceBuilder<?> builder : provider.getBuilders(registry, name, LocalGroupBuilderProvider.LOCAL)) {
-                builder.configure(context).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        for (IdentityGroupServiceConfiguratorProvider provider : ServiceLoader.load(IdentityGroupServiceConfiguratorProvider.class, IdentityGroupServiceConfiguratorProvider.class.getClassLoader())) {
+            for (CapabilityServiceConfigurator configurator : provider.getServiceConfigurators(registry, name, LocalGroupServiceConfiguratorProvider.LOCAL)) {
+                configurator.configure(context).build(target).install();
             }
         }
     }
@@ -75,9 +74,9 @@ public class NoTransportServiceHandler implements ResourceServiceHandler {
 
         ServiceNameRegistry<ClusteringRequirement> registry = new CapabilityServiceNameRegistry<>(CLUSTERING_CAPABILITIES, address);
 
-        for (GroupAliasBuilderProvider provider : ServiceLoader.load(GroupAliasBuilderProvider.class, GroupAliasBuilderProvider.class.getClassLoader())) {
-            for (ServiceNameProvider builder : provider.getBuilders(registry, name, LocalGroupBuilderProvider.LOCAL)) {
-                context.removeService(builder.getServiceName());
+        for (IdentityGroupServiceConfiguratorProvider provider : ServiceLoader.load(IdentityGroupServiceConfiguratorProvider.class, IdentityGroupServiceConfiguratorProvider.class.getClassLoader())) {
+            for (ServiceNameProvider configurator : provider.getServiceConfigurators(registry, name, LocalGroupServiceConfiguratorProvider.LOCAL)) {
+                context.removeService(configurator.getServiceName());
             }
         }
 

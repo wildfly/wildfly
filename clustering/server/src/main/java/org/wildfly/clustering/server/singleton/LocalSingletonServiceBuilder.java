@@ -26,20 +26,23 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.clustering.service.SimpleServiceNameProvider;
 import org.wildfly.clustering.singleton.SingletonElectionPolicy;
 import org.wildfly.clustering.singleton.SingletonService;
 import org.wildfly.clustering.singleton.SingletonServiceBuilder;
+import org.wildfly.clustering.singleton.service.SingletonServiceConfigurator;
 
 /**
+ * Local {@link SingletonServiceConfigurator} implementation that uses JBoss MSC 1.3.x service installation.
  * @author Paul Ferraro
  */
-public class LocalSingletonServiceBuilder<T> implements SingletonServiceBuilder<T> {
+@Deprecated
+public class LocalSingletonServiceBuilder<T> extends SimpleServiceNameProvider implements SingletonServiceBuilder<T> {
 
-    private final ServiceName name;
     private final Service<T> service;
 
     public LocalSingletonServiceBuilder(ServiceName name, Service<T> service) {
-        this.name = name;
+        super(name);
         this.service = service;
     }
 
@@ -57,12 +60,7 @@ public class LocalSingletonServiceBuilder<T> implements SingletonServiceBuilder<
 
     @Override
     public ServiceBuilder<T> build(ServiceTarget target) {
-        SingletonService<T> service = new LocalSingletonService<>(this.service);
-        return target.addService(this.name, service);
-    }
-
-    @Override
-    public ServiceName getServiceName() {
-        return this.name;
+        SingletonService<T> service = new LocalLegacySingletonService<>(this.service);
+        return target.addService(this.getServiceName(), service);
     }
 }

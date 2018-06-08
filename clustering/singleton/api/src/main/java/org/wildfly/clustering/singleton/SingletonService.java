@@ -27,7 +27,9 @@ import org.jboss.msc.service.Service;
 /**
  * Implemented by the instrumented singleton service.
  * @author Paul Ferraro
+ * @deprecated Replaced by {@link org.wildfly.clustering.singleton.service.SingletonService}.
  */
-public interface SingletonService<T> extends Service<T>, Singleton {
+@Deprecated
+public interface SingletonService<T> extends org.wildfly.clustering.singleton.service.SingletonService, Service<T> {
 
 }

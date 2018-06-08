@@ -94,6 +94,6 @@ public class ScatteredCacheResourceDefinition extends SegmentedCacheResourceDefi
     }
 
     ScatteredCacheResourceDefinition() {
-        super(WILDCARD_PATH, new SimpleResourceDescriptorConfigurator<>(Attribute.class), new ClusteredCacheServiceHandler(ScatteredCacheBuilder::new));
+        super(WILDCARD_PATH, new SimpleResourceDescriptorConfigurator<>(Attribute.class), new ClusteredCacheServiceHandler(ScatteredCacheServiceConfigurator::new));
     }
 }

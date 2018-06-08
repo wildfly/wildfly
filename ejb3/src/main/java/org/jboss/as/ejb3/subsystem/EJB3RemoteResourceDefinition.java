@@ -38,7 +38,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderConfiguration;
+import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
 
 /**
  * A {@link org.jboss.as.controller.ResourceDefinition} for the EJB remote service
@@ -56,7 +56,7 @@ public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.CLIENT_MAPPINGS_CLUSTER_NAME, ModelType.STRING, true)
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode(BeanManagerFactoryBuilderConfiguration.DEFAULT_CONTAINER_NAME))
+                    .setDefaultValue(new ModelNode(BeanManagerFactoryServiceConfiguratorConfiguration.DEFAULT_CONTAINER_NAME))
                     .build();
 
     static final SimpleAttributeDefinition CONNECTOR_REF =

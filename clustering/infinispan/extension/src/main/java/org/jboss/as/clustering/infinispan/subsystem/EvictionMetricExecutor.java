@@ -21,12 +21,12 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import org.infinispan.Cache;
 import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.clustering.controller.MetricExecutor;
-import org.jboss.as.clustering.msc.ServiceContainerHelper;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
+import org.wildfly.clustering.service.PassiveServiceSupplier;
 
 /**
  * Handler for cache eviction metrics.
@@ -41,7 +41,7 @@ public class EvictionMetricExecutor implements MetricExecutor<Cache<?, ?>> {
         String containerName = cacheAddress.getParent().getLastElement().getValue();
         String cacheName = cacheAddress.getLastElement().getValue();
 
-        Cache<?, ?> cache = ServiceContainerHelper.findValue(context.getServiceRegistry(false), InfinispanCacheRequirement.CACHE.getServiceName(context, containerName, cacheName));
+        Cache<?, ?> cache = new PassiveServiceSupplier<Cache<?, ?>>(context.getServiceRegistry(true), InfinispanCacheRequirement.CACHE.getServiceName(context, containerName, cacheName)).get();
         return (cache != null) ? metric.execute(cache) : null;
     }
 }

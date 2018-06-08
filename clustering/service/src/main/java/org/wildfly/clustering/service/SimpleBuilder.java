@@ -32,7 +32,9 @@ import org.jboss.msc.value.Value;
 
 /**
  * @author Paul Ferraro
+ * @deprecated Replaced by {@link SimpleServiceConfigurator}.
  */
+@Deprecated
 public class SimpleBuilder<T> implements Builder<T> {
 
     private final ServiceName name;

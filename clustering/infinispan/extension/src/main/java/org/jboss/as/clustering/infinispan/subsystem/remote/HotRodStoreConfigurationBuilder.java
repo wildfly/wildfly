@@ -51,6 +51,7 @@ public class HotRodStoreConfigurationBuilder extends AbstractStoreConfigurationB
         return this;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public HotRodStoreConfiguration create() {
         return new HotRodStoreConfiguration(this.attributes.protect(), this.async.create(), this.singletonStore.create());

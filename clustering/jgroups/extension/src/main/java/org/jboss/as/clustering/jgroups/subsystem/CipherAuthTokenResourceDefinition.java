@@ -92,6 +92,6 @@ public class CipherAuthTokenResourceDefinition extends AuthTokenResourceDefiniti
     }
 
     CipherAuthTokenResourceDefinition() {
-        super(PATH, new SimpleResourceDescriptorConfigurator<>(Attribute.class), CipherAuthTokenBuilder::new);
+        super(PATH, new SimpleResourceDescriptorConfigurator<>(Attribute.class), CipherAuthTokenServiceConfigurator::new);
     }
 }

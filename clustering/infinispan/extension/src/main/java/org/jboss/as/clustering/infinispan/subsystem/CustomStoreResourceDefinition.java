@@ -67,6 +67,6 @@ public class CustomStoreResourceDefinition extends StoreResourceDefinition {
     }
 
     CustomStoreResourceDefinition() {
-        super(PATH, LEGACY_PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH), new SimpleResourceDescriptorConfigurator<>(Attribute.class), CustomStoreBuilder::new);
+        super(PATH, LEGACY_PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH), new SimpleResourceDescriptorConfigurator<>(Attribute.class), CustomStoreServiceConfigurator::new);
     }
 }

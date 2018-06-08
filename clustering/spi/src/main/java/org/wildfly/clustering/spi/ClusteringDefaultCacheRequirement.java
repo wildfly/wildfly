@@ -43,7 +43,8 @@ public enum ClusteringDefaultCacheRequirement implements UnaryRequirement, Unary
     REGISTRY_ENTRY("org.wildfly.clustering.cache.default-registry-entry", Map.Entry.class),
     REGISTRY_FACTORY("org.wildfly.clustering.cache.default-registry-factory", RegistryFactory.class),
     SERVICE_PROVIDER_REGISTRY("org.wildfly.clustering.cache.default-service-provider-registry", ServiceProviderRegistry.class),
-    SINGLETON_SERVICE_BUILDER_FACTORY(SingletonDefaultCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY),
+    @Deprecated SINGLETON_SERVICE_BUILDER_FACTORY(SingletonDefaultCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY),
+    SINGLETON_SERVICE_CONFIGURATOR_FACTORY(SingletonDefaultCacheRequirement.SINGLETON_SERVICE_CONFIGURATOR_FACTORY),
     ;
     private final String name;
     private final Class<?> type;

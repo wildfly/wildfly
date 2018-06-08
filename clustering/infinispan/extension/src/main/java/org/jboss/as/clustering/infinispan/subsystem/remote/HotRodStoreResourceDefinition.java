@@ -25,6 +25,7 @@ package org.jboss.as.clustering.infinispan.subsystem.remote;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.SimpleResourceDescriptorConfigurator;
 import org.jboss.as.clustering.infinispan.subsystem.InfinispanExtension;
+import org.jboss.as.clustering.infinispan.subsystem.InfinispanModel;
 import org.jboss.as.clustering.infinispan.subsystem.StoreResourceDefinition;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
@@ -69,10 +70,12 @@ public class HotRodStoreResourceDefinition extends StoreResourceDefinition {
     }
 
     public static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        // No transformations yet.
+        if (InfinispanModel.VERSION_7_0_0.requiresTransformation(version)) {
+            parent.rejectChildResource(HotRodStoreResourceDefinition.PATH);
+        }
     }
 
     public HotRodStoreResourceDefinition() {
-        super(PATH, null, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH), new SimpleResourceDescriptorConfigurator<>(Attribute.class), HotRodStoreBuilder::new);
+        super(PATH, null, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH), new SimpleResourceDescriptorConfigurator<>(Attribute.class), HotRodStoreServiceConfigurator::new);
     }
 }

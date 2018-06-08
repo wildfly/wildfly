@@ -35,6 +35,7 @@ import org.wildfly.clustering.singleton.SingletonPolicy;
  * Builds a singleton service for the next phase in the deployment chain, if configured.
  * @author Paul Ferraro
  */
+@SuppressWarnings("deprecation")
 public class SingletonDeploymentUnitPhaseBuilder implements DeploymentUnitPhaseBuilder {
     private static final String EJB_REMOTE_CAPABILITY = "org.wildfly.ejb.remote";
 
