@@ -80,16 +80,8 @@ public class ServiceLifecycle implements Lifecycle {
 
             monitor.awaitStability();
 
-            State state = this.controller.getState();
-            switch (state) {
-                case START_FAILED: {
-                    throw new IllegalStateException(this.controller.getStartException());
-                }
-                default: {
-                    if (state != targetState) {
-                        throw new IllegalStateException(state.toString());
-                    }
-                }
+            if (this.controller.getState() == ServiceController.State.START_FAILED) {
+                throw new IllegalStateException(this.controller.getStartException());
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
