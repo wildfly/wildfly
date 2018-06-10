@@ -34,6 +34,7 @@ import org.wildfly.clustering.infinispan.spi.RemoteCacheContainer;
 /**
  * @author Radoslav Husar
  */
+@SuppressWarnings("deprecation")
 @BuiltBy(HotRodStoreConfigurationBuilder.class)
 @ConfigurationFor(HotRodStore.class)
 public class HotRodStoreConfiguration extends AbstractStoreConfiguration {
@@ -42,12 +43,12 @@ public class HotRodStoreConfiguration extends AbstractStoreConfiguration {
 
     static final AttributeDefinition<String> CACHE_CONFIGURATION = AttributeDefinition.builder("cacheConfiguration", null, String.class).build();
 
-    public HotRodStoreConfiguration(AttributeSet attributes, AsyncStoreConfiguration async, @SuppressWarnings("deprecation") SingletonStoreConfiguration singletonStore) {
+    public HotRodStoreConfiguration(AttributeSet attributes, AsyncStoreConfiguration async, SingletonStoreConfiguration singletonStore) {
         super(attributes, async, singletonStore);
     }
 
     @Override
     public String toString() {
-        return "HotRodStoreConfiguration{attributes=" + attributes + '}';
+        return "HotRodStoreConfiguration{attributes=" + this.attributes + '}';
     }
 }

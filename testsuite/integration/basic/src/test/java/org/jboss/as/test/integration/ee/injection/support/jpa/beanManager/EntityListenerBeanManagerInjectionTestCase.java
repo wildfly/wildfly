@@ -22,6 +22,12 @@
 
 package org.jboss.as.test.integration.ee.injection.support.jpa.beanManager;
 
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
+
+import java.io.FilePermission;
+import java.net.URI;
+
+import javax.enterprise.inject.spi.CDI;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
@@ -48,7 +54,15 @@ public class EntityListenerBeanManagerInjectionTestCase {
         war.addAsWebInfResource(EntityListenerBeanManagerInjectionTestCase.class.getPackage(), "persistence.xml",
                 "classes/META-INF/persistence.xml");
         war.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+        war.addAsManifestResource(createPermissionsXmlAsset(
+                new FilePermission(getCdiJarUrl(), "read")
+        ), "jboss-permissions.xml");
         return war;
+    }
+
+    private static String getCdiJarUrl() {
+        String url = CDI.class.getClassLoader().getResource("META-INF/services/javax.enterprise.inject.spi.CDIProvider").getPath();
+        return URI.create(url.substring(0, url.lastIndexOf('!'))).getPath();
     }
 
     @ArquillianResource

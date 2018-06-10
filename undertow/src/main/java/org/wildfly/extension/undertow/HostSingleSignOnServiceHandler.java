@@ -22,15 +22,15 @@
 
 package org.wildfly.extension.undertow;
 
-import static org.wildfly.extension.undertow.SingleSignOnDefinition.Attribute.*;
+import static org.wildfly.extension.undertow.SingleSignOnDefinition.Attribute.COOKIE_NAME;
+import static org.wildfly.extension.undertow.SingleSignOnDefinition.Attribute.DOMAIN;
+import static org.wildfly.extension.undertow.SingleSignOnDefinition.Attribute.HTTP_ONLY;
+import static org.wildfly.extension.undertow.SingleSignOnDefinition.Attribute.PATH;
+import static org.wildfly.extension.undertow.SingleSignOnDefinition.Attribute.SECURE;
 
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.SimpleCapabilityServiceBuilder;
+import org.jboss.as.clustering.controller.SimpleCapabilityServiceConfigurator;
 import org.jboss.as.clustering.dmr.ModelNodes;
-
-import io.undertow.security.impl.InMemorySingleSignOnManager;
-import io.undertow.security.impl.SingleSignOnManager;
-
 import org.jboss.as.controller.CapabilityServiceTarget;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -38,7 +38,10 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.extension.undertow.security.sso.DistributableHostSingleSignOnManagerBuilderProvider;
+import org.wildfly.extension.undertow.security.sso.DistributableHostSingleSignOnManagerServiceConfiguratorProvider;
+
+import io.undertow.security.impl.InMemorySingleSignOnManager;
+import io.undertow.security.impl.SingleSignOnManager;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2014 Red Hat Inc.
@@ -66,8 +69,8 @@ class HostSingleSignOnServiceHandler implements ResourceServiceHandler {
         CapabilityServiceTarget target = context.getCapabilityServiceTarget();
 
         ServiceName managerServiceName = serviceName.append("manager");
-        DistributableHostSingleSignOnManagerBuilderProvider.INSTANCE.map(provider -> provider.getBuilder(managerServiceName, serverName, hostName))
-                .orElse(new SimpleCapabilityServiceBuilder<>(managerServiceName, new InMemorySingleSignOnManager()))
+        DistributableHostSingleSignOnManagerServiceConfiguratorProvider.INSTANCE.map(provider -> provider.getServiceConfigurator(managerServiceName, serverName, hostName))
+                .orElse(new SimpleCapabilityServiceConfigurator<>(managerServiceName, new InMemorySingleSignOnManager()))
                 .configure(context).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 
         SingleSignOnService service = new SingleSignOnService(domain, path, httpOnly, secure, cookieName);

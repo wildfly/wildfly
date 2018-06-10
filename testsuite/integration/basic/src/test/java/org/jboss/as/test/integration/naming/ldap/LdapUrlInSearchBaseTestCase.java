@@ -87,7 +87,11 @@ public class LdapUrlInSearchBaseTestCase {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "ldap-test.war");
         war.addClasses(LdapUrlTestServlet.class);
 
-        war.addAsManifestResource(createPermissionsXmlAsset(new SocketPermission("*:10389", "connect,resolve")), "permissions.xml");
+        war.addAsManifestResource(createPermissionsXmlAsset(
+                new SocketPermission("*:10389", "connect,resolve"),
+                new RuntimePermission("accessClassInPackage.com.sun.jndi.ldap"),
+                new RuntimePermission("accessClassInPackage.com.sun.jndi.url.ldap")
+        ), "permissions.xml");
 
         return war;
     }

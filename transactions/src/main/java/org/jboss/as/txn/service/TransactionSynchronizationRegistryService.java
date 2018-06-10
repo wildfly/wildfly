@@ -29,7 +29,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
-import org.wildfly.transaction.client.ContextTransactionSynchronizationRegistry;
 
 /**
  * Service that exposes the TransactionSynchronizationRegistry
@@ -55,6 +54,6 @@ public class TransactionSynchronizationRegistryService extends AbstractService<T
 
     @Override
     public TransactionSynchronizationRegistry getValue() throws IllegalStateException {
-        return ContextTransactionSynchronizationRegistry.getInstance();
+        return injectedArjunaTM.getValue().getTransactionSynchronizationRegistry();
     }
 }

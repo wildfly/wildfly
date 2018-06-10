@@ -24,19 +24,19 @@ package org.wildfly.mod_cluster.undertow;
 
 import java.time.Duration;
 
-import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.kohsuke.MetaInfServices;
-import org.wildfly.extension.mod_cluster.ContainerEventHandlerAdapterBuilderProvider;
+import org.wildfly.extension.mod_cluster.ContainerEventHandlerAdapterServiceConfiguratorProvider;
 
 /**
- * {@link ContainerEventHandlerAdapterBuilderProvider} service provider for Undertow
+ * {@link ContainerEventHandlerAdapterServiceConfiguratorProvider} service provider for Undertow
  * @author Paul Ferraro
  */
-@MetaInfServices(ContainerEventHandlerAdapterBuilderProvider.class)
-public class UndertowEventHandlerAdapterBuilderProvider implements ContainerEventHandlerAdapterBuilderProvider {
+@MetaInfServices(ContainerEventHandlerAdapterServiceConfiguratorProvider.class)
+public class UndertowEventHandlerAdapterBuilderProvider implements ContainerEventHandlerAdapterServiceConfiguratorProvider {
 
     @Override
-    public CapabilityServiceBuilder<Void> getBuilder(String listenerName, Duration statusInterval) {
-        return new UndertowEventHandlerAdapterBuilder(listenerName, statusInterval);
+    public CapabilityServiceConfigurator getServiceConfigurator(String listenerName, Duration statusInterval) {
+        return new UndertowEventHandlerAdapterServiceConfigurator(listenerName, statusInterval);
     }
 }

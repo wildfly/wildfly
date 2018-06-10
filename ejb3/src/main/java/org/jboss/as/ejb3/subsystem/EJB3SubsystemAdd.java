@@ -116,7 +116,7 @@ import org.jboss.as.ejb3.iiop.RemoteObjectSubstitutionService;
 import org.jboss.as.ejb3.iiop.stub.DynamicStubFactoryFactory;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.remote.AssociationService;
-import org.jboss.as.ejb3.remote.ClientMappingsRegistryBuilder;
+import org.jboss.as.ejb3.remote.ClientMappingsRegistryServiceConfigurator;
 import org.jboss.as.ejb3.remote.EJBClientContextService;
 import org.jboss.as.ejb3.remote.LocalTransportProvider;
 import org.jboss.as.ejb3.remote.http.EJB3RemoteHTTPService;
@@ -227,7 +227,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                 .setInitialMode(ServiceController.Mode.LAZY);
 
         if (context.readResource(PathAddress.EMPTY_ADDRESS, false).hasChild(EJB3SubsystemModel.REMOTE_SERVICE_PATH)) {
-            associationServiceBuilder.addDependency(ClientMappingsRegistryBuilder.SERVICE_NAME, Registry.class, associationService.getClientMappingsRegistryInjector());
+            associationServiceBuilder.addDependency(ClientMappingsRegistryServiceConfigurator.SERVICE_NAME, Registry.class, associationService.getClientMappingsRegistryInjector());
         }
         associationServiceBuilder.install();
 

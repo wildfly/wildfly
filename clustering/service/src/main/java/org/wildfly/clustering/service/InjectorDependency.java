@@ -29,7 +29,9 @@ import org.jboss.msc.service.ServiceName;
 /**
  * Service dependency requiring an injector.
  * @author Paul Ferraro
+ * @deprecated Replaced by {@link ServiceSupplierDependency}.
  */
+@Deprecated
 public class InjectorDependency<T> implements Dependency {
     private final ServiceName name;
     private final Class<T> targetClass;

@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import org.jboss.as.ee.structure.DeploymentType;
+import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -68,7 +70,6 @@ public class JSFVersionProcessor implements DeploymentUnitProcessor {
             DotName.createSimple("javax.faces.event.ListenersFor"),
             DotName.createSimple("javax.faces.bean.ManagedBean"),
             DotName.createSimple("javax.faces.event.NamedEvent"),
-            DotName.createSimple("javax.annotation.Resource"),
             DotName.createSimple("javax.faces.application.ResourceDependencies"),
             DotName.createSimple("javax.faces.application.ResourceDependency")};
 
@@ -146,6 +147,9 @@ public class JSFVersionProcessor implements DeploymentUnitProcessor {
 
 
     private boolean shouldJsfActivate(final DeploymentUnit deploymentUnit, WarMetaData warMetaData) {
+        if (!DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
+            return false;
+        }
         if (warMetaData != null) {
             WebCommonMetaData jBossWebMetaData = warMetaData.getWebMetaData();
             if (isJsfDeclarationsPresent(jBossWebMetaData)) {

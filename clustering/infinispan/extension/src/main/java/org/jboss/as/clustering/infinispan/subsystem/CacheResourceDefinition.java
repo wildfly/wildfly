@@ -208,12 +208,7 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
         BinaryMemoryResourceDefinition.buildTransformation(version, builder);
         ObjectMemoryResourceDefinition.buildTransformation(version, builder);
         OffHeapMemoryResourceDefinition.buildTransformation(version, builder);
-
-        if (InfinispanModel.VERSION_7_0_0.requiresTransformation(version)) {
-            builder.rejectChildResource(HotRodStoreResourceDefinition.WILDCARD_PATH);
-        } else {
-            HotRodStoreResourceDefinition.buildTransformation(version, builder);
-        }
+        HotRodStoreResourceDefinition.buildTransformation(version, builder);
 
         LockingResourceDefinition.buildTransformation(version, builder);
         ExpirationResourceDefinition.buildTransformation(version, builder);

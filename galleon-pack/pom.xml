@@ -34,7 +34,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>13.0.0.Beta2-SNAPSHOT</version>
+        <version>14.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-galleon-pack</artifactId>
@@ -122,6 +122,7 @@
                         <phase>prepare-package</phase>
                         <configuration>
                             <output-dir>${basedir}/target/resources/features</output-dir>
+                            <fork-embedded>true</fork-embedded>
                             <feature-packs>
                                 <feature-pack>
                                     <groupId>org.wildfly.core</groupId>
@@ -247,6 +248,9 @@
                         <phase>prepare-package</phase>
                         <configuration>
                             <release-name>${full.dist.product.release.name}</release-name>
+                            <task-properties>
+                                <product.release.version>${product.release.version}</product.release.version>
+                            </task-properties>
                         </configuration>
                     </execution>
                 </executions>
@@ -774,6 +778,11 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-rt-features-logging</artifactId>
         </dependency>
 
         <dependency>

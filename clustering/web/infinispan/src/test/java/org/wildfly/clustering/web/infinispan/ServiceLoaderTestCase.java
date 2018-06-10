@@ -28,12 +28,12 @@ import org.infinispan.persistence.keymappers.TwoWayKey2StringMapper;
 import org.jboss.logging.Logger;
 import org.junit.Test;
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.spi.CacheAliasBuilderProvider;
-import org.wildfly.clustering.spi.DistributedCacheBuilderProvider;
-import org.wildfly.clustering.spi.LocalCacheBuilderProvider;
-import org.wildfly.clustering.web.session.RouteLocatorBuilderProvider;
-import org.wildfly.clustering.web.session.SessionManagerFactoryBuilderProvider;
-import org.wildfly.clustering.web.sso.SSOManagerFactoryBuilderProvider;
+import org.wildfly.clustering.spi.IdentityCacheServiceConfiguratorProvider;
+import org.wildfly.clustering.spi.DistributedCacheServiceConfiguratorProvider;
+import org.wildfly.clustering.spi.LocalCacheServiceConfiguratorProvider;
+import org.wildfly.clustering.web.session.RouteLocatorServiceConfiguratorProvider;
+import org.wildfly.clustering.web.session.SessionManagerFactoryServiceConfiguratorProvider;
+import org.wildfly.clustering.web.sso.SSOManagerFactoryServiceConfiguratorProvider;
 
 /**
  * Validates loading of services.
@@ -51,12 +51,12 @@ public class ServiceLoaderTestCase {
     @Test
     public void load() {
         load(Externalizer.class);
-        load(RouteLocatorBuilderProvider.class);
-        load(SessionManagerFactoryBuilderProvider.class);
-        load(SSOManagerFactoryBuilderProvider.class);
-        load(DistributedCacheBuilderProvider.class);
-        load(LocalCacheBuilderProvider.class);
-        load(CacheAliasBuilderProvider.class);
+        load(RouteLocatorServiceConfiguratorProvider.class);
+        load(SessionManagerFactoryServiceConfiguratorProvider.class);
+        load(SSOManagerFactoryServiceConfiguratorProvider.class);
+        load(DistributedCacheServiceConfiguratorProvider.class);
+        load(LocalCacheServiceConfiguratorProvider.class);
+        load(IdentityCacheServiceConfiguratorProvider.class);
         load(TwoWayKey2StringMapper.class);
     }
 }

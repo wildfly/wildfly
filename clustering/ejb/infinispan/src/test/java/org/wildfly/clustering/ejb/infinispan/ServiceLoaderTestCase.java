@@ -26,11 +26,11 @@ import java.util.ServiceLoader;
 
 import org.infinispan.persistence.keymappers.TwoWayKey2StringMapper;
 import org.junit.Test;
-import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderFactoryProvider;
+import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorFactoryProvider;
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.spi.CacheAliasBuilderProvider;
-import org.wildfly.clustering.spi.DistributedCacheBuilderProvider;
-import org.wildfly.clustering.spi.LocalCacheBuilderProvider;
+import org.wildfly.clustering.spi.IdentityCacheServiceConfiguratorProvider;
+import org.wildfly.clustering.spi.DistributedCacheServiceConfiguratorProvider;
+import org.wildfly.clustering.spi.LocalCacheServiceConfiguratorProvider;
 
 /**
  * Validates loading of services.
@@ -47,10 +47,10 @@ public class ServiceLoaderTestCase {
     @Test
     public void load() {
         load(Externalizer.class);
-        load(BeanManagerFactoryBuilderFactoryProvider.class);
-        load(DistributedCacheBuilderProvider.class);
-        load(LocalCacheBuilderProvider.class);
-        load(CacheAliasBuilderProvider.class);
+        load(BeanManagerFactoryServiceConfiguratorFactoryProvider.class);
+        load(DistributedCacheServiceConfiguratorProvider.class);
+        load(LocalCacheServiceConfiguratorProvider.class);
+        load(IdentityCacheServiceConfiguratorProvider.class);
         load(TwoWayKey2StringMapper.class);
     }
 }

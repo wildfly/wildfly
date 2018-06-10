@@ -22,14 +22,15 @@
 
 package org.jboss.as.clustering.infinispan;
 
+import java.util.function.Supplier;
+
 import javax.sql.DataSource;
 
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.persistence.jdbc.configuration.AbstractJdbcStoreConfigurationBuilder;
 import org.infinispan.persistence.jdbc.configuration.AbstractJdbcStoreConfigurationChildBuilder;
 import org.infinispan.persistence.jdbc.configuration.ConnectionFactoryConfigurationBuilder;
-import org.jboss.msc.value.ImmediateValue;
-import org.jboss.msc.value.Value;
+import org.wildfly.clustering.service.SimpleSupplierDependency;
 
 /**
  * Builds a {@link DataSourceConnectionFactoryConfiguration}.
@@ -37,13 +38,13 @@ import org.jboss.msc.value.Value;
  */
 public class DataSourceConnectionFactoryConfigurationBuilder<S extends AbstractJdbcStoreConfigurationBuilder<?, S>> extends AbstractJdbcStoreConfigurationChildBuilder<S> implements ConnectionFactoryConfigurationBuilder<DataSourceConnectionFactoryConfiguration> {
 
-    private volatile Value<DataSource> dependency;
+    private volatile Supplier<DataSource> dependency;
 
     public DataSourceConnectionFactoryConfigurationBuilder(AbstractJdbcStoreConfigurationBuilder<?, S> builder) {
         super(builder);
     }
 
-    public DataSourceConnectionFactoryConfigurationBuilder<S> setDataSourceDependency(Value<DataSource> dependency) {
+    public DataSourceConnectionFactoryConfigurationBuilder<S> setDataSourceDependency(Supplier<DataSource> dependency) {
         this.dependency = dependency;
         return this;
     }
@@ -60,12 +61,12 @@ public class DataSourceConnectionFactoryConfigurationBuilder<S extends AbstractJ
 
     @Override
     public DataSourceConnectionFactoryConfiguration create() {
-        return new DataSourceConnectionFactoryConfiguration(this.dependency.getValue());
+        return new DataSourceConnectionFactoryConfiguration(this.dependency.get());
     }
 
     @Override
     public DataSourceConnectionFactoryConfigurationBuilder<S> read(DataSourceConnectionFactoryConfiguration template) {
-        this.dependency = new ImmediateValue<>(template.getDataSource());
+        this.dependency = new SimpleSupplierDependency<>(template.getDataSource());
         return this;
     }
 }

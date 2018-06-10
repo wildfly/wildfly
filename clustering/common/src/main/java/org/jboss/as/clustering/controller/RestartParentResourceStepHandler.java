@@ -35,9 +35,9 @@ import org.jboss.msc.service.ServiceName;
  */
 public class RestartParentResourceStepHandler<T> extends RestartParentResourceHandlerBase {
 
-    private final ResourceServiceBuilderFactory<T> parentFactory;
+    private final ResourceServiceConfiguratorFactory parentFactory;
 
-    public RestartParentResourceStepHandler(ResourceServiceBuilderFactory<T> parentFactory) {
+    public RestartParentResourceStepHandler(ResourceServiceConfiguratorFactory parentFactory) {
         super(null);
         this.parentFactory = parentFactory;
     }
@@ -53,12 +53,12 @@ public class RestartParentResourceStepHandler<T> extends RestartParentResourceHa
 
     @Override
     protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
-        this.parentFactory.createBuilder(parentAddress).configure(context, parentModel).build(context.getServiceTarget()).install();
+        this.parentFactory.createServiceConfigurator(parentAddress).configure(context, parentModel).build(context.getServiceTarget()).install();
     }
 
     @Override
     protected ServiceName getParentServiceName(PathAddress parentAddress) {
-        return this.parentFactory.createBuilder(parentAddress).getServiceName();
+        return this.parentFactory.createServiceConfigurator(parentAddress).getServiceName();
     }
 
     @Override

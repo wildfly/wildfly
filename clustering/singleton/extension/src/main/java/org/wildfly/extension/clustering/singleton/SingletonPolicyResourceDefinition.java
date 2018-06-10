@@ -85,7 +85,7 @@ public class SingletonPolicyResourceDefinition extends ChildResourceDefinition<M
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setRequired(true)
-                        .setCapabilityReference(new CapabilityReference(Capability.POLICY, ClusteringDefaultCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY))
+                        .setCapabilityReference(new CapabilityReference(Capability.POLICY, ClusteringDefaultCacheRequirement.SINGLETON_SERVICE_CONFIGURATOR_FACTORY))
                         ;
             }
         },
@@ -93,7 +93,7 @@ public class SingletonPolicyResourceDefinition extends ChildResourceDefinition<M
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setRequired(false)
-                        .setCapabilityReference(new CapabilityReference(Capability.POLICY, ClusteringCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY, CACHE_CONTAINER))
+                        .setCapabilityReference(new CapabilityReference(Capability.POLICY, ClusteringCacheRequirement.SINGLETON_SERVICE_CONFIGURATOR_FACTORY, CACHE_CONTAINER))
                         ;
             }
         },
@@ -145,7 +145,7 @@ public class SingletonPolicyResourceDefinition extends ChildResourceDefinition<M
                 .addCapabilities(Capability.class)
                 .addRequiredSingletonChildren(SimpleElectionPolicyResourceDefinition.PATH)
                 ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler<>(SingletonPolicyBuilder::new);
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler(SingletonPolicyServiceConfigurator::new);
         new SimpleResourceRegistration(descriptor, handler).register(registration);
 
         new RandomElectionPolicyResourceDefinition().register(registration);

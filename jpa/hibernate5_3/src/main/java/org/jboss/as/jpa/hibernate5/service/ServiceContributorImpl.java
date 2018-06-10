@@ -23,10 +23,29 @@ import org.hibernate.service.spi.ServiceContributor;
  * Contribute specialized Hibernate Service impls
  *
  * @author Steve Ebersole
+ * @author Scott Marlow
  */
 public class ServiceContributorImpl implements ServiceContributor {
+    private static final String CONTROLJTAINTEGRATION = "wildfly.jpa.jtaplatform"; // these properties are documented in org.jboss.as.jpa.config.Configuration
+    private static final String CONTROL2LCINTEGRATION = "wildfly.jpa.regionfactory";
+
     @Override
     public void contribute(StandardServiceRegistryBuilder serviceRegistryBuilder) {
-        serviceRegistryBuilder.addInitiator(new WildFlyCustomRegionFactoryInitiator());
+        // note that the following deprecated getSettings() is agreed to be replaced with method that returns immutable copy of configuration settings.
+        final Object jtaPlatformInitiatorEnabled = serviceRegistryBuilder.getSettings().getOrDefault(CONTROLJTAINTEGRATION, true);
+
+        if (jtaPlatformInitiatorEnabled == null ||
+                (jtaPlatformInitiatorEnabled instanceof Boolean && ((Boolean) jtaPlatformInitiatorEnabled).booleanValue()) ||
+                Boolean.parseBoolean(jtaPlatformInitiatorEnabled.toString())) {
+            serviceRegistryBuilder.addInitiator(new WildFlyCustomJtaPlatformInitiator());
+        }
+
+        final Object regionFactoryInitiatorEnabled = serviceRegistryBuilder.getSettings().getOrDefault(CONTROL2LCINTEGRATION, true);
+
+        if (regionFactoryInitiatorEnabled == null ||
+                (regionFactoryInitiatorEnabled instanceof Boolean && ((Boolean) regionFactoryInitiatorEnabled).booleanValue()) ||
+                Boolean.parseBoolean(regionFactoryInitiatorEnabled.toString())) {
+            serviceRegistryBuilder.addInitiator(new WildFlyCustomRegionFactoryInitiator());
+        }
     }
 }

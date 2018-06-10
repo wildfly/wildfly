@@ -178,6 +178,12 @@ public class Configuration {
     public static final String SKIPMIXEDSYNCTYPECHECKING = "wildfly.jpa.skipmixedsynctypechecking";
 
     /**
+     * Document properties that allow JPA apps to disable WildFly JTA platform/2lc integration for Hibernate ORM 5.3+ (WFLY-10433)
+     * public static final String CONTROLJTAINTEGRATION = "wildfly.jpa.jtaplatform";
+     * public static final String CONTROL2LCINTEGRATION = "wildfly.jpa.regionfactory";
+     */
+
+    /**
      * name of the Hibernate Search module name configuration setting in persistence unit definition
      */
     public static final String HIBERNATE_SEARCH_MODULE = "wildfly.jpa.hibernate.search.module";

@@ -40,7 +40,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.server.security.ServerPermission;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
-import org.jboss.as.test.clustering.cluster.singleton.service.NodeService;
 import org.jboss.as.test.clustering.cluster.singleton.service.NodeServiceActivator;
 import org.jboss.as.test.clustering.cluster.singleton.service.NodeServiceServlet;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
@@ -71,7 +70,7 @@ public class SingletonServiceTestCase extends AbstractClusteringTestCase {
 
     private static Archive<?> createDeployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, MODULE_NAME + ".war");
-        war.addPackage(NodeService.class.getPackage());
+        war.addPackage(NodeServiceServlet.class.getPackage());
         war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.as.server\n"));
         war.addAsManifestResource(createPermissionsXmlAsset(
                 new RuntimePermission("getClassLoader"), // See org.jboss.as.server.deployment.service.ServiceActivatorProcessor#deploy()
@@ -111,20 +110,18 @@ public class SingletonServiceTestCase extends AbstractClusteringTestCase {
 
             start(NODE_2);
 
-            response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL1, NodeServiceActivator.DEFAULT_SERVICE_NAME, NODE_2)));
+            response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL1, NodeServiceActivator.DEFAULT_SERVICE_NAME)));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertTrue(response.containsHeader(NodeServiceServlet.NODE_HEADER));
-                Assert.assertEquals(NODE_2, response.getFirstHeader(NodeServiceServlet.NODE_HEADER).getValue());
+                Assert.assertFalse(response.containsHeader(NodeServiceServlet.NODE_HEADER));
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL1, NodeServiceActivator.QUORUM_SERVICE_NAME, NODE_2)));
+            response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL1, NodeServiceActivator.QUORUM_SERVICE_NAME)));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertTrue(response.containsHeader(NodeServiceServlet.NODE_HEADER));
-                Assert.assertEquals(NODE_2, response.getFirstHeader(NodeServiceServlet.NODE_HEADER).getValue());
+                Assert.assertFalse(response.containsHeader(NodeServiceServlet.NODE_HEADER));
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
@@ -168,20 +165,18 @@ public class SingletonServiceTestCase extends AbstractClusteringTestCase {
 
             start(NODE_2);
 
-            response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL1, NodeServiceActivator.DEFAULT_SERVICE_NAME, NODE_2)));
+            response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL1, NodeServiceActivator.DEFAULT_SERVICE_NAME)));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertTrue(response.containsHeader(NodeServiceServlet.NODE_HEADER));
-                Assert.assertEquals(NODE_2, response.getFirstHeader(NodeServiceServlet.NODE_HEADER).getValue());
+                Assert.assertFalse(response.containsHeader(NodeServiceServlet.NODE_HEADER));
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL1, NodeServiceActivator.QUORUM_SERVICE_NAME, NODE_2)));
+            response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL1, NodeServiceActivator.QUORUM_SERVICE_NAME)));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertTrue(response.containsHeader(NodeServiceServlet.NODE_HEADER));
-                Assert.assertEquals(NODE_2, response.getFirstHeader(NodeServiceServlet.NODE_HEADER).getValue());
+                Assert.assertFalse(response.containsHeader(NodeServiceServlet.NODE_HEADER));
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
@@ -225,20 +220,18 @@ public class SingletonServiceTestCase extends AbstractClusteringTestCase {
 
             start(NODE_1);
 
-            response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL1, NodeServiceActivator.DEFAULT_SERVICE_NAME, NODE_2)));
+            response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL1, NodeServiceActivator.DEFAULT_SERVICE_NAME)));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertTrue(response.containsHeader(NodeServiceServlet.NODE_HEADER));
-                Assert.assertEquals(NODE_2, response.getFirstHeader(NodeServiceServlet.NODE_HEADER).getValue());
+                Assert.assertFalse(response.containsHeader(NodeServiceServlet.NODE_HEADER));
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL1, NodeServiceActivator.QUORUM_SERVICE_NAME, NODE_2)));
+            response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL1, NodeServiceActivator.QUORUM_SERVICE_NAME)));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertTrue(response.containsHeader(NodeServiceServlet.NODE_HEADER));
-                Assert.assertEquals(NODE_2, response.getFirstHeader(NodeServiceServlet.NODE_HEADER).getValue());
+                Assert.assertFalse(response.containsHeader(NodeServiceServlet.NODE_HEADER));
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }

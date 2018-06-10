@@ -30,7 +30,7 @@ import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.server.group.Group;
 
 /**
- * Configuration for a {@link CacheRegistryFactoryBuilder}.
+ * Configuration for a {@link CacheRegistryFactoryServiceConfigurator}.
  * @author Paul Ferraro
  */
 public interface CacheRegistryConfiguration<K, V> {

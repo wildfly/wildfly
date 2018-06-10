@@ -22,12 +22,15 @@
 
 package org.jboss.as.test.clustering.cluster.singleton.service;
 
+import java.time.Duration;
+
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceRegistryException;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.ImmediateValue;
+import org.wildfly.clustering.service.ActiveServiceSupplier;
 import org.wildfly.clustering.singleton.SingletonDefaultRequirement;
 import org.wildfly.clustering.singleton.SingletonPolicy;
 
@@ -39,12 +42,10 @@ public class ValueServiceActivator implements ServiceActivator {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("test", "service", "value");
 
     @Override
-    public void activate(ServiceActivatorContext context) throws ServiceRegistryException {
-        try {
-            SingletonPolicy policy = (SingletonPolicy) context.getServiceRegistry().getRequiredService(ServiceName.parse(SingletonDefaultRequirement.SINGLETON_POLICY.getName())).awaitValue();
-            policy.createSingletonServiceBuilder(SERVICE_NAME, new ValueService<>(new ImmediateValue<>(Boolean.TRUE)), new ValueService<>(new ImmediateValue<>(Boolean.FALSE))).build(context.getServiceTarget()).install();
-        } catch (InterruptedException e) {
-            throw new ServiceRegistryException(e);
-        }
+    public void activate(ServiceActivatorContext context) {
+        ServiceTarget target = context.getServiceTarget();
+        System.out.println(SingletonDefaultRequirement.SINGLETON_POLICY.getName() + " state = " + context.getServiceRegistry().getService(ServiceName.parse(SingletonDefaultRequirement.SINGLETON_POLICY.getName())).getState());
+        SingletonPolicy policy = new ActiveServiceSupplier<SingletonPolicy>(context.getServiceRegistry(), ServiceName.parse(SingletonDefaultRequirement.SINGLETON_POLICY.getName())).setTimeout(Duration.ofSeconds(30)).get();
+        policy.createSingletonServiceBuilder(SERVICE_NAME, new ValueService<>(new ImmediateValue<>(Boolean.TRUE)), new ValueService<>(new ImmediateValue<>(Boolean.FALSE))).build(target).install();
     }
 }

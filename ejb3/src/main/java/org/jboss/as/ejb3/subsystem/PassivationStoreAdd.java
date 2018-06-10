@@ -31,7 +31,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.ejb3.cache.distributable.DistributableCacheFactoryBuilderService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
-import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderConfiguration;
+import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
 
 /**
  * @author Paul Ferraro
@@ -62,7 +62,7 @@ public class PassivationStoreAdd extends AbstractAddStepHandler {
 
     protected void install(OperationContext context, ModelNode operation, final int initialMaxSize, final String containerName, final String cacheName) {
         final String name = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
-        BeanManagerFactoryBuilderConfiguration config = new BeanManagerFactoryBuilderConfiguration() {
+        BeanManagerFactoryServiceConfiguratorConfiguration config = new BeanManagerFactoryServiceConfiguratorConfiguration() {
             private volatile int maxSize = initialMaxSize;
 
             @Override

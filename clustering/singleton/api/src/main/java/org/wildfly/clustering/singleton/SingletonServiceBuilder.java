@@ -22,12 +22,15 @@
 package org.wildfly.clustering.singleton;
 
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.singleton.service.SingletonServiceConfigurator;
 
 /**
  * Builds a singleton service.
  * @author Paul Ferraro
  * @param <T> the singleton service value type
+ * @deprecated Replaced by {@link SingletonServiceConfigurator}.
  */
+@Deprecated
 public interface SingletonServiceBuilder<T> extends Builder<T> {
 
     /**

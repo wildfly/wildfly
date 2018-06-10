@@ -23,6 +23,7 @@
 package org.wildfly.clustering.singleton;
 
 import org.wildfly.clustering.service.Requirement;
+import org.wildfly.clustering.singleton.service.SingletonPolicy;
 
 /**
  * Enumerates capability requirements for default singleton resources

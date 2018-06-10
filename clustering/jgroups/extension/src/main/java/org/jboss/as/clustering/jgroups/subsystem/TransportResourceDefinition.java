@@ -32,10 +32,10 @@ import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
-import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
+import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
+import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
 import org.jboss.as.clustering.controller.WriteAttributeStepHandler;
 import org.jboss.as.clustering.controller.WriteAttributeStepHandlerDescriptor;
 import org.jboss.as.clustering.controller.transform.ChainedOperationTransformer;
@@ -74,9 +74,6 @@ import org.jboss.as.controller.transform.description.AttributeConverter.DefaultV
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jgroups.protocols.TP;
-import org.wildfly.clustering.jgroups.spi.ChannelFactory;
-import org.wildfly.clustering.jgroups.spi.TransportConfiguration;
 
 /**
  * Resource description for /subsystem=jgroups/stack=X/transport=*
@@ -84,7 +81,7 @@ import org.wildfly.clustering.jgroups.spi.TransportConfiguration;
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  * @author Paul Ferraro
  */
-public class TransportResourceDefinition<T extends TP> extends AbstractProtocolResourceDefinition<T, TransportConfiguration<T>> {
+public class TransportResourceDefinition extends AbstractProtocolResourceDefinition {
 
     static final PathElement LEGACY_PATH = pathElement("TRANSPORT");
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
@@ -265,16 +262,16 @@ public class TransportResourceDefinition<T extends TP> extends AbstractProtocolR
         }
     }
 
-    TransportResourceDefinition(ResourceServiceBuilderFactory<TransportConfiguration<T>> builderFactory, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
-        this(new Parameters(WILDCARD_PATH, JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(WILDCARD_PATH, ProtocolResourceDefinition.WILDCARD_PATH)), builderFactory, parentBuilderFactory);
+    TransportResourceDefinition(ResourceServiceConfiguratorFactory serviceConfiguratorFactory, ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory) {
+        this(new Parameters(WILDCARD_PATH, JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(WILDCARD_PATH, ProtocolResourceDefinition.WILDCARD_PATH)), serviceConfiguratorFactory, parentServiceConfiguratorFactory);
     }
 
-    TransportResourceDefinition(PathElement path, ResourceServiceBuilderFactory<TransportConfiguration<T>> builderFactory, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
-        this(new Parameters(path, JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(path, WILDCARD_PATH, ProtocolResourceDefinition.WILDCARD_PATH)), builderFactory, parentBuilderFactory);
+    TransportResourceDefinition(PathElement path, ResourceServiceConfiguratorFactory serviceConfiguratorFactory, ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory) {
+        this(new Parameters(path, JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(path, WILDCARD_PATH, ProtocolResourceDefinition.WILDCARD_PATH)), serviceConfiguratorFactory, parentServiceConfiguratorFactory);
     }
 
-    private TransportResourceDefinition(Parameters parameters, ResourceServiceBuilderFactory<TransportConfiguration<T>> builderFactory, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
-        super(parameters, new ResourceDescriptorConfigurator(), builderFactory, parentBuilderFactory);
+    private TransportResourceDefinition(Parameters parameters, ResourceServiceConfiguratorFactory serviceConfiguratorFactory, ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory) {
+        super(parameters, new ResourceDescriptorConfigurator(), serviceConfiguratorFactory, parentServiceConfiguratorFactory);
     }
 
     @Override

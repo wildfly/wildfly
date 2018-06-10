@@ -145,7 +145,7 @@ public class JobOperatorService extends AbstractJobOperator implements WildFlyJo
     }
 
     @Override
-    protected SecurityAwareBatchEnvironment getBatchEnvironment() {
+    public SecurityAwareBatchEnvironment getBatchEnvironment() {
         if (batchEnvironment == null) {
             throw BatchLogger.LOGGER.jobOperatorServiceStopped();
         }

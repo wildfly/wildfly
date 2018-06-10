@@ -28,6 +28,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 import javax.annotation.Resource;
 import javax.sql.DataSource;
@@ -55,6 +56,7 @@ import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.adapters.jdbc.WrapperDataSource;
 import org.jboss.jca.core.api.connectionmanager.pool.PoolConfiguration;
+import org.jboss.remoting3.security.RemotingPermission;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -62,6 +64,9 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.io.FilePermission;
+import java.lang.reflect.ReflectPermission;
 
 /**
  * Checks that pool attributes can be set and do (not) require a reload.
@@ -108,7 +113,16 @@ public class DatasourceMinPoolAttributeTestCase extends JcaMgmtBase {
                 "org.jboss.staxmapper," +
                 "org.jboss.ironjacamar.api," +
                 "org.jboss.ironjacamar.impl," +
-                "org.jboss.ironjacamar.jdbcadapters\n"), "MANIFEST.MF");
+                "org.jboss.ironjacamar.jdbcadapters," +
+                "org.jboss.remoting3\n"), "MANIFEST.MF");
+
+        jar.addAsManifestResource(createPermissionsXmlAsset(
+                new RuntimePermission("accessDeclaredMembers"),
+                new ReflectPermission("suppressAccessChecks"),
+                new RemotingPermission("createEndpoint"),
+                new RemotingPermission("connect"),
+                new FilePermission(System.getProperty("jboss.inst") + "/standalone/tmp/auth/*", "read")
+        ), "permissions.xml");
 
         return jar;
     }

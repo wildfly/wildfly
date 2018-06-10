@@ -25,31 +25,24 @@ package org.jboss.as.jpa.processor.secondLevelCache;
 import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
 
 import java.security.AccessController;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
+import java.util.function.Supplier;
 
-import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.jboss.as.clustering.msc.ServiceContainerHelper;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceRegistry;
-import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.StabilityMonitor;
 import org.jipijapa.cache.spi.Classification;
 import org.jipijapa.cache.spi.Wrapper;
 import org.jipijapa.event.spi.EventListener;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
-import org.wildfly.clustering.service.AliasServiceBuilder;
 
 /**
  * InfinispanCacheDeploymentListener adds Infinispan second level cache dependencies during application deployment.
@@ -79,46 +72,48 @@ public class InfinispanCacheDeploymentListener implements EventListener {
 
     @Override
     public Wrapper startCache(Classification classification, Properties properties) throws Exception {
-        String cache_type = properties.getProperty(CACHE_TYPE);
+        ServiceContainer target = currentServiceContainer();
         String container = properties.getProperty(CONTAINER);
+        String cacheType = properties.getProperty(CACHE_TYPE);
         // TODO Figure out how to access CapabilityServiceSupport from here
         ServiceName containerServiceName = ServiceName.parse(InfinispanRequirement.CONTAINER.resolve(container));
-        List<ServiceName> serviceNames = new LinkedList<>();
-        EmbeddedCacheManager embeddedCacheManager;
-        if (CACHE_PRIVATE.equals(cache_type)) {
-            // need a private cache for non-jpa application use
-            String name = properties.getProperty(NAME, UUID.randomUUID().toString());
-            ServiceName serviceName = ServiceName.JBOSS.append(DEFAULT_CACHE_CONTAINER, name);
-            serviceNames.add(serviceName);
-            ServiceTarget target = currentServiceContainer();
 
+        // need a private cache for non-jpa application use
+        String name = properties.getProperty(NAME, UUID.randomUUID().toString());
+
+        ServiceBuilder<?> builder = target.addService(ServiceName.JBOSS.append(DEFAULT_CACHE_CONTAINER, name));
+        Supplier<EmbeddedCacheManager> manager = builder.requires(containerServiceName);
+
+        if (CACHE_PRIVATE.equals(cacheType)) {
+            // If using a private cache, addCacheDependencies(...) is never triggered
             String[] caches = properties.getProperty(CACHES).split("\\s+");
-            List<ServiceController<Configuration>> controllers = new ArrayList<>(caches.length);
             for (String cache : caches) {
-                ServiceName aliasServiceName = serviceName.append(cache);
-                ServiceName configServiceName = ServiceName.parse(InfinispanCacheRequirement.CONFIGURATION.resolve(container, cache));
-                controllers.add(new AliasServiceBuilder<>(aliasServiceName, configServiceName, Configuration.class).build(target)
-                        .setInitialMode(ServiceController.Mode.ACTIVE)
-                        .install());
+                ServiceName dependencyName = ServiceName.parse(InfinispanCacheRequirement.CONFIGURATION.resolve(container, cache));
+                builder.requires(dependencyName);
             }
-
-            // Create a mock service that represents this session factory instance
-            embeddedCacheManager = new AliasServiceBuilder<>(serviceName, containerServiceName, EmbeddedCacheManager.class).build(target)
-                    .setInitialMode(ServiceController.Mode.ACTIVE)
-                    .install()
-                    .awaitValue();
-
-            // Ensure cache configuration services are started
-            for (ServiceController<Configuration> controller : controllers) {
-                serviceNames.add(controller.getName());
-                controller.awaitValue();
-            }
-        } else {
-            // need a shared cache for jpa applications
-            ServiceRegistry registry = currentServiceContainer();
-            embeddedCacheManager = (EmbeddedCacheManager) registry.getRequiredService(containerServiceName).getValue();
         }
-        return new CacheWrapper(embeddedCacheManager, serviceNames);
+
+        ServiceController<?> controller = builder.install();
+
+        // Ensure cache configuration services are started
+        StabilityMonitor monitor = new StabilityMonitor();
+        monitor.addController(controller);
+        try {
+            monitor.awaitStability();
+            // TODO Figure out why the awaitStability() returns prematurely while there are still dependencies starting
+            while (controller.getState() == ServiceController.State.DOWN) {
+                Thread.yield();
+                monitor.awaitStability();
+            }
+            System.out.println("Post-stability: " + controller.getName() + " state = " + controller.getState() + ", substate = " + controller.getSubstate());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw e;
+        } finally {
+            monitor.removeController(controller);
+        }
+
+        return new CacheWrapper(manager.get(), controller);
     }
 
     @Override
@@ -134,36 +129,39 @@ public class InfinispanCacheDeploymentListener implements EventListener {
     @Override
     public void stopCache(Classification classification, Wrapper wrapper) {
         // Remove services created in startCache(...)
-        CacheWrapper cacheWrapper = (CacheWrapper) wrapper;
-        ServiceRegistry registry = currentServiceContainer();
-        for (ServiceName serviceName : cacheWrapper.getServiceNames()) {
-            if (ROOT_LOGGER.isTraceEnabled()) {
-                ROOT_LOGGER.tracef("stop second level cache by removing dependency on service '%s'", serviceName.getCanonicalName());
-            }
-            ServiceController<?> service = registry.getService(serviceName);
-            if (service != null) {
-                ServiceContainerHelper.remove(service);
-            }
-        }
+        ((CacheWrapper) wrapper).close();
     }
 
-    private static class CacheWrapper implements Wrapper {
-
-        CacheWrapper(EmbeddedCacheManager embeddedCacheManager, Collection<ServiceName> serviceNames) {
-            this.embeddedCacheManager = embeddedCacheManager;
-            this.serviceNames = serviceNames;
-        }
+    private static class CacheWrapper implements Wrapper, AutoCloseable {
 
         private final EmbeddedCacheManager embeddedCacheManager;
-        private final Collection<ServiceName> serviceNames;
+        private final ServiceController<?> controller;
+
+        CacheWrapper(EmbeddedCacheManager embeddedCacheManager, ServiceController<?> controller) {
+            this.embeddedCacheManager = embeddedCacheManager;
+            this.controller = controller;
+        }
 
         @Override
         public Object getValue() {
-            return embeddedCacheManager;
+            return this.embeddedCacheManager;
         }
 
-        Collection<ServiceName> getServiceNames() {
-            return this.serviceNames;
+        @Override
+        public void close() {
+            if (ROOT_LOGGER.isTraceEnabled()) {
+                ROOT_LOGGER.tracef("stop second level cache by removing dependency on service '%s'", this.controller.getName().getCanonicalName());
+            }
+            StabilityMonitor monitor = new StabilityMonitor();
+            monitor.addController(this.controller);
+            this.controller.setMode(ServiceController.Mode.REMOVE);
+            try {
+                monitor.awaitStability();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } finally {
+                monitor.removeController(this.controller);
+            }
         }
     }
 

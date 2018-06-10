@@ -29,17 +29,16 @@ import java.util.Map;
 import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ResourceServiceBuilder;
-import org.jboss.as.clustering.controller.SimpleResourceRegistration;
-import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
+import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
+import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 import org.wildfly.clustering.service.UnaryRequirement;
 import org.wildfly.clustering.spi.ClusteringRequirement;
@@ -88,10 +87,10 @@ public class ForkResourceDefinition extends ChildResourceDefinition<ManagementRe
         ProtocolRegistration.buildTransformation(version, builder);
     }
 
-    static class ForkChannelFactoryBuilderFactory implements ResourceServiceBuilderFactory<ChannelFactory> {
+    static class ForkChannelFactoryServiceConfiguratorFactory implements ResourceServiceConfiguratorFactory {
         @Override
-        public ResourceServiceBuilder<ChannelFactory> createBuilder(PathAddress address) {
-            return new ForkChannelFactoryBuilder(Capability.FORK_CHANNEL_FACTORY, address);
+        public ResourceServiceConfigurator createServiceConfigurator(PathAddress address) {
+            return new ForkChannelFactoryServiceConfigurator(Capability.FORK_CHANNEL_FACTORY, address);
         }
     }
 
@@ -107,11 +106,11 @@ public class ForkResourceDefinition extends ChildResourceDefinition<ManagementRe
                 .addCapabilities(Capability.class)
                 .addCapabilities(CLUSTERING_CAPABILITIES.values())
                 ;
-        ResourceServiceBuilderFactory<ChannelFactory> builderFactory = new ForkChannelFactoryBuilderFactory();
-        ResourceServiceHandler handler = new ForkServiceHandler(builderFactory);
+        ResourceServiceConfiguratorFactory serviceConfiguratorFactory = new ForkChannelFactoryServiceConfiguratorFactory();
+        ResourceServiceHandler handler = new ForkServiceHandler(serviceConfiguratorFactory);
         new SimpleResourceRegistration(descriptor, handler).register(registration);
 
-        new ProtocolRegistration(builderFactory, new ForkProtocolRuntimeResourceRegistration()).register(registration);
+        new ProtocolRegistration(serviceConfiguratorFactory, new ForkProtocolRuntimeResourceRegistration()).register(registration);
 
         return registration;
     }

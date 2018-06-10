@@ -28,6 +28,8 @@ import javax.persistence.PersistenceContext;
 
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.TermQuery;
+
+import org.hibernate.search.SearchFactory;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
@@ -49,6 +51,10 @@ public class SearchBean {
         TermQuery termQuery = new TermQuery(new Term("title", keyword));
         FullTextQuery fullTextQuery = fullTextEntityManager.createFullTextQuery(termQuery, Book.class);
         return fullTextQuery.getResultList();
+    }
+
+    public SearchFactory retrieveHibernateSearchEngine() {
+        return Search.getFullTextEntityManager(em).getSearchFactory();
     }
 
 }

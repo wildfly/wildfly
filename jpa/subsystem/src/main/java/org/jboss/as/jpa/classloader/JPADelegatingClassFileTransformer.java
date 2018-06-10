@@ -22,10 +22,14 @@
 
 package org.jboss.as.jpa.classloader;
 
+import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
+
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
+import java.nio.ByteBuffer;
 import java.security.ProtectionDomain;
 
+import org.jboss.as.jpa.messages.JpaLogger;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 
 /**
@@ -33,7 +37,7 @@ import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
  *
  * @author Scott Marlow
  */
-public class JPADelegatingClassFileTransformer implements ClassFileTransformer {
+public class JPADelegatingClassFileTransformer implements ClassFileTransformer, org.jboss.modules.ClassTransformer {
     private final PersistenceUnitMetadata persistenceUnitMetadata;
 
     public JPADelegatingClassFileTransformer(PersistenceUnitMetadata pu) {
@@ -41,16 +45,55 @@ public class JPADelegatingClassFileTransformer implements ClassFileTransformer {
     }
 
     @Override
-    public byte[] transform(ClassLoader classLoader, String className, Class<?> aClass, ProtectionDomain protectionDomain, byte[] originalBuffer) throws
-        IllegalClassFormatException {
-        byte[] transformedBuffer = originalBuffer;
+    public byte[] transform(ClassLoader classLoader, String className, Class<?> aClass, ProtectionDomain protectionDomain, byte[] originalBuffer) {
+        return getBytes(transform(classLoader, className, protectionDomain, ByteBuffer.wrap(originalBuffer)));
+    }
+
+    @Override
+    public ByteBuffer transform(ClassLoader classLoader, String className, ProtectionDomain protectionDomain, ByteBuffer classBytes)
+            throws IllegalArgumentException {
+        byte[] transformedBuffer = getBytes(classBytes);
+        boolean transformed = false;
         for (javax.persistence.spi.ClassTransformer transformer : persistenceUnitMetadata.getTransformers()) {
-            byte[] result = transformer.transform(classLoader, className, aClass, protectionDomain, transformedBuffer);
+            if (ROOT_LOGGER.isTraceEnabled())
+                ROOT_LOGGER.tracef("rewrite entity class '%s' using transformer '%s' for '%s'", className,
+                        transformer.getClass().getName(),
+                        persistenceUnitMetadata.getScopedPersistenceUnitName());
+            byte[] result;
+            try {
+                // parameter classBeingRedefined is always passed as null
+                // because we won't ever be called to transform already loaded classes.
+                result = transformer.transform(classLoader, className, null, protectionDomain, transformedBuffer);
+            } catch (IllegalClassFormatException e) {
+                throw JpaLogger.ROOT_LOGGER.invalidClassFormat(e, className);
+            }
             if (result != null) {
                 transformedBuffer = result;
+                transformed = true;
+            if (ROOT_LOGGER.isTraceEnabled())
+                ROOT_LOGGER.tracef("entity class '%s' was rewritten", className);
             }
         }
-        return transformedBuffer;
 
+        return transformed ? ByteBuffer.wrap(transformedBuffer) : null;
+    }
+
+    private byte[] getBytes(ByteBuffer classBytes) {
+
+        if (classBytes == null) {
+            return null;
+        }
+
+        final int position = classBytes.position();
+        final int limit = classBytes.limit();
+        final byte[] bytes;
+        if (classBytes.hasArray() && classBytes.arrayOffset() == 0 && position == 0 && limit == classBytes.capacity()) {
+            bytes = classBytes.array();
+        } else {
+            bytes = new byte[limit - position];
+            classBytes.get(bytes);
+            classBytes.position(position);
+        }
+        return bytes;
     }
 }

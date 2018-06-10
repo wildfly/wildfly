@@ -86,7 +86,7 @@ public class PersistenceProviderHandler {
                 if (adapterClass != null) {
                     try {
                         adaptor = (PersistenceProviderAdaptor) deploymentModuleClassLoader.loadClass(adapterClass).newInstance();
-                        adaptor.injectJtaManager(new JtaManagerImpl(deploymentUnit.getAttachment(JpaAttachments.TRANSACTION_MANAGER), deploymentUnit.getAttachment(JpaAttachments.TRANSACTION_SYNCHRONIZATION_REGISTRY)));
+                        adaptor.injectJtaManager(JtaManagerImpl.getInstance());
                         adaptor.injectPlatform(platform);
                         ArrayList<PersistenceProviderAdaptor> adaptorList = new ArrayList<>();
                         adaptorList.add(adaptor);

@@ -26,20 +26,18 @@ import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
+import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
-import org.jgroups.stack.Protocol;
-import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 
 /**
  * Resource definition for legacy protocols.
  * @author Paul Ferraro
  */
-public class LegacyProtocolResourceDefinition<P extends Protocol> extends ProtocolResourceDefinition<P> {
+public class LegacyProtocolResourceDefinition extends ProtocolResourceDefinition {
 
     private static class ResourceDescriptorConfigurator implements UnaryOperator<ResourceDescriptor> {
         private final UnaryOperator<OperationStepHandler> operationTransformation;
@@ -80,8 +78,8 @@ public class LegacyProtocolResourceDefinition<P extends Protocol> extends Protoc
         }
     }
 
-    LegacyProtocolResourceDefinition(String name, String targetName, JGroupsModel deprecation, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
-        super(pathElement(name), new ResourceDescriptorConfigurator(targetName, configurator), null, parentBuilderFactory);
+    LegacyProtocolResourceDefinition(String name, String targetName, JGroupsModel deprecation, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory) {
+        super(pathElement(name), new ResourceDescriptorConfigurator(targetName, configurator), null, parentServiceConfiguratorFactory);
         this.setDeprecated(deprecation.getVersion());
     }
 }

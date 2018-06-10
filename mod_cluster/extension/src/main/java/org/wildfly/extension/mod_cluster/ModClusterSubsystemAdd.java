@@ -48,16 +48,12 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.common.beans.property.BeanUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.jboss.modcluster.config.ModClusterConfiguration;
 import org.jboss.modcluster.load.LoadBalanceFactorProvider;
 import org.jboss.modcluster.load.impl.DynamicLoadBalanceFactorProvider;
 import org.jboss.modcluster.load.impl.SimpleLoadBalanceFactorProvider;
 import org.jboss.modcluster.load.metric.LoadMetric;
 import org.jboss.msc.service.ServiceController.Mode;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.InjectedValue;
-import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 
 /**
  * The managed subsystem add update.
@@ -78,8 +74,7 @@ class ModClusterSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final ModelNode fullModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
         final ModelNode modelConfig = fullModel.get(ModClusterConfigResourceDefinition.PATH.getKeyValuePair());
 
-        ModClusterConfigurationServiceBuilder configurationBuilder = new ModClusterConfigurationServiceBuilder();
-        configurationBuilder.configure(context, modelConfig).build(target).install();
+        new ModClusterConfigurationServiceConfigurator().configure(context, modelConfig).build(target).install();
 
         // Construct LoadBalanceFactorProvider and call pluggable boot time handlers.
         Set<LoadMetric> metrics = new HashSet<>();
@@ -91,19 +86,13 @@ class ModClusterSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         final String connector = CONNECTOR.resolveModelAttribute(context, modelConfig).asString();
         final int statusInterval = STATUS_INTERVAL.resolveModelAttribute(context, modelConfig).asInt();
-        InjectedValue<ModClusterConfiguration> modClusterConfiguration = new InjectedValue<>();
-        ContainerEventHandlerService service = new ContainerEventHandlerService(modClusterConfiguration, loadProvider);
+
         // Install the main service
-        new AsynchronousServiceBuilder<>(ContainerEventHandlerService.SERVICE_NAME, service).build(target)
-                .addDependency(configurationBuilder.getServiceName(), ModClusterConfiguration.class, modClusterConfiguration)
-                .setInitialMode(Mode.ACTIVE)
-                //temporary in case anyone is using old service name
-                .addAliases(ServiceName.JBOSS.append(ModClusterExtension.SUBSYSTEM_NAME))
-                .install();
+        new ContainerEventHandlerServiceConfigurator(loadProvider).build(target).install();
 
         // Install services for web container integration
-        for (ContainerEventHandlerAdapterBuilderProvider provider : ServiceLoader.load(ContainerEventHandlerAdapterBuilderProvider.class, ContainerEventHandlerAdapterBuilderProvider.class.getClassLoader())) {
-            provider.getBuilder(connector, Duration.ofSeconds(statusInterval)).configure(context).build(target).setInitialMode(Mode.PASSIVE).install();
+        for (ContainerEventHandlerAdapterServiceConfiguratorProvider provider : ServiceLoader.load(ContainerEventHandlerAdapterServiceConfiguratorProvider.class, ContainerEventHandlerAdapterServiceConfiguratorProvider.class.getClassLoader())) {
+            provider.getServiceConfigurator(connector, Duration.ofSeconds(statusInterval)).configure(context).build(target).setInitialMode(Mode.PASSIVE).install();
         }
     }
 

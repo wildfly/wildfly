@@ -24,20 +24,18 @@ package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.util.function.UnaryOperator;
 
-import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
 import org.jboss.as.clustering.controller.ResourceCapabilityReference;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
+import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
+import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jgroups.protocols.AUTH;
-import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 
 /**
  * @author Paul Ferraro
  */
-public class AuthProtocolResourceDefinition extends ProtocolResourceDefinition<AUTH> {
+public class AuthProtocolResourceDefinition extends ProtocolResourceDefinition {
 
     static void addTransformations(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
 
@@ -61,8 +59,8 @@ public class AuthProtocolResourceDefinition extends ProtocolResourceDefinition<A
         }
     }
 
-    AuthProtocolResourceDefinition(String name, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
-        super(pathElement(name), new ResourceDescriptorConfigurator(configurator), AuthProtocolConfigurationBuilder::new, parentBuilderFactory);
+    AuthProtocolResourceDefinition(String name, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory) {
+        super(pathElement(name), new ResourceDescriptorConfigurator(configurator), AuthProtocolConfigurationServiceConfigurator::new, parentServiceConfiguratorFactory);
     }
 
     @Override

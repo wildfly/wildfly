@@ -37,7 +37,9 @@ import org.jboss.msc.value.InjectedValue;
  * Builder for asynchronously started/stopped services.
  * @author Paul Ferraro
  * @param <T> the type of value provided by services built by this builder
+ * @deprecated Replaced by {@link AsyncServiceConfigurator}.
  */
+@Deprecated
 public class AsynchronousServiceBuilder<T> implements Builder<T>, Service<T> {
 
     private static final ServiceName EXECUTOR_SERVICE_NAME = ServiceName.JBOSS.append("as", "server-executor");

@@ -27,10 +27,11 @@ import org.wildfly.clustering.singleton.SingletonServiceBuilder;
 import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
 
 /**
- * Service that provides a non-clustered {@link SingletonServiceBuilderFactory}
+ * Factory for creating local {@link SingletonServiceBuilder} instances.
  * @author Paul Ferraro
  */
-public class LocalSingletonServiceBuilderFactory implements SingletonServiceBuilderFactory {
+@SuppressWarnings("deprecation")
+public class LocalSingletonServiceBuilderFactory extends LocalSingletonServiceConfiguratorFactory implements SingletonServiceBuilderFactory {
 
     @Override
     public <T> SingletonServiceBuilder<T> createSingletonServiceBuilder(ServiceName name, Service<T> service) {

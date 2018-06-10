@@ -38,15 +38,15 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.service.Dependency;
 import org.wildfly.clustering.service.InjectorDependency;
-import org.wildfly.clustering.service.SimpleDependency;
-import org.wildfly.clustering.service.ValueDependency;
+import org.wildfly.clustering.service.ServiceDependency;
+import org.wildfly.clustering.service.SupplierDependency;
 import org.wildfly.common.function.ExceptionSupplier;
 import org.wildfly.security.credential.source.CredentialSource;
 
 /**
  * @author Paul Ferraro
  */
-public class CredentialSourceDependency implements ValueDependency<CredentialSource> {
+public class CredentialSourceDependency implements SupplierDependency<CredentialSource> {
 
     private final ExceptionSupplier<CredentialSource, Exception> supplier;
     private final Iterable<Dependency> dependencies;
@@ -66,7 +66,7 @@ public class CredentialSourceDependency implements ValueDependency<CredentialSou
     }
 
     @Override
-    public CredentialSource getValue() {
+    public CredentialSource get() {
         try {
             return this.supplier.get();
         } catch (Exception e) {
@@ -81,7 +81,8 @@ public class CredentialSourceDependency implements ValueDependency<CredentialSou
             super(null);
         }
 
-        protected ServiceBuilder getDelegate() {
+        @Override
+        protected ServiceBuilder<Object> getDelegate() {
             throw new IllegalStateException();
         }
 
@@ -110,7 +111,7 @@ public class CredentialSourceDependency implements ValueDependency<CredentialSou
         @Override
         public ServiceBuilder<Object> addDependencies(Iterable<ServiceName> serviceNames) {
             for (ServiceName serviceName : serviceNames) {
-                this.dependencies.add(new SimpleDependency(serviceName));
+                this.dependencies.add(new ServiceDependency(serviceName));
             }
             return this;
         }
@@ -127,7 +128,7 @@ public class CredentialSourceDependency implements ValueDependency<CredentialSou
         @Deprecated
         @Override
         public ServiceBuilder<Object> addDependency(ServiceName serviceName) {
-            this.dependencies.add(new SimpleDependency(serviceName));
+            this.dependencies.add(new ServiceDependency(serviceName));
             return this;
         }
 

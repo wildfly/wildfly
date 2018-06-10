@@ -27,6 +27,13 @@ import org.jboss.msc.value.Value;
  * Service dependency that provides a value.
  * @author Paul Ferraro
  * @param <T> the dependency type
+ * @deprecated Replaced by {@link SupplierDependency}.
  */
-public interface ValueDependency<T> extends Value<T>, Dependency {
+@Deprecated
+public interface ValueDependency<T> extends Value<T>, SupplierDependency<T> {
+
+    @Override
+    default T get() {
+        return this.getValue();
+    }
 }
