@@ -312,7 +312,10 @@ public class ExternalContextBindingTestCase {
     public static JavaArchive deploy() {
         return ShrinkWrap.create(JavaArchive.class, "externalContextBindingTest.jar")
                 .addClasses(ExternalContextBindingTestCase.class, LookupEjb.class)
-                .addAsManifestResource(createPermissionsXmlAsset(new JndiPermission("*", "lookup")), "jboss-permissions.xml");
+                .addAsManifestResource(createPermissionsXmlAsset(
+                        new JndiPermission("*", "lookup"),
+                        new RuntimePermission("accessClassInPackage.com.sun.jndi.ldap")
+                ), "jboss-permissions.xml");
     }
 
     @Test

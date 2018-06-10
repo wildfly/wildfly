@@ -29,13 +29,14 @@ import static org.wildfly.test.integration.elytron.util.HttpUtil.get;
 
 import java.io.File;
 import java.net.SocketPermission;
+import java.net.URL;
 import java.util.Collections;
 import java.util.Map;
-import java.util.PropertyPermission;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.shrinkwrap.api.Archive;
@@ -57,17 +58,17 @@ import org.wildfly.test.security.common.elytron.ServletElytronDomainSetup;
 @ServerSetup({ WebAuthenticationTestCase.ElytronDomainSetupOverride.class, ServletElytronDomainSetup.class })
 public class WebAuthenticationTestCase {
 
-    private static final String SERVER_HOST_PORT = TestSuiteEnvironment.getHttpAddress() + ":" + TestSuiteEnvironment.getHttpPort();
-    private static final String WAR_URL = "http://" + SERVER_HOST_PORT + "/websecurity/";
+    @ArquillianResource
+    private URL url;
 
     @Deployment
     public static Archive<?> deployment() {
+        final String SERVER_HOST_PORT = TestSuiteEnvironment.getHttpAddress() + ":" + TestSuiteEnvironment.getHttpPort();
         final Package currentPackage = AuthenticationTestCase.class.getPackage();
         // using JavaArchive doesn't work, because of a bug in Arquillian, it only deploys wars properly
-        final WebArchive war = ShrinkWrap.create(WebArchive.class, "websecurity.war")
+        return ShrinkWrap.create(WebArchive.class, "websecurity.war")
                 .addClass(LoginServlet.class).addClass(HttpUtil.class)
                 .addClasses(ElytronDomainSetup.class, ServletElytronDomainSetup.class)
-                .addClass(TestSuiteEnvironment.class)
                 .addAsResource(currentPackage, "users.properties", "users.properties")
                 .addAsResource(currentPackage, "roles.properties", "roles.properties")
                 .addAsWebInfResource(currentPackage, "web.xml", "web.xml")
@@ -76,13 +77,9 @@ public class WebAuthenticationTestCase {
                         // AuthenticationTestCase#execute calls ExecutorService#shutdownNow
                         new RuntimePermission("modifyThread"),
                         // AuthenticationTestCase#execute calls sun.net.www.http.HttpClient#openServer under the hood
-                        new SocketPermission(SERVER_HOST_PORT, "connect,resolve"),
-                        // TestSuiteEnvironment reads system properties
-                        new PropertyPermission("jboss.http.port", "read"),
-                        new PropertyPermission("jboss.bind.address", "read")
+                        new SocketPermission(SERVER_HOST_PORT, "connect,resolve")
                         ),
                         "permissions.xml");
-        return war;
     }
 
     @Test
@@ -91,23 +88,23 @@ public class WebAuthenticationTestCase {
         AtomicReference<String> sessionCookie = new AtomicReference<>();
 
         // Test Unauthenticated Call is 'null'
-        String identity = get(WAR_URL + "login", headers, 10, SECONDS, sessionCookie);
+        String identity = get(url + "login", headers, 10, SECONDS, sessionCookie);
         assertEquals("Expected Identity", "null", identity);
 
         // Test Call can login and identity established.
-        identity = get(WAR_URL + "login?action=login&username=user1&password=password1", headers, 10, SECONDS, sessionCookie);
+        identity = get(url + "login?action=login&username=user1&password=password1", headers, 10, SECONDS, sessionCookie);
         assertEquals("Expected Identity", "user1", identity);
 
         // Test follow up call still has identity.
-        identity = get(WAR_URL + "login", headers, 10, SECONDS, sessionCookie);
+        identity = get(url + "login", headers, 10, SECONDS, sessionCookie);
         assertEquals("Expected Identity", "user1", identity);
 
         // Logout and check back to 'null'.
-        identity = get(WAR_URL + "login?action=logout", headers, 10, SECONDS, sessionCookie);
+        identity = get(url + "login?action=logout", headers, 10, SECONDS, sessionCookie);
         assertEquals("Expected Identity", "null", identity);
 
         // Once more call to be sure we really are null.
-        identity = get(WAR_URL + "login", headers, 10, SECONDS, sessionCookie);
+        identity = get(url + "login", headers, 10, SECONDS, sessionCookie);
         assertEquals("Expected Identity", "null", identity);
     }
 

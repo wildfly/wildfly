@@ -90,7 +90,7 @@ public class FileStoreResourceDefinition extends StoreResourceDefinition {
     }
 
     FileStoreResourceDefinition() {
-        super(PATH, LEGACY_PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH), new SimpleResourceDescriptorConfigurator<>(Attribute.class), FileStoreBuilder::new);
+        super(PATH, LEGACY_PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH), new SimpleResourceDescriptorConfigurator<>(Attribute.class), FileStoreServiceConfigurator::new);
     }
 
     @Override

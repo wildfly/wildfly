@@ -59,9 +59,7 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
         return (result == 0) ? path1.getValue().compareTo(path2.getValue()) : result;
     };
 
-    private static final Comparator<AttributeDefinition> ATTRIBUTE_COMPARATOR = (AttributeDefinition attribute1, AttributeDefinition attribute2) -> {
-        return attribute1.getName().compareTo(attribute2.getName());
-    };
+    private static final Comparator<AttributeDefinition> ATTRIBUTE_COMPARATOR = Comparator.comparing(AttributeDefinition::getName);
 
     private final ResourceDescriptionResolver resolver;
     private final Map<Capability, Predicate<ModelNode>> capabilities = new HashMap<>();
@@ -177,7 +175,11 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
     }
 
     public <E extends Enum<E> & ResourceDefinition> ResourceDescriptor addRequiredChildren(Class<E> enumClass) {
-        for (ResourceDefinition definition : EnumSet.allOf(enumClass)) {
+        return this.addRequiredChildren(EnumSet.allOf(enumClass));
+    }
+
+    public ResourceDescriptor addRequiredChildren(Set<? extends ResourceDefinition> set) {
+        for (ResourceDefinition definition : set) {
             this.requiredChildren.add(definition.getPathElement());
         }
         return this;

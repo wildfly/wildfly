@@ -30,7 +30,7 @@ import org.wildfly.extension.undertow.UndertowListener;
 import org.wildfly.extension.undertow.UndertowService;
 
 /**
- * Encapsulates the configuration of an {@link UndertowEventHandlerAdapter}.
+ * Encapsulates the configuration of an {@link UndertowEventHandlerAdapterService}.
  * @author Paul Ferraro
  */
 public interface UndertowEventHandlerAdapterConfiguration {

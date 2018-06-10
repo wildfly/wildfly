@@ -33,7 +33,9 @@ import org.jboss.msc.value.InjectedValue;
  * Builds an alias to another service.
  * @author Paul Ferraro
  * @param <T> the type of the target service
+ * @deprecated Replaced by {@link IdentityServiceConfigurator}.
  */
+@Deprecated
 public class AliasServiceBuilder<T> implements Builder<T> {
 
     private final InjectedValue<T> value = new InjectedValue<>();

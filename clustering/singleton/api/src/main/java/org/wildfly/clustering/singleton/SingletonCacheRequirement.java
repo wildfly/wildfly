@@ -30,7 +30,8 @@ import org.wildfly.clustering.service.UnaryRequirement;
  */
 public enum SingletonCacheRequirement implements DefaultableBinaryRequirement {
 
-    SINGLETON_SERVICE_BUILDER_FACTORY("org.wildfly.clustering.cache.singleton-service-builder-factory", SingletonDefaultCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY),
+    @Deprecated SINGLETON_SERVICE_BUILDER_FACTORY("org.wildfly.clustering.cache.singleton-service-builder-factory", SingletonDefaultCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY),
+    SINGLETON_SERVICE_CONFIGURATOR_FACTORY("org.wildfly.clustering.cache.singleton-service-configurator-factory", SingletonDefaultCacheRequirement.SINGLETON_SERVICE_CONFIGURATOR_FACTORY),
     ;
     private final String name;
     private final UnaryRequirement defaultRequirement;

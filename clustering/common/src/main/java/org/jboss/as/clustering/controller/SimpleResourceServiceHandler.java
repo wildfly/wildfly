@@ -30,21 +30,21 @@ import org.jboss.dmr.ModelNode;
  * Simple {@link ResourceServiceHandler} that installs/removes a single service via a {@link ResourceServiceBuilderFactory}.
  * @author Paul Ferraro
  */
-public class SimpleResourceServiceHandler<T> implements ResourceServiceHandler {
+public class SimpleResourceServiceHandler implements ResourceServiceHandler {
 
-    private final ResourceServiceBuilderFactory<T> builderFactory;
+    private ResourceServiceConfiguratorFactory factory;
 
-    public SimpleResourceServiceHandler(ResourceServiceBuilderFactory<T> builderFactory) {
-        this.builderFactory = builderFactory;
+    public SimpleResourceServiceHandler(ResourceServiceConfiguratorFactory factory) {
+        this.factory = factory;
     }
 
     @Override
     public void installServices(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.builderFactory.createBuilder(context.getCurrentAddress()).configure(context, model).build(context.getServiceTarget()).install();
+        this.factory.createServiceConfigurator(context.getCurrentAddress()).configure(context, model).build(context.getServiceTarget()).install();
     }
 
     @Override
     public void removeServices(OperationContext context, ModelNode model) throws OperationFailedException {
-        context.removeService(this.builderFactory.createBuilder(context.getCurrentAddress()).getServiceName());
+        context.removeService(this.factory.createServiceConfigurator(context.getCurrentAddress()).getServiceName());
     }
 }

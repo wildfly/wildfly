@@ -85,6 +85,7 @@
             <excluded-extensions>
                 <extension module="org.wildfly.extension.core-management"/>
                 <extension module="org.wildfly.extension.discovery"/>
+                <extension module="org.wildfly.extension.ee-security"/>
                 <extension module="org.wildfly.extension.elytron"/>
             </excluded-extensions>
         </host-exclude>
@@ -93,7 +94,20 @@
             <excluded-extensions>
                 <extension module="org.wildfly.extension.core-management"/>
                 <extension module="org.wildfly.extension.discovery"/>
+                <extension module="org.wildfly.extension.ee-security"/>
                 <extension module="org.wildfly.extension.elytron"/>
+            </excluded-extensions>
+        </host-exclude>
+        <host-exclude name="WildFly11.0">
+            <host-release id="WildFly11.0"/>
+            <excluded-extensions>
+                <extension module="org.wildfly.extension.ee-security"/>
+            </excluded-extensions>
+        </host-exclude>
+        <host-exclude name="WildFly12.0">
+            <host-release id="WildFly12.0"/>
+            <excluded-extensions>
+                <extension module="org.wildfly.extension.ee-security"/>
             </excluded-extensions>
         </host-exclude>
     </host-excludes>

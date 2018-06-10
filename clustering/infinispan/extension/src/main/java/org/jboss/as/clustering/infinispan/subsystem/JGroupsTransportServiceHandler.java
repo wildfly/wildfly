@@ -27,18 +27,17 @@ import static org.jboss.as.clustering.infinispan.subsystem.TransportResourceDefi
 import java.util.EnumSet;
 import java.util.ServiceLoader;
 
-import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.service.ServiceNameProvider;
 import org.wildfly.clustering.spi.CapabilityServiceNameRegistry;
 import org.wildfly.clustering.spi.ClusteringRequirement;
-import org.wildfly.clustering.spi.GroupAliasBuilderProvider;
+import org.wildfly.clustering.spi.IdentityGroupServiceConfiguratorProvider;
 import org.wildfly.clustering.spi.ServiceNameRegistry;
 
 /**
@@ -53,18 +52,18 @@ public class JGroupsTransportServiceHandler implements ResourceServiceHandler {
         String name = containerAddress.getLastElement().getValue();
         ServiceTarget target = context.getServiceTarget();
 
-        JGroupsTransportBuilder transportBuilder = new JGroupsTransportBuilder(address).configure(context, model);
+        JGroupsTransportServiceConfigurator transportBuilder = new JGroupsTransportServiceConfigurator(address).configure(context, model);
         transportBuilder.build(target).install();
 
-        new SiteBuilder(address).configure(context, model).build(target).install();
+        new SiteServiceConfigurator(address).configure(context, model).build(target).install();
 
         String channel = transportBuilder.getChannel();
 
         ServiceNameRegistry<ClusteringRequirement> registry = new CapabilityServiceNameRegistry<>(CLUSTERING_CAPABILITIES, address);
 
-        for (GroupAliasBuilderProvider provider : ServiceLoader.load(GroupAliasBuilderProvider.class, GroupAliasBuilderProvider.class.getClassLoader())) {
-            for (CapabilityServiceBuilder<?> builder : provider.getBuilders(registry, name, channel)) {
-                builder.configure(context).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        for (IdentityGroupServiceConfiguratorProvider provider : ServiceLoader.load(IdentityGroupServiceConfiguratorProvider.class, IdentityGroupServiceConfiguratorProvider.class.getClassLoader())) {
+            for (CapabilityServiceConfigurator configurator : provider.getServiceConfigurators(registry, name, channel)) {
+                configurator.configure(context).build(target).install();
             }
         }
     }
@@ -77,9 +76,9 @@ public class JGroupsTransportServiceHandler implements ResourceServiceHandler {
 
         ServiceNameRegistry<ClusteringRequirement> registry = new CapabilityServiceNameRegistry<>(CLUSTERING_CAPABILITIES, address);
 
-        for (GroupAliasBuilderProvider provider : ServiceLoader.load(GroupAliasBuilderProvider.class, GroupAliasBuilderProvider.class.getClassLoader())) {
-            for (ServiceNameProvider builder : provider.getBuilders(registry, name, null)) {
-                context.removeService(builder.getServiceName());
+        for (IdentityGroupServiceConfiguratorProvider provider : ServiceLoader.load(IdentityGroupServiceConfiguratorProvider.class, IdentityGroupServiceConfiguratorProvider.class.getClassLoader())) {
+            for (ServiceNameProvider configurator : provider.getServiceConfigurators(registry, name, null)) {
+                context.removeService(configurator.getServiceName());
             }
         }
 

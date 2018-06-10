@@ -22,7 +22,7 @@
 package org.wildfly.clustering.ejb.infinispan.bean;
 
 import org.wildfly.clustering.ejb.infinispan.BeanKey;
-import org.wildfly.clustering.infinispan.spi.distribution.Key;
+import org.wildfly.clustering.ejb.infinispan.Key;
 
 /**
  * The cache key for a bean.
@@ -35,10 +35,5 @@ public class InfinispanBeanKey<I> extends Key<I> implements BeanKey<I> {
 
     public InfinispanBeanKey(I id) {
         super(id);
-    }
-
-    @Override
-    public I getId() {
-        return this.getValue();
     }
 }

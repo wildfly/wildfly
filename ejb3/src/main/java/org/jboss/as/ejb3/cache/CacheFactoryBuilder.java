@@ -40,7 +40,7 @@ public interface CacheFactoryBuilder<K, V extends Identifiable<K>> {
 
     void installDeploymentUnitDependencies(CapabilityServiceSupport support, ServiceTarget target, ServiceName deploymentUnitServiceName);
 
-    ServiceBuilder<? extends CacheFactory<K, V>> build(ServiceTarget target, ServiceName name, BeanContext context, StatefulTimeoutInfo timeout);
+    ServiceBuilder<?> build(ServiceTarget target, ServiceName name, BeanContext context, StatefulTimeoutInfo timeout);
 
     /**
      * Indicates whether or not cache factories built by this object can support passivation.

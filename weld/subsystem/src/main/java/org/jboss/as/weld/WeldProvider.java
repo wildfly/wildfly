@@ -31,6 +31,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.as.weld.deployment.WeldDeployment;
+import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.as.weld.services.ModuleGroupSingletonProvider;
 import org.jboss.as.weld.util.Reflections;
 import org.jboss.weld.AbstractCDI;
@@ -63,7 +64,7 @@ public class WeldProvider implements CDIProvider {
     @Override
     public CDI<Object> getCDI() {
         if (ModuleGroupSingletonProvider.deploymentClassLoaders.isEmpty()) {
-            throw new IllegalStateException();
+            throw WeldLogger.ROOT_LOGGER.weldNotInitialized();
         }
         final Container container = Container.instance();
         checkContainerState(container);

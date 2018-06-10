@@ -25,12 +25,12 @@ import org.infinispan.Cache;
 import org.infinispan.xsite.XSiteAdminOperations;
 import org.jboss.as.clustering.controller.Operation;
 import org.jboss.as.clustering.controller.OperationExecutor;
-import org.jboss.as.clustering.msc.ServiceContainerHelper;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
+import org.wildfly.clustering.service.PassiveServiceSupplier;
 
 /**
  * Operation handler for backup site operations.
@@ -43,11 +43,11 @@ public class BackupOperationExecutor implements OperationExecutor<BackupOperatio
         PathAddress address = context.getCurrentAddress();
         PathAddress cacheAddress = address.getParent();
 
-        final String site = address.getLastElement().getValue();
+        String site = address.getLastElement().getValue();
         String cacheName = cacheAddress.getLastElement().getValue();
         String containerName = cacheAddress.getParent().getLastElement().getValue();
 
-        final Cache<?, ?> cache = ServiceContainerHelper.findValue(context.getServiceRegistry(true), InfinispanCacheRequirement.CACHE.getServiceName(context, containerName, cacheName));
+        Cache<?, ?> cache = new PassiveServiceSupplier<Cache<?, ?>>(context.getServiceRegistry(true), InfinispanCacheRequirement.CACHE.getServiceName(context, containerName, cacheName)).get();
 
         BackupOperationContext operationContext = new BackupOperationContext() {
             @Override

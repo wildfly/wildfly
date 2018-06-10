@@ -34,7 +34,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>13.0.0.Alpha1-SNAPSHOT</version>
+        <version>14.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-galleon-pack</artifactId>
@@ -122,6 +122,7 @@
                         <phase>prepare-package</phase>
                         <configuration>
                             <output-dir>${basedir}/target/resources/features</output-dir>
+                            <fork-embedded>true</fork-embedded>
                             <feature-packs>
                                 <feature-pack>
                                     <groupId>org.wildfly.core</groupId>
@@ -131,7 +132,7 @@
                                     <extension>zip</extension>
                                 </feature-pack>
                                 <feature-pack>
-                                    <groupId>org.wildfly</groupId>
+                                    <groupId>${project.groupId}</groupId>
                                     <artifactId>wildfly-servlet-galleon-pack</artifactId>
                                     <version>${project.version}</version>
                                     <type>zip</type>
@@ -246,7 +247,10 @@
                         </goals>
                         <phase>prepare-package</phase>
                         <configuration>
-                            <release-name>WildFly Full</release-name>
+                            <release-name>${full.dist.product.release.name}</release-name>
+                            <task-properties>
+                                <product.release.version>${product.release.version}</product.release.version>
+                            </task-properties>
                         </configuration>
                     </execution>
                 </executions>
@@ -778,6 +782,11 @@
 
         <dependency>
             <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-rt-features-logging</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-databinding-aegis</artifactId>
         </dependency>
 
@@ -1065,6 +1074,17 @@
             </exclusions>
         </dependency>
 
+       <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>jipijapa-hibernate5-3</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>jipijapa-hibernate5</artifactId>
@@ -1075,9 +1095,15 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>jipijapa-hibernate5-legacy</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>jipijapa-hibernate5-3-legacy</artifactId>
         </dependency>
 
         <dependency>
@@ -2204,6 +2230,11 @@
         </dependency>
 
         <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>
             <exclusions>
@@ -2248,8 +2279,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-infinispan</artifactId>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-hibernate-cache-v53</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -2428,6 +2459,12 @@
         <dependency>
             <groupId>org.infinispan</groupId>
             <artifactId>infinispan-hibernate-cache-spi</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>

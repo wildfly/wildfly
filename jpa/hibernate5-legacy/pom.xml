@@ -29,12 +29,12 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>13.0.0.Alpha1-SNAPSHOT</version>
+        <version>14.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>jipijapa-hibernate5-legacy</artifactId>
 
-    <name>jipijapa Hibernate 5.x (JPA 2.1) legacy integration</name>
+    <name>jipijapa Hibernate 5.1.x (JPA 2.1) legacy integration</name>
 
     <dependencies>
 
@@ -42,6 +42,17 @@
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-hibernate-cache-spi</artifactId>
+            <scope>provided</scope>
+            <exclusions>
+              <exclusion>
+                 <groupId>*</groupId>
+                 <artifactId>*</artifactId>
+              </exclusion>
+           </exclusions>
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
@@ -59,5 +70,11 @@
             <scope>provided</scope>
         </dependency>
 
+      <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-hibernate-cache-commons</artifactId>
+            <scope>provided</scope>
+        </dependency>
+  
     </dependencies>
 </project>

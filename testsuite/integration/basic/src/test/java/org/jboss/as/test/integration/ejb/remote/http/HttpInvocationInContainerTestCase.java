@@ -1,5 +1,8 @@
 package org.jboss.as.test.integration.ejb.remote.http;
 
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
+
+import java.net.SocketPermission;
 import java.net.URL;
 import java.util.Hashtable;
 
@@ -10,6 +13,7 @@ import javax.naming.NamingException;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
@@ -24,8 +28,13 @@ public class HttpInvocationInContainerTestCase {
 
     @Deployment
     public static WebArchive deployment() {
+        String SERVER_HOST_PORT = TestSuiteEnvironment.getHttpAddress() + ":" + TestSuiteEnvironment.getHttpPort();
+
         return ShrinkWrap.create(WebArchive.class, "http-test.war")
-                .addPackage(HttpInvocationInContainerTestCase.class.getPackage());
+                .addPackage(HttpInvocationInContainerTestCase.class.getPackage())
+                .addAsManifestResource(createPermissionsXmlAsset(
+                        new SocketPermission(SERVER_HOST_PORT, "connect,resolve")
+                ), "permissions.xml");
     }
 
     @Test

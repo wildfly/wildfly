@@ -26,6 +26,8 @@ import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
+import java.lang.instrument.IllegalClassFormatException;
+
 import javax.ejb.EJBException;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceException;
@@ -178,7 +180,7 @@ public interface JpaLogger extends BasicLogger {
      */
     @LogMessage(level = WARN)
     @Message(id = 12, value = "Unexpected problem gathering statistics")
-    void unexpectedStatisticsProblem(@Cause IllegalStateException cause);
+    void unexpectedStatisticsProblem(@Cause RuntimeException cause);
 
 //    /**
 //     * Creates an exception indicating the inability ot add the integration, represented by the {@code name} parameter,
@@ -752,4 +754,8 @@ public interface JpaLogger extends BasicLogger {
     DeploymentUnitProcessingException differentSearchModuleDependencies(String deployment, String searchModuleName1, String searchModuleName2);
 
     // id = 72, value = "Could not obtain TransactionListenerRegistry from transaction manager")
+
+    @Message(id = 73, value = "Transformation of class %s failed")
+    IllegalStateException invalidClassFormat(@Cause IllegalClassFormatException cause, String className);
+
 }

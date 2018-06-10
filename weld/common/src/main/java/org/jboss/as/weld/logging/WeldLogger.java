@@ -258,4 +258,7 @@ public interface WeldLogger extends BasicLogger {
     @Message(id = 55, value = "Could not index class [%s] from an external bean archive: %s")
     void cannotIndexClassName(Object name, Object bda);
 
+    @Message(id = 56, value = "Weld is not initialized yet")
+    IllegalStateException weldNotInitialized();
+
 }

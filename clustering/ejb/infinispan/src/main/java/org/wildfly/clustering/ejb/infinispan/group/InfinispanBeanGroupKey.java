@@ -23,7 +23,7 @@
 package org.wildfly.clustering.ejb.infinispan.group;
 
 import org.wildfly.clustering.ejb.infinispan.BeanGroupKey;
-import org.wildfly.clustering.infinispan.spi.distribution.Key;
+import org.wildfly.clustering.ejb.infinispan.Key;
 
 /**
  * @author Paul Ferraro
@@ -32,10 +32,5 @@ public class InfinispanBeanGroupKey<I> extends Key<I> implements BeanGroupKey<I>
 
     public InfinispanBeanGroupKey(I id) {
         super(id);
-    }
-
-    @Override
-    public I getId() {
-        return this.getValue();
     }
 }

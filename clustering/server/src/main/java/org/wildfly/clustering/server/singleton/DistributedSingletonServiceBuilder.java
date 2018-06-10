@@ -22,55 +22,50 @@
 
 package org.wildfly.clustering.server.singleton;
 
-import java.util.Optional;
+import java.util.function.Supplier;
 
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.Value;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.provider.ServiceProviderRegistry;
 import org.wildfly.clustering.server.logging.ClusteringServerLogger;
 import org.wildfly.clustering.service.CompositeDependency;
-import org.wildfly.clustering.service.ValueDependency;
+import org.wildfly.clustering.service.SimpleServiceNameProvider;
+import org.wildfly.clustering.service.SupplierDependency;
 import org.wildfly.clustering.singleton.SingletonElectionPolicy;
 import org.wildfly.clustering.singleton.SingletonService;
 import org.wildfly.clustering.singleton.SingletonServiceBuilder;
 import org.wildfly.clustering.singleton.election.SimpleSingletonElectionPolicy;
 
 /**
- * Builds an MSC service that is only started on one node in the cluster at any given time.
+ * Distributed {@link SingletonServiceBuilder} implementation that uses JBoss MSC 1.3.x service installation.
  * @author Paul Ferraro
  */
-public class DistributedSingletonServiceBuilder<T> implements SingletonServiceBuilder<T>, DistributedSingletonServiceContext<T> {
+@Deprecated
+public class DistributedSingletonServiceBuilder<T> extends SimpleServiceNameProvider implements SingletonServiceBuilder<T>, DistributedSingletonServiceContext {
 
-    private final ValueDependency<ServiceProviderRegistry<ServiceName>> registry;
-    private final ValueDependency<CommandDispatcherFactory> dispatcherFactory;
-    private final ServiceName serviceName;
+    private final SupplierDependency<ServiceProviderRegistry<ServiceName>> registry;
+    private final SupplierDependency<CommandDispatcherFactory> dispatcherFactory;
     private final Service<T> primaryService;
-    private final Optional<Service<T>> backupService;
+    private final Service<T> backupService;
 
     private volatile SingletonElectionPolicy electionPolicy = new SimpleSingletonElectionPolicy();
     private volatile int quorum = 1;
 
-    public DistributedSingletonServiceBuilder(DistributedSingletonServiceBuilderContext context, ServiceName serviceName, Service<T> primaryService, Service<T> backupService) {
+    public DistributedSingletonServiceBuilder(DistributedSingletonServiceConfiguratorContext context, ServiceName serviceName, Service<T> primaryService, Service<T> backupService) {
+        super(serviceName);
         this.registry = context.getServiceProviderRegistryDependency();
         this.dispatcherFactory = context.getCommandDispatcherFactoryDependency();
-        this.serviceName = serviceName;
         this.primaryService = primaryService;
-        this.backupService = Optional.ofNullable(backupService);
-    }
-
-    @Override
-    public ServiceName getServiceName() {
-        return this.serviceName;
+        this.backupService = backupService;
     }
 
     @Override
     public ServiceBuilder<T> build(ServiceTarget target) {
-        SingletonService<T> service = new DistributedSingletonService<>(this);
-        ServiceBuilder<T> installer = target.addService(this.serviceName, service);
+        SingletonService<T> service = new LegacyDistributedSingletonService<>(this, this.primaryService, this.backupService);
+        ServiceBuilder<T> installer = target.addService(this.getServiceName(), service);
         return new CompositeDependency(this.registry, this.dispatcherFactory).register(installer);
     }
 
@@ -90,23 +85,13 @@ public class DistributedSingletonServiceBuilder<T> implements SingletonServiceBu
     }
 
     @Override
-    public Value<ServiceProviderRegistry<ServiceName>> getServiceProviderRegistry() {
+    public Supplier<ServiceProviderRegistry<ServiceName>> getServiceProviderRegistry() {
         return this.registry;
     }
 
     @Override
-    public Value<CommandDispatcherFactory> getCommandDispatcherFactory() {
+    public Supplier<CommandDispatcherFactory> getCommandDispatcherFactory() {
         return this.dispatcherFactory;
-    }
-
-    @Override
-    public Service<T> getPrimaryService() {
-        return this.primaryService;
-    }
-
-    @Override
-    public Optional<Service<T>> getBackupService() {
-        return this.backupService;
     }
 
     @Override

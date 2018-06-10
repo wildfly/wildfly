@@ -17,7 +17,6 @@
             </http-interface>
         </management-interfaces>
     </management>
-
     <interfaces>
         <interface name="management">
             <inet-address value="${jboss.bind.address.management:127.0.0.1}"/>
@@ -26,7 +25,6 @@
             <inet-address value="${jboss.bind.address:127.0.0.1}"/>
         </interface>
     </interfaces>
-
     <socket-binding-group name="standard-sockets" default-interface="public">
         <socket-binding name="management-http" interface="management" port="9990"/>
     </socket-binding-group>

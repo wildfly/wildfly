@@ -24,7 +24,7 @@ package org.wildfly.extension.undertow;
 
 import static org.wildfly.extension.undertow.ServerDefinition.SERVER_CAPABILITY;
 
-import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -37,7 +37,7 @@ import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.extension.undertow.session.DistributableSessionIdentifierCodecBuilderProvider;
+import org.wildfly.extension.undertow.session.DistributableSessionIdentifierCodecServiceConfiguratorProvider;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
@@ -86,10 +86,10 @@ class ServerAdd extends AbstractAddStepHandler {
         builder.install();
 
         ServiceTarget target = context.getServiceTarget();
-        DistributableSessionIdentifierCodecBuilderProvider provider = DistributableSessionIdentifierCodecBuilderProvider.INSTANCE.orElse(null);
+        DistributableSessionIdentifierCodecServiceConfiguratorProvider provider = DistributableSessionIdentifierCodecServiceConfiguratorProvider.INSTANCE.orElse(null);
         if (provider != null) {
-            for (CapabilityServiceBuilder<?> b : provider.getServerBuilders(name)) {
-                b.configure(context).build(target).install();
+            for (CapabilityServiceConfigurator configurator : provider.getServerServiceConfigurators(name)) {
+                configurator.configure(context).build(target).install();
             }
         }
     }

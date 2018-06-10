@@ -24,7 +24,7 @@ package org.jboss.as.ejb3.subsystem;
 import java.util.ServiceLoader;
 import java.util.concurrent.ExecutorService;
 
-import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -38,7 +38,7 @@ import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.remote.AssociationService;
 import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
 import org.jboss.as.ejb3.remote.EJBRemotingConnectorClientMappingsEntryProviderService;
-import org.jboss.as.ejb3.remote.ClientMappingsRegistryBuilder;
+import org.jboss.as.ejb3.remote.ClientMappingsRegistryServiceConfigurator;
 import org.jboss.as.remoting.RemotingConnectorBindingInfoService;
 import org.jboss.as.remoting.RemotingServices;
 import org.jboss.as.txn.service.TxnServices;
@@ -50,10 +50,10 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.remoting3.Endpoint;
 import org.jboss.remoting3.RemotingOptions;
-import org.wildfly.clustering.spi.CacheBuilderProvider;
-import org.wildfly.clustering.spi.GroupBuilderProvider;
-import org.wildfly.clustering.spi.LocalCacheBuilderProvider;
-import org.wildfly.clustering.spi.LocalGroupBuilderProvider;
+import org.wildfly.clustering.spi.CacheServiceConfiguratorProvider;
+import org.wildfly.clustering.spi.GroupServiceConfiguratorProvider;
+import org.wildfly.clustering.spi.LocalCacheServiceConfiguratorProvider;
+import org.wildfly.clustering.spi.LocalGroupServiceConfiguratorProvider;
 import org.wildfly.transaction.client.provider.remoting.RemotingTransactionService;
 import org.xnio.Option;
 import org.xnio.OptionMap;
@@ -89,7 +89,7 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install();
 
-        new ClientMappingsRegistryBuilder(clientMappingsClusterName).configure(context).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        new ClientMappingsRegistryServiceConfigurator(clientMappingsClusterName).configure(context).build(target).install();
 
         // Handle case where no infinispan subsystem exists or does not define an ejb cache-container
         PathElement infinispanPath = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "infinispan");
@@ -97,14 +97,14 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
         if (infinispanResource == null || !infinispanResource.hasChild(PathElement.pathElement("cache-container", clientMappingsClusterName))) {
             // Install services that would normally be installed by this container/cache
             CapabilityServiceSupport support = context.getCapabilityServiceSupport();
-            for (GroupBuilderProvider provider : ServiceLoader.load(LocalGroupBuilderProvider.class, LocalGroupBuilderProvider.class.getClassLoader())) {
-                for (CapabilityServiceBuilder<?> builder : provider.getBuilders(requirement -> requirement.getServiceName(support, clientMappingsClusterName), clientMappingsClusterName)) {
-                    builder.configure(support).build(target).install();
+            for (GroupServiceConfiguratorProvider provider : ServiceLoader.load(LocalGroupServiceConfiguratorProvider.class, LocalGroupServiceConfiguratorProvider.class.getClassLoader())) {
+                for (CapabilityServiceConfigurator configurator : provider.getServiceConfigurators(requirement -> requirement.getServiceName(support, clientMappingsClusterName), clientMappingsClusterName)) {
+                    configurator.configure(support).build(target).install();
                 }
             }
-            for (CacheBuilderProvider provider : ServiceLoader.load(LocalCacheBuilderProvider.class, LocalCacheBuilderProvider.class.getClassLoader())) {
-                for (CapabilityServiceBuilder<?> builder : provider.getBuilders(requirement -> requirement.getServiceName(support, clientMappingsClusterName, null), clientMappingsClusterName, null)) {
-                    builder.configure(support).build(target).install();
+            for (CacheServiceConfiguratorProvider provider : ServiceLoader.load(LocalCacheServiceConfiguratorProvider.class, LocalCacheServiceConfiguratorProvider.class.getClassLoader())) {
+                for (CapabilityServiceConfigurator configurator : provider.getServiceConfigurators(requirement -> requirement.getServiceName(support, clientMappingsClusterName, null), clientMappingsClusterName, null)) {
+                    configurator.configure(support).build(target).install();
                 }
             }
         }

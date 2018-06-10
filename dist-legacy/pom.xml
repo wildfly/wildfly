@@ -34,7 +34,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>13.0.0.Alpha1-SNAPSHOT</version>
+        <version>14.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-dist-legacy</artifactId>
@@ -69,13 +69,6 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
-    <properties>
-        <product.release.name>WildFly Full</product.release.name>
-        <verifier.slot.name>wildfly-full</verifier.slot.name>
-        <verifier.product.release.name>WildFly Full</verifier.product.release.name>
-        <verifier.product.release.version>13.0</verifier.product.release.version>
-    </properties>
 
     <build>
         <plugins>

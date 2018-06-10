@@ -22,19 +22,28 @@
 
 package org.wildfly.clustering.web.undertow;
 
+import java.security.PrivilegedAction;
+
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.marshalling.spi.Serializer;
 import org.wildfly.clustering.web.IdentifierSerializer;
 import org.wildfly.clustering.web.IdentifierSerializerProvider;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author Paul Ferraro
  */
 @MetaInfServices(IdentifierSerializerProvider.class)
-public class UndertowIdentifierSerializerProvider implements IdentifierSerializerProvider {
+public class UndertowIdentifierSerializerProvider implements IdentifierSerializerProvider, PrivilegedAction<String> {
 
     @Override
-    public Serializer<String> getSerializer() {
-        return IdentifierSerializer.BASE64;
+    public IdentifierSerializer getSerializer() {
+        // Disable session ID marshalling optimization for custom alphabets
+        String customAlphabet = WildFlySecurityManager.doUnchecked(this);
+        return (customAlphabet == null) ? IdentifierSerializer.BASE64 : IdentifierSerializer.UTF8;
+    }
+
+    @Override
+    public String run() {
+        return System.getProperty("io.undertow.server.session.SecureRandomSessionIdGenerator.ALPHABET");
     }
 }

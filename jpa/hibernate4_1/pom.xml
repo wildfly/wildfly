@@ -12,7 +12,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>13.0.0.Alpha1-SNAPSHOT</version>
+        <version>14.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -98,13 +98,6 @@
               <artifactId>hibernate-commons-annotations</artifactId>
            </exclusion>
            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-infinispan</artifactId>
-            <version>${version.org.hibernate4_2}</version>
-            <scope>provided</scope>
         </dependency>
 
         <dependency>

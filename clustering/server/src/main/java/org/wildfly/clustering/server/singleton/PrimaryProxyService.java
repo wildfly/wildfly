@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Supplier;
 
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -40,23 +41,25 @@ import org.wildfly.clustering.server.logging.ClusteringServerLogger;
  * Service that proxies the value from the primary node.
  * @author Paul Ferraro
  */
+@Deprecated
 public class PrimaryProxyService<T> implements Service<T> {
 
-    private final PrimaryProxyContext<T> context;
+    private final Supplier<PrimaryProxyContext<T>> contextFactory;
 
     private volatile boolean started = false;
 
-    public PrimaryProxyService(PrimaryProxyContext<T> context) {
-        this.context = context;
+    public PrimaryProxyService(Supplier<PrimaryProxyContext<T>> contextFactory) {
+        this.contextFactory = contextFactory;
     }
 
     @Override
     public T getValue() {
+        PrimaryProxyContext<T> context = this.contextFactory.get();
         if (!this.started) {
-            throw ClusteringServerLogger.ROOT_LOGGER.notStarted(this.context.getServiceName().getCanonicalName());
+            throw ClusteringServerLogger.ROOT_LOGGER.notStarted(context.getServiceName().getCanonicalName());
         }
         try {
-            Map<Node, CommandResponse<Optional<T>>> responses = this.context.getCommandDispatcher().executeOnCluster(new SingletonValueCommand<T>());
+            Map<Node, CommandResponse<Optional<T>>> responses = context.getCommandDispatcher().executeOnCluster(new SingletonValueCommand<T>());
             // Prune non-primary (i.e. null) results
             Map<Node, Optional<T>> results = new HashMap<>();
             try {
@@ -72,11 +75,11 @@ public class PrimaryProxyService<T> implements Service<T> {
             // We expect only 1 result
             if (results.size() > 1) {
                 // This would mean there are multiple primary nodes!
-                throw ClusteringServerLogger.ROOT_LOGGER.multiplePrimaryProvidersDetected(this.context.getServiceName().getCanonicalName(), results.keySet());
+                throw ClusteringServerLogger.ROOT_LOGGER.multiplePrimaryProvidersDetected(context.getServiceName().getCanonicalName(), results.keySet());
             }
             Iterator<Optional<T>> values = results.values().iterator();
             if (!values.hasNext()) {
-                throw ClusteringServerLogger.ROOT_LOGGER.noResponseFromMaster(this.context.getServiceName().getCanonicalName());
+                throw ClusteringServerLogger.ROOT_LOGGER.noResponseFromMaster(context.getServiceName().getCanonicalName());
             }
             return values.next().orElse(null);
         } catch (CommandDispatcherException e) {

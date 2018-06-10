@@ -22,22 +22,20 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
+import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
-import org.jboss.as.clustering.naming.BinderServiceBuilder;
+import org.jboss.as.clustering.naming.BinderServiceConfigurator;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 
 /**
  * @author Paul Ferraro
  */
-public class StackServiceHandler extends SimpleResourceServiceHandler<ChannelFactory> {
+public class StackServiceHandler extends SimpleResourceServiceHandler {
 
-    StackServiceHandler(ResourceServiceBuilderFactory<ChannelFactory> factory) {
+    StackServiceHandler(ResourceServiceConfiguratorFactory factory) {
         super(factory);
     }
 
@@ -47,16 +45,13 @@ public class StackServiceHandler extends SimpleResourceServiceHandler<ChannelFac
 
         String name = context.getCurrentAddressValue();
 
-        ServiceTarget target = context.getServiceTarget();
-
-        new BinderServiceBuilder<>(JGroupsBindingFactory.createChannelFactoryBinding(name), JGroupsRequirement.CHANNEL_FACTORY.getServiceName(context, name), JGroupsRequirement.CHANNEL_FACTORY.getType()).build(target).install();
+        new BinderServiceConfigurator(JGroupsBindingFactory.createChannelFactoryBinding(name), JGroupsRequirement.CHANNEL_FACTORY.getServiceName(context, name)).build(context.getServiceTarget()).install();
     }
 
     @Override
     public void removeServices(OperationContext context, ModelNode model) throws OperationFailedException {
         String name = context.getCurrentAddressValue();
 
-        // remove the ChannelFactoryServiceService
         context.removeService(JGroupsBindingFactory.createChannelFactoryBinding(name).getBinderServiceName());
 
         super.removeServices(context, model);

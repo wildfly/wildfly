@@ -233,7 +233,7 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
         if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
             builder.discardChildResource(NoTransportResourceDefinition.PATH);
 
-            for (ThreadPoolResourceDefinition pool : EnumSet.allOf(ThreadPoolResourceDefinition.class)) {
+            for (ThreadPoolResourceDefinition pool : EnumSet.complementOf(EnumSet.of(ThreadPoolResourceDefinition.CLIENT))) {
                 builder.addChildResource(pool.getPathElement(), pool.getDiscardPolicy());
             }
             for (ScheduledThreadPoolResourceDefinition pool : EnumSet.allOf(ScheduledThreadPoolResourceDefinition.class)) {
@@ -242,7 +242,7 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
         } else {
             NoTransportResourceDefinition.buildTransformation(version, builder);
 
-            for (ThreadPoolResourceDefinition pool : EnumSet.allOf(ThreadPoolResourceDefinition.class)) {
+            for (ThreadPoolResourceDefinition pool : EnumSet.complementOf(EnumSet.of(ThreadPoolResourceDefinition.CLIENT))) {
                 pool.buildTransformation(version, parent);
             }
             for (ScheduledThreadPoolResourceDefinition pool : EnumSet.allOf(ScheduledThreadPoolResourceDefinition.class)) {
@@ -308,7 +308,7 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
                 .addCapabilities(Capability.class)
                 .addCapabilities(model -> model.hasDefined(Attribute.DEFAULT_CACHE.getName()), DEFAULT_CAPABILITIES.values())
                 .addCapabilities(model -> model.hasDefined(Attribute.DEFAULT_CACHE.getName()), DEFAULT_CLUSTERING_CAPABILITIES.values())
-                .addRequiredChildren(ThreadPoolResourceDefinition.class)
+                .addRequiredChildren(EnumSet.complementOf(EnumSet.of(ThreadPoolResourceDefinition.CLIENT)))
                 .addRequiredChildren(ScheduledThreadPoolResourceDefinition.class)
                 .addRequiredSingletonChildren(NoTransportResourceDefinition.PATH)
                 ;
@@ -344,7 +344,7 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
         new JGroupsTransportResourceDefinition().register(registration);
         new NoTransportResourceDefinition().register(registration);
 
-        for (ThreadPoolResourceDefinition pool : EnumSet.allOf(ThreadPoolResourceDefinition.class)) {
+        for (ThreadPoolResourceDefinition pool : EnumSet.complementOf(EnumSet.of(ThreadPoolResourceDefinition.CLIENT))) {
             pool.register(registration);
         }
         for (ScheduledThreadPoolResourceDefinition pool : EnumSet.allOf(ScheduledThreadPoolResourceDefinition.class)) {

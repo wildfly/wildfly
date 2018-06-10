@@ -121,7 +121,7 @@ public abstract class JDBCStoreResourceDefinition extends StoreResourceDefinitio
         }
     }
 
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder, PathElement path) {
+    public static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder, PathElement path) {
 
         if (InfinispanModel.VERSION_5_0_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
@@ -269,6 +269,6 @@ public abstract class JDBCStoreResourceDefinition extends StoreResourceDefinitio
     }
 
     JDBCStoreResourceDefinition(PathElement path, PathElement legacyPath, ResourceDescriptionResolver resolver, UnaryOperator<ResourceDescriptor> configurator) {
-        super(path, legacyPath, resolver, new ResourceDescriptorConfigurator(configurator), JDBCStoreBuilder::new);
+        super(path, legacyPath, resolver, new ResourceDescriptorConfigurator(configurator), JDBCStoreServiceConfigurator::new);
     }
 }

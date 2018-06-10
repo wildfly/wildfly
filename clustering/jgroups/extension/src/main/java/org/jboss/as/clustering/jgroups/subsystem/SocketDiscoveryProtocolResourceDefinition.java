@@ -29,8 +29,8 @@ import java.util.function.UnaryOperator;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ResourceServiceBuilder;
-import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
+import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
+import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
@@ -39,14 +39,11 @@ import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraint
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelType;
-import org.jgroups.protocols.Discovery;
-import org.wildfly.clustering.jgroups.spi.ChannelFactory;
-import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 
 /**
  * @author Paul Ferraro
  */
-public class SocketDiscoveryProtocolResourceDefinition<A, P extends Discovery> extends ProtocolResourceDefinition<P> {
+public class SocketDiscoveryProtocolResourceDefinition<A> extends ProtocolResourceDefinition {
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<StringListAttributeDefinition.Builder> {
         OUTBOUND_SOCKET_BINDINGS("socket-bindings", ModelType.LIST) {
@@ -96,20 +93,20 @@ public class SocketDiscoveryProtocolResourceDefinition<A, P extends Discovery> e
         }
     }
 
-    private static class SocketDiscoveryProtocolConfigurationBuilderFactory<A, P extends Discovery> implements ResourceServiceBuilderFactory<ProtocolConfiguration<P>> {
+    private static class SocketDiscoveryProtocolConfigurationConfiguratorFactory<A> implements ResourceServiceConfiguratorFactory {
         private final Function<InetSocketAddress, A> hostTransformer;
 
-        SocketDiscoveryProtocolConfigurationBuilderFactory(Function<InetSocketAddress, A> hostTransformer) {
+        SocketDiscoveryProtocolConfigurationConfiguratorFactory(Function<InetSocketAddress, A> hostTransformer) {
             this.hostTransformer = hostTransformer;
         }
 
         @Override
-        public ResourceServiceBuilder<ProtocolConfiguration<P>> createBuilder(PathAddress address) {
-            return new SocketDiscoveryProtocolConfigurationBuilder<>(address, this.hostTransformer);
+        public ResourceServiceConfigurator createServiceConfigurator(PathAddress address) {
+            return new SocketDiscoveryProtocolConfigurationServiceConfigurator<>(address, this.hostTransformer);
         }
     }
 
-    SocketDiscoveryProtocolResourceDefinition(String name, Function<InetSocketAddress, A> hostTransformer, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceBuilderFactory<ChannelFactory> parentBuilderFactory) {
-        super(pathElement(name), new ResourceDescriptorConfigurator(configurator), new SocketDiscoveryProtocolConfigurationBuilderFactory<>(hostTransformer), parentBuilderFactory);
+    SocketDiscoveryProtocolResourceDefinition(String name, Function<InetSocketAddress, A> hostTransformer, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory) {
+        super(pathElement(name), new ResourceDescriptorConfigurator(configurator), new SocketDiscoveryProtocolConfigurationConfiguratorFactory<>(hostTransformer), parentServiceConfiguratorFactory);
     }
 }

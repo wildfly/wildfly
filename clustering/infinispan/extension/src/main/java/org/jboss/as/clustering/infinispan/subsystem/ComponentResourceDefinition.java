@@ -30,11 +30,11 @@ import org.jboss.as.controller.PathElement;
  */
 public abstract class ComponentResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
 
-    static PathElement pathElement(String name) {
+    public static PathElement pathElement(String name) {
         return PathElement.pathElement("component", name);
     }
 
-    ComponentResourceDefinition(PathElement path) {
+    public ComponentResourceDefinition(PathElement path) {
         super(path, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(path));
     }
 }

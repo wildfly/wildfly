@@ -28,12 +28,12 @@ import org.jboss.logging.Logger;
 import org.junit.Test;
 import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.jboss.ClassTableContributor;
-import org.wildfly.clustering.spi.CacheAliasBuilderProvider;
-import org.wildfly.clustering.spi.DistributedCacheBuilderProvider;
-import org.wildfly.clustering.spi.DistributedGroupBuilderProvider;
-import org.wildfly.clustering.spi.GroupAliasBuilderProvider;
-import org.wildfly.clustering.spi.LocalCacheBuilderProvider;
-import org.wildfly.clustering.spi.LocalGroupBuilderProvider;
+import org.wildfly.clustering.spi.IdentityCacheServiceConfiguratorProvider;
+import org.wildfly.clustering.spi.DistributedCacheServiceConfiguratorProvider;
+import org.wildfly.clustering.spi.DistributedGroupServiceConfiguratorProvider;
+import org.wildfly.clustering.spi.IdentityGroupServiceConfiguratorProvider;
+import org.wildfly.clustering.spi.LocalCacheServiceConfiguratorProvider;
+import org.wildfly.clustering.spi.LocalGroupServiceConfiguratorProvider;
 
 /**
  * Validates loading of services.
@@ -45,12 +45,12 @@ public class ServiceLoaderTestCase {
     public void load() {
         load(Externalizer.class);
         load(ClassTableContributor.class);
-        load(GroupAliasBuilderProvider.class);
-        load(CacheAliasBuilderProvider.class);
-        load(DistributedGroupBuilderProvider.class);
-        load(DistributedCacheBuilderProvider.class);
-        load(LocalGroupBuilderProvider.class);
-        load(LocalCacheBuilderProvider.class);
+        load(IdentityGroupServiceConfiguratorProvider.class);
+        load(IdentityCacheServiceConfiguratorProvider.class);
+        load(DistributedGroupServiceConfiguratorProvider.class);
+        load(DistributedCacheServiceConfiguratorProvider.class);
+        load(LocalGroupServiceConfiguratorProvider.class);
+        load(LocalCacheServiceConfiguratorProvider.class);
     }
 
     private static <T> void load(Class<T> targetClass) {

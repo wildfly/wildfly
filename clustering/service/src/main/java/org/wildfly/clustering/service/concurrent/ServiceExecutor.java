@@ -70,7 +70,7 @@ public interface ServiceExecutor {
     /**
      * Closes the service, executing the specified task, first waiting for any concurrent executions to complete.
      * The specified task will only execute once, irrespective on subsequent {@link #close(Runnable)} invocations.
-     * @param task a task which closes the service
+     * @param closeTask a task which closes the service
      */
     void close(Runnable closeTask);
 }

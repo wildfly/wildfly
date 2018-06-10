@@ -30,7 +30,9 @@ import org.jboss.msc.value.Value;
 /**
  * Like {@link org.jboss.msc.value.InjectedValue}, but with support for returning an {@link Optional}.
  * @author Paul Ferraro
+ * @deprecated Replaced by a {@link java.util.function.Supplier} that can return null.
  */
+@Deprecated
 public class OptionalInjectedValue<T> extends RetainingInjector<T> implements Value<T> {
 
     @Override

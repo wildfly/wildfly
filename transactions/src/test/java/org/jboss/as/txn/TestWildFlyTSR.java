@@ -13,6 +13,9 @@ import javax.transaction.TransactionSynchronizationRegistry;
 
 import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.XATerminatorImple;
 import org.jboss.as.txn.service.internal.tsr.TransactionSynchronizationRegistryWrapper;
+import org.jboss.tm.XAResourceRecovery;
+import org.jboss.tm.XAResourceRecoveryRegistry;
+
 import org.junit.Test;
 
 import com.arjuna.ats.jta.common.jtaPropertyManager;
@@ -31,6 +34,12 @@ public class TestWildFlyTSR {
         final JBossLocalTransactionProvider.Builder builder = JBossLocalTransactionProvider.builder();
         builder.setTransactionManager(com.arjuna.ats.jta.TransactionManager.transactionManager());
         builder.setExtendedJBossXATerminator(new XATerminatorImple());
+        builder.setXAResourceRecoveryRegistry(new XAResourceRecoveryRegistry() {
+            @Override
+            public void addXAResourceRecovery(XAResourceRecovery xaResourceRecovery) {}
+
+            @Override public void removeXAResourceRecovery(XAResourceRecovery xaResourceRecovery) {}
+        });
         LocalTransactionContext.getContextManager().setGlobalDefault(new LocalTransactionContext(
             builder.build()
         ));

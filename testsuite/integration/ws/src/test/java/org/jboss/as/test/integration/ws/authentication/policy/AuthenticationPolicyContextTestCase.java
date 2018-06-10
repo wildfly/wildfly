@@ -139,7 +139,7 @@ public class AuthenticationPolicyContextTestCase {
         war.addClasses(EchoService.class);
         war.addAsResource(AuthenticationPolicyContextTestCase.class.getPackage(), "resources/sp-users.properties", "sp-users.properties");
         war.addAsResource(AuthenticationPolicyContextTestCase.class.getPackage(), "resources/sp-roles.properties", "sp-roles.properties");
-        war.addAsResource(AuthenticationPolicyContextTestCase.class.getPackage(), "resources/sts-config.properties", "sts-config.properties");
+        war.addAsResource(createFilteredAsset("resources/sts-config.properties"), "sts-config.properties");
         war.addAsWebInfResource(createFilteredAsset("resources/WEB-INF/wsdl/PicketLinkSTS.wsdl"), "wsdl/PicketLinkSTS.wsdl");
         war.addAsWebInfResource(AuthenticationPolicyContextTestCase.class.getPackage(), "resources/WEB-INF/beans.xml", "beans.xml");
         war.addAsWebInfResource(AuthenticationPolicyContextTestCase.class.getPackage(), "resources/WEB-INF/jboss-web-ws.xml", "jboss-web-ws.xml");
@@ -324,7 +324,7 @@ public class AuthenticationPolicyContextTestCase {
         }
 
         try {
-            URL wsdl = new URL("http://localhost:8080/picketlink-sts-ws/EchoService?wsdl");
+            URL wsdl = new URL("http://" + TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getHttpPort() +"/picketlink-sts-ws/EchoService?wsdl");
             QName serviceName = new QName("http://ws.picketlink.sts.jboss.org/", "EchoServiceService");
             Service service = Service.create(wsdl, serviceName);
             EchoServiceRemote port = service.getPort(new QName("http://ws.picketlink.sts.jboss.org/", "EchoServicePort"),

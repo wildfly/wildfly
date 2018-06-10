@@ -26,6 +26,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.as.clustering.controller.Attribute;
+import org.jboss.as.clustering.infinispan.subsystem.remote.ConnectionPoolResourceDefinition;
+import org.jboss.as.clustering.infinispan.subsystem.remote.HotRodStoreResourceDefinition;
+import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition;
+import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteClusterResourceDefinition;
+import org.jboss.as.clustering.infinispan.subsystem.remote.SecurityResourceDefinition;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 
 /**
@@ -112,7 +118,6 @@ public enum XMLAttribute {
     SINGLETON(StoreResourceDefinition.Attribute.SINGLETON),
     SITE("site"),
     SIZE(ObjectMemoryResourceDefinition.Attribute.SIZE),
-    SOCKET_TIMEOUT(RemoteStoreResourceDefinition.Attribute.SOCKET_TIMEOUT),
     @Deprecated STACK(JGroupsTransportResourceDefinition.DeprecatedAttribute.STACK),
     @Deprecated START(CacheContainerResourceDefinition.DeprecatedAttribute.START),
     STATISTICS_ENABLED(CacheResourceDefinition.Attribute.STATISTICS_ENABLED),
@@ -121,16 +126,47 @@ public enum XMLAttribute {
     STRIPING(LockingResourceDefinition.Attribute.STRIPING),
     TAKE_OFFLINE_AFTER_FAILURES(BackupResourceDefinition.TakeOfflineAttribute.AFTER_FAILURES),
     TAKE_OFFLINE_MIN_WAIT(BackupResourceDefinition.TakeOfflineAttribute.MIN_WAIT),
-    TCP_NO_DELAY(RemoteStoreResourceDefinition.Attribute.TCP_NO_DELAY),
     THREAD_POOL_SIZE(StoreWriteBehindResourceDefinition.Attribute.THREAD_POOL_SIZE),
     TIMEOUT(StateTransferResourceDefinition.Attribute.TIMEOUT),
     TYPE(TableResourceDefinition.ColumnAttribute.ID.getColumnType()),
     @Deprecated VIRTUAL_NODES("virtual-nodes"),
+
+    // hotrod store
+    CACHE_CONFIGURATION(HotRodStoreResourceDefinition.Attribute.CACHE_CONFIGURATION),
+
+    // remote-cache-container
+    REMOTE_CACHE_CONTAINER(RemoteCacheContainerResourceDefinition.WILDCARD_PATH),
+    CONNECTION_TIMEOUT(RemoteCacheContainerResourceDefinition.Attribute.CONNECTION_TIMEOUT),
+    DEFAULT_REMOTE_CLUSTER(RemoteCacheContainerResourceDefinition.Attribute.DEFAULT_REMOTE_CLUSTER),
+    KEY_SIZE_ESTIMATE(RemoteCacheContainerResourceDefinition.Attribute.KEY_SIZE_ESTIMATE),
+    MAX_RETRIES(RemoteCacheContainerResourceDefinition.Attribute.MAX_RETRIES),
+    PROTOCOL_VERSION(RemoteCacheContainerResourceDefinition.Attribute.PROTOCOL_VERSION),
+    SOCKET_TIMEOUT(RemoteCacheContainerResourceDefinition.Attribute.SOCKET_TIMEOUT),
+    TCP_NO_DELAY(RemoteCacheContainerResourceDefinition.Attribute.TCP_NO_DELAY),
+    TCP_KEEP_ALIVE(RemoteCacheContainerResourceDefinition.Attribute.TCP_KEEP_ALIVE),
+    VALUE_SIZE_ESTIMATE(RemoteCacheContainerResourceDefinition.Attribute.VALUE_SIZE_ESTIMATE),
+
+    // remote-cache-container -> connection-pool
+    EXHAUSTED_ACTION(ConnectionPoolResourceDefinition.Attribute.EXHAUSTED_ACTION),
+    MAX_ACTIVE(ConnectionPoolResourceDefinition.Attribute.MAX_ACTIVE),
+    MAX_WAIT(ConnectionPoolResourceDefinition.Attribute.MAX_WAIT),
+    MIN_EVICTABLE_IDLE_TIME(ConnectionPoolResourceDefinition.Attribute.MIN_EVICTABLE_IDLE_TIME),
+    MIN_IDLE(ConnectionPoolResourceDefinition.Attribute.MIN_IDLE),
+
+    // remote-cache-container -> remote-clusters
+    SOCKET_BINDINGS(RemoteClusterResourceDefinition.Attribute.SOCKET_BINDINGS),
+
+    // remote-cache-container -> security
+    SSL_CONTEXT(SecurityResourceDefinition.Attribute.SSL_CONTEXT),
     ;
     private final String name;
 
     XMLAttribute(Attribute attribute) {
         this(attribute.getDefinition().getXmlName());
+    }
+
+    XMLAttribute(PathElement wildcardPath) {
+        this(wildcardPath.getKey());
     }
 
     XMLAttribute(String name) {

@@ -31,11 +31,11 @@ import org.jboss.dmr.ModelNode;
  * Add operation handler that leverages a {@link ResourceServiceBuilderFactory} to restart a parent resource..
  * @author Paul Ferraro
  */
-public class RestartParentResourceAddStepHandler<T> extends AddStepHandler {
+public class RestartParentResourceAddStepHandler extends AddStepHandler {
 
     private final OperationStepHandler handler;
 
-    public RestartParentResourceAddStepHandler(ResourceServiceBuilderFactory<T> parentFactory, AddStepHandlerDescriptor descriptor, ResourceServiceHandler handler) {
+    public RestartParentResourceAddStepHandler(ResourceServiceConfiguratorFactory parentFactory, AddStepHandlerDescriptor descriptor, ResourceServiceHandler handler) {
         super(descriptor, handler);
         this.handler = new RestartParentResourceStepHandler<>(parentFactory);
     }

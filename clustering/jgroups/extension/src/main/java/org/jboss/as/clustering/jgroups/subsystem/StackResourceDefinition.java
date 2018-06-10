@@ -30,7 +30,7 @@ import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.OperationHandler;
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ResourceServiceBuilderFactory;
+import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
@@ -59,7 +59,6 @@ import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 import org.wildfly.clustering.service.UnaryRequirement;
 
@@ -217,7 +216,7 @@ public class StackResourceDefinition extends ChildResourceDefinition<ManagementR
         }
     }
 
-    private final ResourceServiceBuilderFactory<ChannelFactory> builderFactory = JChannelFactoryBuilder::new;
+    private final ResourceServiceConfiguratorFactory serviceConfiguratorFactory = JChannelFactoryServiceConfigurator::new;
 
     // registration
     public StackResourceDefinition() {
@@ -235,7 +234,7 @@ public class StackResourceDefinition extends ChildResourceDefinition<ManagementR
                 .addCapabilities(Capability.class)
                 .setAddOperationTransformation(new AddOperationTransformation())
                 ;
-        ResourceServiceHandler handler = new StackServiceHandler(this.builderFactory);
+        ResourceServiceHandler handler = new StackServiceHandler(this.serviceConfiguratorFactory);
         new SimpleResourceRegistration(descriptor, handler).register(registration);
 
         OperationDefinition legacyAddProtocolOperation = new SimpleOperationDefinitionBuilder("add-protocol", this.getResourceDescriptionResolver())
@@ -289,9 +288,9 @@ public class StackResourceDefinition extends ChildResourceDefinition<ManagementR
             new OperationHandler<>(new StackOperationExecutor(), StackOperation.class).register(registration);
         }
 
-        new TransportRegistration(this.builderFactory).register(registration);
-        new ProtocolRegistration(this.builderFactory).register(registration);
-        new RelayResourceDefinition(this.builderFactory).register(registration);
+        new TransportRegistration(this.serviceConfiguratorFactory).register(registration);
+        new ProtocolRegistration(this.serviceConfiguratorFactory).register(registration);
+        new RelayResourceDefinition(this.serviceConfiguratorFactory).register(registration);
 
         return registration;
     }
