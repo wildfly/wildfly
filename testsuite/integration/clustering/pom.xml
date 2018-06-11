@@ -46,6 +46,14 @@
         <test-group>org/jboss/as/test/clustering/cluster</test-group>
     </properties>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.kohsuke.metainf-services</groupId>
+            <artifactId>metainf-services</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
     <profiles>
         <profile>
             <id>clustering.integration.tests.profile</id>
@@ -153,6 +161,8 @@
                                     <goal>test</goal>
                                 </goals>
                                 <configuration>
+                                    <!-- Fix test order to speed up execution by grouping tests that run against same group of containers -->
+                                    <runOrder>alphabetical</runOrder>
                                     <!-- Tests to execute. -->
                                     <includes>
                                         <include>${test-group}/**/*TestCase.java</include>
@@ -195,6 +205,7 @@
                                 <configuration>
                                     <!-- Needed for EJB client tests -->
                                     <reuseForks>false</reuseForks>
+                                    <runOrder>alphabetical</runOrder>
                                     <includes>
                                         <include>${test-group}/dispatcher/**/*TestCase.java</include>
                                         <include>${test-group}/ejb/**/*TestCase.java</include>
@@ -227,6 +238,7 @@
                                     <goal>test</goal>
                                 </goals>
                                 <configuration>
+                                    <runOrder>alphabetical</runOrder>
                                     <includes>
                                         <include>org/jboss/as/test/clustering/single/**/*TestCase.java</include>
                                     </includes>
