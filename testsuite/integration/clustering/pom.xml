@@ -256,7 +256,7 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>ts.surefire.clustering.all-ejb</id>
+                                <id>ts.surefire.clustering.all</id>
                                 <phase>none</phase>
                             </execution>
                             <execution>
