@@ -36,6 +36,7 @@ import static org.wildfly.extension.messaging.activemq.OperationDefinitionHelper
 import static org.wildfly.extension.messaging.activemq.OperationDefinitionHelper.resolveFilter;
 import static org.wildfly.extension.messaging.activemq.OperationDefinitionHelper.runtimeOnlyOperation;
 import static org.wildfly.extension.messaging.activemq.OperationDefinitionHelper.runtimeReadOnlyOperation;
+import static org.wildfly.extension.messaging.activemq.jms.JMSTopicService.JMS_TOPIC_PREFIX;
 
 import java.util.List;
 import java.util.Map;
@@ -143,8 +144,8 @@ public class JMSTopicControlHandler extends AbstractRuntimeOnlyHandler {
         boolean readOnly = context.getResourceRegistration().getOperationFlags(PathAddress.EMPTY_ADDRESS, operationName).contains(OperationEntry.Flag.READ_ONLY);
         ServiceController<?> service = context.getServiceRegistry(!readOnly).getService(serviceName);
         ActiveMQServer server = ActiveMQServer.class.cast(service.getValue());
-       ManagementService managementService = server.getManagementService();
-       AddressControl control = AddressControl.class.cast(managementService.getResource(ResourceNames.ADDRESS + topicName));
+        ManagementService managementService = server.getManagementService();
+        AddressControl control = AddressControl.class.cast(managementService.getResource(ResourceNames.ADDRESS + JMS_TOPIC_PREFIX + topicName));
 
         if (control == null) {
             PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));

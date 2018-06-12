@@ -31,6 +31,7 @@ import static org.wildfly.extension.messaging.activemq.jms.JMSTopicDefinition.NO
 import static org.wildfly.extension.messaging.activemq.jms.JMSTopicDefinition.NON_DURABLE_SUBSCRIPTION_COUNT;
 import static org.wildfly.extension.messaging.activemq.jms.JMSTopicDefinition.SUBSCRIPTION_COUNT;
 import static org.wildfly.extension.messaging.activemq.jms.JMSTopicDefinition.TOPIC_ADDRESS;
+import static org.wildfly.extension.messaging.activemq.jms.JMSTopicService.JMS_TOPIC_PREFIX;
 
 import org.apache.activemq.artemis.api.core.management.AddressControl;
 import org.apache.activemq.artemis.api.core.management.QueueControl;
@@ -89,7 +90,7 @@ public class JMSTopicReadAttributeHandler extends AbstractRuntimeOnlyHandler {
         ServiceController<?> service = context.getServiceRegistry(false).getService(serviceName);
         ActiveMQServer server = ActiveMQServer.class.cast(service.getValue());
         ManagementService managementService = server.getManagementService();
-        AddressControl control = AddressControl.class.cast(managementService.getResource(ResourceNames.ADDRESS + topicName));
+        AddressControl control = AddressControl.class.cast(managementService.getResource(ResourceNames.ADDRESS + JMS_TOPIC_PREFIX + topicName));
 
         if (control == null) {
             PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));

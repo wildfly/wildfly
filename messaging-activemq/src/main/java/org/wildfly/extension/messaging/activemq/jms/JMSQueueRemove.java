@@ -23,6 +23,7 @@
 package org.wildfly.extension.messaging.activemq.jms;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.wildfly.extension.messaging.activemq.jms.JMSQueueService.JMS_QUEUE_PREFIX;
 
 import org.apache.activemq.artemis.jms.server.JMSServerManager;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
@@ -61,7 +62,7 @@ public class JMSQueueRemove extends AbstractRemoveStepHandler {
         ServiceController<?> service = context.getServiceRegistry(true).getService(jmsServiceName);
         JMSServerManager server = JMSServerManager.class.cast(service.getValue());
         try {
-            server.destroyQueue(name, true);
+            server.destroyQueue(JMS_QUEUE_PREFIX + name, true);
         } catch (Exception e) {
             throw new OperationFailedException(e);
         }
