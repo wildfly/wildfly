@@ -32,7 +32,6 @@ import org.jboss.msc.inject.InjectionException;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -90,13 +89,12 @@ public class PartitionManagerService implements Service<PartitionManager> {
     @Override
     public void stop(StopContext context) {
         ROOT_LOGGER.debugf("Stopping PartitionManagerService for [%s]", this.alias);
-        unpublishPartitionManager(context);
     }
     private void publishPartitionManager(StartContext context) {
         BindInfo bindInfo = createPartitionManagerBindInfo();
         ServiceName serviceName = bindInfo.getBinderServiceName();
         final BinderService binderService = new BinderService(serviceName.getCanonicalName());
-        final ServiceBuilder<ManagedReferenceFactory> builder = context.getController().getServiceContainer()
+        final ServiceBuilder<ManagedReferenceFactory> builder = context.getChildTarget()
                                                                 .addService(serviceName, binderService)
                                                                 .addAliases(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(this.jndiName));
 
@@ -116,14 +114,6 @@ public class PartitionManagerService implements Service<PartitionManager> {
         builder.setInitialMode(Mode.PASSIVE).install();
 
         ROOT_LOGGER.boundToJndi("PartitionManager " + this.alias, bindInfo.getAbsoluteJndiName());
-    }
-
-    private void unpublishPartitionManager(StopContext context) {
-        ServiceController<?> service = context.getController().getServiceContainer().getService(createPartitionManagerBindInfo()
-                                                                                                .getBinderServiceName());
-        if (service != null) {
-            service.setMode(Mode.REMOVE);
-        }
     }
 
     private BindInfo createPartitionManagerBindInfo() {
