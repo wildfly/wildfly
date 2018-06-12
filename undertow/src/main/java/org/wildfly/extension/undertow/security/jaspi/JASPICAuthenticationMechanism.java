@@ -27,6 +27,7 @@ import io.undertow.security.api.SecurityContext;
 import io.undertow.security.idm.Account;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.servlet.handlers.ServletRequestContext;
+import io.undertow.servlet.handlers.security.ServletFormAuthenticationMechanism;
 import io.undertow.util.AttachmentKey;
 
 import io.undertow.util.StatusCodes;
@@ -53,6 +54,7 @@ import java.security.Principal;
 import java.security.acl.Group;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.jboss.security.auth.callback.JASPICallbackHandler;
@@ -150,8 +152,8 @@ public class JASPICAuthenticationMechanism implements AuthenticationMechanism {
             outcome = AuthenticationMechanismOutcome.NOT_AUTHENTICATED;
             sc.authenticationFailed("JASPIC authentication failed.", authType);
 
-            // make sure we don't return status OK if the AuthException was thrown
-            if (wasAuthExceptionThrown(exchange) && !statusIndicatesError(exchange)) {
+            // make sure we don't return status OK if the AuthException was thrown except for FORM authentication
+            if (wasAuthExceptionThrown(exchange) && !statusIndicatesError(exchange) && !isFormAuthentication(exchange)) {
                 exchange.setResponseCode(DEFAULT_ERROR_CODE);
             }
         }
@@ -289,5 +291,14 @@ public class JASPICAuthenticationMechanism implements AuthenticationMechanism {
 
     static boolean wasAuthExceptionThrown(HttpServerExchange exchange) {
         return exchange.getAttachment(UndertowSecurityAttachments.SECURITY_CONTEXT_ATTACHMENT).getData().get(AuthException.class.getName()) != null;
+    }
+
+    static boolean isFormAuthentication(HttpServerExchange exchange) {
+        ServletRequestContext src = exchange.getAttachment(ServletRequestContext.ATTACHMENT_KEY);
+        List<AuthenticationMechanism> mechanisms = src.getDeployment().getAuthenticationMechanisms();
+        for (AuthenticationMechanism mech : mechanisms) {
+            if (mech instanceof ServletFormAuthenticationMechanism) return true;
+        }
+        return false;
     }
 }
