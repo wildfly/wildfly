@@ -60,12 +60,12 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class InjectedJMSContextTestCase {
 
-    public static final String QUEUE_NAME = "java:app/InjectedJMSContextTestCaseQueue";
+    public static final String QUEUE_NAME = "java:/InjectedJMSContextTestCaseQueue";
 
     @Resource(mappedName = "/JmsXA")
     private ConnectionFactory factory;
 
-    @Resource(mappedName = QUEUE_NAME)
+    @Resource(lookup = QUEUE_NAME)
     private Queue queue;
 
     @EJB

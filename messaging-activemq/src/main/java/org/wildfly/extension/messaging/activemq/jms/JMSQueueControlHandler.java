@@ -24,6 +24,7 @@ package org.wildfly.extension.messaging.activemq.jms;
 
 import static org.apache.activemq.artemis.utils.SelectorTranslator.convertToActiveMQFilterString;
 import static org.wildfly.extension.messaging.activemq.OperationDefinitionHelper.createNonEmptyStringAttribute;
+import static org.wildfly.extension.messaging.activemq.jms.JMSQueueService.JMS_QUEUE_PREFIX;
 
 import org.apache.activemq.artemis.api.core.management.QueueControl;
 import org.apache.activemq.artemis.api.core.management.ResourceNames;
@@ -59,7 +60,7 @@ public class JMSQueueControlHandler extends AbstractQueueControlHandler<QueueCon
     }
 
     protected AbstractQueueControlHandler.DelegatingQueueControl<QueueControl> getQueueControl(ActiveMQServer server, String queueName){
-        final QueueControl control = QueueControl.class.cast(server.getManagementService().getResource(ResourceNames.QUEUE + queueName));
+        final QueueControl control = QueueControl.class.cast(server.getManagementService().getResource(ResourceNames.QUEUE + JMS_QUEUE_PREFIX + queueName));
         if (control == null) {
             return null;
         }
@@ -127,24 +128,24 @@ public class JMSQueueControlHandler extends AbstractQueueControlHandler<QueueCon
 
             @Override
             public boolean moveMessage(ModelNode id, String otherQueue) throws Exception {
-                int n = control.moveMessages(createFilterForJMSMessageID(id), otherQueue);
+                int n = control.moveMessages(createFilterForJMSMessageID(id), JMS_QUEUE_PREFIX + otherQueue);
                 return n == 1;
             }
 
             @Override
             public boolean moveMessage(ModelNode id, String otherQueue, boolean rejectDuplicates) throws Exception {
-                int n = control.moveMessages(createFilterForJMSMessageID(id), otherQueue, rejectDuplicates);
+                int n = control.moveMessages(createFilterForJMSMessageID(id), JMS_QUEUE_PREFIX + otherQueue, rejectDuplicates);
                 return n == 1;
             }
 
             @Override
             public int moveMessages(String filter, String otherQueue) throws Exception {
-                return control.moveMessages(convertToActiveMQFilterString(filter), otherQueue);
+                return control.moveMessages(convertToActiveMQFilterString(filter), JMS_QUEUE_PREFIX + otherQueue);
             }
 
             @Override
             public int moveMessages(String filter, String otherQueue, boolean rejectDuplicates) throws Exception {
-                return control.moveMessages(convertToActiveMQFilterString(filter), otherQueue, rejectDuplicates);
+                return control.moveMessages(convertToActiveMQFilterString(filter), JMS_QUEUE_PREFIX + otherQueue, rejectDuplicates);
             }
 
             @Override
