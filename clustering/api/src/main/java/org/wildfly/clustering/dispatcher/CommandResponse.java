@@ -21,6 +21,7 @@
  */
 package org.wildfly.clustering.dispatcher;
 
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -29,6 +30,7 @@ import java.util.concurrent.ExecutionException;
  * @param <R> the response type
  * @author Paul Ferraro
  */
+@Deprecated
 public interface CommandResponse<R> {
 
     /**
@@ -36,4 +38,22 @@ public interface CommandResponse<R> {
      * @throws ExecutionException exception that was raised during execution
      */
     R get() throws ExecutionException;
+
+    static <R> CommandResponse<R> of(R value) {
+        return new CommandResponse<R>() {
+            @Override
+            public R get() {
+                return value;
+            }
+        };
+    }
+
+    static <R> CommandResponse<R> of(CompletionException exception) {
+        return new CommandResponse<R>() {
+            @Override
+            public R get() throws ExecutionException {
+                throw new ExecutionException(exception.getCause());
+            }
+        };
+    }
 }

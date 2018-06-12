@@ -25,6 +25,8 @@ include::_high-availability/HTTP_Services.adoc[]
 
 include::_high-availability/EJB_Services.adoc[]
 
+include::_high-availability/Clustering_API.adoc[]
+
 include::_high-availability/HA_Singleton_Features.adoc[]
 
 include::_high-availability/Clustering_and_Domain_Setup_Walkthrough.adoc[]

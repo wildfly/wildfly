@@ -25,6 +25,8 @@ package org.wildfly.clustering.server.singleton;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -114,9 +116,15 @@ public abstract class AbstractDistributedSingletonService<C extends Lifecycle> i
                     ClusteringServerLogger.ROOT_LOGGER.elected(elected.getName(), this.name.getCanonicalName());
 
                     // Stop service on every node except elected node
-                    this.dispatcher.executeOnCluster(new StopCommand(), elected);
+                    for (CompletionStage<Void> stage : this.dispatcher.executeOnGroup(new StopCommand(), elected).values()) {
+                        try {
+                            stage.toCompletableFuture().join();
+                        } catch (CancellationException e) {
+                            // Ignore
+                        }
+                    }
                     // Start service on elected node
-                    this.dispatcher.executeOnNode(new StartCommand(), elected);
+                    this.dispatcher.executeOnMember(new StartCommand(), elected).toCompletableFuture().join();
                 } else {
                     if (quorumMet) {
                         ClusteringServerLogger.ROOT_LOGGER.noPrimaryElected(this.name.getCanonicalName());
@@ -125,7 +133,13 @@ public abstract class AbstractDistributedSingletonService<C extends Lifecycle> i
                     }
 
                     // Stop service on every node
-                    this.dispatcher.executeOnCluster(new StopCommand());
+                    for (CompletionStage<Void> stage : this.dispatcher.executeOnGroup(new StopCommand()).values()) {
+                        try {
+                            stage.toCompletableFuture().join();
+                        } catch (CancellationException e) {
+                            // Ignore
+                        }
+                    }
                 }
             } catch (CommandDispatcherException e) {
                 throw new IllegalStateException(e);
