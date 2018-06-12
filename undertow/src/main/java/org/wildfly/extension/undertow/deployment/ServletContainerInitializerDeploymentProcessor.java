@@ -29,6 +29,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -95,7 +96,7 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
         Set<ServletContainerInitializer> scis = scisMetaData.getScis();
         Set<Class<? extends ServletContainerInitializer>> sciClasses = new HashSet<>();
         if (scis == null) {
-            scis = new HashSet<ServletContainerInitializer>();
+            scis = new LinkedHashSet<>();
             scisMetaData.setScis(scis);
         }
         Map<ServletContainerInitializer, Set<Class<?>>> handlesTypes = scisMetaData.getHandlesTypes();
