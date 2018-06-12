@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.messaging.activemq.jms;
 
+import static org.wildfly.extension.messaging.activemq.jms.JMSTopicService.JMS_TOPIC_PREFIX;
+
 import org.apache.activemq.artemis.jms.server.JMSServerManager;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -58,7 +60,7 @@ public class JMSTopicRemove extends AbstractRemoveStepHandler {
         JMSServerManager server = JMSServerManager.class.cast(service.getValue());
 
         try {
-            server.destroyTopic(name, true);
+            server.destroyTopic(JMS_TOPIC_PREFIX + name, true);
         } catch (Exception e) {
             throw new OperationFailedException(e);
         }

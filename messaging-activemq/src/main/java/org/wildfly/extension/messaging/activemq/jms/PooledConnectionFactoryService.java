@@ -27,6 +27,8 @@ import static org.jboss.as.naming.deployment.ContextNames.BindInfo;
 import static org.wildfly.extension.messaging.activemq.BinderServiceUtil.installAliasBinderService;
 import static org.wildfly.extension.messaging.activemq.MessagingServices.getActiveMQServiceName;
 import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Pooled.REBALANCE_CONNECTIONS_PROP_NAME;
+import static org.wildfly.extension.messaging.activemq.jms.JMSQueueService.JMS_QUEUE_PREFIX;
+import static org.wildfly.extension.messaging.activemq.jms.JMSTopicService.JMS_TOPIC_PREFIX;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -431,6 +433,11 @@ public class PooledConnectionFactoryService implements Service<Void> {
             }
 
             configureCredential(properties);
+
+            // for backwards compatibility, the RA inbound is configured to prefix the JMS resources if JNDI lookups fail
+            // and the destination are inferred from the JNDI name.
+            inboundProperties.add(simpleProperty15("queuePrefix", String.class.getName(), JMS_QUEUE_PREFIX));
+            inboundProperties.add(simpleProperty15("topicPrefix", String.class.getName(), JMS_TOPIC_PREFIX));
 
             WildFlyRecoveryRegistry.container = container;
 
