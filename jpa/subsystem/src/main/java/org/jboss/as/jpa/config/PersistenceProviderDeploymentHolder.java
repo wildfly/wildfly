@@ -24,7 +24,9 @@ package org.jboss.as.jpa.config;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.persistence.spi.PersistenceProvider;
 
@@ -40,12 +42,15 @@ import org.jipijapa.plugin.spi.PersistenceProviderAdaptor;
  */
 public class PersistenceProviderDeploymentHolder {
 
-
-    private final List<PersistenceProvider> providerList = Collections.synchronizedList(new ArrayList<PersistenceProvider>());
-    private final List<PersistenceProviderAdaptor>  adapterList = Collections.synchronizedList(new ArrayList<PersistenceProviderAdaptor>());
+    private final Map<String, PersistenceProvider> providerMap = Collections.synchronizedMap(new HashMap<>());
+    private final List<PersistenceProviderAdaptor>  adapterList = Collections.synchronizedList(new ArrayList<>());
 
     public PersistenceProviderDeploymentHolder(final List<PersistenceProvider> providerList, final List<PersistenceProviderAdaptor> adapterList) {
-        this.providerList.addAll(providerList);
+        synchronized (this.providerMap) {
+            for(PersistenceProvider persistenceProvider : providerList){
+                providerMap.put(persistenceProvider.getClass().getName(), persistenceProvider);
+            }
+        }
         if (adapterList != null) {
             this.adapterList.addAll(adapterList);
         }
@@ -65,8 +70,8 @@ public class PersistenceProviderDeploymentHolder {
      *
      * @return the persistence providers list
      */
-    public List<PersistenceProvider> getProviders() {
-        return providerList;
+    public Map<String, PersistenceProvider> getProviders() {
+        return providerMap;
     }
 
     public static PersistenceProviderDeploymentHolder getPersistenceProviderDeploymentHolder(DeploymentUnit deploymentUnit) {
@@ -81,9 +86,12 @@ public class PersistenceProviderDeploymentHolder {
         if (persistenceProviderDeploymentHolder == null) {
             persistenceProviderDeploymentHolder = new PersistenceProviderDeploymentHolder(providerList, adaptorList);
             deploymentUnit.putAttachment(JpaAttachments.DEPLOYED_PERSISTENCE_PROVIDER, persistenceProviderDeploymentHolder);
-        }
-        else {
-            persistenceProviderDeploymentHolder.providerList.addAll(providerList);
+        } else {
+            synchronized (persistenceProviderDeploymentHolder.providerMap) {
+                for(PersistenceProvider persistenceProvider : providerList){
+                    persistenceProviderDeploymentHolder.providerMap.put(persistenceProvider.getClass().getName(), persistenceProvider);
+                }
+            }
             if (adaptorList != null) {
                 persistenceProviderDeploymentHolder.adapterList.addAll(adaptorList);
             }

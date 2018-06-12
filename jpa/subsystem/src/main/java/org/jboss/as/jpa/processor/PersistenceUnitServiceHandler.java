@@ -921,13 +921,13 @@ public class PersistenceUnitServiceHandler {
         /**
          * check if the deployment is already associated with the specified persistence provider
          */
-        List<PersistenceProvider> providerList = persistenceProviderDeploymentHolder != null ?
+        Map<String, PersistenceProvider> providerMap = persistenceProviderDeploymentHolder != null ?
                 persistenceProviderDeploymentHolder.getProviders() : null;
-        if (providerList != null) {
-            for (PersistenceProvider persistenceProvider : providerList) {
-                if (persistenceProvider.getClass().getName().equals(pu.getPersistenceProviderClassName())) {
+        if (providerMap != null) {
+            synchronized (providerMap) {
+                if(providerMap.containsKey(pu.getPersistenceProviderClassName())){
                     ROOT_LOGGER.tracef("deployment %s is using %s", deploymentUnit.getName(), pu.getPersistenceProviderClassName());
-                    return persistenceProvider;
+                    return providerMap.get(pu.getPersistenceProviderClassName());
                 }
             }
         }
