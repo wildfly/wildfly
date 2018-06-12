@@ -38,11 +38,11 @@ import org.wildfly.clustering.service.ActiveServiceSupplier;
 public class StackOperationExecutor implements OperationExecutor<ChannelFactory> {
 
     @Override
-    public ModelNode execute(OperationContext context, Operation<ChannelFactory> operation) throws OperationFailedException {
+    public ModelNode execute(OperationContext context, ModelNode operation, Operation<ChannelFactory> executable) throws OperationFailedException {
         String stackName = context.getCurrentAddressValue();
 
         ServiceName serviceName = JGroupsRequirement.CHANNEL_FACTORY.getServiceName(context, stackName);
         ChannelFactory factory = new ActiveServiceSupplier<ChannelFactory>(context.getServiceRegistry(true), serviceName).get();
-        return operation.execute(factory);
+        return executable.execute(context, operation, factory);
     }
 }

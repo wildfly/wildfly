@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.jboss.as.clustering.controller.Operation;
+import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
@@ -44,7 +45,7 @@ public enum StackOperation implements Operation<ChannelFactory> {
 
     EXPORT_NATIVE_CONFIGURATION("export-native-configuration", ModelType.STRING) {
         @Override
-        public ModelNode execute(ChannelFactory factory) throws OperationFailedException {
+        public ModelNode execute(ExpressionResolver expressionResolver, ModelNode operation, ChannelFactory factory) throws OperationFailedException {
             // Create a temporary channel, but don't connect it
             try (JChannel channel = factory.createChannel(UUID.randomUUID().toString())) {
                 // ProtocolStack.printProtocolSpecAsXML() is very hacky and only works on an uninitialized stack

@@ -34,64 +34,60 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.Operation;
+import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.modcluster.ModClusterServiceMBean;
 
 /**
  * Enumeration of mod_cluster proxy operations.
  *
  * @author Radoslav Husar
  */
-enum ProxyOperation implements Operation<ProxyOperationContext>, UnaryOperator<SimpleOperationDefinitionBuilder> {
+enum ProxyOperation implements Operation<ModClusterServiceMBean>, UnaryOperator<SimpleOperationDefinitionBuilder> {
     ADD_PROXY("add-proxy") {
         @Override
         public SimpleOperationDefinitionBuilder apply(SimpleOperationDefinitionBuilder builder) {
-            return builder
-                    .setParameters(HOST, PORT)
-                    .addAccessConstraint(ModClusterExtension.MOD_CLUSTER_PROXIES_DEF)
-                    ;
+            return builder.setParameters(HOST, PORT).addAccessConstraint(ModClusterExtension.MOD_CLUSTER_PROXIES_DEF);
         }
 
         @Override
-        public ModelNode execute(ProxyOperationContext context) throws OperationFailedException {
-            context.getModClusterService().addProxy(context.getProxyHost(), context.getProxyPort());
+        public ModelNode execute(ExpressionResolver expressionResolver, ModelNode operation, ModClusterServiceMBean service) throws OperationFailedException {
+            String host = HOST.resolveModelAttribute(expressionResolver, operation).asString();
+            int port = PORT.resolveModelAttribute(expressionResolver, operation).asInt();
+
+            service.addProxy(host, port);
             return null;
         }
     },
     REMOVE_PROXY("remove-proxy") {
         @Override
         public SimpleOperationDefinitionBuilder apply(SimpleOperationDefinitionBuilder builder) {
-            return builder
-                    .setParameters(HOST, PORT)
-                    .addAccessConstraint(ModClusterExtension.MOD_CLUSTER_PROXIES_DEF)
-                    ;
+            return builder.setParameters(HOST, PORT).addAccessConstraint(ModClusterExtension.MOD_CLUSTER_PROXIES_DEF);
         }
 
         @Override
-        public ModelNode execute(ProxyOperationContext context) throws OperationFailedException {
-            String host = context.getProxyHost();
-            context.getModClusterService().removeProxy(host, context.getProxyPort());
+        public ModelNode execute(ExpressionResolver expressionResolver, ModelNode operation, ModClusterServiceMBean service) throws OperationFailedException {
+            String host = HOST.resolveModelAttribute(expressionResolver, operation).asString();
+            int port = PORT.resolveModelAttribute(expressionResolver, operation).asInt();
+
+            service.removeProxy(host, port);
             return null;
         }
     },
     READ_PROXIES_INFO("read-proxies-info") {
         @Override
         public SimpleOperationDefinitionBuilder apply(SimpleOperationDefinitionBuilder builder) {
-            return builder
-                    .setReadOnly()
-                    .setReplyType(ModelType.LIST)
-                    .setReplyValueType(ModelType.STRING)
-                    .addAccessConstraint(ModClusterExtension.MOD_CLUSTER_PROXIES_DEF)
-                    ;
+            return builder.setReadOnly().setReplyType(ModelType.LIST).setReplyValueType(ModelType.STRING).addAccessConstraint(ModClusterExtension.MOD_CLUSTER_PROXIES_DEF);
         }
 
         @Override
-        public ModelNode execute(ProxyOperationContext context) {
-            Map<InetSocketAddress, String> map = context.getModClusterService().getProxyInfo();
+        public ModelNode execute(ExpressionResolver expressionResolver, ModelNode operation, ModClusterServiceMBean service) {
+            Map<InetSocketAddress, String> map = service.getProxyInfo();
 
             if (!map.isEmpty()) {
                 final ModelNode result = new ModelNode();
@@ -112,17 +108,12 @@ enum ProxyOperation implements Operation<ProxyOperationContext>, UnaryOperator<S
     LIST_PROXIES("list-proxies") {
         @Override
         public SimpleOperationDefinitionBuilder apply(SimpleOperationDefinitionBuilder builder) {
-            return builder
-                    .setReadOnly()
-                    .setReplyType(ModelType.LIST)
-                    .setReplyValueType(ModelType.STRING)
-                    .addAccessConstraint(ModClusterExtension.MOD_CLUSTER_PROXIES_DEF)
-                    ;
+            return builder.setReadOnly().setReplyType(ModelType.LIST).setReplyValueType(ModelType.STRING).addAccessConstraint(ModClusterExtension.MOD_CLUSTER_PROXIES_DEF);
         }
 
         @Override
-        public ModelNode execute(ProxyOperationContext context) {
-            Map<InetSocketAddress, String> map = context.getModClusterService().getProxyInfo();
+        public ModelNode execute(ExpressionResolver expressionResolver, ModelNode operation, ModClusterServiceMBean service) {
+            Map<InetSocketAddress, String> map = service.getProxyInfo();
 
             if (!map.isEmpty()) {
                 final ModelNode result = new ModelNode();
@@ -139,17 +130,12 @@ enum ProxyOperation implements Operation<ProxyOperationContext>, UnaryOperator<S
     READ_PROXIES_CONFIGURATION("read-proxies-configuration") {
         @Override
         public SimpleOperationDefinitionBuilder apply(SimpleOperationDefinitionBuilder builder) {
-            return builder
-                    .setReadOnly()
-                    .setReplyType(ModelType.LIST)
-                    .setReplyValueType(ModelType.STRING)
-                    .addAccessConstraint(ModClusterExtension.MOD_CLUSTER_PROXIES_DEF)
-                    ;
+            return builder.setReadOnly().setReplyType(ModelType.LIST).setReplyValueType(ModelType.STRING).addAccessConstraint(ModClusterExtension.MOD_CLUSTER_PROXIES_DEF);
         }
 
         @Override
-        public ModelNode execute(ProxyOperationContext context) {
-            Map<InetSocketAddress, String> map = context.getModClusterService().getProxyConfiguration();
+        public ModelNode execute(ExpressionResolver expressionResolver, ModelNode operation, ModClusterServiceMBean service) {
+            Map<InetSocketAddress, String> map = service.getProxyConfiguration();
 
             if (!map.isEmpty()) {
                 final ModelNode result = new ModelNode();
@@ -169,30 +155,30 @@ enum ProxyOperation implements Operation<ProxyOperationContext>, UnaryOperator<S
     },
     REFRESH("refresh") {
         @Override
-        public ModelNode execute(ProxyOperationContext context) {
-            context.getModClusterService().refresh();
+        public ModelNode execute(ExpressionResolver expressionResolver, ModelNode operation, ModClusterServiceMBean service) {
+            service.refresh();
             return null;
         }
     },
     RESET("reset") {
         @Override
-        public ModelNode execute(ProxyOperationContext context) {
-            context.getModClusterService().reset();
+        public ModelNode execute(ExpressionResolver expressionResolver, ModelNode operation, ModClusterServiceMBean service) {
+            service.reset();
             return null;
         }
     },
     ENABLE("enable") {
         @Override
-        public ModelNode execute(ProxyOperationContext context) {
-            boolean enabled = context.getModClusterService().enable();
+        public ModelNode execute(ExpressionResolver expressionResolver, ModelNode operation, ModClusterServiceMBean service) {
+            boolean enabled = service.enable();
 
             return new ModelNode().get(ModelDescriptionConstants.RESULT).set(enabled);
         }
     },
     DISABLE("disable") {
         @Override
-        public ModelNode execute(ProxyOperationContext context) {
-            boolean disabled = context.getModClusterService().disable();
+        public ModelNode execute(ExpressionResolver expressionResolver, ModelNode operation, ModClusterServiceMBean service) {
+            boolean disabled = service.disable();
 
             return new ModelNode().get(ModelDescriptionConstants.RESULT).set(disabled);
         }
@@ -204,8 +190,10 @@ enum ProxyOperation implements Operation<ProxyOperationContext>, UnaryOperator<S
         }
 
         @Override
-        public ModelNode execute(ProxyOperationContext context) throws OperationFailedException {
-            boolean success = context.getModClusterService().stop(context.getWaitTime(), TimeUnit.SECONDS);
+        public ModelNode execute(ExpressionResolver expressionResolver, ModelNode operation, ModClusterServiceMBean service) throws OperationFailedException {
+            int waitTime = WAIT_TIME.resolveModelAttribute(expressionResolver, operation).asInt();
+
+            boolean success = service.stop(waitTime, TimeUnit.SECONDS);
             return new ModelNode().get(ProxyOperationExecutor.SESSION_DRAINING_COMPLETE).set(success);
         }
     },
@@ -218,12 +206,12 @@ enum ProxyOperation implements Operation<ProxyOperationContext>, UnaryOperator<S
         }
 
         @Override
-        public ModelNode execute(ProxyOperationContext context) throws OperationFailedException {
-            String virtualHost = context.getVirtualHost();
-            String webContext = context.getContext();
+        public ModelNode execute(ExpressionResolver expressionResolver, ModelNode operation, ModClusterServiceMBean service) throws OperationFailedException {
+            String virtualHost = VIRTUAL_HOST.resolveModelAttribute(expressionResolver, operation).asString();
+            String webContext = CONTEXT.resolveModelAttribute(expressionResolver, operation).asString();
 
             try {
-                context.getModClusterService().enableContext(virtualHost, webContext);
+                service.enableContext(virtualHost, webContext);
             } catch (IllegalArgumentException e) {
                 throw new OperationFailedException(ModClusterLogger.ROOT_LOGGER.contextOrHostNotFound(virtualHost, webContext));
             }
@@ -238,12 +226,12 @@ enum ProxyOperation implements Operation<ProxyOperationContext>, UnaryOperator<S
         }
 
         @Override
-        public ModelNode execute(ProxyOperationContext context) throws OperationFailedException {
-            String virtualHost = context.getVirtualHost();
-            String webContext = context.getContext();
+        public ModelNode execute(ExpressionResolver expressionResolver, ModelNode operation, ModClusterServiceMBean service) throws OperationFailedException {
+            String virtualHost = VIRTUAL_HOST.resolveModelAttribute(expressionResolver, operation).asString();
+            String webContext = CONTEXT.resolveModelAttribute(expressionResolver, operation).asString();
 
             try {
-                boolean disabled = context.getModClusterService().disableContext(virtualHost, webContext);
+                boolean disabled = service.disableContext(virtualHost, webContext);
                 return new ModelNode().get(ModelDescriptionConstants.RESULT).set(disabled);
             } catch (IllegalArgumentException e) {
                 throw new OperationFailedException(ModClusterLogger.ROOT_LOGGER.contextOrHostNotFound(virtualHost, webContext));
@@ -257,13 +245,13 @@ enum ProxyOperation implements Operation<ProxyOperationContext>, UnaryOperator<S
         }
 
         @Override
-        public ModelNode execute(ProxyOperationContext context) throws OperationFailedException {
-            String virtualHost = context.getVirtualHost();
-            String webContext = context.getContext();
-            int waitTime = context.getWaitTime();
+        public ModelNode execute(ExpressionResolver expressionResolver, ModelNode operation, ModClusterServiceMBean service) throws OperationFailedException {
+            String virtualHost = VIRTUAL_HOST.resolveModelAttribute(expressionResolver, operation).asString();
+            String webContext = CONTEXT.resolveModelAttribute(expressionResolver, operation).asString();
+            int waitTime = WAIT_TIME.resolveModelAttribute(expressionResolver, operation).asInt();
 
             try {
-                boolean success = context.getModClusterService().stopContext(virtualHost, webContext, waitTime, TimeUnit.SECONDS);
+                boolean success = service.stopContext(virtualHost, webContext, waitTime, TimeUnit.SECONDS);
                 return new ModelNode().get(ProxyOperationExecutor.SESSION_DRAINING_COMPLETE).set(success);
             } catch (IllegalArgumentException e) {
                 throw new OperationFailedException(ModClusterLogger.ROOT_LOGGER.contextOrHostNotFound(virtualHost, webContext));

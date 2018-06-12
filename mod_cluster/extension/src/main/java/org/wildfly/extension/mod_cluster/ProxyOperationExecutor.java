@@ -39,7 +39,7 @@ import org.wildfly.clustering.service.ActiveServiceSupplier;
 /**
  * @author Radoslav Husar
  */
-public class ProxyOperationExecutor implements OperationExecutor<ProxyOperationContext> {
+public class ProxyOperationExecutor implements OperationExecutor<ModClusterServiceMBean> {
 
     public static final SimpleAttributeDefinition HOST = SimpleAttributeDefinitionBuilder.create("host", ModelType.STRING, false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
@@ -71,48 +71,12 @@ public class ProxyOperationExecutor implements OperationExecutor<ProxyOperationC
 
     static final String SESSION_DRAINING_COMPLETE = "session-draining-complete";
 
-    @Override
-    @Deprecated
-    public ModelNode execute(OperationContext context, Operation<ProxyOperationContext> executable) {
-        throw new UnsupportedOperationException();
-    }
 
     @Override
-    public ModelNode execute(OperationContext context, ModelNode operation, Operation<ProxyOperationContext> executable) throws OperationFailedException {
+    public ModelNode execute(OperationContext context, ModelNode operation, Operation<ModClusterServiceMBean> executable) throws OperationFailedException {
         ServiceName serviceName = ProxyConfigurationResourceDefinition.Capability.SERVICE.getDefinition().getCapabilityServiceName(context.getCurrentAddress());
         ModClusterServiceMBean service = new ActiveServiceSupplier<ModClusterServiceMBean>(context.getServiceRegistry(true), serviceName).get();
 
-        ProxyOperationContext operationContext = new ProxyOperationContext() {
-            @Override
-            public ModClusterServiceMBean getModClusterService() {
-                return service;
-            }
-
-            @Override
-            public String getVirtualHost() throws OperationFailedException {
-                return VIRTUAL_HOST.resolveModelAttribute(context, operation).asString();
-            }
-
-            @Override
-            public String getContext() throws OperationFailedException {
-                return CONTEXT.resolveModelAttribute(context, operation).asString();
-            }
-
-            @Override
-            public int getWaitTime() throws OperationFailedException {
-                return WAIT_TIME.resolveModelAttribute(context, operation).asInt();
-            }
-
-            @Override
-            public String getProxyHost() throws OperationFailedException {
-                return HOST.resolveModelAttribute(context, operation).asString();
-            }
-
-            @Override
-            public int getProxyPort() throws OperationFailedException {
-                return PORT.resolveModelAttribute(context, operation).asInt();
-            }
-        };
-        return (service != null) ? executable.execute(operationContext) : null;
+        return (service != null) ? executable.execute(context, operation, service) : null;
     }
 }
