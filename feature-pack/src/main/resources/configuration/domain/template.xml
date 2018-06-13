@@ -87,6 +87,7 @@
                 <extension module="org.wildfly.extension.discovery"/>
                 <extension module="org.wildfly.extension.ee-security"/>
                 <extension module="org.wildfly.extension.elytron"/>
+                <extension module="org.wildfly.extension.microprofile.config-smallrye" />
             </excluded-extensions>
         </host-exclude>
         <host-exclude name="WildFly10.1">
@@ -96,20 +97,31 @@
                 <extension module="org.wildfly.extension.discovery"/>
                 <extension module="org.wildfly.extension.ee-security"/>
                 <extension module="org.wildfly.extension.elytron"/>
+                <extension module="org.wildfly.extension.microprofile.config-smallrye" />
             </excluded-extensions>
         </host-exclude>
         <host-exclude name="WildFly11.0">
             <host-release id="WildFly11.0"/>
             <excluded-extensions>
                 <extension module="org.wildfly.extension.ee-security"/>
+                <extension module="org.wildfly.extension.microprofile.config-smallrye" />
             </excluded-extensions>
         </host-exclude>
         <host-exclude name="WildFly12.0">
             <host-release id="WildFly12.0"/>
             <excluded-extensions>
                 <extension module="org.wildfly.extension.ee-security"/>
+                <extension module="org.wildfly.extension.microprofile.config-smallrye" />
             </excluded-extensions>
         </host-exclude>
+        <!--
+        <host-exclude name="WildFly13.0">
+            <host-release id="WildFly13.0"/>
+            <excluded-extensions>
+                <extension module="org.wildfly.extension.microprofile.config-smallrye" />
+            </excluded-extensions>
+        </host-exclude>
+        -->
     </host-excludes>
 
 </domain>
