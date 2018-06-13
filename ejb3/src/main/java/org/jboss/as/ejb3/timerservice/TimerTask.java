@@ -122,6 +122,28 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
                     // execution until it is complete. See JIRA AS7-3119
                     if (timer.getState() == TimerState.IN_TIMEOUT || timer.getState() == TimerState.RETRY_TIMEOUT) {
                         EJB3_TIMER_LOGGER.skipOverlappingInvokeTimeout(timer, now);
+
+                        if (EJB3_TIMER_LOGGER.isDebugEnabled()) {
+                            // WFLY-10542 log thread stack trace which is processing timer task in debug level to diagnose timer overlap
+                            Thread otherThread = timer.getExecutingThread();
+                            // can be null for clustered timers if the timer is executing on another node.
+                            if (otherThread != null) {
+                                final StringBuilder debugMsg = new StringBuilder()
+                                        .append("Thread: ")
+                                        .append(otherThread.getName())
+                                        .append(" Id: ")
+                                        .append(otherThread.getId())
+                                        .append(" of group ")
+                                        .append(otherThread.getThreadGroup())
+                                        .append(" is in state: ")
+                                        .append(otherThread.getState());
+                                for (StackTraceElement ste : otherThread.getStackTrace()) {
+                                    debugMsg.append(System.lineSeparator()).append(ste.toString());
+                                }
+                                EJB3_TIMER_LOGGER.debugf(debugMsg.toString());
+                            }
+                        }
+
                         Date newD = this.calculateNextTimeout(timer);
                         timer.setNextTimeout(newD);
                         timerService.persistTimer(timer, false);
@@ -146,7 +168,7 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
                     Date nextTimeout = this.calculateNextTimeout(timer);
                     timer.setNextTimeout(nextTimeout);
                     // change the state to mark it as in timeout method
-                    timer.setTimerState(TimerState.IN_TIMEOUT);
+                    timer.setTimerState(TimerState.IN_TIMEOUT, Thread.currentThread());
 
                     // persist changes
                     timerService.persistTimer(timer, false);
@@ -217,7 +239,7 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
         try {
             if (timer.isActive()) {
                 EJB3_TIMER_LOGGER.retryingTimeout(timer);
-                timer.setTimerState(TimerState.RETRY_TIMEOUT);
+                timer.setTimerState(TimerState.RETRY_TIMEOUT, Thread.currentThread());
                 timerService.persistTimer(timer, false);
                 callTimeout = true;
             } else {
@@ -246,7 +268,7 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
                 if (timer.getInterval() == 0) {
                     timerService.expireTimer(timer);
                 } else {
-                    timer.setTimerState(TimerState.ACTIVE);
+                    timer.setTimerState(TimerState.ACTIVE, null);
                 }
                 timerService.persistTimer(timer, false);
             }

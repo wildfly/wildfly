@@ -531,7 +531,6 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                 .setNewTimer(true)
                 .build(this);
 
-
         this.persistTimer(timer, true);
         // now "start" the timer. This involves, moving the timer to an ACTIVE state
         // and scheduling the timer task
@@ -634,7 +633,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             timer.assertTimerState();
             boolean startedInTx = getWaitingOnTxCompletionTimers().containsKey(timer.getId());
             if (timer.getState() != TimerState.EXPIRED) {
-                timer.setTimerState(TimerState.CANCELED);
+                timer.setTimerState(TimerState.CANCELED, null);
             }
             if (transactionActive() && !startedInTx) {
                 registerSynchronization(new TimerRemoveSynchronization(timer));
@@ -656,7 +655,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
 
     public void expireTimer(final TimerImpl timer) {
         this.cancelTimeout(timer);
-        timer.setTimerState(TimerState.EXPIRED);
+        timer.setTimerState(TimerState.EXPIRED, null);
         this.unregisterTimerResource(timer.getId());
         this.timers.remove(timer.getId());
     }
@@ -737,14 +736,13 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                     }
                 }
                 if (!found) {
-                    activeTimer.setTimerState(TimerState.CANCELED);
+                    activeTimer.setTimerState(TimerState.CANCELED, null);
                 } else {
                     // ensure state switch to active if was TIMEOUT in the DB
                     // if the persistence is shared it must be ensured to not update
                     // timers of other nodes in the cluster
-                    activeTimer.setTimerState(TimerState.ACTIVE);
+                    activeTimer.setTimerState(TimerState.ACTIVE, null);
                     calendarTimer.handleRestorationCalculation();
-
                 }
                 try {
                     this.persistTimer(activeTimer, false);
@@ -778,7 +776,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             this.timers.put(timer.getId(), timer);
             // set active if the timer is started if it was read
             // from persistence as current running to ensure correct schedule here
-            timer.setTimerState(TimerState.ACTIVE);
+            timer.setTimerState(TimerState.ACTIVE, null);
             // create and schedule a timer task
             this.registerTimerResource(timer.getId());
             timer.scheduleTimeout(true);
@@ -1170,7 +1168,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                 TimerState timerState = this.timer.getState();
                 switch (timerState) {
                     case CREATED:
-                        this.timer.setTimerState(TimerState.ACTIVE);
+                        this.timer.setTimerState(TimerState.ACTIVE, null);
                         this.timer.scheduleTimeout(true);
                         break;
                     case ACTIVE:
@@ -1179,7 +1177,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                 }
             } else if (status == Status.STATUS_ROLLEDBACK) {
                 EJB3_TIMER_LOGGER.debugv("Rolling back timer creation: {0}", this.timer);
-                this.timer.setTimerState(TimerState.CANCELED);
+                this.timer.setTimerState(TimerState.CANCELED, null);
             }
         }
     }
@@ -1206,7 +1204,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                     unregisterTimerResource(timer.getId());
                     timers.remove(timer.getId());
                 } else {
-                    timer.setTimerState(TimerState.ACTIVE);
+                    timer.setTimerState(TimerState.ACTIVE, null);
                 }
             } finally {
                 timer.unlock();
