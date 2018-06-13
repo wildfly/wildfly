@@ -58,7 +58,7 @@ following example for configuration in the domain mode:
     "result" => undefined,
     "server-groups" => undefined
 }
-[domain@localhost:9990 /] /profile=ha/subsystem=modcluster/mod-cluster-config=configuration/:write-attribute(name=proxies, value=[proxy1, proxy2])
+[domain@localhost:9990 /] /profile=ha/subsystem=modcluster/proxy=default:write-attribute(name=proxies, value=[proxy1, proxy2])
 {
     "outcome" => "success",
     "result" => undefined,
@@ -72,6 +72,30 @@ following example for configuration in the domain mode:
 }
 ----
 
+=== Multiple mod_cluster Configurations
+
+Since WildFly 14 mod_cluster subsystem supports multiple named proxy configurations also allowing for registering
+non-default Undertow servers with the reverse proxies. Moreover, this allows single application server node to register with
+different groups of proxy servers.
+
+See the following example which adds another Undertow AJP listener, server and a host and adds a new mod_cluster configuration
+which registers this host using advertise mechanism.
+
+[source]
+----
+/socket-binding-group=standard-sockets/socket-binding=ajp-other:add(port=8010)
+/subsystem=undertow/server=other-server:add
+/subsystem=undertow/server=other-server/ajp-listener=ajp-other:add(socket-binding=ajp-other)
+/subsystem=undertow/server=other-server/host=other-host:add(default-web-module=root-other.war)
+/subsystem=undertow/server=other-server/host=other-host/location=other:add(handler=welcome-content)
+/subsystem=undertow/server=other-server/host=other-host:write-attribute(name=alias,value=[localhost]))
+
+/socket-binding-group=standard-sockets/socket-binding=modcluster-other:add(multicast-address=224.0.1.106,multicast-port=23364)
+/subsystem=modcluster/proxy=other:add(advertise-socket=modcluster-other,balancer=other-balancer,connector=ajp-other)
+
+reload
+----
+
 [[runtime-operations]]
 == Runtime Operations
 
@@ -79,7 +103,7 @@ The modcluster subsystem supports several operations:
 
 [source]
 ----
-[standalone@localhost:9999 subsystem=modcluster] :read-operation-names
+[standalone@localhost:9990 /] /subsystem=modcluster/proxy=default:read-operation-names
 {
     "outcome" => "success",
     "result" => [
@@ -133,7 +157,7 @@ display the message received from Apache httpd.
 
 [source]
 ----
-[standalone@localhost:9999 subsystem=modcluster] :read-proxies-configuration
+[standalone@localhost:9990 /] /subsystem=modcluster/proxy=default:read-proxies-configuration
 {
     "outcome" => "success",
     "result" => [
@@ -167,7 +191,7 @@ display the message received from Apache httpd.
 
 [source]
 ----
-[standalone@localhost:9999 subsystem=modcluster] :read-proxies-info
+[standalone@localhost:9990 /] /subsystem=modcluster/proxy=default:read-proxies-info
 {
     "outcome" => "success",
     "result" => [
@@ -205,7 +229,7 @@ discovered via the Advertise protocol or via the proxy-list attribute.
 
 [source]
 ----
-[standalone@localhost:9999 subsystem=modcluster] :list-proxies
+[standalone@localhost:9990 subsystem=modcluster] :list-proxies
 {
     "outcome" => "success",
     "result" => [
@@ -223,7 +247,7 @@ proxy-list attribute.
 
 [source]
 ----
-[standalone@localhost:9999 subsystem=modcluster] :remove-proxy(host=jfcpc, port=6666)
+[standalone@localhost:9990 subsystem=modcluster] :remove-proxy(host=jfcpc, port=6666)
 {"outcome" => "success"}
 ----
 
@@ -235,7 +259,7 @@ attribute.
 
 [source]
 ----
-[standalone@localhost:9999 subsystem=modcluster] :add-proxy(host=jfcpc, port=6666)
+[standalone@localhost:9990 subsystem=modcluster] :add-proxy(host=jfcpc, port=6666)
 {"outcome" => "success"}
 ----
 
@@ -252,7 +276,7 @@ Tell Apache httpd that the context is ready receive requests.
 
 [source]
 ----
-[standalone@localhost:9999 subsystem=modcluster] :enable-context(context=/myapp, virtualhost=default-host)
+[standalone@localhost:9990 /] /subsystem=modcluster/proxy=default:enable-context(context=/myapp, virtualhost=default-host)
 {"outcome" => "success"}
 ----
 
@@ -264,7 +288,7 @@ context of the virtualhost.
 
 [source]
 ----
-[standalone@localhost:9999 subsystem=modcluster] :disable-context(context=/myapp, virtualhost=default-host)
+[standalone@localhost:9990 /] /subsystem=modcluster/proxy=default:disable-context(context=/myapp, virtualhost=default-host)
 {"outcome" => "success"}
 ----
 
@@ -276,7 +300,7 @@ virtualhost.
 
 [source]
 ----
-[standalone@localhost:9999 subsystem=modcluster] :stop-context(context=/myapp, virtualhost=default-host, waittime=50)
+[standalone@localhost:9990 /] /subsystem=modcluster/proxy=default:stop-context(context=/myapp, virtualhost=default-host, waittime=50)
 {"outcome" => "success"}
 ----
 
@@ -308,7 +332,7 @@ a simple-load-provider is use with a fixed load factor of one.
 
 [source]
 ----
-[standalone@localhost:9999 subsystem=modcluster] :read-resource(name=mod-cluster-config)
+[standalone@localhost:9990 /] /subsystem=modcluster/proxy=default:read-resource(name=mod-cluster-config)
 {
     "outcome" => "success",
     "result" => {"simple-load-provider" => {"factor" => "1"}}
@@ -334,9 +358,9 @@ configuration is created if needed.
 
 [source, ruby]
 ----
-[standalone@localhost:9999 subsystem=modcluster] :add-metric(type=cpu)
+[standalone@localhost:9990 /] /subsystem=modcluster/proxy=default:add-metric(type=cpu)
 {"outcome" => "success"}
-[standalone@localhost:9999 subsystem=modcluster] :read-resource(name=mod-cluster-config)
+[standalone@localhost:9990 /] /subsystem=modcluster/proxy=default:read-resource(name=mod-cluster-config)
 {
     "outcome" => "success",
     "result" => {
@@ -358,7 +382,7 @@ Remove a metric from the dynamic-load-provider.
 
 [source]
 ----
-[standalone@localhost:9999 subsystem=modcluster] :remove-metric(type=cpu)
+[standalone@localhost:9990 /] /subsystem=modcluster/proxy=default:remove-metric(type=cpu)
 {"outcome" => "success"}
 ----
 
@@ -371,7 +395,7 @@ which can be specified
 
 [source]
 ----
-[standalone@localhost:9999 subsystem=modcluster] :add-custom-metric(class=myclass, property=[("pro1" => "value1"), ("pro2" => "value2")]
+[standalone@localhost:9990 /] /subsystem=modcluster/proxy=default:add-custom-metric(class=myclass, property=[("pro1" => "value1"), ("pro2" => "value2")]
 {"outcome" => "success"}
 ----
 
@@ -380,14 +404,14 @@ which corresponds the following in the xml configuration file:
 [source, xml]
 ----
 <subsystem xmlns="urn:jboss:domain:modcluster:1.0">
-            <mod-cluster-config>
-                <dynamic-load-provider history="9" decay="2">
-                    <custom-load-metric class="myclass">
-                        <property name="pro1" value="value1"/>
-                        <property name="pro2" value="value2"/>
-                    </custom-load-metric>
-                </dynamic-load-provider>
-            </mod-cluster-config>
+    <mod-cluster-config>
+        <dynamic-load-provider history="9" decay="2">
+            <custom-load-metric class="myclass">
+                <property name="pro1" value="value1"/>
+                <property name="pro2" value="value2"/>
+            </custom-load-metric>
+        </dynamic-load-provider>
+    </mod-cluster-config>
 </subsystem>
 ----
 
