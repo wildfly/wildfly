@@ -60,6 +60,10 @@ public class TestXAResource implements XAResource {
         this.testAction = testAction;
     }
 
+    public TestXAResource() {
+        this(TestAction.NONE);
+    }
+
 
     @Override
     public int prepare(Xid xid) throws XAException {
