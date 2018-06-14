@@ -49,6 +49,7 @@ import org.jboss.msc.value.InjectedValue;
  * A description of a generic Java EE component.  The description is pre-classloading so it references everything by name.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class ComponentDescription implements ResourceInjectionTarget {
 
@@ -428,22 +429,13 @@ public class ComponentDescription implements ResourceInjectionTarget {
      * take effect.
      *
      * @param serviceName the service name of the dependency
-     * @param type        the type of the dependency (required or optional)
      */
-    public void addDependency(ServiceName serviceName, ServiceBuilder.DependencyType type) {
+    public void addDependency(ServiceName serviceName) {
         if (serviceName == null) {
             throw EeLogger.ROOT_LOGGER.nullVar("serviceName", "component", componentName);
         }
-        if (type == null) {
-            throw EeLogger.ROOT_LOGGER.nullVar("type", "component", componentName);
-        }
         final Map<ServiceName, ServiceBuilder.DependencyType> dependencies = this.dependencies;
-        final ServiceBuilder.DependencyType dependencyType = dependencies.get(serviceName);
-        if (dependencyType == ServiceBuilder.DependencyType.REQUIRED) {
-            dependencies.put(serviceName, ServiceBuilder.DependencyType.REQUIRED);
-        } else {
-            dependencies.put(serviceName, type);
-        }
+        dependencies.put(serviceName, ServiceBuilder.DependencyType.REQUIRED);
     }
 
     /**

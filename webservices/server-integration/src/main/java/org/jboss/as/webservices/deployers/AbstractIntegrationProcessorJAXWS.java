@@ -46,7 +46,6 @@ import org.jboss.as.webservices.injection.WSComponentDescription;
 import org.jboss.as.webservices.service.EndpointService;
 import org.jboss.invocation.AccessCheckingInterceptor;
 import org.jboss.jandex.ClassInfo;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -89,7 +88,7 @@ public abstract class AbstractIntegrationProcessorJAXWS implements DeploymentUni
         moduleDescription.addComponent(componentDescription);
         // register WS dependency
         final ServiceName endpointServiceName = EndpointService.getServiceName(unit, dependsOnEndpointClassName);
-        componentDescription.addDependency(endpointServiceName, ServiceBuilder.DependencyType.REQUIRED);
+        componentDescription.addDependency(endpointServiceName);
 
         return componentDescription;
     }

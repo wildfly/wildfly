@@ -99,7 +99,7 @@ public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
         }
         //we need to make sure all our components have a dependency on the EJB client context registration, which in turn implies a dependency on the context
         for(final ComponentDescription component : moduleDescription.getComponentDescriptions()) {
-            component.addDependency(registrationServiceName, ServiceBuilder.DependencyType.REQUIRED);
+            component.addDependency(registrationServiceName);
         }
     }
 

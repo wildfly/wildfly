@@ -107,7 +107,7 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
         this.messageListenerInterfaceName = messageListenerInterfaceName;
 
         // setup a dependency on the EJBUtilities service
-        this.addDependency(EJBUtilities.SERVICE_NAME, ServiceBuilder.DependencyType.REQUIRED);
+        this.addDependency(EJBUtilities.SERVICE_NAME);
 
         registerView(getEJBClassName(), MethodIntf.MESSAGE_ENDPOINT);
         // add the interceptor which will invoke the setMessageDrivenContext() method on a MDB which implements
