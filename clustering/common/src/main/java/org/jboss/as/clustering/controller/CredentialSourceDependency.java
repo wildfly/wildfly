@@ -22,7 +22,6 @@
 
 package org.jboss.as.clustering.controller;
 
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -32,12 +31,10 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.DelegatingServiceBuilder;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.service.Dependency;
-import org.wildfly.clustering.service.InjectorDependency;
 import org.wildfly.clustering.service.ServiceDependency;
 import org.wildfly.clustering.service.SupplierDependency;
 import org.wildfly.common.function.ExceptionSupplier;
@@ -45,6 +42,7 @@ import org.wildfly.security.credential.source.CredentialSource;
 
 /**
  * @author Paul Ferraro
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class CredentialSourceDependency implements SupplierDependency<CredentialSource> {
 
@@ -83,7 +81,7 @@ public class CredentialSourceDependency implements SupplierDependency<Credential
 
         @Override
         protected ServiceBuilder<Object> getDelegate() {
-            throw new IllegalStateException();
+            throw new UnsupportedOperationException();
         }
 
         @Override
@@ -93,80 +91,9 @@ public class CredentialSourceDependency implements SupplierDependency<Credential
 
         @Deprecated
         @Override
-        public ServiceBuilder<Object> addDependencies(ServiceName... serviceNames) {
-            this.addDependencies(Arrays.asList(serviceNames));
-            return this;
-        }
-
-        @Deprecated
-        @Override
-        public ServiceBuilder<Object> addDependencies(ServiceBuilder.DependencyType dependencyType, ServiceName... serviceNames) {
-            if (dependencyType != ServiceBuilder.DependencyType.REQUIRED) {
-                throw new UnsupportedOperationException();
-            }
-            return this.addDependencies(serviceNames);
-        }
-
-        @Deprecated
-        @Override
-        public ServiceBuilder<Object> addDependencies(Iterable<ServiceName> serviceNames) {
-            for (ServiceName serviceName : serviceNames) {
-                this.dependencies.add(new ServiceDependency(serviceName));
-            }
-            return this;
-        }
-
-        @Deprecated
-        @Override
-        public ServiceBuilder<Object> addDependencies(ServiceBuilder.DependencyType dependencyType, Iterable<ServiceName> serviceNames) {
-            if (dependencyType != ServiceBuilder.DependencyType.REQUIRED) {
-                throw new UnsupportedOperationException();
-            }
-            return this.addDependencies(serviceNames);
-        }
-
-        @Deprecated
-        @Override
         public ServiceBuilder<Object> addDependency(ServiceName serviceName) {
             this.dependencies.add(new ServiceDependency(serviceName));
             return this;
-        }
-
-        @Deprecated
-        @Override
-        public ServiceBuilder<Object> addDependency(ServiceBuilder.DependencyType dependencyType, ServiceName serviceName) {
-            if (dependencyType != ServiceBuilder.DependencyType.REQUIRED) {
-                throw new UnsupportedOperationException();
-            }
-            return this.addDependency(serviceName);
-        }
-
-        @Deprecated
-        @Override
-        public ServiceBuilder<Object> addDependency(ServiceName serviceName, Injector<Object> target) {
-            return this.addDependency(serviceName, Object.class, target);
-        }
-
-        @Deprecated
-        @Override
-        public ServiceBuilder<Object> addDependency(ServiceBuilder.DependencyType dependencyType, ServiceName serviceName, Injector<Object> target) {
-            return this.addDependency(dependencyType, serviceName, Object.class, target);
-        }
-
-        @Deprecated
-        @Override
-        public <I> ServiceBuilder<Object> addDependency(ServiceName serviceName, Class<I> type, Injector<I> target) {
-            this.dependencies.add(new InjectorDependency<>(serviceName, type, target));
-            return this;
-        }
-
-        @Deprecated
-        @Override
-        public <I> ServiceBuilder<Object> addDependency(ServiceBuilder.DependencyType dependencyType, ServiceName serviceName, Class<I> type, Injector<I> target) {
-            if (dependencyType != ServiceBuilder.DependencyType.REQUIRED) {
-                throw new UnsupportedOperationException();
-            }
-            return this.addDependency(serviceName, type, target);
         }
     }
 }
