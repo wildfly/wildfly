@@ -145,7 +145,6 @@ import org.jboss.dmr.Property;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -296,7 +295,7 @@ class ServerAdd extends AbstractAddStepHandler {
                 } else {
                     // Add legacy security
                     String domain = SECURITY_DOMAIN.resolveModelAttribute(context, model).asString();
-                    serviceBuilder.addDependency(DependencyType.REQUIRED,
+                    serviceBuilder.addDependency(
                             SecurityDomainService.SERVICE_NAME.append(domain),
                             SecurityDomainContext.class,
                             serverService.getSecurityDomainContextInjector())
