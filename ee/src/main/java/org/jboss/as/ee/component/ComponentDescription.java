@@ -78,7 +78,7 @@ public class ComponentDescription implements ResourceInjectionTarget {
     private boolean excludeDefaultInterceptors = false;
     private boolean ignoreLifecycleInterceptors = false;
 
-    private final Map<ServiceName, ServiceBuilder.DependencyType> dependencies = new HashMap<ServiceName, ServiceBuilder.DependencyType>();
+    private final Set<ServiceName> dependencies = new HashSet<ServiceName>();
 
     private ComponentNamingMode namingMode = ComponentNamingMode.USE_MODULE;
 
@@ -434,16 +434,15 @@ public class ComponentDescription implements ResourceInjectionTarget {
         if (serviceName == null) {
             throw EeLogger.ROOT_LOGGER.nullVar("serviceName", "component", componentName);
         }
-        final Map<ServiceName, ServiceBuilder.DependencyType> dependencies = this.dependencies;
-        dependencies.put(serviceName, ServiceBuilder.DependencyType.REQUIRED);
+        dependencies.add(serviceName);
     }
 
     /**
-     * Get the dependency map.
+     * Get the dependency set.
      *
-     * @return the dependency map
+     * @return the dependency set
      */
-    public Map<ServiceName, ServiceBuilder.DependencyType> getDependencies() {
+    public Set<ServiceName> getDependencies() {
         return dependencies;
     }
 
