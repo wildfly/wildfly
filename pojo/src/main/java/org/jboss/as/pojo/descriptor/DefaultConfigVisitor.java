@@ -35,6 +35,7 @@ import org.jboss.msc.service.ServiceName;
  * Default config visitor.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:ropalka@jboss.org">Richard Opalka</a>
  */
 public class DefaultConfigVisitor extends AbstractConfigVisitor {
     private final ServiceBuilder builder;
@@ -90,18 +91,8 @@ public class DefaultConfigVisitor extends AbstractConfigVisitor {
     }
 
     @Override
-    public void addOptionalDependency(ServiceName dependency) {
-        builder.addDependency(ServiceBuilder.DependencyType.OPTIONAL, dependency);
-    }
-
-    @Override
     public void addDependency(ServiceName name, Injector injector) {
         builder.addDependency(name, injector);
-    }
-
-    @Override
-    public void addOptionalDependency(ServiceName dependency, Injector injector) {
-        builder.addDependency(ServiceBuilder.DependencyType.OPTIONAL, dependency, injector);
     }
 
     @Override
