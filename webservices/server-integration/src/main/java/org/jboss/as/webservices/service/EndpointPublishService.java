@@ -32,7 +32,6 @@ import org.jboss.as.webservices.util.WSServices;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -49,7 +48,7 @@ import org.jboss.wsf.spi.publish.Context;
  * WS endpoint publish service, allows for publishing a WS endpoint on AS 7
  *
  * @author alessio.soldano@jboss.com
- * @since 12-Jul-2011
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public final class EndpointPublishService implements Service<Context> {
 
@@ -118,10 +117,10 @@ public final class EndpointPublishService implements Service<Context> {
         final DeploymentUnit unit = EndpointDeployService.install(serviceTarget, context, loader, hostName, urlPatternToClassName, jbwmd, wsmd, jbwsmd, deploymentAttachments);
         final EndpointPublishService service = new EndpointPublishService(context, unit);
         final ServiceBuilder<Context> builder = serviceTarget.addService(service.getName(), service);
-        builder.addDependency(DependencyType.REQUIRED, WSServices.CONFIG_SERVICE);
+        builder.addDependency(WSServices.CONFIG_SERVICE);
         builder.addDependency(WebHost.SERVICE_NAME.append(hostName), WebHost.class, service.getHostInjector());
         for (ServiceName epServiceName : EndpointService.getServiceNamesFromDeploymentUnit(unit)) {
-            builder.addDependency(DependencyType.REQUIRED, epServiceName);
+            builder.addDependency(epServiceName);
         }
         return builder;
     }
