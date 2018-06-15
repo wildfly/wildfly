@@ -3541,8 +3541,8 @@
       <artifactId>jboss-jaxws-api_2.3_spec</artifactId>
       <licenses>
         <license>
-          <name>Common Development and Distribution License 1.1</name>
-          <url>http://repository.jboss.org/licenses/cddl-v1.1.txt</url>
+          <name>Common Development and Distribution License 1.0</name>
+          <url>http://repository.jboss.org/licenses/cddl.txt</url>
           <distribution>repo</distribution>
         </license>
         <license>
