@@ -11,6 +11,22 @@
             <param name="interface" value="private"/>
             <param name="inet-address" value="${jboss.bind.address.private:127.0.0.1}"/>
         </feature>
+        <feature spec="host.jvm">
+            <param name="jvm" value="default"/>
+            <param name="jvm-options" value="[&quot;-server&quot;,&quot;-XX:MetaspaceSize=96m&quot;,&quot;-XX:MaxMetaspaceSize=256m&quot;,&quot;--add-exports=java.base/sun.nio.ch=ALL-UNNAMED&quot;]"/>
+        </feature>
+        <feature spec="host.server-config">
+            <param name="server-config" value="server-two"/>
+            <feature spec="host.server-config.jvm">
+                <param name="jvm" value="default"/>
+            </feature>
+        </feature>
+        <feature spec="host.server-config">
+            <param name="server-config" value="server-three"/>
+            <feature spec="host.server-config.jvm">
+                <param name="jvm" value="default"/>
+            </feature>
+        </feature>
     </feature>
 
     <feature-group name="host-master"/>

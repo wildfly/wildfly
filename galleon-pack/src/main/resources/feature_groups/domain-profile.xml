@@ -2,9 +2,7 @@
 <feature-group-spec name="domain-profile" xmlns="urn:jboss:galleon:feature-group:1.0">
 
     <origin name="org.wildfly:wildfly-servlet-galleon-pack">
-        <feature-group name="domain-profile">
-            <exclude spec="subsystem.jmx.remoting-connector.jmx"/>
-        </feature-group>
+        <feature-group name="domain-profile" />
     </origin>
 
     <feature-group name="basic-profile"/>
