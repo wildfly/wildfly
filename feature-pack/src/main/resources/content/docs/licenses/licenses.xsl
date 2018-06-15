@@ -76,6 +76,9 @@
             <xsl:when test="$name = 'Creative Commons Zero v1.0 Universal'">
                 <xsl:text>creative commons zero v1.0 universal.html</xsl:text>
             </xsl:when>
+            <xsl:when test="$name = 'FSF All Permissive License'">
+                <xsl:text>fsf all permissive license.html</xsl:text>
+            </xsl:when>
             <xsl:when test="$name = 'GNU Lesser General Public License v3.0 or later'">
                 <xsl:text>gnu lesser general public license v3.0 or later.html</xsl:text>
             </xsl:when>
