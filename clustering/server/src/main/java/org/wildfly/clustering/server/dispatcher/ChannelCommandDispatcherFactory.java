@@ -118,13 +118,13 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
     public void run() {
         this.dispatcher.stop();
         this.dispatcher.getChannel().setUpHandler(null);
+        this.executorService.shutdownNow();
         // Cleanup any stray listeners
         for (ExecutorService executor : this.listeners.values()) {
             PrivilegedAction<List<Runnable>> action = () -> executor.shutdownNow();
             WildFlySecurityManager.doUnchecked(action);
         }
         this.listeners.clear();
-        this.executorService.shutdownNow();
     }
 
     @Override
@@ -139,14 +139,23 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
 
     @Override
     public void handle(Message request, Response response) throws Exception {
-        Callable<Object> task = this.read(request);
-        this.executorService.submit(() -> {
-            try {
-                response.send(task.call(), false);
-            } catch (Exception e) {
-                response.send(e, true);
+        Callable<Object> requestTask = this.read(request);
+        Runnable responseTask = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Object result = requestTask.call();
+                    response.send(result, false);
+                } catch (Exception e) {
+                    response.send(e, true);
+                }
             }
-        });
+        };
+        try {
+            this.executorService.submit(responseTask);
+        } catch (RejectedExecutionException e) {
+            response.send(NoSuchService.INSTANCE, false);
+        }
     }
 
     private Callable<Object> read(Message message) throws Exception {
