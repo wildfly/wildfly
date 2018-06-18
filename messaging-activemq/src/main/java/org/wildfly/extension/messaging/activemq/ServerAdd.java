@@ -177,6 +177,7 @@ class ServerAdd extends AbstractAddStepHandler {
     private static final String ARTEMIS_BROKER_CONFIG_NODEMANAGER_STORE_TABLE_NAME = "brokerconfig.storeConfiguration.nodeManagerStoreTableName";
     private static final String ARTEMIS_BROKER_CONFIG_JBDC_LOCK_RENEW_PERIOD_MILLIS = "brokerconfig.storeConfiguration.jdbcLockRenewPeriodMillis";
     private static final String ARTEMIS_BROKER_CONFIG_JBDC_LOCK_EXPIRATION_MILLIS = "brokerconfig.storeConfiguration.jdbcLockExpirationMillis";
+    private static final String ARTEMIS_BROKER_CONFIG_JDBC_LOCK_ACQUISITION_TIMEOUT_MILLIS = "brokerconfig.storeConfiguration.jdbcLockAcquisitionTimeoutMillis";
 
     public static final ServerAdd INSTANCE = new ServerAdd();
 
@@ -578,6 +579,18 @@ class ServerAdd extends AbstractAddStepHandler {
         System.getProperties().remove(ARTEMIS_BROKER_CONFIG_JBDC_LOCK_RENEW_PERIOD_MILLIS);
         storageConfiguration.setJdbcLockRenewPeriodMillis(lockRenewPeriodInMillis);
 
+        // this property is used for testing only and has no corresponding model attribute.
+        // However the default value in Artemis is not correct (should be -1, not 60s)
+        final long jdbcLockAcquisitionTimeoutMillis;
+        if (System.getProperties().containsKey(ARTEMIS_BROKER_CONFIG_JDBC_LOCK_ACQUISITION_TIMEOUT_MILLIS)) {
+            jdbcLockAcquisitionTimeoutMillis = Long.parseLong(System.getProperties().getProperty(ARTEMIS_BROKER_CONFIG_JDBC_LOCK_ACQUISITION_TIMEOUT_MILLIS));
+        } else {
+            jdbcLockAcquisitionTimeoutMillis = -1;
+        }
+        // the system property is removed, otherwise Artemis will use it to override the value from the configuration
+        System.getProperties().remove(ARTEMIS_BROKER_CONFIG_JDBC_LOCK_ACQUISITION_TIMEOUT_MILLIS);
+        storageConfiguration.setJdbcLockAcquisitionTimeoutMillis(jdbcLockAcquisitionTimeoutMillis);
+
         ModelNode databaseNode = JOURNAL_DATABASE.resolveModelAttribute(context, model);
         final String database = databaseNode.isDefined() ? databaseNode.asString() : null;
         try {
@@ -585,6 +598,7 @@ class ServerAdd extends AbstractAddStepHandler {
         } catch (IOException e) {
             throw new OperationFailedException(e);
         }
+
         configuration.setStoreConfiguration(storageConfiguration);
     }
 
