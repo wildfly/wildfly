@@ -208,6 +208,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setRequired(false)
             // references another resource
             .setAllowExpression(false)
+            .setCapabilityReference(Capabilities.DATA_SOURCE_CAPABILITY, Capabilities.ACTIVEMQ_SERVER_CAPABILITY)
             .setRestartAllServices()
             .build();
 
