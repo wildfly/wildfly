@@ -21,12 +21,15 @@
  */
 package org.jboss.as.test.clustering.cluster;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Stream;
 
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
+import org.jboss.arquillian.container.spi.Container;
+import org.jboss.arquillian.container.spi.ContainerRegistry;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.WildFlyContainerController;
@@ -42,10 +45,12 @@ import org.junit.Before;
  * Base implementation for every clustering test which guarantees a framework contract as follows:
  * <ol>
  * <li>test case is constructed specifying nodes and deployments required</li>
+ * <li>before every test method, first all containers that are not required in the test are stopped</li>
  * <li>before every test method, containers are started and deployments are deployed via {@link #beforeTestMethod()}</li>
  * <li>after every method execution the deployments are undeployed via {@link #afterTestMethod()}</li>
  * </ol>
- * Should the test demand different node and deployment handling, the methods must be overridden.
+ * Should the test demand different node and deployment handling, the {@link #beforeTestMethod()} and {@link #afterTestMethod()}
+ * may be overridden.
  * <p>
  * Furthermore, this base class provides common constants for node/instance-id, deployment/deployment helpers, timeouts and provides
  * convenience methods for managing container and deployment lifecycle ({@link #start(String...)}, {@link #deploy(String...)}, etc).
@@ -63,7 +68,7 @@ public abstract class AbstractClusteringTestCase {
     public static final String NODE_4 = "node-4";
     public static final String[] TWO_NODES = new String[] { NODE_1, NODE_2 };
     public static final String[] THREE_NODES = new String[] { NODE_1, NODE_2, NODE_3 };
-    public static final String[] FOUR_NODES = new String[] {NODE_1, NODE_2, NODE_3, NODE_4};
+    public static final String[] FOUR_NODES = new String[] { NODE_1, NODE_2, NODE_3, NODE_4 };
     public static final String NODE_NAME_PROPERTY = "jboss.node.name";
 
     // Test deployment names
@@ -72,7 +77,7 @@ public abstract class AbstractClusteringTestCase {
     public static final String DEPLOYMENT_3 = "deployment-3";
     public static final String DEPLOYMENT_4 = "deployment-4";
     public static final String[] TWO_DEPLOYMENTS = new String[] { DEPLOYMENT_1, DEPLOYMENT_2 };
-    public static final String[] FOUR_DEPLOYMENTS = new String[] {DEPLOYMENT_1, DEPLOYMENT_2, DEPLOYMENT_3, DEPLOYMENT_4 };
+    public static final String[] FOUR_DEPLOYMENTS = new String[] { DEPLOYMENT_1, DEPLOYMENT_2, DEPLOYMENT_3, DEPLOYMENT_4 };
 
     // Helper deployment names
     public static final String DEPLOYMENT_HELPER_1 = "deployment-helper-0";
@@ -80,7 +85,7 @@ public abstract class AbstractClusteringTestCase {
     public static final String DEPLOYMENT_HELPER_3 = "deployment-helper-2";
     public static final String DEPLOYMENT_HELPER_4 = "deployment-helper-3";
     public static final String[] TWO_DEPLOYMENT_HELPERS = new String[] { DEPLOYMENT_HELPER_1, DEPLOYMENT_HELPER_2 };
-    public static final String[] FOUR_DEPLOYMENT_HELPERS = new String[] {DEPLOYMENT_HELPER_1, DEPLOYMENT_HELPER_2, DEPLOYMENT_HELPER_3, DEPLOYMENT_HELPER_4 };
+    public static final String[] FOUR_DEPLOYMENT_HELPERS = new String[] { DEPLOYMENT_HELPER_1, DEPLOYMENT_HELPER_2, DEPLOYMENT_HELPER_3, DEPLOYMENT_HELPER_4 };
 
     // Infinispan Server
     public static final String INFINISPAN_SERVER_1 = "infinispan-server-1";
@@ -121,12 +126,14 @@ public abstract class AbstractClusteringTestCase {
     }
 
     @ArquillianResource
+    protected ContainerRegistry containerRegistry;
+    @ArquillianResource
     protected WildFlyContainerController controller;
     @ArquillianResource
     protected Deployer deployer;
 
-    private final String[] nodes;
-    private final String[] deployments;
+    protected final String[] nodes;
+    protected final String[] deployments;
 
     // Framework contract methods
 
@@ -144,10 +151,22 @@ public abstract class AbstractClusteringTestCase {
     }
 
     /**
-     * Guarantees that prior to test method execution both containers are running and both deployments are deployed.
+     * Guarantees that prior to test method execution
+     * (1) all containers that are not used in the test are stopped and,
+     * (2) all requested containers are running and,
+     * (3) all requested deployments are deployed thus allowing all necessary test resources injection.
      */
     @Before
     public void beforeTestMethod() throws Exception {
+        this.containerRegistry.getContainers().forEach(container -> {
+            if (container.getState() == Container.State.STARTED && !Arrays.asList(nodes).contains(container.getName())) {
+                // Even though we should be able to just stop the container object this currently fails with:
+                // WFARQ-47 Calling "container.stop();" always ends exceptionally "Caught exception closing ManagementClient: java.lang.NullPointerException"
+                this.stop(container.getName());
+                log.infof("Stopped container '%s' which was started but not requested for this test.", container.getName());
+            }
+        });
+
         NodeUtil.start(this.controller, nodes);
         NodeUtil.deploy(this.deployer, deployments);
     }

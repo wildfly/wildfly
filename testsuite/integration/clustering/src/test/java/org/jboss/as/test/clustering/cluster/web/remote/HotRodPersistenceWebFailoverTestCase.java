@@ -83,19 +83,12 @@ public class HotRodPersistenceWebFailoverTestCase extends AbstractWebFailoverTes
     }
 
     @Override
-    public void beforeTestMethod() throws Exception {
-        // First start Infinispan Server instance
+    public void beforeTestMethod() {
+        // Also start the Infinispan Server instance
         NodeUtil.start(controller, INFINISPAN_SERVER_1);
 
-        super.beforeTestMethod();
-    }
-
-    @Override
-    public void afterTestMethod() throws Exception {
-        super.afterTestMethod();
-
-        // Also after stop Infinispan Server instance
-        NodeUtil.stop(controller, INFINISPAN_SERVER_1);
+        NodeUtil.start(this.controller, this.nodes);
+        NodeUtil.deploy(this.deployer, this.deployments);
     }
 
     public static class ServerSetupTask extends CLIServerSetupTask {
