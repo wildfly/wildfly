@@ -64,6 +64,7 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
     private static final String CLASSES = "classes";
     private static final String LIB = "lib";
     private static final String IMPLICIT_TLD = "implicit.tld";
+    private static final String RESOURCES = "resources";
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -94,6 +95,7 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
         for (ResourceRoot root : deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS)) {
             testRoots.add(root.getRoot());
             testRoots.add(root.getRoot().getChild(META_INF));
+            testRoots.add(root.getRoot().getChild(META_INF).getChild(RESOURCES));
         }
 
         JspConfigMetaData merged = warMetaData.getMergedJBossWebMetaData().getJspConfig();
