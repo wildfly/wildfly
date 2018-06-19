@@ -116,6 +116,45 @@ formatted as a command help content:
 help /subsystem=elytron/key-store=?:add
 ----
 
+[[cli-keyboard-navigation]]
+== Keyboard navigation
+
+In order to efficiently edit commands, the CLI allows you to navigate the words
+ and characters of a command using the keyboard.
+
+NB: Part of this navigation is platform dependent. 
+
+=== Go left (back) one word
+
+* _Alt+B_ : Linux, Solaris, HP-UX, Windows.
+* _Ctrl+LeftArrow_: Linux, Solaris, HP-UX.
+* _Alt+LeftArrow_: Mac OSX.
+
+=== Go right (forward) one word
+
+* _Alt+F_ : Linux, Solaris, HP-UX, Windows.
+* _Ctrl+RightArrow_: Linux, Solaris, HP-UX.
+* _Alt+RightArrow_: Mac OSX.
+
+=== Go to the beginning of the line
+
+* _Ctrl+A_: All supported platforms.
+* _HOME_:  Linux, Solaris, HP-UX, Windows
+
+=== Go to the end of the line
+
+* _Ctrl+E_: All supported platforms.
+* _END_: Linux, Solaris, HP-UX, Windows
+
+=== Go left (back) one character
+
+* _Ctrl+B_ or _LeftArrow_: All supported platforms.
+
+=== Go right (forward) one character
+
+* _Ctrl+F_ or _RightArrow_: All supported platforms.
+
+
 [[cli-non-interactive-mode]]
 == Non-interactive Mode
 
