@@ -24,12 +24,15 @@ package org.jboss.as.connector.subsystems.resourceadapters;
 
 import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_RA_LOGGER;
 
+import org.jboss.as.connector.metadata.api.resourceadapter.ActivationSecurityUtil;
+import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.security.SubjectFactory;
 import org.wildfly.common.function.ExceptionSupplier;
 import org.wildfly.security.credential.source.CredentialSource;
 
@@ -45,6 +48,10 @@ final class ConnectionDefinitionService implements Service<ModifiableConnDef> {
     private final InjectedValue<ModifiableResourceAdapter> ra = new InjectedValue<ModifiableResourceAdapter>();
     private final InjectedValue<ExceptionSupplier<CredentialSource, Exception>> credentialSourceSupplier = new InjectedValue<>();
 
+    protected final InjectedValue<SubjectFactory> subjectFactory = new InjectedValue<SubjectFactory>();
+    private final InjectedValue<ServerSecurityManager> secManager = new InjectedValue<ServerSecurityManager>();
+
+
     /** create an instance **/
     public ConnectionDefinitionService() {
     }
@@ -58,6 +65,10 @@ final class ConnectionDefinitionService implements Service<ModifiableConnDef> {
     public void start(StartContext context) throws StartException {
         createConnectionDefinition();
         ra.getValue().addConnectionDefinition(getValue());
+        if (ActivationSecurityUtil.isLegacySecurityRequired(ra.getValue())) {
+            ra.getValue().setSubjectFactory(subjectFactory.getValue());
+            ra.getValue().setSecManager(secManager.getOptionalValue());
+        }
         SUBSYSTEM_RA_LOGGER.debugf("Starting ResourceAdapters Service");
     }
 
@@ -77,6 +88,15 @@ final class ConnectionDefinitionService implements Service<ModifiableConnDef> {
     public InjectedValue<ExceptionSupplier<ModifiableConnDef, Exception>> getConnectionDefinitionSupplierInjector() {
         return connectionDefinitionSupplier;
     }
+
+    public Injector<SubjectFactory> getSubjectFactoryInjector() {
+        return subjectFactory;
+    }
+
+    public Injector<ServerSecurityManager> getServerSecurityManager() {
+        return secManager;
+    }
+
 
     private void createConnectionDefinition() throws IllegalStateException {
         ExceptionSupplier<ModifiableConnDef, Exception> connDefSupplier = connectionDefinitionSupplier.getValue();
