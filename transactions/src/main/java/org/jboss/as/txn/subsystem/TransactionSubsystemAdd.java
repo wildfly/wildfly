@@ -512,7 +512,6 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final int maximumTimeout = TransactionSubsystemRootResourceDefinition.MAXIMUM_TIMEOUT.resolveModelAttribute(context, coordEnvModel).asInt();
 
         // WFLY-9955 Allow the timeout set to "0" while translating into the maximum timeout
-        TransactionSubsystemRootResourceDefinition.maximum_timeout = maximumTimeout;
         if (coordinatorDefaultTimeout == 0) {
             ContextTransactionManager.setGlobalDefaultTransactionTimeout(maximumTimeout);
             TransactionLogger.ROOT_LOGGER.timeoutValueIsSetToMaximum(maximumTimeout);

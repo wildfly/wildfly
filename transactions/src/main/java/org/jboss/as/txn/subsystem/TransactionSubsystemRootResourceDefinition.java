@@ -254,8 +254,6 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
 
     private final boolean registerRuntimeOnly;
 
-    public static int maximum_timeout = MAXIMUM_TIMEOUT.getDefaultValue().asInt();
-
     TransactionSubsystemRootResourceDefinition(boolean registerRuntimeOnly) {
         super(TransactionExtension.SUBSYSTEM_PATH,
                 TransactionExtension.getResourceDescriptionResolver(),
@@ -508,7 +506,8 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
 
             TxControl.setDefaultTimeout(timeout);
             if (timeout == 0) {
-                timeout = TransactionSubsystemRootResourceDefinition.maximum_timeout;
+                ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
+                timeout = MAXIMUM_TIMEOUT.resolveModelAttribute(context, model).asInt();
                 TransactionLogger.ROOT_LOGGER.timeoutValueIsSetToMaximum(timeout);
             }
             ContextTransactionManager.setGlobalDefaultTransactionTimeout(timeout);
@@ -535,7 +534,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
                                               final String attributeName, final ModelNode resolvedValue,
                                               final ModelNode currentValue, final HandbackHolder<Void> handbackHolder)
                throws OperationFailedException {
-           maximum_timeout = resolvedValue.asInt();
+           int maximum_timeout = resolvedValue.asInt();
            if (TxControl.getDefaultTimeout() == 0) {
                TransactionLogger.ROOT_LOGGER.timeoutValueIsSetToMaximum(maximum_timeout);
                ContextTransactionManager.setGlobalDefaultTransactionTimeout(maximum_timeout);
@@ -544,11 +543,8 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
        }
 
         @Override
-        protected void revertUpdateToRuntime(final OperationContext context, final ModelNode operation,
-                                             final String attributeName, final ModelNode valueToRestore,
-                                             final ModelNode valueToRevert, final Void handback)
-                throws OperationFailedException {
-           maximum_timeout = valueToRestore.asInt();
+        protected void revertUpdateToRuntime(OperationContext operationContext, ModelNode modelNode, String s, ModelNode modelNode1, ModelNode modelNode2, Void aVoid) throws OperationFailedException {
+
         }
     }
 
