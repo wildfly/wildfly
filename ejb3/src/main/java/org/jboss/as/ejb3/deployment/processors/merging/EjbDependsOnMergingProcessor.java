@@ -40,7 +40,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.metadata.ejb.spec.SessionBean31MetaData;
-import org.jboss.msc.service.ServiceBuilder.DependencyType;
 
 import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
 
@@ -101,7 +100,7 @@ public class EjbDependsOnMergingProcessor extends AbstractMergingProcessor<EJBCo
             }
             final ComponentDescription component = components.iterator().next();
 
-            description.addDependency(component.getStartServiceName(), DependencyType.REQUIRED);
+            description.addDependency(component.getStartServiceName());
             if (description instanceof SingletonComponentDescription) {
                 ((SingletonComponentDescription)description).getDependsOn().add(component.getStartServiceName());
                 if (ROOT_LOGGER.isDebugEnabled()) {

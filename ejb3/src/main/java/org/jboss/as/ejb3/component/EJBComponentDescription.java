@@ -311,7 +311,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
         //add a dependency on the module deployment service
         //we need to make sure this is up before the EJB starts, so that remote invocations are available
-        addDependency(deploymentUnitServiceName.append(ModuleDeployment.SERVICE_NAME), ServiceBuilder.DependencyType.REQUIRED);
+        addDependency(deploymentUnitServiceName.append(ModuleDeployment.SERVICE_NAME));
 
         getConfigurators().addFirst(EJBValidationConfigurator.INSTANCE);
         getConfigurators().add(new ComponentConfigurator() {

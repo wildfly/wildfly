@@ -46,7 +46,6 @@ import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 
@@ -157,7 +156,7 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
                 final ServiceName puServiceName = PersistenceUnitServiceImpl.getPUServiceName(pu);
                 for (final ComponentDescription component : components) {
                     ROOT_LOGGER.debugf("Adding dependency on PU service %s for component %s", puServiceName, component.getComponentClassName());
-                    component.addDependency(puServiceName, ServiceBuilder.DependencyType.REQUIRED);
+                    component.addDependency(puServiceName);
                 }
             }
         }
