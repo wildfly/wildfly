@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<arquillian xmlns="http://jboss.org/schema/arquillian" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://jboss.org/schema/arquillian http://jboss.org/schema/arquillian/arquillian_1_0.xsd">
+
+    <container qualifier="jboss-domain" mode="manual" default="true" >
+        <configuration>
+            <property name="jbossHome">${jboss.home}</property>
+            <property name="javaVmArguments">-server -Xms64m -Xmx512m</property>
+            <property name="containerNameMap">
+                main-server-group=main-server-group,
+                master:server-one=jboss-domain,
+                master:server-two=backend-2,
+                master:server-three=frontend-1
+            </property>
+            <property name="containerModeMap">
+                other.*=manual
+            </property>
+            <property name="domainConfig">domain.xml</property>
+            <property name="hostConfig">host.xml</property>
+            <property name="managementAddress">127.0.0.1</property>
+            <property name="managementPort">9990</property>
+            <property name="outputToConsole">true</property>
+        </configuration>
+    </container>
+</arquillian>

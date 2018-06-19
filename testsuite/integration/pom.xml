@@ -62,6 +62,7 @@
                 <module>web</module>
                 <module>smoke</module>
                 <module>basic</module>
+                <module>vdx</module>
                 <module>iiop</module>
                 <module>xts</module>
                 <module>rts</module>
@@ -86,6 +87,7 @@
                 <module>web</module>
                 <module>smoke</module>
                 <module>basic</module>
+                <module>vdx</module>
                 <module>clustering</module>
                 <module>iiop</module>
                 <module>xts</module>
