@@ -22,19 +22,19 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.8" name="org.jboss.as.jsf-injection" slot="${jsf-impl-name}-${jsf-version}">
+<module xmlns="urn:jboss:module:1.8" name="org.jboss.as.jsf-injection:${jsf-impl-name}-${jsf-version}">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
 
     <resources>
-        <resource-root path="wildfly-jsf-injection-${version.jboss.as}.jar"/>
-        <resource-root path="weld-jsf-${version.weld.core}.jar"/>
+        <resource-root path="wildfly-jsf-injection-${project.version}.jar"/>
+        <resource-root path="weld-jsf-${version.org.jboss.weld.weld}.jar"/>
         <!-- Insert resources here -->
     </resources>
 
     <dependencies>
-        <module name="com.sun.jsf-impl" slot="${jsf-impl-name}-${jsf-version}"/>
+        <module name="com.sun.jsf-impl:${jsf-impl-name}-${jsf-version}"/>
         <module name="javax.api"/>
         <module name="org.jboss.as.web-common"/>
         <module name="javax.servlet.api"/>
@@ -46,6 +46,6 @@
         <module name="org.jboss.weld.api"/>
         <module name="org.wildfly.security.elytron"/>
 
-        <module name="javax.faces.api" slot="${jsf-impl-name}-${jsf-version}"/>
+        <module name="javax.faces.api:${jsf-impl-name}-${jsf-version}"/>
     </dependencies>
 </module>
