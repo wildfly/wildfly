@@ -192,8 +192,6 @@ import org.jboss.security.authentication.JBossCachedAuthenticationManager;
  */
 public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
-    private static final boolean JAVA_EE_8 = Boolean.getBoolean("ee8.preview.mode");
-
     public static final ServiceName SERVICE_NAME = ServiceName.of("UndertowDeploymentInfoService");
 
     public static final String DEFAULT_SERVLET_NAME = "default";
@@ -277,12 +275,6 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             DeploymentInfo deploymentInfo = createServletConfig();
 
             deploymentInfo.setConfidentialPortManager(getConfidentialPortManager());
-
-            if(!JAVA_EE_8) {
-                //in EE7 mode we need to act as a Servlet 3.1 container
-                deploymentInfo.setContainerMinorVersion(1);
-                deploymentInfo.setContainerMajorVersion(3);
-            }
 
             handleDistributable(deploymentInfo);
             if (securityFunction.getOptionalValue() == null) {
@@ -707,12 +699,6 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                         seenMappings.addAll(mapping.getUrlPatterns());
                     }
                 }
-            }
-
-
-            final List<JBossServletMetaData> servlets = new ArrayList<JBossServletMetaData>();
-            for (JBossServletMetaData servlet : mergedMetaData.getServlets()) {
-                servlets.add(servlet);
             }
 
             for (final JBossServletMetaData servlet : mergedMetaData.getServlets()) {
