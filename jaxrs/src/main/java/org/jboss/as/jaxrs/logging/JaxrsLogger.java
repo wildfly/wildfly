@@ -177,4 +177,8 @@ public interface JaxrsLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 17, value = "Failed to read attribute from JAX-RS deployment at %s with name %s")
     void failedToReadAttribute(@Cause Exception ex, PathAddress address, ModelNode modelNode);
+
+    @LogMessage(level = WARN)
+    @Message(id = 18, value = "Explicit usage of Jackson annotation in a JAX-RS deployment; the system will disable JSON-B processing for the current deployment. Consider setting the '%s' property to 'false' to restore JSON-B.")
+    void jacksonAnnotationDetected(String property);
 }
