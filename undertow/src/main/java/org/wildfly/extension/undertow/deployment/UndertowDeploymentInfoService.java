@@ -1114,6 +1114,8 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                     if (!seenMappings.contains(pattern)) {
                         s.addMapping(pattern);
                         seenMappings.add(pattern);
+                    } else {
+                        UndertowLogger.ROOT_LOGGER.duplicateServletMapping(pattern);
                     }
                 }
             }
