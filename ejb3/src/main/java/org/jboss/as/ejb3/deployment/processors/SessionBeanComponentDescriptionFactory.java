@@ -65,9 +65,11 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
     private static final DotName STATELESS_ANNOTATION = DotName.createSimple(Stateless.class.getName());
     private static final DotName STATEFUL_ANNOTATION = DotName.createSimple(Stateful.class.getName());
     private static final DotName SINGLETON_ANNOTATION = DotName.createSimple(Singleton.class.getName());
+    private final boolean defaultSlsbPoolAvailable;
 
-    public SessionBeanComponentDescriptionFactory(final boolean appclient) {
+    public SessionBeanComponentDescriptionFactory(final boolean appclient, final boolean defaultSlsbPoolAvailable) {
         super(appclient);
+        this.defaultSlsbPoolAvailable = defaultSlsbPoolAvailable;
     }
 
     /**
@@ -143,7 +145,7 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
             final SessionBeanComponentDescription sessionBeanDescription;
             switch (sessionBeanType) {
                 case STATELESS:
-                    sessionBeanDescription = new StatelessComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnitServiceName, beanMetaData);
+                    sessionBeanDescription = new StatelessComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnitServiceName, beanMetaData, defaultSlsbPoolAvailable);
                     break;
                 case STATEFUL:
                     sessionBeanDescription = new StatefulComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnitServiceName, beanMetaData);
@@ -241,7 +243,7 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
         final SessionBeanComponentDescription sessionBeanDescription;
         switch (sessionType) {
             case Stateless:
-                sessionBeanDescription = new StatelessComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnit.getServiceName(), sessionBean);
+                sessionBeanDescription = new StatelessComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnit.getServiceName(), sessionBean, defaultSlsbPoolAvailable);
                 break;
             case Stateful:
                 sessionBeanDescription = new StatefulComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnit.getServiceName(), sessionBean);

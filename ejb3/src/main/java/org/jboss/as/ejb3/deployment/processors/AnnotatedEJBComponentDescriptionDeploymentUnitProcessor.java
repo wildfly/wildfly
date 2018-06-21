@@ -36,11 +36,11 @@ public class AnnotatedEJBComponentDescriptionDeploymentUnitProcessor extends Abs
 
     private final EJBComponentDescriptionFactory[] factories;
 
-    public AnnotatedEJBComponentDescriptionDeploymentUnitProcessor(final boolean appclient) {
+    public AnnotatedEJBComponentDescriptionDeploymentUnitProcessor(final boolean appclient, final boolean defaultMdbPoolAvailable, final boolean defaultSlsbPoolAvailable) {
         super(appclient);
         this.factories = new EJBComponentDescriptionFactory[] {
-                new MessageDrivenComponentDescriptionFactory(appclient),
-                new SessionBeanComponentDescriptionFactory(appclient)
+                new MessageDrivenComponentDescriptionFactory(appclient, defaultMdbPoolAvailable),
+                new SessionBeanComponentDescriptionFactory(appclient, defaultSlsbPoolAvailable)
         };
     }
 

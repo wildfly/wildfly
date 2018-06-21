@@ -70,6 +70,7 @@ import org.jboss.msc.service.ServiceName;
 public class StatelessComponentDescription extends SessionBeanComponentDescription {
 
     private String poolConfigName;
+    private final boolean defaultSlsbPoolAvailable;
 
     /**
      * Construct a new instance.
@@ -79,8 +80,9 @@ public class StatelessComponentDescription extends SessionBeanComponentDescripti
      * @param ejbModuleDescription the module description
      */
     public StatelessComponentDescription(final String componentName, final String componentClassName, final EjbJarDescription ejbModuleDescription,
-                                         final ServiceName deploymentUnitServiceName, final SessionBeanMetaData descriptorData) {
+                                         final ServiceName deploymentUnitServiceName, final SessionBeanMetaData descriptorData, final boolean defaultSlsbPoolAvailable) {
         super(componentName, componentClassName, ejbModuleDescription, deploymentUnitServiceName, descriptorData);
+        this.defaultSlsbPoolAvailable = defaultSlsbPoolAvailable;
     }
 
     @Override
@@ -191,6 +193,10 @@ public class StatelessComponentDescription extends SessionBeanComponentDescripti
         return StatelessSessionBeanObjectViewConfigurator.INSTANCE;
     }
 
+    boolean isDefaultSlsbPoolAvailable() {
+        return defaultSlsbPoolAvailable;
+    }
+
     @Override
     public boolean isTimerServiceApplicable() {
         return true;
@@ -204,7 +210,7 @@ public class StatelessComponentDescription extends SessionBeanComponentDescripti
         return this.poolConfigName;
     }
 
-    private class PoolInjectingConfigurator implements DependencyConfigurator<Service<Component>> {
+    private static class PoolInjectingConfigurator implements DependencyConfigurator<Service<Component>> {
 
         private final StatelessComponentDescription statelessComponentDescription;
 
@@ -219,8 +225,10 @@ public class StatelessComponentDescription extends SessionBeanComponentDescripti
             // if no pool name has been explicitly set, then inject the *optional* "default slsb pool config".
             // If the default slsb pool config itself is not configured, then the pooling is disabled for the bean
             if (poolName == null) {
-                serviceBuilder.addDependency(ServiceBuilder.DependencyType.OPTIONAL, StrictMaxPoolConfigService.DEFAULT_SLSB_POOL_CONFIG_SERVICE_NAME,
-                        PoolConfig.class, statelessSessionComponentService.getPoolConfigInjector());
+                if (statelessComponentDescription.isDefaultSlsbPoolAvailable()) {
+                    serviceBuilder.addDependency(StrictMaxPoolConfigService.DEFAULT_SLSB_POOL_CONFIG_SERVICE_NAME,
+                            PoolConfig.class, statelessSessionComponentService.getPoolConfigInjector());
+                }
             } else {
                 // pool name has been explicitly set so the pool config is a required dependency
                 serviceBuilder.addDependency(StrictMaxPoolConfigService.EJB_POOL_CONFIG_BASE_SERVICE_NAME.append(poolName),
