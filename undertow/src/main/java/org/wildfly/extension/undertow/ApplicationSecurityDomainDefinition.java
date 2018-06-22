@@ -56,6 +56,7 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 import javax.security.jacc.WebResourcePermission;
@@ -75,7 +76,6 @@ import javax.servlet.http.HttpSession;
 import org.jboss.as.clustering.controller.SimpleCapabilityServiceConfigurator;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.CapabilityServiceTarget;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -96,8 +96,8 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.metadata.javaee.jboss.RunAsIdentityMetaData;
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.Service;
+import org.jboss.msc.Service;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceController.State;
@@ -106,7 +106,6 @@ import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.elytron.web.undertow.server.ElytronContextAssociationHandler;
 import org.wildfly.elytron.web.undertow.server.ElytronHttpExchange;
@@ -278,25 +277,26 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
             ModelNode model = resource.getModel();
             CapabilityServiceTarget target = context.getCapabilityServiceTarget();
 
-            String httpServerMechanismFactory = HTTP_AUTHENTICATION_FACTORY.resolveModelAttribute(context, model).asString();
+            final String httpServerMechanismFactory = HTTP_AUTHENTICATION_FACTORY.resolveModelAttribute(context, model).asStringOrNull();
             boolean overrideDeploymentConfig = OVERRIDE_DEPLOYMENT_CONFIG.resolveModelAttribute(context, model).asBoolean();
             boolean enableJacc = ENABLE_JACC.resolveModelAttribute(context, model).asBoolean();
 
             String securityDomainName = context.getCurrentAddressValue();
 
-            ApplicationSecurityDomainService applicationSecurityDomainService = new ApplicationSecurityDomainService(overrideDeploymentConfig, enableJacc);
+            ServiceName applicationSecurityDomainName = APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY.getCapabilityServiceName(context.getCurrentAddress());
 
-            CapabilityServiceBuilder<BiFunction<DeploymentInfo, Function<String, RunAsIdentityMetaData>, Registration>> serviceBuilder = target
-                    .addCapability(APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY, applicationSecurityDomainService)
+            ServiceBuilder<?> serviceBuilder = target
+                    .addService(applicationSecurityDomainName)
                     .setInitialMode(Mode.LAZY);
 
-            serviceBuilder.addCapabilityRequirement(REF_HTTP_AUTHENTICATION_FACTORY, HttpAuthenticationFactory.class,
-                    applicationSecurityDomainService.getHttpAuthenticationFactoryInjector(), httpServerMechanismFactory);
+
+            Supplier<HttpAuthenticationFactory> httpAuthenticationFactorySupplier = serviceBuilder.requires(context.getCapabilityServiceName(REF_HTTP_AUTHENTICATION_FACTORY, HttpAuthenticationFactory.class, httpServerMechanismFactory));
 
             if (enableJacc) {
-                serviceBuilder.addCapabilityRequirement(REF_JACC_POLICY, Policy.class);
+                serviceBuilder.requires(context.getCapabilityServiceName(REF_JACC_POLICY, Policy.class));
             }
 
+            final Supplier<UnaryOperator<HttpServerAuthenticationMechanismFactory>> transformerSupplier;
             if (resource.hasChild(UndertowExtension.PATH_SSO)) {
                 ModelNode ssoModel = resource.getChild(UndertowExtension.PATH_SSO).getModel();
 
@@ -318,12 +318,16 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
                 ServiceConfigurator factoryConfigurator = new SingleSignOnSessionFactoryServiceConfigurator(securityDomainName).configure(context, ssoModel);
                 factoryConfigurator.build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 
-                InjectedValue<SingleSignOnSessionFactory> singleSignOnSessionFactory = new InjectedValue<>();
-                serviceBuilder.addDependency(factoryConfigurator.getServiceName(), SingleSignOnSessionFactory.class, singleSignOnSessionFactory);
+                Supplier<SingleSignOnSessionFactory> singleSignOnSessionFactorySupplier = serviceBuilder.requires(factoryConfigurator.getServiceName());
+                UnaryOperator<HttpServerAuthenticationMechanismFactory> transformer = (factory) -> new SingleSignOnServerMechanismFactory(factory, singleSignOnSessionFactorySupplier.get(), singleSignOnConfiguration);
+                transformerSupplier = () -> transformer;
 
-                applicationSecurityDomainService.getSingleSignOnSessionFactoryInjector().inject(factory -> new SingleSignOnServerMechanismFactory(factory, singleSignOnSessionFactory.getValue(), singleSignOnConfiguration));
+            } else {
+                transformerSupplier = () -> null;
             }
 
+            Consumer<BiFunction<DeploymentInfo, Function<String, RunAsIdentityMetaData>, Registration>> valueConsumer = serviceBuilder.provides(applicationSecurityDomainName);
+            serviceBuilder.setInstance(new ApplicationSecurityDomainService(overrideDeploymentConfig, enableJacc, httpAuthenticationFactorySupplier, transformerSupplier, valueConsumer));
             serviceBuilder.install();
         }
 
@@ -371,44 +375,40 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
         return knownApplicationSecurityDomains::contains;
     }
 
-    private static class ApplicationSecurityDomainService implements Service<BiFunction<DeploymentInfo, Function<String, RunAsIdentityMetaData>, Registration>>, BiFunction<DeploymentInfo, Function<String, RunAsIdentityMetaData>, Registration> {
+    private static class ApplicationSecurityDomainService implements Service, BiFunction<DeploymentInfo, Function<String, RunAsIdentityMetaData>, Registration> {
+
+
+        private final Supplier<HttpAuthenticationFactory> httpAuthenticationFactorySupplier;
+        private final Supplier<UnaryOperator<HttpServerAuthenticationMechanismFactory>> singleSignOnTransformerSupplier;
+
+        private final Consumer<BiFunction<DeploymentInfo, Function<String, RunAsIdentityMetaData>, Registration>> valueConsumer;
 
         private final boolean overrideDeploymentConfig;
-        private final InjectedValue<HttpAuthenticationFactory> httpAuthenticationFactoryInjector = new InjectedValue<>();
-        private final InjectedValue<UnaryOperator<HttpServerAuthenticationMechanismFactory>> singleSignOnTransformer = new InjectedValue<>();
         private final Set<RegistrationImpl> registrations = new HashSet<>();
         private final boolean enableJacc;
         private SecurityDomain securityDomain;
 
         private HttpAuthenticationFactory httpAuthenticationFactory;
 
-        private ApplicationSecurityDomainService(final boolean overrideDeploymentConfig, boolean enableJacc) {
+        private ApplicationSecurityDomainService(final boolean overrideDeploymentConfig, boolean enableJacc, Supplier<HttpAuthenticationFactory> httpAuthenticationFactorySupplier, Supplier<UnaryOperator<HttpServerAuthenticationMechanismFactory>> singleSignOnTransformerSupplier, Consumer<BiFunction<DeploymentInfo, Function<String, RunAsIdentityMetaData>, Registration>> valueConsumer) {
             this.overrideDeploymentConfig = overrideDeploymentConfig;
             this.enableJacc = enableJacc;
+
+            this.httpAuthenticationFactorySupplier = httpAuthenticationFactorySupplier;
+            this.singleSignOnTransformerSupplier = singleSignOnTransformerSupplier;
+            this.valueConsumer = valueConsumer;
         }
 
         @Override
         public void start(StartContext context) throws StartException {
-            httpAuthenticationFactory = httpAuthenticationFactoryInjector.getValue();
+            httpAuthenticationFactory = httpAuthenticationFactorySupplier.get();
             securityDomain = httpAuthenticationFactory.getSecurityDomain();
+            valueConsumer.accept(this);
         }
 
         @Override
         public void stop(StopContext context) {
             httpAuthenticationFactory = null;
-        }
-
-        @Override
-        public BiFunction<DeploymentInfo, Function<String, RunAsIdentityMetaData>, Registration> getValue() throws IllegalStateException, IllegalArgumentException {
-            return this;
-        }
-
-        private Injector<HttpAuthenticationFactory> getHttpAuthenticationFactoryInjector() {
-            return httpAuthenticationFactoryInjector;
-        }
-
-        Injector<UnaryOperator<HttpServerAuthenticationMechanismFactory>> getSingleSignOnSessionFactoryInjector() {
-            return this.singleSignOnTransformer;
         }
 
         @Override
@@ -446,7 +446,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
 
         private List<HttpServerAuthenticationMechanism> getAuthenticationMechanisms(Map<String, Map<String, String>> selectedMechanisms) {
             List<HttpServerAuthenticationMechanism> mechanisms = new ArrayList<>(selectedMechanisms.size());
-            UnaryOperator<HttpServerAuthenticationMechanismFactory> singleSignOnTransformer = this.singleSignOnTransformer.getOptionalValue();
+            UnaryOperator<HttpServerAuthenticationMechanismFactory> singleSignOnTransformer = this.singleSignOnTransformerSupplier.get();
             for (Entry<String, Map<String, String>> entry : selectedMechanisms.entrySet()) {
                 try {
                     UnaryOperator<HttpServerAuthenticationMechanismFactory> factoryTransformation = f -> {
