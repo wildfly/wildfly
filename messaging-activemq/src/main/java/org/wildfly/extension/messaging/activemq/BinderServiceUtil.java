@@ -29,13 +29,13 @@ import javax.naming.InitialContext;
 import org.jboss.as.naming.ContextListAndJndiViewManagedReferenceFactory;
 import org.jboss.as.naming.ContextListManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReference;
-import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
-import org.jboss.msc.service.AbstractServiceListener;
+import org.jboss.msc.service.LifecycleEvent;
+import org.jboss.msc.service.LifecycleListener;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -109,19 +109,19 @@ public class BinderServiceUtil {
         serviceTarget.addService(aliasBindInfo.getBinderServiceName(), aliasBinderService)
                 .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, aliasBinderService.getNamingStoreInjector())
                 .addDependency(bindInfo.getBinderServiceName())
-                .addListener(new AbstractServiceListener<ManagedReferenceFactory>() {
+                .addListener(new LifecycleListener() {
                     @Override
-                    public void transition(ServiceController<? extends ManagedReferenceFactory> controller, ServiceController.Transition transition) {
-                        switch (transition) {
-                            case STARTING_to_UP: {
+                    public void handleEvent(ServiceController<?> controller, LifecycleEvent event) {
+                        switch (event) {
+                            case UP: {
                                 ROOT_LOGGER.boundJndiName(alias);
                                 break;
                             }
-                            case STOPPING_to_DOWN: {
+                            case DOWN: {
                                 ROOT_LOGGER.unboundJndiName(alias);
                                 break;
                             }
-                            case REMOVING_to_REMOVED: {
+                            case REMOVED: {
                                 ROOT_LOGGER.debugf("Removed messaging object [%s]", alias);
                                 break;
                             }

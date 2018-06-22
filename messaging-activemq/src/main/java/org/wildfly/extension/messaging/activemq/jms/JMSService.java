@@ -38,7 +38,8 @@ import org.apache.activemq.artemis.core.server.ActivateCallback;
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.apache.activemq.artemis.jms.server.JMSServerManager;
 import org.apache.activemq.artemis.jms.server.impl.JMSServerManagerImpl;
-import org.jboss.msc.service.AbstractServiceListener;
+import org.jboss.msc.service.LifecycleEvent;
+import org.jboss.msc.service.LifecycleListener;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
@@ -185,10 +186,10 @@ public class JMSService implements Service<JMSServerManager> {
                             // are stopped outside the control of the services.
                             final CountDownLatch latch = new CountDownLatch(1);
                             activeMQActivationController.compareAndSetMode(ACTIVE, REMOVE);
-                            activeMQActivationController.addListener(new AbstractServiceListener<Void>() {
+                            activeMQActivationController.addListener(new LifecycleListener() {
                                 @Override
-                                public void transition(ServiceController<? extends Void> controller, ServiceController.Transition transition) {
-                                    if (transition.enters(REMOVED)) {
+                                public void handleEvent(ServiceController<?> controller, LifecycleEvent event) {
+                                    if (event == LifecycleEvent.REMOVED) {
                                         latch.countDown();
                                     }
                                 }
