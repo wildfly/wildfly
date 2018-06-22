@@ -34,7 +34,8 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.modules.Module;
 import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.AbstractServiceListener;
+import org.jboss.msc.service.LifecycleEvent;
+import org.jboss.msc.service.LifecycleListener;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -98,18 +99,18 @@ public class AdministeredObjectDefinitionInjectionSource extends ResourceDefinit
                 .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
         serviceBuilder.addDependency(AdminObjectReferenceFactoryService.SERVICE_NAME_BASE.append(bindInfo.getBinderServiceName()), ManagedReferenceFactory.class, injector);
-        serviceBuilder.addListener(new AbstractServiceListener<Object>() {
-            public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
-                switch (transition) {
-                    case STARTING_to_UP: {
+        serviceBuilder.addListener(new LifecycleListener() {
+            public void handleEvent(final ServiceController<?> controller, final LifecycleEvent event) {
+                switch (event) {
+                    case UP: {
                         DEPLOYMENT_CONNECTOR_LOGGER.adminObjectAnnotation(jndiName);
                         break;
                     }
-                    case STOPPING_to_DOWN: {
+                    case DOWN: {
                         DEPLOYMENT_CONNECTOR_LOGGER.unboundJca("AdminObject", jndiName);
                         break;
                     }
-                    case REMOVING_to_REMOVED: {
+                    case REMOVED: {
                         DEPLOYMENT_CONNECTOR_LOGGER.debugf("Removed JCA AdminObject [%s]", jndiName);
                     }
                 }

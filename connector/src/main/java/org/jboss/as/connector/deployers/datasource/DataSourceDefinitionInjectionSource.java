@@ -68,7 +68,8 @@ import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
 import org.jboss.modules.Module;
 import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.AbstractServiceListener;
+import org.jboss.msc.service.LifecycleEvent;
+import org.jboss.msc.service.LifecycleListener;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -253,10 +254,10 @@ public class DataSourceDefinitionInjectionSource extends ResourceDefinitionInjec
         final ServiceBuilder<?> binderBuilder = serviceTarget
                 .addService(bindInfo.getBinderServiceName(), binderService)
                 .addDependency(referenceFactoryServiceName, ManagedReferenceFactory.class, binderService.getManagedObjectInjector())
-                .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector()).addListener(new AbstractServiceListener<Object>() {
-                    public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
-                        switch (transition) {
-                            case STARTING_to_UP: {
+                .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector()).addListener(new LifecycleListener() {
+                    public void handleEvent(final ServiceController<?> controller, final LifecycleEvent event) {
+                        switch (event) {
+                            case UP: {
                                 if (isTransactional()) {
                                     SUBSYSTEM_DATASOURCES_LOGGER.boundDataSource(jndiName);
                                 } else {
@@ -264,7 +265,7 @@ public class DataSourceDefinitionInjectionSource extends ResourceDefinitionInjec
                                 }
                                 break;
                             }
-                            case START_REQUESTED_to_DOWN: {
+                            case DOWN: {
                                 if (isTransactional()) {
                                     SUBSYSTEM_DATASOURCES_LOGGER.unboundDataSource(jndiName);
                                 } else {
@@ -272,7 +273,7 @@ public class DataSourceDefinitionInjectionSource extends ResourceDefinitionInjec
                                 }
                                 break;
                             }
-                            case REMOVING_to_REMOVED: {
+                            case REMOVED: {
                                 SUBSYSTEM_DATASOURCES_LOGGER.debugf("Removed JDBC Data-source [%s]", jndiName);
                                 break;
                             }
