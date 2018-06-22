@@ -37,7 +37,8 @@ import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.deployment.JndiNamingDependencyProcessor;
 import org.jboss.as.naming.deployment.RuntimeBindReleaseService;
 import org.jboss.as.naming.service.NamingStoreService;
-import org.jboss.msc.service.AbstractServiceListener;
+import org.jboss.msc.service.LifecycleEvent;
+import org.jboss.msc.service.LifecycleListener;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -68,14 +69,14 @@ public class WritableServiceBasedNamingStoreTestCase {
         final NamingStoreService namingStoreService = new NamingStoreService();
         container.addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME, namingStoreService)
                 .setInitialMode(ServiceController.Mode.ACTIVE)
-                .addListener(new AbstractServiceListener<NamingStore>() {
-                    public void transition(ServiceController<? extends NamingStore> controller, ServiceController.Transition transition) {
-                        switch (transition) {
-                            case STARTING_to_UP: {
+                .addListener(new LifecycleListener() {
+                    public void handleEvent(ServiceController<?> controller, LifecycleEvent event) {
+                        switch (event) {
+                            case UP: {
                                 latch2.countDown();
                                 break;
                             }
-                            case STARTING_to_START_FAILED: {
+                            case FAILED: {
                                 latch2.countDown();
                                 fail("Did not install store service - " + controller.getStartException().getMessage());
                                 break;
@@ -94,14 +95,14 @@ public class WritableServiceBasedNamingStoreTestCase {
         final CountDownLatch latch1 = new CountDownLatch(1);
         container.addService(JndiNamingDependencyProcessor.serviceName(owner), new RuntimeBindReleaseService())
                 .setInitialMode(ServiceController.Mode.ACTIVE)
-                .addListener(new AbstractServiceListener<Object>() {
-                    public void transition(ServiceController<?> controller, ServiceController.Transition transition) {
-                        switch (transition) {
-                            case STARTING_to_UP: {
+                .addListener(new LifecycleListener() {
+                    public void handleEvent(ServiceController<?> controller, LifecycleEvent event) {
+                        switch (event) {
+                            case UP: {
                                 latch1.countDown();
                                 break;
                             }
-                            case STARTING_to_START_FAILED: {
+                            case FAILED: {
                                 latch1.countDown();
                                 fail("Did not install store service - " + controller.getStartException().getMessage());
                                 break;
