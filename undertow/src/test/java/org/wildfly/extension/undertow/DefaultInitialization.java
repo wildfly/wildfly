@@ -48,6 +48,7 @@ import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.ControllerInitializer;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.security.auth.server.HttpAuthenticationFactory;
+import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.credential.store.CredentialStore;
 import org.xnio.Pool;
 import org.xnio.XnioWorker;
@@ -126,6 +127,7 @@ class DefaultInitialization extends AdditionalInitialization.ManagementAdditiona
                 ListenerResourceDefinition.BUFFER_POOL.getDefaultValue().asString()), Pool.class);
         capabilities.put(buildDynamicCapabilityName(Capabilities.REF_HTTP_AUTHENTICATION_FACTORY, "elytron-factory"), HttpAuthenticationFactory.class);
         capabilities.put(buildDynamicCapabilityName(Capabilities.REF_HTTP_AUTHENTICATION_FACTORY, "factory"), HttpAuthenticationFactory.class);
+        capabilities.put(buildDynamicCapabilityName(Capabilities.REF_SECURITY_DOMAIN, "elytron-domain"), SecurityDomain.class);
         capabilities.put(buildDynamicCapabilityName("org.wildfly.security.ssl-context", "TestContext"), SSLContext.class);
         capabilities.put(buildDynamicCapabilityName("org.wildfly.security.ssl-context", "my-ssl-context"), SSLContext.class);
         capabilities.put(buildDynamicCapabilityName("org.wildfly.security.key-store", "my-key-store"), KeyStore.class);

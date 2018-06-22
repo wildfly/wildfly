@@ -96,5 +96,6 @@
             <credential-reference alias="my-credential-alias" store="my-credential-store" type="password"/>
          </single-sign-on>
       </application-security-domain>
+      <application-security-domain security-domain="elytron-domain" name="domain-ref" />
    </application-security-domains>
 </subsystem>
