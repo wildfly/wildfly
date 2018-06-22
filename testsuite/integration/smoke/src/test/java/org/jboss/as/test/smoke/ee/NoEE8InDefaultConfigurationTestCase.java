@@ -60,12 +60,6 @@ public class NoEE8InDefaultConfigurationTestCase {
     }
 
     @Test
-    public void unavailableJSONB10() throws Exception {
-        String fqcn = "javax.json.bind.JsonbBuilder";
-        assertFalse("Class " + fqcn +" is available", isClassAvailable(fqcn));
-    }
-
-    @Test
     public void unavailableCDI20() throws Exception {
         String fqcn = "javax.enterprise.inject.spi.InterceptionFactory";
         assertFalse("Class " + fqcn +" is available", isClassAvailable(fqcn));
