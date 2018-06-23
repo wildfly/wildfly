@@ -28,9 +28,9 @@ import java.util.Collections;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.clustering.controller.IdentityLegacyCapabilityServiceConfigurator;
 import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.service.ServiceNameRegistry;
 import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
 import org.wildfly.clustering.spi.IdentityCacheServiceConfiguratorProvider;
-import org.wildfly.clustering.spi.ServiceNameRegistry;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 
 /**

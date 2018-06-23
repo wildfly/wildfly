@@ -30,8 +30,8 @@ import org.wildfly.clustering.registry.RegistryFactory;
 import org.wildfly.clustering.server.CacheCapabilityServiceConfiguratorFactory;
 import org.wildfly.clustering.server.CacheJndiNameFactory;
 import org.wildfly.clustering.server.CacheRequirementServiceConfiguratorProvider;
+import org.wildfly.clustering.service.ServiceNameRegistry;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
-import org.wildfly.clustering.spi.ServiceNameRegistry;
 
 /**
  * Provides the requisite builders for a clustered {@link RegistryFactory} created from the specified factory.
