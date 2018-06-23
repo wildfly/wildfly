@@ -477,7 +477,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
                     .addDependency(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append("default"))
                     .setInitialMode(ServiceController.Mode.PASSIVE).install();
 
-            createJNDIAliases(bindInfo, jndiAliases, controller);
+            createJNDIAliases(bindInfo, jndiAliases, controller, serviceTarget);
 
             // Mock the deployment service to allow it to start
             serviceTarget.addService(ConnectorServices.RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX.append(name), Service.NULL).install();
@@ -511,11 +511,11 @@ public class PooledConnectionFactoryService implements Service<Void> {
         }
     }
 
-    private void createJNDIAliases(final BindInfo bindInfo, List<String> aliases, ServiceController<ResourceAdapterDeployment> controller) {
+    private void createJNDIAliases(final BindInfo bindInfo, List<String> aliases, ServiceController<ResourceAdapterDeployment> controller, ServiceTarget serviceTarget) {
         for (final String alias : aliases) {
             // do not install the alias' binder service if it is already registered
             if (controller.getServiceContainer().getService(ContextNames.bindInfoFor(alias).getBinderServiceName()) == null) {
-                installAliasBinderService(controller.getServiceContainer(),
+                installAliasBinderService(serviceTarget,
                         bindInfo,
                         alias);
             }

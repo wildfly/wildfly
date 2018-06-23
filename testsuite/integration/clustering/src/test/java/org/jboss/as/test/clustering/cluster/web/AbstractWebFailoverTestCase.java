@@ -21,14 +21,10 @@
  */
 package org.jboss.as.test.clustering.cluster.web;
 
-import static org.jboss.as.test.shared.IntermittentFailure.thisTestIsFailingIntermittently;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
@@ -46,9 +42,7 @@ import org.jboss.as.test.clustering.ClusterHttpClientUtil;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
-import org.jgroups.util.Util;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -59,16 +53,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTestCase {
-
-    @BeforeClass
-    public static void beforeClass() {
-        AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
-            if (Util.checkForWindows()) {
-                thisTestIsFailingIntermittently("WFLY-10026 Disable on Windows until CI environment is fixed");
-            }
-            return null;
-        });
-    }
 
     private final String deploymentName;
     private final CacheMode cacheMode;
@@ -286,7 +270,11 @@ public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTest
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
-                Assert.assertNull(entry);
+                if (entry != null) {
+                    Assert.assertNotEquals(lastOwner, entry.getValue());
+                    lastOwner = entry.getValue();
+                    Assert.assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
+                }
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
@@ -302,7 +290,11 @@ public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTest
                     Assert.assertNotNull(entry);
                     Assert.assertEquals(NODE_3, entry.getValue());
                 } else {
-                    Assert.assertNull(entry);
+                    if (entry != null) {
+                        Assert.assertNotEquals(lastOwner, entry.getValue());
+                        lastOwner = entry.getValue();
+                        Assert.assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
+                    }
                 }
             } finally {
                 HttpClientUtils.closeQuietly(response);
@@ -315,7 +307,11 @@ public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTest
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
-                Assert.assertNull(entry);
+                if (entry != null) {
+                    Assert.assertNotEquals(lastOwner, entry.getValue());
+                    lastOwner = entry.getValue();
+                    Assert.assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
+                }
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
@@ -349,7 +345,11 @@ public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTest
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(value, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
-                Assert.assertNull(entry);
+                if (entry != null) {
+                    Assert.assertNotEquals(lastOwner, entry.getValue());
+                    lastOwner = entry.getValue();
+                    Assert.assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
+                }
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }

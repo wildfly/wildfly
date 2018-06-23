@@ -1,0 +1,1 @@
+elytron."security-realms".appendNode { 'properties-realm'("name":"JBossWS", "plain-text":"true") }

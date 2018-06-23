@@ -22,40 +22,38 @@
 
 package org.jboss.as.ejb3.clustering;
 
-import org.jboss.msc.service.AbstractService;
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.value.InjectedValue;
-import org.wildfly.clustering.singleton.SingletonPolicy;
-
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.CLUSTERED_SINGLETON_CAPABILITY;
+
+import java.util.function.Supplier;
+
+import org.jboss.msc.Service;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StopContext;
+import org.wildfly.clustering.singleton.service.SingletonPolicy;
 
 /**
  * Service that creates clustered singleton service at runtime, using a singleton policy capability service for that.
  *
  * @author Flavia Rainone
  */
-public class ClusteredSingletonServiceCreator extends AbstractService<Void> {
+public class ClusteredSingletonServiceCreator implements Service {
 
-    private final InjectedValue<SingletonPolicy> singletonPolicy;
+    private final Supplier<SingletonPolicy> policy;
 
-    public ClusteredSingletonServiceCreator() {
-        this.singletonPolicy = new InjectedValue<>();
+    public ClusteredSingletonServiceCreator(Supplier<SingletonPolicy> policy) {
+        this.policy = policy;
     }
 
-    public InjectedValue<SingletonPolicy> getSingletonPolicy() {
-        return singletonPolicy;
-    }
-
-    @Override public void start(StartContext context) throws StartException {
-        final ServiceTarget target = context.getChildTarget();
-        final SingletonPolicy singletonPolicyValue = singletonPolicy.getValue();
-        singletonPolicyValue.createSingletonServiceBuilder(CLUSTERED_SINGLETON_CAPABILITY.getCapabilityServiceName(), Service.NULL)
-                .build(target)
+    @Override
+    public void start(StartContext context) {
+        this.policy.get().createSingletonServiceConfigurator(CLUSTERED_SINGLETON_CAPABILITY.getCapabilityServiceName())
+                .build(context.getChildTarget())
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install();
+    }
+
+    @Override
+    public void stop(StopContext context) {
     }
 }

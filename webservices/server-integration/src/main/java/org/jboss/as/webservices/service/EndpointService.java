@@ -49,7 +49,6 @@ import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
@@ -268,7 +267,7 @@ public final class EndpointService implements Service<Endpoint> {
                     SecurityDomainService.SERVICE_NAME.append(domainName),
                     SecurityDomainContext.class, service.getSecurityDomainContextInjector());
         }
-        builder.addDependency(DependencyType.REQUIRED, WSServices.CONFIG_SERVICE, AbstractServerConfig.class,
+        builder.addDependency(WSServices.CONFIG_SERVICE, AbstractServerConfig.class,
                 service.getAbstractServerConfigInjector());
         if (EndpointType.JAXWS_EJB3.equals(endpoint.getType())) {
             builder.addDependency(getEJBViewMethodSecurityAttributesServiceName(unit, endpoint),

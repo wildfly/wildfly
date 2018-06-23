@@ -23,13 +23,14 @@
 package org.jboss.as.connector.services.workmanager.transport;
 
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.CompletionStage;
 
 import javax.resource.spi.work.DistributableWork;
 import javax.resource.spi.work.WorkException;
@@ -44,12 +45,12 @@ import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherException;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
-import org.wildfly.clustering.dispatcher.CommandResponse;
 import org.wildfly.clustering.group.GroupListener;
 import org.wildfly.clustering.group.Membership;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.service.concurrent.ServiceExecutor;
 import org.wildfly.clustering.service.concurrent.StampedLockServiceExecutor;
+import org.wildfly.common.function.ExceptionRunnable;
 import org.wildfly.common.function.ExceptionSupplier;
 
 /**
@@ -116,26 +117,45 @@ public class CommandDispatcherTransport extends AbstractRemoteTransport<Node> im
     @Override
     protected Serializable sendMessage(Node physicalAddress, Request request, Serializable... parameters) throws WorkException {
         Command<?, CommandDispatcherTransport> command = createCommand(request, parameters);
-        ExceptionSupplier<CommandResponse<?>, CommandDispatcherException> task = () -> this.dispatcher.executeOnNode(command, physicalAddress);
-        try {
-            CommandResponse<?> response = this.executor.execute(task).orElse(null);
-            return (response != null) ? (Serializable) response.get() : null;
-        } catch (CommandDispatcherException | ExecutionException e) {
-            throw new WorkException(e);
-        }
+        CommandDispatcher<CommandDispatcherTransport> dispatcher = this.dispatcher;
+        ExceptionSupplier<Optional<Serializable>, WorkException> task = new ExceptionSupplier<Optional<Serializable>, WorkException>() {
+            @Override
+            public Optional<Serializable> get() throws WorkException {
+                try {
+                    CompletionStage<?> response = dispatcher.executeOnMember(command, physicalAddress);
+                    return Optional.ofNullable((Serializable) response.toCompletableFuture().join());
+                } catch (CancellationException e) {
+                    return Optional.empty();
+                } catch (CommandDispatcherException | CompletionException e) {
+                    throw new WorkException(e);
+                }
+            }
+        };
+        return this.executor.execute(task).orElse(null).orElse(null);
     }
 
     private void broadcast(Command<Void, CommandDispatcherTransport> command) throws WorkException {
-        ExceptionSupplier<Map<Node, CommandResponse<Void>>, CommandDispatcherException> task = () -> this.dispatcher.executeOnCluster(command);
-        try {
-            Map<Node, CommandResponse<Void>> responses = this.executor.execute(task).orElse(Collections.emptyMap());
-            for (Map.Entry<Node, CommandResponse<Void>> entry : responses.entrySet()) {
-                // Verify that command executed successfully on all nodes
-                entry.getValue().get();
+        CommandDispatcher<CommandDispatcherTransport> dispatcher = this.dispatcher;
+        ExceptionRunnable<WorkException> task = new ExceptionRunnable<WorkException>() {
+            @Override
+            public void run() throws WorkException {
+                try {
+                    for (Map.Entry<Node, CompletionStage<Void>> entry : dispatcher.executeOnGroup(command).entrySet()) {
+                        // Verify that command executed successfully on all nodes
+                        try {
+                            entry.getValue().toCompletableFuture().join();
+                        } catch (CancellationException e) {
+                            // Ignore
+                        } catch (CompletionException e) {
+                            throw new WorkException(e);
+                        }
+                    }
+                } catch (CommandDispatcherException e) {
+                    throw new WorkException(e);
+                }
             }
-        } catch (CommandDispatcherException | ExecutionException e) {
-            throw new WorkException(e);
-        }
+        };
+        this.executor.execute(task);
     }
 
     private static Command<?, CommandDispatcherTransport> createCommand(Request request, Serializable... parameters) {
@@ -229,33 +249,31 @@ public class CommandDispatcherTransport extends AbstractRemoteTransport<Node> im
     }
 
     private void join(Membership membership) {
-        Map<Node, Future<Set<Address>>> futures = new HashMap<>();
+        Map<Node, CompletionStage<Set<Address>>> futures = new HashMap<>();
         for (Node member : membership.getMembers()) {
             if (!this.getOwnAddress().equals(member) && !this.nodes.containsValue(member)) {
                 try {
-                    futures.put(member, this.dispatcher.submitOnNode(new GetWorkManagersCommand(), member));
+                    futures.put(member, this.dispatcher.executeOnMember(new GetWorkManagersCommand(), member));
                 } catch (CommandDispatcherException e) {
                     ConnectorLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
                 }
             }
         }
-        try {
-            for (Map.Entry<Node, Future<Set<Address>>> entry : futures.entrySet()) {
-                Node member = entry.getKey();
-                try {
-                    Set<Address> addresses = entry.getValue().get();
-                    for (Address address : addresses) {
-                        this.join(address, member);
+        for (Map.Entry<Node, CompletionStage<Set<Address>>> entry : futures.entrySet()) {
+            Node member = entry.getKey();
+            try {
+                Set<Address> addresses = entry.getValue().toCompletableFuture().join();
+                for (Address address : addresses) {
+                    this.join(address, member);
 
-                        this.localUpdateLongRunningFree(address, this.getShortRunningFree(address));
-                        this.localUpdateShortRunningFree(address, this.getShortRunningFree(address));
-                    }
-                } catch (ExecutionException e) {
-                    ConnectorLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
+                    this.localUpdateLongRunningFree(address, this.getShortRunningFree(address));
+                    this.localUpdateShortRunningFree(address, this.getShortRunningFree(address));
                 }
+            } catch (CancellationException e) {
+                // Ignore
+            } catch (CompletionException e) {
+                ConnectorLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
             }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
         }
     }
 }

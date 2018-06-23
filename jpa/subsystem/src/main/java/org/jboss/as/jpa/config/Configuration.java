@@ -259,6 +259,7 @@ public class Configuration {
     private static boolean isHibernateProvider(String provider) {
         return provider == null ||
                 PROVIDER_CLASS_HIBERNATE.equals(provider) ||
+                PROVIDER_CLASS_HIBERNATE_OGM.equals(provider) ||
                 PROVIDER_CLASS_HIBERNATE4_1.equals(provider);
     }
 

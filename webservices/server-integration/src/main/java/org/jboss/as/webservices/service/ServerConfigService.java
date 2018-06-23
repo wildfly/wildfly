@@ -31,7 +31,6 @@ import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
@@ -87,13 +86,13 @@ public final class ServerConfigService implements Service<ServerConfig> {
             final List<ServiceName> dependencies, final boolean jmxSubsystemAvailable, final boolean requireUndertow) {
         final ServiceBuilder<ServerConfig> builder = serviceTarget.addService(WSServices.CONFIG_SERVICE, new ServerConfigService(serverConfig));
         if (jmxSubsystemAvailable) {
-            builder.addDependency(DependencyType.REQUIRED, MBEAN_SERVER_NAME, MBeanServer.class, serverConfig.getMBeanServerInjector());
+            builder.addDependency(MBEAN_SERVER_NAME, MBeanServer.class, serverConfig.getMBeanServerInjector());
         } else {
             serverConfig.getMBeanServerInjector().setValue(new ImmediateValue<MBeanServer>(null));
         }
         builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, serverConfig.getServerEnvironmentInjector());
         if (requireUndertow) {
-            builder.addDependency(DependencyType.REQUIRED, UndertowService.UNDERTOW, UndertowService.class, serverConfig.getUndertowServiceInjector());
+            builder.addDependency(UndertowService.UNDERTOW, UndertowService.class, serverConfig.getUndertowServiceInjector());
         } else {
             serverConfig.getUndertowServiceInjector().setValue(new ImmediateValue<UndertowService>(null));
         }

@@ -161,7 +161,6 @@ public class InterceptorOrder {
         public static final int CHECKING_INTERCEPTOR = 1;
         public static final int TCCL_INTERCEPTOR = 0x003;
         public static final int INVOCATION_TYPE = 0x005;
-        public static final int EE_SETUP = 0x010;
         public static final int EJB_IIOP_TRANSACTION = 0x020;
         public static final int JNDI_NAMESPACE_INTERCEPTOR = 0x050;
         public static final int REMOTE_EXCEPTION_TRANSFORMER = 0x200;
@@ -193,6 +192,7 @@ public class InterceptorOrder {
         public static final int REMOTE_TRANSACTION_PROPAGATION_INTERCEPTOR = 0x450;
         public static final int CDI_REQUEST_SCOPE = 0x480;
         public static final int CMT_TRANSACTION_INTERCEPTOR = 0x500;
+       public static final int EE_SETUP = 0x510;
         public static final int HOME_METHOD_INTERCEPTOR = 0x600;
         public static final int ASSOCIATING_INTERCEPTOR = 0x700;
         public static final int XTS_INTERCEPTOR = 0x701;

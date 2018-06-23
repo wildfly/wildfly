@@ -32,7 +32,6 @@ import org.jboss.as.webservices.util.WSServices;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -48,7 +47,7 @@ import org.jboss.wsf.spi.metadata.webservices.WebservicesMetaData;
  * the EndpointPublishService
  *
  * @author alessio.soldano@jboss.com
- * @since 21-Nov-2013
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public final class EndpointDeployService implements Service<DeploymentUnit> {
 
@@ -106,7 +105,7 @@ public final class EndpointDeployService implements Service<DeploymentUnit> {
         }
         final EndpointDeployService service = new EndpointDeployService(context, unit);
         final ServiceBuilder<DeploymentUnit> builder = serviceTarget.addService(service.getName(), service);
-        builder.addDependency(DependencyType.REQUIRED, WSServices.CONFIG_SERVICE);
+        builder.addDependency(WSServices.CONFIG_SERVICE);
         builder.setInitialMode(Mode.ACTIVE);
         builder.install();
         return unit;

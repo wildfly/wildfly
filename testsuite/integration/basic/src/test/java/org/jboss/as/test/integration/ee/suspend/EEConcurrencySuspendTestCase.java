@@ -97,6 +97,7 @@ public class EEConcurrencySuspendTestCase {
 
         final String address = "http://" + TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getHttpPort() + "/ee-suspend/ShutdownServlet";
         ExecutorService executorService = Executors.newSingleThreadExecutor();
+        boolean suspended = false;
         try {
             Future<Object> result = executorService.submit(new Callable<Object>() {
                 @Override
@@ -107,6 +108,8 @@ public class EEConcurrencySuspendTestCase {
 
             Thread.sleep(1000); //nasty, but we need to make sure the HTTP request has started
 
+            Assert.assertEquals(ShutdownServlet.TEXT, result.get());
+
             ModelNode op = new ModelNode();
             op.get(ModelDescriptionConstants.OP).set("suspend");
             execute(managementClient.getControllerClient(), op);
@@ -114,16 +117,18 @@ public class EEConcurrencySuspendTestCase {
             op = new ModelNode();
             op.get(OP).set(READ_ATTRIBUTE_OPERATION);
             op.get(NAME).set(SUSPEND_STATE);
-            Assert.assertEquals("SUSPENDING", executeForStringResult(managementClient.getControllerClient(), op));
+
+            waitUntilSuspendStateResult(op, "SUSPENDING");
 
             ShutdownServlet.requestLatch.countDown();
-            Assert.assertEquals(ShutdownServlet.TEXT, result.get());
 
             op = new ModelNode();
             op.get(OP).set(READ_ATTRIBUTE_OPERATION);
             op.get(NAME).set(SUSPEND_STATE);
-            Assert.assertEquals("SUSPENDED", executeForStringResult(managementClient.getControllerClient(), op));
 
+            waitUntilSuspendStateResult(op, "SUSPENDED");
+
+            //server is now suspended,check we get 503 http status code
             final HttpURLConnection conn = (HttpURLConnection) new URL(address).openConnection();
             try {
                 conn.setDoInput(true);
@@ -133,13 +138,37 @@ public class EEConcurrencySuspendTestCase {
                 conn.disconnect();
             }
 
+            suspended = true;
         } finally {
             ShutdownServlet.requestLatch.countDown();
             executorService.shutdown();
 
-            ModelNode op = new ModelNode();
-            op.get(ModelDescriptionConstants.OP).set("resume");
-            execute(managementClient.getControllerClient(), op);
+            if (suspended){
+                //if suspended, test if it is resumed
+                ModelNode op = new ModelNode();
+                op.get(ModelDescriptionConstants.OP).set("resume");
+                execute(managementClient.getControllerClient(), op);
+
+                op = new ModelNode();
+                op.get(OP).set(READ_ATTRIBUTE_OPERATION);
+                op.get(NAME).set(SUSPEND_STATE);
+
+                Assert.assertEquals("server-state is not <RUNNING> after resume operation. ", "RUNNING", executeForStringResult(managementClient.getControllerClient(), op));
+            }
+        }
+    }
+
+    private void waitUntilSuspendStateResult(ModelNode op, String expectedResult) throws IOException, InterruptedException {
+        final long deadline = System.currentTimeMillis() + 4000;
+        while (true) {
+            String result = executeForStringResult(managementClient.getControllerClient(), op);
+            if (result.equals(expectedResult)) {
+                break;
+            }
+            if (System.currentTimeMillis() > deadline) {
+                Assert.fail("Server suspend-state is not in " + expectedResult + " after " + deadline + " milliseconds.");
+            }
+            TimeUnit.MILLISECONDS.sleep(500);
         }
     }
 

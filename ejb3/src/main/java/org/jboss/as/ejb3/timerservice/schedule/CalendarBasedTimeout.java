@@ -284,12 +284,16 @@ public class CalendarBasedTimeout {
             // no change in time
             return nextCal;
         }
+
+        // Set the time before adding the a day. If we do it after,
+        // we could be using an invalid DST value in setTime method
+        setTime(nextCal, nextHour, nextMinute, nextSecond);
+
         // time change
         if (nextTimeInSeconds < currentTimeInSeconds) {
             // advance to next day
             nextCal.add(Calendar.DATE, 1);
         }
-        setTime(nextCal, nextHour, nextMinute, nextSecond);
 
         return nextCal;
     }

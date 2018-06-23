@@ -46,7 +46,7 @@ import org.junit.BeforeClass;
 public abstract class RemoteEJBClientStatefulFailoverTestBase extends AbstractClusteringTestCase {
     private static final Logger log = Logger.getLogger(RemoteEJBClientStatefulFailoverTestBase.class);
 
-    protected static final String MODULE_NAME = "ejb2-failover-test";
+    protected static final String MODULE_NAME = RemoteEJBClientStatefulFailoverTestBase.class.getSimpleName();
     protected static final String MODULE_NAME_SINGLE = MODULE_NAME + "-single";
 
     protected static EJBDirectory singletonDirectory;
@@ -56,6 +56,17 @@ public abstract class RemoteEJBClientStatefulFailoverTestBase extends AbstractCl
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME_SINGLE + ".jar");
         jar.addPackage(CounterSingletonRemote.class.getPackage());
         return jar;
+    }
+
+    public RemoteEJBClientStatefulFailoverTestBase() {
+        super(TWO_NODES, new String[] { DEPLOYMENT_HELPER_1, DEPLOYMENT_HELPER_2, DEPLOYMENT_1, DEPLOYMENT_2 });
+    }
+
+    @Override
+    public void afterTestMethod() {
+        start(nodes);
+        undeploy(TWO_DEPLOYMENTS);
+        undeploy(TWO_DEPLOYMENT_HELPERS);
     }
 
     @BeforeClass
@@ -68,19 +79,6 @@ public abstract class RemoteEJBClientStatefulFailoverTestBase extends AbstractCl
     public static void destroy() throws Exception {
         directory.close();
         singletonDirectory.close();
-    }
-
-    @Override
-    public void beforeTestMethod() {
-        start(TWO_NODES);
-        deploy(TWO_DEPLOYMENT_HELPERS);
-        deploy(TWO_DEPLOYMENTS);
-    }
-
-    @Override
-    public void afterTestMethod() throws Exception {
-        super.afterTestMethod();
-        undeploy(TWO_DEPLOYMENT_HELPERS);
     }
 
     /**

@@ -21,24 +21,19 @@
  */
 package org.wildfly.clustering.server.dispatcher;
 
-import java.security.PrivilegedAction;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.Executor;
+import java.util.function.Supplier;
 
-import org.jboss.threads.JBossThreadFactory;
-import org.jgroups.Address;
-import org.jgroups.UnreachableException;
 import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
-import org.wildfly.clustering.dispatcher.CommandResponse;
+import org.wildfly.clustering.dispatcher.CommandDispatcherException;
 import org.wildfly.clustering.group.Node;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Non-clustered {@link CommandDispatcher} implementation
@@ -49,18 +44,9 @@ public class LocalCommandDispatcher<C> implements CommandDispatcher<C> {
 
     private final C context;
     private final Node node;
-    private final ExecutorService executor;
+    private final Executor executor;
 
-    public LocalCommandDispatcher(Node node, C context) {
-        this(node, context, Executors.newCachedThreadPool(createThreadFactory()));
-    }
-
-    private static ThreadFactory createThreadFactory() {
-        PrivilegedAction<ThreadFactory> action = () -> new JBossThreadFactory(new ThreadGroup(LocalCommandDispatcher.class.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null);
-        return WildFlySecurityManager.doUnchecked(action);
-    }
-
-    public LocalCommandDispatcher(Node node, C context, ExecutorService executor) {
+    public LocalCommandDispatcher(Node node, C context, Executor executor) {
         this.node = node;
         this.context = context;
         this.executor = executor;
@@ -72,47 +58,40 @@ public class LocalCommandDispatcher<C> implements CommandDispatcher<C> {
     }
 
     @Override
-    public <R> CommandResponse<R> executeOnNode(Command<R, ? super C> command, Node node) {
-        if (!this.node.equals(node)) {
-            throw new UnreachableException((Address) null);
+    public <R> CompletionStage<R> executeOnMember(Command<R, ? super C> command, Node member) throws CommandDispatcherException {
+        if (!this.node.equals(this.node)) {
+            throw new IllegalArgumentException(member.getName());
         }
-        try {
-            return new SimpleCommandResponse<>(command.execute(this.context));
-        } catch (Throwable e) {
-            return new SimpleCommandResponse<>(e);
-        }
+        return CompletableFuture.supplyAsync(new CommandTask<>(command, this.context), this.executor);
     }
 
     @Override
-    public <R> Map<Node, CommandResponse<R>> executeOnCluster(Command<R, ? super C> command, Node... excludedNodes) {
-        Map<Node, CommandResponse<R>> results = new HashMap<>();
-        if ((excludedNodes == null) || (excludedNodes.length == 0) || !Arrays.asList(excludedNodes).contains(this.node)) {
-            results.put(this.node, this.executeOnNode(command, this.node));
-        }
-        return results;
-    }
-
-    @Override
-    public <R> Future<R> submitOnNode(final Command<R, ? super C> command, Node node) {
-        Callable<R> task = () -> command.execute(this.context);
-        return this.executor.submit(task);
-    }
-
-    @Override
-    public <R> Map<Node, Future<R>> submitOnCluster(Command<R, ? super C> command, Node... excludedNodes) {
-        Map<Node, Future<R>> results = new HashMap<>();
-        if ((excludedNodes == null) || (excludedNodes.length == 0) || !Arrays.asList(excludedNodes).contains(this.node)) {
-            results.put(this.node, this.submitOnNode(command, this.node));
-        }
-        return results;
+    public <R> Map<Node, CompletionStage<R>> executeOnGroup(Command<R, ? super C> command, Node... excludedMembers) throws CommandDispatcherException {
+        if ((excludedMembers != null) && Arrays.asList(excludedMembers).contains(this.node)) return Collections.emptyMap();
+        return Collections.singletonMap(this.node, this.executeOnMember(command, this.node));
     }
 
     @Override
     public void close() {
-        PrivilegedAction<Void> action = () -> {
-            this.executor.shutdown();
-            return null;
-        };
-        WildFlySecurityManager.doUnchecked(action);
+        // Do nothing
+    }
+
+    private static class CommandTask<R, C> implements Supplier<R> {
+        private final C context;
+        private final Command<R, C> command;
+
+        CommandTask(Command<R, C> command, C context) {
+            this.command = command;
+            this.context = context;
+        }
+
+        @Override
+        public R get() {
+            try {
+                return this.command.execute(this.context);
+            } catch (Exception e) {
+                throw new CompletionException(e);
+            }
+        }
     }
 }

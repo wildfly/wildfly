@@ -22,6 +22,7 @@
 package org.jboss.as.ejb3.timer.schedule;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -876,6 +877,286 @@ public class CalendarBasedTimeoutTestCase {
                 current.get(Calendar.MINUTE) != 15 ||
                 current.get(Calendar.DST_OFFSET) != 0) {
             Assert.fail("End time unexpected : " + current.toString());
+        }
+    }
+
+    /**
+     * This test asserts that the timer increments in seconds, minutes and hours
+     * are the same for a complete year using a DST timezone and a non-DST timezone.
+     *
+     * This test covers WFLY-10106 issue.
+     */
+    @Test
+    public void testTimeoutIncrements(){
+        TimeZone dstTimezone = TimeZone.getTimeZone("Atlantic/Canary");
+        TimeZone nonDstTimezone = TimeZone.getTimeZone("Africa/Abidjan");
+
+        Assert.assertTrue(dstTimezone.useDaylightTime());
+        Assert.assertTrue(!nonDstTimezone.useDaylightTime());
+
+        for (TimeZone tz : Arrays.asList(dstTimezone, nonDstTimezone)) {
+            this.timezone = tz;
+
+            testSecondIncrement();
+            testMinutesIncrement();
+            testHoursIncrement();
+        }
+    }
+
+    public void testSecondIncrement() {
+        Calendar start = new GregorianCalendar(timezone);
+        start.clear();
+        start.set(2018, Calendar.JANUARY, 1, 10, 00, 0);
+
+        ScheduleExpression schedule = new ScheduleExpression();
+        schedule.hour("*")
+                .minute("*")
+                .second("*/30")
+                .timezone(timezone.getID())
+                .start(start.getTime());
+        CalendarBasedTimeout calendarTimeout = new CalendarBasedTimeout(schedule);
+        Calendar firstTimeout = calendarTimeout.getFirstTimeout();
+
+        Assert.assertNotNull(firstTimeout);
+
+        if(firstTimeout.get(Calendar.YEAR) != 2018 ||
+                firstTimeout.get(Calendar.MONTH) != Calendar.JANUARY ||
+                firstTimeout.get(Calendar.DAY_OF_MONTH) != 1 ||
+                firstTimeout.get(Calendar.HOUR_OF_DAY) != 10 ||
+                firstTimeout.get(Calendar.MINUTE) != 0 ||
+                firstTimeout.get(Calendar.SECOND) != 0 ||
+                firstTimeout.get(Calendar.DST_OFFSET) != start.get(Calendar.DST_OFFSET) ) {
+            Assert.fail("Start time unexpected : " + firstTimeout.toString());
+        }
+
+        Calendar current = firstTimeout;
+        long numInvocations = 366*24*60*60/30;
+        long millisecondsDiff = 30*1000;
+        for(int i = 0 ; i<numInvocations; i++) {
+            Calendar next = calendarTimeout.getNextTimeout(current);
+            if(current.getTimeInMillis() != (next.getTimeInMillis() - millisecondsDiff)) {
+                Assert.fail("Schedule is more than 30 seconds from " + current.getTime() + " to " + next.getTime());
+            }
+            current = next;
+        }
+
+        if(current.get(Calendar.YEAR) != 2019 ||
+                current.get(Calendar.MONTH) != Calendar.JANUARY ||
+                current.get(Calendar.DAY_OF_MONTH) != 2 ||
+                current.get(Calendar.HOUR_OF_DAY) != 10 ||
+                current.get(Calendar.MINUTE) != 0 ||
+                current.get(Calendar.SECOND) != 0 ||
+                current.get(Calendar.DST_OFFSET) != start.get(Calendar.DST_OFFSET) ) {
+            Assert.fail("End time unexpected : " + current.toString());
+        }
+    }
+
+    public void testMinutesIncrement() {
+        Calendar start = new GregorianCalendar(timezone);
+        start.clear();
+        start.set(2017, Calendar.JANUARY, 1, 0, 0, 0);
+
+        ScheduleExpression schedule = new ScheduleExpression();
+        schedule.hour("*")
+                .minute("*/15")
+                .second("0")
+                .timezone(timezone.getID())
+                .start(start.getTime());
+        CalendarBasedTimeout calendarTimeout = new CalendarBasedTimeout(schedule);
+        Calendar firstTimeout = calendarTimeout.getFirstTimeout();
+
+        Assert.assertNotNull(firstTimeout);
+
+        if(firstTimeout.get(Calendar.YEAR) != 2017 ||
+                firstTimeout.get(Calendar.MONTH) != Calendar.JANUARY ||
+                firstTimeout.get(Calendar.DAY_OF_MONTH) != 1 ||
+                firstTimeout.get(Calendar.HOUR_OF_DAY) != 0 ||
+                firstTimeout.get(Calendar.MINUTE) != 0 ||
+                firstTimeout.get(Calendar.SECOND) != 0 ||
+                firstTimeout.get(Calendar.DST_OFFSET) != start.get(Calendar.DST_OFFSET) ) {
+            Assert.fail("Start time unexpected : " + firstTimeout.toString());
+        }
+
+        Calendar current = firstTimeout;
+        long numInvocations = 366*24*60/15;
+        long millisecondsDiff = 15*60*1000;
+        for(int i = 0 ; i<numInvocations; i++) {
+            Calendar next = calendarTimeout.getNextTimeout(current);
+            if(current.getTimeInMillis() != (next.getTimeInMillis() - millisecondsDiff)) {
+                Assert.fail("Schedule is more than 15 minutes from " + current.getTime() + " to " + next.getTime());
+            }
+            current = next;
+        }
+
+        if(current.get(Calendar.YEAR) != 2018 ||
+                current.get(Calendar.MONTH) != Calendar.JANUARY ||
+                current.get(Calendar.DAY_OF_MONTH) != 2 ||
+                current.get(Calendar.HOUR_OF_DAY) != 0 ||
+                current.get(Calendar.MINUTE) != 0 ||
+                current.get(Calendar.SECOND) != 0 ||
+                current.get(Calendar.DST_OFFSET) != start.get(Calendar.DST_OFFSET) ) {
+            Assert.fail("End time unexpected : " + current.toString());
+        }
+    }
+
+    public void testHoursIncrement() {
+        Calendar start = new GregorianCalendar(timezone);
+        start.clear();
+        start.set(2017, Calendar.JANUARY, 1, 0, 0, 0);
+
+        ScheduleExpression schedule = new ScheduleExpression();
+        schedule.hour("*")
+                .minute("30")
+                .second("0")
+                .timezone(timezone.getID())
+                .start(start.getTime());
+
+        CalendarBasedTimeout calendarTimeout = new CalendarBasedTimeout(schedule);
+        Calendar firstTimeout = calendarTimeout.getFirstTimeout();
+
+        Assert.assertNotNull(firstTimeout);
+
+        if(firstTimeout.get(Calendar.YEAR) != 2017 ||
+                firstTimeout.get(Calendar.MONTH) != Calendar.JANUARY ||
+                firstTimeout.get(Calendar.DAY_OF_MONTH) != 1 ||
+                firstTimeout.get(Calendar.HOUR_OF_DAY) != 0 ||
+                firstTimeout.get(Calendar.MINUTE) != 30 ||
+                firstTimeout.get(Calendar.SECOND) != 0 ||
+                firstTimeout.get(Calendar.DST_OFFSET) != start.get(Calendar.DST_OFFSET) ) {
+            Assert.fail("Start time unexpected : " + firstTimeout.toString());
+        }
+
+        Calendar current = firstTimeout;
+        long numInvocations = 366*24;
+        long millisecondsDiff = 60*60*1000;
+        for(int i = 0 ; i<numInvocations; i++) {
+            Calendar next = calendarTimeout.getNextTimeout(current);
+            if(current.getTimeInMillis() != (next.getTimeInMillis() - millisecondsDiff)) {
+                Assert.fail("Schedule is more than 1 hours from " + current.getTime() + " to " + next.getTime() + " for timezone " + timezone.getID());
+            }
+            current = next;
+        }
+
+        if(current.get(Calendar.YEAR) != 2018 ||
+                current.get(Calendar.MONTH) != Calendar.JANUARY ||
+                current.get(Calendar.DAY_OF_MONTH) != 2 ||
+                current.get(Calendar.HOUR_OF_DAY) != 0 ||
+                current.get(Calendar.MINUTE) != 30 ||
+                current.get(Calendar.SECOND) != 0 ||
+                current.get(Calendar.DST_OFFSET) != start.get(Calendar.DST_OFFSET) ) {
+            Assert.fail("End time unexpected : " + current.toString());
+        }
+    }
+
+    /**
+     * This test asserts that a timer scheduled to run during the ambiguous hour when the
+     * Daylight Savings period ends is not executed twice.
+     *
+     * It configures a timer to be fired on October 29, 2017 at 01:30:00 in Europe/Lisbon TZ.
+     * There are two 01:30:00 that day: 01:30:00 WEST and 01:30:00 WET. The timer has to be
+     * fired just once.
+     */
+    @Test
+    public void testTimerAtAmbiguousHourWESTtoWET() {
+        // WEST -> WET
+        // Sunday, 29 October 2017, 02:00:00 -> 01:00:00
+        Calendar start = new GregorianCalendar(TimeZone.getTimeZone("Europe/Lisbon"));
+        start.clear();
+        start.set(2017, Calendar.OCTOBER, 29, 0, 0, 0);
+
+        ScheduleExpression schedule = new ScheduleExpression();
+        schedule.hour("1")
+                .minute("30")
+                .second("0")
+                .timezone("Europe/Lisbon")
+                .start(start.getTime());
+        CalendarBasedTimeout calendarTimeout = new CalendarBasedTimeout(schedule);
+
+        Calendar timeout = calendarTimeout.getFirstTimeout();
+
+        Assert.assertNotNull(timeout);
+
+        //Assert timeout is 29 October at 01:30 WEST
+        if (timeout.get(Calendar.YEAR) != 2017 ||
+                timeout.get(Calendar.MONTH) != Calendar.OCTOBER ||
+                timeout.get(Calendar.DAY_OF_MONTH) != 29 ||
+                timeout.get(Calendar.HOUR_OF_DAY) != 1 ||
+                timeout.get(Calendar.MINUTE) != 30 ||
+                timeout.get(Calendar.SECOND) != 0 ||
+                timeout.get(Calendar.DST_OFFSET) != 3600000) {
+            Assert.fail("Time unexpected : " + timeout.toString());
+        }
+
+        //Asserts elapsed time from start was 1h 30min:
+        Assert.assertTrue("Schedule is more than 1h 30min hours from " + start.getTime() + " to " + timeout.getTime(), timeout.getTimeInMillis()-start.getTimeInMillis() == 1*60*60*1000 + 30*60*1000);
+
+        timeout = calendarTimeout.getNextTimeout(timeout);
+
+        //Assert timeout is 30 October at 01:30 WET
+        if (timeout.get(Calendar.YEAR) != 2017 ||
+                timeout.get(Calendar.MONTH) != Calendar.OCTOBER ||
+                timeout.get(Calendar.DAY_OF_MONTH) != 30 ||
+                timeout.get(Calendar.HOUR_OF_DAY) != 1 ||
+                timeout.get(Calendar.MINUTE) != 30 ||
+                timeout.get(Calendar.SECOND) != 0 ||
+                timeout.get(Calendar.DST_OFFSET) != 0) {
+            Assert.fail("Time unexpected : " + timeout.toString());
+        }
+    }
+
+    /**
+     * This test asserts that a timer scheduled to run during the removed hour when the
+     * Daylight Savings period starts is executed.
+     *
+     * It configures a timer to be fired on March 26, 2017 at 03:30:00 in Europe/Helsinki TZ.
+     * This hour does not exist in that timezone, this test asserts the timer is fired once
+     * during this ambiguous hour.
+     */
+    @Test
+    public void testTimerAtAmbiguousHourEETtoEEST() {
+        // EET --> EEST
+        // Sunday, 26 March 2017, 03:00:00 --> 04:00:00
+        Calendar start = new GregorianCalendar(TimeZone.getTimeZone("Europe/Helsinki"));
+        start.clear();
+        start.set(2017, Calendar.MARCH, 26, 0, 0, 0);
+
+        ScheduleExpression schedule = new ScheduleExpression();
+        schedule.hour("3")
+                .minute("30")
+                .second("0")
+                .timezone("Europe/Helsinki")
+                .start(start.getTime());
+        CalendarBasedTimeout calendarTimeout = new CalendarBasedTimeout(schedule);
+
+        Calendar timeout = calendarTimeout.getFirstTimeout();
+
+        Assert.assertNotNull(timeout);
+
+        //Assert timeout is 26 March at 03:30 EET
+        if (timeout.get(Calendar.YEAR) != 2017 ||
+                timeout.get(Calendar.MONTH) != Calendar.MARCH ||
+                timeout.get(Calendar.DAY_OF_MONTH) != 26 ||
+                timeout.get(Calendar.HOUR_OF_DAY) != 3 ||
+                timeout.get(Calendar.MINUTE) != 30 ||
+                timeout.get(Calendar.SECOND) != 0 ||
+                timeout.get(Calendar.DST_OFFSET) != 0) {
+            Assert.fail("Time unexpected : " + timeout.toString());
+        }
+
+        //Asserts elapsed time from start was 3h 30min:
+        Assert.assertTrue("Schedule is more than 3h 30min hours from " + start.getTime() + " to " + timeout.getTime(), timeout.getTimeInMillis()-start.getTimeInMillis() == 3*60*60*1000 + 30*60*1000);
+
+        timeout = calendarTimeout.getNextTimeout(timeout);
+
+        //Assert timeout is 27 March at 03:30 EEST
+        if (timeout.get(Calendar.YEAR) != 2017 ||
+                timeout.get(Calendar.MONTH) != Calendar.MARCH ||
+                timeout.get(Calendar.DAY_OF_MONTH) != 27 ||
+                timeout.get(Calendar.HOUR_OF_DAY) != 3 ||
+                timeout.get(Calendar.MINUTE) != 30 ||
+                timeout.get(Calendar.SECOND) != 0 ||
+                timeout.get(Calendar.DST_OFFSET) != 3600000) {
+            Assert.fail("Time unexpected : " + timeout.toString());
         }
     }
 

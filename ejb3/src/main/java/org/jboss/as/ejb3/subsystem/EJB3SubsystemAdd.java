@@ -37,6 +37,7 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.EJ
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.EJB_CLIENT_CONFIGURATOR;
 
 import java.net.URI;
+import java.util.function.Supplier;
 
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
@@ -143,7 +144,7 @@ import org.jboss.remoting3.Endpoint;
 import org.omg.PortableServer.POA;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.singleton.SingletonDefaultRequirement;
-import org.wildfly.clustering.singleton.SingletonPolicy;
+import org.wildfly.clustering.singleton.service.SingletonPolicy;
 import org.wildfly.iiop.openjdk.rmi.DelegatingStubFactoryFactory;
 import org.wildfly.iiop.openjdk.service.CorbaPOAService;
 import org.wildfly.transaction.client.LocalTransactionContext;
@@ -497,10 +498,9 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
             return;
         }
         if (context.hasOptionalCapability(SingletonDefaultRequirement.SINGLETON_POLICY.getName(), CLUSTERED_SINGLETON_CAPABILITY.getName(), null)) {
-            final ClusteredSingletonServiceCreator singletonBarrierCreator = new ClusteredSingletonServiceCreator();
-            target.addService(CLUSTERED_SINGLETON_CAPABILITY.getCapabilityServiceName().append("creator"), singletonBarrierCreator)
-                    .addDependency(context.getCapabilityServiceName(SingletonDefaultRequirement.SINGLETON_POLICY.getName(), SingletonDefaultRequirement.SINGLETON_POLICY.getType()),
-                            SingletonPolicy.class, singletonBarrierCreator.getSingletonPolicy()).install();
+            ServiceBuilder<?> builder = target.addService(CLUSTERED_SINGLETON_CAPABILITY.getCapabilityServiceName().append("creator"));
+            Supplier<SingletonPolicy> policy = builder.requires(context.getCapabilityServiceName(SingletonDefaultRequirement.SINGLETON_POLICY.getName(), SingletonDefaultRequirement.SINGLETON_POLICY.getType()));
+            builder.setInstance(new ClusteredSingletonServiceCreator(policy)).install();
         }
     }
 }

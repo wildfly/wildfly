@@ -57,12 +57,13 @@
             <id>mojarra-2.x</id>
             <properties>
                 <jsf-impl-name>mojarra</jsf-impl-name>
-                <jsf-version>2.3.3.SP1</jsf-version>
+                <jsf-version>2.2.17</jsf-version>
             </properties>
             <dependencies>
                 <dependency>
-                    <groupId>org.jboss.spec.javax.faces</groupId>
-                    <artifactId>jboss-jsf-api_2.2_spec</artifactId>
+                    <groupId>com.sun.faces</groupId>
+                    <artifactId>jsf-api</artifactId>
+                    <version>${jsf-version}</version>
                 </dependency>
                 <dependency>
                     <groupId>com.sun.faces</groupId>
@@ -99,18 +100,19 @@
             </activation>
             <properties>
                 <jsf-impl-name>myfaces</jsf-impl-name>
+                <jsf-version>2.2.11</jsf-version>
             </properties>
             <dependencies>
                 <dependency>
                     <groupId>org.apache.myfaces.core</groupId>
-                    <artifactId>myfaces-impl</artifactId>
+                    <artifactId>myfaces-api</artifactId>
+                    <version>${jsf-version}</version>
                 </dependency>
-
                 <dependency>
                     <groupId>org.apache.myfaces.core</groupId>
-                    <artifactId>myfaces-api</artifactId>
+                    <artifactId>myfaces-impl</artifactId>
+                    <version>${jsf-version}</version>
                 </dependency>
-
                 <dependency>
                     <groupId>commons-digester</groupId>
                     <artifactId>commons-digester</artifactId>

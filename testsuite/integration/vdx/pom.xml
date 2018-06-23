@@ -1,0 +1,151 @@
+<!--
+     Copyright 2018 Red Hat, Inc, and individual contributors.
+    
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+    
+     http://www.apache.org/licenses/LICENSE-2.0
+    
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+            <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-ts-integ</artifactId>
+        <!--
+        Maintain separation between the artifact id and the version to help prevent
+        merge conflicts between commits changing the GA and those changing the V.
+        -->
+        <version>14.0.0.Beta1-SNAPSHOT</version>
+    </parent>
+
+    <!-- ********************************************************************************** -->
+    <!-- ******************************** VDX Integration ********************************** -->
+    <!-- ********************************************************************************** -->
+    <artifactId>wildfly-ts-integ-vdx</artifactId>
+
+    <name>WildFly Test Suite: Integration - VDX</name>
+
+    <properties>
+        <jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>
+        <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
+        <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
+        <wildfly.build.output.dir>dist/target/${server.output.dir.prefix}-${server.output.dir.version}</wildfly.build.output.dir>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.wildfly.extras.creaper</groupId>
+            <artifactId>creaper-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.extras.creaper</groupId>
+            <artifactId>creaper-commands</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.arquillian</groupId>
+            <artifactId>wildfly-arquillian-container-domain-managed</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions combine.self="override">
+                    <execution>
+                        <id>ts.copy-wildfly</id>
+                        <phase>none</phase>
+                    </execution>
+                    <execution>
+                        <id>ts.copy-wildfly-including-docs</id>
+                        <inherited>true</inherited>
+                        <phase>generate-test-resources</phase>
+                        <goals><goal>copy-resources</goal></goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/wildfly</outputDirectory>
+                            <overwrite>true</overwrite>
+                            <resources>
+                                <resource>
+                                    <directory>${jboss.home}</directory>
+                                    <excludes>
+                                        <exclude>bin/client/</exclude>
+                                        <exclude>bin/*.jar</exclude>
+                                        <exclude>bin/*.sh</exclude>
+                                        <exclude>bin/*.bat</exclude>
+                                        <exclude>bin/*.ps1</exclude>
+                                        <!--<exclude>docs/</exclude>-->
+                                        <exclude>modules/</exclude>
+                                        <exclude>welcome-content/*.png</exclude>
+                                        <exclude>standalone/data</exclude>
+                                        <exclude>standalone/log</exclude>
+                                        <exclude>standalone/tmp</exclude>
+                                    </excludes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <executions combine.self="override">
+                    <execution>
+                        <id>default-test</id>
+                        <phase>none</phase>
+                    </execution>
+                    <execution>
+                        <id>all-standalone</id>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <groups>org.wildfly.test.integration.vdx.category.StandaloneTests</groups>
+                            <classpathDependencyExcludes>
+                                <classpathDependencyExclude>
+                                    org.wildfly.arquillian:wildfly-arquillian-container-domain-managed
+                                </classpathDependencyExclude>
+                            </classpathDependencyExcludes>
+                            <systemPropertyVariables>
+                                <jboss.home>${basedir}/target/wildfly</jboss.home>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>all-domain</id>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <groups>org.wildfly.test.integration.vdx.category.DomainTests</groups>
+                            <classpathDependencyExcludes>
+                                <classpathDependencyExclude>
+                                    org.wildfly.arquillian:wildfly-arquillian-container-managed
+                                </classpathDependencyExclude>
+                            </classpathDependencyExcludes>
+                            <systemPropertyVariables>
+                                <domain>true</domain>
+                                <jboss.home>${basedir}/target/wildfly</jboss.home>
+                                <arquillian.xml>arquillian-domain.xml</arquillian.xml>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

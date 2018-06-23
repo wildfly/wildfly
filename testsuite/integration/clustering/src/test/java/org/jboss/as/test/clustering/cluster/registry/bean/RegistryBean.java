@@ -79,12 +79,6 @@ public class RegistryBean implements Registry<String, String>, RegistryListener<
         return this.registry.register(listener);
     }
 
-    @Deprecated
-    @Override
-    public void removeListener(Registry.Listener<String, String> listener) {
-        this.registry.removeListener(listener);
-    }
-
     @Override
     public Map<String, String> getEntries() {
         return this.registry.getEntries();

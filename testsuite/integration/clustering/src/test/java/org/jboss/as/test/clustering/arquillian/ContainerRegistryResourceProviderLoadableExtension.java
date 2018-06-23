@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,44 +19,23 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.server.dispatcher;
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+package org.jboss.as.test.clustering.arquillian;
+
+import org.jboss.arquillian.core.spi.LoadableExtension;
+import org.jboss.arquillian.test.spi.enricher.resource.ResourceProvider;
+import org.kohsuke.MetaInfServices;
 
 /**
- * Simple {@link Future} implementation for synchronous responses.
- * @author Paul Ferraro
- * @param <T> command response type
+ * Arquillian loadable extension which registers {@link ContainerRegistryResourceProvider}.
+ *
+ * @author Radoslav Husar
  */
-public class SimpleFuture<T> extends SimpleCommandResponse<T> implements Future<T> {
-
-    public SimpleFuture(T value) {
-        super(value);
-    }
-
-    public SimpleFuture(Throwable exception) {
-        super(exception);
-    }
+@MetaInfServices(LoadableExtension.class)
+public class ContainerRegistryResourceProviderLoadableExtension implements LoadableExtension {
 
     @Override
-    public boolean cancel(boolean mayInterruptIfRunning) {
-        return false;
-    }
-
-    @Override
-    public boolean isCancelled() {
-        return false;
-    }
-
-    @Override
-    public boolean isDone() {
-        return true;
-    }
-
-    @Override
-    public T get(long timeout, TimeUnit unit) throws ExecutionException {
-        return this.get();
+    public void register(ExtensionBuilder builder) {
+        builder.service(ResourceProvider.class, ContainerRegistryResourceProvider.class);
     }
 }

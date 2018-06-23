@@ -23,12 +23,11 @@
 package org.wildfly.clustering.server.dispatcher;
 
 import java.util.Map;
-import java.util.concurrent.Future;
+import java.util.concurrent.CompletionStage;
 
 import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherException;
-import org.wildfly.clustering.dispatcher.CommandResponse;
 import org.wildfly.clustering.group.Node;
 
 /**
@@ -50,23 +49,13 @@ public class ManagedCommandDispatcher<C> implements CommandDispatcher<C> {
     }
 
     @Override
-    public <R> CommandResponse<R> executeOnNode(Command<R, ? super C> command, Node node) throws CommandDispatcherException {
-        return this.dispatcher.executeOnNode(command, node);
+    public <R> CompletionStage<R> executeOnMember(Command<R, ? super C> command, Node member) throws CommandDispatcherException {
+        return this.dispatcher.executeOnMember(command, member);
     }
 
     @Override
-    public <R> Map<Node, CommandResponse<R>> executeOnCluster(Command<R, ? super C> command, Node... excludedNodes) throws CommandDispatcherException {
-        return this.dispatcher.executeOnCluster(command, excludedNodes);
-    }
-
-    @Override
-    public <R> Future<R> submitOnNode(Command<R, ? super C> command, Node node) throws CommandDispatcherException {
-        return this.dispatcher.submitOnNode(command, node);
-    }
-
-    @Override
-    public <R> Map<Node, Future<R>> submitOnCluster(Command<R, ? super C> command, Node... excludedNodes) throws CommandDispatcherException {
-        return this.dispatcher.submitOnCluster(command, excludedNodes);
+    public <R> Map<Node, CompletionStage<R>> executeOnGroup(Command<R, ? super C> command, Node... excludedMembers) throws CommandDispatcherException {
+        return this.dispatcher.executeOnGroup(command, excludedMembers);
     }
 
     @Override
