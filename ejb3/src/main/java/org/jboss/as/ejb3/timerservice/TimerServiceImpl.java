@@ -1232,10 +1232,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
 
         @Override
         public void run() {
-            final ExecutorService executor = executorServiceInjectedValue.getOptionalValue();
-            if (executor != null) {
-                executor.submit(this::persistTimer);
-            }
+            executorServiceInjectedValue.getValue().submit(this::persistTimer);
         }
 
         void persistTimer() {
