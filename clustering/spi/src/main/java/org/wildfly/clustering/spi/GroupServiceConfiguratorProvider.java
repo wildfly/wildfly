@@ -25,6 +25,7 @@ package org.wildfly.clustering.spi;
 import java.util.Collection;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
+import org.wildfly.clustering.service.ServiceNameRegistry;
 
 /**
  * @author Paul Ferraro

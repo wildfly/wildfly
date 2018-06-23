@@ -28,6 +28,7 @@ import org.jboss.as.clustering.controller.Capability;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.service.Requirement;
+import org.wildfly.clustering.service.ServiceNameRegistry;
 
 /**
  * Generic {@link ServiceNameRegistry} for a specific set of requirements.

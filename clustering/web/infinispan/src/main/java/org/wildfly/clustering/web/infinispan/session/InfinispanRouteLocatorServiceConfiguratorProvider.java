@@ -41,11 +41,11 @@ import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.spi.service.CacheServiceConfigurator;
 import org.wildfly.clustering.infinispan.spi.service.TemplateConfigurationServiceConfigurator;
+import org.wildfly.clustering.service.ServiceNameRegistry;
 import org.wildfly.clustering.service.SupplierDependency;
 import org.wildfly.clustering.spi.CacheServiceConfiguratorProvider;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 import org.wildfly.clustering.spi.DistributedCacheServiceConfiguratorProvider;
-import org.wildfly.clustering.spi.ServiceNameRegistry;
 import org.wildfly.clustering.web.session.RouteLocator;
 import org.wildfly.clustering.web.session.RouteLocatorServiceConfiguratorProvider;
 

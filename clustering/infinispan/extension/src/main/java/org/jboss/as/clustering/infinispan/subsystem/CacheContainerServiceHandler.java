@@ -50,10 +50,10 @@ import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.service.IdentityServiceConfigurator;
 import org.wildfly.clustering.service.ServiceNameProvider;
+import org.wildfly.clustering.service.ServiceNameRegistry;
 import org.wildfly.clustering.spi.IdentityCacheServiceConfiguratorProvider;
 import org.wildfly.clustering.spi.CapabilityServiceNameRegistry;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
-import org.wildfly.clustering.spi.ServiceNameRegistry;
 
 /**
  * @author Paul Ferraro

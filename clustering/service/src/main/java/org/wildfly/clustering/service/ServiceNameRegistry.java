@@ -20,10 +20,9 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.spi;
+package org.wildfly.clustering.service;
 
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.service.Requirement;
 
 /**
  * Registry of services names for a set of requirements.

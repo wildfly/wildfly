@@ -32,9 +32,9 @@ import org.jboss.as.clustering.naming.BinderServiceConfigurator;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.deployment.JndiName;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.clustering.service.ServiceNameRegistry;
 import org.wildfly.clustering.spi.CacheServiceConfiguratorProvider;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
-import org.wildfly.clustering.spi.ServiceNameRegistry;
 
 /**
  * @author Paul Ferraro
