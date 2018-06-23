@@ -1215,14 +1215,19 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     private class TaskPostPersist extends java.util.TimerTask {
         private final TimerImpl timer;
         private long delta = 0;
+        private long nextExpirationPristine = 0;
 
         TaskPostPersist(TimerImpl timer) {
             this.timer = timer;
+            if (timer.nextExpiration != null) {
+                this.nextExpirationPristine = timer.nextExpiration.getTime();
+            }
         }
 
-        TaskPostPersist(TimerImpl timer, long delta) {
+        TaskPostPersist(TimerImpl timer, long delta, long nextExpirationPristine) {
             this.timer = timer;
             this.delta = delta;
+            this.nextExpirationPristine = nextExpirationPristine;
         }
 
         @Override
@@ -1246,14 +1251,15 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                     // omit;
                 }
                 EJB3_TIMER_LOGGER.exceptionRunningTimerTask(timer, timer.getTimedObjectId(), e);
-                Date nextExpiration = timer.getNextExpiration();
                 long nextExpirationDelay;
-                if (nextExpiration != null &&
-                        (nextExpirationDelay = nextExpiration.getTime() - System.currentTimeMillis()) > delta) {
+                if (nextExpirationPristine > 0 && timer.timerState != TimerState.RETRY_TIMEOUT &&
+                        (nextExpirationDelay = nextExpirationPristine - System.currentTimeMillis()) > delta) {
                     if (delta == 0L) {
                         delta = nextExpirationDelay / (1L + MAX_RETRY.longValue());
                     }
-                    timerInjectedValue.getValue().schedule(new TaskPostPersist(timer, delta), delta);
+                    timerInjectedValue
+                            .getValue()
+                            .schedule(new TaskPostPersist(timer, delta, nextExpirationPristine), delta);
                 } else {
                     EJB3_TIMER_LOGGER.exceptionPersistPostTimerState(timer, e);
                 }
