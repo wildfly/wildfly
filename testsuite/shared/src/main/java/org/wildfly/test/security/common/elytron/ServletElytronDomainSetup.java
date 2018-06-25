@@ -76,6 +76,10 @@ public class ServletElytronDomainSetup implements ServerSetupTask {
         return getSecurityDomainName();
     }
 
+    protected boolean useAuthenticationFactory() {
+        return true;
+    }
+
     @Override
     public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
         httpAuthenticationAddress = PathAddress.pathAddress()
@@ -92,15 +96,21 @@ public class ServletElytronDomainSetup implements ServerSetupTask {
 
         ModelNode steps = compositeOp.get(STEPS);
 
-        ModelNode addHttpAuthentication = Util.createAddOperation(httpAuthenticationAddress);
-        addHttpAuthentication.get("security-domain").set(getSecurityDomainName());
-        addHttpAuthentication.get("http-server-mechanism-factory").set("global");
-        addHttpAuthentication.get("mechanism-configurations").get(0).get("mechanism-name").set("BASIC");
-        addHttpAuthentication.get("mechanism-configurations").get(0).get("mechanism-realm-configurations").get(0).get("realm-name").set("TestingRealm");
-        steps.add(addHttpAuthentication);
+        if (useAuthenticationFactory()) {
+            ModelNode addHttpAuthentication = Util.createAddOperation(httpAuthenticationAddress);
+            addHttpAuthentication.get("security-domain").set(getSecurityDomainName());
+            addHttpAuthentication.get("http-server-mechanism-factory").set("global");
+            addHttpAuthentication.get("mechanism-configurations").get(0).get("mechanism-name").set("BASIC");
+            addHttpAuthentication.get("mechanism-configurations").get(0).get("mechanism-realm-configurations").get(0).get("realm-name").set("TestingRealm");
+            steps.add(addHttpAuthentication);
+        }
 
         ModelNode addUndertowDomain = Util.createAddOperation(undertowDomainAddress);
-        addUndertowDomain.get("http-authentication-factory").set(getHttpAuthenticationName());
+        if (useAuthenticationFactory()) {
+            addUndertowDomain.get("http-authentication-factory").set(getHttpAuthenticationName());
+        } else {
+            addUndertowDomain.get("security-domain").set(getSecurityDomainName());
+        }
         steps.add(addUndertowDomain);
 
         applyUpdate(managementClient.getControllerClient(), compositeOp, false);
@@ -109,7 +119,9 @@ public class ServletElytronDomainSetup implements ServerSetupTask {
     @Override
     public void tearDown(final ManagementClient managementClient, final String containerId) {
         applyRemoveAllowReload(managementClient.getControllerClient(), undertowDomainAddress, false);
-        applyRemoveAllowReload(managementClient.getControllerClient(), httpAuthenticationAddress, false);
+        if (useAuthenticationFactory()) {
+            applyRemoveAllowReload(managementClient.getControllerClient(), httpAuthenticationAddress, false);
+        }
     }
 
 }

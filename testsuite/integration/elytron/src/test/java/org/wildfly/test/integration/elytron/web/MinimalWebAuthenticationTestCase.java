@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright (c) 2017, Red Hat, Inc., and individual contributors
+ * Copyright (c) 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -28,17 +28,28 @@ import org.junit.runner.RunWith;
 import org.wildfly.test.security.common.elytron.ServletElytronDomainSetup;
 
 /**
- * Test case to test authentication to web applications, initially programatic authentication.
+ * Test case to test authentication to web applications using programatic authentication.
+ *
+ * This test uses an application security-domain mapping to a security domain instead of an authentication factory.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 @RunWith(Arquillian.class)
 @ServerSetup({ WebAuthenticationTestCaseBase.ElytronDomainSetupOverride.class, ServletElytronDomainSetup.class })
-public class WebAuthenticationTestCase extends WebAuthenticationTestCaseBase {
+public class MinimalWebAuthenticationTestCase extends WebAuthenticationTestCaseBase {
 
     @Override
     protected String getWebXmlName() {
-        return "web.xml";
+        return "minimal-web.xml";
+    }
+
+    public static class ElytronServletSetupOverride extends ServletElytronDomainSetup {
+
+        @Override
+        protected boolean useAuthenticationFactory() {
+            return false;
+        }
+
     }
 
 }

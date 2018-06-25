@@ -98,34 +98,42 @@ abstract class AbstractMechTestBase {
             return DEFAULT_SECURITY_DOMAIN;
         }
 
+        protected boolean useAuthenticationFactory() {
+            return true;
+        }
+
         @Override
         protected ConfigurableElement[] getConfigurableElements() {
-            return new ConfigurableElement[] {
-                    SimpleHttpAuthenticationFactory.builder()
-                            .withName(HTTP_FACTORY)
-                            .withHttpServerMechanismFactory(DEFAULT_MECHANISM_FACTORY)
-                            .withSecurityDomain(getSecurityDomain())
-                            .addMechanismConfiguration(getMechanismConfiguration())
-                            .build(),
-                    new ConfigurableElement() {
+            ConfigurableElement[] elements = useAuthenticationFactory() ? new ConfigurableElement[2] : new ConfigurableElement[1];
+            if (useAuthenticationFactory()) {
+                elements[0] = SimpleHttpAuthenticationFactory.builder()
+                                  .withName(HTTP_FACTORY)
+                                  .withHttpServerMechanismFactory(DEFAULT_MECHANISM_FACTORY)
+                                  .withSecurityDomain(getSecurityDomain())
+                                  .addMechanismConfiguration(getMechanismConfiguration())
+                                  .build();
+            }
+            elements[elements.length - 1] = new ConfigurableElement() {
 
-                        @Override
-                        public String getName() {
-                            return "Configure undertow application-security-domain " + APP_DOMAIN;
-                        }
+                @Override
+                public String getName() {
+                    return "Configure undertow application-security-domain " + APP_DOMAIN;
+                }
 
-                        @Override
-                        public void create(CLIWrapper cli) throws Exception {
-                            cli.sendLine("/subsystem=undertow/application-security-domain=" + APP_DOMAIN + ":add(http-authentication-factory=" + HTTP_FACTORY + ")");
-                        }
+                @Override
+                public void create(CLIWrapper cli) throws Exception {
+                    String argument = useAuthenticationFactory() ? "http-authentication-factory=" + HTTP_FACTORY : "security-domain=" + getSecurityDomain();
+                    cli.sendLine("/subsystem=undertow/application-security-domain=" + APP_DOMAIN + ":add(" + argument + ")");
+                }
 
-                        @Override
-                        public void remove(CLIWrapper cli) throws Exception {
-                            cli.sendLine("/subsystem=undertow/application-security-domain=" + APP_DOMAIN + ":remove");
-                        }
+                @Override
+                public void remove(CLIWrapper cli) throws Exception {
+                    cli.sendLine("/subsystem=undertow/application-security-domain=" + APP_DOMAIN + ":remove");
+                }
 
-                    }
             };
+
+            return elements;
         }
     }
 
