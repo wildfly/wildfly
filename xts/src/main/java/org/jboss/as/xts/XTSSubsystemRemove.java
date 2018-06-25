@@ -45,7 +45,7 @@ class XTSSubsystemRemove extends AbstractRemoveStepHandler {
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        for (ContextInfo contextInfo : XTSSubsystemAdd.getContextDefinitions()) {
+        for (ContextInfo contextInfo : XTSSubsystemAdd.getContextDefinitions(context, model)) {
             String contextName = contextInfo.contextPath;
             context.removeService(WSServices.ENDPOINT_PUBLISH_SERVICE.append(contextName));
         }

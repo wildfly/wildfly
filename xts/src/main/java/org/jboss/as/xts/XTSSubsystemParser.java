@@ -24,6 +24,7 @@ package org.jboss.as.xts;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.xts.XTSSubsystemDefinition.DEFAULT_CONTEXT_PROPAGATION;
+import static org.jboss.as.xts.XTSSubsystemDefinition.ASYNC_REGISTRATION;
 import static org.jboss.as.xts.XTSSubsystemDefinition.ENVIRONMENT_URL;
 import static org.jboss.as.xts.XTSSubsystemDefinition.HOST_NAME;
 
@@ -87,6 +88,10 @@ class XTSSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                     parseDefaultContextPropagationElement(reader, subsystem);
                     break;
                 }
+                case ASYNC_REGISTRATION: {
+                    parseAsyncRegistrationElement(reader, subsystem);
+                    break;
+                }
                 default: {
                     throw ParseUtils.unexpectedElement(reader);
                 }
@@ -120,25 +125,28 @@ class XTSSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
             writer.writeEndElement();
         }
 
+        if (node.hasDefined(ASYNC_REGISTRATION.getName())) {
+            writer.writeStartElement(Element.ASYNC_REGISTRATION.getLocalName());
+            ASYNC_REGISTRATION.marshallAsAttribute(node, writer);
+            writer.writeEndElement();
+        }
+
         writer.writeEndElement();
     }
 
     private void parseHostElement(XMLExtendedStreamReader reader, ModelNode subsystem) throws XMLStreamException {
         final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME);
-        final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i++) {
-            ParseUtils.requireNoNamespaceAttribute(reader, i);
-            final String value = reader.getAttributeValue(i);
-            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+        processAttributes(reader, (index, attribute) -> {
             required.remove(attribute);
+            final String value = reader.getAttributeValue(index);
             switch (attribute) {
                 case NAME:
                     HOST_NAME.parseAndSetParameter(value, subsystem, reader);
                     break;
                 default:
-                    throw ParseUtils.unexpectedAttribute(reader, i);
+                    throw ParseUtils.unexpectedAttribute(reader, index);
             }
-        }
+        });
         // Handle elements
         ParseUtils.requireNoContent(reader);
 
@@ -158,20 +166,16 @@ class XTSSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
      *
      */
     private void parseXTSEnvironmentElement(XMLExtendedStreamReader reader, ModelNode subsystem) throws XMLStreamException {
-
-        final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i++) {
-            ParseUtils.requireNoNamespaceAttribute(reader, i);
-            final String value = reader.getAttributeValue(i);
-            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+        processAttributes(reader, (index, attribute) -> {
+            final String value = reader.getAttributeValue(index);
             switch (attribute) {
                 case URL:
                     ENVIRONMENT_URL.parseAndSetParameter(value, subsystem, reader);
                     break;
                 default:
-                    throw ParseUtils.unexpectedAttribute(reader, i);
+                    throw ParseUtils.unexpectedAttribute(reader, index);
             }
-        }
+        });
         // Handle elements
         ParseUtils.requireNoContent(reader);
     }
@@ -184,22 +188,41 @@ class XTSSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
      * @throws XMLStreamException
      */
     private void parseDefaultContextPropagationElement(XMLExtendedStreamReader reader, ModelNode subsystem) throws XMLStreamException {
-        final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i++) {
-            ParseUtils.requireNoNamespaceAttribute(reader, i);
-            final String value = reader.getAttributeValue(i);
-            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+        processAttributes(reader, (index, attribute) -> {
+            final String value = reader.getAttributeValue(index);
             switch (attribute) {
                 case ENABLED:
                     if (value == null || (!value.toLowerCase().equals("true") && !value.toLowerCase().equals("false"))) {
-                        throw ParseUtils.invalidAttributeValue(reader, i);
+                        throw ParseUtils.invalidAttributeValue(reader, index);
                     }
                     DEFAULT_CONTEXT_PROPAGATION.parseAndSetParameter(value, subsystem, reader);
                     break;
                 default:
-                    throw ParseUtils.unexpectedAttribute(reader, i);
+                    throw ParseUtils.unexpectedAttribute(reader, index);
             }
-        }
+        });
+
+        // Handle elements
+        ParseUtils.requireNoContent(reader);
+    }
+
+    /**
+     * Handle the async-registration element.
+     */
+    private void parseAsyncRegistrationElement(XMLExtendedStreamReader reader, ModelNode subsystem) throws XMLStreamException {
+        processAttributes(reader, (index, attribute) -> {
+            final String value = reader.getAttributeValue(index);
+            switch (attribute) {
+                case ENABLED:
+                    if (value == null || (!value.toLowerCase().equals("true") && !value.toLowerCase().equals("false"))) {
+                        throw ParseUtils.invalidAttributeValue(reader, index);
+                    }
+                    ASYNC_REGISTRATION.parseAndSetParameter(value, subsystem, reader);
+                    break;
+                default:
+                    throw ParseUtils.unexpectedAttribute(reader, index);
+            }
+        });
 
         // Handle elements
         ParseUtils.requireNoContent(reader);
@@ -215,8 +238,39 @@ class XTSSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
             elements.add(Element.XTS_ENVIRONMENT);
             elements.add(Element.HOST);
             elements.add(Element.DEFAULT_CONTEXT_PROPAGATION);
+        } else if (Namespace.XTS_3_0.equals(namespace)) {
+            elements.add(Element.XTS_ENVIRONMENT);
+            elements.add(Element.HOST);
+            elements.add(Element.DEFAULT_CONTEXT_PROPAGATION);
+            elements.add(Element.ASYNC_REGISTRATION);
         }
 
         return elements;
+    }
+
+    /**
+     * Functional interface to provide similar functionality as {@link BiConsumer}
+     * but with cought exception {@link XMLStreamException} declared.
+     */
+    @FunctionalInterface
+    private interface AttributeProcessor<T, R> {
+        void process(T t, R r) throws XMLStreamException;
+    }
+
+    /**
+     * Iterating over all attributes got from the reader parameter.
+     *
+     * @param reader  reading the parameters from
+     * @param attributeProcessorCallback  callback being processed for each attribute
+     * @throws XMLStreamException troubles parsing xml
+     */
+    private void processAttributes(final XMLExtendedStreamReader reader, AttributeProcessor<Integer, Attribute> attributeProcessorCallback) throws XMLStreamException {
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            ParseUtils.requireNoNamespaceAttribute(reader, i);
+            // final String value = reader.getAttributeValue(i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            attributeProcessorCallback.process(i, attribute);
+        }
     }
 }

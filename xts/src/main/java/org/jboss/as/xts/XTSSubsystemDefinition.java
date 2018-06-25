@@ -67,6 +67,14 @@ public class XTSSubsystemDefinition extends SimpleResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_JVM)
                     .build();
 
+    protected static final SimpleAttributeDefinition ASYNC_REGISTRATION =
+            new SimpleAttributeDefinitionBuilder(CommonAttributes.ASYNC_REGISTRATION, ModelType.BOOLEAN, true)
+            .setAllowExpression(true)
+            .setXmlName(Attribute.ENABLED.getLocalName())
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES) // we need to register new WS endpoints
+            .setDefaultValue(new ModelNode(false))
+            .build();
+
     @Deprecated //just legacy support
     private static final ObjectTypeAttributeDefinition ENVIRONMENT = ObjectTypeAttributeDefinition.
             Builder.of(CommonAttributes.XTS_ENVIRONMENT, ENVIRONMENT_URL)
@@ -97,6 +105,7 @@ public class XTSSubsystemDefinition extends SimpleResourceDefinition {
         resourceRegistration.registerReadWriteAttribute(HOST_NAME, null, new ReloadRequiredWriteAttributeHandler(HOST_NAME));
         resourceRegistration.registerReadWriteAttribute(ENVIRONMENT_URL, null, new ReloadRequiredWriteAttributeHandler(ENVIRONMENT_URL));
         resourceRegistration.registerReadWriteAttribute(DEFAULT_CONTEXT_PROPAGATION, null, new ReloadRequiredWriteAttributeHandler(DEFAULT_CONTEXT_PROPAGATION));
+        resourceRegistration.registerReadWriteAttribute(ASYNC_REGISTRATION, null, new ReloadRequiredWriteAttributeHandler(ASYNC_REGISTRATION));
         //this here just for legacy support!
         resourceRegistration.registerReadOnlyAttribute(ENVIRONMENT, new OperationStepHandler() {
             @Override

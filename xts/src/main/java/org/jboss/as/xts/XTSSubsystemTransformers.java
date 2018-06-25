@@ -27,10 +27,10 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
 import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
 import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.description.ChainedTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 
@@ -38,25 +38,44 @@ import org.jboss.dmr.ModelNode;
  * @author Tomaz Cerar (c) 2018 Red Hat Inc.
  */
 public class XTSSubsystemTransformers implements ExtensionTransformerRegistration {
+    static final ModelVersion MODEL_VERSION_EAP64 = ModelVersion.create(1, 0, 0);
+    static final ModelVersion MODEL_VERSION_EAP71 = ModelVersion.create(2, 0, 0);
+
     @Override
     public String getSubsystemName() {
-        return "xts";
+        return XTSExtension.SUBSYSTEM_NAME;
     }
 
     @Override
     public void registerTransformers(SubsystemTransformerRegistration subsystem) {
-         ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-           builder.getAttributeBuilder().setDiscard(new DiscardAttributeChecker.DefaultDiscardAttributeChecker() {
-               @Override
-               protected boolean isValueDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
-                   return attributeValue.isDefined() && attributeValue.equals(XTSSubsystemDefinition.HOST_NAME.getDefaultValue());
-               }
-           }, XTSSubsystemDefinition.HOST_NAME)
-           .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), XTSSubsystemDefinition.DEFAULT_CONTEXT_PROPAGATION)
-           .addRejectCheck(RejectAttributeChecker.DEFINED, XTSSubsystemDefinition.HOST_NAME, XTSSubsystemDefinition.DEFAULT_CONTEXT_PROPAGATION)
-           .end();
+        ChainedTransformationDescriptionBuilder chainedBuilder
+            = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(XTSExtension.CURRENT_MODEL_VERSION);
 
-           TransformationDescription.Tools.register(builder.build(), subsystem, ModelVersion.create(1, 1, 0));
+        // 3.0.0 --> 2.0.0
+        ResourceTransformationDescriptionBuilder builderEap72 = chainedBuilder.createBuilder(XTSExtension.CURRENT_MODEL_VERSION, MODEL_VERSION_EAP71);
+        builderEap72.getAttributeBuilder()
+            .addRejectCheck(RejectAttributeChecker.DEFINED, XTSSubsystemDefinition.ASYNC_REGISTRATION)
+            .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), XTSSubsystemDefinition.ASYNC_REGISTRATION)
+            .end();
+
+        // 2.0.0 --> 1.0.0
+        ResourceTransformationDescriptionBuilder builderEap70 = chainedBuilder.createBuilder(MODEL_VERSION_EAP71, MODEL_VERSION_EAP64);
+        builderEap70.getAttributeBuilder()
+            .addRejectCheck(RejectAttributeChecker.DEFINED, XTSSubsystemDefinition.HOST_NAME, XTSSubsystemDefinition.DEFAULT_CONTEXT_PROPAGATION)
+            .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), XTSSubsystemDefinition.DEFAULT_CONTEXT_PROPAGATION)
+            .setDiscard(new DiscardAttributeChecker.DefaultDiscardAttributeChecker() {
+                   @Override
+                   protected boolean isValueDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+                       return attributeValue.isDefined() && attributeValue.equals(XTSSubsystemDefinition.HOST_NAME.getDefaultValue());
+                   }
+               }, XTSSubsystemDefinition.HOST_NAME)
+            .end();
+
+           chainedBuilder.buildAndRegister(subsystem, new ModelVersion[]{
+                   MODEL_VERSION_EAP64,
+                   MODEL_VERSION_EAP71,
+                   // current is 3.0.0
+           });
 
        }
 
