@@ -46,6 +46,24 @@
             -->
             <build>
                 <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>1.6.0</version>
+                        <executions>
+                            <execution>
+                                <id>generate-jboss-stores</id>
+                                <phase>test-compile</phase>
+                                <goals>
+                                    <goal>java</goal>
+                                </goals>
+                                <configuration>
+                                    <mainClass>org.jboss.as.test.manualmode.ejb.ssl.GenerateJBossStores</mainClass>
+                                    <classpathScope>test</classpathScope>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
 
                     <!-- Build the server configuration(s) -->
                     <plugin>
@@ -96,8 +114,8 @@
                                 <arquillian.launch>manual-mode</arquillian.launch>
                                 <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
                                 <!-- needed for SSLEJBRemoteClientTestCase only, however setting them from within the test itself isn't possible -->
-                                <javax.net.ssl.trustStore>${basedir}/src/test/resources/ejb3/ssl/jbossClient.truststore</javax.net.ssl.trustStore>
-                                <javax.net.ssl.keyStore>${basedir}/src/test/resources/ejb3/ssl/jbossClient.keystore</javax.net.ssl.keyStore>
+                                <javax.net.ssl.trustStore>${basedir}/target/test-classes/ejb3/ssl/jbossClient.truststore</javax.net.ssl.trustStore>
+                                <javax.net.ssl.keyStore>${basedir}/target/test-classes/ejb3/ssl/jbossClient.keystore</javax.net.ssl.keyStore>
                                 <javax.net.ssl.trustStorePassword>clientPassword</javax.net.ssl.trustStorePassword>
                                 <javax.net.ssl.keyStorePassword>clientPassword</javax.net.ssl.keyStorePassword>
                                 <!-- EJB client library hack, see WFLY-4973-->

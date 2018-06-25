@@ -24,7 +24,9 @@
 package org.jboss.as.security;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.security.KeyStore;
 import java.util.List;
 import java.util.Properties;
 
@@ -49,9 +51,49 @@ public class SecurityDomainModelv12UnitTestCase extends AbstractSubsystemBaseTes
 
     private static String oldConfig;
 
+    private static final char[] KEYSTORE_PASSWORD = "changeit".toCharArray();
+    private static final char[] TRUSTSTORE_PASSWORD = "rmi+ssl".toCharArray();
+    private static final String WORKING_DIRECTORY_LOCATION = "./target/test-classes";
+    private static final String KEYSTORE_FILENAME = "clientcert.jks";
+    private static final String TRUSTSTORE_FILENAME = "keystore.jks";
+    private static final File KEY_STORE_FILE = new File(WORKING_DIRECTORY_LOCATION, KEYSTORE_FILENAME);
+    private static final File TRUST_STORE_FILE = new File(WORKING_DIRECTORY_LOCATION, TRUSTSTORE_FILENAME);
+
+    private static void createBlankKeyStores() throws Exception {
+        File workingDir = new File(WORKING_DIRECTORY_LOCATION);
+        if (workingDir.exists() == false) {
+            workingDir.mkdirs();
+        }
+
+        KeyStore keyStore = KeyStore.getInstance("JKS");
+        keyStore.load(null, null);
+        KeyStore trustStore = KeyStore.getInstance("JKS");
+        trustStore.load(null, null);
+
+        try (FileOutputStream fos = new FileOutputStream(KEY_STORE_FILE)){
+            keyStore.store(fos, KEYSTORE_PASSWORD);
+        }
+        try (FileOutputStream fos = new FileOutputStream(TRUST_STORE_FILE)){
+            trustStore.store(fos, TRUSTSTORE_PASSWORD);
+        }
+    }
+
+    private static void deleteKeyStoreFiles() {
+        File[] testFiles = {
+                KEY_STORE_FILE,
+                TRUST_STORE_FILE
+        };
+        for (File file : testFiles) {
+            if (file.exists()) {
+                file.delete();
+            }
+        }
+    }
+
     @BeforeClass
     public static void beforeClass() {
         try {
+            createBlankKeyStores();
             File target = new File(SecurityDomainModelv11UnitTestCase.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParentFile();
             File config = new File(target, "config");
             config.mkdir();
@@ -63,6 +105,7 @@ public class SecurityDomainModelv12UnitTestCase extends AbstractSubsystemBaseTes
 
     @AfterClass
     public static void afterClass() {
+        deleteKeyStoreFiles();
         if (oldConfig != null) {
             System.setProperty("jboss.server.config.dir", oldConfig);
         } else {

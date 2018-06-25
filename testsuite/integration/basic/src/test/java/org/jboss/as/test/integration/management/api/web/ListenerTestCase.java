@@ -31,15 +31,21 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.net.Socket;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyStore;
+import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+
+import javax.security.auth.x500.X500Principal;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -65,9 +71,11 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.security.x500.cert.SelfSignedX509CertificateAndSigningKey;
 
 import io.undertow.util.FileUtils;
 
@@ -86,6 +94,94 @@ public class ListenerTestCase extends ContainerResourceMgmtTestBase {
     private static int socketBindingCount = 0;
     @ArquillianResource
     private URL url;
+
+    private static final char[] GENERATED_KEYSTORE_PASSWORD = "changeit".toCharArray();
+
+    private static final String WORKING_DIRECTORY_LOCATION = "./target/test-classes/security";
+
+    private static final String CLIENT_ALIAS = "client";
+    private static final String CLIENT_2_ALIAS = "client2";
+    private static final String TEST_ALIAS = "test";
+
+    private static final File KEY_STORE_FILE = new File(WORKING_DIRECTORY_LOCATION, "server.keystore");
+    private static final File TRUST_STORE_FILE = new File(WORKING_DIRECTORY_LOCATION, "jsse.keystore");
+
+    private static final String TEST_CLIENT_DN = "CN=Test Client, OU=JBoss, O=Red Hat, L=Raleigh, ST=North Carolina, C=US";
+    private static final String TEST_CLIENT_2_DN = "CN=Test Client 2, OU=JBoss, O=Red Hat, L=Raleigh, ST=North Carolina, C=US";
+    private static final String AS_7_DN = "CN=AS7, OU=JBoss, O=Red Hat, L=Raleigh, ST=North Carolina, C=US";
+
+    private static final String SHA_1_RSA = "SHA1withRSA";
+
+    private static KeyStore loadKeyStore() throws Exception{
+        KeyStore ks = KeyStore.getInstance("JKS");
+        ks.load(null, null);
+        return ks;
+    }
+
+    private static SelfSignedX509CertificateAndSigningKey createSelfSigned(String DN) {
+        return SelfSignedX509CertificateAndSigningKey.builder()
+                .setDn(new X500Principal(DN))
+                .setKeyAlgorithmName("RSA")
+                .setSignatureAlgorithmName(SHA_1_RSA)
+                .build();
+    }
+
+    private static void addKeyEntry(SelfSignedX509CertificateAndSigningKey selfSignedX509CertificateAndSigningKey, KeyStore keyStore) throws Exception {
+        X509Certificate certificate = selfSignedX509CertificateAndSigningKey.getSelfSignedCertificate();
+        keyStore.setKeyEntry(TEST_ALIAS, selfSignedX509CertificateAndSigningKey.getSigningKey(), GENERATED_KEYSTORE_PASSWORD, new X509Certificate[]{certificate});
+    }
+
+    private static void addCertEntry(SelfSignedX509CertificateAndSigningKey selfSignedX509CertificateAndSigningKey, String alias, KeyStore keyStore) throws Exception {
+        X509Certificate certificate = selfSignedX509CertificateAndSigningKey.getSelfSignedCertificate();
+        keyStore.setCertificateEntry(alias, certificate);
+    }
+
+    private static void createTemporaryKeyStoreFile(KeyStore keyStore, File outputFile) throws Exception {
+        try (FileOutputStream fos = new FileOutputStream(outputFile)){
+            keyStore.store(fos, GENERATED_KEYSTORE_PASSWORD);
+        }
+    }
+
+    private static void setUpKeyStores() throws Exception {
+        File workingDir = new File(WORKING_DIRECTORY_LOCATION);
+        if (workingDir.exists() == false) {
+            workingDir.mkdirs();
+        }
+
+        KeyStore keyStore = loadKeyStore();
+        KeyStore trustStore = loadKeyStore();
+
+        SelfSignedX509CertificateAndSigningKey testClientSelfSignedX509CertificateAndSigningKey = createSelfSigned(TEST_CLIENT_DN);
+        SelfSignedX509CertificateAndSigningKey testClient2SelfSignedX509CertificateAndSigningKey = createSelfSigned(TEST_CLIENT_2_DN);
+        SelfSignedX509CertificateAndSigningKey aS7SelfSignedX509CertificateAndSigningKey = createSelfSigned(AS_7_DN);
+
+        addCertEntry(testClient2SelfSignedX509CertificateAndSigningKey, CLIENT_2_ALIAS, keyStore);
+        addCertEntry(testClientSelfSignedX509CertificateAndSigningKey, CLIENT_ALIAS, keyStore);
+        addKeyEntry(aS7SelfSignedX509CertificateAndSigningKey, keyStore);
+
+        addCertEntry(testClient2SelfSignedX509CertificateAndSigningKey, CLIENT_2_ALIAS, trustStore);
+        addCertEntry(testClientSelfSignedX509CertificateAndSigningKey, CLIENT_ALIAS, trustStore);
+
+        createTemporaryKeyStoreFile(keyStore, KEY_STORE_FILE);
+        createTemporaryKeyStoreFile(trustStore, TRUST_STORE_FILE);
+    }
+
+    private static void deleteKeyStoreFiles() {
+        File[] testFiles = {
+                KEY_STORE_FILE,
+                TRUST_STORE_FILE
+        };
+        for (File file : testFiles) {
+            if (file.exists()) {
+                file.delete();
+            }
+        }
+    }
+
+    @AfterClass
+    public static void afterTests() {
+        deleteKeyStoreFiles();
+    }
 
     @Deployment
     public static Archive<?> getDeployment() {
@@ -309,6 +405,7 @@ public class ListenerTestCase extends ContainerResourceMgmtTestBase {
     static class SecurityRealmsSetup extends AbstractSecurityRealmsServerSetupTask {
         @Override
         protected SecurityRealm[] getSecurityRealms() throws Exception {
+            setUpKeyStores();
             URL keystoreResource = Thread.currentThread().getContextClassLoader().getResource("security/server.keystore");
             URL truststoreResource = Thread.currentThread().getContextClassLoader().getResource("security/jsse.keystore");
 
@@ -321,6 +418,7 @@ public class ListenerTestCase extends ContainerResourceMgmtTestBase {
                     .keystorePassword("changeit")
                     .keystorePath(truststoreResource.getPath())
                     .build();
+
             return new SecurityRealm[]{new SecurityRealm.Builder()
                     .name("ssl-realm")
                     .serverIdentity(

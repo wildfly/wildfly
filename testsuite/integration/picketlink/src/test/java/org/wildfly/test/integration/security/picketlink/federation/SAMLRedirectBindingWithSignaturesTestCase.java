@@ -40,17 +40,17 @@ import static org.wildfly.test.integration.security.picketlink.federation.util.F
 public class SAMLRedirectBindingWithSignaturesTestCase extends AbstractBasicFederationTestCase {
 
     @Deployment(name = "identity-provider")
-    public static WebArchive deploymentIdP() {
+    public static WebArchive deploymentIdP() throws Exception {
         return identityProviderWithKeyStore("idp-redirect-sig.war");
     }
 
     @Deployment(name = "service-provider-1")
-    public static WebArchive deploymentSP1() {
+    public static WebArchive deploymentSP1() throws Exception {
         return serviceProviderWithKeyStore("sp-redirect-sig1.war");
     }
 
     @Deployment(name = "service-provider-2")
-    public static WebArchive deploymentSP2() {
+    public static WebArchive deploymentSP2() throws Exception {
         return serviceProviderWithKeyStore("sp-redirect-sig2.war");
     }
 }
