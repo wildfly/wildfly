@@ -1,6 +1,10 @@
 <subsystem xmlns="urn:jboss:domain:messaging-activemq:4.0">
     <global-client thread-pool-max-size="${global.client.thread-pool-max-size:32}"
                    scheduled-thread-pool-max-size="${global.client.scheduled.thread-pool-max-size:54}" />
+
+    <discovery-group name="client-discovery-group-1"
+                     socket-binding="group-t-binding"/>
+
     <server name="default">
 
         <security elytron-domain="elytronDomain"/>

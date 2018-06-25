@@ -1,6 +1,15 @@
 <subsystem xmlns="urn:jboss:domain:messaging-activemq:4.0">
     <global-client thread-pool-max-size="${global.client.thread-pool-max-size:32}"
            scheduled-thread-pool-max-size="${global.client.scheduled.thread-pool-max-size:54}" />
+
+    <discovery-group name="client-discovery-group-1"
+                     socket-binding="group-t-binding"/>
+    <discovery-group name="client-discovery-group-2"
+                     jgroups-channel="ee"
+                     jgroups-cluster="activemq-cluster"
+                     refresh-timeout="${discovery.group.refresh.timeout:2345}"
+                     initial-wait-timeout="${discovery.group.initial.wait.timeout:2345}"/>
+
     <server name="default"
             persistence-enabled="${persistence.enabled:false}"
             persist-id-cache="${persist.id.cache:false}"

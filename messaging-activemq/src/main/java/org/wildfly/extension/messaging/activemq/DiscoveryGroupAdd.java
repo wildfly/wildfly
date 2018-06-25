@@ -61,10 +61,11 @@ import org.wildfly.extension.messaging.activemq.broadcast.CommandDispatcherBroad
  */
 public class DiscoveryGroupAdd extends AbstractAddStepHandler {
 
-    public static final DiscoveryGroupAdd INSTANCE = new DiscoveryGroupAdd();
+    private final boolean subsystemResource;
 
-    private DiscoveryGroupAdd() {
+    protected DiscoveryGroupAdd(boolean subsystemResource) {
         super(DiscoveryGroupDefinition.ATTRIBUTES);
+        this.subsystemResource = subsystemResource;
     }
 
     @Override
@@ -76,7 +77,13 @@ public class DiscoveryGroupAdd extends AbstractAddStepHandler {
                 String channel = operation.get(JGROUPS_CLUSTER.getName()).asString();
                 operation.get(JGROUPS_CHANNEL.getName()).set(channel);
 
-                PathAddress channelAddress = context.getCurrentAddress().getParent().getParent().getParent().append(ModelDescriptionConstants.SUBSYSTEM, "jgroups").append("channel", channel);
+
+                final PathAddress channelAddress;
+                if (subsystemResource) {
+                    channelAddress = context.getCurrentAddress().getParent().getParent().append(ModelDescriptionConstants.SUBSYSTEM, "jgroups").append("channel", channel);
+                } else {
+                    channelAddress = context.getCurrentAddress().getParent().getParent().getParent().append(ModelDescriptionConstants.SUBSYSTEM, "jgroups").append("channel", channel);
+                }
                 ModelNode addChannelOperation = Util.createAddOperation(channelAddress);
                 addChannelOperation.get("stack").set(operation.get(JGROUPS_CHANNEL_FACTORY.getName()));
                 // Fabricate a channel resource

@@ -32,6 +32,7 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.REMOTE_A
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.REMOTE_CONNECTOR;
 
 import org.jboss.as.controller.PersistentResourceXMLDescription;
+import org.jboss.as.controller.PersistentResourceXMLDescription.PersistentResourceXMLBuilder;
 import org.jboss.as.controller.PersistentResourceXMLParser;
 import org.wildfly.extension.messaging.activemq.ha.HAAttributes;
 import org.wildfly.extension.messaging.activemq.ha.LiveOnlyDefinition;
@@ -61,10 +62,21 @@ public class MessagingSubsystemParser_4_0 extends PersistentResourceXMLParser {
 
     @Override
     public PersistentResourceXMLDescription getParserDescription(){
+
+        final PersistentResourceXMLBuilder discoveryGroup = builder(DiscoveryGroupDefinition.PATH)
+                .addAttributes(
+                        CommonAttributes.SOCKET_BINDING,
+                        DiscoveryGroupDefinition.JGROUPS_CHANNEL_FACTORY,
+                        DiscoveryGroupDefinition.JGROUPS_CHANNEL,
+                        CommonAttributes.JGROUPS_CLUSTER,
+                        DiscoveryGroupDefinition.REFRESH_TIMEOUT,
+                        DiscoveryGroupDefinition.INITIAL_WAIT_TIMEOUT);
+
         return builder(MessagingExtension.SUBSYSTEM_PATH, NAMESPACE)
                 .addAttributes(
                         MessagingSubsystemRootResourceDefinition.GLOBAL_CLIENT_THREAD_POOL_MAX_SIZE,
                         MessagingSubsystemRootResourceDefinition.GLOBAL_CLIENT_SCHEDULED_THREAD_POOL_MAX_SIZE)
+                .addChild(discoveryGroup)
                 .addChild(
                         builder(MessagingExtension.SERVER_PATH)
                                 .addAttributes(
@@ -347,15 +359,7 @@ public class MessagingSubsystemParser_4_0 extends PersistentResourceXMLParser {
                                                         CommonAttributes.JGROUPS_CLUSTER,
                                                         BroadcastGroupDefinition.BROADCAST_PERIOD,
                                                         BroadcastGroupDefinition.CONNECTOR_REFS))
-                                .addChild(
-                                        builder(DiscoveryGroupDefinition.PATH)
-                                                .addAttributes(
-                                                        CommonAttributes.SOCKET_BINDING,
-                                                        DiscoveryGroupDefinition.JGROUPS_CHANNEL_FACTORY,
-                                                        DiscoveryGroupDefinition.JGROUPS_CHANNEL,
-                                                        CommonAttributes.JGROUPS_CLUSTER,
-                                                        DiscoveryGroupDefinition.REFRESH_TIMEOUT,
-                                                        DiscoveryGroupDefinition.INITIAL_WAIT_TIMEOUT))
+                                .addChild(discoveryGroup)
                                 .addChild(
                                         builder(MessagingExtension.CLUSTER_CONNECTION_PATH)
                                                 .addAttributes(
