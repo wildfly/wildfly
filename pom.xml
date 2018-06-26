@@ -238,8 +238,6 @@
         <version.io.undertow.js>1.0.2.Final</version.io.undertow.js>
         <version.javax.activation>1.1.1</version.javax.activation>
         <version.javax.enterprise>2.0</version.javax.enterprise>
-        <!-- Hardcoded in module.xml for the dual EE7 and EE8 support -->
-        <version.javax.enterprise-1.2>1.2</version.javax.enterprise-1.2>
         <version.javax.json.api>1.1.2</version.javax.json.api>
         <version.javax.json.bind.api>1.0</version.javax.json.bind.api>
         <version.javax.jws.jsr181-api>1.0-MR1</version.javax.jws.jsr181-api>
@@ -375,7 +373,6 @@
         <version.org.reactivestreams>1.0.2</version.org.reactivestreams>
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.wildfly.arquillian>2.1.1.Final</version.org.wildfly.arquillian>
-        <version.org.wildfly.cdi-api-bridge>1.0.1.Final</version.org.wildfly.cdi-api-bridge>
         <version.org.wildfly.core>6.0.0.Alpha2</version.org.wildfly.core>
         <version.org.wildfly.extras.creaper>1.6.1</version.org.wildfly.extras.creaper>
         <version.org.wildfly.http-client>1.0.12.Final</version.org.wildfly.http-client>
@@ -6040,26 +6037,6 @@
                    <artifactId>wildfly-arquillian-testenricher-msc</artifactId>
                    <version>${version.org.wildfly.arquillian}</version>
                </dependency>-->
-
-            <dependency>
-                <groupId>org.wildfly.bridge</groupId>
-                <artifactId>cdi-api-bridge</artifactId>
-                <version>${version.org.wildfly.cdi-api-bridge}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>javax.el</groupId>
-                        <artifactId>javax.el-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>javax.interceptor</groupId>
-                        <artifactId>javax.interceptor-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>javax.inject</groupId>
-                        <artifactId>javax.inject</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
 
             <dependency>
                 <groupId>org.wildfly.checkstyle</groupId>

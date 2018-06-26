@@ -38,7 +38,6 @@
         <module name="org.jboss.as.ee"/>
         <module name="org.jboss.as.server"/>
         <module name="javax.enterprise.api"/>
-        <module name="org.wildfly.cdi-api-bridge"/>
     </dependencies>
 
 </module>
