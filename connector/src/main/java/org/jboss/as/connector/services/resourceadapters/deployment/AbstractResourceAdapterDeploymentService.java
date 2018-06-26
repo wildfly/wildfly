@@ -86,7 +86,8 @@ import org.jboss.jca.deployers.common.CommonDeployment;
 import org.jboss.jca.deployers.common.DeployException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.AbstractServiceListener;
+import org.jboss.msc.service.LifecycleEvent;
+import org.jboss.msc.service.LifecycleListener;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -432,18 +433,18 @@ public abstract class AbstractResourceAdapterDeploymentService {
                                 binderService.getManagedObjectInjector())
                         .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class,
                                 binderService.getNamingStoreInjector())
-                        .addListener(new AbstractServiceListener<Object>() {
-                            public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
-                                switch (transition) {
-                                    case STARTING_to_UP: {
+                        .addListener(new LifecycleListener() {
+                            public void handleEvent(final ServiceController<? extends Object> controller, final LifecycleEvent event) {
+                                switch (event) {
+                                    case UP: {
                                         DEPLOYMENT_CONNECTOR_LOGGER.boundJca("ConnectionFactory", jndi);
                                         break;
                                     }
-                                    case STOPPING_to_DOWN: {
+                                    case DOWN: {
                                         DEPLOYMENT_CONNECTOR_LOGGER.unboundJca("ConnectionFactory", jndi);
                                         break;
                                     }
-                                    case REMOVING_to_REMOVED: {
+                                    case REMOVED: {
                                         DEPLOYMENT_CONNECTOR_LOGGER.debugf("Removed JCA ConnectionFactory [%s]", jndi);
                                     }
                                 }
@@ -498,19 +499,19 @@ public abstract class AbstractResourceAdapterDeploymentService {
                         .addDependency(referenceFactoryServiceName, ManagedReferenceFactory.class,
                                 binderService.getManagedObjectInjector())
                         .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class,
-                                binderService.getNamingStoreInjector()).addListener(new AbstractServiceListener<Object>() {
+                                binderService.getNamingStoreInjector()).addListener(new LifecycleListener() {
 
-                    public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
-                        switch (transition) {
-                            case STARTING_to_UP: {
+                    public void handleEvent(final ServiceController<?> controller, final LifecycleEvent event) {
+                        switch (event) {
+                            case UP: {
                                 DEPLOYMENT_CONNECTOR_LOGGER.boundJca("AdminObject", jndi);
                                 break;
                             }
-                            case STOPPING_to_DOWN: {
+                            case DOWN: {
                                 DEPLOYMENT_CONNECTOR_LOGGER.unboundJca("AdminObject", jndi);
                                 break;
                             }
-                            case REMOVING_to_REMOVED: {
+                            case REMOVED: {
                                 DEPLOYMENT_CONNECTOR_LOGGER.debugf("Removed JCA AdminObject [%s]", jndi);
                             }
                         }

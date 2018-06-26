@@ -51,7 +51,8 @@ import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.jboss.msc.service.AbstractServiceListener;
+import org.jboss.msc.service.LifecycleEvent;
+import org.jboss.msc.service.LifecycleListener;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -138,18 +139,18 @@ class MailSessionAdd extends AbstractAddStepHandler {
         final ServiceBuilder<?> binderBuilder = serviceTarget
                 .addService(bindInfo.getBinderServiceName(), binderService)
                 .addInjection(binderService.getManagedObjectInjector(), valueManagedReferenceFactory)
-                .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector()).addListener(new AbstractServiceListener<Object>() {
-                    public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
-                        switch (transition) {
-                            case STARTING_to_UP: {
+                .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector()).addListener(new LifecycleListener() {
+                    public void handleEvent(final ServiceController<?> controller, final LifecycleEvent event) {
+                        switch (event) {
+                            case UP: {
                                 MailLogger.ROOT_LOGGER.boundMailSession(jndiName);
                                 break;
                             }
-                            case START_REQUESTED_to_DOWN: {
+                            case DOWN: {
                                 MailLogger.ROOT_LOGGER.unboundMailSession(jndiName);
                                 break;
                             }
-                            case REMOVING_to_REMOVED: {
+                            case REMOVED: {
                                 MailLogger.ROOT_LOGGER.removedMailSession(jndiName);
                                 break;
                             }

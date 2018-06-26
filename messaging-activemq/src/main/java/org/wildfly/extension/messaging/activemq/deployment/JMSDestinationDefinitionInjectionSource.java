@@ -53,7 +53,8 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.AbstractServiceListener;
+import org.jboss.msc.service.LifecycleEvent;
+import org.jboss.msc.service.LifecycleListener;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -219,18 +220,18 @@ public class JMSDestinationDefinitionInjectionSource extends ResourceDefinitionI
     private <D extends Destination> void inject(ServiceBuilder<?> serviceBuilder, Injector<ManagedReferenceFactory> injector, Service<D> destinationService) {
         final ContextListAndJndiViewManagedReferenceFactory referenceFactoryService = new MessagingJMSDestinationManagedReferenceFactory(destinationService);
         serviceBuilder.addInjection(injector, referenceFactoryService)
-                .addListener(new AbstractServiceListener<Object>() {
-                    public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
-                        switch (transition) {
-                            case STARTING_to_UP: {
+                .addListener(new LifecycleListener() {
+                    public void handleEvent(final ServiceController<?> controller, final LifecycleEvent event) {
+                        switch (event) {
+                            case UP: {
                                 ROOT_LOGGER.boundJndiName(jndiName);
                                 break;
                             }
-                            case START_REQUESTED_to_DOWN: {
+                            case DOWN: {
                                 ROOT_LOGGER.unboundJndiName(jndiName);
                                 break;
                             }
-                            case REMOVING_to_REMOVED: {
+                            case REMOVED: {
                                 ROOT_LOGGER.debugf("Removed messaging object [%s]", jndiName);
                                 break;
                             }
