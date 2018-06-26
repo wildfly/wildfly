@@ -232,7 +232,7 @@
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables combine.children="append">
                                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
-                                        <jboss.inst>${basedir}/target/jbossas</jboss.inst>
+                                        <jboss.inst>${basedir}/target/wildfly</jboss.inst>
                                         <!-- EJB client library hack, see WFLY-4973-->
                                         <org.jboss.ejb.client.wildfly-testsuite-hack>true</org.jboss.ejb.client.wildfly-testsuite-hack>
                                     </systemPropertyVariables>
@@ -281,7 +281,7 @@
 
                                     <systemPropertyVariables combine.children="append">
                                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
-                                        <jboss.inst>${basedir}/target/jbossas</jboss.inst>
+                                        <jboss.inst>${basedir}/target/wildfly</jboss.inst>
                                         <!-- EJB client library hack, see WFLY-4973-->
                                         <org.jboss.ejb.client.wildfly-testsuite-hack>true</org.jboss.ejb.client.wildfly-testsuite-hack>
                                     </systemPropertyVariables>
