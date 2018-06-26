@@ -61,6 +61,8 @@ import org.wildfly.transaction.client.provider.jboss.JBossLocalTransactionProvid
 
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
+
+import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -140,6 +142,7 @@ public class HTTPEJBClientXidTransactionTestCase {
             @Override public void removeXAResourceRecovery(
                   XAResourceRecovery xaResourceRecovery) {}
         });
+        builder.setXARecoveryLogDirRelativeToPath(new File("target").toPath());
         LocalTransactionContext.getContextManager().setGlobalDefault(new LocalTransactionContext(builder.build()));
         txManager = ContextTransactionManager.getInstance();
         txSyncRegistry = ContextTransactionSynchronizationRegistry.getInstance();

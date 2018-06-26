@@ -24,6 +24,8 @@ package org.jboss.as.test.integration.ejb.remote.client.api.tx;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 
+import java.io.File;
+
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 
@@ -126,6 +128,7 @@ public class EJBClientXidTransactionTestCase {
             @Override public void removeXAResourceRecovery(
                   XAResourceRecovery xaResourceRecovery) {}
         });
+        builder.setXARecoveryLogDirRelativeToPath(new File("target").toPath());
         LocalTransactionContext.getContextManager().setGlobalDefault(new LocalTransactionContext(builder.build()));
         txManager = ContextTransactionManager.getInstance();
         txSyncRegistry = ContextTransactionSynchronizationRegistry.getInstance();
