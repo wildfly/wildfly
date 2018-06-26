@@ -63,7 +63,7 @@
     <xsl:template name="remap-local-filename">
         <xsl:param name="name"/>
         <xsl:choose>
-            <xsl:when test="$name = 'BSD 3-clause &quot;New&quot; or &quot;Revised&quot; License'">
+            <xsl:when test="$name = 'BSD 3-Clause &quot;New&quot; or &quot;Revised&quot; License'">
                 <xsl:text>bsd 3-clause new or revised license.html</xsl:text>
             </xsl:when>
             <xsl:when test="$name = 'BSD 3-Clause No Nuclear License'">
