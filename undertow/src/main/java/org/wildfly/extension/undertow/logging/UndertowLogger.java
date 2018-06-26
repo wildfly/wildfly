@@ -407,4 +407,8 @@ public interface UndertowLogger extends BasicLogger {
 
     @Message(id = 100, value = "Session %s not found")
     OperationFailedException sessionNotFound(String sessionId);
+
+    @LogMessage(level = WARN)
+    @Message(id = 101, value = "Duplicate servlet mapping %s found")
+    void duplicateServletMapping(String mapping);
 }
