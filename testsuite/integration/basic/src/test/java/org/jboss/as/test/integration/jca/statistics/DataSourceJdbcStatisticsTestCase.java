@@ -81,20 +81,6 @@ public class DataSourceJdbcStatisticsTestCase {
             }
         }
 
-        @Override
-        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
-            try {
-                StringBuffer sb = assertStatisticsSet(true, getStatAddr(dsAddress)).append(
-                        assertStatisticsSet(true, getStatAddr(dsXaAddress)));
-                if (sb.length() > 0) { fail(sb.toString()); }
-
-            } catch (Throwable e) {
-                throw new Exception(e);
-            } finally {
-                removeDss();
-            }
-        }
-
         public void removeDss() {
             try {
                 remove(dsAddress);

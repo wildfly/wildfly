@@ -25,9 +25,7 @@ package org.jboss.as.test.integration.security.auditing;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.junit.Assert.assertTrue;
 
@@ -53,6 +51,7 @@ import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.config.SecurityDomain;
 import org.jboss.as.test.integration.security.common.config.SecurityModule;
 import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.shared.ServerSnapshot;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
@@ -84,8 +83,11 @@ public class SecurityAuditingTestCase extends AnnSBTest {
          */
         private static final String LOGGING = "logging";
 
+        private AutoCloseable snapshot;
+
         @Override
         protected void doSetup(final ManagementClient managementClient) throws Exception {
+            snapshot = ServerSnapshot.takeSnapshot(managementClient);
             final List<ModelNode> updates = new ArrayList<ModelNode>();
 
             ModelNode op = new ModelNode();
@@ -131,37 +133,7 @@ public class SecurityAuditingTestCase extends AnnSBTest {
 
         @Override
         public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
-            final List<ModelNode> updates = new ArrayList<ModelNode>();
-
-            // /subsystem=logging/logger=org.jboss.security.audit:remove
-            ModelNode op = new ModelNode();
-            op.get(OP).set(REMOVE);
-            op.get(OP_ADDR).add(SUBSYSTEM, LOGGING);
-            op.get(OP_ADDR).add("logger", "org.jboss.security.audit");
-            updates.add(op);
-
-            // /subsystem=logging/periodic-rotating-file-handler=AUDIT:remove
-            op = new ModelNode();
-            op.get(OP).set(REMOVE);
-            op.get(OP_ADDR).add(SUBSYSTEM, LOGGING);
-            op.get(OP_ADDR).add("periodic-rotating-file-handler", "AUDIT");
-            updates.add(op);
-
-            if (System.getProperty("elytron") != null) {
-                // /subsystem=elytron/security-domain=ApplicationDomain:undefine-attribute(name=security-event-listener)
-                op = new ModelNode();
-                op.get(OP).set(UNDEFINE_ATTRIBUTE_OPERATION);
-                op.get(OP_ADDR).add(SUBSYSTEM, "elytron");
-                op.get(OP_ADDR).add("security-domain", "ApplicationDomain");
-                op.get("name").set("security-event-listener");
-                updates.add(op);
-            }
-
-            executeOperations(updates);
-
-            if (System.getProperty("elytron") != null) {
-                ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient(), 50000);
-            }
+            snapshot.close();
         }
     }
 

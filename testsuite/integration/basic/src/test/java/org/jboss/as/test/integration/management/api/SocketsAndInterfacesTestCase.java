@@ -21,6 +21,17 @@
  */
 package org.jboss.as.test.integration.management.api;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROCESS_STATE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InterfaceAddress;
@@ -35,10 +46,12 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.WebUtil;
 import org.jboss.as.test.shared.RetryTaskExecutor;
 import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.shared.ServerSnapshot;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
@@ -49,18 +62,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROCESS_STATE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE_HEADERS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-import org.jboss.as.network.NetworkUtils;
-import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 
 /**
  * @author Dominik Pospisil <dpospisi@redhat.com>
@@ -85,12 +86,15 @@ public class SocketsAndInterfacesTestCase extends ContainerResourceMgmtTestBase 
         return ja;
     }
 
+    private AutoCloseable snapshot;
+
     @Before
     public void before() throws IOException {
+        snapshot = ServerSnapshot.takeSnapshot(getManagementClient());
         if (System.getProperties().containsKey("ipv6")) {
             // if proxy is used, we need to use default host, because used host needs to be set in -DnonProxyHosts and -Dhttp.nonProxyHosts parameter
             // we can't choose one host randomly
-            testHost =  System.getProperty("node0");
+            testHost = System.getProperty("node0");
             testNic = getNic(testHost);
         } else {
             testNic = getNonDefaultNic();
@@ -101,25 +105,8 @@ public class SocketsAndInterfacesTestCase extends ContainerResourceMgmtTestBase 
 
     @After
     public void after() throws Exception {
-        // remove connector
-        ModelNode op = createOpNode("subsystem=undertow/server=default-server/http-listener=test", REMOVE);
-        ModelNode result = executeOperation(op);
-
-        try {
-            // check that the connector is down
-            Assert.assertFalse("Could not connect to created connector.", WebUtil.testHttpURL(new URL(
-                    "http", testHost, TEST_PORT, "/").toString()));
-        } finally {
-            // remove socket binding
-            op = createOpNode("socket-binding-group=standard-sockets/socket-binding=test123-binding", REMOVE);
-            result = executeOperation(op);
-
-            ServerReload.executeReloadAndWaitForCompletion(getModelControllerClient());
-            // remove interface
-            op = createOpNode("interface=test123-interface", REMOVE);
-            result = executeOperation(op);
-            ServerReload.executeReloadAndWaitForCompletion(getModelControllerClient());
-        }
+        snapshot.close();
+        snapshot = null;
     }
 
     @Test

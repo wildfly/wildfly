@@ -21,10 +21,9 @@
  */
 package org.jboss.as.test.integration.jca.statistics.xa;
 
-import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
-import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 
 /**
  * Adds xa-data-source before deployment and removes it at the end.
@@ -32,22 +31,20 @@ import org.jboss.as.test.shared.ServerReload;
  * @author dsimko@redhat.com
  *
  */
-class XaDataSourceSetupStep implements ServerSetupTask {
+class XaDataSourceSetupStep extends SnapshotRestoreSetupTask {
 
     public static final String XA_DATASOURCE_NAME = "ExampleXADS";
     private CLIWrapper cli;
 
     @Override
-    public void setup(ManagementClient managementClient, String serverId) throws Exception {
+    public void doSetup(ManagementClient managementClient, String serverId) throws Exception {
         initCli();
         addXaDatasource(XA_DATASOURCE_NAME);
     }
 
     @Override
-    public void tearDown(ManagementClient managementClient, String serverId) throws Exception {
-        removeXaDatasource(XA_DATASOURCE_NAME);
+    protected void nonManagementCleanUp() throws Exception {
         quitCli();
-        ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
     }
 
     private void addXaDatasource(String name) {
@@ -60,11 +57,6 @@ class XaDataSourceSetupStep implements ServerSetupTask {
         builder.append(" --xa-datasource-properties={\"URL\"=>\"jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE\"}");
         cli.sendLine(builder.toString());
     }
-
-    private void removeXaDatasource(String name) {
-        cli.sendLine("xa-data-source remove --name=" + name);
-    }
-
     private void initCli() throws Exception {
         if (cli == null) {
             cli = new CLIWrapper(true);

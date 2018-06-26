@@ -22,50 +22,27 @@
 
 package org.jboss.as.test.integration.batch.transaction;
 
-import org.jboss.as.arquillian.api.ServerSetupTask;
-import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.test.integration.management.ManagementOperations;
-import org.jboss.as.test.integration.management.util.MgmtOperationException;
-import org.jboss.as.test.shared.ServerReload;
-import org.jboss.dmr.ModelNode;
-
-import java.io.IOException;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
-class SingleThreadedBatchSetup implements ServerSetupTask {
+import java.io.IOException;
 
-    private int originalThreadCount = -1;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.test.integration.management.ManagementOperations;
+import org.jboss.as.test.integration.management.util.MgmtOperationException;
+import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
+import org.jboss.dmr.ModelNode;
+
+class SingleThreadedBatchSetup extends SnapshotRestoreSetupTask {
 
     @Override
-    public void setup(ManagementClient managementClient, String containerId) throws Exception {
-        this.originalThreadCount = readBatchThreadSize(managementClient);
-
+    public void doSetup(ManagementClient managementClient, String containerId) throws Exception {
         setThreadSize(managementClient, 1);
-    }
-
-    @Override
-    public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-        final int threadCount = originalThreadCount == -1 ? 10 : originalThreadCount;
-
-        setThreadSize(managementClient, threadCount);
-    }
-
-    private int readBatchThreadSize(ManagementClient managementClient) throws IOException, MgmtOperationException {
-        ModelNode op = new ModelNode();
-        op.get(OP).set(READ_ATTRIBUTE_OPERATION);
-        op.get(OP_ADDR).add(SUBSYSTEM, "batch-jberet");
-        op.get(OP_ADDR).add("thread-pool", "batch");
-        op.get(NAME).set("max-threads");
-
-        final ModelNode res = ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
-        return res.asInt();
     }
 
     private void setThreadSize(ManagementClient managementClient, int threadCount) throws IOException, MgmtOperationException {

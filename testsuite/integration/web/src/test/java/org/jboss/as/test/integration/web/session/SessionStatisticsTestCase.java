@@ -40,12 +40,12 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.management.ManagementOperations;
 import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -72,26 +72,15 @@ public class SessionStatisticsTestCase {
     @ArquillianResource
     public ManagementClient managementClient;
 
-    static class SessionStatisticsServerSetup implements ServerSetupTask {
+    static class SessionStatisticsServerSetup extends SnapshotRestoreSetupTask {
 
         @Override
-        public void setup(ManagementClient managementClient, String containerId) throws Exception {
+        public void doSetup(ManagementClient managementClient, String containerId) throws Exception {
             ModelNode op = new ModelNode();
             op.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
             op.get(OP_ADDR).add(SUBSYSTEM, "undertow");
             op.get(NAME).set(Constants.STATISTICS_ENABLED);
             op.get(VALUE).set(true);
-            ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
-            ServerReload.executeReloadAndWaitForCompletion(managementClient);
-        }
-
-        @Override
-        public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-            ModelNode op = new ModelNode();
-            op.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-            op.get(OP_ADDR).add(SUBSYSTEM, "undertow");
-            op.get(NAME).set(Constants.STATISTICS_ENABLED);
-            op.get(VALUE).set(false);
             ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
             ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }

@@ -228,11 +228,6 @@ public abstract class AbstractDatasourceCapacityPoliciesTestCase extends JcaMgmt
 
         }
 
-        @Override
-        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
-            removeDatasource();
-        }
-
         private void createDatasource(CapacityConfiguration capacityConfiguration) throws Exception {
             ModelNode addOperation = new ModelNode();
             addOperation.get(OP).set(ADD);
@@ -292,15 +287,6 @@ public abstract class AbstractDatasourceCapacityPoliciesTestCase extends JcaMgmt
             }
 
             writeAttribute(xa ? XA_DS_ADDRESS : DS_ADDRESS, ENABLED, "true");
-            reload();
-        }
-
-        private void removeDatasource() throws Exception {
-            if (xa) {
-                remove(XA_DS_ADDRESS);
-            } else {
-                remove(DS_ADDRESS);
-            }
             reload();
         }
     }

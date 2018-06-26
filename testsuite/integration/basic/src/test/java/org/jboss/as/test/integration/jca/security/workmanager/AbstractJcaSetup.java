@@ -23,34 +23,24 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
 
 import java.io.IOException;
 
-import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 
-public abstract class AbstractJcaSetup implements ServerSetupTask {
+public abstract class AbstractJcaSetup extends SnapshotRestoreSetupTask {
     private static final PathAddress JCA_SUBSYSTEM_ADDRESS = PathAddress.pathAddress(ModelDescriptionConstants.SUBSYSTEM, "jca");
 
     @Override
-    public void setup(ManagementClient managementClient, String containerId) throws Exception {
+    public void doSetup(ManagementClient managementClient, String containerId) throws Exception {
         ModelControllerClient mcc = managementClient.getControllerClient();
         addWM(mcc);
         addThreadPool(mcc);
         addBootstrapContext(mcc);
-    }
-
-    @Override
-    public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-        ModelControllerClient mcc = managementClient.getControllerClient();
-        removeBootstrapContextSilently(mcc);
-        removeWMSilently(mcc);
-        ServerReload.executeReloadAndWaitForCompletion(managementClient);
     }
 
     private void addWM(ModelControllerClient client) throws IOException {
@@ -80,18 +70,6 @@ public abstract class AbstractJcaSetup implements ServerSetupTask {
 
         ModelNode response = execute(addBootstrapCtxOperation, client);
         Assert.assertEquals(response.toString(), SUCCESS, response.get(OUTCOME).asString());
-    }
-
-    private void removeBootstrapContextSilently(ModelControllerClient client) throws IOException {
-        ModelNode removeBootstrapCtxOperation = Operations.createRemoveOperation(getBootstrapContextAddress().toModelNode());
-        removeBootstrapCtxOperation.get(ClientConstants.OPERATION_HEADERS).get("allow-resource-service-restart").set("true");
-        client.execute(removeBootstrapCtxOperation);
-    }
-
-    private void removeWMSilently(ModelControllerClient client) throws IOException {
-        ModelNode removeWMOperation = Operations.createRemoveOperation(getWorkManagerAddress().toModelNode());
-        removeWMOperation.get(ClientConstants.OPERATION_HEADERS).get("allow-resource-service-restart").set("true");
-        client.execute(removeWMOperation);
     }
 
     private ModelNode execute(ModelNode operation, ModelControllerClient client) throws IOException {

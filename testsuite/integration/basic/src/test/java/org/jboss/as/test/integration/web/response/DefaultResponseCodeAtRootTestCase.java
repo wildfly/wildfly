@@ -40,6 +40,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.controller.client.helpers.Operations.CompositeOperationBuilder;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
+import org.jboss.as.test.shared.ServerSnapshot;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -100,20 +101,21 @@ public class DefaultResponseCodeAtRootTestCase extends ContainerResourceMgmtTest
 
     @Test
     public void testDefaultResponseCode() throws Exception {
-        CompositeOperationBuilder cob = CompositeOperationBuilder.create();
 
-        ModelNode operation = createOpNode("subsystem=undertow/server=default-server/host=default-host", "write-attribute");
-        operation.get("name").set("default-response-code");
-        operation.get("value").set(506);
-        cob.addStep(operation);
-        // if location service is removed, if no deployment == no virtual host.
-        operation = createOpNode("subsystem=undertow/server=default-server/host=default-host", "remove");
-        operation.get("address").add("location","/");
-        cob.addStep(operation);
-        executeOperation(cob.build().getOperation());
-        executeReloadAndWaitForCompletion(getModelControllerClient());
-        deployer.deploy("test");
-        try {
+        try (AutoCloseable snapshot = ServerSnapshot.takeSnapshot(getManagementClient())){
+            CompositeOperationBuilder cob = CompositeOperationBuilder.create();
+
+            ModelNode operation = createOpNode("subsystem=undertow/server=default-server/host=default-host", "write-attribute");
+            operation.get("name").set("default-response-code");
+            operation.get("value").set(506);
+            cob.addStep(operation);
+            // if location service is removed, if no deployment == no virtual host.
+            operation = createOpNode("subsystem=undertow/server=default-server/host=default-host", "remove");
+            operation.get("address").add("location","/");
+            cob.addStep(operation);
+            executeOperation(cob.build().getOperation());
+            executeReloadAndWaitForCompletion(getModelControllerClient());
+            deployer.deploy("test");
             HttpGet httpget = null;
             HttpResponse response = null;
             httpget = new HttpGet(url.toString() + URL_PATTERN+"xxx/xxxxx");
@@ -123,17 +125,6 @@ public class DefaultResponseCodeAtRootTestCase extends ContainerResourceMgmtTest
             httpget = new HttpGet(url.toString() + URL_PATTERN);
             response = this.httpclient.execute(httpget);
             Assert.assertEquals(""+httpget,506, response.getStatusLine().getStatusCode());
-        } finally {
-            cob = CompositeOperationBuilder.create();
-            operation = createOpNode("subsystem=undertow/server=default-server/host=default-host", "undefine-attribute");
-            operation.get("name").set("default-response-code");
-            cob.addStep(operation);
-            operation = createOpNode("subsystem=undertow/server=default-server/host=default-host", "add");
-            operation.get("address").add("location","/");
-            operation.get("handler").set("welcome-content");
-            cob.addStep(operation);
-            executeOperation(cob.build().getOperation());
-            executeReloadAndWaitForCompletion(getModelControllerClient());
         }
     }
 }

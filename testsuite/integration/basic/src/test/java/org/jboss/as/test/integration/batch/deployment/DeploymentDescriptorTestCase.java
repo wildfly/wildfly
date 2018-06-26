@@ -36,7 +36,6 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.Operation;
@@ -47,7 +46,7 @@ import org.jboss.as.test.integration.batch.common.CountingItemReader;
 import org.jboss.as.test.integration.batch.common.CountingItemWriter;
 import org.jboss.as.test.integration.batch.common.JobExecutionMarshaller;
 import org.jboss.as.test.integration.batch.common.StartBatchServlet;
-import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
@@ -128,10 +127,10 @@ public class DeploymentDescriptorTestCase extends AbstractBatchTestCase {
     }
 
 
-    static class JdbcJobRepositorySetUp implements ServerSetupTask {
+    static class JdbcJobRepositorySetUp extends SnapshotRestoreSetupTask {
 
         @Override
-        public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
+        public void doSetup(final ManagementClient managementClient, final String containerId) throws Exception {
             final CompositeOperationBuilder operationBuilder = CompositeOperationBuilder.create();
 
             // Add a new data-source
@@ -162,23 +161,6 @@ public class DeploymentDescriptorTestCase extends AbstractBatchTestCase {
             operationBuilder.addStep(op);
 
             execute(managementClient.getControllerClient(), operationBuilder.build());
-        }
-
-        @Override
-        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
-            // Remove the JDBC job repository and in-memory job repository
-            final CompositeOperationBuilder operationBuilder = CompositeOperationBuilder.create();
-            operationBuilder.addStep(Operations.createRemoveOperation(Operations.createAddress("subsystem", "batch-jberet", "jdbc-job-repository", "batch-ds")));
-            operationBuilder.addStep(Operations.createRemoveOperation(Operations.createAddress("subsystem", "batch-jberet", "in-memory-job-repository", "batch-in-mem")));
-            operationBuilder.addStep(Operations.createRemoveOperation(Operations.createAddress("subsystem", "batch-jberet", "thread-pool", "deployment-thread-pool")));
-            execute(managementClient.getControllerClient(), operationBuilder.build());
-
-            // Requires a reload to free the data-source capability
-            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
-
-            // Remove the data-source
-            execute(managementClient.getControllerClient(), Operations.createRemoveOperation(Operations.createAddress("subsystem", "datasources", "data-source", "batch-ds")));
-            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
         }
 
         static ModelNode execute(final ModelControllerClient client, final Operation op) throws IOException {

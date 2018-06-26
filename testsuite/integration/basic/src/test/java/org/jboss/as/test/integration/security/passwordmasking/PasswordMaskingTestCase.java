@@ -28,7 +28,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COR
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT_OPTIONS;
@@ -48,12 +47,11 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.VaultHandler;
-import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -73,13 +71,13 @@ public class PasswordMaskingTestCase {
 
    @ArquillianResource URL baseURL;
 
-   static class PasswordMaskingTestCaseSetup implements ServerSetupTask {
+   static class PasswordMaskingTestCaseSetup extends SnapshotRestoreSetupTask {
 
        private Server server;
        private VaultHandler vaultHandler;
 
        @Override
-       public void setup(ManagementClient managementClient, String containerId) throws Exception {
+       public void doSetup(ManagementClient managementClient, String containerId) throws Exception {
 
            VaultHandler.cleanFilesystem(RESOURCE_LOCATION, true);
 
@@ -136,32 +134,13 @@ public class PasswordMaskingTestCase {
        }
 
        @Override
-       public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-
-           ModelNode op;
-
-           // remove created datasources
-           op = new ModelNode();
-           op.get(OP).set(REMOVE);
-           op.get(OP_ADDR).add(SUBSYSTEM, "datasources");
-           op.get(OP_ADDR).add("data-source", VAULT_BLOCK);
-           managementClient.getControllerClient().execute(new OperationBuilder(op).build());
-
-           // remove created vault
-           op = new ModelNode();
-           op.get(OP).set(REMOVE);
-           op.get(OP_ADDR).add(CORE_SERVICE, VAULT);
-           managementClient.getControllerClient().execute(new OperationBuilder(op).build());
-
+       protected void nonManagementCleanUp() throws Exception {
            // remove temporary files
            vaultHandler.cleanUp();
 
            // stop DB
            server.shutdown();
-           ServerReload.executeReloadAndWaitForCompletion(managementClient);
-
        }
-
    }
 
    static final String RESOURCE_LOCATION = PasswordMaskingTestCase.class.getResource("/").getPath()

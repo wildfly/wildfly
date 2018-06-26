@@ -24,7 +24,6 @@ package org.jboss.as.test.integration.security.common;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import java.util.ArrayList;
@@ -35,6 +34,7 @@ import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.security.common.config.DataSource;
 import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 
@@ -43,7 +43,7 @@ import org.jboss.logging.Logger;
  *
  * @author Josef Cacek
  */
-public abstract class AbstractDataSourceServerSetupTask implements ServerSetupTask {
+public abstract class AbstractDataSourceServerSetupTask extends SnapshotRestoreSetupTask {
 
     private static final Logger LOGGER = Logger.getLogger(AbstractDataSourceServerSetupTask.class);
     private static final String SUBSYSTEM_DATASOURCES = "datasources";
@@ -60,7 +60,7 @@ public abstract class AbstractDataSourceServerSetupTask implements ServerSetupTa
      * @see org.jboss.as.arquillian.api.ServerSetupTask#setup(org.jboss.as.arquillian.container.ManagementClient,
      *      java.lang.String)
      */
-    public final void setup(final ManagementClient managementClient, String containerId) throws Exception {
+    public final void doSetup(final ManagementClient managementClient, String containerId) throws Exception {
         final DataSource[] dataSourceConfigurations = getDataSourceConfigurations(managementClient, containerId);
 
         if (dataSourceConfigurations == null) {
@@ -98,36 +98,6 @@ public abstract class AbstractDataSourceServerSetupTask implements ServerSetupTa
         }
         CoreUtils.applyUpdates(updates, managementClient.getControllerClient());
         ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient(), 50000);
-    }
-
-    /**
-     * Removes the security domain from the AS configuration.
-     *
-     * @param managementClient
-     * @param containerId
-     * @see org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup#tearDown(org.jboss.as.arquillian.container.ManagementClient,
-     *      java.lang.String)
-     */
-    public final void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-        final DataSource[] dataSourceConfigurations = getDataSourceConfigurations(managementClient, containerId);
-        if (dataSourceConfigurations == null) {
-            LOGGER.warn("Null DataSourceConfiguration array provided");
-            return;
-        }
-        final List<ModelNode> updates = new ArrayList<ModelNode>();
-        for (final DataSource config : dataSourceConfigurations) {
-            final String name = config.getName();
-            LOGGER.trace("Removing datasource " + name);
-            final ModelNode op = new ModelNode();
-            op.get(OP).set(REMOVE);
-            op.get(OP_ADDR).add(SUBSYSTEM, SUBSYSTEM_DATASOURCES);
-            op.get(OP_ADDR).add(DATASOURCE, name);
-
-            updates.add(op);
-        }
-
-        CoreUtils.applyUpdates(updates, managementClient.getControllerClient());
-        ServerReload.executeReloadAndWaitForCompletion(managementClient);
     }
 
     // Protected methods -----------------------------------------------------

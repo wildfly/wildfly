@@ -28,7 +28,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STATISTICS_ENABLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.shrinkwrap.api.ArchivePaths.create;
@@ -44,6 +43,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.shared.ServerSnapshot;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -72,9 +72,11 @@ public class PooledConnectionFactoryStatisticsTestCase {
                 .addAsManifestResource(EmptyAsset.INSTANCE,  create("beans.xml"));
     }
 
+
     @Test
     public void testStatistics() throws Exception {
-        try {
+
+        try (AutoCloseable snapshot = ServerSnapshot.takeSnapshot(managementClient)){
             checkStatisticsAreDisabled();
 
             enableStatistics();
@@ -86,10 +88,6 @@ public class PooledConnectionFactoryStatisticsTestCase {
 
             bean.closeConnection();
             assertEquals(0, readStatistic("InUseCount"));
-
-        } finally {
-            disableStatistics();
-            checkStatisticsAreDisabled();
         }
     }
 
@@ -119,15 +117,6 @@ public class PooledConnectionFactoryStatisticsTestCase {
         op.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
         op.get(NAME).set(STATISTICS_ENABLED);
         op.get(VALUE).set(true);
-        execute(op, true);
-        ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
-    }
-
-    private void disableStatistics() throws IOException {
-        ModelNode op = new ModelNode();
-        op.get(OP_ADDR).set(getPooledConnectionFactoryAddress());
-        op.get(OP).set(UNDEFINE_ATTRIBUTE_OPERATION);
-        op.get(NAME).set(STATISTICS_ENABLED);
         execute(op, true);
         ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
     }

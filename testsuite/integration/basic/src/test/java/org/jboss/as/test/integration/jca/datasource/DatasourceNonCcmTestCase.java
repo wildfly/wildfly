@@ -25,7 +25,6 @@ package org.jboss.as.test.integration.jca.datasource;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 import java.io.FilePermission;
@@ -125,37 +124,6 @@ public class DatasourceNonCcmTestCase extends JcaMgmtBase {
             operation.get("connection-url").set(ds.getConnectionUrl());
             managementClient.getControllerClient().execute(operation);
         }
-
-        @Override
-        public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-            ModelNode address = new ModelNode();
-            address.add("subsystem", "jca");
-            address.add("cached-connection-manager", "cached-connection-manager");
-
-            ModelNode operation = new ModelNode();
-            operation.get(OP_ADDR).set(address);
-            operation.get(OP).set("write-attribute");
-            operation.get("name").set("debug");
-            operation.get("value").set(debug);
-            managementClient.getControllerClient().execute(operation);
-
-            // remove the DS
-            removeDs(managementClient, NON_TX_DS_NAME);
-            removeDs(managementClient, TX_DS_NAME);
-
-            reload();
-        }
-
-        private void removeDs(ManagementClient managementClient, String dsName) throws Exception {
-            ModelNode address = new ModelNode();
-            address.add("subsystem", "datasources");
-            address.add("data-source", dsName);
-            ModelNode operation = new ModelNode();
-            operation.get(OP).set(REMOVE);
-            operation.get(OP_ADDR).set(address);
-            managementClient.getControllerClient().execute(operation);
-        }
-
     }
 
     @Resource(mappedName = "java:jboss/datasources/" + NON_TX_DS_NAME)

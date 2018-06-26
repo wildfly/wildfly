@@ -78,7 +78,7 @@ public class WebCERTTestsSetup implements ServerSetupTask {
     }
 
     @Override
-    public void tearDown(ManagementClient managementClient, String containerId) throws IOException {
+    public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
         if (WebSecurityCommon.isElytron()) {
             try {
                 elytronSetup.tearDown(managementClient, containerId);

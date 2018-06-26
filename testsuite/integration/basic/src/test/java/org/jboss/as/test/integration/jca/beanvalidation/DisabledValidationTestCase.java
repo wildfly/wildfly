@@ -54,11 +54,6 @@ public class DisabledValidationTestCase extends JcaMgmtBase {
         ModelNode bvAddress = subsystemAddress.clone().add("bean-validation", "bean-validation");
 
         @Override
-        public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-            writeAttribute(bvAddress, "enabled", "true");
-        }
-
-        @Override
         protected void doSetup(ManagementClient managementClient) throws Exception {
             writeAttribute(bvAddress, "enabled", "false");
         }
