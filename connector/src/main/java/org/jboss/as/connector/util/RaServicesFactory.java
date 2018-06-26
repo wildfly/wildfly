@@ -28,7 +28,6 @@ import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
 
-import org.jboss.as.connector.metadata.api.resourceadapter.ActivationSecurityUtil;
 import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeployment;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.services.mdr.AS7MetadataRepository;
@@ -38,10 +37,7 @@ import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
 import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.naming.service.NamingService;
-import org.jboss.as.security.service.SimpleSecurityManagerService;
-import org.jboss.as.security.service.SubjectFactoryService;
 import org.jboss.as.server.Services;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
@@ -55,7 +51,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.security.SubjectFactory;
 
 public class RaServicesFactory {
 
@@ -92,13 +87,6 @@ public class RaServicesFactory {
                 .addDependency(NamingService.SERVICE_NAME)
                 .addDependency(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append(bootStrapCtxName))
                 .addDependency(ConnectorServices.RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX.append(connectorXmlDescriptor.getDeploymentName()));
-
-        if (ActivationSecurityUtil.isLegacySecurityRequired(raxml)) {
-            builder.addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class,
-                            service.getSubjectFactoryInjector())
-                    .addDependency(SimpleSecurityManagerService.SERVICE_NAME,
-                            ServerSecurityManager.class, service.getServerSecurityManager());
-        }
 
         String raName = deployment;
         if (raxml.getId() != null) {

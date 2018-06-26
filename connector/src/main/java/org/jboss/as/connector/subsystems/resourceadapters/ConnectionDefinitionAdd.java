@@ -52,6 +52,9 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.security.CredentialReference;
+import org.jboss.as.core.security.ServerSecurityManager;
+import org.jboss.as.security.service.SimpleSecurityManagerService;
+import org.jboss.as.security.service.SubjectFactoryService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
 import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
@@ -60,6 +63,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.security.SubjectFactory;
 import org.wildfly.security.auth.client.AuthenticationContext;
 
 /**
@@ -167,10 +171,18 @@ public class ConnectionDefinitionAdd extends AbstractAddStepHandler {
                 }
             }
 
+            if (!elytronEnabled || !elytronRecoveryEnabled) {
+                cdServiceBuilder.addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class,
+                        service.getSubjectFactoryInjector())
+                        .addDependency(SimpleSecurityManagerService.SERVICE_NAME,
+                                ServerSecurityManager.class, service.getServerSecurityManager());
+            }
+
             if (credentialReference.isDefined()) {
                 service.getCredentialSourceSupplier().inject(
                         CredentialReference.getCredentialSourceSupplier(context, RECOVERY_CREDENTIAL_REFERENCE, resourceModel, cdServiceBuilder));
             }
+
 
             // Install the ConnectionDefinitionService
             cdServiceBuilder.install();
