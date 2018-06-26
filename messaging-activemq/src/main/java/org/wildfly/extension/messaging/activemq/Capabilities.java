@@ -32,6 +32,13 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 public class Capabilities {
 
     /**
+     * Represents the data source capability
+     *
+     * @see <a href="https://github.com/wildfly/wildfly-capabilities/blob/master/org/wildfly/data-source/capability.adoc">Capability documentation</a>
+     */
+    static final String DATA_SOURCE_CAPABILITY = "org.wildfly.data-source";
+
+    /**
      * The capability name for the JMX management.
      *
      * @see <a href="https://github.com/wildfly/wildfly-capabilities/blob/master/org/wildfly/management/jmx/capability.adoc">Capability documentation</a>

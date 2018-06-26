@@ -168,9 +168,6 @@ import org.wildfly.security.credential.source.CredentialSource;
  * @author <a href="http://jmesnil.net">Jeff Mesnil</a> (c) 2012 Red Hat Inc.
  */
 class ServerAdd extends AbstractAddStepHandler {
-
-    static final String PATH_BASE = "paths";
-
     public static final ServerAdd INSTANCE = new ServerAdd();
 
     private ServerAdd() {
