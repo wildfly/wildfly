@@ -1247,7 +1247,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                 } catch (Exception ee) {
                     // omit;
                 }
-                EJB3_TIMER_LOGGER.exceptionRunningTimerTask(timer, timer.getTimedObjectId(), e);
+                EJB3_TIMER_LOGGER.exceptionPersistTimerState(timer, e);
                 long nextExpirationDelay;
                 if (nextExpirationPristine > 0 && timer.timerState != TimerState.RETRY_TIMEOUT &&
                         (nextExpirationDelay = nextExpirationPristine - System.currentTimeMillis()) > delta) {

@@ -3174,4 +3174,8 @@ public interface EjbLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 507, value = "Failed to persist timer's state %s. Timer has to be restored manually")
     void exceptionPersistPostTimerState(Timer timer, @Cause Exception e);
+
+    @LogMessage(level = WARN)
+    @Message(id = 508, value = "Failed to persist timer's state %s due to %s")
+    void exceptionPersistTimerState(Timer timer, Exception e);
 }
