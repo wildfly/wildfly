@@ -59,12 +59,6 @@ public class NoEE8InDefaultConfigurationTestCase {
         assertTrue("Class " + fqcn +" is not available", isClassAvailable(fqcn));
     }
 
-    @Test
-    public void unavailableCDI20() throws Exception {
-        String fqcn = "javax.enterprise.inject.spi.InterceptionFactory";
-        assertFalse("Class " + fqcn +" is available", isClassAvailable(fqcn));
-    }
-
     private boolean isClassAvailable(String s) {
         boolean classAvailable = false;
         try {

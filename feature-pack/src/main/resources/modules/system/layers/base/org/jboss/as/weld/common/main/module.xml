@@ -47,7 +47,6 @@
         <module name="org.jboss.as.security"/>
         <module name="org.jboss.invocation"/>
         <module name="javax.enterprise.api"/>
-        <module name="org.wildfly.cdi-api-bridge"/>
         <module name="javax.annotation.api"/>
         <module name="java.desktop"/>
     </dependencies>
