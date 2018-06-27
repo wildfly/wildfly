@@ -2133,17 +2133,6 @@
             <artifactId>hibernate-validator-cdi</artifactId>
         </dependency>
 
-        <!-- Hibernate Validator dependencies for EE7 compliance -->
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-validator</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-validator-cdi</artifactId>
-        </dependency>
-
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-envers</artifactId>

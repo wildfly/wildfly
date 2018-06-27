@@ -249,8 +249,6 @@
         <version.javax.persistence>2.2</version.javax.persistence>
         <version.javax.security.enterprise>1.0</version.javax.security.enterprise>
         <version.javax.validation>2.0.1.Final</version.javax.validation>
-        <!-- Hardcoded in module.xml for the dual EE7 and EE8 support -->
-        <version.javax.validation-1.1>1.1.0.Final</version.javax.validation-1.1>
         <version.jaxen>1.1.6</version.jaxen>
         <version.jboss.jaxbintros>1.0.2.GA</version.jboss.jaxbintros>
         <version.joda-time>2.9.7</version.joda-time>
@@ -297,7 +295,6 @@
         <!-- Hardcoded in module.xml for the dual EE7 and EE8 support -->
         <version.org.hibernate.search5_10>5.10.1.Final</version.org.hibernate.search5_10>
         <version.org.hibernate.validator>6.0.10.Final</version.org.hibernate.validator>
-        <version.org.hibernate.validator.ee7>5.3.6.Final</version.org.hibernate.validator.ee7>
         <!-- Hardcoded in module.xml for the dual EE7 and EE8 support -->
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>1.0.2.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>
         <version.org.hornetq>2.4.7.Final</version.org.hornetq>
@@ -3851,31 +3848,6 @@
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-search-serialization-avro</artifactId>
                 <version>${version.org.hibernate.search}</version>
-            </dependency>
-
-            <!-- Hibernate Validator dependencies for EE 7 -->
-            <dependency>
-                <groupId>org.hibernate</groupId>
-                <artifactId>hibernate-validator</artifactId>
-                <version>${version.org.hibernate.validator.ee7}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.hibernate</groupId>
-                <artifactId>hibernate-validator-cdi</artifactId>
-                <version>${version.org.hibernate.validator.ee7}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>
