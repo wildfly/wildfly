@@ -22,11 +22,7 @@
         <property name="jboss.api" value="public"/>
     </properties>
     <resources>
-        <artifact name="${javax.json.bind:javax.json.bind-api}">
-            <conditions>
-                <property-equal name="ee8.preview.mode" value="true"/>
-            </conditions>
-        </artifact>
+        <artifact name="${javax.json.bind:javax.json.bind-api}"/>
     </resources>
     <dependencies>
         <module name="javax.json.api"/>

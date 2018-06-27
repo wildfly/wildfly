@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.test.integration.ee8.json;
+package org.jboss.as.test.integration.json;
 
 import javax.json.bind.JsonbBuilder;
 import javax.servlet.ServletException;
