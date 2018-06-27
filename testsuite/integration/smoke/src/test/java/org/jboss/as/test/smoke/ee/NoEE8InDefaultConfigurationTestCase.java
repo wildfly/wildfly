@@ -65,15 +65,6 @@ public class NoEE8InDefaultConfigurationTestCase {
         assertFalse("Class " + fqcn +" is available", isClassAvailable(fqcn));
     }
 
-    @Test
-    public void unavailableServlet40() throws Exception {
-        String fqcn = "javax.servlet.GenericFilter";
-        assertFalse("Class " + fqcn +" is available", isClassAvailable(fqcn));
-
-        fqcn = "javax.servlet.http.HttpServletMapping";
-        assertFalse("Class " + fqcn +" is available", isClassAvailable(fqcn));
-    }
-
     private boolean isClassAvailable(String s) {
         boolean classAvailable = false;
         try {

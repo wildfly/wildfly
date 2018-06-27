@@ -68,7 +68,7 @@ import org.wildfly.extension.undertow.logging.UndertowLogger;
  */
 public class WarMetaDataProcessor implements DeploymentUnitProcessor {
 
-    static final String VERSION = Boolean.getBoolean("ee8.preview.mode") ? "4.0" : "3.1";
+    static final String VERSION = "4.0";
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
