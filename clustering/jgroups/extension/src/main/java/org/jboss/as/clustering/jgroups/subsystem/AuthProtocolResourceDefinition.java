@@ -28,14 +28,22 @@ import org.jboss.as.clustering.controller.ResourceCapabilityReference;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
+import org.jboss.as.clustering.jgroups.auth.BinaryAuthToken;
+import org.jboss.as.clustering.jgroups.auth.CipherAuthToken;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jgroups.conf.ClassConfigurator;
 
 /**
  * @author Paul Ferraro
  */
 public class AuthProtocolResourceDefinition extends ProtocolResourceDefinition {
+
+    static {
+        ClassConfigurator.add((short) 1100, BinaryAuthToken.class);
+        ClassConfigurator.add((short) 1101, CipherAuthToken.class);
+    }
 
     static void addTransformations(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
 

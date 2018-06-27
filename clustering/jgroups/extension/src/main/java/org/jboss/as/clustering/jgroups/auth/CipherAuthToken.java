@@ -34,17 +34,12 @@ import javax.crypto.IllegalBlockSizeException;
 
 import org.jgroups.Message;
 import org.jgroups.auth.AuthToken;
-import org.jgroups.conf.ClassConfigurator;
 
 /**
  * An AUTH token, functionally equivalent to {@link org.jgroups.auth.X509Token}, but configured using Elytron resources.
  * @author Paul Ferraro
  */
 public class CipherAuthToken extends BinaryAuthToken {
-
-    static {
-        ClassConfigurator.add((short) 1101, CipherAuthToken.class);
-    }
 
     private final Cipher cipher;
     private final byte[] rawSharedSecret;

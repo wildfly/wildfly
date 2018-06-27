@@ -28,7 +28,6 @@ import java.util.Arrays;
 
 import org.jgroups.Message;
 import org.jgroups.auth.AuthToken;
-import org.jgroups.conf.ClassConfigurator;
 import org.jgroups.util.Util;
 
 /**
@@ -36,10 +35,6 @@ import org.jgroups.util.Util;
  * @author Paul Ferraro
  */
 public class BinaryAuthToken extends AuthToken {
-
-    static {
-        ClassConfigurator.add((short) 1100, BinaryAuthToken.class);
-    }
 
     private volatile byte[] sharedSecret;
 
