@@ -78,9 +78,9 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
     private boolean deliveryActive;
     private String deliveryGroup;
     private boolean clusteredSingleton;
-
     private String mdbPoolConfigName;
     private final String messageListenerInterfaceName;
+    private final boolean defaultMdbPoolAvailable;
 
     /**
      * Construct a new instance.
@@ -92,7 +92,7 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
      */
     public MessageDrivenComponentDescription(final String componentName, final String componentClassName, final EjbJarDescription ejbJarDescription,
                                              final ServiceName deploymentUnitServiceName, final String messageListenerInterfaceName, final Properties activationProps,
-                                             final String defaultResourceAdapterName, final MessageDrivenBeanMetaData descriptorData) {
+                                             final String defaultResourceAdapterName, final MessageDrivenBeanMetaData descriptorData, final boolean defaultMdbPoolAvailable) {
         super(componentName, componentClassName, ejbJarDescription, deploymentUnitServiceName, descriptorData);
         if (messageListenerInterfaceName == null || messageListenerInterfaceName.isEmpty()) {
             throw EjbLogger.ROOT_LOGGER.stringParamCannotBeNullOrEmpty("Message listener interface");
@@ -103,9 +103,8 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
         this.resourceAdapterName = defaultResourceAdapterName;
         this.deliveryActive = true;
         this.activationProps = activationProps;
-
         this.messageListenerInterfaceName = messageListenerInterfaceName;
-
+        this.defaultMdbPoolAvailable = defaultMdbPoolAvailable;
         // setup a dependency on the EJBUtilities service
         this.addDependency(EJBUtilities.SERVICE_NAME);
 
@@ -177,6 +176,9 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
         return mdbComponentConfiguration;
     }
 
+    boolean isDefaultMdbPoolAvailable() {
+        return defaultMdbPoolAvailable;
+    }
 
     public Properties getActivationProps() {
         return activationProps;
@@ -312,7 +314,7 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
         return messageListenerInterfaceName;
     }
 
-    private class PoolInjectingConfigurator implements DependencyConfigurator<Service<Component>> {
+    private static class PoolInjectingConfigurator implements DependencyConfigurator<Service<Component>> {
 
         private final MessageDrivenComponentDescription mdbComponentDescription;
 
@@ -321,14 +323,16 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
         }
 
         @Override
-        public void configureDependency(ServiceBuilder<?> serviceBuilder, Service<Component> service) throws DeploymentUnitProcessingException {
+        public void configureDependency(ServiceBuilder<?> serviceBuilder, Service<Component> service) {
             final MessageDrivenComponentCreateService mdbComponentCreateService = (MessageDrivenComponentCreateService) service;
             final String poolName = this.mdbComponentDescription.getPoolConfigName();
             // if no pool name has been explicitly set, then inject the *optional* "default mdb pool config"
             // If the default mdb pool config itself is not configured, then pooling is disabled for the bean
             if (poolName == null) {
-                serviceBuilder.addDependency(ServiceBuilder.DependencyType.OPTIONAL, StrictMaxPoolConfigService.DEFAULT_MDB_POOL_CONFIG_SERVICE_NAME,
-                        PoolConfig.class, mdbComponentCreateService.getPoolConfigInjector());
+                if (mdbComponentDescription.isDefaultMdbPoolAvailable()) {
+                    serviceBuilder.addDependency(StrictMaxPoolConfigService.DEFAULT_MDB_POOL_CONFIG_SERVICE_NAME,
+                            PoolConfig.class, mdbComponentCreateService.getPoolConfigInjector());
+                }
             } else {
                 // pool name has been explicitly set so the pool config is a required dependency
                 serviceBuilder.addDependency(StrictMaxPoolConfigService.EJB_POOL_CONFIG_BASE_SERVICE_NAME.append(poolName),
