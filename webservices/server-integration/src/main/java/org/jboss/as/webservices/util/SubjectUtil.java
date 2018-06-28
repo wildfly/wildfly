@@ -17,18 +17,26 @@ package org.jboss.as.webservices.util;
  * limitations under the License.
  */
 import java.security.AccessController;
+import java.security.KeyPair;
 import java.security.Principal;
+import java.security.PrivateKey;
 import java.security.PrivilegedAction;
+import java.security.PublicKey;
 import java.security.acl.Group;
+import java.security.cert.X509Certificate;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.crypto.SecretKey;
 import javax.security.auth.Subject;
 
 import org.wildfly.security.auth.principal.NamePrincipal;
+import org.wildfly.security.auth.server.IdentityCredentials;
+import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.auth.server.SecurityIdentity;
+import org.wildfly.security.authz.Roles;
 import org.wildfly.security.credential.Credential;
 import org.wildfly.security.credential.KeyPairCredential;
 import org.wildfly.security.credential.PasswordCredential;
@@ -37,7 +45,7 @@ import org.wildfly.security.credential.SecretKeyCredential;
 import org.wildfly.security.credential.X509CertificateChainPrivateCredential;
 import org.wildfly.security.credential.X509CertificateChainPublicCredential;
 import org.wildfly.security.manager.WildFlySecurityManager;
-
+import org.wildfly.security.password.Password;
 /**
  * Utilities for dealing with {@link Subject}.
  *
@@ -119,6 +127,54 @@ public final class SubjectUtil {
                 return null;
             });
         }
+    }
+
+    public static SecurityIdentity toSecurityIdentity (Subject subject, Principal principal, SecurityDomain domain,
+            String roleCategory) {
+        SecurityIdentity identity = domain.createAdHocIdentity(principal);
+        // convert subject Group
+        Set<String> roles = new HashSet<>();
+        for (Principal prin : subject.getPrincipals()) {
+            if (prin instanceof Group && "Roles".equalsIgnoreCase(prin.getName())) {
+                Enumeration<? extends Principal> enumeration = ((Group) prin).members();
+                while (enumeration.hasMoreElements()) {
+                    roles.add(enumeration.nextElement().getName());
+                }
+            }
+        }
+        identity.withRoleMapper(roleCategory, (rolesToMap) -> Roles.fromSet(roles));
+        // convert public credentials
+        IdentityCredentials publicCredentials = IdentityCredentials.NONE;
+        for (Object credential : subject.getPublicCredentials()) {
+            if (credential instanceof PublicKey) {
+                publicCredentials = publicCredentials.withCredential(new PublicKeyCredential((PublicKey) credential));
+            } else if (credential instanceof X509Certificate) {
+                publicCredentials = publicCredentials.withCredential(new X509CertificateChainPublicCredential(
+                        (X509Certificate) credential));
+            } else if (credential instanceof Credential) {
+                publicCredentials = publicCredentials.withCredential((Credential) credential);
+            }
+        }
+        identity.withPublicCredentials(publicCredentials);
+
+        // convert private credentials
+        IdentityCredentials privateCredentials = IdentityCredentials.NONE;
+        for (Object credential : subject.getPrivateCredentials()) {
+            if (credential instanceof Password) {
+                privateCredentials = privateCredentials.withCredential(new PasswordCredential((Password) credential));
+            } else if (credential instanceof SecretKey) {
+                privateCredentials = privateCredentials.withCredential(new SecretKeyCredential((SecretKey) credential));
+            } else if (credential instanceof KeyPair) {
+                privateCredentials = privateCredentials.withCredential(new KeyPairCredential((KeyPair) credential));
+            } else if (credential instanceof PrivateKey) {
+                privateCredentials = privateCredentials.withCredential(new X509CertificateChainPrivateCredential(
+                        (PrivateKey) credential));
+            } else if (credential instanceof Credential) {
+                privateCredentials = privateCredentials.withCredential((Credential) credential);
+            }
+        }
+        identity.withPrivateCredentials(privateCredentials);
+        return identity;
     }
 
 
