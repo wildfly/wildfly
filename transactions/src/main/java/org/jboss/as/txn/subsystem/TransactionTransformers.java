@@ -16,17 +16,14 @@
 package org.jboss.as.txn.subsystem;
 
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
 import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
-import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.ChainedTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
-import org.jboss.dmr.ModelNode;
 
 import static org.jboss.as.txn.subsystem.TransactionExtension.CURRENT_MODEL_VERSION;
 import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.MAXIMUM_TIMEOUT;
@@ -40,6 +37,7 @@ public class TransactionTransformers implements ExtensionTransformerRegistration
     static final ModelVersion MODEL_VERSION_EAP63 = ModelVersion.create(1, 4);
     static final ModelVersion MODEL_VERSION_EAP64 = ModelVersion.create(1, 5);
     static final ModelVersion MODEL_VERSION_EAP70 = ModelVersion.create(3, 0);
+    static final ModelVersion MODEL_VERSION_EAP71 = ModelVersion.create(4, 0);
 
 
     @Override
@@ -50,7 +48,14 @@ public class TransactionTransformers implements ExtensionTransformerRegistration
     @Override
     public void registerTransformers(SubsystemTransformerRegistration subsystemRegistration) {
         ChainedTransformationDescriptionBuilder chainedBuilder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(CURRENT_MODEL_VERSION);
-        // 4.1.0 --> 3.0.0
+        // 4.1.0 --> 4.0.0
+        ResourceTransformationDescriptionBuilder builderEap71 = chainedBuilder.createBuilder(CURRENT_MODEL_VERSION, MODEL_VERSION_EAP71);
+        builderEap71.getAttributeBuilder()
+                .setDiscard(DiscardAttributeChecker.ALWAYS, MAXIMUM_TIMEOUT)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, MAXIMUM_TIMEOUT)
+                .end();
+
+        // 4.0.0 --> 3.0.0
         /*
         Missing attributes in current: []; missing in legacy [number-of-system-rollbacks, average-commit-time] //both runtime
         Different 'default' for attribute 'object-store-relative-to'. Current: undefined; legacy: "jboss.server.data.dir"
@@ -58,19 +63,12 @@ public class TransactionTransformers implements ExtensionTransformerRegistration
         Different 'nillable' for attribute 'process-id-uuid'. Current: true; legacy: false //alternatives
          */
 
-        ResourceTransformationDescriptionBuilder builderEap7 = chainedBuilder.createBuilder(CURRENT_MODEL_VERSION, MODEL_VERSION_EAP70);
-        builderEap7.getAttributeBuilder()
+        ResourceTransformationDescriptionBuilder builderEap70 = chainedBuilder.createBuilder(MODEL_VERSION_EAP71, MODEL_VERSION_EAP70);
+        builderEap70.getAttributeBuilder()
                 .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(OBJECT_STORE_RELATIVE_TO), OBJECT_STORE_RELATIVE_TO)
-                .setDiscard(new DiscardAttributeChecker.DefaultDiscardAttributeChecker(true, false) {
-                    @Override
-                    protected boolean isValueDiscardable(final PathAddress address, final String attributeName, final ModelNode attributeValue, final TransformationContext transformationContext) {
-                        return attributeValue.isDefined();
-                    }
-                }, MAXIMUM_TIMEOUT)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, MAXIMUM_TIMEOUT)
                 .end();
 
-        builderEap7.addChildResource(TransactionExtension.LOG_STORE_PATH)
+        builderEap70.addChildResource(TransactionExtension.LOG_STORE_PATH)
                 .addChildResource(TransactionExtension.TRANSACTION_PATH)
                 .addChildResource(TransactionExtension.PARTICIPANT_PATH)
                 .addOperationTransformationOverride("delete")
@@ -96,7 +94,8 @@ public class TransactionTransformers implements ExtensionTransformerRegistration
                 MODEL_VERSION_EAP63,
                 MODEL_VERSION_EAP64,
                 MODEL_VERSION_EAP70,
-                // v4_0_0
+                MODEL_VERSION_EAP71,
+                // v4_1_0
         });
     }
 }
