@@ -161,7 +161,6 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
     private final EJBDefaultSecurityDomainProcessor defaultSecurityDomainDeploymentProcessor;
     private final MissingMethodPermissionsDenyAccessMergingProcessor missingMethodPermissionsDenyAccessMergingProcessor;
     private static final String UNDERTOW_HTTP_INVOKER_CAPABILITY_NAME = "org.wildfly.undertow.http-invoker";
-    private static final String LEGACY_SECURITY_CAPABILITY_NAME = "org.wildfly.legacy-security.server-security-manager";
 
     private static final String REMOTING_ENDPOINT_CAPABILITY = "org.wildfly.remoting.endpoint";
 
