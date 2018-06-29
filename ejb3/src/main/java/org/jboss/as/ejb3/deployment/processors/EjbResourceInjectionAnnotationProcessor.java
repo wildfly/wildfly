@@ -185,7 +185,7 @@ public class EjbResourceInjectionAnnotationProcessor implements DeploymentUnitPr
     private InjectionSource createLookup(final String localContextName, final boolean appclient) {
         //appclient lookups are always optional
         //as they could reference local interfaces that are not present
-        return new LookupInjectionSource(localContextName, appclient);
+        return new LookupInjectionSource(localContextName);
     }
 
     private boolean isEmpty(final String string) {

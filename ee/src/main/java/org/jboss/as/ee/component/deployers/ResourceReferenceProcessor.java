@@ -64,8 +64,6 @@ import static org.jboss.as.ee.logging.EeLogger.ROOT_LOGGER;
  */
 public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBindingsProcessor {
 
-    private static final String JAVAX_NAMING_CONTEXT = "javax.naming.Context";
-
     @Override
     protected List<BindingConfiguration> processDescriptorEntries(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, ResourceInjectionTarget resourceInjectionTarget, final ComponentDescription componentDescription, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, final EEApplicationClasses applicationClasses) throws DeploymentUnitProcessingException {
         List<BindingConfiguration> bindings = new ArrayList<BindingConfiguration>();
@@ -102,7 +100,7 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
             InjectionSource injectionSource = new LookupInjectionSource(name);
             classType = processInjectionTargets(resourceInjectionTarget, injectionSource, classLoader, deploymentReflectionIndex, resourceEnvRef, classType);
             if (!isEmpty(resourceEnvRef.getLookupName())) {
-                injectionSource = new LookupInjectionSource(resourceEnvRef.getLookupName(), classType != null && JAVAX_NAMING_CONTEXT.equals(classType.getName()));
+                injectionSource = new LookupInjectionSource(resourceEnvRef.getLookupName());
             } else {
                 if (classType == null) {
                     throw EeLogger.ROOT_LOGGER.cannotDetermineType(name);
@@ -157,7 +155,7 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
             InjectionSource injectionSource = new LookupInjectionSource(name);
             classType = processInjectionTargets(resourceInjectionTarget, injectionSource, classLoader, deploymentReflectionIndex, resourceRef, classType);
             if (!isEmpty(resourceRef.getLookupName())) {
-                injectionSource = new LookupInjectionSource(resourceRef.getLookupName(), classType != null && JAVAX_NAMING_CONTEXT.equals(classType.getName()));
+                injectionSource = new LookupInjectionSource(resourceRef.getLookupName());
             } else if (!isEmpty(resourceRef.getResUrl())) {
                 final String url = resourceRef.getResUrl();
                 if (classType != null && classType.equals(URI.class)) {
