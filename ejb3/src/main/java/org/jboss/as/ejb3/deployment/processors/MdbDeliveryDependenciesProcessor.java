@@ -77,12 +77,12 @@ public class MdbDeliveryDependenciesProcessor implements DeploymentUnitProcessor
                         builder.addDependency(CLUSTERED_SINGLETON_CAPABILITY.getCapabilityServiceName());
                     }
                     if (mdbDescription.getDeliveryGroup() != null) {
-                        final ServiceName deliveyGroupServiceName = MdbDeliveryGroupResourceDefinition.getDeliveryGroupServiceName(
+                        final ServiceName deliveryGroupServiceName = MdbDeliveryGroupResourceDefinition.getDeliveryGroupServiceName(
                                 mdbDescription.getDeliveryGroup());
-                        if (phaseContext.getServiceRegistry().getService(deliveyGroupServiceName) == null) {
+                        if (phaseContext.getServiceRegistry().getService(deliveryGroupServiceName) == null) {
                             throw EjbLogger.DEPLOYMENT_LOGGER.missingMdbDeliveryGroup(mdbDescription.getDeliveryGroup());
                         }
-                        builder.addDependency(deliveyGroupServiceName);
+                        builder.addDependency(deliveryGroupServiceName);
                     }
                     builder.install();
                 }
