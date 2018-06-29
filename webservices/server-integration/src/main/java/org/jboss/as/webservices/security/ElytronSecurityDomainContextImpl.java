@@ -21,9 +21,7 @@
  */
 package org.jboss.as.webservices.security;
 
-import java.security.AccessController;
 import java.security.Principal;
-import java.security.PrivilegedAction;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
@@ -93,18 +91,8 @@ public class ElytronSecurityDomainContextImpl implements SecurityDomainContext {
         }
     }
     @Override
-    public void pushSubjectContext(Subject subject, Principal principal, Object credential) {
-        AccessController.doPrivileged(new PrivilegedAction<Void>() {
-            public Void run() {
-                if (credential != null) {
-                    subject.getPrivateCredentials().add(credential);
-                }
-                SecurityIdentity securityIdentity = SubjectUtil.toSecurityIdentity(subject, principal, securityDomain,
-                        "ejb");
-                currentIdentity.set(securityIdentity);
-                return null;
-            }
-        });
+    public void pushSubjectContext(Subject arg0, Principal arg1, Object arg2) {
+
     }
 
     private SecurityIdentity authenticate(final String username, final String password) {
