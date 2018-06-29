@@ -27,21 +27,22 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.CL
 import java.util.function.Supplier;
 
 import org.jboss.msc.Service;
-import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.wildfly.clustering.singleton.service.SingletonPolicy;
 
 /**
- * Service that creates clustered singleton service at runtime, using a singleton policy capability service for that.
+ * Service that installs a singleton service on service start using a singleton policy.
  *
  * @author Flavia Rainone
  */
-public class ClusteredSingletonServiceCreator implements Service {
+public class SingletonBarrierService implements Service {
+    public static final ServiceName SERVICE_NAME = CLUSTERED_SINGLETON_CAPABILITY.getCapabilityServiceName().append("barrier");
 
     private final Supplier<SingletonPolicy> policy;
 
-    public ClusteredSingletonServiceCreator(Supplier<SingletonPolicy> policy) {
+    public SingletonBarrierService(Supplier<SingletonPolicy> policy) {
         this.policy = policy;
     }
 
@@ -49,7 +50,6 @@ public class ClusteredSingletonServiceCreator implements Service {
     public void start(StartContext context) {
         this.policy.get().createSingletonServiceConfigurator(CLUSTERED_SINGLETON_CAPABILITY.getCapabilityServiceName())
                 .build(context.getChildTarget())
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install();
     }
 

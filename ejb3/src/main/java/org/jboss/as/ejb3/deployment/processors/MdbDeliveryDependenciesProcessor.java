@@ -25,6 +25,7 @@ package org.jboss.as.ejb3.deployment.processors;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleConfiguration;
+import org.jboss.as.ejb3.clustering.SingletonBarrierService;
 import org.jboss.as.ejb3.component.messagedriven.MdbDeliveryControllerService;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponent;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
@@ -34,7 +35,6 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
@@ -74,7 +74,7 @@ public class MdbDeliveryDependenciesProcessor implements DeploymentUnitProcessor
                             .setInitialMode(Mode.PASSIVE);
                     if (mdbDescription.isClusteredSingleton()) {
                         clusteredSingletonFound = true;
-                        builder.addDependency(CLUSTERED_SINGLETON_CAPABILITY.getCapabilityServiceName().append("primary"));
+                        builder.addDependency(CLUSTERED_SINGLETON_CAPABILITY.getCapabilityServiceName());
                     }
                     if (mdbDescription.getDeliveryGroup() != null) {
                         final ServiceName deliveyGroupServiceName = MdbDeliveryGroupResourceDefinition.getDeliveryGroupServiceName(
@@ -89,10 +89,9 @@ public class MdbDeliveryDependenciesProcessor implements DeploymentUnitProcessor
             }
         }
         if (clusteredSingletonFound) {
-            // trigger the start of the clustered singleton capability, since our service above is PASSIVE, and not ACTIVE
-            // (the MDB delivery controller won't demand the clustered singleton service to start)
-            serviceTarget.addService(createClusteredSingletonDemanderServiceName(deploymentUnit), Service.NULL)
-                    .addDependency(CLUSTERED_SINGLETON_CAPABILITY.getCapabilityServiceName()).install();
+            // Add dependency on the singleton barrier, which starts on-demand
+            // (the MDB delivery controller won't demand the singleton barrier service to start)
+            serviceTarget.addDependency(SingletonBarrierService.SERVICE_NAME);
         }
     }
 
@@ -114,13 +113,5 @@ public class MdbDeliveryDependenciesProcessor implements DeploymentUnitProcessor
                 }
             }
         }
-        if (clusteredSingletonFound) {
-            serviceRegistry.getRequiredService(createClusteredSingletonDemanderServiceName(deploymentUnit))
-                    .setMode(Mode.REMOVE);
-        }
-    }
-
-    private ServiceName createClusteredSingletonDemanderServiceName(DeploymentUnit deploymentUnit) {
-        return deploymentUnit.getServiceName().append("clustered", "singleton", "dependency");
     }
 }
