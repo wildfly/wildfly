@@ -1,36 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ JBoss, Home of Professional Open Source
-  ~ Copyright 2018, Red Hat, Inc., and individual contributors as indicated
-  ~ by the @authors tag.
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2011, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
   ~
-  ~ Licensed under the Apache License, Version 2.0 (the "License");
-  ~ you may not use this file except in compliance with the License.
-  ~ You may obtain a copy of the License at
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
   ~
-  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
   ~
-  ~ Unless required by applicable law or agreed to in writing, software
-  ~ distributed under the License is distributed on an "AS IS" BASIS,
-  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  ~ See the License for the specific language governing permissions and
-  ~ limitations under the License.
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-          <groupId>org.wildfly.bom</groupId>
-          <artifactId>wildfly</artifactId>
-          <version>14.0.0.Beta1-SNAPSHOT</version>
-        <relativePath>../../pom.xml</relativePath>
-      </parent>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-parent</artifactId>
+        <!--
+        Maintain separation between the artifact id and the version to help prevent
+        merge conflicts between commits changing the GA and those changing the V.
+        -->
+        <version>13.0.0.Final</version>
+    </parent>
 
-    <artifactId>ejb-client-legacy-bom</artifactId>
+    <artifactId>wildfly-ejb-client-legacy-bom</artifactId>
+    <version>14.0.0.Beta1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>WildFly: EJB Legacy Client BOM</name>
+    <name>WildFly BOMs: EJB Legacy Client</name>
 
     <description>
         This artifact provides a bill of materials (BOM) for remoting based EJB for clients
@@ -43,6 +53,7 @@
         <dependency>
             <groupId>org.jboss</groupId>
             <artifactId>jboss-ejb-client-legacy</artifactId>
+            <version>${version.org.jboss.ejb-client-legacy}</version>
         </dependency>
 
         <dependency>

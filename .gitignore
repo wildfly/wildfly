@@ -4,8 +4,10 @@ CONTRIBUTING.html
 .settings
 
 # Build output directies
-/target
-*/target
+target
+
+# ignore the build metadata created by the build metadata plugin
+build.metadata
 
 # IntelliJ specific files/directories
 out
@@ -28,3 +30,7 @@ bin
 # Miscellaneous
 *.log
 .clover
+.DS_Store
+
+#Vi
+*.swp
