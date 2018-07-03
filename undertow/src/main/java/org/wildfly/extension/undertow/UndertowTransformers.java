@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.undertow;
 
+import static org.wildfly.extension.undertow.ApplicationSecurityDomainDefinition.SECURITY_DOMAIN;
 import static org.wildfly.extension.undertow.Constants.ENABLE_HTTP2;
 import static org.wildfly.extension.undertow.HostDefinition.QUEUE_REQUESTS_ON_START;
 import static org.wildfly.extension.undertow.HttpListenerResourceDefinition.CERTIFICATE_FORWARDING;
@@ -95,6 +96,12 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
     private static void registerTransformers_EAP_7_1_0(ResourceTransformationDescriptionBuilder subsystemBuilder) {
         final ResourceTransformationDescriptionBuilder serverBuilder = subsystemBuilder.addChildResource(UndertowExtension.SERVER_PATH);
         final ResourceTransformationDescriptionBuilder hostBuilder = serverBuilder.addChildResource(UndertowExtension.HOST_PATH);
+        subsystemBuilder
+                .addChildResource(UndertowExtension.PATH_APPLICATION_SECURITY_DOMAIN)
+                .getAttributeBuilder()
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, SECURITY_DOMAIN)
+                .end();
+
         subsystemBuilder
                 .addChildResource(UndertowExtension.PATH_SERVLET_CONTAINER)
                 .getAttributeBuilder()
