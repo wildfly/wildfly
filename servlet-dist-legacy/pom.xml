@@ -247,7 +247,11 @@
                                             <parameters>
                                                 <parameter>
                                                     <name>version</name>
-                                                    <value>${project.version}</value>
+                                                    <value>${product.release.version}</value>
+                                                </parameter>
+                                                <parameter>
+                                                    <name>product.release.name</name>
+                                                    <value>${servlet.dist.product.release.name}</value>
                                                 </parameter>
                                             </parameters>
                                         </transformationSet>

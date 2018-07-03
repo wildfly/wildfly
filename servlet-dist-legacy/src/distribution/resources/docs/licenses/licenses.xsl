@@ -4,6 +4,7 @@
 
     <xsl:output method="html" encoding="utf-8" standalone="no" media-type="text/html" />
     <xsl:param name="version"/>
+    <xsl:param name="product.release.name"/>
     <xsl:variable name="lowercase" select="'abcdefghijklmnopqrstuvwxyz '" />
     <xsl:variable name="uppercase" select="'ABCDEFGHIJKLMNOPQRSTUVWXYZ!'" />
     
@@ -14,7 +15,7 @@
                 <link rel="stylesheet" type="text/css" href="licenses.css"/>
             </head>
             <body>
-                <h2>Red Hat JBoss Enterprise Application Platform <xsl:value-of select="substring-before($version, '-')"/></h2>
+                <h2><xsl:value-of select="$product.release.name"/><xsl:text> </xsl:text><xsl:value-of select="substring-before($version, '-')"/></h2>
                 <p>The following material has been provided for informational purposes only, and should not be relied upon or construed as a legal opinion or legal advice.</p>
                 <!-- Read matching templates -->
                 <table>

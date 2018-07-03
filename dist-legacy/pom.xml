@@ -237,7 +237,7 @@
                                 <configuration>
                                     <tasks>
                                         <filelist id="licenses.xml.list" dir="${basedir}/target/${server.output.dir.prefix}-${server.output.dir.version}/docs/licenses" 
-	                                        files="full-feature-pack-licenses.xml,servlet-feature-pack-licenses.xml,core-feature-pack-licenses.xml"/>
+                                            files="full-feature-pack-licenses.xml,servlet-feature-pack-licenses.xml,core-feature-pack-licenses.xml"/>
                                         <!--
                                         <property name="prop.licenses.xml.list" refid="licenses.xml.list"/>
                                         <echo>List of licenses.xml in ${basedir}/target/${server.output.dir.prefix}-${server.output.dir.version}/docs/licenses</echo>
@@ -303,7 +303,11 @@
                                             <parameters>
                                                 <parameter>
                                                     <name>version</name>
-                                                    <value>${project.version}</value>
+                                                    <value>${product.release.version}</value>
+                                                </parameter>
+                                                <parameter>
+                                                    <name>product.release.name</name>
+                                                    <value>${full.dist.product.release.name}</value>
                                                 </parameter>
                                             </parameters>
                                         </transformationSet>
