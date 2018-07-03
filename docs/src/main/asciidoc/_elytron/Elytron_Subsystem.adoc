@@ -334,6 +334,9 @@ from an LDAP server.
 
 |server-ssl-context |An SSL context for use on the server side of a
 connection.
+
+|certificate-authority-account |A certificate authority account which can
+be used to obtain and revoke signed certificates.
 |=======================================================================
 
 [[other]]
@@ -514,6 +517,7 @@ and openssl provider loaders.
         "authentication-configuration" => undefined,
         "authentication-context" => undefined,
         "caching-realm" => undefined,
+        "certificate-authority-account" => undefined,
         "chained-principal-transformer" => undefined,
         "client-ssl-context" => undefined,
         "concatenating-principal-decoder" => undefined,
