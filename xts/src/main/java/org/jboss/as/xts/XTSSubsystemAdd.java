@@ -99,6 +99,8 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     static final XTSSubsystemAdd INSTANCE = new XTSSubsystemAdd();
 
+    private static final String WSAT_ASYNC_REGISTRATION_PARAM_NAME = "wsat.async.registration";
+
     private static final String[] WAR_DEPLOYMENT_NAMES = {
             "ws-c11.war",
             "ws-t11-coordinator.war",
@@ -168,6 +170,7 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
                     })
     };
 
+    private static final String WS_C11_CONTEXT_DEFINITION_NAME = "ws-c11";
     static final EndpointInfo[] wsC11 = new EndpointInfo[] {
             new EndpointInfo(ActivationPortTypeImpl.class.getName(), ActivationService.class.getSimpleName()),
             new EndpointInfo(RegistrationPortTypeImpl.class.getName(), RegistrationService.class.getSimpleName())
@@ -183,11 +186,11 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
     static Iterable<ContextInfo> getContextDefinitions(OperationContext context, ModelNode model) throws IllegalArgumentException, OperationFailedException {
         Collection<ContextInfo> updatedContextDefinitions = new ArrayList<>(Arrays.asList(contextDefinitions));
         Collection<EndpointInfo> wsC11EndpointInfos = new ArrayList<>(Arrays.asList(wsC11));
-        if(ASYNC_REGISTRATION.resolveModelAttribute(context, model).asBoolean()) {
+        if(ASYNC_REGISTRATION.resolveModelAttribute(context, model).asBoolean() || Boolean.getBoolean(XTSSubsystemAdd.WSAT_ASYNC_REGISTRATION_PARAM_NAME)) {
             wsC11EndpointInfos.addAll(Arrays.asList(wsC11Async));
         }
 
-        ContextInfo wsC11ContextInfo = new ContextInfo("ws-c11", wsC11EndpointInfos.toArray(new EndpointInfo[wsC11EndpointInfos.size()]));
+        ContextInfo wsC11ContextInfo = new ContextInfo(WS_C11_CONTEXT_DEFINITION_NAME, wsC11EndpointInfos.toArray(new EndpointInfo[wsC11EndpointInfos.size()]));
         updatedContextDefinitions.add(wsC11ContextInfo);
 
         return updatedContextDefinitions;
