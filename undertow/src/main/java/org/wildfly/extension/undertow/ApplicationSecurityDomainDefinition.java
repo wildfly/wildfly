@@ -25,6 +25,7 @@ package org.wildfly.extension.undertow;
 import static io.undertow.util.StatusCodes.OK;
 import static java.security.AccessController.doPrivileged;
 import static org.wildfly.extension.undertow.Capabilities.CAPABILITY_APPLICATION_SECURITY_DOMAIN;
+import static org.wildfly.extension.undertow.Capabilities.CAPABILITY_APPLICATION_SECURITY_DOMAIN_KNOWN_DEPLOYMENTS;
 import static org.wildfly.extension.undertow.Capabilities.REF_HTTP_AUTHENTICATION_FACTORY;
 import static org.wildfly.extension.undertow.Capabilities.REF_JACC_POLICY;
 import static org.wildfly.extension.undertow.Capabilities.REF_SECURITY_DOMAIN;
@@ -83,6 +84,7 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CapabilityServiceTarget;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationContext.AttachmentKey;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PersistentResourceDefinition;
@@ -105,9 +107,7 @@ import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
-import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -193,6 +193,10 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
             .Builder.of(CAPABILITY_APPLICATION_SECURITY_DOMAIN, true, BiFunction.class)
             .build();
 
+    static final RuntimeCapability<Void> APPLICATION_SECURITY_DOMAIN_KNOWN_DEPLOYMENTS_CAPABILITY = RuntimeCapability
+            .Builder.of(CAPABILITY_APPLICATION_SECURITY_DOMAIN_KNOWN_DEPLOYMENTS, true)
+            .build();
+
     static final SimpleAttributeDefinition HTTP_AUTHENTICATION_FACTORY = new SimpleAttributeDefinitionBuilder(Constants.HTTP_AUTHENITCATION_FACTORY, ModelType.STRING, false)
             .setMinSize(1)
             .setRestartAllServices()
@@ -231,6 +235,8 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
 
     private static final Set<String> knownApplicationSecurityDomains = Collections.synchronizedSet(new HashSet<>());
 
+    private static final AttachmentKey<KnownDeploymentsApi> KNOWN_DEPLOYMENTS_KEY = AttachmentKey.create(KnownDeploymentsApi.class);
+
     private ApplicationSecurityDomainDefinition() {
         this((Parameters) new Parameters(UndertowExtension.PATH_APPLICATION_SECURITY_DOMAIN,
                 UndertowExtension.getResolver(Constants.APPLICATION_SECURITY_DOMAIN))
@@ -264,20 +270,13 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             if (context.isDefaultRequiresRuntime()) {
                 context.addStep((ctx, op) -> {
-                    RuntimeCapability<Void> runtimeCapability = APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY.fromBaseCapability(ctx.getCurrentAddressValue());
-                    ServiceName applicationSecurityDomainName = runtimeCapability.getCapabilityServiceName(BiFunction.class);
-
-                    ServiceRegistry serviceRegistry = ctx.getServiceRegistry(false);
-                    ServiceController<?> controller = serviceRegistry.getRequiredService(applicationSecurityDomainName);
+                    final KnownDeploymentsApi knownDeploymentsApi = context.getCapabilityRuntimeAPI(
+                            CAPABILITY_APPLICATION_SECURITY_DOMAIN_KNOWN_DEPLOYMENTS, ctx.getCurrentAddressValue(),
+                            KnownDeploymentsApi.class);
 
                     ModelNode deploymentList = new ModelNode();
-                    if (controller.getState() == State.UP) {
-                        Service service = controller.getService();
-                        if (service instanceof ApplicationSecurityDomainService) {
-                            for (String current : ((ApplicationSecurityDomainService) service).getDeployments()) {
-                                deploymentList.add(current);
-                            }
-                        }
+                    for (String current : knownDeploymentsApi.getKnownDeployments()) {
+                        deploymentList.add(current);
                     }
 
                     context.getResult().set(deploymentList);
@@ -300,6 +299,16 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
         protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
             super.populateModel(context, operation, resource);
             knownApplicationSecurityDomains.add(context.getCurrentAddressValue());
+        }
+
+        @Override
+        protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+            super.recordCapabilitiesAndRequirements(context, operation, resource);
+            KnownDeploymentsApi knownDeployments = new KnownDeploymentsApi();
+            context.registerCapability(RuntimeCapability.Builder
+                    .of(CAPABILITY_APPLICATION_SECURITY_DOMAIN_KNOWN_DEPLOYMENTS, true, knownDeployments).build()
+                    .fromBaseCapability(context.getCurrentAddressValue()));
+            context.attach(KNOWN_DEPLOYMENTS_KEY, knownDeployments);
         }
 
         @Override
@@ -364,8 +373,12 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
             }
 
             Consumer<BiFunction<DeploymentInfo, Function<String, RunAsIdentityMetaData>, Registration>> valueConsumer = serviceBuilder.provides(applicationSecurityDomainName);
-            serviceBuilder.setInstance(new ApplicationSecurityDomainService(overrideDeploymentConfig, enableJacc, factoryFunction, transformerSupplier, valueConsumer));
+            ApplicationSecurityDomainService service = new ApplicationSecurityDomainService(overrideDeploymentConfig, enableJacc, factoryFunction, transformerSupplier, valueConsumer);
+            serviceBuilder.setInstance(service);
             serviceBuilder.install();
+
+            KnownDeploymentsApi knownDeploymentsApi = context.getAttachment(KNOWN_DEPLOYMENTS_KEY);
+            knownDeploymentsApi.setApplicationSecurityDomainService(service);
         }
 
     }
@@ -389,7 +402,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
          * @param addOperation
          */
         protected RemoveHandler(AbstractAddStepHandler addOperation) {
-            super(addOperation);
+            super(addOperation, APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY, APPLICATION_SECURITY_DOMAIN_KNOWN_DEPLOYMENTS_CAPABILITY);
         }
 
         @Override
@@ -1012,6 +1025,20 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
             return status;
         }
 
+    }
+
+    private static class KnownDeploymentsApi {
+
+        private volatile ApplicationSecurityDomainService service;
+
+        List<String> getKnownDeployments() {
+            return service != null ? service.getDeployments() : Collections.emptyList();
+
+        }
+
+        void setApplicationSecurityDomainService(final ApplicationSecurityDomainService service) {
+            this.service = service;
+        }
     }
 
 

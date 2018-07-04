@@ -43,6 +43,7 @@ public final class Capabilities {
     public static final String CAPABILITY_HTTP_INVOKER = "org.wildfly.undertow.http-invoker";
     public static final String CAPABILITY_HTTP_INVOKER_HOST = "org.wildfly.undertow.http-invoker.host";
     public static final String CAPABILITY_APPLICATION_SECURITY_DOMAIN = "org.wildfly.undertow.application-security-domain";
+    public static final String CAPABILITY_APPLICATION_SECURITY_DOMAIN_KNOWN_DEPLOYMENTS = "org.wildfly.undertow.application-security-domain.known-deployments";
     public static final String CAPABILITY_REVERSE_PROXY_HANDLER_HOST = "org.wildfly.undertow.reverse-proxy.host";
     public static final String CAPABILITY_BYTE_BUFFER_POOL = "org.wildfly.undertow.byte-buffer-pool";
 
