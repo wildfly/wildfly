@@ -87,6 +87,7 @@
                 <option value="-server"/>
                 <option value="-XX:MetaspaceSize=96m"/>
                 <option value="-XX:MaxMetaspaceSize=256m"/>
+                <option value="--add-exports=java.base/sun.nio.ch=ALL-UNNAMED"/>
             </jvm-options>
         </jvm>
     </jvms>
@@ -94,9 +95,11 @@
     <servers>
         <server name="server-one" group="main-server-group"/>
         <server name="server-two" group="main-server-group" auto-start="true">
+            <jvm name="default"/>
             <socket-bindings port-offset="150"/>
         </server>
         <server name="server-three" group="other-server-group" auto-start="false">
+            <jvm name="default"/>
             <socket-bindings port-offset="250"/>
         </server>
     </servers>
