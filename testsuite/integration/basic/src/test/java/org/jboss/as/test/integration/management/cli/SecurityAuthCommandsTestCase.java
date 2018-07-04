@@ -19,7 +19,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import org.aesh.complete.AeshCompleteOperation;
+import org.aesh.readline.completion.Completion;
+import org.aesh.readline.terminal.formatting.TerminalString;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandContextFactory;
@@ -38,6 +42,9 @@ import org.jboss.dmr.ModelNode;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -79,7 +86,7 @@ public class SecurityAuthCommandsTestCase {
     public static void setup() throws Exception {
         // Create ctx, used to setup the test and do the final reload.
         CommandContextConfiguration.Builder configBuilder = new CommandContextConfiguration.Builder();
-        configBuilder.setConsoleOutput(consoleOutput).
+        configBuilder.setConsoleOutput(consoleOutput).setInitConsole(true).
                 setController("remote+http://" + TestSuiteEnvironment.getServerAddress()
                         + ":" + TestSuiteEnvironment.getServerPort());
         ctx = CommandContextFactory.getInstance().newCommandContext(configBuilder.build());
@@ -361,7 +368,7 @@ public class SecurityAuthCommandsTestCase {
     @Test
     public void testOOBHTTP() throws Exception {
         ctx.handle("security enable-http-auth-http-server --no-reload --security-domain=" + TEST_UNDERTOW_DOMAIN);
-        Assert.assertEquals(ElytronUtil.OOTB_APPLICATION_HTTP_FACTORY, getSecurityDomainAuthFactory(ctx, TEST_UNDERTOW_DOMAIN));
+        Assert.assertEquals(ElytronUtil.OOTB_APPLICATION_DOMAIN, getReferencedSecurityDomain(ctx, TEST_UNDERTOW_DOMAIN));
         ctx.handle("security disable-http-auth-http-server --no-reload --security-domain=" + TEST_UNDERTOW_DOMAIN);
         Assert.assertFalse(domainExists(TEST_UNDERTOW_DOMAIN));
     }
@@ -394,6 +401,87 @@ public class SecurityAuthCommandsTestCase {
         Assert.assertTrue(realms.contains(TEST_FS_REALM));
     }
 
+    @Test
+    public void testReferencedSecurityDomainHTTP() throws Exception {
+        ctx.handle("security enable-http-auth-http-server --no-reload --security-domain=" + TEST_UNDERTOW_DOMAIN
+                + " --referenced-security-domain=" + ElytronUtil.OOTB_APPLICATION_DOMAIN);
+        Assert.assertEquals(ElytronUtil.OOTB_APPLICATION_DOMAIN, getReferencedSecurityDomain(ctx, TEST_UNDERTOW_DOMAIN));
+        ctx.handle("security disable-http-auth-http-server --no-reload --security-domain=" + TEST_UNDERTOW_DOMAIN);
+        Assert.assertFalse(domainExists(TEST_UNDERTOW_DOMAIN));
+    }
+
+    @Test
+    public void testCompletion() throws Exception {
+        {
+            String cmd = "security enable-http-auth-http-server ";
+            List<String> candidates = new ArrayList<>();
+            ctx.getDefaultCommandCompleter().complete(ctx,
+                    cmd, cmd.length(), candidates);
+            List<String> res = Arrays.asList("--no-reload", "--security-domain=");
+            assertEquals(candidates.toString(), res, candidates);
+            candidates = complete(ctx, cmd, null);
+            assertEquals(candidates.toString(), res, candidates);
+        }
+
+        {
+            String cmd = "security enable-http-auth-http-server --security-domain=foo ";
+            List<String> candidates = new ArrayList<>();
+            ctx.getDefaultCommandCompleter().complete(ctx,
+                    cmd, cmd.length(), candidates);
+            List<String> res = Arrays.asList("--mechanism=", "--no-reload",
+                    "--referenced-security-domain=");
+            assertEquals(candidates.toString(), res, candidates);
+            candidates = complete(ctx, cmd, null);
+            assertEquals(candidates.toString(), res, candidates);
+        }
+
+        {
+            String cmd = "security enable-http-auth-http-server --security-domain=foo "
+                    + "--mechanism=";
+            List<String> candidates = new ArrayList<>();
+            ctx.getDefaultCommandCompleter().complete(ctx,
+                    cmd, cmd.length(), candidates);
+            List<String> res = Arrays.asList("BASIC", "CLIENT_CERT", "DIGEST", "FORM");
+            assertTrue(candidates.toString(), candidates.containsAll(res));
+            candidates = complete(ctx, cmd, null);
+            assertTrue(candidates.toString(), candidates.containsAll(res));
+        }
+
+        {
+            String cmd = "security enable-http-auth-http-server --security-domain=foo "
+                    + "--mechanism=BASIC ";
+            List<String> candidates = new ArrayList<>();
+            ctx.getDefaultCommandCompleter().complete(ctx,
+                    cmd, cmd.length(), candidates);
+            assertFalse(candidates.toString(), candidates.contains("--referenced-security-domain="));
+            candidates = complete(ctx, cmd, null);
+            assertFalse(candidates.toString(), candidates.contains("--referenced-security-domain="));
+        }
+
+        {
+            String cmd = "security enable-http-auth-http-server --security-domain=foo "
+                    + "--referenced-security-domain=";
+            List<String> candidates = new ArrayList<>();
+            ctx.getDefaultCommandCompleter().complete(ctx,
+                    cmd, cmd.length(), candidates);
+            List<String> res = Arrays.asList("ApplicationDomain");
+            assertTrue(candidates.toString(), candidates.containsAll(res));
+            candidates = complete(ctx, cmd, null);
+            assertTrue(candidates.toString(), candidates.containsAll(res));
+        }
+
+        {
+            String cmd = "security enable-http-auth-http-server --security-domain=foo "
+                    + "--referenced-security-domain=ApplicationDomain ";
+            List<String> candidates = new ArrayList<>();
+            ctx.getDefaultCommandCompleter().complete(ctx,
+                    cmd, cmd.length(), candidates);
+            assertFalse(candidates.toString(), candidates.contains("--mechanism="));
+            candidates = complete(ctx, cmd, null);
+            assertFalse(candidates.toString(), candidates.contains("--mechanism="));
+        }
+
+    }
     @Test
     public void testHTTP() throws Exception {
 
@@ -602,13 +690,21 @@ public class SecurityAuthCommandsTestCase {
     }
 
     private static String getSecurityDomainAuthFactory(CommandContext ctx, String domain) throws Exception {
+        return readAttribute(ctx, domain, Util.HTTP_AUTHENTICATION_FACTORY);
+    }
+
+    private static String getReferencedSecurityDomain(CommandContext ctx, String domain) throws Exception {
+        return readAttribute(ctx, domain, Util.SECURITY_DOMAIN);
+    }
+
+    private static String readAttribute(CommandContext ctx, String domain, String name) throws Exception {
         final DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
         final ModelNode request;
         try {
             builder.setOperationName(Util.READ_ATTRIBUTE);
             builder.addNode(Util.SUBSYSTEM, Util.UNDERTOW);
             builder.addNode(Util.APPLICATION_SECURITY_DOMAIN, domain);
-            builder.addProperty(Util.NAME, Util.HTTP_AUTHENTICATION_FACTORY);
+            builder.addProperty(Util.NAME, name);
             request = builder.buildRequest();
         } catch (OperationFormatException e) {
             throw new IllegalStateException("Failed to build operation", e);
@@ -695,5 +791,24 @@ public class SecurityAuthCommandsTestCase {
         }
         op.get("operation").set(operation);
         return op;
+    }
+
+    // This completion is what aesh-readline completion is calling, so more
+    // similar to interactive CLI session
+    private List<String> complete(CommandContext ctx, String cmd, Boolean separator) {
+        Completion<AeshCompleteOperation> completer
+                = (Completion<AeshCompleteOperation>) ctx.getDefaultCommandCompleter();
+        AeshCompleteOperation op = new AeshCompleteOperation(cmd, cmd.length());
+        completer.complete(op);
+        if (separator != null) {
+            assertEquals(op.hasAppendSeparator(), separator);
+        }
+        List<String> candidates = new ArrayList<>();
+        for (TerminalString ts : op.getCompletionCandidates()) {
+            candidates.add(ts.getCharacters());
+        }
+        // aesh-readline does sort the candidates prior to display.
+        Collections.sort(candidates);
+        return candidates;
     }
 }
