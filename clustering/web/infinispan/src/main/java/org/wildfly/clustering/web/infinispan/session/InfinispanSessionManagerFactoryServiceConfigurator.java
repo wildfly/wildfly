@@ -29,6 +29,7 @@ import org.infinispan.Cache;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.ExpirationConfiguration;
 import org.infinispan.configuration.cache.StorageType;
+import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.eviction.EvictionType;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
@@ -100,8 +101,9 @@ public class InfinispanSessionManagerFactoryServiceConfigurator<C extends Marsha
             }
 
             int size = configuration.getMaxActiveSessions();
-            builder.memory().evictionType(EvictionType.COUNT).storageType(StorageType.OBJECT).size(size);
-            if (size >= 0) {
+            EvictionStrategy strategy = (size > 0) ? EvictionStrategy.REMOVE : EvictionStrategy.MANUAL;
+            builder.memory().evictionStrategy(strategy).evictionType(EvictionType.COUNT).storageType(StorageType.OBJECT).size(size);
+            if (strategy.isEnabled()) {
                 // Only evict creation meta-data entries
                 // We will cascade eviction to the remaining entries for a given session
                 builder.dataContainer().dataContainer(new EvictableDataContainer<>(size, SessionCreationMetaDataKey.class::isInstance));
