@@ -48,7 +48,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.ejb3.clustering.ClusteredSingletonServiceCreator;
+import org.jboss.as.ejb3.clustering.SingletonBarrierService;
 import org.jboss.as.ejb3.component.EJBUtilities;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.processors.AnnotatedEJBComponentDescriptionDeploymentUnitProcessor;
@@ -161,7 +161,6 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
     private final EJBDefaultSecurityDomainProcessor defaultSecurityDomainDeploymentProcessor;
     private final MissingMethodPermissionsDenyAccessMergingProcessor missingMethodPermissionsDenyAccessMergingProcessor;
     private static final String UNDERTOW_HTTP_INVOKER_CAPABILITY_NAME = "org.wildfly.undertow.http-invoker";
-    private static final String LEGACY_SECURITY_CAPABILITY_NAME = "org.wildfly.legacy-security.server-security-manager";
 
     private static final String REMOTING_ENDPOINT_CAPABILITY = "org.wildfly.remoting.endpoint";
 
@@ -498,9 +497,9 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
             return;
         }
         if (context.hasOptionalCapability(SingletonDefaultRequirement.SINGLETON_POLICY.getName(), CLUSTERED_SINGLETON_CAPABILITY.getName(), null)) {
-            ServiceBuilder<?> builder = target.addService(CLUSTERED_SINGLETON_CAPABILITY.getCapabilityServiceName().append("creator"));
+            ServiceBuilder<?> builder = target.addService(SingletonBarrierService.SERVICE_NAME);
             Supplier<SingletonPolicy> policy = builder.requires(context.getCapabilityServiceName(SingletonDefaultRequirement.SINGLETON_POLICY.getName(), SingletonDefaultRequirement.SINGLETON_POLICY.getType()));
-            builder.setInstance(new ClusteredSingletonServiceCreator(policy)).install();
+            builder.setInstance(new SingletonBarrierService(policy)).install();
         }
     }
 }
