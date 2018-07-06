@@ -22,14 +22,19 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.7" name="javax.ws.rs.api">
+<module xmlns="urn:jboss:module:1.7" name="org.jboss.resteasy.resteasy-rxjava2">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
     <resources>
-        <artifact name="${org.jboss.spec.javax.ws.rs:jboss-jaxrs-api_2.1_spec}"/>
+        <artifact name="${org.jboss.resteasy:resteasy-rxjava2}" />
     </resources>
 
     <dependencies>
-        <module name="org.jboss.resteasy.resteasy-jaxrs" services="export"/>
-        <module name="javax.xml.bind.api" />
-        <module name="javax.api" />
+        <module name="javax.ws.rs.api"/>
+        <module name="org.jboss.resteasy.resteasy-jaxrs"/>
+        <module name="org.reactivestreams" export = "true" />
+        <module name="io.reactivex.rxjava" export="true" />
     </dependencies>
 </module>
