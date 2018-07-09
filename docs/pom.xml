@@ -48,8 +48,11 @@
                     <groupId>org.asciidoctor</groupId>
                     <artifactId>asciidoctor-maven-plugin</artifactId>
                     <configuration>
+                        <!-- Attributes to use in the asciidoc source files. Please leave in alphabetical order -->
                         <attributes>
+                            <appservername>WildFly</appservername>
                             <javaee_version>8</javaee_version>
+                            <oracle-javadoc>https://docs.oracle.com/javase/8/docs/api</oracle-javadoc>
                             <wildflyversion>${product.docs.server.version}</wildflyversion>
                         </attributes>
                         <resources>
