@@ -287,7 +287,7 @@
         <version.org.glassfish.soteria>1.0</version.org.glassfish.soteria>
         <version.org.hibernate53>5.3.1.Final</version.org.hibernate53>
         <!-- Hardcoded in module.xml for the dual EE7 and EE8 support -->
-        <version.org.hibernate>5.1.14.Final</version.org.hibernate>
+        <version.org.hibernate>5.1.15.Final</version.org.hibernate>
         <version.org.hibernate.commons.annotations>5.0.4.Final</version.org.hibernate.commons.annotations>
         <version.org.hibernate.search>5.5.8.Final</version.org.hibernate.search>
         <!-- Hardcoded in module.xml for the dual EE7 and EE8 support -->
