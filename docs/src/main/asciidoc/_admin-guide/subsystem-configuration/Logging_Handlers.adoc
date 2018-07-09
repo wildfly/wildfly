@@ -17,6 +17,7 @@ The following are the available handlers for {appservername};
 * <<periodic-rotating-file-handler,periodic-rotating-file-handler>>
 * <<periodic-size-rotating-file-handler,periodic-size-rotating-file-handler>>
 * <<size-rotating-file-handler,size-rotating-file-handler>>
+* <<socket-handler,socket-handler>>
 * <<syslog-handler,syslog-handler>>
 
 === async-handler
@@ -69,6 +70,63 @@ to the name moving previously rotated file indexes up by 1 until the `max-backup
 `max-backup-index` is reached, the indexed files will be overwritten.
 
 NOTE: The rotate happens before the next message is written by the handler.
+
+=== socket-handler
+
+A `socket-handler` is a handler which sends messages over a socket. This can be a TCP or UDP socket and must be
+defined in a <<socket-binding-groups,socket binding group>> under the `local-destination-outbound-socket-binding` or
+`remote-destination-outbound-socket-binding` resource.
+
+During the boot logging messages will be queued until the socket binding is configured and the logging subsystem is
+added. This is important to note because setting the level of the handler to `DEBUG` or `TRACE` could result in
+large memory consumption during boot.
+
+[IMPORTANT]
+====
+A server booted in `--admin-only` mode will discard messages rather than send them over a socket.
+====
+
+.CLI Example
+[source]
+----
+# Add the socket binding
+/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=log-server:add(host=localhost, port=4560)
+# Add a json-formatter
+/subsystem=logging/json-formatter=json:add
+# Add the socket handler
+/subsystem=logging/socket-handler=log-server-handler:add(named-formatter=json, level=INFO, outbound-socket-binding-ref=log-server)
+# Add the handler to the root logger
+/subsystem=logging/root-logger=ROOT:add-handler(name=log-server-handler)
+----
+
+.Add a UDP Example
+[source]
+----
+/subsystem=logging/socket-handler=log-server-handler:add(named-formatter=json, level=INFO, outbound-socket-binding-ref=log-server, protocol=UDP)
+----
+
+.Add SSL Example
+[source]
+----
+# Add the socket binding
+/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=log-server:add(host=localhost, port=4560)
+
+# Add the Elytron key store
+/subsystem=elytron/key-store=log-server-ks:add(path=/path/to/keystore.jks, type=JKS, credential-reference={clear-text=mypassword})
+# Add the Elytron trust manager
+/subsystem=elytron/trust-manager=log-server-tm:add(key-store=log-server-ks)
+# Add the client SSL context
+/subsystem=elytron/client-ssl-context=log-server-context:add(trust-manager=log-server-tm, protocols=["TLSv1.2"])
+
+# Add a json-formatter
+/subsystem=logging/json-formatter=json:add
+# Add the socket handler
+/subsystem=logging/socket-handler=log-server-handler:add(named-formatter=json, level=INFO, outbound-socket-binding-ref=log-server, protocol=SSL_TCP, ssl-context=log-server-context)
+# Add the handler to the root logger
+/subsystem=logging/root-logger=ROOT:add-handler(name=log-server-handler)
+----
+
+TIP: Wrapping a `socket-handler` in a <<async-handler,`async-handler`>> may improve performance.
 
 === syslog-handler
 
