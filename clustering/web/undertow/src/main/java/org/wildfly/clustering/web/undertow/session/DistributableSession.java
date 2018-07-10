@@ -60,6 +60,7 @@ public class DistributableSession implements io.undertow.server.session.Session 
     private final UndertowSessionManager manager;
     private final Batch batch;
     private final Runnable closeTask;
+    private boolean isSessionCloseTaskRun;
 
     private volatile Map.Entry<Session<LocalSessionContext>, SessionConfig> entry;
 
@@ -93,7 +94,12 @@ public class DistributableSession implements io.undertow.server.session.Session 
                 // Don't propagate exceptions at the stage, since response was already committed
                 UndertowClusteringLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
             } finally {
-                this.closeTask.run();
+                if (!isSessionCloseTaskRun) {
+                    this.closeTask.run();
+                    this.isSessionCloseTaskRun = true;
+                } else {
+                    throw UndertowClusteringLogger.ROOT_LOGGER.sessionClosed(session.getId());
+                }
             }
         }
     }
@@ -215,7 +221,12 @@ public class DistributableSession implements io.undertow.server.session.Session 
             }
             this.batch.close();
         } finally {
-            this.closeTask.run();
+            if (!isSessionCloseTaskRun) {
+                this.closeTask.run();
+                this.isSessionCloseTaskRun = true;
+            } else {
+                throw UndertowClusteringLogger.ROOT_LOGGER.sessionClosed(session.getId());
+            }
         }
     }
 

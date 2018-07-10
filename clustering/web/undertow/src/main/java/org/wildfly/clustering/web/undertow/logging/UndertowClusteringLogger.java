@@ -40,4 +40,7 @@ public interface UndertowClusteringLogger extends BasicLogger {
 
     @Message(id = 3, value = "Session manager was stopped")
     IllegalStateException sessionManagerStopped();
+
+    @Message(id = 4, value = "Session %s was closed")
+    IllegalStateException sessionClosed(String sessionId);
 }
