@@ -423,11 +423,6 @@
         </dependency>
 
         <dependency>
-            <groupId>commons-pool</groupId>
-            <artifactId>commons-pool</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>dom4j</groupId>
             <artifactId>dom4j</artifactId>
         </dependency>
