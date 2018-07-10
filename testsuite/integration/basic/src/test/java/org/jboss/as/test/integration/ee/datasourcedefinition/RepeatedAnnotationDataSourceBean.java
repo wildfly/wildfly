@@ -1,6 +1,5 @@
 /*
- *
- * Copyright 2017 Red Hat, Inc.
+ * Copyright 2018 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +12,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
-package org.wildfly.test.integration.ee8.commonannotations13.datasourcedefinition;
+package org.jboss.as.test.integration.ee.datasourcedefinition;
 
 import java.sql.SQLException;
 import javax.annotation.Resource;
@@ -35,11 +33,11 @@ import javax.sql.DataSource;
 )
 @DataSourceDefinition(
         name = "java:comp/dse",
-        className = "org.wildfly.test.integration.ee8.commonannotations13.datasourcedefinition.EmbeddedDataSource",
+        className = "org.jboss.as.test.integration.ee.datasourcedefinition.EmbeddedDataSource",
         url = "jdbc:embedded:/some/url"
 )
 @Stateless
-public class DataSourceBean {
+public class RepeatedAnnotationDataSourceBean {
 
     @Resource(lookup = "java:comp/ds", name = "java:app/DataSource")
     private DataSource dataSource;
@@ -53,7 +51,7 @@ public class DataSourceBean {
     @Resource(lookup = "java:app/DataSource")
     private DataSource dataSource3;
 
-    @Resource(lookup = "org.wildfly.test.integration.ee8.commonannotations13.datasourcedefinition.DataSourceBean/dataSource3")
+    @Resource(lookup = "org.jboss.as.test.integration.ee.datasourcedefinition.RepeatedAnnotationDataSourceBean/dataSource3")
     private DataSource dataSource4;
 
     @Resource(lookup = "java:comp/dse")
