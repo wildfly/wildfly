@@ -25,7 +25,7 @@
 <!-- Hibernate Search Engine: the fulltext indexing and query capabilities
      without the ORM integration bits. This is reused by several other project
      outside of the Hibernate group. -->
-<module xmlns="urn:jboss:module:1.5" name="org.hibernate.search.engine">
+<module xmlns="urn:jboss:module:1.7" name="org.hibernate.search.engine">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -40,6 +40,9 @@
         <module name="org.apache.lucene.internal"/>
         <module name="org.jboss.logging"/>
 
+        <!-- Elasticsearch support -->
+        <module name="org.hibernate.search.elasticsearch" export="true" services="import" optional="true" />
+
         <!-- optional JMS backend support -->
         <module name="org.hibernate.search.backend-jms" export="true" services="import" optional="true"/>
 
@@ -50,10 +53,10 @@
         <module name="org.hibernate.search.serialization-avro" services="import" optional="true"/>
 
         <!-- Infinispan extensions - provided as separate download by the Infinispan project -->
-        <module name="org.infinispan.hibernate-search.directory-provider" slot="for-hibernatesearch-5.5" services="import" optional="true"/>
+        <module name="org.infinispan.hibernate-search.directory-provider:for-hibernatesearch-5.10" services="import" optional="true"/>
 
         <!-- optional Apache Tika integration -->
-        <module name="org.apache.tika" slot="1.4" optional="true" />
+        <module name="org.apache.tika" optional="true" />
 
         <!-- For naming -->
         <module name="javax.api" />

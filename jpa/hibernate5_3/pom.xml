@@ -42,7 +42,7 @@
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-core</artifactId>
                 <scope>provided</scope>
-                <version>${version.org.hibernate53}</version>
+                <version>${version.org.hibernate}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -179,7 +179,7 @@
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>
             <scope>provided</scope>
-            <version>${version.org.hibernate53}</version>
+            <version>${version.org.hibernate}</version>
             <exclusions>
               <exclusion>
                  <groupId>*</groupId>

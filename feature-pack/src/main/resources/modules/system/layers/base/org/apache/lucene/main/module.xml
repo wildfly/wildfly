@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.apache.lucene">
+<module xmlns="urn:jboss:module:1.7" name="org.apache.lucene">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
