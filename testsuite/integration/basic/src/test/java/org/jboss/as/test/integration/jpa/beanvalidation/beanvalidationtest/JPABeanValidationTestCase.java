@@ -22,6 +22,7 @@
 
 package org.jboss.as.test.integration.jpa.beanvalidation.beanvalidationtest;
 
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -29,6 +30,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.validation.ConstraintViolationException;
 
+import org.hibernate.validator.HibernateValidatorPermission;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -59,6 +61,9 @@ public class JPABeanValidationTestCase {
                 SFSB1.class
         );
         jar.addAsManifestResource(JPABeanValidationTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
+        jar.addAsManifestResource(createPermissionsXmlAsset(
+                HibernateValidatorPermission.ACCESS_PRIVATE_MEMBERS
+        ), "permissions.xml");
         return jar;
     }
 
