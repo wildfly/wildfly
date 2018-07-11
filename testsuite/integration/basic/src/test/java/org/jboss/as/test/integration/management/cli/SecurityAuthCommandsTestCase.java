@@ -40,6 +40,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
@@ -359,6 +360,7 @@ public class SecurityAuthCommandsTestCase {
     }
 
     @Test
+    @Ignore("[WFLY-10614] Temporarily ignore test until WildFly Core updated.")
     public void testOOBHTTP() throws Exception {
         ctx.handle("security enable-http-auth-http-server --no-reload --security-domain=" + TEST_UNDERTOW_DOMAIN);
         Assert.assertEquals(ElytronUtil.OOTB_APPLICATION_HTTP_FACTORY, getSecurityDomainAuthFactory(ctx, TEST_UNDERTOW_DOMAIN));

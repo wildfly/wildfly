@@ -691,10 +691,12 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="http-authentication-factory" type="xs:string" use="required">
+        <xs:attribute name="http-authentication-factory" type="xs:string">
             <xs:annotation>
                 <xs:documentation>
                     Reference to the HttpAuthenticationFactory that should be used.
+
+                    Exactly one of http-authentication-factory or security-domain must be defined.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
@@ -704,6 +706,20 @@
                     The references HttpServerAuthenticationMechanismFactory contains it's own policy configuration
                     to control the authentication mechanisms it supports, if this attribute is set to 'true'
                     that policy will override the methods specified within the deployment.
+
+                    This attribute can only be specified if a http-authentication-factory is also specified.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="security-domain" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    Reference to the security-domain that should be associated with the deployment, where a 
+                    security-domain is referenced instead of a http-authentication-factory the authentication mechanisms
+                    BASIC, DIGEST, FORM and CLIENT_CERT will be availble for the deployment to use - additionally the deployment
+                    can make use of the programatic login API. 
+
+                    Exactly one of http-authentication-factory or security-domain must be defined.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>

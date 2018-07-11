@@ -1,6 +1,6 @@
 # enable Elytron across the server
 /subsystem=undertow/server=default-server/https-listener=https:remove()
-/subsystem=undertow/application-security-domain=other:add(http-authentication-factory=application-http-authentication)
+/subsystem=undertow/application-security-domain=other:add(security-domain=ApplicationDomain)
 /subsystem=ejb3/application-security-domain=other:add(security-domain=ApplicationDomain)
 /subsystem=batch-jberet:write-attribute(name=security-domain, value=ApplicationDomain)
 /subsystem=remoting/http-connector=http-remoting-connector:undefine-attribute(name=security-realm)
