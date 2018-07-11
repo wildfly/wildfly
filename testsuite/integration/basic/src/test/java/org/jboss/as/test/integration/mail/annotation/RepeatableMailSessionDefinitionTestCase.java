@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.test.integration.ee8.mail;
+package org.jboss.as.test.integration.mail.annotation;
 
 import javax.annotation.Resource;
 import javax.mail.Session;

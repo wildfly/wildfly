@@ -234,8 +234,6 @@
         <version.javax.json.bind.api>1.0</version.javax.json.bind.api>
         <version.javax.jws.jsr181-api>1.0-MR1</version.javax.jws.jsr181-api>
         <version.javax.mail>1.6.1</version.javax.mail>
-        <!-- Hardcoded in module.xml for the dual EE7 and EE8 support -->
-        <version.javax.mail-1.5>1.5.6</version.javax.mail-1.5>
         <version.javax.persistence>2.2</version.javax.persistence>
         <version.javax.security.enterprise>1.0</version.javax.security.enterprise>
         <version.javax.validation>2.0.1.Final</version.javax.validation>
