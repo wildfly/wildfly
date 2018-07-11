@@ -70,14 +70,6 @@
         <feature-group name="standalone"/>
     </config>
 
-    <config name="standalone-ee8.xml" model="standalone">
-        <feature-group name="standalone"/>
-        <feature spec="system-property">
-            <param name="system-property" value="ee8.preview.mode"/>
-            <param name="value" value="true"/>
-        </feature>
-    </config>
-
     <config name="standalone-ha.xml" model="standalone">
         <feature-group name="standalone-ha"/>
      </config>
