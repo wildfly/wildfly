@@ -219,7 +219,6 @@
         <version.commons-collections>3.2.2</version.commons-collections>
         <version.commons-digester>1.8</version.commons-digester>
         <version.commons-lang3>3.6</version.commons-lang3>
-        <version.commons-pool>1.6</version.commons-pool>
         <version.dom4j>1.6.1</version.dom4j>
         <version.gnu.getopt>1.0.13</version.gnu.getopt>
         <version.groovy-all>2.4.7</version.groovy-all>
@@ -1319,12 +1318,6 @@
                         <artifactId>javax.servlet</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>commons-pool</groupId>
-                <artifactId>commons-pool</artifactId>
-                <version>${version.commons-pool}</version>
             </dependency>
 
             <dependency>
