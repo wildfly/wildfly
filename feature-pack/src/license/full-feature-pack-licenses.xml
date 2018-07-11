@@ -3540,22 +3540,6 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.spec.javax.xml.bind</groupId>
-      <artifactId>jboss-jaxb-api_2.2_spec</artifactId>
-      <licenses>
-        <license>
-          <name>Common Development and Distribution License 1.1</name>
-          <url>https://javaee.github.io/glassfish/LICENSE</url>
-          <distribution>repo</distribution>
-        </license>
-        <license>
-          <name>GNU General Public License, Version 2 with the Classpath Exception</name>
-          <url>http://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.spec.javax.xml.bind</groupId>
       <artifactId>jboss-jaxb-api_2.3_spec</artifactId>
       <licenses>
         <license>
