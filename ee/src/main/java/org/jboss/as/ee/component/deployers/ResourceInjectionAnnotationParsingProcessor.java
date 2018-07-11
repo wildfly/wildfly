@@ -218,7 +218,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         InjectionSource valueSource = null;
         final boolean isEnvEntryType = this.isEnvEntryType(injectionType, module);
         if (!isEmpty(lookup)) {
-            valueSource = new LookupInjectionSource(lookup, JAVAX_NAMING_CONTEXT.equals(injectionType));
+            valueSource = new LookupInjectionSource(lookup);
         } else if (isEnvEntryType) {
             // if it's an env-entry type then we do *not* create a BindingConfiguration to bind to the ENC
             // since the binding (value) for env-entry is always driven from a deployment descriptor.
@@ -247,7 +247,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         if (valueSource == null) {
             // the ResourceInjectionConfiguration is created by LazyResourceInjection
             if (targetDescription != null) {
-                final LookupInjectionSource optionalInjection = new LookupInjectionSource(localContextName, true);
+                final LookupInjectionSource optionalInjection = new LookupInjectionSource(localContextName);
                 final ResourceInjectionConfiguration injectionConfiguration = new ResourceInjectionConfiguration(targetDescription, optionalInjection, true);
                 classDescription.addResourceInjection(injectionConfiguration);
             }

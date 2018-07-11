@@ -21,8 +21,10 @@
  */
 package org.jboss.as.weld.deployment.processors;
 
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.security.service.SimpleSecurityManager;
 import org.jboss.as.security.service.SimpleSecurityManagerService;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.weld.services.bootstrap.WeldSecurityServices;
 import org.jboss.as.weld.spi.BootstrapDependencyInstaller;
@@ -42,9 +44,12 @@ public class SecurityBootstrapDependencyInstaller implements BootstrapDependency
 
         final ServiceName serviceName = deploymentUnit.getServiceName().append(WeldSecurityServices.SERVICE_NAME);
 
-        serviceTarget.addService(serviceName, service).addDependency(ServiceBuilder.DependencyType.OPTIONAL, SimpleSecurityManagerService.SERVICE_NAME,
-                SimpleSecurityManager.class, service.getSecurityManagerValue()).install();
-
+        final ServiceBuilder sb = serviceTarget.addService(serviceName, service);
+        final CapabilityServiceSupport capabilities = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
+        if (capabilities.hasCapability("org.wildfly.legacy-security")) {
+            sb.addDependency(SimpleSecurityManagerService.SERVICE_NAME, SimpleSecurityManager.class, service.getSecurityManagerValue());
+        }
+        sb.install();
         return serviceName;
     }
 

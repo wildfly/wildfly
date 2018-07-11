@@ -60,18 +60,12 @@ public final class LookupInjectionSource extends InjectionSource {
     }
 
     private final String lookupName;
-    private final boolean optional;
 
     public LookupInjectionSource(final String lookupName) {
-        this(lookupName,false);
-    }
-
-    public LookupInjectionSource(final String lookupName, final boolean optional) {
         if (lookupName == null) {
             throw EeLogger.ROOT_LOGGER.nullVar("lookupName");
         }
         this.lookupName = lookupName;
-        this.optional = optional;
     }
 
     /**
@@ -87,13 +81,13 @@ public final class LookupInjectionSource extends InjectionSource {
             // relative name, build absolute name and setup normal lookup injection
             if (componentName != null && !compUsesModule) {
                 ContextNames.bindInfoFor(applicationName, moduleName, componentName, "java:comp/env/" + lookupName)
-                        .setupLookupInjection(serviceBuilder, injector, phaseContext.getDeploymentUnit(), optional);
+                        .setupLookupInjection(serviceBuilder, injector, phaseContext.getDeploymentUnit());
             } else if (compUsesModule) {
                 ContextNames.bindInfoFor(applicationName, moduleName, componentName, "java:module/env/" + lookupName)
-                        .setupLookupInjection(serviceBuilder, injector, phaseContext.getDeploymentUnit(), optional);
+                        .setupLookupInjection(serviceBuilder, injector, phaseContext.getDeploymentUnit());
             } else {
                 ContextNames.bindInfoFor(applicationName, moduleName, componentName, "java:jboss/env/" + lookupName)
-                        .setupLookupInjection(serviceBuilder, injector, phaseContext.getDeploymentUnit(), optional);
+                        .setupLookupInjection(serviceBuilder, injector, phaseContext.getDeploymentUnit());
             }
         } else {
             if (scheme.equals("java")) {
@@ -101,10 +95,10 @@ public final class LookupInjectionSource extends InjectionSource {
                 if (compUsesModule && lookupName.startsWith("java:comp/")) {
                     // switch "comp" with "module"
                     ContextNames.bindInfoFor(applicationName, moduleName, componentName, "java:module/" + lookupName.substring(10))
-                            .setupLookupInjection(serviceBuilder, injector, phaseContext.getDeploymentUnit(), optional);
+                            .setupLookupInjection(serviceBuilder, injector, phaseContext.getDeploymentUnit());
                 } else {
                     ContextNames.bindInfoFor(applicationName, moduleName, componentName, lookupName)
-                            .setupLookupInjection(serviceBuilder, injector, phaseContext.getDeploymentUnit(), optional);
+                            .setupLookupInjection(serviceBuilder, injector, phaseContext.getDeploymentUnit());
                 }
             } else {
                 // an absolute non java name
