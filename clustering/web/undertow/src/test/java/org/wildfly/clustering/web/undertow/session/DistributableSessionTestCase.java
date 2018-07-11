@@ -48,6 +48,8 @@ import io.undertow.server.session.SessionListener;
 import io.undertow.server.session.SessionListener.SessionDestroyedReason;
 import io.undertow.server.session.SessionListeners;
 import io.undertow.servlet.handlers.security.CachedAuthenticatedSessionHandler;
+
+import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.wildfly.clustering.ee.Batch;
@@ -567,6 +569,48 @@ public class DistributableSessionTestCase {
         verify(this.batch).close();
         verify(context).close();
         verify(this.closeTask).run();
+    }
+
+    @Test
+    public void requestDoneThenInvalidate() {
+        SessionManager<LocalSessionContext, Batch> manager = mock(SessionManager.class);
+        Batcher<Batch> batcher = mock(Batcher.class);
+        BatchContext context = mock(BatchContext.class);
+        HttpServerExchange exchange = new HttpServerExchange(null);
+
+        when(this.session.isValid()).thenReturn(true);
+        when(this.manager.getSessionManager()).thenReturn(manager);
+        when(manager.getBatcher()).thenReturn(batcher);
+        when(batcher.resumeBatch(this.batch)).thenReturn(context);
+
+        this.adapter.requestDone(exchange);
+
+        verify(this.session).close();
+        verify(this.batch).close();
+        verify(context).close();
+        verify(this.closeTask).run();
+
+        reset(this.batch, this.session, context, this.closeTask);
+
+        this.validate(session -> session.invalidate(exchange));
+
+        SessionListener listener = mock(SessionListener.class);
+        SessionListeners listeners = new SessionListeners();
+        listeners.addSessionListener(listener);
+        String sessionId = "session";
+
+        when(this.manager.getSessionListeners()).thenReturn(listeners);
+        when(this.session.getId()).thenReturn(sessionId);
+        when(this.manager.getSessionManager()).thenReturn(manager);
+        when(manager.getBatcher()).thenReturn(batcher);
+        when(batcher.resumeBatch(this.batch)).thenReturn(context);
+
+        try {
+            this.adapter.invalidate(exchange);
+            Assert.fail("Expecting IllegalStateException");
+        } catch (IllegalStateException expectedException) {
+            // good for https://issues.jboss.org/browse/WFLY-10661
+        }
     }
 
     @Test
