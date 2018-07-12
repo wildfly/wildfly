@@ -3,7 +3,7 @@
 
     <origin name="org.wildfly.core:wildfly-core-galleon-pack">
         <feature-group name="domain-interfaces"/>
-        <feature spec="interface">
+        <feature spec="domain.interface">
             <param name="interface" value="private"/>
         </feature>
     </origin>
