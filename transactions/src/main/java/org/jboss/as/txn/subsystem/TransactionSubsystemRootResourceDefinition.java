@@ -155,6 +155,12 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .setXmlName(Attribute.DEFAULT_TIMEOUT.getLocalName())
             .setAllowExpression(true).build();
 
+    public static final SimpleAttributeDefinition MAXIMUM_TIMEOUT = new SimpleAttributeDefinitionBuilder(CommonAttributes.MAXIMUM_TIMEOUT, ModelType.INT, true)
+            .setValidator(new IntRangeValidator(300))
+            .setMeasurementUnit(MeasurementUnit.SECONDS)
+            .setDefaultValue(new ModelNode().set(31536000))
+            .setFlags(AttributeAccess.Flag.RESTART_NONE)
+            .setAllowExpression(true).build();
     //object store
     public static final SimpleAttributeDefinition OBJECT_STORE_RELATIVE_TO = new SimpleAttributeDefinitionBuilder(CommonAttributes.OBJECT_STORE_RELATIVE_TO, ModelType.STRING, true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
@@ -259,7 +265,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
     // all attributes
     static final AttributeDefinition[] attributes = new AttributeDefinition[] {
             BINDING, STATUS_BINDING, RECOVERY_LISTENER, NODE_IDENTIFIER, PROCESS_ID_UUID, PROCESS_ID_SOCKET_BINDING,
-            PROCESS_ID_SOCKET_MAX_PORTS, STATISTICS_ENABLED, ENABLE_TSM_STATUS, DEFAULT_TIMEOUT,
+            PROCESS_ID_SOCKET_MAX_PORTS, STATISTICS_ENABLED, ENABLE_TSM_STATUS, DEFAULT_TIMEOUT, MAXIMUM_TIMEOUT,
             OBJECT_STORE_RELATIVE_TO, OBJECT_STORE_PATH, JTS, USE_JOURNAL_STORE, USE_JDBC_STORE, JDBC_STORE_DATASOURCE,
             JDBC_ACTION_STORE_DROP_TABLE, JDBC_ACTION_STORE_TABLE_PREFIX, JDBC_COMMUNICATION_STORE_DROP_TABLE,
             JDBC_COMMUNICATION_STORE_TABLE_PREFIX, JDBC_STATE_STORE_DROP_TABLE, JDBC_STATE_STORE_TABLE_PREFIX,
@@ -281,6 +287,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
 
         attributesWithoutMutuals.remove(STATISTICS_ENABLED);
         attributesWithoutMutuals.remove(DEFAULT_TIMEOUT);
+        attributesWithoutMutuals.remove(MAXIMUM_TIMEOUT);
         attributesWithoutMutuals.remove(JDBC_STORE_DATASOURCE); // Remove these as it also needs special write handler
 
         attributesWithoutMutuals.remove(PROCESS_ID_UUID);
@@ -300,6 +307,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
 
         //Register default-timeout attribute
         resourceRegistration.registerReadWriteAttribute(DEFAULT_TIMEOUT, null, new DefaultTimeoutHandler(DEFAULT_TIMEOUT));
+        resourceRegistration.registerReadWriteAttribute(MAXIMUM_TIMEOUT, null, new MaximumTimeoutHandler(MAXIMUM_TIMEOUT));
 
         // Register jdbc-store-datasource attribute
         resourceRegistration.registerReadWriteAttribute(JDBC_STORE_DATASOURCE, null, new JdbcStoreDatasourceWriteHandler(JDBC_STORE_DATASOURCE));
@@ -489,14 +497,20 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             super(definitions);
         }
 
-
         @Override
         protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation,
                                                final String attributeName, final ModelNode resolvedValue,
                                                final ModelNode currentValue, final HandbackHolder<Void> handbackHolder)
             throws OperationFailedException {
-            TxControl.setDefaultTimeout(resolvedValue.asInt());
-            ContextTransactionManager.setGlobalDefaultTransactionTimeout(resolvedValue.asInt());
+            int timeout = resolvedValue.asInt();
+
+            TxControl.setDefaultTimeout(timeout);
+            if (timeout == 0) {
+                ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
+                timeout = MAXIMUM_TIMEOUT.resolveModelAttribute(context, model).asInt();
+                TransactionLogger.ROOT_LOGGER.timeoutValueIsSetToMaximum(timeout);
+            }
+            ContextTransactionManager.setGlobalDefaultTransactionTimeout(timeout);
             return false;
         }
 
@@ -507,6 +521,30 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             throws OperationFailedException {
             TxControl.setDefaultTimeout(valueToRestore.asInt());
             ContextTransactionManager.setGlobalDefaultTransactionTimeout(valueToRestore.asInt());
+        }
+    }
+
+    private static class MaximumTimeoutHandler extends AbstractWriteAttributeHandler<Void> {
+       public MaximumTimeoutHandler(final AttributeDefinition... definitions) {
+           super(definitions);
+       }
+
+       @Override
+       protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation,
+                                              final String attributeName, final ModelNode resolvedValue,
+                                              final ModelNode currentValue, final HandbackHolder<Void> handbackHolder)
+               throws OperationFailedException {
+           int maximum_timeout = resolvedValue.asInt();
+           if (TxControl.getDefaultTimeout() == 0) {
+               TransactionLogger.ROOT_LOGGER.timeoutValueIsSetToMaximum(maximum_timeout);
+               ContextTransactionManager.setGlobalDefaultTransactionTimeout(maximum_timeout);
+           }
+           return false;
+       }
+
+        @Override
+        protected void revertUpdateToRuntime(OperationContext operationContext, ModelNode modelNode, String s, ModelNode modelNode1, ModelNode modelNode2, Void aVoid) throws OperationFailedException {
+
         }
     }
 
