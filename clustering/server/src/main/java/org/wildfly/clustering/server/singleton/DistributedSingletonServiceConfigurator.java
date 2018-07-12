@@ -32,6 +32,7 @@ import java.util.function.Supplier;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.DelegatingServiceBuilder;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
@@ -104,6 +105,7 @@ public class DistributedSingletonServiceConfigurator extends SimpleServiceNamePr
 
         private final DistributedSingletonServiceContext context;
         private final List<Map.Entry<ServiceName[], DeferredInjector<?>>> injectors = new LinkedList<>();
+        private Service service = Service.NULL;
 
         DistributedSingletonServiceBuilder(DistributedSingletonServiceContext context, ServiceBuilder<T> builder) {
             super(builder);
@@ -119,7 +121,13 @@ public class DistributedSingletonServiceConfigurator extends SimpleServiceNamePr
 
         @Override
         public ServiceBuilder<T> setInstance(Service service) {
-            return super.setInstance(new DistributedSingletonService(this.context, service, this.injectors));
+            this.service = service;
+            return this;
+        }
+
+        @Override
+        public ServiceController<T> install() {
+            return this.getDelegate().setInstance(new DistributedSingletonService(this.context, this.service, this.injectors)).install();
         }
     }
 }
