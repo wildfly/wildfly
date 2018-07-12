@@ -55,8 +55,8 @@ public class HibernateJarsInDeploymentTestCase {
         final String testdir = basedir + File.separatorChar + "target" + File.separatorChar + "test-libs";
 
         File hibernatecore = new File(testdir, "hibernate-core.jar");
+        File bytebuddy = new File(testdir, "byte-buddy.jar");
         File hibernateannotations = new File(testdir, "hibernate-commons-annotations.jar");
-        File hibernateentitymanager = new File(testdir, "hibernate-entitymanager.jar");
         File jipi = new File(testdir,"jipijapa-hibernate5.jar");
         File dom4j = new File(testdir, "dom4j.jar");
         File antlr = new File(testdir, "antlr.jar");
@@ -64,7 +64,7 @@ public class HibernateJarsInDeploymentTestCase {
         ear.addAsLibraries(
                 hibernatecore,
                 hibernateannotations,
-                hibernateentitymanager,
+                bytebuddy,
                 dom4j,
                 antlr,
                 classmate,

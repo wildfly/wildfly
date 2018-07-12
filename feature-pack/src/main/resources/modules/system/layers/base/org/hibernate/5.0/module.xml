@@ -23,5 +23,28 @@
   -->
 
 <!-- Represents the Hibernate 5.1.x module-->
-<module-alias xmlns="urn:jboss:module:1.5" name="org.hibernate" slot="5.0"  target-name="org.hibernate"/>
+<module xmlns="urn:jboss:module:1.5" name="org.hibernate" slot="5.0">
+   <resources>
+    </resources>
 
+    <dependencies>
+        <module name="com.fasterxml.classmate"/>
+        <module name="javax.api"/>
+        <module name="javax.annotation.api"/>
+        <module name="javax.enterprise.api"/>
+        <module name="javax.persistence.api"/>
+        <module name="javax.transaction.api"/>
+        <module name="javax.validation.api"/>
+        <module name="javax.xml.bind.api"/>
+        <module name="org.antlr"/>
+        <module name="org.dom4j"/>
+        <module name="org.javassist" export="true"/>
+        <module name="org.jboss.as.jpa.spi"/>
+        <module name="org.jboss.jandex"/>
+        <module name="org.jboss.logging"/>
+        <module name="org.jboss.vfs"/>
+        <module name="org.hibernate.commons-annotations"/>
+        <module name="org.hibernate.jipijapa-hibernate5" services="import"/>
+        <module name="org.infinispan.hibernate-cache" services="import" optional="true"/>
+    </dependencies>
+</module>

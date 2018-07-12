@@ -596,11 +596,6 @@
         </dependency>
 
         <dependency>
-            <groupId>commons-pool</groupId>
-            <artifactId>commons-pool</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>dom4j</groupId>
             <artifactId>dom4j</artifactId>
         </dependency>
@@ -1486,11 +1481,6 @@
 
         <dependency>
             <groupId>org.jboss.spec.javax.faces</groupId>
-            <artifactId>jboss-jsf-api_2.2_spec</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.spec.javax.faces</groupId>
             <artifactId>jboss-jsf-api_2.3_spec</artifactId>
         </dependency>
 
@@ -1517,12 +1507,6 @@
         <dependency>
             <groupId>org.jboss.spec.javax.transaction</groupId>
             <artifactId>jboss-transaction-api_1.2_spec</artifactId>
-        </dependency>
-
-
-        <dependency>
-            <groupId>org.jboss.spec.javax.xml.bind</groupId>
-            <artifactId>jboss-jaxb-api_2.2_spec</artifactId>
         </dependency>
 
         <dependency>
@@ -2237,28 +2221,6 @@
         <dependency>
             <groupId>org.hibernate.common</groupId>
             <artifactId>hibernate-commons-annotations</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-entitymanager</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-java8</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>

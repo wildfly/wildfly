@@ -24,16 +24,7 @@
 
 <module xmlns="urn:jboss:module:1.7" name="javax.annotation.api">
     <resources>
-        <artifact name="${org.jboss.spec.javax.annotation:jboss-annotations-api_1.2_spec}">
-            <conditions>
-                <property-not-equal name="ee8.preview.mode" value="true"/>
-            </conditions>
-        </artifact>
-        <artifact name="${org.jboss.spec.javax.annotation:jboss-annotations-api_1.3_spec}">
-            <conditions>
-                <property-equal name="ee8.preview.mode" value="true"/>
-            </conditions>
-        </artifact>
+        <artifact name="${org.jboss.spec.javax.annotation:jboss-annotations-api_1.3_spec}"/>
     </resources>
 
 </module>

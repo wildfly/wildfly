@@ -20,43 +20,44 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.test.integration.ee8.hibernate;
+package org.jboss.as.test.integration.jpa.resultstream;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import java.util.stream.Stream;
+
+import javax.ejb.Stateful;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.persistence.PersistenceContext;
+
+import javax.persistence.EntityManager;
 
 /**
- * Ticket entity class
+ * Stateful session bean for testing JPA 2.2 API
+ * javax.persistence.Query#getResultStream
  *
- * @author Zbyněk Roubalík
+ * @author Gail Badner
  */
-@Entity
-public class Ticket {
+@Stateful
+public class ResultStreamTest {
 
-    Long id;
-    String number;
+    @PersistenceContext(unitName = "mypc")
+    EntityManager em;
 
-    public Ticket() {
+    public Ticket createTicket() throws Exception {
+        Ticket t = new Ticket();
+        t.setNumber("111");
+
+        em.persist(t);
+
+        return t;
     }
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public Long getId() {
-        return id;
+    @TransactionAttribute(TransactionAttributeType.NEVER)
+    public Stream getTicketStreamOrderedById() {
+        return em.createQuery( "from Ticket t order by t.id" ).getResultStream();
     }
 
-    public void setId(Long long1) {
-        id = long1;
-    }
-
-    public String getNumber() {
-        return number;
-    }
-
-    public void setNumber(String string) {
-        number = string;
+    public void deleteTickets() {
+        em.createQuery( "delete from Ticket" ).executeUpdate();
     }
 }
-

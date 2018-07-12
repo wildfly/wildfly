@@ -35,6 +35,6 @@
         <module name="javax.ws.rs.api"/>
         <module name="org.jboss.resteasy.resteasy-jaxrs"/>
         <module name="org.reactivestreams" export = "true" />
-        <module name="io.reactivex.rxjava" export="true" />
+        <module name="io.reactivex.rxjava2.rxjava" export="true" />
     </dependencies>
 </module>

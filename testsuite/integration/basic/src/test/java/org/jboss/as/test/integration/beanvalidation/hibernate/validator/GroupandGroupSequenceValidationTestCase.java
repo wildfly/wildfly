@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.integration.beanvalidation.hibernate.validator;
 
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
@@ -31,6 +32,7 @@ import javax.naming.NamingException;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
 
+import org.hibernate.validator.HibernateValidatorPermission;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
@@ -51,8 +53,11 @@ public class GroupandGroupSequenceValidationTestCase {
     public static Archive<?> deploy() {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "testgroupvalidation.war");
         war.addPackage(GroupandGroupSequenceValidationTestCase.class.getPackage());
-        return war;
+        war.addAsManifestResource(createPermissionsXmlAsset(
+                HibernateValidatorPermission.ACCESS_PRIVATE_MEMBERS
+        ),"permissions.xml");
 
+        return war;
     }
 
     @Test

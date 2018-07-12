@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.jpa.beanvalidation.beanvalidationinheritancetest;
 
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.SQLException;
@@ -28,6 +30,7 @@ import java.util.Locale;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import org.hibernate.validator.HibernateValidatorPermission;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -65,6 +68,9 @@ public class BeanValidationJPAInheritanceTestCase {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
         jar.addClasses(Player.class, SoccerPlayer.class, SLSBInheritance.class);
         jar.addAsManifestResource(BeanValidationJPAInheritanceTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
+        jar.addAsManifestResource(createPermissionsXmlAsset(
+                HibernateValidatorPermission.ACCESS_PRIVATE_MEMBERS
+        ), "permissions.xml");
         return jar;
     }
 
