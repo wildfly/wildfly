@@ -83,9 +83,21 @@ public abstract class JcaStatisticsBase extends JcaMgmtBase {
         ModelNode statisticsNode = translateFromConnectionToStatistics(node2);
         executeOnNode(node1, "flush-all-connection-in-pool");
         executeOnNode(node2, "flush-all-connection-in-pool");
-        writeAttribute(statisticsNode, "statistics-enabled", "true");
+        resetStatistics(statisticsNode);
         executeOnNode(node1, "test-connection-in-pool");
         assertStatisticsShouldBeSet(statisticsNode, false);
+    }
+
+    /**
+     * Resets stat counters and enables statistics on given node
+     *
+     * @param statisticsNode
+     * @throws Exception
+     */
+    protected void resetStatistics(ModelNode statisticsNode) throws Exception {
+        // statistics only reset when the value of "statistics-enabled" actually changes, so switch to false then true
+        writeAttribute(statisticsNode, "statistics-enabled", "false");
+        writeAttribute(statisticsNode, "statistics-enabled", "true");
     }
 
     /**
@@ -106,8 +118,8 @@ public abstract class JcaStatisticsBase extends JcaMgmtBase {
             assertTrue("active==" + active, active > 0);
             assertTrue("maxused==" + maxUsed, maxUsed > 0);
         } else {
-            assertEquals(active, 0);
-            assertEquals(maxUsed, 0);
+            assertEquals(0, active);
+            assertEquals(0, maxUsed);
         }
     }
 
