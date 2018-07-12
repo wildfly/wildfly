@@ -179,11 +179,16 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
         @Override
         protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             super.performRemove(context, operation, model);
-            for (ApplicationSecurityDomainConfig domain : new HashSet<>(knownApplicationSecurityDomains)) {
+            HashSet<ApplicationSecurityDomainConfig> applicationSecurityDomainConfigs;
+            synchronized (knownApplicationSecurityDomains) {
+                applicationSecurityDomainConfigs = new HashSet<>(knownApplicationSecurityDomains);
+            }
+            for (ApplicationSecurityDomainConfig domain : applicationSecurityDomainConfigs) {
                 if (domain.isSameDomain(context.getCurrentAddressValue())) {
                     knownApplicationSecurityDomains.remove(domain);
                 }
             }
+
         }
 
         @Override
@@ -221,9 +226,11 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
 
     Function<String, ApplicationSecurityDomainConfig> getKnownSecurityDomainFunction() {
         return name -> {
-            for (ApplicationSecurityDomainConfig applicationSecurityDomainConfig : knownApplicationSecurityDomains) {
-                if (applicationSecurityDomainConfig.isSameDomain(name)) {
-                    return applicationSecurityDomainConfig;
+            synchronized (knownApplicationSecurityDomains) {
+                for (ApplicationSecurityDomainConfig applicationSecurityDomainConfig : knownApplicationSecurityDomains) {
+                    if (applicationSecurityDomainConfig.isSameDomain(name)) {
+                        return applicationSecurityDomainConfig;
+                    }
                 }
             }
             return null;
