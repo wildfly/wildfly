@@ -3,7 +3,7 @@
 <config>
    <extension-module>org.jboss.as.transactions</extension-module>
    <subsystem xmlns="urn:jboss:domain:transactions:4.0">
-       <core-environment>
+       <core-environment node-identifier="${jboss.tx.node.id:1}">
            <process-id>
                <uuid/>
            </process-id>
