@@ -187,4 +187,35 @@ public class SFSBHibernateSessionFactory {
         }
 
     }
+
+    public Gene createGene(int id, State state) {
+        final Gene gene = new Gene();
+        gene.setId( id );
+        gene.setState( state );
+        try {
+            Session session = sessionFactory.openSession();
+            Transaction tx = session.beginTransaction();
+            session.save( gene );
+            session.flush();
+            tx.commit();
+            session.close();
+        } catch (Exception e) {
+            throw new RuntimeException("transactional failure while persisting gene entity", e);
+        }
+
+        return gene;
+    }
+
+    public Gene getGene(int id) {
+        try {
+            Session session = sessionFactory.openSession();
+            Transaction tx = session.beginTransaction();
+            Gene gene = session.get( Gene.class, id );
+            tx.commit();
+            session.close();
+            return gene;
+        } catch (Exception e) {
+            throw new RuntimeException("transactional failure while getting gene entity", e);
+        }
+   }
 }

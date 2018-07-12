@@ -72,7 +72,11 @@ public class VerifyHibernate51CompatibilityTestCase {
             + "<id name=\"studentId\" column=\"student_id\">" + "<generator class=\"assigned\"/>" + "</id>"
             + "<property name=\"firstName\" column=\"first_name\"/>" + "<property name=\"lastName\" column=\"last_name\"/>"
             + "<property name=\"address\"/>"
-            + "</class></hibernate-mapping>";
+            + "</class>"
+            + "<class name=\"org.jboss.as.test.compat.jpa.hibernate.transformer.Gene\" table=\"GENE\">"
+            + "<id name=\"id\">" + "<generator class=\"assigned\"/>" + "</id>"
+            + "<property name=\"state\" type=\"org.jboss.as.test.compat.jpa.hibernate.transformer.StateType\"/>"
+            + "</class>" + "</hibernate-mapping>";
 
     @ArquillianResource
     private static InitialContext iniCtx;
@@ -91,10 +95,13 @@ public class VerifyHibernate51CompatibilityTestCase {
 
         JavaArchive lib = ShrinkWrap.create(JavaArchive.class, "beans.jar");
         lib.addClasses(SFSBHibernateSessionFactory.class);
-        ear.addAsModule(lib);
+        ear.addAsModule( lib );
 
         lib = ShrinkWrap.create(JavaArchive.class, "entities.jar");
         lib.addClasses(Student.class);
+        lib.addClasses(Gene.class);
+        lib.addClasses(State.class);
+        lib.addClasses(StateType.class);
         lib.addAsResource(new StringAsset(testmapping), "testmapping.hbm.xml");
         lib.addAsResource(new StringAsset(hibernate_cfg), "hibernate.cfg.xml");
         ear.addAsLibraries(lib);
@@ -401,4 +408,21 @@ public class VerifyHibernate51CompatibilityTestCase {
             assertEquals( i, ( (Student) results.get( resultIndex ) ).getStudentId() );
         }
     }
+
+    @Test
+    public void testUserTypeImplemented() throws Exception {
+
+        SFSBHibernateSessionFactory sfsb = lookup("SFSBHibernateSessionFactory", SFSBHibernateSessionFactory.class);
+        // setup Configuration and SessionFactory
+        sfsb.setupConfig();
+        try {
+            sfsb.createGene( 1, State.DORMANT );
+            final Gene gene = sfsb.getGene( 1 );
+            assertEquals( State.DORMANT, gene.getState() );
+        } finally {
+            sfsb.cleanup();
+        }
+    }
+
+
 }
