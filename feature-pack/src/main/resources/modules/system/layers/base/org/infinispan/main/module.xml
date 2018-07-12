@@ -33,7 +33,7 @@
         <module name="javax.api"/>
         <module name="javax.transaction.api"/>
         <module name="com.github.ben-manes.caffeine"/>
-        <module name="io.reactivex.rxjava"/>
+        <module name="io.reactivex.rxjava2.rxjava"/>
         <module name="net.jcip"/>
         <module name="org.infinispan.persistence.jdbc" optional="true"/>
         <module name="org.infinispan.persistence.remote" optional="true"/>
