@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright (c) 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,25 +20,29 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.test.integration.elytron.web;
+package org.wildfly.test.integration.elytron.http;
 
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.junit.runner.RunWith;
-import org.wildfly.test.security.common.elytron.ServletElytronDomainSetup;
+import org.wildfly.test.security.common.elytron.MechanismConfiguration;
 
 /**
- * Test case to test authentication to web applications, initially programatic authentication.
+ * Test of FORM HTTP mechanism.
  *
- * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
+ * @author Jan Kalina
  */
 @RunWith(Arquillian.class)
-@ServerSetup({ WebAuthenticationTestCaseBase.ElytronDomainSetupOverride.class, ServletElytronDomainSetup.class })
-public class WebAuthenticationTestCase extends WebAuthenticationTestCaseBase {
+@RunAsClient
+@ServerSetup({ FormMechTestBase.ServerSetup.class })
+public class FormMechTestBase extends FormMechTestCase {
 
-    @Override
-    protected String getWebXmlName() {
-        return "web.xml";
+    static class ServerSetup extends AbstractMechTestBase.ServerSetup {
+        @Override protected MechanismConfiguration getMechanismConfiguration() {
+            return MechanismConfiguration.builder()
+                    .withMechanismName("FORM")
+                    .build();
+        }
     }
-
 }

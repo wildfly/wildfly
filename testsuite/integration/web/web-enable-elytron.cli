@@ -1,6 +1,6 @@
 embed-server --server-config=standalone.xml
 
-/subsystem=undertow/application-security-domain=other:add(http-authentication-factory=application-http-authentication)
+/subsystem=undertow/application-security-domain=other:add(security-domain=ApplicationDomain)
 
 ## TODO use Elytron for management
 # /core-service=management/access=identity:add(security-domain=ManagementDomain)

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright (c) 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,25 +20,37 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.test.integration.elytron.web;
+package org.wildfly.test.integration.elytron.http;
 
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.junit.runner.RunWith;
-import org.wildfly.test.security.common.elytron.ServletElytronDomainSetup;
+import org.wildfly.test.security.common.elytron.MechanismConfiguration;
 
 /**
- * Test case to test authentication to web applications, initially programatic authentication.
+ * Test of FORM HTTP mechanism using a direct reference to the security domain instead of an authentication factory.
  *
+ * @author Jan Kalina
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 @RunWith(Arquillian.class)
-@ServerSetup({ WebAuthenticationTestCaseBase.ElytronDomainSetupOverride.class, ServletElytronDomainSetup.class })
-public class WebAuthenticationTestCase extends WebAuthenticationTestCaseBase {
+@RunAsClient
+@ServerSetup({ MinimalFormMechTestCase.ServerSetup.class })
+public class MinimalFormMechTestCase extends FormMechTestCase {
 
-    @Override
-    protected String getWebXmlName() {
-        return "web.xml";
+    static class ServerSetup extends AbstractMechTestBase.ServerSetup {
+
+        @Override
+        protected boolean useAuthenticationFactory() {
+            return false;
+        }
+
+        @Override
+        protected MechanismConfiguration getMechanismConfiguration() {
+            // As we are not using an authentication factory the mechanisms do not require configuration.
+            return null;
+        }
+
     }
-
 }

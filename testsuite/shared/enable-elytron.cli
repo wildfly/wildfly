@@ -1,8 +1,10 @@
 embed-server --server-config=standalone.xml
 
-/subsystem=undertow/application-security-domain=other:add(http-authentication-factory=application-http-authentication)
+/subsystem=elytron/http-authentication-factory=ejb-http-authentication:add(security-domain=ApplicationDomain, http-server-mechanism-factory=global,mechanism-configurations=[{mechanism-name=BASIC}])
+
+/subsystem=undertow/application-security-domain=other:add(security-domain=ApplicationDomain)
 /subsystem=undertow/server=default-server/host=default-host/setting=http-invoker:undefine-attribute(name=security-realm)
-/subsystem=undertow/server=default-server/host=default-host/setting=http-invoker:write-attribute(name=http-authentication-factory, value=application-http-authentication)
+/subsystem=undertow/server=default-server/host=default-host/setting=http-invoker:write-attribute(name=http-authentication-factory, value=ejb-http-authentication)
 
 /subsystem=ejb3/application-security-domain=other:add(security-domain=ApplicationDomain)
 /subsystem=batch-jberet:write-attribute(name=security-domain, value=ApplicationDomain)
@@ -24,9 +26,11 @@ stop-embedded-server
 
 embed-server --server-config=standalone-full.xml
 
-/subsystem=undertow/application-security-domain=other:add(http-authentication-factory=application-http-authentication)
+/subsystem=elytron/http-authentication-factory=ejb-http-authentication:add(security-domain=ApplicationDomain, http-server-mechanism-factory=global,mechanism-configurations=[{mechanism-name=BASIC}])
+
+/subsystem=undertow/application-security-domain=other:add(security-domain=ApplicationDomain)
 /subsystem=undertow/server=default-server/host=default-host/setting=http-invoker:undefine-attribute(name=security-realm)
-/subsystem=undertow/server=default-server/host=default-host/setting=http-invoker:write-attribute(name=http-authentication-factory, value=application-http-authentication)
+/subsystem=undertow/server=default-server/host=default-host/setting=http-invoker:write-attribute(name=http-authentication-factory, value=ejb-http-authentication)
 /subsystem=ejb3/application-security-domain=other:add(security-domain=ApplicationDomain)
 /subsystem=batch-jberet:write-attribute(name=security-domain, value=ApplicationDomain)
 /subsystem=messaging-activemq/server=default:undefine-attribute(name=security-domain)
