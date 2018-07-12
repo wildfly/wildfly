@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.integration.jca.beanvalidation;
 
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -29,6 +30,7 @@ import java.util.Set;
 import javax.annotation.Resource;
 import javax.resource.spi.ActivationSpec;
 
+import org.hibernate.validator.HibernateValidatorPermission;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -78,6 +80,10 @@ public class PositiveValidationTestCase {
         raa.addAsManifestResource(PositiveValidationTestCase.class.getPackage(), "ra.xml", "ra.xml")
                 .addAsManifestResource(PositiveValidationTestCase.class.getPackage(), "ironjacamar.xml", "ironjacamar.xml")
                 .addAsManifestResource(new StringAsset("Dependencies: javax.inject.api,org.jboss.as.connector\n"), "MANIFEST.MF");
+
+        raa.addAsManifestResource(createPermissionsXmlAsset(
+                HibernateValidatorPermission.ACCESS_PRIVATE_MEMBERS
+        ), "permissions.xml");
 
         return raa;
     }

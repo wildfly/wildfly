@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.integration.jpa.beanvalidation.cdi;
 
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -33,6 +34,7 @@ import javax.naming.NamingException;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 
+import org.hibernate.validator.HibernateValidatorPermission;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -59,6 +61,9 @@ public class BeanValidationCdiIntegrationTestCase {
         jar.addPackage(BeanValidationCdiIntegrationTestCase.class.getPackage());
         jar.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
         jar.addAsManifestResource(BeanValidationCdiIntegrationTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
+        jar.addAsManifestResource(createPermissionsXmlAsset(
+                HibernateValidatorPermission.ACCESS_PRIVATE_MEMBERS
+        ), "permissions.xml");
         return jar;
     }
 
