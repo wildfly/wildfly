@@ -66,7 +66,7 @@
         <plugins>
             <plugin>
                 <groupId>org.jboss.galleon</groupId>
-                <artifactId>galleon-maven-plugins</artifactId>
+                <artifactId>galleon-maven-plugin</artifactId>
                 <executions>
                     <execution>
                         <id>server-provisioning</id>
@@ -79,6 +79,13 @@
                             <plugin-options>
                                 <jboss-fork-embedded/>
                             </plugin-options>
+                            <resolve-locals>
+                                <resolve-local>
+                                    <groupId>org.wildfly.core</groupId>
+                                    <artifactId>wildfly-core-galleon-pack</artifactId>
+                                    <version>${version.org.wildfly.core}</version>
+                                </resolve-local>
+                            </resolve-locals>
                             <feature-packs>
                                 <feature-pack>
                                     <groupId>${project.groupId}</groupId>

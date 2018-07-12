@@ -65,7 +65,7 @@
         <plugins>
             <plugin>
                 <groupId>org.jboss.galleon</groupId>
-                <artifactId>galleon-maven-plugins</artifactId>
+                <artifactId>galleon-maven-plugin</artifactId>
                 <executions>
                     <execution>
                         <id>server-provisioning</id>
@@ -79,9 +79,9 @@
                                 <feature-pack>
                                     <groupId>org.wildfly.core</groupId>
                                     <artifactId>wildfly-core-galleon-pack</artifactId>
-                                    <inherit-configs>false</inherit-configs>
+                                    <version>${version.org.wildfly.core}</version>
+                                    <transitive>true</transitive>
                                     <excluded-packages>
-                                        <name>product.conf</name>
                                         <name>docs.schema</name>
                                     </excluded-packages>
                                 </feature-pack>

@@ -74,7 +74,7 @@
         <plugins>
             <plugin>
                 <groupId>org.jboss.galleon</groupId>
-                <artifactId>galleon-maven-plugins</artifactId>
+                <artifactId>galleon-maven-plugin</artifactId>
                 <executions>
                     <execution>
                         <id>server-provisioning</id>
@@ -84,19 +84,19 @@
                         <phase>generate-resources</phase>
                         <configuration>
                             <install-dir>${project.build.directory}/wildfly</install-dir>
-                            <feature-packs>
-                                <feature-pack>
+                            <resolve-locals>
+                                <resolve-local>
                                     <groupId>org.wildfly.core</groupId>
                                     <artifactId>wildfly-core-galleon-pack</artifactId>
-                                    <inherit-packages>false</inherit-packages>
-                                    <inherit-configs>false</inherit-configs>
-                                </feature-pack>
-                                <feature-pack>
+                                    <version>${version.org.wildfly.core}</version>
+                                </resolve-local>
+                                <resolve-local>
                                     <groupId>${project.groupId}</groupId>
                                     <artifactId>wildfly-servlet-galleon-pack</artifactId>
-                                    <inherit-packages>false</inherit-packages>
-                                    <inherit-configs>false</inherit-configs>
-                                </feature-pack>
+                                    <version>${project.version}</version>
+                                </resolve-local>
+                            </resolve-locals>
+                            <feature-packs>
                                 <feature-pack>
                                     <groupId>${project.groupId}</groupId>
                                     <artifactId>wildfly-galleon-pack</artifactId>
