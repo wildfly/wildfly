@@ -42,9 +42,11 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.web.common.WarMetaData;
+import org.jboss.jandex.DotName;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.jboss.JBossServletMetaData;
 import org.jboss.metadata.web.jboss.JBossServletsMetaData;
@@ -55,9 +57,12 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher;
 import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 import static org.jboss.as.jaxrs.logging.JaxrsLogger.JAXRS_LOGGER;
 
+import org.jboss.as.jaxrs.Jackson2Annotations;
+import org.jboss.as.jaxrs.JacksonAnnotations;
 import org.jboss.as.jaxrs.JaxrsExtension;
 
 
@@ -175,6 +180,15 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
             setContextParameter(webdata, ResteasyContextParameters.RESTEASY_UNWRAPPED_EXCEPTIONS, "javax.ejb.EJBException");
         }
 
+        if (findContextParam(webdata, ResteasyContextParameters.RESTEASY_PREFER_JACKSON_OVER_JSONB) == null) {
+            final String prop = WildFlySecurityManager.getPropertyPrivileged(ResteasyContextParameters.RESTEASY_PREFER_JACKSON_OVER_JSONB, null);
+            if (prop != null) {
+                setContextParameter(webdata, ResteasyContextParameters.RESTEASY_PREFER_JACKSON_OVER_JSONB, prop);
+            } else {
+                setContextParameter(webdata, ResteasyContextParameters.RESTEASY_PREFER_JACKSON_OVER_JSONB, Boolean.toString(hasJacksonAnnotations(deploymentUnit)));
+            }
+        }
+
         if (resteasy.hasBootClasses() || resteasy.isDispatcherCreated())
             return;
 
@@ -260,6 +274,31 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
         params.add(param);
     }
 
+    private boolean hasJacksonAnnotations(DeploymentUnit deploymentUnit) {
+        final CompositeIndex index = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
+        for (Jackson2Annotations a : Jackson2Annotations.values())
+        {
+            if (checkAnnotation(a.getDotName(), index)) {
+                return true;
+            }
+        }
+        for (JacksonAnnotations a : JacksonAnnotations.values())
+        {
+            if (checkAnnotation(a.getDotName(), index)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean checkAnnotation(DotName name, CompositeIndex index) {
+        List<?> list = index.getAnnotations(name);
+        if (list != null && !list.isEmpty()) {
+            JAXRS_LOGGER.jacksonAnnotationDetected(ResteasyContextParameters.RESTEASY_PREFER_JACKSON_OVER_JSONB);
+            return true;
+        }
+        return false;
+    }
 
     private void setServletMappingPrefix(JBossWebMetaData webdata, String servletName, JBossServletMetaData servlet) {
         final List<ServletMappingMetaData> mappings = webdata.getServletMappings();

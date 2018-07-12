@@ -60,6 +60,12 @@ public class SFSBHibernateSessionFactory {
             configuration.setProperty(Environment.HBM2DDL_AUTO, "create-drop");
             configuration.setProperty(Environment.DATASOURCE, "java:jboss/datasources/ExampleDS");
             configuration.setProperty("hibernate.listeners.envers.autoRegister", "false");
+            /* Hibernate 5.2+ (see https://hibernate.atlassian.net/browse/HHH-10877 +
+                 https://hibernate.atlassian.net/browse/HHH-12665) no longer defaults
+                 to allowing a DML operation outside of a started transaction.
+                 The application workaround is to configure new property hibernate.allow_update_outside_transaction=true.
+            */
+            configuration.setProperty("hibernate.allow_update_outside_transaction","true");
 
             // fetch the properties
             Properties properties = new Properties();

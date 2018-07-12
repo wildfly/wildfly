@@ -1,6 +1,5 @@
 /*
- *
- * Copyright 2017 Red Hat, Inc.
+ * Copyright 2018 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +12,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
-package org.wildfly.test.integration.ee8.commonannotations13.datasourcedefinition;
+package org.jboss.as.test.integration.ee.datasourcedefinition;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -47,7 +45,7 @@ public class RepeatableDataSourceDefinitionTestCase {
     @Deployment
     public static Archive<?> deploy() {
         final WebArchive war = ShrinkWrap.create(WebArchive.class,"testds.war");
-        war.addPackage(RepeatableDataSourceDefinitionTestCase.class.getPackage());
+        war.addClasses(RepeatedAnnotationDataSourceBean.class, EmbeddedDataSource.class);
         war.addAsManifestResource(new StringAsset("Dependencies: com.h2database.h2\n"),"MANIFEST.MF");
         return war;
 
@@ -58,13 +56,13 @@ public class RepeatableDataSourceDefinitionTestCase {
 
     @Before
     public void createTables() throws NamingException, SQLException {
-        DataSourceBean bean = (DataSourceBean)ctx.lookup("java:module/" + DataSourceBean.class.getSimpleName());
+        RepeatedAnnotationDataSourceBean bean = lookup();
         bean.createTable();
     }
 
     @Test
     public void testDataSourceDefinition() throws NamingException, SQLException {
-        DataSourceBean bean = (DataSourceBean)ctx.lookup("java:module/" + DataSourceBean.class.getSimpleName());
+        RepeatedAnnotationDataSourceBean bean = lookup();
         DataSource ds = bean.getDataSource();
         Connection c = ds.getConnection();
         ResultSet result = c.createStatement().executeQuery("select 1");
@@ -74,7 +72,7 @@ public class RepeatableDataSourceDefinitionTestCase {
 
     @Test
     public void testTransactionEnlistment() throws NamingException, SQLException {
-        DataSourceBean bean = (DataSourceBean)ctx.lookup("java:module/" + DataSourceBean.class.getSimpleName());
+        RepeatedAnnotationDataSourceBean bean = lookup();
         try {
             bean.insert1RolledBack();
             Assert.fail("expect exception");
@@ -89,7 +87,7 @@ public class RepeatableDataSourceDefinitionTestCase {
 
     @Test
     public void testTransactionEnlistment2() throws NamingException, SQLException {
-        DataSourceBean bean = (DataSourceBean)ctx.lookup("java:module/" + DataSourceBean.class.getSimpleName());
+        RepeatedAnnotationDataSourceBean bean = lookup();
         bean.insert2();
         DataSource ds = bean.getDataSource();
         Connection c = ds.getConnection();
@@ -100,7 +98,7 @@ public class RepeatableDataSourceDefinitionTestCase {
 
     @Test
     public void testResourceInjectionWithSameName() throws NamingException {
-        DataSourceBean bean = (DataSourceBean)ctx.lookup("java:module/" + DataSourceBean.class.getSimpleName());
+        RepeatedAnnotationDataSourceBean bean = lookup();
         Assert.assertNotNull(bean.getDataSource2());
         Assert.assertNotNull(bean.getDataSource3());
         Assert.assertNotNull(bean.getDataSource4());
@@ -113,7 +111,11 @@ public class RepeatableDataSourceDefinitionTestCase {
      */
     @Test
     public void testEmbeddedDatasource() throws NamingException, SQLException {
-        DataSourceBean bean = (DataSourceBean)ctx.lookup("java:module/" + DataSourceBean.class.getSimpleName());
+        RepeatedAnnotationDataSourceBean bean = lookup();
         Assert.assertEquals(bean.getDataSource5().getConnection().nativeSQL("dse"),"dse");
+    }
+
+    private RepeatedAnnotationDataSourceBean lookup() throws NamingException {
+        return (RepeatedAnnotationDataSourceBean) ctx.lookup("java:module/" + RepeatedAnnotationDataSourceBean.class.getSimpleName());
     }
 }

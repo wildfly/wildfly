@@ -51,7 +51,7 @@ public class DataSourceDefinitionTestCase {
     @Deployment
     public static Archive<?> deploy() {
         final WebArchive war = ShrinkWrap.create(WebArchive.class,"testds.war");
-        war.addPackage(DataSourceDefinitionTestCase.class.getPackage());
+        war.addClasses(DataSourceBean.class, EmbeddedDataSource.class);
         war.addAsManifestResource(new StringAsset("Dependencies: com.h2database.h2\n"),"MANIFEST.MF");
         return war;
 

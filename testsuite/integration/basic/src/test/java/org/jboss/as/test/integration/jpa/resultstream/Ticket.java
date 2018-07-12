@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2018, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,17 +20,43 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.test.integration.ee8.temp.jsf23;
+package org.jboss.as.test.integration.jpa.resultstream;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.faces.annotation.FacesConfig;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 
 /**
+ * Ticket entity class
  *
- * @author <a href="mailto:fjuma@redhat.com">Farah Juma</a>
+ * @author Zbyněk Roubalík
  */
-@ApplicationScoped
-@FacesConfig(version = FacesConfig.Version.JSF_2_3)
-public class DummyBean {
+@Entity
+public class Ticket {
 
+    Long id;
+    String number;
+
+    public Ticket() {
+    }
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long long1) {
+        id = long1;
+    }
+
+    public String getNumber() {
+        return number;
+    }
+
+    public void setNumber(String string) {
+        number = string;
+    }
 }
+

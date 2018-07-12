@@ -52,7 +52,7 @@
 
     <dependency>
       <groupId>org.jboss.spec.javax.ws.rs</groupId>
-      <artifactId>jboss-jaxrs-api_2.0_spec</artifactId>
+      <artifactId>jboss-jaxrs-api_2.1_spec</artifactId>
     </dependency>
     <dependency>
       <groupId>org.jboss.spec.javax.batch</groupId>
@@ -69,10 +69,6 @@
     <dependency>
       <groupId>org.jboss.spec.javax.enterprise.concurrent</groupId>
       <artifactId>jboss-concurrency-api_1.0_spec</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.spec.javax.faces</groupId>
-      <artifactId>jboss-jsf-api_2.2_spec</artifactId>
     </dependency>
     <dependency>
       <groupId>org.jboss.spec.javax.faces</groupId>

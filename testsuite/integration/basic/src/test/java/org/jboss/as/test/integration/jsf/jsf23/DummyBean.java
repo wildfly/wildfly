@@ -20,35 +20,17 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.test.integration.ee8.mail;
+package org.jboss.as.test.integration.jsf.jsf23;
 
-import javax.mail.MailSessionDefinition;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
+import javax.enterprise.context.ApplicationScoped;
+import javax.faces.annotation.FacesConfig;
 
-@MailSessionDefinition(
-        name = "java:/mail/test-mail-session-1",
-        host = "localhost",
-        transportProtocol = "smtp",
-        properties = {
-                "mail.smtp.host=localhost",
-                "mail.smtp.port=5554",
-                "mail.smtp.sendpartial=true",
-                "mail.debug=true"
-        }
-)
-@MailSessionDefinition(
-        name = "java:/mail/test-mail-session-2",
-        host = "localhost",
-        transportProtocol = "smtp",
-        properties = {
-                "mail.smtp.host=localhost",
-                "mail.smtp.port=5555",
-                "mail.smtp.sendpartial=true",
-                "mail.debug=true"
-        })
-@WebServlet
-public final class MailServlet extends HttpServlet {
-
+/**
+ *
+ * @author <a href="mailto:fjuma@redhat.com">Farah Juma</a>
+ */
+@ApplicationScoped
+@FacesConfig(version = FacesConfig.Version.JSF_2_3)
+public class DummyBean {
 
 }
