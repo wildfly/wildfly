@@ -74,9 +74,14 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-web-common</artifactId>
         </dependency>
+        <!-- TODO Check if this one is still needed by the end. -->
         <dependency>
             <groupId>org.wildfly.security.elytron-web</groupId>
             <artifactId>undertow-server</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.security.elytron-web</groupId>
+            <artifactId>undertow-server-servlet</artifactId>
         </dependency>
         <dependency>
             <groupId>io.undertow</groupId>
