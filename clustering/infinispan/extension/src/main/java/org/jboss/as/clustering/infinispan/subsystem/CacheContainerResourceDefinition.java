@@ -231,8 +231,6 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
         ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
 
         if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
-            builder.discardChildResource(NoTransportResourceDefinition.PATH);
-
             for (ThreadPoolResourceDefinition pool : EnumSet.complementOf(EnumSet.of(ThreadPoolResourceDefinition.CLIENT))) {
                 builder.addChildResource(pool.getPathElement(), pool.getDiscardPolicy());
             }
@@ -240,8 +238,6 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
                 builder.addChildResource(pool.getPathElement(), pool.getDiscardPolicy());
             }
         } else {
-            NoTransportResourceDefinition.buildTransformation(version, builder);
-
             for (ThreadPoolResourceDefinition pool : EnumSet.complementOf(EnumSet.of(ThreadPoolResourceDefinition.CLIENT))) {
                 pool.buildTransformation(version, parent);
             }
@@ -284,6 +280,7 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
             builder.addRawOperationTransformationOverride(ListOperations.LIST_REMOVE_DEFINITION.getName(), new SimpleOperationTransformer(removeAliasTransformer));
         }
 
+        NoTransportResourceDefinition.buildTransformation(version, builder);
         JGroupsTransportResourceDefinition.buildTransformation(version, builder);
 
         ScatteredCacheResourceDefinition.buildTransformation(version, builder);

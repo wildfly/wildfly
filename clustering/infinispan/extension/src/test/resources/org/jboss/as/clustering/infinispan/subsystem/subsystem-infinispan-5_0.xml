@@ -33,9 +33,7 @@
                               queue-length="22"
                               max-threads="23"
                               keepalive-time="24"/>
-        <persistence-thread-pool min-threads="31"
-                                 queue-length="32"
-                                 max-threads="33"
+        <persistence-thread-pool max-threads="33"
                                  keepalive-time="34"/>
         <remote-command-thread-pool min-threads="51"
                                     queue-length="52"

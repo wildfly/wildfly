@@ -105,9 +105,8 @@
                                     <artifactItems>
                                         <artifactItem>
                                             <groupId>org.infinispan.server</groupId>
-                                            <artifactId>infinispan-server</artifactId>
+                                            <artifactId>infinispan-server-build</artifactId>
                                             <version>${version.org.infinispan}</version>
-                                            <classifier>bin</classifier>
                                             <type>zip</type>
                                             <outputDirectory>${project.build.directory}</outputDirectory>
                                         </artifactItem>

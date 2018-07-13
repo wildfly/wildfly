@@ -22,16 +22,18 @@
 
 package org.wildfly.clustering.ejb.infinispan;
 
-import org.infinispan.filter.KeyFilter;
+import org.infinispan.metadata.Metadata;
+import org.infinispan.notifications.cachelistener.filter.CacheEventFilter;
+import org.infinispan.notifications.cachelistener.filter.EventType;
 
 /**
  * Filters a cache for entries specific to a particular bean.
  * @author Paul Ferraro
  */
-public class BeanGroupFilter implements KeyFilter<Object> {
+public class BeanGroupFilter implements CacheEventFilter<Object, Object> {
 
     @Override
-    public boolean accept(Object key) {
+    public boolean accept(Object key, Object oldValue, Metadata oldMetadata, Object newValue, Metadata newMetadata, EventType eventType) {
         return key instanceof BeanGroupKey;
     }
 }

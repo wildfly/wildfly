@@ -47,6 +47,7 @@ import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemResourceDefinit
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeParser;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.Element;
 import org.jboss.as.controller.parsing.ParseUtils;
@@ -237,7 +238,11 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 }
                 case PERSISTENCE_THREAD_POOL: {
                     if (this.schema.since(InfinispanSchema.VERSION_4_0)) {
-                        this.parseThreadPool(ThreadPoolResourceDefinition.PERSISTENCE, reader, address, operations);
+                        if (this.schema.since(InfinispanSchema.VERSION_7_0)) {
+                            this.parseScheduledThreadPool(ThreadPoolResourceDefinition.PERSISTENCE, reader, address, operations);
+                        } else {
+                            this.parseThreadPool(ThreadPoolResourceDefinition.PERSISTENCE, reader, address, operations);
+                        }
                         break;
                     }
                 }
@@ -1301,7 +1306,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
 
     private void parseHotRodStore(XMLExtendedStreamReader reader, PathAddress cacheAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
         PathAddress address = cacheAddress.append(HotRodStoreResourceDefinition.PATH);
-        PathAddress operationKey = cacheAddress.append(HotRodStoreResourceDefinition.WILDCARD_PATH);
+        PathAddress operationKey = cacheAddress.append(StoreResourceDefinition.WILDCARD_PATH);
         if (operations.containsKey(operationKey)) {
             throw ParseUtils.unexpectedElement(reader);
         }
@@ -1740,7 +1745,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
         ParseUtils.requireNoContent(reader);
     }
 
-    private void parseThreadPool(ThreadPoolResourceDefinition pool, XMLExtendedStreamReader reader, PathAddress parentAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
+    private <P extends ThreadPoolDefinition & ResourceDefinition> void parseThreadPool(P pool, XMLExtendedStreamReader reader, PathAddress parentAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
         PathAddress address = parentAddress.append(pool.getPathElement());
         ModelNode operation = Util.createAddOperation(address);
         operations.put(address, operation);
@@ -1749,7 +1754,9 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case MIN_THREADS: {
-                    readAttribute(reader, i, operation, pool.getMinThreads());
+                    if (pool.getMinThreads() != null) {
+                        readAttribute(reader, i, operation, pool.getMinThreads());
+                    }
                     break;
                 }
                 case MAX_THREADS: {
@@ -1757,7 +1764,9 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     break;
                 }
                 case QUEUE_LENGTH: {
-                    readAttribute(reader, i, operation, pool.getQueueLength());
+                    if (pool.getQueueLength() != null) {
+                        readAttribute(reader, i, operation, pool.getQueueLength());
+                    }
                     break;
                 }
                 case KEEPALIVE_TIME: {
@@ -1773,7 +1782,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
         ParseUtils.requireNoContent(reader);
     }
 
-    private void parseScheduledThreadPool(ScheduledThreadPoolResourceDefinition pool, XMLExtendedStreamReader reader, PathAddress parentAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
+    private <P extends ScheduledThreadPoolDefinition & ResourceDefinition> void parseScheduledThreadPool(P pool, XMLExtendedStreamReader reader, PathAddress parentAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
         PathAddress address = parentAddress.append(pool.getPathElement());
         ModelNode operation = Util.createAddOperation(address);
         operations.put(address, operation);

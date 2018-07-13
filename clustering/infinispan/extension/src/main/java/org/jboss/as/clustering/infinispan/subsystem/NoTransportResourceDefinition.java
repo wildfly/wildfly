@@ -35,7 +35,9 @@ public class NoTransportResourceDefinition extends TransportResourceDefinition {
     static final PathElement PATH = pathElement("none");
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        // Nothing to transform
+        if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
+            parent.discardChildResource(NoTransportResourceDefinition.PATH);
+        }
     }
 
     NoTransportResourceDefinition() {

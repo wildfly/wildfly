@@ -79,7 +79,7 @@ public class InfinispanBeanGroupFactory<I, T> implements BeanGroupFactory<I, T> 
         this.factory = factory;
         this.context = context;
         this.passivationListener = !properties.isPersistent() ? passivation.getPassivationListener() : null;
-        this.cache.addListener(this, new BeanGroupFilter());
+        this.cache.addListener(this, new BeanGroupFilter(), null);
     }
 
     @Override

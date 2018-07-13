@@ -37,7 +37,7 @@ public class ConsistentHashLocality implements Locality {
     private final LocalizedCacheTopology topology;
 
     public ConsistentHashLocality(Cache<?, ?> cache, ConsistentHash hash) {
-        this.topology = new LocalizedCacheTopology(cache.getCacheConfiguration().clustering().cacheMode(), new CacheTopology(0, 0, hash, null, CacheTopology.Phase.NO_REBALANCE, Collections.emptyList(), Collections.emptyList()), cache.getCacheConfiguration().clustering().hash().keyPartitioner(), cache.getCacheManager().getAddress());
+        this.topology = new LocalizedCacheTopology(cache.getCacheConfiguration().clustering().cacheMode(), new CacheTopology(0, 0, hash, null, CacheTopology.Phase.NO_REBALANCE, Collections.emptyList(), Collections.emptyList()), cache.getCacheConfiguration().clustering().hash().keyPartitioner(), cache.getCacheManager().getAddress(), true);
     }
 
     public ConsistentHashLocality(LocalizedCacheTopology topology) {

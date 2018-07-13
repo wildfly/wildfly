@@ -113,7 +113,7 @@ public class InfinispanBeanManagerFactoryServiceConfiguratorFactory<I> implement
             if (strategy.isEnabled()) {
                 // Only evict bean group entries
                 // We will cascade eviction to the associated beans
-                builder.dataContainer().dataContainer(new EvictableDataContainer<>(size, BeanGroupKey.class::isInstance));
+                builder.dataContainer().dataContainer(EvictableDataContainer.createDataContainer(builder, size, BeanGroupKey.class::isInstance));
             }
         };
 

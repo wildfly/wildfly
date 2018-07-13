@@ -24,7 +24,12 @@ package org.wildfly.clustering.infinispan.spi;
 
 import java.util.function.Predicate;
 
-import org.infinispan.container.DefaultDataContainer;
+import org.infinispan.commons.util.EntrySizeCalculator;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.container.DataContainer;
+import org.infinispan.container.entries.InternalCacheEntry;
+import org.infinispan.container.impl.BoundedSegmentedDataContainer;
+import org.infinispan.container.impl.DefaultDataContainer;
 
 /**
  * Custom {@link DataContainer} considers only specific cache entries for eviction.
@@ -32,7 +37,12 @@ import org.infinispan.container.DefaultDataContainer;
  */
 public class EvictableDataContainer<K, V> extends DefaultDataContainer<K, V> {
 
-    public EvictableDataContainer(long size, Predicate<K> evictable) {
-        super(size, (key, entry) -> evictable.test(key) ? 1 : 0);
+    protected EvictableDataContainer(long size, EntrySizeCalculator<? super K, ? super InternalCacheEntry<K, V>> calculator) {
+        super(size, calculator);
+    }
+
+    public static <K, V> DataContainer<K, V> createDataContainer(ConfigurationBuilder builder, long size, Predicate<K> evictable) {
+        EntrySizeCalculator<? super K, ? super InternalCacheEntry<K, V>> calculator = (key, entry) -> evictable.test(key) ? 1 : 0;
+        return builder.clustering().cacheMode().needsStateTransfer() ? new BoundedSegmentedDataContainer<>(builder.clustering().hash().create().numSegments(), size, calculator) : new EvictableDataContainer<>(size, calculator);
     }
 }
