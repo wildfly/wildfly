@@ -28,11 +28,13 @@ import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.NamingContext;
 import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.context.external.ExternalContexts;
+import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.naming.logging.NamingLogger;
 import org.jboss.msc.inject.InjectionException;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceName;
 
 import javax.naming.NamingException;
@@ -296,8 +298,12 @@ public class ContextNames {
             final ExternalContexts externalContexts = deploymentUnit.getAttachment(Attachments.EXTERNAL_CONTEXTS);
             final ServiceName parentExternalContextServiceName = externalContexts != null ? externalContexts.getParentExternalContext(getBinderServiceName()) : null;
             final ServiceName dependencyServiceName = parentExternalContextServiceName == null ? getBinderServiceName() : parentExternalContextServiceName;
-            final ServiceBuilder.DependencyType dependencyType = optional ? ServiceBuilder.DependencyType.OPTIONAL : ServiceBuilder.DependencyType.REQUIRED;
-            serviceBuilder.addDependency(dependencyType, dependencyServiceName);
+            final ServiceContainer container = CurrentServiceContainer.getServiceContainer();
+            if (optional) {
+                if (container.getService(dependencyServiceName) != null) serviceBuilder.addDependency(dependencyServiceName);
+            } else {
+                serviceBuilder.addDependency(dependencyServiceName);
+            }
 
             // an injector which upon being injected with the naming store, injects a factory - which does the lookup - to the
             // target injector
