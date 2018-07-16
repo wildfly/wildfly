@@ -26,6 +26,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -92,7 +93,7 @@ public class SessionObjectReferenceTestCase {
     @Test
     public void testEcho() throws Exception {
         String result = performCall("simple", "Hello+world");
-        XMLDecoder decoder = new XMLDecoder(new ByteArrayInputStream(result.getBytes()));
+        XMLDecoder decoder = new XMLDecoder(new ByteArrayInputStream(result.getBytes(StandardCharsets.UTF_8)));
         List<String> results = (List<String>) decoder.readObject();
         List<Exception> exceptions = (List<Exception>) decoder.readObject();
         String sharedContext = (String) decoder.readObject();

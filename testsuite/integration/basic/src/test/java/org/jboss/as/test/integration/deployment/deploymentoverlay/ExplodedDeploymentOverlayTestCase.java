@@ -22,6 +22,8 @@ package org.jboss.as.test.integration.deployment.deploymentoverlay;
 
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -105,7 +107,7 @@ public class ExplodedDeploymentOverlayTestCase {
         op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
         op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
         op.get(ModelDescriptionConstants.CONTENT).get(ModelDescriptionConstants.BYTES).set(
-                FileUtils.readFile(ExplodedDeploymentOverlayTestCase.class, "wildcard-override.xml").getBytes());
+                FileUtils.readFile(ExplodedDeploymentOverlayTestCase.class, "wildcard-override.xml").getBytes(StandardCharsets.UTF_8));
         ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
 
         op = new ModelNode();

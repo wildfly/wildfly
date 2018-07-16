@@ -42,6 +42,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -92,7 +93,7 @@ public class JdrRunner implements JdrReportCollector {
         List<JdrCommand> commands = new ArrayList<JdrCommand>();
 
         ByteArrayOutputStream versionStream = new ByteArrayOutputStream();
-        PrintWriter versionWriter = new PrintWriter(new OutputStreamWriter(versionStream));
+        PrintWriter versionWriter = new PrintWriter(new OutputStreamWriter(versionStream, StandardCharsets.UTF_8));
         versionWriter.println("JDR: " + Namespace.CURRENT.getUriString());
 
         try {

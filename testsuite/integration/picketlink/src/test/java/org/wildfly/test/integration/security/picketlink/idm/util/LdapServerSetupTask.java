@@ -52,6 +52,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -114,11 +115,11 @@ public class LdapServerSetupTask implements ServerSetupTask {
         final Map<String, String> map = new HashMap<String, String>();
         map.put("hostname", NetworkUtils.formatPossibleIpv6Address(hostname));
         directoryService = DSAnnotationProcessor.getDirectoryService();
-        final String ldifContent = StrSubstitutor.replace(IOUtils.toString(LdapServerSetupTask.class.getResourceAsStream("picketlink-idm-tests.ldif"), "UTF-8"), map);
+        final String ldifContent = StrSubstitutor.replace(IOUtils.toString(LdapServerSetupTask.class.getResourceAsStream("picketlink-idm-tests.ldif"), StandardCharsets.UTF_8), map);
 
         final SchemaManager schemaManager = directoryService.getSchemaManager();
         try {
-            for (LdifEntry ldifEntry : new LdifReader(IOUtils.toInputStream(ldifContent))) {
+            for (LdifEntry ldifEntry : new LdifReader(IOUtils.toInputStream(ldifContent, StandardCharsets.UTF_8))) {
                 directoryService.getAdminSession().add(new DefaultEntry(schemaManager, ldifEntry.getEntry()));
             }
         } catch (Exception e) {

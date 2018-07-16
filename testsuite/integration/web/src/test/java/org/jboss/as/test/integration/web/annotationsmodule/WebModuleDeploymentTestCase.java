@@ -47,15 +47,14 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.xnio.IoUtils;
 
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.Files;
 
 import static org.junit.Assert.assertEquals;
 
@@ -136,16 +135,7 @@ public class WebModuleDeploymentTestCase {
     }
 
     private static void copyFile(File target, InputStream src) throws IOException {
-        final BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(target));
-        try {
-            int i = src.read();
-            while (i != -1) {
-                out.write(i);
-                i = src.read();
-            }
-        } finally {
-            IoUtils.safeClose(out);
-        }
+        Files.copy(src, target.toPath());
     }
 
     private static File getModulePath() {

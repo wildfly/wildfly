@@ -5,11 +5,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
@@ -29,7 +29,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.xnio.IoUtils;
 
 /**
  * @author <a href="mailto:hsvabek@redhat.com">Hynek Svabek</a>
@@ -222,17 +221,7 @@ public abstract class AbstractTestsuite {
     }
 
     protected static void copyModuleFile(File target, InputStream src) throws IOException {
-        final BufferedOutputStream out = new BufferedOutputStream(
-                new FileOutputStream(target));
-        try {
-            int i = src.read();
-            while (i != -1) {
-                out.write(i);
-                i = src.read();
-            }
-        } finally {
-            IoUtils.safeClose(out);
-        }
+        Files.copy(src, target.toPath(), StandardCopyOption.REPLACE_EXISTING);
     }
 
     protected <T> T lookup(final Class<T> remoteClass, final Class<?> beanClass, final String archiveName) throws NamingException {

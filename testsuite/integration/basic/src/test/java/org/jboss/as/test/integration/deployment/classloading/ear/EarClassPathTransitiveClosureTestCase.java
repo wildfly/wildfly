@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.deployment.classloading.ear;
 
+import java.nio.charset.StandardCharsets;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
@@ -47,15 +49,15 @@ public class EarClassPathTransitiveClosureTestCase {
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class);
         ear.addAsModule(war);
         JavaArchive earLib = ShrinkWrap.create(JavaArchive.class, "earLib.jar");
-        earLib.addAsManifestResource(new ByteArrayAsset("Class-Path: ../cp1.jar\n".getBytes()), "MANIFEST.MF");
+        earLib.addAsManifestResource(new ByteArrayAsset("Class-Path: ../cp1.jar\n".getBytes(StandardCharsets.UTF_8)), "MANIFEST.MF");
         ear.addAsLibraries(earLib);
 
         earLib = ShrinkWrap.create(JavaArchive.class, "cp1.jar");
-        earLib.addAsManifestResource(new ByteArrayAsset("Class-Path: cp2.jar\n".getBytes()), "MANIFEST.MF");
+        earLib.addAsManifestResource(new ByteArrayAsset("Class-Path: cp2.jar\n".getBytes(StandardCharsets.UTF_8)), "MANIFEST.MF");
         ear.addAsModule(earLib);
 
         earLib = ShrinkWrap.create(JavaArchive.class, "cp2.jar");
-        earLib.addAsManifestResource(new ByteArrayAsset("Class-Path: a/b/c\n".getBytes()), "MANIFEST.MF");
+        earLib.addAsManifestResource(new ByteArrayAsset("Class-Path: a/b/c\n".getBytes(StandardCharsets.UTF_8)), "MANIFEST.MF");
         earLib.addClass(TestBB.class);
         ear.addAsModule(earLib);
 

@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.security.PrivilegedActionException;
 import java.security.Security;
 import java.util.ArrayList;
@@ -145,7 +146,7 @@ public class AdvancedLdapLoginModuleTestCase {
         for (final String role : ROLE_NAMES) {
             qparams.add(new BasicNameValuePair(RolePrintingServlet.PARAM_ROLE_NAME, role));
         }
-        QUERY_ROLES = URLEncodedUtils.format(qparams, "UTF-8");
+        QUERY_ROLES = URLEncodedUtils.format(qparams, StandardCharsets.UTF_8);
     }
 
     @ArquillianResource
@@ -411,11 +412,11 @@ public class AdvancedLdapLoginModuleTestCase {
             final String ldifContent = StrSubstitutor.replace(
                     IOUtils.toString(
                             AdvancedLdapLoginModuleTestCase.class.getResourceAsStream(AdvancedLdapLoginModuleTestCase.class
-                                    .getSimpleName() + ".ldif"), "UTF-8"), map);
+                                    .getSimpleName() + ".ldif"), StandardCharsets.UTF_8), map);
             LOGGER.trace(ldifContent);
             final SchemaManager schemaManager = directoryService.getSchemaManager();
             try {
-                for (LdifEntry ldifEntry : new LdifReader(IOUtils.toInputStream(ldifContent))) {
+                for (LdifEntry ldifEntry : new LdifReader(IOUtils.toInputStream(ldifContent, StandardCharsets.UTF_8))) {
                     directoryService.getAdminSession().add(new DefaultEntry(schemaManager, ldifEntry.getEntry()));
                 }
             } catch (Exception e) {

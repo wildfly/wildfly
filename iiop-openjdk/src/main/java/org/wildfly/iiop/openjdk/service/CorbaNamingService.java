@@ -22,6 +22,7 @@
 
 package org.wildfly.iiop.openjdk.service;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 import org.jboss.msc.inject.Injector;
@@ -85,7 +86,7 @@ public class CorbaNamingService implements Service<NamingContextExt> {
             ns.init(namingPOA, false, false);
 
             // create and activate the root context.
-            byte[] rootContextId = "root".getBytes();
+            byte[] rootContextId = "root".getBytes(StandardCharsets.UTF_8);
             namingPOA.activate_object_with_id(rootContextId, ns);
             namingService = NamingContextExtHelper.narrow(namingPOA.create_reference_with_id(rootContextId,
                     "IDL:omg.org/CosNaming/NamingContextExt:1.0"));

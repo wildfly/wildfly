@@ -29,20 +29,19 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -63,7 +62,6 @@ import org.jboss.shrinkwrap.api.exporter.ExplodedExporter;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
-import org.xnio.IoUtils;
 
 /**
  * AS7-5768 -Support for RA module deployment
@@ -141,28 +139,19 @@ public abstract class AbstractModuleDeploymentTestCaseSetup extends AbstractMgmt
     }
 
     protected void copyFile(File target, InputStream src) throws IOException {
-        final BufferedOutputStream out = new BufferedOutputStream(
-                new FileOutputStream(target));
-        try {
-            int i = src.read();
-            while (i != -1) {
-                out.write(i);
-                i = src.read();
-            }
-        } finally {
-            IoUtils.safeClose(out);
-        }
+        Files.copy(src, target.toPath());
     }
 
     protected void copyModuleXml(File slot, InputStream src) throws IOException {
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(src));
-             PrintWriter out = new PrintWriter(new File(slot, "module.xml"))) {
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(src, StandardCharsets.UTF_8))) {
             String line;
+            List<String> lines = new ArrayList<>();
             while ((line = in.readLine()) != null) {
                 // replace slot name in the module xml file
                 line = MODULE_SLOT_PATTERN.matcher(line).replaceAll("slot=\"" + getSlot() + "\"");
-                out.println(line);
+                lines.add(line);
             }
+            Files.write(slot.toPath().resolve("module.xml"), lines, StandardCharsets.UTF_8);
         }
     }
 

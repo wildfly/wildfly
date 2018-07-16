@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -50,7 +51,7 @@ public class HttpUtil {
         final Map<String, String> headers;
         if (username != null) {
             final String userpassword = username + ":" + password;
-            final String basicAuthorization = java.util.Base64.getEncoder().encodeToString(userpassword.getBytes());
+            final String basicAuthorization = java.util.Base64.getEncoder().encodeToString(userpassword.getBytes(StandardCharsets.UTF_8));
             headers = Collections.singletonMap("Authorization", "Basic " + basicAuthorization);
         } else {
             headers = Collections.emptyMap();

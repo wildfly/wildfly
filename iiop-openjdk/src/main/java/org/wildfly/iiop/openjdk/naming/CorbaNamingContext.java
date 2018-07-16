@@ -25,6 +25,7 @@ package org.wildfly.iiop.openjdk.naming;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
@@ -324,11 +325,11 @@ public class CorbaNamingContext extends NamingContextExtPOA implements Serializa
             CorbaNamingContext newContextImpl = new CorbaNamingContext();
             newContextImpl.init(this.poa, this.doPurge, this.noPing);
             // create the oid for the new context and activate it with the naming service POA.
-            String oid = new String(this.poa.servant_to_id(this)) + "/ctx" + (++this.childCount);
-            this.poa.activate_object_with_id(oid.getBytes(), newContextImpl);
+            String oid = new String(this.poa.servant_to_id(this), StandardCharsets.UTF_8) + "/ctx" + (++this.childCount);
+            this.poa.activate_object_with_id(oid.getBytes(StandardCharsets.UTF_8), newContextImpl);
             // add the newly-created context to the cache.
             contextImpls.put(oid, newContextImpl);
-            return NamingContextExtHelper.narrow(this.poa.create_reference_with_id(oid.getBytes(),
+            return NamingContextExtHelper.narrow(this.poa.create_reference_with_id(oid.getBytes(StandardCharsets.UTF_8),
                     "IDL:omg.org/CosNaming/NamingContextExt:1.0"));
         } catch (Exception e) {
             IIOPLogger.ROOT_LOGGER.failedToCreateNamingContext(e);
@@ -566,7 +567,7 @@ public class CorbaNamingContext extends NamingContextExtPOA implements Serializa
         try {
             byte[] oidBytes = this.poa.reference_to_id(object);
             if (oidBytes != null)
-                oid = new String(oidBytes);
+                oid = new String(oidBytes, StandardCharsets.UTF_8);
         } catch (Exception e) {
             IIOPLogger.ROOT_LOGGER.debug("Unable to obtain id from object", e);
         }

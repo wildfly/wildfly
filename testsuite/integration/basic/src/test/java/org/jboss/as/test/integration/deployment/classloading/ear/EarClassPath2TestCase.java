@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.deployment.classloading.ear;
 
+import java.nio.charset.StandardCharsets;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
@@ -40,7 +42,7 @@ public class EarClassPath2TestCase {
         WebArchive war = ShrinkWrap.create(WebArchive.class);
         JavaArchive libJar = ShrinkWrap.create(JavaArchive.class);
         libJar.addClasses(TestAA.class, EarClassPath2TestCase.class);
-        libJar.addAsManifestResource(new ByteArrayAsset("Class-Path: ../../../cp.jar\n".getBytes()), "MANIFEST.MF");
+        libJar.addAsManifestResource(new ByteArrayAsset("Class-Path: ../../../cp.jar\n".getBytes(StandardCharsets.UTF_8)), "MANIFEST.MF");
         war.addAsLibraries(libJar);
 
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class);

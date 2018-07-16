@@ -22,6 +22,7 @@
 package org.jboss.as.test.integration.web.security.websocket;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -71,7 +72,7 @@ public class AnnotatedClient {
         public void beforeRequest(Map<String, List<String>> headers) {
             String credentials = user + ":" + password;
             headers.put("AUTHORIZATION", Collections.singletonList("Basic " + FlexBase64.encodeString(credentials
-                    .getBytes(), false)));
+                    .getBytes(StandardCharsets.UTF_8), false)));
         }
     }
 }

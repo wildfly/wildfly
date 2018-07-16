@@ -1,6 +1,7 @@
 package org.jboss.as.test.integration.deployment.deploymentoverlay;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -50,7 +51,7 @@ public class DeploymentOverlayTestCase {
             op = new ModelNode();
             op.get(ModelDescriptionConstants.OP_ADDR).set(new ModelNode());
             op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.UPLOAD_DEPLOYMENT_BYTES);
-            op.get(ModelDescriptionConstants.BYTES).set(FileUtils.readFile(DeploymentOverlayTestCase.class, "override.xml").getBytes());
+            op.get(ModelDescriptionConstants.BYTES).set(FileUtils.readFile(DeploymentOverlayTestCase.class, "override.xml").getBytes(StandardCharsets.UTF_8));
             ModelNode result = ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
 
             //add the content
@@ -84,7 +85,7 @@ public class DeploymentOverlayTestCase {
             addr.add(ModelDescriptionConstants.CONTENT, "WEB-INF/web.xml");
             op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
             op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
-            op.get(ModelDescriptionConstants.CONTENT).get(ModelDescriptionConstants.BYTES).set(FileUtils.readFile(DeploymentOverlayTestCase.class, "wildcard-override.xml").getBytes());
+            op.get(ModelDescriptionConstants.CONTENT).get(ModelDescriptionConstants.BYTES).set(FileUtils.readFile(DeploymentOverlayTestCase.class, "wildcard-override.xml").getBytes(StandardCharsets.UTF_8));
             ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
 
             op = new ModelNode();

@@ -34,6 +34,7 @@ import org.junit.runner.RunWith;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 
 
 /**
@@ -67,7 +68,7 @@ public class InvalidTransactionAttributeTestCase {
             deployer.deploy("invalidtransactionattribute");
             try {
                 System.setOut(oldOut);
-                String output = new String(baos.toByteArray());
+                String output = new String(baos.toByteArray(), StandardCharsets.UTF_8);
                 Assert.assertFalse(output, output.contains("WFLYEJB0463"));
                 Assert.assertFalse(output, output.contains("ERROR"));
             } finally {

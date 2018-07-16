@@ -22,13 +22,10 @@
 
 package org.jboss.as.test.integration.domain;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.Closeable;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -79,68 +76,57 @@ public abstract class BuildConfigurationTestBase {
 
     private static File hackFixHostConfig(File hostConfigFile, String hostName, String hostAddress) {
         final Path file;
-        final BufferedWriter writer;
         try {
             file = Files.createTempFile(hostConfigFile.toPath().getParent(),"host", ".xml");
-            writer = Files.newBufferedWriter(file);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(hostConfigFile));
-            try {
-                String line = reader.readLine();
-                boolean processedOpt = false;
-                while (line != null) {
-                    int start = line.indexOf("<host");
-                    if (start >= 0 && !line.contains(" name=")) {
+        try (BufferedWriter writer = Files.newBufferedWriter(file, StandardCharsets.UTF_8)){
+            List<String> lines = Files.readAllLines(hostConfigFile.toPath(), StandardCharsets.UTF_8);
+            boolean processedOpt = false;
+            for (String line : lines) {
+                int start = line.indexOf("<host");
+                if (start >= 0 && !line.contains(" name=")) {
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("<host name=\"");
+                    sb.append(hostName);
+                    sb.append('"');
+                    sb.append(line.substring(start + 5));
+                    writer.write(sb.toString());
+                } else {
+                    start = line.indexOf("<inet-address value=\"");
+                    if (start >= 0) {
                         StringBuilder sb = new StringBuilder();
-                        sb.append("<host name=\"");
-                        sb.append(hostName);
-                        sb.append('"');
-                        sb.append(line.substring(start + 5));
+                        sb.append(line.substring(0, start))
+                            .append("<inet-address value=\"")
+                            .append(hostAddress)
+                            .append("\"/>");
                         writer.write(sb.toString());
                     } else {
-                        start = line.indexOf("<inet-address value=\"");
-                        if (start >= 0) {
+                        start = line.indexOf("<option value=\"");
+                        if (start >= 0 && !processedOpt) {
                             StringBuilder sb = new StringBuilder();
-                            sb.append(line.substring(0, start))
-                                    .append("<inet-address value=\"")
-                                    .append(hostAddress)
-                                    .append("\"/>");
-                            writer.write(sb.toString());
-                        } else {
-                            start = line.indexOf("<option value=\"");
-                            if (start >= 0 && !processedOpt) {
-                                StringBuilder sb = new StringBuilder();
-                                sb.append(line.substring(0, start));
-                                List<String> opts = new ArrayList<String>();
-                                TestSuiteEnvironment.getIpv6Args(opts);
-                                for (String opt : opts) {
-                                    sb.append("<option value=\"")
-                                            .append(opt)
-                                            .append("\"/>");
-                                }
-
-                                writer.write(sb.toString());
-                                processedOpt = true;
-                            } else if (!line.contains("java.net.")) {
-                                writer.write(line);
+                            sb.append(line.substring(0, start));
+                            List<String> opts = new ArrayList<String>();
+                            TestSuiteEnvironment.getIpv6Args(opts);
+                            for (String opt : opts) {
+                                sb.append("<option value=\"")
+                                        .append(opt)
+                                        .append("\"/>");
                             }
+
+                            writer.write(sb.toString());
+                            processedOpt = true;
+                        } else if (!line.contains("java.net.")) {
+                            writer.write(line);
                         }
                     }
                     writer.write("\n");
-                    line = reader.readLine();
                 }
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
-            } finally {
-                safeClose(reader);
-                safeClose(writer);
         }
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-    }
         return file.toFile();
     }
 
@@ -150,14 +136,12 @@ public abstract class BuildConfigurationTestBase {
         try {
             file = File.createTempFile("domain", ".xml", domainConfigFile.getAbsoluteFile().getParentFile());
             file.deleteOnExit();
-
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        try (BufferedReader reader = new BufferedReader(new FileReader(domainConfigFile));
-                BufferedWriter writer = Files.newBufferedWriter(file.toPath())) {
-            String line = reader.readLine();
-            while (line != null) {
+        try (BufferedWriter writer = Files.newBufferedWriter(file.toPath(), StandardCharsets.UTF_8)) {
+            List<String> lines = Files.readAllLines(domainConfigFile.toPath(), StandardCharsets.UTF_8);
+            for (String line : lines) {
                 if (line.contains("<security-setting name=\"#\">")) { //super duper hackish, just IO optimization
                     writer.write("        <journal type=\"NIO\" file-size=\"1024\" />");
                     writer.newLine();
@@ -168,18 +152,10 @@ public abstract class BuildConfigurationTestBase {
                     writer.write(line);
                 }
                 writer.newLine();
-                line = reader.readLine();
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
         return file;
-    }
-
-    static void safeClose(Closeable c) {
-        try {
-            c.close();
-        } catch (Exception ignore) {
-        }
     }
 }

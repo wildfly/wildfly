@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
 import org.jboss.as.test.integration.deployment.deploymentoverlay.jar.JarOverlayTestBase;
 import org.jboss.as.test.integration.deployment.deploymentoverlay.jar.OverlayableInterface;
@@ -65,7 +66,7 @@ public class WarOverlayTestBase extends JarOverlayTestBase{
             int httpCode = conn.getResponseCode();
             if (httpCode == 200) {
                 try (InputStream input = conn.getInputStream();
-                     InputStreamReader inputReader = new InputStreamReader(input);
+                     InputStreamReader inputReader = new InputStreamReader(input, StandardCharsets.UTF_8);
                      BufferedReader reader = new BufferedReader(inputReader)) {
                     return reader.readLine();
                 }

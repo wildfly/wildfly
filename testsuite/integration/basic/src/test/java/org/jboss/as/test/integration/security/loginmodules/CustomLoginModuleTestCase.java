@@ -36,6 +36,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -51,7 +52,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -190,7 +190,7 @@ public class CustomLoginModuleTestCase {
             nvps.add(new BasicNameValuePair("j_username", user));
             nvps.add(new BasicNameValuePair("j_password", pass));
 
-            httpost.setEntity(new UrlEncodedFormEntity(nvps, HTTP.UTF_8));
+            httpost.setEntity(new UrlEncodedFormEntity(nvps, StandardCharsets.UTF_8));
 
             response = httpclient.execute(httpost);
             entity = response.getEntity();

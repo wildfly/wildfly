@@ -22,6 +22,7 @@
 package org.jboss.as.test.integration.management.deploy.runtime.servlet;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -42,6 +43,6 @@ public class Servlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.getOutputStream().write(SUCCESS.getBytes());
+        resp.getOutputStream().write(SUCCESS.getBytes(StandardCharsets.UTF_8));
     }
 }

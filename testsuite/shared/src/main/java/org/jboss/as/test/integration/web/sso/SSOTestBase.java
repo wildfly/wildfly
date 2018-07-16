@@ -30,6 +30,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -248,7 +249,7 @@ public abstract class SSOTestBase {
         List<NameValuePair> formparams = new ArrayList<>();
         formparams.add(new BasicNameValuePair("j_username", "user1"));
         formparams.add(new BasicNameValuePair("j_password", "password1"));
-        formPost.setEntity(new UrlEncodedFormEntity(formparams, "UTF-8"));
+        formPost.setEntity(new UrlEncodedFormEntity(formparams, StandardCharsets.UTF_8));
 
         HttpResponse postResponse = httpConn.execute(formPost);
         try {

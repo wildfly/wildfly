@@ -7,6 +7,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +41,7 @@ public final class Utils {
     }
 
     public static List<String> readLines(InputStream input) throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(input,StandardCharsets.UTF_8));
         List<String> result = new ArrayList<String>();
         String line = reader.readLine();
 
@@ -52,7 +53,7 @@ public final class Utils {
     }
 
     public static String toString(VirtualFile r) throws IOException {
-        return new String(toBytes(r));
+        return new String(toBytes(r), StandardCharsets.UTF_8);
     }
 
     public static byte[] toBytes(VirtualFile r) throws IOException {

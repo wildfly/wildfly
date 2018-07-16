@@ -22,10 +22,12 @@
 
 package org.wildfly.extension.clustering.singleton.deployment;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -78,7 +80,7 @@ public class SingletonDeploymentParsingProcessor implements DeploymentUnitProces
     }
 
     private SingletonDeploymentConfiguration parse(DeploymentUnit unit, File file) throws DeploymentUnitProcessingException {
-        try (FileReader reader = new FileReader(file)) {
+        try (BufferedReader reader = Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8)) {
             XMLStreamReader xmlReader = XML_INPUT_FACTORY.createXMLStreamReader(reader);
             try  {
                 MutableSingletonDeploymentConfiguration config = new MutableSingletonDeploymentConfiguration(unit);

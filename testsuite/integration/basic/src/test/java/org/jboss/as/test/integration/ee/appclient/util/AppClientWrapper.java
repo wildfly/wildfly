@@ -25,6 +25,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.Vector;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -49,7 +50,6 @@ public class AppClientWrapper implements Runnable {
     private static final String errThreadHame = "APPCLIENT-err";
 
     private Process appClientProcess;
-    private PrintWriter writer;
     private BufferedReader outputReader;
     private BufferedReader errorReader;
     private BlockingQueue<String> outputQueue = new LinkedBlockingQueue<String>();
@@ -150,9 +150,9 @@ public class AppClientWrapper implements Runnable {
         });
         Runtime.getRuntime().addShutdownHook(shutdownThread);
         appClientProcess = Runtime.getRuntime().exec(getAppClientCommand());
-        writer = new PrintWriter(appClientProcess.getOutputStream());
-        outputReader = new BufferedReader(new InputStreamReader(appClientProcess.getInputStream()));
-        errorReader = new BufferedReader(new InputStreamReader(appClientProcess.getErrorStream()));
+        new PrintWriter(appClientProcess.getOutputStream());
+        outputReader = new BufferedReader(new InputStreamReader(appClientProcess.getInputStream(), StandardCharsets.UTF_8));
+        errorReader = new BufferedReader(new InputStreamReader(appClientProcess.getErrorStream(), StandardCharsets.UTF_8));
 
         final Thread readOutputThread = new Thread(this, outThreadHame);
         readOutputThread.start();

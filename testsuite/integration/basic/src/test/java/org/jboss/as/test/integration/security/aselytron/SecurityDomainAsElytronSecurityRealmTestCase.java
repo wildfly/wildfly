@@ -23,6 +23,7 @@ package org.jboss.as.test.integration.security.aselytron;
 
 import java.io.File;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
@@ -261,10 +262,10 @@ public class SecurityDomainAsElytronSecurityRealmTestCase {
          */
         @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
-            FileUtils.writeStringToFile(FILE_USERS1, USERS1_CONTENT, "UTF-8");
-            FileUtils.writeStringToFile(FILE_ROLES1, ROLES1_CONTENT, "UTF-8");
-            FileUtils.writeStringToFile(FILE_USERS2, USERS2_CONTENT, "UTF-8");
-            FileUtils.writeStringToFile(FILE_ROLES2, ROLES2_CONTENT, "UTF-8");
+            FileUtils.writeStringToFile(FILE_USERS1, USERS1_CONTENT, StandardCharsets.UTF_8);
+            FileUtils.writeStringToFile(FILE_ROLES1, ROLES1_CONTENT, StandardCharsets.UTF_8);
+            FileUtils.writeStringToFile(FILE_USERS2, USERS2_CONTENT, StandardCharsets.UTF_8);
+            FileUtils.writeStringToFile(FILE_ROLES2, ROLES2_CONTENT, StandardCharsets.UTF_8);
         }
 
         /**

@@ -34,6 +34,7 @@ import javax.crypto.SecretKey;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -87,7 +88,7 @@ public class VaultToolTestCase extends VaultTest {
         Assert.assertEquals("Exit status is equal to 0", 0, e.status);
     }
     SYSTEM_OUT.flush();
-    String ouput = new String(SYSTEM_OUT.toByteArray());
+    String ouput = new String(SYSTEM_OUT.toByteArray(), StandardCharsets.UTF_8);
     String[] outputLines = ouput.split("\n");
 
     String vaultSharedKey = getStoredAttributeSharedKey(outputLines);

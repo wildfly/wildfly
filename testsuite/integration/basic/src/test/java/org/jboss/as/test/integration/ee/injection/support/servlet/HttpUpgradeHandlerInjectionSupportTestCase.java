@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
@@ -83,7 +84,7 @@ public class HttpUpgradeHandlerInjectionSupportTestCase extends InjectionSupport
         try {
 
             socket = new Socket(host, port);
-            out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+            out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));
 
             // Initial HTTP upgrade request
             out.write("GET /" + contextRoot + "TestUpgradeServlet HTTP/1.1" + CRLF);
@@ -94,7 +95,7 @@ public class HttpUpgradeHandlerInjectionSupportTestCase extends InjectionSupport
             out.flush();
 
             // Receive the protocol upgrade response
-            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            in = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
             String line = null;
             while ((line = in.readLine()) != null) {
                 if ("".equals(line)) {

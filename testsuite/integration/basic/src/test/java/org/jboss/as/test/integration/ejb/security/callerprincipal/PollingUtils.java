@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
@@ -129,7 +130,7 @@ public class PollingUtils {
                 conn.setDoInput(true);
                 if (request != null) {
                     conn.setDoOutput(true);
-                    osw = new OutputStreamWriter(conn.getOutputStream());
+                    osw = new OutputStreamWriter(conn.getOutputStream(), StandardCharsets.UTF_8);
                     osw.write(request);
                     osw.flush();
                 }

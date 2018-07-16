@@ -25,6 +25,8 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+
+import java.nio.charset.StandardCharsets;
 import java.security.AlgorithmParameters;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -120,7 +122,7 @@ public class DummyCipher implements DPCipher {
                 cipher = "decrypted";
                 break;
         }
-        return cipher.getBytes().clone();
+        return cipher.getBytes(StandardCharsets.UTF_8).clone();
     }
 
 }

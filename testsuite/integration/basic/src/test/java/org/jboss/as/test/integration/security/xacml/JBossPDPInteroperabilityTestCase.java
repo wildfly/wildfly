@@ -27,6 +27,7 @@ import static org.junit.Assert.assertNotNull;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -166,7 +167,7 @@ public class JBossPDPInteroperabilityTestCase {
         try {
             policyDir.mkdirs();
             final JBossPDP pdp = createPDPForMed(policyDir);
-            final String requestTemplate = IOUtils.toString(requestIS, "UTF-8");
+            final String requestTemplate = IOUtils.toString(requestIS, StandardCharsets.UTF_8);
             LOGGER.trace("REQUEST template: " + requestTemplate);
             final Map<String, Object> substitutionMap = new HashMap<String, Object>();
 
@@ -249,7 +250,7 @@ public class JBossPDPInteroperabilityTestCase {
      */
     private int getDecisionForStr(PolicyDecisionPoint pdp, String requestStr) throws Exception {
         final RequestContext request = RequestResponseContextFactory.createRequestCtx();
-        request.readRequest(IOUtils.toInputStream(requestStr));
+        request.readRequest(IOUtils.toInputStream(requestStr, StandardCharsets.UTF_8));
         return getDecision(pdp, request);
     }
 

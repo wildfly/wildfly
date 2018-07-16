@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -75,7 +76,7 @@ public class EESecurityAuthMechanismTestCase {
 
         httpResponse.getEntity().writeTo(bos);
 
-        assertTrue(new String(bos.toByteArray()).contains("Unsecured"));
+        assertTrue(new String(bos.toByteArray(), StandardCharsets.UTF_8).contains("Unsecured"));
     }
 
     @Test
@@ -90,7 +91,7 @@ public class EESecurityAuthMechanismTestCase {
 
         httpResponse.getEntity().writeTo(bos);
 
-        assertTrue(new String(bos.toByteArray()).contains("Welcome"));
+        assertTrue(new String(bos.toByteArray(), StandardCharsets.UTF_8).contains("Welcome"));
     }
 
     @Test
