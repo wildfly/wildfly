@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -78,8 +79,6 @@ import org.junit.runner.RunWith;
 @ServerSetup({AggregateRealmTestCase.SetupTask.class})
 public class AggregateRealmTestCase {
 
-    private static final String CHARSET_UTF_8 = "UTF-8";
-
     private static final String AGGREGATE_REALM_SAME_TYPE_NAME = "elytron-aggregate-realm-same-type";
     private static final String AGGREGATE_REALM_DIFFERENT_TYPE_NAME = "elytron-aggregate-realm-different-type";
 
@@ -107,7 +106,7 @@ public class AggregateRealmTestCase {
         for (final String role : ALL_TESTED_ROLES) {
             qparams.add(new BasicNameValuePair(RolePrintingServlet.PARAM_ROLE_NAME, role));
         }
-        QUERY_ROLES = URLEncodedUtils.format(qparams, "UTF-8");
+        QUERY_ROLES = URLEncodedUtils.format(qparams, StandardCharsets.UTF_8);
     }
 
     @Deployment(name = AGGREGATE_REALM_SAME_TYPE_NAME)
@@ -592,13 +591,13 @@ public class AggregateRealmTestCase {
             sb.append(createPropertiesUserWithHashedPassword(USER_WITH_TWO_ROLES, CORRECT_PASSWORD, PROPERTIES_REALM_AUTHN_NAME));
             sb.append(createPropertiesUserWithHashedPassword(USER_WITH_DIFFERENT_ROLE_IN_DIFFERENT_REALM, CORRECT_PASSWORD, PROPERTIES_REALM_AUTHN_NAME));
             sb.append(createPropertiesUserWithHashedPassword(USER_ONLY_IN_AUTHORIZATION, CORRECT_PASSWORD, PROPERTIES_REALM_AUTHN_NAME));
-            FileUtils.writeStringToFile(usersAuthnRealmFile, sb.toString(), CHARSET_UTF_8);
+            FileUtils.writeStringToFile(usersAuthnRealmFile, sb.toString(), StandardCharsets.UTF_8);
         }
 
         private void createRolesProperties_authnRealm() throws IOException {
             StringBuilder sb = new StringBuilder();
             sb.append(USER_WITH_DIFFERENT_ROLE_IN_DIFFERENT_REALM + "=" + ROLE_USER + "\n");
-            FileUtils.writeStringToFile(rolesAuthnRealmFile, sb.toString(), CHARSET_UTF_8);
+            FileUtils.writeStringToFile(rolesAuthnRealmFile, sb.toString(), StandardCharsets.UTF_8);
         }
 
         private void createUsersProperties_authzRealm() throws IOException {
@@ -608,7 +607,7 @@ public class AggregateRealmTestCase {
             sb.append(createPropertiesUserWithHashedPassword(USER_WITH_ONE_ROLE, AUTHORIZATION_REALM_PASSWORD, PROPERTIES_REALM_AUTHZ_NAME));
             sb.append(createPropertiesUserWithHashedPassword(USER_WITH_TWO_ROLES, AUTHORIZATION_REALM_PASSWORD, PROPERTIES_REALM_AUTHZ_NAME));
             sb.append(createPropertiesUserWithHashedPassword(USER_WITH_DIFFERENT_ROLE_IN_DIFFERENT_REALM, AUTHORIZATION_REALM_PASSWORD, PROPERTIES_REALM_AUTHZ_NAME));
-            FileUtils.writeStringToFile(usersAuthzRealmFile, sb.toString(), CHARSET_UTF_8);
+            FileUtils.writeStringToFile(usersAuthzRealmFile, sb.toString(), StandardCharsets.UTF_8);
         }
 
         private void createRolesProperties_authzRealm() throws IOException {
@@ -617,7 +616,7 @@ public class AggregateRealmTestCase {
             sb.append(USER_WITH_TWO_ROLES + "=" + ROLE_USER + "," + ROLE_ADMIN + "\n");
             sb.append(USER_WITH_DIFFERENT_ROLE_IN_DIFFERENT_REALM + "=" + ROLE_ADMIN + "\n");
             sb.append(USER_ONLY_IN_AUTHORIZATION + "=" + ROLE_USER + "\n");
-            FileUtils.writeStringToFile(rolesAuthzRealmFile, sb.toString(), CHARSET_UTF_8);
+            FileUtils.writeStringToFile(rolesAuthzRealmFile, sb.toString(), StandardCharsets.UTF_8);
         }
 
         private String createPropertiesUserWithHashedPassword(String username, String password, String realmName) {

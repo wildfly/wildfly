@@ -21,11 +21,18 @@
  */
 package org.wildfly.test.integration.elytron.audit;
 
-import java.io.BufferedReader;
+import static javax.servlet.http.HttpServletResponse.SC_OK;
+import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
+import static org.jboss.as.test.shared.CliUtils.asAbsolutePath;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
-import java.io.FileReader;
 import java.io.PrintWriter;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.List;
+
 import org.codehaus.plexus.util.FileUtils;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -40,13 +47,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.security.common.elytron.FileAuditLog;
-
-import static javax.servlet.http.HttpServletResponse.SC_OK;
-import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
-import static org.jboss.as.test.shared.CliUtils.asAbsolutePath;
-import static org.junit.Assert.assertTrue;
-import static org.wildfly.test.integration.elytron.audit.AbstractAuditLogTestCase.SD_WITHOUT_LOGIN_PERMISSION;
-import static org.wildfly.test.integration.elytron.audit.AbstractAuditLogTestCase.setEventListenerOfApplicationDomain;
 
 /**
  * Test case for 'file-audit-log' Elytron subsystem resource.
@@ -198,10 +198,8 @@ public class FileAuditLogTestCase extends AbstractAuditLogTestCase {
     }
 
     private static boolean loggedAuthResult(File file, String user, String expectedEvent) throws Exception {
-        BufferedReader reader = new BufferedReader(new FileReader(file));
-
-        String line;
-        while ((line = reader.readLine()) != null) {
+        List<String> lines = Files.readAllLines(file.toPath(), StandardCharsets.UTF_8);
+        for (String line : lines) {
             if (line.contains(expectedEvent) && line.contains(user)) {
                 return true;
             }

@@ -40,6 +40,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
@@ -234,7 +235,7 @@ public class ReloadRequiringChangesTestCase {
             Assert.assertEquals(200, connection.getResponseCode());
             connection.getInputStream();
 
-            BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
             String line;
             while ((line = in.readLine()) != null) {
                 if (line.contains("address location")) {

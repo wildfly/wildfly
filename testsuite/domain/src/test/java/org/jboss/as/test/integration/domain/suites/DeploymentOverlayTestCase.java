@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 
@@ -255,7 +256,7 @@ public class DeploymentOverlayTestCase {
         op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
         op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
         op.get(ModelDescriptionConstants.CONTENT).get(ModelDescriptionConstants.INPUT_STREAM_INDEX).set(0);
-        opBuilder.addInputStream(new ByteArrayInputStream("new file".getBytes()));
+        opBuilder.addInputStream(new ByteArrayInputStream("new file".getBytes(StandardCharsets.UTF_8)));
         steps.add(op);
 
         //add the non-wildcard link to the server group
@@ -343,7 +344,7 @@ public class DeploymentOverlayTestCase {
     }
 
     public static String getContent(HttpResponse response) throws IOException {
-        InputStreamReader reader = new InputStreamReader(response.getEntity().getContent());
+        InputStreamReader reader = new InputStreamReader(response.getEntity().getContent(),StandardCharsets.UTF_8);
         StringBuilder content = new StringBuilder();
         char[] buffer = new char[8];
         int c;

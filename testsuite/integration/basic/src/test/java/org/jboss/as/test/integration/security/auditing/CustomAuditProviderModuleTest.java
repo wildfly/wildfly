@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.integration.security.auditing;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -39,7 +40,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -200,7 +200,6 @@ public class CustomAuditProviderModuleTest {
 
     }
 
-    private static final Charset UTF_8 = Charset.forName("utf-8");
     private static String RANDOM_EXECUTION_ID = String.valueOf(UUID.randomUUID().toString().replace("-", ""));
     private static final String AUDIT_HANDLER_NAME;
     private static final String AUDIT_LOG_FILE_NAME;
@@ -268,7 +267,7 @@ public class CustomAuditProviderModuleTest {
 
             if (password != null) {
                 request.addHeader(HttpHeaders.AUTHORIZATION,
-                        "Basic " + FlexBase64.encodeString((user + ":" + password).getBytes("utf-8"), false));
+                        "Basic " + FlexBase64.encodeString((user + ":" + password).getBytes(UTF_8), false));
             }
 
             HttpResponse response = httpclient.execute(request);
@@ -276,7 +275,7 @@ public class CustomAuditProviderModuleTest {
             StatusLine statusLine = response.getStatusLine();
             assertEquals(expectedStatusCode, statusLine.getStatusCode());
             if (statusLine.getStatusCode() == 200) {
-                String body = EntityUtils.toString(entity, "utf-8");
+                String body = EntityUtils.toString(entity, UTF_8);
                 assertEquals("GOOD", body);
             } else {
                 EntityUtils.consume(entity);

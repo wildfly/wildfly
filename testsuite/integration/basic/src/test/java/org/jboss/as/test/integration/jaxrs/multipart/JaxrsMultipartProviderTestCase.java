@@ -22,6 +22,7 @@
 package org.jboss.as.test.integration.jaxrs.multipart;
 
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
 import javax.activation.DataSource;
@@ -73,7 +74,7 @@ public class JaxrsMultipartProviderTestCase {
     @Test
     public void testJaxRsWithNoApplication() throws Exception {
         String result = performCall("myjaxrs/form");
-        DataSource mimeData = new ByteArrayDataSource(result.getBytes(),"multipart/related");
+        DataSource mimeData = new ByteArrayDataSource(result.getBytes(StandardCharsets.UTF_8),"multipart/related");
         MimeMultipart mime = new MimeMultipart(mimeData);
         String string  = (String)mime.getBodyPart(0).getContent();
         Assert.assertEquals("Hello", string);

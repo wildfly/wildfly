@@ -27,6 +27,7 @@ import org.jboss.vfs.VirtualFile;
 import java.io.ByteArrayInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.zip.ZipEntry;
@@ -143,7 +144,7 @@ public class JdrZipFile {
         name.append("/");
         name.append(path);
 
-        this.add(new ByteArrayInputStream(content.getBytes()), name.toString());
+        this.add(new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8)), name.toString());
     }
 
     /**
@@ -178,7 +179,7 @@ public class JdrZipFile {
      */
     public void addLog(String content, String logName) throws Exception {
         String name = "sos_logs/" + logName;
-        this.add(new ByteArrayInputStream(content.getBytes()), name);
+        this.add(new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8)), name);
     }
 
     public void close() throws Exception {

@@ -23,6 +23,7 @@ package org.jboss.as.test.integration.security.common;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -53,7 +54,7 @@ public class RolesPrintingServletUtils {
         for (final String role : allPossibleRoles) {
             qparams.add(new BasicNameValuePair(RolePrintingServlet.PARAM_ROLE_NAME, role));
         }
-        String queryRoles = URLEncodedUtils.format(qparams, "UTF-8");
+        String queryRoles = URLEncodedUtils.format(qparams, StandardCharsets.UTF_8);
         try {
             return new URL(webAppURL.toExternalForm() + RolePrintingServlet.SERVLET_PATH.substring(1) + "?" + queryRoles);
         } catch (MalformedURLException ex) {

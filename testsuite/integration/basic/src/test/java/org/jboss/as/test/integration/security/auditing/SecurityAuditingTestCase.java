@@ -31,8 +31,9 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -177,7 +178,7 @@ public class SecurityAuditingTestCase extends AnnSBTest {
         assertTrue("Audit log file has not been created (" + auditLog.getAbsolutePath() + ")", auditLog.exists());
         assertTrue("Audit log file is closed for reading (" + auditLog.getAbsolutePath() + ")", auditLog.canRead());
 
-        BufferedReader reader = new BufferedReader(new FileReader(auditLog));
+        BufferedReader reader = Files.newBufferedReader(auditLog.toPath(), StandardCharsets.UTF_8);
 
         while (reader.readLine() != null) {
             // we need to get trough all old records (if any)
@@ -201,7 +202,7 @@ public class SecurityAuditingTestCase extends AnnSBTest {
         assertTrue("Audit log file has not been created (" + auditLog.getAbsolutePath() + ")", auditLog.exists());
         assertTrue("Audit log file is closed for reading (" + auditLog.getAbsolutePath() + ")", auditLog.canRead());
 
-        BufferedReader reader = new BufferedReader(new FileReader(auditLog));
+        BufferedReader reader = Files.newBufferedReader(auditLog.toPath(), StandardCharsets.UTF_8);
 
         while (reader.readLine() != null) {
             // we need to get trough all old records (if any)

@@ -21,6 +21,7 @@ import org.wildfly.extension.undertow.security.jaspi.modules.HTTPSchemeServerAut
 
 import java.io.ByteArrayOutputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -81,7 +82,7 @@ public class JASPIHttpSchemeServerAuthModelTestCase {
 
         httpResponse.getEntity().writeTo(bos);
 
-        assertTrue(new String(bos.toByteArray()).contains("Unsecured"));
+        assertTrue(new String(bos.toByteArray(), StandardCharsets.UTF_8).contains("Unsecured"));
     }
 
     @Test
@@ -96,7 +97,7 @@ public class JASPIHttpSchemeServerAuthModelTestCase {
 
         httpResponse.getEntity().writeTo(bos);
 
-        assertTrue(new String(bos.toByteArray()).contains("Welcome"));
+        assertTrue(new String(bos.toByteArray(), StandardCharsets.UTF_8).contains("Welcome"));
     }
 
     @Test

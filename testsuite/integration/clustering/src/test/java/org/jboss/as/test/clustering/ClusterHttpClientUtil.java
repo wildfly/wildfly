@@ -30,6 +30,7 @@ import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -121,7 +122,7 @@ public final class ClusterHttpClientUtil {
 
         // Consume it
         StringBuilder sb = new StringBuilder();
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()), 4096)) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent(), StandardCharsets.UTF_8), 4096)) {
             String line;
             while ((line = br.readLine()) != null) {
                 sb.append(line);

@@ -22,12 +22,11 @@
 
 package org.wildfly.dist.subsystem.xml;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -184,18 +183,10 @@ public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidation
         final File tmp = File.createTempFile(getClass().getSimpleName(), "xml");
         tmp.deleteOnExit();
         File target = new File(getBaseDir(), xmlName);
-        BufferedReader reader = new BufferedReader(new FileReader(target));
-        BufferedWriter writer = null;
-        try {
-            writer = new BufferedWriter(new FileWriter(tmp));
-            String line;
-            while ((line = reader.readLine()) != null) {
+        try (BufferedWriter writer= Files.newBufferedWriter(tmp.toPath(), StandardCharsets.UTF_8)) {
+            List<String> lines = Files.readAllLines(target.toPath(), StandardCharsets.UTF_8);
+            for (String line : lines) {
                 writer.write(fixExpressions(line));
-            }
-        } finally {
-            reader.close();
-            if (writer != null) {
-                writer.close();
             }
         }
         return tmp;

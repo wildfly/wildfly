@@ -12,8 +12,9 @@ import org.jboss.marshalling.Unmarshaller;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -111,12 +112,7 @@ public class LegacyFileStore {
 
             }
             if (!timers.isEmpty()) {
-                FileOutputStream out = new FileOutputStream(marker);
-                try {
-                    out.write(new Date().toString().getBytes());
-                } finally {
-                    out.close();
-                }
+                Files.write(marker.toPath(), new Date().toString().getBytes(StandardCharsets.UTF_8));
             }
         } catch (Exception e) {
             EJB3_TIMER_LOGGER.failToRestoreTimersForObjectId(timedObjectId, e);

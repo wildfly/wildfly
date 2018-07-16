@@ -26,6 +26,7 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -93,8 +94,8 @@ public abstract class AbstractKrb5ConfServerSetupTask implements ServerSetupTask
         FileUtils.write(
                 KRB5_CONF_FILE,
                 StrSubstitutor.replace(
-                        IOUtils.toString(AbstractKrb5ConfServerSetupTask.class.getResourceAsStream(KRB5_CONF), "UTF-8"), map),
-                "UTF-8");
+                        IOUtils.toString(AbstractKrb5ConfServerSetupTask.class.getResourceAsStream(KRB5_CONF), StandardCharsets.UTF_8), map),
+                StandardCharsets.UTF_8);
         createServerKeytab(cannonicalHost);
         final List<UserForKeyTab> kerberosUsers = kerberosUsers();
         if (kerberosUsers != null) {

@@ -595,12 +595,12 @@ public class SPNEGOLoginModuleTestCase {
             final String ldifContent = StrSubstitutor.replace(
                     IOUtils.toString(
                             SPNEGOLoginModuleTestCase.class.getResourceAsStream(SPNEGOLoginModuleTestCase.class.getSimpleName()
-                                    + ".ldif"), "UTF-8"), map);
+                                    + ".ldif"), StandardCharsets.UTF_8), map);
             LOGGER.trace(ldifContent);
             final SchemaManager schemaManager = directoryService.getSchemaManager();
             try {
 
-                for (LdifEntry ldifEntry : new LdifReader(IOUtils.toInputStream(ldifContent))) {
+                for (LdifEntry ldifEntry : new LdifReader(IOUtils.toInputStream(ldifContent, StandardCharsets.UTF_8))) {
                     directoryService.getAdminSession().add(new DefaultEntry(schemaManager, ldifEntry.getEntry()));
                 }
             } catch (Exception e) {

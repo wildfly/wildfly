@@ -25,6 +25,7 @@ package org.jboss.as.test.integration.deployment.deploymentoverlay.jar;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 
 import javax.ejb.Singleton;
 
@@ -50,7 +51,7 @@ public class OverlayEJB implements OverlayableInterface {
             if (is == null) {
                 return null;
             }
-            try (InputStreamReader isr = new InputStreamReader(is);
+            try (InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);
                  BufferedReader br = new BufferedReader(isr);) {
                 return br.readLine();
             }

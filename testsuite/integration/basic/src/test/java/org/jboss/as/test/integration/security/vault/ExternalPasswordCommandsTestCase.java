@@ -29,10 +29,10 @@ import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.
 import static org.junit.Assert.fail;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Iterator;
 import java.util.Set;
@@ -187,9 +187,7 @@ public class ExternalPasswordCommandsTestCase {
     public void testPicketboxClassPassword() throws Exception {
 
         File tmpPassword = new File(System.getProperty("java.io.tmpdir"), "tmp.password");
-        FileWriter writer = new FileWriter(tmpPassword);
-        writer.write(VAULT_PASSWORD);
-        writer.close();
+        Files.write(tmpPassword.toPath(), VAULT_PASSWORD.getBytes(StandardCharsets.UTF_8));
 
         String passwordCmd = "{CLASS@org.picketbox}org.jboss.security.plugins.TmpFilePassword:${java.io.tmpdir}/tmp.password";
         passwordCmd = StringPropertyReplacer.replaceProperties(passwordCmd);

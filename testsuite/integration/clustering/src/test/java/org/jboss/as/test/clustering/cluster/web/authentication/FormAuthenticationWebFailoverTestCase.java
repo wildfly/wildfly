@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -109,7 +110,7 @@ public class FormAuthenticationWebFailoverTestCase extends AbstractClusteringTes
             pairs.add(new BasicNameValuePair("j_username", "allowed"));
             pairs.add(new BasicNameValuePair("j_password", "password"));
 
-            login.setEntity(new UrlEncodedFormEntity(pairs, "UTF-8"));
+            login.setEntity(new UrlEncodedFormEntity(pairs, StandardCharsets.UTF_8));
             response = client.execute(login);
             try {
                 Assert.assertEquals(HttpServletResponse.SC_FOUND, response.getStatusLine().getStatusCode());

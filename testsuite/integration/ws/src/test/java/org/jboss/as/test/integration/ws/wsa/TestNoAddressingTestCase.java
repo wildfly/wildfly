@@ -21,14 +21,12 @@
  */
 package org.jboss.as.test.integration.ws.wsa;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
+
 import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.Service;
@@ -125,15 +123,6 @@ public class TestNoAddressingTestCase {
     }
 
     protected static void downloadWSDLToFile(URL wsdlURL, File wsdlFile) throws IOException {
-        BufferedReader in = new BufferedReader(new InputStreamReader(wsdlURL.openStream()));
-        BufferedWriter out = new BufferedWriter(new FileWriter(wsdlFile));
-        String inputLine;
-        while ((inputLine = in.readLine()) != null) {
-            out.write(inputLine);
-            out.newLine();
-        }
-        in.close();
-        out.flush();
-        out.close();
+        Files.copy(wsdlURL.openStream(), wsdlFile.toPath());
     }
 }

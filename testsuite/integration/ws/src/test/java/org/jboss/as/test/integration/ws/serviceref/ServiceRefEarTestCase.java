@@ -27,6 +27,7 @@ import java.io.FilePermission;
 import java.io.InputStreamReader;
 import java.net.SocketPermission;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 import java.util.PropertyPermission;
 
@@ -133,11 +134,8 @@ public class ServiceRefEarTestCase {
     }
 
     private String receiveFirstLineFromUrl(URL url) throws Exception {
-        BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
-        try {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8))) {
             return br.readLine();
-        } finally {
-            br.close();
         }
     }
 }

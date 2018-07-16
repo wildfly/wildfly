@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.jsf.jsf23;
 import static org.junit.Assert.assertTrue;
 
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -91,7 +92,7 @@ public class JSF23SanityTestCase {
             HttpGet getRequest = new HttpGet(requestUrl);
             HttpResponse response = client.execute(getRequest);
             try {
-                responseString = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
+                responseString = IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8);
 
                 // Get the JSF view state
                 Matcher jsfViewMatcher = viewStatePattern.matcher(responseString);
@@ -110,11 +111,11 @@ public class JSF23SanityTestCase {
             list.add(new BasicNameValuePair("register", "register"));
             list.add(new BasicNameValuePair("register:registerButton", "Register"));
 
-            post.setEntity(new StringEntity(URLEncodedUtils.format(list, "UTF-8"), ContentType.APPLICATION_FORM_URLENCODED));
+            post.setEntity(new StringEntity(URLEncodedUtils.format(list, StandardCharsets.UTF_8), ContentType.APPLICATION_FORM_URLENCODED));
             response = client.execute(post);
 
             try {
-                responseString = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
+                responseString = IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8);
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }

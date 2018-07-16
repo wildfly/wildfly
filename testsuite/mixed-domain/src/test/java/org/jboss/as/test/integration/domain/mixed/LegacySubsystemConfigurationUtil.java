@@ -24,13 +24,12 @@ package org.jboss.as.test.integration.domain.mixed;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
@@ -97,10 +96,9 @@ public class LegacySubsystemConfigurationUtil {
 
     private String extractSubsystemXml(File file) throws IOException {
         StringBuilder sb = new StringBuilder();
-        BufferedReader reader = new BufferedReader(new FileReader(file));
-        String line = reader.readLine();
+        List<String> lines = Files.readAllLines(file.toPath(), StandardCharsets.UTF_8);
         boolean inSusbsystem = false;
-        while (line != null) {
+        for (String line : lines) {
             if (!inSusbsystem) {
                 if (line.contains(SUBSYSTEM_OPEN)) {
                     inSusbsystem = true;
@@ -116,7 +114,6 @@ public class LegacySubsystemConfigurationUtil {
                     break;
                 }
             }
-            line = reader.readLine();
         }
         return sb.toString();
     }

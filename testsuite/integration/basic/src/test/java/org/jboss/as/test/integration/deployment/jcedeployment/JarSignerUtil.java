@@ -22,11 +22,8 @@
 package org.jboss.as.test.integration.deployment.jcedeployment;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-
-import org.xnio.IoUtils;
+import java.nio.file.Files;
 
 /**
  * Utility for signing jars.
@@ -91,20 +88,7 @@ class JarSignerUtil {
     }
 
     private static void copyFile(final File src, final File dst) throws IOException {
-        FileInputStream in = null;
-        FileOutputStream out = null;
-        try {
-            in = new FileInputStream(src);
-            out = new FileOutputStream(dst);
-            byte[] buffer = new byte[4096];
-            int read;
-            while ((read = in.read(buffer)) != -1) {
-                out.write(buffer, 0, read);
-            }
-        } finally {
-            IoUtils.safeClose(in);
-            IoUtils.safeClose(out);
-        }
+        Files.copy(src.toPath(), dst.toPath());
     }
 
 }

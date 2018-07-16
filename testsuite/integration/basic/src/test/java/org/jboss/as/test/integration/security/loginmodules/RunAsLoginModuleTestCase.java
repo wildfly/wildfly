@@ -38,6 +38,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
 import javax.security.auth.AuthPermission;
@@ -153,7 +154,7 @@ public class RunAsLoginModuleTestCase {
         HttpResponse response;
 
         HttpGet httpget = new HttpGet(url.toString());
-        String headerValue = Base64.getEncoder().encodeToString("anil:anil".getBytes());
+        String headerValue = Base64.getEncoder().encodeToString("anil:anil".getBytes(StandardCharsets.UTF_8));
         Assert.assertNotNull(headerValue);
         httpget.addHeader("Authorization", "Basic " + headerValue);
         String text;

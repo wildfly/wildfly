@@ -37,6 +37,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import org.apache.http.HttpEntity;
@@ -187,7 +188,7 @@ public class MultipleCustomLoginModulesTest {
 
             if (password != null) {
                 request.addHeader(HttpHeaders.AUTHORIZATION,
-                        "Basic " + FlexBase64.encodeString((user + ":" + password).getBytes("utf-8"), false));
+                        "Basic " + FlexBase64.encodeString((user + ":" + password).getBytes(StandardCharsets.UTF_8), false));
             }
 
             HttpResponse response = httpclient.execute(request);
@@ -195,7 +196,7 @@ public class MultipleCustomLoginModulesTest {
             StatusLine statusLine = response.getStatusLine();
             assertEquals(expectedStatusCode, statusLine.getStatusCode());
             if (statusLine.getStatusCode() == 200) {
-                String body = EntityUtils.toString(entity, "utf-8");
+                String body = EntityUtils.toString(entity, StandardCharsets.UTF_8);
                 assertEquals("GOOD", body);
             } else {
                 EntityUtils.consume(entity);

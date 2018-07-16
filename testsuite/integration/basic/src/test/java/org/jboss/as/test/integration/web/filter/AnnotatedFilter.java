@@ -23,6 +23,7 @@
 package org.jboss.as.test.integration.web.filter;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -46,7 +47,7 @@ public class AnnotatedFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        servletResponse.getOutputStream().write(OUTPUT.getBytes());
+        servletResponse.getOutputStream().write(OUTPUT.getBytes(StandardCharsets.UTF_8));
     }
 
     @Override

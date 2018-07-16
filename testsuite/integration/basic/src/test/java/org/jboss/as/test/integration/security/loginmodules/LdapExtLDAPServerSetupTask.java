@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.security.loginmodules;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.security.Security;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -90,7 +91,7 @@ public class LdapExtLDAPServerSetupTask implements ServerSetupTask {
         for (final String role : ROLE_NAMES) {
             qparams.add(new BasicNameValuePair(RolePrintingServlet.PARAM_ROLE_NAME, role));
         }
-        QUERY_ROLES = URLEncodedUtils.format(qparams, "UTF-8");
+        QUERY_ROLES = URLEncodedUtils.format(qparams, StandardCharsets.UTF_8);
     }
 
     private DirectoryService directoryService1;
@@ -163,12 +164,12 @@ public class LdapExtLDAPServerSetupTask implements ServerSetupTask {
         final String ldifContent = StrSubstitutor.replace(
                 IOUtils.toString(
                         LdapExtLoginModuleTestCase.class.getResourceAsStream(LdapExtLoginModuleTestCase.class.getSimpleName()
-                                + ".ldif"), "UTF-8"), map);
+                                + ".ldif"), StandardCharsets.UTF_8), map);
         LOGGER.debug(ldifContent);
 
         final SchemaManager schemaManager = directoryService1.getSchemaManager();
         try {
-            for (LdifEntry ldifEntry : new LdifReader(IOUtils.toInputStream(ldifContent))) {
+            for (LdifEntry ldifEntry : new LdifReader(IOUtils.toInputStream(ldifContent, StandardCharsets.UTF_8))) {
                 directoryService1.getAdminSession().add(new DefaultEntry(schemaManager, ldifEntry.getEntry()));
             }
         } catch (Exception e) {
