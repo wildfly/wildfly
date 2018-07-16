@@ -48,10 +48,10 @@ public class TransactionTransformers implements ExtensionTransformerRegistration
     @Override
     public void registerTransformers(SubsystemTransformerRegistration subsystemRegistration) {
         ChainedTransformationDescriptionBuilder chainedBuilder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(CURRENT_MODEL_VERSION);
-        // 4.1.0 --> 4.0.0
+        // 5.0.0 --> 4.0.0
         ResourceTransformationDescriptionBuilder builderEap71 = chainedBuilder.createBuilder(CURRENT_MODEL_VERSION, MODEL_VERSION_EAP71);
         builderEap71.getAttributeBuilder()
-                .setDiscard(DiscardAttributeChecker.ALWAYS, MAXIMUM_TIMEOUT)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, MAXIMUM_TIMEOUT)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, MAXIMUM_TIMEOUT)
                 .end();
 

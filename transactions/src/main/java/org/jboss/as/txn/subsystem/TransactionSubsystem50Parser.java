@@ -32,15 +32,15 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttri
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 
 /**
- * The {@link org.jboss.staxmapper.XMLElementReader} that handles the version 4.1 of Transaction subsystem xml.
+ * The {@link org.jboss.staxmapper.XMLElementReader} that handles the version 5.1 of Transaction subsystem xml.
  */
-class TransactionSubsystem41Parser extends TransactionSubsystem40Parser {
+class TransactionSubsystem50Parser extends TransactionSubsystem40Parser {
 
-    TransactionSubsystem41Parser() {
-        super(Namespace.TRANSACTIONS_4_1);
+    TransactionSubsystem50Parser() {
+        super(Namespace.TRANSACTIONS_5_0);
     }
 
-    TransactionSubsystem41Parser(Namespace namespace) {
+    TransactionSubsystem50Parser(Namespace namespace) {
         super(namespace);
     }
 

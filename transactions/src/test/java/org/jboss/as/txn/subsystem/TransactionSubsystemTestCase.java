@@ -36,6 +36,7 @@ import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
+import org.jboss.as.subsystem.test.LegacyKernelServicesInitializer;
 import org.jboss.as.txn.logging.TransactionLogger;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
@@ -68,7 +69,7 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-txn_4_1.xsd";
+        return "schema/wildfly-txn_5_0.xsd";
     }
 
     @Override
@@ -118,22 +119,17 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testParser_1_2() throws Exception {
-        standardSubsystemTest("full-1.2.xml");
+    public void testParser_EAP_6_4() throws Exception {
+        standardSubsystemTest("full-1.5.xml");
     }
 
     @Test
-    public void testParser_1_3() throws Exception {
-        standardSubsystemTest("full-1.3.xml");
-    }
-
-    @Test
-    public void testParser_3_0() throws Exception {
+    public void testParser_EAP_7_0() throws Exception {
         standardSubsystemTest("full-3.0.xml");
     }
 
     @Test
-    public void testParser_4_0() throws Exception {
+    public void testParser_EAP_7_1() throws Exception {
         standardSubsystemTest("full-4.0.xml");
     }
 
@@ -170,41 +166,19 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testTransformersFullEAP640() throws Exception {
-        testTransformersFull(ModelTestControllerVersion.EAP_6_4_0, MODEL_VERSION_EAP64); //model version 1.5.0
+        testTransformersFull(ModelTestControllerVersion.EAP_6_4_0, MODEL_VERSION_EAP64);
     }
 
     @Test
     public void testTransformersFullEAP700() throws Exception {
-        testTransformersFull7(ModelTestControllerVersion.EAP_7_0_0, MODEL_VERSION_EAP70);
+        testTransformersFull(ModelTestControllerVersion.EAP_7_0_0, MODEL_VERSION_EAP70);
     }
 
     @Test
     public void testTransformersFullEAP710() throws Exception {
-        testTransformersFull7(ModelTestControllerVersion.EAP_7_1_0, MODEL_VERSION_EAP71);
+        testTransformersFull(ModelTestControllerVersion.EAP_7_1_0, MODEL_VERSION_EAP71);
     }
-
-    private void testTransformersFull7(ModelTestControllerVersion controllerVersion, ModelVersion modelVersion) throws Exception {
-        String subsystemXml = readResource("full-expressions-transform.xml");
-        //Use the non-runtime version of the extension which will happen on the HC
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-                .setSubsystemXml(subsystemXml);
-
-        // Add legacy subsystems
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
-                .addMavenResourceURL("org.jboss.eap:wildfly-transactions:" + controllerVersion.getMavenGavVersion())
-                .excludeFromParent(SingleClassFilter.createFilter(TransactionLogger.class));
-
-        KernelServices mainServices = builder.build();
-        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
-        Assert.assertTrue(mainServices.isSuccessfulBoot());
-        Assert.assertTrue(legacyServices.isSuccessfulBoot());
-
-        checkSubsystemModelTransformation(mainServices, modelVersion, modelNode -> {
-            modelNode.remove("maximum-timeout");
-            return modelNode;
-        });
-    }
-
+    
     private void testTransformersFull(ModelTestControllerVersion controllerVersion, ModelVersion modelVersion) throws Exception {
         String subsystemXml = readResource("full-expressions-transform.xml");
         //Use the non-runtime version of the extension which will happen on the HC
@@ -212,24 +186,53 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
                 .setSubsystemXml(subsystemXml);
 
         // Add legacy subsystems
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-transactions:" + controllerVersion.getMavenGavVersion())
-                .addSingleChildFirstClass(RemoveProcessUUIDOperationFixer.class)
-                .configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, ADD_REMOVED_HORNETQ_STORE_ENABLE_ASYNC_IO, RemoveProcessUUIDOperationFixer.INSTANCE)
+        final String artifactId = controllerVersion == ModelTestControllerVersion.EAP_6_4_0 ?
+                "jboss-as-transactions" : "wildfly-transactions";
+        LegacyKernelServicesInitializer initializer = builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
+                .addMavenResourceURL(String.format("%s:%s:%s",
+                        controllerVersion.getMavenGroupId(), artifactId, controllerVersion.getMavenGavVersion()))
                 .excludeFromParent(SingleClassFilter.createFilter(TransactionLogger.class));
+
+        if (controllerVersion == ModelTestControllerVersion.EAP_6_4_0) {
+            initializer.addSingleChildFirstClass(RemoveProcessUUIDOperationFixer.class)
+                    .configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, ADD_REMOVED_HORNETQ_STORE_ENABLE_ASYNC_IO, RemoveProcessUUIDOperationFixer.INSTANCE);
+        }
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
         Assert.assertTrue(mainServices.isSuccessfulBoot());
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
-        checkSubsystemModelTransformation(mainServices, modelVersion, modelNode -> {
-            modelNode.remove("path");
-            modelNode.remove("relative-to");
-            modelNode.get("process-id-uuid").set(false); //only needs to be removed for 6.2
-            return modelNode;
-        });
+        ModelFixer modelFixer = null;
+        switch (controllerVersion) {
+            case EAP_6_4_0:
+                modelFixer = new ModelFixer() {
+                    @Override
+                    public ModelNode fixModel(ModelNode modelNode) {
+                        modelNode.remove("path");
+                        modelNode.remove("relative-to");
+                        return modelNode;
+                    }
+                };
+                break;
+            case EAP_7_0_0:
+            case EAP_7_1_0:
+                modelFixer = new ModelFixer() {
+                    @Override
+                    public ModelNode fixModel(ModelNode modelNode) {
+                        if (modelNode.has("log-store", "log-store")) {
+                            ModelNode logStore = modelNode.get("log-store", "log-store");
+                            if (!logStore.get("expose-all-logs").asBoolean()) {
+                                logStore.remove("expose-all-logs");
+                            }
+                        }
+                        return modelNode;
+                    }
+                };
+                break;
 
+        }
+        checkSubsystemModelTransformation(mainServices, modelVersion, modelFixer);
     }
 
     @Test
