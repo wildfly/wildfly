@@ -54,104 +54,153 @@ public class Hibernate51CompatibilityTransformer implements ClassFileTransformer
         final ClassReader classReader = new ClassReader(classfileBuffer);
         final ClassWriter cv = new ClassWriter(classReader, 0);
         classReader.accept(new ClassVisitor(Opcodes.ASM6, cv) {
+        boolean implementsUserType = false;
             @Override
-            public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-                return new MethodVisitor(Opcodes.ASM6, super.visitMethod(access, name, desc, signature, exceptions)) {
-                    // Change call to org.hibernate.BasicQueryContract.getFlushMode() to instead call BasicQueryContract.getHibernateFlushMode().
-                    // Change call to org.hibernate.Session.getFlushMode, to instead call Session.getHibernateFlushMode()
-                    // Calls to Hibernate ORM 5.3 getFlushMode(), will not be changed as the desc will not match (desc == "()Ljavax.persistence.FlushModeType;")
-                    public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
-                        if (opcode == Opcodes.INVOKEINTERFACE &&
-                                (owner.equals("org/hibernate/Session") || owner.equals("org/hibernate/BasicQueryContract"))
-                                && name.equals("getFlushMode") && desc.equals("()Lorg/hibernate/FlushMode;")) {
-                            ROOT_LOGGER.debugf("Deprecated Hibernate51CompatibilityTransformer transformed application classes in '%s', " +
-                                            "class '%s' is calling %s.getFlushMode, which must be changed to call getHibernateFlushMode().",
-                                    getModuleName(loader), className, owner);
-                            name = "getHibernateFlushMode";
-                            super.visitMethodInsn(opcode, owner, name, desc, itf);
-                        } else if (opcode == Opcodes.INVOKEINTERFACE &&
-                                owner.equals("org/hibernate/Query") &&
-                                name.equals("getFirstResult") &&
-                                desc.equals("()Ljava/lang/Integer;")) {
-                            ROOT_LOGGER.debugf("Deprecated Hibernate51CompatibilityTransformer transformed application classes in '%s', " +
-                                            "class '%s' is calling %s.%s, which must be changed to expect int result, instead of Integer.",
-                                    getModuleName(loader), className, name, owner);
-                            ROOT_LOGGER.debugf("Deprecated Hibernate51CompatibilityTransformer transformed application classes in '%s', " +
-                                            "class '%s', is calling org.hibernate.Query.getFirstResult, which must be changed to call getHibernateFirstResult() " +
-                                            "so null can be returned when the value is uninitialized. Please note that if a negative value was set using " +
-                                            "org.hibernate.Query.setFirstResult, then getHibernateFirstResult() will return 0.",
-                                    getModuleName(loader), className);
-                            name = "getHibernateFirstResult";
-                            super.visitMethodInsn(opcode, owner, name, desc, itf);
-                        } else if (opcode == Opcodes.INVOKEINTERFACE &&
-                                owner.equals("org/hibernate/Query") &&
-                                name.equals("getMaxResults") &&
-                                desc.equals("()Ljava/lang/Integer;")) {
-                            ROOT_LOGGER.debugf("Deprecated Hibernate51CompatibilityTransformer transformed application classes in '%s', " +
-                                            "class '%s' is calling %s.%s, which must be changed to expect int result, instead of Integer.",
-                                    getModuleName(loader), className, name, owner);
-                            ROOT_LOGGER.debugf("Deprecated Hibernate51CompatibilityTransformer transformed application classes in '%s', " +
-                                            "class '%s', is calling org.hibernate.Query.getMaxResults, which must be changed to call getHibernateMaxResults() " +
-                                            "so that null will be returned when the value is uninitialized or ORM 5.1 org.hibernate.Query#setMaxResults was " +
-                                            "used to set a value <= 0"
-                                    , getModuleName(loader), className);
-                            name = "getHibernateMaxResults";
-                            super.visitMethodInsn(opcode, owner, name, desc, itf);
-                        } else if (!disableAmbiguousChanges && opcode == Opcodes.INVOKEINTERFACE &&
-                                owner.equals("org/hibernate/Query") &&
-                                name.equals("setFirstResult") &&
-                                desc.equals("(I)Lorg/hibernate/Query;")) {
-                            ROOT_LOGGER.debugf("Deprecated Hibernate51CompatibilityTransformer transformed application classes in '%s', " +
-                                            "class '%s', is calling org.hibernate.Query.setFirstResult, which must be changed to call setHibernateFirstResult() " +
-                                            "so setting a value < 0 results in pagination starting with the 0th row as was done in Hibernate ORM 5.1 " +
-                                            "(instead of throwing IllegalArgumentException as specified by JPA)."
-                                    , getModuleName(loader), className);
-                            name = "setHibernateFirstResult";
-                            super.visitMethodInsn(opcode, owner, name, desc, itf);
-                        } else if (!disableAmbiguousChanges && opcode == Opcodes.INVOKEINTERFACE &&
-                                owner.equals("org/hibernate/Query") &&
-                                name.equals("setMaxResults") &&
-                                desc.equals("(I)Lorg/hibernate/Query;")) {
-                            ROOT_LOGGER.debugf("Deprecated Hibernate51CompatibilityTransformer transformed application classes in '%s', " +
-                                            "class '%s', is calling org.hibernate.Query.setMaxResults, which must be changed to call setHibernateMaxResults() " +
-                                            "so that values <= 0 are the same as uninitialized."
-                                    , getModuleName(loader), className);
-                            name = "setHibernateMaxResults";
-                            super.visitMethodInsn(opcode, owner, name, desc, itf);
-                        } else
-
-                        {
-                            super.visitMethodInsn(opcode, owner, name, desc, itf);
-                        }
-
-                    }
-
-                    public void visitFieldInsn(int opcode, String owner, String name, String desc) {
-                        // App References to Enum org.hibernate.FlushMode.NEVER (0) should be transformed to reference FlushMode.MANUAL (0) instead.
-                        if (opcode == Opcodes.GETSTATIC &&
-                                owner.equals("org/hibernate/FlushMode") &&
-                                name.equals("NEVER") &&
-                                desc.equals("Lorg/hibernate/FlushMode;")) {
-                            ROOT_LOGGER.debugf("Deprecated Hibernate51CompatibilityTransformer transformed application classes in '%s', " +
-                                            "class '%s' is using org.hibernate.FlushMode.NEVER, change to org.hibernate.FlushMode.MANUAL."
-                                    , getModuleName(loader), className);
-                            super.visitFieldInsn(opcode, owner, "MANUAL", desc);
-                        } else {
-                            super.visitFieldInsn(opcode, owner, name, desc);
+            public void visit(int version, int access, String name, String signature,
+                        String superName, String[] interfaces) {
+                if (interfaces != null) {
+                    for (String interfaceName : interfaces) {
+                        if("org/hibernate/usertype/UserType".equals(interfaceName)) {
+                            implementsUserType = true;
                         }
                     }
                 }
+                super.visit(version, access, name, signature, superName, interfaces);
+            }
 
-                        ;
+            @Override
+            public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
+                // change SessionImplementor parameter to SharedSessionContractImplementor
+                if (implementsUserType && name.equals("nullSafeGet")  &&
+                        "(Ljava/sql/ResultSet;[Ljava/lang/String;Lorg/hibernate/engine/spi/SessionImplementor;Ljava/lang/Object;)Ljava/lang/Object;".equals(desc)) {
+                    desc = "(Ljava/sql/ResultSet;[Ljava/lang/String;Lorg/hibernate/engine/spi/SharedSessionContractImplementor;Ljava/lang/Object;)Ljava/lang/Object;";
+                }
+                if (implementsUserType && name.equals("nullSafeSet") &&
+                        "(Ljava/sql/PreparedStatement;Ljava/lang/Object;ILorg/hibernate/engine/spi/SessionImplementor;)V".equals(desc)) {
+                    desc = "(Ljava/sql/PreparedStatement;Ljava/lang/Object;ILorg/hibernate/engine/spi/SharedSessionContractImplementor;)V";
+                }
+
+                return new MethodAdapter(Opcodes.ASM6,super.visitMethod(access, name, desc, signature, exceptions), loader, className);
             }
         }, 0);
         return cv.toByteArray();
     }
 
-    private static final String getModuleName(ClassLoader loader) {
+    private static String getModuleName(ClassLoader loader) {
         if (loader instanceof ModuleClassLoader) {
             return ((ModuleClassLoader) loader).getName();
         }
         return loader.toString();
     }
+
+    protected static class MethodAdapter extends MethodVisitor {
+
+        private final MethodVisitor mv;
+        private final ClassLoader loader;
+        private final String className;
+
+        private MethodAdapter(int api, MethodVisitor mv, final ClassLoader loader, final String className) {
+            super(api, mv);
+            this.mv = mv;
+            this.loader = loader;
+            this.className = className;
+        }
+
+
+        // Change call to org.hibernate.BasicQueryContract.getFlushMode() to instead call BasicQueryContract.getHibernateFlushMode().
+        // Change call to org.hibernate.Session.getFlushMode, to instead call Session.getHibernateFlushMode()
+        // Calls to Hibernate ORM 5.3 getFlushMode(), will not be changed as the desc will not match (desc == "()Ljavax.persistence.FlushModeType;")
+        @Override
+        public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
+            if (opcode == Opcodes.INVOKEINTERFACE &&
+                    (owner.equals("org/hibernate/Session") || owner.equals("org/hibernate/BasicQueryContract"))
+                    && name.equals("getFlushMode") && desc.equals("()Lorg/hibernate/FlushMode;")) {
+                ROOT_LOGGER.debugf("Deprecated Hibernate51CompatibilityTransformer transformed application classes in '%s', " +
+                                "class '%s' is calling %s.getFlushMode, which must be changed to call getHibernateFlushMode().",
+                        getModuleName(loader), className, owner);
+                name = "getHibernateFlushMode";
+                mv.visitMethodInsn(opcode, owner, name, desc, itf);
+            } else if (opcode == Opcodes.INVOKEINTERFACE &&
+                    owner.equals("org/hibernate/Query") &&
+                    name.equals("getFirstResult") &&
+                    desc.equals("()Ljava/lang/Integer;")) {
+                ROOT_LOGGER.debugf("Deprecated Hibernate51CompatibilityTransformer transformed application classes in '%s', " +
+                                "class '%s' is calling %s.%s, which must be changed to expect int result, instead of Integer.",
+                        getModuleName(loader), className, name, owner);
+                ROOT_LOGGER.debugf("Deprecated Hibernate51CompatibilityTransformer transformed application classes in '%s', " +
+                                "class '%s', is calling org.hibernate.Query.getFirstResult, which must be changed to call getHibernateFirstResult() " +
+                                "so null can be returned when the value is uninitialized. Please note that if a negative value was set using " +
+                                "org.hibernate.Query.setFirstResult, then getHibernateFirstResult() will return 0.",
+                        getModuleName(loader), className);
+                name = "getHibernateFirstResult";
+                mv.visitMethodInsn(opcode, owner, name, desc, itf);
+            } else if (opcode == Opcodes.INVOKEINTERFACE &&
+                    owner.equals("org/hibernate/Query") &&
+                    name.equals("getMaxResults") &&
+                    desc.equals("()Ljava/lang/Integer;")) {
+                ROOT_LOGGER.debugf("Deprecated Hibernate51CompatibilityTransformer transformed application classes in '%s', " +
+                                "class '%s' is calling %s.%s, which must be changed to expect int result, instead of Integer.",
+                        getModuleName(loader), className, name, owner);
+                ROOT_LOGGER.debugf("Deprecated Hibernate51CompatibilityTransformer transformed application classes in '%s', " +
+                                "class '%s', is calling org.hibernate.Query.getMaxResults, which must be changed to call getHibernateMaxResults() " +
+                                "so that null will be returned when the value is uninitialized or ORM 5.1 org.hibernate.Query#setMaxResults was " +
+                                "used to set a value <= 0"
+                        , getModuleName(loader), className);
+                name = "getHibernateMaxResults";
+                mv.visitMethodInsn(opcode, owner, name, desc, itf);
+            } else if (!disableAmbiguousChanges && opcode == Opcodes.INVOKEINTERFACE &&
+                    owner.equals("org/hibernate/Query") &&
+                    name.equals("setFirstResult") &&
+                    desc.equals("(I)Lorg/hibernate/Query;")) {
+                ROOT_LOGGER.debugf("Deprecated Hibernate51CompatibilityTransformer transformed application classes in '%s', " +
+                                "class '%s', is calling org.hibernate.Query.setFirstResult, which must be changed to call setHibernateFirstResult() " +
+                                "so setting a value < 0 results in pagination starting with the 0th row as was done in Hibernate ORM 5.1 " +
+                                "(instead of throwing IllegalArgumentException as specified by JPA)."
+                        , getModuleName(loader), className);
+                name = "setHibernateFirstResult";
+                mv.visitMethodInsn(opcode, owner, name, desc, itf);
+            } else if (!disableAmbiguousChanges && opcode == Opcodes.INVOKEINTERFACE &&
+                    owner.equals("org/hibernate/Query") &&
+                    name.equals("setMaxResults") &&
+                    desc.equals("(I)Lorg/hibernate/Query;")) {
+                ROOT_LOGGER.debugf("Deprecated Hibernate51CompatibilityTransformer transformed application classes in '%s', " +
+                                "class '%s', is calling org.hibernate.Query.setMaxResults, which must be changed to call setHibernateMaxResults() " +
+                                "so that values <= 0 are the same as uninitialized."
+                        , getModuleName(loader), className);
+                name = "setHibernateMaxResults";
+                mv.visitMethodInsn(opcode, owner, name, desc, itf);
+            } else
+
+            {
+                mv.visitMethodInsn(opcode, owner, name, desc, itf);
+            }
+
+        }
+
+        @Override
+        public void visitFieldInsn(int opcode, String owner, String name, String desc) {
+            // App References to Enum org.hibernate.FlushMode.NEVER (0) should be transformed to reference FlushMode.MANUAL (0) instead.
+            if (opcode == Opcodes.GETSTATIC &&
+                    owner.equals("org/hibernate/FlushMode") &&
+                    name.equals("NEVER") &&
+                    desc.equals("Lorg/hibernate/FlushMode;")) {
+                ROOT_LOGGER.debugf("Deprecated Hibernate51CompatibilityTransformer transformed application classes in '%s', " +
+                                "class '%s' is using org.hibernate.FlushMode.NEVER, change to org.hibernate.FlushMode.MANUAL."
+                        , getModuleName(loader), className);
+                mv.visitFieldInsn(opcode, owner, "MANUAL", desc);
+            } else {
+                mv.visitFieldInsn(opcode, owner, name, desc);
+            }
+        }
+
+        @Override
+        public void visitTypeInsn(int opcode, String type) {
+            if (type.contains("SharedSessionContractImplementor")) {
+                mv.visitTypeInsn(opcode, "org/hibernate/engine/spi/SessionImplementor");
+            } else {
+                mv.visitTypeInsn(opcode, type);
+            }
+        }
+    }
 }
+

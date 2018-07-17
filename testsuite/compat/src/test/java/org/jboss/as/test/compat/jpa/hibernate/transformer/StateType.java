@@ -41,16 +41,22 @@ public class StateType implements UserType {
     }
 
     public Object nullSafeGet(ResultSet rs, String[] names, SessionImplementor session, Object owner) throws HibernateException, SQLException {
+        session.getJdbcConnectionAccess();
         int result = rs.getInt( names[0] );
+        session.isTransactionInProgress();
         if ( rs.wasNull() ) return null;
+        session.isTransactionInProgress();
         return State.values()[result];
     }
 
     public void nullSafeSet(PreparedStatement st, Object value, int index, SessionImplementor session) throws HibernateException, SQLException {
+        //session.isTransactionInProgress();
         if (value == null) {
+            session.isTransactionInProgress();
             st.setNull( index, Types.INTEGER );
         }
         else {
+            session.isTransactionInProgress();
             st.setInt( index, ( (State) value ).ordinal() );
         }
     }

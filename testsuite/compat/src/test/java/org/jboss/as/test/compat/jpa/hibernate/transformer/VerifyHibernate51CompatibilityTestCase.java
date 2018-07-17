@@ -76,7 +76,8 @@ public class VerifyHibernate51CompatibilityTestCase {
             + "<class name=\"org.jboss.as.test.compat.jpa.hibernate.transformer.Gene\" table=\"GENE\">"
             + "<id name=\"id\">" + "<generator class=\"assigned\"/>" + "</id>"
             + "<property name=\"state\" type=\"org.jboss.as.test.compat.jpa.hibernate.transformer.StateType\"/>"
-            + "</class>" + "</hibernate-mapping>";
+            + "</class>"
+            + "</hibernate-mapping>";
 
     @ArquillianResource
     private static InitialContext iniCtx;
@@ -409,6 +410,7 @@ public class VerifyHibernate51CompatibilityTestCase {
         }
     }
 
+
     @Test
     public void testUserTypeImplemented() throws Exception {
 
@@ -423,6 +425,5 @@ public class VerifyHibernate51CompatibilityTestCase {
             sfsb.cleanup();
         }
     }
-
 
 }

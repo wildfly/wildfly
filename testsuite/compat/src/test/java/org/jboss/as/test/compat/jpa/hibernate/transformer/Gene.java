@@ -6,6 +6,8 @@
  */
 package org.jboss.as.test.compat.jpa.hibernate.transformer;
 
+import org.hibernate.annotations.Type;
+
 /**
  * @author Paolo Perrotta
  */
@@ -14,6 +16,7 @@ public class Gene {
     private Integer id;
     private State state;
 
+    @Type(type="org.jboss.as.test.compat.jpa.hibernate.transformer.StateType")
     public State getState() {
         return state;
     }
