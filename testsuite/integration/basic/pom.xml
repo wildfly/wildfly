@@ -170,6 +170,10 @@
                                         <include>org/jboss/as/test/integration/jsr77/**/*TestCase*.java</include>
                                     </includes>
 
+                                    <excludes>
+                                        <exclude>org/jboss/as/test/integration/web/security/bufferFreed/BufferFreedTestCase.java</exclude>
+                                    </excludes>
+
                                     <environmentVariables>
                                         <JBOSS_HOME>${jboss.dist}</JBOSS_HOME>
                                     </environmentVariables>
