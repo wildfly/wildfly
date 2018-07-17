@@ -72,10 +72,16 @@ public class MessagingSubsystemParser_4_0 extends PersistentResourceXMLParser {
                         DiscoveryGroupDefinition.REFRESH_TIMEOUT,
                         DiscoveryGroupDefinition.INITIAL_WAIT_TIMEOUT);
 
+        final PersistentResourceXMLBuilder remoteConnector = builder(pathElement(REMOTE_CONNECTOR))
+                .addAttributes(
+                        RemoteTransportDefinition.SOCKET_BINDING,
+                        CommonAttributes.PARAMS);
+
         return builder(MessagingExtension.SUBSYSTEM_PATH, NAMESPACE)
                 .addAttributes(
                         MessagingSubsystemRootResourceDefinition.GLOBAL_CLIENT_THREAD_POOL_MAX_SIZE,
                         MessagingSubsystemRootResourceDefinition.GLOBAL_CLIENT_SCHEDULED_THREAD_POOL_MAX_SIZE)
+                .addChild(remoteConnector)
                 .addChild(discoveryGroup)
                 .addChild(
                         builder(MessagingExtension.SERVER_PATH)
@@ -312,11 +318,7 @@ public class MessagingSubsystemParser_4_0 extends PersistentResourceXMLParser {
                                                         HTTPConnectorDefinition.ENDPOINT,
                                                         HTTPConnectorDefinition.SERVER_NAME,
                                                         CommonAttributes.PARAMS))
-                                .addChild(
-                                        builder(pathElement(REMOTE_CONNECTOR))
-                                                .addAttributes(
-                                                        RemoteTransportDefinition.SOCKET_BINDING,
-                                                        CommonAttributes.PARAMS))
+                                .addChild(remoteConnector)
                                 .addChild(
                                         builder(pathElement(IN_VM_CONNECTOR))
                                                 .addAttributes(

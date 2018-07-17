@@ -24,10 +24,12 @@ package org.wildfly.extension.messaging.activemq;
 
 import static org.jboss.as.controller.transform.description.RejectAttributeChecker.DEFINED;
 import static org.jboss.as.controller.transform.description.RejectAttributeChecker.UNDEFINED;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.REMOTE_CONNECTOR;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
 import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
@@ -45,7 +47,7 @@ import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes;
 import org.wildfly.extension.messaging.activemq.jms.bridge.JMSBridgeDefinition;
 
 /**
- * {@link org.jboss.as.controller.ExtensionTransformerRegistration} for the messaging-activemq subsystem.
+ * {@link org.jboss.as.controller.transform.ExtensionTransformerRegistration} for the messaging-activemq subsystem.
  * @author Paul Ferraro
  */
 @MetaInfServices
@@ -67,8 +69,9 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
         builder.buildAndRegister(registration, new ModelVersion[] { MessagingExtension.VERSION_1_0_0, MessagingExtension.VERSION_2_0_0, MessagingExtension.VERSION_3_0_0 });
     }
 
-    private void registerTransformers_EAP_7_2_0(ResourceTransformationDescriptionBuilder subsystem) {
+    private static void registerTransformers_EAP_7_2_0(ResourceTransformationDescriptionBuilder subsystem) {
         subsystem.rejectChildResource(DiscoveryGroupDefinition.PATH);
+        subsystem.rejectChildResource(PathElement.pathElement(REMOTE_CONNECTOR));
 
         ResourceTransformationDescriptionBuilder server = subsystem.addChildResource(MessagingExtension.SERVER_PATH);
         // WFLY-10165 - journal-jdbc-network-timeout default value is 20 seconds.
