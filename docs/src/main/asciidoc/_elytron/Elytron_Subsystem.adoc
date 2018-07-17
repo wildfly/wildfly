@@ -309,6 +309,9 @@ is an aggregation of other role mappers.
 performs a logical operation using two referenced role mappers.
 
 |custom-role-mapper |Definition of a custom role mapper
+
+|mapped-role-mapper |A role mapper definition for a role mapper that uses
+configured mapping of role names to map role names.
 |=======================================================================
 
 [[ssl-components]]
@@ -1139,6 +1142,9 @@ Kerberos-Based Identity Store
 
 |Kerberos, SPNEGO Login Modules with Fallback |Configure Authentication
 with a Form as a Fallback for Kerberos
+
+|RoleMapping Login Module |Configure Authentication
+with a Mapped Role Mapper
 
 |Vault |Create and Use a Credential Store
 
