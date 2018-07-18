@@ -192,15 +192,6 @@ public class Hibernate51CompatibilityTransformer implements ClassFileTransformer
                 mv.visitFieldInsn(opcode, owner, name, desc);
             }
         }
-
-        @Override
-        public void visitTypeInsn(int opcode, String type) {
-            if (type.contains("SharedSessionContractImplementor")) {
-                mv.visitTypeInsn(opcode, "org/hibernate/engine/spi/SessionImplementor");
-            } else {
-                mv.visitTypeInsn(opcode, type);
-            }
-        }
     }
 }
 
