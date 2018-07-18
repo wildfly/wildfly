@@ -120,17 +120,17 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testParser_EAP_6_4() throws Exception {
-        standardSubsystemTest("full-1.5.xml");
+        standardSubsystemTest("full-1.5.0.xml");
     }
 
     @Test
     public void testParser_EAP_7_0() throws Exception {
-        standardSubsystemTest("full-3.0.xml");
+        standardSubsystemTest("full-3.0.0.xml");
     }
 
     @Test
     public void testParser_EAP_7_1() throws Exception {
-        standardSubsystemTest("full-4.0.xml");
+        standardSubsystemTest("full-4.0.0.xml");
     }
 
     @Test
@@ -178,9 +178,10 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
     public void testTransformersFullEAP710() throws Exception {
         testTransformersFull(ModelTestControllerVersion.EAP_7_1_0, MODEL_VERSION_EAP71);
     }
-    
+
     private void testTransformersFull(ModelTestControllerVersion controllerVersion, ModelVersion modelVersion) throws Exception {
-        String subsystemXml = readResource("full-expressions-transform.xml");
+        String subsystemXml = readResource(String.format("full-%s.xml", modelVersion));
+
         //Use the non-runtime version of the extension which will happen on the HC
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
                 .setSubsystemXml(subsystemXml);
@@ -237,17 +238,20 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testRejectTransformersEAP640() throws Exception {
-        testRejectTransformers(ModelTestControllerVersion.EAP_6_4_0, MODEL_VERSION_EAP64, new FailedOperationTransformationConfig()); //nothing is rejected
+        testRejectTransformers(ModelTestControllerVersion.EAP_6_4_0, MODEL_VERSION_EAP64, new FailedOperationTransformationConfig().addFailedAttribute(
+                PathAddress.pathAddress(TransactionExtension.SUBSYSTEM_PATH), new FailedOperationTransformationConfig.NewAttributesConfig("maximum-timeout")));
     }
 
     @Test
     public void testRejectTransformersEAP700() throws Exception {
-        testRejectTransformers7(ModelTestControllerVersion.EAP_7_0_0, MODEL_VERSION_EAP70, new FailedOperationTransformationConfig()); //nothing is rejected
+        testRejectTransformers7(ModelTestControllerVersion.EAP_7_0_0, MODEL_VERSION_EAP70, new FailedOperationTransformationConfig().addFailedAttribute(
+                PathAddress.pathAddress(TransactionExtension.SUBSYSTEM_PATH), new FailedOperationTransformationConfig.NewAttributesConfig("maximum-timeout")));
     }
 
     @Test
     public void testRejectTransformersEAP710() throws Exception {
-        testRejectTransformers7(ModelTestControllerVersion.EAP_7_1_0, MODEL_VERSION_EAP71, new FailedOperationTransformationConfig()); //nothing is rejected
+        testRejectTransformers7(ModelTestControllerVersion.EAP_7_1_0, MODEL_VERSION_EAP71, new FailedOperationTransformationConfig().addFailedAttribute(
+                PathAddress.pathAddress(TransactionExtension.SUBSYSTEM_PATH), new FailedOperationTransformationConfig.NewAttributesConfig("maximum-timeout")));
     }
 
     private void testRejectTransformers7(ModelTestControllerVersion controllerVersion, ModelVersion modelVersion, FailedOperationTransformationConfig config) throws Exception {
