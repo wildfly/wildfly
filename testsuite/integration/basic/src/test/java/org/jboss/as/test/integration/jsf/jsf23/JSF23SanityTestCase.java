@@ -52,7 +52,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * A simple test to verify that JSF 2.3 can be used with the {@code ee8.preview.mode} switch.
+ * A simple test to verify that JSF 2.3 is used.
  *
  * @author <a href="mailto:fjuma@redhat.com">Farah Juma</a>
  */

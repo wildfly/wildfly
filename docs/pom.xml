@@ -48,6 +48,10 @@
                     <groupId>org.asciidoctor</groupId>
                     <artifactId>asciidoctor-maven-plugin</artifactId>
                     <configuration>
+                        <attributes>
+                            <javaee_version>8</javaee_version>
+                            <wildflyversion>${product.docs.server.version}</wildflyversion>
+                        </attributes>
                         <resources>
                             <resource>
                                 <directory>src/main/asciidoc/images</directory>

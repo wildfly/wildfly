@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.test.integration.ee8.temp;
+package org.jboss.as.test.integration.beanvalidation;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -150,7 +150,7 @@ public class BeanValidationEE8TestCase {
     private class ContainerValueExtractor implements ValueExtractor<@ExtractedValue(type = String.class) Container> {
 
         @Override
-        public void extractValues(Container originalValue, ValueExtractor.ValueReceiver receiver) {
+        public void extractValues(Container originalValue, ValueReceiver receiver) {
             receiver.value(null, originalValue.getValue());
         }
     }

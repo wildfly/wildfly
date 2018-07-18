@@ -75,7 +75,6 @@
                 <module>legacy</module>
                 <module>legacy-ejb-client</module>
                 <module>elytron</module>
-                <module>ee8-temp</module>
             </modules>
         </profile>
         <!-- Define ts.integration uber-group. -->

@@ -9,7 +9,6 @@ WildFly team;
 :doctype: book
 :icons: font
 :source-highlighter: coderay
-:wildflyVersion: 13
 
 ifndef::ebook-format[:leveloffset: 1]
 
@@ -23,25 +22,27 @@ ifdef::basebackend-html[toc::[]]
 
 WildFly {wildflyVersion} is the latest release in a series of JBoss open-source
 application server offerings. WildFly {wildflyVersion} is an exceptionally fast,
-lightweight and powerful implementation of the Java Enterprise Edition 7
+lightweight and powerful implementation of the Java Enterprise Edition {javaee_version}
 Platform specifications. The state-of-the-art architecture built on the
 Modular Service Container enables services on-demand when your
 application requires them. The table below lists the Java Enterprise
-Edition 7 technologies and the technologies available in WildFly {wildflyVersion}
+Edition {javaee_version} technologies and the technologies available in WildFly {wildflyVersion}
 server configuration profiles.
 
 [cols=",,,,",options="header"]
 |=======================================================================
-|Java EE 7 Platform Technology |Java EE 7Full Profile |Java EE 7Web
+|Java EE {javaee_version} Platform Technology |Java EE {javaee_version} Full Profile |Java EE {javaee_version} Web
 Profile |WildFly {wildflyVersion} Full Profile |WildFly {wildflyVersion} Web Profile
 
 |JSR-356: Java API for Web Socket |X |X |X |X
 
-|JSR-353: Java API for JSON ﻿Processing |X |X |X |X
+|JSR-374: Java API for JSON Processing 1.1 |X |X |X |X
 
-|JSR-340: Java Servlet 3.1 |X |X |X |X
+|JSR-367: Java API for JSON Binding 1.0 |X |X |X |X
 
-|JSR-344: JavaServer Faces 2.2 |X |X |X |X
+|JSR-369: Java Servlet 4.0 |X |X |X |X
+
+|JSR-372: JavaServer Faces 2.3 |X |X |X |X
 
 |JSR-341: Expression Language 3.0 |X |X |X |X
 
@@ -54,11 +55,11 @@ Profile |WildFly {wildflyVersion} Full Profile |WildFly {wildflyVersion} Web Pro
 
 |JSR-236: Concurrency Utilities for Java EE 1.0 |X |X |X |X
 
-|JSR-346: Contexts and Dependency Injection for Java 1.1 |X |X |X |X
+|JSR-365: Contexts and Dependency Injection for Java 2.0 |X |X |X |X
 
 |JSR-330: Dependency Injection for Java 1.0 |X |X |X |X
 
-|JSR-349: Bean Validation 1.1 |X |X |X |X
+|JSR-380: Bean Validation 2.0 |X |X |X |X
 
 |JSR-345: Enterprise JavaBeans 3.2 |XCMP 2.0Optional |X(Lite) |XCMP
 2.0Not Available |X(Lite)
@@ -67,21 +68,21 @@ Profile |WildFly {wildflyVersion} Full Profile |WildFly {wildflyVersion} Web Pro
 
 |JSR-322: Java EE Connector Architecture 1.7 |X |-- |X |X
 
-|JSR-338: Java Persistence 2.1 |X |X |X |X
+|JSR-338: Java Persistence 2.2 |X |X |X |X
 
-|JSR-250: Common Annotations for the Java Platform 1.2 |X |X |X |X
+|JSR-250: Common Annotations for the Java Platform 1.3 |X |X |X |X
 
 |JSR-343: Java Message Service API 2.0 |X |-- |X |--
 
 |JSR-907: Java Transaction API 1.2 |X |X |X |X
 
-|JSR-919: JavaMail 1.5 |X |-- |X |X
+|JSR-919: JavaMail 1.6 |X |-- |X |X
 
-|JSR-339: Java API for RESTFul Web Services 2.0 |X |X |X |X
+|JSR-370: Java API for RESTFul Web Services 2.1 |X |X |X |X
 
 |JSR-109: Implementing Enterprise Web Services 1.3 |X |-- |X |--
 
-|JSR-224: Java API for XML-Based Web Services 2.2 |X |X |X |X
+|JSR-224: Java API for XML-Based Web Services 2.3 |X |X |X |X
 
 |JSR-181: Web Services Metadata for the Java Platform |X |-- |X |--
 
@@ -90,6 +91,8 @@ Profile |WildFly {wildflyVersion} Full Profile |WildFly {wildflyVersion} Web Pro
 |JSR-67: Java APIs for XML Messaging 1.3 |X |-- |X |--
 
 |JSR-93: Java API for XML Registries |Optional |-- |-- |--
+
+|JSR-222: Java Architecture for XML Binding (JAXB) 2.3 |X |X |X |X
 
 |JSR-196: Java Authentication Service Provider Interface for Containers
 1.1 |X |-- |X |--
@@ -101,6 +104,8 @@ Profile |WildFly {wildflyVersion} Full Profile |WildFly {wildflyVersion} Web Pro
 |JSR-77: J2EE Management 1.1 |X |  |X | 
 
 |JSR-45: Debugging Support for Other Languages 1.0 |X |X |X |X
+
+|JSR-375: Java EE Security API 1.0 |X |X |X |X
 |=======================================================================
 
 Missing HornetQ and JMS?
@@ -114,35 +119,6 @@ using the "Full Profile" configuration.
 This document provides a quick overview on how to download and get
 started using WildFly {wildflyVersion} for your application development. For in-depth
 content on administrative features, refer to the WildFly {wildflyVersion} Admin Guide.
-
-[[ee8-preview]]
-=== EE8 Preview ===
-By default, WildFly supports Java EE7. We aim to support Java EE8 in the
-future. As we implement Java EE8, and the technologies become available, we offer a preview of these.
-To turn on the Java EE8 preview for these technologies, start the server with `-Dee8.preview.mode=true`.
-Alternatively you can launch with the `standalone-ee8.xml` configuration, which has this property already set.
-Once enabled, this setting will switch the technologies
-as shown in the table below. Note that Java EE8 technologies not listed in the table below
-will remain at Java EE7 level.
-
-[cols=",,,,",options="header"]
-|=======================================================================
-| Name | From Version | From JSR | To Version | To JSR
-
-| Java Servlet | 3.1 | JSR-340 | 4.0 | https://jcp.org/en/jsr/detail?id=370[JSR-369]
-| Contexts and Dependency Injection for Java | 1.2 | JSR-346 | 2.0 | https://jcp.org/en/jsr/detail?id=365[JSR-365]
-| Bean Validation | 1.1 | JSR-349 | 2.0 | https://jcp.org/en/jsr/detail?id=380[JSR-380]
-| JavaServer Faces | 2.2 | JSR-344 | 2.3 | https://jcp.org/en/jsr/detail?id=372[JSR-372]
-| JavaMail | 1.5 | JSR-919 | 1.6 | https://jcp.org/en/jsr/detail?id=919[JSR-919]
-| Java API for RESTFul Web Services | 2.0 | JSR-339 | 2.1 | https://jcp.org/en/jsr/detail?id=370[JSR-370]
-| Java API for JSON Processing | 1.0 | JSR-353 | 1.1 | https://jcp.org/en/jsr/detail?id=374[JSR-374]
-| Java API for JSON Binding | - | - | 1.0 | https://jcp.org/en/jsr/detail?id=367[JSR-367]
-| Java Architecture for XML Binding (JAXB) | 2.2 | JSR-222 | 2.3 | https://jcp.org/en/jsr/detail?id=222[JSR-222]
-| Java API for XML-Based Web Services | 2.2 | JSR-224 | 2.3 | https://jcp.org/en/jsr/detail?id=224[JSR-224]
-| Common Annotations for the Java Platform | 1.2 | JSR-250 | 1.3 | http://download.oracle.com/otndocs/jcp/common_annotations-1_3-mrel3-spec/[JSR-250]
-| Java EE Security API | - | - | 1.0 | https://jcp.org/aboutJava/communityprocess/final/jsr375/index.html[JSR-375]
-| Java Persistence 2.2 | 2.1 | JSR-338 | 2.2 | https://jcp.org/en/jsr/detail?id=338[JSR-338]
-|=======================================================================
 
 [[download]]
 === Download
@@ -312,30 +288,26 @@ process.
 ===== Standalone Server Configurations
 
 * standalone.xml (_default_)
-** Java Enterprise Edition 7 web profile certified configuration with
+** Java Enterprise Edition {javaee_version} web profile certified configuration with
 the required technologies plus those noted in the table above.
 
-* standalone-ee8.xml
-** Java EE8 Preview mode. Same as standalone.xml, but with EE8
-technologies enabled.
-
 * standalone-ha.xml
-** Java Enterprise Edition 7 web profile certified configuration with
+** Java Enterprise Edition {javaee_version} web profile certified configuration with
 high availability
 
 * standalone-full.xml
-** Java Enterprise Edition 7 full profile certified configuration
-including all the required EE 7 technologies
+** Java Enterprise Edition {javaee_version} full profile certified configuration
+including all the required EE {javaee_version} technologies
 
 * standalone-full-ha.xml
-** Java Enterprise Edition 7 full profile certified configuration with
+** Java Enterprise Edition {javaee_version} full profile certified configuration with
 high availability
 
 [[domain-server-configurations]]
 ===== Domain Server Configurations
 
 * domain.xml
-** Java Enterprise Edition 7 full and web profiles available with or
+** Java Enterprise Edition {javaee_version} full and web profiles available with or
 without high availability
 
 Important to note is that the *_domain_* and *_standalone_* modes
