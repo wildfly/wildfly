@@ -50,6 +50,8 @@ import org.wildfly.extension.microprofile.config.smallrye.ServiceNames;
 public class SubsystemDeploymentProcessor implements DeploymentUnitProcessor {
 
     public static final AttachmentKey<Config> CONFIG = AttachmentKey.create(Config.class);
+    public static final AttachmentKey<ConfigProviderResolver> CONFIG_PROVIDER_RESOLVER = AttachmentKey.create(ConfigProviderResolver.class);
+
     /**
      * See {@link Phase} for a description of the different phases
      */
@@ -75,9 +77,11 @@ public class SubsystemDeploymentProcessor implements DeploymentUnitProcessor {
         addConfigSourcesFromServices(builder, phaseContext.getServiceRegistry(), module.getClassLoader());
         Config config = builder.build();
 
+        ConfigProviderResolver configProviderResolver = ConfigProviderResolver.instance();
         deploymentUnit.putAttachment(CONFIG, config);
+        deploymentUnit.putAttachment(CONFIG_PROVIDER_RESOLVER, configProviderResolver);
 
-        ConfigProviderResolver.instance().registerConfig(config, module.getClassLoader());
+        configProviderResolver.registerConfig(config, module.getClassLoader());
 
         if (WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
             WeldPortableExtensions extensions = WeldPortableExtensions.getPortableExtensions(deploymentUnit);
@@ -106,6 +110,8 @@ public class SubsystemDeploymentProcessor implements DeploymentUnitProcessor {
     @Override
     public void undeploy(DeploymentUnit context) {
         Config config = context.getAttachment(CONFIG);
-        ConfigProviderResolver.instance().releaseConfig(config);
+        ConfigProviderResolver configProviderResolver = context.getAttachment(CONFIG_PROVIDER_RESOLVER);
+
+        configProviderResolver.releaseConfig(config);
     }
 }
