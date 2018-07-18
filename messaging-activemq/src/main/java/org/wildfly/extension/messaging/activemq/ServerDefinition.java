@@ -265,10 +265,13 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .build();
 
+    /**
+     * @see ActiveMQDefaultConfiguration#getDefaultJdbcNetworkTimeout()
+     */
     public static final AttributeDefinition JOURNAL_JDBC_NETWORK_TIMEOUT = create("journal-jdbc-network-timeout", INT)
             .setAttributeGroup("journal")
             .setXmlName("jdbc-network-timeout")
-            .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultJdbcNetworkTimeout()))
+            .setDefaultValue(new ModelNode(20))
             .setMeasurementUnit(SECONDS)
             .setRequired(false)
             .setAllowExpression(true)

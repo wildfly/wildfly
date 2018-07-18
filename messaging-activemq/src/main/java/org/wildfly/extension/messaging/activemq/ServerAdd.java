@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.messaging.activemq;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.wildfly.extension.messaging.activemq.Capabilities.ACTIVEMQ_SERVER_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.Capabilities.ELYTRON_DOMAIN_CAPABILITY;
@@ -519,6 +520,9 @@ class ServerAdd extends AbstractAddStepHandler {
         storageConfiguration.setMessageTableName(JOURNAL_MESSAGES_TABLE.resolveModelAttribute(context, model).asString());
         storageConfiguration.setLargeMessageTableName(JOURNAL_LARGE_MESSAGES_TABLE.resolveModelAttribute(context, model).asString());
         storageConfiguration.setPageStoreTableName(JOURNAL_PAGE_STORE_TABLE.resolveModelAttribute(context, model).asString());
+        long networkTimeout = SECONDS.toMillis(JOURNAL_JDBC_NETWORK_TIMEOUT.resolveModelAttribute(context, model).asInt());
+        // ARTEMIS-1493: Artemis API is not correct. the value must be in millis but it requires an int instead of a long.
+        storageConfiguration.setJdbcNetworkTimeout((int)networkTimeout);
         storageConfiguration.setJdbcNetworkTimeout(JOURNAL_JDBC_NETWORK_TIMEOUT.resolveModelAttribute(context, model).asInt());
         ModelNode databaseNode = JOURNAL_DATABASE.resolveModelAttribute(context, model);
         final String database = databaseNode.isDefined() ? databaseNode.asString() : null;
