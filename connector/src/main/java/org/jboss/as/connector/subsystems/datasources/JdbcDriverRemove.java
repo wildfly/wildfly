@@ -44,6 +44,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
+import org.jboss.modules.ModuleNotFoundException;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
@@ -84,6 +85,9 @@ public class JdbcDriverRemove extends AbstractRemoveStepHandler {
         try {
             moduleId = ModuleIdentifier.fromString(moduleName);
             module = Module.getCallerModuleLoader().loadModule(moduleId);
+        } catch (ModuleNotFoundException e) {
+            context.getFailureDescription().set(ConnectorLogger.ROOT_LOGGER.missingDependencyInModuleDriver(moduleName, e.getMessage()));
+            return;
         } catch (ModuleLoadException e) {
             context.getFailureDescription().set(ConnectorLogger.ROOT_LOGGER.failedToLoadModuleDriver(moduleName));
             return;

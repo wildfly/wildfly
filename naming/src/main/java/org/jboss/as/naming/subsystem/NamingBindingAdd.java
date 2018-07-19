@@ -57,6 +57,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
+import org.jboss.modules.ModuleNotFoundException;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.ImmediateValue;
@@ -166,6 +167,8 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
         final Module module;
         try {
             module = Module.getBootModuleLoader().loadModule(moduleID);
+        } catch (ModuleNotFoundException e) {
+            throw NamingLogger.ROOT_LOGGER.moduleNotFound(moduleID, e.getMessage());
         } catch (ModuleLoadException e) {
             throw NamingLogger.ROOT_LOGGER.couldNotLoadModule(moduleID);
         }

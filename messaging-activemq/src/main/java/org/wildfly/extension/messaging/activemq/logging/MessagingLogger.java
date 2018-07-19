@@ -47,6 +47,7 @@ import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.modules.ModuleLoadException;
+import org.jboss.modules.ModuleNotFoundException;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
@@ -854,4 +855,7 @@ public interface MessagingLogger extends BasicLogger {
 
     @Message(id = 97, value = "There is no socket-binding or outbound-socket-binding configured with the name %s")
     OperationFailedException noSocketBinding(String connectorSocketBinding);
+
+    @Message(id = 98, value = "Unable to load module %s - the module or one of its dependencies is missing [%s]")
+    OperationFailedException moduleNotFound(String moduleName, String missingModule, @Cause ModuleNotFoundException e);
 }
