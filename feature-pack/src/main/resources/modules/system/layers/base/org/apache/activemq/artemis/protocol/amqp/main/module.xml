@@ -30,6 +30,7 @@
     <dependencies>
         <module name="javax.jms.api"/>
         <module name="org.apache.qpid.proton"/>
+        <module name="io.netty"/>
         <!-- required to load ActiveMQ protocol SPI -->
         <module name="org.apache.activemq.artemis"/>
         <module name="org.jboss.logging"/>
