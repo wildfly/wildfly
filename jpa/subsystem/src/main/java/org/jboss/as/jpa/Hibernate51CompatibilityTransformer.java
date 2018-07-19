@@ -54,15 +54,24 @@ public class Hibernate51CompatibilityTransformer implements ClassFileTransformer
         final ClassReader classReader = new ClassReader(classfileBuffer);
         final ClassWriter cv = new ClassWriter(classReader, 0);
         classReader.accept(new ClassVisitor(Opcodes.ASM6, cv) {
-        boolean implementsUserType = false;
+            boolean implementsUserType = false;
+            boolean implementsCompositeUserType = false;
+            boolean implementsUserCollectionType = false;
+
             @Override
             public void visit(int version, int access, String name, String signature,
-                        String superName, String[] interfaces) {
+                              String superName, String[] interfaces) {
                 if (interfaces != null) {
                     for (String interfaceName : interfaces) {
-                        if("org/hibernate/usertype/UserType".equals(interfaceName)) {
+                        if ("org/hibernate/usertype/UserType".equals(interfaceName)) {
                             implementsUserType = true;
+                        } else if ("org/hibernate/usertype/CompositeUserType".equals(interfaceName)) {
+                            implementsCompositeUserType = true;
+                        } else if ("org/hibernate/usertype/UserCollectionType".equals(interfaceName)) {
+                            implementsUserCollectionType = true;
                         }
+
+
                     }
                 }
                 super.visit(version, access, name, signature, superName, interfaces);
@@ -70,17 +79,79 @@ public class Hibernate51CompatibilityTransformer implements ClassFileTransformer
 
             @Override
             public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
+                // TODO: cover checking for classes that implement more than one of the (checked) ORM interfaces.
+                // Step 1:  check if the method name matches one of the target methods.
+                // Step 2:  replace all Lorg/hibernate/engine/spi/SessionImplementor with Lorg/hibernate/engine/spi/SharedSessionContractImplementor
+                // Step 3:  save the parameter number of the replaced SessionImplementor and pass to MethodAdapter
+                // Step 4:  update MethodAdapter to generate a local variable that is assigned the specified parameter SharedSessionContractImplementor,
+                //          casted to SessionImplementor.
+                // Step 5:  replace all parameter references to the SharedSessionContractImplementor, with the new local variable.
+
                 // change SessionImplementor parameter to SharedSessionContractImplementor
-                if (implementsUserType && name.equals("nullSafeGet")  &&
-                        "(Ljava/sql/ResultSet;[Ljava/lang/String;Lorg/hibernate/engine/spi/SessionImplementor;Ljava/lang/Object;)Ljava/lang/Object;".equals(desc)) {
-                    desc = "(Ljava/sql/ResultSet;[Ljava/lang/String;Lorg/hibernate/engine/spi/SharedSessionContractImplementor;Ljava/lang/Object;)Ljava/lang/Object;";
+                MethodParameterCast methodParameterCast = null;
+                if (implementsUserType || implementsCompositeUserType) { // nullSafeGet/nullSafeSet methods are used in a few different classes
+                    if (name.equals("nullSafeGet") &&
+                            "(Ljava/sql/ResultSet;[Ljava/lang/String;Lorg/hibernate/engine/spi/SessionImplementor;Ljava/lang/Object;)Ljava/lang/Object;".equals(desc)) {
+                        desc = "(Ljava/sql/ResultSet;[Ljava/lang/String;Lorg/hibernate/engine/spi/SharedSessionContractImplementor;Ljava/lang/Object;)Ljava/lang/Object;";
+                        methodParameterCast = new MethodParameterCast(2, "org/hibernate/engine/spi/SessionImplementor");
+                    } else if (name.equals("nullSafeSet") &&
+                            "(Ljava/sql/PreparedStatement;Ljava/lang/Object;ILorg/hibernate/engine/spi/SessionImplementor;)V".equals(desc)) {
+                        desc = "(Ljava/sql/PreparedStatement;Ljava/lang/Object;ILorg/hibernate/engine/spi/SharedSessionContractImplementor;)V";
+                        methodParameterCast = new MethodParameterCast(2, "org/hibernate/engine/spi/SessionImplementor");
+                    }
                 }
-                if (implementsUserType && name.equals("nullSafeSet") &&
-                        "(Ljava/sql/PreparedStatement;Ljava/lang/Object;ILorg/hibernate/engine/spi/SessionImplementor;)V".equals(desc)) {
-                    desc = "(Ljava/sql/PreparedStatement;Ljava/lang/Object;ILorg/hibernate/engine/spi/SharedSessionContractImplementor;)V";
+                if (implementsCompositeUserType) {
+                    if (name.equals("assemble") &&
+                            "(Ljava/io/Serializable;Lorg/hibernate/engine/spi/SessionImplementor;Ljava/lang/Object;)Ljava/lang/Object;".equals(desc)) {
+                        desc = "(Ljava/io/Serializable;Lorg/hibernate/engine/spi/SharedSessionContractImplementor;Ljava/lang/Object;)Ljava/lang/Object;";
+                        methodParameterCast = new MethodParameterCast(1, "org/hibernate/engine/spi/SessionImplementor");
+                    } else if (name.equals("disassemble") &&
+                            "(Ljava/lang/Object;Lorg/hibernate/engine/spi/SessionImplementor;)Ljava/io/Serializable;".equals(desc)) {
+                        desc = "(Ljava/lang/Object;Lorg/hibernate/engine/spi/SharedSessionContractImplementor;)Ljava/io/Serializable;";
+                        methodParameterCast = new MethodParameterCast(1, "org/hibernate/engine/spi/SessionImplementor");
+                    }
+                    else if (name.equals("replace") &&
+                            "(Ljava/lang/Object;Ljava/lang/Object;Lorg/hibernate/engine/spi/SessionImplementor;Ljava/lang/Object;)Ljava/lang/Object;".equals(desc)) {
+                        desc = "(Ljava/lang/Object;Ljava/lang/Object;Lorg/hibernate/engine/spi/SharedSessionContractImplementor;Ljava/lang/Object;)Ljava/lang/Object;";
+                        methodParameterCast = new MethodParameterCast(2, "org/hibernate/engine/spi/SessionImplementor");
+                    }
+                }
+                if (implementsUserCollectionType) {
+                    if (name.equals("instantiate") &&
+                            "(Lorg/hibernate/engine/spi/SessionImplementor;Lorg/hibernate/persister/collection/CollectionPersister;)Lorg/hibernate/collection/spi/PersistentCollection;".equals(desc)) {
+                        desc = "(Lorg/hibernate/engine/spi/SharedSessionContractImplementor;Lorg/hibernate/persister/collection/CollectionPersister;)Lorg/hibernate/collection/spi/PersistentCollection;";
+                        methodParameterCast = new MethodParameterCast(0, "org/hibernate/engine/spi/SessionImplementor");
+                    } else if (name.equals("replaceElements") &&
+                            "(Ljava/lang/Object;Ljava/lang/Object;Lorg/hibernate/persister/collection/CollectionPersister;Ljava/lang/Object;Ljava/util/Map;Lorg/hibernate/engine/spi/SessionImplementor;)Ljava/lang/Object;".equals(desc)) {
+                        desc = "(Ljava/lang/Object;Ljava/lang/Object;Lorg/hibernate/persister/collection/CollectionPersister;Ljava/lang/Object;Ljava/util/Map;Lorg/hibernate/engine/spi/SharedSessionContractImplementor;)Ljava/lang/Object;";
+                        methodParameterCast = new MethodParameterCast(5, "org/hibernate/engine/spi/SessionImplementor");
+                    } else if (name.equals("wrap") &&
+                            "(Lorg/hibernate/engine/spi/SessionImplementor;Ljava/lang/Object;)Lorg/hibernate/collection/spi/PersistentCollection;".equals(desc)) {
+                        desc = "(Lorg/hibernate/engine/spi/SharedSessionContractImplementor;Ljava/lang/Object;)Lorg/hibernate/collection/spi/PersistentCollection;";
+                        methodParameterCast = new MethodParameterCast(0, "org/hibernate/engine/spi/SessionImplementor");
+                    }
+
                 }
 
-                return new MethodAdapter(Opcodes.ASM6,super.visitMethod(access, name, desc, signature, exceptions), loader, className);
+                // TODO: UserVersionType
+                // TODO: org.hibernate.type.Type
+                // TODO: org.hibernate.type.SingleColumnType
+                // TODO: org.hibernate.type.AbstractStandardBasicType
+                // TODO: org.hibernate.type.VersionType
+                // TODO: org.hibernate.type.ProcedureParameterExtractionAware
+                // TODO: org.hibernate.type.ProcedureParameterNamedBinder
+                // TODO: org.hibernate.collection.spi.PersistentCollection
+                // TODO: org.hibernate.collection.internal.AbstractPersistentCollection
+                // TODO: org.hibernate.collection.internal.PersistentArrayHolder constructors
+                // TODO: org.hibernate.collection.internal.PersistentBag constructors
+                // TODO: org.hibernate.collection.internal.PersistentIdentifierBag
+                // TODO: org.hibernate.collection.internal.PersistentList constructors
+                // TODO: org.hibernate.collection.internal.PersistentMap constructors
+                // TODO: org.hibernate.collection.internal.PersistentSet constructors
+                // TODO: org.hibernate.collection.internal.PersistentSortedMap constructors
+                // TODO: org.hibernate.collection.internal.PersistentSortedSet constructors
+
+                return new MethodAdapter(Opcodes.ASM6, super.visitMethod(access, name, desc, signature, exceptions), loader, className, methodParameterCast);
             }
         }, 0);
         return cv.toByteArray();
@@ -93,13 +164,25 @@ public class Hibernate51CompatibilityTransformer implements ClassFileTransformer
         return loader.toString();
     }
 
+    // generates visitTypeInsn(CHECKCAST, targetClass) for specified parameterNumber and
+    // also changes parameter references to use (casted) local variable.
+    protected static class MethodParameterCast {
+        private final int parameterNumber; // zero relative method parameter number to load that will be casted to targetClass
+        private final String targetClass;  // e.g. should be in form "java/util/List"
+
+        protected MethodParameterCast(int parameterNumber, String castParameterTo) {
+            this.parameterNumber = parameterNumber;
+            this.targetClass = castParameterTo;
+        }
+    }
+
     protected static class MethodAdapter extends MethodVisitor {
 
         private final MethodVisitor mv;
         private final ClassLoader loader;
         private final String className;
 
-        private MethodAdapter(int api, MethodVisitor mv, final ClassLoader loader, final String className) {
+        private MethodAdapter(int api, MethodVisitor mv, final ClassLoader loader, final String className, MethodParameterCast methodParameterCast) {
             super(api, mv);
             this.mv = mv;
             this.loader = loader;
