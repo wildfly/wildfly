@@ -38,6 +38,7 @@ import org.jboss.as.ee.component.interceptors.ComponentDispatcherInterceptor;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.component.serialization.WriteReplaceInterface;
 import org.jboss.as.ejb3.logging.EjbLogger;
+import org.jboss.as.ejb3.util.EjbValidationsUtil;
 import org.jboss.as.ejb3.component.EjbHomeViewDescription;
 import org.jboss.as.ejb3.component.interceptors.GetHomeInterceptorFactory;
 import org.jboss.as.server.deployment.Attachments;
@@ -116,12 +117,14 @@ public abstract class SessionBeanObjectViewConfigurator implements ViewConfigura
                     if(!Modifier.isPublic(componentMethod.getModifiers())) {
                         throw EjbLogger.ROOT_LOGGER.ejbBusinessMethodMustBePublic(componentMethod);
                     }
+
                     configuration.addViewInterceptor(method, new ImmediateInterceptorFactory(new ComponentDispatcherInterceptor(componentMethod)), InterceptorOrder.View.COMPONENT_DISPATCHER);
                     configuration.addClientInterceptor(method, ViewDescription.CLIENT_DISPATCHER_INTERCEPTOR_FACTORY, InterceptorOrder.Client.CLIENT_DISPATCHER);
                 } else if(method.getDeclaringClass() != Object.class && method.getDeclaringClass() != WriteReplaceInterface.class) {
                     throw EjbLogger.ROOT_LOGGER.couldNotFindViewMethodOnEjb(method, description.getViewClassName(), componentConfiguration.getComponentName());
                 }
             }
+            EjbValidationsUtil.verifyMethodIsNotFinalNorStatic(method, index.getClass().getName());
         }
 
         configuration.addClientPostConstructInterceptor(Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ClientPostConstruct.TERMINAL_INTERCEPTOR);

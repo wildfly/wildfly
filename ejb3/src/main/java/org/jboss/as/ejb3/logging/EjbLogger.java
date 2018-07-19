@@ -773,6 +773,10 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 130, value = "EJB %s of type %s must not be declared final")
     DeploymentUnitProcessingException ejbMustNotBeFinalClass(String componentName, String componentClassName);
 
+    @LogMessage(level = WARN)
+    @Message(id = 131, value = "EJB %s should not have a final or static method (%s)")
+    void ejbMethodMustNotBeFinalNorStatic(String ejbName, String methodName);
+
 //    @Message(id = 131, value = "EJB client context selector failed due to unavailability of %s service")
 //    IllegalStateException ejbClientContextSelectorUnableToFunctionDueToMissingService(ServiceName serviceName);
 

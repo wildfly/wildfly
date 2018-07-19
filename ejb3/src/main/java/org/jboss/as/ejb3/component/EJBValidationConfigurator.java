@@ -23,18 +23,16 @@
 package org.jboss.as.ejb3.component;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Modifier;
 
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ViewDescription;
-import org.jboss.as.ejb3.logging.EjbLogger;
+import org.jboss.as.ejb3.util.EjbValidationsUtil;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
-import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 
 /**
  *
@@ -52,8 +50,7 @@ public class EJBValidationConfigurator implements ComponentConfigurator {
 
     @Override
     public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
-        final DeploymentReflectionIndex deploymentReflectionIndex = context.getDeploymentUnit().getAttachment(Attachments.REFLECTION_INDEX);
-        final ClassReflectionIndex classIndex = deploymentReflectionIndex.getClassIndex(configuration.getComponentClass());
+        final ClassReflectionIndex classIndex = context.getDeploymentUnit().getAttachment(Attachments.REFLECTION_INDEX).getClassIndex(configuration.getComponentClass());
         final Constructor<?> ctor = classIndex.getConstructor(new String[0]);
         boolean noInterface = false;
         for(ViewDescription view : description.getViews()) {
@@ -61,18 +58,12 @@ public class EJBValidationConfigurator implements ComponentConfigurator {
                 noInterface = true;
             }
         }
-        if(ctor == null && noInterface) {
-            //we only validate this for no interface views
-            throw EjbLogger.ROOT_LOGGER.ejbMustHavePublicDefaultConstructor(description.getComponentName(), description.getComponentClassName());
-        }
-        if(configuration.getComponentClass().getEnclosingClass() != null) {
-            throw EjbLogger.ROOT_LOGGER.ejbMustNotBeInnerClass(description.getComponentName(), description.getComponentClassName());
-        }
-        if(!Modifier.isPublic(configuration.getComponentClass().getModifiers())) {
-            throw EjbLogger.ROOT_LOGGER.ejbMustBePublicClass(description.getComponentName(), description.getComponentClassName());
-        }
-        if(Modifier.isFinal(configuration.getComponentClass().getModifiers())) {
-            throw EjbLogger.ROOT_LOGGER.ejbMustNotBeFinalClass(description.getComponentName(), description.getComponentClassName());
-        }
+
+        EjbValidationsUtil.getBusinessMethods(configuration.getComponentClass());
+
+        EjbValidationsUtil.verifyEjbClassAndDefaultConstructor(ctor, configuration.getComponentClass().getEnclosingClass(), noInterface, description.getComponentName(), description.getComponentClassName(), configuration.getComponentClass().getModifiers());
+        EjbValidationsUtil.verifyEjbPublicMethodAreNotFinalNorStatic(configuration.getComponentClass().getDeclaredMethods(),description.getComponentClassName());
+        for ( Class<?> interfaceClass : configuration.getComponentClass().getInterfaces())
+            EjbValidationsUtil.verifyEjbPublicMethodAreNotFinalNorStatic(interfaceClass.getDeclaredMethods(), interfaceClass.getCanonicalName());
     }
 }
