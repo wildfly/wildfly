@@ -9,7 +9,12 @@
     <config-source name="configSourceFromClass">
         <class name="foo.bar.MyConfigSource" module="foo.bar" />
     </config-source>
-    <config-source name="configSourceFromDir" dir="${java.io.tmpdir}" />
+    <config-source name="configSourceFromAbsoluteDir">
+        <dir path="${java.io.tmpdir}" />
+    </config-source>
+    <config-source name="configSourceFromRelativeDir">
+        <dir path="myConfigDir" relative-to="java.io.tmpdir" />
+    </config-source>
     <config-source-provider name="myConfigSourceProvider">
         <class name="foo.bar.MyConfigSourceProvider" module="foo.bar" />
     </config-source-provider>

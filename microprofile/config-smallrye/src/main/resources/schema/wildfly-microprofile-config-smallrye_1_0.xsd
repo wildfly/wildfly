@@ -45,9 +45,14 @@
                                 </xs:element>
                             </xs:sequence>
                             <xs:element name="class" type="classType" minOccurs="0" maxOccurs="1" />
+                            <xs:element name="dir" minOccurs="0" maxOccurs="1">
+                                <xs:complexType>
+                                    <xs:attribute name="path" type="xs:string" use="required" />
+                                    <xs:attribute name="relative-to" type="xs:string" />
+                                </xs:complexType>
+                            </xs:element>
                         </xs:choice>
                         <xs:attribute name="ordinal" type="xs:nonNegativeInteger" use="optional" />
-                        <xs:attribute name="dir" type="xs:string" use="optional" />
                         <xs:attribute name="name" type="xs:string" use="required" />
                     </xs:complexType>
                 </xs:element>

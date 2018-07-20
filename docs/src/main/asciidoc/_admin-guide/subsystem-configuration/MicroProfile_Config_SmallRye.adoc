@@ -61,7 +61,7 @@ We can create a config-source` to access these properties by using the operation
 
 [source]
 ----
-/subsystem=microprofile-config-smallrye/config-source=file-props:add(dir=/etc/config/numbers-app)
+/subsystem=microprofile-config-smallrye/config-source=file-props:add(dir={path=/etc/config/numbers-app})
 ----
 
 This results in the XML configuration:
@@ -69,7 +69,9 @@ This results in the XML configuration:
 [source,xml]
 ----
 <subsystem xmlns="urn:wildfly:microprofile-config-smallrye:1.0">
-    <config-source name="file-props" dir="/etc/config/numbers-app"/>
+    <config-source name="file-props">
+        <dir path="/etc/config/numbers-app"/>
+    </config-source>
 </subsystem>
 ----
 

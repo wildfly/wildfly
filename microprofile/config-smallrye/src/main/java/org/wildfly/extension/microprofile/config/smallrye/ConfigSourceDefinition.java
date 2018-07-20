@@ -23,16 +23,15 @@
 package org.wildfly.extension.microprofile.config.smallrye;
 
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FILESYSTEM_PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODULE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.wildfly.extension.microprofile.config.smallrye._private.MicroProfileConfigLogger.ROOT_LOGGER;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 
-import io.smallrye.config.DirConfigSource;
 import io.smallrye.config.PropertiesConfigSource;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -47,6 +46,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.modules.Module;
@@ -81,11 +81,22 @@ class ConfigSourceDefinition extends PersistentResourceDefinition {
             .setAllowNull(true)
             .setAttributeMarshaller(AttributeMarshaller.ATTRIBUTE_OBJECT)
             .setRestartAllServices()
+            .setCapabilityReference("org.wildfly.management.path-manager")
             .build();
-    static AttributeDefinition DIR = SimpleAttributeDefinitionBuilder.create("dir", ModelType.STRING)
+
+    static AttributeDefinition PATH = create(ModelDescriptionConstants.PATH, ModelType.STRING, false)
             .setAllowExpression(true)
-            .setAlternatives("class", "properties")
+            .addArbitraryDescriptor(FILESYSTEM_PATH, new ModelNode(true))
+            .build();
+
+    static AttributeDefinition RELATIVE_TO = create(ModelDescriptionConstants.RELATIVE_TO, ModelType.STRING, true)
+            .setAllowExpression(false)
+            .build();
+
+    static ObjectTypeAttributeDefinition DIR = ObjectTypeAttributeDefinition.Builder.of("dir", PATH, RELATIVE_TO)
+            .setAlternatives("properties", "class")
             .setAllowNull(true)
+            .setAttributeMarshaller(AttributeMarshaller.ATTRIBUTE_OBJECT)
             .setRestartAllServices()
             .build();
 
@@ -113,18 +124,20 @@ class ConfigSourceDefinition extends PersistentResourceDefinition {
                             Class configSourceClass = unwrapClass(classModel);
                             try {
                                 configSource = ConfigSource.class.cast(configSourceClass.newInstance());
+                                MicroProfileConfigLogger.ROOT_LOGGER.loadConfigSourceFromClass(configSourceClass);
+                                ConfigSourceService.install(context, name, configSource);
                             } catch (Exception e) {
                                 throw new OperationFailedException(e);
                             }
                         } else if (dirModel.isDefined()) {
-                            File dir = new File(dirModel.asString());
-                            configSource = new DirConfigSource(dir, ordinal);
+                            String path = PATH.resolveModelAttribute(context, dirModel).asString();
+                            String relativeTo = RELATIVE_TO.resolveModelAttribute(context, dirModel).asStringOrNull();
+                            DirConfigSourceService.install(context, name, path, relativeTo, ordinal);
                         } else {
                             Map<String, String> properties = PropertiesAttributeDefinition.unwrapModel(context, props);
                             configSource = new PropertiesConfigSource(properties, name, ordinal);
+                            ConfigSourceService.install(context, name, configSource);
                         }
-                        MicroProfileConfigLogger.ROOT_LOGGER.info("Reading properties from " + configSource.getName());
-                        ConfigSourceService.install(context, name, configSource);
                     }
                 }, new AbstractRemoveStepHandler() {
                     @Override
