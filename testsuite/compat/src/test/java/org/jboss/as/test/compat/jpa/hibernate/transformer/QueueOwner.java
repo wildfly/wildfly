@@ -21,11 +21,27 @@
  */
 package org.jboss.as.test.compat.jpa.hibernate.transformer;
 
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.Queue;
 
-/**
- * @author Emmanuel Bernard
- */
-public enum State {
-    ACTIVE,
-    DORMANT
+public class QueueOwner {
+    private Integer id;
+    private Collection<String> strings = new LinkedList<>();
+
+    public Queue<String> getStrings() {
+        return (Queue<String>) strings;
+    }
+
+    public void setStrings(Queue<String> strings) {
+        this.strings = strings;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
 }

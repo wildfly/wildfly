@@ -26,7 +26,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -77,6 +80,13 @@ public class VerifyHibernate51CompatibilityTestCase {
             + "<id name=\"id\">" + "<generator class=\"assigned\"/>" + "</id>"
             + "<property name=\"state\" type=\"org.jboss.as.test.compat.jpa.hibernate.transformer.StateType\"/>"
             + "</class>"
+            + "<class name=\"org.jboss.as.test.compat.jpa.hibernate.transformer.QueueOwner\" table=\"QUEUE_OWNER\">"
+            + "<id name=\"id\">" + "<generator class=\"assigned\"/>" + "</id>"
+            + "<bag name=\"strings\" collection-type=\"org.jboss.as.test.compat.jpa.hibernate.transformer.QueueType\">"
+            + "<key column=\"ownerId\"/>"
+            + "<element type=\"string\"/>"
+            + "</bag>"
+            + "</class>"
             + "</hibernate-mapping>";
 
     @ArquillianResource
@@ -92,7 +102,7 @@ public class VerifyHibernate51CompatibilityTestCase {
 
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, ARCHIVE_NAME + ".ear");
         // add required jars as manifest dependencies
-        ear.addAsManifestResource(new StringAsset("Dependencies: org.hibernate\n"), "MANIFEST.MF");
+        ear.addAsManifestResource( new StringAsset( "Dependencies: org.hibernate\n" ), "MANIFEST.MF" );
 
         JavaArchive lib = ShrinkWrap.create(JavaArchive.class, "beans.jar");
         lib.addClasses(SFSBHibernateSessionFactory.class);
@@ -103,6 +113,9 @@ public class VerifyHibernate51CompatibilityTestCase {
         lib.addClasses(Gene.class);
         lib.addClasses(State.class);
         lib.addClasses(StateType.class);
+        lib.addClasses(QueueOwner.class);
+        lib.addClasses(QueueType.class);
+        lib.addClasses(PersistentQueue.class);
         lib.addAsResource(new StringAsset(testmapping), "testmapping.hbm.xml");
         lib.addAsResource(new StringAsset(hibernate_cfg), "hibernate.cfg.xml");
         ear.addAsLibraries(lib);
@@ -425,5 +438,28 @@ public class VerifyHibernate51CompatibilityTestCase {
             sfsb.cleanup();
         }
     }
+
+    @Test
+    public void testCollectionUserTypeImplementedPersistentBagExtended() throws Exception {
+
+        SFSBHibernateSessionFactory sfsb = lookup("SFSBHibernateSessionFactory", SFSBHibernateSessionFactory.class);
+        // setup Configuration and SessionFactory
+        sfsb.setupConfig();
+        try {
+            Queue queue = new LinkedList<String>();
+            queue.add( "first" );
+            queue.add( "second" );
+            sfsb.createQueueOwner( 1, queue );
+            final QueueOwner queueOwner = sfsb.getQueueOwner( 1 );
+            assertEquals( 2, queueOwner.getStrings().size() );
+            final Iterator<String> it = queueOwner.getStrings().iterator();
+            assertEquals( "first", it.next() );
+            assertEquals( "second", it.next() );
+
+        } finally {
+            sfsb.cleanup();
+        }
+    }
+
 
 }

@@ -21,11 +21,51 @@
  */
 package org.jboss.as.test.compat.jpa.hibernate.transformer;
 
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Queue;
 
-/**
- * @author Emmanuel Bernard
- */
-public enum State {
-    ACTIVE,
-    DORMANT
+import org.hibernate.collection.internal.PersistentBag;
+import org.hibernate.engine.spi.SessionImplementor;
+
+public class PersistentQueue extends PersistentBag implements Queue {
+
+    public PersistentQueue(SessionImplementor session) {
+        super( session );
+    }
+
+    public PersistentQueue(SessionImplementor session, List list) {
+        super( session, list );
+    }
+
+    @Override
+    public boolean offer(Object o) {
+        return add( o );
+    }
+
+    @Override
+    public Object remove() {
+        return poll();
+    }
+
+    @Override
+    public Object poll() {
+        int size = size();
+        if(size > 0) {
+            Object first = get(0);
+            remove( 0 );
+            return first;
+        }
+        throw new NoSuchElementException();
+    }
+
+    @Override
+    public Object element() {
+        return peek();
+    }
+
+    @Override
+    public Object peek() {
+        return size() > 0 ? get( 0 ) : null;
+    }
 }

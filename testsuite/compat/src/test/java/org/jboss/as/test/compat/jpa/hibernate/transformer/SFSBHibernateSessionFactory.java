@@ -24,6 +24,7 @@ package org.jboss.as.test.compat.jpa.hibernate.transformer;
 
 import java.util.List;
 import java.util.Properties;
+import java.util.Queue;
 
 import javax.ejb.Stateful;
 import javax.ejb.TransactionManagement;
@@ -218,4 +219,35 @@ public class SFSBHibernateSessionFactory {
             throw new RuntimeException("transactional failure while getting gene entity", e);
         }
    }
+
+    public QueueOwner createQueueOwner(Integer id, Queue strings) {
+        final QueueOwner queueOwner = new QueueOwner();
+        queueOwner.setId( id );
+        queueOwner.setStrings(strings );
+        try {
+            Session session = sessionFactory.openSession();
+            Transaction tx = session.beginTransaction();
+            session.save( queueOwner );
+            session.flush();
+            tx.commit();
+            session.close();
+        } catch (Exception e) {
+            throw new RuntimeException("transactional failure while persisting QueueOwner entity", e);
+        }
+
+        return queueOwner;
+    }
+
+    public QueueOwner getQueueOwner(int id) {
+        try {
+            Session session = sessionFactory.openSession();
+            Transaction tx = session.beginTransaction();
+            QueueOwner queueOwner = session.get( QueueOwner.class, id );
+            tx.commit();
+            session.close();
+            return queueOwner;
+        } catch (Exception e) {
+            throw new RuntimeException("transactional failure while getting gene entity", e);
+        }
+    }
 }
