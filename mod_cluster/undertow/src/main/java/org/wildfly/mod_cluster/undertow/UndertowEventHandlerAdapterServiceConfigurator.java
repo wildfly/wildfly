@@ -31,7 +31,6 @@ import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.modcluster.container.ContainerEventHandler;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.service.AsyncServiceConfigurator;
 import org.wildfly.clustering.service.CompositeDependency;
@@ -48,7 +47,7 @@ import org.wildfly.extension.undertow.UndertowService;
  * @author Paul Ferraro
  * @author Radoslav Husar
  */
-public class UndertowEventHandlerAdapterServiceConfigurator implements CapabilityServiceConfigurator, UndertowEventHandlerAdapterConfiguration {
+public class UndertowEventHandlerAdapterServiceConfigurator extends UndertowEventHandlerAdapterServiceNameProvider implements CapabilityServiceConfigurator, UndertowEventHandlerAdapterConfiguration {
 
     private final String proxyName;
     private final String listenerName;
@@ -61,18 +60,10 @@ public class UndertowEventHandlerAdapterServiceConfigurator implements Capabilit
     private volatile SupplierDependency<UndertowListener> listener;
 
     public UndertowEventHandlerAdapterServiceConfigurator(String proxyName, String listenerName, Duration statusInterval) {
+        super(proxyName);
         this.proxyName = proxyName;
         this.listenerName = listenerName;
         this.statusInterval = statusInterval;
-    }
-
-    @Override
-    public ServiceName getServiceName() {
-        return getServiceName(proxyName);
-    }
-
-    public static ServiceName getServiceName(String name) {
-        return ProxyConfigurationResourceDefinition.Capability.SERVICE.getDefinition().getCapabilityServiceName(name).append("undertow");
     }
 
     @Override

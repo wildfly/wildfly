@@ -69,7 +69,7 @@ public class ModClusterUndertowDeploymentProcessor implements DeploymentUnitProc
 
         // Add mod_cluster-undertow integration service as a web deployment dependency
         for (String adapter : adapterNames) {
-            deploymentUnit.addToAttachmentList(Attachments.WEB_DEPENDENCIES, UndertowEventHandlerAdapterServiceConfigurator.getServiceName(adapter));
+            deploymentUnit.addToAttachmentList(Attachments.WEB_DEPENDENCIES, new UndertowEventHandlerAdapterServiceNameProvider(adapter).getServiceName());
         }
 
         // Request count wrapping
