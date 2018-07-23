@@ -77,11 +77,19 @@ public class MessagingSubsystemParser_4_0 extends PersistentResourceXMLParser {
                         RemoteTransportDefinition.SOCKET_BINDING,
                         CommonAttributes.PARAMS);
 
+        final PersistentResourceXMLBuilder httpConnector = builder(MessagingExtension.HTTP_CONNECTOR_PATH)
+                .addAttributes(
+                        HTTPConnectorDefinition.SOCKET_BINDING,
+                        HTTPConnectorDefinition.ENDPOINT,
+                        HTTPConnectorDefinition.SERVER_NAME,
+                        CommonAttributes.PARAMS);
+
         return builder(MessagingExtension.SUBSYSTEM_PATH, NAMESPACE)
                 .addAttributes(
                         MessagingSubsystemRootResourceDefinition.GLOBAL_CLIENT_THREAD_POOL_MAX_SIZE,
                         MessagingSubsystemRootResourceDefinition.GLOBAL_CLIENT_SCHEDULED_THREAD_POOL_MAX_SIZE)
                 .addChild(remoteConnector)
+                .addChild(httpConnector)
                 .addChild(discoveryGroup)
                 .addChild(
                         builder(MessagingExtension.SERVER_PATH)
@@ -311,13 +319,7 @@ public class MessagingSubsystemParser_4_0 extends PersistentResourceXMLParser {
                                                         AddressSettingDefinition.SLOW_CONSUMER_THRESHOLD,
                                                         AddressSettingDefinition.AUTO_CREATE_JMS_QUEUES,
                                                         AddressSettingDefinition.AUTO_DELETE_JMS_QUEUES))
-                                .addChild(
-                                        builder(MessagingExtension.HTTP_CONNECTOR_PATH)
-                                                .addAttributes(
-                                                        HTTPConnectorDefinition.SOCKET_BINDING,
-                                                        HTTPConnectorDefinition.ENDPOINT,
-                                                        HTTPConnectorDefinition.SERVER_NAME,
-                                                        CommonAttributes.PARAMS))
+                                .addChild(httpConnector)
                                 .addChild(remoteConnector)
                                 .addChild(
                                         builder(pathElement(IN_VM_CONNECTOR))

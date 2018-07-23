@@ -72,6 +72,7 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
     private static void registerTransformers_EAP_7_2_0(ResourceTransformationDescriptionBuilder subsystem) {
         subsystem.rejectChildResource(DiscoveryGroupDefinition.PATH);
         subsystem.rejectChildResource(PathElement.pathElement(REMOTE_CONNECTOR));
+        subsystem.rejectChildResource(MessagingExtension.HTTP_CONNECTOR_PATH);
 
         ResourceTransformationDescriptionBuilder server = subsystem.addChildResource(MessagingExtension.SERVER_PATH);
         // WFLY-10165 - journal-jdbc-network-timeout default value is 20 seconds.

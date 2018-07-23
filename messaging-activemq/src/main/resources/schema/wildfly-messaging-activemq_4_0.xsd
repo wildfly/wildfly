@@ -39,6 +39,7 @@
                     </xs:complexType>
                 </xs:element>
                 <xs:element name="remote-connector" type="remote-connectorType" minOccurs="0" maxOccurs="unbounded" />
+                <xs:element name="http-connector" type="http-connectorType" minOccurs="0" maxOccurs="unbounded" />
                 <xs:element name="discovery-group" type="discovery-groupType" minOccurs="0" maxOccurs="unbounded" />
                 <xs:element maxOccurs="unbounded" minOccurs="0" name="server" type="serverType" />
                 <xs:element maxOccurs="unbounded" minOccurs="0" name="jms-bridge" type="jms-bridgeType" />
@@ -282,23 +283,9 @@
                 </xs:complexType>
             </xs:element>
 
-            <xs:element name="http-connector" minOccurs="0" maxOccurs="unbounded">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:element name="param" minOccurs="0" maxOccurs="unbounded" type="paramType" />
-                    </xs:sequence>
-                    <xs:attribute name="name" type="xs:string" use="required" />
-                    <xs:attribute name="socket-binding" type="xs:string" use="required" />
-                    <xs:attribute name="endpoint" type="xs:string" use="required" />
-                    <xs:attribute name="server-name" type="xs:string" use="optional" />
-                </xs:complexType>
-            </xs:element>
+            <xs:element name="http-connector" minOccurs="0" maxOccurs="unbounded" type="http-connectorType" />
 
-            <xs:element name="remote-connector" minOccurs="0" maxOccurs="unbounded" type="remote-connectorType">
-                <xs:annotation>
-                    <xs:documentation>Deprecated. Use the remote-connector element directly under subsystem.</xs:documentation>
-                </xs:annotation>
-            </xs:element>
+            <xs:element name="remote-connector" minOccurs="0" maxOccurs="unbounded" type="remote-connectorType" />
 
             <xs:element name="in-vm-connector" minOccurs="0" maxOccurs="unbounded">
                 <xs:complexType>
@@ -796,6 +783,16 @@
         </xs:sequence>
         <xs:attribute name="name" type="xs:string" use="required" />
         <xs:attribute name="socket-binding" type="xs:string" use="required" />
+    </xs:complexType>
+
+    <xs:complexType name="http-connectorType">
+        <xs:sequence>
+            <xs:element name="param" minOccurs="0" maxOccurs="unbounded" type="paramType" />
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required" />
+        <xs:attribute name="socket-binding" type="xs:string" use="required" />
+        <xs:attribute name="endpoint" type="xs:string" use="required" />
+        <xs:attribute name="server-name" type="xs:string" />
     </xs:complexType>
 
     <xs:complexType name="jms-bridgeType">

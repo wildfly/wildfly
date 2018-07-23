@@ -7,6 +7,13 @@
         <param name="batch-delay" value="${batch.delay:50}"/>
     </remote-connector>
 
+    <http-connector name="client-http"
+                    socket-binding="http"
+                    endpoint="http"
+                    server-name="=foo">
+        <param name="batch-delay" value="${batch.delay:50}"/>
+    </http-connector>
+
     <discovery-group name="client-discovery-group-1"
                      socket-binding="group-t-binding"/>
     <discovery-group name="client-discovery-group-2"

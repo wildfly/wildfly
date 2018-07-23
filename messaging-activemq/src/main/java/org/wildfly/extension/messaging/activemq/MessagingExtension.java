@@ -186,6 +186,7 @@ public class MessagingExtension implements Extension {
         // WFLY-10518 - register new client resources under subsystem
         subsystem.registerSubModel(new DiscoveryGroupDefinition(registerRuntimeOnly, true));
         subsystem.registerSubModel(RemoteTransportDefinition.createConnectorDefinition(registerRuntimeOnly));
+        subsystem.registerSubModel(new HTTPConnectorDefinition(registerRuntimeOnly));
 
         // ActiveMQ Servers
         final ManagementResourceRegistration server = subsystem.registerSubModel(new ServerDefinition(registerRuntimeOnly));
