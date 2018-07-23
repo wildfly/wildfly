@@ -89,6 +89,16 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
         addJSFAPI(jsfVersion, moduleSpecification, moduleLoader);
         addJSFImpl(jsfVersion, moduleSpecification, moduleLoader);
 
+        // WFLY-10655
+        if (deploymentUnit.getParent() != null) {
+            final DeploymentUnit topLevelDeployment = deploymentUnit.getParent();
+            if (deploymentUnit != topLevelDeployment) { // add JSF to top level deployment
+                final ModuleSpecification topLevelModuleSpecification = topLevelDeployment.getAttachment(Attachments.MODULE_SPECIFICATION);
+                addJSFAPI(jsfVersion, topLevelModuleSpecification, moduleLoader);
+                addJSFImpl(jsfVersion, topLevelModuleSpecification, moduleLoader);
+            }
+        }
+
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JSF_SUBSYSTEM, false, false, true, false));
 
         addJSFInjection(jsfVersion, moduleSpecification, moduleLoader);
