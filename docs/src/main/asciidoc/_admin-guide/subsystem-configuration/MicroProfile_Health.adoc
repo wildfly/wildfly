@@ -1,0 +1,86 @@
+[[MicroProfile_Health_SmallRye]]
+= MicroProfile Health Subsystem Configuration
+
+Support for https://microprofile.io/project/eclipse/microprofile-health[Eclipse MicroProfile Health] is provided by
+ the _microprofile-health-smallrye_ subsystem.
+
+[[required-extension]]
+== Required Extension
+
+This extension is included in the standalone configurations included in the
+WildFly distribution.
+
+You can also add the extension to a configuration without it either by adding
+an `<extension module="org.wildfly.extension.microprofile.health-smallrye"/>`
+element to the xml or by using the following CLI operation:
+
+[source,ruby]
+----
+[standalone@localhost:9990 /]/extension=org.wildfly.extension.microprofile.health-smallrye:add
+----
+
+== Management Operation
+
+The healthiness of the application server can be queried by calling the `check`:
+
+[source]
+----
+[standalone@localhost:9990 /] /subsystem=microprofile-health-smallrye:check
+{
+    "outcome" => "success", <1>
+    "result" => {
+        "outcome" => "UP", <2>
+        "checks" => []
+    }
+}
+----
+<1> this `outcome` means that the management operation is successful
+<2> this `outcome` corresponds to the health check, `UP` if the application server is healthy, `DOWN` else.
+
+== HTTP Endpoint
+
+The Health HTTP endpoint is accessible on WildFly HTTP management interface http://localhost:9990/health[http://localhost:9990/health].
+
+Secured access to the HTTP endpoint is controlled by the `security-enabled` attribute of the `/subsystem=microprofile-health-smallrye` resource.
+If it is set to `true`, the HTTP client must be authenticated.
+
+If the application server is healthy, it will return a `200 OK` response:
+
+---
+$ curl -v http://localhost:9990/health
+< HTTP/1.1 200 OK
+...
+{"outcome":"UP","checks":[]}
+---
+
+If the application server (and its deployment) is not healthy, it returns `503 Service Unavailable`
+
+----
+$ curl -v http://localhost:9990/health
+< HTTP/1.1 503 Service Unavailable
+...
+{"outcome":"DOWN","checks":[{"name":"myFailingProbe","state":"DOWN","data":{"foo":"bar"}}]}
+----
+
+If security has been enabled, the HTTP client must pass the credentials corresponding to a management user
+created by the `add-user` script. For example:
+
+---
+$ curl -v --digest -u myadminuser:myadminpassword http://localhost:9990/health
+< HTTP/1.1 200 OK
+...
+{"outcome":"UP","checks":[]}
+---
+
+If the authentication fails, the  server will reply with a `401 NOT AUTHORIZED` response.
+
+== Component Reference
+
+The Eclipse MicroProfile Health is implemented by the SmallRye Health project.
+
+****
+
+* https://microprofile.io/project/eclipse/microprofile-health[Eclipse MicroProfile Health]
+* http://github.com/smallrye/smallrye-health/[SmallRye Health]
+
+****

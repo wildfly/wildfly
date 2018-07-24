@@ -23,6 +23,7 @@
         <subsystem>jsf.xml</subsystem>
         <subsystem>mail.xml</subsystem>
         <subsystem>microprofile-config-smallrye.xml</subsystem>
+        <subsystem>microprofile-health-smallrye.xml</subsystem>
         <subsystem>microprofile-opentracing.xml</subsystem>
         <subsystem>naming.xml</subsystem>
         <subsystem>pojo.xml</subsystem>
