@@ -545,6 +545,47 @@ There are eight available colors:
 
 There is also the possibility of using the _default_ color, which is the terminal's configured foreground color.
 
+[[paging-output]]
+== Paging and searching output
+
+In interactive mode, when the content to display is longer than the terminal
+ height, the content is paged. You can navigate the content by using the following
+ keys and mouse events:
+
+* space or PAGE_DOWN: scroll the content one page down.
+* '\' or PAGE_UP: scroll the content one page up.
+* ';' or up arrow or mouse wheel up: scroll the content one line up.
+* ENTER or down arrow or mouse wheel down: scroll the content one line down.
+* HOME or 'g': scroll to the top of the content. NB: HOME is only supported
+ for keyboards containing this key.
+* END or 'G': scroll to the bottom of the content. NB: END is only supported
+ for keyboards containing this key.
+* 'q' or 'Q' or ESC: exit the paging.
+
+NB: When the end of the content is reached (using ENTER, space, ...) the paging
+ is automatically exited.
+
+It is possible to search for text when the content is paged. Search is operated
+ with the following keys:
+
+* '/' to display prompt allowing to type some text. Type return to launch the search. +
+You can use up/down arrows to retrieve previously typed text. NB: search history
+ is not persisted when CLI process exits.
+* 'n' to jump to the next match if any. If no search text has been typed, then the
+ last entry from the search history is used.
+* 'N' to jump to the previous match if any. If no search text has been typed,
+ then the last entry from the search history is used.
+
+[WARNING]
+
+On Windows, searching and navigating backward is only supported starting with Windows 10 and Windows Server 2016.
+
+[WARNING]
+
+If the CLI process is sent the signal KILL(9) while it is paging, the terminal will stay
+ in alternate mode. This makes the terminal to behave in an unexpected manner (display and mouse events).
+ In order to restore the terminal state call: _tput rmcup_.
+
 [[batch-processing]]
 == Batch Processing
 
