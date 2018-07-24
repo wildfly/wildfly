@@ -48,6 +48,7 @@ import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 public class PropertySQLProviderFactory implements SQLProvider.Factory {
 
     private static final String ORACLE = "oracle";
+    private static final String DB2 = "db2";
 
     String database;
     private volatile Properties sql;
@@ -66,7 +67,7 @@ public class PropertySQLProviderFactory implements SQLProvider.Factory {
     @Override
     public SQLProvider create(String tableName, SQLProvider.DatabaseStoreType storeType) {
         // WFLY-8307 - Oracle driver does not support lower case for table names
-        String name = ORACLE.equals(database) ? tableName.toUpperCase() : tableName;
+        String name = ORACLE.equals(database) || DB2.equals(database) ? tableName.toUpperCase() : tableName;
         return new PropertySQLProvider(name, storeType);
     }
 
@@ -115,8 +116,8 @@ public class PropertySQLProviderFactory implements SQLProvider.Factory {
                 unified = "postgresql";
             } else if (name.toLowerCase().contains("mysql")) {
                 unified = "mysql";
-            } else if (name.toLowerCase().contains("db2")) {
-                unified = "db2";
+            } else if (name.toLowerCase().contains(DB2)) {
+                unified = DB2;
             } else if (name.toLowerCase().contains("derby")) {
                 unified = "derby";
             } else if (name.toLowerCase().contains("hsql") || name.toLowerCase().contains("hypersonic")) {
