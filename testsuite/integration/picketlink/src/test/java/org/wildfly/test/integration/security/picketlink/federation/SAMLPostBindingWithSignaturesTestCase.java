@@ -40,17 +40,17 @@ import static org.wildfly.test.integration.security.picketlink.federation.util.F
 public class SAMLPostBindingWithSignaturesTestCase extends AbstractBasicFederationTestCase {
 
     @Deployment(name = "identity-provider")
-    public static WebArchive deploymentIdP() {
+    public static WebArchive deploymentIdP() throws Exception {
         return identityProviderWithKeyStore("idp-post-sig.war");
     }
 
     @Deployment(name = "service-provider-1")
-    public static WebArchive deploymentSP1() {
+    public static WebArchive deploymentSP1() throws Exception {
         return serviceProviderWithKeyStore("sp-post-sig1.war");
     }
 
     @Deployment(name = "service-provider-2")
-    public static WebArchive deploymentSP2() {
+    public static WebArchive deploymentSP2() throws Exception {
         return serviceProviderWithKeyStore("sp-post-sig2.war");
     }
 

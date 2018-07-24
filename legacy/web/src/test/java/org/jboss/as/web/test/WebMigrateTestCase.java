@@ -37,8 +37,13 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.security.KeyStore;
+import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.security.auth.x500.X500Principal;
 
 import io.undertow.predicate.PredicateParser;
 import io.undertow.server.handlers.builder.PredicatedHandlersParser;
@@ -71,10 +76,13 @@ import org.jboss.as.subsystem.test.ControllerInitializer;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.web.WebExtension;
 import org.jboss.dmr.ModelNode;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.wildfly.extension.io.IOExtension;
 import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.UndertowExtension;
+import org.wildfly.security.x500.cert.SelfSignedX509CertificateAndSigningKey;
 
 /**
  * @author Stuart Douglas
@@ -82,6 +90,99 @@ import org.wildfly.extension.undertow.UndertowExtension;
 public class WebMigrateTestCase extends AbstractSubsystemTest {
 
     public static final String UNDERTOW_SUBSYSTEM_NAME = "undertow";
+
+    private static final char[] GENERATED_KEYSTORE_PASSWORD = "changeit".toCharArray();
+
+    private static final String CLIENT_ALIAS = "client";
+    private static final String CLIENT_2_ALIAS = "client2";
+    private static final String TEST_ALIAS = "test";
+
+    private static final String WORKING_DIRECTORY_LOCATION = "./target/test-classes";
+
+    private static final File KEY_STORE_FILE = new File(WORKING_DIRECTORY_LOCATION, "server.keystore");
+    private static final File TRUST_STORE_FILE = new File(WORKING_DIRECTORY_LOCATION, "jsse.keystore");
+
+    private static final String TEST_CLIENT_DN = "CN=Test Client, OU=JBoss, O=Red Hat, L=Raleigh, ST=North Carolina, C=US";
+    private static final String TEST_CLIENT_2_DN = "CN=Test Client 2, OU=JBoss, O=Red Hat, L=Raleigh, ST=North Carolina, C=US";
+    private static final String AS_7_DN = "CN=AS7, OU=JBoss, O=Red Hat, L=Raleigh, ST=North Carolina, C=US";
+
+    private static final String SHA_1_RSA = "SHA1withRSA";
+
+    private static KeyStore loadKeyStore() throws Exception{
+        KeyStore ks = KeyStore.getInstance("JKS");
+        ks.load(null, null);
+        return ks;
+    }
+
+    private static SelfSignedX509CertificateAndSigningKey createSelfSigned(String DN) {
+        return SelfSignedX509CertificateAndSigningKey.builder()
+                .setDn(new X500Principal(DN))
+                .setKeyAlgorithmName("RSA")
+                .setSignatureAlgorithmName(SHA_1_RSA)
+                .build();
+    }
+
+    private static void addKeyEntry(SelfSignedX509CertificateAndSigningKey selfSignedX509CertificateAndSigningKey, KeyStore keyStore) throws Exception {
+        X509Certificate certificate = selfSignedX509CertificateAndSigningKey.getSelfSignedCertificate();
+        keyStore.setKeyEntry(TEST_ALIAS, selfSignedX509CertificateAndSigningKey.getSigningKey(), GENERATED_KEYSTORE_PASSWORD, new X509Certificate[]{certificate});
+    }
+
+    private static void addCertEntry(SelfSignedX509CertificateAndSigningKey selfSignedX509CertificateAndSigningKey, String alias, KeyStore keyStore) throws Exception {
+        X509Certificate certificate = selfSignedX509CertificateAndSigningKey.getSelfSignedCertificate();
+        keyStore.setCertificateEntry(alias, certificate);
+    }
+
+    private static void createTemporaryKeyStoreFile(KeyStore keyStore, File outputFile) throws Exception {
+        try (FileOutputStream fos = new FileOutputStream(outputFile)){
+            keyStore.store(fos, GENERATED_KEYSTORE_PASSWORD);
+        }
+    }
+
+    private static void setUpKeyStores() throws Exception {
+        File workingDir = new File(WORKING_DIRECTORY_LOCATION);
+        if (workingDir.exists() == false) {
+            workingDir.mkdirs();
+        }
+
+        KeyStore keyStore = loadKeyStore();
+        KeyStore trustStore = loadKeyStore();
+
+        SelfSignedX509CertificateAndSigningKey testClientSelfSignedX509CertificateAndSigningKey = createSelfSigned(TEST_CLIENT_DN);
+        SelfSignedX509CertificateAndSigningKey testClient2SelfSignedX509CertificateAndSigningKey = createSelfSigned(TEST_CLIENT_2_DN);
+        SelfSignedX509CertificateAndSigningKey aS7SelfSignedX509CertificateAndSigningKey = createSelfSigned(AS_7_DN);
+
+        addCertEntry(testClient2SelfSignedX509CertificateAndSigningKey, CLIENT_2_ALIAS, keyStore);
+        addCertEntry(testClientSelfSignedX509CertificateAndSigningKey, CLIENT_ALIAS, keyStore);
+        addKeyEntry(aS7SelfSignedX509CertificateAndSigningKey, keyStore);
+
+        addCertEntry(testClient2SelfSignedX509CertificateAndSigningKey, CLIENT_2_ALIAS, trustStore);
+        addCertEntry(testClientSelfSignedX509CertificateAndSigningKey, CLIENT_ALIAS, trustStore);
+
+        createTemporaryKeyStoreFile(keyStore, KEY_STORE_FILE);
+        createTemporaryKeyStoreFile(trustStore, TRUST_STORE_FILE);
+    }
+
+    private static void deleteKeyStoreFiles() {
+        File[] testFiles = {
+                KEY_STORE_FILE,
+                TRUST_STORE_FILE
+        };
+        for (File file : testFiles) {
+            if (file.exists()) {
+                file.delete();
+            }
+        }
+    }
+
+    @BeforeClass
+    public static void beforeTests() throws Exception {
+        setUpKeyStores();
+    }
+
+    @AfterClass
+    public static void afterTests() {
+        deleteKeyStoreFiles();
+    }
 
     public WebMigrateTestCase() {
         super(WebExtension.SUBSYSTEM_NAME, new WebExtension());

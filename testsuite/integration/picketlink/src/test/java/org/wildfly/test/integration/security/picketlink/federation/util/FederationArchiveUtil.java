@@ -21,14 +21,73 @@
  */
 package org.wildfly.test.integration.security.picketlink.federation.util;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.security.KeyStore;
+import java.security.cert.X509Certificate;
+
+import javax.security.auth.x500.X500Principal;
+
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.wildfly.security.x500.cert.SelfSignedX509CertificateAndSigningKey;
 
 /**
  * @author Pedro Igor
  */
 public class FederationArchiveUtil {
+    private static final char[] GENERATED_KEYSTORE_PASSWORD = "store123".toCharArray();
+    private static final char[] GENERATED_KEY_PASSWORD = "test123".toCharArray();
+
+    private static final String ALIAS = "servercert";
+
+    private static final String WORKING_DIRECTORY_LOCATION = FederationArchiveUtil.class.getProtectionDomain().getCodeSource().getLocation().getPath() + "org/wildfly/test/integration/security/picketlink/federation/util";
+    private static final File KEY_STORE_FILE = new File(WORKING_DIRECTORY_LOCATION, "jbid_test_keystore.jks");
+
+    private static final String DN = "CN=jbid test, OU=JBoss, O=JBoss, C=US";
+    private static final String MD_5_RSA = "MD5withRSA";
+
+    private static KeyStore loadKeyStore() throws Exception {
+        KeyStore ks = KeyStore.getInstance("JKS");
+        ks.load(null, null);
+        return ks;
+    }
+
+    private static SelfSignedX509CertificateAndSigningKey createSelfSigned() {
+        return SelfSignedX509CertificateAndSigningKey.builder()
+                .setDn(new X500Principal(DN))
+                .setKeyAlgorithmName("RSA")
+                .setSignatureAlgorithmName(MD_5_RSA)
+                .setKeySize(1024)
+                .build();
+    }
+
+    private static KeyStore createKeyStore(SelfSignedX509CertificateAndSigningKey selfSignedX509CertificateAndSigningKey) throws Exception {
+        KeyStore keyStore = loadKeyStore();
+
+        X509Certificate certificate = selfSignedX509CertificateAndSigningKey.getSelfSignedCertificate();
+        keyStore.setKeyEntry(ALIAS, selfSignedX509CertificateAndSigningKey.getSigningKey(), GENERATED_KEY_PASSWORD, new X509Certificate[]{certificate});
+
+        return keyStore;
+    }
+
+    private static void createTemporaryKeyStoreFile(KeyStore keyStore) throws Exception {
+        try (FileOutputStream fos = new FileOutputStream(KEY_STORE_FILE)){
+            keyStore.store(fos, GENERATED_KEYSTORE_PASSWORD);
+        }
+    }
+
+    private static void setUpKeyStores() throws Exception {
+        File workingDir = new File(WORKING_DIRECTORY_LOCATION);
+        if (workingDir.exists() == false) {
+            workingDir.mkdirs();
+        }
+
+        SelfSignedX509CertificateAndSigningKey selfSignedX509CertificateAndSigningKey = createSelfSigned();
+        KeyStore keyStore = createKeyStore(selfSignedX509CertificateAndSigningKey);
+        createTemporaryKeyStoreFile(keyStore);
+    }
 
     public static WebArchive identityProvider(String deploymentName) {
         return identityProvider(deploymentName, null, null);
@@ -49,7 +108,9 @@ public class FederationArchiveUtil {
         return war;
     }
 
-    public static WebArchive identityProviderWithKeyStore(String deploymentName) {
+    public static WebArchive identityProviderWithKeyStore(String deploymentName) throws Exception {
+        setUpKeyStores();
+
         WebArchive war = identityProvider(deploymentName);
 
         war.addAsResource(FederationArchiveUtil.class.getPackage(), "jbid_test_keystore.jks", "jbid_test_keystore.jks");
@@ -68,7 +129,9 @@ public class FederationArchiveUtil {
         return war;
     }
 
-    public static WebArchive serviceProviderWithKeyStore(String deploymentName) {
+    public static WebArchive serviceProviderWithKeyStore(String deploymentName) throws Exception {
+        setUpKeyStores();
+
         WebArchive war = serviceProvider(deploymentName);
 
         war.addAsResource(FederationArchiveUtil.class.getPackage(), "jbid_test_keystore.jks", "jbid_test_keystore.jks");

@@ -40,7 +40,7 @@ import static org.wildfly.test.integration.security.picketlink.federation.util.F
 public class SAMLMetadataTestCase extends AbstractBasicFederationTestCase {
 
     @Deployment(name = "identity-provider")
-    public static WebArchive deploymentIdP() {
+    public static WebArchive deploymentIdP() throws Exception {
         WebArchive identityProvider = identityProviderWithKeyStore("idp-metadata.war");
 
         identityProvider.addAsResource(SAMLMetadataTestCase.class.getPackage(), "idp-metadata.xml", "idp-metadata.xml");
@@ -49,7 +49,7 @@ public class SAMLMetadataTestCase extends AbstractBasicFederationTestCase {
     }
 
     @Deployment(name = "service-provider-1")
-    public static WebArchive deploymentSP1() {
+    public static WebArchive deploymentSP1()  throws Exception {
         WebArchive serviceProvider = serviceProviderWithKeyStore("sp-metadata1.war");
 
         serviceProvider.addAsResource(SAMLMetadataTestCase.class.getPackage(), "sp-metadata1.xml", "sp-metadata.xml");
@@ -58,7 +58,7 @@ public class SAMLMetadataTestCase extends AbstractBasicFederationTestCase {
     }
 
     @Deployment(name = "service-provider-2")
-    public static WebArchive deploymentSP2() {
+    public static WebArchive deploymentSP2()  throws Exception {
         WebArchive serviceProvider = serviceProviderWithKeyStore("sp-metadata2.war");
 
         serviceProvider.addAsResource(SAMLMetadataTestCase.class.getPackage(), "sp-metadata2.xml", "sp-metadata.xml");

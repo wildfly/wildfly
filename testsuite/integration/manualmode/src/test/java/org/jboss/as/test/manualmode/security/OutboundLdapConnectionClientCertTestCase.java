@@ -84,7 +84,9 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -153,6 +155,16 @@ public class OutboundLdapConnectionClientCertTestCase {
 
     @ArquillianResource
     Deployer deployer;
+
+    @BeforeClass
+    public static void beforeTests() throws Exception {
+        GenerateLdapConnectionStores.setUpKeyStores();
+    }
+
+    @AfterClass
+    public static void afterTests() {
+        GenerateLdapConnectionStores.removeKeyStores();
+    }
 
     @Before
     public void initializeRoleConfiguration() throws Exception {
