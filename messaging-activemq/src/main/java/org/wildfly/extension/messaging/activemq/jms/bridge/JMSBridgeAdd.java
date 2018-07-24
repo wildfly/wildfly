@@ -50,6 +50,7 @@ import org.jboss.dmr.Property;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
+import org.jboss.modules.ModuleNotFoundException;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
@@ -185,6 +186,8 @@ public class JMSBridgeAdd extends AbstractAddStepHandler {
                     subName,
                     clientID,
                     addMessageIDInHeader);
+        } catch (ModuleNotFoundException e) {
+            throw MessagingLogger.ROOT_LOGGER.moduleNotFound(moduleName, e.getMessage(), e);
         } catch (ModuleLoadException e) {
             throw MessagingLogger.ROOT_LOGGER.unableToLoadModule(moduleName, e);
         } finally {
