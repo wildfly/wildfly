@@ -224,8 +224,8 @@
         <version.gnu.getopt>1.0.13</version.gnu.getopt>
         <version.groovy-all>2.4.7</version.groovy-all>
         <version.httpunit>1.7.2</version.httpunit>
-        <version.io.netty>4.1.9.Final</version.io.netty>
-        <version.io.reactivex.rxjava>2.1.9</version.io.reactivex.rxjava>
+        <version.io.netty>4.1.25.Final</version.io.netty>
+        <version.io.reactivex.rxjava>2.1.16</version.io.reactivex.rxjava>
         <version.io.undertow.jastow>2.0.3.Final</version.io.undertow.jastow>
         <version.io.undertow.js>1.0.2.Final</version.io.undertow.js>
         <version.javax.activation>1.1.1</version.javax.activation>
@@ -279,7 +279,7 @@
         <version.org.hibernate.search>5.10.1.Final</version.org.hibernate.search>        <version.org.hibernate.validator>6.0.10.Final</version.org.hibernate.validator>
         <version.org.hibernate.validator>6.0.10.Final</version.org.hibernate.validator>
         <version.org.hornetq>2.4.7.Final</version.org.hornetq>
-        <version.org.infinispan>9.2.5.Final</version.org.infinispan>
+        <version.org.infinispan>9.3.1.Final</version.org.infinispan>
         <version.org.jasypt>1.9.2</version.org.jasypt>
         <version.org.javassist>3.23.1-GA</version.org.javassist>
         <version.org.jberet>1.3.0.Final</version.org.jberet>
@@ -3920,6 +3920,10 @@
                     <exclusion>
                         <groupId>io.netty</groupId>
                         <artifactId>netty-transport-native-epoll</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.transaction</groupId>
+                        <artifactId>jboss-transaction-api_1.1_spec</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>

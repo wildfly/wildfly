@@ -106,7 +106,7 @@ public class InfinispanSessionManagerFactoryServiceConfigurator<C extends Marsha
             if (strategy.isEnabled()) {
                 // Only evict creation meta-data entries
                 // We will cascade eviction to the remaining entries for a given session
-                builder.dataContainer().dataContainer(new EvictableDataContainer<>(size, SessionCreationMetaDataKey.class::isInstance));
+                builder.dataContainer().dataContainer(EvictableDataContainer.createDataContainer(builder, size, SessionCreationMetaDataKey.class::isInstance));
             }
         };
 

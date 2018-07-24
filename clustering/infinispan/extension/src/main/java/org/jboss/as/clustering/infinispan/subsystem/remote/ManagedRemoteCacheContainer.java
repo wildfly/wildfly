@@ -26,10 +26,14 @@ import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.RemoteCacheManagerAdmin;
 import org.infinispan.client.hotrod.configuration.Configuration;
+import org.infinispan.client.hotrod.configuration.TransactionMode;
+import org.infinispan.commons.api.BasicCache;
 import org.infinispan.commons.marshall.Marshaller;
 import org.wildfly.clustering.infinispan.spi.RemoteCacheContainer;
 
 import java.util.Set;
+
+import javax.transaction.TransactionManager;
 
 /**
  * Default implementation of container managed {@link RemoteCacheContainer}.
@@ -57,18 +61,28 @@ public class ManagedRemoteCacheContainer implements RemoteCacheContainer {
     }
 
     @Override
-    public Configuration getConfiguration() {
-        return this.remoteCacheManager.getConfiguration();
-    }
-
-    @Override
-    public <K, V> RemoteCache<K, V> getCache(boolean forceReturnValue) {
+    public <K, V> BasicCache<K, V> getCache() {
         return this.remoteCacheManager.getCache();
     }
 
     @Override
-    public <K, V> RemoteCache<K, V> getCache(String cacheName, boolean forceReturnValue) {
-        return this.remoteCacheManager.getCache(cacheName, forceReturnValue);
+    public <K, V> BasicCache<K, V> getCache(String cacheName) {
+        return this.remoteCacheManager.getCache(cacheName);
+    }
+
+    @Override
+    public <K, V> RemoteCache<K, V> getCache(String cacheName, TransactionMode transactionMode, TransactionManager transactionManager) {
+        return this.remoteCacheManager.getCache(cacheName, transactionMode, transactionManager);
+    }
+
+    @Override
+    public <K, V> RemoteCache<K, V> getCache(String cacheName, boolean forceReturnValue, TransactionMode transactionMode, TransactionManager transactionManager) {
+        return this.remoteCacheManager.getCache(cacheName, forceReturnValue, transactionMode, transactionManager);
+    }
+
+    @Override
+    public Configuration getConfiguration() {
+        return this.remoteCacheManager.getConfiguration();
     }
 
     @Override
@@ -89,16 +103,6 @@ public class ManagedRemoteCacheContainer implements RemoteCacheContainer {
     @Override
     public Marshaller getMarshaller() {
         return this.remoteCacheManager.getMarshaller();
-    }
-
-    @Override
-    public <K, V> RemoteCache<K, V> getCache() {
-        return this.remoteCacheManager.getCache();
-    }
-
-    @Override
-    public <K, V> RemoteCache<K, V> getCache(String cacheName) {
-        return this.remoteCacheManager.getCache(cacheName);
     }
 
     @Override

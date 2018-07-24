@@ -42,7 +42,7 @@ import org.infinispan.Cache;
 import org.infinispan.commons.CacheException;
 import org.infinispan.context.Flag;
 import org.infinispan.distribution.ch.ConsistentHash;
-import org.infinispan.filter.KeyFilter;
+import org.infinispan.metadata.Metadata;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryCreated;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryRemoved;
@@ -51,6 +51,8 @@ import org.infinispan.notifications.cachelistener.event.CacheEntryEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
 import org.infinispan.notifications.cachelistener.event.Event;
 import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
+import org.infinispan.notifications.cachelistener.filter.CacheEventFilter;
+import org.infinispan.notifications.cachelistener.filter.EventType;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.as.clustering.logging.ClusteringLogger;
 import org.jboss.threads.JBossThreadFactory;
@@ -74,7 +76,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @param <V> value type
  */
 @org.infinispan.notifications.Listener
-public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
+public class CacheRegistry<K, V> implements Registry<K, V>, CacheEventFilter<Object, Object> {
 
     private static ThreadFactory createThreadFactory(Class<?> targetClass) {
         PrivilegedAction<ThreadFactory> action = () -> new ClassLoaderThreadFactory(new JBossThreadFactory(new ThreadGroup(targetClass.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null), targetClass.getClassLoader());
@@ -96,7 +98,7 @@ public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
         this.closeTask = closeTask;
         this.entry = new AbstractMap.SimpleImmutableEntry<>(entry);
         this.populateRegistry();
-        this.cache.addListener(this, new CacheRegistryFilter());
+        this.cache.addListener(this, new CacheRegistryFilter(), null);
     }
 
     private void populateRegistry() {
@@ -106,7 +108,7 @@ public class CacheRegistry<K, V> implements Registry<K, V>, KeyFilter<Object> {
     }
 
     @Override
-    public boolean accept(Object key) {
+    public boolean accept(Object key, Object oldValue, Metadata oldMetadata, Object newValue, Metadata newMetadata, EventType eventType) {
         return key instanceof Address;
     }
 

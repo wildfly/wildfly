@@ -24,12 +24,14 @@ package org.wildfly.clustering.infinispan.spi;
 
 import java.util.function.Predicate;
 
-import org.infinispan.filter.KeyFilter;
+import org.infinispan.metadata.Metadata;
+import org.infinispan.notifications.cachelistener.filter.CacheEventFilter;
+import org.infinispan.notifications.cachelistener.filter.EventType;
 
 /**
  * @author Paul Ferraro
  */
-public class PredicateKeyFilter<K> implements KeyFilter<K> {
+public class PredicateKeyFilter<K> implements CacheEventFilter<K, Object> {
 
     private final Predicate<? super K> predicate;
 
@@ -38,7 +40,7 @@ public class PredicateKeyFilter<K> implements KeyFilter<K> {
     }
 
     @Override
-    public boolean accept(K key) {
+    public boolean accept(K key, Object oldValue, Metadata oldMetadata, Object newValue, Metadata newMetadata, EventType eventType) {
         return this.predicate.test(key);
     }
 }

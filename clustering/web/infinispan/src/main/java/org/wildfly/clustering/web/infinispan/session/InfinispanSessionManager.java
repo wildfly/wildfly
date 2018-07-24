@@ -40,7 +40,6 @@ import javax.servlet.http.HttpSessionEvent;
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
 import org.infinispan.distribution.DistributionManager;
-import org.infinispan.filter.KeyFilter;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryActivated;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryPassivated;
@@ -48,6 +47,7 @@ import org.infinispan.notifications.cachelistener.annotation.CacheEntryRemoved;
 import org.infinispan.notifications.cachelistener.event.CacheEntryActivatedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryPassivatedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
+import org.infinispan.notifications.cachelistener.filter.CacheEventFilter;
 import org.infinispan.remoting.transport.Address;
 import org.wildfly.clustering.Registrar;
 import org.wildfly.clustering.Registration;
@@ -125,10 +125,10 @@ public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, Tr
         }
         this.identifierFactory.start();
         this.expirationRegistration = this.expirationRegistrar.register(this.expirationListener);
-        KeyFilter<Object> filter = new PredicateKeyFilter<>(this.filter);
-        this.cache.addListener(this, filter);
-        this.cache.addListener(this.factory.getMetaDataFactory(), filter);
-        this.cache.addListener(this.factory.getAttributesFactory(), filter);
+        CacheEventFilter<Object, Object> filter = new PredicateKeyFilter<>(this.filter);
+        this.cache.addListener(this, filter, null);
+        this.cache.addListener(this.factory.getMetaDataFactory(), filter, null);
+        this.cache.addListener(this.factory.getAttributesFactory(), filter, null);
     }
 
     @Override

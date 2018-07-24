@@ -35,10 +35,13 @@ import static org.infinispan.client.hotrod.ProtocolVersion.PROTOCOL_VERSION_25;
 import static org.infinispan.client.hotrod.ProtocolVersion.PROTOCOL_VERSION_26;
 
 import java.io.IOException;
+import java.util.AbstractMap;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
+import java.util.function.Predicate;
 
 import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.ProtocolVersion;
@@ -47,15 +50,19 @@ import org.infinispan.client.hotrod.exceptions.HotRodClientException;
 import org.infinispan.commons.io.ByteBuffer;
 import org.infinispan.commons.marshall.WrappedByteArray;
 import org.infinispan.commons.persistence.Store;
-import org.infinispan.filter.KeyFilter;
+import org.infinispan.commons.util.CloseableIterator;
+import org.infinispan.commons.util.IteratorMapper;
 import org.infinispan.marshall.core.MarshalledEntry;
-import org.infinispan.persistence.TaskContextImpl;
+import org.infinispan.metadata.InternalMetadata;
 import org.infinispan.persistence.spi.AdvancedLoadWriteStore;
 import org.infinispan.persistence.spi.InitializationContext;
 import org.infinispan.persistence.spi.PersistenceException;
-import org.infinispan.util.KeyValuePair;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
+import org.reactivestreams.Publisher;
 import org.wildfly.clustering.infinispan.spi.RemoteCacheContainer;
+
+import io.reactivex.Flowable;
+import io.reactivex.functions.Function;
 
 /**
  * Simple implementation of Infinispan {@link AdvancedLoadWriteStore} configured with a started container-managed {@link RemoteCacheContainer}
@@ -64,7 +71,7 @@ import org.wildfly.clustering.infinispan.spi.RemoteCacheContainer;
  * @author Radoslav Husar
  */
 @Store(shared = true)
-public class HotRodStore<K, V> implements AdvancedLoadWriteStore<K, V> {
+public class HotRodStore<K, V> implements AdvancedLoadWriteStore<K, V>, Callable<CloseableIterator<byte[]>>, Function<CloseableIterator<byte[]>, Publisher<K>> {
 
     private InitializationContext ctx;
 
@@ -107,15 +114,18 @@ public class HotRodStore<K, V> implements AdvancedLoadWriteStore<K, V> {
         // Do nothing -- remoteCacheContainer lifecycle is controlled by the application server
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public MarshalledEntry<K, V> load(Object key) throws PersistenceException {
         byte[] bytes = this.remoteCache.get(this.marshall(key));
         if (bytes == null) {
             return null;
         }
-        KeyValuePair<ByteBuffer, ByteBuffer> keyValuePair = (KeyValuePair<ByteBuffer, ByteBuffer>) this.unmarshall(bytes);
-        return this.ctx.getMarshalledEntryFactory().newMarshalledEntry(key, keyValuePair.getKey(), keyValuePair.getValue());
+        Map.Entry<ByteBuffer, ByteBuffer> entry = this.unmarshallValue(bytes);
+        return this.ctx.getMarshalledEntryFactory().newMarshalledEntry(key, entry.getKey(), entry.getValue());
+    }
+
+    private MarshalledEntry<K, V> asMarshalledEntry(Object key) {
+        return this.ctx.getMarshalledEntryFactory().newMarshalledEntry(key, (Object) null, (InternalMetadata) null);
     }
 
     @Override
@@ -146,25 +156,25 @@ public class HotRodStore<K, V> implements AdvancedLoadWriteStore<K, V> {
     }
 
     @Override
-    public void process(KeyFilter<? super K> filter, CacheLoaderTask<K, V> task, Executor executor, boolean fetchValue, boolean fetchMetadata) {
-        TaskContext taskContext = new TaskContextImpl();
-        for (byte[] key : this.remoteCache.keySet()) {
-            if (taskContext.isStopped()) {
-                break;
-            }
-            @SuppressWarnings("unchecked") K typedKey = (K) this.unmarshall(key);
-            if (filter == null || filter.accept(typedKey)) {
-                try {
-                    MarshalledEntry<K, V> marshalledEntry = this.load(key);
-                    if (marshalledEntry != null) {
-                        task.processEntry(marshalledEntry, taskContext);
-                    }
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    return;
-                }
-            }
-        }
+    public Flowable<K> publishKeys(Predicate<? super K> filter) {
+        Flowable<K> keys = Flowable.using(this, this, CloseableIterator::close);
+        return (filter != null) ? keys.filter(filter::test) : keys;
+    }
+
+    @Override
+    public CloseableIterator<byte[]> call() {
+        return this.remoteCache.keySet().iterator();
+    }
+
+    @Override
+    public Publisher<K> apply(CloseableIterator<byte[]> iterator) {
+        return Flowable.fromIterable(() -> new IteratorMapper<>(iterator, HotRodStore.this::unmarshallKey));
+    }
+
+    @Override
+    public Publisher<MarshalledEntry<K, V>> publishEntries(Predicate<? super K> filter, boolean fetchValue, boolean fetchMetadata) {
+        Flowable<K> keys = this.publishKeys(filter);
+        return (fetchValue || fetchMetadata) ? keys.map(this::load) : keys.map(this::asMarshalledEntry);
     }
 
     @Override
@@ -182,7 +192,7 @@ public class HotRodStore<K, V> implements AdvancedLoadWriteStore<K, V> {
         // Ignore
     }
 
-    private byte[] marshall(Object key) throws PersistenceException {
+    private byte[] marshall(Object key) {
         try {
             return (key instanceof WrappedByteArray) ? ((WrappedByteArray) key).getBytes() : this.ctx.getMarshaller().objectToByteBuffer(key);
         } catch (IOException | InterruptedException e) {
@@ -190,16 +200,25 @@ public class HotRodStore<K, V> implements AdvancedLoadWriteStore<K, V> {
         }
     }
 
-    private byte[] marshall(MarshalledEntry<?, ?> entry) {
-        return this.marshall(new KeyValuePair<>(entry.getValueBytes(), entry.getMetadataBytes()));
+    private byte[] marshall(MarshalledEntry<? extends K, ? extends V> entry) {
+        return this.marshall(new AbstractMap.SimpleImmutableEntry<>(entry.getValueBytes(), entry.getMetadataBytes()));
     }
 
-    private Object unmarshall(byte[] bytes) throws PersistenceException {
+    @SuppressWarnings("unchecked")
+    private K unmarshallKey(byte[] bytes) {
+        return (K) this.unmarshall(bytes);
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map.Entry<ByteBuffer, ByteBuffer> unmarshallValue(byte[] bytes) {
+        return (Map.Entry<ByteBuffer, ByteBuffer>) this.unmarshall(bytes);
+    }
+
+    private Object unmarshall(byte[] bytes) {
         try {
             return this.ctx.getMarshaller().objectFromByteBuffer(bytes);
         } catch (IOException | ClassNotFoundException e) {
             throw new PersistenceException(e);
         }
     }
-
 }
