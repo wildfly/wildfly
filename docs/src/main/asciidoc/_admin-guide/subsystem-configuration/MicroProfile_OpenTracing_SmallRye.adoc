@@ -1,0 +1,73 @@
+[[MicroProfile_OpenTracing SmallRye]]
+= MicroProfile OpenTracing Subsystem Configuration
+
+Support for https://microprofile.io/project/eclipse/microprofile-opentracing[Eclipse MicroProfile OpenTracing] is provided by
+ the _microprofile-opentracing-smallrye_ subsystem.
+
+[[required-extension]]
+== Required Extension
+
+This extension is included in the standard configurations included in the WildFly distribution.
+
+You can also add the extension to a configuration without it either by adding
+an `<extension module="org.wildfly.extension.microprofile.opentracing"/>`
+element to the xml or by using the following CLI operation:
+
+[source]
+----
+[standalone@localhost:9990 /] /extension=org.wildfly.extension.microprofile.opentracing:add
+{"outcome" => "success"}
+
+[standalone@localhost:9990 /] /subsystem=microprofile-opentracing:add
+{
+    "outcome" => "success",
+    "response-headers" => {
+        "operation-requires-reload" => true,
+        "process-state" => "reload-required"
+    }
+}
+----
+
+== Supported instrumentation libraries
+
+WildFly's MicroProfile OpenTracing subsystem implements MicroProfile 1.1, which includes support for tracing JAX-RS and
+CDI.
+
+Additionally, applications being deployed are able to provide their own tracers via the
+https://github.com/opentracing-contrib/java-tracerresolver[`TracerResolver`] facility. In that case, the default tracer
+will *not* be used.
+
+The subsystem ships with https://github.com/jaegertracing/jaeger-client-java[Jaeger Java Client] as the default tracer.
+Refer to that project's documentation for instructions on how to configure it. Note that the configuration is only
+possible by setting system properties or environment variables. If a more complex configuration is required, implement a
+`TracerResolver` that returns the `Tracer` with the desired state.
+
+WARNING: by default, the Jaeger Client Java has a probabilistic sampling strategy, set to 0.001, meaning that only
+approximately one in one thousand traces will be sampled. To sample every request, set the environment variable
+`JAEGER_SAMPLER_TYPE` to `const` and `JAEGER_SAMPLER_PARAM` to `1`.
+
+By default, the service name used with the Jaeger Client is derived from the deployment's name, which is usually the
+WAR file name.
+
+As defined by the MicroProfile OpenTracing specification, CDI beans are traced if the annotation
+`org.eclipse.microprofile.opentracing.Traced` is present, either at the type or method level. Tracing can be disabled
+by setting the annotation's value to `false`. Similarly, a custom operation name can be set by specifying the parameter
+`operationName` for that annotation. The semantics are ruled by the MicroProfile OpenTracing specification.
+
+Note that CDI support for the deployment is required in order to activate the MicroProfile OpenTracing support. A simple
+JAX-RS application with no CDI support will *not* be traced.
+
+Managed beans with multiple facets, such as EJBs, can also be traced by annotating them with `@Traced`, but with
+limitations. For instance, asynchronous invocations will yield a new trace, instead of having the span to join an
+existing trace.
+
+== Component Reference
+
+The Eclipse MicroProfile OpenTracing is implemented by the SmallRye OpenTracing project.
+
+****
+
+* https://microprofile.io/project/eclipse/microprofile-opentracing[Eclipse MicroProfile OpenTracing]
+* https://github.com/smallrye/smallrye-opentracing/[SmallRye OpenTracing]
+
+****
