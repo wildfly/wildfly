@@ -1,0 +1,161 @@
+[[Bearer_Token_Authorization]]
+= Bearer Token Authorization
+
+Bearer Token Authorization is the process of authorizing HTTP requests based on the existence and validity of a bearer
+token representing a subject and his access context, where the token provides valuable information to determine the subject of the call as well whether or not a HTTP resource
+can be accessed.
+
+Elytron supports bearer token authorization by providing a `BEARER_TOKEN` HTTP authentication mechanism based on https://tools.ietf.org/html/rfc6750[RFC-6750] and
+an specific `realm` implementation, the `token-realm`, to validate tokens using the JWT format (for instance, OpenID Connect ID Tokens) or opaque tokens issued by any OAuth2 compliant
+authorization server.
+
+== How it Works
+
+When a HTTP request arrives to your application, the `BEARER_TOKEN` mechanism will check if a bearer token was provided by checking the existence of an `Authorization` HTTP header with the following format:
+
+```bash
+GET /resource HTTP/1.1
+Host: server.example.com
+Authorization: Bearer mF_9.B5f-4.1JqM
+```
+
+If no bearer token was provided, the mechanism will respond with a `401` HTTP status code as follows:
+
+```bash
+HTTP/1.1 401 Unauthorized
+WWW-Authenticate: Bearer realm="example"
+```
+
+When a bearer token is provided, the mechanism will extract the token from the request (in the example above, the token is represented by the string `mF_9.B5f-4.1JqM`) and pass it over
+to the `token-realm` in order to check if the token is valid and can be used to build a security context based on its information. Note that the `BEARER_TOKEN` mechanism is only responsible to
+check and extract bearer tokens from an HTTP request, whereas the `token-realm` is the one responsible for validating the token.
+
+If validation succeeds, a security context will be created based on the information represented by the token and the application can use the newly created
+security context to obtain information about the subject making the request as well decide whether or not the request should be full filled. In case the validation fails,
+the mechanism will respond with a `403` HTTP status code as follows:
+
+```bash
+HTTP/1.1 403 Forbidden
+```
+
+== Validating JWT Tokens
+
+Elytron provides built-in support for JWT tokens, which can be enabled by defining a `realm` in the Elytron subsystem as follows:
+
+```xml
+ <token-realm name="JwtRealm" principal-claim="sub">
+    <jwt issuer="as.example.com"
+         audience="api.example.com"
+         public-key="-----BEGIN PUBLIC KEY-----MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCqGKukO1De7zhZj6+H0qtjTkVxwTCpvKe4eCZ0FPqri0cb2JZfXJ/DgYSF6vUpwmJG8wVQZKjeGcjDOL5UlsuusFncCzWBQ7RKNUSesmQRMSGkVb1/3j+skZ6UtW+5u09lHNsj6tQ51s1SPrCBkedbNf0Tp0GbMJDyR4e9T04ZZwIDAQAB-----END PUBLIC KEY-----"/>
+ </token-realm>
+```
+
+In the example above, the `token-realm` is defined with a `principal-claim` attribute. This attribute specifies which claim
+within the token should be used to identity the principal. If you have a token as follows:
+
+```json
+ {
+   "iss": "as.example.com",
+   "sub": "24400320",
+   "aud": "s6BhdRkqt3",
+   "exp": 1311281970,
+   "nbf": 1311280970,
+  }
+```
+
+Elytron will use the value associated with the `sub` claim as the identifier of the subject represented by the token.
+
+The `jwt` element within the `token-realm` specifies that tokens should be validated as JWT and provides different configuration options on how they
+should be validated:
+
+* *issuer*
++
+A list of strings representing the issuers supported by this configuration. During validation JWT tokens must have an "iss" claim that contains one of the values defined here
++
+* *audience*
++
+A list of strings representing the audiences supported by this configuration. During validation JWT tokens must have an "aud" claim that contains one of the values defined here
++
+* *public-key*
++
+A public key in PEM Format. During validation, if a public key is provided, signature will be verified based on the key you provided here. Alternatively,
+you can define a `key-store` and `certificate` attributes to configure the public key.
++
+* *key-store*
++
+As an alternative to `public-key`, you can also define a key store from where the certificate with a public key should be loaded from
++
+* *certificate*
++
+The name of the certificate with a public key to load from the key store in case you defined the `key-store` attribute
+
+The `jwt` validator performs different checks in order to determine the validity of a JWT:
+
+* Expiration checks based on the values of the `exp` and `nbf` claims
+* Signature checks based on the public key provided via `public-key` or `certificate` attributes
+
+It is strongly recommended that you use signed JWTs in order to guarantee authenticity of tokens and make sure they were not tampered.
+
+== Validating OAuth2 Bearer Tokens
+
+Elytron provides built-in support for tokens issued by an OAuth2 compliant authorization server, where these tokens are validated
+using a token introspection endpoint as defined by OAuth2 specification.
+
+```xml
+<token-realm name="OAuth2Realm" principal-claim="sub">
+    <oauth2-introspection client-id="my-client-id"
+                          client-secret="keep_it_secret"
+                          introspection-url="https://as.example.com/token/introspect"
+                          client-ssl-context="user-defined-ssl-context"
+                          host-name-verification-policy="ANY" />
+</token-realm>
+```
+
+The `auth2-introspection` element within the `token-realm` specifies that tokens should be validated using an OAuth2 Token Introspection Endpoint and provides different configuration options on how they
+should be validated:
+
+* *client-id*
++
+The identifier of the client on the OAuth2 Authorization Server
++
+* *client-secret*
++
+The secret of the client
++
+* *introspection-url*
++
+The URL of token introspection endpoint
++
+* *client-ssl-context*
++
+The SSL context to be used if the introspection endpoint is using HTTPS.
++
+* *host-name-verification-policy*
++
+A policy that defines how host names should be verified when using HTTPS. Allowed values: "ANY".
+
+== Quickstarts
+
+* https://github.com/wildfly/quickstart/tree/master/jaxrs-jwt[JAX-RS secured using JSON Web Tokens]
+
+== CLI Examples on How to Create a Token Realm
+
+.Create a Token Realm to validate JWT tokens using a key store to retrieve the public key
+```bash
+# Create a Key Store
+/subsystem=elytron/key-store=my-keystore:add(path=/path/to/keystore.jks,credential-reference={clear-text=secret},type=JKS)
+
+# Create the realm
+/subsystem=elytron/token-realm=jwt-realm:add(principal-claim=sub, jwt={issuer=["as.example.com"], audience=["api.example.com"], key-store=my-keystore, certificate=as.example.com})
+```
+
+.Create a Token Realm to validate OAuth2 tokens
+```bash
+# Create a Client SSLContext
+/subsystem=elytron/key-store=default-trust-store:add(path=/path/to/keystore.jks,credential-reference={clear-text=secret},type=JKS)
+/subsystem=elytron/trust-manager=default-trust-manager:add(algorithm=PKIX, key-store=default-trust-store)
+/subsystem=elytron/client-ssl-context=default-client-ssl-context:add(trust-manager=default-trust-manager)
+
+# Create the realm
+/subsystem=elytron/token-realm=oauth2-realm:add(principal-claim=preferred_username, oauth2-introspection={client-id=my-client-id, client-secret=keep_it_secret, client-ssl-context=default-client-ssl-context, introspection-url=https://as.example.com/token/introspect})
+```
