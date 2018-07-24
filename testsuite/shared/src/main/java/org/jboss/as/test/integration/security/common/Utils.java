@@ -39,9 +39,11 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.net.UnknownHostException;
+import java.security.KeyStore;
 import java.security.MessageDigest;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
@@ -55,6 +57,7 @@ import javax.security.auth.Subject;
 import javax.security.auth.login.Configuration;
 import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
+import javax.security.auth.x500.X500Principal;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
@@ -112,6 +115,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
+import org.wildfly.security.x500.cert.SelfSignedX509CertificateAndSigningKey;
 
 /**
  * Common utilities for JBoss AS security tests.
@@ -128,6 +132,72 @@ public class Utils extends CoreUtils {
     public static final boolean IBM_JDK = StringUtils.startsWith(SystemUtils.JAVA_VENDOR, "IBM");
     public static final boolean OPEN_JDK = StringUtils.startsWith(SystemUtils.JAVA_VM_NAME, "OpenJDK");
     public static final boolean ORACLE_JDK = StringUtils.startsWith(SystemUtils.JAVA_VM_NAME, "Java HotSpot");
+
+    private static final char[] KEYSTORE_CREATION_PASSWORD = "123456".toCharArray();
+
+    private static void createKeyStoreTrustStore(KeyStore keyStore, KeyStore trustStore, String DN, String alias) throws Exception {
+        X500Principal principal = new X500Principal(DN);
+
+        SelfSignedX509CertificateAndSigningKey selfSignedX509CertificateAndSigningKey = SelfSignedX509CertificateAndSigningKey.builder()
+                .setKeyAlgorithmName("RSA")
+                .setSignatureAlgorithmName("SHA256withRSA")
+                .setDn(principal)
+                .setKeySize(1024)
+                .build();
+        X509Certificate certificate = selfSignedX509CertificateAndSigningKey.getSelfSignedCertificate();
+
+        keyStore.setKeyEntry(alias, selfSignedX509CertificateAndSigningKey.getSigningKey(), KEYSTORE_CREATION_PASSWORD, new X509Certificate[]{certificate});
+        if(trustStore != null) trustStore.setCertificateEntry(alias, certificate);
+    }
+
+    private static KeyStore loadKeyStore() throws Exception{
+        KeyStore ks = KeyStore.getInstance("JKS");
+        ks.load(null, null);
+        return ks;
+    }
+
+    private static void createTemporaryCertFile(X509Certificate cert, File outputFile) throws Exception {
+        try (FileOutputStream fos = new FileOutputStream(outputFile)){
+            fos.write(cert.getTBSCertificate());
+        }
+    }
+
+    private static void createTemporaryKeyStoreFile(KeyStore keyStore, File outputFile) throws Exception {
+        try (FileOutputStream fos = new FileOutputStream(outputFile)){
+            keyStore.store(fos, KEYSTORE_CREATION_PASSWORD);
+        }
+    }
+
+    private static void generateKeyMaterial(final File keyStoreDir) throws Exception {
+        KeyStore clientKeyStore = loadKeyStore();
+        KeyStore clientTrustStore = loadKeyStore();
+        KeyStore serverKeyStore = loadKeyStore();
+        KeyStore serverTrustStore = loadKeyStore();
+        KeyStore untrustedKeyStore = loadKeyStore();
+
+        createKeyStoreTrustStore(clientKeyStore, serverTrustStore, "CN=client", "cn=client");
+        createKeyStoreTrustStore(serverKeyStore, clientTrustStore, "CN=server", "cn=server");
+        createKeyStoreTrustStore(untrustedKeyStore, null, "CN=untrusted", "cn=untrusted");
+
+        File clientCertFile = new File(keyStoreDir, "client.crt");
+        File clientKeyFile = new File(keyStoreDir, "client.keystore");
+        File clientTrustFile = new File(keyStoreDir, "client.truststore");
+        File serverCertFile = new File(keyStoreDir, "server.crt");
+        File serverKeyFile = new File(keyStoreDir, "server.keystore");
+        File serverTrustFile = new File(keyStoreDir, "server.truststore");
+        File untrustedCertFile = new File(keyStoreDir, "untrusted.crt");
+        File untrustedKeyFile = new File(keyStoreDir, "untrusted.keystore");
+
+        createTemporaryCertFile((X509Certificate) clientKeyStore.getCertificate("cn=client"), clientCertFile);
+        createTemporaryCertFile((X509Certificate) serverKeyStore.getCertificate("cn=server"), serverCertFile);
+        createTemporaryCertFile((X509Certificate) untrustedKeyStore.getCertificate("cn=untrusted"), untrustedCertFile);
+
+        createTemporaryKeyStoreFile(clientKeyStore, clientKeyFile);
+        createTemporaryKeyStoreFile(clientTrustStore, clientTrustFile);
+        createTemporaryKeyStoreFile(serverKeyStore, serverKeyFile);
+        createTemporaryKeyStoreFile(serverTrustStore, serverTrustFile);
+        createTemporaryKeyStoreFile(untrustedKeyStore, untrustedKeyFile);
+    }
 
     /** The REDIRECT_STRATEGY for Apache HTTP Client */
     public static final RedirectStrategy REDIRECT_STRATEGY = new DefaultRedirectStrategy() {
@@ -863,37 +933,12 @@ public class Utils extends CoreUtils {
      * @throws IOException copying of keystores fails
      * @throws IllegalArgumentException workingFolder is null or it's not a directory
      */
-    public static void createKeyMaterial(final File workingFolder) throws IOException, IllegalArgumentException {
+    public static void createKeyMaterial(final File workingFolder) throws Exception {
         if (workingFolder == null || !workingFolder.isDirectory()) {
             throw new IllegalArgumentException("Provide an existing folder as the method parameter.");
         }
-        createTestResource(new File(workingFolder, SecurityTestConstants.SERVER_KEYSTORE));
-        createTestResource(new File(workingFolder, SecurityTestConstants.SERVER_TRUSTSTORE));
-        createTestResource(new File(workingFolder, SecurityTestConstants.SERVER_CRT));
-        createTestResource(new File(workingFolder, SecurityTestConstants.CLIENT_KEYSTORE));
-        createTestResource(new File(workingFolder, SecurityTestConstants.CLIENT_TRUSTSTORE));
-        createTestResource(new File(workingFolder, SecurityTestConstants.CLIENT_CRT));
-        createTestResource(new File(workingFolder, SecurityTestConstants.UNTRUSTED_KEYSTORE));
-        createTestResource(new File(workingFolder, SecurityTestConstants.UNTRUSTED_CRT));
+        generateKeyMaterial(workingFolder);
         LOGGER.trace("Key material created in " + workingFolder.getAbsolutePath());
-    }
-
-    /**
-     * Copies a resource file from current package to location denoted by given {@link File} instance.
-     *
-     * @param file
-     *
-     * @throws IOException
-     */
-    private static void createTestResource(File file) throws IOException {
-        FileOutputStream fos = null;
-        LOGGER.trace("Creating test file " + file.getAbsolutePath());
-        try {
-            fos = new FileOutputStream(file);
-            IOUtils.copy(CoreUtils.class.getResourceAsStream(file.getName()), fos);
-        } finally {
-            IOUtils.closeQuietly(fos);
-        }
     }
 
     public static String propertiesReplacer(String originalFile, File keystoreFile, File trustStoreFile, String keystorePassword) {

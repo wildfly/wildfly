@@ -185,7 +185,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
     }
 
     @BeforeClass
-    public static void prepareSSLFiles() {
+    public static void prepareSSLFiles() throws Exception {
         WORKDIR.mkdirs();
         try {
             Utils.createKeyMaterial(WORKDIR);
