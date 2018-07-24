@@ -4,8 +4,6 @@
     <extension-module>org.wildfly.extension.messaging-activemq</extension-module>
     <subsystem xmlns="urn:jboss:domain:messaging-activemq:4.0">
 
-        <?DISCOVERY-GROUPS?>
-
         <server name="default">
             <?CLUSTERED?>
 
@@ -47,6 +45,7 @@
                 <param name="buffer-pooling" value="false" />
             </in-vm-acceptor>
 
+            <?DISCOVERY-GROUPS?>
             <?BROADCAST-GROUPS?>
             <?CLUSTER-CONNECTIONS?>
 

@@ -222,6 +222,8 @@ public class MessagingActiveMQSubsystem_4_0_TestCase extends AbstractSubsystemBa
         config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, DiscoveryGroupDefinition.PATH), new FailedOperationTransformationConfig.NewAttributesConfig(DiscoveryGroupDefinition.JGROUPS_CHANNEL));
         config.addFailedAttribute(subsystemAddress.append(DiscoveryGroupDefinition.PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
         config.addFailedAttribute(subsystemAddress.append(pathElement(CommonAttributes.REMOTE_CONNECTOR)), FailedOperationTransformationConfig.REJECTED_RESOURCE);
+        config.addFailedAttribute(subsystemAddress.append(pathElement(CommonAttributes.IN_VM_CONNECTOR)), FailedOperationTransformationConfig.REJECTED_RESOURCE);
+        config.addFailedAttribute(subsystemAddress.append(pathElement(CommonAttributes.CONNECTOR)), FailedOperationTransformationConfig.REJECTED_RESOURCE);
         config.addFailedAttribute(subsystemAddress.append(MessagingExtension.HTTP_CONNECTOR_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
 
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, messagingVersion, ops, config);

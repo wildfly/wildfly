@@ -2,17 +2,28 @@
     <global-client thread-pool-max-size="${global.client.thread-pool-max-size:32}"
                    scheduled-thread-pool-max-size="${global.client.scheduled.thread-pool-max-size:54}" />
 
-    <remote-connector name="client-netty-throughput"
-                      socket-binding="messaging-throughput">
-        <param name="batch-delay" value="${batch.delay:50}"/>
-    </remote-connector>
-
     <http-connector name="client-http"
                     socket-binding="http"
                     endpoint="http"
                     server-name="=foo">
         <param name="batch-delay" value="${batch.delay:50}"/>
     </http-connector>
+
+    <remote-connector name="client-netty-throughput"
+                      socket-binding="messaging-throughput">
+        <param name="batch-delay" value="${batch.delay:50}"/>
+    </remote-connector>
+
+    <in-vm-connector name="in-vm-client"
+                     server-id="${my.server-id:0}"/>
+
+    <connector name="myconnector-client"
+               factory-class="org.apache.activemq.artemis.core.remoting.impl.netty.NettyConnectorFactory">
+        <param name="host" value="192.168.1.2"/>
+        <param name="port" value="5445"/>
+        <param name="key-store-path" value="path/to/server.jks"/>
+        <param name="key-store-password" value="${VAULT::server-key::key-store-password::sharedKey}"/>
+    </connector>
 
     <discovery-group name="client-discovery-group-1"
                      socket-binding="group-t-binding"/>

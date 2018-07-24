@@ -38,8 +38,10 @@
                         <xs:attribute name="scheduled-thread-pool-max-size" type="xs:int" />
                     </xs:complexType>
                 </xs:element>
-                <xs:element name="remote-connector" type="remote-connectorType" minOccurs="0" maxOccurs="unbounded" />
                 <xs:element name="http-connector" type="http-connectorType" minOccurs="0" maxOccurs="unbounded" />
+                <xs:element name="remote-connector" type="remote-connectorType" minOccurs="0" maxOccurs="unbounded" />
+                <xs:element name="in-vm-connector" minOccurs="0" maxOccurs="unbounded" type="in-vm-connectorType" />
+                <xs:element name="connector" minOccurs="0" maxOccurs="unbounded" type="connectorType" />
                 <xs:element name="discovery-group" type="discovery-groupType" minOccurs="0" maxOccurs="unbounded" />
                 <xs:element maxOccurs="unbounded" minOccurs="0" name="server" type="serverType" />
                 <xs:element maxOccurs="unbounded" minOccurs="0" name="jms-bridge" type="jms-bridgeType" />
@@ -287,25 +289,9 @@
 
             <xs:element name="remote-connector" minOccurs="0" maxOccurs="unbounded" type="remote-connectorType" />
 
-            <xs:element name="in-vm-connector" minOccurs="0" maxOccurs="unbounded">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:element name="param" minOccurs="0" maxOccurs="unbounded" type="paramType" />
-                    </xs:sequence>
-                    <xs:attribute name="name" type="xs:string" use="required" />
-                    <xs:attribute name="server-id" type="xs:string" use="required" />
-                </xs:complexType>
-            </xs:element>
+            <xs:element name="in-vm-connector" minOccurs="0" maxOccurs="unbounded" type="in-vm-connectorType" />
 
-            <xs:element name="connector" minOccurs="0" maxOccurs="unbounded">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:element name="param" minOccurs="0" maxOccurs="unbounded" type="paramType" />
-                    </xs:sequence>
-                    <xs:attribute name="name" type="xs:string" use="required" />
-                    <xs:attribute name="factory-class" type="xs:string" use="required" />
-                </xs:complexType>
-            </xs:element>
+            <xs:element name="connector" minOccurs="0" maxOccurs="unbounded" type="connectorType" />
 
             <xs:element name="http-acceptor" minOccurs="0" maxOccurs="unbounded">
                 <xs:complexType>
@@ -793,6 +779,22 @@
         <xs:attribute name="socket-binding" type="xs:string" use="required" />
         <xs:attribute name="endpoint" type="xs:string" use="required" />
         <xs:attribute name="server-name" type="xs:string" />
+    </xs:complexType>
+
+    <xs:complexType name="in-vm-connectorType">
+        <xs:sequence>
+            <xs:element name="param" minOccurs="0" maxOccurs="unbounded" type="paramType" />
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required" />
+        <xs:attribute name="server-id" type="xs:string" use="required" />
+    </xs:complexType>
+
+    <xs:complexType name="connectorType">
+        <xs:sequence>
+            <xs:element name="param" minOccurs="0" maxOccurs="unbounded" type="paramType" />
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required" />
+        <xs:attribute name="factory-class" type="xs:string" use="required" />
     </xs:complexType>
 
     <xs:complexType name="jms-bridgeType">

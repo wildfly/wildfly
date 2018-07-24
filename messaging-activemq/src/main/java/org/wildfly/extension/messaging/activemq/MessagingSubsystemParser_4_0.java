@@ -84,12 +84,25 @@ public class MessagingSubsystemParser_4_0 extends PersistentResourceXMLParser {
                         HTTPConnectorDefinition.SERVER_NAME,
                         CommonAttributes.PARAMS);
 
+        final PersistentResourceXMLBuilder invmConnector = builder(pathElement(IN_VM_CONNECTOR))
+                .addAttributes(
+                        InVMTransportDefinition.SERVER_ID,
+                        CommonAttributes.PARAMS);
+
+        final PersistentResourceXMLBuilder connector = builder(pathElement(CONNECTOR))
+                .addAttributes(
+                        GenericTransportDefinition.SOCKET_BINDING,
+                        CommonAttributes.FACTORY_CLASS,
+                        CommonAttributes.PARAMS);
+
         return builder(MessagingExtension.SUBSYSTEM_PATH, NAMESPACE)
                 .addAttributes(
                         MessagingSubsystemRootResourceDefinition.GLOBAL_CLIENT_THREAD_POOL_MAX_SIZE,
                         MessagingSubsystemRootResourceDefinition.GLOBAL_CLIENT_SCHEDULED_THREAD_POOL_MAX_SIZE)
-                .addChild(remoteConnector)
                 .addChild(httpConnector)
+                .addChild(remoteConnector)
+                .addChild(invmConnector)
+                .addChild(connector)
                 .addChild(discoveryGroup)
                 .addChild(
                         builder(MessagingExtension.SERVER_PATH)
@@ -321,17 +334,8 @@ public class MessagingSubsystemParser_4_0 extends PersistentResourceXMLParser {
                                                         AddressSettingDefinition.AUTO_DELETE_JMS_QUEUES))
                                 .addChild(httpConnector)
                                 .addChild(remoteConnector)
-                                .addChild(
-                                        builder(pathElement(IN_VM_CONNECTOR))
-                                                .addAttributes(
-                                                        InVMTransportDefinition.SERVER_ID,
-                                                        CommonAttributes.PARAMS))
-                                .addChild(
-                                        builder(pathElement(CONNECTOR))
-                                                .addAttributes(
-                                                        GenericTransportDefinition.SOCKET_BINDING,
-                                                        CommonAttributes.FACTORY_CLASS,
-                                                        CommonAttributes.PARAMS))
+                                .addChild(invmConnector)
+                                .addChild(connector)
                                 .addChild(
                                         builder(HTTPAcceptorDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(
