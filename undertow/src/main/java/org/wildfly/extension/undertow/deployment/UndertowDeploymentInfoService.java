@@ -81,6 +81,7 @@ import org.jboss.as.web.common.ExpressionFactoryWrapper;
 import org.jboss.as.web.common.ServletContextAttribute;
 import org.jboss.as.web.common.WebInjectionContainer;
 import org.jboss.as.web.session.SessionIdentifierCodec;
+import org.jboss.as.web.session.SharedSessionManagerConfig;
 import org.jboss.metadata.javaee.jboss.RunAsIdentityMetaData;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRoleRefMetaData;
@@ -144,7 +145,6 @@ import org.wildfly.extension.undertow.security.jaspi.JASPICAuthenticationMechani
 import org.wildfly.extension.undertow.security.jaspi.JASPICSecureResponseHandler;
 import org.wildfly.extension.undertow.security.jaspi.JASPICSecurityContextFactory;
 import org.wildfly.extension.undertow.session.CodecSessionConfigWrapper;
-import org.wildfly.extension.undertow.session.SharedSessionManagerConfig;
 import org.xnio.IoUtils;
 
 import javax.servlet.Filter;
