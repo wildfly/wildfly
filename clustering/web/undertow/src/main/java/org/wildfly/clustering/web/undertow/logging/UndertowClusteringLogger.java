@@ -24,6 +24,8 @@ package org.wildfly.clustering.web.undertow.logging;
 
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
+import org.jboss.logging.Logger.Level;
+import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 
@@ -40,4 +42,20 @@ public interface UndertowClusteringLogger extends BasicLogger {
 
     @Message(id = 3, value = "Session manager was stopped")
     IllegalStateException sessionManagerStopped();
+
+    @Message(id = 4, value = "Legacy <replication-config/> overriding attached distributable session management provider for %s")
+    @LogMessage(level = Level.WARN)
+    void legacySessionManagementProviderOverride(String deploymentName);
+
+    @Message(id = 5, value = "No distributable session management provider found for %s; using legacy provider based on <replication-config/>")
+    @LogMessage(level = Level.WARN)
+    void legacySessionManagementProviderInUse(String name);
+
+    @Message(id = 7, value = "No routing provider found for %s; using legacy provider based on static configuration")
+    @LogMessage(level = Level.WARN)
+    void legacyRoutingProviderInUse(String name);
+
+    @Message(id = 8, value = "No distributable single sign-on management provider found for %s; using legacy provider based on static configuration")
+    @LogMessage(level = Level.WARN)
+    void legacySingleSignOnProviderInUse(String name);
 }

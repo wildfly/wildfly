@@ -45,7 +45,7 @@ import org.wildfly.extension.undertow.Capabilities;
 import org.wildfly.extension.undertow.Server;
 
 /**
- * Service providing a non-distributable {@link SessionIdentifierCodec} implementation.
+ * Configures a Service providing a non-distributable {@link SessionIdentifierCodec} implementation.
  * @author Paul Ferraro
  */
 public class SimpleSessionIdentifierCodecServiceConfigurator extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, Function<Server, SessionIdentifierCodec> {

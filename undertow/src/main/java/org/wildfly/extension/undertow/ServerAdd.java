@@ -24,8 +24,10 @@ package org.wildfly.extension.undertow;
 
 import static org.wildfly.extension.undertow.ServerDefinition.SERVER_CAPABILITY;
 
-import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
+import java.util.ServiceLoader;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -36,8 +38,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.extension.undertow.session.DistributableSessionIdentifierCodecServiceConfiguratorProvider;
+import org.wildfly.extension.undertow.session.DistributableServerRuntimeHandler;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
@@ -53,7 +54,8 @@ class ServerAdd extends AbstractAddStepHandler {
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
-        final ModelNode parentModel = context.readResourceFromRoot(context.getCurrentAddress().getParent(), false).getModel();
+        PathAddress address = context.getCurrentAddress();
+        final ModelNode parentModel = context.readResourceFromRoot(address.getParent(), false).getModel();
 
         final String name = context.getCurrentAddressValue();
         final String defaultHost = ServerDefinition.DEFAULT_HOST.resolveModelAttribute(context, resource.getModel()).asString();
@@ -61,7 +63,7 @@ class ServerAdd extends AbstractAddStepHandler {
         final String defaultServerName = UndertowRootDefinition.DEFAULT_SERVER.resolveModelAttribute(context, parentModel).asString();
 
         final Server service = new Server(name, defaultHost);
-        final ServiceBuilder<Server> builder = context.getCapabilityServiceTarget().addCapability(SERVER_CAPABILITY, service)
+        final CapabilityServiceBuilder<Server> builder = context.getCapabilityServiceTarget().addCapability(SERVER_CAPABILITY, service)
                 .addCapabilityRequirement(Capabilities.CAPABILITY_SERVLET_CONTAINER, ServletContainerService.class, service.getServletContainerInjector(), servletContainer)
                 .addCapabilityRequirement(Capabilities.CAPABILITY_UNDERTOW, UndertowService.class, service.getUndertowServiceInjector());
 
@@ -85,12 +87,8 @@ class ServerAdd extends AbstractAddStepHandler {
         }
         builder.install();
 
-        ServiceTarget target = context.getServiceTarget();
-        DistributableSessionIdentifierCodecServiceConfiguratorProvider provider = DistributableSessionIdentifierCodecServiceConfiguratorProvider.INSTANCE.orElse(null);
-        if (provider != null) {
-            for (CapabilityServiceConfigurator configurator : provider.getServerServiceConfigurators(name)) {
-                configurator.configure(context).build(target).install();
-            }
+        for (DistributableServerRuntimeHandler handler : ServiceLoader.load(DistributableServerRuntimeHandler.class, DistributableServerRuntimeHandler.class.getClassLoader())) {
+            handler.execute(context, name);
         }
     }
 

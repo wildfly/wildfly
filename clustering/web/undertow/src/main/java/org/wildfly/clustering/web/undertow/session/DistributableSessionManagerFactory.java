@@ -28,13 +28,13 @@ import org.wildfly.clustering.ee.BatchContext;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.Recordable;
 import org.wildfly.clustering.web.IdentifierFactory;
+import org.wildfly.clustering.web.container.SessionManagerFactoryConfiguration;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.SessionExpirationListener;
 import org.wildfly.clustering.web.session.SessionManager;
 import org.wildfly.clustering.web.session.SessionManagerConfiguration;
 import org.wildfly.clustering.web.session.SessionManagerFactory;
 import org.wildfly.clustering.web.undertow.IdentifierFactoryAdapter;
-import org.wildfly.extension.undertow.session.DistributableSessionManagerConfiguration;
 
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.session.SessionListeners;
@@ -49,10 +49,10 @@ import io.undertow.servlet.api.ThreadSetupHandler;
 public class DistributableSessionManagerFactory implements io.undertow.servlet.api.SessionManagerFactory {
 
     private final SessionManagerFactory<LocalSessionContext, Batch> factory;
-    private final DistributableSessionManagerConfiguration config;
+    private final SessionManagerFactoryConfiguration config;
     private final SessionListeners listeners = new SessionListeners();
 
-    public DistributableSessionManagerFactory(SessionManagerFactory<LocalSessionContext, Batch> factory, DistributableSessionManagerConfiguration config) {
+    public DistributableSessionManagerFactory(SessionManagerFactory<LocalSessionContext, Batch> factory, SessionManagerFactoryConfiguration config) {
         this.factory = factory;
         this.config = config;
     }
@@ -102,6 +102,8 @@ public class DistributableSessionManagerFactory implements io.undertow.servlet.a
             }
         });
         RecordableSessionManagerStatistics statistics = (inactiveSessionStatistics != null) ? new DistributableSessionManagerStatistics(manager, inactiveSessionStatistics, this.config.getMaxActiveSessions()) : null;
-        return new DistributableSessionManager(info.getDeploymentName(), manager, this.listeners, statistics);
+        io.undertow.server.session.SessionManager result = new DistributableSessionManager(info.getDeploymentName(), manager, this.listeners, statistics);
+        result.setDefaultSessionTimeout((int) this.config.getDefaultSessionTimeout().getSeconds());
+        return result;
     }
 }

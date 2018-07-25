@@ -87,6 +87,7 @@
                 <extension>org.wildfly.extension.batch.jberet</extension>
                 <extension>org.wildfly.extension.bean-validation</extension>
                 <extension>org.wildfly.extension.clustering.singleton</extension>
+                <extension>org.wildfly.extension.clustering.web</extension>
                 <extension>org.wildfly.extension.ee-security</extension>
                 <extension>org.wildfly.extension.messaging-activemq</extension>
                 <extension>org.wildfly.extension.microprofile.config-smallrye</extension>
@@ -118,6 +119,7 @@
                 <extension>org.wildfly.extension.batch.jberet</extension>
                 <extension>org.wildfly.extension.bean-validation</extension>
                 <extension>org.wildfly.extension.clustering.singleton</extension>
+                <extension>org.wildfly.extension.clustering.web</extension>
                 <extension>org.wildfly.extension.ee-security</extension>
                 <extension>org.wildfly.extension.messaging-activemq</extension>
                 <extension>org.wildfly.extension.microprofile.config-smallrye</extension>

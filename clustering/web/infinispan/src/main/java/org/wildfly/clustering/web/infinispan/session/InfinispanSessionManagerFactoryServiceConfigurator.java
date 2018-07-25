@@ -49,6 +49,7 @@ import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
 import org.wildfly.clustering.infinispan.spi.service.CacheServiceConfigurator;
 import org.wildfly.clustering.infinispan.spi.service.TemplateConfigurationServiceConfigurator;
 import org.wildfly.clustering.marshalling.spi.Marshallability;
+import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
 import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.FunctionalService;
 import org.wildfly.clustering.service.ServiceConfigurator;
@@ -58,17 +59,20 @@ import org.wildfly.clustering.service.SupplierDependency;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 import org.wildfly.clustering.spi.ClusteringRequirement;
 import org.wildfly.clustering.spi.NodeFactory;
+import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
+import org.wildfly.clustering.web.session.SessionAttributePersistenceStrategy;
 import org.wildfly.clustering.web.session.SessionManagerFactory;
 import org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration;
 
-public class InfinispanSessionManagerFactoryServiceConfigurator<C extends Marshallability, L> extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, InfinispanSessionManagerFactoryConfiguration<C, L>, Supplier<SessionManagerFactory<L, TransactionBatch>> {
+public class InfinispanSessionManagerFactoryServiceConfigurator<C extends Marshallability, L> extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, InfinispanSessionManagerFactoryConfiguration<C, L>, Supplier<SessionManagerFactory<L, TransactionBatch>>, Consumer<ConfigurationBuilder> {
     public static final String DEFAULT_CACHE_CONTAINER = "web";
 
-    private final SessionManagerFactoryConfiguration<C, L> configuration;
-    private final String containerName;
-    private final CapabilityServiceConfigurator configurationConfigurator;
-    private final CapabilityServiceConfigurator cacheConfigurator;
+    private final InfinispanSessionManagementConfiguration configuration;
+    private final SessionManagerFactoryConfiguration<C, L> factoryConfiguration;
+
+    private volatile ServiceConfigurator configurationConfigurator;
+    private volatile ServiceConfigurator cacheConfigurator;
 
     private volatile SupplierDependency<NodeFactory<Address>> group;
     private volatile SupplierDependency<KeyAffinityServiceFactory> affinityFactory;
@@ -76,42 +80,10 @@ public class InfinispanSessionManagerFactoryServiceConfigurator<C extends Marsha
     @SuppressWarnings("rawtypes")
     private volatile Supplier<Cache> cache;
 
-    public InfinispanSessionManagerFactoryServiceConfigurator(SessionManagerFactoryConfiguration<C, L> configuration) {
-        super(ServiceName.JBOSS.append("clustering", "web", configuration.getDeploymentName()));
+    public InfinispanSessionManagerFactoryServiceConfigurator(InfinispanSessionManagementConfiguration configuration, SessionManagerFactoryConfiguration<C, L> factoryConfiguration) {
+        super(ServiceName.JBOSS.append("clustering", "web", factoryConfiguration.getDeploymentName()));
         this.configuration = configuration;
-
-        ServiceName baseServiceName = ServiceName.JBOSS.append("infinispan");
-        String configCacheName = this.configuration.getCacheName();
-        ServiceName configServiceName = ServiceName.parse((configCacheName != null) ? configCacheName : DEFAULT_CACHE_CONTAINER);
-        if (!baseServiceName.isParentOf(configServiceName)) {
-            configServiceName = baseServiceName.append(configServiceName);
-        }
-        this.containerName = ((configServiceName.length() > 3) ? configServiceName.getParent() : configServiceName).getSimpleName();
-        String templateCacheName =  (configServiceName.length() > 3) ? configServiceName.getSimpleName() : null;
-        String cacheName = this.configuration.getDeploymentName();
-
-        // Ensure eviction and expiration are disabled
-        @SuppressWarnings("deprecation")
-        Consumer<ConfigurationBuilder> configurator = builder -> {
-            // Ensure expiration is not enabled on cache
-            ExpirationConfiguration expiration = builder.expiration().create();
-            if ((expiration.lifespan() >= 0) || (expiration.maxIdle() >= 0)) {
-                builder.expiration().lifespan(-1).maxIdle(-1);
-                InfinispanWebLogger.ROOT_LOGGER.expirationDisabled(InfinispanCacheRequirement.CONFIGURATION.resolve(this.containerName, templateCacheName));
-            }
-
-            int size = configuration.getMaxActiveSessions();
-            EvictionStrategy strategy = (size > 0) ? EvictionStrategy.REMOVE : EvictionStrategy.MANUAL;
-            builder.memory().evictionStrategy(strategy).evictionType(EvictionType.COUNT).storageType(StorageType.OBJECT).size(size);
-            if (strategy.isEnabled()) {
-                // Only evict creation meta-data entries
-                // We will cascade eviction to the remaining entries for a given session
-                builder.dataContainer().dataContainer(EvictableDataContainer.createDataContainer(builder, size, SessionCreationMetaDataKey.class::isInstance));
-            }
-        };
-
-        this.configurationConfigurator = new TemplateConfigurationServiceConfigurator(ServiceName.parse(InfinispanCacheRequirement.CONFIGURATION.resolve(this.containerName, cacheName)), this.containerName, cacheName, templateCacheName, configurator);
-        this.cacheConfigurator = new CacheServiceConfigurator<>(ServiceName.parse(InfinispanCacheRequirement.CACHE.resolve(this.containerName, cacheName)), this.containerName, cacheName);
+        this.factoryConfiguration = factoryConfiguration;
     }
 
     @Override
@@ -121,13 +93,40 @@ public class InfinispanSessionManagerFactoryServiceConfigurator<C extends Marsha
 
     @Override
     public ServiceConfigurator configure(CapabilityServiceSupport support) {
-        this.configurationConfigurator.configure(support);
-        this.cacheConfigurator.configure(support);
+        String containerName = this.configuration.getContainerName();
+        String cacheName = this.configuration.getCacheName();
+        String deploymentName = this.factoryConfiguration.getDeploymentName();
+        this.configurationConfigurator = new TemplateConfigurationServiceConfigurator(InfinispanCacheRequirement.CONFIGURATION.getServiceName(support, containerName, deploymentName), containerName, deploymentName, cacheName, this).configure(support);
+        this.cacheConfigurator = new CacheServiceConfigurator<>(InfinispanCacheRequirement.CACHE.getServiceName(support, containerName, deploymentName), containerName, deploymentName).configure(support);
 
-        this.affinityFactory = new ServiceSupplierDependency<>(InfinispanRequirement.KEY_AFFINITY_FACTORY.getServiceName(support, this.containerName));
-        this.dispatcherFactory = new ServiceSupplierDependency<>(ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(support, this.containerName));
-        this.group = new ServiceSupplierDependency<>(ClusteringCacheRequirement.GROUP.getServiceName(support, this.containerName, this.configuration.getServerName()));
+        this.affinityFactory = new ServiceSupplierDependency<>(InfinispanRequirement.KEY_AFFINITY_FACTORY.getServiceName(support, containerName));
+        this.dispatcherFactory = new ServiceSupplierDependency<>(ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(support, containerName));
+        this.group = new ServiceSupplierDependency<>(ClusteringCacheRequirement.GROUP.getServiceName(support, containerName, this.factoryConfiguration.getServerName()));
         return this;
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public void accept(ConfigurationBuilder builder) {
+        // Ensure expiration is not enabled on cache
+        ExpirationConfiguration expiration = builder.expiration().create();
+        if ((expiration.lifespan() >= 0) || (expiration.maxIdle() >= 0)) {
+            builder.expiration().lifespan(-1).maxIdle(-1);
+            InfinispanWebLogger.ROOT_LOGGER.expirationDisabled(InfinispanCacheRequirement.CONFIGURATION.resolve(this.configuration.getContainerName(), this.configuration.getCacheName()));
+        }
+
+        Integer size = this.factoryConfiguration.getMaxActiveSessions();
+        EvictionStrategy strategy = (size != null) ? EvictionStrategy.REMOVE : EvictionStrategy.NONE;
+        builder.memory().evictionType(EvictionType.COUNT)
+                .evictionStrategy(strategy)
+                .size((size != null) ? size.longValue() : 0)
+                .storageType(StorageType.OBJECT)
+                ;
+        if (strategy.isEnabled()) {
+            // Only evict creation meta-data entries
+            // We will cascade eviction to the remaining entries for a given session
+            builder.dataContainer().dataContainer(EvictableDataContainer.createDataContainer(builder, size, SessionCreationMetaDataKey.class::isInstance));
+        }
     }
 
     @Override
@@ -140,11 +139,6 @@ public class InfinispanSessionManagerFactoryServiceConfigurator<C extends Marsha
         this.cache = builder.requires(this.cacheConfigurator.getServiceName());
         Service service = new FunctionalService<>(factory, Function.identity(), this, Consumers.close());
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
-    }
-
-    @Override
-    public SessionManagerFactoryConfiguration<C, L> getSessionManagerFactoryConfiguration() {
-        return this.configuration;
     }
 
     @Override
@@ -165,5 +159,50 @@ public class InfinispanSessionManagerFactoryServiceConfigurator<C extends Marsha
     @Override
     public NodeFactory<Address> getMemberFactory() {
         return this.group.get();
+    }
+
+    @Override
+    public String getContainerName() {
+        return this.configuration.getContainerName();
+    }
+
+    @Override
+    public String getCacheName() {
+        return this.configuration.getCacheName();
+    }
+
+    @Override
+    public SessionAttributePersistenceStrategy getAttributePersistenceStrategy() {
+        return this.configuration.getAttributePersistenceStrategy();
+    }
+
+    @Override
+    public Integer getMaxActiveSessions() {
+        return this.factoryConfiguration.getMaxActiveSessions();
+    }
+
+    @Override
+    public String getServerName() {
+        return this.factoryConfiguration.getServerName();
+    }
+
+    @Override
+    public String getDeploymentName() {
+        return this.factoryConfiguration.getDeploymentName();
+    }
+
+    @Override
+    public MarshalledValueFactory<C> getMarshalledValueFactory() {
+        return this.factoryConfiguration.getMarshalledValueFactory();
+    }
+
+    @Override
+    public C getMarshallingContext() {
+        return this.factoryConfiguration.getMarshallingContext();
+    }
+
+    @Override
+    public LocalContextFactory<L> getLocalContextFactory() {
+        return this.factoryConfiguration.getLocalContextFactory();
     }
 }

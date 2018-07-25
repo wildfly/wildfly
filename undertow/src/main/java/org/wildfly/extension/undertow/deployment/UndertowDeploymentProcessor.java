@@ -23,16 +23,19 @@
 package org.wildfly.extension.undertow.deployment;
 
 import java.net.MalformedURLException;
-import java.util.Arrays;
+import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import javax.security.jacc.PolicyConfiguration;
@@ -47,7 +50,6 @@ import org.apache.jasper.deploy.TagLibraryValidatorInfo;
 import org.apache.jasper.deploy.TagVariableInfo;
 import org.jboss.annotation.javaee.Icon;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
-import org.jboss.as.clustering.controller.SimpleCapabilityServiceConfigurator;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.component.ComponentRegistry;
@@ -85,6 +87,7 @@ import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.AttributeMetaData;
 import org.jboss.metadata.web.spec.FunctionMetaData;
 import org.jboss.metadata.web.spec.ListenerMetaData;
+import org.jboss.metadata.web.spec.SessionConfigMetaData;
 import org.jboss.metadata.web.spec.TagFileMetaData;
 import org.jboss.metadata.web.spec.TagMetaData;
 import org.jboss.metadata.web.spec.TldMetaData;
@@ -98,6 +101,8 @@ import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.security.SecurityConstants;
 import org.jboss.vfs.VirtualFile;
+import org.wildfly.clustering.web.container.SessionManagementProvider;
+import org.wildfly.clustering.web.container.SessionManagerFactoryConfiguration;
 import org.wildfly.extension.io.IOServices;
 import org.wildfly.extension.requestcontroller.ControlPoint;
 import org.wildfly.extension.requestcontroller.ControlPointService;
@@ -111,17 +116,14 @@ import org.wildfly.extension.undertow.UndertowExtension;
 import org.wildfly.extension.undertow.UndertowService;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.extension.undertow.security.jacc.WarJACCDeployer;
-import org.wildfly.extension.undertow.session.DistributableSessionIdentifierCodecServiceConfiguratorProvider;
-import org.wildfly.extension.undertow.session.DistributableSessionManagerConfiguration;
-import org.wildfly.extension.undertow.session.DistributableSessionManagerFactoryServiceConfiguratorProvider;
-import org.wildfly.extension.undertow.session.SimpleDistributableSessionManagerConfiguration;
-import org.wildfly.extension.undertow.session.SimpleSessionIdentifierCodecServiceConfigurator;
+import org.wildfly.extension.undertow.session.NonDistributableSessionManagementProvider;
+import org.wildfly.extension.undertow.session.SessionManagementProviderFactory;
 
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.SessionManagerFactory;
 import io.undertow.servlet.core.InMemorySessionManagerFactory;
 
-public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
+public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Function<SessionManagerFactoryConfiguration, SessionManagerFactory> {
 
     public static final String OLD_URI_PREFIX = "http://java.sun.com";
     public static final String NEW_URI_PREFIX = "http://xmlns.jcp.org";
@@ -140,6 +142,8 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         value is host name where deployment is bound to.
      */
     private final DefaultDeploymentMappingProvider defaultModuleMappingProvider;
+    private final SessionManagementProviderFactory sessionManagementProviderFactory;
+    private final SessionManagementProvider nonDistributableSessionManagementProvider;
 
     public UndertowDeploymentProcessor(String defaultHost, final String defaultContainer, String defaultServer, String defaultSecurityDomain, Predicate<String> knownSecurityDomain) {
         this.defaultHost = defaultHost;
@@ -151,6 +155,9 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         this.defaultContainer = defaultContainer;
         this.defaultServer = defaultServer;
         this.knownSecurityDomain = knownSecurityDomain;
+        Iterator<SessionManagementProviderFactory> factories = ServiceLoader.load(SessionManagementProviderFactory.class, SessionManagementProviderFactory.class.getClassLoader()).iterator();
+        this.sessionManagementProviderFactory = factories.hasNext() ? factories.next() : null;
+        this.nonDistributableSessionManagementProvider = new NonDistributableSessionManagementProvider(this);
     }
 
     @Override
@@ -187,6 +194,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
 
         String serverInstanceName = warMetaData.getMergedJBossWebMetaData().getServerInstanceName() == null ? defaultServerForDeployment : warMetaData.getMergedJBossWebMetaData().getServerInstanceName();
         String hostName = hostNameOfDeployment(warMetaData, defaultHostForDeployment);
+
         processDeployment(warMetaData, deploymentUnit, phaseContext.getServiceTarget(), deploymentName, hostName, serverInstanceName);
     }
 
@@ -396,17 +404,49 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
             infoBuilder.addDependency(deploymentUnit.getParent().getServiceName().append(SharedSessionManagerConfig.SHARED_SESSION_MANAGER_SERVICE_NAME), SessionManagerFactory.class, undertowDeploymentInfoService.getSessionManagerFactoryInjector());
             infoBuilder.addDependency(deploymentUnit.getParent().getServiceName().append(SharedSessionManagerConfig.SHARED_SESSION_IDENTIFIER_CODEC_SERVICE_NAME), SessionIdentifierCodec.class, undertowDeploymentInfoService.getSessionIdentifierCodecInjector());
         } else {
-            CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
+            ServletContainerService servletContainer = deploymentUnit.getAttachment(UndertowAttachments.SERVLET_CONTAINER_SERVICE);
+            Integer maxActiveSessions = (metaData.getMaxActiveSessions() != null) ? metaData.getMaxActiveSessions() : (servletContainer != null) ? servletContainer.getMaxSessions() : null;
+            SessionConfigMetaData sessionConfig = metaData.getSessionConfig();
+            int defaultSessionTimeout = ((sessionConfig != null) && sessionConfig.getSessionTimeoutSet()) ? sessionConfig.getSessionTimeout() : (servletContainer != null) ? servletContainer.getDefaultSessionTimeout() : Integer.valueOf(30);
+            ServiceName factoryServiceName = deploymentServiceName.append("session");
+            ServiceName codecServiceName = deploymentServiceName.append("codec");
 
-            CapabilityServiceConfigurator factoryConfigurator = getSessionManagerFactoryServiceConfigurator(deploymentServiceName, serverInstanceName, deploymentName, module, metaData, deploymentUnit.getAttachment(UndertowAttachments.SERVLET_CONTAINER_SERVICE));
+            SessionManagementProvider provider = this.getDistributableWebDeploymentProvider(deploymentUnit, metaData);
+            SessionManagerFactoryConfiguration configuration = new SessionManagerFactoryConfiguration() {
+                @Override
+                public String getServerName() {
+                    return serverInstanceName;
+                }
+
+                @Override
+                public String getDeploymentName() {
+                    return deploymentName;
+                }
+
+                @Override
+                public Module getModule() {
+                    return module;
+                }
+
+                @Override
+                public Integer getMaxActiveSessions() {
+                    return maxActiveSessions;
+                }
+
+                @Override
+                public Duration getDefaultSessionTimeout() {
+                    return Duration.ofMinutes(defaultSessionTimeout);
+                }
+            };
+            CapabilityServiceConfigurator factoryConfigurator = provider.getSessionManagerFactoryServiceConfigurator(factoryServiceName, configuration);
+            CapabilityServiceConfigurator codecConfigurator = provider.getSessionIdentifierCodecServiceConfigurator(codecServiceName, configuration);
+
             infoBuilder.addDependency(factoryConfigurator.getServiceName(), SessionManagerFactory.class, undertowDeploymentInfoService.getSessionManagerFactoryInjector());
-
-            CapabilityServiceConfigurator codecConfigurator = getSessionIdentifierCodecServiceConfigurator(deploymentServiceName, serverInstanceName, deploymentName, metaData);
             infoBuilder.addDependency(codecConfigurator.getServiceName(), SessionIdentifierCodec.class, undertowDeploymentInfoService.getSessionIdentifierCodecInjector());
 
-            for (CapabilityServiceConfigurator configurator : Arrays.asList(factoryConfigurator, codecConfigurator)) {
-                configurator.configure(support).build(serviceTarget).install();
-            }
+            CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
+            factoryConfigurator.configure(support).build(serviceTarget).install();
+            codecConfigurator.configure(support).build(serviceTarget).install();
         }
 
         infoBuilder.install();
@@ -459,33 +499,21 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         processManagement(deploymentUnit, metaData);
     }
 
-    private static CapabilityServiceConfigurator getSessionManagerFactoryServiceConfigurator(ServiceName deploymentServiceName, String serverName, String deploymentName, Module module, JBossWebMetaData metaData, ServletContainerService servletContainerService) {
+    @Override
+    public SessionManagerFactory apply(SessionManagerFactoryConfiguration configuration) {
+        Integer maxActiveSessions = configuration.getMaxActiveSessions();
+        return (maxActiveSessions != null) ? new InMemorySessionManagerFactory(maxActiveSessions.intValue()) : new InMemorySessionManagerFactory();
+    }
 
-        Integer maxActiveSessions = metaData.getMaxActiveSessions();
-        if(maxActiveSessions == null && servletContainerService != null) {
-            maxActiveSessions = servletContainerService.getMaxSessions();
-        }
-        ServiceName name = deploymentServiceName.append("session");
+    private SessionManagementProvider getDistributableWebDeploymentProvider(DeploymentUnit unit, JBossWebMetaData metaData) {
         if (metaData.getDistributable() != null) {
-            if (DistributableSessionManagerFactoryServiceConfiguratorProvider.INSTANCE.isPresent()) {
-                DistributableSessionManagerConfiguration config = new SimpleDistributableSessionManagerConfiguration(maxActiveSessions, metaData.getReplicationConfig(), serverName, deploymentName, module);
-                return DistributableSessionManagerFactoryServiceConfiguratorProvider.INSTANCE.get().getServiceConfigurator(name, config);
+            if (this.sessionManagementProviderFactory != null) {
+                return this.sessionManagementProviderFactory.createSessionManagementProvider(unit, metaData.getReplicationConfig());
             }
             // Fallback to local session manager if server does not support clustering
             UndertowLogger.ROOT_LOGGER.clusteringNotSupported();
         }
-        return new SimpleCapabilityServiceConfigurator<>(name, (maxActiveSessions != null) ? new InMemorySessionManagerFactory(maxActiveSessions) : new InMemorySessionManagerFactory());
-    }
-
-    private static CapabilityServiceConfigurator getSessionIdentifierCodecServiceConfigurator(ServiceName deploymentServiceName, String serverName, String deploymentName, JBossWebMetaData metaData) {
-        ServiceName name = deploymentServiceName.append("codec");
-        if (metaData.getDistributable() != null) {
-            if (DistributableSessionIdentifierCodecServiceConfiguratorProvider.INSTANCE.isPresent()) {
-                return DistributableSessionIdentifierCodecServiceConfiguratorProvider.INSTANCE.get().getDeploymentServiceConfigurator(name, serverName, deploymentName);
-            }
-            // Fallback to simple codec if server does not support clustering
-        }
-        return new SimpleSessionIdentifierCodecServiceConfigurator(name, serverName);
+        return this.nonDistributableSessionManagementProvider;
     }
 
     static String pathNameOfDeployment(final DeploymentUnit deploymentUnit, final JBossWebMetaData metaData) {

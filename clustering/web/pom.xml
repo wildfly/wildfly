@@ -44,8 +44,10 @@
     <modules>
         <module>api</module>
         <module>spi</module>
+        <module>container</module>
         <module>undertow</module>
         <module>infinispan</module>
+        <module>extension</module>
     </modules>
 
 </project>

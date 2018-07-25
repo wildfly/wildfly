@@ -29,9 +29,7 @@ import org.wildfly.clustering.marshalling.spi.Marshallability;
 import org.wildfly.clustering.spi.NodeFactory;
 import org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration;
 
-public interface InfinispanSessionManagerFactoryConfiguration<C extends Marshallability, L> {
-
-    SessionManagerFactoryConfiguration<C, L> getSessionManagerFactoryConfiguration();
+public interface InfinispanSessionManagerFactoryConfiguration<C extends Marshallability, L> extends InfinispanSessionManagementConfiguration, SessionManagerFactoryConfiguration<C, L> {
 
     <K, V> Cache<K, V> getCache();
 

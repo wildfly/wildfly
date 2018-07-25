@@ -46,28 +46,30 @@ import org.wildfly.clustering.web.sso.SSOManagerFactory;
 
 public class InfinispanSSOManagerFactoryServiceConfigurator<A, D, S> extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, InfinispanSSOManagerFactoryConfiguration {
 
-    public static final String DEFAULT_CACHE_CONTAINER = "web";
+    private final String name;
+    private final String containerName;
+    private final String cacheName;
 
-    private final CapabilityServiceConfigurator configurationConfigurator;
-    private final CapabilityServiceConfigurator cacheConfigurator;
-
+    private volatile ServiceConfigurator configurationConfigurator;
+    private volatile ServiceConfigurator cacheConfigurator;
     private volatile SupplierDependency<KeyAffinityServiceFactory> affinityFactory;
+
     @SuppressWarnings("rawtypes")
     private volatile Supplier<Cache> cache;
 
-    public InfinispanSSOManagerFactoryServiceConfigurator(String name) {
+    public InfinispanSSOManagerFactoryServiceConfigurator(InfinispanSSOManagementConfiguration config, String name) {
         super(ServiceName.JBOSS.append("clustering", "sso", name));
 
-        this.configurationConfigurator = new TemplateConfigurationServiceConfigurator(ServiceName.parse(InfinispanCacheRequirement.CONFIGURATION.resolve(DEFAULT_CACHE_CONTAINER, name)), DEFAULT_CACHE_CONTAINER, name, null);
-        this.cacheConfigurator = new CacheServiceConfigurator<>(ServiceName.parse(InfinispanCacheRequirement.CACHE.resolve(DEFAULT_CACHE_CONTAINER, name)), DEFAULT_CACHE_CONTAINER, name);
+        this.name = name;
+        this.containerName = config.getContainerName();
+        this.cacheName = config.getCacheName();
     }
 
     @Override
     public ServiceConfigurator configure(CapabilityServiceSupport support) {
-        this.configurationConfigurator.configure(support);
-        this.cacheConfigurator.configure(support);
-
-        this.affinityFactory = new ServiceSupplierDependency<>(InfinispanRequirement.KEY_AFFINITY_FACTORY.getServiceName(support, DEFAULT_CACHE_CONTAINER));
+        this.configurationConfigurator = new TemplateConfigurationServiceConfigurator(InfinispanCacheRequirement.CONFIGURATION.getServiceName(support, this.containerName, this.name), this.containerName, this.name, this.cacheName).configure(support);
+        this.cacheConfigurator = new CacheServiceConfigurator<>(InfinispanCacheRequirement.CACHE.getServiceName(support, this.containerName, this.name), this.containerName, this.name).configure(support);
+        this.affinityFactory = new ServiceSupplierDependency<>(InfinispanRequirement.KEY_AFFINITY_FACTORY.getServiceName(support, this.containerName));
         return this;
     }
 
