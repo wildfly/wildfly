@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<shared-session-config xmlns="urn:jboss:shared-session-config:2.0">
+    <distributable/>
+    <max-active-sessions>10</max-active-sessions>
+    <session-config>
+        <cookie-config>
+            <path>/</path>
+        </cookie-config>
+    </session-config>
+</shared-session-config>

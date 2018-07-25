@@ -34,15 +34,14 @@ import org.jboss.as.clustering.controller.Schema;
  */
 public enum DistributableWebDeploymentSchema implements Schema<DistributableWebDeploymentSchema> {
 
-    VERSION_1_0("distributable-web", 1, 0),
+    VERSION_1_0(1, 0),
     ;
+    private static final String ROOT = "distributable-web";
 
-    private final String root;
     private final int major;
     private final int minor;
 
-    DistributableWebDeploymentSchema(String root, int major, int minor) {
-        this.root = root;
+    DistributableWebDeploymentSchema(int major, int minor) {
         this.major = major;
         this.minor = minor;
     }
@@ -59,10 +58,10 @@ public enum DistributableWebDeploymentSchema implements Schema<DistributableWebD
 
     @Override
     public String getNamespaceUri() {
-        return String.format(Locale.ROOT, "urn:jboss:%s:%d.%d", this.root, this.major, this.minor);
+        return String.format(Locale.ROOT, "urn:jboss:%s:%d.%d", ROOT, this.major, this.minor);
     }
 
     public QName getRoot() {
-        return new QName(this.getNamespaceUri(), this.root);
+        return new QName(this.getNamespaceUri(), ROOT);
     }
 }
