@@ -36,15 +36,15 @@ public class SharedSessionManagerConfig {
     public static final ServiceName SHARED_SESSION_MANAGER_SERVICE_NAME = ServiceName.of("web", "shared-session-manager");
     public static final ServiceName SHARED_SESSION_IDENTIFIER_CODEC_SERVICE_NAME = SHARED_SESSION_MANAGER_SERVICE_NAME.append("codec");
 
-    private int maxActiveSessions = -1;
+    private Integer maxActiveSessions;
     private ReplicationConfig replicationConfig;
     private SessionConfigMetaData sessionConfig;
 
-    public int getMaxActiveSessions() {
+    public Integer getMaxActiveSessions() {
         return maxActiveSessions;
     }
 
-    public void setMaxActiveSessions(int maxActiveSessions) {
+    public void setMaxActiveSessions(Integer maxActiveSessions) {
         this.maxActiveSessions = maxActiveSessions;
     }
 

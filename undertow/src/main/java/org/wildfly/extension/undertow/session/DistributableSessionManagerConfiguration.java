@@ -25,7 +25,7 @@ import org.jboss.metadata.web.jboss.ReplicationGranularity;
 import org.jboss.modules.Module;
 
 public interface DistributableSessionManagerConfiguration {
-    int getMaxActiveSessions();
+    Integer getMaxActiveSessions();
 
     ReplicationGranularity getGranularity();
 

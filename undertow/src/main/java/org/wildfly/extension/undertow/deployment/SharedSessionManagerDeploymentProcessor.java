@@ -76,7 +76,8 @@ public class SharedSessionManagerDeploymentProcessor implements DeploymentUnitPr
         CapabilityServiceConfigurator factoryConfigurator = DistributableSessionManagerFactoryServiceConfiguratorProvider.INSTANCE
                 .map(provider -> provider.getServiceConfigurator(managerServiceName, new SimpleDistributableSessionManagerConfiguration(sharedConfig, serverName, deploymentUnit.getName(), module)))
                 .orElseGet(() -> {
-                    InMemorySessionManager manager = new InMemorySessionManager(deploymentUnit.getName(), sharedConfig.getMaxActiveSessions());
+                    Integer maxActiveSessions = sharedConfig.getMaxActiveSessions();
+                    InMemorySessionManager manager = (maxActiveSessions != null) ? new InMemorySessionManager(deploymentUnit.getName(), maxActiveSessions) : new InMemorySessionManager(deploymentUnit.getName());
                     if (sharedConfig.getSessionConfig() != null) {
                         if (sharedConfig.getSessionConfig().getSessionTimeoutSet()) {
                             manager.setDefaultSessionTimeout(sharedConfig.getSessionConfig().getSessionTimeout());
