@@ -20,8 +20,9 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.undertow.session;
+package org.jboss.as.web.session;
 
+import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.metadata.web.jboss.ReplicationConfig;
 import org.jboss.metadata.web.spec.SessionConfigMetaData;
 import org.jboss.msc.service.ServiceName;
@@ -31,7 +32,8 @@ import org.jboss.msc.service.ServiceName;
  */
 public class SharedSessionManagerConfig {
 
-    public static final ServiceName SHARED_SESSION_MANAGER_SERVICE_NAME = ServiceName.of("undertow", "shared-session-manager");
+    public static final AttachmentKey<SharedSessionManagerConfig> ATTACHMENT_KEY = AttachmentKey.create(SharedSessionManagerConfig.class);
+    public static final ServiceName SHARED_SESSION_MANAGER_SERVICE_NAME = ServiceName.of("web", "shared-session-manager");
     public static final ServiceName SHARED_SESSION_IDENTIFIER_CODEC_SERVICE_NAME = SHARED_SESSION_MANAGER_SERVICE_NAME.append("codec");
 
     private int maxActiveSessions = -1;

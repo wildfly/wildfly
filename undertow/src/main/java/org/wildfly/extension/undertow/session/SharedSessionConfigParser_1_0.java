@@ -24,9 +24,10 @@ package org.wildfly.extension.undertow.session;
 
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.ee.structure.JBossDescriptorPropertyReplacement;
-import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.jbossallxml.JBossAllXMLParser;
+import org.jboss.as.server.logging.ServerLogger;
+import org.jboss.as.web.session.SharedSessionManagerConfig;
 import org.jboss.metadata.parser.jbossweb.ReplicationConfigParser;
 import org.jboss.metadata.parser.servlet.SessionConfigMetaDataParser;
 import org.jboss.metadata.property.PropertyReplacer;

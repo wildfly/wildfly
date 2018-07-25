@@ -74,6 +74,7 @@ import org.jboss.as.web.common.WarMetaData;
 import org.jboss.as.web.common.WebComponentDescription;
 import org.jboss.as.web.common.WebInjectionContainer;
 import org.jboss.as.web.session.SessionIdentifierCodec;
+import org.jboss.as.web.session.SharedSessionManagerConfig;
 import org.jboss.dmr.ModelNode;
 import org.jboss.metadata.ear.jboss.JBossAppMetaData;
 import org.jboss.metadata.ear.spec.EarMetaData;
@@ -113,7 +114,6 @@ import org.wildfly.extension.undertow.security.jacc.WarJACCDeployer;
 import org.wildfly.extension.undertow.session.DistributableSessionIdentifierCodecServiceConfiguratorProvider;
 import org.wildfly.extension.undertow.session.DistributableSessionManagerConfiguration;
 import org.wildfly.extension.undertow.session.DistributableSessionManagerFactoryServiceConfiguratorProvider;
-import org.wildfly.extension.undertow.session.SharedSessionManagerConfig;
 import org.wildfly.extension.undertow.session.SimpleDistributableSessionManagerConfiguration;
 import org.wildfly.extension.undertow.session.SimpleSessionIdentifierCodecServiceConfigurator;
 
@@ -279,7 +279,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
                 additionalDependencies.addAll(dependencies);
             }
         }
-        SharedSessionManagerConfig sharedSessionManagerConfig = deploymentUnit.getParent() != null ? deploymentUnit.getParent().getAttachment(UndertowAttachments.SHARED_SESSION_MANAGER_CONFIG) : null;
+        SharedSessionManagerConfig sharedSessionManagerConfig = deploymentUnit.getParent() != null ? deploymentUnit.getParent().getAttachment(SharedSessionManagerConfig.ATTACHMENT_KEY) : null;
 
         if(!deploymentResourceRoot.isUsePhysicalCodeSource()) {
             try {

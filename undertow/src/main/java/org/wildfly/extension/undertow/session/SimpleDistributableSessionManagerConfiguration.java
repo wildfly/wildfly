@@ -21,6 +21,7 @@
  */
 package org.wildfly.extension.undertow.session;
 
+import org.jboss.as.web.session.SharedSessionManagerConfig;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.jboss.ReplicationConfig;
 import org.jboss.metadata.web.jboss.ReplicationGranularity;
