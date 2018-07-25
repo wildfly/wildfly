@@ -56,8 +56,8 @@ public class SimpleDistributableSessionManagerConfiguration implements Distribut
     }
 
     @Override
-    public int getMaxActiveSessions() {
-        return (this.maxActiveSessions != null) ? this.maxActiveSessions.intValue() : -1;
+    public Integer getMaxActiveSessions() {
+        return this.maxActiveSessions;
     }
 
     @Override

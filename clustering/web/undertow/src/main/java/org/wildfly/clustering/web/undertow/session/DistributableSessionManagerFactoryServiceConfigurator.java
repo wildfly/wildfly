@@ -107,7 +107,7 @@ public class DistributableSessionManagerFactoryServiceConfigurator extends Simpl
         LocalContextFactory<LocalSessionContext> localContextFactory = new LocalSessionContextFactory();
         SessionManagerFactoryConfiguration<MarshallingContext, LocalSessionContext> configuration = new SessionManagerFactoryConfiguration<MarshallingContext, LocalSessionContext>() {
             @Override
-            public int getMaxActiveSessions() {
+            public Integer getMaxActiveSessions() {
                 return config.getMaxActiveSessions();
             }
 

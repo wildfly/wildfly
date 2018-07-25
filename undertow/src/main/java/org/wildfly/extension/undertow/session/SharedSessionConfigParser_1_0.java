@@ -122,7 +122,7 @@ public class SharedSessionConfigParser_1_0 implements JBossAllXMLParser<SharedSe
                     switch (element) {
                         case MAX_ACTIVE_SESSIONS:
                             final String value = getElementText(reader, propertyReplacer);
-                            result.setMaxActiveSessions(Integer.parseInt(value));
+                            result.setMaxActiveSessions(Integer.valueOf(value));
                             break;
                         case REPLICATION_CONFIG:
                             result.setReplicationConfig(ReplicationConfigParser.parse(reader, propertyReplacer));

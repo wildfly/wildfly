@@ -32,7 +32,7 @@ import org.wildfly.clustering.web.LocalContextFactory;
 public interface SessionManagerFactoryConfiguration<C extends Marshallability, L> {
     enum SessionAttributePersistenceStrategy { COARSE, FINE }
 
-    int getMaxActiveSessions();
+    Integer getMaxActiveSessions();
 
     SessionAttributePersistenceStrategy getAttributePersistenceStrategy();
 
