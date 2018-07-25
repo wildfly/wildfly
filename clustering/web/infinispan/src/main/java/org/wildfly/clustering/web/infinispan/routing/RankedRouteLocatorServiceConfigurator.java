@@ -20,24 +20,37 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.clustering.web;
+package org.wildfly.clustering.web.infinispan.routing;
 
-import org.jboss.as.controller.PathAddress;
-import org.wildfly.clustering.web.infinispan.routing.PrimaryOwnerRouteLocatorServiceConfiguratorFactory;
+import org.wildfly.clustering.web.WebDeploymentConfiguration;
 import org.wildfly.clustering.web.infinispan.session.InfinispanSessionManagementConfiguration;
-import org.wildfly.clustering.web.routing.RouteLocatorServiceConfiguratorFactory;
+import org.wildfly.clustering.web.routing.RouteLocator;
 
 /**
+ * Configures a service providing a ranked route locator.
  * @author Paul Ferraro
  */
-public class PrimaryOwnerAffinityServiceConfigurator extends AffinityServiceConfigurator<InfinispanSessionManagementConfiguration> {
+public class RankedRouteLocatorServiceConfigurator extends PrimaryOwnerRouteLocatorServiceConfigurator implements RankedRouteLocatorConfiguration {
 
-    public PrimaryOwnerAffinityServiceConfigurator(PathAddress address) {
-        super(address);
+    private final RankedRoutingConfiguration config;
+
+    public RankedRouteLocatorServiceConfigurator(InfinispanSessionManagementConfiguration managementConfiguration, WebDeploymentConfiguration deploymentConfiguration, RankedRoutingConfiguration routeConfiguration) {
+        super(managementConfiguration, deploymentConfiguration);
+        this.config = routeConfiguration;
     }
 
     @Override
-    public RouteLocatorServiceConfiguratorFactory<InfinispanSessionManagementConfiguration> get() {
-        return new PrimaryOwnerRouteLocatorServiceConfiguratorFactory();
+    public RouteLocator get() {
+        return new RankedRouteLocator(this);
+    }
+
+    @Override
+    public String getDelimiter() {
+        return this.config.getDelimiter();
+    }
+
+    @Override
+    public int getMaxRoutes() {
+        return this.config.getMaxRoutes();
     }
 }

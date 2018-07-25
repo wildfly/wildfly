@@ -22,22 +22,50 @@
 
 package org.wildfly.extension.clustering.web;
 
+import static org.wildfly.extension.clustering.web.RankedAffinityResourceDefinition.Attribute.DELIMITER;
+import static org.wildfly.extension.clustering.web.RankedAffinityResourceDefinition.Attribute.MAX_ROUTES;
+
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.wildfly.clustering.web.infinispan.routing.PrimaryOwnerRouteLocatorServiceConfiguratorFactory;
+import org.jboss.dmr.ModelNode;
+import org.wildfly.clustering.service.ServiceConfigurator;
+import org.wildfly.clustering.web.infinispan.routing.RankedRouteLocatorServiceConfiguratorFactory;
+import org.wildfly.clustering.web.infinispan.routing.RankedRoutingConfiguration;
 import org.wildfly.clustering.web.infinispan.session.InfinispanSessionManagementConfiguration;
 import org.wildfly.clustering.web.routing.RouteLocatorServiceConfiguratorFactory;
 
 /**
  * @author Paul Ferraro
  */
-public class PrimaryOwnerAffinityServiceConfigurator extends AffinityServiceConfigurator<InfinispanSessionManagementConfiguration> {
+public class RankedAffinityServiceConfigurator extends AffinityServiceConfigurator<InfinispanSessionManagementConfiguration> implements RankedRoutingConfiguration {
 
-    public PrimaryOwnerAffinityServiceConfigurator(PathAddress address) {
+    private volatile String delimiter;
+    private volatile int maxRoutes;
+
+    public RankedAffinityServiceConfigurator(PathAddress address) {
         super(address);
     }
 
     @Override
+    public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        this.delimiter = DELIMITER.resolveModelAttribute(context, model).asString();
+        this.maxRoutes = MAX_ROUTES.resolveModelAttribute(context, model).asInt();
+        return this;
+    }
+
+    @Override
     public RouteLocatorServiceConfiguratorFactory<InfinispanSessionManagementConfiguration> get() {
-        return new PrimaryOwnerRouteLocatorServiceConfiguratorFactory();
+        return new RankedRouteLocatorServiceConfiguratorFactory(this);
+    }
+
+    @Override
+    public String getDelimiter() {
+        return this.delimiter;
+    }
+
+    @Override
+    public int getMaxRoutes() {
+        return this.maxRoutes;
     }
 }

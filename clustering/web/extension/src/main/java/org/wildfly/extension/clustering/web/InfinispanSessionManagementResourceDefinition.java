@@ -96,6 +96,7 @@ public class InfinispanSessionManagementResourceDefinition extends SessionManage
         ManagementResourceRegistration registration = super.register(parent);
 
         new PrimaryOwnerAffinityResourceDefinition().register(registration);
+        new RankedAffinityResourceDefinition().register(registration);
 
         return registration;
     }

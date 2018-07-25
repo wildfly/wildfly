@@ -40,8 +40,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+import org.wildfly.clustering.web.cache.routing.NullRouteLocatorServiceConfiguratorFactory;
 import org.wildfly.clustering.web.hotrod.session.HotRodSessionManagementConfiguration;
 import org.wildfly.clustering.web.hotrod.session.HotRodSessionManagementProvider;
+import org.wildfly.clustering.web.infinispan.routing.RankedRouteLocatorServiceConfiguratorFactory;
+import org.wildfly.clustering.web.infinispan.routing.RankedRoutingConfiguration;
 import org.wildfly.clustering.web.infinispan.session.InfinispanSessionManagementConfiguration;
 import org.wildfly.clustering.web.infinispan.session.InfinispanSessionManagementProvider;
 import org.wildfly.clustering.web.session.DistributableSessionManagementProvider;
@@ -97,10 +100,21 @@ public class DistributableWebDeploymentXMLReaderTestCase {
             DistributableSessionManagementProvider result = config.getSessionManagement();
             Assert.assertNotNull(result);
             Assert.assertTrue(result instanceof InfinispanSessionManagementProvider);
-            InfinispanSessionManagementConfiguration configuration = ((InfinispanSessionManagementProvider) result).getSessionManagementConfiguration();
+            InfinispanSessionManagementProvider provider = (InfinispanSessionManagementProvider) result;
+
+            InfinispanSessionManagementConfiguration configuration = provider.getSessionManagementConfiguration();
             Assert.assertEquals("foo", configuration.getContainerName());
             Assert.assertEquals("bar", configuration.getCacheName());
             Assert.assertSame(SessionAttributePersistenceStrategy.FINE, configuration.getAttributePersistenceStrategy());
+
+            if (this.schema.since(DistributableWebDeploymentSchema.VERSION_2_0)) {
+                Assert.assertTrue(provider.getRouteLocatorServiceConfiguratorFactory() instanceof RankedRouteLocatorServiceConfiguratorFactory);
+                RankedRoutingConfiguration routing = ((RankedRouteLocatorServiceConfiguratorFactory) provider.getRouteLocatorServiceConfiguratorFactory()).getConfiguration();
+                Assert.assertEquals(":", routing.getDelimiter());
+                Assert.assertEquals(4, routing.getMaxRoutes());
+            } else {
+                Assert.assertTrue(provider.getRouteLocatorServiceConfiguratorFactory() instanceof NullRouteLocatorServiceConfiguratorFactory);
+            }
 
             Assert.assertNotNull(config.getImmutableClasses());
             Assert.assertEquals(Arrays.asList(Locale.class.getName(), UUID.class.getName()), config.getImmutableClasses());
