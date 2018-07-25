@@ -27,6 +27,7 @@ import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 import org.jboss.as.clustering.controller.Schema;
 import org.jboss.as.clustering.controller.persistence.AttributeXMLBuilderOperator;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
+import org.jboss.as.controller.PersistentResourceXMLDescription.PersistentResourceXMLBuilder;
 import org.jboss.as.controller.PersistentResourceXMLParser;
 
 /**
@@ -46,19 +47,8 @@ public class DistributableWebXMLParser extends PersistentResourceXMLParser {
         return builder(DistributableWebResourceDefinition.PATH, this.schema.getNamespaceUri())
                 .addAttribute(DistributableWebResourceDefinition.Attribute.DEFAULT_SESSION_MANAGEMENT.getDefinition())
                 .addAttribute(DistributableWebResourceDefinition.Attribute.DEFAULT_SSO_MANAGEMENT.getDefinition())
-                .addChild(new AttributeXMLBuilderOperator()
-                        .addAttributes(InfinispanSessionManagementResourceDefinition.Attribute.class)
-                        .addAttributes(SessionManagementResourceDefinition.Attribute.class)
-                        .apply(builder(InfinispanSessionManagementResourceDefinition.WILDCARD_PATH))
-                        .addChild(builder(NoAffinityResourceDefinition.PATH).setXmlElementName("no-affinity"))
-                        .addChild(builder(LocalAffinityResourceDefinition.PATH).setXmlElementName("local-affinity"))
-                        .addChild(builder(PrimaryOwnerAffinityResourceDefinition.PATH).setXmlElementName("primary-owner-affinity")))
-                .addChild(new AttributeXMLBuilderOperator()
-                        .addAttributes(HotRodSessionManagementResourceDefinition.Attribute.class)
-                        .addAttributes(SessionManagementResourceDefinition.Attribute.class)
-                        .apply(builder(HotRodSessionManagementResourceDefinition.WILDCARD_PATH))
-                        .addChild(builder(NoAffinityResourceDefinition.PATH).setXmlElementName("no-affinity"))
-                        .addChild(builder(LocalAffinityResourceDefinition.PATH).setXmlElementName("local-affinity")))
+                .addChild(this.getInfinispanSessionManagementResourceXMLBuilder())
+                .addChild(this.getHotRodSessionManagementResourceXMLBuilder())
                 .addChild(new AttributeXMLBuilderOperator(InfinispanSSOManagementResourceDefinition.Attribute.class)
                         .apply(builder(InfinispanSSOManagementResourceDefinition.WILDCARD_PATH)))
                 .addChild(new AttributeXMLBuilderOperator(HotRodSSOManagementResourceDefinition.Attribute.class)
@@ -66,5 +56,34 @@ public class DistributableWebXMLParser extends PersistentResourceXMLParser {
                 .addChild(builder(LocalRoutingProviderResourceDefinition.PATH).setXmlElementName("local-routing"))
                 .addChild(new AttributeXMLBuilderOperator(InfinispanRoutingProviderResourceDefinition.Attribute.class).apply(builder(InfinispanRoutingProviderResourceDefinition.PATH)).setXmlElementName("infinispan-routing"))
                 .build();
+    }
+
+    private PersistentResourceXMLBuilder getInfinispanSessionManagementResourceXMLBuilder() {
+        PersistentResourceXMLBuilder builder = new AttributeXMLBuilderOperator()
+                .addAttributes(InfinispanSessionManagementResourceDefinition.Attribute.class)
+                .addAttributes(SessionManagementResourceDefinition.Attribute.class)
+                .apply(builder(InfinispanSessionManagementResourceDefinition.WILDCARD_PATH));
+        this.addAffinityChildren(builder)
+                .addChild(builder(PrimaryOwnerAffinityResourceDefinition.PATH).setXmlElementName("primary-owner-affinity"));
+        if (this.schema.since(DistributableWebSchema.VERSION_2_0)) {
+            builder.addChild(new AttributeXMLBuilderOperator(RankedAffinityResourceDefinition.Attribute.class).apply(builder(RankedAffinityResourceDefinition.PATH).setXmlElementName("ranked-affinity")));
+        }
+        return builder;
+    }
+
+    private PersistentResourceXMLBuilder getHotRodSessionManagementResourceXMLBuilder() {
+        PersistentResourceXMLBuilder builder = new AttributeXMLBuilderOperator()
+                .addAttributes(HotRodSessionManagementResourceDefinition.Attribute.class)
+                .addAttributes(SessionManagementResourceDefinition.Attribute.class)
+                .apply(builder(HotRodSessionManagementResourceDefinition.WILDCARD_PATH));
+        return this.addAffinityChildren(builder);
+    }
+
+    @SuppressWarnings("static-method")
+    private PersistentResourceXMLBuilder addAffinityChildren(PersistentResourceXMLBuilder builder) {
+        return builder
+                .addChild(builder(NoAffinityResourceDefinition.PATH).setXmlElementName("no-affinity"))
+                .addChild(builder(LocalAffinityResourceDefinition.PATH).setXmlElementName("local-affinity"))
+                ;
     }
 }

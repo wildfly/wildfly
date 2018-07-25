@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2018, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,7 +22,8 @@
 
 package org.wildfly.clustering.web.infinispan.routing;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.AbstractMap;
 import java.util.Arrays;
@@ -51,11 +52,10 @@ import org.wildfly.clustering.spi.NodeFactory;
 import org.wildfly.clustering.web.routing.RouteLocator;
 
 /**
- * Unit test for {@link InfinispanRouteLocator}.
  * @author Paul Ferraro
  */
 @RunWith(value = Parameterized.class)
-public class PrimaryOwnerRouteLocatorTestCase {
+public class RankedRouteLocatorTestCase {
 
     @Parameters
     public static Iterable<CacheMode> cacheModes() {
@@ -74,7 +74,7 @@ public class PrimaryOwnerRouteLocatorTestCase {
     private final KeyPartitioner partitioner = mock(KeyPartitioner.class);
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public PrimaryOwnerRouteLocatorTestCase(CacheMode mode) {
+    public RankedRouteLocatorTestCase(CacheMode mode) {
         EmbeddedCacheManager manager = mock(EmbeddedCacheManager.class);
         Configuration config = new ConfigurationBuilder().clustering().cacheMode(mode).build();
         when(this.cache.getCacheManager()).thenReturn(manager);
@@ -103,11 +103,13 @@ public class PrimaryOwnerRouteLocatorTestCase {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Test
     public void test() {
-        PrimaryOwnerRouteLocatorConfiguration config = mock(PrimaryOwnerRouteLocatorConfiguration.class);
+        RankedRouteLocatorConfiguration config = mock(RankedRouteLocatorConfiguration.class);
 
         when(config.getCache()).thenReturn((AdvancedCache) this.cache);
         when(config.getMemberFactory()).thenReturn(this.factory);
         when(config.getRegistry()).thenReturn(this.registry);
+        when(config.getDelimiter()).thenReturn(".");
+        when(config.getMaxRoutes()).thenReturn(3);
         for (int i = 0; i < this.addresses.length; ++i) {
             when(this.factory.createNode(this.addresses[i])).thenReturn(this.members[i]);
             when(this.registry.getEntry(this.members[i])).thenReturn(new AbstractMap.SimpleImmutableEntry<>(String.valueOf(i), null));
@@ -116,22 +118,35 @@ public class PrimaryOwnerRouteLocatorTestCase {
         when(this.group.getLocalMember()).thenReturn(this.localMember);
         when(this.registry.getEntry(this.localMember)).thenReturn(new AbstractMap.SimpleImmutableEntry<>("local", null));
 
-        RouteLocator locator = new PrimaryOwnerRouteLocator(config);
+        RouteLocator locator = new RankedRouteLocator(config);
 
         switch (this.cache.getCacheConfiguration().clustering().cacheMode()) {
-            case REPL_SYNC:
             case DIST_SYNC: {
                 when(this.partitioner.getSegment(new Key<>("session"))).thenReturn(0);
                 String result = locator.locate("session");
-                Assert.assertEquals("0", result);
+                Assert.assertEquals("0.1.local", result);
 
                 when(this.partitioner.getSegment(new Key<>("session"))).thenReturn(1);
                 result = locator.locate("session");
-                Assert.assertEquals("1", result);
+                Assert.assertEquals("1.2.local", result);
 
                 when(this.partitioner.getSegment(new Key<>("session"))).thenReturn(2);
                 result = locator.locate("session");
-                Assert.assertEquals("2", result);
+                Assert.assertEquals("2.0.local", result);
+                break;
+            }
+            case REPL_SYNC: {
+                when(this.partitioner.getSegment(new Key<>("session"))).thenReturn(0);
+                String result = locator.locate("session");
+                Assert.assertEquals("0.1.2", result);
+
+                when(this.partitioner.getSegment(new Key<>("session"))).thenReturn(1);
+                result = locator.locate("session");
+                Assert.assertEquals("1.2.0", result);
+
+                when(this.partitioner.getSegment(new Key<>("session"))).thenReturn(2);
+                result = locator.locate("session");
+                Assert.assertEquals("2.0.1", result);
                 break;
             }
             default: {

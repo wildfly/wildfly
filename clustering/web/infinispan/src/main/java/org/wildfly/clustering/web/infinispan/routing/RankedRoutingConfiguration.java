@@ -20,24 +20,14 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.clustering.web;
-
-import org.jboss.as.controller.PathAddress;
-import org.wildfly.clustering.web.cache.routing.LocalRouteLocatorServiceConfiguratorFactory;
-import org.wildfly.clustering.web.routing.RouteLocatorServiceConfiguratorFactory;
-import org.wildfly.clustering.web.session.DistributableSessionManagementConfiguration;
+package org.wildfly.clustering.web.infinispan.routing;
 
 /**
  * @author Paul Ferraro
  */
-public class LocalAffinityServiceConfigurator extends AffinityServiceConfigurator<DistributableSessionManagementConfiguration> {
+public interface RankedRoutingConfiguration {
 
-    public LocalAffinityServiceConfigurator(PathAddress address) {
-        super(address);
-    }
+    String getDelimiter();
 
-    @Override
-    public RouteLocatorServiceConfiguratorFactory<DistributableSessionManagementConfiguration> get() {
-        return new LocalRouteLocatorServiceConfiguratorFactory<>();
-    }
+    int getMaxRoutes();
 }

@@ -106,27 +106,21 @@
         <xs:complexContent>
             <xs:extension base="tns:abstract-session-management">
                 <xs:choice>
-                    <xs:element name="no-affinity" type="tns:empty">
-                        <xs:annotation>
-                            <xs:documentation>
-                                Web requests not have an affinity for any particular server.
-                                Intended for use cases where web session state is not maintained within the application server.
-                            </xs:documentation>
-                        </xs:annotation>
-                    </xs:element>
-                    <xs:element name="local-affinity" type="tns:empty">
-                        <xs:annotation>
-                            <xs:documentation>
-                                Web requests have an affinity for the member that last handled a given session.
-                                This option corresponds to traditional sticky session behavior.
-                            </xs:documentation>
-                        </xs:annotation>
-                    </xs:element>
+                    <xs:group ref="tns:affinity"/>
                     <xs:element name="primary-owner-affinity" type="tns:empty">
                         <xs:annotation>
                             <xs:documentation>
                                 Web requests will have an affinity for the primary owner of a given session.
                                 Behaves the same as local-affinity if the backing cache is not distributed nor replicated.
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="ranked-affinity" type="tns:ranked-affinity">
+                        <xs:annotation>
+                            <xs:documentation>
+                                Web requests will have an affinity for the first available node in a list comprised of: primary owner, backup nodes, local node (if not a primary nor backup owner).
+                                Behaves the same as local-affinity if the cache is not distributed, nor replicated.
+                                Must be explicitly supported by the load balancer.
                             </xs:documentation>
                         </xs:annotation>
                     </xs:element>
@@ -231,6 +225,40 @@
             </xs:enumeration>
         </xs:restriction>
     </xs:simpleType>
+
+    <xs:group name="affinity">
+        <xs:choice>
+            <xs:element name="no-affinity" type="tns:empty">
+                <xs:annotation>
+                    <xs:documentation>
+                        Web requests not have an affinity for any particular server.
+                        Intended for use cases where web session state is not maintained within the application server.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="local-affinity" type="tns:empty">
+                <xs:annotation>
+                    <xs:documentation>
+                        Web requests have an affinity for the member that last handled a given session.
+                        This option corresponds to traditional sticky session behavior.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:choice>
+    </xs:group>
+
+    <xs:complexType name="ranked-affinity">
+        <xs:attribute name="delimiter" type="xs:string" default=".">
+            <xs:annotation>
+                <xs:documentation>The delimiter used to separate ranked routes within the session ID.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="max-routes" type="xs:string" default="3">
+            <xs:annotation>
+                <xs:documentation>The maximum number of routes to append to the session ID.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
 
     <xs:complexType name="empty">
         <xs:sequence/>

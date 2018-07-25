@@ -20,24 +20,34 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.clustering.web;
+package org.wildfly.extension.clustering.web.deployment;
 
-import org.jboss.as.controller.PathAddress;
-import org.wildfly.clustering.web.cache.routing.LocalRouteLocatorServiceConfiguratorFactory;
-import org.wildfly.clustering.web.routing.RouteLocatorServiceConfiguratorFactory;
-import org.wildfly.clustering.web.session.DistributableSessionManagementConfiguration;
+import org.wildfly.clustering.web.infinispan.routing.RankedRoutingConfiguration;
+import org.wildfly.extension.clustering.web.RankedAffinityResourceDefinition;
 
 /**
  * @author Paul Ferraro
  */
-public class LocalAffinityServiceConfigurator extends AffinityServiceConfigurator<DistributableSessionManagementConfiguration> {
+public class MutableRankedRoutingConfiguration implements RankedRoutingConfiguration {
 
-    public LocalAffinityServiceConfigurator(PathAddress address) {
-        super(address);
+    private String delimter = RankedAffinityResourceDefinition.Attribute.DELIMITER.getDefinition().getDefaultValue().asString();
+    private int maxRoutes = RankedAffinityResourceDefinition.Attribute.MAX_ROUTES.getDefinition().getDefaultValue().asInt();
+
+    @Override
+    public String getDelimiter() {
+        return this.delimter;
+    }
+
+    public void setDelimiter(String delimiter) {
+        this.delimter = delimiter;
     }
 
     @Override
-    public RouteLocatorServiceConfiguratorFactory<DistributableSessionManagementConfiguration> get() {
-        return new LocalRouteLocatorServiceConfiguratorFactory<>();
+    public int getMaxRoutes() {
+        return this.maxRoutes;
+    }
+
+    public void setMaxRoutes(int maxRoutes) {
+        this.maxRoutes = maxRoutes;
     }
 }
