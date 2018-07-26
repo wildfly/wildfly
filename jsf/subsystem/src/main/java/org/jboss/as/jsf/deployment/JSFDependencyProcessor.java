@@ -40,6 +40,7 @@ import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.filter.PathFilters;
 
@@ -103,7 +104,7 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
     public void undeploy(DeploymentUnit context) {
     }
 
-    private void addJSFAPI(String jsfVersion, ModuleSpecification moduleSpecification, ModuleLoader moduleLoader) throws DeploymentUnitProcessingException {
+    private void addJSFAPI(String jsfVersion, ModuleSpecification moduleSpecification, ModuleLoader moduleLoader) {
         if (jsfVersion.equals(JsfVersionMarker.WAR_BUNDLES_JSF_IMPL)) return;
 
         ModuleIdentifier jsfModule = moduleIdFactory.getApiModId(jsfVersion);
@@ -131,13 +132,36 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
         moduleSpecification.addSystemDependency(jsfImpl);
     }
 
-    private void addJSFInjection(String jsfVersion, ModuleSpecification moduleSpecification, ModuleLoader moduleLoader) {
+    private void addJSFInjection(String jsfVersion, ModuleSpecification moduleSpecification, ModuleLoader moduleLoader)
+            throws DeploymentUnitProcessingException {
         if (jsfVersion.equals(JsfVersionMarker.WAR_BUNDLES_JSF_IMPL)) return;
 
         ModuleIdentifier jsfInjectionModule = moduleIdFactory.getInjectionModId(jsfVersion);
         ModuleDependency jsfInjectionDependency = new ModuleDependency(moduleLoader, jsfInjectionModule, false, true, true, false);
-        jsfInjectionDependency.addImportFilter(PathFilters.getMetaInfFilter(), true);
+
+        try {
+            if (isJSF12(jsfInjectionDependency, jsfInjectionModule.toString())) {
+                JSFLogger.ROOT_LOGGER.loadingJsf12();
+                jsfInjectionDependency.addImportFilter(PathFilters.is("META-INF/faces-config.xml"), false);
+                jsfInjectionDependency.addImportFilter(PathFilters.is("META-INF/1.2/faces-config.xml"), true);
+            } else {
+                JSFLogger.ROOT_LOGGER.loadingJsf2x();
+                jsfInjectionDependency.addImportFilter(PathFilters.getMetaInfFilter(), true);
+                // Exclude JSF 1.2 faces-config.xml to make extra sure it won't interfere with JSF 2.0 deployments
+                jsfInjectionDependency.addImportFilter(PathFilters.is("META-INF/1.2/faces-config.xml"), false);
+            }
+        } catch (ModuleLoadException e) {
+            throw JSFLogger.ROOT_LOGGER.jsfInjectionFailed(jsfVersion);
+        }
+
         moduleSpecification.addSystemDependency(jsfInjectionDependency);
+    }
+
+    private boolean isJSF12(ModuleDependency moduleDependency, String identifier) throws ModuleLoadException {
+
+        // The class javax.faces.event.NamedEvent was introduced in JSF 2.0
+        return (moduleDependency.getModuleLoader().loadModule(identifier)
+                                .getClassLoader().getResource("/javax/faces/event/NamedEvent.class") == null);
     }
 
     // Add a flag to the sevlet context so that we know if we need to instantiate
