@@ -1,41 +1,24 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--
-  ~ JBoss, Home of Professional Open Source
-  ~ Copyright 2017, Red Hat, Inc., and individual contributors as indicated
-  ~ by the @authors tag.
-  ~
-  ~ Licensed under the Apache License, Version 2.0 (the "License");
-  ~ you may not use this file except in compliance with the License.
-  ~ You may obtain a copy of the License at
-  ~
-  ~ http://www.apache.org/licenses/LICENSE-2.0
-  ~
-  ~ Unless required by applicable law or agreed to in writing, software
-  ~ distributed under the License is distributed on an "AS IS" BASIS,
-  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  ~ See the License for the specific language governing permissions and
-  ~ limitations under the License.
-  -->
+<?xml version='1.0' encoding='UTF-8'?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>org.wildfly.bom</groupId>
-        <artifactId>wildfly</artifactId>
+        <artifactId>wildfly-javaee7</artifactId>
         <version>14.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-with-tools</artifactId>
+    <artifactId>wildfly-javaee7-with-tools</artifactId>
     <packaging>pom</packaging>
 
-    <name>WildFly APIs with Tools BOM</name>
+    <name>WildFly BOMs: Java EE 7 with Tools</name>
     <description>Dependency Management for Java EE 7 Specification APIs with Deployment and Testing Tools</description>
 
     <licenses>
         <license>
-            <name>Apache License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
+            <name>GNU Lesser General Public License, Version 2.1</name>
+            <url>http://www.gnu.org/licenses/lgpl-2.1.txt</url>
             <distribution>repo</distribution>
         </license>
     </licenses>
@@ -47,6 +30,7 @@
     <dependencyManagement>
 
         <dependencies>
+
             <!-- Recommended JUnit version -->
             <!-- Note that JUnit is preferred framework -->
             <dependency>
@@ -115,7 +99,7 @@
             <dependency>
                 <groupId>org.wildfly.arquillian</groupId>
                 <artifactId>wildfly-arquillian-container-managed</artifactId>
-                <version>${version.org.wildfly.arquillian.container}</version>
+                <version>${version.org.wildfly.arquillian}</version>
             </dependency>
 
             <!-- Arquillian support for JBoss WildFly 8 container -->
@@ -124,10 +108,30 @@
             <dependency>
                 <groupId>org.wildfly.arquillian</groupId>
                 <artifactId>wildfly-arquillian-container-remote</artifactId>
-                <version>${version.org.wildfly.arquillian.container}</version>
+                <version>${version.org.wildfly.arquillian}</version>
             </dependency>
-
         </dependencies>
     </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <!-- The Maven Surefire plugin tests your application. Here
+                    we ensure we are using a version compatible with Arquillian -->
+                <plugin>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${version.surefire.plugin}</version>
+                </plugin>
+                <!-- The WildFly plugin deploys your war to a local WildFly container -->
+                <!-- To use, set the JBOSS_HOME environment variable and
+                    run: mvn package wildfly:deploy -->
+                <plugin>
+                    <groupId>org.wildfly.plugins</groupId>
+                    <artifactId>wildfly-maven-plugin</artifactId>
+                    <version>${version.org.wildfly.plugins.maven.plugin}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 
 </project>

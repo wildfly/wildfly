@@ -1,4 +1,4 @@
-WildFly JBoss BOMs Contributing Guide
+WildFly BOMs Contributing Guide
 =====================================
 
 BOMs are Maven pom.xml files that specify the versions of all runtime dependencies for a given module.  So by importing this BOM, you are specifying the versions of the dependencies required to use the specified stack.

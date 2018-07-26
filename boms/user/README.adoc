@@ -15,7 +15,7 @@ To use the BOM, import into your dependency management. For example, if you want
             <artifactId>wildfly-javaee7</artifactId>
             <scope>import</scope>
             <type>pom</type>
-            <version>13.0.0.Final</version>
+            <version>14.0.0.Beta1-SNAPSHOT</version>
         </dependency>
     </dependencies>
 </dependencyManagement> 
