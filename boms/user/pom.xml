@@ -31,7 +31,7 @@
 
     <groupId>org.wildfly.bom</groupId>
     <artifactId>wildfly</artifactId>
-    <version>14.0.0.Beta1-SNAPSHOT</version>
+    <version>14.0.0.Alpha1</version>
 
     <packaging>pom</packaging>
 

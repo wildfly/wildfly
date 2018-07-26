@@ -37,7 +37,7 @@
     </parent>
 
     <artifactId>wildfly-ejb-client-bom</artifactId>
-    <version>14.0.0.Beta1-SNAPSHOT</version>
+    <version>14.0.0.Alpha1</version>
 
     <packaging>pom</packaging>
 
