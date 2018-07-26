@@ -259,11 +259,17 @@ public abstract class AbstractRemoteEJBForwardingTestCase extends AbstractCluste
                     .teardown("/core-service=management/security-realm=PasswordRealm:remove")
                     .teardown("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=binding-remote-ejb-connection:remove")
                     .teardown("/subsystem=jgroups/channel=ee:write-attribute(name=cluster,value=ejb)")
+                    // TODO following 2 lines workaround WFCORE-3977
+                    .reloadOnTearDown(ReloadBehavior.ALWAYS)
+                    .reloadOnSetup(ReloadBehavior.ALWAYS)
                     .parent()
                     // clusterB
                     .node(NODE_3, NODE_4)
                     .setup("/socket-binding-group=standard-sockets/socket-binding=jgroups-mping:write-attribute(name=multicast-address,value=%s)", TESTSUITE_MCAST1)
                     .teardown("/socket-binding-group=standard-sockets/socket-binding=jgroups-mping:write-attribute(name=multicast-address,value=\"${jboss.default.multicast.address:230.0.0.4}\"")
+                    // TODO following 2 lines workaround WFCORE-3977
+                    .reloadOnTearDown(ReloadBehavior.ALWAYS)
+                    .reloadOnSetup(ReloadBehavior.ALWAYS)
             ;
 
         }
