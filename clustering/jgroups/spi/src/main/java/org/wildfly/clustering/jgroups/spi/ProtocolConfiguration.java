@@ -21,6 +21,10 @@
  */
 package org.wildfly.clustering.jgroups.spi;
 
+import java.util.Collections;
+import java.util.Map;
+
+import org.jboss.as.network.SocketBinding;
 import org.jgroups.stack.Protocol;
 
 /**
@@ -32,4 +36,8 @@ public interface ProtocolConfiguration<P extends Protocol> {
     String getName();
 
     P createProtocol(ProtocolStackConfiguration stackConfiguration);
+
+    default Map<String, SocketBinding> getSocketBindings() {
+        return Collections.emptyMap();
+    }
 }

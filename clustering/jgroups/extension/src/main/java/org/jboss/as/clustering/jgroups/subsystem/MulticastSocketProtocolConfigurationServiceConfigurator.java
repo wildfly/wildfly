@@ -22,6 +22,9 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import java.util.Collections;
+import java.util.Map;
+
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -56,6 +59,11 @@ public class MulticastSocketProtocolConfigurationServiceConfigurator extends Pro
         String bindingName = SocketBindingProtocolResourceDefinition.Attribute.SOCKET_BINDING.resolveModelAttribute(context, model).asString();
         this.binding = new ServiceSupplierDependency<>(CommonUnaryRequirement.SOCKET_BINDING.getServiceName(context, bindingName));
         return super.configure(context, model);
+    }
+
+    @Override
+    public Map<String, SocketBinding> getSocketBindings() {
+        return Collections.singletonMap("jgroups.mping.mcast_sock", this.binding.get());
     }
 
     @Override
