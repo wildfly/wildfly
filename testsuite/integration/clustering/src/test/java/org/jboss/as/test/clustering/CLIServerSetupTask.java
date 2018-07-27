@@ -64,7 +64,7 @@ public class CLIServerSetupTask implements ServerSetupTask {
         }
     }
 
-    private void executeCommands(ManagementClient managementClient, List<String> commands, boolean useBatch, boolean reload) throws Exception {
+    private void executeCommands(ManagementClient managementClient, List<String> commands, boolean useBatch, ReloadBehavior reload) throws Exception {
         if (commands.isEmpty()) return;
 
         CommandContext context = CLITestUtil.getCommandContext();
@@ -96,9 +96,12 @@ public class CLIServerSetupTask implements ServerSetupTask {
             }
         }
 
-        if (reload) {
-            LOG.infof("Reloading server %s if its in a 'reload-required' state.", managementClient.getMgmtAddress());
+        if (reload == ReloadBehavior.IF_REQUIRED) {
+            LOG.infof("Reloading server '%s' if it is in a 'reload-required' state.", managementClient.getMgmtAddress());
             ServerReload.reloadIfRequired(managementClient);
+        } else if (reload == ReloadBehavior.ALWAYS) {
+            LOG.infof("Reloading server '%s'.", managementClient.getMgmtAddress());
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
     }
 
@@ -149,8 +152,8 @@ public class CLIServerSetupTask implements ServerSetupTask {
         private final List<String> setupCommands = new LinkedList<>();
         private final List<String> teardownCommands = new LinkedList<>();
         private boolean batch = true;
-        private boolean reloadOnSetup = true;
-        private boolean reloadOnTearDown = true;
+        private ReloadBehavior reloadOnSetup = ReloadBehavior.IF_REQUIRED;
+        private ReloadBehavior reloadOnTearDown = ReloadBehavior.IF_REQUIRED;
 
         NodeBuilder(Builder parentBuilder) {
             this.parentBuilder = parentBuilder;
@@ -195,17 +198,17 @@ public class CLIServerSetupTask implements ServerSetupTask {
         }
 
         /**
-         * Configure whether to reload the server after setup if it's in a 'reload-required' state.
+         * Configure reload behavior after applying setup steps. Defaults to reloading if required.
          */
-        public NodeBuilder reloadOnSetup(boolean reloadOnSetup) {
+        public NodeBuilder reloadOnSetup(ReloadBehavior reloadOnSetup) {
             this.reloadOnSetup = reloadOnSetup;
             return this;
         }
 
         /**
-         * Configure whether to reload the server on teardown if it's in a 'reload-required' state.
+         * Configure reload behavior after applying teardown steps. Defaults to reloading if required.
          */
-        public NodeBuilder reloadOnTearDown(boolean reloadOnTearDown) {
+        public NodeBuilder reloadOnTearDown(ReloadBehavior reloadOnTearDown) {
             this.reloadOnTearDown = reloadOnTearDown;
             return this;
         }
@@ -216,5 +219,16 @@ public class CLIServerSetupTask implements ServerSetupTask {
         public Builder parent() {
             return parentBuilder;
         }
+    }
+
+    public enum ReloadBehavior {
+        /**
+         * Specifies that the server should be reloaded if it's left in the 'reload-required' state.
+         */
+        IF_REQUIRED,
+        /**
+         * Always reloads the server, even if it was not in the 'reload-required' state.
+         */
+        ALWAYS,
     }
 }
