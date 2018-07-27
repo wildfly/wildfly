@@ -78,14 +78,14 @@ public class HotRodPersistenceWebFailoverTestCase extends AbstractWebFailoverTes
         war.addClasses(SimpleServlet.class, Mutable.class);
         ClusterTestUtil.addTopologyListenerDependencies(war);
         war.setWebXML(AbstractWebFailoverTestCase.class.getPackage(), "web.xml");
-        war.addAsWebInfResource(HotRodPersistenceWebFailoverTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
+        war.addAsWebInfResource(HotRodPersistenceWebFailoverTestCase.class.getPackage(), "distributable-web.xml", "distributable-web.xml");
         return war;
     }
 
     @Override
     public void beforeTestMethod() {
         // Also start the Infinispan Server instance
-        NodeUtil.start(controller, INFINISPAN_SERVER_1);
+        NodeUtil.start(this.controller, INFINISPAN_SERVER_1);
 
         NodeUtil.start(this.controller, this.nodes);
         NodeUtil.deploy(this.deployer, this.deployments);
@@ -93,7 +93,7 @@ public class HotRodPersistenceWebFailoverTestCase extends AbstractWebFailoverTes
 
     public static class ServerSetupTask extends CLIServerSetupTask {
         public ServerSetupTask() {
-            builder.node(THREE_NODES)
+            this.builder.node(THREE_NODES)
                     // remote-cache-container=web-sessions
                     .setup("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=infinispan-server-1:add(port=11622,host=%s)", TESTSUITE_NODE0)
                     .setup("/subsystem=infinispan/remote-cache-container=web-sessions:add(default-remote-cluster=infinispan-server-cluster)")

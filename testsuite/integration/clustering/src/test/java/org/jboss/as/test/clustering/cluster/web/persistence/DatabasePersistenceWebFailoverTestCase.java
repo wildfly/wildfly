@@ -78,7 +78,7 @@ public class DatabasePersistenceWebFailoverTestCase extends AbstractWebFailoverT
         war.addClasses(SimpleServlet.class, Mutable.class);
         ClusterTestUtil.addTopologyListenerDependencies(war);
         war.setWebXML(AbstractWebFailoverTestCase.class.getPackage(), "web.xml");
-        war.addAsWebInfResource(DatabasePersistenceWebFailoverTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
+        war.addAsWebInfResource(DatabasePersistenceWebFailoverTestCase.class.getPackage(), "distributable-web.xml", "distributable-web.xml");
         return war;
     }
 
@@ -89,12 +89,15 @@ public class DatabasePersistenceWebFailoverTestCase extends AbstractWebFailoverT
 
     public static class ServerSetupTask extends CLIServerSetupTask {
         public ServerSetupTask() {
-            builder.node(THREE_NODES)
+            this.builder.node(THREE_NODES)
                     .setup("/subsystem=datasources/data-source=web-sessions-ds:add(jndi-name=\"java:jboss/datasources/web-sessions-ds\",enabled=true,use-java-context=true,connection-url=\"jdbc:h2:file:./target/h2/web-sessions;AUTO_SERVER=true;DB_CLOSE_ON_EXIT=FALSE;DB_CLOSE_DELAY=-1;\",driver-name=h2")
                     .setup("/subsystem=infinispan/cache-container=web/invalidation-cache=database-persistence:add")
                     .setup("/subsystem=infinispan/cache-container=web/invalidation-cache=database-persistence/store=jdbc:add(data-source=web-sessions-ds,fetch-state=false,purge=false,passivation=false,shared=true")
                     .setup("/subsystem=infinispan/cache-container=web/invalidation-cache=database-persistence/component=transaction:add(mode=BATCH)")
                     .setup("/subsystem=infinispan/cache-container=web/invalidation-cache=database-persistence/component=locking:add(isolation=REPEATABLE_READ)")
+                    .setup("/subsystem=distributable-web/infinispan-session-management=database:add(cache-container=web, cache=database-persistence, granularity=SESSION)")
+                    .setup("/subsystem=distributable-web/infinispan-session-management=database/affinity=local:add()")
+                    .teardown("/subsystem=distributable-web/infinispan-session-management=database:remove")
                     .teardown("/subsystem=infinispan/cache-container=web/invalidation-cache=database-persistence:remove")
                     .teardown("/subsystem=datasources/data-source=web-sessions-ds:remove");
         }

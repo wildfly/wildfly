@@ -22,50 +22,18 @@
 
 package org.jboss.as.test.clustering.cluster.web;
 
-import org.jboss.as.arquillian.api.ServerSetupTask;
-import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.clustering.controller.Operations;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.test.integration.management.ManagementOperations;
-import org.jboss.dmr.ModelNode;
+import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
+import org.jboss.as.test.shared.CLIServerSetupTask;
 
 /**
  * @author Paul Ferraro
  */
-public class ConcurrentWebFailoverServerSetup implements ServerSetupTask {
-    private static final String CONTAINER_NAME = "web";
-    private static final String CACHE_NAME = "concurrent";
-
-    @Override
-    public void setup(ManagementClient client, String containerId) throws Exception {
-        if (!client.isClosed()) {
-            PathAddress cacheAddress = getCacheAddress();
-            ModelNode addCacheOperation = Util.createAddOperation(cacheAddress);
-            ModelNode addCacheStoreOperation = Util.createAddOperation(getCacheStoreAddress(cacheAddress));
-
-            ManagementOperations.executeOperationRaw(client.getControllerClient(), Operations.createCompositeOperation(addCacheOperation, addCacheStoreOperation));
-        }
-    }
-
-    @Override
-    public void tearDown(ManagementClient client, String containerId) throws Exception {
-        if (!client.isClosed()) {
-            PathAddress cacheAddress = getCacheAddress();
-            ModelNode removeCacheOperation = Util.createRemoveOperation(cacheAddress);
-            ModelNode removeCacheStoreOperation = Util.createRemoveOperation(getCacheStoreAddress(cacheAddress));
-
-            ManagementOperations.executeOperationRaw(client.getControllerClient(), Operations.createCompositeOperation(removeCacheOperation, removeCacheStoreOperation));
-        }
-    }
-
-    private static PathAddress getCacheAddress() {
-        return PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "infinispan"), PathElement.pathElement("cache-container", CONTAINER_NAME), PathElement.pathElement("distributed-cache", CACHE_NAME));
-    }
-
-    private static PathAddress getCacheStoreAddress(PathAddress cacheAddress) {
-        return cacheAddress.append("store", "file");
+public class ConcurrentWebFailoverServerSetup extends CLIServerSetupTask {
+    public ConcurrentWebFailoverServerSetup() {
+        this.builder.node(AbstractClusteringTestCase.THREE_NODES)
+                .setup("/subsystem=infinispan/cache-container=web/distributed-cache=concurrent:add()")
+                .setup("/subsystem=infinispan/cache-container=web/distributed-cache=concurrent/store=file:add()")
+                .teardown("/subsystem=infinispan/cache-container=web/distributed-cache=concurrent:remove()")
+        ;
     }
 }

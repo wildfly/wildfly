@@ -67,7 +67,7 @@ public class FineWebFailoverTestCase extends AbstractWebFailoverTestCase {
         ClusterTestUtil.addTopologyListenerDependencies(war);
         // Take web.xml from the managed test.
         war.setWebXML(DistributableTestCase.class.getPackage(), "web.xml");
-        war.addAsWebInfResource(DistributableTestCase.class.getPackage(), "jboss-web_fine.xml", "jboss-web.xml");
+        war.addAsWebInfResource(DistributableTestCase.class.getPackage(), "jboss-all_fine.xml", "jboss-all.xml");
         return war;
     }
 }
