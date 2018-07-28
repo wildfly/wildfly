@@ -29,6 +29,7 @@ import io.undertow.servlet.handlers.security.CachedAuthenticatedSessionHandler;
 
 import java.time.Duration;
 import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.function.Consumer;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
@@ -59,11 +60,11 @@ public class DistributableSession implements io.undertow.server.session.Session 
 
     private final UndertowSessionManager manager;
     private final Batch batch;
-    private final Runnable closeTask;
+    private final Consumer<HttpServerExchange> closeTask;
 
     private volatile Map.Entry<Session<LocalSessionContext>, SessionConfig> entry;
 
-    public DistributableSession(UndertowSessionManager manager, Session<LocalSessionContext> session, SessionConfig config, Batch batch, Runnable closeTask) {
+    public DistributableSession(UndertowSessionManager manager, Session<LocalSessionContext> session, SessionConfig config, Batch batch, Consumer<HttpServerExchange> closeTask) {
         this.manager = manager;
         this.entry = new SimpleImmutableEntry<>(session, config);
         this.batch = batch;
@@ -96,7 +97,7 @@ public class DistributableSession implements io.undertow.server.session.Session 
                 }
             }
         } finally {
-            this.closeTask.run();
+            this.closeTask.accept(exchange);
         }
     }
 
@@ -217,7 +218,7 @@ public class DistributableSession implements io.undertow.server.session.Session 
             }
             this.batch.close();
         } finally {
-            this.closeTask.run();
+            this.closeTask.accept(exchange);
         }
     }
 
