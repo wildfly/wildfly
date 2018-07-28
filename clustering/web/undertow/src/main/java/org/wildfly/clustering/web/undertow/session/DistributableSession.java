@@ -77,24 +77,26 @@ public class DistributableSession implements io.undertow.server.session.Session 
 
     @Override
     public void requestDone(HttpServerExchange exchange) {
-        Session<LocalSessionContext> session = this.entry.getKey();
-        if (session.isValid()) {
-            Batcher<Batch> batcher = this.manager.getSessionManager().getBatcher();
-            try (BatchContext context = batcher.resumeBatch(this.batch)) {
-                // If batch was discarded, close it
-                if (this.batch.getState() == Batch.State.DISCARDED) {
-                    this.batch.close();
+        try {
+            Session<LocalSessionContext> session = this.entry.getKey();
+            if (session.isValid()) {
+                Batcher<Batch> batcher = this.manager.getSessionManager().getBatcher();
+                try (BatchContext context = batcher.resumeBatch(this.batch)) {
+                    // If batch was discarded, close it
+                    if (this.batch.getState() == Batch.State.DISCARDED) {
+                        this.batch.close();
+                    }
+                    // If batch is closed, close session in a new batch
+                    try (Batch batch = (this.batch.getState() == Batch.State.CLOSED) ? batcher.createBatch() : this.batch) {
+                        session.close();
+                    }
+                } catch (Throwable e) {
+                    // Don't propagate exceptions at the stage, since response was already committed
+                    UndertowClusteringLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
                 }
-                // If batch is closed, close session in a new batch
-                try (Batch batch = (this.batch.getState() == Batch.State.CLOSED) ? batcher.createBatch() : this.batch) {
-                    session.close();
-                }
-            } catch (Throwable e) {
-                // Don't propagate exceptions at the stage, since response was already committed
-                UndertowClusteringLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
-            } finally {
-                this.closeTask.run();
             }
+        } finally {
+            this.closeTask.run();
         }
     }
 

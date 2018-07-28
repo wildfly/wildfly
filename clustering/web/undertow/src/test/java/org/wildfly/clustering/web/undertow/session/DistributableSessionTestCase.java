@@ -110,7 +110,7 @@ public class DistributableSessionTestCase {
         verify(this.session, never()).close();
         verify(this.batch, never()).close();
         verify(context, never()).close();
-        verify(this.closeTask, never()).run();
+        verify(this.closeTask).run();
     }
 
     @Test
