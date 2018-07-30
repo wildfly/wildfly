@@ -34,17 +34,15 @@ import org.jboss.as.clustering.controller.Schema;
  */
 public enum SingletonDeploymentSchema implements Schema<SingletonDeploymentSchema> {
 
-    VERSION_1_0("singleton-deployment", 1, 0),
+    VERSION_1_0(1, 0),
     ;
     public static final SingletonDeploymentSchema CURRENT = VERSION_1_0;
-    private static final String NAMESPACE_URI_PATTERN = "urn:jboss:%s:%d.%d";
+    private static final String ROOT = "singleton-deployment";
 
-    private final String root;
     private final int major;
     private final int minor;
 
-    SingletonDeploymentSchema(String root, int major, int minor) {
-        this.root = root;
+    SingletonDeploymentSchema(int major, int minor) {
         this.major = major;
         this.minor = minor;
     }
@@ -61,10 +59,10 @@ public enum SingletonDeploymentSchema implements Schema<SingletonDeploymentSchem
 
     @Override
     public String getNamespaceUri() {
-        return String.format(Locale.ROOT, NAMESPACE_URI_PATTERN, this.root, this.major, this.minor);
+        return String.format(Locale.ROOT, "urn:jboss:%s:%d.%d", ROOT, this.major, this.minor);
     }
 
     public QName getRoot() {
-        return new QName(this.getNamespaceUri(), this.root);
+        return new QName(this.getNamespaceUri(), ROOT);
     }
 }
