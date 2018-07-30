@@ -29,6 +29,7 @@ import io.undertow.servlet.handlers.security.CachedAuthenticatedSessionHandler;
 
 import java.time.Duration;
 import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.function.Consumer;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
@@ -59,11 +60,11 @@ public class DistributableSession implements io.undertow.server.session.Session 
 
     private final UndertowSessionManager manager;
     private final Batch batch;
-    private final Runnable closeTask;
+    private final Consumer<HttpServerExchange> closeTask;
 
     private volatile Map.Entry<Session<LocalSessionContext>, SessionConfig> entry;
 
-    public DistributableSession(UndertowSessionManager manager, Session<LocalSessionContext> session, SessionConfig config, Batch batch, Runnable closeTask) {
+    public DistributableSession(UndertowSessionManager manager, Session<LocalSessionContext> session, SessionConfig config, Batch batch, Consumer<HttpServerExchange> closeTask) {
         this.manager = manager;
         this.entry = new SimpleImmutableEntry<>(session, config);
         this.batch = batch;
@@ -77,24 +78,26 @@ public class DistributableSession implements io.undertow.server.session.Session 
 
     @Override
     public void requestDone(HttpServerExchange exchange) {
-        Session<LocalSessionContext> session = this.entry.getKey();
-        if (session.isValid()) {
-            Batcher<Batch> batcher = this.manager.getSessionManager().getBatcher();
-            try (BatchContext context = batcher.resumeBatch(this.batch)) {
-                // If batch was discarded, close it
-                if (this.batch.getState() == Batch.State.DISCARDED) {
-                    this.batch.close();
+        try {
+            Session<LocalSessionContext> session = this.entry.getKey();
+            if (session.isValid()) {
+                Batcher<Batch> batcher = this.manager.getSessionManager().getBatcher();
+                try (BatchContext context = batcher.resumeBatch(this.batch)) {
+                    // If batch was discarded, close it
+                    if (this.batch.getState() == Batch.State.DISCARDED) {
+                        this.batch.close();
+                    }
+                    // If batch is closed, close session in a new batch
+                    try (Batch batch = (this.batch.getState() == Batch.State.CLOSED) ? batcher.createBatch() : this.batch) {
+                        session.close();
+                    }
+                } catch (Throwable e) {
+                    // Don't propagate exceptions at the stage, since response was already committed
+                    UndertowClusteringLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
                 }
-                // If batch is closed, close session in a new batch
-                try (Batch batch = (this.batch.getState() == Batch.State.CLOSED) ? batcher.createBatch() : this.batch) {
-                    session.close();
-                }
-            } catch (Throwable e) {
-                // Don't propagate exceptions at the stage, since response was already committed
-                UndertowClusteringLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
-            } finally {
-                this.closeTask.run();
             }
+        } finally {
+            this.closeTask.accept(exchange);
         }
     }
 
@@ -215,7 +218,7 @@ public class DistributableSession implements io.undertow.server.session.Session 
             }
             this.batch.close();
         } finally {
-            this.closeTask.run();
+            this.closeTask.accept(exchange);
         }
     }
 

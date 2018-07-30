@@ -68,7 +68,7 @@ public class DistributableSessionTestCase {
     private final SessionConfig config = mock(SessionConfig.class);
     private final Session<LocalSessionContext> session = mock(Session.class);
     private final Batch batch = mock(Batch.class);
-    private final Runnable closeTask = mock(Runnable.class);
+    private final Consumer<HttpServerExchange> closeTask = mock(Consumer.class);
 
     private final io.undertow.server.session.Session adapter = new DistributableSession(this.manager, this.session, this.config, this.batch, this.closeTask);
 
@@ -99,7 +99,7 @@ public class DistributableSessionTestCase {
         verify(this.session).close();
         verify(this.batch).close();
         verify(context).close();
-        verify(this.closeTask).run();
+        verify(this.closeTask).accept(exchange);
 
         reset(this.batch, this.session, context, this.closeTask);
 
@@ -110,7 +110,7 @@ public class DistributableSessionTestCase {
         verify(this.session, never()).close();
         verify(this.batch, never()).close();
         verify(context, never()).close();
-        verify(this.closeTask, never()).run();
+        verify(this.closeTask).accept(exchange);
     }
 
     @Test
@@ -566,7 +566,7 @@ public class DistributableSessionTestCase {
         verify(listener).sessionDestroyed(this.adapter, exchange, SessionDestroyedReason.INVALIDATED);
         verify(this.batch).close();
         verify(context).close();
-        verify(this.closeTask).run();
+        verify(this.closeTask).accept(exchange);
     }
 
     @Test
