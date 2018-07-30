@@ -250,4 +250,7 @@ public interface TransactionLogger extends BasicLogger {
     @Message(id = 38, value = "Unexpected error on suspending transaction for work %s")
     RuntimeException cannotSuspendInflowTransactionUnexpectedError(Work txn, @Cause Exception e);
 
+    @LogMessage(level = WARN)
+    @Message(id = 39, value = "A value of zero is not permitted for the maximum timeout, as such the timeout has been set to %s")
+    void timeoutValueIsSetToMaximum(int maximum_timeout);
 }

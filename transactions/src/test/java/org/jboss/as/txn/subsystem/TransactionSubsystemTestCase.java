@@ -21,21 +21,9 @@
 */
 package org.jboss.as.txn.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.txn.subsystem.TransactionTransformers.MODEL_VERSION_EAP62;
-import static org.jboss.as.txn.subsystem.TransactionTransformers.MODEL_VERSION_EAP63;
-import static org.jboss.as.txn.subsystem.TransactionTransformers.MODEL_VERSION_EAP64;
-import static org.jboss.as.txn.subsystem.TransactionTransformers.MODEL_VERSION_EAP70;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
-import java.util.List;
-
 import com.arjuna.ats.arjuna.coordinator.TxStats;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.transform.OperationTransformer;
@@ -48,10 +36,20 @@ import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
+import org.jboss.as.subsystem.test.LegacyKernelServicesInitializer;
 import org.jboss.as.txn.logging.TransactionLogger;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.util.List;
+
+import static org.jboss.as.txn.subsystem.TransactionTransformers.MODEL_VERSION_EAP64;
+import static org.jboss.as.txn.subsystem.TransactionTransformers.MODEL_VERSION_EAP70;
+import static org.jboss.as.txn.subsystem.TransactionTransformers.MODEL_VERSION_EAP71;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 
 /**
@@ -71,7 +69,7 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-txn_4_0.xsd";
+        return "schema/wildfly-txn_5_0.xsd";
     }
 
     @Override
@@ -121,23 +119,18 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testParser_1_2() throws Exception {
-        standardSubsystemTest("full-1.2.xml");
+    public void testParser_EAP_6_4() throws Exception {
+        standardSubsystemTest("full-1.5.0.xml");
     }
 
     @Test
-    public void testParser_1_3() throws Exception {
-        standardSubsystemTest("full-1.3.xml");
+    public void testParser_EAP_7_0() throws Exception {
+        standardSubsystemTest("full-3.0.0.xml");
     }
 
     @Test
-    public void testParser_3_0() throws Exception {
-        standardSubsystemTest("full-3.0.xml");
-    }
-
-    @Test
-    public void testParser_4_0() throws Exception {
-        standardSubsystemTest("full-4.0.xml");
+    public void testParser_EAP_7_1() throws Exception {
+        standardSubsystemTest("full-4.0.0.xml");
     }
 
     @Test
@@ -172,71 +165,93 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testTransformersFullEAP620() throws Exception {
-        testTransformersFull(ModelTestControllerVersion.EAP_6_2_0, MODEL_VERSION_EAP62); //model version 1.3.0
-    }
-
-    @Test
-    public void testTransformersFullEAP630() throws Exception {
-        testTransformersFull(ModelTestControllerVersion.EAP_6_3_0, MODEL_VERSION_EAP63); //model version 1.4.0
-    }
-
-    @Test
     public void testTransformersFullEAP640() throws Exception {
-        testTransformersFull(ModelTestControllerVersion.EAP_6_4_0, MODEL_VERSION_EAP64); //model version 1.5.0
+        testTransformersFull(ModelTestControllerVersion.EAP_6_4_0, MODEL_VERSION_EAP64);
+    }
+
+    @Test
+    public void testTransformersFullEAP700() throws Exception {
+        testTransformersFull(ModelTestControllerVersion.EAP_7_0_0, MODEL_VERSION_EAP70);
+    }
+
+    @Test
+    public void testTransformersFullEAP710() throws Exception {
+        testTransformersFull(ModelTestControllerVersion.EAP_7_1_0, MODEL_VERSION_EAP71);
     }
 
     private void testTransformersFull(ModelTestControllerVersion controllerVersion, ModelVersion modelVersion) throws Exception {
-        String subsystemXml = readResource("full-expressions-transform.xml");
+        String subsystemXml = readResource(String.format("full-%s.xml", modelVersion));
+
         //Use the non-runtime version of the extension which will happen on the HC
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
                 .setSubsystemXml(subsystemXml);
 
         // Add legacy subsystems
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-transactions:" + controllerVersion.getMavenGavVersion())
-                .addSingleChildFirstClass(RemoveProcessUUIDOperationFixer.class)
-                .configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, ADD_REMOVED_HORNETQ_STORE_ENABLE_ASYNC_IO, RemoveProcessUUIDOperationFixer.INSTANCE)
+        final String artifactId = controllerVersion == ModelTestControllerVersion.EAP_6_4_0 ?
+                "jboss-as-transactions" : "wildfly-transactions";
+        LegacyKernelServicesInitializer initializer = builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
+                .addMavenResourceURL(String.format("%s:%s:%s",
+                        controllerVersion.getMavenGroupId(), artifactId, controllerVersion.getMavenGavVersion()))
                 .excludeFromParent(SingleClassFilter.createFilter(TransactionLogger.class));
+
+        if (controllerVersion == ModelTestControllerVersion.EAP_6_4_0) {
+            initializer.addSingleChildFirstClass(RemoveProcessUUIDOperationFixer.class)
+                    .configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, ADD_REMOVED_HORNETQ_STORE_ENABLE_ASYNC_IO, RemoveProcessUUIDOperationFixer.INSTANCE);
+        }
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
         Assert.assertTrue(mainServices.isSuccessfulBoot());
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
-        checkSubsystemModelTransformation(mainServices, modelVersion, modelNode -> {
-            modelNode.remove("path");
-            modelNode.remove("relative-to");
-            modelNode.get("process-id-uuid").set(false); //only needs to be removed for 6.2
-            return modelNode;
-        });
+        ModelFixer modelFixer = null;
+        switch (controllerVersion) {
+            case EAP_6_4_0:
+                modelFixer = new ModelFixer() {
+                    @Override
+                    public ModelNode fixModel(ModelNode modelNode) {
+                        modelNode.remove("path");
+                        modelNode.remove("relative-to");
+                        return modelNode;
+                    }
+                };
+                break;
+            case EAP_7_0_0:
+            case EAP_7_1_0:
+                modelFixer = new ModelFixer() {
+                    @Override
+                    public ModelNode fixModel(ModelNode modelNode) {
+                        if (modelNode.has("log-store", "log-store")) {
+                            ModelNode logStore = modelNode.get("log-store", "log-store");
+                            if (!logStore.get("expose-all-logs").asBoolean()) {
+                                logStore.remove("expose-all-logs");
+                            }
+                        }
+                        return modelNode;
+                    }
+                };
+                break;
 
-    }
-
-    @Test
-    public void testRejectTransformersEAP620() throws Exception {
-        testRejectTransformers(ModelTestControllerVersion.EAP_6_2_0, MODEL_VERSION_EAP62, new FailedOperationTransformationConfig()
-                .addFailedAttribute(PathAddress.pathAddress(
-                        PathElement.pathElement(SUBSYSTEM, TransactionExtension.SUBSYSTEM_NAME)).append(CMResourceResourceDefinition.PATH_CM_RESOURCE),
-                        FailedOperationTransformationConfig.REJECTED_RESOURCE));
-    }
-
-    @Test
-    public void testRejectTransformersEAP630() throws Exception {
-        testRejectTransformers(ModelTestControllerVersion.EAP_6_3_0, MODEL_VERSION_EAP63, new FailedOperationTransformationConfig()
-                .addFailedAttribute(PathAddress.pathAddress(
-                        PathElement.pathElement(SUBSYSTEM, TransactionExtension.SUBSYSTEM_NAME)).append(CMResourceResourceDefinition.PATH_CM_RESOURCE),
-                        FailedOperationTransformationConfig.REJECTED_RESOURCE));
+        }
+        checkSubsystemModelTransformation(mainServices, modelVersion, modelFixer);
     }
 
     @Test
     public void testRejectTransformersEAP640() throws Exception {
-        testRejectTransformers(ModelTestControllerVersion.EAP_6_4_0, MODEL_VERSION_EAP64, new FailedOperationTransformationConfig()); //nothing is rejected
+        testRejectTransformers(ModelTestControllerVersion.EAP_6_4_0, MODEL_VERSION_EAP64, new FailedOperationTransformationConfig().addFailedAttribute(
+                PathAddress.pathAddress(TransactionExtension.SUBSYSTEM_PATH), new FailedOperationTransformationConfig.NewAttributesConfig("maximum-timeout")));
     }
 
     @Test
-    public void testRejectTransformersEAP7() throws Exception {
-        testRejectTransformers7(ModelTestControllerVersion.EAP_7_0_0, MODEL_VERSION_EAP70, new FailedOperationTransformationConfig()); //nothing is rejected
+    public void testRejectTransformersEAP700() throws Exception {
+        testRejectTransformers7(ModelTestControllerVersion.EAP_7_0_0, MODEL_VERSION_EAP70, new FailedOperationTransformationConfig().addFailedAttribute(
+                PathAddress.pathAddress(TransactionExtension.SUBSYSTEM_PATH), new FailedOperationTransformationConfig.NewAttributesConfig("maximum-timeout")));
+    }
+
+    @Test
+    public void testRejectTransformersEAP710() throws Exception {
+        testRejectTransformers7(ModelTestControllerVersion.EAP_7_1_0, MODEL_VERSION_EAP71, new FailedOperationTransformationConfig().addFailedAttribute(
+                PathAddress.pathAddress(TransactionExtension.SUBSYSTEM_PATH), new FailedOperationTransformationConfig.NewAttributesConfig("maximum-timeout")));
     }
 
     private void testRejectTransformers7(ModelTestControllerVersion controllerVersion, ModelVersion modelVersion, FailedOperationTransformationConfig config) throws Exception {
@@ -256,11 +271,13 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
         List<ModelNode> ops = builder.parseXmlResource("full-expressions.xml");
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, ops, config);
 
-        PathAddress subsystemAddress = PathAddress.pathAddress(TransactionExtension.SUBSYSTEM_PATH);
-        PathAddress participants = subsystemAddress.append(TransactionExtension.LOG_STORE_PATH).append(TransactionExtension.TRANSACTION_PATH).append(TransactionExtension.PARTICIPANT_PATH);
-        //check that we reject log-store=log-store/transactions=*/participants=*:delete
-        OperationTransformer.TransformedOperation transOp = mainServices.transformOperation(modelVersion, Util.createOperation("delete", participants));
-        Assert.assertTrue(transOp.getFailureDescription(), transOp.rejectOperation(success()));
+        if (modelVersion == MODEL_VERSION_EAP70) {
+            PathAddress subsystemAddress = PathAddress.pathAddress(TransactionExtension.SUBSYSTEM_PATH);
+            PathAddress participants = subsystemAddress.append(TransactionExtension.LOG_STORE_PATH).append(TransactionExtension.TRANSACTION_PATH).append(TransactionExtension.PARTICIPANT_PATH);
+            //check that we reject log-store=log-store/transactions=*/participants=*:delete
+            OperationTransformer.TransformedOperation transOp = mainServices.transformOperation(modelVersion, Util.createOperation("delete", participants));
+            Assert.assertTrue(transOp.getFailureDescription(), transOp.rejectOperation(success()));
+        }
 
     }
 

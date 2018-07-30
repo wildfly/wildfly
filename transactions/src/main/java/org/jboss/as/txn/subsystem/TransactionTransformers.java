@@ -15,16 +15,19 @@
  */
 package org.jboss.as.txn.subsystem;
 
-import static org.jboss.as.txn.subsystem.TransactionExtension.CURRENT_MODEL_VERSION;
-import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.OBJECT_STORE_RELATIVE_TO;
-
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
 import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
 import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.ChainedTransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
+
+import static org.jboss.as.txn.subsystem.TransactionExtension.CURRENT_MODEL_VERSION;
+import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.MAXIMUM_TIMEOUT;
+import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.OBJECT_STORE_RELATIVE_TO;
 
 /**
  * @author Emmanuel Hugonnet (c) 2017 Red Hat, inc.
@@ -34,6 +37,7 @@ public class TransactionTransformers implements ExtensionTransformerRegistration
     static final ModelVersion MODEL_VERSION_EAP63 = ModelVersion.create(1, 4);
     static final ModelVersion MODEL_VERSION_EAP64 = ModelVersion.create(1, 5);
     static final ModelVersion MODEL_VERSION_EAP70 = ModelVersion.create(3, 0);
+    static final ModelVersion MODEL_VERSION_EAP71 = ModelVersion.create(4, 0);
 
 
     @Override
@@ -44,6 +48,13 @@ public class TransactionTransformers implements ExtensionTransformerRegistration
     @Override
     public void registerTransformers(SubsystemTransformerRegistration subsystemRegistration) {
         ChainedTransformationDescriptionBuilder chainedBuilder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(CURRENT_MODEL_VERSION);
+        // 5.0.0 --> 4.0.0
+        ResourceTransformationDescriptionBuilder builderEap71 = chainedBuilder.createBuilder(CURRENT_MODEL_VERSION, MODEL_VERSION_EAP71);
+        builderEap71.getAttributeBuilder()
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(MAXIMUM_TIMEOUT.getDefaultValue()), MAXIMUM_TIMEOUT)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, MAXIMUM_TIMEOUT)
+                .end();
+
         // 4.0.0 --> 3.0.0
         /*
         Missing attributes in current: []; missing in legacy [number-of-system-rollbacks, average-commit-time] //both runtime
@@ -52,12 +63,12 @@ public class TransactionTransformers implements ExtensionTransformerRegistration
         Different 'nillable' for attribute 'process-id-uuid'. Current: true; legacy: false //alternatives
          */
 
-        ResourceTransformationDescriptionBuilder builderEap7 = chainedBuilder.createBuilder(CURRENT_MODEL_VERSION, MODEL_VERSION_EAP70);
-        builderEap7.getAttributeBuilder()
+        ResourceTransformationDescriptionBuilder builderEap70 = chainedBuilder.createBuilder(MODEL_VERSION_EAP71, MODEL_VERSION_EAP70);
+        builderEap70.getAttributeBuilder()
                 .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(OBJECT_STORE_RELATIVE_TO), OBJECT_STORE_RELATIVE_TO)
                 .end();
 
-        builderEap7.addChildResource(TransactionExtension.LOG_STORE_PATH)
+        builderEap70.addChildResource(TransactionExtension.LOG_STORE_PATH)
                 .addChildResource(TransactionExtension.TRANSACTION_PATH)
                 .addChildResource(TransactionExtension.PARTICIPANT_PATH)
                 .addOperationTransformationOverride("delete")
@@ -83,7 +94,8 @@ public class TransactionTransformers implements ExtensionTransformerRegistration
                 MODEL_VERSION_EAP63,
                 MODEL_VERSION_EAP64,
                 MODEL_VERSION_EAP70,
-                // v4_0_0
+                MODEL_VERSION_EAP71,
+                // v4_1_0
         });
     }
 }
