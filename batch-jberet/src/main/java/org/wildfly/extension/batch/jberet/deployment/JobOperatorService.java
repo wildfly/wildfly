@@ -297,7 +297,7 @@ public class JobOperatorService extends AbstractJobOperator implements WildFlyJo
         final ClassLoader current = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         try {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
-            validateJob(instance.getJobName());
+            validateJob(instance == null ? null : instance.getJobName());
             return super.getJobExecutions(instance);
         } finally {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(current);
