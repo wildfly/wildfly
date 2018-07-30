@@ -28,6 +28,10 @@
     <discovery-group name="client-discovery-group-1"
                      socket-binding="group-t-binding"/>
 
+    <connection-factory name="InVmConnectionFactory"
+                        connectors="in-vm client"
+                        entries="${connection-factory.entries.entry:java:/ClientConnectionFactory}" />
+
     <server name="default">
 
         <security elytron-domain="elytronDomain"/>

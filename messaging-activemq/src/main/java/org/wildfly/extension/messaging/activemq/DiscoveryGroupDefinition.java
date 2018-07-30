@@ -91,7 +91,7 @@ public class DiscoveryGroupDefinition extends PersistentResourceDefinition {
 
     protected DiscoveryGroupDefinition(final boolean registerRuntimeOnly, final boolean subsystemResource) {
         super(new Parameters(PATH, MessagingExtension.getResourceDescriptionResolver(CommonAttributes.DISCOVERY_GROUP))
-                .setAddHandler(new DiscoveryGroupAdd(subsystemResource))
+                .setAddHandler(DiscoveryGroupAdd.INSTANCE)
                 .setRemoveHandler(DiscoveryGroupRemove.INSTANCE));
         this.registerRuntimeOnly = registerRuntimeOnly;
     }

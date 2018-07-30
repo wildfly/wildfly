@@ -33,6 +33,20 @@
                      refresh-timeout="${discovery.group.refresh.timeout:2345}"
                      initial-wait-timeout="${discovery.group.initial.wait.timeout:2345}"/>
 
+    <connection-factory name="InVmConnectionFactory"
+                        connectors="in-vm client"
+                        entries="${connection-factory.entries.entry:java:/ClientConnectionFactory}" />
+
+    <connection-factory name="RemoteClientConnectionFactory"
+                        factory-type="XA_QUEUE"
+                        connectors="client-http client-netty-throughput"
+                        entries="RemoteClientConnectionFactory java:/global/jms/RemoteClientConnectionFactory" />
+
+    <connection-factory name="otherClientConnectionFactory"
+                        discovery-group="client-discovery-group-1"
+                        ha="${ha:true}"
+                        entries="otherClientConnectionFactory" />
+
     <server name="default"
             persistence-enabled="${persistence.enabled:false}"
             persist-id-cache="${persist.id.cache:false}"

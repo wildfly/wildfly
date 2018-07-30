@@ -43,6 +43,16 @@
                 <xs:element name="in-vm-connector" minOccurs="0" maxOccurs="unbounded" type="in-vm-connectorType" />
                 <xs:element name="connector" minOccurs="0" maxOccurs="unbounded" type="connectorType" />
                 <xs:element name="discovery-group" type="discovery-groupType" minOccurs="0" maxOccurs="unbounded" />
+                <xs:element name="connection-factory" minOccurs="0" maxOccurs="unbounded">
+                    <xs:complexType>
+                        <xs:attribute name="name" type="xs:string" use="required" />
+                        <xs:attribute name="ha" type="xs:boolean" use="optional" />
+                        <xs:attribute name="factory-type" type="connectionFactoryType" use="optional"/>
+                        <xs:attribute name="discovery-group" type="xs:string" use="optional"/>
+                        <xs:attribute name="connectors" type="xs:string" use="optional"/>
+                        <xs:attribute name="entries" type="stringList" use="required" />
+                    </xs:complexType>
+                </xs:element>
                 <xs:element maxOccurs="unbounded" minOccurs="0" name="server" type="serverType" />
                 <xs:element maxOccurs="unbounded" minOccurs="0" name="jms-bridge" type="jms-bridgeType" />
             </xs:sequence>

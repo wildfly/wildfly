@@ -73,6 +73,7 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.wildfly.extension.messaging.activemq.jms.ClientConnectionFactoryDefinition;
 import org.wildfly.extension.messaging.activemq.jms.JMSQueueDefinition;
 import org.wildfly.extension.messaging.activemq.jms.JMSTopicDefinition;
 import org.wildfly.extension.messaging.activemq.jms.PooledConnectionFactoryDefinition;
@@ -189,6 +190,7 @@ public class MessagingExtension implements Extension {
         subsystem.registerSubModel(InVMTransportDefinition.createConnectorDefinition(registerRuntimeOnly));
         subsystem.registerSubModel(RemoteTransportDefinition.createConnectorDefinition(registerRuntimeOnly));
         subsystem.registerSubModel(new HTTPConnectorDefinition(registerRuntimeOnly));
+        subsystem.registerSubModel(new ClientConnectionFactoryDefinition(registerRuntimeOnly));
 
         // ActiveMQ Servers
         final ManagementResourceRegistration server = subsystem.registerSubModel(new ServerDefinition(registerRuntimeOnly));

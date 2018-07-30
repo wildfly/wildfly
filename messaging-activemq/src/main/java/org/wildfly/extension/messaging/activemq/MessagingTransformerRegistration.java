@@ -27,6 +27,7 @@ import static org.jboss.as.controller.transform.description.RejectAttributeCheck
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.CONNECTOR;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.IN_VM_CONNECTOR;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.REMOTE_CONNECTOR;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.CONNECTION_FACTORY;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
@@ -77,6 +78,7 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
         subsystem.rejectChildResource(MessagingExtension.HTTP_CONNECTOR_PATH);
         subsystem.rejectChildResource(PathElement.pathElement(CONNECTOR));
         subsystem.rejectChildResource(PathElement.pathElement(IN_VM_CONNECTOR));
+        subsystem.rejectChildResource(PathElement.pathElement(CONNECTION_FACTORY));
 
         ResourceTransformationDescriptionBuilder server = subsystem.addChildResource(MessagingExtension.SERVER_PATH);
         // WFLY-10165 - journal-jdbc-network-timeout default value is 20 seconds.

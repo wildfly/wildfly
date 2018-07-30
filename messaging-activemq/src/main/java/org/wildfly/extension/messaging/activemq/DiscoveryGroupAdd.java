@@ -61,11 +61,14 @@ import org.wildfly.extension.messaging.activemq.broadcast.CommandDispatcherBroad
  */
 public class DiscoveryGroupAdd extends AbstractAddStepHandler {
 
-    private final boolean subsystemResource;
+    public static final DiscoveryGroupAdd INSTANCE = new DiscoveryGroupAdd();
 
-    protected DiscoveryGroupAdd(boolean subsystemResource) {
+    private DiscoveryGroupAdd() {
         super(DiscoveryGroupDefinition.ATTRIBUTES);
-        this.subsystemResource = subsystemResource;
+    }
+
+    private static boolean isSubsystemResource(final OperationContext context) {
+        return ModelDescriptionConstants.SUBSYSTEM.equals(context.getCurrentAddress().getParent().getLastElement().getKey());
     }
 
     @Override
@@ -79,7 +82,7 @@ public class DiscoveryGroupAdd extends AbstractAddStepHandler {
 
 
                 final PathAddress channelAddress;
-                if (subsystemResource) {
+                if (isSubsystemResource(context)) {
                     channelAddress = context.getCurrentAddress().getParent().getParent().append(ModelDescriptionConstants.SUBSYSTEM, "jgroups").append("channel", channel);
                 } else {
                     channelAddress = context.getCurrentAddress().getParent().getParent().getParent().append(ModelDescriptionConstants.SUBSYSTEM, "jgroups").append("channel", channel);

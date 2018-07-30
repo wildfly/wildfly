@@ -104,6 +104,14 @@ public class MessagingSubsystemParser_4_0 extends PersistentResourceXMLParser {
                 .addChild(invmConnector)
                 .addChild(connector)
                 .addChild(discoveryGroup)
+                .addChild(builder(MessagingExtension.CONNECTION_FACTORY_PATH)
+                        .addAttributes(
+                                CommonAttributes.HA,
+                                ConnectionFactoryAttributes.Regular.FACTORY_TYPE,
+                                ConnectionFactoryAttributes.Common.DISCOVERY_GROUP,
+                                ConnectionFactoryAttributes.Common.CONNECTORS,
+                                ConnectionFactoryAttributes.Common.ENTRIES
+                                ))
                 .addChild(
                         builder(MessagingExtension.SERVER_PATH)
                                 .addAttributes(

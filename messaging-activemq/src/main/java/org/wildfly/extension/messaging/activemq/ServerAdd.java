@@ -98,6 +98,7 @@ import static org.wildfly.extension.messaging.activemq.ServerDefinition.THREAD_P
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.TRANSACTION_TIMEOUT;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.TRANSACTION_TIMEOUT_SCAN_PERIOD;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.WILD_CARD_ROUTING_ENABLED;
+import static org.wildfly.extension.messaging.activemq.TransportConfigOperationHandlers.isOutBoundSocketBinding;
 import static org.wildfly.extension.messaging.activemq.ha.HAPolicyConfigurationBuilder.addHAPolicyConfiguration;
 
 import java.io.IOException;
@@ -392,24 +393,6 @@ class ServerAdd extends AbstractAddStepHandler {
                 context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
             }
         }, OperationContext.Stage.RUNTIME);
-    }
-
-    /**
-     * Determines whether a socket-binding with the given name corresponds to a (local or remote) outbound-socket-binding
-     * or a socket-binding.
-     *
-     * If no socket-binding or outbound-socket-binding resources matches, throw an OperationFailedException.
-     */
-    private boolean isOutBoundSocketBinding(OperationContext context, String name) throws OperationFailedException {
-        Resource root = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS);
-        for (Resource.ResourceEntry resource : root.getChildren(ModelDescriptionConstants.SOCKET_BINDING_GROUP)) {
-            if (resource.getChildrenNames(ModelDescriptionConstants.SOCKET_BINDING).contains(name)) {
-                return false;
-            } else if (resource.getChildrenNames(ModelDescriptionConstants.LOCAL_DESTINATION_OUTBOUND_SOCKET_BINDING).contains(name)
-                    || resource.getChildrenNames(ModelDescriptionConstants.REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING).contains(name))
-                return true;
-        }
-        throw MessagingLogger.ROOT_LOGGER.noSocketBinding(name);
     }
 
     /**
