@@ -22,6 +22,7 @@
 
 package org.jboss.as.jsf.logging;
 
+import static org.jboss.logging.Logger.Level.DEBUG;
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
@@ -104,4 +105,15 @@ public interface JSFLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 15, value = "Failed to parse %s, phase listeners defined in this file will not be available")
     void phaseListenersConfigParseFailed(VirtualFile facesConfig);
+
+    @Message(id = 16, value = "Failed to inject JSF from slot %s")
+    DeploymentUnitProcessingException jsfInjectionFailed(String slotName);
+
+    @LogMessage(level = DEBUG)
+    @Message(id = 17, value = "JSF 1.2 classes detected. Using org.jboss.as.jsf.injection.weld.legacy.WeldApplicationFactoryLegacy.")
+    void loadingJsf12();
+
+    @LogMessage(level = DEBUG)
+    @Message(id = 18, value = "JSF 1.2 classes not detected. Using org.jboss.as.jsf.injection.weld.WeldApplicationFactory.")
+    void loadingJsf2x();
 }
