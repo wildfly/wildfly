@@ -167,3 +167,31 @@ e.g.
     </distributable-web>
 </jboss>
 ----
+
+== Distributable Shared Sessions
+
+WildFly supports the ability to share sessions across web applications within an enterprise archive.
+In previous releases, WildFly always presumed distributable session management of shared sessions.
+Version 2.0 of the shared-session-config deployment descriptor was updated to allow an EAR to opt-in to this behavior using the familiar `<distributable/>` element.
+Additionally, you can customize the behavior of the distributable session manager used for session sharing via the same configuration mechanism described in the above sections.
+
+e.g.
+
+./META-INF/jboss-all.xml
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<jboss xmlns="urn:jboss:1.0">
+    <shared-session-config xmlns="urn:jboss:shared-session-config:2.0">
+        <distributable/>
+        <session-config>
+            <cookie-config>
+                <path>/</path>
+            </cookie-config>
+        </session-config>
+    </shared-session-config>
+    <distributable-web xmlns="urn:jboss:distributable-web:1.0">
+        <session-management name="foo"/>
+    </distributable-web>
+</jboss>
+----

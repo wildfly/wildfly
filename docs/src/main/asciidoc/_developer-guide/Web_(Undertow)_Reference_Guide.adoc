@@ -13,7 +13,7 @@ ear:
 [source,xml,options="nowrap"]
 ----
 <jboss xmlns="urn:jboss:1.0">
-    <shared-session-config xmlns="urn:jboss:shared-session-config:1.0">
+    <shared-session-config xmlns="urn:jboss:shared-session-config:2.0">
         <session-config>
             <cookie-config>
                 <path>/</path>
@@ -26,6 +26,6 @@ ear:
 This element is used to configure the shared session manager that will
 be used by all wars in the ear. For full details of all the options
 provided by this file please see the schema at
-https://github.com/wildfly/wildfly/blob/master/undertow/src/main/resources/schema/shared-session-config_1_0.xsd,
+https://github.com/wildfly/wildfly/blob/master/undertow/src/main/resources/schema/shared-session-config_2_0.xsd,
 however in general it mimics the options that are available in
 jboss-web.xml for configuring the session.
