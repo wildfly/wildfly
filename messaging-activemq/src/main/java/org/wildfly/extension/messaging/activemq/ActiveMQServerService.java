@@ -31,7 +31,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import javax.management.MBeanServer;
 import javax.sql.DataSource;
@@ -59,8 +61,6 @@ import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.security.plugins.SecurityDomainContext;
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.inject.MapInjector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -97,76 +97,65 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
     private Configuration configuration;
 
     private ActiveMQServer server;
-    private Map<String, SocketBinding> socketBindings = new HashMap<String, SocketBinding>();
-    private Map<String, OutboundSocketBinding> outboundSocketBindings = new HashMap<String, OutboundSocketBinding>();
-    private Map<String, SocketBinding> groupBindings = new HashMap<String, SocketBinding>();
-    private final InjectedValue<PathManager> pathManager = new InjectedValue<PathManager>();
-    private final InjectedValue<MBeanServer> mbeanServer = new InjectedValue<MBeanServer>();
-    // Injected DataSource for JDBC store use (can be null).
-    private final InjectedValue<DataSource> dataSource = new InjectedValue<>();
-    private final InjectedValue<SecurityDomainContext> securityDomainContextValue = new InjectedValue<SecurityDomainContext>();
-    private final InjectedValue<SecurityDomain> elytronSecurityDomain = new InjectedValue<>();
     private final PathConfig pathConfig;
-    // mapping between the {broadcast|discovery}-groups and the cluster names they use
-    private final Map<String, String> clusterNames = new HashMap<>();
-    // mapping between the {broadcast|discovery}-groups and the command dispatcher factory they use
-    private final Map<String, CommandDispatcherFactory> commandDispatcherFactories = new HashMap<>();
 
-    private final List<Interceptor> incomingInterceptors = new ArrayList<>();
-    private final List<Interceptor> outgoingInterceptors = new ArrayList<>();
+    private final List<Interceptor> incomingInterceptors;
+    private final List<Interceptor> outgoingInterceptors;
+    private final Map<String, Supplier<SocketBinding>> socketBindings;
+    private final Map<String, Supplier<OutboundSocketBinding>> outboundSocketBindings;
+    private final Map<String, Supplier<SocketBinding>> groupBindings;
+    // Supplier for PathManagerService
+    private final Supplier<PathManager> pathManager;
+    // Supplier for JMX MBeanServer
+    private final Optional<Supplier<MBeanServer>> mbeanServer;
+    // Supplier for DataSource for JDBC store
+    private final Optional<Supplier<DataSource>> dataSource;
+    // mapping between the {broadcast|discovery}-groups and the cluster names they use
+    private final Map<String, String> clusterNames;
+    // mapping between the {broadcast|discovery}-groups and the command dispatcher factory they use
+    private final Map<String, Supplier<CommandDispatcherFactory>> commandDispatcherFactories;
+    // Supplier for Elytron SecurityDomain
+    private final Optional<Supplier<SecurityDomain>> elytronSecurityDomain;
+    // Supplier for legacy SecurityDomainContext
+    private final Optional<Supplier<SecurityDomainContext>> securityDomainContext;
 
     // credential source injectors
     private Map<String, InjectedValue<ExceptionSupplier<CredentialSource, Exception>>> bridgeCredentialSource = new HashMap<>();
     private InjectedValue<ExceptionSupplier<CredentialSource, Exception>> clusterCredentialSource = new InjectedValue<>();
 
-    public ActiveMQServerService(Configuration configuration, PathConfig pathConfig) {
+    public ActiveMQServerService(Configuration configuration,
+                                 PathConfig pathConfig,
+                                 Supplier<PathManager> pathManager,
+                                 List<Interceptor> incomingInterceptors,
+                                 List<Interceptor> outgoingInterceptors,
+                                 Map<String, Supplier<SocketBinding>> socketBindings,
+                                 Map<String, Supplier<OutboundSocketBinding>> outboundSocketBindings,
+                                 Map<String, Supplier<SocketBinding>> groupBindings,
+                                 Map<String, Supplier<CommandDispatcherFactory>> commandDispatcherFactories,
+                                 Map<String, String> clusterNames,
+                                 Optional<Supplier<SecurityDomain>> elytronSecurityDomain,
+                                 Optional<Supplier<SecurityDomainContext>> securityDomainContext,
+                                 Optional<Supplier<MBeanServer>> mbeanServer,
+                                 Optional<Supplier<DataSource>> dataSource) {
         this.configuration = configuration;
         this.pathConfig = pathConfig;
+        this.dataSource = dataSource;
+        this.mbeanServer = mbeanServer;
+        this.pathManager = pathManager;
+        this.elytronSecurityDomain = elytronSecurityDomain;
+        this.securityDomainContext = securityDomainContext;
+        this.incomingInterceptors = incomingInterceptors;
+        this.outgoingInterceptors = outgoingInterceptors;
+        this.socketBindings = socketBindings;
+        this.outboundSocketBindings = outboundSocketBindings;
+        this.groupBindings = groupBindings;
+        this.commandDispatcherFactories = commandDispatcherFactories;
+        this.clusterNames = clusterNames;
         if (configuration != null) {
             for (BridgeConfiguration bridgeConfiguration : configuration.getBridgeConfigurations()) {
                 bridgeCredentialSource.put(bridgeConfiguration.getName(), new InjectedValue<>());
             }
         }
-    }
-
-    Injector<PathManager> getPathManagerInjector(){
-        return pathManager;
-    }
-
-    Injector<SocketBinding> getSocketBindingInjector(String name) {
-        return new MapInjector<String, SocketBinding>(socketBindings, name);
-    }
-
-    CommandDispatcherFactory getCommandDispatcherFactory(String name) {
-        return this.commandDispatcherFactories.get(name);
-    }
-
-    Injector<CommandDispatcherFactory> getCommandDispatcherFactoryInjector(String name) {
-        return new MapInjector<>(this.commandDispatcherFactories, name);
-    }
-
-    Injector<OutboundSocketBinding> getOutboundSocketBindingInjector(String name) {
-        return new MapInjector<String, OutboundSocketBinding>(outboundSocketBindings, name);
-    }
-
-    Injector<SocketBinding> getGroupBindingInjector(String name) {
-        return new MapInjector<String, SocketBinding>(groupBindings, name);
-    }
-
-    InjectedValue<MBeanServer> getMBeanServer() {
-        return mbeanServer;
-    }
-
-    InjectedValue<DataSource> getDataSource() {
-        return dataSource;
-    }
-
-    protected List<Interceptor> getIncomingInterceptors() {
-        return incomingInterceptors;
-    }
-
-    protected List<Interceptor> getOutgoingInterceptors() {
-        return outgoingInterceptors;
     }
 
     public synchronized void start(final StartContext context) throws StartException {
@@ -187,12 +176,11 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
         }
 
         // Setup paths
-        PathManager pathManager = this.pathManager.getValue();
-        configuration.setBindingsDirectory(pathConfig.resolveBindingsPath(pathManager));
-        configuration.setLargeMessagesDirectory(pathConfig.resolveLargeMessagePath(pathManager));
-        configuration.setJournalDirectory(pathConfig.resolveJournalPath(pathManager));
-        configuration.setPagingDirectory(pathConfig.resolvePagingPath(pathManager));
-        pathConfig.registerCallbacks(pathManager);
+        configuration.setBindingsDirectory(pathConfig.resolveBindingsPath(pathManager.get()));
+        configuration.setLargeMessagesDirectory(pathConfig.resolveLargeMessagePath(pathManager.get()));
+        configuration.setJournalDirectory(pathConfig.resolveJournalPath(pathManager.get()));
+        configuration.setPagingDirectory(pathConfig.resolvePagingPath(pathManager.get()));
+        pathConfig.registerCallbacks(pathManager.get());
 
         try {
             // Update the acceptor/connector port/host values from the
@@ -209,12 +197,13 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
                         String name = socketRef.toString();
                         String host;
                         int port;
-                        OutboundSocketBinding binding = outboundSocketBindings.get(name);
-                        if (binding == null) {
-                            final SocketBinding socketBinding = socketBindings.get(name);
-                            if (socketBinding == null) {
+                        Supplier<OutboundSocketBinding> bindingSupplier = outboundSocketBindings.get(name);
+                        if (bindingSupplier == null) {
+                            final Supplier<SocketBinding> socketBindingSupplier = socketBindings.get(name);
+                            if (socketBindingSupplier == null) {
                                 throw MessagingLogger.ROOT_LOGGER.failedToFindConnectorSocketBinding(tc.getName());
                             }
+                            final SocketBinding socketBinding = socketBindingSupplier.get();
                             if (socketBinding.getClientMappings() != null && !socketBinding.getClientMappings().isEmpty()) {
                                 // At the moment ActiveMQ doesn't allow to select mapping based on client's network.
                                 // Instead the first client-mapping element will always be used - see WFLY-8432
@@ -236,6 +225,7 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
                                 }
                             }
                         } else {
+                            OutboundSocketBinding binding = bindingSupplier.get();
                             port = binding.getDestinationPort();
                             host = NetworkUtils.canonize(binding.getUnresolvedDestinationAddress());
                             if (binding.getSourceAddress() != null) {
@@ -259,7 +249,7 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
                     Object socketRef = tc.getParams().remove(SOCKET_REF);
                     if (socketRef != null) {
                         String name = socketRef.toString();
-                        SocketBinding binding = socketBindings.get(name);
+                        SocketBinding binding = socketBindings.get(name).get();
                         if (binding == null) {
                             throw MessagingLogger.ROOT_LOGGER.failedToFindConnectorSocketBinding(tc.getName());
                         }
@@ -271,21 +261,21 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
                 }
             }
 
-
             if(broadcastGroups != null) {
-                final List<BroadcastGroupConfiguration> newConfigs = new ArrayList<BroadcastGroupConfiguration>();
+                final List<BroadcastGroupConfiguration> newConfigs = new ArrayList<>();
                 for(final BroadcastGroupConfiguration config : broadcastGroups) {
                     final String name = config.getName();
                     final String key = "broadcast" + name;
                     if (commandDispatcherFactories.containsKey(key)) {
-                        CommandDispatcherFactory commandDispatcherFactory = commandDispatcherFactories.get(key);
+                        CommandDispatcherFactory commandDispatcherFactory = commandDispatcherFactories.get(key).get();
                         String clusterName = clusterNames.get(key);
                         newConfigs.add(BroadcastGroupAdd.createBroadcastGroupConfiguration(name, config, commandDispatcherFactory, clusterName));
                     } else {
-                        final SocketBinding binding = groupBindings.get(key);
-                        if (binding == null) {
+                        final Supplier<SocketBinding> bindingSupplier = groupBindings.get(key);
+                        if (bindingSupplier == null) {
                             throw MessagingLogger.ROOT_LOGGER.failedToFindBroadcastSocketBinding(name);
                         }
+                        final SocketBinding binding = bindingSupplier.get();
                         binding.getSocketBindings().getNamedRegistry().registerBinding(ManagedBinding.Factory.createSimpleManagedBinding(binding));
                         newConfigs.add(BroadcastGroupAdd.createBroadcastGroupConfiguration(name, config, binding));
                     }
@@ -294,43 +284,42 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
                 configuration.getBroadcastGroupConfigurations().addAll(newConfigs);
             }
             if(discoveryGroups != null) {
-                configuration.setDiscoveryGroupConfigurations(new HashMap<String, DiscoveryGroupConfiguration>());
+                configuration.setDiscoveryGroupConfigurations(new HashMap<>());
                 for(final Map.Entry<String, DiscoveryGroupConfiguration> entry : discoveryGroups.entrySet()) {
                     final String name = entry.getKey();
                     final String key = "discovery" + name;
                     final DiscoveryGroupConfiguration config;
                     if (commandDispatcherFactories.containsKey(key)) {
-                        CommandDispatcherFactory commandDispatcherFactory = commandDispatcherFactories.get(key);
+                        CommandDispatcherFactory commandDispatcherFactory = commandDispatcherFactories.get(key).get();
                         String clusterName = clusterNames.get(key);
                         config = DiscoveryGroupAdd.createDiscoveryGroupConfiguration(name, entry.getValue(), commandDispatcherFactory, clusterName);
                     } else {
-                        final SocketBinding binding = groupBindings.get(key);
+                        final Supplier<SocketBinding> binding = groupBindings.get(key);
                         if (binding == null) {
                             throw MessagingLogger.ROOT_LOGGER.failedToFindDiscoverySocketBinding(name);
                         }
-                        config = DiscoveryGroupAdd.createDiscoveryGroupConfiguration(name, entry.getValue(), binding);
-                        binding.getSocketBindings().getNamedRegistry().registerBinding(ManagedBinding.Factory.createSimpleManagedBinding(binding));
+                        config = DiscoveryGroupAdd.createDiscoveryGroupConfiguration(name, entry.getValue(), binding.get());
+                        binding.get().getSocketBindings().getNamedRegistry().registerBinding(ManagedBinding.Factory.createSimpleManagedBinding(binding.get()));
                     }
                     configuration.getDiscoveryGroupConfigurations().put(name, config);
                 }
             }
 
             // security - if an Elytron domain has been defined we delegate security checks to the Elytron based security manager.
-            ActiveMQSecurityManager securityManager = null;
-            final SecurityDomain elytronDomain = this.elytronSecurityDomain.getOptionalValue();
-            if (elytronDomain != null) {
-                securityManager = new ElytronSecurityManager(elytronDomain);
-            }
-            else {
-                securityManager = new WildFlySecurityManager(securityDomainContextValue.getValue());
+            final ActiveMQSecurityManager securityManager;
+            if (elytronSecurityDomain.isPresent()) {
+                securityManager = new ElytronSecurityManager(elytronSecurityDomain.get().get());
+            } else {
+                assert securityDomainContext.isPresent();
+                securityManager = new WildFlySecurityManager(securityDomainContext.get().get());
             }
 
             // insert possible credential source hold passwords
             setBridgePasswordsFromCredentialSource();
             setClusterPasswordFromCredentialSource();
 
-            DataSource ds = dataSource.getOptionalValue();
-            if (ds != null) {
+            if (dataSource.isPresent()) {
+                final DataSource ds = dataSource.get().get();
                 DatabaseStorageConfiguration dbConfiguration = (DatabaseStorageConfiguration) configuration.getStoreConfiguration();
                 dbConfiguration.setDataSource(ds);
                 // inject the datasource into the PropertySQLProviderFactory to be able to determine the
@@ -341,8 +330,13 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
                 ROOT_LOGGER.infof("use JDBC store for Artemis server, bindingsTable:%s",
                         dbConfiguration.getBindingsTableName());
             }
+
+            final MBeanServer mbs = mbeanServer.isPresent() ? mbeanServer.get().get() : null;
+
             // Now start the server
-            server = new ActiveMQServerImpl(configuration, mbeanServer.getOptionalValue(), securityManager);
+            server = new ActiveMQServerImpl(configuration,
+                    mbs,
+                    securityManager);
             if (ActiveMQDefaultConfiguration.getDefaultClusterPassword().equals(server.getConfiguration().getClusterPassword())) {
                 server.getConfiguration().setClusterPassword(java.util.UUID.randomUUID().toString());
             }
@@ -365,20 +359,20 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
     public synchronized void stop(final StopContext context) {
         try {
             if (server != null) {
-                for (SocketBinding binding : socketBindings.values()) {
+                for (Supplier<SocketBinding> binding : socketBindings.values()) {
                     if (binding != null) {
-                        binding.getSocketBindings().getNamedRegistry().unregisterBinding(binding.getName());
+                        binding.get().getSocketBindings().getNamedRegistry().unregisterBinding(binding.get().getName());
                     }
                 }
-                for (SocketBinding binding : groupBindings.values()) {
+                for (Supplier<SocketBinding> binding : groupBindings.values()) {
                     if (binding != null) {
-                        binding.getSocketBindings().getNamedRegistry().unregisterBinding(binding.getName());
+                        binding.get().getSocketBindings().getNamedRegistry().unregisterBinding(binding.get().getName());
                     }
                 }
 
                 // the server is actually stopped by the JMS Service
             }
-            pathConfig.closeCallbacks(pathManager.getValue());
+            pathConfig.closeCallbacks(pathManager.get());
         } catch (Exception e) {
             throw MessagingLogger.ROOT_LOGGER.failedToShutdownServer(e, "Artemis");
         }
@@ -390,18 +384,6 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
             throw new IllegalStateException();
         }
         return server;
-    }
-
-    public Injector<SecurityDomainContext> getSecurityDomainContextInjector() {
-        return securityDomainContextValue;
-    }
-
-    public Injector<SecurityDomain> getElytronDomainInjector() {
-        return this.elytronSecurityDomain;
-    }
-
-    public Map<String, String> getClusterNames() {
-        return clusterNames;
     }
 
     /**
@@ -419,6 +401,10 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
             return controller != null;
         }
         return false;
+    }
+
+    CommandDispatcherFactory getCommandDispatcherFactory(String key) {
+        return commandDispatcherFactories.get(key).get();
     }
 
     static class PathConfig {
@@ -508,7 +494,6 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
 
     /**
      * Get {@link CredentialSource} injector based on name of the cluster credential.
-     * @param name the cluster credential name
      * @return injector
      */
     public InjectedValue<ExceptionSupplier<CredentialSource, Exception>> getClusterCredentialSourceSupplierInjector() {

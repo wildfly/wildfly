@@ -25,8 +25,10 @@ package org.wildfly.extension.messaging.activemq;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.wildfly.extension.messaging.activemq.Capabilities.ACTIVEMQ_SERVER_CAPABILITY;
+import static org.wildfly.extension.messaging.activemq.Capabilities.DATA_SOURCE_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.Capabilities.ELYTRON_DOMAIN_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.Capabilities.JMX_CAPABILITY;
+import static org.wildfly.extension.messaging.activemq.Capabilities.PATH_MANAGER_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.ADDRESS_SETTING;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.BINDINGS_DIRECTORY;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.BROADCAST_GROUP;
@@ -102,10 +104,14 @@ import static org.wildfly.extension.messaging.activemq.ha.HAPolicyConfigurationB
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import javax.management.MBeanServer;
 import javax.sql.DataSource;
@@ -120,7 +126,6 @@ import org.apache.activemq.artemis.core.config.Configuration;
 import org.apache.activemq.artemis.core.config.impl.ConfigurationImpl;
 import org.apache.activemq.artemis.core.config.storage.DatabaseStorageConfiguration;
 import org.apache.activemq.artemis.core.security.Role;
-import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.apache.activemq.artemis.core.server.JournalType;
 import org.apache.activemq.artemis.core.settings.impl.AddressSettings;
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -135,7 +140,6 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.as.controller.services.path.PathManager;
-import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.security.plugins.SecurityDomainContext;
@@ -263,86 +267,94 @@ class ServerAdd extends AbstractAddStepHandler {
                 String pagingPath = PATHS.get(PAGING_DIRECTORY).resolveModelAttribute(context, model.get(PATH, PAGING_DIRECTORY)).asString();
                 String pagingRelativeToPath = RELATIVE_TO.resolveModelAttribute(context, model.get(PATH, PAGING_DIRECTORY)).asString();
 
-                // Create the ActiveMQ Service
-                final ActiveMQServerService serverService = new ActiveMQServerService(
-                        configuration, new ActiveMQServerService.PathConfig(bindingsPath, bindingsRelativeToPath, journalPath, journalRelativeToPath, largeMessagePath, largeMessageRelativeToPath, pagingPath, pagingRelativeToPath)
-                );
-                processIncomingInterceptors(INCOMING_INTERCEPTORS.resolveModelAttribute(context, operation), serverService);
-                processOutgoingInterceptors(OUTGOING_INTERCEPTORS.resolveModelAttribute(context, operation), serverService);
-
                 // Add the ActiveMQ Service
                 ServiceName activeMQServiceName = MessagingServices.getActiveMQServiceName(serverName);
-                final ServiceBuilder<ActiveMQServer> serviceBuilder = serviceTarget.addService(activeMQServiceName, serverService);
+                final ServiceBuilder serviceBuilder = serviceTarget.addService(activeMQServiceName);
+                Supplier pathManager = serviceBuilder.requires(context.getCapabilityServiceName(PATH_MANAGER_CAPABILITY, PathManager.class));
+
+                Optional<Supplier<DataSource>> dataSource = Optional.empty();
+                ModelNode dataSourceModel = JOURNAL_DATASOURCE.resolveModelAttribute(context, model);
+                if (dataSourceModel.isDefined()) {
+                    ServiceName dataSourceCapability = context.getCapabilityServiceName(DATA_SOURCE_CAPABILITY, dataSourceModel.asString(), DataSource.class);
+                    dataSource = Optional.of(serviceBuilder.requires(dataSourceCapability));
+                }
+                Optional<Supplier<MBeanServer>> mbeanServer = Optional.empty();
                 if (context.hasOptionalCapability(JMX_CAPABILITY, ACTIVEMQ_SERVER_CAPABILITY.getDynamicName(serverName), null)) {
                     ServiceName jmxCapability = context.getCapabilityServiceName(JMX_CAPABILITY, MBeanServer.class);
-                    serviceBuilder.addDependency(jmxCapability, MBeanServer.class, serverService.getMBeanServer());
+                    mbeanServer = Optional.of(serviceBuilder.requires(jmxCapability));
                 }
-                ModelNode dataSource = JOURNAL_DATASOURCE.resolveModelAttribute(context, model);
-                if (dataSource.isDefined()) {
-                    ServiceName dataSourceCapability = context.getCapabilityServiceName("org.wildfly.data-source", dataSource.asString(), DataSource.class);
-                    serviceBuilder.addDependency(dataSourceCapability, DataSource.class, serverService.getDataSource());
-                }
-
-                serviceBuilder.addDependency(PathManagerService.SERVICE_NAME, PathManager.class, serverService.getPathManagerInjector());
 
                 // Inject a reference to the Elytron security domain if one has been defined.
-                final ModelNode elytronSecurityDomain = ELYTRON_DOMAIN.resolveModelAttribute(context, model);
-                if (elytronSecurityDomain.isDefined()) {
-                    ServiceName elytronDomainCapability = context.getCapabilityServiceName(ELYTRON_DOMAIN_CAPABILITY, elytronSecurityDomain.asString(), SecurityDomain.class);
-                    serviceBuilder.addDependency(elytronDomainCapability, SecurityDomain.class, serverService.getElytronDomainInjector());
+                Optional<Supplier<SecurityDomain>> elytronSecurityDomain = Optional.empty();
+                // legacy security
+                Optional<Supplier<SecurityDomainContext>> securityDomainContext = Optional.empty();
+                final ModelNode elytronSecurityDomainModel = ELYTRON_DOMAIN.resolveModelAttribute(context, model);
+                if (elytronSecurityDomainModel.isDefined()) {
+                    ServiceName elytronDomainCapability = context.getCapabilityServiceName(ELYTRON_DOMAIN_CAPABILITY, elytronSecurityDomainModel.asString(), SecurityDomain.class);
+                    elytronSecurityDomain = Optional.of(serviceBuilder.requires(elytronDomainCapability));
                 } else {
                     // Add legacy security
                     String domain = SECURITY_DOMAIN.resolveModelAttribute(context, model).asString();
-                    serviceBuilder.addDependency(
-                            SecurityDomainService.SERVICE_NAME.append(domain),
-                            SecurityDomainContext.class,
-                            serverService.getSecurityDomainContextInjector())
+                    securityDomainContext = Optional.of(serviceBuilder.requires(SecurityDomainService.SERVICE_NAME.append(domain)));
                     // WFLY-6652 / WFLY-10292 this dependency ensures that Artemis will be able to destroy any queues created on behalf of a
                     // pooled-connection-factory client during server stop
-                    .addDependency(SecurityBootstrapService.SERVICE_NAME);
+                    serviceBuilder.requires(SecurityBootstrapService.SERVICE_NAME);
                 }
 
-                // inject credential-references for bridges
-                addBridgeCredentialStoreReference(serverService, configuration, BridgeDefinition.CREDENTIAL_REFERENCE, context, model, serviceBuilder);
-                addClusterCredentialStoreReference(serverService, ServerDefinition.CREDENTIAL_REFERENCE, context, model, serviceBuilder);
+                List<Interceptor> incomingInterceptors = processInterceptors(INCOMING_INTERCEPTORS.resolveModelAttribute(context, operation));
+                List<Interceptor> outgoingInterceptors = processInterceptors(OUTGOING_INTERCEPTORS.resolveModelAttribute(context, operation));
 
                 // Process acceptors and connectors
-                final Set<String> socketBindings = new HashSet<String>();
-                TransportConfigOperationHandlers.processAcceptors(context, configuration, model, socketBindings);
+                final Set<String> socketBindingNames = new HashSet<String>();
+                TransportConfigOperationHandlers.processAcceptors(context, configuration, model, socketBindingNames);
 
-                // if there is any HTTP acceptor, add a dependency on the http-upgrade-registry service to
-                // make sure that ActiveMQ server will be stopped *after* the registry (and its underlying XNIO thread)
-                // is stopped.
-                if (model.hasDefined(HTTP_ACCEPTOR)) {
-                    for (final Property property : model.get(HTTP_ACCEPTOR).asPropertyList()) {
-                        String httpListener = HTTPAcceptorDefinition.HTTP_LISTENER.resolveModelAttribute(context, property.getValue()).asString();
-                        serviceBuilder.addDependency(MessagingServices.HTTP_UPGRADE_REGISTRY.append(httpListener));
-                    }
-                }
-
-                for (final String socketBinding : socketBindings) {
-                    final ServiceName socketName = SocketBinding.JBOSS_BINDING_NAME.append(socketBinding);
-                    serviceBuilder.addDependency(socketName, SocketBinding.class, serverService.getSocketBindingInjector(socketBinding));
+                Map<String, Supplier<SocketBinding>> socketBindings = new HashMap<>();
+                for (final String socketBindingName : socketBindingNames) {
+                    Supplier<SocketBinding> socketBinding = serviceBuilder.requires(SocketBinding.JBOSS_BINDING_NAME.append(socketBindingName));
+                    socketBindings.put(socketBindingName, socketBinding);
                 }
 
                 final Set<String> connectorsSocketBindings = new HashSet<String>();
                 TransportConfigOperationHandlers.processConnectors(context, configuration, model, connectorsSocketBindings);
+
+                Map<String, Supplier<OutboundSocketBinding>> outboundSocketBindings = new HashMap<>();
                 for (final String connectorSocketBinding : connectorsSocketBindings) {
                     // find whether the connectorSocketBinding references a SocketBinding or an OutboundSocketBinding
                     boolean outbound = isOutBoundSocketBinding(context, connectorSocketBinding);
                     if (outbound) {
                         final ServiceName outboundSocketName = OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME.append(connectorSocketBinding);
-                        serviceBuilder.addDependency(outboundSocketName, OutboundSocketBinding.class, serverService.getOutboundSocketBindingInjector(connectorSocketBinding));
+                        Supplier<OutboundSocketBinding> outboundSocketBinding = serviceBuilder.requires(outboundSocketName);
+                        outboundSocketBindings.put(connectorSocketBinding, outboundSocketBinding);
                     } else {
-                        final ServiceName socketName = SocketBinding.JBOSS_BINDING_NAME.append(connectorSocketBinding);
-                        serviceBuilder.addDependency(socketName, SocketBinding.class, serverService.getSocketBindingInjector(connectorSocketBinding));
+                        Supplier<SocketBinding> socketBinding = serviceBuilder.requires(SocketBinding.JBOSS_BINDING_NAME.append(connectorSocketBinding));
+                        socketBindings.put(connectorSocketBinding, socketBinding);
                     }
                 }
+                // if there is any HTTP acceptor, add a dependency on the http-upgrade-registry service to
+                // make sure that ActiveMQ server will be stopped *after* the registry (and its underlying XNIO thread)
+                // is stopped.
+                Set<String> httpListeners = new HashSet<>();
+                if (model.hasDefined(HTTP_ACCEPTOR)) {
+                    for (final Property property : model.get(HTTP_ACCEPTOR).asPropertyList()) {
+                        String httpListener = HTTPAcceptorDefinition.HTTP_LISTENER.resolveModelAttribute(context, property.getValue()).asString();
+                        httpListeners.add(httpListener);
+                    }
+                }
+                for (String httpListener : httpListeners) {
+                    serviceBuilder.requires(MessagingServices.HTTP_UPGRADE_REGISTRY.append(httpListener));
+                }
+
                 //this requires connectors
                 BroadcastGroupAdd.addBroadcastGroupConfigs(context, configuration, model);
 
                 final List<BroadcastGroupConfiguration> broadcastGroupConfigurations = configuration.getBroadcastGroupConfigurations();
                 final Map<String, DiscoveryGroupConfiguration> discoveryGroupConfigurations = configuration.getDiscoveryGroupConfigurations();
+
+                final Map<String, String> clusterNames = new HashMap<>();
+                final Map<String, Supplier<CommandDispatcherFactory>> commandDispatcherFactories = new HashMap<>();
+                final Map<ServiceName, Supplier<CommandDispatcherFactory>> commandDispatcherFactoryServices = new HashMap<>();
+                final Map<String, Supplier<SocketBinding>> groupBindings = new HashMap<>();
+                final Map<ServiceName, Supplier<SocketBinding>> groupBindingServices = new HashMap<>();
 
                 if(broadcastGroupConfigurations != null) {
                     for(final BroadcastGroupConfiguration config : broadcastGroupConfigurations) {
@@ -354,11 +366,19 @@ class ServerAdd extends AbstractAddStepHandler {
                             ModelNode channel = BroadcastGroupDefinition.JGROUPS_CHANNEL.resolveModelAttribute(context, broadcastGroupModel);
                             ServiceName commandDispatcherFactoryServiceName = channel.isDefined() ? ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context, channel.asString()) : ClusteringDefaultRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context);
                             String clusterName = JGROUPS_CLUSTER.resolveModelAttribute(context, broadcastGroupModel).asString();
-                            serviceBuilder.addDependency(commandDispatcherFactoryServiceName, CommandDispatcherFactory.class, serverService.getCommandDispatcherFactoryInjector(key));
-                            serverService.getClusterNames().put(key, clusterName);
+                            if (!commandDispatcherFactoryServices.containsKey(commandDispatcherFactoryServiceName)) {
+                                Supplier<CommandDispatcherFactory> commandDispatcherFactory = serviceBuilder.requires(commandDispatcherFactoryServiceName);
+                                commandDispatcherFactoryServices.put(commandDispatcherFactoryServiceName, commandDispatcherFactory);
+                            }
+                            commandDispatcherFactories.put(key, commandDispatcherFactoryServices.get(commandDispatcherFactoryServiceName));
+                            clusterNames.put(key, clusterName);
                         } else {
-                            final ServiceName groupBinding = GroupBindingService.getBroadcastBaseServiceName(activeMQServiceName).append(name);
-                            serviceBuilder.addDependency(groupBinding, SocketBinding.class, serverService.getGroupBindingInjector(key));
+                            final ServiceName groupBindingServiceName = GroupBindingService.getBroadcastBaseServiceName(activeMQServiceName).append(name);
+                            if (!groupBindingServices.containsKey(groupBindingServiceName)) {
+                                Supplier<SocketBinding> groupBinding = serviceBuilder.requires(groupBindingServiceName);
+                                groupBindingServices.put(groupBindingServiceName, groupBinding) ;
+                            }
+                            groupBindings.put(key, groupBindingServices.get(groupBindingServiceName));
                         }
                     }
                 }
@@ -371,17 +391,48 @@ class ServerAdd extends AbstractAddStepHandler {
                             ModelNode channel = DiscoveryGroupDefinition.JGROUPS_CHANNEL.resolveModelAttribute(context, discoveryGroupModel);
                             ServiceName commandDispatcherFactoryServiceName = channel.isDefined() ? ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context, channel.asString()) : ClusteringDefaultRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context);
                             String clusterName = JGROUPS_CLUSTER.resolveModelAttribute(context, discoveryGroupModel).asString();
-                            serviceBuilder.addDependency(commandDispatcherFactoryServiceName, CommandDispatcherFactory.class, serverService.getCommandDispatcherFactoryInjector(key));
-                            serverService.getClusterNames().put(key, clusterName);
+                            if (!commandDispatcherFactoryServices.containsKey(commandDispatcherFactoryServiceName)) {
+                                Supplier<CommandDispatcherFactory> commandDispatcherFactory = serviceBuilder.requires(commandDispatcherFactoryServiceName);
+                                commandDispatcherFactoryServices.put(commandDispatcherFactoryServiceName, commandDispatcherFactory);
+                            }
+                            commandDispatcherFactories.put(key, commandDispatcherFactoryServices.get(commandDispatcherFactoryServiceName));
+                            clusterNames.put(key, clusterName);
                         } else {
-                            final ServiceName groupBinding = GroupBindingService.getDiscoveryBaseServiceName(activeMQServiceName).append(name);
-                            serviceBuilder.addDependency(groupBinding, SocketBinding.class, serverService.getGroupBindingInjector(key));
+                            final ServiceName groupBindingServiceName = GroupBindingService.getDiscoveryBaseServiceName(activeMQServiceName).append(name);
+                            if (!groupBindingServices.containsKey(groupBindingServiceName)) {
+                                Supplier<SocketBinding> groupBinding = serviceBuilder.requires(groupBindingServiceName);
+                                groupBindingServices.put(groupBindingServiceName, groupBinding) ;
+                            }
+                            groupBindings.put(key, groupBindingServices.get(groupBindingServiceName));
                         }
                     }
                 }
 
+                // Create the ActiveMQ Service
+                final ActiveMQServerService serverService = new ActiveMQServerService(
+                        configuration,
+                        new ActiveMQServerService.PathConfig(bindingsPath, bindingsRelativeToPath, journalPath, journalRelativeToPath, largeMessagePath, largeMessageRelativeToPath, pagingPath, pagingRelativeToPath),
+                        pathManager,
+                        incomingInterceptors,
+                        outgoingInterceptors,
+                        socketBindings,
+                        outboundSocketBindings,
+                        groupBindings,
+                        commandDispatcherFactories,
+                        clusterNames,
+                        elytronSecurityDomain,
+                        securityDomainContext,
+                        mbeanServer,
+                        dataSource
+                );
+
+                // inject credential-references for bridges
+                addBridgeCredentialStoreReference(serverService, configuration, BridgeDefinition.CREDENTIAL_REFERENCE, context, model, serviceBuilder);
+                addClusterCredentialStoreReference(serverService, ServerDefinition.CREDENTIAL_REFERENCE, context, model, serviceBuilder);
+
                 // Install the ActiveMQ Service
-                ServiceController<ActiveMQServer> activeMQServerServiceController = serviceBuilder.install();
+                ServiceController activeMQServerServiceController = serviceBuilder.setInstance(serverService)
+                        .install();
                 // Provide our custom Resource impl a ref to the ActiveMQ server so it can create child runtime resources
                 ((ActiveMQServerResource)resource).setActiveMQServerServiceController(activeMQServerServiceController);
 
@@ -582,34 +633,21 @@ class ServerAdd extends AbstractAddStepHandler {
         }
     }
 
-    private void processIncomingInterceptors(ModelNode model, ActiveMQServerService serverService) throws OperationFailedException {
+    private List<Interceptor> processInterceptors(ModelNode model) throws OperationFailedException {
         if (!model.isDefined()) {
-            return;
+            return Collections.emptyList();
         }
-        List<ModelNode> interceptors = model.asList();
-        for (Class clazz : unwrapClasses(interceptors)) {
+        List<Interceptor> interceptors = new ArrayList<>();
+        List<ModelNode> interceptorModels = model.asList();
+        for (Class clazz : unwrapClasses(interceptorModels)) {
             try {
                 Interceptor interceptor = Interceptor.class.cast(clazz.newInstance());
-                serverService.getIncomingInterceptors().add(interceptor);
+                interceptors.add(interceptor);
             } catch (Exception e) {
                 throw new OperationFailedException(e);
             }
         }
-    }
-
-    private void processOutgoingInterceptors(ModelNode model, ActiveMQServerService serverService) throws OperationFailedException {
-        if (!model.isDefined()) {
-            return;
-        }
-        List<ModelNode> interceptors = model.asList();
-        for (Class clazz : unwrapClasses(interceptors)) {
-            try {
-                Interceptor interceptor = Interceptor.class.cast(clazz.newInstance());
-                serverService.getOutgoingInterceptors().add(interceptor);
-            } catch (Exception e) {
-                throw new OperationFailedException(e);
-            }
-        }
+        return interceptors;
     }
 
     /**
