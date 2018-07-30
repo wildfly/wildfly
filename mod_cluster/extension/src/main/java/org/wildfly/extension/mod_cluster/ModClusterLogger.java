@@ -23,7 +23,6 @@
 package org.wildfly.extension.mod_cluster;
 
 import static org.jboss.logging.Logger.Level.ERROR;
-import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
 import org.jboss.logging.BasicLogger;
@@ -81,12 +80,9 @@ interface ModClusterLogger extends BasicLogger {
     @Message(id = 4, value = "Mod_cluster requires Advertise but Multicast interface is not available")
     void multicastInterfaceNotAvailable();
 
-    /**
-     * Logs an informational message indicating the default load balancer provider is being used.
-     */
-    @LogMessage(level = INFO)
-    @Message(id = 5, value = "Mod_cluster uses default load balancer provider")
-    void useDefaultLoadBalancer();
+    @LogMessage(level = WARN)
+    @Message(id = 5, value = "No mod_cluster load balance factor provider specified for proxy '%s'! Using load balance factor provider with constant factor of '1'.")
+    void usingSimpleLoadProvider(String proxyName);
 
     /**
      * Logs an error message indicating that metric properties could not be applied on a custom load metric.
@@ -134,7 +130,7 @@ interface ModClusterLogger extends BasicLogger {
      * @param context name of the context
      * @return the message
      */
-    @Message(id = 11, value = "Virtual host '%s' or context '%s' not found")
+    @Message(id = 11, value = "Virtual host '%s' or context '%s' not found.")
     String contextOrHostNotFound(String host, String context);
 
 //    @Message(id = 12, value = "'capacity' is either an expression, is not an integer value, or has a bigger value than Integer.MAX_VALUE: %s")
@@ -151,8 +147,8 @@ interface ModClusterLogger extends BasicLogger {
     @Message(id = 14, value = "Need valid host and port in the form host:port, %s is not valid")
     String needHostAndPort(String value);
 
-    @Message(id = 15, value = "session-draining-strategy must either be undefined or have the value \"DEFAULT\"")
-    String sessionDrainingStrategyMustBeUndefinedOrDefault();
+//    @Message(id = 15, value = "session-draining-strategy must either be undefined or have the value \"DEFAULT\"")
+//    String sessionDrainingStrategyMustBeUndefinedOrDefault();
 
     /**
      * A message indicating the host of the reverse proxy server could not be resolved.
@@ -162,23 +158,23 @@ interface ModClusterLogger extends BasicLogger {
     @Message(id = 16, value = "No IP address could be resolved for the specified host of the proxy.")
     String couldNotResolveProxyIpAddress();
 
-    /**
-     * A message explaining that 'proxy-list' attribute has been deprecated and that 'proxies' attribute which is a list
-     * of references to outbound-socket-binding(s) should be used instead.
-     *
-     * @return the message
-     */
-    @Message(id = 17, value = "'proxy-list' usage not allowed in the current model, can only be used to support older slaves")
-    String proxyListNotAllowedInCurrentModel();
+//    /**
+//     * A message explaining that 'proxy-list' attribute has been deprecated and that 'proxies' attribute which is a list
+//     * of references to outbound-socket-binding(s) should be used instead.
+//     *
+//     * @return the message
+//     */
+//    @Message(id = 17, value = "'proxy-list' usage not allowed in the current model, can only be used to support older slaves")
+//    String proxyListNotAllowedInCurrentModel();
 
-    /**
-     * Message indicating that only one of 'proxy-list' or 'proxies' attributes is allowed and the former one only
-     * to support older EAP 6.x slaves.
-     *
-     * @return the message
-     */
-    @Message(id = 18, value = "Usage of only one 'proxy-list' (only to support EAP 6.x slaves) or 'proxies' attributes allowed")
-    String proxyListAttributeUsage();
+//    /**
+//     * Message indicating that only one of 'proxy-list' or 'proxies' attributes is allowed and the former one only
+//     * to support older EAP 6.x slaves.
+//     *
+//     * @return the message
+//     */
+//    @Message(id = 18, value = "Usage of only one 'proxy-list' (only to support EAP 6.x slaves) or 'proxies' attributes allowed")
+//    String proxyListAttributeUsage();
 
     /**
      * Logs a error message when excluded contexts are in a wrong format.
@@ -197,5 +193,8 @@ interface ModClusterLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 21, value = "Value 'ROOT' for excluded-contexts is deprecated, to exclude the root context use '/' instead.")
     void excludedContextsUseSlashInsteadROOT();
+
+    @Message(id = 22, value = "Legacy operations cannot be used with multiple proxy configurations. Use non-deprecated operations at the correct proxy address.")
+    String legacyOperationsWithMultipleProxies();
 
 }

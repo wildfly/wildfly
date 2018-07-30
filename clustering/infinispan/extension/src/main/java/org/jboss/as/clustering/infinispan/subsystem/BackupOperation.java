@@ -22,6 +22,7 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.jboss.as.clustering.controller.Operation;
+import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.dmr.ModelNode;
@@ -35,19 +36,19 @@ public enum BackupOperation implements Operation<BackupOperationContext> {
 
     BRING_SITE_ONLINE("bring-site-online", false) {
         @Override
-        public ModelNode execute(BackupOperationContext context) {
+        public ModelNode execute(ExpressionResolver expressionResolver, ModelNode operation, BackupOperationContext context) {
             return new ModelNode(context.getOperations().bringSiteOnline(context.getSite()));
         }
     },
     TAKE_SITE_OFFLINE("take-site-offline", false) {
         @Override
-        public ModelNode execute(BackupOperationContext context) {
+        public ModelNode execute(ExpressionResolver expressionResolver, ModelNode operation, BackupOperationContext context) {
             return new ModelNode(context.getOperations().takeSiteOffline(context.getSite()));
         }
     },
     SITE_STATUS("site-status", true) {
         @Override
-        public ModelNode execute(BackupOperationContext context) {
+        public ModelNode execute(ExpressionResolver expressionResolver, ModelNode operation, BackupOperationContext context) {
             return new ModelNode(context.getOperations().siteStatus(context.getSite()));
         }
     },

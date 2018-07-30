@@ -26,7 +26,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
- * Configures the dependendies of a {@link org.jboss.msc.Service}.
+ * Configures the dependencies of a {@link org.jboss.msc.Service}.
  * @author Paul Ferraro
  */
 public interface ServiceConfigurator extends ServiceNameProvider {

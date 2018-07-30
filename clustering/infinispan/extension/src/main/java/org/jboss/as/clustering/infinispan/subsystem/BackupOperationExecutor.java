@@ -39,7 +39,7 @@ import org.wildfly.clustering.service.PassiveServiceSupplier;
 public class BackupOperationExecutor implements OperationExecutor<BackupOperationContext> {
 
     @Override
-    public ModelNode execute(OperationContext context, Operation<BackupOperationContext> operation) throws OperationFailedException {
+    public ModelNode execute(OperationContext context, ModelNode operation, Operation<BackupOperationContext> executable) throws OperationFailedException {
         PathAddress address = context.getCurrentAddress();
         PathAddress cacheAddress = address.getParent();
 
@@ -60,6 +60,6 @@ public class BackupOperationExecutor implements OperationExecutor<BackupOperatio
                 return cache.getAdvancedCache().getComponentRegistry().getComponent(XSiteAdminOperations.class);
             }
         };
-        return (cache != null) ? operation.execute(operationContext) : null;
+        return (cache != null) ? executable.execute(context, operation, operationContext) : null;
     }
 }

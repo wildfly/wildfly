@@ -1,4 +1,4 @@
-/**
+/*
  * JBoss, Home of Professional Open Source.
  * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
@@ -26,22 +26,16 @@ import java.util.Set;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.dmr.ModelNode;
 import org.jboss.modcluster.load.metric.LoadMetric;
 
 /**
  * Mechanism to plug in {@link org.jboss.as.server.deployment.DeploymentUnitProcessor} on boot time, e.g. Undertow
- * {@link io.undertow.server.HttpHandler}. Passes on a reference to Set with enabled {@link LoadMetric}s.
+ * {@link io.undertow.server.HttpHandler}. Passes on a reference to sets with enabled {@link LoadMetric}s and event handler
+ * adapters.
  *
  * @author Radoslav Husar
- * @version Jan 2014
  * @since 8.0
  */
 public interface BoottimeHandlerProvider {
-
-    /**
-     * @see org.jboss.as.controller.AbstractBoottimeAddStepHandler#performBoottime(org.jboss.as.controller.OperationContext, org.jboss.dmr.ModelNode, org.jboss.dmr.ModelNode
-     */
-    void performBoottime(final Set<LoadMetric> enabledMetrics, OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException;
-
+    void performBoottime(OperationContext context, Set<String> adapterNames, Set<LoadMetric> enabledMetrics) throws OperationFailedException;
 }

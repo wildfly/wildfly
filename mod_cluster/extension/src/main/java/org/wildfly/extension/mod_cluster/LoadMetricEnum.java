@@ -34,6 +34,7 @@ import org.jboss.modcluster.load.metric.impl.SendTrafficLoadMetric;
  * Enumeration of mod_cluster load metrics.
  *
  * @author Paul Ferraro
+ * @author Radoslav Husar
  */
 public enum LoadMetricEnum {
 
@@ -44,7 +45,8 @@ public enum LoadMetricEnum {
     RECEIVE_TRAFFIC("receive-traffic", ReceiveTrafficLoadMetric.class),
     SEND_TRAFFIC("send-traffic", SendTrafficLoadMetric.class),
     REQUEST_COUNT("requests", RequestCountLoadMetric.class),
-    BUSY_CONNECTORS("busyness", BusyConnectorsLoadMetric.class),;
+    BUSY_CONNECTORS("busyness", BusyConnectorsLoadMetric.class),
+    ;
 
     private final String type;
     private final Class<? extends LoadMetric> loadMetricClass;

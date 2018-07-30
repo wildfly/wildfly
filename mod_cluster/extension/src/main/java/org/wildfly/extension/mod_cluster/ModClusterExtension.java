@@ -22,75 +22,50 @@
 
 package org.wildfly.extension.mod_cluster;
 
-import static org.wildfly.extension.mod_cluster.ModClusterLogger.ROOT_LOGGER;
-
 import java.util.EnumSet;
 
-import javax.xml.stream.XMLStreamConstants;
-
+import org.jboss.as.clustering.controller.ContextualSubsystemRegistration;
+import org.jboss.as.clustering.controller.descriptions.SubsystemResourceDescriptionResolver;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
-import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.kohsuke.MetaInfServices;
 
 /**
- * Domain extension used to initialize the mod_cluster subsystem element handlers.
+ * Defines the mod_cluster subsystem and its resources.
  *
  * @author Jean-Frederic Clere
  * @author Tomaz Cerar
  * @author Radoslav Husar
  */
 @MetaInfServices(Extension.class)
-public class ModClusterExtension implements XMLStreamConstants, Extension {
+public class ModClusterExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "modcluster";
 
-    private static final String RESOURCE_NAME = ModClusterExtension.class.getPackage().getName() + ".LocalDescriptions";
+    static final SubsystemResourceDescriptionResolver SUBSYSTEM_RESOLVER = new SubsystemResourceDescriptionResolver(SUBSYSTEM_NAME, ModClusterExtension.class);
 
-    static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
-        StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
-        for (String kp : keyPrefix) {
-            prefix.append('.').append(kp);
-        }
-        return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, ModClusterExtension.class.getClassLoader(), true, false);
-    }
-
-    static final SensitivityClassification MOD_CLUSTER_SECURITY =
-            new SensitivityClassification(SUBSYSTEM_NAME, "mod_cluster-security", false, true, true);
-
-    static final SensitiveTargetAccessConstraintDefinition MOD_CLUSTER_SECURITY_DEF = new SensitiveTargetAccessConstraintDefinition(MOD_CLUSTER_SECURITY);
-
-    static final SensitivityClassification MOD_CLUSTER_PROXIES =
-            new SensitivityClassification(SUBSYSTEM_NAME, "mod_cluster-proxies", false, false, false);
-
-    static final SensitiveTargetAccessConstraintDefinition MOD_CLUSTER_PROXIES_DEF = new SensitiveTargetAccessConstraintDefinition(MOD_CLUSTER_PROXIES);
+    public static final SensitiveTargetAccessConstraintDefinition MOD_CLUSTER_SECURITY_DEF = new SensitiveTargetAccessConstraintDefinition(
+            new SensitivityClassification(SUBSYSTEM_NAME, "mod_cluster-security", false, true, true));
+    public static final SensitiveTargetAccessConstraintDefinition MOD_CLUSTER_PROXIES_DEF = new SensitiveTargetAccessConstraintDefinition(
+            new SensitivityClassification(SUBSYSTEM_NAME, "mod_cluster-proxies", false, false, false));
 
     @Override
     public void initialize(ExtensionContext context) {
-        ROOT_LOGGER.debugf("Activating mod_cluster extension");
+        SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, ModClusterModel.CURRENT.getVersion());
 
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, ModClusterModel.CURRENT.getVersion());
-        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new ModClusterSubsystemResourceDefinition(context.isRuntimeOnlyRegistrationValid()));
+        new ModClusterSubsystemResourceDefinition().register(new ContextualSubsystemRegistration(registration, context));
 
-        final ManagementResourceRegistration configuration = registration.registerSubModel(new ModClusterConfigResourceDefinition());
-
-        configuration.registerSubModel(new ModClusterSSLResourceDefinition());
-        final ManagementResourceRegistration dynamicLoadProvider = configuration.registerSubModel(DynamicLoadProviderDefinition.INSTANCE);
-        dynamicLoadProvider.registerSubModel(LoadMetricDefinition.INSTANCE);
-        dynamicLoadProvider.registerSubModel(CustomLoadMetricDefinition.INSTANCE);
-
-        subsystem.registerXMLElementWriter(() -> new ModClusterSubsystemXMLWriter());
+        registration.registerXMLElementWriter(new ModClusterSubsystemXMLWriter());
     }
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
         for (ModClusterSchema schema : EnumSet.allOf(ModClusterSchema.class)) {
-            context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespaceUri(), schema.getXMLReaderSupplier());
+            context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespaceUri(), new ModClusterSubsystemXMLReader(schema));
         }
     }
 

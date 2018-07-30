@@ -40,7 +40,7 @@ import org.wildfly.clustering.service.PassiveServiceSupplier;
 public class PartitionHandlingOperationExecutor implements OperationExecutor<AdvancedCache<?, ?>> {
 
     @Override
-    public ModelNode execute(OperationContext context, Operation<AdvancedCache<?, ?>> operation) throws OperationFailedException {
+    public ModelNode execute(OperationContext context, ModelNode operation, Operation<AdvancedCache<?, ?>> executable) throws OperationFailedException {
         PathAddress address = context.getCurrentAddress();
         PathAddress cacheAddress = address.getParent();
 
@@ -49,6 +49,6 @@ public class PartitionHandlingOperationExecutor implements OperationExecutor<Adv
 
         Cache<?, ?> cache = new PassiveServiceSupplier<Cache<?, ?>>(context.getServiceRegistry(true), InfinispanCacheRequirement.CACHE.getServiceName(context, containerName, cacheName)).get();
 
-        return (cache != null) ? operation.execute(cache.getAdvancedCache()) : null;
+        return (cache != null) ? executable.execute(context, operation, cache.getAdvancedCache()) : null;
     }
 }

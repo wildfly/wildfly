@@ -1,4 +1,4 @@
-/**
+/*
  * JBoss, Home of Professional Open Source.
  * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
@@ -37,7 +37,6 @@ import org.wildfly.mod_cluster.undertow.metric.RunningRequestsHttpHandler;
  * Adapts {@link UndertowListener} to a {@link Connector}.
  *
  * @author Radoslav Husar
- * @version Aug 2013
  * @since 8.0
  */
 public class UndertowConnector implements Connector {

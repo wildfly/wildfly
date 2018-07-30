@@ -31,21 +31,25 @@ import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.modcluster.container.ContainerEventHandler;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.service.AsyncServiceConfigurator;
 import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SupplierDependency;
-import org.wildfly.extension.mod_cluster.ContainerEventHandlerServiceConfigurator;
+import org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefinition;
 import org.wildfly.extension.undertow.Capabilities;
+import org.wildfly.extension.undertow.Server;
 import org.wildfly.extension.undertow.UndertowListener;
 import org.wildfly.extension.undertow.UndertowService;
 
-public class UndertowEventHandlerAdapterServiceConfigurator implements CapabilityServiceConfigurator, UndertowEventHandlerAdapterConfiguration {
-    static final ServiceName SERVICE_NAME = ContainerEventHandlerServiceConfigurator.SERVICE_NAME.append("undertow");
+/**
+ * @author Paul Ferraro
+ * @author Radoslav Husar
+ */
+public class UndertowEventHandlerAdapterServiceConfigurator extends UndertowEventHandlerAdapterServiceNameProvider implements CapabilityServiceConfigurator, UndertowEventHandlerAdapterConfiguration {
 
+    private final String proxyName;
     private final String listenerName;
     private final Duration statusInterval;
 
@@ -55,14 +59,11 @@ public class UndertowEventHandlerAdapterServiceConfigurator implements Capabilit
     private volatile SupplierDependency<UndertowService> service;
     private volatile SupplierDependency<UndertowListener> listener;
 
-    public UndertowEventHandlerAdapterServiceConfigurator(String listenerName, Duration statusInterval) {
+    public UndertowEventHandlerAdapterServiceConfigurator(String proxyName, String listenerName, Duration statusInterval) {
+        super(proxyName);
+        this.proxyName = proxyName;
         this.listenerName = listenerName;
         this.statusInterval = statusInterval;
-    }
-
-    @Override
-    public ServiceName getServiceName() {
-        return SERVICE_NAME;
     }
 
     @Override
@@ -74,9 +75,9 @@ public class UndertowEventHandlerAdapterServiceConfigurator implements Capabilit
 
     @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
-        ServiceBuilder<?> builder = new AsyncServiceConfigurator(SERVICE_NAME).build(target);
+        ServiceBuilder<?> builder = new AsyncServiceConfigurator(this.getServiceName()).build(target);
         new CompositeDependency(this.service, this.listener).register(builder);
-        this.eventHandler = builder.requires(ContainerEventHandlerServiceConfigurator.SERVICE_NAME);
+        this.eventHandler = builder.requires(ProxyConfigurationResourceDefinition.Capability.SERVICE.getDefinition().getCapabilityServiceName(proxyName));
         this.suspendController = builder.requires(SuspendController.SERVICE_NAME);
         Service service = new UndertowEventHandlerAdapterService(this);
         return builder.setInstance(service);
@@ -105,5 +106,10 @@ public class UndertowEventHandlerAdapterServiceConfigurator implements Capabilit
     @Override
     public UndertowListener getListener() {
         return this.listener.get();
+    }
+
+    @Override
+    public Server getServer() {
+        return this.listener.get().getServer();
     }
 }

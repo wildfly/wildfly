@@ -32,26 +32,28 @@ import org.wildfly.extension.undertow.UndertowService;
 
 /**
  * Adapts {@link UndertowService} to a {@link Server}.
+ *
  * @author Radoslav Husar
  * @author Paul Ferraro
  * @since 8.0
  */
 public class UndertowServer implements Server {
 
+    private final String serverName;
     private final UndertowService service;
     private final Connector connector;
 
-    public UndertowServer(UndertowService service, Connector connector) {
+    public UndertowServer(String serverName, UndertowService service, Connector connector) {
+        this.serverName = serverName;
         this.service = service;
         this.connector = connector;
     }
 
     @Override
     public Iterable<Engine> getEngines() {
-        // Currently, the mod_cluster subsystem only supports the default server
-        for (org.wildfly.extension.undertow.Server server : service.getServers()) {
-            if (server.getName().equals(service.getDefaultServer())) {
-                return Collections.singleton(new UndertowEngine(server, service, connector));
+        for (org.wildfly.extension.undertow.Server server : this.service.getServers()) {
+            if (server.getName().equals(this.serverName)) {
+                return Collections.singleton(new UndertowEngine(serverName, server, this.service, this.connector));
             }
         }
         throw new IllegalStateException();

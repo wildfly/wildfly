@@ -80,7 +80,6 @@ public class ModClusterSubsystemTestCase {
             Assert.assertEquals("Adding mod_cluster subsystem failed! " + response.toJSONString(false), SUCCESS, outcome);
 
             // We need to reload the server here since the add operation leaves the server in 'reload-required' state
-            // and HttpInvokerDefinition adds dependency on the service conditionally with OperationContext#hasOptionalCapability
             ServerReload.executeReloadAndWaitForCompletion(controllerClient);
 
             // Test subsystem remove

@@ -53,7 +53,7 @@ public class LegacyPropertyWriteOperationTransformer implements OperationTransfo
     private final UnaryOperator<PathAddress> addressTransformer;
 
     /**
-     * Constructs a new LegacyPropertyWriteOperationTransformer with no address tranformation.
+     * Constructs a new LegacyPropertyWriteOperationTransformer with no address transformation.
      */
     public LegacyPropertyWriteOperationTransformer() {
         this(UnaryOperator.identity());

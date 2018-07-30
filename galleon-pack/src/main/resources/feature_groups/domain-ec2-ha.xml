@@ -17,7 +17,8 @@
         <param name="profile" value="ha"/>
         <feature-group name="domain-ha-profile">
             <feature spec="subsystem.modcluster">
-                <feature spec="subsystem.modcluster.mod-cluster-config.configuration">
+                <feature spec="subsystem.modcluster.proxy">
+                    <param name="proxy" value="default"/>
                     <unset param="advertise-socket"/>
                     <param name="advertise" value="false"/>
                     <param name="proxies" value=""/>

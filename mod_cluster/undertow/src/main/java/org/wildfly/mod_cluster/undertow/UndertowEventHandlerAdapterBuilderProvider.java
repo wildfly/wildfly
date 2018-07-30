@@ -29,14 +29,15 @@ import org.kohsuke.MetaInfServices;
 import org.wildfly.extension.mod_cluster.ContainerEventHandlerAdapterServiceConfiguratorProvider;
 
 /**
- * {@link ContainerEventHandlerAdapterServiceConfiguratorProvider} service provider for Undertow
+ * {@link ContainerEventHandlerAdapterServiceConfiguratorProvider} service provider for Undertow.
+ *
  * @author Paul Ferraro
  */
 @MetaInfServices(ContainerEventHandlerAdapterServiceConfiguratorProvider.class)
 public class UndertowEventHandlerAdapterBuilderProvider implements ContainerEventHandlerAdapterServiceConfiguratorProvider {
 
     @Override
-    public CapabilityServiceConfigurator getServiceConfigurator(String listenerName, Duration statusInterval) {
-        return new UndertowEventHandlerAdapterServiceConfigurator(listenerName, statusInterval);
+    public CapabilityServiceConfigurator getServiceConfigurator(String name, String listenerName, Duration statusInterval) {
+        return new UndertowEventHandlerAdapterServiceConfigurator(name, listenerName, statusInterval);
     }
 }

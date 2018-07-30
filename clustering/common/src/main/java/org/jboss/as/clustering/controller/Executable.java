@@ -28,7 +28,7 @@ import org.jboss.dmr.ModelNode;
 /**
  * Generic interface for some object capable of execution.
  * @author Paul Ferraro
- * @param C the execution context
+ * @param <C> the execution context
  */
 public interface Executable<C> {
     /**

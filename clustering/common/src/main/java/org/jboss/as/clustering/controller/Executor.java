@@ -28,9 +28,9 @@ import org.jboss.dmr.ModelNode;
 
 /**
  * Encapsulates the execution of a contextual executable.
+ * @param <C> the execution context
+ * @param <E> the contextual executable
  * @author Paul Ferraro
- * @param C the execution context
- * @param E the contextual executable
  */
 public interface Executor<C, E extends Executable<C>> {
     /**

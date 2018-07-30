@@ -24,8 +24,6 @@ package org.wildfly.mod_cluster.undertow;
 
 import static java.security.AccessController.doPrivileged;
 
-import io.undertow.servlet.api.Deployment;
-
 import java.security.PrivilegedAction;
 import java.util.HashSet;
 import java.util.Set;
@@ -34,6 +32,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
+import io.undertow.servlet.api.Deployment;
 import org.jboss.as.server.suspend.ServerActivity;
 import org.jboss.as.server.suspend.ServerActivityCallback;
 import org.jboss.logging.Logger;
@@ -51,9 +50,10 @@ import org.wildfly.extension.undertow.UndertowEventListener;
 import org.wildfly.extension.undertow.UndertowService;
 
 /**
- * Builds a service exposing an Undertow subsystem adapter to mod_cluster's ContainerEventHandler.
+ * Builds a service exposing an Undertow subsystem adapter to mod_cluster's {@link ContainerEventHandler}.
  *
  * @author Paul Ferraro
+ * @author Radoslav Husar
  */
 public class UndertowEventHandlerAdapterService implements UndertowEventListener, Service, Runnable, ServerActivity {
     // No logger interface for this module and no reason to create one for this class only
@@ -64,6 +64,7 @@ public class UndertowEventHandlerAdapterService implements UndertowEventListener
     private volatile ScheduledExecutorService executor;
     private volatile Server server;
     private volatile Connector connector;
+    private volatile String serverName;
 
     public UndertowEventHandlerAdapterService(UndertowEventHandlerAdapterConfiguration configuration) {
         this.configuration = configuration;
@@ -74,7 +75,8 @@ public class UndertowEventHandlerAdapterService implements UndertowEventListener
         UndertowService service = this.configuration.getUndertowService();
         ContainerEventHandler eventHandler = this.configuration.getContainerEventHandler();
         this.connector = new UndertowConnector(this.configuration.getListener());
-        this.server = new UndertowServer(service, this.connector);
+        this.serverName = this.configuration.getServer().getName();
+        this.server = new UndertowServer(this.serverName, service, this.connector);
 
         // Register ourselves as a listener to the container events
         service.registerListener(this);
@@ -112,11 +114,11 @@ public class UndertowEventHandlerAdapterService implements UndertowEventListener
     }
 
     private Context createContext(Deployment deployment, Host host) {
-        return new UndertowContext(deployment, new UndertowHost(host, new UndertowEngine(host.getServer().getValue(), this.configuration.getUndertowService(), this.connector)));
+        return new UndertowContext(deployment, new UndertowHost(host, new UndertowEngine(serverName, host.getServer().getValue(), this.configuration.getUndertowService(), this.connector)));
     }
 
     private Context createContext(String contextPath, Host host) {
-        return new LocationContext(contextPath, new UndertowHost(host, new UndertowEngine(host.getServer().getValue(), this.configuration.getUndertowService(), this.connector)));
+        return new LocationContext(contextPath, new UndertowHost(host, new UndertowEngine(serverName, host.getServer().getValue(), this.configuration.getUndertowService(), this.connector)));
     }
 
     private synchronized void onStart(Context context) {
@@ -139,22 +141,34 @@ public class UndertowEventHandlerAdapterService implements UndertowEventListener
 
     @Override
     public void onDeploymentStart(Deployment deployment, Host host) {
-        this.onStart(this.createContext(deployment, host));
+        if (this.filter(host)) {
+            this.onStart(this.createContext(deployment, host));
+        }
     }
 
     @Override
     public void onDeploymentStop(Deployment deployment, Host host) {
-        this.onStop(this.createContext(deployment, host));
+        if (this.filter(host)) {
+            this.onStop(this.createContext(deployment, host));
+        }
     }
 
     @Override
     public void onDeploymentStart(String contextPath, Host host) {
-        this.onStart(this.createContext(contextPath, host));
+        if (this.filter(host)) {
+            this.onStart(this.createContext(contextPath, host));
+        }
     }
 
     @Override
     public void onDeploymentStop(String contextPath, Host host) {
-        this.onStop(this.createContext(contextPath, host));
+        if (this.filter(host)) {
+            this.onStop(this.createContext(contextPath, host));
+        }
+    }
+
+    public boolean filter(Host host) {
+        return host.getServer().getName().equals(serverName);
     }
 
     @Override
