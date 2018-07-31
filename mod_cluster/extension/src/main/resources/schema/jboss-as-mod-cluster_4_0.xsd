@@ -369,6 +369,13 @@
                         </xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
+                <xs:attribute name="module" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Module name from which to load the load metric class.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>

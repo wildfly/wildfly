@@ -86,7 +86,6 @@ class SSLResourceDefinition extends ChildResourceDefinition<ManagementResourceRe
                     .setRequired(false)
                     .setDefaultValue(defaultValue)
                     .setRestartAllServices()
-                    .setAlternatives()
             ).build();
         }
 

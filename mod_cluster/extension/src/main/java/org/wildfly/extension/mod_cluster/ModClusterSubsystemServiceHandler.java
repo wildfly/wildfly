@@ -39,6 +39,8 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.server.Services;
+import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.common.beans.property.BeanUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -46,8 +48,11 @@ import org.jboss.modcluster.load.LoadBalanceFactorProvider;
 import org.jboss.modcluster.load.impl.DynamicLoadBalanceFactorProvider;
 import org.jboss.modcluster.load.impl.SimpleLoadBalanceFactorProvider;
 import org.jboss.modcluster.load.metric.LoadMetric;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.clustering.service.ActiveServiceSupplier;
 
 /**
  * Resource service handler implementation that handles installation of mod_cluster services. Since mod_cluster requires certain
@@ -155,8 +160,15 @@ class ModClusterSubsystemServiceHandler implements ResourceServiceHandler {
                 loadMetricClass = (metric != null) ? metric.getLoadMetricClass() : null;
             } else {
                 String className = CustomLoadMetricResourceDefinition.Attribute.CLASS.resolveModelAttribute(context, node).asString();
+                String moduleName = CustomLoadMetricResourceDefinition.Attribute.MODULE.resolveModelAttribute(context, node).asString();
+
+                ServiceModuleLoader serviceModuleLoader = new ActiveServiceSupplier<ServiceModuleLoader>(context.getServiceRegistry(false), Services.JBOSS_SERVICE_MODULE_LOADER).get();
+
                 try {
-                    loadMetricClass = this.getClass().getClassLoader().loadClass(className).asSubclass(LoadMetric.class);
+                    Module module = serviceModuleLoader.loadModule(moduleName);
+                    loadMetricClass = module.getClassLoader().loadClass(className).asSubclass(LoadMetric.class);
+                } catch (ModuleLoadException e) {
+                    ROOT_LOGGER.errorLoadingModuleForCustomMetric(moduleName, e);
                 } catch (ClassNotFoundException e) {
                     ROOT_LOGGER.errorAddingMetrics(e);
                 }

@@ -22,15 +22,21 @@
 
 package org.wildfly.extension.mod_cluster;
 
+import java.util.function.UnaryOperator;
+
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ReloadRequiredResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.mod_cluster.LoadMetricResourceDefinition.SharedAttribute;
 
@@ -45,25 +51,38 @@ public class CustomLoadMetricResourceDefinition extends ChildResourceDefinition<
         return PathElement.pathElement("custom-load-metric", loadMetric);
     }
 
-    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
         CLASS("class", ModelType.STRING),
-        // TODO WFLY-10634 mod_cluster should allow to specify module to load custom metric from
-        //MODULE("module"),
+        MODULE("module", ModelType.STRING) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder
+                        .setDefaultValue(new ModelNode("org.wildfly.extension.mod_cluster"))
+                        .setRequired(false)
+                        .setValidator(new ModuleIdentifierValidatorBuilder().configure(builder).build())
+                        ;
+            }
+        },
         ;
 
         private final AttributeDefinition definition;
 
         Attribute(String name, ModelType type) {
-            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
+            this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, type)
                     .setAllowExpression(true)
                     .setRequired(true)
                     .setRestartAllServices()
-                    .build();
+            ).build();
         }
 
         @Override
         public AttributeDefinition getDefinition() {
             return this.definition;
+        }
+
+        @Override
+        public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+            return builder;
         }
     }
 
@@ -85,7 +104,14 @@ public class CustomLoadMetricResourceDefinition extends ChildResourceDefinition<
         return registration;
     }
 
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
-        // Nothing to transform
+    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
+        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
+
+        if (ModClusterModel.VERSION_6_0_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder()
+                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(Attribute.MODULE.getDefinition().getDefaultValue()), Attribute.MODULE.getDefinition())
+                    .addRejectCheck(new RejectAttributeChecker.SimpleAcceptAttributeChecker(Attribute.MODULE.getDefinition().getDefaultValue()), Attribute.MODULE.getDefinition())
+                    .end();
+        }
     }
 }
