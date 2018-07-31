@@ -25,6 +25,8 @@ package org.wildfly.extension.mod_cluster;
 
 import static org.jboss.dmr.ModelType.EXPRESSION;
 
+import java.util.function.UnaryOperator;
+
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ReloadRequiredResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
@@ -34,9 +36,12 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.AttributeConverter;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -53,25 +58,36 @@ public class DynamicLoadProviderResourceDefinition extends ChildResourceDefiniti
     public static final PathElement LEGACY_PATH = PathElement.pathElement("dynamic-load-provider", "configuration");
     public static final PathElement PATH = PathElement.pathElement("load-provider", "dynamic");
 
-    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
         DECAY("decay", ModelType.DOUBLE, new ModelNode((double) DynamicLoadBalanceFactorProvider.DEFAULT_DECAY_FACTOR)),
         HISTORY("history", ModelType.INT, new ModelNode(DynamicLoadBalanceFactorProvider.DEFAULT_HISTORY)),
+        INITIAL_LOAD("initial-load", ModelType.INT, new ModelNode(0)) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder simpleAttributeDefinitionBuilder) {
+                return simpleAttributeDefinitionBuilder.setValidator(new IntRangeValidator(-1, 100, true, true));
+            }
+        },
         ;
 
         private final AttributeDefinition definition;
 
         Attribute(String name, ModelType type, ModelNode defaultValue) {
-            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
+            this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, type)
                     .setAllowExpression(true)
                     .setRequired(false)
                     .setDefaultValue(defaultValue)
                     .setRestartAllServices()
-                    .build();
+            ).build();
         }
 
         @Override
         public AttributeDefinition getDefinition() {
             return this.definition;
+        }
+
+        @Override
+        public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+            return builder;
         }
     }
 
@@ -109,6 +125,14 @@ public class DynamicLoadProviderResourceDefinition extends ChildResourceDefiniti
                             }
                         }
                     }, Attribute.DECAY.getDefinition())
+                    .end();
+        }
+
+        if (ModClusterModel.VERSION_7_0_0.requiresTransformation(version)) {
+            ModelNode legacyInitialLoad = new ModelNode(-1);
+            builder.getAttributeBuilder()
+                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(legacyInitialLoad), Attribute.INITIAL_LOAD.getDefinition())
+                    .addRejectCheck(new RejectAttributeChecker.SimpleAcceptAttributeChecker(legacyInitialLoad), Attribute.INITIAL_LOAD.getDefinition())
                     .end();
         }
 

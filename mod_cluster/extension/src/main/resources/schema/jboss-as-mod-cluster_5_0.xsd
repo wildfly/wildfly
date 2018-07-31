@@ -318,6 +318,14 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="initial-load" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    Initial load within the range [0..100] with which to prepopulate historical values. Used to gradually drive
+                    load to the node. Value of 0 prepopulates with full load and value of -1 disables this behavior.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="common-load-metric" abstract="true">
