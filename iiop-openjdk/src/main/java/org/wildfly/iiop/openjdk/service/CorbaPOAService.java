@@ -89,7 +89,7 @@ public class CorbaPOAService implements Service<POA> {
 
     private final ThreadPolicyValue threadPolicyValue;
 
-    private final boolean sslRequired;
+    private final boolean sslOnly;
 
     /**
      * <p>
@@ -101,8 +101,8 @@ public class CorbaPOAService implements Service<POA> {
      * @param bindingName the JNDI context name where the created {@code POA} will be bound. If null, the JNDI binding
      *                    won't be performed.
      */
-    public CorbaPOAService(String poaName, String bindingName, boolean sslRequired) {
-        this(poaName, bindingName, sslRequired, null, null, null, null, null, null, null);
+    public CorbaPOAService(String poaName, String bindingName, boolean sslOnly) {
+        this(poaName, bindingName, sslOnly, null, null, null, null, null, null, null);
     }
 
     /**
@@ -128,13 +128,13 @@ public class CorbaPOAService implements Service<POA> {
      * @param threadPolicyValue             the {@code ThreadPolicyValue} that will be associated with the created {@code POA}. Can
      *                                      be null.
      */
-    public CorbaPOAService(String poaName, String bindingName, boolean sslRequired, IdAssignmentPolicyValue idAssignmentPolicyValue,
+    public CorbaPOAService(String poaName, String bindingName, boolean sslOnly, IdAssignmentPolicyValue idAssignmentPolicyValue,
                            IdUniquenessPolicyValue idUniquenessPolicyValue, ImplicitActivationPolicyValue implicitActivationPolicyValue,
                            LifespanPolicyValue lifespanPolicyValue, RequestProcessingPolicyValue requestProcessingPolicyValue,
                            ServantRetentionPolicyValue servantRetentionPolicyValue, ThreadPolicyValue threadPolicyValue) {
         this.poaName = poaName;
         this.bindingName = bindingName;
-        this.sslRequired = sslRequired;
+        this.sslOnly = sslOnly;
         this.idAssignmentPolicyValue = idAssignmentPolicyValue;
         this.idUniquenessPolicyValue = idUniquenessPolicyValue;
         this.implicitActivationPolicyValue = implicitActivationPolicyValue;
@@ -222,7 +222,7 @@ public class CorbaPOAService implements Service<POA> {
      */
     private Policy[] createPolicies(POA poa) {
         List<Policy> policies = new ArrayList<Policy>();
-        if(this.sslRequired)
+        if(this.sslOnly)
             policies.add(ZeroPortPolicy.getPolicy());
         if (this.idAssignmentPolicyValue != null)
             policies.add(poa.create_id_assignment_policy(this.idAssignmentPolicyValue));
