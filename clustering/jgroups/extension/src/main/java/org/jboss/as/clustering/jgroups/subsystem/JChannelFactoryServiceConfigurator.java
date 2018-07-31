@@ -31,6 +31,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
+import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
 import org.jboss.as.clustering.jgroups.JChannelFactory;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
@@ -38,6 +39,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.network.SocketBindingManager;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.dmr.ModelNode;
@@ -71,6 +73,7 @@ public class JChannelFactoryServiceConfigurator extends CapabilityServiceNamePro
     private volatile SupplierDependency<TransportConfiguration<? extends TP>> transport = null;
     private volatile List<SupplierDependency<ProtocolConfiguration<? extends Protocol>>> protocols = null;
     private volatile SupplierDependency<RelayConfiguration> relay = null;
+    private volatile SupplierDependency<SocketBindingManager> socketBindingManager;
     private volatile Supplier<ServerEnvironment> environment;
 
     public JChannelFactoryServiceConfigurator(PathAddress address) {
@@ -81,7 +84,7 @@ public class JChannelFactoryServiceConfigurator extends CapabilityServiceNamePro
     @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
         ServiceBuilder<?> builder = target.addService(this.getServiceName());
-        Consumer<ChannelFactory> factory = new CompositeDependency(this.transport, this.relay).register(builder).provides(this.getServiceName());
+        Consumer<ChannelFactory> factory = new CompositeDependency(this.transport, this.relay, this.socketBindingManager).register(builder).provides(this.getServiceName());
         this.environment = builder.requires(ServerEnvironmentService.SERVICE_NAME);
         for (Dependency dependency : this.protocols) {
             dependency.register(builder);
@@ -107,6 +110,8 @@ public class JChannelFactoryServiceConfigurator extends CapabilityServiceNamePro
             this.protocols.add(new ServiceSupplierDependency<>(new ProtocolServiceNameProvider(this.address, entry.getPathElement())));
         }
         this.relay = resource.hasChild(RelayResourceDefinition.PATH) ? new ServiceSupplierDependency<>(new SingletonProtocolServiceNameProvider(this.address, RelayResourceDefinition.PATH)) : null;
+
+        this.socketBindingManager = new ServiceSupplierDependency<>(CommonRequirement.SOCKET_BINDING_MANAGER.getServiceName(context));
 
         return this;
     }
@@ -144,5 +149,10 @@ public class JChannelFactoryServiceConfigurator extends CapabilityServiceNamePro
     @Override
     public boolean isStatisticsEnabled() {
         return this.statisticsEnabled;
+    }
+
+    @Override
+    public SocketBindingManager getSocketBindingManager() {
+        return this.socketBindingManager.get();
     }
 }

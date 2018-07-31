@@ -29,6 +29,9 @@ import static org.jboss.as.clustering.jgroups.subsystem.TransportResourceDefinit
 import static org.jboss.as.clustering.jgroups.subsystem.TransportResourceDefinition.Attribute.SOCKET_BINDING;
 
 import java.net.InetSocketAddress;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.jgroups.ClassLoaderThreadFactory;
@@ -114,6 +117,19 @@ public class TransportConfigurationServiceConfigurator<T extends TP> extends Abs
     }
 
     @Override
+    public Map<String, SocketBinding> getSocketBindings() {
+        Map<String, SocketBinding> bindings = new HashMap<>();
+        SocketBinding binding = this.getSocketBinding();
+        for (String serviceName : Arrays.asList("jgroups.udp.mcast_sock", "jgroups.udp.sock", "jgroups.tcp.server", "jgroups.nio.server", "jgroups.tunnel.ucast_sock")) {
+            bindings.put(serviceName, binding);
+        }
+        if (this.diagnosticsSocketBinding != null) {
+            bindings.put("jgroups.tp.diag.mcast_sock", this.diagnosticsSocketBinding.get());
+        }
+        return bindings;
+    }
+
+    @Override
     public void accept(T protocol) {
         InetSocketAddress socketAddress = this.getSocketBinding().getSocketAddress();
         protocol.setBindAddress(socketAddress.getAddress());
@@ -140,12 +156,11 @@ public class TransportConfigurationServiceConfigurator<T extends TP> extends Abs
     }
 
     @Override
-    public SocketBinding getSocketBinding() {
-        return this.socketBinding.get();
-    }
-
-    @Override
     public Topology getTopology() {
         return this.topology;
+    }
+
+    SocketBinding getSocketBinding() {
+        return this.socketBinding.get();
     }
 }

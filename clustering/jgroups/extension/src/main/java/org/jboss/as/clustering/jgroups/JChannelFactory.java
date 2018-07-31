@@ -25,8 +25,11 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.jboss.as.network.SocketBinding;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
 import org.jgroups.blocks.RequestCorrelator;
@@ -92,6 +95,7 @@ public class JChannelFactory implements ChannelFactory {
             }
         });
 
+        Map<String, SocketBinding> bindings = new HashMap<>();
         // Transport always resides at the bottom of the stack
         List<ProtocolConfiguration<? extends Protocol>> transports = Collections.singletonList(this.configuration.getTransport());
         // Add RELAY2 to the top of the stack, if defined
@@ -100,10 +104,14 @@ public class JChannelFactory implements ChannelFactory {
         for (List<ProtocolConfiguration<? extends Protocol>> protocolConfigs : Arrays.asList(transports, this.configuration.getProtocols(), relays)) {
             for (ProtocolConfiguration<? extends Protocol> protocolConfig : protocolConfigs) {
                 protocols.add(protocolConfig.createProtocol(this.configuration));
+                bindings.putAll(protocolConfig.getSocketBindings());
             }
         }
         // Add implicit FORK to the top of the stack
         protocols.add(fork);
+
+        // Override the SocketFactory of the transport
+        protocols.get(0).setSocketFactory(new ManagedSocketFactory(this.configuration.getSocketBindingManager(), bindings));
 
         JChannel channel = new JChannel(protocols);
 

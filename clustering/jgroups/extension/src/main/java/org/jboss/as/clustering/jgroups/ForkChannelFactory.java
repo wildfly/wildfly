@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
+import org.jboss.as.network.SocketBindingManager;
 import org.jgroups.JChannel;
 import org.jgroups.fork.ForkChannel;
 import org.jgroups.protocols.TP;
@@ -118,6 +119,11 @@ public class ForkChannelFactory implements ChannelFactory {
         @Override
         public Optional<RelayConfiguration> getRelay() {
             return this.parentStack.getRelay();
+        }
+
+        @Override
+        public SocketBindingManager getSocketBindingManager() {
+            return this.parentStack.getSocketBindingManager();
         }
     }
 }
