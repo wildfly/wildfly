@@ -22,6 +22,7 @@
 package org.jboss.as.weld.discovery;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.Set;
 
@@ -37,6 +38,7 @@ import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.weld.resources.spi.ClassFileInfo;
+import org.jboss.weld.resources.spi.ClassFileInfo.NestingType;
 import org.jboss.weld.util.cache.ComputingCache;
 
 /**
@@ -128,6 +130,33 @@ public class WeldClassFileInfo implements ClassFileInfo {
     @Override
     public boolean isTopLevelClass() {
         return classInfo.nestingType() == ClassInfo.NestingType.TOP_LEVEL;
+    }
+
+    @Override
+    public ClassFileInfo.NestingType getNestingType() {
+        NestingType result = null;
+        switch (classInfo.nestingType()) {
+            case ANONYMOUS:
+                result = NestingType.NESTED_ANONYMOUS;
+                break;
+            case TOP_LEVEL:
+                result = NestingType.TOP_LEVEL;
+                break;
+            case LOCAL:
+                result = NestingType.NESTED_LOCAL;
+                break;
+            case INNER:
+                if (Modifier.isStatic(classInfo.flags())) {
+                    result = NestingType.NESTED_STATIC;
+                } else {
+                    result = NestingType.NESTED_INNER;
+                }
+                break;
+            default:
+                // should never happer
+                break;
+        }
+        return result;
     }
 
     @Override
