@@ -22,14 +22,20 @@
 
 package org.wildfly.extension.mod_cluster;
 
+
+import static org.jboss.dmr.ModelType.EXPRESSION;
+
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ReloadRequiredResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -46,7 +52,7 @@ public class DynamicLoadProviderResourceDefinition extends ChildResourceDefiniti
     public static final PathElement PATH = PathElement.pathElement("dynamic-load-provider", "configuration");
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        DECAY("decay", ModelType.INT, new ModelNode(DynamicLoadBalanceFactorProvider.DEFAULT_DECAY_FACTOR)),
+        DECAY("decay", ModelType.DOUBLE, new ModelNode((double) DynamicLoadBalanceFactorProvider.DEFAULT_DECAY_FACTOR)),
         HISTORY("history", ModelType.INT, new ModelNode(DynamicLoadBalanceFactorProvider.DEFAULT_HISTORY)),
         ;
 
@@ -87,11 +93,24 @@ public class DynamicLoadProviderResourceDefinition extends ChildResourceDefiniti
         return registration;
     }
 
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
-        ResourceTransformationDescriptionBuilder loadProviderBuilder = builder.addChildResource(PATH);
+    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
+        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
 
-        LoadMetricResourceDefinition.buildTransformation(version, loadProviderBuilder);
-        CustomLoadMetricResourceDefinition.buildTransformation(version, loadProviderBuilder);
+        if (ModClusterModel.VERSION_6_0_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder()
+                    .setValueConverter(new AttributeConverter.DefaultAttributeConverter() {
+                        @Override
+                        protected void convertAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+                            if (attributeValue.isDefined() && attributeValue.getType() != EXPRESSION) {
+                                attributeValue.set((int) Math.ceil(attributeValue.asDouble()));
+                            }
+                        }
+                    }, Attribute.DECAY.getDefinition())
+                    .end();
+        }
+
+        LoadMetricResourceDefinition.buildTransformation(version, builder);
+        CustomLoadMetricResourceDefinition.buildTransformation(version, builder);
     }
 
 }
