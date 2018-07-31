@@ -131,12 +131,11 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-antrun-plugin</artifactId>
-                        <version>1.7</version>
                         <executions>
                             <execution>
                                 <phase>prepare-package</phase>
                                 <configuration>
-                                    <tasks>
+                                    <target>
                                         <filelist id="licenses.xml.list" dir="${basedir}/target/${server.output.dir.prefix}-${server.output.dir.version}/docs/licenses"
                                                   files="full-feature-pack-licenses.xml,servlet-feature-pack-licenses.xml,core-feature-pack-licenses.xml"/>
                                         <!--
@@ -154,7 +153,7 @@
                                         <echo file="${basedir}/target/${server.output.dir.prefix}-${server.output.dir.version}/docs/licenses/licenses.xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;&#xA;&lt;list&gt;&#xA;</echo>
                                         <echo file="${basedir}/target/${server.output.dir.prefix}-${server.output.dir.version}/docs/licenses/licenses.xml" append="true">${license-files-list-items}&#xA;</echo>
                                         <echo file="${basedir}/target/${server.output.dir.prefix}-${server.output.dir.version}/docs/licenses/licenses.xml" append="true">&lt;/list&gt;</echo>
-                                    </tasks>
+                                    </target>
                                 </configuration>
                                 <goals>
                                     <goal>run</goal>
@@ -165,7 +164,6 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>xml-maven-plugin</artifactId>
-                        <version>1.0.1</version>
                         <inherited>false</inherited>
                         <executions>
                             <execution>

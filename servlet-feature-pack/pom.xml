@@ -564,7 +564,6 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>xml-maven-plugin</artifactId>
-                        <version>1.0.1</version>
                         <inherited>false</inherited>
                         <executions>
                             <execution>
