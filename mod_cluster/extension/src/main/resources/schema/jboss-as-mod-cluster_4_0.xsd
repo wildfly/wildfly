@@ -108,13 +108,6 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="connector" type="xs:string" use="required">
-            <xs:annotation>
-                <xs:documentation>
-                    The name of Undertow listener that will be registered with the reverse proxy.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
         <xs:attribute name="excluded-contexts" type="xs:string">
             <xs:annotation>
                 <xs:documentation>
@@ -133,6 +126,13 @@
             <xs:annotation>
                 <xs:documentation>
                     Time to wait before flushing packets on the reverse proxy.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="listener" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The name of Undertow listener that will be registered with the reverse proxy.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>

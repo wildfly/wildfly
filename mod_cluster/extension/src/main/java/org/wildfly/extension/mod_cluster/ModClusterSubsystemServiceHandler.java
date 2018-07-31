@@ -23,7 +23,7 @@
 package org.wildfly.extension.mod_cluster;
 
 import static org.wildfly.extension.mod_cluster.ModClusterLogger.ROOT_LOGGER;
-import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefinition.Attribute.CONNECTOR;
+import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefinition.Attribute.LISTENER;
 import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefinition.Attribute.STATUS_INTERVAL;
 
 import java.time.Duration;
@@ -83,14 +83,14 @@ class ModClusterSubsystemServiceHandler implements ResourceServiceHandler {
                 LoadBalanceFactorProvider loadProvider = this.getLoadProvider(proxyName, metrics, context, proxyModel);
                 enabledMetrics.addAll(metrics);
 
-                String connector = CONNECTOR.resolveModelAttribute(context, proxyModel).asString();
+                String listenerName = LISTENER.resolveModelAttribute(context, proxyModel).asString();
                 int statusInterval = STATUS_INTERVAL.resolveModelAttribute(context, proxyModel).asInt();
 
                 new ContainerEventHandlerServiceConfigurator(proxyAddress, loadProvider).build(target).install();
 
                 // Install services for web container integration
                 for (ContainerEventHandlerAdapterServiceConfiguratorProvider provider : ServiceLoader.load(ContainerEventHandlerAdapterServiceConfiguratorProvider.class, ContainerEventHandlerAdapterServiceConfiguratorProvider.class.getClassLoader())) {
-                    provider.getServiceConfigurator(proxyName, connector, Duration.ofSeconds(statusInterval)).configure(context).build(target).setInitialMode(Mode.PASSIVE).install();
+                    provider.getServiceConfigurator(proxyName, listenerName, Duration.ofSeconds(statusInterval)).configure(context).build(target).setInitialMode(Mode.PASSIVE).install();
                 }
             }
 

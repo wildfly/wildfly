@@ -124,15 +124,6 @@ public class ProxyConfigurationResourceDefinition extends ChildResourceDefinitio
         },
         AUTO_ENABLE_CONTEXTS("auto-enable-contexts", ModelType.BOOLEAN, new ModelNode(true)),
         BALANCER("balancer", ModelType.STRING, null),
-        CONNECTOR("connector", ModelType.STRING, null) {
-            @Override
-            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder
-                        .setCapabilityReference(UNDERTOW_LISTENER_CAPABILITY_NAME)
-                        .setRequired(true)
-                        ;
-            }
-        },
         EXCLUDED_CONTEXTS("excluded-contexts", ModelType.STRING, null),
         FLUSH_PACKETS("flush-packets", ModelType.BOOLEAN, new ModelNode(false)),
         FLUSH_WAIT("flush-wait", ModelType.INT, new ModelNode(-1)) {
@@ -142,6 +133,15 @@ public class ProxyConfigurationResourceDefinition extends ChildResourceDefinitio
                         .setMeasurementUnit(MeasurementUnit.SECONDS)
                         .setValidator(new IntRangeValidator(-1, true, true))
                         .setCorrector(ZeroToNegativeOneParameterCorrector.INSTANCE)
+                        ;
+            }
+        },
+        LISTENER("listener", ModelType.STRING, null) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder
+                        .setCapabilityReference(UNDERTOW_LISTENER_CAPABILITY_NAME)
+                        .setRequired(true)
                         ;
             }
         },
@@ -333,6 +333,23 @@ public class ProxyConfigurationResourceDefinition extends ChildResourceDefinitio
         }
     }
 
+    enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
+        CONNECTOR("connector", ModelType.STRING, ModClusterModel.VERSION_6_0_0),
+        SIMPLE_LOAD_PROVIDER("simple-load-provider", ModelType.INT, ModClusterModel.VERSION_6_0_0),
+        ;
+
+        private final AttributeDefinition definition;
+
+        DeprecatedAttribute(String name, ModelType type, ModClusterModel deprecation) {
+            this.definition = new SimpleAttributeDefinitionBuilder(name, type, true).setDeprecated(deprecation.getVersion()).build();
+        }
+
+        @Override
+        public AttributeDefinition getDefinition() {
+            return this.definition;
+        }
+    }
+
     public ProxyConfigurationResourceDefinition() {
         super(WILDCARD_PATH, ModClusterExtension.SUBSYSTEM_RESOLVER.createChildResolver(WILDCARD_PATH));
     }
@@ -345,7 +362,9 @@ public class ProxyConfigurationResourceDefinition extends ChildResourceDefinitio
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(EnumSet.complementOf(EnumSet.of(Attribute.SSL_CONTEXT)))
                 .addExtraParameters(Attribute.SSL_CONTEXT)
-                .addCapabilities(Capability.class);
+                .addAlias(DeprecatedAttribute.CONNECTOR, Attribute.LISTENER)
+                .addCapabilities(Capability.class)
+                ;
         registration.registerReadWriteAttribute(Attribute.SSL_CONTEXT.getDefinition(), null, new ReloadRequiredWriteAttributeHandler() {
             @Override
             protected void validateUpdatedModel(OperationContext context, Resource model) {
@@ -407,6 +426,12 @@ public class ProxyConfigurationResourceDefinition extends ChildResourceDefinitio
     @SuppressWarnings("deprecation")
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = ModClusterModel.VERSION_6_0_0.requiresTransformation(version) ? parent.addChildRedirection(WILDCARD_PATH, new PathAddressTransformer.BasicPathAddressTransformer(LEGACY_PATH), new ProxyConfigurationDynamicDiscardPolicy()) : parent.addChildResource(WILDCARD_PATH);
+
+        if (ModClusterModel.VERSION_6_0_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder()
+                    .addRename(Attribute.LISTENER.getDefinition(), DeprecatedAttribute.CONNECTOR.getName())
+                    .end();
+        }
 
         if (ModClusterModel.VERSION_5_0_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()

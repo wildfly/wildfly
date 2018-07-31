@@ -197,9 +197,11 @@ final class ModClusterSubsystemXMLReader implements XMLElementReader<List<ModelN
                     }
                 }
                 case CONNECTOR: {
-                    if (schema.since(ModClusterSchema.MODCLUSTER_1_1)) {
-                        readAttribute(reader, i, operation, ProxyConfigurationResourceDefinition.Attribute.CONNECTOR);
+                    if (schema.since(ModClusterSchema.MODCLUSTER_1_1) && !schema.since(ModClusterSchema.MODCLUSTER_4_0)) {
+                        readAttribute(reader, i, operation, ProxyConfigurationResourceDefinition.Attribute.LISTENER);
                         break;
+                    } else {
+                        throw unexpectedAttribute(reader, i);
                     }
                 }
                 // 1.2
@@ -236,6 +238,12 @@ final class ModClusterSubsystemXMLReader implements XMLElementReader<List<ModelN
                         break;
                     }
                 }
+                case LISTENER: {
+                    if (schema.since(ModClusterSchema.MODCLUSTER_4_0)) {
+                        readAttribute(reader, i, operation, ProxyConfigurationResourceDefinition.Attribute.LISTENER);
+                        break;
+                    }
+                }
                 default: {
                     throw unexpectedAttribute(reader, i);
                 }
@@ -244,7 +252,7 @@ final class ModClusterSubsystemXMLReader implements XMLElementReader<List<ModelN
 
         if (schema == ModClusterSchema.MODCLUSTER_1_0) {
             // This is a required attribute - so set it to something reasonable
-            setAttribute(reader, "ajp", operation, ProxyConfigurationResourceDefinition.Attribute.CONNECTOR);
+            setAttribute(reader, "ajp", operation, ProxyConfigurationResourceDefinition.Attribute.LISTENER);
         }
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {

@@ -27,7 +27,7 @@
            advertise-socket="modcluster"
            auto-enable-contexts="${modcluster.auto-enable-contexts:true}"
            balancer="${modcluster.balancer:mybalancer}"
-           connector="ajp"
+           listener="ajp"
            excluded-contexts="${modcluster.excluded-contexts:contextA,contextB,contextC}"
            flush-packets="${modcluster.flush-packets:true}"
            flush-wait="${modcluster.flush-wait:10}"
@@ -79,7 +79,7 @@
         </dynamic-load-provider>
     </proxy>
     <proxy name="other"
-           connector="default">
+           listener="default">
         <simple-load-provider factor="${modcluster.simple-load-provider.factor:15}"/>
         <ssl ca-certificate-file="${modcluster.ca-certificate-file:/home/rhusar/client-keystore.jks}"
              ca-revocation-url="${modcluster.ca-revocation-url:/home/rhusar/revocations}"
