@@ -22,49 +22,46 @@
 
 package org.wildfly.extension.mod_cluster;
 
-
-import static org.jboss.dmr.ModelType.EXPRESSION;
-
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
+import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.ReloadRequiredResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.validation.IntRangeValidator;
+import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
-import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.modcluster.load.impl.DynamicLoadBalanceFactorProvider;
 
 /**
- * Definition for resource at address /subsystem=modcluster/proxy=X/load-provider=dynamic
- * and its legacy alias /subsystem=modcluster/proxy=X/dynamic-load-provider=configuration
+ * Definition for resource at address /subsystem=modcluster/proxy=X/load-provider=simple
  *
  * @author Radoslav Husar
  */
-public class DynamicLoadProviderResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
+public class SimpleLoadProviderResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
 
-    public static final PathElement LEGACY_PATH = PathElement.pathElement("dynamic-load-provider", "configuration");
-    public static final PathElement PATH = PathElement.pathElement("load-provider", "dynamic");
+    public static final PathElement PATH = PathElement.pathElement("load-provider", "simple");
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        DECAY("decay", ModelType.DOUBLE, new ModelNode((double) DynamicLoadBalanceFactorProvider.DEFAULT_DECAY_FACTOR)),
-        HISTORY("history", ModelType.INT, new ModelNode(DynamicLoadBalanceFactorProvider.DEFAULT_HISTORY)),
+        FACTOR("factor", ModelType.INT, new ModelNode(1), new IntRangeValidator(0, 100, true, true)),
         ;
 
         private final AttributeDefinition definition;
 
-        Attribute(String name, ModelType type, ModelNode defaultValue) {
+        Attribute(String name, ModelType type, ModelNode defaultValue, ParameterValidator validator) {
             this.definition = new SimpleAttributeDefinitionBuilder(name, type)
                     .setAllowExpression(true)
-                    .setRequired(false)
+                    .setRequired(defaultValue == null)
                     .setDefaultValue(defaultValue)
+                    .setValidator(validator)
                     .setRestartAllServices()
                     .build();
         }
@@ -75,21 +72,17 @@ public class DynamicLoadProviderResourceDefinition extends ChildResourceDefiniti
         }
     }
 
-    DynamicLoadProviderResourceDefinition() {
+    SimpleLoadProviderResourceDefinition() {
         super(PATH, ModClusterExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH));
     }
 
     @Override
     public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
         ManagementResourceRegistration registration = parent.registerSubModel(this);
-        parent.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
                 ;
-
-        new LoadMetricResourceDefinition().register(registration);
-        new CustomLoadMetricResourceDefinition().register(registration);
 
         new ReloadRequiredResourceRegistration(descriptor).register(registration);
 
@@ -97,23 +90,19 @@ public class DynamicLoadProviderResourceDefinition extends ChildResourceDefiniti
     }
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = ModClusterModel.VERSION_6_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH) : parent.addChildResource(PATH);
+        ResourceTransformationDescriptionBuilder builder = ModClusterModel.VERSION_6_0_0.requiresTransformation(version) ? parent.addChildResource(PATH) : parent.addChildResource(PATH);
 
         if (ModClusterModel.VERSION_6_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder()
-                    .setValueConverter(new AttributeConverter.DefaultAttributeConverter() {
-                        @Override
-                        protected void convertAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
-                            if (attributeValue.isDefined() && attributeValue.getType() != EXPRESSION) {
-                                attributeValue.set((int) Math.ceil(attributeValue.asDouble()));
-                            }
-                        }
-                    }, Attribute.DECAY.getDefinition())
-                    .end();
+            builder.addRawOperationTransformationOverride(ModelDescriptionConstants.ADD, new org.jboss.as.controller.transform.OperationTransformer() {
+                @Override
+                public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) {
+                    PathAddress parentAddress = address.getParent();
+                    ModelNode value = operation.get(Attribute.FACTOR.getName());
+                    ModelNode transformedOperation = Operations.createWriteAttributeOperation(parentAddress, ProxyConfigurationResourceDefinition.DeprecatedAttribute.SIMPLE_LOAD_PROVIDER, value);
+                    return new TransformedOperation(transformedOperation, OperationResultTransformer.ORIGINAL_RESULT);
+                }
+            });
         }
 
-        LoadMetricResourceDefinition.buildTransformation(version, builder);
-        CustomLoadMetricResourceDefinition.buildTransformation(version, builder);
     }
-
 }

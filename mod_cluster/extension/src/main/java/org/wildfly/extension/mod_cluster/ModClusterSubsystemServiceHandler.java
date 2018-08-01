@@ -108,13 +108,13 @@ class ModClusterSubsystemServiceHandler implements ResourceServiceHandler {
     private LoadBalanceFactorProvider getLoadProvider(String proxyName, final Set<LoadMetric> metrics, final OperationContext context, ModelNode model) throws OperationFailedException {
         LoadBalanceFactorProvider load = null;
 
-        if (model.hasDefined(ProxyConfigurationResourceDefinition.Attribute.SIMPLE_LOAD_PROVIDER.getName())) {
-            int value = ProxyConfigurationResourceDefinition.Attribute.SIMPLE_LOAD_PROVIDER.resolveModelAttribute(context, model).asInt(1);
+        if (model.get(SimpleLoadProviderResourceDefinition.PATH.getKeyValuePair()).isDefined()) {
+            ModelNode simpleProviderModel = model.get(SimpleLoadProviderResourceDefinition.PATH.getKeyValuePair());
+            int value = SimpleLoadProviderResourceDefinition.Attribute.FACTOR.resolveModelAttribute(context, simpleProviderModel).asInt();
             SimpleLoadBalanceFactorProvider simpleLoadProvider = new SimpleLoadBalanceFactorProvider();
             simpleLoadProvider.setLoadBalanceFactor(value);
             load = simpleLoadProvider;
         }
-
         if (model.get(DynamicLoadProviderResourceDefinition.PATH.getKeyValuePair()).isDefined()) {
             ModelNode node = model.get(DynamicLoadProviderResourceDefinition.PATH.getKeyValuePair());
             int decayFactor = DynamicLoadProviderResourceDefinition.Attribute.DECAY.resolveModelAttribute(context, node).asInt();

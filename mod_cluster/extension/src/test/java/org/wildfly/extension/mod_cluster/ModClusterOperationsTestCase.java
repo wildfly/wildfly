@@ -30,6 +30,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.VALUE;
 
 import java.io.IOException;
 
@@ -53,6 +55,7 @@ import org.junit.Test;
 @SuppressWarnings("SameParameterValue")
 public class ModClusterOperationsTestCase extends AbstractSubsystemTest {
 
+    private final String PROXY_NAME = "default";
 
     public ModClusterOperationsTestCase() {
         super(ModClusterExtension.SUBSYSTEM_NAME, new ModClusterExtension());
@@ -129,7 +132,6 @@ public class ModClusterOperationsTestCase extends AbstractSubsystemTest {
         Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(), FAILED, result.get(OUTCOME).asString());
     }
 
-
     @Test
     public void testLegacyConnectorOperations() throws Exception {
         KernelServices services = this.buildKernelServices();
@@ -146,6 +148,39 @@ public class ModClusterOperationsTestCase extends AbstractSubsystemTest {
         Assert.assertEquals(testListenerName, result.get(RESULT).asString());
     }
 
+    @Test
+    public void testLegacyLoadProviderOperations() throws Exception {
+        KernelServices services = this.buildKernelServices();
+
+        ModelNode op = Util.createRemoveOperation(getLegacyModClusterConfigDynamicLoadProviderAddress());
+        ModelNode result = services.executeOperation(op);
+        Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(), SUCCESS, result.get(OUTCOME).asString());
+
+        op = Util.createAddOperation(getSimpleLoadProviderAddress(PROXY_NAME));
+        result = services.executeOperation(op);
+        Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(), SUCCESS, result.get(OUTCOME).asString());
+
+        // Write on legacy path
+        int testFactor = 66;
+        op = Util.createOperation(WRITE_ATTRIBUTE_OPERATION, getProxyAddress(PROXY_NAME));
+        op.get(NAME).set(ProxyConfigurationResourceDefinition.DeprecatedAttribute.SIMPLE_LOAD_PROVIDER.getName());
+        op.get(VALUE).set(testFactor);
+        result = services.executeOperation(op);
+        Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(), SUCCESS, result.get(OUTCOME).asString());
+
+        // Check written value on current model path
+        op = Operations.createReadAttributeOperation(getSimpleLoadProviderAddress(PROXY_NAME), SimpleLoadProviderResourceDefinition.Attribute.FACTOR);
+        result = services.executeOperation(op);
+        Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(), SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals(testFactor, result.get(RESULT).asInt());
+
+        // Check written value on legacy path
+        op = Operations.createReadAttributeOperation(getProxyAddress(PROXY_NAME), ProxyConfigurationResourceDefinition.DeprecatedAttribute.SIMPLE_LOAD_PROVIDER);
+        result = services.executeOperation(op);
+        Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(), SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals(testFactor, result.get(RESULT).asInt());
+    }
+
     // Addresses
 
     private static PathAddress getSubsystemAddress() {
@@ -154,15 +189,23 @@ public class ModClusterOperationsTestCase extends AbstractSubsystemTest {
 
 
     private static PathAddress getProxyAddress(String proxyName) {
-        return PathAddress.pathAddress(ModClusterSubsystemResourceDefinition.PATH).append(ProxyConfigurationResourceDefinition.pathElement(proxyName));
+        return getSubsystemAddress().append(ProxyConfigurationResourceDefinition.pathElement(proxyName));
+    }
+
+    private static PathAddress getSimpleLoadProviderAddress(String proxyName) {
+        return getProxyAddress(proxyName).append(SimpleLoadProviderResourceDefinition.PATH);
     }
 
     private static PathAddress getLegacyModClusterConfigAddress() {
         return getSubsystemAddress().append(ProxyConfigurationResourceDefinition.LEGACY_PATH);
     }
 
+    private static PathAddress getLegacyModClusterConfigDynamicLoadProviderAddress() {
+        return getLegacyModClusterConfigAddress().append(DynamicLoadProviderResourceDefinition.LEGACY_PATH);
+    }
+
     private static PathAddress getLegacyModClusterConfigLoadMetricAddress(String metric) {
-        return getSubsystemAddress().append(ProxyConfigurationResourceDefinition.LEGACY_PATH).append(DynamicLoadProviderResourceDefinition.PATH).append(LoadMetricResourceDefinition.pathElement(metric));
+        return getLegacyModClusterConfigDynamicLoadProviderAddress().append(LoadMetricResourceDefinition.pathElement(metric));
     }
 
 

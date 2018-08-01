@@ -67,7 +67,7 @@ public class LegacyMetricOperationsRegistration implements Registration<Manageme
                 operationDeprecated(context, operation);
                 PathAddress address = translateProxyPath(context);
                 String type = operation.require(LoadMetricResourceDefinition.Attribute.TYPE.getName()).asString();
-                PathAddress metricPath = PathAddress.pathAddress(DynamicLoadProviderResourceDefinition.PATH, LoadMetricResourceDefinition.pathElement(type));
+                PathAddress metricPath = PathAddress.pathAddress(DynamicLoadProviderResourceDefinition.LEGACY_PATH, LoadMetricResourceDefinition.pathElement(type));
                 PathAddress metricPathAddress = address.append(metricPath);
                 ModelNode metricOperation = Util.createAddOperation(metricPathAddress);
                 OperationEntry addOperationEntry = context.getResourceRegistration().getOperationEntry(PathAddress.pathAddress(metricPath), ModelDescriptionConstants.ADD);
@@ -96,7 +96,7 @@ public class LegacyMetricOperationsRegistration implements Registration<Manageme
                 operationDeprecated(context, operation);
                 PathAddress address = translateProxyPath(context);
                 String type = operation.require(LoadMetricResourceDefinition.Attribute.TYPE.getName()).asString();
-                PathAddress metricPath = PathAddress.pathAddress(DynamicLoadProviderResourceDefinition.PATH, LoadMetricResourceDefinition.pathElement(type));
+                PathAddress metricPath = PathAddress.pathAddress(DynamicLoadProviderResourceDefinition.LEGACY_PATH, LoadMetricResourceDefinition.pathElement(type));
                 PathAddress metricPathAddress = address.append(metricPath);
                 ModelNode metricOperation = Util.createRemoveOperation(metricPathAddress);
                 OperationEntry removeOperationEntry = context.getResourceRegistration().getOperationEntry(PathAddress.pathAddress(metricPath), ModelDescriptionConstants.REMOVE);
@@ -122,7 +122,7 @@ public class LegacyMetricOperationsRegistration implements Registration<Manageme
                 operationDeprecated(context, operation);
                 PathAddress address = translateProxyPath(context);
                 String type = operation.require(CustomLoadMetricResourceDefinition.Attribute.CLASS.getName()).asString();
-                PathAddress metricPath = PathAddress.pathAddress(DynamicLoadProviderResourceDefinition.PATH, LoadMetricResourceDefinition.pathElement(type));
+                PathAddress metricPath = PathAddress.pathAddress(DynamicLoadProviderResourceDefinition.LEGACY_PATH, LoadMetricResourceDefinition.pathElement(type));
                 PathAddress metricPathAddress = address.append(metricPath);
                 ModelNode metricOperation = Util.createAddOperation(metricPathAddress);
                 OperationEntry addOperationEntry = context.getResourceRegistration().getOperationEntry(PathAddress.pathAddress(metricPath), ModelDescriptionConstants.ADD);
@@ -151,7 +151,7 @@ public class LegacyMetricOperationsRegistration implements Registration<Manageme
                 operationDeprecated(context, operation);
                 PathAddress address = translateProxyPath(context);
                 String type = operation.require(CustomLoadMetricResourceDefinition.Attribute.CLASS.getName()).asString();
-                PathAddress metricPath = PathAddress.pathAddress(DynamicLoadProviderResourceDefinition.PATH, LoadMetricResourceDefinition.pathElement(type));
+                PathAddress metricPath = PathAddress.pathAddress(DynamicLoadProviderResourceDefinition.LEGACY_PATH, LoadMetricResourceDefinition.pathElement(type));
                 PathAddress metricPathAddress = address.append(metricPath);
                 ModelNode metricOperation = Util.createRemoveOperation(metricPathAddress);
                 OperationEntry removeOperationEntry = context.getResourceRegistration().getOperationEntry(PathAddress.pathAddress(metricPath), ModelDescriptionConstants.REMOVE);

@@ -28,6 +28,7 @@ import java.util.EnumSet;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 
+import org.jboss.as.clustering.controller.AttributeTranslation;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
@@ -56,8 +57,11 @@ import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AliasEntry;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.PathAddressTransformer;
+import org.jboss.as.controller.transform.ResourceTransformationContext;
+import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
@@ -224,15 +228,6 @@ public class ProxyConfigurationResourceDefinition extends ChildResourceDefinitio
                 return builder.setValidator(new EnumValidator<>(SessionDrainingStrategyEnum.class, SessionDrainingStrategyEnum.values()));
             }
         },
-        SIMPLE_LOAD_PROVIDER("simple-load-provider", ModelType.INT, null) {
-            @Override
-            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder
-                        .setXmlName("factor")
-                        .setValidator(new IntRangeValidator(0, true, true))
-                        ;
-            }
-        },
         SMAX("smax", ModelType.INT, new ModelNode(-1)) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
@@ -362,14 +357,16 @@ public class ProxyConfigurationResourceDefinition extends ChildResourceDefinitio
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(EnumSet.complementOf(EnumSet.of(Attribute.SSL_CONTEXT)))
                 .addExtraParameters(Attribute.SSL_CONTEXT)
+                .addAttributeTranslation(DeprecatedAttribute.SIMPLE_LOAD_PROVIDER, SIMPLE_LOAD_PROVIDER_TRANSLATION)
                 .addAlias(DeprecatedAttribute.CONNECTOR, Attribute.LISTENER)
+                .addRequiredSingletonChildren(SimpleLoadProviderResourceDefinition.PATH)
                 .addCapabilities(Capability.class)
                 ;
+
         registration.registerReadWriteAttribute(Attribute.SSL_CONTEXT.getDefinition(), null, new ReloadRequiredWriteAttributeHandler() {
             @Override
             protected void validateUpdatedModel(OperationContext context, Resource model) {
                 context.addStep(new OperationStepHandler() {
-                    @SuppressWarnings("deprecation")
                     @Override
                     public void execute(OperationContext ctx, ModelNode op) throws OperationFailedException {
                         if (model.hasChild(SSLResourceDefinition.PATH)) {
@@ -417,17 +414,60 @@ public class ProxyConfigurationResourceDefinition extends ChildResourceDefinitio
         new ReloadRequiredResourceRegistration(descriptor).register(registration);
         new LegacyMetricOperationsRegistration().register(registration);
 
-        new SSLResourceDefinition().register(registration);
+        new SimpleLoadProviderResourceDefinition().register(registration);
         new DynamicLoadProviderResourceDefinition().register(registration);
+
+        new SSLResourceDefinition().register(registration);
 
         return registration;
     }
+
+    private AttributeTranslation SIMPLE_LOAD_PROVIDER_TRANSLATION = new AttributeTranslation() {
+        @Override
+        public org.jboss.as.clustering.controller.Attribute getTargetAttribute() {
+            return SimpleLoadProviderResourceDefinition.Attribute.FACTOR;
+        }
+
+        @Override
+        public UnaryOperator<PathAddress> getPathAddressTransformation() {
+            return new UnaryOperator<PathAddress>() {
+                @Override
+                public PathAddress apply(PathAddress pathAddress) {
+                    return pathAddress.append(SimpleLoadProviderResourceDefinition.PATH);
+                }
+            };
+        }
+
+        @Override
+        public UnaryOperator<ImmutableManagementResourceRegistration> getResourceRegistrationTransformation() {
+            return new UnaryOperator<ImmutableManagementResourceRegistration>() {
+                @Override
+                public ImmutableManagementResourceRegistration apply(ImmutableManagementResourceRegistration registration) {
+                    return registration.getSubModel(PathAddress.pathAddress(SimpleLoadProviderResourceDefinition.PATH));
+                }
+            };
+        }
+    };
 
     @SuppressWarnings("deprecation")
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = ModClusterModel.VERSION_6_0_0.requiresTransformation(version) ? parent.addChildRedirection(WILDCARD_PATH, new PathAddressTransformer.BasicPathAddressTransformer(LEGACY_PATH), new ProxyConfigurationDynamicDiscardPolicy()) : parent.addChildResource(WILDCARD_PATH);
 
         if (ModClusterModel.VERSION_6_0_0.requiresTransformation(version)) {
+            builder.discardChildResource(SimpleLoadProviderResourceDefinition.PATH);
+            builder.setCustomResourceTransformer(new ResourceTransformer() {
+                @Override
+                public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
+                    if (resource.hasChild(SimpleLoadProviderResourceDefinition.PATH)) {
+                        ModelNode model = resource.getModel();
+
+                        ModelNode simpleModel = Resource.Tools.readModel(resource.removeChild(SimpleLoadProviderResourceDefinition.PATH));
+                        model.get(DeprecatedAttribute.SIMPLE_LOAD_PROVIDER.getName()).set(simpleModel.get(SimpleLoadProviderResourceDefinition.Attribute.FACTOR.getName()));
+                    }
+                    context.addTransformedResource(PathAddress.EMPTY_ADDRESS, resource).processChildren(resource);
+                }
+            });
+
             builder.getAttributeBuilder()
                     .addRename(Attribute.LISTENER.getDefinition(), DeprecatedAttribute.CONNECTOR.getName())
                     .end();
@@ -466,7 +506,9 @@ public class ProxyConfigurationResourceDefinition extends ChildResourceDefinitio
                     .end();
         }
 
+        SimpleLoadProviderResourceDefinition.buildTransformation(version, builder);
         DynamicLoadProviderResourceDefinition.buildTransformation(version, builder);
+
         SSLResourceDefinition.buildTransformation(version, builder);
     }
 

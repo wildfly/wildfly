@@ -101,28 +101,32 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
     }
 
     private void testTransformation(ModelTestControllerVersion controllerVersion) throws Exception {
-        String[] dependencies = getDependencies(controllerVersion);
-        String subsystemXml = readResource("subsystem-transform.xml");
-        ModClusterModel model = getModelVersion(controllerVersion);
-        ModelVersion modelVersion = model.getVersion();
-        String extensionClassName = (model.getVersion().getMajor() == 1) ? "org.jboss.as.modcluster.ModClusterExtension" : "org.wildfly.extension.mod_cluster.ModClusterExtension";
+        String[] resources = { "subsystem-transform-simple.xml", "subsystem-transform.xml" };
 
-        KernelServicesBuilder builder = createKernelServicesBuilder(new ModClusterAdditionalInitialization())
-                .setSubsystemXml(subsystemXml);
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
-                .addMavenResourceURL(dependencies)
-                .setExtensionClassName(extensionClassName)
-                .skipReverseControllerCheck()
-                .dontPersistXml();
+        for (String resource : resources) {
+            String[] dependencies = getDependencies(controllerVersion);
+            String subsystemXml = readResource(resource);
+            ModClusterModel model = getModelVersion(controllerVersion);
+            ModelVersion modelVersion = model.getVersion();
+            String extensionClassName = (model.getVersion().getMajor() == 1) ? "org.jboss.as.modcluster.ModClusterExtension" : "org.wildfly.extension.mod_cluster.ModClusterExtension";
 
-        KernelServices mainServices = builder.build();
-        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+            KernelServicesBuilder builder = createKernelServicesBuilder(new ModClusterAdditionalInitialization())
+                    .setSubsystemXml(subsystemXml);
+            builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
+                    .addMavenResourceURL(dependencies)
+                    .setExtensionClassName(extensionClassName)
+                    .skipReverseControllerCheck()
+                    .dontPersistXml();
 
-        Assert.assertNotNull(legacyServices);
-        Assert.assertTrue(mainServices.isSuccessfulBoot());
-        Assert.assertTrue(legacyServices.isSuccessfulBoot());
+            KernelServices mainServices = builder.build();
+            KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
 
-        checkSubsystemModelTransformation(mainServices, modelVersion, null, false);
+            Assert.assertNotNull(legacyServices);
+            Assert.assertTrue(mainServices.isSuccessfulBoot());
+            Assert.assertTrue(legacyServices.isSuccessfulBoot());
+
+            checkSubsystemModelTransformation(mainServices, modelVersion, null, false);
+        }
     }
 
     @Test

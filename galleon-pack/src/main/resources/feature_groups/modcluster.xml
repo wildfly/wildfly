@@ -5,8 +5,8 @@
             <param name="proxy" value="default"/>
             <param name="advertise-socket" value="modcluster"/>
             <param name="listener" value="ajp"/>
-            <feature spec="subsystem.modcluster.proxy.dynamic-load-provider.configuration">
-                <feature spec="subsystem.modcluster.proxy.dynamic-load-provider.configuration.load-metric">
+            <feature spec="subsystem.modcluster.proxy.load-provider.dynamic">
+                <feature spec="subsystem.modcluster.proxy.load-provider.dynamic.load-metric">
                     <param name="load-metric" value="cpu"/>
                     <param name="type" value="cpu"/>
                 </feature>

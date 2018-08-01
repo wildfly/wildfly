@@ -259,7 +259,7 @@ final class ModClusterSubsystemXMLReader implements XMLElementReader<List<ModelN
             XMLElement element = XMLElement.forName(reader.getLocalName());
             switch (element) {
                 case SIMPLE_LOAD_PROVIDER: {
-                    this.parseSimpleLoadProvider(reader, operation);
+                    this.parseSimpleLoadProvider(reader, list, address);
                     break;
                 }
                 case DYNAMIC_LOAD_PROVIDER: {
@@ -324,15 +324,17 @@ final class ModClusterSubsystemXMLReader implements XMLElementReader<List<ModelN
         ParseUtils.requireNoContent(reader);
     }
 
-    private void parseSimpleLoadProvider(XMLExtendedStreamReader reader, ModelNode operation) throws XMLStreamException {
+    private void parseSimpleLoadProvider(XMLExtendedStreamReader reader, List<ModelNode> list, PathAddress parent) throws XMLStreamException {
+        PathAddress address = parent.append(SimpleLoadProviderResourceDefinition.PATH);
+        ModelNode operation = Util.createAddOperation(address);
+
         int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case FACTOR: {
-                    // todo require?
-                    readAttribute(reader, i, operation, ProxyConfigurationResourceDefinition.Attribute.SIMPLE_LOAD_PROVIDER);
+                    readAttribute(reader, i, operation, SimpleLoadProviderResourceDefinition.Attribute.FACTOR);
                     break;
                 }
                 default: {
@@ -341,6 +343,8 @@ final class ModClusterSubsystemXMLReader implements XMLElementReader<List<ModelN
             }
         }
         ParseUtils.requireNoContent(reader);
+
+        list.add(operation);
     }
 
     private void parseDynamicLoadProvider(XMLExtendedStreamReader reader, List<ModelNode> list, PathAddress parent) throws XMLStreamException {
