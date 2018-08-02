@@ -44,12 +44,22 @@
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
         <surefire.forked.process.timeout>3600</surefire.forked.process.timeout>
         <test-group>org/jboss/as/test/clustering/cluster</test-group>
+        <!-- Needs to kept inline with what the infinispan-server-feature-pack requires -->
+        <version.org.jboss.infinispan-wildfly>13.0.0.Final</version.org.jboss.infinispan-wildfly>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.kohsuke.metainf-services</groupId>
             <artifactId>metainf-services</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- Used for the infinispan-server-feature-pack -->
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-feature-pack</artifactId>
+            <version>${version.org.jboss.infinispan-wildfly}</version>
+            <type>zip</type>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -64,6 +74,25 @@
             </activation>
             <build>
                 <plugins>
+                    <!-- Configure an Infinispan server -->
+                    <plugin>
+                        <groupId>org.wildfly.build</groupId>
+                        <artifactId>wildfly-server-provisioning-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>provision-infinispan-server</id>
+                                <goals>
+                                    <goal>build</goal>
+                                </goals>
+                                <phase>test-compile</phase>
+                                <configuration>
+                                    <config-file>infinispan-server-provisioning.xml</config-file>
+                                    <buildName>${basedir}/target/</buildName>
+                                    <server-name>infinispan-server-${version.org.infinispan}</server-name>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
                     <!-- Update server profile with shared configuration changes -->
                     <plugin>
                         <groupId>org.wildfly.plugins</groupId>
@@ -90,30 +119,6 @@
                                 <module.path>${jboss.dist}/modules</module.path>
                             </system-properties>
                         </configuration>
-                    </plugin>
-                    <!-- Unzip Infinispan Server distribution for remote tests -->
-                    <plugin>
-                        <artifactId>maven-dependency-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>unpack-infinispan-server</id>
-                                <phase>generate-test-resources</phase>
-                                <goals>
-                                    <goal>unpack</goal>
-                                </goals>
-                                <configuration>
-                                    <artifactItems>
-                                        <artifactItem>
-                                            <groupId>org.infinispan.server</groupId>
-                                            <artifactId>infinispan-server-build</artifactId>
-                                            <version>${version.org.infinispan}</version>
-                                            <type>zip</type>
-                                            <outputDirectory>${project.build.directory}</outputDirectory>
-                                        </artifactItem>
-                                    </artifactItems>
-                                </configuration>
-                            </execution>
-                        </executions>
                     </plugin>
                     <!-- Copy 4 containers based on the shared configuration -->
                     <plugin>
