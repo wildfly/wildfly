@@ -24,6 +24,9 @@ package org.wildfly.extension.undertow;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -40,6 +43,9 @@ import io.undertow.security.api.AuthenticationMechanism;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.PathHandler;
+import io.undertow.server.handlers.resource.PathResourceManager;
+import io.undertow.server.handlers.resource.ResourceHandler;
+import io.undertow.server.handlers.resource.ResourceManager;
 import io.undertow.servlet.api.Deployment;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.util.CopyOnWriteMap;
@@ -56,6 +62,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.undertow.deployment.GateHandlerWrapper;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
@@ -163,6 +170,20 @@ public class Host implements Service<Host>, FilterLocation {
         if (logService != null) {
             rootHandler = logService.configureAccessLogHandler(rootHandler);
         }
+
+        // handle .well-known requests from ACME certificate authorities
+        String path = WildFlySecurityManager.getPropertyPrivileged("jboss.home.dir", ".");
+        Path base;
+        try {
+            base = Paths.get(path).normalize().toRealPath();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        final int cacheBufferSize = 1024;
+        final int cacheBuffers = 1024;
+        PathResourceManager resourceManager = new PathResourceManager(base, cacheBufferSize * cacheBuffers, true, false);
+        rootHandler = new AcmeResourceHandler(resourceManager, rootHandler);
+
         GateHandlerWrapper gateHandlerWrapper = this.gateHandlerWrapper;
         if(gateHandlerWrapper != null) {
             rootHandler = gateHandlerWrapper.wrap(rootHandler);
@@ -363,6 +384,26 @@ public class Host implements Service<Host>, FilterLocation {
                 return;
             }
             next.handleRequest(exchange);
+        }
+    }
+
+    private static final class AcmeResourceHandler extends ResourceHandler {
+        private static final String ACME_CHALLENGE_REGEX = "/\\.well-known/acme-challenge/[A-Za-z0-9_-]+";
+
+        private final HttpHandler next;
+
+        private AcmeResourceHandler(ResourceManager resourceManager, HttpHandler next) {
+            super(resourceManager, next);
+            this.next = next;
+        }
+
+        @Override
+        public void handleRequest(HttpServerExchange exchange) throws Exception {
+            if (exchange.getRequestMethod().equals(Methods.GET) && exchange.getRelativePath().matches(ACME_CHALLENGE_REGEX)) {
+                super.handleRequest(exchange);
+            } else {
+                next.handleRequest(exchange);
+            }
         }
     }
 

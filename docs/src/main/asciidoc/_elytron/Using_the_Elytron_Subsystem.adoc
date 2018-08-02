@@ -1667,6 +1667,115 @@ backs the KeyStore.
 /subsystem=elytron/key-store=httpsKS:store()
 ----
 
+[[obtain-certificate]]
+==== Obtain a signed certificate from Let's Encrypt
+Before obtaining a signed certificate from Let's Encrypt, you must configure
+a Let's Encrypt account using the following commands.
+
+[[create-le-account-key-store]]
+===== Create a key-store to hold your Let's Encrypt account key.
+
+[source, ruby]
+----
+/subsystem=elytron/key-store=accountsKS:add(path=accounts.keystore.jks,relative-to=jboss.server.config.dir,credential-reference={clear-text=secret},type=JKS)
+----
+
+[[configure-le-account]]
+===== Configure a Let's Encrypt account
+
+[source, ruby]
+----
+/subsystem=elytron/certificate-authority-account=myLEAccount:add(alias=example,key-store=accountsKS,contact-urls=[mailto:admin@example.org])
+----
+
+[[obtain-signed-certificate]]
+===== Obtain a signed certificate from Let's Encrypt
+
+The _obtain-certificate_ command creates an account with Let's Encrypt, if such an account does not already exist,
+obtains a signed certificate from Let's Encrypt, and stores it in the KeyStore.
+
+[source, ruby]
+----
+/subsystem=elytron/key-store=httpsKS:obtain-certificate(alias=server,domain-names=[www.example.org],certificate-authority-account=myLEAccount,agree-to-terms-of-service=true,algorithm=RSA,key-size=1024,credential-reference={clear-text=secret})
+----
+
+[[revoke-certificate]]
+==== Revoke a signed certificate
+
+The _revoke-certificate_ command revokes a certificate that was issued by Let's Encrypt.
+
+[source, ruby]
+----
+/subsystem=elytron/key-store=httpsKS:revoke-certificate(alias=server,reason=keyCompromise,certificate-authority-account=myLEAccount)
+----
+
+[[should-renew-certificate]]
+==== Check if a certificate is due for renewal
+
+The _should-renew-certificate_ command checks if a certificate is due for renewal. In particular, it will return true if the certificate expires in less than the given number of days and false otherwise.
+
+[source, ruby]
+----
+/subsystem=elytron/key-store=httpsKS:should-renew-certificate(alias=server,expiration=7)
+----
+
+[[certificate-authority-account-operations]]
+=== Certificate authority account operations
+
+It is possible to perform various operations on an Elytron certificate-authority-account
+resource using the management CLI.
+
+[[create-account]]
+==== Create an account with the certificate authority
+
+The _create-account_ command creates an account with the certificate authority if one does not already exist.
+
+[source, ruby]
+----
+/subsystem=elytron/certificate-authority-account=myLEAccount:create-account(agree-to-terms-of-service=true)
+----
+
+[[update-account]]
+==== Update an account with the certificate authority
+
+The _update-account_ command updates an account with the certificate authority.
+
+[source, ruby]
+----
+/subsystem=elytron/certificate-authority-account=myLEAccount:update-account(agree-to-terms-of-service=true)
+----
+
+[[change-account-key]]
+==== Change the account key
+
+The _change-account-key_ command changes the key associated with the certificate authority account.
+
+[source, ruby]
+----
+/subsystem=elytron/certificate-authority-account=myLEAccount:change-account-key()
+----
+
+[[deactivate-account]]
+==== Deactivate the account
+
+The _deactivate-account_ command deactivates the certificate authority account.
+
+[source, ruby]
+----
+/subsystem=elytron/certificate-authority-account=myLEAccount:deactivate-account()
+----
+
+[[get-metadata]]
+==== Get metadata
+
+The _get-metadata_ command retrieves the metadata (e.g., terms of service URL, website URL, CAA identities,
+and whether or not an external account is required), if any, associated with the certificate authority.
+
+[source, ruby]
+----
+/subsystem=elytron/certificate-authority-account=myLEAccount:get-metadata()
+----
+
 [[using-an-ldap-key-store]]
 === Using an ldap-key-store
 
@@ -1843,6 +1952,7 @@ use custom implementations of the following components:
 * _trust-manager_
 * _client-ssl-context_
 * _server-ssl-context_
+* _certificate-authority-account_
 
 When creating custom implementations of Elytron components, they must
 present the appropriate capabilities and requirements.
