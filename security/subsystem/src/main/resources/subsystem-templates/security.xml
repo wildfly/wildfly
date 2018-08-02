@@ -58,5 +58,21 @@
            </security-domain>
        </replacement>
    </supplement>
-   <supplement name="web-build"/>
+   <supplement name="web-build">
+       <replacement placeholder="ADDITIONAL_SECURITY_DOMAINS">
+           <security-domain name="jboss-web-policy" cache-type="default">
+               <authorization>
+                   <policy-module code="Delegating" flag="required"/>
+               </authorization>
+           </security-domain>
+           <security-domain name="jaspitest" cache-type="default">
+               <authentication-jaspi>
+                   <login-module-stack name="dummy">
+                       <login-module code="Dummy" flag="optional"/>
+                   </login-module-stack>
+                   <auth-module code="Dummy"/>
+               </authentication-jaspi>
+           </security-domain>
+        </replacement>
+   </supplement>
 </config>

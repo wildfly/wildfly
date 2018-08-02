@@ -6,5 +6,6 @@
             <package name="misc.domain"/>
         </origin>
         <package name="misc.common"/>
+        <package name="domain"/>
     </dependencies>
 </package-spec>

@@ -7,6 +7,8 @@
                 <param name="handlers" value="[&quot;FILE&quot;]"/>
             </include>
             <exclude spec="subsystem.logging.console-handler"/>
+            <exclude spec="subsystem.discovery"/>
+            <exclude spec="subsystem.jmx.remoting-connector.jmx"/>
         </feature-group>
     </origin>
 

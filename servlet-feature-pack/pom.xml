@@ -564,7 +564,6 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>xml-maven-plugin</artifactId>
-                        <version>1.0.1</version>
                         <inherited>false</inherited>
                         <executions>
                             <execution>
@@ -590,7 +589,11 @@
                                             <parameters>
                                                 <parameter>
                                                     <name>version</name>
-                                                    <value>${project.version}</value>
+                                                    <value>${product.release.version}</value>
+                                                </parameter>
+                                                <parameter>
+                                                    <name>product.release.name</name>
+                                                    <value>${full.dist.product.release.name}</value>
                                                 </parameter>
                                             </parameters>
                                         </transformationSet>
