@@ -53,6 +53,57 @@
                         <xs:attribute name="entries" type="stringList" use="required" />
                     </xs:complexType>
                 </xs:element>
+                <xs:element name="pooled-connection-factory" minOccurs="0" maxOccurs="unbounded">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="inbound-config" minOccurs="0" maxOccurs="1">
+                                <xs:complexType>
+                                    <xs:attribute name="use-jndi" type="xs:boolean" use="optional" />
+                                    <xs:attribute name="jndi-params" type="xs:string" use="optional" />
+                                    <xs:attribute name="rebalance-connections" type="xs:boolean" use="optional" />
+                                    <xs:attribute name="use-local-tx" type="xs:boolean" use="optional" />
+                                    <xs:attribute name="setup-attempts" type="xs:int" use="optional" />
+                                    <xs:attribute name="setup-interval" type="xs:long" use="optional" />
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="outbound-config" minOccurs="0" maxOccurs="1">
+                                <xs:complexType>
+                                    <xs:attribute name="allow-local-transactions" type="xs:boolean" use="optional" />
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="credential-reference" type="credentialReferenceType" minOccurs="0" maxOccurs="1">
+                                <xs:annotation>
+                                    <xs:documentation>
+                                        Credential to be used by the configuration.
+                                    </xs:documentation>
+                                </xs:annotation>
+                            </xs:element>
+                        </xs:sequence>
+                        <xs:attribute name="name" type="xs:string" use="required" />
+                        <xs:attribute name="entries" type="stringList" use="required" />
+
+                        <xs:attributeGroup ref="common-connection-factory-attributeGroup" />
+                        <xs:attribute name="transaction" use="optional">
+                            <xs:simpleType>
+                                <xs:restriction base="xs:string">
+                                    <xs:enumeration value="xa"/>
+                                    <xs:enumeration value="local"/>
+                                    <xs:enumeration value="none"/>
+                                </xs:restriction>
+                            </xs:simpleType>
+                        </xs:attribute>
+                        <xs:attribute name="user" type="xs:string" use="optional" />
+                        <xs:attribute name="password" type="xs:string" use="optional" />
+                        <xs:attribute name="min-pool-size" type="xs:int" use="optional" />
+                        <xs:attribute name="use-auto-recovery" type="xs:boolean" use="optional" />
+                        <xs:attribute name="max-pool-size" type="xs:int" use="optional" />
+                        <xs:attribute name="managed-connection-pool" type="xs:string" use="optional" />
+                        <xs:attribute name="enlistment-trace" type="xs:boolean" use="optional" />
+                        <xs:attribute name="initial-message-packet-size" type="xs:int" use="optional" />
+                        <xs:attribute name="initial-connect-attempts" type="xs:int" use="optional" />
+                        <xs:attribute name="statistics-enabled" type="xs:boolean" use="optional" />
+                    </xs:complexType>
+                </xs:element>
                 <xs:element maxOccurs="unbounded" minOccurs="0" name="server" type="serverType" />
                 <xs:element maxOccurs="unbounded" minOccurs="0" name="jms-bridge" type="jms-bridgeType" />
             </xs:sequence>

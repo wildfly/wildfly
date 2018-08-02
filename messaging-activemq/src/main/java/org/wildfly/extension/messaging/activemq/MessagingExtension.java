@@ -191,6 +191,7 @@ public class MessagingExtension implements Extension {
         subsystem.registerSubModel(RemoteTransportDefinition.createConnectorDefinition(registerRuntimeOnly));
         subsystem.registerSubModel(new HTTPConnectorDefinition(registerRuntimeOnly));
         subsystem.registerSubModel(new ClientConnectionFactoryDefinition(registerRuntimeOnly));
+        subsystem.registerSubModel(PooledConnectionFactoryDefinition.INSTANCE);
 
         // ActiveMQ Servers
         final ManagementResourceRegistration server = subsystem.registerSubModel(new ServerDefinition(registerRuntimeOnly));

@@ -428,8 +428,9 @@ public class TransportConfigOperationHandlers {
                 parameters.put(HTTPConnectorDefinition.SOCKET_BINDING.getName(), binding);
                 bindings.add(binding);
                 ModelNode serverNameModelNode = HTTPConnectorDefinition.SERVER_NAME.resolveModelAttribute(context, config);
-                String serverName = serverNameModelNode.asString();
-                parameters.put(ACTIVEMQ_SERVER_NAME, serverName);
+                if( serverNameModelNode.isDefined()) {
+                    parameters.put(ACTIVEMQ_SERVER_NAME, serverNameModelNode.asString());
+                }
                 connectors.add(new TransportConfiguration(NettyConnectorFactory.class.getName(), parameters, connectorName));
             }
         }

@@ -47,6 +47,86 @@
                         ha="${ha:true}"
                         entries="otherClientConnectionFactory" />
 
+    <pooled-connection-factory name="hornetq-ra-local"
+                                   transaction="local"
+                                   user="alice"
+                                   password="alicepassword"
+                                   use-auto-recovery="${use.auto.recovery:true}"
+                                   connectors="in-vm-client"
+                                   entries="java:/JmsLocal"/>
+
+    <pooled-connection-factory name="activemq-ra-none"
+                                   transaction="none"
+                                   user="alice"
+                                   password="alicepassword"
+                                   connectors="in-vm-client"
+                                   entries="java:/JmsNone"/>
+
+    <pooled-connection-factory name="activemq-ra"
+                               transaction="${transaction:xa}"
+                               user="${user:alice}"
+                               password="${password:alicepassword}"
+                               min-pool-size="${min.pool.size:42}"
+                               max-pool-size="${max.pool.size:242}"
+                               managed-connection-pool="${managed.connection.pool:org.foo.bar.ConnectionPool}"
+                               enlistment-trace="${enlistment.trace:false}"
+                               initial-message-packet-size="${initial.message.packet.size:9876}"
+                               initial-connect-attempts="${initial.connect.attempts:5432}"
+                               connectors="in-vm-client"
+                               entries="${pooled-connection-factory.entries.entry:java:/JmsXA}"
+                               ha="${ha:true}"
+                               client-failure-check-period="${client.failure.check.period:12345}"
+                               connection-ttl="${connection.ttl:6789}"
+                               call-timeout="${call.timeout:123}"
+                               call-failover-timeout="${call.failover.timeout:456}"
+                               consumer-window-size="${consumer.window.size:456}"
+                               consumer-max-rate="${consumer.max.rate:789}"
+                               confirmation-window-size="${confirmation.window.size:-1}"
+                               producer-window-size="${producer.window.size:-1}"
+                               producer-max-rate="${producer.max.rate:1024}"
+                               protocol-manager-factory="com.foo.bar.ProtocolManagerFactory"
+                               compress-large-messages="${compress.large.messages:true}"
+                               cache-large-message-client="${cache.large.message.client:false}"
+                               min-large-message-size="${min.large.message.size:2048}"
+                               client-id="${client.id:myClientID}"
+                               dups-ok-batch-size="${dups.ok.batch.size:256}"
+                               transaction-batch-size="${transaction.batch.size:512}"
+                               block-on-acknowledge="${block.on.acknowledge:false}"
+                               block-on-non-durable-send="${block.on.non.durable.send:false}"
+                               block-on-durable-send="${block.on.durable.send:false}"
+                               auto-group="${auto.group:true}"
+                               pre-acknowledge="${pre.acknowledge:true}"
+                               retry-interval="${retry.interval:500}"
+                               retry-interval-multiplier="${retry.interval.multiplier:2.5}"
+                               max-retry-interval="${max.retry.interval:10000}"
+                               reconnect-attempts="${reconnect.attempts:2}"
+                               failover-on-initial-connection="${failover.on.initial.connection:true}"
+                               connection-load-balancing-policy-class-name="connection.load.balancing.policy.class"
+                               use-global-pools="${use.global.pools:true}"
+                               scheduled-thread-pool-max-size="${scheduled.thread.pool.max.size:24}"
+                               thread-pool-max-size="${thread.pool.max.size:48}"
+                               group-id="${group.id:myGroup}"
+                               deserialization-black-list="org.foo.Bar org.foo.Baz"
+                               deserialization-white-list="org.bar.Bar org.baz.Baz"
+                               statistics-enabled="${pcf.statistics-enabled:true}">
+        <inbound-config
+            use-jndi="${use.jndi:false}"
+            jndi-params="${jndi.params:whatever}"
+            rebalance-connections="${inbound.rebalance-connections:true}"
+            use-local-tx="${use.local.tx:true}"
+            setup-attempts="${setup-attempts:123}"
+            setup-interval="${setup-interval:456}" />
+        <outbound-config
+            allow-local-transactions="${allow.local.transactions:true}" />
+    </pooled-connection-factory>
+
+    <pooled-connection-factory name="pcf-with-credential-reference"
+                               entries="java:/JmsLocal2"
+                               connectors="in-vm-client"
+                               user="foo">
+        <credential-reference clear-text="passwordOut!"/>
+    </pooled-connection-factory>
+
     <server name="default"
             persistence-enabled="${persistence.enabled:false}"
             persist-id-cache="${persist.id.cache:false}"

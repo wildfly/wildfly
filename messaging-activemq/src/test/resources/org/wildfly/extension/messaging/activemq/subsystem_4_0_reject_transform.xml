@@ -32,6 +32,14 @@
                         connectors="in-vm client"
                         entries="${connection-factory.entries.entry:java:/ClientConnectionFactory}" />
 
+    <pooled-connection-factory name="hornetq-ra-local"
+                                   transaction="local"
+                                   user="alice"
+                                   password="alicepassword"
+                                   use-auto-recovery="${use.auto.recovery:true}"
+                                   connectors="in-vm-client"
+                                   entries="java:/JmsLocal"/>
+
     <server name="default">
 
         <security elytron-domain="elytronDomain"/>
