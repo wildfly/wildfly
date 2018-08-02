@@ -58,6 +58,8 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class JACCAuthorizationManager implements AuthorizationManager {
 
+    public static final AuthorizationManager INSTANCE = new JACCAuthorizationManager();
+
     @Override
     public boolean isUserInRole(final String roleName, final Account account, final ServletInfo servletInfo, final HttpServletRequest request, final Deployment deployment) {
         return hasPermission(account, deployment, servletInfo, new WebRoleRefPermission(servletInfo.getName(), roleName));
