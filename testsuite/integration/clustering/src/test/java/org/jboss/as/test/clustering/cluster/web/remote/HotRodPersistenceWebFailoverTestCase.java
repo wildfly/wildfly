@@ -22,6 +22,9 @@
 
 package org.jboss.as.test.clustering.cluster.web.remote;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.transaction.TransactionMode;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -37,6 +40,9 @@ import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jgroups.util.Util;
+import org.junit.Assume;
+import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 
 /**
@@ -50,6 +56,14 @@ import org.junit.runner.RunWith;
 public class HotRodPersistenceWebFailoverTestCase extends AbstractWebFailoverTestCase {
 
     private static final String DEPLOYMENT_NAME = HotRodPersistenceWebFailoverTestCase.class.getSimpleName() + ".war";
+
+    @BeforeClass
+    public static void beforeClass() {
+        AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
+            Assume.assumeFalse("Disable on Windows until CI environment is fixed", Util.checkForWindows());
+            return null;
+        });
+    }
 
     public HotRodPersistenceWebFailoverTestCase() {
         super(DEPLOYMENT_NAME, CacheMode.INVALIDATION_SYNC, TransactionMode.NON_TRANSACTIONAL);
