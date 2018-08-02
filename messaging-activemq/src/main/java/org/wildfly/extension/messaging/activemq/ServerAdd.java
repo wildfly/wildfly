@@ -326,8 +326,11 @@ class ServerAdd extends AbstractAddStepHandler {
                         Supplier<OutboundSocketBinding> outboundSocketBinding = serviceBuilder.requires(outboundSocketName);
                         outboundSocketBindings.put(connectorSocketBinding, outboundSocketBinding);
                     } else {
-                        Supplier<SocketBinding> socketBinding = serviceBuilder.requires(SocketBinding.JBOSS_BINDING_NAME.append(connectorSocketBinding));
-                        socketBindings.put(connectorSocketBinding, socketBinding);
+                        // check if the socket binding has not already been added by the acceptors
+                        if (!socketBindings.containsKey(connectorSocketBinding)) {
+                            Supplier<SocketBinding> socketBinding = serviceBuilder.requires(SocketBinding.JBOSS_BINDING_NAME.append(connectorSocketBinding));
+                            socketBindings.put(connectorSocketBinding, socketBinding);
+                        }
                     }
                 }
                 // if there is any HTTP acceptor, add a dependency on the http-upgrade-registry service to
