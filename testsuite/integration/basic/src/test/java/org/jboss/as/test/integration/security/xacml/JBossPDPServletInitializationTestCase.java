@@ -22,8 +22,10 @@
 package org.jboss.as.test.integration.security.xacml;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 
+import java.io.FilePermission;
 import java.net.URL;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -33,6 +35,7 @@ import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.shrinkwrap.impl.base.asset.AssetUtil;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -60,6 +63,11 @@ public class JBossPDPServletInitializationTestCase {
         XACMLTestUtils.addCommonClassesToArchive(war);
         XACMLTestUtils.addJBossDeploymentStructureToArchive(war);
         XACMLTestUtils.addXACMLPoliciesToArchive(war);
+
+        final String testObjectsPolicies = AssetUtil.getClassLoaderResourceName(JBossPDPServletInitializationTestCase.class.getPackage(), XACMLTestUtils.TESTOBJECTS_POLICIES);
+        war.addAsManifestResource(createPermissionsXmlAsset(
+                new FilePermission(testObjectsPolicies + "/-", "read")
+                ), "permissions.xml");
         return war;
     }
 

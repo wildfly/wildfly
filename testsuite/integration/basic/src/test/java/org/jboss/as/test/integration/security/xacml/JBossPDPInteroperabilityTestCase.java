@@ -21,12 +21,15 @@
  */
 package org.jboss.as.test.integration.security.xacml;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
+import java.io.FilePermission;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,6 +41,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.text.StrSubstitutor;
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.logging.Logger;
 import org.jboss.security.xacml.core.JBossPDP;
@@ -62,11 +66,12 @@ import org.jboss.shrinkwrap.api.ArchivePaths;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.jboss.shrinkwrap.impl.base.asset.AssetUtil;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Testcases which test JBossPDP initialization a validates XACML Interoperability Use Cases. .
+ * Testcases which test JBossPDP initialization a validates XACML Interoperability Use Cases.
  *
  * @author Josef Cacek
  */
@@ -101,6 +106,12 @@ public class JBossPDPInteroperabilityTestCase {
         jar.addAsResource(JBossPDPServletInitializationTestCase.class.getPackage(), XACMLTestUtils.TESTOBJECTS_REQUESTS
                 + "/med-example-request.xml");
 
+        final String tempDir = System.getProperty("java.io.tmpdir");
+        final String testObjectsPolicies = AssetUtil.getClassLoaderResourceName(JBossPDPInteroperabilityTestCase.class.getPackage(), XACMLTestUtils.TESTOBJECTS_POLICIES);
+        jar.addAsResource(createPermissionsXmlAsset(
+                new FilePermission(testObjectsPolicies + "/-", "read"),
+                new FilePermission(tempDir + "/-", "read,write,delete")
+        ),"META-INF/permissions.xml");
         return jar;
     }
 
@@ -158,9 +169,10 @@ public class JBossPDPInteroperabilityTestCase {
      * @throws Exception
      */
     @Test
+    @RunAsClient
     public void testPoliciesLoadedFromDir() throws Exception {
         //create temporary folder for policies
-        final File policyDir = new File("test-JBossPDP-Med-" + System.currentTimeMillis());
+        final File policyDir = Paths.get(System.getProperty("java.io.tmpdir"),"test-JBossPDP-Med-" + System.currentTimeMillis()).toFile();
         final InputStream requestIS = getClass().getResourceAsStream(
                 XACMLTestUtils.TESTOBJECTS_REQUESTS + "/med-example-request.xml");
         try {
