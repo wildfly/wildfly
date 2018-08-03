@@ -70,7 +70,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.ResourceTransformer;
-import org.jboss.as.controller.transform.description.AttributeConverter.DefaultValueAttributeConverter;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -186,7 +186,7 @@ public class TransportResourceDefinition extends AbstractProtocolResourceDefinit
         AbstractProtocolResourceDefinition.addTransformations(version, builder);
 
         if (JGroupsModel.VERSION_3_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder().setValueConverter(new DefaultValueAttributeConverter(Attribute.SHARED.getDefinition()), Attribute.SHARED.getDefinition());
+            builder.getAttributeBuilder().setDiscard(DiscardAttributeChecker.ALWAYS, Attribute.SHARED.getDefinition());
 
             builder.setCustomResourceTransformer(new ResourceTransformer() {
                 @Override
