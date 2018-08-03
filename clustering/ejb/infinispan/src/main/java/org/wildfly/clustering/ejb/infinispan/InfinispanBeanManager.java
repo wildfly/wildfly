@@ -22,9 +22,11 @@
 package org.wildfly.clustering.ejb.infinispan;
 
 import java.security.PrivilegedAction;
+import java.time.Duration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -56,8 +58,8 @@ import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.Invoker;
 import org.wildfly.clustering.ee.infinispan.CacheProperties;
 import org.wildfly.clustering.ee.infinispan.InfinispanBatcher;
-import org.wildfly.clustering.ee.infinispan.RetryingInvoker;
 import org.wildfly.clustering.ee.infinispan.TransactionBatch;
+import org.wildfly.clustering.ee.retry.RetryingInvoker;
 import org.wildfly.clustering.ejb.Bean;
 import org.wildfly.clustering.ejb.BeanManager;
 import org.wildfly.clustering.ejb.IdentifierFactory;
@@ -74,6 +76,7 @@ import org.wildfly.clustering.infinispan.spi.distribution.Locality;
 import org.wildfly.clustering.infinispan.spi.distribution.SimpleLocality;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.spi.NodeFactory;
+import org.wildfly.common.function.ExceptionSupplier;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -93,6 +96,8 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
         return WildFlySecurityManager.doUnchecked(action);
     }
 
+    private static final Invoker INVOKER = new RetryingInvoker(Duration.ZERO, Duration.ofMillis(10), Duration.ofMillis(100));
+
     private final Cache<BeanKey<I>, BeanEntry<I>> cache;
     private final CacheProperties properties;
     private final BeanFactory<I, T> beanFactory;
@@ -105,7 +110,6 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
     private final ExpirationConfiguration<T> expiration;
     private final PassivationConfiguration<T> passivation;
     private final Batcher<TransactionBatch> batcher;
-    private final Invoker invoker = new RetryingInvoker(0, 10, 100);
     private final Predicate<Map.Entry<? super BeanKey<I>, ? super BeanEntry<I>>> filter;
     private final AtomicReference<Future<?>> rehashFuture = new AtomicReference<>();
 
@@ -216,11 +220,16 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
     }
 
     private void executeOnPrimaryOwner(Bean<I, T> bean, final Command<Void, Scheduler<I>> command) throws Exception {
-        this.invoker.invoke(() -> {
-            // This should only go remote following a failover
-            Node node = InfinispanBeanManager.this.locatePrimaryOwner(bean.getId());
-            return InfinispanBeanManager.this.dispatcher.executeOnMember(command, node);
-        }).toCompletableFuture().join();
+        CommandDispatcher<Scheduler<I>> dispatcher = this.dispatcher;
+        ExceptionSupplier<CompletionStage<Void>, Exception> action = new ExceptionSupplier<CompletionStage<Void>, Exception>() {
+            @Override
+            public CompletionStage<Void> get() throws Exception {
+                // This should only go remote following a failover
+                Node node = InfinispanBeanManager.this.locatePrimaryOwner(bean.getId());
+                return dispatcher.executeOnMember(command, node);
+            }
+        };
+        INVOKER.invoke(action).toCompletableFuture().join();
     }
 
     Node locatePrimaryOwner(I id) {

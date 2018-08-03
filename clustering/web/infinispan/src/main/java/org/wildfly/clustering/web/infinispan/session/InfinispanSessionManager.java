@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletionStage;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -57,8 +58,8 @@ import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.Invoker;
 import org.wildfly.clustering.ee.Recordable;
 import org.wildfly.clustering.ee.infinispan.CacheProperties;
-import org.wildfly.clustering.ee.infinispan.RetryingInvoker;
 import org.wildfly.clustering.ee.infinispan.TransactionBatch;
+import org.wildfly.clustering.ee.retry.RetryingInvoker;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.infinispan.spi.PredicateKeyFilter;
@@ -77,6 +78,7 @@ import org.wildfly.clustering.web.session.SessionAttributes;
 import org.wildfly.clustering.web.session.SessionExpirationListener;
 import org.wildfly.clustering.web.session.SessionManager;
 import org.wildfly.clustering.web.session.SessionMetaData;
+import org.wildfly.common.function.ExceptionSupplier;
 
 /**
  * Generic session manager implementation - independent of cache mapping strategy.
@@ -84,6 +86,8 @@ import org.wildfly.clustering.web.session.SessionMetaData;
  */
 @Listener(primaryOnly = true)
 public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, TransactionBatch> {
+
+    private static final Invoker INVOKER = new RetryingInvoker(Duration.ZERO, Duration.ofMillis(10), Duration.ofMillis(100));
 
     private final Registrar<SessionExpirationListener> expirationRegistrar;
     private final SessionExpirationListener expirationListener;
@@ -95,7 +99,6 @@ public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, Tr
     private final CommandDispatcher<Scheduler> dispatcher;
     private final Group group;
     private final NodeFactory<Address> memberFactory;
-    private final Invoker invoker = new RetryingInvoker(0, 10, 100);
     private final Predicate<Object> filter = new SessionCreationMetaDataKeyFilter();
     private final Recordable<ImmutableSession> recorder;
     private final ServletContext context;
@@ -161,14 +164,19 @@ public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, Tr
     }
 
     private void executeOnPrimaryOwner(final String sessionId, final Command<Void, Scheduler> command) throws Exception {
-        this.invoker.invoke(() -> {
-            // This should only go remote following a failover
-            Node node = this.locatePrimaryOwner(sessionId);
-            return this.dispatcher.executeOnMember(command, node);
-        }).toCompletableFuture().join();
+        CommandDispatcher<Scheduler> dispatcher = this.dispatcher;
+        ExceptionSupplier<CompletionStage<Void>, Exception> action = new ExceptionSupplier<CompletionStage<Void>, Exception>() {
+            @Override
+            public CompletionStage<Void> get() throws Exception {
+                // This should only go remote following a failover
+                Node node = InfinispanSessionManager.this.locatePrimaryOwner(sessionId);
+                return dispatcher.executeOnMember(command, node);
+            }
+        };
+        INVOKER.invoke(action).toCompletableFuture().join();
     }
 
-    private Node locatePrimaryOwner(String sessionId) {
+    Node locatePrimaryOwner(String sessionId) {
         DistributionManager dist = this.cache.getAdvancedCache().getDistributionManager();
         Address address = (dist != null) ? dist.getCacheTopology().getDistribution(new Key<>(sessionId)).primary() : null;
         Node node = (address != null) ? this.memberFactory.createNode(address) : null;
