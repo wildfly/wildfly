@@ -22,6 +22,7 @@
 package org.wildfly.clustering.server.provider;
 
 import java.security.PrivilegedAction;
+import java.time.Duration;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -42,6 +43,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 
 import org.infinispan.Cache;
+import org.infinispan.commons.CacheException;
 import org.infinispan.commons.util.CloseableIterator;
 import org.infinispan.context.Flag;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryCreated;
@@ -55,6 +57,8 @@ import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherException;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
+import org.wildfly.clustering.ee.Invoker;
+import org.wildfly.clustering.ee.retry.RetryingInvoker;
 import org.wildfly.clustering.group.GroupListener;
 import org.wildfly.clustering.group.Membership;
 import org.wildfly.clustering.group.Node;
@@ -64,6 +68,7 @@ import org.wildfly.clustering.provider.ServiceProviderRegistry;
 import org.wildfly.clustering.server.group.Group;
 import org.wildfly.clustering.server.logging.ClusteringServerLogger;
 import org.wildfly.clustering.service.concurrent.ClassLoaderThreadFactory;
+import org.wildfly.common.function.ExceptionRunnable;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -79,6 +84,8 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
         PrivilegedAction<ThreadFactory> action = () -> new ClassLoaderThreadFactory(new JBossThreadFactory(new ThreadGroup(targetClass.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null), targetClass.getClassLoader());
         return WildFlySecurityManager.doUnchecked(action);
     }
+
+    private static final Invoker INVOKER = new RetryingInvoker(Duration.ZERO, Duration.ofMillis(100), Duration.ofSeconds(500));
 
     final Batcher<? extends Batch> batcher;
     private final ConcurrentMap<T, Map.Entry<Listener, ExecutorService>> listeners = new ConcurrentHashMap<>();
@@ -135,9 +142,13 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
         if (entry != newEntry) {
             throw new IllegalArgumentException(service.toString());
         }
-        try (Batch batch = this.batcher.createBatch()) {
-            this.register(this.group.getAddress(this.group.getLocalMember()), service);
-        }
+        ExceptionRunnable<CacheException> registerAction = new ExceptionRunnable<CacheException>() {
+            @Override
+            public void run() throws CacheException {
+                CacheServiceProviderRegistry.this.registerLocal(service);
+            }
+        };
+        INVOKER.invoke(registerAction);
         return new SimpleServiceProviderRegistration<>(service, this, () -> {
             Address localAddress = this.group.getAddress(this.group.getLocalMember());
             try (Batch batch = this.batcher.createBatch()) {
@@ -166,6 +177,12 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
                 }
             }
         });
+    }
+
+    void registerLocal(T service) {
+        try (Batch batch = this.batcher.createBatch()) {
+            this.register(this.group.getAddress(this.group.getLocalMember()), service);
+        }
     }
 
     void register(Address address, T service) {
