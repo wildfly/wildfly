@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.messaging.jms;
+package org.jboss.as.test.integration.messaging.jms.client;
 
 import static org.junit.Assert.assertEquals;
 
@@ -31,9 +31,9 @@ import javax.jms.ConnectionFactory;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
+import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.jms.Topic;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -59,12 +59,12 @@ import org.junit.runner.RunWith;
  * @author <a href="jmartisk@redhat.com">Jan Martiska</a>
  */
 @RunWith(Arquillian.class)
-@ServerSetup(SendToClientJMSQueueTest.SetupTask.class)
-public class SendToClientJMSQueueTest {
+@ServerSetup(SendToClientJMSQueueTestCase.SetupTask.class)
+public class SendToClientJMSQueueTestCase {
 
     static class SetupTask extends SnapshotRestoreSetupTask {
 
-        private static final Logger logger = Logger.getLogger(SendToClientJMSQueueTest.SetupTask.class);
+        private static final Logger logger = Logger.getLogger(SendToClientJMSQueueTestCase.SetupTask.class);
 
         @Override
         public void doSetup(org.jboss.as.arquillian.container.ManagementClient managementClient, String s) throws Exception {
@@ -80,7 +80,7 @@ public class SendToClientJMSQueueTest {
             op.get("entries").add("java:/JmsXA java:jboss/DefaultJMSConnectionFactory");
             op.get("connectors").add("http-test-connector");
             execute(managementClient, op, true);
-            op = Operations.createAddOperation(getClientTopicAddress());
+            op = Operations.createAddOperation(getClientQueueAddress());
             op.get("entries").add("java:jboss/exported/topic/myAwesomeClientQueue");
             op.get("entries").add("/topic/myAwesomeClientQueue");
             execute(managementClient, op, true);
@@ -107,10 +107,10 @@ public class SendToClientJMSQueueTest {
         }
 
 
-        ModelNode getClientTopicAddress() {
+        ModelNode getClientQueueAddress() {
             ModelNode address = new ModelNode();
             address.add("subsystem", "messaging-activemq");
-            address.add("client-jms-topic", "myAwesomeQueue");
+            address.add("client-jms-queue", "myAwesomeQueue");
             return address;
         }
 
@@ -123,10 +123,10 @@ public class SendToClientJMSQueueTest {
         }
     }
 
-    private static final Logger logger = Logger.getLogger(SendToClientJMSQueueTest.class);
+    private static final Logger logger = Logger.getLogger(SendToClientJMSQueueTestCase.class);
 
     @Resource(lookup = "java:jboss/exported/topic/myAwesomeClientQueue")
-    private Topic topic;
+    private Queue queue;
 
     @Resource(lookup = "java:/JmsXA")
     private ConnectionFactory factory;
@@ -135,7 +135,7 @@ public class SendToClientJMSQueueTest {
     public static JavaArchive createTestArchive() {
         return ShrinkWrap.create(JavaArchive.class, "test.jar")
                 .addPackage(JMSOperations.class.getPackage())
-                .addClass(SendToClientJMSQueueTest.SetupTask.class)
+                .addClass(SendToClientJMSQueueTestCase.SetupTask.class)
                 .addAsManifestResource(
                         EmptyAsset.INSTANCE,
                         ArchivePaths.create("beans.xml"));
@@ -155,7 +155,7 @@ public class SendToClientJMSQueueTest {
             logger.trace("Creating session for consumer");
             consumerSession = consumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
             logger.trace("Creating consumer");
-            consumer = consumerSession.createConsumer(topic);
+            consumer = consumerSession.createConsumer(queue);
             logger.trace("Start session");
             consumerConnection.start();
 
@@ -164,7 +164,7 @@ public class SendToClientJMSQueueTest {
             senderConnection = factory.createConnection("guest", "guest");
             logger.trace("Creating session..");
             senderSession = senderConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-            MessageProducer producer = senderSession.createProducer(topic);
+            MessageProducer producer = senderSession.createProducer(queue);
             TextMessage message = senderSession.createTextMessage("Hello world!");
             logger.trace("Sending..");
             producer.send(message);

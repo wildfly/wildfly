@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.messaging.jms;
+package org.jboss.as.test.integration.messaging.jms.client;
 
 import static org.junit.Assert.assertEquals;
 
@@ -59,12 +59,12 @@ import org.junit.runner.RunWith;
  * @author <a href="jmartisk@redhat.com">Jan Martiska</a>
  */
 @RunWith(Arquillian.class)
-@ServerSetup(SendToClientJMSTopicTest.SetupTask.class)
-public class SendToClientJMSTopicTest {
+@ServerSetup(SendToClientJMSTopicTestCase.SetupTask.class)
+public class SendToClientJMSTopicTestCase {
 
     static class SetupTask extends SnapshotRestoreSetupTask {
 
-        private static final Logger logger = Logger.getLogger(SendToClientJMSTopicTest.SetupTask.class);
+        private static final Logger logger = Logger.getLogger(SendToClientJMSTopicTestCase.SetupTask.class);
 
         @Override
         public void doSetup(org.jboss.as.arquillian.container.ManagementClient managementClient, String s) throws Exception {
@@ -123,7 +123,7 @@ public class SendToClientJMSTopicTest {
         }
     }
 
-    private static final Logger logger = Logger.getLogger(SendToClientJMSTopicTest.class);
+    private static final Logger logger = Logger.getLogger(SendToClientJMSTopicTestCase.class);
 
     @Resource(lookup = "java:jboss/exported/topic/myAwesomeClientTopic")
     private Topic topic;
@@ -135,7 +135,7 @@ public class SendToClientJMSTopicTest {
     public static JavaArchive createTestArchive() {
         return ShrinkWrap.create(JavaArchive.class, "test.jar")
                 .addPackage(JMSOperations.class.getPackage())
-                .addClass(SendToClientJMSTopicTest.SetupTask.class)
+                .addClass(SendToClientJMSTopicTestCase.SetupTask.class)
                 .addAsManifestResource(
                         EmptyAsset.INSTANCE,
                         ArchivePaths.create("beans.xml"));
