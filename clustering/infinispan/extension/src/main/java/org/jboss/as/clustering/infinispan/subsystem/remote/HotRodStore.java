@@ -78,8 +78,10 @@ public class HotRodStore<K, V> implements AdvancedLoadWriteStore<K, V>, Callable
 
             // Administration support was introduced in protocol version 2.7
             if (protocolVersion.compareTo(ProtocolVersion.PROTOCOL_VERSION_27) < 0) {
-                InfinispanLogger.ROOT_LOGGER.remoteCacheMustBeDefined(protocolVersion.toString(), cacheName);
                 this.remoteCache = remoteCacheContainer.getCache(cacheName, false);
+                if (this.remoteCache == null) {
+                    throw InfinispanLogger.ROOT_LOGGER.remoteCacheMustBeDefined(protocolVersion.toString(), cacheName);
+                }
             } else {
                 InfinispanLogger.ROOT_LOGGER.remoteCacheCreated(cacheName, cacheConfiguration);
                 this.remoteCache = remoteCacheContainer.administration().getOrCreateCache(cacheName, cacheConfiguration);
