@@ -32,6 +32,8 @@ import static org.wildfly.extension.messaging.activemq.MessagingDependencies.get
 import static org.wildfly.extension.messaging.activemq.MessagingDependencies.getJGroupsDependencies;
 import static org.wildfly.extension.messaging.activemq.MessagingDependencies.getMessagingActiveMQGAV;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.BRIDGE_PATH;
+import static org.wildfly.extension.messaging.activemq.MessagingExtension.CLIENT_JMS_QUEUE_PATH;
+import static org.wildfly.extension.messaging.activemq.MessagingExtension.CLIENT_JMS_TOPIC_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.CLUSTER_CONNECTION_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.CONNECTION_FACTORY_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.POOLED_CONNECTION_FACTORY_PATH;
@@ -227,6 +229,8 @@ public class MessagingActiveMQSubsystem_4_0_TestCase extends AbstractSubsystemBa
         config.addFailedAttribute(subsystemAddress.append(MessagingExtension.HTTP_CONNECTOR_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
         config.addFailedAttribute(subsystemAddress.append(CONNECTION_FACTORY_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
         config.addFailedAttribute(subsystemAddress.append(POOLED_CONNECTION_FACTORY_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
+        config.addFailedAttribute(subsystemAddress.append(CLIENT_JMS_QUEUE_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
+        config.addFailedAttribute(subsystemAddress.append(CLIENT_JMS_TOPIC_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
 
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, messagingVersion, ops, config);
     }

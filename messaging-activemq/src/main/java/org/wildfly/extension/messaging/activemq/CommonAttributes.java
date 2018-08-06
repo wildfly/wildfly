@@ -318,6 +318,8 @@ public interface CommonAttributes {
     String BROADCAST_GROUPS = "broadcast-groups";
     String CHECK_FOR_LIVE_SERVER2 = "check-for-live-server";
     String CLASS_NAME = "class-name";
+    String CLIENT_JMS_QUEUE = "client-jms-queue";
+    String CLIENT_JMS_TOPIC = "client-jms-topic";
     String CLUSTER_CONNECTION = "cluster-connection";
     String CLUSTER_CONNECTIONS = "cluster-connections";
     String CLUSTER_NAME = "cluster-name";

@@ -1,6 +1,6 @@
 <subsystem xmlns="urn:jboss:domain:messaging-activemq:4.0">
     <global-client thread-pool-max-size="${global.client.thread-pool-max-size:32}"
-           scheduled-thread-pool-max-size="${global.client.scheduled.thread-pool-max-size:54}" />
+                   scheduled-thread-pool-max-size="${global.client.scheduled.thread-pool-max-size:54}" />
 
     <http-connector name="client-http"
                     socket-binding="http"
@@ -48,19 +48,19 @@
                         entries="otherClientConnectionFactory" />
 
     <pooled-connection-factory name="hornetq-ra-local"
-                                   transaction="local"
-                                   user="alice"
-                                   password="alicepassword"
-                                   use-auto-recovery="${use.auto.recovery:true}"
-                                   connectors="in-vm-client"
-                                   entries="java:/JmsLocal"/>
+                               transaction="local"
+                               user="alice"
+                               password="alicepassword"
+                               use-auto-recovery="${use.auto.recovery:true}"
+                               connectors="in-vm-client"
+                               entries="java:/JmsLocal"/>
 
     <pooled-connection-factory name="activemq-ra-none"
-                                   transaction="none"
-                                   user="alice"
-                                   password="alicepassword"
-                                   connectors="in-vm-client"
-                                   entries="java:/JmsNone"/>
+                               transaction="none"
+                               user="alice"
+                               password="alicepassword"
+                               connectors="in-vm-client"
+                               entries="java:/JmsNone"/>
 
     <pooled-connection-factory name="activemq-ra"
                                transaction="${transaction:xa}"
@@ -127,6 +127,13 @@
         <credential-reference clear-text="passwordOut!"/>
     </pooled-connection-factory>
 
+    <jms-queue name="testQueue"
+                   entries="${jms-queue.entry:queue/client-test}"/>
+    <jms-queue name="testQueue2"
+                   entries="java:/global/queue/test java:/global/queue/client-test2"/>
+    <jms-topic name="testTopic"
+                   entries="${jms-topic.entry:topic/client-test}"/>
+
     <server name="default"
             persistence-enabled="${persistence.enabled:false}"
             persist-id-cache="${persist.id.cache:false}"
@@ -150,64 +157,64 @@
         </outgoing-interceptors>
 
         <security
-                enabled="${security.enabled:false}"
-                elytron-domain="elytronDomain"
-                invalidation-interval="${security.invalidation.interval:1234}"
-                override-in-vm-security="${override.in-vm.security:false}"/>
+            enabled="${security.enabled:false}"
+            elytron-domain="elytronDomain"
+            invalidation-interval="${security.invalidation.interval:1234}"
+            override-in-vm-security="${override.in-vm.security:false}"/>
 
         <cluster
-                user="${messaging.cluster.user.name}"
-                password="${messaging.cluster.user.password}"/>
+            user="${messaging.cluster.user.name}"
+            password="${messaging.cluster.user.password}"/>
 
         <management
-                address="${management.address:my.management.address}"
-                notification-address="${management.notification.address:my.management.notif.address}"
-                jmx-enabled="${jmx.management.enabled:false}"
-                jmx-domain="${jmx.domain:my.jmx.domain}"/>
+            address="${management.address:my.management.address}"
+            notification-address="${management.notification.address:my.management.notif.address}"
+            jmx-enabled="${jmx.management.enabled:false}"
+            jmx-domain="${jmx.domain:my.jmx.domain}"/>
 
         <journal
-                type="${journal.type:NIO}"
-                buffer-timeout="${journal.buffer.timeout:1357}"
-                buffer-size="${journal.buffer.size:2468}"
-                sync-transactional="${journal.sync.transactional:false}"
-                sync-non-transactional="${journal.sync.non.transactional:true}"
-                log-write-rate="${log.journal.write.rate:true}"
-                file-size="${journal.file.size:102400}"
-                min-files="${journal.min.files:2}"
-                pool-files="${journal.pool.files:5}"
-                compact-percentage="${journal.compact.percentage:83}"
-                compact-min-files="${journal.compact.min.files:2}"
-                max-io="${journal.max.io:50}"
-                create-bindings-dir="${create.bindings.dir:false}"
-                create-journal-dir="${create.journal.dir:true}"
-                datasource="fooDS"
-                database="mysql"
-                jdbc-network-timeout="${journal.jdbc.network.timeout:4567}"
-                messages-table="${journal.message.table:MESSAGES}"
-                bindings-table="${journal.bindings.table:BINDINGS}"
-                jms-bindings-table="${journal.jms.bindings.table:JMS_BINDINGS}"
-                large-messages-table="${journal.large-messages.table:LARGE_MESSAGES}"
-                page-store-table="${journal.page-store.table:PAGE_STORE}"/>
+            type="${journal.type:NIO}"
+            buffer-timeout="${journal.buffer.timeout:1357}"
+            buffer-size="${journal.buffer.size:2468}"
+            sync-transactional="${journal.sync.transactional:false}"
+            sync-non-transactional="${journal.sync.non.transactional:true}"
+            log-write-rate="${log.journal.write.rate:true}"
+            file-size="${journal.file.size:102400}"
+            min-files="${journal.min.files:2}"
+            pool-files="${journal.pool.files:5}"
+            compact-percentage="${journal.compact.percentage:83}"
+            compact-min-files="${journal.compact.min.files:2}"
+            max-io="${journal.max.io:50}"
+            create-bindings-dir="${create.bindings.dir:false}"
+            create-journal-dir="${create.journal.dir:true}"
+            datasource="fooDS"
+            database="mysql"
+            jdbc-network-timeout="${journal.jdbc.network.timeout:4567}"
+            messages-table="${journal.message.table:MESSAGES}"
+            bindings-table="${journal.bindings.table:BINDINGS}"
+            jms-bindings-table="${journal.jms.bindings.table:JMS_BINDINGS}"
+            large-messages-table="${journal.large-messages.table:LARGE_MESSAGES}"
+            page-store-table="${journal.page-store.table:PAGE_STORE}"/>
 
         <statistics
-                enabled="${statistics.enabled:true}"
-                message-counter-sample-period="${message.counter.sample.period:7654}"
-                message-counter-max-day-history="${message.counter.max.day.history:23}"/>
+            enabled="${statistics.enabled:true}"
+            message-counter-sample-period="${message.counter.sample.period:7654}"
+            message-counter-max-day-history="${message.counter.max.day.history:23}"/>
 
         <transaction
-                timeout="${transaction.timeout:4321}"
-                scan-period="${transaction.timeout.scan.period:5432}"/>
+            timeout="${transaction.timeout:4321}"
+            scan-period="${transaction.timeout.scan.period:5432}"/>
 
         <message-expiry
-                scan-period="${message.expiry.scan.period:7654}"
-                thread-priority="${message.expiry.thread.priority:7}"/>
+            scan-period="${message.expiry.scan.period:7654}"
+            thread-priority="${message.expiry.thread.priority:7}"/>
 
         <debug
-                perf-blast-pages="${perf.blast.pages:70}"
-                run-sync-speed-test="${run.sync.speed.test:false}"
-                server-dump-interval="${server.dump.interval:8642}"
-                memory-warning-threshold="${memory.warning.threshold:1024}"
-                memory-measure-interval="${memory.measure.interval:2048}"/>
+            perf-blast-pages="${perf.blast.pages:70}"
+            run-sync-speed-test="${run.sync.speed.test:false}"
+            server-dump-interval="${server.dump.interval:8642}"
+            memory-warning-threshold="${memory.warning.threshold:1024}"
+            memory-measure-interval="${memory.measure.interval:2048}"/>
 
         <bindings-directory path="${my.bindings.dir:test}" relative-to="test"/>
         <journal-directory path="${my.journal.dir:test}" relative-to="test"/>
@@ -559,14 +566,14 @@
                                    deserialization-white-list="org.bar.Bar org.baz.Baz"
                                    statistics-enabled="${pcf.statistics-enabled:true}">
             <inbound-config
-                    use-jndi="${use.jndi:false}"
-                    jndi-params="${jndi.params:whatever}"
-                    rebalance-connections="${inbound.rebalance-connections:true}"
-                    use-local-tx="${use.local.tx:true}"
-                    setup-attempts="${setup-attempts:123}"
-                    setup-interval="${setup-interval:456}" />
+                use-jndi="${use.jndi:false}"
+                jndi-params="${jndi.params:whatever}"
+                rebalance-connections="${inbound.rebalance-connections:true}"
+                use-local-tx="${use.local.tx:true}"
+                setup-attempts="${setup-attempts:123}"
+                setup-interval="${setup-interval:456}" />
             <outbound-config
-                    allow-local-transactions="${allow.local.transactions:true}" />
+                allow-local-transactions="${allow.local.transactions:true}" />
         </pooled-connection-factory>
         <pooled-connection-factory name="pcf-with-credential-reference"
                                    entries="java:/JmsLocal2"

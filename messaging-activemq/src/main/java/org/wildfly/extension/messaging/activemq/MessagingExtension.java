@@ -29,6 +29,8 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.ADDRESS_
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.BINDINGS_DIRECTORY;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.BRIDGE;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.BROADCAST_GROUP;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.CLIENT_JMS_QUEUE;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.CLIENT_JMS_TOPIC;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.CLUSTER_CONNECTION;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.CONFIGURATION;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.CONNECTOR_SERVICE;
@@ -74,6 +76,8 @@ import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.wildfly.extension.messaging.activemq.jms.ClientConnectionFactoryDefinition;
+import org.wildfly.extension.messaging.activemq.jms.ClientJMSQueueDefinition;
+import org.wildfly.extension.messaging.activemq.jms.ClientJMSTopicDefinition;
 import org.wildfly.extension.messaging.activemq.jms.JMSQueueDefinition;
 import org.wildfly.extension.messaging.activemq.jms.JMSTopicDefinition;
 import org.wildfly.extension.messaging.activemq.jms.PooledConnectionFactoryDefinition;
@@ -133,6 +137,8 @@ public class MessagingExtension implements Extension {
     static final PathElement ADDRESS_SETTING_PATH = pathElement(ADDRESS_SETTING);
     static final PathElement ROLE_PATH = pathElement(ROLE);
     static final PathElement SECURITY_SETTING_PATH =  pathElement(SECURITY_SETTING);
+    public static final PathElement CLIENT_JMS_QUEUE_PATH = pathElement(CLIENT_JMS_QUEUE);
+    public static final PathElement CLIENT_JMS_TOPIC_PATH = pathElement(CLIENT_JMS_TOPIC);
     public static final PathElement JMS_QUEUE_PATH = pathElement(JMS_QUEUE);
     public static final PathElement JMS_TOPIC_PATH = pathElement(JMS_TOPIC);
     public static final PathElement POOLED_CONNECTION_FACTORY_PATH = pathElement(CommonAttributes.POOLED_CONNECTION_FACTORY);
@@ -192,6 +198,8 @@ public class MessagingExtension implements Extension {
         subsystem.registerSubModel(new HTTPConnectorDefinition(registerRuntimeOnly));
         subsystem.registerSubModel(new ClientConnectionFactoryDefinition(registerRuntimeOnly));
         subsystem.registerSubModel(PooledConnectionFactoryDefinition.INSTANCE);
+        subsystem.registerSubModel(ClientJMSQueueDefinition.INSTANCE);
+        subsystem.registerSubModel(ClientJMSTopicDefinition.INSTANCE);
 
         // ActiveMQ Servers
         final ManagementResourceRegistration server = subsystem.registerSubModel(new ServerDefinition(registerRuntimeOnly));
