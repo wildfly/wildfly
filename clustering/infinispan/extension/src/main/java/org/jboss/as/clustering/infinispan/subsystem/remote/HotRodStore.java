@@ -22,21 +22,8 @@
 
 package org.jboss.as.clustering.infinispan.subsystem.remote;
 
-import static org.infinispan.client.hotrod.ProtocolVersion.PROTOCOL_VERSION_10;
-import static org.infinispan.client.hotrod.ProtocolVersion.PROTOCOL_VERSION_11;
-import static org.infinispan.client.hotrod.ProtocolVersion.PROTOCOL_VERSION_12;
-import static org.infinispan.client.hotrod.ProtocolVersion.PROTOCOL_VERSION_13;
-import static org.infinispan.client.hotrod.ProtocolVersion.PROTOCOL_VERSION_20;
-import static org.infinispan.client.hotrod.ProtocolVersion.PROTOCOL_VERSION_21;
-import static org.infinispan.client.hotrod.ProtocolVersion.PROTOCOL_VERSION_22;
-import static org.infinispan.client.hotrod.ProtocolVersion.PROTOCOL_VERSION_23;
-import static org.infinispan.client.hotrod.ProtocolVersion.PROTOCOL_VERSION_24;
-import static org.infinispan.client.hotrod.ProtocolVersion.PROTOCOL_VERSION_25;
-import static org.infinispan.client.hotrod.ProtocolVersion.PROTOCOL_VERSION_26;
-
 import java.io.IOException;
 import java.util.AbstractMap;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -89,9 +76,8 @@ public class HotRodStore<K, V> implements AdvancedLoadWriteStore<K, V>, Callable
         try {
             ProtocolVersion protocolVersion = remoteCacheContainer.getConfiguration().version();
 
-            // Currently enumerates protocols which do *not* yet support administration calls
-            // TODO update the upstream API to be able to use comparison reliably; ordering is changed in 9.3
-            if (EnumSet.of(PROTOCOL_VERSION_26, PROTOCOL_VERSION_25, PROTOCOL_VERSION_24, PROTOCOL_VERSION_23, PROTOCOL_VERSION_22, PROTOCOL_VERSION_21, PROTOCOL_VERSION_20, PROTOCOL_VERSION_13, PROTOCOL_VERSION_12, PROTOCOL_VERSION_11, PROTOCOL_VERSION_10).contains(protocolVersion)) {
+            // Administration support was introduced in protocol version 2.7
+            if (protocolVersion.compareTo(ProtocolVersion.PROTOCOL_VERSION_27) < 0) {
                 InfinispanLogger.ROOT_LOGGER.remoteCacheMustBeDefined(protocolVersion.toString(), cacheName);
                 this.remoteCache = remoteCacheContainer.getCache(cacheName, false);
             } else {
@@ -101,7 +87,6 @@ public class HotRodStore<K, V> implements AdvancedLoadWriteStore<K, V>, Callable
         } catch (HotRodClientException ex) {
             throw new PersistenceException(ex);
         }
-
     }
 
     @Override
