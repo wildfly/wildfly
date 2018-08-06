@@ -19,13 +19,14 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.ee.infinispan;
+package org.wildfly.clustering.ee.retry;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
 
 import org.jboss.logging.Logger;
 import org.wildfly.clustering.ee.Invoker;
+import org.wildfly.common.function.ExceptionRunnable;
+import org.wildfly.common.function.ExceptionSupplier;
 
 /**
  * A invocation strategy that invokes a given task, retrying a configurable number of times on failure using backoff sleep intervals.
@@ -36,44 +37,44 @@ public class RetryingInvoker implements Invoker {
     // No logger interface for this module and no reason to create one for this class only
     private static final Logger LOGGER = Logger.getLogger(RetryingInvoker.class);
 
-    private final long[] backOffIntervals;
-    private final TimeUnit unit;
+    private final Duration[] backOffIntervals;
 
-    public RetryingInvoker(long... backOffIntervals) {
-        this(backOffIntervals, TimeUnit.MILLISECONDS);
-    }
-
-    public RetryingInvoker(long[] backOffIntervals, TimeUnit unit) {
+    public RetryingInvoker(Duration... backOffIntervals) {
         this.backOffIntervals = backOffIntervals;
-        this.unit = unit;
     }
 
     @Override
-    public <R> R invoke(Callable<R> task) throws Exception {
-        Exception exception = null;
-
+    public <R, E extends Exception> R invoke(ExceptionSupplier<R, E> task) throws E {
         for (int i = 0; i < this.backOffIntervals.length; ++i) {
-            if (i > 0) {
-                long delay = this.backOffIntervals[i];
-                if (delay > 0) {
-                    try {
-                        this.unit.sleep(delay);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    }
-                } else {
-                    Thread.yield();
-                }
-                if (Thread.currentThread().isInterrupted()) break;
-            }
+            if (Thread.currentThread().isInterrupted()) break;
             try {
-                return task.call();
+                return task.get();
             } catch (Exception e) {
-                exception = e;
+                LOGGER.debugf(e, "Attempt #%d failed", i + 1);
             }
-            LOGGER.debugf(exception, "Attempt #%d failed", i + 1);
+            Duration delay = this.backOffIntervals[i];
+            if (delay.isZero() || delay.isNegative()) {
+                Thread.yield();
+            } else {
+                try {
+                    Thread.sleep(delay.toMillis(), delay.getNano());
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
         }
+        return task.get();
+    }
 
-        throw exception;
+    @Override
+    public <E extends Exception> void invoke(ExceptionRunnable<E> action) throws E {
+        ExceptionSupplier<Void, E> adapter = new ExceptionSupplier<Void, E>() {
+            @Override
+            public Void get() throws E {
+                action.run();
+                return null;
+            }
+        };
+        this.invoke(adapter);
     }
 }
