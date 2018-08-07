@@ -59,6 +59,8 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
     private static final ModuleIdentifier JAVAX_PERSISTENCE_API_ID = ModuleIdentifier.create("javax.persistence.api");
     private static final ModuleIdentifier JBOSS_AS_JPA_ID = ModuleIdentifier.create("org.jboss.as.jpa");
     private static final ModuleIdentifier JBOSS_AS_JPA_SPI_ID = ModuleIdentifier.create("org.jboss.as.jpa.spi");
+    // HIBERNATE_TRANSFORMER_ID will be removed in a future WildFly release.
+    private static final ModuleIdentifier HIBERNATE_TRANSFORMER_ID = ModuleIdentifier.create("org.hibernate.bytecodetransformer");
 
     /**
      * Add dependencies for modules required for JPA deployments
@@ -69,7 +71,7 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
 
         // all applications get the javax.persistence module added to their deplyoment by default
-        addDependency(moduleSpecification, moduleLoader, deploymentUnit, JAVAX_PERSISTENCE_API_ID);
+        addDependency(moduleSpecification, moduleLoader, deploymentUnit, JAVAX_PERSISTENCE_API_ID, HIBERNATE_TRANSFORMER_ID);
 
         if (!JPADeploymentMarker.isJPADeployment(deploymentUnit)) {
             return; // Skip if there are no persistence use in the deployment

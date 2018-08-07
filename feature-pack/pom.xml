@@ -165,6 +165,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm-util</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>com.fasterxml</groupId>
             <artifactId>classmate</artifactId>
         </dependency>
@@ -2126,6 +2131,17 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-search-serialization-avro</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-ormtransformer</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
