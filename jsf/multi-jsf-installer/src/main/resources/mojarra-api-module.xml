@@ -36,7 +36,7 @@
     </dependencies>
 
     <resources>
-        <resource-root path="jsf-api-${jsf-version}.jar"/>
+        <resource-root path="${jsf-api-name}-${jsf-version}.jar"/>
     </resources>
 </module>
 

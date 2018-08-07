@@ -56,8 +56,9 @@
         <profile>
             <id>mojarra-2.x</id>
             <properties>
+                <jsf-api-name>jsf-api</jsf-api-name>
                 <jsf-impl-name>mojarra</jsf-impl-name>
-                <jsf-version>2.2.17</jsf-version>
+                <jsf-version>2.2.18</jsf-version>
             </properties>
             <dependencies>
                 <dependency>
@@ -72,10 +73,30 @@
                 </dependency>
             </dependencies>
         </profile>
-
+        <profile>
+            <id>mojarra-2.3</id>
+            <properties>
+                <jsf-api-name>jboss-jsf-api_2.3_spec</jsf-api-name>
+                <jsf-impl-name>mojarra</jsf-impl-name>
+                <jsf-version>2.3.5.SP1</jsf-version>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>org.jboss.spec.javax.faces</groupId>
+                    <artifactId>jboss-jsf-api_2.3_spec</artifactId>
+                    <version>${jsf-version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>com.sun.faces</groupId>
+                    <artifactId>jsf-impl</artifactId>
+                    <version>${jsf-version}</version>
+                </dependency>
+            </dependencies>
+        </profile>
         <profile>
             <id>mojarra-1.2</id>
             <properties>
+                <jsf-api-name>jsf-api</jsf-api-name>
                 <jsf-impl-name>mojarra</jsf-impl-name>
                 <jsf-version>1.2_14</jsf-version>
             </properties>
@@ -100,7 +121,7 @@
             </activation>
             <properties>
                 <jsf-impl-name>myfaces</jsf-impl-name>
-                <jsf-version>2.2.11</jsf-version>
+                <jsf-version>2.3.1</jsf-version>
             </properties>
             <dependencies>
                 <dependency>
@@ -117,7 +138,6 @@
                     <groupId>commons-digester</groupId>
                     <artifactId>commons-digester</artifactId>
                 </dependency>
-
             </dependencies>
         </profile>
     </profiles>
