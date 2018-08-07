@@ -56,7 +56,7 @@
         interval="15000"
         timeout="60000"
         timeout_check_interval="5000"/>
-    <FD_SOCK port_range="0"/>
+    <FD_SOCK/>
     <VERIFY_SUSPECT timeout="5000"/>
     <pbcast.NAKACK2
         xmit_interval="100"

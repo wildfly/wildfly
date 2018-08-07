@@ -447,6 +447,14 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
                 }
             }
         }
+
+        // Set default port_range for pre-WF11 schemas
+        if (!this.schema.since(JGroupsSchema.VERSION_5_0)) {
+            String portRangeProperty = "port_range";
+            if (!operation.hasDefined(AbstractProtocolResourceDefinition.Attribute.PROPERTIES.getName(), portRangeProperty)) {
+                operation.get(AbstractProtocolResourceDefinition.Attribute.PROPERTIES.getName()).get(portRangeProperty).set("50");
+            }
+        }
     }
 
     private void parseSocketProtocol(XMLExtendedStreamReader reader, PathAddress stackAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
