@@ -29,6 +29,7 @@ import java.util.function.Function;
 
 import org.wildfly.clustering.infinispan.spi.distribution.Key;
 import org.wildfly.clustering.marshalling.Externalizer;
+import org.wildfly.clustering.web.cache.SessionIdentifierSerializer;
 
 /**
  * Base externalizer for cache keys containing session identifiers.

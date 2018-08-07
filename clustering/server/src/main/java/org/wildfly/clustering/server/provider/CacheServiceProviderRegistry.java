@@ -56,7 +56,7 @@ import org.wildfly.clustering.dispatcher.CommandDispatcherException;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.Invoker;
-import org.wildfly.clustering.ee.infinispan.CacheProperties;
+import org.wildfly.clustering.ee.cache.CacheProperties;
 import org.wildfly.clustering.ee.infinispan.InfinispanCacheProperties;
 import org.wildfly.clustering.ee.infinispan.retry.RetryingInvoker;
 import org.wildfly.clustering.group.GroupListener;

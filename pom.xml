@@ -602,6 +602,11 @@
 
             <dependency>
                 <groupId>${project.groupId}</groupId>
+                <artifactId>wildfly-clustering-ee-cache</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-clustering-ee-infinispan</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -707,6 +712,11 @@
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-clustering-web-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>wildfly-clustering-web-cache</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

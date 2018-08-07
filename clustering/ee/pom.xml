@@ -43,6 +43,7 @@
 
     <modules>
         <module>spi</module>
+        <module>cache</module>
         <module>infinispan</module>
     </modules>
 

@@ -38,8 +38,8 @@ import org.infinispan.notifications.cachelistener.annotation.CacheEntryPassivate
 import org.infinispan.notifications.cachelistener.event.CacheEntryActivatedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryPassivatedEvent;
 import org.wildfly.clustering.ee.Mutator;
+import org.wildfly.clustering.ee.cache.CacheProperties;
 import org.wildfly.clustering.ee.infinispan.CacheEntryMutator;
-import org.wildfly.clustering.ee.infinispan.CacheProperties;
 import org.wildfly.clustering.ejb.PassivationListener;
 import org.wildfly.clustering.ejb.infinispan.BeanEntry;
 import org.wildfly.clustering.ejb.infinispan.BeanGroup;

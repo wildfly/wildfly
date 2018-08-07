@@ -31,7 +31,7 @@ import java.util.concurrent.Executors;
 
 import org.junit.Test;
 import org.wildfly.clustering.ee.Batcher;
-import org.wildfly.clustering.ee.infinispan.TransactionBatch;
+import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.ejb.RemoveListener;
 
 public class BeanExpirationSchedulerTestCase {

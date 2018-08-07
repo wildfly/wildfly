@@ -42,7 +42,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ee.Immutability;
-import org.wildfly.clustering.ee.infinispan.TransactionBatch;
+import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.infinispan.spi.EvictableDataContainer;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;

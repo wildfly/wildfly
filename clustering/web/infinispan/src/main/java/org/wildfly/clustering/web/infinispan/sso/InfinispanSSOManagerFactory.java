@@ -26,14 +26,17 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.infinispan.Cache;
 import org.wildfly.clustering.ee.Batcher;
-import org.wildfly.clustering.ee.infinispan.CacheProperties;
-import org.wildfly.clustering.ee.infinispan.InfinispanBatcher;
+import org.wildfly.clustering.ee.cache.CacheProperties;
+import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.ee.infinispan.InfinispanCacheProperties;
-import org.wildfly.clustering.ee.infinispan.TransactionBatch;
+import org.wildfly.clustering.ee.infinispan.tx.InfinispanBatcher;
 import org.wildfly.clustering.infinispan.spi.distribution.Key;
 import org.wildfly.clustering.marshalling.spi.Marshallability;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueMarshaller;
 import org.wildfly.clustering.web.IdentifierFactory;
+import org.wildfly.clustering.web.cache.sso.CompositeSSOManager;
+import org.wildfly.clustering.web.cache.sso.SSOFactory;
+import org.wildfly.clustering.web.cache.sso.SessionsFactory;
 import org.wildfly.clustering.web.infinispan.AffinityIdentifierFactory;
 import org.wildfly.clustering.web.infinispan.sso.coarse.CoarseSessionsFactory;
 import org.wildfly.clustering.web.sso.SSOManager;
@@ -56,6 +59,6 @@ public class InfinispanSSOManagerFactory<A, D, S> implements SSOManagerFactory<A
         SSOFactory<Map.Entry<A, AtomicReference<L>>, Map<D, S>, A, D, S, L> factory = new InfinispanSSOFactory<>(this.configuration.getCache(), properties, new MarshalledValueMarshaller<>(configuration.getMarshalledValueFactory(), configuration.getMarshallingContext()), configuration.getLocalContextFactory(), sessionsFactory);
         IdentifierFactory<String> idFactory = new AffinityIdentifierFactory<>(configuration.getIdentifierFactory(), cache, this.configuration.getKeyAffinityServiceFactory());
         Batcher<TransactionBatch> batcher = new InfinispanBatcher(cache);
-        return new InfinispanSSOManager<>(factory, idFactory, batcher);
+        return new CompositeSSOManager<>(factory, idFactory, batcher);
     }
 }
