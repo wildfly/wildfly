@@ -48,4 +48,9 @@
 
         <module name="javax.faces.api:${jsf-impl-name}-${jsf-version}"/>
     </dependencies>
+    <provides>
+        <service name="javax.servlet.ServletContainerInitializer">
+            <with-class name="org.jboss.as.jsf.injection.MyFacesContainerInitializer"/>
+        </service>
+    </provides>
 </module>
