@@ -23,7 +23,7 @@
                 <protocol type="FRAG3"/>
             </stack>
             <stack name="tcp">
-                <transport type="TCP" socket-binding="jgroups-tcp"/>
+                <transport type="TCP_NIO2" socket-binding="jgroups-tcp"/>
                 <?TCP-DISCOVERY?>
                 <protocol type="MERGE3"/>
                 <protocol type="FD_SOCK"/>
