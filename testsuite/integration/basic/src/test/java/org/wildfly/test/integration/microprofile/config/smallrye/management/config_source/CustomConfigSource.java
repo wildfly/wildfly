@@ -34,12 +34,16 @@ import org.eclipse.microprofile.config.spi.ConfigSource;
 public class CustomConfigSource implements ConfigSource{
     public static final String PROP_NAME = "my.prop.from.class";
     public static final String PROP_VALUE = "I'm from a custom config source!";
+    public static final String PROP_NAME_OVERRIDEN_BY_SERVICE_LOADER = "my.prop.from.class.overriden.service.loader";
+    public static final String PROP_VALUE_OVERRIDEN_BY_SERVICE_LOADER = "I'm from a custom config source! However I should be " +
+            "overriden by property from ConfigSource provided by service loader.";
 
     final Map<String, String> props;
 
     public CustomConfigSource() {
         props = new HashMap<>();
         props.put(PROP_NAME, PROP_VALUE);
+        props.put(PROP_NAME_OVERRIDEN_BY_SERVICE_LOADER, PROP_VALUE_OVERRIDEN_BY_SERVICE_LOADER);
     }
 
     @Override

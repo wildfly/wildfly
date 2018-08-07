@@ -58,7 +58,9 @@ public class ConfigSourceFromClassTestCase {
     public static Archive<?> deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "ConfigSourceFromClassTestCase.war")
                 .addClasses(TestApplication.class, TestApplication.Resource.class)
-                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
+                .addAsWebInfResource(ConfigSourceFromClassTestCase.class.getPackage(), "jboss-deployment-structure.xml",
+                        "jboss-deployment-structure.xml");
         return war;
     }
 
@@ -73,6 +75,13 @@ public class ConfigSourceFromClassTestCase {
             Assert.assertEquals(200, response.getStatusLine().getStatusCode());
             String text = getContent(response);
             AssertUtils.assertTextContainsProperty(text, CustomConfigSource.PROP_NAME, CustomConfigSource.PROP_VALUE);
+            AssertUtils.assertTextContainsProperty(text, CustomConfigSource.PROP_NAME_OVERRIDEN_BY_SERVICE_LOADER,
+                    CustomConfigSourceServiceLoader.PROP_VALUE_OVERRIDEN_BY_SERVICE_LOADER);
+            AssertUtils.assertTextContainsProperty(text, CustomConfigSourceServiceLoader.PROP_NAME,
+                    CustomConfigSourceServiceLoader.PROP_VALUE);
+            // TODO - enable this when https://issues.jboss.org/browse/WFWIP-60 is resolved
+            //AssertUtils.assertTextContainsProperty(text, CustomConfigSourceAServiceLoader.PROP_NAME_SAME_ORDINALITY_OVERRIDE,
+            //        CustomConfigSourceAServiceLoader.PROP_VALUE_SAME_ORDINALITY_OVERRIDE);
         }
     }
 }
