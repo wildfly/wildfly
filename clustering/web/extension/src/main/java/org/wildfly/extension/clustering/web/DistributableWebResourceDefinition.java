@@ -121,6 +121,9 @@ public class DistributableWebResourceDefinition extends SubsystemResourceDefinit
 
         new InfinispanSessionManagementResourceDefinition().register(registration);
         new InfinispanSSOManagementResourceDefinition().register(registration);
+
+        new HotRodSessionManagementResourceDefinition().register(registration);
+        new HotRodSSOManagementResourceDefinition().register(registration);
     }
 
     @Override

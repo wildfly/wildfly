@@ -38,11 +38,21 @@
                         <xs:documentation>Defines an Infinispan cache-based session management provider</xs:documentation>
                     </xs:annotation>
                 </xs:element>
+                <xs:element name="hotrod-session-management" type="tns:hotrod-session-management">
+                    <xs:annotation>
+                        <xs:documentation>Defines a deployment specific HotRod remote cache-based session management provider</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
             </xs:choice>
             <xs:choice maxOccurs="unbounded">
                 <xs:element name="infinispan-single-sign-on-management" type="tns:infinispan-single-sign-on-management">
                     <xs:annotation>
                         <xs:documentation>Defines an Infinispan cache-based single sign-on management provider</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="hotrod-single-sign-on-management" type="tns:hotrod-single-sign-on-management">
+                    <xs:annotation>
+                        <xs:documentation>Defines an HotRod remote cache-based single sign-on management provider</xs:documentation>
                     </xs:annotation>
                 </xs:element>
             </xs:choice>
@@ -134,6 +144,40 @@
         </xs:complexContent>
     </xs:complexType>
 
+    <xs:complexType name="hotrod-session-management">
+        <xs:complexContent>
+            <xs:extension base="tns:abstract-session-management">
+                <xs:choice>
+                    <xs:element name="no-affinity" type="tns:empty">
+                        <xs:annotation>
+                            <xs:documentation>
+                                Web requests not have an affinity for any particular server.
+                                Intended for use cases where web session state is not maintained within the application server.
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="local-affinity" type="tns:empty">
+                        <xs:annotation>
+                            <xs:documentation>
+                                Web requests have an affinity for the member that last handled a given session.
+                                This option corresponds to traditional sticky session behavior.
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                </xs:choice>
+                <xs:attributeGroup ref="tns:hotrod"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="hotrod-single-sign-on-management">
+        <xs:complexContent>
+            <xs:extension base="tns:abstract-single-sign-on-management">
+                <xs:attributeGroup ref="tns:hotrod"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
     <xs:complexType name="infinispan-routing">
         <xs:attributeGroup ref="tns:infinispan"/>
     </xs:complexType>
@@ -150,6 +194,19 @@
                     References a cache within the associated cache-container.
                     If unspecified, the default cache of the associated cache-container is assumed.
                 </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:attributeGroup>
+
+    <xs:attributeGroup name="hotrod">
+        <xs:attribute name="remote-cache-container" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>References a remote-cache-container defined by the Infinispan subsystem.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="cache-configuration" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>References a named configuration on the remote server.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:attributeGroup>

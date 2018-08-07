@@ -51,6 +51,8 @@
         <module name="org.wildfly.clustering.infinispan.spi"/>
         <module name="org.wildfly.clustering.service"/>
         <module name="org.wildfly.clustering.web.cache"/>
+        <module name="org.wildfly.clustering.web.hotrod"/>
+        <module name="org.wildfly.clustering.web.cache"/>
         <module name="org.wildfly.clustering.web.infinispan"/>
         <module name="org.wildfly.clustering.web.spi"/>
     </dependencies>
