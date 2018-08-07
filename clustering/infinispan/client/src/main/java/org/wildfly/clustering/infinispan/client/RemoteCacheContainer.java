@@ -20,12 +20,12 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.infinispan.spi;
+package org.wildfly.clustering.infinispan.client;
 
 import org.infinispan.client.hotrod.RemoteCacheManagerAdmin;
 
 /**
- * Exposes Infinispan's {@link org.infinispan.client.hotrod.RemoteCacheContainer} additionally exposing the name of the
+ * Exposes Infinispan's {@link org.wildfly.clustering.infinispan.client.client.hotrod.RemoteCacheContainer} additionally exposing the name of the
  * remote cache container and an administration utility.
  *
  * @author Radoslav Husar

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,29 +20,27 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.infinispan.spi;
+package org.wildfly.clustering.infinispan.client;
 
-import org.infinispan.configuration.global.GlobalConfiguration;
+import org.infinispan.client.hotrod.configuration.Configuration;
 import org.jboss.as.clustering.controller.UnaryRequirementServiceNameFactory;
 import org.jboss.as.clustering.controller.UnaryServiceNameFactory;
 import org.jboss.as.clustering.controller.UnaryServiceNameFactoryProvider;
-import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
 import org.wildfly.clustering.service.UnaryRequirement;
 
 /**
  * @author Paul Ferraro
  */
-public enum InfinispanRequirement implements UnaryRequirement, UnaryServiceNameFactoryProvider {
+public enum InfinispanClientRequirement implements UnaryRequirement, UnaryServiceNameFactoryProvider {
 
-    CONTAINER("org.wildfly.clustering.infinispan.cache-container", CacheContainer.class),
-    CONFIGURATION("org.wildfly.clustering.infinispan.cache-container-configuration", GlobalConfiguration.class),
-    KEY_AFFINITY_FACTORY("org.wildfly.clustering.infinispan.key-affinity-factory", KeyAffinityServiceFactory.class),
+    REMOTE_CONTAINER("org.wildfly.clustering.infinispan.remote-cache-container", RemoteCacheContainer.class),
+    REMOTE_CONTAINER_CONFIGURATION("org.wildfly.clustering.infinispan.remote-cache-container-configuration", Configuration.class),
     ;
     private final String name;
     private final Class<?> type;
     private final UnaryServiceNameFactory factory = new UnaryRequirementServiceNameFactory(this);
 
-    InfinispanRequirement(String name, Class<?> type) {
+    InfinispanClientRequirement(String name, Class<?> type) {
         this.name = name;
         this.type = type;
     }

@@ -29,7 +29,7 @@ import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.client.hotrod.configuration.TransactionMode;
 import org.infinispan.commons.api.BasicCache;
 import org.infinispan.commons.marshall.Marshaller;
-import org.wildfly.clustering.infinispan.spi.RemoteCacheContainer;
+import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
 
 import java.util.Set;
 

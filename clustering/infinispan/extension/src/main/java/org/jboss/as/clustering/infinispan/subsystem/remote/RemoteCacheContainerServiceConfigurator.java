@@ -39,8 +39,8 @@ import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
-import org.wildfly.clustering.infinispan.spi.RemoteCacheContainer;
+import org.wildfly.clustering.infinispan.client.InfinispanClientRequirement;
+import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
 import org.wildfly.clustering.service.AsyncServiceConfigurator;
 import org.wildfly.clustering.service.FunctionalService;
 import org.wildfly.clustering.service.ServiceConfigurator;
@@ -63,7 +63,7 @@ public class RemoteCacheContainerServiceConfigurator extends CapabilityServiceNa
 
     @Override
     public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.configuration = new ServiceSupplierDependency<>(InfinispanRequirement.REMOTE_CONTAINER_CONFIGURATION.getServiceName(context, this.name));
+        this.configuration = new ServiceSupplierDependency<>(InfinispanClientRequirement.REMOTE_CONTAINER_CONFIGURATION.getServiceName(context, this.name));
         return this;
     }
 

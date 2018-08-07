@@ -34,7 +34,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelType;
-import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
+import org.wildfly.clustering.infinispan.client.InfinispanClientRequirement;
 
 /**
  * Resource description for the addressable resource:
@@ -49,7 +49,7 @@ public class HotRodStoreResourceDefinition extends StoreResourceDefinition {
 
     public enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         CACHE_CONFIGURATION("cache-configuration", ModelType.STRING, null),
-        REMOTE_CACHE_CONTAINER("remote-cache-container", ModelType.STRING, new CapabilityReference(Capability.PERSISTENCE, InfinispanRequirement.REMOTE_CONTAINER)),
+        REMOTE_CACHE_CONTAINER("remote-cache-container", ModelType.STRING, new CapabilityReference(Capability.PERSISTENCE, InfinispanClientRequirement.REMOTE_CONTAINER)),
         ;
 
         private final AttributeDefinition definition;
