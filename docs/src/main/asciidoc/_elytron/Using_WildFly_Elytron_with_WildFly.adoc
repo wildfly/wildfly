@@ -9,25 +9,24 @@
 
 You can find more details on the enabling WildFly to use the out of the
 box Elytron components for securing the management interfaces in the
-link:Elytron_Subsystem.html#src-557147_ElytronSubsystem-DefaultManagementAuthenticationConfiguration[Default
-Management Authentication Configuration] section.
+<<#default-management-authentication-configuration,Default
+Management Authentication Configuration>> section.
 
 [[securing-applications]]
 === Securing Applications
 
-The _elytron_ subsystem provides _application-http-authentication_ by
+The _elytron_ subsystem provides _application-security-domain_ by
 default which can be used to secure applications. For more details on
-how _application-http-authentication_ is configured, see the
-link:Elytron_Subsystem.html#src-557147_ElytronSubsystem-OutoftheBoxConfiguration[Out
-of the Box Configuration] section.
+how _application-security-domain_ is configured, see the
+<<#default-application-authentication-configuration,Default
+Application Authentication Configuration>> section.
 
-To configure applications to use _application-http-authentication_, see
-link:Using_the_Elytron_Subsystem.html#src-557140_UsingtheElytronSubsystem-ConfigureApplicationstoUseElytronorLegacySecurityforAuthentication[Configure
-Applications to Use Elytron or Legacy Security for Authentication]. You
+To configure applications to use _application-security-domain_, see
+<<#set-up-and-configure-authentication-for-applications,Set Up and Configure Authentication for Applications>>. You
 can also override the default behavior of all applications using the
 steps in
-link:Using_the_Elytron_Subsystem.html#src-557140_safe-id-VXNpbmd0aGVFbHl0cm9uU3Vic3lzdGVtLU92ZXJyaWRlYW5BcHBsaWNhdGlvbidzQXV0aGVudGljYXRpb25Db25maWd1cmF0aW9u[Override
-an Application's Authentication Configuration].
+<<#override-an-applications-authentication-configuration,
+Override an Application's Authentication Configuration>>.
 
 [[using-ssltls]]
 === Using SSL/TLS
