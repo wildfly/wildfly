@@ -53,6 +53,7 @@ public class SimpleServerAuthModule implements ServerAuthModule {
 
     private static final String USERNAME_HEADER = "X-USERNAME";
     private static final String PASSWORD_HEADER = "X-PASSWORD";
+    private static final String ROLES_HEADER = "X-ROLES";
     private static final String MESSAGE_HEADER = "X-MESSAGE";
 
     private CallbackHandler callbackHandler;
@@ -72,6 +73,7 @@ public class SimpleServerAuthModule implements ServerAuthModule {
 
         final String username = request.getHeader(USERNAME_HEADER);
         final String password = request.getHeader(PASSWORD_HEADER);
+        final String roles = request.getHeader(ROLES_HEADER);
 
         if (username == null || username.length() == 0 || password == null || password.length() == 0) {
             sendChallenge(response);
@@ -85,7 +87,13 @@ public class SimpleServerAuthModule implements ServerAuthModule {
             pvc.clearPassword();
         }
         if (pvc.getResult()) {
-            handle(new CallerPrincipalCallback(clientSubject, new NamePrincipal(username)), new GroupPrincipalCallback(clientSubject, new String[] {"Users"}));
+            Callback callerPrincipalCallback = new CallerPrincipalCallback(clientSubject, new NamePrincipal(username));
+            if (roles != null) {
+                handle(callerPrincipalCallback, new GroupPrincipalCallback(clientSubject, roles.split(",")));
+            } else {
+                handle(callerPrincipalCallback);
+            }
+
             return AuthStatus.SUCCESS;
         } else {
             // It is a failure as authentication was deliberately attempted and the supplied username / password failed validation.

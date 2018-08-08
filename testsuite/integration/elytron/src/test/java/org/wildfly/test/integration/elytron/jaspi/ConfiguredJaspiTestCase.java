@@ -124,6 +124,14 @@ public class ConfiguredJaspiTestCase extends JaspiTestBase {
                 int statusCode = response.getStatusLine().getStatusCode();
                 assertEquals("Unexpected status code in HTTP response.", SC_FORBIDDEN, statusCode);
             }
+
+            // Now try adding the role.
+            request.addHeader("X-ROLES", "Role1,Role2");
+            try (CloseableHttpResponse response = httpClient.execute(request)) {
+                int statusCode = response.getStatusLine().getStatusCode();
+                assertEquals("Unexpected status code in HTTP response.", SC_OK, statusCode);
+                assertEquals("Unexpected content of HTTP response.", "user1", EntityUtils.toString(response.getEntity()));
+            }
         }
     }
 
