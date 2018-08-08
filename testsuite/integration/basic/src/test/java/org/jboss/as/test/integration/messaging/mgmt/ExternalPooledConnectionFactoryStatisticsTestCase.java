@@ -21,15 +21,10 @@
  */
 package org.jboss.as.test.integration.messaging.mgmt;
 
-import static org.jboss.as.controller.client.helpers.ClientConstants.ADD;
-import static org.jboss.as.controller.client.helpers.ClientConstants.NAME;
-import static org.jboss.as.controller.client.helpers.ClientConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STATISTICS_ENABLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-import static org.jboss.as.test.integration.messaging.mgmt.ClientConnectionFactoryClientMappingTestCase.SetupTask.execute;
 import static org.jboss.shrinkwrap.api.ArchivePaths.create;
 import static org.junit.Assert.assertEquals;
 
@@ -43,14 +38,11 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.shared.ServerReload;
-import org.jboss.as.test.shared.ServerSnapshot;
 import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
-import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -64,17 +56,17 @@ import org.junit.runner.RunWith;
  */
 @RunAsClient
 @RunWith(Arquillian.class)
-@ServerSetup({ClientPooledConnectionFactoryStatisticsTestCase.SetupTask.class})
-public class ClientPooledConnectionFactoryStatisticsTestCase {
+@ServerSetup({ExternalPooledConnectionFactoryStatisticsTestCase.SetupTask.class})
+public class ExternalPooledConnectionFactoryStatisticsTestCase {
 
     static class SetupTask extends SnapshotRestoreSetupTask {
 
-        private static final Logger logger = Logger.getLogger(ClientPooledConnectionFactoryStatisticsTestCase.SetupTask.class);
+        private static final Logger logger = Logger.getLogger(ExternalPooledConnectionFactoryStatisticsTestCase.SetupTask.class);
 
         @Override
         public void doSetup(org.jboss.as.arquillian.container.ManagementClient managementClient, String s) throws Exception {
             JMSOperations ops = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
-            ops.addClientHttpConnector("http-test-connector", "http", "http-acceptor");
+            ops.addExternalHttpConnector("http-test-connector", "http", "http-acceptor");
             ModelNode attr = new ModelNode();
             attr.get("connectors").add("http-test-connector");
             ModelNode op = Operations.createRemoveOperation(getInitialPooledConnectionFactoryAddress());

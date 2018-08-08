@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.messaging.jms.client;
+package org.jboss.as.test.integration.messaging.jms.external;
 
 import static org.junit.Assert.assertEquals;
 
@@ -59,17 +59,17 @@ import org.junit.runner.RunWith;
  * @author <a href="jmartisk@redhat.com">Jan Martiska</a>
  */
 @RunWith(Arquillian.class)
-@ServerSetup(SendToClientJMSTopicTestCase.SetupTask.class)
-public class SendToClientJMSTopicTestCase {
+@ServerSetup(SendToExternalJMSTopicTestCase.SetupTask.class)
+public class SendToExternalJMSTopicTestCase {
 
     static class SetupTask extends SnapshotRestoreSetupTask {
 
-        private static final Logger logger = Logger.getLogger(SendToClientJMSTopicTestCase.SetupTask.class);
+        private static final Logger logger = Logger.getLogger(SendToExternalJMSTopicTestCase.SetupTask.class);
 
         @Override
         public void doSetup(org.jboss.as.arquillian.container.ManagementClient managementClient, String s) throws Exception {
             JMSOperations ops = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
-            ops.addClientHttpConnector("http-test-connector", "http", "http-acceptor");
+            ops.addExternalHttpConnector("http-test-connector", "http", "http-acceptor");
             ops.createJmsTopic("myAwesomeTopic", "/topic/myAwesomeTopic");
             ModelNode attr = new ModelNode();
             attr.get("connectors").add("http-test-connector");
@@ -110,7 +110,7 @@ public class SendToClientJMSTopicTestCase {
         ModelNode getClientTopicAddress() {
             ModelNode address = new ModelNode();
             address.add("subsystem", "messaging-activemq");
-            address.add("client-jms-topic", "myAwesomeTopic");
+            address.add("external-jms-topic", "myAwesomeTopic");
             return address;
         }
 
@@ -123,7 +123,7 @@ public class SendToClientJMSTopicTestCase {
         }
     }
 
-    private static final Logger logger = Logger.getLogger(SendToClientJMSTopicTestCase.class);
+    private static final Logger logger = Logger.getLogger(SendToExternalJMSTopicTestCase.class);
 
     @Resource(lookup = "java:jboss/exported/topic/myAwesomeClientTopic")
     private Topic topic;
@@ -135,7 +135,7 @@ public class SendToClientJMSTopicTestCase {
     public static JavaArchive createTestArchive() {
         return ShrinkWrap.create(JavaArchive.class, "test.jar")
                 .addPackage(JMSOperations.class.getPackage())
-                .addClass(SendToClientJMSTopicTestCase.SetupTask.class)
+                .addClass(SendToExternalJMSTopicTestCase.SetupTask.class)
                 .addAsManifestResource(
                         EmptyAsset.INSTANCE,
                         ArchivePaths.create("beans.xml"));

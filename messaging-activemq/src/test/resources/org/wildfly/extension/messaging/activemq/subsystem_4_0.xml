@@ -127,11 +127,11 @@
         <credential-reference clear-text="passwordOut!"/>
     </pooled-connection-factory>
 
-    <client-jms-queue name="testQueue"
+    <external-jms-queue name="testQueue"
                    entries="${jms-queue.entry:queue/client-test}"/>
-    <client-jms-queue name="testQueue2"
+    <external-jms-queue name="testQueue2"
                    entries="java:/global/queue/test java:/global/queue/client-test2"/>
-    <client-jms-topic name="testTopic"
+    <external-jms-topic name="testTopic"
                    entries="${jms-topic.entry:topic/client-test}"/>
 
     <server name="default"

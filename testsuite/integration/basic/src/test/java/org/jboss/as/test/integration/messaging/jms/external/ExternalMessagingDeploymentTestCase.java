@@ -19,11 +19,10 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.messaging.jms.client;
 
-import static org.jboss.as.controller.client.helpers.ClientConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+package org.jboss.as.test.integration.messaging.jms.external;
+
+
 import static org.jboss.shrinkwrap.api.ShrinkWrap.create;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -38,7 +37,6 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
@@ -56,13 +54,13 @@ import org.junit.runner.RunWith;
  * Test that invoking a management operation that removes a JMS resource that is used by a deployed archive must fail:
  * the resource must not be removed and any depending services must be recovered.
  * The deployment must still be operating after the failing management operation.
- *
+
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2014 Red Hat inc.
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup(DiscoveryGroupClientMessagingDeploymentTestCase.SetupTask.class)
-public class DiscoveryGroupClientMessagingDeploymentTestCase {
+@ServerSetup(ExternalMessagingDeploymentTestCase.SetupTask.class)
+public class ExternalMessagingDeploymentTestCase {
 
     public static final String QUEUE_LOOKUP = "java:/jms/DependentMessagingDeploymentTestCase/myQueue";
     public static final String TOPIC_LOOKUP = "java:/jms/DependentMessagingDeploymentTestCase/myTopic";
@@ -70,35 +68,28 @@ public class DiscoveryGroupClientMessagingDeploymentTestCase {
 
     private static final String QUEUE_NAME = "myQueue";
     private static final String TOPIC_NAME = "myTopic";
-    private static final String DISCOVERY_GROUP_NAME = "dg1";
-    private static final String MULTICAST_SOCKET_BINDING = "messaging-group";
 
     @ArquillianResource
     private URL url;
 
     static class SetupTask extends SnapshotRestoreSetupTask {
 
-        private static final Logger logger = Logger.getLogger(DiscoveryGroupClientMessagingDeploymentTestCase.SetupTask.class);
+        private static final Logger logger = Logger.getLogger(SendToExternalJMSQueueTestCase.SetupTask.class);
 
         @Override
         public void doSetup(org.jboss.as.arquillian.container.ManagementClient managementClient, String s) throws Exception {
             JMSOperations ops = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
             ops.createJmsQueue(QUEUE_NAME, "/queue/" + QUEUE_NAME);
             ops.createJmsTopic(TOPIC_NAME, "/topic/" + TOPIC_NAME);
-            execute(managementClient, addMulticastSocketBinding(MULTICAST_SOCKET_BINDING, "${jboss.messaging.group.address:231.7.7.7}", "${jboss.messaging.group.port:9876}", 0), true);
-            execute(managementClient, addClientDiscoveryGroup(DISCOVERY_GROUP_NAME, MULTICAST_SOCKET_BINDING), true);
+            ops.addExternalHttpConnector("http-test-connector", "http", "http-acceptor");
+            ModelNode attr = new ModelNode();
+            attr.get("connectors").add("http-test-connector");
             ModelNode op = Operations.createRemoveOperation(getInitialPooledConnectionFactoryAddress());
             execute(managementClient, op, true);
-            execute(managementClient, createBroadcastGroupWithSocketBinding(ops.getServerAddress(), "bg-group1", MULTICAST_SOCKET_BINDING, "http-connector"), true);
-            execute(managementClient, createDiscoveryGroupWithSocketBinding(ops.getServerAddress(), "dg-group1", MULTICAST_SOCKET_BINDING), true);
-            execute(managementClient, createClusterConnection(ops.getServerAddress(), "my-cluster", "jms", "http-connector", "dg-group1"), true);
-//            <broadcast-group name="bg-group1" jgroups-cluster="activemq-cluster" connectors="http-connector"/>
-//                <discovery-group name="dg-group1" jgroups-cluster="activemq-cluster"/>
-//                <cluster-connection name="my-cluster" address="jms" connector-name="http-connector" discovery-group="dg-group1"/>
             op = Operations.createAddOperation(getPooledConnectionFactoryAddress());
             op.get("transaction").set("xa");
             op.get("entries").add("java:/JmsXA java:jboss/DefaultJMSConnectionFactory");
-            op.get("discovery-group").set(DISCOVERY_GROUP_NAME);
+            op.get("connectors").add("http-test-connector");
             execute(managementClient, op, true);
             op = Operations.createAddOperation(getClientTopicAddress());
             op.get("entries").add(TOPIC_LOOKUP);
@@ -130,17 +121,19 @@ public class DiscoveryGroupClientMessagingDeploymentTestCase {
             return address;
         }
 
+
         ModelNode getClientTopicAddress() {
             ModelNode address = new ModelNode();
             address.add("subsystem", "messaging-activemq");
-            address.add("client-jms-topic", TOPIC_NAME);
+            address.add("external-jms-topic", TOPIC_NAME);
             return address;
         }
+
 
         ModelNode getClientQueueAddress() {
             ModelNode address = new ModelNode();
             address.add("subsystem", "messaging-activemq");
-            address.add("client-jms-queue", QUEUE_NAME);
+            address.add("external-jms-queue", QUEUE_NAME);
             return address;
         }
 
@@ -150,59 +143,6 @@ public class DiscoveryGroupClientMessagingDeploymentTestCase {
             address.add("server", "default");
             address.add("pooled-connection-factory", "activemq-ra");
             return address;
-        }
-
-        ModelNode addClientDiscoveryGroup(String name, String socketBinding) {
-            ModelNode address = new ModelNode();
-            address.add("subsystem", "messaging-activemq");
-            address.add("discovery-group", name);
-
-            ModelNode add = new ModelNode();
-            add.get(OP).set(ADD);
-            add.get(OP_ADDR).set(address);
-            add.get("socket-binding").set(socketBinding);
-            return add;
-        }
-
-        ModelNode addMulticastSocketBinding(String bindingName, String multicastAddress, String multicastPort, int port) {
-            ModelNode address = new ModelNode();
-            address.add("socket-binding-group", "standard-sockets");
-            address.add("socket-binding", bindingName);
-
-            ModelNode socketBindingOp = new ModelNode();
-            socketBindingOp.get(OP).set(ADD);
-            socketBindingOp.get(OP_ADDR).set(address);
-            socketBindingOp.get("port").set(port);
-            socketBindingOp.get("multicast-address").set(multicastAddress);
-            socketBindingOp.get("multicast-port").set(multicastPort);
-            return socketBindingOp;
-        }
-
-        ModelNode createDiscoveryGroupWithSocketBinding(ModelNode serverAddress, String discoveryGroupName, String socketBinding) throws Exception {
-            ModelNode address = serverAddress.clone();
-            address.add("discovery-group", discoveryGroupName);
-            ModelNode op = Operations.createAddOperation(address);
-            op.get("socket-binding").set(socketBinding);
-            return op;
-        }
-
-        ModelNode createBroadcastGroupWithSocketBinding(ModelNode serverAddress, String broadcastGroupName, String socketBinding, String connector) throws Exception {
-            ModelNode address = serverAddress.clone();
-            address.add("broadcast-group", broadcastGroupName);
-            ModelNode op = Operations.createAddOperation(address);
-            op.get("socket-binding").set(socketBinding);
-            op.get("connectors").add(connector);
-            return op;
-        }
-
-        ModelNode createClusterConnection(ModelNode serverAddress, String name, String address, String connector, String discoveryGroup) throws Exception {
-            ModelNode opAddress = serverAddress.clone();
-            opAddress.add("cluster-connection", name);
-            ModelNode op = Operations.createAddOperation(opAddress);
-            op.get("cluster-connection-address").set(address);
-            op.get("connector-name").set(connector);
-            op.get("discovery-group").set(discoveryGroup);
-            return op;
         }
     }
 

@@ -141,7 +141,7 @@ public class ActiveMQProviderJMSOperations implements JMSOperations {
         executeOperation(address, REMOVE_OPERATION, null);
     }
     @Override
-    public void addJmsClientConnectionFactory(String name, String jndiName, ModelNode attributes) {
+    public void addJmsExternalConnectionFactory(String name, String jndiName, ModelNode attributes) {
         ModelNode address = getSubsystemAddress()
                 .add("connection-factory", name);
         attributes.get("entries").add(jndiName);
@@ -149,7 +149,7 @@ public class ActiveMQProviderJMSOperations implements JMSOperations {
     }
 
     @Override
-    public void removeJmsClientConnectionFactory(String name) {
+    public void removeJmsExternalConnectionFactory(String name) {
         ModelNode address = getSubsystemAddress()
                 .add("connection-factory", name);
         executeOperation(address, REMOVE_OPERATION, null);
@@ -300,7 +300,7 @@ public class ActiveMQProviderJMSOperations implements JMSOperations {
 
 
     @Override
-    public void addClientHttpConnector(String connectorName, String socketBinding, String endpoint) {
+    public void addExternalHttpConnector(String connectorName, String socketBinding, String endpoint) {
         ModelNode address = getSubsystemAddress()
                 .add("http-connector", connectorName);
 
@@ -312,7 +312,7 @@ public class ActiveMQProviderJMSOperations implements JMSOperations {
     }
 
     @Override
-    public void removeClientHttpConnector(String connectorName) {
+    public void removeExternalHttpConnector(String connectorName) {
         ModelNode address = getSubsystemAddress()
                 .add("http-connector", connectorName);
         executeOperation(address, REMOVE_OPERATION, null);

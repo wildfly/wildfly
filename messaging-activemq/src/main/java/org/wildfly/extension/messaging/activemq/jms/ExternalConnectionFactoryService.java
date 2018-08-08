@@ -42,7 +42,7 @@ import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
  *
  * @author Emmanuel Hugonnet (c) 2018 Red Hat, inc.
  */
-public class ClientConnectionFactoryService implements Service<ConnectionFactory> {
+public class ExternalConnectionFactoryService implements Service<ConnectionFactory> {
 
     private final boolean ha;
     private final DiscoveryGroupConfiguration groupConfiguration;
@@ -57,17 +57,17 @@ public class ClientConnectionFactoryService implements Service<ConnectionFactory
     private final Map<String, CommandDispatcherFactory> commandDispatcherFactories = new HashMap<>();
     private ActiveMQConnectionFactory factory;
 
-    ClientConnectionFactoryService(DiscoveryGroupConfiguration groupConfiguration, JMSFactoryType type, boolean ha) {
+    ExternalConnectionFactoryService(DiscoveryGroupConfiguration groupConfiguration, JMSFactoryType type, boolean ha) {
         this(ha, type, groupConfiguration, null);
     }
 
-    ClientConnectionFactoryService(TransportConfiguration[] connectors,
+    ExternalConnectionFactoryService(TransportConfiguration[] connectors,
             JMSFactoryType type,
             boolean ha) {
         this(ha, type, null, connectors);
     }
 
-    private ClientConnectionFactoryService(boolean ha,
+    private ExternalConnectionFactoryService(boolean ha,
             JMSFactoryType type,
             DiscoveryGroupConfiguration groupConfiguration,
             TransportConfiguration[] connectors) {

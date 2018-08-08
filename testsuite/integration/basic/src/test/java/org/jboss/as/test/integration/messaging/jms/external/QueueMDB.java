@@ -19,10 +19,10 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.messaging.jms.client;
+package org.jboss.as.test.integration.messaging.jms.external;
 
-import static org.jboss.as.test.integration.messaging.jms.client.ClientMessagingDeploymentTestCase.REMOTE_PCF;
-import static org.jboss.as.test.integration.messaging.jms.client.ClientMessagingDeploymentTestCase.TOPIC_LOOKUP;
+import static org.jboss.as.test.integration.messaging.jms.external.ExternalMessagingDeploymentTestCase.QUEUE_LOOKUP;
+import static org.jboss.as.test.integration.messaging.jms.external.ExternalMessagingDeploymentTestCase.REMOTE_PCF;
 
 import javax.ejb.ActivationConfigProperty;
 import javax.ejb.MessageDriven;
@@ -40,14 +40,14 @@ import org.jboss.ejb3.annotation.ResourceAdapter;
  */
 @MessageDriven(
         activationConfig = {
-            @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Topic"),
-            @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = TOPIC_LOOKUP),
-            @ActivationConfigProperty(propertyName="user", propertyValue="guest"),
+            @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+            @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = QUEUE_LOOKUP),
+            @ActivationConfigProperty(propertyName="user",  propertyValue="guest"),
             @ActivationConfigProperty(propertyName="password", propertyValue="guest")
         }
 )
 @ResourceAdapter(REMOTE_PCF) // name of the pooled-connection-factory resource
-public class TopicMDB implements MessageListener {
+public class QueueMDB implements MessageListener {
 
     @Inject
     @JMSPasswordCredential(userName = "guest", password = "guest")

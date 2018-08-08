@@ -40,18 +40,18 @@ import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.
  *
  * @author Emmanuel Hugonnet (c) 2018 Red Hat, inc.
  */
-public class ClientConnectionFactoryDefinition extends PersistentResourceDefinition {
+public class ExternalConnectionFactoryDefinition extends PersistentResourceDefinition {
 
     public static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] {
         CommonAttributes.HA, Regular.FACTORY_TYPE, Common.DISCOVERY_GROUP, Common.CONNECTORS, Common.ENTRIES};
 
     private final boolean registerRuntimeOnly;
 
-    public ClientConnectionFactoryDefinition(final boolean registerRuntimeOnly) {
+    public ExternalConnectionFactoryDefinition(final boolean registerRuntimeOnly) {
         super(MessagingExtension.CONNECTION_FACTORY_PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.CONNECTION_FACTORY),
-                ClientConnectionFactoryAdd.INSTANCE,
-                ClientConnectionFactoryRemove.INSTANCE);
+                ExternalConnectionFactoryAdd.INSTANCE,
+                ExternalConnectionFactoryRemove.INSTANCE);
         this.registerRuntimeOnly = registerRuntimeOnly;
     }
 

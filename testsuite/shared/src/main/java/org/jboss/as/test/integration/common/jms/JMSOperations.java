@@ -61,9 +61,9 @@ public interface JMSOperations {
 
     void removeJmsConnectionFactory(final String name);
 
-    void addJmsClientConnectionFactory(final String name, final String jndiName, ModelNode attributes);
+    void addJmsExternalConnectionFactory(final String name, final String jndiName, ModelNode attributes);
 
-    void removeJmsClientConnectionFactory(final String name);
+    void removeJmsExternalConnectionFactory(final String name);
 
     void addJmsBridge(String name, ModelNode attributes);
 
@@ -96,9 +96,9 @@ public interface JMSOperations {
     void removeHttpConnector(String connectorName);
 
 
-    void addClientHttpConnector(String connectorName, String socketBinding, String endpoint);
+    void addExternalHttpConnector(String connectorName, String socketBinding, String endpoint);
 
-    void removeClientHttpConnector(String connectorName);
+    void removeExternalHttpConnector(String connectorName);
 
     /**
      * Set system properties for the given destination and resourceAdapter.

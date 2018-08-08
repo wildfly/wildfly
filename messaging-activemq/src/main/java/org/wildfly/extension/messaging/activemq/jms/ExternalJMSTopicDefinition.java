@@ -28,20 +28,23 @@ import org.wildfly.extension.messaging.activemq.CommonAttributes;
 import org.wildfly.extension.messaging.activemq.MessagingExtension;
 
 /**
- * JMS Queue resource definition
+ * JMS Topic resource definition
+ *
  * @author Emmanuel Hugonnet (c) 2018 Red Hat, inc.
  */
-public class ClientJMSQueueDefinition extends PersistentResourceDefinition {
+public class ExternalJMSTopicDefinition extends PersistentResourceDefinition {
 
-    public static final AttributeDefinition[] ATTRIBUTES = {CommonAttributes.DESTINATION_ENTRIES};
+    public static final AttributeDefinition[] ATTRIBUTES = {
+        CommonAttributes.DESTINATION_ENTRIES
+    };
 
-    public static final ClientJMSQueueDefinition INSTANCE = new ClientJMSQueueDefinition();
+    public static final ExternalJMSTopicDefinition INSTANCE = new ExternalJMSTopicDefinition();
 
-    private ClientJMSQueueDefinition() {
-        super(MessagingExtension.CLIENT_JMS_QUEUE_PATH,
-                MessagingExtension.getResourceDescriptionResolver(CommonAttributes.CLIENT_JMS_QUEUE),
-                ClientJMSQueueAdd.INSTANCE,
-                ClientJMSQueueRemove.INSTANCE);
+    private ExternalJMSTopicDefinition() {
+        super(MessagingExtension.EXTERNAL_JMS_TOPIC_PATH,
+                MessagingExtension.getResourceDescriptionResolver(CommonAttributes.EXTERNAL_JMS_TOPIC),
+                ExternalJMSTopicAdd.INSTANCE,
+                ExternalJMSTopicRemove.INSTANCE);
     }
 
     @Override
@@ -51,11 +54,11 @@ public class ClientJMSQueueDefinition extends PersistentResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration registry) {
-        registry.registerReadWriteAttribute(CommonAttributes.DESTINATION_ENTRIES, null, new ReloadRequiredWriteAttributeHandler(CommonAttributes.DESTINATION_ENTRIES));
+        registry.registerReadWriteAttribute(CommonAttributes.DESTINATION_ENTRIES, null, new ReloadRequiredWriteAttributeHandler(getAttributes()));
     }
 
     @Override
     public List<AccessConstraintDefinition> getAccessConstraints() {
-        return Collections.singletonList(MessagingExtension.JMS_QUEUE_ACCESS_CONSTRAINT);
+        return Collections.singletonList(MessagingExtension.JMS_TOPIC_ACCESS_CONSTRAINT);
     }
 }

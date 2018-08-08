@@ -132,11 +132,11 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
         if(isSubsystemResource(context)) {
             DiscoveryGroupConfiguration discoveryGroupConfiguration = null;
             if(discoveryGroupName != null) {
-                discoveryGroupConfiguration = ClientConnectionFactoryAdd.getDiscoveryGroup(context, discoveryGroupName);
+                discoveryGroupConfiguration = ExternalConnectionFactoryAdd.getDiscoveryGroup(context, discoveryGroupName);
             }
             Set<String> connectorsSocketBindings = new HashSet<>();
             TransportConfiguration[] transportConfigurations = TransportConfigOperationHandlers.processConnectors(context, connectors, connectorsSocketBindings);
-            ClientPooledConnectionFactoryService service = ClientPooledConnectionFactoryService.installService(context, name, transportConfigurations, discoveryGroupConfiguration, connectorsSocketBindings,
+            ExternalPooledConnectionFactoryService service = ExternalPooledConnectionFactoryService.installService(context, name, transportConfigurations, discoveryGroupConfiguration, connectorsSocketBindings,
                     jgroupsChannelName, adapterParams, jndiNames, txSupport, minPoolSize, maxPoolSize, managedConnectionPoolClassName, enlistmentTrace, model);
         } else {
             String serverName = serverAddress.getLastElement().getValue();

@@ -63,17 +63,17 @@ import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 
 /**
  * Update adding a connection factory to the subsystem. The
- * runtime action will create the {@link ClientConnectionFactoryService}.
+ * runtime action will create the {@link ExternalConnectionFactoryService}.
  *
  * @author Emmanuel Hugonnet (c) 2018 Red Hat, inc.
  */
-public class ClientConnectionFactoryAdd extends AbstractAddStepHandler {
+public class ExternalConnectionFactoryAdd extends AbstractAddStepHandler {
 
     private static final ServiceName JBOSS_MESSAGING_ACTIVEMQ = ServiceName.JBOSS.append(MessagingExtension.SUBSYSTEM_NAME);
-    public static final ClientConnectionFactoryAdd INSTANCE = new ClientConnectionFactoryAdd();
+    public static final ExternalConnectionFactoryAdd INSTANCE = new ExternalConnectionFactoryAdd();
 
-    private ClientConnectionFactoryAdd() {
-        super(ClientConnectionFactoryDefinition.ATTRIBUTES);
+    private ExternalConnectionFactoryAdd() {
+        super(ExternalConnectionFactoryDefinition.ATTRIBUTES);
     }
 
     @Override
@@ -86,10 +86,10 @@ public class ClientConnectionFactoryAdd extends AbstractAddStepHandler {
         JMSFactoryType jmsFactoryType = ConnectionFactoryType.valueOf(ConnectionFactoryAttributes.Regular.FACTORY_TYPE.resolveModelAttribute(context, model).asString()).getType();
         List<String> connectorNames = Common.CONNECTORS.unwrap(context, model);
         ServiceBuilder<?> builder;
-        ClientConnectionFactoryService service;
+        ExternalConnectionFactoryService service;
         if (discoveryGroupName.isDefined()) {
             final String dgname = discoveryGroupName.asString();
-            service = new ClientConnectionFactoryService(getDiscoveryGroup(context, dgname), jmsFactoryType, ha);
+            service = new ExternalConnectionFactoryService(getDiscoveryGroup(context, dgname), jmsFactoryType, ha);
             builder = context.getServiceTarget().addService(serviceName, service);
             final String key = "discovery" + dgname;
             ModelNode discoveryGroupModel = model.get(DISCOVERY_GROUP, dgname);
@@ -106,7 +106,7 @@ public class ClientConnectionFactoryAdd extends AbstractAddStepHandler {
         } else {
             Set<String> connectorsSocketBindings = new HashSet<>();
             TransportConfiguration[] transportConfigurations = TransportConfigOperationHandlers.processConnectors(context, connectorNames, connectorsSocketBindings);
-            service = new ClientConnectionFactoryService(transportConfigurations, jmsFactoryType, ha);
+            service = new ExternalConnectionFactoryService(transportConfigurations, jmsFactoryType, ha);
             builder = context.getServiceTarget().addService(serviceName, service);
             for (final String connectorSocketBinding : connectorsSocketBindings) {
                 // find whether the connectorSocketBinding references a SocketBinding or an OutboundSocketBinding

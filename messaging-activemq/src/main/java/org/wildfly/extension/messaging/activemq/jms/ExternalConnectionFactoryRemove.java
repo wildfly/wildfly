@@ -35,9 +35,9 @@ import org.wildfly.extension.messaging.activemq.MessagingServices;
  * @author Emanuel Muckenhuber
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
  */
-public class ClientConnectionFactoryRemove extends AbstractRemoveStepHandler {
+public class ExternalConnectionFactoryRemove extends AbstractRemoveStepHandler {
 
-    public static final ClientConnectionFactoryRemove INSTANCE = new ClientConnectionFactoryRemove();
+    public static final ExternalConnectionFactoryRemove INSTANCE = new ExternalConnectionFactoryRemove();
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {

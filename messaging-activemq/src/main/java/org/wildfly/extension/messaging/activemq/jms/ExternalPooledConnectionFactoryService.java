@@ -138,7 +138,7 @@ import org.wildfly.security.password.interfaces.ClearPassword;
  *
  * @author Emmanuel Hugonnet (c) 2018 Red Hat, inc.
  */
-public class ClientPooledConnectionFactoryService implements Service<Void> {
+public class ExternalPooledConnectionFactoryService implements Service<Void> {
 
     private static final ServiceName JBOSS_MESSAGING_ACTIVEMQ = ServiceName.JBOSS.append(MessagingExtension.SUBSYSTEM_NAME);
     private static final List<LocalizedXsdString> EMPTY_LOCL = Collections.emptyList();
@@ -194,7 +194,7 @@ public class ClientPooledConnectionFactoryService implements Service<Void> {
     private final Boolean enlistmentTrace;
     private InjectedValue<ExceptionSupplier<CredentialSource, Exception>> credentialSourceSupplier = new InjectedValue<>();
 
-    public ClientPooledConnectionFactoryService(String name, TransportConfiguration[] connectors, DiscoveryGroupConfiguration groupConfiguration, String jgroupsChannelName, List<PooledConnectionFactoryConfigProperties> adapterParams, List<String> jndiNames, String txSupport, int minPoolSize, int maxPoolSize, String managedConnectionPoolClassName, Boolean enlistmentTrace) {
+    public ExternalPooledConnectionFactoryService(String name, TransportConfiguration[] connectors, DiscoveryGroupConfiguration groupConfiguration, String jgroupsChannelName, List<PooledConnectionFactoryConfigProperties> adapterParams, List<String> jndiNames, String txSupport, int minPoolSize, int maxPoolSize, String managedConnectionPoolClassName, Boolean enlistmentTrace) {
         this.name = name;
         this.connectors = connectors;
         this.discoveryGroupConfiguration = groupConfiguration;
@@ -209,7 +209,7 @@ public class ClientPooledConnectionFactoryService implements Service<Void> {
         this.enlistmentTrace = enlistmentTrace;
     }
 
-//    public ClientPooledConnectionFactoryService(String name, TransportConfiguration[] connectors, DiscoveryGroupConfiguration groupConfiguration, String jgroupsChannelName, List<PooledConnectionFactoryConfigProperties> adapterParams, BindInfo bindInfo, String txSupport, int minPoolSize, int maxPoolSize, String managedConnectionPoolClassName, Boolean enlistmentTrace) {
+//    public ExternalPooledConnectionFactoryService(String name, TransportConfiguration[] connectors, DiscoveryGroupConfiguration groupConfiguration, String jgroupsChannelName, List<PooledConnectionFactoryConfigProperties> adapterParams, BindInfo bindInfo, String txSupport, int minPoolSize, int maxPoolSize, String managedConnectionPoolClassName, Boolean enlistmentTrace) {
 //        this.name = name;
 //        this.connectors = connectors;
 //        this.discoveryGroupConfiguration = groupConfiguration;
@@ -243,7 +243,7 @@ public class ClientPooledConnectionFactoryService implements Service<Void> {
         return credentialSourceSupplier;
     }
 
-    public static ClientPooledConnectionFactoryService installService(OperationContext context,
+    public static ExternalPooledConnectionFactoryService installService(OperationContext context,
             String name,
             TransportConfiguration[] connectors,
             DiscoveryGroupConfiguration groupConfiguration,
@@ -259,7 +259,7 @@ public class ClientPooledConnectionFactoryService implements Service<Void> {
             ModelNode model) throws OperationFailedException {
 
         ServiceName serviceName = JMSServices.getPooledConnectionFactoryBaseServiceName(JBOSS_MESSAGING_ACTIVEMQ).append(name);
-        ClientPooledConnectionFactoryService service = new ClientPooledConnectionFactoryService(name,
+        ExternalPooledConnectionFactoryService service = new ExternalPooledConnectionFactoryService(name,
                 connectors, groupConfiguration, jgroupsChannelName, adapterParams,
                 jndiNames, txSupport, minPoolSize, maxPoolSize, managedConnectionPoolClassName, enlistmentTrace);
 
@@ -269,7 +269,7 @@ public class ClientPooledConnectionFactoryService implements Service<Void> {
 
     private static void installService0(OperationContext context,
             ServiceName serviceName,
-            ClientPooledConnectionFactoryService service,
+            ExternalPooledConnectionFactoryService service,
             DiscoveryGroupConfiguration groupConfiguration,
             String jgroupsChannelName,
             Set<String> connectorsSocketBindings,
@@ -303,7 +303,7 @@ public class ClientPooledConnectionFactoryService implements Service<Void> {
         serviceBuilder.install();
     }
 
-    private static ServiceBuilder createServiceBuilder(ServiceTarget serviceTarget, ServiceName serviceName, ClientPooledConnectionFactoryService service) {
+    private static ServiceBuilder createServiceBuilder(ServiceTarget serviceTarget, ServiceName serviceName, ExternalPooledConnectionFactoryService service) {
         ServiceBuilder serviceBuilder = serviceTarget
                 .addService(serviceName, service)
                 .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, service.transactionManager)
@@ -446,7 +446,7 @@ public class ClientPooledConnectionFactoryService implements Service<Void> {
             Activation activation = createActivation(common, transactionSupport);
 
             ResourceAdapterActivatorService activator = new ResourceAdapterActivatorService(cmd, activation,
-                    ClientPooledConnectionFactoryService.class.getClassLoader(), name);
+                    ExternalPooledConnectionFactoryService.class.getClassLoader(), name);
             activator.setBindInfo(bindInfo);
             activator.setCreateBinderService(createBinderService);
 

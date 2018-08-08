@@ -33,11 +33,11 @@ import org.wildfly.extension.messaging.activemq.MessagingServices;
  *
  * @author Emmanuel Hugonnet (c) 2018 Red Hat, inc.
  */
-public class ClientJMSQueueRemove extends AbstractRemoveStepHandler {
+public class ExternalJMSQueueRemove extends AbstractRemoveStepHandler {
 
-    static final ClientJMSQueueRemove INSTANCE = new ClientJMSQueueRemove();
+    static final ExternalJMSQueueRemove INSTANCE = new ExternalJMSQueueRemove();
 
-    private ClientJMSQueueRemove() {
+    private ExternalJMSQueueRemove() {
     }
 
     @Override
@@ -54,6 +54,6 @@ public class ClientJMSQueueRemove extends AbstractRemoveStepHandler {
 
     @Override
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        ClientJMSQueueAdd.INSTANCE.performRuntime(context, operation, model);
+        ExternalMSQueueAdd.INSTANCE.performRuntime(context, operation, model);
     }
 }

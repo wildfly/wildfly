@@ -16,7 +16,7 @@
 package org.wildfly.extension.messaging.activemq.jms;
 
 
-import javax.jms.Queue;
+import javax.jms.Topic;
 import org.apache.activemq.artemis.api.jms.ActiveMQJMSClient;
 
 import org.jboss.msc.service.Service;
@@ -29,37 +29,37 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
 /**
- * Service responsible for creating and destroying a client {@code javax.jms.Queue}.
+ * Service responsible for creating and destroying a client {@code javax.jms.Topic}.
  *
  * @author Emmanuel Hugonnet (c) 2018 Red Hat, inc.
  */
-public class ClientJMSQueueService implements Service<Queue> {
+public class ExternalJMSTopicService implements Service<Topic> {
+    private final String name;
 
-    private final String queueName;
-    private Queue queue;
+    private Topic topic;
 
-    public ClientJMSQueueService(final String queueName) {
-        this.queueName = queueName;
+    public ExternalJMSTopicService(String name) {
+        this.name = name;
     }
 
     @Override
     public synchronized void start(final StartContext context) throws StartException {
-        queue = ActiveMQJMSClient.createQueue(queueName);
+        topic = ActiveMQJMSClient.createTopic(name);
     }
 
     @Override
     public synchronized void stop(final StopContext context) {
-        queue = null;
+        topic = null;
     }
 
     @Override
-    public Queue getValue() throws IllegalStateException, IllegalArgumentException {
-        return queue;
+    public Topic getValue() throws IllegalStateException {
+        return topic;
     }
 
-    public static Service<Queue> installService(final String name, final ServiceTarget serviceTarget, final ServiceName serviceName) {
-        final ClientJMSQueueService service = new ClientJMSQueueService(name);
-        final ServiceBuilder<Queue> serviceBuilder = serviceTarget.addService(serviceName, service);
+    public static ExternalJMSTopicService installService(final String name, final ServiceName serviceName, final ServiceTarget serviceTarget) {
+        final ExternalJMSTopicService service = new ExternalJMSTopicService(name);
+        final ServiceBuilder<Topic> serviceBuilder = serviceTarget.addService(serviceName, service);
         serviceBuilder.install();
         return service;
     }

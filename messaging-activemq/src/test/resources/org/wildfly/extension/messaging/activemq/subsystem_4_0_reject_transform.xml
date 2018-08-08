@@ -40,6 +40,13 @@
                                    connectors="in-vm-client"
                                    entries="java:/JmsLocal"/>
 
+    <external-jms-queue name="testQueue"
+                   entries="${jms-queue.entry:queue/client-test}"/>
+    <external-jms-queue name="testQueue2"
+                   entries="java:/global/queue/test java:/global/queue/client-test2"/>
+    <external-jms-topic name="testTopic"
+                   entries="${jms-topic.entry:topic/client-test}"/>
+
     <server name="default">
 
         <security elytron-domain="elytronDomain"/>

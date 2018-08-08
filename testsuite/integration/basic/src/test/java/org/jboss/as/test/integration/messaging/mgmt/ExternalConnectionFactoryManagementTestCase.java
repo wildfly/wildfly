@@ -57,7 +57,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class ClientConnectionFactoryManagementTestCase extends ContainerResourceMgmtTestBase {
+public class ExternalConnectionFactoryManagementTestCase extends ContainerResourceMgmtTestBase {
 
     private static final String CF_NAME = randomUUID().toString();
     private static final String CONNECTOR_NAME = "client-http-connector";
@@ -69,11 +69,11 @@ public class ClientConnectionFactoryManagementTestCase extends ContainerResource
     public void testWriteDiscoveryGroupAttributeWhenConnectorIsAlreadyDefined() throws Exception {
         JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
         try {
-            jmsOperations.addClientHttpConnector(CONNECTOR_NAME, "http", "http-acceptor");
+            jmsOperations.addExternalHttpConnector(CONNECTOR_NAME, "http", "http-acceptor");
 
             ModelNode attributes = new ModelNode();
             attributes.get(CommonAttributes.CONNECTORS).add(CONNECTOR_NAME);
-            jmsOperations.addJmsClientConnectionFactory(CF_NAME, "java:/jms/" + CF_NAME, attributes);
+            jmsOperations.addJmsExternalConnectionFactory(CF_NAME, "java:/jms/" + CF_NAME, attributes);
 
             final ModelNode writeAttribute = new ModelNode();
             writeAttribute.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
@@ -90,8 +90,8 @@ public class ClientConnectionFactoryManagementTestCase extends ContainerResource
                 assertTrue(e.getResult().get(FAILURE_DESCRIPTION).asString().contains("WFLYCTL0105"));
             }
         } finally {
-            jmsOperations.removeJmsClientConnectionFactory(CF_NAME);
-            jmsOperations.removeClientHttpConnector(CONNECTOR_NAME);
+            jmsOperations.removeJmsExternalConnectionFactory(CF_NAME);
+            jmsOperations.removeExternalHttpConnector(CONNECTOR_NAME);
         }
         ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
     }

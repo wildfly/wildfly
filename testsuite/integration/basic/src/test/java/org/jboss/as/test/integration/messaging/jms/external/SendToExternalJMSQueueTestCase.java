@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.messaging.jms.client;
+package org.jboss.as.test.integration.messaging.jms.external;
 
 import static org.junit.Assert.assertEquals;
 
@@ -59,17 +59,17 @@ import org.junit.runner.RunWith;
  * @author <a href="jmartisk@redhat.com">Jan Martiska</a>
  */
 @RunWith(Arquillian.class)
-@ServerSetup(SendToClientJMSQueueTestCase.SetupTask.class)
-public class SendToClientJMSQueueTestCase {
+@ServerSetup(SendToExternalJMSQueueTestCase.SetupTask.class)
+public class SendToExternalJMSQueueTestCase {
 
     static class SetupTask extends SnapshotRestoreSetupTask {
 
-        private static final Logger logger = Logger.getLogger(SendToClientJMSQueueTestCase.SetupTask.class);
+        private static final Logger logger = Logger.getLogger(SendToExternalJMSQueueTestCase.SetupTask.class);
 
         @Override
         public void doSetup(org.jboss.as.arquillian.container.ManagementClient managementClient, String s) throws Exception {
             JMSOperations ops = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
-            ops.addClientHttpConnector("http-test-connector", "http", "http-acceptor");
+            ops.addExternalHttpConnector("http-test-connector", "http", "http-acceptor");
             ops.createJmsQueue("myAwesomeQueue", "/queue/myAwesomeQueue");
             ModelNode attr = new ModelNode();
             attr.get("connectors").add("http-test-connector");
@@ -110,7 +110,7 @@ public class SendToClientJMSQueueTestCase {
         ModelNode getClientQueueAddress() {
             ModelNode address = new ModelNode();
             address.add("subsystem", "messaging-activemq");
-            address.add("client-jms-queue", "myAwesomeQueue");
+            address.add("external-jms-queue", "myAwesomeQueue");
             return address;
         }
 
@@ -123,7 +123,7 @@ public class SendToClientJMSQueueTestCase {
         }
     }
 
-    private static final Logger logger = Logger.getLogger(SendToClientJMSQueueTestCase.class);
+    private static final Logger logger = Logger.getLogger(SendToExternalJMSQueueTestCase.class);
 
     @Resource(lookup = "java:jboss/exported/topic/myAwesomeClientQueue")
     private Queue queue;
@@ -135,7 +135,7 @@ public class SendToClientJMSQueueTestCase {
     public static JavaArchive createTestArchive() {
         return ShrinkWrap.create(JavaArchive.class, "test.jar")
                 .addPackage(JMSOperations.class.getPackage())
-                .addClass(SendToClientJMSQueueTestCase.SetupTask.class)
+                .addClass(SendToExternalJMSQueueTestCase.SetupTask.class)
                 .addAsManifestResource(
                         EmptyAsset.INSTANCE,
                         ArchivePaths.create("beans.xml"));

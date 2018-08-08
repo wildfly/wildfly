@@ -51,23 +51,23 @@ import static org.junit.Assert.assertEquals;
  * Created by spyrkob on 18/05/2017.
  */
 @RunWith(Arquillian.class)
-@ServerSetup({ClientConnectionFactoryClientMappingTestCase.SetupTask.class})
-public class ClientConnectionFactoryClientMappingTestCase {
+@ServerSetup({ExternalConnectionFactoryClientMappingTestCase.SetupTask.class})
+public class ExternalConnectionFactoryClientMappingTestCase {
 
     private static final String CONNECTION_FACTORY_JNDI_NAME = "java:jboss/exported/jms/TestConnectionFactory";
 
     static class SetupTask extends SnapshotRestoreSetupTask {
-        private static final Logger logger = Logger.getLogger(ClientConnectionFactoryClientMappingTestCase.SetupTask.class);
+        private static final Logger logger = Logger.getLogger(ExternalConnectionFactoryClientMappingTestCase.SetupTask.class);
 
         @Override
         public void doSetup(org.jboss.as.arquillian.container.ManagementClient managementClient, String s) throws Exception {
             JMSOperations ops = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
 
             addSocketBinding(managementClient, "test-binding", clientMapping("test", "8000"));
-            ops.addClientHttpConnector("http-test-connector", "test-binding", "http-acceptor");
+            ops.addExternalHttpConnector("http-test-connector", "test-binding", "http-acceptor");
             ModelNode attr = new ModelNode();
             attr.get("connectors").add("http-test-connector");
-            ops.addJmsClientConnectionFactory("TestConnectionFactory", CONNECTION_FACTORY_JNDI_NAME, attr);
+            ops.addJmsExternalConnectionFactory("TestConnectionFactory", CONNECTION_FACTORY_JNDI_NAME, attr);
 
             ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
         }
@@ -116,7 +116,7 @@ public class ClientConnectionFactoryClientMappingTestCase {
     @Deployment(testable = true)
     public static JavaArchive createDeployment() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "test.jar");
-        jar.addClass(ClientConnectionFactoryClientMappingTestCase.class);
+        jar.addClass(ExternalConnectionFactoryClientMappingTestCase.class);
         jar.add(EmptyAsset.INSTANCE, "META-INF/beans.xml");
 
         jar.add(new StringAsset(

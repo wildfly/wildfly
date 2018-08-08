@@ -178,11 +178,11 @@ public class MessagingSubsystemParser_4_0 extends PersistentResourceXMLParser {
                                 ConnectionFactoryAttributes.Common.ENTRIES
                                 ))
                 .addChild(pooledConnectionFactory)
-                .addChild(builder(MessagingExtension.CLIENT_JMS_QUEUE_PATH)
+                .addChild(builder(MessagingExtension.EXTERNAL_JMS_QUEUE_PATH)
                         .addAttributes(
                                 ConnectionFactoryAttributes.Common.ENTRIES
                                 ))
-                .addChild(builder(MessagingExtension.CLIENT_JMS_TOPIC_PATH)
+                .addChild(builder(MessagingExtension.EXTERNAL_JMS_TOPIC_PATH)
                         .addAttributes(
                                 ConnectionFactoryAttributes.Common.ENTRIES
                                 ))
