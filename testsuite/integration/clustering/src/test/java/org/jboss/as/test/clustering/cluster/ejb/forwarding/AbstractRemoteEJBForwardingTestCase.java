@@ -149,7 +149,7 @@ public abstract class AbstractRemoteEJBForwardingTestCase extends AbstractCluste
             Thread.sleep(FAILURE_FREE_TIME);
 
             int newSerialValue = bean.getSerialAndIncrement();
-            logger.debugf("First invocation: serial = %d", newSerialValue);
+            logger.infof("First invocation: serial = %d", newSerialValue);
 
             ClientInvocationTask client = new ClientInvocationTask(bean, newSerialValue);
 
@@ -160,17 +160,17 @@ public abstract class AbstractRemoteEJBForwardingTestCase extends AbstractCluste
             Thread.sleep(FAILURE_FREE_TIME);
             client.assertNoExceptions("at the beginning of the test");
 
-            logger.debug("------ Shutdown clusterA-node0 -----");
+            logger.info("------ Shutdown clusterA-node0 -----");
             stop(GRACEFUL_SHUTDOWN_TIMEOUT, NODE_1);
             Thread.sleep(SERVER_DOWN_TIME);
             client.assertNoExceptions("after clusterA-node0 was shut down");
 
-            logger.debug("------ Startup clusterA-node0 -----");
+            logger.info("------ Startup clusterA-node0 -----");
             start(NODE_1);
             Thread.sleep(FAILURE_FREE_TIME);
             client.assertNoExceptions("after clusterA-node0 was brought up");
 
-            logger.debug("----- Shutdown clusterA-node1 -----");
+            logger.info("----- Shutdown clusterA-node1 -----");
             stop(GRACEFUL_SHUTDOWN_TIMEOUT, NODE_2);
             Thread.sleep(SERVER_DOWN_TIME);
 
@@ -179,7 +179,7 @@ public abstract class AbstractRemoteEJBForwardingTestCase extends AbstractCluste
             Thread.sleep(FAILURE_FREE_TIME);
             client.assertNoExceptions("after clusterA-node1 was brought back up");
 
-            logger.debug("----- Shutdown clusterB-node0 -----");
+            logger.info("----- Shutdown clusterB-node0 -----");
             stop(GRACEFUL_SHUTDOWN_TIMEOUT, NODE_3);
             Thread.sleep(SERVER_DOWN_TIME);
             client.assertNoExceptions("after clusterB-node0 was shut down");
@@ -189,11 +189,11 @@ public abstract class AbstractRemoteEJBForwardingTestCase extends AbstractCluste
             Thread.sleep(FAILURE_FREE_TIME);
             client.assertNoExceptions("after clusterB-node0 was brought back up");
 
-            logger.debug("----- Shutdown clusterB-node1 -----");
+            logger.info("----- Shutdown clusterB-node1 -----");
             stop(GRACEFUL_SHUTDOWN_TIMEOUT, NODE_4);
             Thread.sleep(SERVER_DOWN_TIME);
 
-            logger.debug("------ Startup clusterB-node1 -----");
+            logger.info("------ Startup clusterB-node1 -----");
             start(NODE_4);
             Thread.sleep(FAILURE_FREE_TIME);
 
@@ -231,13 +231,14 @@ public abstract class AbstractRemoteEJBForwardingTestCase extends AbstractCluste
 
             try {
                 int serial = this.bean.getSerialAndIncrement();
-                logger.debugf("EJB client invocation #%d on bean, received serial #%d.", this.invocationCount, serial);
+                logger.infof("EJB client invocation #%d on bean, received serial #%d.", this.invocationCount, serial);
 
                 if (serial != ++expectedSerial) {
                     logger.warnf("Expected (%d) and received serial (%d) numbers do not match! Resetting.", expectedSerial, serial);
                     expectedSerial = serial;
                 }
             } catch (Exception clientException) {
+                logger.warnf("EJB client invocation #%d on bean, exception occurred %s", this.invocationCount, clientException);
                 if (this.firstException == null) {
                     this.firstException = clientException;
                 }
