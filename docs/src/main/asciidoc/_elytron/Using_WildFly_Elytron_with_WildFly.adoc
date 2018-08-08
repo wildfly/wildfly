@@ -198,6 +198,31 @@ for elytron security domain automatically. Like configure with legacy
 security domain, you can configure elytron security domain in deployment
 descriptor or annotation to secure webservice endpoint.
 
+When Elytron security is enabled, JAAS subject or principal can be pushed
+to jbossws-cxf endpoint’s SecurityContext to propagate authenticated
+identity to EJB container. Here is a CXF interceptor example to
+propagate authenticated information to EJB container :
+[source, java]
+----
+public class PropagateSecurityInterceptor extends WSS4JInInterceptor {
+
+   public PropagateSecurityInterceptor() {
+      super();
+      getAfter().add(PolicyBasedWSS4JInInterceptor.class.getName());
+   }
+
+   @Override
+   public void handleMessage(SoapMessage message) throws Fault {
+      ...
+      final Endpoint endpoint = message.getExchange().get(Endpoint.class);
+      final SecurityDomainContext securityDomainContext = endpoint.getSecurityDomainContext();
+      //push subject principal retrieved from CXF to ElytronSecurityDomainContext
+      securityDomainContext.pushSubjectContext(subject, principal, null)
+   }
+
+}
+
+----
 [[legacy-security-subsystem]]
 == Legacy Security Subsystem
 
