@@ -7,6 +7,7 @@ import org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServ
 import org.jboss.as.test.integration.security.common.CoreUtils;
 import org.jboss.as.test.integration.security.common.config.SecurityDomain;
 import org.jboss.as.test.integration.security.common.config.SecurityModule;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 
 import java.util.ArrayList;
@@ -55,6 +56,7 @@ public class WSTrustTestCaseSecuritySetupTask implements ServerSetupTask {
         updateOp.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
         updateOp.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         CoreUtils.applyUpdate(updateOp, managementClient.getControllerClient());
+        ServerReload.reloadIfRequired(managementClient);
     }
 
 
@@ -80,7 +82,7 @@ public class WSTrustTestCaseSecuritySetupTask implements ServerSetupTask {
     }
 
     private void removeHttpsListener(List<ModelNode> operations) throws Exception {
-        ModelNode removeOp = createOpNode("socket-binding-group=standard-sockets/socket-binding=https2" + HTTPS_LISTENER_NAME, REMOVE);
+        ModelNode removeOp = createOpNode("socket-binding-group=standard-sockets/socket-binding=https2", REMOVE);
         operations.add(removeOp);
         removeOp = createOpNode("subsystem=undertow/server=default-server/https-listener=" + HTTPS_LISTENER_NAME, REMOVE);
         operations.add(removeOp);
