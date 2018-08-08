@@ -57,8 +57,8 @@ The following command demonstrates how to add a configuration containing two `Se
 ----
 ./subsystem=elytron/jaspi-configuration=simple-configuration:add(layer=HttpServlet, application-context="default-host /webctx", \
         description="Elytron Test Configuration", \
-        server-auth-modules=[{class-name=org.wildfly.security.examples.jaspi.SimpleServerAuthModule, module=org.wildfly.security.examples.jaspic, flag=OPTIONAL, options={a=b, c=d}}, \
-            {class-name=org.wildfly.security.examples.jaspi.SecondServerAuthModule, module=org.wildfly.security.examples.jaspic}])
+        server-auth-modules=[{class-name=org.wildfly.security.examples.jaspi.SimpleServerAuthModule, module=org.wildfly.security.examples.jaspi, flag=OPTIONAL, options={a=b, c=d}}, \
+            {class-name=org.wildfly.security.examples.jaspi.SecondServerAuthModule, module=org.wildfly.security.examples.jaspi}])
 ----
 
 This results in the following configuration being persisted: -
@@ -68,13 +68,13 @@ This results in the following configuration being persisted: -
 <jaspi>
     <jaspi-configuration name="simple-configuration" layer="HttpServlet" application-context="default-host /webctx" description="Elytron Test Configuration">
         <server-auth-modules>
-            <server-auth-module class-name="org.wildfly.security.examples.jaspi.SimpleServerAuthModule" module="org.wildfly.security.examples.jaspic" flag="OPTIONAL">
+            <server-auth-module class-name="org.wildfly.security.examples.jaspi.SimpleServerAuthModule" module="org.wildfly.security.examples.jaspi" flag="OPTIONAL">
                 <options>
                     <property name="a" value="b"/>
                     <property name="c" value="d"/>
                 </options>
             </server-auth-module>
-            <server-auth-module class-name="org.wildfly.security.examples.jaspi.SecondServerAuthModule" module="org.wildfly.security.examples.jaspic"/>
+            <server-auth-module class-name="org.wildfly.security.examples.jaspi.SecondServerAuthModule" module="org.wildfly.security.examples.jaspi"/>
         </server-auth-modules>
     </jaspi-configuration>
 </jaspi>
@@ -102,7 +102,7 @@ The following piece of code illustrates how this API can be used to register a s
 
 [source, java]
 ----
-String registraionId = JaspicConfigurationBuilder.builder("HttpServlet", servletContext.getVirtualServerName() + " " + servletContext.getContextPath())
+String registraionId = JaspiConfigurationBuilder.builder("HttpServlet", servletContext.getVirtualServerName() + " " + servletContext.getContextPath())
     .addAuthModuleFactory(SimpleServerAuthModule::new, Flag.OPTIONAL, Collections.singletonMap("a", "b"))
     .addAuthModuleFactory(SecondServerAuthModule::new)
 .register();
