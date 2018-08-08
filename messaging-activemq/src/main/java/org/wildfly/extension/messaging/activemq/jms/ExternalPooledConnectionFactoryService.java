@@ -209,22 +209,6 @@ public class ExternalPooledConnectionFactoryService implements Service<Void> {
         this.enlistmentTrace = enlistmentTrace;
     }
 
-//    public ExternalPooledConnectionFactoryService(String name, TransportConfiguration[] connectors, DiscoveryGroupConfiguration groupConfiguration, String jgroupsChannelName, List<PooledConnectionFactoryConfigProperties> adapterParams, BindInfo bindInfo, String txSupport, int minPoolSize, int maxPoolSize, String managedConnectionPoolClassName, Boolean enlistmentTrace) {
-//        this.name = name;
-//        this.connectors = connectors;
-//        this.discoveryGroupConfiguration = groupConfiguration;
-//        this.jgroupsChannelName = jgroupsChannelName;
-//        this.adapterParams = adapterParams;
-//        this.bindInfo = bindInfo;
-//        this.jndiAliases = Collections.emptyList();
-//        this.createBinderService = false;
-//        this.txSupport = txSupport;
-//        this.minPoolSize = minPoolSize;
-//        this.maxPoolSize = maxPoolSize;
-//        this.managedConnectionPoolClassName = managedConnectionPoolClassName;
-//        this.enlistmentTrace = enlistmentTrace;
-//    }
-
     private void initJNDIBindings(List<String> jndiNames) {
         // create the definition with the 1st jndi names and create jndi aliases for the rest
         String jndiName = jndiNames.get(0);

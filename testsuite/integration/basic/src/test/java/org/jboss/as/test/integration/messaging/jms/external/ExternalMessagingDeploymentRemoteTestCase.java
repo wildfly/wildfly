@@ -23,6 +23,9 @@
 package org.jboss.as.test.integration.messaging.jms.external;
 
 
+import static org.jboss.as.controller.client.helpers.ClientConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.shrinkwrap.api.ShrinkWrap.create;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -59,8 +62,8 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup(ExternalMessagingDeploymentTestCase.SetupTask.class)
-public class ExternalMessagingDeploymentTestCase {
+@ServerSetup(ExternalMessagingDeploymentRemoteTestCase.SetupTask.class)
+public class ExternalMessagingDeploymentRemoteTestCase {
 
     public static final String QUEUE_LOOKUP = "java:/jms/DependentMessagingDeploymentTestCase/myQueue";
     public static final String TOPIC_LOOKUP = "java:/jms/DependentMessagingDeploymentTestCase/myTopic";
@@ -74,26 +77,28 @@ public class ExternalMessagingDeploymentTestCase {
 
     static class SetupTask extends SnapshotRestoreSetupTask {
 
-        private static final Logger logger = Logger.getLogger(SendToExternalJMSQueueTestCase.SetupTask.class);
+        private static final Logger logger = Logger.getLogger(ExternalMessagingDeploymentRemoteTestCase.SetupTask.class);
 
         @Override
         public void doSetup(org.jboss.as.arquillian.container.ManagementClient managementClient, String s) throws Exception {
             JMSOperations ops = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
             ops.createJmsQueue(QUEUE_NAME, "/queue/" + QUEUE_NAME);
             ops.createJmsTopic(TOPIC_NAME, "/topic/" + TOPIC_NAME);
-            ops.addExternalHttpConnector("http-test-connector", "http", "http-acceptor");
-            ModelNode op = Operations.createRemoveOperation(getInitialPooledConnectionFactoryAddress());
+            execute(managementClient, addSocketBinding("legacy-messaging", 5445) , true);
+            execute(managementClient, addExternalRemoteConnector(ops.getSubsystemAddress(), "remote-broker-connector", "legacy-messaging") , true);
+            execute(managementClient, addRemoteAcceptor(ops.getServerAddress(), "legacy-messaging-acceptor", "legacy-messaging") , true);
+            ModelNode op = Operations.createRemoveOperation(getInitialPooledConnectionFactoryAddress(ops.getServerAddress()));
             execute(managementClient, op, true);
             op = Operations.createAddOperation(getPooledConnectionFactoryAddress());
             op.get("transaction").set("xa");
             op.get("entries").add("java:/JmsXA java:jboss/DefaultJMSConnectionFactory");
-            op.get("connectors").add("http-test-connector");
+            op.get("connectors").add("remote-broker-connector");
             execute(managementClient, op, true);
-            op = Operations.createAddOperation(getClientTopicAddress());
+            op = Operations.createAddOperation(getExternalTopicAddress());
             op.get("entries").add(TOPIC_LOOKUP);
             op.get("entries").add("/topic/myAwesomeClientTopic");
             execute(managementClient, op, true);
-            op = Operations.createAddOperation(getClientQueueAddress());
+            op = Operations.createAddOperation(getExternalQueueAddress());
             op.get("entries").add(QUEUE_LOOKUP);
             op.get("entries").add("/topic/myAwesomeClientQueue");
             execute(managementClient, op, true);
@@ -120,7 +125,7 @@ public class ExternalMessagingDeploymentTestCase {
         }
 
 
-        ModelNode getClientTopicAddress() {
+        ModelNode getExternalTopicAddress() {
             ModelNode address = new ModelNode();
             address.add("subsystem", "messaging-activemq");
             address.add("external-jms-topic", TOPIC_NAME);
@@ -128,19 +133,51 @@ public class ExternalMessagingDeploymentTestCase {
         }
 
 
-        ModelNode getClientQueueAddress() {
+        ModelNode getExternalQueueAddress() {
             ModelNode address = new ModelNode();
             address.add("subsystem", "messaging-activemq");
             address.add("external-jms-queue", QUEUE_NAME);
             return address;
         }
 
-        ModelNode getInitialPooledConnectionFactoryAddress() {
-            ModelNode address = new ModelNode();
-            address.add("subsystem", "messaging-activemq");
-            address.add("server", "default");
+        ModelNode getInitialPooledConnectionFactoryAddress(ModelNode serverAddress) {
+            ModelNode address = serverAddress.clone();
             address.add("pooled-connection-factory", "activemq-ra");
             return address;
+        }
+
+        ModelNode addSocketBinding(String bindingName, int port) {
+            ModelNode address = new ModelNode();
+            address.add("socket-binding-group", "standard-sockets");
+            address.add("socket-binding", bindingName);
+
+            ModelNode socketBindingOp = new ModelNode();
+            socketBindingOp.get(OP).set(ADD);
+            socketBindingOp.get(OP_ADDR).set(address);
+            socketBindingOp.get("port").set(port);
+            return socketBindingOp;
+        }
+
+        ModelNode addExternalRemoteConnector(ModelNode subsystemAddress, String name, String socketBinding) {
+            ModelNode address = subsystemAddress.clone();
+            address.add("remote-connector", name);
+
+            ModelNode socketBindingOp = new ModelNode();
+            socketBindingOp.get(OP).set(ADD);
+            socketBindingOp.get(OP_ADDR).set(address);
+            socketBindingOp.get("socket-binding").set(socketBinding);
+            return socketBindingOp;
+        }
+
+        ModelNode addRemoteAcceptor(ModelNode serverAddress, String name, String socketBinding) {
+            ModelNode address = serverAddress.clone();
+            address.add("remote-acceptor", name);
+
+            ModelNode socketBindingOp = new ModelNode();
+            socketBindingOp.get(OP).set(ADD);
+            socketBindingOp.get(OP_ADDR).set(address);
+            socketBindingOp.get("socket-binding").set(socketBinding);
+            return socketBindingOp;
         }
     }
 

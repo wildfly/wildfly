@@ -407,6 +407,9 @@ public class TransportConfigOperationHandlers {
                     parameters.put(GenericTransportDefinition.SOCKET_BINDING.getName(), socketBinding.asString());
                     bindings.add(socketBinding.asString());
                 }
+                if(!config.hasDefined(FACTORY_CLASS.getName())) {
+                    config.get(FACTORY_CLASS.getName()).set(NettyConnectorFactory.class.getName());
+                }
                 final String clazz = FACTORY_CLASS.resolveModelAttribute(context, config).asString();
                 connectors.add(new TransportConfiguration(clazz, parameters, connectorName));
             }
