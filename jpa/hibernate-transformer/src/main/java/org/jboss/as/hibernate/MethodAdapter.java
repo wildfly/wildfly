@@ -116,7 +116,7 @@ class MethodAdapter extends MethodVisitor {
                 desc.equals("(I)Lorg/hibernate/Query;")) {
             logger.debugf("Deprecated Hibernate51CompatibilityTransformer transformed application classes in '%s', " +
                             "class '%s', is calling org.hibernate.Query.setMaxResults, which must be changed to call setHibernateMaxResults() " +
-                            "so that values <= 0 are treated the same as uninitialized."
+                            "so that values <= 0 are treated the same as uninitialized.  Review Hibernate ORM migration doc "
                     , moduleName, className);
             name = "setHibernateMaxResults";
             mv.visitMethodInsn(opcode, owner, name, desc, itf);

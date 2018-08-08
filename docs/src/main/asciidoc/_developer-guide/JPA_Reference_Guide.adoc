@@ -20,7 +20,7 @@ deploy JPA applications.
 
 In the remainder of this documentation, "entity manager" refers to an
 instance of the _javax.persistence.EntityManager_ class.
-https://javaee.github.io/javaee-spec/javadocs/javax/persistence/package-summary.html[Javadoc
+https://javaee.github.io/javaee-spec/javadocs/overview-summary.html[Javadoc
 for the JPA interfaces]and https://jcp.org/en/jsr/detail?id=338[JPA 2.2
 specification].
 
@@ -406,7 +406,8 @@ The Hibernate native API application will also need a MANIFEST.MF:
 Dependencies: org.infinispan,org.hibernate
 ....
 
-http://infinispan.org/docs/9.2.x/user_guide/user_guide.html#jpa_hibernate_2l_cache contains
+http://infinispan.org/docs/9.3.x/user_guide/user_guide.html#jpa_hibernate_2l_cache[Infinispan
+Hibernate/JPA second level cache provider documentation] contains
 advanced configuration information but you should bear in mind that when
 Hibernate runs within WildFly {wildflyVersion}, some of those configuration options,
 such as region factory, are not needed. Moreover, the application server
@@ -500,13 +501,17 @@ persistence property *wildfly.jpa.hibernate.search.module* to either
 *none* to not automatically inject any Hibernate Search module, or to
 any other module identifier to inject a different module. +
 For example you could set
-*wildfly.jpa.hibernate.search.module=org.hibernate.search.orm:5.4.0.Alpha1*
-to use the version 5.4.0.Alpha1 instead of the provided
-Search module; in this case you'll have to download and add the custom modules
+*wildfly.jpa.hibernate.search.module=org.hibernate.search.orm:5.11.0.Alpha1*
+to use the experimental version 5.11.0.Alpha1 instead of the provided
+module; in this case you'll have to download and add the custom modules
 to the application server as other versions are not included. +
 When setting *wildfly.jpa.hibernate.search.module=none* you might also
 opt to include Hibernate Search and its dependencies within your
 application but we highly recommend the modules approach.
+
+[[Using latest Hibernate ORM within WildFly]]
+== Using latest Hibernate ORM within WildFly
+https://docs.jboss.org/hibernate/orm/5.3/topical/html_single/wildfly/Wildfly.html[Read about Hibernate ORM feature packs here].
 
 [[packaging-the-hibernate-jpa-persistence-provider-with-your-application]]
 == Packaging the Hibernate JPA persistence provider with your application
@@ -646,8 +651,7 @@ Dependencies: org.hibernate
 ....
 
 [[injection-of-hibernate-session-and-sessionfactoryinjection-of-hibernate-session-and-sessionfactory]]
-== Injection of Hibernate Session and SessionFactoryInjection of
-Hibernate Session and SessionFactory
+== Injection of Hibernate Session and SessionFactoryInjection of Hibernate Session and SessionFactory
 
 You can inject a org.hibernate.Session and org.hibernate.SessionFactory
 directly, just as you can do with EntityManagers and
@@ -711,12 +715,12 @@ Applied Transformations to application classes compiled with Hibernate 5.1: ::
 **  org.hibernate.type.ProcedureParameterNamedBinder.
 **  org.hibernate.type.VersionType.
 *  In user type classes, when calling hibernate.orm methods, cast SessionImplementor to SharedSessionContractImplementor.
-*  Change calls to org.hibernate.BasicQueryContract.getFlushMode() to instead call BasicQueryContract.getHibernateFlushMode().
-*  Change calls to org.hibernate.Session.getFlushMode() to instead call Session.getHibernateFlushMode().
+*  Change calls to org.hibernate.BasicQueryContract.getFlushMode(), https://github.com/hibernate/hibernate-orm/blob/5.2/migration-guide.adoc#misc[to instead call BasicQueryContract.getHibernateFlushMode()].
+*  Change calls to org.hibernate.Session.getFlushMode(), https://github.com/hibernate/hibernate-orm/blob/5.2/migration-guide.adoc#misc[to instead call Session.getHibernateFlushMode()].
 *  Change calls to org.hibernate.Query.getFirstResult(), to instead call Query.getHibernateFirstResult(), so null can be returned when the value is uninitialized (note that 0 is now returned instead of negative values).
-*  Change calls to org.hibernate.Query.getMaxResults(), to instead call Query.getHibernateMaxResults(), so that null will be returned when the value is uninitialized or org.hibernate.Query#setMaxResults() was called with a value <= 0.
-*  Change calls to org.hibernate.Query.setFirstResult(), to instead call Query.setHibernateFirstResult(), so that calls to set a value < 0 results in pagination starting with the 0th row as was done in Hibernate ORM 5.1.
-*  Change calls to org.hibernate.Query.setMaxResults(), to instead call Query.setHibernateMaxResults(), so that passed values <= 0 are treated the same as uninitialized.
+*  Change calls to org.hibernate.Query.getMaxResults(), https://github.com/hibernate/hibernate-orm/blob/5.3/migration-guide.adoc#native-non-jpa-pagination-changes[to instead call Query.getHibernateMaxResults(), so that null will be returned when the value is uninitialized or org.hibernate.Query#setMaxResults() was called with a value <= 0].
+*  Change calls to org.hibernate.Query.setFirstResult(), https://github.com/hibernate/hibernate-orm/blob/5.3/migration-guide.adoc#native-non-jpa-pagination-changes[to instead call Query.setHibernateFirstResult(), so that calls to set a value < 0 results in pagination starting with the 0th row as was done in Hibernate ORM 5.1].
+*  Change calls to org.hibernate.Query.setMaxResults(), https://github.com/hibernate/hibernate-orm/blob/5.3/migration-guide.adoc#native-non-jpa-pagination-changes[to instead call Query.setHibernateMaxResults(), so that passed values <= 0 are treated the same as uninitialized].
 *  Change references to NEVER field in enum org.hibernate.FlushMode, to instead reference FlushMode.MANUAL.
 
 ****
@@ -730,13 +734,13 @@ Hibernate51CompatibilityTransformer transformed application classes in 'deployme
 
 [cols=",",options="header"]
 |=======================================================================
-|System Property |Purpose
+|System Property |Purpose| Default
 
-|Hibernate51CompatibilityTransformer=false| if true, the transformer will transform ORM 5.1.x native calls to, ORM 5.3 native calls, in every application deployment.
+|Hibernate51CompatibilityTransformer| if true, the transformer will transform ORM 5.1.x native calls to, ORM 5.3 native calls, in every application deployment|false
 
-|Hibernate51CompatibilityTransformer.disableAmbiguousChanges=false| disable transformation of org.hibernate.Query.setFirstResult(int) + org.hibernate.Query.setMaxResults(int), since these methods are in both Hibernate ORM 5.1.x + 5.3.x.
+|Hibernate51CompatibilityTransformer.disableAmbiguousChanges| disable transformation of org.hibernate.Query.setFirstResult(int) + org.hibernate.Query.setMaxResults(int), since these methods are in both Hibernate ORM 5.1.x + 5.3.x|false
 
-|Hibernate51CompatibilityTransformer.showTransformedClassFolder| specifies the folder name to create bytecode level description of applications run through the transformer.  If the transformer actually makes a change to your application, a (boolean) class variable will be added "$_org_jboss_as_hibernate_Hibernate51CompatibilityTransformer_transformed_$", that ensures that the application is only transformed once.
+|Hibernate51CompatibilityTransformer.showTransformedClassFolder| specifies the folder name to create bytecode level description of applications run through the transformer.  If the transformer actually makes a change to your application, a (boolean) class variable will be added "$_org_jboss_as_hibernate_Hibernate51CompatibilityTransformer_transformed_$", that ensures that the application is only transformed once|disabled
 | 
 ----
 ----
@@ -814,7 +818,7 @@ across all application deployments on the AS instance).
 | 
 |=======================================================================
 
-if *new_generator_mappings* is *true*:
+if *hibernate.id.new_generator_mappings* is *true*:
 
 * @GeneratedValue(AUTO) maps to
 org.hibernate.id.enhanced.SequenceStyleGenerator
@@ -823,7 +827,7 @@ org.hibernate.id.enhanced.TableGenerator
 * @GeneratedValue(SEQUENCE) maps to
 org.hibernate.id.enhanced.SequenceStyleGenerator
 
-if *new_generator_mappings* is *false*:
+if *hibernate.id.new_generator_mappings* is *false*:
 
 * @GeneratedValue(AUTO) maps to Hibernate "native"
 * @GeneratedValue(TABLE) maps to
@@ -929,7 +933,7 @@ specified in the persistence.xml. The mapping is:
 
 |blank |org.hibernate
 
-|org.hibernate.ejb.HibernatePersistence |org.hibernate
+|org.hibernate.jpa.HibernatePersistenceProvider |org.hibernate
 
 |org.hibernate.ogm.jpa.HibernateOgmPersistence |org.hibernate.ogm
 
@@ -1000,43 +1004,3 @@ public class ExampleSFSB {
 }
 ----
 
-[[community]]
-== Community
-
-Many thanks to the community, for reporting issues, solutions and code
-changes. A number of people have been answering Wildfly forum questions
-related to JPA usage. I would like to thank them for this, as well as
-those reporting issues. For those of you that haven't downloaded the AS
-source code and started hacking patches together. I would like to
-encourage you to start by reading
-https://community.jboss.org/wiki/HackingOnWildFly[Hacking on WildFly].
-You will find that it easy very easy to find your way around the
-WildFly/JPA/* source tree and make changes. Also, new for WildFly, is
-the JipiJapa project that contains additional integration code that
-makes EE JPA application deployments work better. The following list of
-contributors should grow over time, I hope to see more of you listed
-here.
-
-[[people-who-have-contributed-to-the-wildfly-jpa-layer]]
-=== People who have contributed to the WildFly JPA layer:
-
-* https://community.jboss.org/people/wolfc[Carlo de Wolf] (lead of the
-EJB3 project)
-* *http://in.relation.to/Bloggers/Steve[Steve Ebersole]* (lead of the
-Hibernate ORM project)
-* *https://community.jboss.org/people/swd847[Stuart Douglas]* (lead of
-the Seam Persistence project, WildFly project team member/committer)
-* https://community.jboss.org/people/jaikiran[Jaikiran Pai] (Active
-member of JBoss forums and JBoss EJB3 project team member)
-* http://relation.to/Bloggers/StrongLiu[Strong Liu] (leads the
-productization effort of Hibernate in the EAP product)
-* *https://community.jboss.org/people/smarlow[Scott Marlow]* (lead of
-the WildFly container JPA sub-project)
-* *https://community.jboss.org/people/alaisi[Antti Laisi]* *(OpenJPA
-integration changes)*
-* https://docs.jboss.org/author/display/~galder.zamarreno[Galder
-Zamarreño] (Infinispan 2lc documentation)
-* https://docs.jboss.org/author/display/~sannegrinovero[Sanne Grinovero]
-(lead of the Hibernate Search project)
-* https://issues.jboss.org/secure/ViewProfile.jspa?name=pferraro[Paul
-Ferraro] (Infinispan 2lc integration)
