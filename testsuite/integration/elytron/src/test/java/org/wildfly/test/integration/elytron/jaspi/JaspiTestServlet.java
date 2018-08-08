@@ -32,7 +32,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.wildfly.security.auth.jaspi.JaspicConfigurationBuilder;
+import org.wildfly.security.auth.jaspi.JaspiConfigurationBuilder;
 
 /**
  * A servlet used for JASPI testing.
@@ -52,7 +52,7 @@ public class JaspiTestServlet extends HttpServlet {
             switch (action) {
                 case "register":
                     ServletContext servletContext = req.getServletContext();
-                    registrationId = JaspicConfigurationBuilder
+                    registrationId = JaspiConfigurationBuilder
                             .builder("HttpServlet", servletContext.getVirtualServerName() + " " + servletContext.getContextPath())
                             .addAuthModuleFactory(SimpleServerAuthModule::new)
                             .register();

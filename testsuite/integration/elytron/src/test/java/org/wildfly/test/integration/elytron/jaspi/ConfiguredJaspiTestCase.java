@@ -67,7 +67,7 @@ import org.wildfly.test.security.common.elytron.ConfigurableElement;
 public class ConfiguredJaspiTestCase extends JaspiTestBase {
 
     private static final String NAME = ConfiguredJaspiTestCase.class.getSimpleName();
-    private static final String MODULE_NAME = "org.wildfly.security.examples.jaspic";
+    private static final String MODULE_NAME = "org.wildfly.security.examples.jaspi";
 
     @Deployment(testable = false)
     public static WebArchive createDeployment() {
