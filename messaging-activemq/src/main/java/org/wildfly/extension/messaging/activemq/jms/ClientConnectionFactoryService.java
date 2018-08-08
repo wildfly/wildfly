@@ -24,6 +24,7 @@ import org.apache.activemq.artemis.api.core.TransportConfiguration;
 import org.apache.activemq.artemis.api.jms.ActiveMQJMSClient;
 import org.apache.activemq.artemis.api.jms.JMSFactoryType;
 import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory;
+import org.jboss.as.network.ManagedBinding;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.msc.inject.Injector;
@@ -32,6 +33,8 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
+import org.wildfly.extension.messaging.activemq.DiscoveryGroupAdd;
 import org.wildfly.extension.messaging.activemq.TransportConfigOperationHandlers;
 import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 
@@ -48,6 +51,10 @@ public class ClientConnectionFactoryService implements Service<ConnectionFactory
     private Map<String, SocketBinding> socketBindings = new HashMap<>();
     private Map<String, OutboundSocketBinding> outboundSocketBindings = new HashMap<>();
     private Map<String, SocketBinding> groupBindings = new HashMap<>();
+    // mapping between the {discovery}-groups and the cluster names they use
+    private final Map<String, String> clusterNames = new HashMap<>();
+    // mapping between the {discovery}-groups and the command dispatcher factory they use
+    private final Map<String, CommandDispatcherFactory> commandDispatcherFactories = new HashMap<>();
     private ActiveMQConnectionFactory factory;
 
     ClientConnectionFactoryService(DiscoveryGroupConfiguration groupConfiguration, JMSFactoryType type, boolean ha) {
@@ -76,16 +83,31 @@ public class ClientConnectionFactoryService implements Service<ConnectionFactory
         try {
             if (connectors != null && connectors.length > 0) {
                 TransportConfigOperationHandlers.processConnectorBindings(Arrays.asList(connectors), socketBindings, outboundSocketBindings);
-                if(ha) {
-                   factory = ActiveMQJMSClient.createConnectionFactoryWithHA(type, connectors);
+                if (ha) {
+                    factory = ActiveMQJMSClient.createConnectionFactoryWithHA(type, connectors);
                 } else {
                     factory = ActiveMQJMSClient.createConnectionFactoryWithoutHA(type, connectors);
                 }
             } else {
-                 if(ha) {
-                   factory = ActiveMQJMSClient.createConnectionFactoryWithHA(groupConfiguration, type);
+                final String name = groupConfiguration.getName();
+                final String key = "discovery" + name;
+                final DiscoveryGroupConfiguration config;
+                if (commandDispatcherFactories.containsKey(key)) {
+                    CommandDispatcherFactory commandDispatcherFactory = commandDispatcherFactories.get(key);
+                    String clusterName = clusterNames.get(key);
+                    config = DiscoveryGroupAdd.createDiscoveryGroupConfiguration(name, groupConfiguration, commandDispatcherFactory, clusterName);
                 } else {
-                    factory = ActiveMQJMSClient.createConnectionFactoryWithoutHA(groupConfiguration, type);
+                    final SocketBinding binding = groupBindings.get(key);
+                    if (binding == null) {
+                        throw MessagingLogger.ROOT_LOGGER.failedToFindDiscoverySocketBinding(name);
+                    }
+                    config = DiscoveryGroupAdd.createDiscoveryGroupConfiguration(name, groupConfiguration, binding);
+                    binding.getSocketBindings().getNamedRegistry().registerBinding(ManagedBinding.Factory.createSimpleManagedBinding(binding));
+                }
+                if (ha) {
+                    factory = ActiveMQJMSClient.createConnectionFactoryWithHA(config, type);
+                } else {
+                    factory = ActiveMQJMSClient.createConnectionFactoryWithoutHA(config, type);
                 }
             }
         } catch (Throwable e) {
@@ -117,5 +139,17 @@ public class ClientConnectionFactoryService implements Service<ConnectionFactory
 
     Injector<SocketBinding> getGroupBindingInjector(String name) {
         return new MapInjector<String, SocketBinding>(groupBindings, name);
+    }
+
+    CommandDispatcherFactory getCommandDispatcherFactory(String name) {
+        return this.commandDispatcherFactories.get(name);
+    }
+
+    Injector<CommandDispatcherFactory> getCommandDispatcherFactoryInjector(String name) {
+        return new MapInjector<>(this.commandDispatcherFactories, name);
+    }
+
+    public Map<String, String> getClusterNames() {
+        return clusterNames;
     }
 }

@@ -122,7 +122,10 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
             }
             Resource dgResource = context.readResourceFromRoot(dgAddress, false);
             ModelNode dgModel = dgResource.getModel();
-            jgroupsChannelName = JGROUPS_CLUSTER.resolveModelAttribute(context, dgModel).asString();
+            ModelNode jgroupChannel = JGROUPS_CLUSTER.resolveModelAttribute(context, dgModel);
+            if(jgroupChannel.isDefined()) {
+                jgroupsChannelName = JGROUPS_CLUSTER.resolveModelAttribute(context, dgModel).asString();
+            }
         }
 
         List<PooledConnectionFactoryConfigProperties> adapterParams = getAdapterParams(resolvedModel, context);
@@ -133,7 +136,8 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
             }
             Set<String> connectorsSocketBindings = new HashSet<>();
             TransportConfiguration[] transportConfigurations = TransportConfigOperationHandlers.processConnectors(context, connectors, connectorsSocketBindings);
-            ClientPooledConnectionFactoryService.installService(context, name, transportConfigurations, discoveryGroupConfiguration, connectorsSocketBindings, jgroupsChannelName, adapterParams, jndiNames, txSupport, minPoolSize, maxPoolSize, managedConnectionPoolClassName, enlistmentTrace, model);
+            ClientPooledConnectionFactoryService service = ClientPooledConnectionFactoryService.installService(context, name, transportConfigurations, discoveryGroupConfiguration, connectorsSocketBindings,
+                    jgroupsChannelName, adapterParams, jndiNames, txSupport, minPoolSize, maxPoolSize, managedConnectionPoolClassName, enlistmentTrace, model);
         } else {
             String serverName = serverAddress.getLastElement().getValue();
             PooledConnectionFactoryService.installService(context,

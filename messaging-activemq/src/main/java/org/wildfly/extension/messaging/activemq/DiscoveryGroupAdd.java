@@ -114,8 +114,8 @@ public class DiscoveryGroupAdd extends AbstractAddStepHandler {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
         ServiceRegistry registry = context.getServiceRegistry(false);
-        final ServiceName serviceName = MessagingServices.getActiveMQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
-        ServiceController<?> service = registry.getService(serviceName);
+        ServiceName serviceName = MessagingServices.getActiveMQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
+        ServiceController<?> service = serviceName == null ? null : registry.getService(serviceName);
         if (service != null) {
             context.reloadRequired();
         } else {
@@ -123,6 +123,9 @@ public class DiscoveryGroupAdd extends AbstractAddStepHandler {
             if (model.hasDefined(JGROUPS_CLUSTER.getName())) {
                 // nothing to do, in that case, the clustering.jgroups subsystem will have setup the stack
             } else if(model.hasDefined(RemoteTransportDefinition.SOCKET_BINDING.getName())) {
+                if(serviceName == null) {
+                    serviceName = MessagingServices.getActiveMQServiceName((String) null);
+                }
                 final GroupBindingService bindingService = new GroupBindingService();
                 target.addService(GroupBindingService.getDiscoveryBaseServiceName(serviceName).append(name), bindingService)
                         .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(model.get(SOCKET_BINDING).asString()), SocketBinding.class, bindingService.getBindingRef())
@@ -135,7 +138,7 @@ public class DiscoveryGroupAdd extends AbstractAddStepHandler {
         if (model.hasDefined(CommonAttributes.DISCOVERY_GROUP)) {
             Map<String, DiscoveryGroupConfiguration> configs = configuration.getDiscoveryGroupConfigurations();
             if (configs == null) {
-                configs = new HashMap<String, DiscoveryGroupConfiguration>();
+                configs = new HashMap<>();
                 configuration.setDiscoveryGroupConfigurations(configs);
             }
             for (Property prop : model.get(CommonAttributes.DISCOVERY_GROUP).asPropertyList()) {
@@ -156,7 +159,7 @@ public class DiscoveryGroupAdd extends AbstractAddStepHandler {
                 .setDiscoveryInitialWaitTimeout(initialWaitTimeout);
     }
 
-    static DiscoveryGroupConfiguration createDiscoveryGroupConfiguration(final String name, final DiscoveryGroupConfiguration config, final SocketBinding socketBinding) throws Exception {
+   public static DiscoveryGroupConfiguration createDiscoveryGroupConfiguration(final String name, final DiscoveryGroupConfiguration config, final SocketBinding socketBinding) throws Exception {
 
         final String localAddress = socketBinding.getAddress().getHostAddress();
         final String groupAddress = socketBinding.getMulticastAddress().getHostAddress();
@@ -178,7 +181,7 @@ public class DiscoveryGroupAdd extends AbstractAddStepHandler {
     }
 
 
-    static DiscoveryGroupConfiguration createDiscoveryGroupConfiguration(final String name, final DiscoveryGroupConfiguration config, final CommandDispatcherFactory commandDispatcherFactory, final String channelName) throws Exception {
+   public static DiscoveryGroupConfiguration createDiscoveryGroupConfiguration(final String name, final DiscoveryGroupConfiguration config, final CommandDispatcherFactory commandDispatcherFactory, final String channelName) throws Exception {
         final long refreshTimeout = config.getRefreshTimeout();
         final long initialWaitTimeout = config.getDiscoveryInitialWaitTimeout();
 

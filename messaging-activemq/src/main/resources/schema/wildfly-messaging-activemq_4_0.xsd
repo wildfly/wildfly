@@ -104,6 +104,18 @@
                         <xs:attribute name="statistics-enabled" type="xs:boolean" use="optional" />
                     </xs:complexType>
                 </xs:element>
+                <xs:element name="client-jms-queue" minOccurs="0" maxOccurs="unbounded">
+                    <xs:complexType>
+                        <xs:attribute name="name" type="xs:string" use="required" />
+                        <xs:attribute name="entries" type="stringList" use="required" />
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="client-jms-topic" minOccurs="0" maxOccurs="unbounded">
+                    <xs:complexType>
+                        <xs:attribute name="name" type="xs:string" use="required" />
+                        <xs:attribute name="entries" type="stringList" use="required" />
+                    </xs:complexType>
+                </xs:element>
                 <xs:element maxOccurs="unbounded" minOccurs="0" name="server" type="serverType" />
                 <xs:element maxOccurs="unbounded" minOccurs="0" name="jms-bridge" type="jms-bridgeType" />
             </xs:sequence>

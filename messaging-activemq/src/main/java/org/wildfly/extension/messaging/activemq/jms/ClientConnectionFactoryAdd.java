@@ -24,7 +24,9 @@ package org.wildfly.extension.messaging.activemq.jms;
 
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.DISCOVERY_GROUP;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.HA;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_CLUSTER;
 import static org.wildfly.extension.messaging.activemq.TransportConfigOperationHandlers.isOutBoundSocketBinding;
 
 import java.util.HashSet;
@@ -46,9 +48,14 @@ import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.spi.ClusteringDefaultRequirement;
+import org.wildfly.clustering.spi.ClusteringRequirement;
 import org.wildfly.extension.messaging.activemq.BinderServiceUtil;
 import org.wildfly.extension.messaging.activemq.CommonAttributes;
 import org.wildfly.extension.messaging.activemq.DiscoveryGroupDefinition;
+import org.wildfly.extension.messaging.activemq.GroupBindingService;
+import org.wildfly.extension.messaging.activemq.MessagingExtension;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
 import org.wildfly.extension.messaging.activemq.TransportConfigOperationHandlers;
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common;
@@ -62,6 +69,7 @@ import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
  */
 public class ClientConnectionFactoryAdd extends AbstractAddStepHandler {
 
+    private static final ServiceName JBOSS_MESSAGING_ACTIVEMQ = ServiceName.JBOSS.append(MessagingExtension.SUBSYSTEM_NAME);
     public static final ClientConnectionFactoryAdd INSTANCE = new ClientConnectionFactoryAdd();
 
     private ClientConnectionFactoryAdd() {
@@ -80,8 +88,21 @@ public class ClientConnectionFactoryAdd extends AbstractAddStepHandler {
         ServiceBuilder<?> builder;
         ClientConnectionFactoryService service;
         if (discoveryGroupName.isDefined()) {
-            service = new ClientConnectionFactoryService(getDiscoveryGroup(context, discoveryGroupName.asString()), jmsFactoryType, ha);
+            final String dgname = discoveryGroupName.asString();
+            service = new ClientConnectionFactoryService(getDiscoveryGroup(context, dgname), jmsFactoryType, ha);
             builder = context.getServiceTarget().addService(serviceName, service);
+            final String key = "discovery" + dgname;
+            ModelNode discoveryGroupModel = model.get(DISCOVERY_GROUP, dgname);
+            if (discoveryGroupModel.hasDefined(JGROUPS_CLUSTER.getName())) {
+                ModelNode channel = DiscoveryGroupDefinition.JGROUPS_CHANNEL.resolveModelAttribute(context, discoveryGroupModel);
+                ServiceName commandDispatcherFactoryServiceName = channel.isDefined() ? ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context, channel.asString()) : ClusteringDefaultRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context);
+                String clusterName = JGROUPS_CLUSTER.resolveModelAttribute(context, discoveryGroupModel).asString();
+                builder.addDependency(commandDispatcherFactoryServiceName, CommandDispatcherFactory.class, service.getCommandDispatcherFactoryInjector(key));
+                service.getClusterNames().put(key, clusterName);
+            } else {
+                final ServiceName groupBinding = GroupBindingService.getDiscoveryBaseServiceName(JBOSS_MESSAGING_ACTIVEMQ).append(name);
+                builder.addDependency(groupBinding, SocketBinding.class, service.getGroupBindingInjector(key));
+            }
         } else {
             Set<String> connectorsSocketBindings = new HashSet<>();
             TransportConfiguration[] transportConfigurations = TransportConfigOperationHandlers.processConnectors(context, connectorNames, connectorsSocketBindings);

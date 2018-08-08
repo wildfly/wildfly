@@ -242,7 +242,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
         return credentialSourceSupplier;
     }
 
-    public static void installService(ServiceTarget serviceTarget,
+    public static PooledConnectionFactoryService installService(ServiceTarget serviceTarget,
                                       String name,
                                       String serverName,
                                       List<String> connectors,
@@ -265,9 +265,10 @@ public class PooledConnectionFactoryService implements Service<Void> {
                 bindInfo, txSupport, minPoolSize, maxPoolSize, managedConnectionPoolClassName, enlistmentTrace, pickAnyConnectors);
 
         installService0(serviceTarget, serverServiceName, serviceName, service);
+        return service;
     }
 
-    public static void installService(OperationContext context,
+    public static PooledConnectionFactoryService installService(OperationContext context,
                                       String name,
                                       String serverName,
                                       List<String> connectors,
@@ -289,6 +290,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
                 jndiNames, txSupport, minPoolSize, maxPoolSize, managedConnectionPoolClassName, enlistmentTrace);
 
         installService0(context, serverServiceName, serviceName, service, model);
+        return service;
     }
 
     private static void installService0(ServiceTarget serviceTarget, ServiceName serverServiceName, ServiceName serviceName, PooledConnectionFactoryService service) {
