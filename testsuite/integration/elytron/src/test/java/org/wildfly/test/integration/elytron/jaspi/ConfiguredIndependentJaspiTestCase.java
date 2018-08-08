@@ -28,17 +28,18 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.runner.RunWith;
+import org.wildfly.security.auth.server.SecurityDomain;
 
 /**
- * Test case testing a deployment secured using JASPI configured within the Elytron subsystem with the actual authentication
- * handled by the mapped SecurityDomain of the deployment.
+ * Test case testing a deployment secured using JASPI configured within the Elytron subsystem with the authentication being
+ * handled by the ServerAuthModule but the identity still being loaded from the {@link SecurityDomain}
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup({ ConfiguredJaspiTestCase.ServerSetup.class })
-public class ConfiguredJaspiTestCase extends ConfiguredJaspiTestBase {
+@ServerSetup({ ConfiguredIndependentJaspiTestCase.ServerSetup.class })
+public class ConfiguredIndependentJaspiTestCase extends ConfiguredJaspiTestBase {
 
     private static final String NAME = ConfiguredJaspiTestCase.class.getSimpleName();
 
@@ -54,5 +55,11 @@ public class ConfiguredJaspiTestCase extends ConfiguredJaspiTestBase {
             return NAME;
         }
 
+        @Override
+        protected String getMode() {
+            return "independent";
+        }
+
     }
+
 }

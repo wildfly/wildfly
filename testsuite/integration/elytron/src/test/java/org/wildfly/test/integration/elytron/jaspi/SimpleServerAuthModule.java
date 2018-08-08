@@ -56,11 +56,13 @@ public class SimpleServerAuthModule implements ServerAuthModule {
     private static final String ROLES_HEADER = "X-ROLES";
     private static final String MESSAGE_HEADER = "X-MESSAGE";
 
+    private boolean independent;
     private CallbackHandler callbackHandler;
 
     public void initialize(MessagePolicy requestPolicy, MessagePolicy responsePolicy, CallbackHandler handler, Map options)
             throws AuthException {
         this.callbackHandler = checkNotNullParam("handler", handler);
+        this.independent = "independent".equals(options.get("mode"));
     }
 
     public Class[] getSupportedMessageTypes() {
@@ -80,13 +82,21 @@ public class SimpleServerAuthModule implements ServerAuthModule {
             return AuthStatus.SEND_CONTINUE;
         }
 
-        PasswordValidationCallback pvc = new PasswordValidationCallback(serviceSubject, username, password.toCharArray());
-        try {
-            handle(pvc);
-        } finally {
-            pvc.clearPassword();
+        final boolean validated;
+        if (independent) {
+            // In this mode the ServerAuthModule is taking over it's own validation and only using Callbacks to establish the identity.
+            validated = "user1".equals(username) && "password1".equals(password);
+        } else {
+            PasswordValidationCallback pvc = new PasswordValidationCallback(serviceSubject, username, password.toCharArray());
+            try {
+                handle(pvc);
+            } finally {
+                pvc.clearPassword();
+            }
+            validated = pvc.getResult();
         }
-        if (pvc.getResult()) {
+
+        if (validated) {
             Callback callerPrincipalCallback = new CallerPrincipalCallback(clientSubject, new NamePrincipal(username));
             if (roles != null) {
                 handle(callerPrincipalCallback, new GroupPrincipalCallback(clientSubject, roles.split(",")));
