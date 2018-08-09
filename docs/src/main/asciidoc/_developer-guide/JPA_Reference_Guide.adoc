@@ -485,33 +485,9 @@ Persistence.xml to use the above custom settings:
 [[using-hibernate-search]]
 == Using Hibernate Search
 
-WildFly includes Hibernate Search. If you want to use the bundled
-version of Hibernate Search - which requires to use the default
-Hibernate ORM persistence provider - this will be automatically
-enabled. +
-Having this enabled means that, provided your application includes any
-entity which is annotated with
-*org.hibernate.search.annotations.Indexed*, the module
-*org.hibernate.search.orm:main* will be made available to your
-deployment; this will also include the required version of Apache
-Lucene.
+WildFly includes Hibernate Search. If you want to use the bundled version of Hibernate Search, which requires to use the default Hibernate ORM persistence provider, this will be automatically enabled.  Having this enabled means that, provided your application includes any entity which is annotated with *org.hibernate.search.annotations.Indexed*, the module *org.hibernate.search.orm:main* will be made available to your deployment; this will also include the required version of Apache Lucene.
 
-If you do not want this module to be exposed to your deployment, set the
-persistence property *wildfly.jpa.hibernate.search.module* to either
-*none* to not automatically inject any Hibernate Search module, or to
-any other module identifier to inject a different module. +
-For example you could set
-*wildfly.jpa.hibernate.search.module=org.hibernate.search.orm:5.11.0.Alpha1*
-to use the experimental version 5.11.0.Alpha1 instead of the provided
-module; in this case you'll have to download and add the custom modules
-to the application server as other versions are not included. +
-When setting *wildfly.jpa.hibernate.search.module=none* you might also
-opt to include Hibernate Search and its dependencies within your
-application but we highly recommend the modules approach.
-
-[[Using latest Hibernate ORM within WildFly]]
-== Using latest Hibernate ORM within WildFly
-https://docs.jboss.org/hibernate/stable/orm/topical/html_single/wildfly/Wildfly.html[Read about Hibernate ORM feature packs here].
+If you do not want this module to be exposed to your deployment, set the persistence property *wildfly.jpa.hibernate.search.module* to either *none* to not automatically inject any Hibernate Search module, or to any other module identifier to inject a different module. For example you could set *wildfly.jpa.hibernate.search.module=org.hibernate.search.orm:5.11.0.Alpha1* to use the experimental version 5.11.0.Alpha1 instead of the provided module; in this case you'll have to download and add the custom modules to the application server as other versions are not included.  When setting *wildfly.jpa.hibernate.search.module=none* you might also opt to include Hibernate Search and its dependencies within your application but we highly recommend the modules approach.
 
 [[packaging-the-hibernate-jpa-persistence-provider-with-your-application]]
 == Packaging the Hibernate JPA persistence provider with your application
@@ -1004,3 +980,6 @@ public class ExampleSFSB {
 }
 ----
 
+== Tips for using the latest Hibernate ORM
+
+http://docs.jboss.org/hibernate/stable/orm/topical/html_single/wildfly/Wildfly.html[Read about using Hibernate ORM feature packs on WildFly].
