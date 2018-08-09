@@ -339,7 +339,12 @@ public class UndertowSubsystemParser_7_0 extends PersistentResourceXMLParser {
                 .addChild(
                         builder(ApplicationSecurityDomainDefinition.INSTANCE.getPathElement())
                             .setXmlWrapperElement(Constants.APPLICATION_SECURITY_DOMAINS)
-                            .addAttributes(ApplicationSecurityDomainDefinition.HTTP_AUTHENTICATION_FACTORY, ApplicationSecurityDomainDefinition.OVERRIDE_DEPLOYMENT_CONFIG, ApplicationSecurityDomainDefinition.SECURITY_DOMAIN, ApplicationSecurityDomainDefinition.ENABLE_JACC)
+                            .addAttribute(ApplicationSecurityDomainDefinition.HTTP_AUTHENTICATION_FACTORY)
+                            .addAttribute(ApplicationSecurityDomainDefinition.OVERRIDE_DEPLOYMENT_CONFIG)
+                            .addAttribute(ApplicationSecurityDomainDefinition.SECURITY_DOMAIN)
+                            .addAttribute(ApplicationSecurityDomainDefinition.ENABLE_JACC)
+                            .addAttribute(ApplicationSecurityDomainDefinition.ENABLE_JASPI)
+                            .addAttribute(ApplicationSecurityDomainDefinition.INTEGRATED_JASPI)
                             .addChild(builder(UndertowExtension.PATH_SSO)
                                     .addAttribute(SingleSignOnDefinition.Attribute.DOMAIN.getDefinition())
                                     .addAttribute(SingleSignOnDefinition.Attribute.PATH.getDefinition())

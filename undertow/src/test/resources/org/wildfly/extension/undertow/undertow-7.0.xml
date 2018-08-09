@@ -91,7 +91,7 @@
       <rewrite name="redirects" redirect="true" target="'/foo/'"/>
    </filters>
    <application-security-domains>
-      <application-security-domain enable-jacc="true" http-authentication-factory="elytron-factory" name="other" override-deployment-config="true">
+      <application-security-domain enable-jacc="true" http-authentication-factory="elytron-factory" name="other" override-deployment-config="true" enable-jaspi="false" integrated-jaspi="false">
          <single-sign-on client-ssl-context="my-ssl-context" cookie-name="SSOID" domain="${prop.domain:myDomain}" http-only="true" key-alias="my-key-alias" key-store="my-key-store" path="/path" secure="true">
             <credential-reference alias="my-credential-alias" store="my-credential-store" type="password"/>
          </single-sign-on>
