@@ -94,8 +94,7 @@ public class WSBearerSecurityPropagationTestCase {
         WebArchive archive = ShrinkWrap.create(WebArchive.class, BEARER_SERVER_DEP + ".war");
         archive
                 .setManifest(new StringAsset("Manifest-Version: 1.0\n"
-                        + "Dependencies: org.apache.cxf.impl,org.apache.cxf,org.jboss.ws.spi,org.jboss.ws.cxf.jbossws-cxf-server,"
-                        + "org.apache.ws.security,org.jboss.ws.jaxws-client\n"))
+                        + "Dependencies: org.jboss.ws.cxf.jbossws-cxf-client,org.apache.cxf.impl\n"))
                 .addClass(org.jboss.as.test.integration.ws.wsse.trust.SayHello.class)
                 .addClass(org.jboss.as.test.integration.ws.wsse.trust.SayHelloResponse.class)
                 .addClass(org.jboss.as.test.integration.ws.wsse.trust.bearer.BearerIface.class)
