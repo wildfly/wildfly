@@ -22,26 +22,28 @@
 
 package org.wildfly.test.integration.elytron.jaspi;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.runner.RunWith;
-import org.wildfly.security.auth.server.SecurityDomain;
 
 /**
  * Test case testing a deployment secured using JASPI configured within the Elytron subsystem with the authentication being
- * handled by the ServerAuthModule but the identity still being loaded from the {@link SecurityDomain}
+ * handled by the ServerAuthModule and an AdHoc identity being created.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup({ ConfiguredIndependentJaspiTestCase.ServerSetup.class })
-public class ConfiguredIndependentJaspiTestCase extends ConfiguredJaspiTestBase {
+@ServerSetup({ ConfiguredAdHocJaspiTestCase.ServerSetup.class })
+public class ConfiguredAdHocJaspiTestCase extends ConfiguredJaspiTestBase {
 
-    private static final String NAME = ConfiguredJaspiTestCase.class.getSimpleName();
+    private static final String NAME = ConfiguredAdHocJaspiTestCase.class.getSimpleName();
 
     @Deployment(testable = false)
     public static WebArchive createDeployment() {
@@ -57,8 +59,24 @@ public class ConfiguredIndependentJaspiTestCase extends ConfiguredJaspiTestBase 
 
         @Override
         protected String getMode() {
-            return "independent";
+            // We still want self-validating as ad-hoc does not support PasswordValidationCallback
+            return "self-validating";
         }
+
+        @Override
+        protected Map<String, String> getOptions() {
+            Map<String, String> options = new HashMap<>();
+            options.putAll(super.getOptions());
+            options.put("default-roles", "Role1");
+            return options;
+        }
+
+        @Override
+        protected boolean isIntegratedJaspi() {
+            return false;
+        }
+
+
 
     }
 

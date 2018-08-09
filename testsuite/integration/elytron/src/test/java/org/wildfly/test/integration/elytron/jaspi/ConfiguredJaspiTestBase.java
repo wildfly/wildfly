@@ -33,6 +33,7 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.Map;
 
 import org.apache.http.Header;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -198,13 +199,14 @@ abstract class ConfiguredJaspiTestBase extends JaspiTestBase {
             elements[1] = UndertowApplicationSecurityDomain.builder()
                     .withName("JaspiDomain")
                     .withSecurityDomain("ApplicationDomain")
+                    .withIntegratedJaspi(isIntegratedJaspi())
                     .build();
             // 3 - Add the jaspi-configuration
             elements[2] = JaspiConfiguration.builder()
                     .withName(getName())
                     .withLayer("HttpServlet")
                     .withApplicationContext("default-host /" + getName())
-                    .withServerAuthModule("org.wildfly.test.integration.elytron.jaspi.SimpleServerAuthModule", MODULE_NAME, Flag.REQUIRED, Collections.singletonMap("mode", getMode()))
+                    .withServerAuthModule("org.wildfly.test.integration.elytron.jaspi.SimpleServerAuthModule", MODULE_NAME, Flag.REQUIRED, getOptions())
                     .build();
 
             return elements;
@@ -226,8 +228,16 @@ abstract class ConfiguredJaspiTestBase extends JaspiTestBase {
 
         protected abstract String getName();
 
+        protected Map<String, String> getOptions() {
+            return Collections.singletonMap("mode", getMode());
+        }
+
         protected String getMode() {
             return "integrated";
+        }
+
+        protected boolean isIntegratedJaspi() {
+            return true;
         }
 
     }

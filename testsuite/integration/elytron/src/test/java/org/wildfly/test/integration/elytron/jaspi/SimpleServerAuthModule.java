@@ -56,13 +56,21 @@ public class SimpleServerAuthModule implements ServerAuthModule {
     private static final String ROLES_HEADER = "X-ROLES";
     private static final String MESSAGE_HEADER = "X-MESSAGE";
 
-    private boolean independent;
+    private boolean selfValidating;
     private CallbackHandler callbackHandler;
+
+    /**
+     * Roles to be applied to every validated identity.
+     */
+    private String[] defaultRoles = null;
 
     public void initialize(MessagePolicy requestPolicy, MessagePolicy responsePolicy, CallbackHandler handler, Map options)
             throws AuthException {
         this.callbackHandler = checkNotNullParam("handler", handler);
-        this.independent = "independent".equals(options.get("mode"));
+        this.selfValidating = "self-validating".equals(options.get("mode"));
+        if (options.containsKey("default-roles")) {
+            defaultRoles = String.valueOf(options.get("default-roles")).split(",");
+        }
     }
 
     public Class[] getSupportedMessageTypes() {
@@ -83,7 +91,7 @@ public class SimpleServerAuthModule implements ServerAuthModule {
         }
 
         final boolean validated;
-        if (independent) {
+        if (selfValidating) {
             // In this mode the ServerAuthModule is taking over it's own validation and only using Callbacks to establish the identity.
             validated = "user1".equals(username) && "password1".equals(password);
         } else {
@@ -97,11 +105,12 @@ public class SimpleServerAuthModule implements ServerAuthModule {
         }
 
         if (validated) {
-            Callback callerPrincipalCallback = new CallerPrincipalCallback(clientSubject, new NamePrincipal(username));
+            handle(new CallerPrincipalCallback(clientSubject, new NamePrincipal(username)));
             if (roles != null) {
-                handle(callerPrincipalCallback, new GroupPrincipalCallback(clientSubject, roles.split(",")));
-            } else {
-                handle(callerPrincipalCallback);
+                handle(new GroupPrincipalCallback(clientSubject, roles.split(",")));
+            }
+            if (defaultRoles != null) {
+                handle(new GroupPrincipalCallback(clientSubject, defaultRoles));
             }
 
             return AuthStatus.SUCCESS;

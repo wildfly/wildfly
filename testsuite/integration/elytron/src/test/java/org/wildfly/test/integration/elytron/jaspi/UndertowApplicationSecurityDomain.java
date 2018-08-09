@@ -49,6 +49,8 @@ import org.wildfly.test.security.common.elytron.ConfigurableElement;
      private final String securityDomain;
      private final String httpAuthenticationFactory;
      private final boolean enableJacc;
+     private final boolean enableJaspi;
+     private final boolean integratedJaspi;
 
      UndertowApplicationSecurityDomain(Builder builder) {
          super(builder);
@@ -56,6 +58,8 @@ import org.wildfly.test.security.common.elytron.ConfigurableElement;
          this.securityDomain = builder.securityDomain;
          this.httpAuthenticationFactory = builder.httpAuthenticationFactory;
          this.enableJacc = builder.enableJacc;
+         this.enableJaspi = builder.enableJaspi;
+         this.integratedJaspi = builder.integratedJaspi;
      }
 
      @Override
@@ -64,8 +68,10 @@ import org.wildfly.test.security.common.elytron.ConfigurableElement;
         setIfNotNull(add, "security-domain", securityDomain);
         setIfNotNull(add, "http-authentication-factory", httpAuthenticationFactory);
         if (enableJacc) {
-            add.add("enable-jacc", enableJacc);
+            add.get("enable-jacc").set(enableJacc);
         }
+        add.get("enable-jaspi").set(enableJaspi);
+        add.get("integrated-jaspi").set(integratedJaspi);
 
         Utils.applyUpdate(add, client);
     }
@@ -92,6 +98,8 @@ import org.wildfly.test.security.common.elytron.ConfigurableElement;
         private String securityDomain;
         private String httpAuthenticationFactory;
         private boolean enableJacc = false;
+        private boolean enableJaspi = true;
+        private boolean integratedJaspi = true;
 
         /**
          * Set the security domain to be mapped from this application-security-domain.
@@ -125,6 +133,30 @@ import org.wildfly.test.security.common.elytron.ConfigurableElement;
          */
         public Builder withEnableJacc(final boolean enableJacc) {
             this.enableJacc = enableJacc;
+
+            return this;
+        }
+
+        /**
+         * Set if JASPI should be enabled for this application-security-domain.
+         *
+         * @param enableJaspi if JASPI should be enabled for this application-security-domain.
+         * @return this {@link Builder} to allow method chaining.
+         */
+        public Builder withEnableJaspi(final boolean enableJaspi) {
+            this.enableJaspi = enableJaspi;
+
+            return this;
+        }
+
+        /**
+         * Set if JASPI should operate in integrated mode or ad-hoc mode.
+         *
+         * @param integratedJaspi if JASPI should operate in integrated mode or ad-hoc mode.
+         * @return this {@link Builder} to allow method chaining.
+         */
+        public Builder withIntegratedJaspi(final boolean integratedJaspi) {
+            this.integratedJaspi = integratedJaspi;
 
             return this;
         }

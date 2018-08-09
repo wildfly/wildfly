@@ -81,7 +81,7 @@ class JaspiConfiguration extends AbstractConfigurableElement {
            if (moduleDefinition.options != null) {
                ModelNode options = module.get("options");
                for (Entry<String, String> entry : moduleDefinition.options.entrySet()) {
-                   options.set(entry.getKey(), entry.getValue());
+                   options.get(entry.getKey()).set(entry.getValue());
                }
            }
 
