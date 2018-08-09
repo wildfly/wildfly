@@ -77,19 +77,19 @@
                         <phase>prepare-package</phase>
                         <configuration>
                             <install-dir>${project.build.directory}/${project.build.finalName}</install-dir>
-                            <resolve-locals>
-                                <resolve-local>
+                            <feature-packs>
+                                <feature-pack>
+                                    <transitive>true</transitive>
                                     <groupId>org.wildfly.core</groupId>
                                     <artifactId>wildfly-core-galleon-pack</artifactId>
                                     <version>${version.org.wildfly.core}</version>
-                                </resolve-local>
-                                <resolve-local>
+                                </feature-pack>
+                                <feature-pack>
+                                    <transitive>true</transitive>
                                     <groupId>${project.groupId}</groupId>
                                     <artifactId>wildfly-servlet-galleon-pack</artifactId>
                                     <version>${project.version}</version>
-                                </resolve-local>
-                            </resolve-locals>
-                            <feature-packs>
+                                </feature-pack>
                                 <feature-pack>
                                     <groupId>${project.groupId}</groupId>
                                     <artifactId>wildfly-galleon-pack</artifactId>
