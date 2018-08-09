@@ -20,15 +20,26 @@
                 <param name="max-threads" value="50"/>
                 <param name="queue-length" value="50"/>
                 <param name="core-threads" value="50"/>
-                <param name="keepalive-time" value="{time=10,unit=SECONDS}"/>
+                <feature spec="subsystem.jca.workmanager.short-running-threads.keepalive-time">
+                    <param name="time" value="10"/>
+                    <param name="unit" value="SECONDS"/>
+                </feature>
             </feature>
             <feature spec="subsystem.jca.workmanager.long-running-threads">
                 <param name="long-running-threads" value="default"/>
                 <param name="max-threads" value="50"/>
                 <param name="queue-length" value="50"/>
                 <param name="core-threads" value="50"/>
-                <param name="keepalive-time" value="{time=10,unit=SECONDS}"/>
+                <feature spec="subsystem.jca.workmanager.long-running-threads.keepalive-time">
+                    <param name="time" value="10"/>
+                    <param name="unit" value="SECONDS"/>
+                </feature>
             </feature>
+        </feature>
+        <feature spec="subsystem.jca.bootstrap-context">
+            <param name="bootstrap-context" value="default"/>
+            <param name="name" value="default"/>
+            <param name="workmanager" value="default"/>
         </feature>
     </feature>
 </feature-group-spec>

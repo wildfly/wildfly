@@ -6,7 +6,7 @@
             <param name="cache-container" value="server"/>
             <param name="module" value="org.wildfly.clustering.server"/>
             <param name="default-cache" value="default"/>
-            <param name="aliases" value="[singleton cluster]"/>
+            <param name="aliases" value="[singleton, cluster]"/>
             <feature spec="subsystem.infinispan.cache-container.transport.jgroups">
                 <param name="lock-timeout" value="60000"/>
             </feature>
