@@ -17,20 +17,20 @@
         <iiop:iiop>
             <ejb-name>*</ejb-name>
             <iiop:ior-security-config>
-                <iiop:transport-config>
-                    <iiop:integrity>supported</iiop:integrity>
-                    <iiop:confidentiality>supported</iiop:confidentiality>
-                    <iiop:establish-trust-in-target>supported</iiop:establish-trust-in-target>
-                    <iiop:establish-trust-in-client>supported</iiop:establish-trust-in-client>
-                </iiop:transport-config>
-                <iiop:as-context>
-                    <iiop:auth-method>username_password</iiop:auth-method>
-                    <iiop:realm>default</iiop:realm>
-                    <iiop:required>false</iiop:required>
-                </iiop:as-context>
-                <iiop:sas-context>
-                    <iiop:caller-propagation>supported</iiop:caller-propagation>
-                </iiop:sas-context>
+                <iiop:transport-config
+                    iiop:integrity="supported"
+                    iiop:confidentiality="supported"
+                    iiop:establish-trust-in-target="supported"
+                    iiop:establish-trust-in-client="supported"
+                />
+                <iiop:as-context
+                    iiop:auth-method="username_password"
+                    iiop:realm="default"
+                    iiop:required="false"
+                />
+                <iiop:sas-context
+                    iiop:caller-propagation="supported"
+                />
             </iiop:ior-security-config>
         </iiop:iiop>
     </assembly-descriptor>
