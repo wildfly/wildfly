@@ -25,6 +25,7 @@ package org.wildfly.test.integration.elytron.jaspi;
 import static org.wildfly.common.Assert.checkNotNullParam;
 
 import java.io.IOException;
+import java.security.Principal;
 import java.util.Map;
 
 import javax.security.auth.Subject;
@@ -50,6 +51,8 @@ import org.wildfly.security.auth.principal.NamePrincipal;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class SimpleServerAuthModule implements ServerAuthModule {
+
+    static final String ANONYMOUS = "anonymous";
 
     private static final String USERNAME_HEADER = "X-USERNAME";
     private static final String PASSWORD_HEADER = "X-PASSWORD";
@@ -85,13 +88,16 @@ public class SimpleServerAuthModule implements ServerAuthModule {
         final String password = request.getHeader(PASSWORD_HEADER);
         final String roles = request.getHeader(ROLES_HEADER);
 
-        if (username == null || username.length() == 0 || password == null || password.length() == 0) {
+        if (username == null || username.length() == 0 || ((password == null || password.length() == 0) && !ANONYMOUS.equals(username))) {
             sendChallenge(response);
             return AuthStatus.SEND_CONTINUE;
         }
 
         final boolean validated;
-        if (selfValidating) {
+
+        if ("anonymous".equals(username)) {
+            validated = true; // Skip Authentication.
+        } else if (selfValidating) {
             // In this mode the ServerAuthModule is taking over it's own validation and only using Callbacks to establish the identity.
             validated = "user1".equals(username) && "password1".equals(password);
         } else {
@@ -105,7 +111,12 @@ public class SimpleServerAuthModule implements ServerAuthModule {
         }
 
         if (validated) {
-            handle(new CallerPrincipalCallback(clientSubject, new NamePrincipal(username)));
+            if ("anonymous".equals(username)) {
+                handle(new CallerPrincipalCallback(clientSubject, (Principal) null));
+            } else {
+                handle(new CallerPrincipalCallback(clientSubject, new NamePrincipal(username)));
+            }
+
             if (roles != null) {
                 handle(new GroupPrincipalCallback(clientSubject, roles.split(",")));
             }

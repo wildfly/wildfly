@@ -60,6 +60,11 @@ public class ConfiguredSelfValidatingJaspiTestCase extends ConfiguredJaspiTestBa
             return "self-validating";
         }
 
+        @Override
+        protected boolean enableAnonymousLogin() {
+            return true;
+        }
+
     }
 
 }

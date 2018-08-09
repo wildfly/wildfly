@@ -54,5 +54,10 @@ public class ConfiguredJaspiTestCase extends ConfiguredJaspiTestBase {
             return NAME;
         }
 
+        @Override
+        protected boolean enableAnonymousLogin() {
+            return true;
+        }
+
     }
 }

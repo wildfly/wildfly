@@ -22,6 +22,7 @@
 
 package org.wildfly.test.integration.elytron.jaspi;
 
+import static org.wildfly.test.integration.elytron.jaspi.SimpleServerAuthModule.ANONYMOUS;
 import static org.apache.http.HttpStatus.SC_FORBIDDEN;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
@@ -41,7 +42,13 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.test.integration.management.util.CLIWrapper;
+import org.jboss.as.test.integration.security.common.Utils;
+import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -59,6 +66,32 @@ import org.wildfly.test.security.common.elytron.ConfigurableElement;
 abstract class ConfiguredJaspiTestBase extends JaspiTestBase {
 
     private static final String MODULE_NAME = "org.wildfly.security.examples.jaspi";
+
+    @Test
+    public void testAnonymous() throws Exception {
+        HttpGet request = new HttpGet(new URI(url.toExternalForm()));
+
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            // Verify that we are challenged.
+            try (CloseableHttpResponse response = httpClient.execute(request)) {
+                int statusCode = response.getStatusLine().getStatusCode();
+                assertEquals("Unexpected status code in HTTP response.", SC_UNAUTHORIZED, statusCode);
+                Header[] challenge = response.getHeaders("X-MESSAGE");
+                assertEquals("Only 1 header expected", 1, challenge.length);
+                assertTrue("Challenge information contained in header.", challenge[0].getValue().contains("X-USERNAME"));
+                assertTrue("Challenge information contained in header.", challenge[0].getValue().contains("X-PASSWORD"));
+            }
+
+            // Now authenticate.
+            request.addHeader("X-USERNAME", ANONYMOUS);
+
+            try (CloseableHttpResponse response = httpClient.execute(request)) {
+                int statusCode = response.getStatusLine().getStatusCode();
+                assertEquals("Unexpected status code in HTTP response.", SC_OK, statusCode);
+                assertEquals("Unexpected content of HTTP response.", ANONYMOUS, EntityUtils.toString(response.getEntity()));
+            }
+        }
+    }
 
     @Test
     public void testSuccess() throws Exception {
@@ -185,7 +218,7 @@ abstract class ConfiguredJaspiTestBase extends JaspiTestBase {
 
         @Override
         protected ConfigurableElement[] getConfigurableElements() {
-            ConfigurableElement[] elements = new ConfigurableElement[3];
+            ConfigurableElement[] elements = new ConfigurableElement[enableAnonymousLogin() ? 4 : 3];
             // 1 - Register the module
             elements[0] = Module.builder()
                     .withName(MODULE_NAME)
@@ -208,6 +241,30 @@ abstract class ConfiguredJaspiTestBase extends JaspiTestBase {
                     .withApplicationContext("default-host /" + getName())
                     .withServerAuthModule("org.wildfly.test.integration.elytron.jaspi.SimpleServerAuthModule", MODULE_NAME, Flag.REQUIRED, getOptions())
                     .build();
+            if (enableAnonymousLogin()) {
+                elements[3] = new ConfigurableElement() {
+
+                    private final PathAddress ADDRESS = PathAddress.pathAddress(PathElement.pathElement("subsystem", "elytron"), PathElement.pathElement("simple-permission-mapper", "default-permission-mapper"));
+
+                    @Override
+                    public String getName() {
+                        return "Enable LoginPermission for anonymous.";
+                    }
+
+                    @Override
+                    public void create(ModelControllerClient client, CLIWrapper cli) throws Exception {
+                        ModelNode write = Util.getWriteAttributeOperation(ADDRESS, "mapping-mode", "or");
+                        Utils.applyUpdate(write, client);
+                    }
+
+                    @Override
+                    public void remove(ModelControllerClient client, CLIWrapper cli) throws Exception {
+                        ModelNode write = Util.getWriteAttributeOperation(ADDRESS, "mapping-mode", "first");
+                        Utils.applyUpdate(write, client);
+                    }
+
+                };
+            }
 
             return elements;
         }
@@ -238,6 +295,10 @@ abstract class ConfiguredJaspiTestBase extends JaspiTestBase {
 
         protected boolean isIntegratedJaspi() {
             return true;
+        }
+
+        protected boolean enableAnonymousLogin() {
+            return false;
         }
 
     }
