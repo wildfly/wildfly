@@ -511,7 +511,7 @@ application but we highly recommend the modules approach.
 
 [[Using latest Hibernate ORM within WildFly]]
 == Using latest Hibernate ORM within WildFly
-https://docs.jboss.org/hibernate/orm/5.3/topical/html_single/wildfly/Wildfly.html[Read about Hibernate ORM feature packs here].
+https://docs.jboss.org/hibernate/stable/orm/topical/html_single/wildfly/Wildfly.html[Read about Hibernate ORM feature packs here].
 
 [[packaging-the-hibernate-jpa-persistence-provider-with-your-application]]
 == Packaging the Hibernate JPA persistence provider with your application
@@ -651,7 +651,7 @@ Dependencies: org.hibernate
 ....
 
 [[injection-of-hibernate-session-and-sessionfactoryinjection-of-hibernate-session-and-sessionfactory]]
-== Injection of Hibernate Session and SessionFactoryInjection of Hibernate Session and SessionFactory
+== Injection of Hibernate Session and SessionFactory
 
 You can inject a org.hibernate.Session and org.hibernate.SessionFactory
 directly, just as you can do with EntityManagers and
@@ -714,7 +714,7 @@ If enabled, the following transformations will be made to application classes co
 **  org.hibernate.type.ProcedureParameterExtractionAware.
 **  org.hibernate.type.ProcedureParameterNamedBinder.
 **  org.hibernate.type.VersionType.
-*  In user type classes, when calling hibernate.orm methods, cast SessionImplementor to SharedSessionContractImplementor.
+*  In user type classes, when calling org.hibernate.* class methods, cast SessionImplementor to SharedSessionContractImplementor.
 *  Change calls to org.hibernate.BasicQueryContract.getFlushMode(), https://github.com/hibernate/hibernate-orm/blob/5.2/migration-guide.adoc#misc[to instead call BasicQueryContract.getHibernateFlushMode()].
 *  Change calls to org.hibernate.Session.getFlushMode(), https://github.com/hibernate/hibernate-orm/blob/5.2/migration-guide.adoc#misc[to instead call Session.getHibernateFlushMode()].
 *  Change calls to org.hibernate.Query.getFirstResult(), to instead call Query.getHibernateFirstResult(), so null can be returned when the value is uninitialized (note that 0 is now returned instead of negative values).
