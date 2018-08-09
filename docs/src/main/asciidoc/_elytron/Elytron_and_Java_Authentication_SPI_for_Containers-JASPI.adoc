@@ -145,6 +145,8 @@ In this mode the CallbackHandlers operate as follows: -
  
  If an authenticated identity has already been established via the PasswordValidationCallback this Callback is interpreted as a run-as request and authorization checks are performed to ensure the authenticated identity is authorized to run as the identity specified in this Callback.  If no authenticated identity has been established by a PasswordValidationCallback it is assumed the ServerAuthModule has handled the authentication step so this Callback will cause the specified identity to be loaded from the SecurityDomain and an authorization check to verify this identity has the LoginPermission.
  
+ If a Callback is received with a null Principal and name then if an authenticated identity has already been established authorization will be performed as that identity, if no identity has been established then authorization of the anonymous identity will be performed.  Where authorization of the anonymous identity is performed the SecurityDomain must have been configured to grant the anonymous identity the LoginPermission otherwise authorization will fail. 
+ 
  * *GroupPrincipalCallback*
  
  By default in this mode the attribute loading, role decoding, and role mapping configured on the security domain will be used to establish the identity - if this Callback is received the groups specified will be taken as the roles that will be assigned to the identity whilst the request is in the servlet container.  These roles will be visible in the servlet container only.
@@ -165,9 +167,13 @@ In this mode the CallbackHandlers operate as follows: -
  
  This Callback is used to establish the Principal for the resulting identity, as the ServerAuthModule is handling all of the identity checking requirements no checks are performed to verify if the identity exists in the security domain and no authorization checks are performed.
  
+ If a Callback is received with a null Principal and name then then the identity will be established as the anonymous identity, as the ServerAuthModule is making the decisions no authorizaton check will be performed with the SecurityDomain.
+ 
   * *GroupPrincipalCallback*
   
   As the identity is created in this mode without loading from the SecurityDomain it will by default have no roles assigned, if this Callback is received the groups will be taken and assigned to the resulting identity whilst the request is in the servlet container. These roles will be visible in the servlet container only.
+  
+  
 
 === Control Flags
 
