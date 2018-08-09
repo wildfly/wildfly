@@ -702,7 +702,7 @@ For this reason, we made it easy to enable the transformer via either a system p
 ----
 
 
-Applied Transformations to application classes compiled with Hibernate 5.1: ::
+If enabled, the following transformations will be made to application classes compiled with Hibernate 5.1: ::
 *  In user type classes, change methods with parameter type org.hibernate.engine.spi.SessionImplementor to instead use type org.hibernate.engine.spi.SharedSessionContractImplementor, this is done for implementations of:
 **  org.hibernate.usertype.UserType.
 **  org.hibernate.usertype.CompositeUserType.
