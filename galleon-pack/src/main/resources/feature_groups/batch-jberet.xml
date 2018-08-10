@@ -9,7 +9,10 @@
         <feature spec="subsystem.batch-jberet.thread-pool">
             <param name="thread-pool" value="batch" />
             <param name="max-threads" value="10" />
-            <param name="keepalive-time" value="{time=30,unit=SECONDS}"/>
+            <feature spec="subsystem.batch-jberet.thread-pool.keepalive-time">
+                <param name="time" value="30"/>
+                <param name="unit" value="SECONDS"/>
+            </feature>
         </feature>
     </feature>
     <feature spec="subsystem.elytron.permission-set.permissions">
