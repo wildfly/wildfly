@@ -41,17 +41,17 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-feature-pack</artifactId>
+            <artifactId>wildfly-galleon-pack</artifactId>
             <type>pom</type>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-servlet-feature-pack</artifactId>
+            <artifactId>wildfly-servlet-galleon-pack</artifactId>
             <type>pom</type>
         </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-core-feature-pack</artifactId>
+            <artifactId>wildfly-core-galleon-pack</artifactId>
             <type>pom</type>
         </dependency>
 
