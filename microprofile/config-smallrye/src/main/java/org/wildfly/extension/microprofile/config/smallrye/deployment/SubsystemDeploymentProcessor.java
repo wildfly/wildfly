@@ -37,7 +37,6 @@ import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.weld.deployment.WeldPortableExtensions;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceController;
@@ -51,18 +50,6 @@ public class SubsystemDeploymentProcessor implements DeploymentUnitProcessor {
 
     public static final AttachmentKey<Config> CONFIG = AttachmentKey.create(Config.class);
     public static final AttachmentKey<ConfigProviderResolver> CONFIG_PROVIDER_RESOLVER = AttachmentKey.create(ConfigProviderResolver.class);
-
-    /**
-     * See {@link Phase} for a description of the different phases
-     */
-    public static final Phase PHASE = Phase.POST_MODULE;
-
-    /**
-     * The relative order of this processor within the {@link #PHASE}.
-     * The current number is large enough for it to happen after all
-     * the standard deployment unit processors that come with JBoss AS.
-     */
-    public static final int PRIORITY = 0x4000;
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) {

@@ -60,16 +60,18 @@ class ConfigSourceDefinition extends PersistentResourceDefinition {
 
     static AttributeDefinition ORDINAL = SimpleAttributeDefinitionBuilder.create("ordinal", ModelType.INT)
             .setDefaultValue(new ModelNode(100))
-            .setAllowNull(true)
+            .setRequired(false)
             .setRestartAllServices()
             .build();
+
     static AttributeDefinition PROPERTIES = new PropertiesAttributeDefinition.Builder("properties", true)
             .setAttributeParser(new AttributeParsers.PropertiesParser(false))
             .setAttributeMarshaller(new AttributeMarshallers.PropertiesAttributeMarshaller(null, false))
             .setAlternatives("class", "dir")
-            .setAllowNull(true)
+            .setRequired(false)
             .setRestartAllServices()
             .build();
+
     static ObjectTypeAttributeDefinition CLASS = ObjectTypeAttributeDefinition.Builder.of("class",
             create(NAME, ModelType.STRING, false)
                     .setAllowExpression(false)
@@ -78,10 +80,9 @@ class ConfigSourceDefinition extends PersistentResourceDefinition {
                     .setAllowExpression(false)
                     .build())
             .setAlternatives("properties", "dir")
-            .setAllowNull(true)
+            .setRequired(false)
             .setAttributeMarshaller(AttributeMarshaller.ATTRIBUTE_OBJECT)
             .setRestartAllServices()
-            .setCapabilityReference("org.wildfly.management.path-manager")
             .build();
 
     static AttributeDefinition PATH = create(ModelDescriptionConstants.PATH, ModelType.STRING, false)
@@ -98,6 +99,7 @@ class ConfigSourceDefinition extends PersistentResourceDefinition {
             .setAllowNull(true)
             .setAttributeMarshaller(AttributeMarshaller.ATTRIBUTE_OBJECT)
             .setRestartAllServices()
+            .setCapabilityReference("org.wildfly.management.path-manager")
             .build();
 
     static AttributeDefinition[] ATTRIBUTES = { ORDINAL, PROPERTIES, CLASS, DIR };

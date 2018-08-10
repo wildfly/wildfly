@@ -26,6 +26,7 @@ import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
+import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.microprofile.config.smallrye._private.MicroProfileConfigLogger;
 import org.wildfly.extension.microprofile.config.smallrye.deployment.DependencyProcessor;
@@ -51,13 +52,10 @@ class MicroProfileConfigSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         ConfigProviderService.install(context);
 
-        //Add deployment processors here
-        //Remove this if you don't need to hook into the deployers, or you can add as many as you like
-        //see SubDeploymentProcessor for explanation of the phases
         context.addStep(new AbstractDeploymentChainStep() {
             public void execute(DeploymentProcessorTarget processorTarget) {
-                processorTarget.addDeploymentProcessor(MicroProfileConfigExtension.SUBSYSTEM_NAME, DependencyProcessor.PHASE, DependencyProcessor.PRIORITY, new DependencyProcessor());
-                processorTarget.addDeploymentProcessor(MicroProfileConfigExtension.SUBSYSTEM_NAME, SubsystemDeploymentProcessor.PHASE, SubsystemDeploymentProcessor.PRIORITY, new SubsystemDeploymentProcessor());
+                processorTarget.addDeploymentProcessor(MicroProfileConfigExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_MODULE, new DependencyProcessor());
+                processorTarget.addDeploymentProcessor(MicroProfileConfigExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_WELD_PORTABLE_EXTENSIONS + 10, new SubsystemDeploymentProcessor());
 
             }
         }, OperationContext.Stage.RUNTIME);
