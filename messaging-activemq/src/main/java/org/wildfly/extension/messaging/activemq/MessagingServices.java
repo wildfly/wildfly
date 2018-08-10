@@ -66,7 +66,7 @@ public class MessagingServices {
    }
 
    public static ServiceName getActiveMQServiceName(String serverName) {
-       if(serverName == null) {
+       if(serverName == null || serverName.isEmpty()) {
            return JBOSS_MESSAGING_ACTIVEMQ;
        }
       return JBOSS_MESSAGING_ACTIVEMQ.append(serverName);

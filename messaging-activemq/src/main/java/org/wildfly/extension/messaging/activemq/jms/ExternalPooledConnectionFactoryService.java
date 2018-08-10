@@ -277,8 +277,9 @@ public class ExternalPooledConnectionFactoryService implements Service<Void> {
         if (groupConfiguration != null) {
             final String key = "discovery" + groupConfiguration.getName();
             if (jgroupsChannelName != null) {
-                ServiceName commandDispatcherFactoryServiceName = jgroupsChannelName != null ? ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context, jgroupsChannelName) : ClusteringDefaultRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context);
+                ServiceName commandDispatcherFactoryServiceName = ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context, jgroupsChannelName);
                 serviceBuilder.addDependency(commandDispatcherFactoryServiceName, CommandDispatcherFactory.class, service.getCommandDispatcherFactoryInjector(key));
+                service.clusterNames.put(key, jgroupsChannelName);
             } else {
                 final ServiceName groupBinding = GroupBindingService.getDiscoveryBaseServiceName(JBOSS_MESSAGING_ACTIVEMQ).append(groupConfiguration.getName());
                 serviceBuilder.addDependency(groupBinding, SocketBinding.class, service.getGroupBindingInjector(key));
@@ -372,8 +373,9 @@ public class ExternalPooledConnectionFactoryService implements Service<Void> {
                     properties.add(simpleProperty15(GROUP_PORT, INTEGER_TYPE, "" + udpCfg.getGroupPort()));
                     properties.add(simpleProperty15(DISCOVERY_LOCAL_BIND_ADDRESS, STRING_TYPE, "" + udpCfg.getLocalBindAddress()));
                 } else if (bgCfg instanceof CommandDispatcherBroadcastEndpointFactory) {
+                    String external = "/" + name + ":discovery" + dgName;
                     properties.add(simpleProperty15(JGROUPS_CHANNEL_NAME, STRING_TYPE, jgroupsChannelName));
-                    properties.add(simpleProperty15(JGROUPS_CHANNEL_REF_NAME, STRING_TYPE, "/discovery" + dgName));
+                    properties.add(simpleProperty15(JGROUPS_CHANNEL_REF_NAME, STRING_TYPE, external));
                 }
                 properties.add(simpleProperty15(DISCOVERY_INITIAL_WAIT_TIMEOUT, LONG_TYPE, "" + config.getDiscoveryInitialWaitTimeout()));
                 properties.add(simpleProperty15(REFRESH_TIMEOUT, LONG_TYPE, "" + config.getRefreshTimeout()));
@@ -610,15 +612,11 @@ public class ExternalPooledConnectionFactoryService implements Service<Void> {
         return new MapInjector<String, SocketBinding>(groupBindings, name);
     }
 
-    CommandDispatcherFactory getCommandDispatcherFactory(String name) {
+    public CommandDispatcherFactory getCommandDispatcherFactory(String name) {
         return this.commandDispatcherFactories.get(name);
     }
 
     Injector<CommandDispatcherFactory> getCommandDispatcherFactoryInjector(String name) {
         return new MapInjector<>(this.commandDispatcherFactories, name);
-    }
-
-    public Map<String, String> getClusterNames() {
-        return clusterNames;
     }
 }
