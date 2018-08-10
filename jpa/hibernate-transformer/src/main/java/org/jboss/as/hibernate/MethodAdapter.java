@@ -79,9 +79,6 @@ class MethodAdapter extends MethodVisitor {
                 name.equals("getFirstResult") &&
                 desc.equals("()Ljava/lang/Integer;")) {
             logger.debugf("Deprecated Hibernate51CompatibilityTransformer transformed application classes in '%s', " +
-                            "class '%s' is calling %s.%s, which must be changed to expect int result, instead of Integer.",
-                    moduleName, className, name, owner);
-            logger.debugf("Deprecated Hibernate51CompatibilityTransformer transformed application classes in '%s', " +
                             "class '%s', is calling org.hibernate.Query.getFirstResult, which must be changed to call getHibernateFirstResult() " +
                             "so null can be returned when the value is uninitialized. Please note that if a negative value was set using " +
                             "org.hibernate.Query.setFirstResult, then getHibernateFirstResult() will return 0.",
@@ -93,9 +90,6 @@ class MethodAdapter extends MethodVisitor {
                 owner.equals("org/hibernate/Query") &&
                 name.equals("getMaxResults") &&
                 desc.equals("()Ljava/lang/Integer;")) {
-            logger.debugf("Deprecated Hibernate51CompatibilityTransformer transformed application classes in '%s', " +
-                            "class '%s' is calling %s.%s, which must be changed to expect int result, instead of Integer.",
-                    moduleName, className, name, owner);
             logger.debugf("Deprecated Hibernate51CompatibilityTransformer transformed application classes in '%s', " +
                             "class '%s', is calling org.hibernate.Query.getMaxResults, which must be changed to call getHibernateMaxResults() " +
                             "so that null will be returned when the value is uninitialized or ORM 5.1 org.hibernate.Query#setMaxResults was " +
@@ -122,7 +116,7 @@ class MethodAdapter extends MethodVisitor {
                 desc.equals("(I)Lorg/hibernate/Query;")) {
             logger.debugf("Deprecated Hibernate51CompatibilityTransformer transformed application classes in '%s', " +
                             "class '%s', is calling org.hibernate.Query.setMaxResults, which must be changed to call setHibernateMaxResults() " +
-                            "so that values <= 0 are the same as uninitialized."
+                            "so that values <= 0 are treated the same as uninitialized.  Review Hibernate ORM migration doc "
                     , moduleName, className);
             name = "setHibernateMaxResults";
             mv.visitMethodInsn(opcode, owner, name, desc, itf);
