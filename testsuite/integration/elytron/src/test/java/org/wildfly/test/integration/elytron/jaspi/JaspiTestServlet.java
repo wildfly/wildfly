@@ -25,6 +25,7 @@ package org.wildfly.test.integration.elytron.jaspi;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import javax.ejb.EJB;
 import javax.security.auth.message.config.AuthConfigFactory;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -42,6 +43,9 @@ import org.wildfly.security.auth.jaspi.JaspiConfigurationBuilder;
 public class JaspiTestServlet extends HttpServlet {
 
     private volatile String registrationId;
+
+    @EJB
+    private WhoAmI whoAmIBean;
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -66,6 +70,9 @@ public class JaspiTestServlet extends HttpServlet {
                     authConfigFactory.removeRegistration(registrationId);
                     registrationId = null;
                     writer.print("REMOVED");
+                    return;
+                case "ejb":
+                    writer.print(String.valueOf(whoAmIBean.getCallerPrincipal()));
                     return;
             }
         }

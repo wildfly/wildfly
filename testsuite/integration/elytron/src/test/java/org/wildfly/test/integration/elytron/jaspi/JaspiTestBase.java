@@ -28,6 +28,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.wildfly.test.integration.elytron.ejb.base.WhoAmIBean;
 
 abstract class JaspiTestBase {
 
@@ -35,10 +36,12 @@ abstract class JaspiTestBase {
     protected URL url;
 
     protected static WebArchive createDeployment(final String name) {
+        final Package testPackage = ConfiguredJaspiTestCase.class.getPackage();
         return ShrinkWrap.create(WebArchive.class, name + ".war")
-                .addClasses(JaspiTestServlet.class)
-                .addClass(SimpleServerAuthModule.class)
+                .addClasses(JaspiTestServlet.class, SimpleServerAuthModule.class, WhoAmI.class)
+                .addClasses(WhoAmI.class, WhoAmIBean.class, WhoAmIBeanImpl.class)
                 .addAsWebInfResource(Utils.getJBossWebXmlAsset("JaspiDomain"), "jboss-web.xml")
-                .addAsWebInfResource(ConfiguredJaspiTestCase.class.getPackage(), "web.xml", "web.xml");
+                .addAsWebInfResource(testPackage, "web.xml", "web.xml")
+                .addAsWebInfResource(testPackage, "jboss-ejb3.xml", "jboss-ejb3.xml");
     }
 }

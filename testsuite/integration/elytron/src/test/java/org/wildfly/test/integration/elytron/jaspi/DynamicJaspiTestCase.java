@@ -28,6 +28,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.net.URI;
+import java.net.URL;
 
 import org.apache.http.Header;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -38,6 +39,7 @@ import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
@@ -57,8 +59,11 @@ public class DynamicJaspiTestCase extends JaspiTestBase {
 
     private static final String NAME = ConfiguredJaspiTestCase.class.getSimpleName();
 
-    @Deployment(testable = false)
-    public static WebArchive createDeployment() {
+    @ArquillianResource
+    protected URL url;
+
+    @Deployment
+    protected static WebArchive createDeployment() {
         return createDeployment(NAME);
     }
 
@@ -96,6 +101,16 @@ public class DynamicJaspiTestCase extends JaspiTestBase {
             }
 
             // Now authenticate.
+            request.addHeader("X-USERNAME", "user1");
+            request.addHeader("X-PASSWORD", "password1");
+            try (CloseableHttpResponse response = httpClient.execute(request)) {
+                int statusCode = response.getStatusLine().getStatusCode();
+                assertEquals("Unexpected status code in HTTP response.", SC_OK, statusCode);
+                assertEquals("Unexpected content of HTTP response.", "user1", EntityUtils.toString(response.getEntity()));
+            }
+
+            // Now try and EJB call
+            request = new HttpGet(new URI(url.toExternalForm()) + "?action=ejb");
             request.addHeader("X-USERNAME", "user1");
             request.addHeader("X-PASSWORD", "password1");
             try (CloseableHttpResponse response = httpClient.execute(request)) {

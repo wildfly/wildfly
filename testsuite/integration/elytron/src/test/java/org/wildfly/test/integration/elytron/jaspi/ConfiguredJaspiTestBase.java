@@ -22,12 +22,12 @@
 
 package org.wildfly.test.integration.elytron.jaspi;
 
-import static org.wildfly.test.integration.elytron.jaspi.SimpleServerAuthModule.ANONYMOUS;
 import static org.apache.http.HttpStatus.SC_FORBIDDEN;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.wildfly.test.integration.elytron.jaspi.SimpleServerAuthModule.ANONYMOUS;
 
 import java.io.IOException;
 import java.net.URI;
@@ -96,6 +96,33 @@ abstract class ConfiguredJaspiTestBase extends JaspiTestBase {
     @Test
     public void testSuccess() throws Exception {
         HttpGet request = new HttpGet(new URI(url.toExternalForm() + "role1"));
+
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            // Verify that we are challenged.
+            try (CloseableHttpResponse response = httpClient.execute(request)) {
+                int statusCode = response.getStatusLine().getStatusCode();
+                assertEquals("Unexpected status code in HTTP response.", SC_UNAUTHORIZED, statusCode);
+                Header[] challenge = response.getHeaders("X-MESSAGE");
+                assertEquals("Only 1 header expected", 1, challenge.length);
+                assertTrue("Challenge information contained in header.", challenge[0].getValue().contains("X-USERNAME"));
+                assertTrue("Challenge information contained in header.", challenge[0].getValue().contains("X-PASSWORD"));
+            }
+
+            // Now authenticate.
+            request.addHeader("X-USERNAME", "user1");
+            request.addHeader("X-PASSWORD", "password1");
+
+            try (CloseableHttpResponse response = httpClient.execute(request)) {
+                int statusCode = response.getStatusLine().getStatusCode();
+                assertEquals("Unexpected status code in HTTP response.", SC_OK, statusCode);
+                assertEquals("Unexpected content of HTTP response.", "user1", EntityUtils.toString(response.getEntity()));
+            }
+        }
+    }
+
+    @Test
+    public void testSuccess_EJB() throws Exception {
+        final HttpGet request = new HttpGet(new URI(url.toExternalForm() + "role1?action=ejb"));
 
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             // Verify that we are challenged.
