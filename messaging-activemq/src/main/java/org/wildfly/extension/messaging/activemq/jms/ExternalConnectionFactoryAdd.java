@@ -92,7 +92,8 @@ public class ExternalConnectionFactoryAdd extends AbstractAddStepHandler {
             service = new ExternalConnectionFactoryService(getDiscoveryGroup(context, dgname), jmsFactoryType, ha);
             builder = context.getServiceTarget().addService(serviceName, service);
             final String key = "discovery" + dgname;
-            ModelNode discoveryGroupModel = model.get(DISCOVERY_GROUP, dgname);
+            PathAddress dgAddress = context.getCurrentAddress().getParent().append(DISCOVERY_GROUP, dgname);
+            ModelNode discoveryGroupModel = context.readResourceFromRoot(dgAddress).getModel();
             if (discoveryGroupModel.hasDefined(JGROUPS_CLUSTER.getName())) {
                 ModelNode channel = DiscoveryGroupDefinition.JGROUPS_CHANNEL.resolveModelAttribute(context, discoveryGroupModel);
                 ServiceName commandDispatcherFactoryServiceName = channel.isDefined() ? ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context, channel.asString()) : ClusteringDefaultRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context);
