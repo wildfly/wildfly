@@ -76,6 +76,12 @@ public class JaspiTestServlet extends HttpServlet {
                     return;
             }
         }
+
+        final String value = req.getParameter("value");
+        if ("authType".equals(value)) {
+            writer.print(req.getAuthType());
+            return;
+        }
         writer.print(String.valueOf(req.getUserPrincipal()));
     }
 

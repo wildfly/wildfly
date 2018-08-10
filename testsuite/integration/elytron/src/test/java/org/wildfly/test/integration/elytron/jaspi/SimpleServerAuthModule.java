@@ -52,8 +52,10 @@ import org.wildfly.security.auth.principal.NamePrincipal;
  */
 public class SimpleServerAuthModule implements ServerAuthModule {
 
+    private static final String AUTH_TYPE = "javax.servlet.http.authType";
     static final String ANONYMOUS = "anonymous";
 
+    private static final String AUTH_TYPE_HEADER = "X-AUTH-TYPE";
     private static final String USERNAME_HEADER = "X-USERNAME";
     private static final String PASSWORD_HEADER = "X-PASSWORD";
     private static final String ROLES_HEADER = "X-ROLES";
@@ -84,6 +86,7 @@ public class SimpleServerAuthModule implements ServerAuthModule {
         HttpServletRequest request =  (HttpServletRequest) messageInfo.getRequestMessage();
         HttpServletResponse response = (HttpServletResponse) messageInfo.getResponseMessage();
 
+        final String authType = request.getHeader(AUTH_TYPE_HEADER);
         final String username = request.getHeader(USERNAME_HEADER);
         final String password = request.getHeader(PASSWORD_HEADER);
         final String roles = request.getHeader(ROLES_HEADER);
@@ -122,6 +125,10 @@ public class SimpleServerAuthModule implements ServerAuthModule {
             }
             if (defaultRoles != null) {
                 handle(new GroupPrincipalCallback(clientSubject, defaultRoles));
+            }
+
+            if (authType != null) {
+                messageInfo.getMap().put(AUTH_TYPE, authType);
             }
 
             return AuthStatus.SUCCESS;

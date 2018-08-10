@@ -117,6 +117,16 @@ abstract class ConfiguredJaspiTestBase extends JaspiTestBase {
                 assertEquals("Unexpected status code in HTTP response.", SC_OK, statusCode);
                 assertEquals("Unexpected content of HTTP response.", "user1", EntityUtils.toString(response.getEntity()));
             }
+
+            request = new HttpGet(new URI(url.toExternalForm() + "role1?value=authType"));
+            request.addHeader("X-USERNAME", "user1");
+            request.addHeader("X-PASSWORD", "password1");
+            request.addHeader("X-AUTH-TYPE", "TestAuth");
+            try (CloseableHttpResponse response = httpClient.execute(request)) {
+                int statusCode = response.getStatusLine().getStatusCode();
+                assertEquals("Unexpected status code in HTTP response.", SC_OK, statusCode);
+                assertEquals("Unexpected content of HTTP response.", "TestAuth", EntityUtils.toString(response.getEntity()));
+            }
         }
     }
 
