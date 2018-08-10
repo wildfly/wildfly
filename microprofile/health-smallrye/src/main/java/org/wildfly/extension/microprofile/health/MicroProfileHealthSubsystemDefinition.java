@@ -27,7 +27,6 @@ import java.util.Collection;
 
 import io.smallrye.health.SmallRyeHealthReporter;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelOnlyRemoveStepHandler;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.capability.RuntimeCapability;
@@ -42,14 +41,14 @@ import org.jboss.msc.service.ServiceName;
 public class MicroProfileHealthSubsystemDefinition extends PersistentResourceDefinition {
 
     static final String HEALTH_REPORTER_CAPABILITY = "org.wildlfy.microprofile.health.reporter";
-    private static final RuntimeCapability<Void> HEALTH_REPORTER_RUNTIME_CAPABILITY =
+    static final RuntimeCapability<Void> HEALTH_REPORTER_RUNTIME_CAPABILITY =
             RuntimeCapability.Builder.of(HEALTH_REPORTER_CAPABILITY, SmallRyeHealthReporter.class)
                     .build();
 
     public static final ServiceName HEALTH_REPORTER_SERVICE = ServiceName.parse(HEALTH_REPORTER_CAPABILITY);
 
     static final String HTTP_EXTENSIBILITY_CAPABILITY = "org.wildfly.management.http.extensible";
-    private static final RuntimeCapability<Void> EXTENSION_CAPABILITY = RuntimeCapability.Builder.of(MicroProfileHealthExtension.EXTENSION_NAME)
+    static final RuntimeCapability<Void> EXTENSION_CAPABILITY = RuntimeCapability.Builder.of(MicroProfileHealthExtension.EXTENSION_NAME)
             .addRequirements(HTTP_EXTENSIBILITY_CAPABILITY)
             .build();
 
@@ -65,7 +64,7 @@ public class MicroProfileHealthSubsystemDefinition extends PersistentResourceDef
         super(new Parameters(MicroProfileHealthExtension.SUBSYSTEM_PATH,
                 MicroProfileHealthExtension.getResourceDescriptionResolver(MicroProfileHealthExtension.SUBSYSTEM_NAME))
                 .setAddHandler(new MicroProfileHealthSubsystemAdd())
-                .setRemoveHandler(new ModelOnlyRemoveStepHandler())
+                .setRemoveHandler(new MicroProfileHealthSubsystemRemove())
                 .setCapabilities(HEALTH_REPORTER_RUNTIME_CAPABILITY, EXTENSION_CAPABILITY));
     }
 

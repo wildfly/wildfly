@@ -42,7 +42,7 @@ import org.jboss.msc.service.StopContext;
  */
 public class HealthContextService implements Service {
 
-    private static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("extension", "health", "context");
+    static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("extension", "health", "context");
     private static final String CONTEXT_NAME = "health";
 
     private final Supplier<ExtensibleHttpManagement> extensibleHttpManagement;
