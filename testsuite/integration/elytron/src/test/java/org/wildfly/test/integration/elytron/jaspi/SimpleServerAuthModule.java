@@ -53,6 +53,7 @@ import org.wildfly.security.auth.principal.NamePrincipal;
 public class SimpleServerAuthModule implements ServerAuthModule {
 
     private static final String AUTH_TYPE = "javax.servlet.http.authType";
+    private static final String SESSION = "javax.servlet.http.registerSession";
     static final String ANONYMOUS = "anonymous";
 
     private static final String AUTH_TYPE_HEADER = "X-AUTH-TYPE";
@@ -60,6 +61,7 @@ public class SimpleServerAuthModule implements ServerAuthModule {
     private static final String PASSWORD_HEADER = "X-PASSWORD";
     private static final String ROLES_HEADER = "X-ROLES";
     private static final String MESSAGE_HEADER = "X-MESSAGE";
+    private static final String SESSION_HEADER = "X-SESSION";
 
     private boolean selfValidating;
     private CallbackHandler callbackHandler;
@@ -90,6 +92,9 @@ public class SimpleServerAuthModule implements ServerAuthModule {
         final String username = request.getHeader(USERNAME_HEADER);
         final String password = request.getHeader(PASSWORD_HEADER);
         final String roles = request.getHeader(ROLES_HEADER);
+        final String session = request.getHeader(SESSION_HEADER);
+
+        System.out.println(String.format("authType=%s, username=%s, password=%s, roles=%s, session=%s", authType, username, password, roles, session));
 
         if (username == null || username.length() == 0 || ((password == null || password.length() == 0) && !ANONYMOUS.equals(username))) {
             sendChallenge(response);
@@ -127,8 +132,14 @@ public class SimpleServerAuthModule implements ServerAuthModule {
                 handle(new GroupPrincipalCallback(clientSubject, defaultRoles));
             }
 
+            Map map = messageInfo.getMap();
             if (authType != null) {
-                messageInfo.getMap().put(AUTH_TYPE, authType);
+                map.put(AUTH_TYPE, authType);
+            }
+
+            if ("register".equals(session)) {
+                System.out.println("Requesting session registration");
+                map.put(SESSION, Boolean.TRUE.toString());
             }
 
             return AuthStatus.SUCCESS;
