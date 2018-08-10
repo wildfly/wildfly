@@ -1,0 +1,21 @@
+<subsystem xmlns="urn:wildfly:microprofile-config-smallrye:1.0">
+    <config-source name="myFirstConfigSource"
+                   ordinal="101">
+        <property name="foo" value="123" />
+        <property name="bar" value="yes" />
+    </config-source>
+    <config-source name="mySecondConfigSource"
+                   ordinal="201" />
+    <config-source name="configSourceFromClass">
+        <class name="foo.bar.MyConfigSource" module="foo.bar" />
+    </config-source>
+    <config-source name="configSourceFromAbsoluteDir">
+        <dir path="${java.io.tmpdir}" />
+    </config-source>
+    <config-source name="configSourceFromRelativeDir">
+        <dir path="myConfigDir" relative-to="java.io.tmpdir" />
+    </config-source>
+    <config-source-provider name="myConfigSourceProvider">
+        <class name="foo.bar.MyConfigSourceProvider" module="foo.bar" />
+    </config-source-provider>
+</subsystem>

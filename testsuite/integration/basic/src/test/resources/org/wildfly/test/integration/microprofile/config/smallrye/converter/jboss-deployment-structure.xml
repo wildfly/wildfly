@@ -1,0 +1,7 @@
+<jboss-deployment-structure>
+    <deployment>
+        <dependencies>
+            <module name="test.custom-config-converters" services="import" annotations="true" />
+        </dependencies>
+    </deployment>
+</jboss-deployment-structure>
