@@ -69,20 +69,6 @@
                 <property name="waitForPortsTimeoutInSeconds">8</property>
             </configuration>
         </container>
-
-        <!-- The server that expsoses EJB's via IIOP -->
-        <container qualifier="iiop-legacy-server" default="false">
-            <configuration>
-                <property name="jbossHome">${basedir}/target/jbossas-iiop-ssl-legacy-server</property>
-                <property name="javaVmArguments">${server.jvm2.args} -Djboss.socket.binding.port-offset=200</property>
-                <property name="serverConfig">${jboss.server.config.file.name:standalone-full.xml}</property>
-                <property name="managementAddress">${node1}</property>
-                <property name="managementPort">10190</property>
-
-                <property name="waitForPorts">${as.debug.port.node1:10190}</property>
-                <property name="waitForPortsTimeoutInSeconds">8</property>
-            </configuration>
-        </container>
     </group>
 
 </arquillian>

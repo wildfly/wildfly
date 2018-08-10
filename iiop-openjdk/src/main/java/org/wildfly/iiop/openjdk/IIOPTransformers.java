@@ -23,6 +23,7 @@
 package org.wildfly.iiop.openjdk;
 
 import static org.wildfly.iiop.openjdk.IIOPExtension.CURRENT_MODEL_VERSION;
+import static org.wildfly.iiop.openjdk.IIOPExtension.VERSION_2;
 import static org.wildfly.iiop.openjdk.IIOPExtension.VERSION_1;
 
 import java.util.Map;
@@ -32,6 +33,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
 import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
 import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.ChainedTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
@@ -53,6 +55,10 @@ public class IIOPTransformers implements ExtensionTransformerRegistration {
     public void registerTransformers(SubsystemTransformerRegistration subsystemRegistration) {
         ChainedTransformationDescriptionBuilder chained = ResourceTransformationDescriptionBuilder.Factory.createChainedSubystemInstance(CURRENT_MODEL_VERSION);
 
+        ResourceTransformationDescriptionBuilder builder_2_0 = chained.createBuilder(CURRENT_MODEL_VERSION, VERSION_2);
+        builder_2_0.getAttributeBuilder()
+                .setValueConverter(new AttributeConverter.DefaultValueAttributeConverter(IIOPRootDefinition.SOCKET_BINDING), IIOPRootDefinition.SOCKET_BINDING);
+
         /*
         --- Problems for relative address to root []:
         Missing attributes in current: []; missing in legacy [server-requires-ssl, server-ssl-context, client-requires-ssl, authentication-context, client-ssl-context]
@@ -65,8 +71,8 @@ public class IIOPTransformers implements ExtensionTransformerRegistration {
         Different 'default' for attribute 'trust-in-target'. Current: undefined; legacy: "none"
         Missing parameters for operation 'add' in current: []; missing in legacy [server-requires-ssl, server-ssl-context, client-requires-ssl, authentication-context, client-ssl-context]
          */
-        ResourceTransformationDescriptionBuilder builder = chained.createBuilder(CURRENT_MODEL_VERSION, VERSION_1);
-        builder.getAttributeBuilder()
+        ResourceTransformationDescriptionBuilder builder_1_0 = chained.createBuilder(VERSION_2, VERSION_1);
+        builder_1_0.getAttributeBuilder()
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(IIOPRootDefinition.CLIENT_REQUIRES_SSL.getDefaultValue()), IIOPRootDefinition.CLIENT_REQUIRES_SSL)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(IIOPRootDefinition.SERVER_REQUIRES_SSL.getDefaultValue()), IIOPRootDefinition.SERVER_REQUIRES_SSL)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(IIOPRootDefinition.INTEROP_IONA.getDefaultValue()), IIOPRootDefinition.INTEROP_IONA)
@@ -86,6 +92,7 @@ public class IIOPTransformers implements ExtensionTransformerRegistration {
         ;
 
         chained.buildAndRegister(subsystemRegistration, new ModelVersion[]{
+                VERSION_2,
                 VERSION_1
         });
     }

@@ -78,7 +78,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
 
     protected static final AttributeDefinition SOCKET_BINDING = new SimpleAttributeDefinitionBuilder(
             Constants.ORB_SOCKET_BINDING, ModelType.STRING, true).setAttributeGroup(Constants.ORB)
-            .setDefaultValue(new ModelNode().set("iiop")).setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF).build();
 
     protected static final AttributeDefinition SSL_SOCKET_BINDING = new SimpleAttributeDefinitionBuilder(
