@@ -61,6 +61,12 @@
             <version>${version.org.jboss.infinispan-wildfly}</version>
             <type>zip</type>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 
