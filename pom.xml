@@ -3878,6 +3878,12 @@
                 <groupId>org.hornetq</groupId>
                 <artifactId>hornetq-commons</artifactId>
                 <version>${version.org.hornetq}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.hornetq</groupId>
+                        <artifactId>hornetq-journal</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -3890,6 +3896,12 @@
                 <groupId>org.hornetq</groupId>
                 <artifactId>hornetq-jms-client</artifactId>
                 <version>${version.org.hornetq}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.hornetq</groupId>
+                        <artifactId>hornetq-journal</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.infinispan</groupId>
