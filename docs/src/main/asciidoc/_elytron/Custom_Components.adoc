@@ -1,0 +1,69 @@
+[[Custom_Components]]
+= Custom Components
+
+WildFly Elytron subsystem allows to add custom implementation of different
+components in form of WildFly modules into the WildFly instance and use them
+by the same way as built-in Elytron subsystem components.
+For example, you can create custom security event listener to develop custom
+audit mechanisms and store information about user authentication attempts in
+custom storage structure. Or you can create custom security realm to
+authenticate users against your own identities storage.
+
+To find what types of custom components you can implement you can use Tab
+completion:
+
+----
+[standalone@localhost:9990 /] /subsystem=elytron/custom-
+custom-credential-security-factory  custom-realm
+custom-modifiable-realm             custom-realm-mapper
+custom-permission-mapper            custom-role-decoder
+custom-principal-decoder            custom-role-mapper
+custom-principal-transformer        custom-security-event-listener
+----
+
+== Security event listener
+
+To create custom security event listener you need to implement `java.util.function.Consumer<org.wildfly.security.auth.server.event.SecurityEvent>` interface.
+Resulting class needs to be packed into JAR and WildFly module created.
+You can create appropriate directory structure and module descriptor manually, or you can use following command of WildFly CLI:
+
+----
+bin/jboss-cli.sh
+module add --name=my.module --resources=my-listener.jar --dependencies=org.wildfly.security.elytron
+----
+
+Check
+link:Developer_Guide.html#Class_Loading_in_WildFly[Class loading doc]
+for more information how to create WildFly module.
+
+When appropriate module is on place, you can start using it by adding Elytron subsystem resource:
+
+----
+/subsystem=elytron/custom-security-event-listener=myListener:add(
+        module=my.module, class-name=my.module.MyAuditListener)
+----
+
+Now you can start to use it as any other security event listener - typically to set it as listener of `ApplicationDomain`:
+
+----
+/subsystem=elytron/security-domain=ApplicationDomain:write-attribute(name=security-event-listener, value=myListener)
+----
+
+After server reload the listener will receive all security events from given security domain.
+
+== Configurable custom components
+
+You can also provide some component configuration from the subsystem, if class of your component will implement following method:
+
+----
+public void initialize(Map<String, String> configuration)
+----
+
+Afterwards you can provide configuration into your component from the subsystem using attribute `configuration`:
+
+----
+/subsystem=elytron/custom-...=my-component:add(module=..., class-name=..., configuration={myAttribute="myValue"})
+----
+
+After the component construction, the `initialize` method will be called with the configuration.
+
