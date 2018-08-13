@@ -2,7 +2,7 @@
 <config xmlns="http://zanata.org/namespace/config/">
     <url>https://vendors.zanata.redhat.com/</url>
     <project>eap</project>
-    <project-version>7.1</project-version>
+    <project-version>7.2</project-version>
     <project-type>properties</project-type>
 
 </config>
