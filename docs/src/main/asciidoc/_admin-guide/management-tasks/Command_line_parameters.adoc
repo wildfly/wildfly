@@ -187,7 +187,7 @@ available in standalone and domain mode.
 to open administrative interfaces and accept management requests but not
 start other runtime services oraccept end user requests.
 
-|--server-config-c |standalone.xml |A relative path which is interpreted
+|--server-config -c |standalone.xml |A relative path which is interpreted
 to be relative to jboss.server.config.dir. The name of the configuration
 file to use.
 
@@ -196,6 +196,12 @@ be relative to jboss.server.config.dir. This is similar to
 --server-config but if this alternative is specified the server willnot
 overwrite the file when the management model is changed. However a full
 versioned history is maintained of the file.
+
+|--git-repo |- | remote Git repository URL to use for configuration directory and content repository content or `local` if only a local repository is to be used.
+
+|--git-branch |master |The Git branch or tag to be used. If a `tag` name is used then the future commits will go into the detached state.
+
+|--git-auth |- |A URL to an Elytron configuration file containing the credentials to be used for connecting to the Git repository.
 |=======================================================================
 
 [[managed-domain-1]]

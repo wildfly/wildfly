@@ -1,0 +1,125 @@
+[[Configuration_file_git_history]]
+= Git Configuration file history
+
+To enhance the initial <<Configuration_file_history,configuration file history>> we have now a native Git support to manage the configuration history. This feature goes a little farther than the initial configuration file history in that it also manages content repository content and all the configuration files (such as properties). This feature only work for **standalone servers** using the default directory layout.
+
+As mentioned in <<Command_line_parameters,Command line parameters>> we support the usage of a remote Git repository to pull the configuration from or create or use a local Git repository.
+In fact if a `.git` directory exists under `jboss.server.base.dir` then using Git for managing configuration files will be automatically activated.
+Each modification of the content or the configuration will result in a new commit when the operation is successful and there are changes to commit. If there is an authenticated user then it will be stored as the author of the commit.
+Please note that this is a real Git repository so using a native Git client you can manipulate it.
+
+Now if we execute a management operation that modifies
+the model, for example adding a new system property using the CLI:
+
+[source, ruby]
+----
+[standalone@localhost:9990 /] /system-property=test:add(value="test123")
+{"outcome" => "success"}
+----
+
+What happens is:
+
+* The change is applied to the configuration file.
+* The configuration file is added to a new commit.
+
+
+[[local_git_repository]]
+== Local Git Repository
+
+Starting the server with the option `--git-repo=local` will initiate a Git repository if none exists or use the current Git repository. When initiating the local Git repository a `.gitignore` file will be created and added to the initial commit.
+
+If a `--git-branch` parameter is added then the repository will be checked out on the supplied branch. Please note that the branch will not be automatically created and must exist in the repository already. By default, if no parameter is specified, the branch `master` will be used.
+
+[[remote_git_repository]]
+== Remote Git Repository
+
+If a remote Git repository is provided then the server will try to pull from it at boot. If this is the first time we are pulling then local files will be deleted to avoid the pull to fail because of the need to overwrite those existing files.
+The parameter for `--git-repo` can be a URL or a remote alias provided you have manually added it to the local git configuration. 
+
+If a `--git-branch` parameter is added then the branch will be pulled, otherwise it will default to `master`.
+
+For example this is an elytron configuration file that you could use to connect to Github via the `--git-auth` parameter:
+[source, xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <authentication-client xmlns="urn:elytron:1.0">
+        <authentication-rules>
+            <rule use-configuration="test-login">
+            </rule>
+        </authentication-rules>
+        <authentication-configurations>
+            <configuration name="test-login">
+                <sasl-mechanism-selector selector="BASIC" />
+                <set-user-name name="ehsavoie" />
+                <credentials>
+                    <clear-password password="my_api_key" />
+                </credentials>
+                <set-mechanism-realm name="testRealm" />
+            </configuration>
+        </authentication-configurations>
+    </authentication-client>
+</configuration>
+----
+
+Sample command line to start the server using the `standalone-full.xml` file pulled from Github and being authenticated via the Elytron configuration file `github-wildfly-config.xml`:
+
+[source,bash]
+----
+./standalone.sh --git-repo=https://github.com/wildfly/wildfly-config.git --git-auth=file:///home/ehsavoie/tmp/github-wildfly-config.xml -c standalone-full.xml
+----
+
+[[snapshots]]
+== Snapshots
+
+In addition to the commits taken by the server as described above you
+can manually take snapshots which will be stored as `tags` in the Git repository.
+You can choose the tag name and the commit message attached to this tag.
+
+You may also take your own snapshots using the CLI:
+
+[source, ruby]
+----
+[standalone@localhost:9990 /] :take-snapshot(name="snapshot", comment="1st snapshot")
+{
+    "outcome" => "success",
+    "result" => "1st snapshot"
+}
+----
+
+You can also use the CLI to list all the snapshots
+
+[source, ruby]
+----
+[standalone@localhost:9990 /] :list-snapshots
+{
+    "outcome" => "success",
+    "result" => {
+        "directory" => "",
+        "names" => [
+            "snapshot : 1st snapshot",
+            "refs/tags/snapshot",
+            "snapshot2 : 2nd snapshot",
+            "refs/tags/snapshot2"
+        ]
+    }
+}
+----
+
+To delete a particular snapshot:
+
+[source, ruby]
+----
+[standalone@localhost:9990 /] :delete-snapshot(name="snapshot2")
+{"outcome" => "success"}
+----
+
+[[remote_push]]
+== Remote push
+
+You may need to push your repository changes to a remote repository so you can share them.
+[source, ruby]
+----
+[standalone@localhost:9990 /] :publish-configuration(location="origin")
+{"outcome" => "success"}
+----

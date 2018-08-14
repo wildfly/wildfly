@@ -18,4 +18,6 @@ include::management-tasks/Canceling_Management_Operations.adoc[]
 
 include::management-tasks/Configuration_file_history.adoc[]
 
+include::management-tasks/Configuration_file_git_history.adoc[]
+
 :leveloffset: -1
