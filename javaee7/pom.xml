@@ -36,36 +36,37 @@
 
     <properties>
         <!-- Versions of JBoss server -->
-        <version.org.wildfly>13.0.0.Final</version.org.wildfly>
+        <version.org.wildfly>14.0.0.Beta2-SNAPSHOT</version.org.wildfly>
 
         <!-- Versions of JBoss projects -->
-        <version.org.infinispan>9.2.4.Final</version.org.infinispan>
+        <version.org.infinispan>9.3.1.Final</version.org.infinispan>
+        <version.javax.validation>2.0.1.Final</version.javax.validation>
         <version.org.jboss.arquillian>1.1.13.Final</version.org.jboss.arquillian>
         <version.org.jboss.arquillian.extension.drone>2.3.1</version.org.jboss.arquillian.extension.drone>
         <version.org.jboss.arquillian.graphene>2.3.1</version.org.jboss.arquillian.graphene>
         <version.org.jboss.ejb3.ext-api>2.2.0.Final</version.org.jboss.ejb3.ext-api>
-        <version.org.jboss.logging.jboss-logging>3.3.1.Final</version.org.jboss.logging.jboss-logging>
+        <version.org.jboss.logging.jboss-logging>3.3.2.Final</version.org.jboss.logging.jboss-logging>
         <version.org.jboss.logging.processor>2.1.0.Final</version.org.jboss.logging.processor>
-        <version.org.jboss.narayana>5.8.1.Final</version.org.jboss.narayana>
-        <version.org.jboss.resteasy>3.5.1.Final</version.org.jboss.resteasy>
+        <version.org.jboss.narayana>5.9.0.Final</version.org.jboss.narayana>
+        <version.org.jboss.resteasy>3.6.1.Final</version.org.jboss.resteasy>
         <version.org.jboss.security.jboss-negotiation>3.0.4.Final</version.org.jboss.security.jboss-negotiation>
         <version.org.jboss.security.jbossxacml>2.0.8.Final</version.org.jboss.security.jbossxacml>
         <version.org.jboss.spec.jboss.javaee7>1.1.1.Final</version.org.jboss.spec.jboss.javaee7>
         <version.org.jboss.shrinkwrap.resolver>2.2.6</version.org.jboss.shrinkwrap.resolver>
         <version.org.picketbox.picketbox-commons>1.0.0.final</version.org.picketbox.picketbox-commons>
-        <version.org.picketlink>2.5.5.SP11</version.org.picketlink>
-        <version.org.wildfly.arquillian>2.1.0.Final</version.org.wildfly.arquillian>
+        <version.org.picketlink>2.5.5.SP12</version.org.picketlink>
+        <version.org.wildfly.arquillian>2.1.1.Final</version.org.wildfly.arquillian>
         <version.org.wildfly.client.config>1.0.0.Final</version.org.wildfly.client.config>
-        <version.org.wildfly.common>1.3.1.Final</version.org.wildfly.common>
-        <version.org.wildfly.discovery>1.0.0.Final</version.org.wildfly.discovery>
-        <version.org.wildfly.security.elytron>1.2.4.Final</version.org.wildfly.security.elytron>
+        <version.org.wildfly.common>1.4.0.Final</version.org.wildfly.common>
+        <version.org.wildfly.discovery>1.1.1.Final</version.org.wildfly.discovery>
+        <version.org.wildfly.security.elytron>1.5.3.Final</version.org.wildfly.security.elytron>
 
         <!-- Version of Hibernate projects -->
-        <version.org.hibernate>5.1.14.Final</version.org.hibernate>
-        <version.org.hibernate.commons-annotations>5.0.1.Final</version.org.hibernate.commons-annotations>
+        <version.org.hibernate>5.3.4.Final</version.org.hibernate>
+        <version.org.hibernate.commons-annotations>5.0.4.Final</version.org.hibernate.commons-annotations>
         <version.org.hibernate-jpamodelgen>${version.org.hibernate}</version.org.hibernate-jpamodelgen>
-        <version.org.hibernate.validator>5.3.6.Final</version.org.hibernate.validator>
-        <version.org.hibernate.search>5.5.8.Final</version.org.hibernate.search>
+        <version.org.hibernate.validator>6.0.12.Final</version.org.hibernate.validator>
+        <version.org.hibernate.search>5.10.3.Final</version.org.hibernate.search>
 
         <!-- Versions of projects not directly under JBoss umbrella -->
         <version.junit>4.12</version.junit>
@@ -73,7 +74,7 @@
 
         <!-- Versions of Maven plugins, user must setup them by his/her own -->
         <version.surefire.plugin>2.17</version.surefire.plugin>
-        <version.org.wildfly.plugins.maven.plugin>1.0.2.Final</version.org.wildfly.plugins.maven.plugin>
+        <version.org.wildfly.plugins.maven.plugin>1.2.1.Final</version.org.wildfly.plugins.maven.plugin>
 
     </properties>
 
@@ -92,6 +93,18 @@
                 <version>${version.org.jboss.spec.jboss.javaee7}</version>
                 <type>pom</type>
                 <scope>import</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>javax.validation</groupId>
+                        <artifactId>validation-api</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>javax.validation</groupId>
+                <artifactId>validation-api</artifactId>
+                <version>${version.javax.validation}</version>
             </dependency>
 
         <!-- Wildfly client dependency sets -->

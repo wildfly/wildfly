@@ -33,7 +33,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>13.0.0.Final</version>
+        <version>14.0.0.Beta2-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-jms-client-bom</artifactId>
@@ -93,11 +93,11 @@
         <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>javax.json</artifactId>
-            <!-- This is an unusual case where we override the version only for this client. The parent pom version is
-                 using the 1.1 version for the Java EE 8 tech preview though the client still currently expects 1.0.
-                 Once we fully move to Java EE 8 this can be removed.
-            -->
-            <version>${version.org.glassfish.javax.json-1.0}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.json</groupId>
+            <artifactId>javax.json-api</artifactId>
         </dependency>
 
         <dependency>
