@@ -77,7 +77,6 @@ public class ElytronSecurityDomainContextImpl implements SecurityDomainContext {
             return false;
         }
         SubjectUtil.fromSecurityIdentity(identity, subject);
-        currentIdentity.set(identity);
         return true;
     }
 
@@ -85,8 +84,11 @@ public class ElytronSecurityDomainContextImpl implements SecurityDomainContext {
         final SecurityIdentity ci = currentIdentity.get();
         if (ci != null) {
             //there is no security constrains in servlet and directly with jaas
-            ci.runAs(action);
-            currentIdentity.set(null);
+            try {
+                ci.runAs(action);
+            } finally {
+                currentIdentity.remove();
+            }
         } else {
             //undertow's ElytronRunAsHandler will propagate the SecurityIndentity to SecurityDomain and directly run this action
             action.call();
