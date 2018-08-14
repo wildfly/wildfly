@@ -72,7 +72,7 @@ class ModClusterSubsystemServiceHandler implements ResourceServiceHandler {
                 String proxyName = proxyResource.getName();
                 PathAddress proxyAddress = context.getCurrentAddress().append(ProxyConfigurationResourceDefinition.pathElement(proxyName));
                 adapterNames.add(proxyName);
-                ModelNode proxyModel = proxyResource.getModel();
+                ModelNode proxyModel = Resource.Tools.readModel(proxyResource);
 
                 ServiceTarget target = context.getServiceTarget();
                 ProxyConfigurationServiceConfigurator configurationBuilder = new ProxyConfigurationServiceConfigurator(proxyAddress);
