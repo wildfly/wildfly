@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
+<config>
+    <extension-module>org.wildfly.extension.microprofile.config-smallrye</extension-module>
+    <subsystem xmlns="urn:wildfly:microprofile-config-smallrye:1.0">
+    </subsystem>
+</config>

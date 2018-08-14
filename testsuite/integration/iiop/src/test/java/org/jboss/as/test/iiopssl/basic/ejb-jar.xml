@@ -34,7 +34,7 @@
                     <injection-target-class>org.jboss.as.test.iiopssl.basic.ClientEjb</injection-target-class>
                     <injection-target-name>statelessHome</injection-target-name>
                 </injection-target>
-                <lookup-name>corbaname:iiop:${node1}:3628#IIOPSslStatelessBean</lookup-name>
+                <lookup-name>corbaname:ssliop:1.2@${node1}:3629#IIOPSslStatelessBean</lookup-name>
             </ejb-ref>
         </session>
     </enterprise-beans>

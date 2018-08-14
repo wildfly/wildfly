@@ -25,11 +25,12 @@ package org.jboss.as.clustering.infinispan;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
+import org.infinispan.client.hotrod.exceptions.HotRodClientException;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.logging.BasicLogger;
+import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
-import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 
@@ -134,9 +135,8 @@ public interface InfinispanLogger extends BasicLogger {
     @Message(id = 30, value = "Stopped remote cache container '%s'.")
     void remoteCacheContainerStopped(String remoteCacheContainer);
 
-    @LogMessage(level = WARN)
     @Message(id = 31, value = "Specified HotRod protocol version %s does not support creating caches automatically. Cache named '%s' must be already created on the Infinispan Server!")
-    void remoteCacheMustBeDefined(String protocolVersion, String remoteCacheName);
+    HotRodClientException remoteCacheMustBeDefined(String protocolVersion, String remoteCacheName);
 
     @LogMessage(level = INFO)
     @Message(id = 32, value = "Getting remote cache named '%s'. If it does not exist a new cache will be created from configuration template named '%s'; null value uses default cache configuration on the Infinispan Server.")

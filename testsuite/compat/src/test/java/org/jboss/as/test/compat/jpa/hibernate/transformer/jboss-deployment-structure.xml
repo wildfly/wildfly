@@ -1,0 +1,18 @@
+<jboss-deployment-structure>
+    <deployment>
+        <transformers>
+            <transformer class="org.jboss.as.hibernate.Hibernate51CompatibilityTransformer"/>
+        </transformers>
+        <dependencies>
+            <module name="org.hibernate" export="true" />
+            <module name="com.h2database.h2" />
+            <module name="org.slf4j"/>
+        </dependencies>
+    </deployment>
+    <sub-deployment name="main.war">
+        <transformers>
+            <transformer class="org.jboss.as.hibernate.Hibernate51CompatibilityTransformer"/>
+        </transformers>
+    </sub-deployment>
+
+</jboss-deployment-structure>

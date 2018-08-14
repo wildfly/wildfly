@@ -5,8 +5,6 @@
 :idprefix:
 :idseparator:       -
 
-include::../common_attributes.adoc[]
-
 The embedded API can be used to launch {appservername} within a currently running process.
 
 The embedded server can be reinitialized with a different JBoss Home. However the module directory, `module.path`

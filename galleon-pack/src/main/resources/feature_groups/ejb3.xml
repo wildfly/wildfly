@@ -63,7 +63,10 @@
         <feature spec="subsystem.ejb3.thread-pool">
             <param name="thread-pool" value="default"/>
             <param name="max-threads" value="10"/>
-            <param name="keepalive-time" value="{time=100,unit=MILLISECONDS}"/>
+            <feature spec="subsystem.ejb3.thread-pool.keepalive-time">
+                <param name="time" value="100"/>
+                <param name="unit" value="MILLISECONDS"/>
+            </feature>
         </feature>
     </feature>
     <feature spec="subsystem.elytron.permission-set.permissions">

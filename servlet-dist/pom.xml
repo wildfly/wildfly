@@ -79,14 +79,13 @@
                             <plugin-options>
                                 <jboss-fork-embedded/>
                             </plugin-options>
-                            <resolve-locals>
-                                <resolve-local>
+                            <feature-packs>
+                                <feature-pack>
+                                    <transitive>true</transitive>
                                     <groupId>org.wildfly.core</groupId>
                                     <artifactId>wildfly-core-galleon-pack</artifactId>
                                     <version>${version.org.wildfly.core}</version>
-                                </resolve-local>
-                            </resolve-locals>
-                            <feature-packs>
+                                </feature-pack>
                                 <feature-pack>
                                     <groupId>${project.groupId}</groupId>
                                     <artifactId>wildfly-servlet-galleon-pack</artifactId>

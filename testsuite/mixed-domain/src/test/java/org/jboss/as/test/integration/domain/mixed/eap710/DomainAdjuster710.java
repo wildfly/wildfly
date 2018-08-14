@@ -61,6 +61,7 @@ public class DomainAdjuster710 extends DomainAdjuster {
 
         list.addAll(removeEESecurity(profileAddress.append(SUBSYSTEM, "ee-security")));
         list.addAll(removeDiscovery(profileAddress.append(SUBSYSTEM, "discovery")));
+        list.addAll(removeMicroProfileConfigSmallrye(profileAddress.append(SUBSYSTEM, "microprofile-config-smallrye")));
         if (withMasterServers) {
             list.addAll(reconfigureServers());
         }
@@ -123,6 +124,17 @@ public class DomainAdjuster710 extends DomainAdjuster {
         //discovery subsystem and extension do not exist in previous versions, so remove it
         list.add(createRemoveOperation(subsystem));
         list.add(createRemoveOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.discovery")));
+        return list;
+    }
+
+    /*
+     * microprofile-config-smallrye subsystem and extension do not exist in previous versions, so remove it
+     */
+    private Collection<? extends ModelNode> removeMicroProfileConfigSmallrye(final PathAddress subsystem) {
+        final List<ModelNode> list = new ArrayList<>();
+
+        list.add(createRemoveOperation(subsystem));
+        list.add(createRemoveOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.microprofile.config-smallrye")));
         return list;
     }
 }

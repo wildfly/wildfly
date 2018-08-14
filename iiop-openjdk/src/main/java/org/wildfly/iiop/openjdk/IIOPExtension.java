@@ -51,7 +51,8 @@ public class IIOPExtension implements Extension {
 
     private static final String RESOURCE_NAME = IIOPExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(2,0,0);
+    static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(2,1,0);
+    static final ModelVersion VERSION_2 = ModelVersion.create(2,0,0);
     static final ModelVersion VERSION_1 = ModelVersion.create(1);
 
 
@@ -69,7 +70,7 @@ public class IIOPExtension implements Extension {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
         final ManagementResourceRegistration subsystemRegistration = subsystem.registerSubsystemModel(IIOPRootDefinition.INSTANCE);
         subsystemRegistration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
-        subsystem.registerXMLElementWriter(new IIOPSubsystemParser_2_0());
+        subsystem.registerXMLElementWriter(new IIOPSubsystemParser_2_1());
 
     }
 
@@ -77,6 +78,7 @@ public class IIOPExtension implements Extension {
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME,Namespace.IIOP_OPENJDK_1_0.getUriString(), IIOPSubsystemParser_1::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME,Namespace.IIOP_OPENJDK_2_0.getUriString(), IIOPSubsystemParser_2_0::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME,Namespace.IIOP_OPENJDK_2_1.getUriString(), IIOPSubsystemParser_2_1::new);
     }
 
 }

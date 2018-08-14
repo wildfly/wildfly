@@ -1901,6 +1901,48 @@ To reload a keystore.
 /subsystem=elytron/key-store=httpsKS:load
 ----
 
+[[reinitialize-a-key-manager]]
+=== Reinitialize a Key Manager
+
+You can reinitialize a key-manager configured in WildFly from the management CLI.
+This is useful in cases where you have made changes in certificates provided by keystore
+resource and you want to apply this change to new SSL connections without restarting the server.
+
+If the key-store is file based then it must be loaded first.
+
+[source, bash]
+----
+/subsystem=elytron/key-store=httpsKS:load()
+----
+
+To reinitialize a key-manager.
+
+[source, bash]
+----
+/subsystem=elytron/key-manager=httpsKM:init()
+----
+
+[[reinitialize-a-trust-manager]]
+=== Reinitialize a Trust Manager
+
+You can reinitialize a trust-manager configured in WildFly from the management CLI.
+This is useful in cases where you have made changes to certificates provided by keystore
+resource and you want to apply this change to new SSL connections without restarting the server.
+
+If the key-store is file based then it must be loaded first.
+
+[source, bash]
+----
+/subsystem=elytron/key-store=httpsKS:load()
+----
+
+To reinitialize a trust-manager.
+
+[source, bash]
+----
+/subsystem=elytron/trust-manager=httpsTM:init()
+----
+
 [[check-the-content-of-a-keystore-by-alias]]
 === Check the Content of a Keystore by Alias
 

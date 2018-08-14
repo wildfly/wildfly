@@ -1,0 +1,7 @@
+<jboss-deployment-structure>
+    <deployment>
+        <dependencies>
+            <module name="test.custom-config-source-service-loader" services="import" />
+        </dependencies>
+    </deployment>
+</jboss-deployment-structure>

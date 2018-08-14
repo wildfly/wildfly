@@ -3167,4 +3167,12 @@ public interface EjbLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 506, value = "[EJB3.2 spec, section 5.6.2] Message Driven Bean can not have a 'finalize' method. (MDB: %s)")
     void mdbCantHaveFinalizeMethod(String className);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 507, value = "Failed to persist timer's state %s. Timer has to be restored manually")
+    void exceptionPersistPostTimerState(Timer timer, @Cause Exception e);
+
+    @LogMessage(level = WARN)
+    @Message(id = 508, value = "Failed to persist timer's state %s due to %s")
+    void exceptionPersistTimerState(Timer timer, Exception e);
 }

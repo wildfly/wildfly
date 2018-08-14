@@ -25,6 +25,7 @@
         <subsystem>jsf.xml</subsystem>
         <subsystem>jsr77.xml</subsystem>
         <subsystem>mail.xml</subsystem>
+        <subsystem>microprofile-config-smallrye.xml</subsystem>
         <subsystem supplement="ha">messaging-activemq.xml</subsystem>
         <subsystem supplement="${mod_cluster.supplement}">mod_cluster.xml</subsystem>
         <subsystem>naming.xml</subsystem>

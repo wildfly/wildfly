@@ -4,7 +4,7 @@
     <extension-module>org.jboss.as.clustering.jgroups</extension-module>
     <subsystem xmlns="urn:jboss:domain:jgroups:6.0">
         <channels default="ee">
-            <channel name="ee" stack="udp" cluster="ejb"/>
+            <channel name="ee" stack="tcp" cluster="ejb"/>
         </channels>
         <stacks>
             <stack name="udp">
@@ -23,7 +23,7 @@
                 <protocol type="FRAG3"/>
             </stack>
             <stack name="tcp">
-                <transport type="TCP" socket-binding="jgroups-tcp"/>
+                <transport type="TCP_NIO2" socket-binding="jgroups-tcp"/>
                 <?TCP-DISCOVERY?>
                 <protocol type="MERGE3"/>
                 <protocol type="FD_SOCK"/>

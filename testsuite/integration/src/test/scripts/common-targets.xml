@@ -352,21 +352,21 @@
         </sequential>
     </macrodef>
 
-    <macrodef name="ts.config-as.setup-ssl-support-for-iiop" description="Creates jsse security domain with a keystore and changes jacorb security settings to support SSL.">
+    <!-- after refactor -->
+
+    <macrodef name="ts.config-as.iiop.enable-ssl-jsse-domain" description="Enable SSL with JSSE security domain">
 
         <attribute name="name" default="jbossas"/>
         <attribute name="output.dir" default="${project.build.directory}"/>
         <attribute name="config.dir.name" default="standalone/configuration"/>
 
-        <attribute name="domainName" default="iiop-ssl-domain"/>
-        <attribute name="keystore"/>
-        <attribute name="password"/>
+        <attribute name="domain-name" default="iiop-ssl-domain"/>
 
         <sequential>
-            <echo message="Setting up SSL support in IIOP configuration for @{name}"/>
+            <echo message="IIOP: enabling SSL with JSSE security domain"/>
 
             <xslt destdir="@{output.dir}/@{name}/@{config.dir.name}"
-                  style="${jbossas.ts.integ.dir}/src/test/xslt/setupIiopSslSupport.xsl"
+                  style="${jbossas.ts.integ.dir}/src/test/xslt/iiopEnableSslJsseDomain.xsl"
                   extension=".xml.mod"
                   useImplicitFileset="false">
                 <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
@@ -374,11 +374,9 @@
                     <include name="**/standalone.xml"/>
                     <include name="**/standalone-full.xml"/>
                 </fileset>
-                <param name="domainName" expression="@{domainName}"/>
-                <param name="keystore" expression="@{keystore}"/>
-                <param name="password" expression="@{password}"/>
+                <param name="domain-name" expression="@{domain-name}"/>
             </xslt>
-        	
+
             <move todir="@{output.dir}/@{name}/@{config.dir.name}">
                 <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
                     <include name="**/standalone-ha.xml.mod"/>
@@ -390,37 +388,13 @@
         </sequential>
     </macrodef>
 
-    <macrodef name="ts.config-as.setup-ssl-support-for-iiop-elytron" description="Creates elytron security settings to support SSL.">
+    <macrodef name="ts.config-as.iiop.create-jsse-security-domain" description="Creates legacy JSSE security domain">
 
         <attribute name="name" default="jbossas"/>
         <attribute name="output.dir" default="${project.build.directory}"/>
         <attribute name="config.dir.name" default="standalone/configuration"/>
 
-        <attribute name="domainName" default="iiop-ssl-domain"/>
-        <attribute name="keystore"/>
-        <attribute name="password"/>
-
-        <sequential>
-            <echo message="Setting up SSL support in IIOP configuration for @{name}"/>
-        	
-            <move todir="@{output.dir}/@{name}/@{config.dir.name}">
-                <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
-                    <include name="**/standalone-ha.xml.mod"/>
-                    <include name="**/standalone.xml.mod"/>
-                    <include name="**/standalone-full.xml.mod"/>
-                </fileset>
-                <mapper type="glob" from="*.mod" to="*"/>
-            </move>
-        </sequential>
-    </macrodef>
-
-    <macrodef name="ts.config-as.setup-legacy-ssl-support-for-iiop" description="Creates jsse security domain with a keystore and enables server-reqires setting.">
-
-        <attribute name="name" default="jbossas"/>
-        <attribute name="output.dir" default="${project.build.directory}"/>
-        <attribute name="config.dir.name" default="standalone/configuration"/>
-
-        <attribute name="domainName" default="iiop-ssl-domain"/>
+        <attribute name="domain-name" default="iiop-ssl-domain"/>
         <attribute name="keystore"/>
         <attribute name="password"/>
 
@@ -428,7 +402,7 @@
             <echo message="Setting up SSL support in IIOP configuration for @{name}"/>
 
             <xslt destdir="@{output.dir}/@{name}/@{config.dir.name}"
-                  style="${jbossas.ts.integ.dir}/src/test/xslt/setupLegacyIiopSslSupport.xsl"
+                  style="${jbossas.ts.integ.dir}/src/test/xslt/createJsseSecurityDomain.xsl"
                   extension=".xml.mod"
                   useImplicitFileset="false">
                 <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
@@ -436,7 +410,7 @@
                     <include name="**/standalone.xml"/>
                     <include name="**/standalone-full.xml"/>
                 </fileset>
-                <param name="domainName" expression="@{domainName}"/>
+                <param name="domain-name" expression="@{domain-name}"/>
                 <param name="keystore" expression="@{keystore}"/>
                 <param name="password" expression="@{password}"/>
             </xslt>
@@ -452,18 +426,25 @@
         </sequential>
     </macrodef>
 
-    <macrodef name="ts.config-as.setup-legacy-ssl-support-for-iiop-elytron" description="Creates elytron security settings and enables server-reqires setting.">
+    <macrodef name="ts.config-as.iiop.enable-server-requires-ssl" description="Creates elytron security settings and enables server-reqires-ssl setting.">
 
         <attribute name="name" default="jbossas"/>
         <attribute name="output.dir" default="${project.build.directory}"/>
         <attribute name="config.dir.name" default="standalone/configuration"/>
 
-        <attribute name="domainName" default="iiop-ssl-domain"/>
-        <attribute name="keystore"/>
-        <attribute name="password"/>
-
         <sequential>
-            <echo message="Setting up SSL support in IIOP configuration for @{name}"/>
+            <echo message="IIOP: setting server-requires-ssl to true"/>
+
+            <xslt destdir="@{output.dir}/@{name}/@{config.dir.name}"
+                  style="${jbossas.ts.integ.dir}/src/test/xslt/iiopRequireSslSupport.xsl"
+                  extension=".xml.mod"
+                  useImplicitFileset="false">
+                <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
+                    <include name="**/standalone-ha.xml"/>
+                    <include name="**/standalone.xml"/>
+                    <include name="**/standalone-full.xml"/>
+                </fileset>
+            </xslt>
 
             <move todir="@{output.dir}/@{name}/@{config.dir.name}">
                 <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">

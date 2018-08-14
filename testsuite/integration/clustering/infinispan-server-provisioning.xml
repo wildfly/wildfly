@@ -1,0 +1,28 @@
+<!--
+  ~ Copyright 2018 Red Hat, Inc.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~   http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<server-provisioning xmlns="urn:wildfly:server-provisioning:1.2" extract-schemas="true" copy-module-artifacts="false" extract-schemas-groups="org.jboss.as org.wildfly org.wildfly.core org.infinispan.server org.infinispan">
+    <feature-packs>
+        <!-- We must specify the exact wildfly version as some of our external feature-pack dependencies may reference a different version -->
+        <feature-pack groupId="org.wildfly" artifactId="wildfly-feature-pack" version="${version.org.jboss.infinispan-wildfly}">
+            <!--Exclude wildfly config-->
+            <config/>
+            <!--Exclude wildfly content -->
+            <contents include="false"/>
+        </feature-pack>
+        <feature-pack groupId="org.infinispan.server" artifactId="infinispan-server-feature-pack" version="${version.org.infinispan}"/>
+    </feature-packs>
+</server-provisioning>

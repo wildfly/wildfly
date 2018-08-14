@@ -1,0 +1,16 @@
+<subsystem xmlns="urn:jboss:domain:iiop-openjdk:2.1">
+    <properties>
+        <property name="some_property" value="some_value"/>
+    </properties>
+    <!-- test both values being default because there is a bug that nothing gets persisted -->
+    <orb socket-binding="iiop" ssl-socket-binding="iiop-ssl"/>
+    <tcp high-water-mark="500" number-to-reclaim="30"/>
+    <initializers security="elytron" authentication-context="iiop" transactions="spec"/>
+    <naming root-context="JBoss/Naming/root2" export-corbaloc="false"/>
+    <security support-ssl="true" security-domain="domain" add-component-via-interceptor="false" client-requires-ssl="false" server-requires-ssl="false"/>
+    <transport-config integrity="required" confidentiality="required" detect-replay="supported"
+                      detect-misordering="supported"
+                      trust-in-client="required" trust-in-target="supported"/>
+    <as-context auth-method="none" realm="test_realm2" required="true"/>
+    <sas-context caller-propagation="supported"/>
+</subsystem>

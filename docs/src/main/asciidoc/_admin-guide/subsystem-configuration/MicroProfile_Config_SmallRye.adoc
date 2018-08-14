@@ -1,0 +1,163 @@
+[[MicroProfile_Config_SmallRye]]
+= MicroProfile Config Subsystem Configuration
+
+Support for https://microprofile.io/project/eclipse/microprofile-config[Eclipse MicroProfile Config] is provided by
+ the _microprofile-config-smallrye_ subsystem.
+
+[[required-extension]]
+== Required Extension
+
+This extension is included in the standard configurations included in the
+WildFly distribution.
+
+You can also add the extension to a configuration without it either by adding
+an `<extension module="org.wildfly.extension.microprofile.config-smallrye"/>`
+element to the xml or by using the following CLI operation:
+
+[source,ruby]
+----
+[standalone@localhost:9990 /]/extension=org.wildfly.extension.microprofile.config-smallrye:add
+----
+
+== Supported ConfigSources
+
+In addition to the default `ConfigSources` specified by the MicroProfile Config specification
+(environment variables, System properties and `META-INF/microprofile-config.properties` file), the
+`microprofile-config-smallrye` provides additional types of `ConfigSource`
+
+=== ConfigSource from Properties
+
+You can store properties directly in a `config-source` in the subsystem by using the `properties`
+attribute when you add the `config-source`:
+
+[source]
+----
+/subsystem=microprofile-config-smallrye/config-source=props:add(properties={"prop1" = "foo", "prop2" = "bar"})
+----
+
+This results in the XML configuration:
+
+[source,xml]
+----
+<subsystem xmlns="urn:wildfly:microprofile-config-smallrye:1.0">
+    <config-source name="props">
+        <property name="prop1" value="foo"/>
+        <property name="prop2" value="bar"/>
+    </config-source>
+</subsystem>
+----
+
+=== ConfigSource from Directory
+
+You can also read properties from a directory where each file is the name of
+a property and the file content is the value of the property.
+
+For example, let's imagine that the directory `/etc/config/numbers-app/` contains 2 files:
+
+ * the `num.size` file contains the value `5`
+ * the `num.max` file contains the value `100`
+
+We can create a config-source` to access these properties by using the operation:
+
+[source]
+----
+/subsystem=microprofile-config-smallrye/config-source=file-props:add(dir={path=/etc/config/numbers-app})
+----
+
+This results in the XML configuration:
+
+[source,xml]
+----
+<subsystem xmlns="urn:wildfly:microprofile-config-smallrye:1.0">
+    <config-source name="file-props">
+        <dir path="/etc/config/numbers-app"/>
+    </config-source>
+</subsystem>
+----
+
+With that configuration, any application deployed in WildFly can use the `num.size` and
+`num.max` properties that are stored in the directory:
+
+[source,java]
+----
+@Inject
+@ConfigProperty(name = "num.size")
+int numSize; // <1>
+
+@Inject
+@ConfigProperty(name = "num.max")
+int numMax; // <2>
+----
+<1> will be set to 5
+<2> will be set to 100
+
+[NOTE]
+This corresponds to the layout used by https://docs.openshift.com/enterprise/3.2/dev_guide/configmaps.html[OpenShift ConfigMaps].
+The `dir` value corresponds to the `mountPath` in the ConfigMap definition in OpenShift or Kubernetes.
+
+=== ConfigSource from Class
+
+You can create a specific type of `ConfigSource` implementation by creating a `config-source` resource
+with a `class` attribute.
+
+For example, you can provide an implementation of `org.eclipse.microprofile.config.spi.ConfigSource`
+that is named `org.example.MyConfigSource` and provided by a JBoss module named `org.example`:
+
+----
+/subsystem=microprofile-config-smallrye/config-source=my-config-source:add(class={name=org.example.MyConfigSource, module=org.example})
+----
+
+This results in the XML configuration:
+
+[source,xml]
+----
+<subsystem xmlns="urn:wildfly:microprofile-config-smallrye:1.0">
+    <config-source name="my-config-source">
+        <class name="org.example.MyConfigSource" module="org.example"/>
+    </config-source>
+</subsystem>
+----
+
+All properties from this `ConfigSource` will be available to any WildFly deployment.
+
+=== ConfigSourceProvider from Class
+
+You can create a specific type of `ConfigSourceProvider` implementation by creating a `config-source-provider` resource
+with a `class` attribute.
+
+For example, you can provide an implementation of `org.eclipse.microprofile.config.spi.ConfigSourceProvider`
+that is named `org.example.MyConfigSourceProvider` and provided by a JBoss module named `org.example`:
+
+----
+/subsystem=microprofile-config-smallrye/config-source-provider=my-config-source-provider:add(class={name=org.example.MyConfigSourceProvider, module=org.example})
+----
+
+This results in the XML configuration:
+
+[source,xml]
+----
+<subsystem xmlns="urn:wildfly:microprofile-config-smallrye:1.0">
+    <config-source-provider name="my-config-source-provider">
+         <class name="org.example.MyConfigSourceProvider" module="org.example"/>
+    </config-source-provider>
+</subsystem>
+----
+
+All properties from the `ConfigSource`s provided by this `ConfigSourceProvider` will be available to any WildFly deployment.
+
+== Deployment
+
+Applications that are deployed in WildFly must have CDI enabled (e.g. with a `META-INF/beans.xml`
+or by having CDI Bean annotation) to be able to use MicroProfile Config in their code.
+
+
+== Component Reference
+
+The Eclipse MicroProfile Config is implemented by the SmallRye Config project.
+
+****
+
+* https://microprofile.io/project/eclipse/microprofile-config[Eclipse MicroProfile Config]
+* http://github.com/smallrye/smallrye-config/[SmallRye Config]
+
+****

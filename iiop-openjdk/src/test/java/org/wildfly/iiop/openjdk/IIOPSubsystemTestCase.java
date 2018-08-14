@@ -54,7 +54,7 @@ public class IIOPSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem-2.0.xml");
+        return readResource("subsystem-2.1.xml");
     }
 
 
@@ -65,7 +65,7 @@ public class IIOPSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-iiop-openjdk_2_0.xsd";
+        return "schema/wildfly-iiop-openjdk_2_1.xsd";
     }
 
     @Override

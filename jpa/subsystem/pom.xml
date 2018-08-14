@@ -120,5 +120,9 @@
             <artifactId>wildfly-weld-common</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-ormtransformer</artifactId>
+        </dependency>
     </dependencies>
 </project>
