@@ -85,7 +85,7 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
         return WildFlySecurityManager.doUnchecked(action);
     }
 
-    private static final Invoker INVOKER = new RetryingInvoker(Duration.ZERO, Duration.ofMillis(100), Duration.ofSeconds(500));
+    private static final Invoker INVOKER = new RetryingInvoker(Duration.ZERO, Duration.ofMillis(100), Duration.ofSeconds(1));
 
     final Batcher<? extends Batch> batcher;
     private final ConcurrentMap<T, Map.Entry<Listener, ExecutorService>> listeners = new ConcurrentHashMap<>();
