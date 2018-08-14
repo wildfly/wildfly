@@ -55,6 +55,11 @@
             <groupId>org.jboss.shrinkwrap.descriptors</groupId>
             <artifactId>shrinkwrap-descriptors-impl-javaee</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.opentracing</groupId>
+            <artifactId>opentracing-mock</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <profiles>
@@ -178,6 +183,7 @@
                                         <include>org/jboss/as/test/integration/jca/bootstrap/**/*TestCase*.java</include>
                                         <include>org/jboss/as/test/integration/jmx/full/**/*TestCase*.java</include>
                                         <include>org/jboss/as/test/integration/messaging/**/*TestCase*.java</include>
+                                        <include>org/jboss/as/test/integration/microprofile/opentracing/**/*TestCase*.java</include>
                                         <include>org/jboss/as/test/integration/management/cli/**/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/naming/remote/**/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/ee/injection/resource/resourceref/*TestCase.java</include>
@@ -239,6 +245,7 @@
                                         <exclude>org/jboss/as/test/integration/jca/bootstrap/**/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/jmx/full/**/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/messaging/**/*TestCase*.java</exclude>
+                                        <include>org/jboss/as/test/integration/microprofile/opentracing/**/*TestCase*.java</include>
                                         <exclude>org/jboss/as/test/integration/management/cli/**/*TestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/naming/remote/**/*TestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ee/injection/resource/resourceref/*TestCase.java</exclude>
