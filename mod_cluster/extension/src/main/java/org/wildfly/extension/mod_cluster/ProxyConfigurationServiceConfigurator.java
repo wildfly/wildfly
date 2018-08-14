@@ -287,9 +287,9 @@ import org.wildfly.clustering.service.SupplierDependency;
             }
             node = PASSWORD.resolveModelAttribute(context, sslModel);
             if (node.isDefined()) {
-                String str = node.toString();
-                sslConfiguration.setSslTrustStorePassword(str);
-                sslConfiguration.setSslKeyStorePassword(str);
+                String password = node.asString();
+                sslConfiguration.setSslTrustStorePassword(password);
+                sslConfiguration.setSslKeyStorePassword(password);
             }
             node = CERTIFICATE_KEY_FILE.resolveModelAttribute(context, sslModel);
             if (node.isDefined()) {
