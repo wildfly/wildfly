@@ -1,446 +1,147 @@
-[[Logging_Handlers]]
 = Handlers
+:author:            James R. Perkins
+:email:             jperkins@redhat.com
 
-WIP
+== Overview
 
-[IMPORTANT]
+Handlers define how log messages are recorded. If a message is said to be
+link:{oracle-javadocs}/java/util/logging/Logger.html#isLoggable-java.util.logging.Level-[loggable] by a
+<<Logging_Loggers,logger>> the message is then processed by the log handler.
 
-This is still a work in progress. Please feel free to edit any mistakes
-you find icon:smile-o[role="yellow"]
-
-
-[abstract]
-
-Handlers are used to determine what happens with a log message if the
-<<Logging_Loggers#Logging_Loggers,logger>> determines the
-message is loggable.
-
-There are 6 main handlers provided with WildFly and 1 generic handler;
+The following are the available handlers for {appservername};
 
 * <<async-handler,async-handler>>
 * <<console-handler,console-handler>>
+* <<custom-handler,custom-handler>>
 * <<file-handler,file-handler>>
 * <<periodic-rotating-file-handler,periodic-rotating-file-handler>>
+* <<periodic-size-rotating-file-handler,periodic-size-rotating-file-handler>>
 * <<size-rotating-file-handler,size-rotating-file-handler>>
+* <<socket-handler,socket-handler>>
 * <<syslog-handler,syslog-handler>>
-* <<enabled,custom-handler>>
 
-[[async-handler]]
 === async-handler
 
-An `async-handler` is a handler that asynchronously writes log messages
-to it's child handlers. This type of handler is generally used for other
-handlers that take a substantial time to write logged messages.
+An `async-handler` is a handler that asynchronously writes log messages to it's child handlers. This type of
+handler is generally used to wrap other handlers that take a substantial time to write messages.
 
-==== Attributes
-
-* <<enabled,#enabled>>
-* <<filter-spec,#filter-spec>>
-* <<level,#level>>
-* <<overflow-action,#overflow-action>>
-* <<queue-length,#queue-length>>
-* <<subhandlers,#subhandlers>>
-
-[[console-handler]]
 === console-handler
 
-A `console-handler` is a handler that writes log messages to the
-console. Generally this writes to `stdout`, but can be set to write to
-`stderr`.
+A `console-handler` is a handler that writes log messages to the console. Generally this writes to `stdout`,
+but can be set to write to `stderr`.
 
-[[attributes-1]]
-==== Attributes
+=== custom-handler
 
-* <<autoflush,#autoflush>>
-* <<enabled,#enabled>>
-* <<encoding,#encoding>>
-* <<filter-spec,#filter-spec>>
-* <<formatter,#formatter>>
-* <<level,#level>>
-* <<named-formatter,#named-formatter>>
-* <<target,#target>>
+A `custom-handler` allows you to define any {oracle-javadoc}/java/util/logging/Handler.html[handler] as a handler that
+can be assigned to a logger or a <<async-handler,`async-handler`>>.
 
-[[file-handler]]
 === file-handler
 
-A `file-handler` is a handler that writes log messages to the specified
-file.
+A `file-handler` is a handler that writes log messages to the specified file.
 
-==== Attributes
-
-* <<autoflush,#autoflush>>
-* <<enabled,#enabled>>
-* <<encoding,#encoding>>
-* <<filter-spec,#filter-spec>>
-* <<formatter,#formatter>>
-* <<level,#level>>
-* <<named-formatter,#named-formatter>>
-* <<file,#file>>
-
-[[periodic-rotating-file-handler]]
 === periodic-rotating-file-handler
 
-A `periodic-rotating-file-handler` is a handler that writes log messages
-to the specified file. The file rotates on the date pattern specified in
-the <<suffix,#suffix>> attribute. The suffix must
-be a valid pattern recognized by the
-http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html[`java.text.SimpleDateFormat`]
-and must not rotate on seconds or milliseconds.
+A `periodic-rotating-file-handler` is a handler that writes log messages to the specified file. The file rotates on
+the date pattern specified in the `suffix` attribute. The suffix must be a valid pattern recognized by the
+{oracle-javadoc}/java/text/SimpleDateFormat.html[`java.text.SimpleDateFormat`] and must not rotate on seconds or
+milliseconds.
 
-[NOTE]
+NOTE: The rotate happens before the next message is written by the handler.
 
-The rotate happens before the next message is written by the handler.
+=== periodic-size-rotating-file-handler
 
-[[attributes-3]]
-==== Attributes
+A `periodic-size-rotating-file-handler` is a handler that writes log messages to the specified file. The file rotates on
+the date pattern specified in the `suffix` attribute or the `rotate-size` attribute. The suffix must be a valid
+pattern recognized by the {oracle-javadoc}/java/text/SimpleDateFormat.html[`java.text.SimpleDateFormat`] and must
+not rotate on seconds or milliseconds.
 
-* <<autoflush,#autoflush>>
-* <<enabled,#enabled>>
-* <<encoding,#encoding>>
-* <<filter-spec,#filter-spec>>
-* <<formatter,#formatter>>
-* <<level,#level>>
-* <<named-formatter,#named-formatter>>
-* <<file,#file>>
-* <<suffix,#suffix>>
+The `max-backup-index` works differently on this handler than the
+<<size-rotating-file-handler,`size-rotating-file-handler`>>. The date suffix of the file to be rotated must be the
+same as the current expected suffix. For example with a suffix pattern of `yyyy-MM` and a `rotate-size` of `10m` the
+file will be rotated with the current month each time the 10Mb size is reached.
 
-[[size-rotating-file-handler]]
+NOTE: The rotate happens before the next message is written by the handler.
+
 === size-rotating-file-handler
 
-A `size-rotating-file-handler` is a handler that writes log messages to
-the specified file. The file rotates when the file size is greater than
-the <<rotate-size,#rotate-size>> attribute. The
-rotated file will be kept and the index appended to the name moving
-previously rotated file indexes up by 1 until the
-<<max-backup-index,#max-backup-index>> is
-reached. Once the
-<<max-backup-index,#max-backup-index>> is
-reached, the indexed files will be overwritten.
+A `size-rotating-file-handler` is a handler that writes log messages to the specified file. The file rotates when
+the file size is greater than the `rotate-size` attribute. The rotated file will be kept and the index appended
+to the name moving previously rotated file indexes up by 1 until the `max-backup-index` is reached. Once the
+`max-backup-index` is reached, the indexed files will be overwritten.
 
-[NOTE]
+NOTE: The rotate happens before the next message is written by the handler.
 
-The rotate happens before the next message is written by the handler.
+=== socket-handler
 
-[[attributes-4]]
-==== Attributes
+A `socket-handler` is a handler which sends messages over a socket. This can be a TCP or UDP socket and must be
+defined in a <<socket-binding-groups,socket binding group>> under the `local-destination-outbound-socket-binding` or
+`remote-destination-outbound-socket-binding` resource.
 
-* <<autoflush,#autoflush>>
-* <<enabled,#enabled>>
-* <<encoding,#encoding>>
-* <<filter-spec,#filter-spec>>
-* <<formatter,#formatter>>
-* <<level,#level>>
-* <<named-formatter,#named-formatter>>
-* <<file,#file>>
-* <<max-backup-index,#max-backup-index>>
-* <<rotate-size,#rotate-size>>
-* <<rotate-on-boot,#rotate-on-boot>>
+During the boot logging messages will be queued until the socket binding is configured and the logging subsystem is
+added. This is important to note because setting the level of the handler to `DEBUG` or `TRACE` could result in
+large memory consumption during boot.
 
-[[syslog-handler]]
+[IMPORTANT]
+====
+A server booted in `--admin-only` mode will discard messages rather than send them over a socket.
+====
+
+.CLI Example
+[source]
+----
+# Add the socket binding
+/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=log-server:add(host=localhost, port=4560)
+# Add a json-formatter
+/subsystem=logging/json-formatter=json:add
+# Add the socket handler
+/subsystem=logging/socket-handler=log-server-handler:add(named-formatter=json, level=INFO, outbound-socket-binding-ref=log-server)
+# Add the handler to the root logger
+/subsystem=logging/root-logger=ROOT:add-handler(name=log-server-handler)
+----
+
+.Add a UDP Example
+[source]
+----
+/subsystem=logging/socket-handler=log-server-handler:add(named-formatter=json, level=INFO, outbound-socket-binding-ref=log-server, protocol=UDP)
+----
+
+.Add SSL Example
+[source]
+----
+# Add the socket binding
+/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=log-server:add(host=localhost, port=4560)
+
+# Add the Elytron key store
+/subsystem=elytron/key-store=log-server-ks:add(path=/path/to/keystore.jks, type=JKS, credential-reference={clear-text=mypassword})
+# Add the Elytron trust manager
+/subsystem=elytron/trust-manager=log-server-tm:add(key-store=log-server-ks)
+# Add the client SSL context
+/subsystem=elytron/client-ssl-context=log-server-context:add(trust-manager=log-server-tm, protocols=["TLSv1.2"])
+
+# Add a json-formatter
+/subsystem=logging/json-formatter=json:add
+# Add the socket handler
+/subsystem=logging/socket-handler=log-server-handler:add(named-formatter=json, level=INFO, outbound-socket-binding-ref=log-server, protocol=SSL_TCP, ssl-context=log-server-context)
+# Add the handler to the root logger
+/subsystem=logging/root-logger=ROOT:add-handler(name=log-server-handler)
+----
+
+TIP: Wrapping a `socket-handler` in a <<async-handler,`async-handler`>> may improve performance.
+
 === syslog-handler
 
-A `syslog-handler` is a handler that writes to a syslog server. The
-handler support http://www.ietf.org/rfc/rfc3164.txt[RFC3164] or
-http://www.ietf.org/rfc/rfc5424.txt[RFC5424] formats.
-
-[[attributes-5]]
-==== Attributes
-
-* link:#src-557084_Handlers-port[#port]
-* link:#src-557084_Handlers-app-name[#app-name]
-* <<enabled,#enabled>>
-* <<level,#level>>
-* link:#src-557084_Handlers-facility[#facility]
-* link:#src-557084_Handlers-server-address[#server-address]
-* link:#src-557084_Handlers-hostname[#hostname]
-* link:#src-557084_Handlers-syslog-format[#syslog-format]
+A `syslog-handler` is a handler that writes to a syslog server via UDP. The handler support
+http://www.ietf.org/rfc/rfc3164.txt[RFC3164] or http://www.ietf.org/rfc/rfc5424.txt[RFC5424] formats.
 
 [TIP]
+====
 
 The syslog-handler is missing some configuration properties that may be
 useful in some scenarios like setting a formatter. Use the
 `org.jboss.logmanager.handlers.SyslogHandler` in module
 `org.jboss.logmanager` as a
-<<custom-handler,#custom-handler>> to exploit
+<<custom-handler,custom-handler>> to exploit
 these benefits. Additional attributes will be added at some point so
 this will no longer be necessary.
 
-[[custom-handler]]
-=== custom-handler
-
-[[attributes-6]]
-=== Attributes
-
-[[autoflush]]
-==== autoflush
-
-****
-
-[cols=",",options="header"]
-|=======================================================================
-|Description: |Indicates whether a flush should happen after each write.
-|Type: |boolean
-|Default Value: |true
-|Allowed Values: |true or false
-|=======================================================================
-
-****
-
-[[enabled]]
-==== enabled
-
-****
-
-[cols=",",options="header"]
-|=======================================================================
-|Description: |If set to true the handler is enabled and functioning as
-normal, if set to false the handler is ignored when processing log
-messages.
-
-|Type: |boolean
-
-|Default Value: |true
-
-|Allowed Values: |true or false
-|=======================================================================
-
-****
-
-[[encoding]]
-==== encoding
-
-****
-
-[cols=",",options="header"]
-|==========================================================
-|Description: |The character encoding used by this Handler.
-|Type: |string
-|Default Value: |null
-|Allowed Values: |Any valid encoding
-|==========================================================
-
-****
-
-[[file]]
-==== file
-
-****
-
-[cols=",",options="header"]
-|=======================================================================
-|Description: |An object describing the file the handler should write
-to.
-
-|Type: |object
-
-|Default Value: |null
-
-|Allowed Values: |An object optionally containing a relative-to property
-and a path. The path is a required property of the object.
-|=======================================================================
-
-****
-
-[[named-formatter]]
-==== named-formatter
-
-****
-
-[cols=",",options="header"]
-|=======================================================================
-|Description: |The name of a defined formatter to be used on the
-handler.
-
-|Type: |string
-
-|Default Value: |null
-
-|Allowed Values: |TODO add link
-|=======================================================================
-
-****
-
-[[formatter]]
-==== formatter
-
-****
-
-[cols=",",options="header"]
-|========================================================
-|Description: |Defines a pattern for a pattern formatter.
-|Type: |string
-|Default Value: |%d\{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n
-|Allowed Values: |TODO add link
-|========================================================
-
-****
-
-[[filter-spec]]
-==== filter-spec
-
-****
-
-[cols=",",options="header"]
-|===========================================================
-|Description: |A filter expression value to define a filter.
-|Type: |string
-|Default Value: |null
-|Allowed Values: |See Filter Expression
-|===========================================================
-
-****
-
-[[level]]
-==== level
-
-****
-
-[cols=",",options="header"]
-|=======================================================================
-|Description : |The log level specifying which message levels will be
-logged by this logger. Message levels lower than this value will be
-discarded.
-
-|Type: |string
-
-|Default Value: |ALL
-
-|Allowed Values: |ALL FINEST FINER TRACE DEBUG FINE CONFIG INFO WARN
-WARNING ERROR SEVERE FATAL OFF
-|=======================================================================
-
-****
-
-[[max-backup-index]]
-==== max-backup-index
-
-****
-
-[cols=",",options="header"]
-|==========================================================
-|Description: |The maximum number of rotated files to keep.
-|Type: |integer
-|Default Value: |1
-|Allowed Values: |any integer greater than 0
-|==========================================================
-
-****
-
-[[overflow-action]]
-==== overflow-action
-
-****
-
-[cols=",",options="header"]
-|===============================================================
-|Description: |Specify what action to take when the overflowing.
-|Type: |string
-|Default Value: |BLOCK
-|Allowed Values: |BLOCK or DISCARD
-|===============================================================
-
-****
-
-[[queue-length]]
-==== queue-length
-
-****
-
-[cols=",",options="header"]
-|=============================================================
-|Description: |The queue length to use before flushing writing
-|Type: |integer
-|Default Value: |0
-|Allowed Values: |any positive integer
-|=============================================================
-
-****
-
-[[rotate-on-boot]]
-==== rotate-on-boot
-
-****
-
-[cols=",",options="header"]
-|=======================================================================
-|Description: |Indicates whether or not the file should be rotated each
-time the #file attribute is changed. If set to true will rotate on each
-boot of the server.
-
-|Type: |boolean
-
-|Default Value: |false
-
-|Allowed Values: |true or false
-|=======================================================================
-
-****
-
-[[rotate-size]]
-==== rotate-size
-
-****
-
-[cols=",",options="header"]
-|=======================================================================
-|Description: |The size at which the file should be rotated.
-
-|Type: |string
-
-|Default Value: |2m
-
-|Allowed Values: |Any positive integer with a size type appended to the
-end. Valid types are b for bytes, k for kilobytes, m for megabytes, g
-for gigabytes or t for terabytes. Type character is not case sensitive.
-|=======================================================================
-
-****
-
-[[subhandlers]]
-==== subhandlers
-
-****
-
-[cols=",",options="header"]
-|==============================================================
-|Description: |The handlers to associate with the async handler
-|Type: |list of strings
-|Default Value: |null
-|Allowed Values: |An array of valid handler names
-|==============================================================
-
-****
-
-[[suffix]]
-==== suffix
-
-****
-
-[cols=",",options="header"]
-|=======================================================================
-|Description: |The pattern used to determine when the file should be
-rotated.
-
-|Type: |string
-
-|Default Value: |null
-
-|Allowed Values: |Any valid java.text.SimpleDateFormat pattern.
-|=======================================================================
-
-****
-
-[[target]]
-==== target
-
-****
-
-[cols=",",options="header"]
-|========================================================
-|Description: |Defines the target of the console handler.
-|Type: |string
-|Default Value: |System.out
-|Allowed Values: |System.out or System.err
-|========================================================
-
-****
+====
