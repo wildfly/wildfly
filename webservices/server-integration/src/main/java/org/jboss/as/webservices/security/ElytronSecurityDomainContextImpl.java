@@ -136,4 +136,10 @@ public class ElytronSecurityDomainContextImpl implements SecurityDomainContext {
         }
         return null;
     }
+
+    @Override
+    public void cleanupSubjectContext() {
+        currentIdentity.remove();
+    }
+
 }
