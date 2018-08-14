@@ -54,7 +54,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Basic JMS test using a customly created JMS topic
+ * Basic JMS test using a customly created JMS queue
  *
  * @author <a href="jmartisk@redhat.com">Jan Martiska</a>
  */
@@ -81,8 +81,8 @@ public class SendToExternalJMSQueueTestCase {
             op.get("connectors").add("http-test-connector");
             execute(managementClient, op, true);
             op = Operations.createAddOperation(getClientQueueAddress());
-            op.get("entries").add("java:jboss/exported/topic/myAwesomeClientQueue");
-            op.get("entries").add("/topic/myAwesomeClientQueue");
+            op.get("entries").add("java:jboss/exported/queue/myAwesomeClientQueue");
+            op.get("entries").add("/queue/myAwesomeClientQueue");
             execute(managementClient, op, true);
             ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
         }
@@ -125,7 +125,7 @@ public class SendToExternalJMSQueueTestCase {
 
     private static final Logger logger = Logger.getLogger(SendToExternalJMSQueueTestCase.class);
 
-    @Resource(lookup = "java:jboss/exported/topic/myAwesomeClientQueue")
+    @Resource(lookup = "java:jboss/exported/queue/myAwesomeClientQueue")
     private Queue queue;
 
     @Resource(lookup = "java:/JmsXA")
@@ -160,7 +160,7 @@ public class SendToExternalJMSQueueTestCase {
             consumerConnection.start();
 
             // SEND A MESSAGE
-            logger.trace("***** Start - sending message to topic");
+            logger.trace("***** Start - sending message to queue");
             senderConnection = factory.createConnection("guest", "guest");
             logger.trace("Creating session..");
             senderSession = senderConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);

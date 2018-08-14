@@ -91,9 +91,6 @@ public class DiscoveryGroupExternalMessagingDeploymentTestCase {
             execute(managementClient, createBroadcastGroupWithSocketBinding(ops.getServerAddress(), "bg-group1", MULTICAST_SOCKET_BINDING, "http-connector"), true);
             execute(managementClient, createDiscoveryGroupWithSocketBinding(ops.getServerAddress(), "dg-group1", MULTICAST_SOCKET_BINDING), true);
             execute(managementClient, createClusterConnection(ops.getServerAddress(), "my-cluster", "jms", "http-connector", "dg-group1"), true);
-//            <broadcast-group name="bg-group1" jgroups-cluster="activemq-cluster" connectors="http-connector"/>
-//                <discovery-group name="dg-group1" jgroups-cluster="activemq-cluster"/>
-//                <cluster-connection name="my-cluster" address="jms" connector-name="http-connector" discovery-group="dg-group1"/>
             op = Operations.createAddOperation(getPooledConnectionFactoryAddress());
             op.get("transaction").set("xa");
             op.get("entries").add("java:/JmsXA java:jboss/DefaultJMSConnectionFactory");
@@ -105,7 +102,7 @@ public class DiscoveryGroupExternalMessagingDeploymentTestCase {
             execute(managementClient, op, true);
             op = Operations.createAddOperation(getClientQueueAddress());
             op.get("entries").add(QUEUE_LOOKUP);
-            op.get("entries").add("/topic/myAwesomeClientQueue");
+            op.get("entries").add("/queue/myAwesomeClientQueue");
             execute(managementClient, op, true);
             ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
         }
@@ -160,6 +157,7 @@ public class DiscoveryGroupExternalMessagingDeploymentTestCase {
             add.get(OP).set(ADD);
             add.get(OP_ADDR).set(address);
             add.get("socket-binding").set(socketBinding);
+            add.get("initial-wait-timeout").set(30000);
             return add;
         }
 
@@ -182,6 +180,7 @@ public class DiscoveryGroupExternalMessagingDeploymentTestCase {
             address.add("discovery-group", discoveryGroupName);
             ModelNode op = Operations.createAddOperation(address);
             op.get("socket-binding").set(socketBinding);
+            op.get("initial-wait-timeout").set(30000);
             return op;
         }
 

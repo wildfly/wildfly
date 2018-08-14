@@ -187,18 +187,21 @@ public class ExternalPooledConnectionFactoryService implements Service<Void> {
     private String txSupport;
     private int minPoolSize;
     private int maxPoolSize;
-    private final String jgroupsChannelName;
+    private final String jgroupsClusterName;
+    private final String jgroupChannelName;
     private final boolean createBinderService;
     private final String managedConnectionPoolClassName;
     // can be null. In that case the behaviour is depending on the IronJacamar container setting.
     private final Boolean enlistmentTrace;
     private InjectedValue<ExceptionSupplier<CredentialSource, Exception>> credentialSourceSupplier = new InjectedValue<>();
 
-    public ExternalPooledConnectionFactoryService(String name, TransportConfiguration[] connectors, DiscoveryGroupConfiguration groupConfiguration, String jgroupsChannelName, List<PooledConnectionFactoryConfigProperties> adapterParams, List<String> jndiNames, String txSupport, int minPoolSize, int maxPoolSize, String managedConnectionPoolClassName, Boolean enlistmentTrace) {
+    public ExternalPooledConnectionFactoryService(String name, TransportConfiguration[] connectors, DiscoveryGroupConfiguration groupConfiguration, String jgroupsClusterName,
+            String jgroupChannelName, List<PooledConnectionFactoryConfigProperties> adapterParams, List<String> jndiNames, String txSupport, int minPoolSize, int maxPoolSize, String managedConnectionPoolClassName, Boolean enlistmentTrace) {
         this.name = name;
         this.connectors = connectors;
         this.discoveryGroupConfiguration = groupConfiguration;
-        this.jgroupsChannelName = jgroupsChannelName;
+        this.jgroupsClusterName = jgroupsClusterName;
+        this.jgroupChannelName = jgroupChannelName;
         this.adapterParams = adapterParams;
         initJNDIBindings(jndiNames);
         createBinderService = true;
@@ -232,7 +235,8 @@ public class ExternalPooledConnectionFactoryService implements Service<Void> {
             TransportConfiguration[] connectors,
             DiscoveryGroupConfiguration groupConfiguration,
             Set<String> connectorsSocketBindings,
-            String jgroupsChannelName,
+            String jgroupClusterName,
+            String jgroupChannelName,
             List<PooledConnectionFactoryConfigProperties> adapterParams,
             List<String> jndiNames,
             String txSupport,
@@ -244,10 +248,10 @@ public class ExternalPooledConnectionFactoryService implements Service<Void> {
 
         ServiceName serviceName = JMSServices.getPooledConnectionFactoryBaseServiceName(JBOSS_MESSAGING_ACTIVEMQ).append(name);
         ExternalPooledConnectionFactoryService service = new ExternalPooledConnectionFactoryService(name,
-                connectors, groupConfiguration, jgroupsChannelName, adapterParams,
+                connectors, groupConfiguration, jgroupClusterName, jgroupChannelName, adapterParams,
                 jndiNames, txSupport, minPoolSize, maxPoolSize, managedConnectionPoolClassName, enlistmentTrace);
 
-        installService0(context, serviceName, service, groupConfiguration, jgroupsChannelName, connectorsSocketBindings, model);
+        installService0(context, serviceName, service, groupConfiguration, jgroupClusterName, jgroupChannelName, connectorsSocketBindings, model);
         return service;
     }
 
@@ -255,6 +259,7 @@ public class ExternalPooledConnectionFactoryService implements Service<Void> {
             ServiceName serviceName,
             ExternalPooledConnectionFactoryService service,
             DiscoveryGroupConfiguration groupConfiguration,
+            String jgroupsClusterName,
             String jgroupsChannelName,
             Set<String> connectorsSocketBindings,
             ModelNode model) throws OperationFailedException {
@@ -276,10 +281,10 @@ public class ExternalPooledConnectionFactoryService implements Service<Void> {
         }
         if (groupConfiguration != null) {
             final String key = "discovery" + groupConfiguration.getName();
-            if (jgroupsChannelName != null) {
-                ServiceName commandDispatcherFactoryServiceName = ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context, jgroupsChannelName);
+            if (jgroupsClusterName != null) {
+                ServiceName commandDispatcherFactoryServiceName = jgroupsChannelName != null ? ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context, jgroupsChannelName) : ClusteringDefaultRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context);
                 serviceBuilder.addDependency(commandDispatcherFactoryServiceName, CommandDispatcherFactory.class, service.getCommandDispatcherFactoryInjector(key));
-                service.clusterNames.put(key, jgroupsChannelName);
+                service.clusterNames.put(key, jgroupsClusterName);
             } else {
                 final ServiceName groupBinding = GroupBindingService.getDiscoveryBaseServiceName(JBOSS_MESSAGING_ACTIVEMQ).append(groupConfiguration.getName());
                 serviceBuilder.addDependency(groupBinding, SocketBinding.class, service.getGroupBindingInjector(key));
@@ -374,7 +379,7 @@ public class ExternalPooledConnectionFactoryService implements Service<Void> {
                     properties.add(simpleProperty15(DISCOVERY_LOCAL_BIND_ADDRESS, STRING_TYPE, "" + udpCfg.getLocalBindAddress()));
                 } else if (bgCfg instanceof CommandDispatcherBroadcastEndpointFactory) {
                     String external = "/" + name + ":discovery" + dgName;
-                    properties.add(simpleProperty15(JGROUPS_CHANNEL_NAME, STRING_TYPE, jgroupsChannelName));
+                    properties.add(simpleProperty15(JGROUPS_CHANNEL_NAME, STRING_TYPE, jgroupsClusterName));
                     properties.add(simpleProperty15(JGROUPS_CHANNEL_REF_NAME, STRING_TYPE, external));
                 }
                 properties.add(simpleProperty15(DISCOVERY_INITIAL_WAIT_TIMEOUT, LONG_TYPE, "" + config.getDiscoveryInitialWaitTimeout()));

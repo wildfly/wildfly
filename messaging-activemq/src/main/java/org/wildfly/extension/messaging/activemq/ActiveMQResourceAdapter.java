@@ -64,7 +64,7 @@ public class ActiveMQResourceAdapter extends org.apache.activemq.artemis.ra.Acti
                 return new CommandDispatcherBroadcastEndpointFactory(service.getCommandDispatcherFactory(key), clusterName);
             }
             ExternalPooledConnectionFactoryService service = (ExternalPooledConnectionFactoryService) currentServiceContainer().getService(JMSServices.getPooledConnectionFactoryBaseServiceName(JBOSS_MESSAGING_ACTIVEMQ).append(pcf)).getService();
-                return new CommandDispatcherBroadcastEndpointFactory(service.getCommandDispatcherFactory(key), clusterName);
+            return new CommandDispatcherBroadcastEndpointFactory(service.getCommandDispatcherFactory(key), clusterName);
         }
         return super.createBroadcastEndpointFactory(overrideProperties);
     }
