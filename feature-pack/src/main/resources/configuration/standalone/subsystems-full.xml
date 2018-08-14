@@ -24,8 +24,8 @@
         <subsystem>jsf.xml</subsystem>
         <subsystem>jsr77.xml</subsystem>
         <subsystem>mail.xml</subsystem>
-        <subsystem>microprofile-config-smallrye.xml</subsystem>
         <subsystem>messaging-activemq.xml</subsystem>
+        <subsystem>microprofile-config-smallrye.xml</subsystem>
         <subsystem>naming.xml</subsystem>
         <subsystem>pojo.xml</subsystem>
         <subsystem>remoting.xml</subsystem>
