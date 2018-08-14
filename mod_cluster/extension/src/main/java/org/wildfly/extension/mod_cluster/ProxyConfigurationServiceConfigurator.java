@@ -49,13 +49,6 @@ import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefini
 import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefinition.Attribute.STOP_CONTEXT_TIMEOUT;
 import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefinition.Attribute.TTL;
 import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefinition.Attribute.WORKER_TIMEOUT;
-import static org.wildfly.extension.mod_cluster.SSLResourceDefinition.Attribute.CA_CERTIFICATE_FILE;
-import static org.wildfly.extension.mod_cluster.SSLResourceDefinition.Attribute.CA_REVOCATION_URL;
-import static org.wildfly.extension.mod_cluster.SSLResourceDefinition.Attribute.CERTIFICATE_KEY_FILE;
-import static org.wildfly.extension.mod_cluster.SSLResourceDefinition.Attribute.CIPHER_SUITE;
-import static org.wildfly.extension.mod_cluster.SSLResourceDefinition.Attribute.KEY_ALIAS;
-import static org.wildfly.extension.mod_cluster.SSLResourceDefinition.Attribute.PASSWORD;
-import static org.wildfly.extension.mod_cluster.SSLResourceDefinition.Attribute.PROTOCOL;
 
 import javax.net.ssl.SSLContext;
 import java.net.InetSocketAddress;
@@ -281,33 +274,33 @@ import org.wildfly.clustering.service.SupplierDependency;
 
             ModClusterConfig sslConfiguration = new ModClusterConfig();
 
-            node = KEY_ALIAS.resolveModelAttribute(context, sslModel);
+            node = SSLResourceDefinition.Attribute.KEY_ALIAS.resolveModelAttribute(context, sslModel);
             if (node.isDefined()) {
                 sslConfiguration.setSslKeyAlias(node.asString());
             }
-            node = PASSWORD.resolveModelAttribute(context, sslModel);
+            node = SSLResourceDefinition.Attribute.PASSWORD.resolveModelAttribute(context, sslModel);
             if (node.isDefined()) {
                 String password = node.asString();
                 sslConfiguration.setSslTrustStorePassword(password);
                 sslConfiguration.setSslKeyStorePassword(password);
             }
-            node = CERTIFICATE_KEY_FILE.resolveModelAttribute(context, sslModel);
+            node = SSLResourceDefinition.Attribute.CERTIFICATE_KEY_FILE.resolveModelAttribute(context, sslModel);
             if (node.isDefined()) {
                 sslConfiguration.setSslKeyStore(node.asString());
             }
-            node = CIPHER_SUITE.resolveModelAttribute(context, sslModel);
+            node = SSLResourceDefinition.Attribute.CIPHER_SUITE.resolveModelAttribute(context, sslModel);
             if (node.isDefined()) {
                 sslConfiguration.setSslCiphers(node.asString());
             }
-            node = PROTOCOL.resolveModelAttribute(context, sslModel);
+            node = SSLResourceDefinition.Attribute.PROTOCOL.resolveModelAttribute(context, sslModel);
             if (node.isDefined()) {
                 sslConfiguration.setSslProtocol(node.asString());
             }
-            node = CA_CERTIFICATE_FILE.resolveModelAttribute(context, sslModel);
+            node = SSLResourceDefinition.Attribute.CA_CERTIFICATE_FILE.resolveModelAttribute(context, sslModel);
             if (node.isDefined()) {
                 sslConfiguration.setSslTrustStore(node.asString());
             }
-            node = CA_REVOCATION_URL.resolveModelAttribute(context, sslModel);
+            node = SSLResourceDefinition.Attribute.CA_REVOCATION_URL.resolveModelAttribute(context, sslModel);
             if (node.isDefined()) {
                 sslConfiguration.setSslCrlFile(node.asString());
             }
