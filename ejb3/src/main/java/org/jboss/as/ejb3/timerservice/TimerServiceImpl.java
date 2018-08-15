@@ -743,6 +743,8 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                     // if the persistence is shared it must be ensured to not update
                     // timers of other nodes in the cluster
                     activeTimer.setTimerState(TimerState.ACTIVE);
+                    calendarTimer.handleRestorationCalculation();
+
                 }
                 try {
                     this.persistTimer(activeTimer, false);
@@ -751,7 +753,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                 }
                 if (found) {
                     startTimer(activeTimer);
-                    EJB3_TIMER_LOGGER.debugv("Started timer: {0}", activeTimer);
+                    EJB3_TIMER_LOGGER.debugv("Started existing auto timer: {0}", activeTimer);
                 }
             } else if (!ineligibleTimerStates.contains(activeTimer.getState())) {
                 startTimer(activeTimer);
