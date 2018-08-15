@@ -50,7 +50,7 @@ public abstract class BuildConfigurationTestBase {
     static final File CONFIG_DIR = new File("target/wildfly/domain/configuration/");
 
     static WildFlyManagedConfiguration createConfiguration(final String domainXmlName, final String hostXmlName, final String testConfiguration) {
-        return createConfiguration(domainXmlName, hostXmlName, testConfiguration, "master", masterAddress, 9999);
+        return createConfiguration(domainXmlName, hostXmlName, testConfiguration, "master", masterAddress, 9990);
     }
 
     static WildFlyManagedConfiguration createConfiguration(final String domainXmlName, final String hostXmlName,
@@ -60,8 +60,9 @@ public abstract class BuildConfigurationTestBase {
 
         configuration.setHostControllerManagementAddress(hostAddress);
         configuration.setHostControllerManagementPort(hostPort);
+        configuration.setHostControllerManagementProtocol("remote+http");
         configuration.setHostCommandLineProperties("-Djboss.domain.master.address=" + masterAddress +
-                " -Djboss.management.native.port=" + hostPort);
+                " -Djboss.management.http.port=" + hostPort);
         configuration.setDomainConfigFile(hackFixDomainConfig(new File(CONFIG_DIR, domainXmlName)).getAbsolutePath());
         configuration.setHostConfigFile(hackFixHostConfig(new File(CONFIG_DIR, hostXmlName), hostName, hostAddress).getAbsolutePath());
         //configuration.setHostConfigFile(new File(CONFIG_DIR, hostXmlName).getAbsolutePath());
@@ -104,9 +105,9 @@ public abstract class BuildConfigurationTestBase {
                         if (start >= 0) {
                             StringBuilder sb = new StringBuilder();
                             sb.append(line.substring(0, start))
-                                .append("<inet-address value=\"")
-                                .append(hostAddress)
-                                .append("\"/>");
+                                    .append("<inet-address value=\"")
+                                    .append(hostAddress)
+                                    .append("\"/>");
                             writer.write(sb.toString());
                         } else {
                             start = line.indexOf("<option value=\"");
@@ -123,7 +124,7 @@ public abstract class BuildConfigurationTestBase {
 
                                 writer.write(sb.toString());
                                 processedOpt = true;
-                            } else if (!line.contains("java.net.")){
+                            } else if (!line.contains("java.net.")) {
                                 writer.write(line);
                             }
                         }
@@ -131,15 +132,15 @@ public abstract class BuildConfigurationTestBase {
                     writer.write("\n");
                     line = reader.readLine();
                 }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
             } finally {
                 safeClose(reader);
                 safeClose(writer);
-            }
+        }
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
-        }
+    }
         return file.toFile();
     }
 
@@ -154,8 +155,7 @@ public abstract class BuildConfigurationTestBase {
             throw new RuntimeException(e);
         }
         try (BufferedReader reader = new BufferedReader(new FileReader(domainConfigFile));
-             BufferedWriter writer = Files.newBufferedWriter(file.toPath())
-        ) {
+                BufferedWriter writer = Files.newBufferedWriter(file.toPath())) {
             String line = reader.readLine();
             while (line != null) {
                 if (line.contains("<security-setting name=\"#\">")) { //super duper hackish, just IO optimization

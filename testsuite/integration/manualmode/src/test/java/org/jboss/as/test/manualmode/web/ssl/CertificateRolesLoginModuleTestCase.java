@@ -101,7 +101,7 @@ public class CertificateRolesLoginModuleTestCase extends AbstractCertificateLogi
         containerController.start(CONTAINER);
         ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient();
         managementClient = new ManagementClient(client, TestSuiteEnvironment.getServerAddress(),
-                TestSuiteEnvironment.getServerPort(), "http-remoting");
+                TestSuiteEnvironment.getServerPort(), "remote+http");
         snapshot = ServerSnapshot.takeSnapshot(managementClient);
 
         LOGGER.trace("*** will configure server now");

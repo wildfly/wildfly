@@ -71,6 +71,7 @@ public class RemoteNamingTestCase {
         final Properties env = new Properties();
         env.put(Context.INITIAL_CONTEXT_FACTORY, org.jboss.naming.remote.client.InitialContextFactory.class.getName());
         URI webUri = managementClient.getWebUri();
+        //TODO replace with remote+http once the New WildFly Naming Client is merged
         URI namingUri = new URI("http-remoting", webUri.getUserInfo(), webUri.getHost(), webUri.getPort(), "", "" ,"");
         env.put(Context.PROVIDER_URL, namingUri.toString());
         env.put("jboss.naming.client.connect.options.org.xnio.Options.SASL_POLICY_NOPLAINTEXT", "false");

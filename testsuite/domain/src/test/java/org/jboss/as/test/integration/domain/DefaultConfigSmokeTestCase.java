@@ -80,7 +80,7 @@ public class DefaultConfigSmokeTestCase extends BuildConfigurationTestBase {
         final WildFlyManagedConfiguration masterConfig = createConfiguration("domain.xml", "host-master.xml", getClass().getSimpleName());
         final DomainLifecycleUtil masterUtils = new DomainLifecycleUtil(masterConfig);
         final WildFlyManagedConfiguration slaveConfig = createConfiguration("domain.xml", "host-slave.xml", getClass().getSimpleName(),
-                "slave", slaveAddress, 19999);
+                "slave", slaveAddress, 19990);
         final DomainLifecycleUtil slaveUtils = new DomainLifecycleUtil(slaveConfig);
         try {
             masterUtils.start();

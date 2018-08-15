@@ -7,7 +7,7 @@
 
     <!-- The default controller to connect to when 'connect' command is executed w/o arguments -->
     <default-controller>
-    	<protocol>http-remoting</protocol>
+	<protocol>remote+http</protocol>
         <host>${hostname}</host>
         <port>9990</port>
     </default-controller>
