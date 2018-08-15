@@ -1,8 +1,8 @@
 [[MicroProfile_OpenTracing SmallRye]]
 = MicroProfile OpenTracing Subsystem Configuration
 
-Support for https://microprofile.io/project/eclipse/microprofile-opentracing[Eclipse MicroProfile OpenTracing] is provided by
- the _microprofile-opentracing-smallrye_ subsystem.
+Support for https://microprofile.io/project/eclipse/microprofile-opentracing[Eclipse MicroProfile OpenTracing] is
+provided as a Tech Preview feature by the _microprofile-opentracing-smallrye_ subsystem.
 
 [[required-extension]]
 == Required Extension
@@ -45,6 +45,9 @@ possible by setting system properties or environment variables. If a more comple
 WARNING: by default, the Jaeger Client Java has a probabilistic sampling strategy, set to 0.001, meaning that only
 approximately one in one thousand traces will be sampled. To sample every request, set the environment variable
 `JAEGER_SAMPLER_TYPE` to `const` and `JAEGER_SAMPLER_PARAM` to `1`.
+
+WARNING: the supported configuration options for this Tech Preview feature, particularly those related to configuring
+the Jaeger Java Client tracer, may change in incompatible ways in a future release.
 
 By default, the service name used with the Jaeger Client is derived from the deployment's name, which is usually the
 WAR file name.
