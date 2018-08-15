@@ -1,0 +1,270 @@
+[[agroal]]
+= Agroal configuration
+
+The Agroal subsystem allows the definition of datasources. Declaring a new datasource consists of two separate steps: provide a JDBC driver and define a datasource that references the driver you installed.
+
+The Agroal subsystem is provided by the https://agroal.github.io/[Agroal] project. For a detailed description of the available configuration properties, please consult the project documentation.
+
+[[agroal-subssystem-enable]]
+== Enabling the subsystem
+
+If the WildFly configuration does not have Agroal subsystem enabled by default, it can be enabled in the following ways.
+
+[source, xml]
+----
+<extensions>
+    <extension module="org.wildfly.extension.datasources-agroal"/>
+    [...]
+</extensions>
+<subsystem xmlns="urn:jboss:domain:agroal:1.0">
+    [...]
+</subsystem>
+----
+
+[source, ruby]
+----
+[standalone@localhost:9990  /] /extension=org.wildfly.extension.datasources-agroal:add
+{"outcome" => "success"}
+[standalone@localhost:9990  /] /subsystem=datasources-agroal:add
+{
+    "outcome" => "success",
+    "response-headers" => {
+        "operation-requires-reload" => true,
+        "process-state" => "reload-required"
+    }
+}
+----
+
+[[agroal-driver-installation]]
+== JDBC Driver Installation
+
+A driver definition is a reference to a class in a JDBC driver. Multiple definitions can be created on the same JDBC driver for multiple classes in it. Agroal requires an implementation of java.sql.Driver or javax.sql.DataSource for non-XA datasources, while for XA a javax.sql.XADataSource implementation is required.
+
+[NOTE]
+Agroal will try to load an java.sql.Driver from the specified module if the _class_ is not defined
+
+[TIP]
+Any installed _driver_ provides an operation called _class-info_ that lists all the properties available for that particular class, that can be set in the _connection-factory_.
+
+[source, xml]
+----
+<subsystem xmlns="urn:jboss:domain:agroal:1.0">
+    [...]
+    <drivers>
+        <driver name="h2" module="com.h2database.h2" class="org.h2.Driver"/>
+    </drivers>
+</subsystem>
+----
+
+[source, ruby]
+----
+[standalone@localhost:9990  /] /subsystem=datasources-agroal/driver=h2:read-resource
+{
+    "outcome" => "success",
+    "result" => {
+        "class" => "org.h2.Driver",
+        "module" => "com.h2database.h2"
+    }
+}
+----
+
+[[agroal-common-datasource-definitions]]
+== Common Datasource Definitions
+
+Agroal provides both XA and non-XA datasources and most of the attributes that define them are common. This definition is mainly split in two logical units: the _connection factory_ and the _connection pool_. As the name implies, the _connection factory_ has all that is required to create new connections and _connection pool_ defines how connections are handled by the pool.
+
+[[agroal-connection-factory]]
+=== Connection Factory definition
+
+The _connection factory_ requires a reference to a _driver_ (see link:#[agroal-driver-installation]). With a java.sql.Driver the preferred way to 'point' to the database is to specify an _url_ attribute while for javax.sql.DataSource and javax.sql.XADataSource the preferred way is to specify _connection-properties_.
+
+[NOTE]
+Attributes _username_ and _password_ are provided for basic authentication with the database. Agroal does not allow _username_ and _password_ to be set as _connection-properties_ due to security requirements.
+
+Other features provided by the _connection-factory_ definition include the possibility of executing a SQL statement right after the connection has been created and to specify the isolation level of transactions in the database.
+
+[source, xml]
+----
+<subsystem xmlns="urn:jboss:domain:agroal:1.0">
+     <datasource [...]>
+        [...]
+        <connection-factory driver="h2" url="jdbc:h2:tcp://localhost:1701" transaction-isolation="SERIALIZABLE" new-connection-sql="SELECT 1" username="sa" password="sa">
+            <connection-properties>
+                <property name="aProperty" value="aValue"/>
+                <property name="anotherProperty" value="anotherValue"/>
+            </connection-properties>
+        </connection-factory>
+    </datasource>
+    [...]
+</subsystem>
+----
+
+[source, ruby]
+---
+[standalone@localhost:9990  /] /subsystem=datasources-agroal/datasource=sample:read-resource
+{
+    "outcome" => "success",
+    "result" => {
+        "connection-factory" => {
+            "driver" => "h2",
+            "url" => "jdbc:h2:tcp://localhost:1701",
+            "transaction-isolation" => "SERIALIZABLE",
+            "new-connection-sql" => "SELECT 1",
+            "username" => "sa",
+            "password" => "sa",
+            "connection-properties" => {
+                "aProperty" => "aValue",
+                "anotherProperty" => "anotherValue"
+            }
+        }
+        [...]
+    }
+}
+---
+
+[[agroal-connection-pool]]
+=== Connection Pool definition
+
+The main attributes of the _connection-pool_ definition are the ones that control it's size. While the _initial size_ attribute is only taken into account while bootstrapping the pool, _min size_ and _max size_ are always enforced and can be changed at any time without requiring a reload of the server.
+
+Another important attribute of the _connection-pool_ is the _blocking timeout_ that defines the maximum amount of time a thread will wait for a connection. If that time elapses and still no connection is available an exception is thrown. Keep in mind that the default value is _0_, meaning that a thread will wait forever for a connection to become available. Changing this setting does not require a reload of the server.
+
+The _connection pool_ provides other convenient features like background validation of connections on the pool, removal of idle connections from the pool and detection of connections held for too long by one thread. All these features are disabled by default and can be enabled by specifying an interval of time on the corresponding attribute.
+
+[NOTE]
+There is a set of flush operations that perform many of these features on-demand. These are _flush-all_ to close all connections immediately, _flush-graceful_ to close all connections under normal operation, _flush-invalid_ to remove any invalid connections from the pool and _flush-idle_ to remove any connections not being used.
+
+[source, xml]
+----
+<subsystem xmlns="urn:jboss:domain:agroal:1.0">
+     <datasource [...]>
+        [...]
+        <connection-pool max-size="30" min-size="10" initial-size="20" blocking-timeout="1000" background-validation="6000" leak-detection="5000" idle-removal="5"/>
+    </datasource>
+    [...]
+</subsystem>
+----
+
+[source, ruby]
+---
+[standalone@localhost:9990  /] /subsystem=datasources-agroal/datasource=sample:read-resource
+{
+    "outcome" => "success",
+    "result" => {
+        "connection-pool" => {
+            "max-size" => 30,
+            "min-size" => 10,
+            "initial-size" => 20,
+            "blocking-timeout" => 1000,
+            "background-validation" => 6000,
+            "leak-detection" => 5000,
+            "idle-removal" => 5
+        }
+        [...]
+    }
+}
+---
+
+[[agroal-common-attributes]]
+=== Common datasource attributes
+
+All datasources in Agroal have a name that's used to locate them in the WildFly runtime model and are bound to a JNDI name.
+
+The attribute _statistics-enabled_ allow the collection of metrics regarding the pool that can be queried in the runtime model
+
+[NOTE]
+There is also a _reset-statistics_ operation provided.
+
+[source, xml]
+----
+<subsystem xmlns="urn:jboss:domain:agroal:1.0">
+    <xa-datasource name="sample-xa" jndi-name="java:jboss/datasources/ExampleXADS" statistics-enabled="true">
+        [...]
+    </xa-datasource>
+    [...]
+</subsystem>
+----
+
+[source, ruby]
+---
+[standalone@localhost:9990  /] /subsystem=datasources-agroal/datasource=sample-xa:read-resource
+{
+    "outcome" => "success",
+    "result" => {   
+        "jndi-name" => "java:jboss/datasources/ExampleXADS",
+        "statistics-enabled" => true
+        [...]
+    }
+}
+---
+
+The available statistics include the number of created / destroyed connections and the number of connections in use / available in the pool. There are also statistics for the time it takes to create a connection and for how long have threads been blocked waiting for a connection.
+
+[source, ruby]
+----
+[standalone@localhost:9990  /] /subsystem=datasources-agroal/datasource=sample:read-resource(include-runtime)
+{
+    "outcome" => "success",
+    "result" => {
+        "statistics" => {
+            "acquire-count" => 10L,
+            "active-count" => 3L,
+            "available-count" => 17L,
+            "awaiting-count" => 0L,
+            "creation-count" => 20L,
+            "destroy-count" => 0L,
+            "flush-count" => 0L,
+            "invalid-count" => 0L,
+            "leak-detection-count" => 0L,
+            "max-used-count" => 20L,
+            "reap-count" => 0L,
+            "blocking-time-average-ms" => 0L,
+            "blocking-time-max-ms" => 0L,
+            "blocking-time-total-ms" => 0L,
+            "creation-time-average-ms" => 96L,
+            "creation-time-max-ms" => 815L,
+            "creation-time-total-ms" => 964L
+        }
+        [...]
+    }
+}
+----
+
+[[agroal-datasource-attributes]]
+=== DataSource specific attributes
+
+In addition to all the common attributes, a _datasource_ definition may disable the JTA integration.
+
+Deferred enlistment is not supported, meaning that if JTA is enabled a connection must always be obtained within the scope of a transaction. The connection will always be enlisted with that transaction (lazy enlistment is not supported).
+
+[TIP]
+The _connectable_ attribute allows a non-XA datasource to take part in an XA transaction ('Last Resource Commit Optimization (LRCO)' / 'Commit Markable Resource')
+
+[source, xml]
+----
+<subsystem xmlns="urn:jboss:domain:agroal:1.0">
+    <datasource name="sample" jndi-name="java:jboss/datasources/ExampleDS" jta="false" connectable="false" statistics-enabled="true">
+        [...]
+    </datasource>
+    [...]
+</subsystem>
+----
+
+[source, ruby]
+---
+[standalone@localhost:9990  /] /subsystem=datasources-agroal/datasource=sample-xa:read-resource
+{
+    "outcome" => "success",
+    "result" => {
+        "connectable" => false,
+        "jta" => false,
+        [...]
+    }
+}
+---
+
+[[agroal-xa-datasource-attributes]]
+=== XADataSource specific attributes
+
+At the moment there are no attributes specific to a XADataSource definition.
+
