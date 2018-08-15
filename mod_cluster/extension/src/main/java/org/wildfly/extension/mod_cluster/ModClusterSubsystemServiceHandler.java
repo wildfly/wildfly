@@ -23,7 +23,7 @@
 package org.wildfly.extension.mod_cluster;
 
 import static org.wildfly.extension.mod_cluster.ModClusterLogger.ROOT_LOGGER;
-import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefinition.Attribute.CONNECTOR;
+import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefinition.Attribute.LISTENER;
 import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefinition.Attribute.STATUS_INTERVAL;
 
 import java.time.Duration;
@@ -39,6 +39,8 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.server.Services;
+import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.common.beans.property.BeanUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -46,8 +48,11 @@ import org.jboss.modcluster.load.LoadBalanceFactorProvider;
 import org.jboss.modcluster.load.impl.DynamicLoadBalanceFactorProvider;
 import org.jboss.modcluster.load.impl.SimpleLoadBalanceFactorProvider;
 import org.jboss.modcluster.load.metric.LoadMetric;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.clustering.service.ActiveServiceSupplier;
 
 /**
  * Resource service handler implementation that handles installation of mod_cluster services. Since mod_cluster requires certain
@@ -83,14 +88,14 @@ class ModClusterSubsystemServiceHandler implements ResourceServiceHandler {
                 LoadBalanceFactorProvider loadProvider = this.getLoadProvider(proxyName, metrics, context, proxyModel);
                 enabledMetrics.addAll(metrics);
 
-                String connector = CONNECTOR.resolveModelAttribute(context, proxyModel).asString();
+                String listenerName = LISTENER.resolveModelAttribute(context, proxyModel).asString();
                 int statusInterval = STATUS_INTERVAL.resolveModelAttribute(context, proxyModel).asInt();
 
                 new ContainerEventHandlerServiceConfigurator(proxyAddress, loadProvider).build(target).install();
 
                 // Install services for web container integration
                 for (ContainerEventHandlerAdapterServiceConfiguratorProvider provider : ServiceLoader.load(ContainerEventHandlerAdapterServiceConfiguratorProvider.class, ContainerEventHandlerAdapterServiceConfiguratorProvider.class.getClassLoader())) {
-                    provider.getServiceConfigurator(proxyName, connector, Duration.ofSeconds(statusInterval)).configure(context).build(target).setInitialMode(Mode.PASSIVE).install();
+                    provider.getServiceConfigurator(proxyName, listenerName, Duration.ofSeconds(statusInterval)).configure(context).build(target).setInitialMode(Mode.PASSIVE).install();
                 }
             }
 
@@ -103,13 +108,13 @@ class ModClusterSubsystemServiceHandler implements ResourceServiceHandler {
     private LoadBalanceFactorProvider getLoadProvider(String proxyName, final Set<LoadMetric> metrics, final OperationContext context, ModelNode model) throws OperationFailedException {
         LoadBalanceFactorProvider load = null;
 
-        if (model.hasDefined(ProxyConfigurationResourceDefinition.Attribute.SIMPLE_LOAD_PROVIDER.getName())) {
-            int value = ProxyConfigurationResourceDefinition.Attribute.SIMPLE_LOAD_PROVIDER.resolveModelAttribute(context, model).asInt(1);
+        if (model.get(SimpleLoadProviderResourceDefinition.PATH.getKeyValuePair()).isDefined()) {
+            ModelNode simpleProviderModel = model.get(SimpleLoadProviderResourceDefinition.PATH.getKeyValuePair());
+            int value = SimpleLoadProviderResourceDefinition.Attribute.FACTOR.resolveModelAttribute(context, simpleProviderModel).asInt();
             SimpleLoadBalanceFactorProvider simpleLoadProvider = new SimpleLoadBalanceFactorProvider();
             simpleLoadProvider.setLoadBalanceFactor(value);
             load = simpleLoadProvider;
         }
-
         if (model.get(DynamicLoadProviderResourceDefinition.PATH.getKeyValuePair()).isDefined()) {
             ModelNode node = model.get(DynamicLoadProviderResourceDefinition.PATH.getKeyValuePair());
             int decayFactor = DynamicLoadProviderResourceDefinition.Attribute.DECAY.resolveModelAttribute(context, node).asInt();
@@ -155,8 +160,15 @@ class ModClusterSubsystemServiceHandler implements ResourceServiceHandler {
                 loadMetricClass = (metric != null) ? metric.getLoadMetricClass() : null;
             } else {
                 String className = CustomLoadMetricResourceDefinition.Attribute.CLASS.resolveModelAttribute(context, node).asString();
+                String moduleName = CustomLoadMetricResourceDefinition.Attribute.MODULE.resolveModelAttribute(context, node).asString();
+
+                ServiceModuleLoader serviceModuleLoader = new ActiveServiceSupplier<ServiceModuleLoader>(context.getServiceRegistry(false), Services.JBOSS_SERVICE_MODULE_LOADER).get();
+
                 try {
-                    loadMetricClass = this.getClass().getClassLoader().loadClass(className).asSubclass(LoadMetric.class);
+                    Module module = serviceModuleLoader.loadModule(moduleName);
+                    loadMetricClass = module.getClassLoader().loadClass(className).asSubclass(LoadMetric.class);
+                } catch (ModuleLoadException e) {
+                    ROOT_LOGGER.errorLoadingModuleForCustomMetric(moduleName, e);
                 } catch (ClassNotFoundException e) {
                     ROOT_LOGGER.errorAddingMetrics(e);
                 }

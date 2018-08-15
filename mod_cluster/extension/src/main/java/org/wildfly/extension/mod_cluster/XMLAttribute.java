@@ -44,11 +44,12 @@ enum XMLAttribute {
     ADVERTISE_SOCKET(ProxyConfigurationResourceDefinition.Attribute.ADVERTISE_SOCKET),
     AUTO_ENABLE_CONTEXTS(ProxyConfigurationResourceDefinition.Attribute.AUTO_ENABLE_CONTEXTS),
     BALANCER(ProxyConfigurationResourceDefinition.Attribute.BALANCER),
-    CONNECTOR(ProxyConfigurationResourceDefinition.Attribute.CONNECTOR),
+    @Deprecated CONNECTOR(ProxyConfigurationResourceDefinition.DeprecatedAttribute.CONNECTOR),
+    @Deprecated DOMAIN("domain"),
     EXCLUDED_CONTEXTS(ProxyConfigurationResourceDefinition.Attribute.EXCLUDED_CONTEXTS),
     FLUSH_PACKETS(ProxyConfigurationResourceDefinition.Attribute.FLUSH_PACKETS),
     FLUSH_WAIT(ProxyConfigurationResourceDefinition.Attribute.FLUSH_WAIT),
-    @Deprecated DOMAIN("domain"),
+    LISTENER(ProxyConfigurationResourceDefinition.Attribute.LISTENER),
     LOAD_BALANCING_GROUP(ProxyConfigurationResourceDefinition.Attribute.LOAD_BALANCING_GROUP),
     MAX_ATTEMPTS(ProxyConfigurationResourceDefinition.Attribute.MAX_ATTEMPTS),
     NAME(ModelDescriptionConstants.NAME),
@@ -70,9 +71,9 @@ enum XMLAttribute {
     WORKER_TIMEOUT(ProxyConfigurationResourceDefinition.Attribute.WORKER_TIMEOUT),
 
     // Load provider
-    FACTOR(ProxyConfigurationResourceDefinition.Attribute.SIMPLE_LOAD_PROVIDER.getDefinition().getXmlName()),
-    HISTORY(DynamicLoadProviderResourceDefinition.Attribute.HISTORY),
+    FACTOR(SimpleLoadProviderResourceDefinition.Attribute.FACTOR),
     DECAY(DynamicLoadProviderResourceDefinition.Attribute.DECAY),
+    HISTORY(DynamicLoadProviderResourceDefinition.Attribute.HISTORY),
 
     // Load metrics
     CAPACITY(LoadMetricResourceDefinition.SharedAttribute.CAPACITY),

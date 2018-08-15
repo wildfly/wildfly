@@ -8,7 +8,7 @@
     <socket-binding name="modcluster" multicast-address="${jboss.modcluster.multicast.address:224.0.1.105}" multicast-port="23364"/>
     <supplement name="default">
         <replacement placeholder="SUBSYSTEM">
-            <proxy name="default" advertise-socket="modcluster" connector="ajp">
+            <proxy name="default" advertise-socket="modcluster" listener="ajp">
                 <dynamic-load-provider>
                     <load-metric type="cpu"/>
                 </dynamic-load-provider>
@@ -17,7 +17,7 @@
     </supplement>
     <supplement name="no-multicast">
         <replacement placeholder="SUBSYSTEM">
-            <proxy name="default" advertise="false" connector="ajp" proxies="">
+            <proxy name="default" advertise="false" listener="ajp" proxies="">
                 <dynamic-load-provider>
                     <load-metric type="cpu"/>
                 </dynamic-load-provider>

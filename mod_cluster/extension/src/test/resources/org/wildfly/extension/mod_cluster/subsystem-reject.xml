@@ -26,7 +26,7 @@
            advertise-socket="modcluster"
            auto-enable-contexts="${modcluster.auto-enable-contexts:true}"
            balancer="${modcluster.balancer:mybalancer}"
-           connector="ajp"
+           listener="ajp"
            excluded-contexts="${modcluster.excluded-contexts:contextA,contextB,contextC}"
            flush-packets="${modcluster.flush-packets:true}"
            flush-wait="${modcluster.flush-wait:10}"

@@ -311,7 +311,7 @@
         <!-- Only used for testing -->
         <version.org.jboss.logmanager.commons-logging-jboss-logmanager>1.0.3.Final</version.org.jboss.logmanager.commons-logging-jboss-logmanager>
         <version.org.jboss.metadata>11.0.0.Final</version.org.jboss.metadata>
-        <version.org.jboss.mod_cluster>1.3.10.Final</version.org.jboss.mod_cluster>
+        <version.org.jboss.mod_cluster>1.4.0.Final</version.org.jboss.mod_cluster>
         <version.org.jboss.narayana>5.9.0.Final</version.org.jboss.narayana>
         <version.org.jboss.openjdk-orb>8.1.2.Final</version.org.jboss.openjdk-orb>
         <version.org.jboss.resteasy>3.6.1.Final</version.org.jboss.resteasy>
@@ -4560,26 +4560,27 @@
                 <artifactId>jboss-metadata-web</artifactId>
                 <version>${version.org.jboss.metadata}</version>
             </dependency>
+
             <dependency>
                 <groupId>org.jboss.mod_cluster</groupId>
                 <artifactId>mod_cluster-container-spi</artifactId>
                 <version>${version.org.jboss.mod_cluster}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.jboss.mod_cluster</groupId>
                 <artifactId>mod_cluster-core</artifactId>
                 <version>${version.org.jboss.mod_cluster}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.jboss.logging</groupId>
-                        <artifactId>jboss-logging</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.servlet</groupId>
-                        <artifactId>jboss-servlet-api_3.0_spec</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.mod_cluster</groupId>
+                <artifactId>mod_cluster-load-spi</artifactId>
+                <version>${version.org.jboss.mod_cluster}</version>
             </dependency>
 
             <dependency>

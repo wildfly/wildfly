@@ -39,8 +39,8 @@ enum XMLElement {
     @Deprecated MOD_CLUSTER_CONFIG(ProxyConfigurationResourceDefinition.LEGACY_PATH),
     PROXY(ProxyConfigurationResourceDefinition.WILDCARD_PATH),
 
-    DYNAMIC_LOAD_PROVIDER(DynamicLoadProviderResourceDefinition.PATH),
-    SIMPLE_LOAD_PROVIDER(ProxyConfigurationResourceDefinition.Attribute.SIMPLE_LOAD_PROVIDER.getName()),
+    SIMPLE_LOAD_PROVIDER(ProxyConfigurationResourceDefinition.DeprecatedAttribute.SIMPLE_LOAD_PROVIDER.getName()),
+    DYNAMIC_LOAD_PROVIDER(DynamicLoadProviderResourceDefinition.LEGACY_PATH),
 
     CUSTOM_LOAD_METRIC(CustomLoadMetricResourceDefinition.WILDCARD_PATH),
     LOAD_METRIC(LoadMetricResourceDefinition.WILDCARD_PATH),

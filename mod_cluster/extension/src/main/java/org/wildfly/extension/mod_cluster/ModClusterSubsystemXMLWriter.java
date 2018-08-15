@@ -59,11 +59,12 @@ public final class ModClusterSubsystemXMLWriter implements XMLElementWriter<Subs
 
         writer.writeAttribute(XMLAttribute.NAME.getLocalName(), name);
 
-        writeAttributes(writer, model, EnumSet.complementOf(EnumSet.of(ProxyConfigurationResourceDefinition.Attribute.SIMPLE_LOAD_PROVIDER)));
+        writeAttributes(writer, model, ProxyConfigurationResourceDefinition.Attribute.class);
 
-        if (model.hasDefined(ProxyConfigurationResourceDefinition.Attribute.SIMPLE_LOAD_PROVIDER.getName())) {
+        if (model.get(SimpleLoadProviderResourceDefinition.PATH.getKeyValuePair()).isDefined()) {
+            ModelNode loadProviderModel = model.get(SimpleLoadProviderResourceDefinition.PATH.getKeyValuePair());
             writer.writeStartElement(XMLElement.SIMPLE_LOAD_PROVIDER.getLocalName());
-            writeAttribute(writer, model, ProxyConfigurationResourceDefinition.Attribute.SIMPLE_LOAD_PROVIDER);
+            writeAttributes(writer, loadProviderModel, SimpleLoadProviderResourceDefinition.Attribute.class);
             writer.writeEndElement();
         }
         if (model.get(DynamicLoadProviderResourceDefinition.PATH.getKeyValuePair()).isDefined()) {
@@ -74,8 +75,8 @@ public final class ModClusterSubsystemXMLWriter implements XMLElementWriter<Subs
                 for (Property prop : loadProviderModel.get(LoadMetricResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
                     ModelNode metricModel = prop.getValue();
                     writer.writeStartElement(XMLElement.LOAD_METRIC.getLocalName());
-                    writeAttributes(writer, metricModel, EnumSet.allOf(LoadMetricResourceDefinition.Attribute.class));
-                    writeAttributes(writer, metricModel, EnumSet.allOf(LoadMetricResourceDefinition.SharedAttribute.class));
+                    writeAttributes(writer, metricModel, LoadMetricResourceDefinition.Attribute.class);
+                    writeAttributes(writer, metricModel, LoadMetricResourceDefinition.SharedAttribute.class);
                     writer.writeEndElement();
                 }
             }

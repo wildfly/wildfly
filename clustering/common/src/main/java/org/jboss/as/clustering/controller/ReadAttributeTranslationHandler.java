@@ -27,6 +27,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -74,13 +75,18 @@ public class ReadAttributeTranslationHandler implements OperationStepHandler {
             if (this.readHandler != null) {
                 this.readHandler.execute(context, operation);
             } else {
-                // If attribute has no read handler, simulate one
-                ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS, false).getModel();
-                ModelNode result = context.getResult();
-                if (model.hasDefined(this.targetAttribute.getName())) {
-                    result.set(model.get(this.targetAttribute.getName()));
-                } else if (Operations.isIncludeDefaults(operation)) {
-                    result.set(this.targetAttribute.getDefinition().getDefaultValue());
+                try {
+                    // If attribute has no read handler, simulate one
+                    ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS, false).getModel();
+                    ModelNode result = context.getResult();
+                    if (model.hasDefined(this.targetAttribute.getName())) {
+                        result.set(model.get(this.targetAttribute.getName()));
+                    } else if (Operations.isIncludeDefaults(operation)) {
+                        result.set(this.targetAttribute.getDefinition().getDefaultValue());
+                    }
+                } catch (Resource.NoSuchResourceException ignore) {
+                    // If the target resource does not exist return UNDEFINED
+                    return;
                 }
             }
             ModelNode result = context.getResult();

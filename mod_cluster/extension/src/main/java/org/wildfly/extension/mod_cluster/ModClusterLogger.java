@@ -197,4 +197,7 @@ interface ModClusterLogger extends BasicLogger {
     @Message(id = 22, value = "Legacy operations cannot be used with multiple proxy configurations. Use non-deprecated operations at the correct proxy address.")
     String legacyOperationsWithMultipleProxies();
 
+    @LogMessage(level = ERROR)
+    @Message(id = 23, value = "Error loading module '%s' to load custom metric from.")
+    void errorLoadingModuleForCustomMetric(String moduleName, @Cause Throwable cause);
 }

@@ -33,5 +33,5 @@ import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
  * @author Radoslav Husar
  */
 public interface ContainerEventHandlerAdapterServiceConfiguratorProvider {
-    CapabilityServiceConfigurator getServiceConfigurator(String adapterName, String connector, Duration statusInterval);
+    CapabilityServiceConfigurator getServiceConfigurator(String adapterName, String listenerName, Duration statusInterval);
 }

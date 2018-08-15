@@ -22,72 +22,58 @@
 
 package org.wildfly.extension.mod_cluster;
 
-import java.util.function.UnaryOperator;
-
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
+import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.ReloadRequiredResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.validation.IntRangeValidator;
+import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.OperationResultTransformer;
+import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.wildfly.extension.mod_cluster.LoadMetricResourceDefinition.SharedAttribute;
 
 /**
+ * Definition for resource at address /subsystem=modcluster/proxy=X/load-provider=simple
+ *
  * @author Radoslav Husar
  */
-public class CustomLoadMetricResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
+public class SimpleLoadProviderResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
 
-    static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
+    public static final PathElement PATH = PathElement.pathElement("load-provider", "simple");
 
-    static PathElement pathElement(String loadMetric) {
-        return PathElement.pathElement("custom-load-metric", loadMetric);
-    }
-
-    enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
-        CLASS("class", ModelType.STRING),
-        MODULE("module", ModelType.STRING) {
-            @Override
-            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder
-                        .setDefaultValue(new ModelNode("org.wildfly.extension.mod_cluster"))
-                        .setRequired(false)
-                        .setValidator(new ModuleIdentifierValidatorBuilder().configure(builder).build())
-                        ;
-            }
-        },
+    enum Attribute implements org.jboss.as.clustering.controller.Attribute {
+        FACTOR("factor", ModelType.INT, new ModelNode(1), new IntRangeValidator(0, 100, true, true)),
         ;
 
         private final AttributeDefinition definition;
 
-        Attribute(String name, ModelType type) {
-            this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, type)
+        Attribute(String name, ModelType type, ModelNode defaultValue, ParameterValidator validator) {
+            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
                     .setAllowExpression(true)
-                    .setRequired(true)
+                    .setRequired(defaultValue == null)
+                    .setDefaultValue(defaultValue)
+                    .setValidator(validator)
                     .setRestartAllServices()
-            ).build();
+                    .build();
         }
 
         @Override
         public AttributeDefinition getDefinition() {
             return this.definition;
         }
-
-        @Override
-        public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-            return builder;
-        }
     }
 
-    CustomLoadMetricResourceDefinition() {
-        super(WILDCARD_PATH, ModClusterExtension.SUBSYSTEM_RESOLVER.createChildResolver(LoadMetricResourceDefinition.WILDCARD_PATH));
+    SimpleLoadProviderResourceDefinition() {
+        super(PATH, ModClusterExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH));
     }
 
     @Override
@@ -95,7 +81,6 @@ public class CustomLoadMetricResourceDefinition extends ChildResourceDefinition<
         ManagementResourceRegistration registration = parent.registerSubModel(this);
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
-                .addAttributes(SharedAttribute.class)
                 .addAttributes(Attribute.class)
                 ;
 
@@ -105,13 +90,19 @@ public class CustomLoadMetricResourceDefinition extends ChildResourceDefinition<
     }
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
+        ResourceTransformationDescriptionBuilder builder = ModClusterModel.VERSION_6_0_0.requiresTransformation(version) ? parent.addChildResource(PATH) : parent.addChildResource(PATH);
 
         if (ModClusterModel.VERSION_6_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder()
-                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(Attribute.MODULE.getDefinition().getDefaultValue()), Attribute.MODULE.getDefinition())
-                    .addRejectCheck(new RejectAttributeChecker.SimpleAcceptAttributeChecker(Attribute.MODULE.getDefinition().getDefaultValue()), Attribute.MODULE.getDefinition())
-                    .end();
+            builder.addRawOperationTransformationOverride(ModelDescriptionConstants.ADD, new org.jboss.as.controller.transform.OperationTransformer() {
+                @Override
+                public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) {
+                    PathAddress parentAddress = address.getParent();
+                    ModelNode value = operation.get(Attribute.FACTOR.getName());
+                    ModelNode transformedOperation = Operations.createWriteAttributeOperation(parentAddress, ProxyConfigurationResourceDefinition.DeprecatedAttribute.SIMPLE_LOAD_PROVIDER, value);
+                    return new TransformedOperation(transformedOperation, OperationResultTransformer.ORIGINAL_RESULT);
+                }
+            });
         }
+
     }
 }
