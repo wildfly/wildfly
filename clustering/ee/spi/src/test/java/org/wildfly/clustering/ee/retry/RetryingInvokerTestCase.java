@@ -46,7 +46,7 @@ public class RetryingInvokerTestCase {
         Object expected = new Object();
         ExceptionSupplier<Object, Exception> action = mock(ExceptionSupplier.class);
 
-        Invoker invoker = new RetryingInvoker(Duration.ZERO, Duration.ZERO);
+        Invoker invoker = new RetryingInvoker(Duration.ZERO, Duration.ofMillis(1));
 
         when(action.get()).thenReturn(expected);
 

@@ -57,7 +57,7 @@ public class RetryingInvoker implements Invoker {
                 Thread.yield();
             } else {
                 try {
-                    Thread.sleep(delay.toMillis(), delay.getNano());
+                    Thread.sleep(delay.toMillis(), delay.getNano() % 1_000_000);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
