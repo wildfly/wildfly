@@ -61,7 +61,9 @@ public class JdbcDriverDefinition extends SimpleResourceDefinition {
         for (AttributeDefinition attribute : Constants.JDBC_DRIVER_ATTRIBUTES) {
             resourceRegistration.registerReadOnlyAttribute(attribute, null);
         }
-        resourceRegistration.registerMetric(DATASOURCE_CLASS_INFO, GetDataSourceClassInfoOperationHandler.INSTANCE);
+        if (resourceRegistration.getProcessType().isServer()) {
+            resourceRegistration.registerMetric(DATASOURCE_CLASS_INFO, GetDataSourceClassInfoOperationHandler.INSTANCE);
+        }
     }
 
     @Override
