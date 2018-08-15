@@ -88,6 +88,7 @@
                 <extension module="org.wildfly.extension.ee-security"/>
                 <extension module="org.wildfly.extension.elytron"/>
                 <extension module="org.wildfly.extension.microprofile.config-smallrye" />
+                <extension module="org.wildfly.extension.microprofile.health-smallrye" />
                 <extension module="org.wildfly.extension.microprofile.opentracing" />
             </excluded-extensions>
         </host-exclude>
@@ -99,6 +100,7 @@
                 <extension module="org.wildfly.extension.ee-security"/>
                 <extension module="org.wildfly.extension.elytron"/>
                 <extension module="org.wildfly.extension.microprofile.config-smallrye" />
+                <extension module="org.wildfly.extension.microprofile.health-smallrye" />
                 <extension module="org.wildfly.extension.microprofile.opentracing" />
             </excluded-extensions>
         </host-exclude>
@@ -107,6 +109,7 @@
             <excluded-extensions>
                 <extension module="org.wildfly.extension.ee-security"/>
                 <extension module="org.wildfly.extension.microprofile.config-smallrye" />
+                <extension module="org.wildfly.extension.microprofile.health-smallrye" />
                 <extension module="org.wildfly.extension.microprofile.opentracing" />
             </excluded-extensions>
         </host-exclude>
@@ -115,18 +118,18 @@
             <excluded-extensions>
                 <extension module="org.wildfly.extension.ee-security"/>
                 <extension module="org.wildfly.extension.microprofile.config-smallrye" />
+                <extension module="org.wildfly.extension.microprofile.health-smallrye" />
                 <extension module="org.wildfly.extension.microprofile.opentracing" />
             </excluded-extensions>
         </host-exclude>
-        <!--
         <host-exclude name="WildFly13.0">
             <host-release id="WildFly13.0"/>
             <excluded-extensions>
                 <extension module="org.wildfly.extension.microprofile.config-smallrye" />
+                <extension module="org.wildfly.extension.microprofile.health-smallrye" />
                 <extension module="org.wildfly.extension.microprofile.opentracing" />
             </excluded-extensions>
         </host-exclude>
-        -->
     </host-excludes>
 
 </domain>

@@ -186,6 +186,7 @@
                                 <extension>org.wildfly.extension.io</extension>
                                 <extension>org.wildfly.extension.messaging-activemq</extension>
                                 <extension>org.wildfly.extension.microprofile.config-smallrye</extension>
+                                <extension>org.wildfly.extension.microprofile.health-smallrye</extension>
                                 <extension>org.wildfly.extension.microprofile.opentracing</extension>
                                 <extension>org.wildfly.extension.picketlink</extension>
                                 <extension>org.wildfly.extension.request-controller</extension>
@@ -228,6 +229,7 @@
                                 <extension>org.wildfly.extension.io</extension>
                                 <extension>org.wildfly.extension.messaging-activemq</extension>
                                 <extension>org.wildfly.extension.microprofile.config-smallrye</extension>
+                                <extension>org.wildfly.extension.microprofile.health-smallrye</extension>
                                 <extension>org.wildfly.extension.microprofile.opentracing</extension>
                                 <extension>org.wildfly.extension.picketlink</extension>
                                 <extension>org.wildfly.extension.request-controller</extension>
@@ -1448,6 +1450,17 @@
 
         <dependency>
             <groupId>io.smallrye</groupId>
+            <artifactId>smallrye-health</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>io.smallrye</groupId>
             <artifactId>smallrye-opentracing</artifactId>
             <exclusions>
                 <exclusion>
@@ -1728,6 +1741,17 @@
         <dependency>
             <groupId>org.eclipse.microprofile.config</groupId>
             <artifactId>microprofile-config-api</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.microprofile.health</groupId>
+            <artifactId>microprofile-health-api</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -3122,6 +3146,17 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-microprofile-config-smallrye</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-microprofile-health-smallrye</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
