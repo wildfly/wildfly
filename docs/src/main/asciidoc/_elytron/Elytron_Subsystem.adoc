@@ -40,36 +40,29 @@ To get started using Elytron, refer to these topics:
 * Use the default Elytron components for
 <<default-application-authentication-configuration,application>>
 and
-link:#src-557147_ElytronSubsystem-use-default-elytron-mgmt-auth[management]
+<<default-management-authentication-configuration,management>>
 authentication
 * Secure an application with a new identity store stored in a
-link:Using_the_Elytron_Subsystem.html#src-557140_UsingtheElytronSubsystem-ConfigureAuthenticationwithaFilesystem-BasedIdentityStore[filesystem]
+<<configure-authentication-with-a-filesystem-based-identity-store,filesystem>>
 or
-link:Using_the_Elytron_Subsystem.html#src-557140_UsingtheElytronSubsystem-ConfigureAuthenticationwithaDatabaseIdentityStore[database].
+<<configure-authentication-with-a-database-identity-store,database>>.
 * Set up one-way SSL/TLS for
-link:Using_the_Elytron_Subsystem.html#src-557140_UsingtheElytronSubsystem-one-way-apps[applications]
+<<enable-one-way-ssltls-for-applications,applications>>
 or the
-link:Using_the_Elytron_Subsystem.html#src-557140_UsingtheElytronSubsystem-one-way-mgmt[management
-interfaces].
+<<enable-one-way-ssltls-for-the-management-interfaces,management interfaces>>.
 * Set up two-way SSL/TLS for
-link:Using_the_Elytron_Subsystem.html#src-557140_UsingtheElytronSubsystem-two-way-apps[applications]
+<<enable-two-way-ssltls-in-wildfly-for-applications,applications>>
 or the
-link:Using_the_Elytron_Subsystem.html#src-557140_UsingtheElytronSubsystem-two-way-mgmt[management
-interfaces].
-* link:Using_the_Elytron_Subsystem.html#src-557140_UsingtheElytronSubsystem-CreateandUseaCredentialStore[Create
-a credential store and use it with your SSL/TLS configuration].
-* link:Using_the_Elytron_Subsystem.html#src-557140_UsingtheElytronSubsystem-ConfigureAuthenticationwithCertificates[Use
-certificate-based authentication with applications].
-* link:Using_the_Elytron_Subsystem.html#src-557140_safe-id-VXNpbmd0aGVFbHl0cm9uU3Vic3lzdGVtLU92ZXJyaWRlYW5BcHBsaWNhdGlvbidzQXV0aGVudGljYXRpb25Db25maWd1cmF0aW9u[Override
-an application's authentication configuration] with Elytron
-authentication.
-* link:Using_the_Elytron_Subsystem.html#src-557140_UsingtheElytronSubsystem-ConfigureAuthenticationwithaKerberos-BasedIdentityStore[Configure
-Kerberos authentication for applications].
+<<enable-two-way-ssltls-for-the-management-interfaces,management interfaces>>.
+* <<create-and-use-a-credential-store,Create a credential store and use it with your SSL/TLS configuration>>.
+* <<configure-authentication-with-certificates,Use certificate-based authentication with applications>>.
+* <<override-an-applications-authentication-configuration,Override an application's authentication configuration>>
+with Elytron authentication.
+* <<configure-authentication-with-a-kerberos-based-identity-store, Configure Kerberos authentication for applications>>.
 * Secure
-link:Using_the_Elytron_Subsystem.html#src-557140_UsingtheElytronSubsystem-ConfigureAuthenticationwithanLDAP-BasedIdentityStore[applications]
+<<configure-authentication-with-an-ldap-based-identity-store,applications>>
 and the
-link:Using_the_Elytron_Subsystem.html#src-557140_UsingtheElytronSubsystem-SecuretheManagementInterfaceswithaNewIdentityStore[management
-interfaces] with an LDAP-based identity store.
+<<secure-the-management-interfaces-with-a-new-identity-store,management interfaces>> with an LDAP-based identity store.
 
 [[provided-components]]
 == Provided components

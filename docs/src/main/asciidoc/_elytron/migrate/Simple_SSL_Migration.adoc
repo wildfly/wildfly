@@ -8,7 +8,7 @@ This section describe securing HTTP connections to the server using SSL
 using Elytron. +
 It suppose you have already configured SSL using legacy
 `security-realm`, for example by
-link:Admin_Guide.html#src-557075_AdminGuide-EnableSSL[Admin Guide#Enable
+link:Admin_Guide.html#enable-ssl[Admin Guide#Enable
 SSL], and your configuration looks like:
 
 [source, xml]
@@ -99,7 +99,7 @@ Output `https-listener` in Undertow subsystem should be:
 
 This suppose you have already configured Client-Cert SSL authentication
 using `truststore` in legacy `security-realm`, for example by
-link:Admin_Guide.html#src-557075_AdminGuide-AddClient-CerttoSSL[Admin
+link:Admin_Guide.html#add-client-cert-to-ssl[Admin
 Guide#Add Client-Cert to SSL], and your configuration looks like:
 
 [source, xml]

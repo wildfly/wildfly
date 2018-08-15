@@ -9,7 +9,7 @@
 
 You can find more details on the enabling WildFly to use the out of the
 box Elytron components for securing the management interfaces in the
-<<#default-management-authentication-configuration,Default
+<<default-management-authentication-configuration,Default
 Management Authentication Configuration>> section.
 
 [[securing-applications]]
@@ -18,14 +18,14 @@ Management Authentication Configuration>> section.
 The _elytron_ subsystem provides _application-security-domain_ by
 default which can be used to secure applications. For more details on
 how _application-security-domain_ is configured, see the
-<<#default-application-authentication-configuration,Default
+<<default-application-authentication-configuration,Default
 Application Authentication Configuration>> section.
 
 To configure applications to use _application-security-domain_, see
-<<#set-up-and-configure-authentication-for-applications,Set Up and Configure Authentication for Applications>>. You
+<<set-up-and-configure-authentication-for-applications,Set Up and Configure Authentication for Applications>>. You
 can also override the default behavior of all applications using the
 steps in
-<<#override-an-applications-authentication-configuration,
+<<override-an-applications-authentication-configuration,
 Override an Application's Authentication Configuration>>.
 
 [[using-ssltls]]
@@ -36,8 +36,8 @@ legacy core management authentication but does not provide one in the
 _elytron_ subsystem. You can find more details on configuring SSL/TLS
 using the _elytron_ subsystem for both the management interfaces as well
 as for applications in
-link:Using_the_Elytron_Subsystem.html#src-557140_UsingtheElytronSubsystem-ssl-tls[Configure
-SSL/TLS]
+<<configure-ssltls,Configure
+SSL/TLS>>
 
 [[using-elytron-with-other-subsystems]]
 === Using Elytron with Other Subsystems
