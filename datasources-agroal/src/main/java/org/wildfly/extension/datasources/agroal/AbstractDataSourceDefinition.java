@@ -21,13 +21,23 @@
  */
 package org.wildfly.extension.datasources.agroal;
 
+import static io.agroal.api.configuration.AgroalConnectionFactoryConfiguration.TransactionIsolation.NONE;
+import static io.agroal.api.configuration.AgroalConnectionFactoryConfiguration.TransactionIsolation.READ_COMMITTED;
+import static io.agroal.api.configuration.AgroalConnectionFactoryConfiguration.TransactionIsolation.READ_UNCOMMITTED;
+import static io.agroal.api.configuration.AgroalConnectionFactoryConfiguration.TransactionIsolation.REPEATABLE_READ;
+import static io.agroal.api.configuration.AgroalConnectionFactoryConfiguration.TransactionIsolation.SERIALIZABLE;
+import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
+
+import java.util.EnumSet;
+
+import javax.sql.DataSource;
+
 import io.agroal.api.configuration.AgroalConnectionFactoryConfiguration;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
@@ -38,7 +48,6 @@ import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
@@ -48,12 +57,6 @@ import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.datasources.agroal.logging.AgroalLogger;
-
-import javax.sql.DataSource;
-import java.util.EnumSet;
-
-import static io.agroal.api.configuration.AgroalConnectionFactoryConfiguration.TransactionIsolation.*;
-import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 
 /**
  * Common Definition for the datasource resource
@@ -245,8 +248,8 @@ abstract class AbstractDataSourceDefinition extends PersistentResourceDefinition
 
     // --- //
 
-    protected AbstractDataSourceDefinition(PathElement pathElement, ResourceDescriptionResolver descriptionResolver, OperationStepHandler addHandler, OperationStepHandler removeHandler) {
-        super(pathElement, descriptionResolver, addHandler, removeHandler);
+    AbstractDataSourceDefinition(Parameters parameters) {
+        super(parameters.setCapabilities(DATA_SOURCE_CAPABILITY));
     }
 
     @Override
@@ -272,11 +275,6 @@ abstract class AbstractDataSourceDefinition extends PersistentResourceDefinition
 
         // Runtime attributes
         resourceRegistration.registerReadOnlyAttribute(STATISTICS, AbstractDataSourceOperations.STATISTICS_GET_OPERATION);
-    }
-
-    @Override
-    public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerCapability(DATA_SOURCE_CAPABILITY);
     }
 
     @Override

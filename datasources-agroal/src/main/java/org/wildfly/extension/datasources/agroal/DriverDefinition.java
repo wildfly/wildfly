@@ -21,21 +21,23 @@
  */
 package org.wildfly.extension.datasources.agroal;
 
-import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.PersistentResourceDefinition;
-import org.jboss.as.controller.PrimitiveListAttributeDefinition;
-import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.dmr.ModelType;
-
-import java.util.Collection;
-
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableList;
 import static org.jboss.as.controller.PathElement.pathElement;
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.wildfly.extension.datasources.agroal.AgroalExtension.getResolver;
+
+import java.util.Collection;
+
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PersistentResourceDefinition;
+import org.jboss.as.controller.PrimitiveListAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
+import org.jboss.as.controller.access.management.ApplicationTypeAccessConstraintDefinition;
+import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.dmr.ModelType;
 
 /**
  * Definition for the driver resource
@@ -71,7 +73,12 @@ class DriverDefinition extends PersistentResourceDefinition {
     // --- //
 
     private DriverDefinition() {
-        super(pathElement("driver"), getResolver("driver"), DriverOperations.ADD_OPERATION, DriverOperations.REMOVE_OPERATION);
+        // TODO The cast to PersistentResourceDefinition.Parameters is a workaround to WFCORE-4040
+        super((Parameters) new Parameters(pathElement("driver"), getResolver("driver"))
+                .setAddHandler(DriverOperations.ADD_OPERATION)
+                .setRemoveHandler(DriverOperations.REMOVE_OPERATION)
+                .setAccessConstraints(new ApplicationTypeAccessConstraintDefinition(
+                        new ApplicationTypeConfig(AgroalExtension.SUBSYSTEM_NAME, "driver"))));
     }
 
     @Override

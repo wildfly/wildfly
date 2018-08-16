@@ -23,9 +23,14 @@
 package org.jboss.as.test.integration.mgmt.access;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_RESOURCES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
+
+import java.io.IOException;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -33,17 +38,21 @@ import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.connector.subsystems.datasources.DataSourcesExtension;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.access.management.AccessConstraintKey;
 import org.jboss.as.controller.access.management.ApplicationTypeAccessConstraintDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.jdr.JdrReportExtension;
 import org.jboss.as.test.integration.management.rbac.Outcome;
 import org.jboss.as.test.integration.management.rbac.RbacUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.extension.messaging.activemq.MessagingExtension;
@@ -109,11 +118,30 @@ public class AccessConstraintUtilizationTestCase extends AbstractRbacTestCase {
         new ExpectedDef(getAppKey(DataSourcesExtension.SUBSYSTEM_NAME, "jdbc-driver"), true, false, false),
         new ExpectedDef(getAppKey(MessagingExtension.SUBSYSTEM_NAME, "queue"), true, false, false),
         new ExpectedDef(getAppKey(MessagingExtension.SUBSYSTEM_NAME, "jms-queue"), true, false, false),
-        new ExpectedDef(getAppKey(MessagingExtension.SUBSYSTEM_NAME, "jms-topic"), true, false, false)
+        new ExpectedDef(getAppKey(MessagingExtension.SUBSYSTEM_NAME, "jms-topic"), true, false, false),
+        // Agroal
+        new ExpectedDef(getAppKey("datasources-agroal", "datasource"), true, false, false),
+        new ExpectedDef(getAppKey("datasources-agroal", "xa-datasource"), true, false, false),
+        new ExpectedDef(getAppKey("datasources-agroal", "driver"), true, false, false)
+
     };
 
     @ContainerResource
     private ManagementClient managementClient;
+
+    @Before
+    public void addAgroal() throws IOException {
+        ModelNode addOp = Util.createAddOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.datasources-agroal"));
+        ModelNode response = managementClient.getControllerClient().execute(addOp);
+        Assert.assertEquals(response.toString(), SUCCESS, response.get(OUTCOME).asString());
+    }
+
+    @After
+    public void removeAgroal() throws IOException {
+        ModelNode removeOp = Util.createRemoveOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.datasources-agroal"));
+        ModelNode response = managementClient.getControllerClient().execute(removeOp);
+        Assert.assertEquals(response.toString(), SUCCESS, response.get(OUTCOME).asString());
+    }
 
     @Test
     public void testConstraintUtilization() throws Exception {
