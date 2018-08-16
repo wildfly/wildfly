@@ -7,7 +7,7 @@
         <param name="host" value="master"/>
         <feature spec="host.jvm">
             <param name="jvm" value="default"/>
-            <param name="jvm-options" value="[&quot;-server&quot;,&quot;-XX:MetaspaceSize=96m&quot;,&quot;-XX:MaxMetaspaceSize=256m&quot;,&quot;--add-exports=java.base/sun.nio.ch=ALL-UNNAMED&quot;]"/>
+            <param name="jvm-options" value="[&quot;-server&quot;,&quot;-XX:MetaspaceSize=96m&quot;,&quot;-XX:MaxMetaspaceSize=256m&quot;,&quot;--add-exports=java.base/sun.nio.ch=ALL-UNNAMED&quot;,&quot;--add-modules=java.se&quot;,&quot;--illegal-access=permit&quot;]"/>
         </feature>
     </feature>
 </feature-group-spec>
