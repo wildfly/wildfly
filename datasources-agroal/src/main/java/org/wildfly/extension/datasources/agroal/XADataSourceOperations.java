@@ -21,6 +21,8 @@
  */
 package org.wildfly.extension.datasources.agroal;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import io.agroal.api.AgroalDataSource;
 import io.agroal.api.configuration.supplier.AgroalConnectionFactoryConfigurationSupplier;
 import io.agroal.api.configuration.supplier.AgroalConnectionPoolConfigurationSupplier;
@@ -35,8 +37,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
 /**
  * Operations for adding and removing an xa-datasource resource to the model
  *
@@ -45,8 +45,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 class XADataSourceOperations extends AbstractAddStepHandler {
 
     static final String XADATASOURCE_SERVICE_NAME = "xa-datasource";
-
-    static final ServiceName XADATASOURCE_SERVICE_PREFIX = AgroalExtension.BASE_SERVICE_NAME.append(XADATASOURCE_SERVICE_NAME);
 
     // --- //
 
@@ -83,7 +81,7 @@ class XADataSourceOperations extends AbstractAddStepHandler {
 
             DataSourceService dataSourceService = new DataSourceService(datasourceName, jndiName, false, false, true, dataSourceConfiguration);
 
-            ServiceBuilder<AgroalDataSource> serviceBuilder = context.getServiceTarget().addService(XADATASOURCE_SERVICE_PREFIX.append(datasourceName), dataSourceService);
+            ServiceBuilder<AgroalDataSource> serviceBuilder = context.getCapabilityServiceTarget().addCapability(AbstractDataSourceDefinition.DATA_SOURCE_CAPABILITY.fromBaseCapability(datasourceName), dataSourceService);
 
             AbstractDataSourceOperations.setupElytronSecurity(context, factoryModel, dataSourceService, serviceBuilder);
 
@@ -99,7 +97,7 @@ class XADataSourceOperations extends AbstractAddStepHandler {
         @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             String datasourceName = PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement().getValue();
-            ServiceName datasourceServiceName = ServiceName.of(XADATASOURCE_SERVICE_PREFIX, datasourceName);
+            ServiceName datasourceServiceName = AbstractDataSourceDefinition.DATA_SOURCE_CAPABILITY.getCapabilityServiceName(datasourceName);
             context.removeService(datasourceServiceName);
         }
     }
