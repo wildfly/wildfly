@@ -33,7 +33,7 @@ Unfortunately, Maven doesn't allow you to specify plugin versions this way. The 
         <plugin>
             <groupId>org.wildfly.plugins</groupId>
             <artifactId>wildfly-maven-plugin</artifactId>
-            <version>1.2.1.Final</version>
+            <version>${version.org.wildfly.plugin}</version>
         </plugin>
     </plugins>
 </pluginManagement>
