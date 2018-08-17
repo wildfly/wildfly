@@ -21,10 +21,6 @@
  */
 package org.jboss.as.test.integration.microprofile.opentracing;
 
-import static org.wildfly.test.integration.microprofile.config.smallrye.HttpUtils.getContent;
-
-import java.net.URL;
-
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -43,9 +39,12 @@ import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.net.URL;
+
+import static org.wildfly.test.integration.microprofile.config.smallrye.HttpUtils.getContent;
 
 /**
  * Test verifying the assumption that different services inside single EAR have different tracers.
@@ -75,13 +74,11 @@ public class EarOpenTracingTestCase {
         return ear;
     }
 
-    @Ignore("Unignore when https://issues.jboss.org/browse/WFWIP-104") // TODO
     @Test
     public void testEarServicesUseDifferentTracers() throws Exception {
         testHttpInvokation();
     }
 
-    @Ignore("Unignore when https://issues.jboss.org/browse/WFWIP-104") // TODO
     @Test
     public void testEarServicesUseDifferentTracersAfterReload() throws Exception {
         //TODO the tracer instance is same after reload as before it - check whether this is correct or no
