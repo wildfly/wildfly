@@ -29,7 +29,7 @@ Unfortunately, Maven doesn't allow you to specify plugin versions this way. To u
             <!-- The Maven Surefire plugin tests your application. Here we ensure we are using a version compatible with Arquillian -->
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.17</version>
+                <version>${version.surefire.plugin}</version>
             </plugin>
             <!-- The WildFly plugin deploys your war to a local WildFly container -->
             <!-- To use, set the JBOSS_HOME environment variable and run:
@@ -37,7 +37,7 @@ Unfortunately, Maven doesn't allow you to specify plugin versions this way. To u
             <plugin>
                 <groupId>org.wildfly.plugins</groupId>
                 <artifactId>wildfly-maven-plugin</artifactId>
-                <version>1.0.2.Final</version>
+                <version>${version.org.wildfly.plugin}</version>
             </plugin>
         </plugins>
     </pluginManagement>

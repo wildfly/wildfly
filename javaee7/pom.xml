@@ -35,46 +35,44 @@
     <description>Java EE 7 Dependency Management</description>
 
     <properties>
-        <!-- Versions of JBoss server -->
-        <version.org.wildfly>14.0.0.Beta2-SNAPSHOT</version.org.wildfly>
 
-        <!-- Versions of JBoss projects -->
-        <version.org.infinispan>9.3.1.Final</version.org.infinispan>
-        <version.javax.validation>2.0.1.Final</version.javax.validation>
-        <version.org.jboss.arquillian>1.1.13.Final</version.org.jboss.arquillian>
-        <version.org.jboss.arquillian.extension.drone>2.3.1</version.org.jboss.arquillian.extension.drone>
-        <version.org.jboss.arquillian.graphene>2.3.1</version.org.jboss.arquillian.graphene>
-        <version.org.jboss.ejb3.ext-api>2.2.0.Final</version.org.jboss.ejb3.ext-api>
+        <!-- Version of server -->
+        <version.server>14.0.0.Beta2</version.server>
+
+        <!-- Versions on server's core -->
+        <version.junit>4.12</version.junit>
         <version.org.jboss.logging.jboss-logging>3.3.2.Final</version.org.jboss.logging.jboss-logging>
-        <version.org.jboss.logging.processor>2.1.0.Final</version.org.jboss.logging.processor>
+        <version.org.jboss.logging.jboss-logging-tools>2.1.0.Final</version.org.jboss.logging.jboss-logging-tools>
+        <version.org.wildfly.client.config>1.0.0.Final</version.org.wildfly.client.config>
+        <version.org.wildfly.common>1.4.0.Final</version.org.wildfly.common>
+        <version.org.wildfly.discovery>1.1.1.Final</version.org.wildfly.discovery>
+        <version.org.wildfly.security.elytron>1.5.4.Final</version.org.wildfly.security.elytron>
+
+        <!-- Versions on server -->
+        <version.javax.validation>2.0.1.Final</version.javax.validation>
+        <version.org.hibernate>5.3.5.Final</version.org.hibernate>
+        <version.org.hibernate.commons.annotations>5.0.4.Final</version.org.hibernate.commons.annotations>
+        <version.org.hibernate.search>5.10.3.Final</version.org.hibernate.search>
+        <version.org.hibernate.validator>6.0.12.Final</version.org.hibernate.validator>
+        <version.org.infinispan>9.3.1.Final</version.org.infinispan>
+        <version.org.jboss.arquillian.core>1.1.13.Final</version.org.jboss.arquillian.core>
+        <version.org.jboss.ejb3.ext-api>2.2.0.Final</version.org.jboss.ejb3.ext-api>
         <version.org.jboss.narayana>5.9.0.Final</version.org.jboss.narayana>
         <version.org.jboss.resteasy>3.6.1.Final</version.org.jboss.resteasy>
         <version.org.jboss.security.jboss-negotiation>3.0.4.Final</version.org.jboss.security.jboss-negotiation>
         <version.org.jboss.security.jbossxacml>2.0.8.Final</version.org.jboss.security.jbossxacml>
         <version.org.jboss.spec.jboss.javaee7>1.1.1.Final</version.org.jboss.spec.jboss.javaee7>
-        <version.org.jboss.shrinkwrap.resolver>2.2.6</version.org.jboss.shrinkwrap.resolver>
         <version.org.picketbox.picketbox-commons>1.0.0.final</version.org.picketbox.picketbox-commons>
         <version.org.picketlink>2.5.5.SP12</version.org.picketlink>
         <version.org.wildfly.arquillian>2.1.1.Final</version.org.wildfly.arquillian>
-        <version.org.wildfly.client.config>1.0.0.Final</version.org.wildfly.client.config>
-        <version.org.wildfly.common>1.4.0.Final</version.org.wildfly.common>
-        <version.org.wildfly.discovery>1.1.1.Final</version.org.wildfly.discovery>
-        <version.org.wildfly.security.elytron>1.5.3.Final</version.org.wildfly.security.elytron>
+        <version.org.wildfly.plugin>1.2.1.Final</version.org.wildfly.plugin>
+        <version.surefire.plugin>2.22.0</version.surefire.plugin>
 
-        <!-- Version of Hibernate projects -->
-        <version.org.hibernate>5.3.4.Final</version.org.hibernate>
-        <version.org.hibernate.commons-annotations>5.0.4.Final</version.org.hibernate.commons-annotations>
-        <version.org.hibernate-jpamodelgen>${version.org.hibernate}</version.org.hibernate-jpamodelgen>
-        <version.org.hibernate.validator>6.0.12.Final</version.org.hibernate.validator>
-        <version.org.hibernate.search>5.10.3.Final</version.org.hibernate.search>
-
-        <!-- Versions of projects not directly under JBoss umbrella -->
-        <version.junit>4.12</version.junit>
+        <!-- Other versions -->
+        <version.org.jboss.arquillian.extension.drone>2.3.1</version.org.jboss.arquillian.extension.drone>
+        <version.org.jboss.arquillian.graphene>2.3.1</version.org.jboss.arquillian.graphene>
+        <version.org.jboss.shrinkwrap.resolver>2.2.6</version.org.jboss.shrinkwrap.resolver>
         <version.org.testng>6.11</version.org.testng>
-
-        <!-- Versions of Maven plugins, user must setup them by his/her own -->
-        <version.surefire.plugin>2.17</version.surefire.plugin>
-        <version.org.wildfly.plugins.maven.plugin>1.2.1.Final</version.org.wildfly.plugins.maven.plugin>
 
     </properties>
 
@@ -195,12 +193,12 @@
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-jpamodelgen</artifactId>
-                <version>${version.org.hibernate-jpamodelgen}</version>
+                <version>${version.org.hibernate}</version>
             </dependency>
             <dependency>
                 <groupId>org.hibernate.common</groupId>
                 <artifactId>hibernate-commons-annotations</artifactId>
-                <version>${version.org.hibernate.commons-annotations}</version>
+                <version>${version.org.hibernate.commons.annotations}</version>
             </dependency>
 
             <dependency>
@@ -231,13 +229,13 @@
             <dependency>
                 <groupId>org.jboss.logging</groupId>
                 <artifactId>jboss-logging-processor</artifactId>
-                <version>${version.org.jboss.logging.processor}</version>
+                <version>${version.org.jboss.logging.jboss-logging-tools}</version>
             </dependency>
             <!--  the jboss-logging-tools annotations  -->
             <dependency>
                 <groupId>org.jboss.logging</groupId>
                 <artifactId>jboss-logging-annotations</artifactId>
-                <version>${version.org.jboss.logging.processor}</version>
+                <version>${version.org.jboss.logging.jboss-logging-tools}</version>
             </dependency>
             <!--  jboss-logging API -->
             <dependency>
@@ -386,12 +384,12 @@
             <dependency>
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-clustering-singleton-api</artifactId>
-                <version>${version.org.wildfly}</version>
+                <version>${version.server}</version>
             </dependency>
             <dependency>
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-security-api</artifactId>
-                <version>${version.org.wildfly}</version>
+                <version>${version.server}</version>
             </dependency>
 
 

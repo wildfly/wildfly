@@ -61,7 +61,7 @@
             <dependency>
                 <groupId>org.jboss.arquillian</groupId>
                 <artifactId>arquillian-bom</artifactId>
-                <version>${version.org.jboss.arquillian}</version>
+                <version>${version.org.jboss.arquillian.core}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -128,7 +128,7 @@
                 <plugin>
                     <groupId>org.wildfly.plugins</groupId>
                     <artifactId>wildfly-maven-plugin</artifactId>
-                    <version>${version.org.wildfly.plugins.maven.plugin}</version>
+                    <version>${version.org.wildfly.plugin}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
