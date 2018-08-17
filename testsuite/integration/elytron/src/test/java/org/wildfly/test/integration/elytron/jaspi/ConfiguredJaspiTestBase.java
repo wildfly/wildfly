@@ -88,7 +88,7 @@ abstract class ConfiguredJaspiTestBase extends JaspiTestBase {
             try (CloseableHttpResponse response = httpClient.execute(request)) {
                 int statusCode = response.getStatusLine().getStatusCode();
                 assertEquals("Unexpected status code in HTTP response.", SC_OK, statusCode);
-                assertEquals("Unexpected content of HTTP response.", ANONYMOUS, EntityUtils.toString(response.getEntity()));
+                assertEquals("Unexpected content of HTTP response.", "null", EntityUtils.toString(response.getEntity()));
             }
         }
     }
