@@ -84,6 +84,7 @@
             <host-release id="WildFly10.0"/>
             <excluded-extensions>
                 <extension module="org.wildfly.extension.core-management"/>
+                <extension module="org.wildfly.extension.datasources-agroal" />
                 <extension module="org.wildfly.extension.discovery"/>
                 <extension module="org.wildfly.extension.ee-security"/>
                 <extension module="org.wildfly.extension.elytron"/>
@@ -96,6 +97,7 @@
             <host-release id="WildFly10.1"/>
             <excluded-extensions>
                 <extension module="org.wildfly.extension.core-management"/>
+                <extension module="org.wildfly.extension.datasources-agroal" />
                 <extension module="org.wildfly.extension.discovery"/>
                 <extension module="org.wildfly.extension.ee-security"/>
                 <extension module="org.wildfly.extension.elytron"/>
@@ -107,6 +109,7 @@
         <host-exclude name="WildFly11.0">
             <host-release id="WildFly11.0"/>
             <excluded-extensions>
+                <extension module="org.wildfly.extension.datasources-agroal" />
                 <extension module="org.wildfly.extension.ee-security"/>
                 <extension module="org.wildfly.extension.microprofile.config-smallrye" />
                 <extension module="org.wildfly.extension.microprofile.health-smallrye" />
@@ -116,6 +119,7 @@
         <host-exclude name="WildFly12.0">
             <host-release id="WildFly12.0"/>
             <excluded-extensions>
+                <extension module="org.wildfly.extension.datasources-agroal" />
                 <extension module="org.wildfly.extension.ee-security"/>
                 <extension module="org.wildfly.extension.microprofile.config-smallrye" />
                 <extension module="org.wildfly.extension.microprofile.health-smallrye" />
@@ -125,6 +129,7 @@
         <host-exclude name="WildFly13.0">
             <host-release id="WildFly13.0"/>
             <excluded-extensions>
+                <extension module="org.wildfly.extension.datasources-agroal" />
                 <extension module="org.wildfly.extension.microprofile.config-smallrye" />
                 <extension module="org.wildfly.extension.microprofile.health-smallrye" />
                 <extension module="org.wildfly.extension.microprofile.opentracing" />
