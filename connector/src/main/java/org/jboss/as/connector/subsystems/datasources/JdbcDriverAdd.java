@@ -35,8 +35,12 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.MODULE_SLO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
 import java.sql.Driver;
 import java.util.ServiceLoader;
+
+import javax.sql.DataSource;
+import javax.sql.XADataSource;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.services.driver.DriverService;
@@ -107,6 +111,24 @@ public class JdbcDriverAdd extends AbstractAddStepHandler {
             throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.failedToLoadModuleDriver(moduleName), e);
         }
 
+        if (dataSourceClassName != null) {
+            Class<? extends DataSource> dsCls;
+            try {
+                dsCls = module.getClassLoader().loadClass(dataSourceClassName).asSubclass(DataSource.class);
+            } catch (ClassNotFoundException | ClassCastException  e) {
+                throw SUBSYSTEM_DATASOURCES_LOGGER.failedToLoadDataSourceClass(dataSourceClassName, e);
+            }
+            checkDSCls(dsCls, DataSource.class);
+        }
+        if (xaDataSourceClassName != null) {
+            Class<? extends XADataSource> dsCls;
+            try {
+                dsCls = module.getClassLoader().loadClass(xaDataSourceClassName).asSubclass(XADataSource.class);
+            } catch (ClassNotFoundException | ClassCastException e) {
+                throw SUBSYSTEM_DATASOURCES_LOGGER.failedToLoadDataSourceClass(xaDataSourceClassName, e);
+            }
+            checkDSCls(dsCls, XADataSource.class);
+        }
         if (driverClassName == null) {
             final ServiceLoader<Driver> serviceLoader = module.loadService(Driver.class);
             boolean driverLoaded = false;
@@ -158,6 +180,12 @@ public class JdbcDriverAdd extends AbstractAddStepHandler {
                         driverService.getDriverRegistryServiceInjector())
                 .setInitialMode(ServiceController.Mode.ACTIVE);
         builder.install();
+    }
+
+    static <T> void checkDSCls(Class<? extends T> dsCls, Class<T> t) throws OperationFailedException {
+        if (Modifier.isInterface(dsCls.getModifiers()) || Modifier.isAbstract(dsCls.getModifiers())) {
+            throw SUBSYSTEM_DATASOURCES_LOGGER.notAValidDataSourceClass(dsCls.getName(), t.getName());
+        }
     }
 
 

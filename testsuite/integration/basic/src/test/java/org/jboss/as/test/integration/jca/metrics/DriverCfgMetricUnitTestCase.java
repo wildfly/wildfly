@@ -49,8 +49,7 @@ public class DriverCfgMetricUnitTestCase extends JCAMetrictsTestBase {
     public void testDriverAttributes() throws Exception {
         setModel("complex-driver.xml");
         assertEquals("name", readAttribute(baseAddress, "driver-name").asString());
-        assertEquals("DsClass", readAttribute(baseAddress, "driver-datasource-class-name").asString());
-        assertEquals("XaDsClass", readAttribute(baseAddress, "driver-xa-datasource-class-name").asString());
+        assertEquals("org.h2.jdbcx.JdbcDataSource", readAttribute(baseAddress, "driver-xa-datasource-class-name").asString());
         removeDs();
     }
 
