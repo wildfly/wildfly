@@ -50,7 +50,7 @@ General Guidelines
 
 * Each BOM is a child module of the parent BOM module. Copy an existing module as a template. Remember to give it a unique, and descriptive name. You should follow the conventions defined by the existing BOMs when naming it. All BOMs live in the same repository.
 
-* Most BOMs build on the base Java EE stack, and as such, import it. This is reflected in the name of the BOM "wildfly-javaee7-with-XXX".
+* Most BOMs build on the base Java EE stack, and as such, import it. This is reflected in the name of the BOM "wildfly-javaee8-with-XXX".
 
 * All dependencies versions should references properties that is declared on root `pom.xml`
 

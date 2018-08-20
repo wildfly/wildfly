@@ -27,12 +27,12 @@
         <version>14.0.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-javaee7</artifactId>
+    <artifactId>wildfly-javaee8</artifactId>
 
     <packaging>pom</packaging>
 
-    <name>WildFly BOMs: Java EE 7</name>
-    <description>Java EE 7 Dependency Management</description>
+    <name>WildFly BOMs: Java EE 8</name>
+    <description>Java EE 8 Dependency Management</description>
 
     <properties>
 
@@ -384,7 +384,7 @@
     </dependencyManagement>
 
     <modules>
-        <module>javaee7-with-tools</module>
+        <module>javaee8-with-tools</module>
     </modules>
 
 </project>

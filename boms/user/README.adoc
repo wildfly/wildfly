@@ -1,6 +1,6 @@
 = WildFly BOMs
 
-The WildFly BOMs project provides Maven BOM files enhancing Java EE 7 with deployment and test tooling. These files manage the version of the dependencies you use in your project, ensuring you always get a compatible stack.
+The WildFly BOMs project provides Maven BOM files enhancing Java EE 8 with deployment and test tooling. These files manage the version of the dependencies you use in your project, ensuring you always get a compatible stack.
 
 == Usage
 
@@ -12,7 +12,7 @@ To use the BOM, import into your dependency management. For example, if you want
     <dependencies>
         <dependency>
             <groupId>org.wildfly.bom</groupId>
-            <artifactId>wildfly-javaee7</artifactId>
+            <artifactId>wildfly-javaee8</artifactId>
             <scope>import</scope>
             <type>pom</type>
             <version>14.0.0-SNAPSHOT</version>
