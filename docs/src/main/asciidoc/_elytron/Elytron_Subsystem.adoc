@@ -40,36 +40,29 @@ To get started using Elytron, refer to these topics:
 * Use the default Elytron components for
 <<default-application-authentication-configuration,application>>
 and
-link:#src-557147_ElytronSubsystem-use-default-elytron-mgmt-auth[management]
+<<default-management-authentication-configuration,management>>
 authentication
 * Secure an application with a new identity store stored in a
-link:Using_the_Elytron_Subsystem.html#src-557140_UsingtheElytronSubsystem-ConfigureAuthenticationwithaFilesystem-BasedIdentityStore[filesystem]
+<<configure-authentication-with-a-filesystem-based-identity-store,filesystem>>
 or
-link:Using_the_Elytron_Subsystem.html#src-557140_UsingtheElytronSubsystem-ConfigureAuthenticationwithaDatabaseIdentityStore[database].
+<<configure-authentication-with-a-database-identity-store,database>>.
 * Set up one-way SSL/TLS for
-link:Using_the_Elytron_Subsystem.html#src-557140_UsingtheElytronSubsystem-one-way-apps[applications]
+<<enable-one-way-ssltls-for-applications,applications>>
 or the
-link:Using_the_Elytron_Subsystem.html#src-557140_UsingtheElytronSubsystem-one-way-mgmt[management
-interfaces].
+<<enable-one-way-ssltls-for-the-management-interfaces,management interfaces>>.
 * Set up two-way SSL/TLS for
-link:Using_the_Elytron_Subsystem.html#src-557140_UsingtheElytronSubsystem-two-way-apps[applications]
+<<enable-two-way-ssltls-in-wildfly-for-applications,applications>>
 or the
-link:Using_the_Elytron_Subsystem.html#src-557140_UsingtheElytronSubsystem-two-way-mgmt[management
-interfaces].
-* link:Using_the_Elytron_Subsystem.html#src-557140_UsingtheElytronSubsystem-CreateandUseaCredentialStore[Create
-a credential store and use it with your SSL/TLS configuration].
-* link:Using_the_Elytron_Subsystem.html#src-557140_UsingtheElytronSubsystem-ConfigureAuthenticationwithCertificates[Use
-certificate-based authentication with applications].
-* link:Using_the_Elytron_Subsystem.html#src-557140_safe-id-VXNpbmd0aGVFbHl0cm9uU3Vic3lzdGVtLU92ZXJyaWRlYW5BcHBsaWNhdGlvbidzQXV0aGVudGljYXRpb25Db25maWd1cmF0aW9u[Override
-an application's authentication configuration] with Elytron
-authentication.
-* link:Using_the_Elytron_Subsystem.html#src-557140_UsingtheElytronSubsystem-ConfigureAuthenticationwithaKerberos-BasedIdentityStore[Configure
-Kerberos authentication for applications].
+<<enable-two-way-ssltls-for-the-management-interfaces,management interfaces>>.
+* <<create-and-use-a-credential-store,Create a credential store and use it with your SSL/TLS configuration>>.
+* <<configure-authentication-with-certificates,Use certificate-based authentication with applications>>.
+* <<override-an-applications-authentication-configuration,Override an application's authentication configuration>>
+with Elytron authentication.
+* <<configure-authentication-with-a-kerberos-based-identity-store, Configure Kerberos authentication for applications>>.
 * Secure
-link:Using_the_Elytron_Subsystem.html#src-557140_UsingtheElytronSubsystem-ConfigureAuthenticationwithanLDAP-BasedIdentityStore[applications]
+<<configure-authentication-with-an-ldap-based-identity-store,applications>>
 and the
-link:Using_the_Elytron_Subsystem.html#src-557140_UsingtheElytronSubsystem-SecuretheManagementInterfaceswithaNewIdentityStore[management
-interfaces] with an LDAP-based identity store.
+<<secure-the-management-interfaces-with-a-new-identity-store,management interfaces>> with an LDAP-based identity store.
 
 [[provided-components]]
 == Provided components
@@ -250,9 +243,6 @@ files.
 
 |token-realm |A security realm definition capable of validating and
 extracting identities from security tokens.
-
-|trust-managers |A trust manager definition for creating the
-TrustManager list as used to create an SSL context.
 |=======================================================================
 
 [[permission-mappers]]
@@ -327,7 +317,7 @@ connection.
 |filtering-key-store |A filtering keystore definition, which provides a
 keystore by filtering a key-store.
 
-|key-managers |A key manager definition for creating the key manager
+|key-manager |A key manager definition for creating the key manager
 list as used to create an SSL context.
 
 |key-store |A keystore definition.
@@ -337,6 +327,9 @@ from an LDAP server.
 
 |server-ssl-context |An SSL context for use on the server side of a
 connection.
+
+|trust-manager |A trust manager definition for creating the
+TrustManager list as used to create an SSL context.
 
 |certificate-authority-account |A certificate authority account which can
 be used to obtain and revoke signed certificates.
@@ -442,13 +435,6 @@ filter authentication mechanism and uses ManagementDomain for
 authenticating principals. It accepts the DIGEST authentication
 mechanisms and exposes it as ManagementRealm to applications.
 
-|application-http-authentication |The application-http-authentication
-http-authentication-factory can be used for doing authentication over
-http. It uses the global provider-http-server-mechanism-factory to
-filter authentication mechanism and uses ApplicationDomain for
-authenticating principals. It accepts BASIC and FORM authentication
-mechanisms and exposes BASIC as Application Realm to applications.
-
 |global (provider-http-server-mechanism-factory) |This is the HTTP
 server factory mechanism definition used to list the provided
 authentication mechanisms when creating an http authentication factory.
@@ -547,6 +533,7 @@ and openssl provider loaders.
         "custom-realm-mapper" => undefined,
         "custom-role-decoder" => undefined,
         "custom-role-mapper" => undefined,
+        "custom-security-event-listener" => undefined,
         "dir-context" => undefined,
         "file-audit-log" => {"local-audit" => {
             "format" => "JSON",
@@ -564,17 +551,6 @@ and openssl provider loaders.
                     "mechanism-realm-configurations" => [{"realm-name" => "ManagementRealm"}]
                 }],
                 "security-domain" => "ManagementDomain"
-            },
-            "application-http-authentication" => {
-                "http-server-mechanism-factory" => "global",
-                "mechanism-configurations" => [
-                    {
-                        "mechanism-name" => "BASIC",
-                        "mechanism-realm-configurations" => [{"realm-name" => "Application Realm"}]
-                    },
-                    {"mechanism-name" => "FORM"}
-                ],
-                "security-domain" => "ApplicationDomain"
             }
         },
         "identity-realm" => {"local" => {
@@ -592,6 +568,7 @@ and openssl provider loaders.
         "logical-permission-mapper" => undefined,
         "logical-role-mapper" => undefined,
         "mapped-regex-realm-mapper" => undefined,
+        "mapped-role-mapper" => undefined,
         "mechanism-provider-filtering-sasl-server-factory" => {"elytron" => {
             "enabling" => true,
             "filters" => [{"provider-name" => "WildFlyElytron"}],
@@ -666,20 +643,6 @@ and openssl provider loaders.
         "regex-principal-transformer" => undefined,
         "regex-validating-principal-transformer" => undefined,
         "sasl-authentication-factory" => {
-            "management-sasl-authentication" => {
-                "mechanism-configurations" => [
-                    {
-                        "mechanism-name" => "JBOSS-LOCAL-USER",
-                        "realm-mapper" => "local"
-                    },
-                    {
-                        "mechanism-name" => "DIGEST-MD5",
-                        "mechanism-realm-configurations" => [{"realm-name" => "ManagementRealm"}]
-                    }
-                ],
-                "sasl-server-factory" => "configured",
-                "security-domain" => "ManagementDomain"
-            },
             "application-sasl-authentication" => {
                 "mechanism-configurations" => [
                     {
@@ -693,6 +656,20 @@ and openssl provider loaders.
                 ],
                 "sasl-server-factory" => "configured",
                 "security-domain" => "ApplicationDomain"
+            },
+            "management-sasl-authentication" => {
+                "mechanism-configurations" => [
+                    {
+                        "mechanism-name" => "JBOSS-LOCAL-USER",
+                        "realm-mapper" => "local"
+                    },
+                    {
+                        "mechanism-name" => "DIGEST-MD5",
+                        "mechanism-realm-configurations" => [{"realm-name" => "ManagementRealm"}]
+                    }
+                ],
+                "sasl-server-factory" => "configured",
+                "security-domain" => "ManagementDomain"
             }
         },
         "security-domain" => {
@@ -785,38 +762,15 @@ Authentication
 
 [source,ruby]
 ----
-/subsystem=undertow/application-security-domain=exampleApplicationDomain:add(http-authentication-factory=application-http-authentication)
+/subsystem=undertow/application-security-domain=exampleApplicationDomain:add(http-authentication-factory=example-http-auth)
 ----
+For more information on configuring an http-authentication-factory, see <<configure-an-http-authentication-factory, configure an http-authentication-factory>>
 
-[[default-elytron-application-http-authentication-configuration]]
-=== Default Elytron Application HTTP Authentication Configuration
+[[default-elytron-application-domain-configuration]]
+=== Default Elytron ApplicationDomain Configuration
 
-By default, the _application-http-authentication_
-http-authentication-factory is provided for application http
-authentication.
-
-[source,ruby]
-----
-/subsystem=elytron/http-authentication-factory=application-http-authentication:read-resource()
-{
-    "outcome" => "success",
-    "result" => {
-        "http-server-mechanism-factory" => "global",
-        "mechanism-configurations" => [
-            {
-                "mechanism-name" => "BASIC",
-                "mechanism-realm-configurations" => [{"realm-name" => "Application Realm"}]
-            },
-            {"mechanism-name" => "FORM"}
-        ],
-        "security-domain" => "ApplicationDomain"
-    }
-}
-----
-
-The _application-http-authentication_ http-authentication-factory is
-configured to use the _ApplicationDomain_ security domain.
-
+The http-authentication-factory can be configured to use the _ApplicationDomain_
+security domain.
 [source,ruby]
 ----
 /subsystem=elytron/security-domain=ApplicationDomain:read-resource()
@@ -838,11 +792,9 @@ configured to use the _ApplicationDomain_ security domain.
     }
 }
 ----
-
 The _ApplicationDomain_ security domain is backed by the
 _ApplicationRealm_ Elytron security realm, which is a properties-based
 realm.
-
 [source,ruby]
 ----
 /subsystem=elytron/properties-realm=ApplicationRealm:read-resource()
@@ -975,6 +927,8 @@ configured to use the _ManagementDomain_ security domain.
     "outcome" => "success",
     "result" => {
         "default-realm" => "ManagementRealm",
+        "outflow-anonymous" => false,
+        "outflow-security-domains" => undefined,
         "permission-mapper" => "default-permission-mapper",
         "post-realm-principal-transformer" => undefined,
         "pre-realm-principal-transformer" => undefined,
@@ -991,6 +945,7 @@ configured to use the _ManagementDomain_ security domain.
             }
         ],
         "role-mapper" => undefined,
+        "security-event-listener" => undefined,
         "trusted-security-domains" => undefined
     }
 }
@@ -1014,7 +969,8 @@ realm.
         "plain-text" => false,
         "users-properties" => {
             "path" => "mgmt-users.properties",
-            "relative-to" => "jboss.server.config.dir"
+            "relative-to" => "jboss.server.config.dir",
+            "digest-realm-name" => "ManagementRealm"
         }
     }
 }
@@ -1024,19 +980,19 @@ realm.
 === Default Elytron Management CLI Authentication
 
 By default, the management CLI ( _jboss-cli.sh_) is configured to
-connect over _remotehttp_.
+connect over _remote+http_.
 
 *Default jboss-cli.xml*
 
 [source,xml]
 ----
-<jboss-cli xmlns="urn:jboss:cli:3.1">
+<jboss-cli xmlns="urn:jboss:cli:3.3">
  
-    <default-protocol use-legacy-override="true">remotehttp</default-protocol>
+    <default-protocol use-legacy-override="true">remote+http</default-protocol>
  
     <!-- The default controller to connect to when 'connect' command is executed w/o arguments -->
     <default-controller>
-        <protocol>remotehttp</protocol>
+        <protocol>remote+http</protocol>
         <host>localhost</host>
         <port>9990</port>
     </default-controller>

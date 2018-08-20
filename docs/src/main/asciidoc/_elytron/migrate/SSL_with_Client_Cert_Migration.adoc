@@ -4,7 +4,7 @@ As this documentation is primarily intended for users migrating to WildFly Elytr
 
 This section will cover how to create the various resources required to achieve CLIENT_CERT authentication with fallback to username / password authentication for both HTTP and SASL (i.e. Remoting) - both are being covered at the same time as predominantly they require the same core configuration, it is not until the definition of the authentication factories that the configuration becomes really specific.
 
-This suppose you have configured legacy Client-Cert SSL authentication using `truststore` in legacy `security-realm`, for example by link:Admin_Guide.html#src-557075_AdminGuide-AddClient-CerttoSSL[Admin Guide#Add Client-Cert to SSL], and your configuration looks like:
+This suppose you have configured legacy Client-Cert SSL authentication using `truststore` in legacy `security-realm`, for example by link:Admin_Guide.html#add-client-cert-to-ssl[Admin Guide#Add Client-Cert to SSL], and your configuration looks like:
 
 [source, xml]
 ----
@@ -22,7 +22,7 @@ This suppose you have configured legacy Client-Cert SSL authentication using `tr
 </security-realm>
 ----
 
-This also suppose you have already followed link:Simple_SSL_Migration.adoc[Simple SSL Migration] section, so your partialy migrated configuration looks like:
+This also suppose you have already followed <<Simple_SSL_Migration,Simple SSL Migration>> section, so your partialy migrated configuration looks like:
 
 [source, xml]
 ----
