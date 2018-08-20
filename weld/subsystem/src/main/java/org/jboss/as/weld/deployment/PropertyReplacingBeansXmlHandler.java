@@ -38,6 +38,10 @@ import org.xml.sax.SAXParseException;
  */
 class PropertyReplacingBeansXmlHandler extends BeansXmlHandler {
 
+    private static final String ROOT_ELEMENT_NAME = "beans";
+    // See also https://www.w3.org/TR/xmlschema-1/#cvc-elt
+    private static final String VALIDATION_ERROR_CODE_CVC_ELT_1 = "cvc-elt.1";
+
     private final PropertyReplacer replacer;
 
     public PropertyReplacingBeansXmlHandler(URL file, PropertyReplacer replacer) {
@@ -52,7 +56,7 @@ class PropertyReplacingBeansXmlHandler extends BeansXmlHandler {
 
     @Override
     public void error(SAXParseException e) throws SAXException {
-        if (e.getMessage().equals("cvc-elt.1: Cannot find the declaration of element 'beans'.")) {
+        if (e.getMessage().startsWith(VALIDATION_ERROR_CODE_CVC_ELT_1) && e.getMessage().contains(ROOT_ELEMENT_NAME)) {
             // Ignore the errors we get when there is no schema defined
             return;
         }
