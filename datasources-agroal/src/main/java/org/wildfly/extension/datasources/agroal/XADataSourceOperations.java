@@ -59,7 +59,7 @@ class XADataSourceOperations extends AbstractAddStepHandler {
     private static class XADataSourceAdd extends AbstractAddStepHandler {
 
         private XADataSourceAdd() {
-            super(XADataSourceDefinition.DATA_SOURCE_CAPABILITY, XADataSourceDefinition.ATTRIBUTES);
+            super(XADataSourceDefinition.ATTRIBUTES);
         }
 
         @Override
@@ -95,10 +95,6 @@ class XADataSourceOperations extends AbstractAddStepHandler {
     // --- //
 
     private static class XADataSourceRemove extends AbstractRemoveStepHandler {
-
-        private XADataSourceRemove(){
-            super(XADataSourceDefinition.DATA_SOURCE_CAPABILITY);
-        }
 
         @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {

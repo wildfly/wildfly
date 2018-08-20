@@ -23,6 +23,8 @@ package org.wildfly.extension.datasources.agroal;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
+import org.jboss.as.controller.access.management.ApplicationTypeAccessConstraintDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -62,7 +64,12 @@ class DataSourceDefinition extends AbstractDataSourceDefinition {
     // --- //
 
     private DataSourceDefinition() {
-        super(pathElement("datasource"), getResolver("datasource"), DataSourceOperations.ADD_OPERATION, DataSourceOperations.REMOVE_OPERATION);
+        // TODO The cast to PersistentResourceDefinition.Parameters is a workaround to WFCORE-4040
+        super((Parameters) new Parameters(pathElement("datasource"), getResolver("datasource"))
+                .setAddHandler(DataSourceOperations.ADD_OPERATION)
+                .setRemoveHandler(DataSourceOperations.REMOVE_OPERATION)
+                .setAccessConstraints(new ApplicationTypeAccessConstraintDefinition(
+                        new ApplicationTypeConfig(AgroalExtension.SUBSYSTEM_NAME, "datasource"))));
     }
 
     @Override

@@ -56,7 +56,7 @@ class DataSourceOperations {
     private static class DataSourceAdd extends AbstractAddStepHandler {
 
         private DataSourceAdd() {
-            super(DataSourceDefinition.DATA_SOURCE_CAPABILITY, DataSourceDefinition.ATTRIBUTES);
+            super(DataSourceDefinition.ATTRIBUTES);
         }
 
         @Override
@@ -94,10 +94,6 @@ class DataSourceOperations {
     // --- //
 
     private static class DataSourceRemove extends AbstractRemoveStepHandler {
-
-        private DataSourceRemove(){
-            super(DataSourceDefinition.DATA_SOURCE_CAPABILITY);
-        }
 
         @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {

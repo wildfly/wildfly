@@ -21,14 +21,16 @@
  */
 package org.wildfly.extension.datasources.agroal;
 
-import org.jboss.as.controller.AttributeDefinition;
-
-import java.util.Collection;
-
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableList;
 import static org.jboss.as.controller.PathElement.pathElement;
 import static org.wildfly.extension.datasources.agroal.AgroalExtension.getResolver;
+
+import java.util.Collection;
+
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
+import org.jboss.as.controller.access.management.ApplicationTypeAccessConstraintDefinition;
 
 /**
  * Definition for the xa-datasource resource
@@ -44,7 +46,12 @@ class XADataSourceDefinition extends AbstractDataSourceDefinition {
     // --- //
 
     private XADataSourceDefinition() {
-        super(pathElement("xa-datasource"), getResolver("xa-datasource"), XADataSourceOperations.ADD_OPERATION, XADataSourceOperations.REMOVE_OPERATION);
+        // TODO The cast to PersistentResourceDefinition.Parameters is a workaround to WFCORE-4040
+        super((Parameters) new Parameters(pathElement("xa-datasource"), getResolver("xa-datasource"))
+                .setAddHandler(XADataSourceOperations.ADD_OPERATION)
+                .setRemoveHandler(XADataSourceOperations.REMOVE_OPERATION)
+                .setAccessConstraints(new ApplicationTypeAccessConstraintDefinition(
+                        new ApplicationTypeConfig(AgroalExtension.SUBSYSTEM_NAME, "xa-datasource"))));
     }
 
     @Override
