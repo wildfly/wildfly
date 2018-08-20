@@ -577,7 +577,6 @@ class ServerAdd extends AbstractAddStepHandler {
         long networkTimeout = SECONDS.toMillis(JOURNAL_JDBC_NETWORK_TIMEOUT.resolveModelAttribute(context, model).asInt());
         // ARTEMIS-1493: Artemis API is not correct. the value must be in millis but it requires an int instead of a long.
         storageConfiguration.setJdbcNetworkTimeout((int)networkTimeout);
-        storageConfiguration.setJdbcNetworkTimeout(JOURNAL_JDBC_NETWORK_TIMEOUT.resolveModelAttribute(context, model).asInt());
         ModelNode databaseNode = JOURNAL_DATABASE.resolveModelAttribute(context, model);
         final String database = databaseNode.isDefined() ? databaseNode.asString() : null;
         try {
