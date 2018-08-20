@@ -130,6 +130,7 @@ public class Hibernate51CompatibilityTransformer implements ClassFileTransformer
 
                     // Handle changing SessionImplementor parameter to SharedSessionContractImplementor
                     boolean rewriteSessionImplementor = false;
+                    final String descOrig = desc;
 
                     logger.tracef("method %s, description %s, signature %s", name, desc, signature);
                     if (parentClassesAndInterfaces.contains("org/hibernate/usertype/UserType")) {
@@ -140,7 +141,7 @@ public class Hibernate51CompatibilityTransformer implements ClassFileTransformer
                                 "(Ljava/sql/PreparedStatement;Ljava/lang/Object;ILorg/hibernate/engine/spi/SessionImplementor;)V".equals(desc)) {
                             desc = replaceSessionImplementor(desc);
                         }
-                        transformedState.setClassTransformed(true);
+
                         rewriteSessionImplementor = true;
                     }
 
@@ -161,7 +162,6 @@ public class Hibernate51CompatibilityTransformer implements ClassFileTransformer
                                 "(Ljava/lang/Object;Ljava/lang/Object;Lorg/hibernate/engine/spi/SessionImplementor;Ljava/lang/Object;)Ljava/lang/Object;".equals(desc)) {
                             desc = replaceSessionImplementor(desc);
                         }
-                        transformedState.setClassTransformed(true);
                         rewriteSessionImplementor = true;
                     }
 
@@ -177,7 +177,6 @@ public class Hibernate51CompatibilityTransformer implements ClassFileTransformer
                             desc = replaceSessionImplementor(desc);
                         }
 
-                        transformedState.setClassTransformed(true);
                         rewriteSessionImplementor = true;
                     }
 
@@ -190,7 +189,6 @@ public class Hibernate51CompatibilityTransformer implements ClassFileTransformer
                             desc = replaceSessionImplementor(desc);
                         }
 
-                        transformedState.setClassTransformed(true);
                         rewriteSessionImplementor = true;
                     }
 
@@ -245,7 +243,6 @@ public class Hibernate51CompatibilityTransformer implements ClassFileTransformer
                             desc = replaceSessionImplementor(desc);
                         }
 
-                        transformedState.setClassTransformed(true);
                         rewriteSessionImplementor = true;
                     }
 
@@ -261,7 +258,6 @@ public class Hibernate51CompatibilityTransformer implements ClassFileTransformer
                             desc = replaceSessionImplementor(desc);
                         }
 
-                        transformedState.setClassTransformed(true);
                         rewriteSessionImplementor = true;
                     }
 
@@ -277,7 +273,6 @@ public class Hibernate51CompatibilityTransformer implements ClassFileTransformer
                             desc = replaceSessionImplementor(desc);
                         }
 
-                        transformedState.setClassTransformed(true);
                         rewriteSessionImplementor = true;
                     }
 
@@ -288,7 +283,6 @@ public class Hibernate51CompatibilityTransformer implements ClassFileTransformer
                                 || desc.startsWith(
                                 "(Ljava/sql/CallableStatement;[Ljava/lang/String;Lorg/hibernate/engine/spi/SessionImplementor;)"))) {
                             desc = replaceSessionImplementor(desc);
-                            transformedState.setClassTransformed(true);
                         }
 
                         rewriteSessionImplementor = true;
@@ -298,7 +292,6 @@ public class Hibernate51CompatibilityTransformer implements ClassFileTransformer
                         if (name.equals("nullSafeSet") &&
                                 "(Ljava/sql/CallableStatement;Ljava/lang/Object;Ljava/lang/String;Lorg/hibernate/engine/spi/SessionImplementor;)V".equals(desc)) {
                             desc = replaceSessionImplementor(desc);
-                            transformedState.setClassTransformed(true);
                         }
 
                         rewriteSessionImplementor = true;
@@ -311,7 +304,6 @@ public class Hibernate51CompatibilityTransformer implements ClassFileTransformer
                         } else if (name.equals("next") &&
                                 desc.contains("Lorg/hibernate/engine/spi/SessionImplementor;")) {
                             desc = replaceSessionImplementor(desc);
-                            transformedState.setClassTransformed(true);
                         }
 
                         rewriteSessionImplementor = true;
@@ -328,7 +320,10 @@ public class Hibernate51CompatibilityTransformer implements ClassFileTransformer
 
                         rewriteSessionImplementor = true;
                     }
-
+                    if (descOrig != desc) {  // if we are changing from type SessionImplementor to SharedSessionContractImplementor
+                                             // mark the class as transformed
+                        transformedState.setClassTransformed(true);
+                    }
                     return new MethodAdapter(rewriteSessionImplementor, Opcodes.ASM6, super.visitMethod(access, name, desc,
                             signature, exceptions), getModuleName(loader), className, transformedState);
                 }
