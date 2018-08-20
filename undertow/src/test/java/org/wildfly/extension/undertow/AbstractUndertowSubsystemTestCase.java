@@ -24,6 +24,8 @@ package org.wildfly.extension.undertow;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import javax.net.ssl.SSLContext;
 
@@ -90,16 +92,16 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
             Throwable t = mainServices.getBootError();
             Assert.fail("Boot unsuccessful: " + (t != null ? t.toString() : "no boot error provided"));
         }
-        ServiceController<FilterService> connectionLimiter = (ServiceController<FilterService>) mainServices.getContainer()
+        ServiceController connectionLimiter = mainServices.getContainer()
                 .getService(UndertowService.FILTER.append("limit-connections"));
         connectionLimiter.setMode(ServiceController.Mode.ACTIVE);
-        FilterService connectionLimiterService = connectionLimiter.awaitValue();
+        FilterService connectionLimiterService = (FilterService) awaitServiceValue(connectionLimiter);
         HttpHandler result = connectionLimiterService.createHttpHandler(Predicates.truePredicate(), new PathHandler());
         Assert.assertNotNull("handler should have been created", result);
 
         ServiceController headersFilter = mainServices.getContainer().getService(UndertowService.FILTER.append("headers"));
         headersFilter.setMode(ServiceController.Mode.ACTIVE);
-        FilterService headersService = (FilterService)headersFilter.awaitValue();
+        FilterService headersService = (FilterService) awaitServiceValue(headersFilter);
         HttpHandler headerHandler = headersService.createHttpHandler(Predicates.truePredicate(), new PathHandler());
         Assert.assertNotNull("handler should have been created", headerHandler);
 
@@ -107,7 +109,7 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
             ServiceController modClusterServiceServiceController = mainServices.getContainer()
                     .getService(UndertowService.FILTER.append("mod-cluster"));
             modClusterServiceServiceController.setMode(ServiceController.Mode.ACTIVE);
-            ModClusterService modClusterService = (ModClusterService)modClusterServiceServiceController.awaitValue();
+            ModClusterService modClusterService = (ModClusterService) awaitServiceValue(modClusterServiceServiceController);
             Assert.assertNotNull(modClusterService);
             Assert.assertNotNull(modClusterService.getModCluster());
 
@@ -119,7 +121,7 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
         ServiceController hostSC = mainServices.getContainer().getService(hostServiceName);
         Assert.assertNotNull(hostSC);
         hostSC.setMode(ServiceController.Mode.ACTIVE);
-        Host host = (Host) hostSC.awaitValue();
+        Host host = (Host) awaitServiceValue(hostSC);
         if (flag == 1) {
             Assert.assertEquals(3, host.getAllAliases().size());
             Assert.assertEquals("default-alias", new ArrayList<>(host.getAllAliases()).get(1));
@@ -135,7 +137,7 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
         final ServiceName servletContainerServiceName = UndertowService.SERVLET_CONTAINER.append("myContainer");
         ServiceController servletContainerService = mainServices.getContainer().getService(servletContainerServiceName);
         Assert.assertNotNull(servletContainerService);
-        JSPConfig jspConfig = ((ServletContainerService)servletContainerService.awaitValue()).getJspConfig();
+        JSPConfig jspConfig = ((ServletContainerService) awaitServiceValue(servletContainerService)).getJspConfig();
         Assert.assertNotNull(jspConfig);
         Assert.assertNotNull(jspConfig.createJSPServletInfo());
 
@@ -143,7 +145,7 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
 
         ServiceController gzipFilterController = mainServices.getContainer().getService(filterRefName);
         gzipFilterController.setMode(ServiceController.Mode.ACTIVE);
-        FilterRef gzipFilterRef = (FilterRef)gzipFilterController.awaitValue();
+        FilterRef gzipFilterRef = (FilterRef) awaitServiceValue(gzipFilterController);
         HttpHandler gzipHandler = gzipFilterRef.createHttpHandler(new PathHandler());
         Assert.assertNotNull("handler should have been created", gzipHandler);
         Assert.assertEquals(1, host.getFilters().size());
@@ -189,6 +191,16 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
         return DEFAULT;
+    }
+
+    private static Object awaitServiceValue(ServiceController controller) throws InterruptedException {
+        try {
+            return controller.awaitValue(2, TimeUnit.MINUTES);
+        } catch (TimeoutException e) {
+            controller.getServiceContainer().dumpServices();
+            Assert.fail(String.format("ServiceController %s did not provide a value within 2 minutes; mode is %s and state is %s", controller.getName(), controller.getMode(), controller.getState()));
+            throw new IllegalStateException("unreachable");
+        }
     }
 
     private static class RuntimeInitialization extends DefaultInitialization {
