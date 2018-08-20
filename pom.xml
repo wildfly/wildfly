@@ -6959,8 +6959,6 @@
                     --add-exports=jdk.unsupported/sun.misc=ALL-UNNAMED
                     --add-modules=java.se
                     --illegal-access=permit</modular.jdk.args>
-                <!-- [WFCORE-1494] remove JUL workaround -->
-                <modular.jdk.props>-Dsun.util.logging.disableCallerCheck=true -Djdk.attach.allowAttachSelf=true</modular.jdk.props>
             </properties>
 
         </profile>
