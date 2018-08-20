@@ -274,17 +274,21 @@ abstract class AbstractDataSourceDefinition extends PersistentResourceDefinition
         }
 
         // Runtime attributes
-        resourceRegistration.registerReadOnlyAttribute(STATISTICS, AbstractDataSourceOperations.STATISTICS_GET_OPERATION);
+        if (resourceRegistration.getProcessType().isServer()) {
+            resourceRegistration.registerReadOnlyAttribute(STATISTICS, AbstractDataSourceOperations.STATISTICS_GET_OPERATION);
+        }
     }
 
     @Override
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         super.registerOperations(resourceRegistration);
-        resourceRegistration.registerOperationHandler(FLUSH_ALL, AbstractDataSourceOperations.FLUSH_ALL_OPERATION);
-        resourceRegistration.registerOperationHandler(FLUSH_GRACEFUL, AbstractDataSourceOperations.FLUSH_GRACEFUL_OPERATION);
-        resourceRegistration.registerOperationHandler(FLUSH_INVALID, AbstractDataSourceOperations.FLUSH_INVALID_OPERATION);
-        resourceRegistration.registerOperationHandler(FLUSH_IDLE, AbstractDataSourceOperations.FLUSH_IDLE_OPERATION);
-        resourceRegistration.registerOperationHandler(RESET_STATISTICS, AbstractDataSourceOperations.RESET_STATISTICS_OPERATION);
-        resourceRegistration.registerOperationHandler(TEST_CONNECTION, AbstractDataSourceOperations.TEST_CONNECTION_OPERATION);
+        if (resourceRegistration.getProcessType().isServer()) {
+            resourceRegistration.registerOperationHandler(FLUSH_ALL, AbstractDataSourceOperations.FLUSH_ALL_OPERATION);
+            resourceRegistration.registerOperationHandler(FLUSH_GRACEFUL, AbstractDataSourceOperations.FLUSH_GRACEFUL_OPERATION);
+            resourceRegistration.registerOperationHandler(FLUSH_INVALID, AbstractDataSourceOperations.FLUSH_INVALID_OPERATION);
+            resourceRegistration.registerOperationHandler(FLUSH_IDLE, AbstractDataSourceOperations.FLUSH_IDLE_OPERATION);
+            resourceRegistration.registerOperationHandler(RESET_STATISTICS, AbstractDataSourceOperations.RESET_STATISTICS_OPERATION);
+            resourceRegistration.registerOperationHandler(TEST_CONNECTION, AbstractDataSourceOperations.TEST_CONNECTION_OPERATION);
+        }
     }
 }
