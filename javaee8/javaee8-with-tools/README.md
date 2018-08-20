@@ -15,7 +15,7 @@ To use the BOM, import into your dependency management:
             <dependency>
                <groupId>org.wildfly.bom</groupId>
                <artifactId>wildfly-javaee8-with-tools</artifactId>
-               <version>14.0.0-SNAPSHOT</version>
+               <version>14.0.0.Beta2</version>
                <type>pom</type>
                <scope>import</scope>
             </dependency>
