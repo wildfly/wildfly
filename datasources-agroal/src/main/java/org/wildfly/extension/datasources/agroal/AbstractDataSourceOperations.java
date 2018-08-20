@@ -152,10 +152,10 @@ class AbstractDataSourceOperations {
 
         switch (context.getCurrentAddress().getLastElement().getKey()) {
             case DataSourceOperations.DATASOURCE_SERVICE_NAME:
-                ServiceController<?> controller = registry.getRequiredService(DataSourceOperations.DATASOURCE_SERVICE_PREFIX.append(dataSourceName));
+                ServiceController<?> controller = registry.getRequiredService(AbstractDataSourceDefinition.DATA_SOURCE_CAPABILITY.getCapabilityServiceName(dataSourceName));
                 return ((AgroalDataSource) controller.getValue());
             case XADataSourceOperations.XADATASOURCE_SERVICE_NAME:
-                ServiceController<?> xaController = registry.getRequiredService(XADataSourceOperations.XADATASOURCE_SERVICE_PREFIX.append(dataSourceName));
+                ServiceController<?> xaController = registry.getRequiredService(AbstractDataSourceDefinition.DATA_SOURCE_CAPABILITY.getCapabilityServiceName(dataSourceName));
                 return ((AgroalDataSource) xaController.getValue());
             default:
                 throw AgroalLogger.SERVICE_LOGGER.unknownDatasourceServiceType(context.getCurrentAddress().getLastElement().getKey());

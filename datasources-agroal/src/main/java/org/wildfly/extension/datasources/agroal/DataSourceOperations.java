@@ -43,8 +43,6 @@ class DataSourceOperations {
 
     static final String DATASOURCE_SERVICE_NAME = "datasource";
 
-    static final ServiceName DATASOURCE_SERVICE_PREFIX = AgroalExtension.BASE_SERVICE_NAME.append(DATASOURCE_SERVICE_NAME);
-
     // --- //
 
     static final OperationStepHandler ADD_OPERATION = new DataSourceAdd();
@@ -82,7 +80,7 @@ class DataSourceOperations {
 
             DataSourceService dataSourceService = new DataSourceService(datasourceName, jndiName, jta, connectable, false, dataSourceConfiguration);
 
-            ServiceBuilder<AgroalDataSource> serviceBuilder = context.getServiceTarget().addService(DATASOURCE_SERVICE_PREFIX.append(datasourceName), dataSourceService);
+            ServiceBuilder<AgroalDataSource> serviceBuilder = context.getCapabilityServiceTarget().addCapability(AbstractDataSourceDefinition.DATA_SOURCE_CAPABILITY.fromBaseCapability(datasourceName), dataSourceService);
 
             AbstractDataSourceOperations.setupElytronSecurity(context, factoryModel, dataSourceService, serviceBuilder);
 
@@ -98,7 +96,7 @@ class DataSourceOperations {
         @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             String datasourceName = context.getCurrentAddressValue();
-            ServiceName datasourceServiceName = ServiceName.of(DATASOURCE_SERVICE_PREFIX, datasourceName);
+            ServiceName datasourceServiceName = AbstractDataSourceDefinition.DATA_SOURCE_CAPABILITY.getCapabilityServiceName(datasourceName);
             context.removeService(datasourceServiceName);
         }
     }
