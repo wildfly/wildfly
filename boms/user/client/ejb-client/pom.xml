@@ -37,6 +37,10 @@
     </parent>
 
     <artifactId>wildfly-ejb-client-bom</artifactId>
+    <!--
+    Maintain separation between the artifact id and the version to help prevent
+    merge conflicts between commits changing the GA and those changing the V.
+    -->
     <version>14.0.0.CR1-SNAPSHOT</version>
 
     <packaging>pom</packaging>
