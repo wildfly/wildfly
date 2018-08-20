@@ -121,8 +121,6 @@ public class JMSServerControlHandler extends AbstractRuntimeOnlyHandler {
                 String json = serverControl.listConnectionsAsJSON();
                 context.getResult().set(json);
 
-                // FIXME uncomment when ARTEMIS-1947 is properly fixed in Artemis 2.6.3
-                /*
                 final JsonArrayBuilder enrichedConnections = Json.createArrayBuilder();
                 try (
                         JsonReader reader = Json.createReader(new StringReader(json));
@@ -139,7 +137,6 @@ public class JMSServerControlHandler extends AbstractRuntimeOnlyHandler {
 
                 String enrichedJSON = enrichedConnections.build().toString();
                 context.getResult().set(enrichedJSON);
-                */
             } else if (LIST_CONSUMERS_AS_JSON.equals(operationName)) {
                 String connectionID = CONNECTION_ID.resolveModelAttribute(context, operation).asString();
                 String json = serverControl.listConsumersAsJSON(connectionID);
