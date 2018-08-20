@@ -37,6 +37,12 @@ import org.wildfly.extension.messaging.activemq.broadcast.CommandDispatcherBroad
 public class ActiveMQResourceAdapter extends org.apache.activemq.artemis.ra.ActiveMQResourceAdapter {
     private static final long serialVersionUID = 170278234232275756L;
 
+    public ActiveMQResourceAdapter() {
+        super();
+        this.setEnable1xPrefixes(true);
+        this.getProperties().setEnable1xPrefixes(true);
+    }
+
     @Override
     protected BroadcastEndpointFactory createBroadcastEndpointFactory(ConnectionFactoryProperties overrideProperties) {
         String clusterName = overrideProperties.getJgroupsChannelName() != null ? overrideProperties.getJgroupsChannelName() : getJgroupsChannelName();

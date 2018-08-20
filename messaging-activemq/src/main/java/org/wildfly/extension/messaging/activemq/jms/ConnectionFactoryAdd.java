@@ -157,6 +157,8 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
         config.setFactoryType(jmsFactoryType);
 
         config.setInitialMessagePacketSize(ConnectionFactoryAttributes.Common.INITIAL_MESSAGE_PACKET_SIZE.resolveModelAttribute(context, model).asInt());
+        config.setEnableSharedClientID(true);
+        config.setEnable1xPrefixes(true);
         return config;
     }
 }
