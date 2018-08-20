@@ -69,7 +69,7 @@
 
     <modules>
         <module>client</module>
-        <module>javaee7</module>
+        <module>javaee8</module>
     </modules>
 
 </project>
