@@ -17,8 +17,10 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.microprofile.opentracing.smallrye.TracerInitializer;
 
 import javax.inject.Inject;
+import javax.servlet.ServletContext;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
@@ -29,6 +31,9 @@ public class ResourceTracedTestCase {
 
     @ArquillianResource
     private URL url;
+
+    @Inject
+    ServletContext servletContext;
 
     @Deployment
     public static Archive<?> deploy() {
@@ -57,6 +62,10 @@ public class ResourceTracedTestCase {
         performCall("opentracing/traced");
 
         Assert.assertEquals(1, mockTracer.finishedSpans().size());
+        Assert.assertEquals(
+                (servletContext.getContextPath() + ".war").substring(1),
+                servletContext.getInitParameter(TracerInitializer.SMALLRYE_OPENTRACING_SERVICE_NAME)
+        );
     }
 
     private void performCall(String path) throws Exception {

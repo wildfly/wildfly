@@ -22,18 +22,17 @@
 
 package org.wildfly.extension.microprofile.opentracing;
 
-import io.smallrye.opentracing.SmallRyeTracingDynamicFeature;
+import org.jboss.as.ee.structure.DeploymentType;
+import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.ee.weld.WeldDeploymentMarker;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.web.common.WarMetaData;
-import org.jboss.as.weld.deployment.WeldPortableExtensions;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.ListenerMetaData;
 import org.wildfly.microprofile.opentracing.smallrye.TracerInitializer;
-import org.wildfly.microprofile.opentracing.smallrye.TracingCDIExtension;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 import java.util.ArrayList;
@@ -45,19 +44,18 @@ public class TracingDeploymentProcessor implements DeploymentUnitProcessor {
         TracingExtensionLogger.ROOT_LOGGER.processingDeployment();
         DeploymentUnit deploymentUnit = deploymentPhaseContext.getDeploymentUnit();
 
+        if (DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
+            return;
+        }
+
         if (!WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
             // SmallRye JAX-RS requires CDI. Without CDI, there's no integration needed
             TracingExtensionLogger.ROOT_LOGGER.noCdiDeployment();
             return;
         }
 
+        setServiceName(deploymentUnit);
         addListeners(deploymentUnit);
-        addJaxRsIntegration(deploymentUnit);
-        addCDIExtension(deploymentUnit);
-    }
-
-    @Override
-    public void undeploy(DeploymentUnit deploymentUnit) {
     }
 
     private void addListeners(DeploymentUnit deploymentUnit) {
@@ -68,12 +66,6 @@ public class TracingDeploymentProcessor implements DeploymentUnitProcessor {
         }
 
         TracingExtensionLogger.ROOT_LOGGER.registeringTracerInitializer();
-
-        String serviceName = getServiceName(deploymentUnit);
-        ParamValueMetaData serviceNameContextParameter = new ParamValueMetaData();
-        serviceNameContextParameter.setParamName(TracerInitializer.SMALLRYE_OPENTRACING_SERVICE_NAME);
-        serviceNameContextParameter.setParamValue(serviceName);
-        addContextParameter(jbossWebMetaData, serviceNameContextParameter);
 
         ListenerMetaData listenerMetaData = new ListenerMetaData();
         listenerMetaData.setListenerClass(TracerInitializer.class.getName());
@@ -86,26 +78,18 @@ public class TracingDeploymentProcessor implements DeploymentUnitProcessor {
         jbossWebMetaData.setListeners(listeners);
     }
 
-    private void addJaxRsIntegration(DeploymentUnit deploymentUnit) {
+    private void setServiceName(DeploymentUnit deploymentUnit) {
         JBossWebMetaData jbossWebMetaData = getJBossWebMetaData(deploymentUnit);
         if (null == jbossWebMetaData) {
             // nothing to do here
             return;
         }
 
-        TracingExtensionLogger.ROOT_LOGGER.registeringJaxRs();
-
-        ParamValueMetaData restEasyProvider = new ParamValueMetaData();
-        restEasyProvider.setParamName("resteasy.providers");
-        restEasyProvider.setParamValue(SmallRyeTracingDynamicFeature.class.getName());
-        addContextParameter(jbossWebMetaData, restEasyProvider);
-    }
-
-    private void addCDIExtension(DeploymentUnit deploymentUnit) {
-        TracingExtensionLogger.ROOT_LOGGER.registeringCDIExtension();
-
-        WeldPortableExtensions extensions = WeldPortableExtensions.getPortableExtensions(deploymentUnit);
-        extensions.registerExtensionInstance(new TracingCDIExtension(), deploymentUnit);
+        String serviceName = getServiceName(deploymentUnit);
+        ParamValueMetaData serviceNameContextParameter = new ParamValueMetaData();
+        serviceNameContextParameter.setParamName(TracerInitializer.SMALLRYE_OPENTRACING_SERVICE_NAME);
+        serviceNameContextParameter.setParamValue(serviceName);
+        addContextParameter(jbossWebMetaData, serviceNameContextParameter);
     }
 
     private JBossWebMetaData getJBossWebMetaData(DeploymentUnit deploymentUnit) {
@@ -134,10 +118,22 @@ public class TracingDeploymentProcessor implements DeploymentUnitProcessor {
         }
 
         if (null == serviceName || serviceName.isEmpty()) {
+            if (null != deploymentUnit.getParent()) {
+                // application.ear!module.war
+                serviceName = deploymentUnit.getParent().getServiceName().getSimpleName()
+                        + "!"
+                        + deploymentUnit.getServiceName().getSimpleName();
+            } else {
+                serviceName = deploymentUnit.getServiceName().getSimpleName();
+            }
+
             TracingExtensionLogger.ROOT_LOGGER.serviceNameDerivedFromDeploymentUnit(serviceName);
-            serviceName = deploymentUnit.getServiceName().getSimpleName();
         }
 
         return serviceName;
+    }
+
+    @Override
+    public void undeploy(DeploymentUnit deploymentUnit) {
     }
 }

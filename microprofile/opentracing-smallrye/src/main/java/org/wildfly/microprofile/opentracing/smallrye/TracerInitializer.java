@@ -29,10 +29,9 @@ import io.opentracing.contrib.tracerresolver.TracerResolver;
 import io.opentracing.noop.NoopTracerFactory;
 import io.opentracing.util.GlobalTracer;
 
-import javax.enterprise.event.Event;
-import javax.inject.Inject;
 import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
@@ -41,18 +40,10 @@ import java.util.EnumSet;
 @WebListener
 public class TracerInitializer implements ServletContextListener {
     public static final String SMALLRYE_OPENTRACING_SERVICE_NAME = "smallrye.opentracing.serviceName";
-
-    @Inject
-    Event<Tracer> tracerInitialized;
+    public static final String SMALLRYE_OPENTRACING_TRACER = "smallrye.opentracing.tracer";
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
-        if (null == tracerInitialized) {
-            // Weld integration problems? This happens with the test org.jboss.as.test.integration.ws.injection.ejb.basic.InjectionTestCase
-            TracingLogger.ROOT_LOGGER.noCdiEventSupport();
-            return;
-        }
-
         if (GlobalTracer.isRegistered()) {
             TracingLogger.ROOT_LOGGER.alreadyRegistered();
             return;
@@ -72,12 +63,16 @@ public class TracerInitializer implements ServletContextListener {
         }
 
         TracingLogger.ROOT_LOGGER.registeringTracer(tracer.getClass().getName());
-        tracerInitialized.fire(tracer);
+        sce.getServletContext().setAttribute(SMALLRYE_OPENTRACING_TRACER, tracer);
+        addJaxRsIntegration(sce.getServletContext(), tracer);
 
         TracingLogger.ROOT_LOGGER.initializing(tracer.toString());
+    }
 
-        FilterRegistration.Dynamic filterRegistration = sce.getServletContext()
-                .addFilter(SpanFinishingFilter.class.getName(), new SpanFinishingFilter(tracer));
+    private void addJaxRsIntegration(ServletContext servletContext, Tracer tracer) {
+        servletContext.setInitParameter("resteasy.providers", TracerDynamicFeature.class.getName());
+        FilterRegistration.Dynamic filterRegistration = servletContext.addFilter(SpanFinishingFilter.class.getName(),
+                new SpanFinishingFilter(tracer));
         filterRegistration.setAsyncSupported(true);
         filterRegistration.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), false, "*");
     }

@@ -51,15 +51,11 @@ public interface TracingLogger extends BasicLogger {
     @Message(id = 4, value = "Registering %s as the OpenTracing Tracer")
     void registeringTracer(String message);
 
-    @LogMessage(level = DEBUG)
-    @Message(id = 5, value = "CDI events are not supported for this deployment. Possible configuration issues? Skipping MicroProfile OpenTracing integration.")
-    void noCdiEventSupport();
+    @LogMessage(level = WARN)
+    @Message(id = 5, value = "No tracer available to JAX-RS. Skipping MicroProfile OpenTracing configuration for JAX-RS")
+    void noTracerAvailable();
 
     @LogMessage(level = DEBUG)
     @Message(id = 6, value = "Extra Tracer bean found: %s. Vetoing it, please use TracerResolver to specify a custom tracer to use.")
     void extraTracerBean(String clazz);
-
-    @LogMessage(level = WARN)
-    @Message(id = 7, value = "Multiple tracer resolvers found. Cannot properly determine which one to use.")
-    void multipleTracerResolvers();
 }

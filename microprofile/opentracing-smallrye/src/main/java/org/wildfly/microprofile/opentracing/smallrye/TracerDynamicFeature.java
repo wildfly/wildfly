@@ -23,23 +23,41 @@
 package org.wildfly.microprofile.opentracing.smallrye;
 
 import io.opentracing.Tracer;
+import io.opentracing.contrib.jaxrs2.server.OperationNameProvider;
+import io.opentracing.contrib.jaxrs2.server.ServerTracingDynamicFeature;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Produces;
-import javax.inject.Inject;
 import javax.servlet.ServletContext;
+import javax.ws.rs.container.DynamicFeature;
+import javax.ws.rs.container.ResourceInfo;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.FeatureContext;
+import javax.ws.rs.ext.Provider;
 
-@ApplicationScoped
-public class TracerProducer {
-    @Inject
+@Provider
+public class TracerDynamicFeature implements DynamicFeature {
+    @Context
     ServletContext servletContext;
 
-    @Produces
-    public Tracer getTracer() {
+    @Override
+    public void configure(ResourceInfo resourceInfo, FeatureContext context) {
+        Tracer tracer;
+
         Object tracerObject = servletContext.getAttribute(TracerInitializer.SMALLRYE_OPENTRACING_TRACER);
         if (tracerObject instanceof Tracer) {
-            return (Tracer) tracerObject;
+            tracer = (Tracer) tracerObject;
+        } else {
+            // should never happen, but if it does, there's something really wrong
+            // we log a warn-level message here then
+            TracingLogger.ROOT_LOGGER.noTracerAvailable();
+            return;
         }
-        return null;
+
+        ServerTracingDynamicFeature delegate = new ServerTracingDynamicFeature.Builder(tracer)
+                .withOperationNameProvider(OperationNameProvider.ClassNameOperationName.newBuilder())
+                .withTraceSerialization(false)
+                .build();
+
+        delegate.configure(resourceInfo, context);
     }
+
 }

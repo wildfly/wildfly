@@ -44,22 +44,14 @@ public interface TracingExtensionLogger extends BasicLogger {
     void processingDeployment();
 
     @LogMessage(level = DEBUG)
-    @Message(id = 3, value = "Registering SmallRye CDI Extension")
-    void registeringCDIExtension();
-
-    @LogMessage(level = DEBUG)
-    @Message(id = 4, value = "The deployment does not have CDI enabled. Skipping MicroProfile OpenTracing integration.")
+    @Message(id = 3, value = "The deployment does not have CDI enabled. Skipping MicroProfile OpenTracing integration.")
     void noCdiDeployment();
 
     @LogMessage(level = DEBUG)
-    @Message(id = 5, value = "Registering MicroProfile OpenTracing JAX-RS integration")
-    void registeringJaxRs();
-
-    @LogMessage(level = DEBUG)
-    @Message(id = 6, value = "Deriving service name based on the deployment unit's name: %s")
+    @Message(id = 4, value = "Deriving service name based on the deployment unit's name: %s")
     void serviceNameDerivedFromDeploymentUnit(String serviceName);
 
     @LogMessage(level = DEBUG)
-    @Message(id = 7, value = "Registering the TracerInitializer filter")
+    @Message(id = 5, value = "Registering the TracerInitializer filter")
     void registeringTracerInitializer();
 }
