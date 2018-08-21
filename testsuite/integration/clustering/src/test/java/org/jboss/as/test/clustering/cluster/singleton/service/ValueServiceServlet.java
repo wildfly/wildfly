@@ -26,6 +26,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -69,10 +71,14 @@ public class ValueServiceServlet extends HttpServlet {
         @SuppressWarnings("unchecked")
         ServiceController<Boolean> service = (ServiceController<Boolean>) CurrentServiceContainer.getServiceContainer().getService(ServiceName.parse(serviceName));
         try {
-            Boolean primary = service.awaitValue();
+            Boolean primary = service.awaitValue(5, TimeUnit.MINUTES);
             response.setHeader(PRIMARY_HEADER, primary.toString());
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
+        } catch (TimeoutException e) {
+            service.getServiceContainer().dumpServices();
+            throw new ServletException(String.format("ServiceController %s did not provide a value within 5 minutes; " +
+                    "mode is %s and state is %s", serviceName, service.getMode(), service.getState()), e);
         }
         response.getWriter().write("Success");
     }
