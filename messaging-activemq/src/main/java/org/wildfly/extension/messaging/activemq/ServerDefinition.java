@@ -250,6 +250,18 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .build();
 
+    /**
+     * @see ActiveMQDefaultConfiguration#getDefaultNodeManagerStoreTableName
+     */
+    public static final SimpleAttributeDefinition JOURNAL_NODE_MANAGER_STORE_TABLE = create("journal-node-manager-store-table", STRING)
+            .setAttributeGroup("journal")
+            .setXmlName("node-manager-store-table")
+            .setRequired(false)
+            .setDefaultValue(new ModelNode("NODE_MANAGER_STORE"))
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
     public static final SimpleAttributeDefinition JOURNAL_PAGE_STORE_TABLE  = create("journal-page-store-table", STRING)
             .setAttributeGroup("journal")
             .setXmlName("page-store-table")
@@ -266,6 +278,33 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
+
+    /**
+     * @see ActiveMQDefaultConfiguration#getDefaultJdbcLockExpirationMillis()
+     */
+    public static final AttributeDefinition JOURNAL_JDBC_LOCK_EXPIRATION = create("journal-jdbc-lock-expiration", INT)
+            .setAttributeGroup("journal")
+            .setXmlName("jdbc-lock-expiration")
+            .setDefaultValue(new ModelNode(20))
+            .setMeasurementUnit(SECONDS)
+            .setRequired(false)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
+    /**
+     * @see ActiveMQDefaultConfiguration#getDefaultJdbcLockRenewPeriodMillis()
+     */
+    public static final AttributeDefinition JOURNAL_JDBC_LOCK_RENEW_PERIOD = create("journal-jdbc-lock-renew-period", INT)
+            .setAttributeGroup("journal")
+            .setXmlName("jdbc-lock-renew-period")
+            .setDefaultValue(new ModelNode(4))
+            .setMeasurementUnit(SECONDS)
+            .setRequired(false)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
 
     /**
      * @see ActiveMQDefaultConfiguration#getDefaultJdbcNetworkTimeout()
@@ -577,8 +616,10 @@ public class ServerDefinition extends PersistentResourceDefinition {
             PAGE_MAX_CONCURRENT_IO, CREATE_BINDINGS_DIR, CREATE_JOURNAL_DIR, JOURNAL_TYPE, JOURNAL_BUFFER_TIMEOUT,
             JOURNAL_BUFFER_SIZE,
             JOURNAL_DATASOURCE, JOURNAL_DATABASE,
+            JOURNAL_JDBC_LOCK_EXPIRATION, JOURNAL_JDBC_LOCK_RENEW_PERIOD,
             JOURNAL_JDBC_NETWORK_TIMEOUT,
             JOURNAL_MESSAGES_TABLE, JOURNAL_BINDINGS_TABLE, JOURNAL_JMS_BINDINGS_TABLE, JOURNAL_LARGE_MESSAGES_TABLE, JOURNAL_PAGE_STORE_TABLE,
+            JOURNAL_NODE_MANAGER_STORE_TABLE,
             JOURNAL_SYNC_TRANSACTIONAL, JOURNAL_SYNC_NON_TRANSACTIONAL, LOG_JOURNAL_WRITE_RATE,
             JOURNAL_FILE_SIZE, JOURNAL_MIN_FILES, JOURNAL_POOL_FILES, JOURNAL_COMPACT_PERCENTAGE, JOURNAL_COMPACT_MIN_FILES, JOURNAL_MAX_IO,
             PERF_BLAST_PAGES, RUN_SYNC_SPEED_TEST, SERVER_DUMP_INTERVAL, MEMORY_WARNING_THRESHOLD, MEMORY_MEASURE_INTERVAL,
