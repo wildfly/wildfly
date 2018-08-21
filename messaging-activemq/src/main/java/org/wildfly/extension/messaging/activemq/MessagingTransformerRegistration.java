@@ -72,6 +72,10 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
         // WFLY-10165 - journal-jdbc-network-timeout default value is 20 seconds.
         defaultValueAttributeConverter(server, ServerDefinition.JOURNAL_JDBC_NETWORK_TIMEOUT);
 
+        rejectDefinedAttributeWithDefaultValue(server, ServerDefinition.JOURNAL_JDBC_LOCK_EXPIRATION,
+                ServerDefinition.JOURNAL_JDBC_LOCK_RENEW_PERIOD,
+                ServerDefinition.JOURNAL_NODE_MANAGER_STORE_TABLE);
+
         ResourceTransformationDescriptionBuilder addressSetting = server.addChildResource(MessagingExtension.ADDRESS_SETTING_PATH);
         rejectDefinedAttributeWithDefaultValue(addressSetting,
                 AddressSettingDefinition.AUTO_CREATE_QUEUES,
