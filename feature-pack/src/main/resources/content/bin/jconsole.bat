@@ -50,10 +50,20 @@ set "CLASSPATH=%CLASSPATH%;%JBOSS_HOME%\bin\client\jboss-cli-client.jar"
 
 rem echo %CLASSPATH%
 
-if "%*" == "" (
-    "%JAVA_HOME%\bin\jconsole.exe" "-J-Djava.class.path=%CLASSPATH%"
+"%JAVA_HOME%\bin\java.exe" --add-modules=java.se -version >nul 2>&1 && (set MODULAR_JDK=true) || (set MODULAR_JDK=false)
+
+if "%MODULAR_JDK%" == "true" (
+ if "%*" == "" (
+    "%JAVA_HOME%\bin\jconsole.exe" "-J--add-modules=jdk.unsupported" "-J-Djava.class.path=%CLASSPATH%"
+ ) else (
+    "%JAVA_HOME%\bin\jconsole.exe" "-J--add-modules=jdk.unsupported" "-J-Djava.class.path=%CLASSPATH%" %*
+ )   
 ) else (
+ if "%*" == "" (
+    "%JAVA_HOME%\bin\jconsole.exe" "-J-Djava.class.path=%CLASSPATH%"
+ ) else (
     "%JAVA_HOME%\bin\jconsole.exe" "-J-Djava.class.path=%CLASSPATH%" %*
+ )
 )
 
 :END
