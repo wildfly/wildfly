@@ -43,7 +43,6 @@ import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.singleton.service.ValueServiceActivator;
 import org.jboss.as.test.clustering.cluster.singleton.service.ValueServiceServlet;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
-import org.jboss.as.test.shared.IntermittentFailure;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -87,8 +86,6 @@ public class SingletonBackupServiceTestCase extends AbstractClusteringTestCase {
             @ArquillianResource(ValueServiceServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource(ValueServiceServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
             throws IOException, URISyntaxException {
-
-        IntermittentFailure.thisTestIsFailingIntermittently("WFLY-10233");
 
         // Needed to be able to inject ArquillianResource
         stop(NODE_2);
