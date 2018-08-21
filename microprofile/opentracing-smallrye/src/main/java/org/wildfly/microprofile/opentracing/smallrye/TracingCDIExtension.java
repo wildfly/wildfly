@@ -34,8 +34,9 @@ import javax.enterprise.inject.spi.ProcessAnnotatedType;
 public class TracingCDIExtension implements Extension {
 
     public void observeBeforeBeanDiscovery(@Observes BeforeBeanDiscovery bbd, BeanManager manager) {
-        bbd.addAnnotatedType(manager.createAnnotatedType(TracerProducer.class));
-        bbd.addAnnotatedType(manager.createAnnotatedType(SmallRyeTracingCDIInterceptor.class));
+        String extensionName = TracingCDIExtension.class.getName();
+        bbd.addAnnotatedType(manager.createAnnotatedType(TracerProducer.class), extensionName + "-" + TracerProducer.class.getName());
+        bbd.addAnnotatedType(manager.createAnnotatedType(SmallRyeTracingCDIInterceptor.class), extensionName + "-" + SmallRyeTracingCDIInterceptor.class.getName());
     }
 
     public void skipTracerBeans(@Observes ProcessAnnotatedType<? extends Tracer> processAnnotatedType) {
