@@ -35,8 +35,6 @@
         <artifact name="${io.opentracing.contrib:opentracing-tracerresolver}"/>
         <artifact name="${io.jaegertracing:jaeger-core}"/>
         <artifact name="${io.jaegertracing:jaeger-thrift}"/>
-
-        <artifact name="${com.google.code.gson:gson}"/>
     </resources>
 
     <dependencies>
@@ -45,6 +43,9 @@
 
         <module name="org.slf4j"/>
         <module name="org.apache.httpcomponents"/>
+        <module name="org.apache.thrift"/>
+        <module name="com.google.code.gson"/>
+        <module name="com.squareup.okhttp3"/>
 
         <module name="org.jboss.logging"/>
 
