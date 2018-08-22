@@ -27,10 +27,10 @@ Kerberos realm in use and the address of the KDC.
   </system-properties>
 ----
 
-[[http-authentication]]
+[[http-authentication-kerberos]]
 == HTTP Authentication
 
-[[legacy-security-realm]]
+[[legacy-security-realm-kerberos]]
 === Legacy Security Realm
 
 A legacy security realm can be define so that SPNEGO authentication can
@@ -207,7 +207,7 @@ authentication section].
 [[remoting-sasl-authentication]]
 == Remoting / SASL Authentication
 
-[[legacy-security-realm-1]]
+[[legacy-security-realm-kerberos-1]]
 === Legacy Security Realm
 
 It is also possible to define a legacy security realm for Kerberos /
