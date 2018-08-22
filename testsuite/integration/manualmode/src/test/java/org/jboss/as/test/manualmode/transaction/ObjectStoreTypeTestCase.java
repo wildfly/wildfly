@@ -172,6 +172,20 @@ public class ObjectStoreTypeTestCase extends AbstractCliTestBase {
         }
     }
 
+    /**
+     * Test if 0 can be set for default transaction timeout
+     * @throws Exception
+     */
+    @Test
+    public void testSet0ToTransactionTimeout() throws Exception {
+        try {
+            cli.sendLine("/subsystem=transactions:write-attribute(name=default-timeout,value=0)", true);
+            checkAttributeIsAsExpected("default-timeout", "0");
+        } finally {
+            setDefaultObjectStore();
+        }
+    }
+
     private void checkAttributeIsAsExpected(String attributeName, String expectedValue) {
         try {
             cli.sendLine("/subsystem=transactions:read-attribute(name=" + attributeName + ")");
