@@ -34,7 +34,8 @@ import org.wildfly.clustering.singleton.SingletonRequirement;
  * @author Paul Ferraro
  */
 public enum SingletonServiceNameFactory implements DefaultableUnaryServiceNameFactoryProvider {
-    SINGLETON_POLICY(SingletonRequirement.SINGLETON_POLICY)
+    @Deprecated LEGACY_SINGLETON_POLICY(SingletonRequirement.SINGLETON_POLICY),
+    SINGLETON_POLICY(SingletonRequirement.POLICY),
     ;
     private final UnaryServiceNameFactory factory;
     private final ServiceNameFactory defaultFactory;

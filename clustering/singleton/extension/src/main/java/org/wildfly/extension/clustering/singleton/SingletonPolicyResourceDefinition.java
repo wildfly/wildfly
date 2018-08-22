@@ -30,14 +30,12 @@ import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.clustering.controller.validation.IntRangeValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
@@ -62,13 +60,10 @@ public class SingletonPolicyResourceDefinition extends ChildResourceDefinition<M
     }
 
     enum Capability implements CapabilityProvider {
-        POLICY(SingletonRequirement.SINGLETON_POLICY),
+        @Deprecated LEGACY_POLICY(SingletonRequirement.SINGLETON_POLICY),
+        POLICY(SingletonRequirement.POLICY),
         ;
         private final org.jboss.as.clustering.controller.Capability capability;
-
-        Capability(String name) {
-            this.capability = () -> RuntimeCapability.Builder.of(name, true).build();
-        }
 
         Capability(UnaryRequirement requirement) {
             this.capability = new UnaryRequirementCapability(requirement);
@@ -145,7 +140,7 @@ public class SingletonPolicyResourceDefinition extends ChildResourceDefinition<M
                 .addCapabilities(Capability.class)
                 .addRequiredSingletonChildren(SimpleElectionPolicyResourceDefinition.PATH)
                 ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler(SingletonPolicyServiceConfigurator::new);
+        ResourceServiceHandler handler = new SingletonPolicyServiceHandler();
         new SimpleResourceRegistration(descriptor, handler).register(registration);
 
         new RandomElectionPolicyResourceDefinition().register(registration);

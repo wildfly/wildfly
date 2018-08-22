@@ -50,7 +50,7 @@ import org.wildfly.clustering.singleton.SingletonDefaultRequirement;
 public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
 
     private static final AdditionalInitialization ADDITIONAL_INITIALIZATION = AdditionalInitialization.withCapabilities(
-            SingletonDefaultRequirement.SINGLETON_POLICY.getName());
+            SingletonDefaultRequirement.POLICY.getName());
 
     public Ejb3SubsystemUnitTestCase() {
         super(EJB3Extension.SUBSYSTEM_NAME, new EJB3Extension());

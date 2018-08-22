@@ -65,7 +65,8 @@ public class SingletonResourceDefinition extends SubsystemResourceDefinition<Sub
     static final PathElement PATH = pathElement(SingletonExtension.SUBSYSTEM_NAME);
 
     enum Capability implements CapabilityProvider {
-        DEFAULT_POLICY(SingletonDefaultRequirement.SINGLETON_POLICY),
+        @Deprecated DEFAULT_LEGACY_POLICY(SingletonDefaultRequirement.SINGLETON_POLICY),
+        DEFAULT_POLICY(SingletonDefaultRequirement.POLICY),
         ;
         private final org.jboss.as.clustering.controller.Capability capability;
 
@@ -80,7 +81,7 @@ public class SingletonResourceDefinition extends SubsystemResourceDefinition<Sub
     }
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        DEFAULT("default", ModelType.STRING, new CapabilityReference(Capability.DEFAULT_POLICY, SingletonRequirement.SINGLETON_POLICY)),
+        DEFAULT("default", ModelType.STRING, new CapabilityReference(Capability.DEFAULT_POLICY, SingletonRequirement.POLICY)),
         ;
         private final SimpleAttributeDefinition definition;
 

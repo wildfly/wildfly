@@ -22,9 +22,15 @@
 
 package org.wildfly.clustering.server.singleton;
 
+import java.util.Collection;
+import java.util.Collections;
+
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
+import org.jboss.as.clustering.controller.IdentityLegacyCapabilityServiceConfigurator;
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.server.IdentityCacheRequirementServiceConfiguratorProvider;
+import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
 import org.wildfly.clustering.spi.IdentityCacheServiceConfiguratorProvider;
+import org.wildfly.clustering.spi.ServiceNameRegistry;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 
 /**
@@ -32,9 +38,15 @@ import org.wildfly.clustering.spi.ClusteringCacheRequirement;
  */
 @Deprecated
 @MetaInfServices(IdentityCacheServiceConfiguratorProvider.class)
-public class IdentitySingletonServiceBuilderFactoryBuilderProvider extends IdentityCacheRequirementServiceConfiguratorProvider {
+public class IdentitySingletonServiceBuilderFactoryBuilderProvider implements IdentityCacheServiceConfiguratorProvider {
 
-    public IdentitySingletonServiceBuilderFactoryBuilderProvider() {
-        super(ClusteringCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY);
+    @Override
+    public Collection<CapabilityServiceConfigurator> getServiceConfigurators(ServiceNameRegistry<ClusteringCacheRequirement> registry, String containerName, String cacheName, String targetCacheName) {
+        return Collections.singleton(new IdentityLegacyCapabilityServiceConfigurator<>(registry.getServiceName(ClusteringCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY), SingletonServiceBuilderFactory.class, ClusteringCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY, containerName, targetCacheName));
+    }
+
+    @Override
+    public String toString() {
+        return this.getClass().getName();
     }
 }
