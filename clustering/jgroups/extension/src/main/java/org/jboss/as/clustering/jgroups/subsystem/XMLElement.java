@@ -85,6 +85,11 @@ public enum XMLElement {
         return this.name;
     }
 
+    @Override
+    public String toString() {
+        return this.name;
+    }
+
     private static final Map<String, XMLElement> elements = new HashMap<>();
     private static final Map<String, XMLElement> protocols = new HashMap<>();
     private static final Map<String, XMLElement> tokens = new HashMap<>();
