@@ -55,7 +55,8 @@ public class DiscoveryGroupDefinition extends PersistentResourceDefinition {
     public static final PathElement PATH = PathElement.pathElement(CommonAttributes.DISCOVERY_GROUP);
 
     public static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.messaging.activemq.discovery-group", true)
-            .setDynamicNameMapper(address -> new String[] { address.getParent().getLastElement().getValue(), address.getLastElement().getValue() })
+            // WFLY-10518 - only the name of the discovery-group is used for its capability as the resource can be
+            // either under server (and it is deprecated) or under the subsystem.
             .build();
 
     public static final SimpleAttributeDefinition REFRESH_TIMEOUT = create("refresh-timeout", ModelType.LONG)
@@ -88,11 +89,10 @@ public class DiscoveryGroupDefinition extends PersistentResourceDefinition {
 
     private final boolean registerRuntimeOnly;
 
-    public DiscoveryGroupDefinition(final boolean registerRuntimeOnly) {
-        super(PATH,
-                MessagingExtension.getResourceDescriptionResolver(CommonAttributes.DISCOVERY_GROUP),
-                DiscoveryGroupAdd.INSTANCE,
-                DiscoveryGroupRemove.INSTANCE);
+    protected DiscoveryGroupDefinition(final boolean registerRuntimeOnly, final boolean subsystemResource) {
+        super(new Parameters(PATH, MessagingExtension.getResourceDescriptionResolver(CommonAttributes.DISCOVERY_GROUP))
+                .setAddHandler(DiscoveryGroupAdd.INSTANCE)
+                .setRemoveHandler(DiscoveryGroupRemove.INSTANCE));
         this.registerRuntimeOnly = registerRuntimeOnly;
     }
 

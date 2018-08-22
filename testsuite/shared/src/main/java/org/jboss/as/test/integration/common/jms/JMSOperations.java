@@ -41,6 +41,8 @@ public interface JMSOperations {
 
     ModelNode getServerAddress();
 
+    ModelNode getSubsystemAddress();
+
     String getProviderName();
 
     void createJmsQueue(final String queueName, final String jndiName);
@@ -58,6 +60,10 @@ public interface JMSOperations {
     void addJmsConnectionFactory(final String name, final String jndiName, ModelNode attributes);
 
     void removeJmsConnectionFactory(final String name);
+
+    void addJmsExternalConnectionFactory(final String name, final String jndiName, ModelNode attributes);
+
+    void removeJmsExternalConnectionFactory(final String name);
 
     void addJmsBridge(String name, ModelNode attributes);
 
@@ -88,6 +94,11 @@ public interface JMSOperations {
     void addHttpConnector(String connectorName, String socketBinding, String endpoint);
 
     void removeHttpConnector(String connectorName);
+
+
+    void addExternalHttpConnector(String connectorName, String socketBinding, String endpoint);
+
+    void removeExternalHttpConnector(String connectorName);
 
     /**
      * Set system properties for the given destination and resourceAdapter.

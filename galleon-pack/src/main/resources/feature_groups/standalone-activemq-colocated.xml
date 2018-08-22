@@ -94,14 +94,14 @@
                     <param name="connectors" value="[http-connector-backup]"/>
                 </feature>
                 <feature spec="subsystem.messaging-activemq.server.discovery-group">
-                    <param name="discovery-group" value="dg-group1"/>
+                    <param name="discovery-group" value="dg-group2"/>
                     <param name="jgroups-cluster" value="activemq-cluster"/>
                 </feature>
                 <feature spec="subsystem.messaging-activemq.server.cluster-connection">
                     <param name="cluster-connection" value="my-cluster"/>
                     <param name="cluster-connection-address" value="jms"/>
                     <param name="connector-name" value="http-connector-backup"/>
-                    <param name="discovery-group" value="dg-group1"/>
+                    <param name="discovery-group" value="dg-group2"/>
                 </feature>
             </feature>
         </feature>

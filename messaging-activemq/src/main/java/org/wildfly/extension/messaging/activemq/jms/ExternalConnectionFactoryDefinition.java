@@ -22,8 +22,6 @@
 
 package org.wildfly.extension.messaging.activemq.jms;
 
-import static java.lang.System.arraycopy;
-import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttribute.getDefinitions;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -38,31 +36,22 @@ import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Regular;
 
 /**
- * JMS Connection Factory resource definition
+ * JMS Connection Factory resource definition without a broker.
  *
- * @author <a href="http://jmesnil.net">Jeff Mesnil</a> (c) 2012 Red Hat Inc.
+ * @author Emmanuel Hugonnet (c) 2018 Red Hat, inc.
  */
-public class ConnectionFactoryDefinition extends PersistentResourceDefinition {
+public class ExternalConnectionFactoryDefinition extends PersistentResourceDefinition {
 
-    static final AttributeDefinition[] concat(AttributeDefinition[] common, AttributeDefinition... specific) {
-        int size = common.length + specific.length;
-        AttributeDefinition[] result = new AttributeDefinition[size];
-        arraycopy(common, 0, result, 0, common.length);
-        arraycopy(specific, 0, result, common.length, specific.length);
-        return result;
-    }
-
-    public static final AttributeDefinition[] ATTRIBUTES = concat(Regular.ATTRIBUTES, getDefinitions(Common.ATTRIBUTES));
-
-    static final AttributeDefinition[] READONLY_ATTRIBUTES = { Regular.INITIAL_MESSAGE_PACKET_SIZE };
+    public static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] {
+        CommonAttributes.HA, Regular.FACTORY_TYPE, Common.DISCOVERY_GROUP, Common.CONNECTORS, Common.ENTRIES};
 
     private final boolean registerRuntimeOnly;
 
-    public ConnectionFactoryDefinition(final boolean registerRuntimeOnly) {
+    public ExternalConnectionFactoryDefinition(final boolean registerRuntimeOnly) {
         super(MessagingExtension.CONNECTION_FACTORY_PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.CONNECTION_FACTORY),
-                ConnectionFactoryAdd.INSTANCE,
-                ConnectionFactoryRemove.INSTANCE);
+                ExternalConnectionFactoryAdd.INSTANCE,
+                ExternalConnectionFactoryRemove.INSTANCE);
         this.registerRuntimeOnly = registerRuntimeOnly;
     }
 
@@ -76,11 +65,6 @@ public class ConnectionFactoryDefinition extends PersistentResourceDefinition {
         for (AttributeDefinition attr : ATTRIBUTES) {
             if (registerRuntimeOnly || !attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
                 registry.registerReadWriteAttribute(attr, null, ConnectionFactoryWriteAttributeHandler.INSTANCE);
-            }
-        }
-        if (registerRuntimeOnly) {
-            for (AttributeDefinition attr : READONLY_ATTRIBUTES) {
-                registry.registerReadOnlyAttribute(attr, ConnectionFactoryReadAttributeHandler.INSTANCE);
             }
         }
     }

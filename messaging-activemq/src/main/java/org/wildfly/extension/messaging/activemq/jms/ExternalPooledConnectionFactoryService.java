@@ -19,17 +19,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.wildfly.extension.messaging.activemq.jms;
 
-import static java.util.Collections.EMPTY_LIST;
 import static org.jboss.as.naming.deployment.ContextNames.BindInfo;
 import static org.wildfly.extension.messaging.activemq.BinderServiceUtil.installAliasBinderService;
-import static org.wildfly.extension.messaging.activemq.MessagingServices.getActiveMQServiceName;
+import static org.wildfly.extension.messaging.activemq.TransportConfigOperationHandlers.isOutBoundSocketBinding;
 import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Pooled.REBALANCE_CONNECTIONS_PROP_NAME;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -40,7 +39,6 @@ import org.apache.activemq.artemis.api.core.BroadcastEndpointFactory;
 import org.apache.activemq.artemis.api.core.DiscoveryGroupConfiguration;
 import org.apache.activemq.artemis.api.core.TransportConfiguration;
 import org.apache.activemq.artemis.api.core.UDPBroadcastEndpointFactory;
-import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.jboss.as.connector.metadata.common.CredentialImpl;
 import org.jboss.as.connector.metadata.common.SecurityImpl;
 import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeployment;
@@ -54,6 +52,8 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.NamingService;
+import org.jboss.as.network.ManagedBinding;
+import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.server.Services;
 import org.jboss.as.txn.service.TxnServices;
@@ -117,10 +117,16 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.spi.ClusteringDefaultRequirement;
+import org.wildfly.clustering.spi.ClusteringRequirement;
 import org.wildfly.common.function.ExceptionSupplier;
-import org.wildfly.extension.messaging.activemq.ActiveMQActivationService;
 import org.wildfly.extension.messaging.activemq.ActiveMQResourceAdapter;
+import org.wildfly.extension.messaging.activemq.DiscoveryGroupAdd;
+import org.wildfly.extension.messaging.activemq.GroupBindingService;
+import org.wildfly.extension.messaging.activemq.MessagingExtension;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
+import org.wildfly.extension.messaging.activemq.TransportConfigOperationHandlers;
 import org.wildfly.extension.messaging.activemq.broadcast.CommandDispatcherBroadcastEndpointFactory;
 import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 import org.wildfly.security.credential.PasswordCredential;
@@ -130,14 +136,11 @@ import org.wildfly.security.password.interfaces.ClearPassword;
 /**
  * A service which translates a pooled connection factory into a resource adapter driven connection pool
  *
- * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
- * @author <a href="mailto:jbertram@redhat.com">Justin Bertram</a>
- * @author Jason T. Greene
- *         Date: 5/13/11
- *         Time: 2:21 PM
+ * @author Emmanuel Hugonnet (c) 2018 Red Hat, inc.
  */
-public class PooledConnectionFactoryService implements Service<Void> {
+public class ExternalPooledConnectionFactoryService implements Service<Void> {
 
+    private static final ServiceName JBOSS_MESSAGING_ACTIVEMQ = ServiceName.JBOSS.append(MessagingExtension.SUBSYSTEM_NAME);
     private static final List<LocalizedXsdString> EMPTY_LOCL = Collections.emptyList();
     public static final String CONNECTOR_CLASSNAME = "connectorClassName";
     public static final String CONNECTION_PARAMETERS = "connectionParameters";
@@ -168,33 +171,37 @@ public class PooledConnectionFactoryService implements Service<Void> {
     public static final String JGROUPS_CHANNEL_REF_NAME = "jgroupsChannelRefName";
 
     private Injector<Object> transactionManager = new InjectedValue<Object>();
-    private List<String> connectors;
-    private String discoveryGroupName;
+    private final DiscoveryGroupConfiguration discoveryGroupConfiguration;
+    private final TransportConfiguration[] connectors;
     private List<PooledConnectionFactoryConfigProperties> adapterParams;
     private String name;
-    private Map<String, SocketBinding> socketBindings = new HashMap<String, SocketBinding>();
-    private InjectedValue<ActiveMQServer> activeMQServer = new InjectedValue<>();
+    private Map<String, SocketBinding> socketBindings = new HashMap<>();
+    private Map<String, OutboundSocketBinding> outboundSocketBindings = new HashMap<>();
+    private Map<String, SocketBinding> groupBindings = new HashMap<>();
+    // mapping between the {discovery}-groups and the cluster names they use
+    private final Map<String, String> clusterNames = new HashMap<>();
+    // mapping between the {discovery}-groups and the command dispatcher factory they use
+    private final Map<String, CommandDispatcherFactory> commandDispatcherFactories = new HashMap<>();
     private BindInfo bindInfo;
-    private final boolean pickAnyConnectors;
     private List<String> jndiAliases;
     private String txSupport;
     private int minPoolSize;
     private int maxPoolSize;
-    private String serverName;
-    private final String jgroupsChannelName;
+    private final String jgroupsClusterName;
+    private final String jgroupChannelName;
     private final boolean createBinderService;
     private final String managedConnectionPoolClassName;
     // can be null. In that case the behaviour is depending on the IronJacamar container setting.
     private final Boolean enlistmentTrace;
     private InjectedValue<ExceptionSupplier<CredentialSource, Exception>> credentialSourceSupplier = new InjectedValue<>();
 
-
-    public PooledConnectionFactoryService(String name, List<String> connectors, String discoveryGroupName, String serverName, String jgroupsChannelName, List<PooledConnectionFactoryConfigProperties> adapterParams, List<String> jndiNames, String txSupport, int minPoolSize, int maxPoolSize, String managedConnectionPoolClassName, Boolean enlistmentTrace) {
+    public ExternalPooledConnectionFactoryService(String name, TransportConfiguration[] connectors, DiscoveryGroupConfiguration groupConfiguration, String jgroupsClusterName,
+            String jgroupChannelName, List<PooledConnectionFactoryConfigProperties> adapterParams, List<String> jndiNames, String txSupport, int minPoolSize, int maxPoolSize, String managedConnectionPoolClassName, Boolean enlistmentTrace) {
         this.name = name;
         this.connectors = connectors;
-        this.discoveryGroupName = discoveryGroupName;
-        this.serverName = serverName;
-        this.jgroupsChannelName = jgroupsChannelName;
+        this.discoveryGroupConfiguration = groupConfiguration;
+        this.jgroupsClusterName = jgroupsClusterName;
+        this.jgroupChannelName = jgroupChannelName;
         this.adapterParams = adapterParams;
         initJNDIBindings(jndiNames);
         createBinderService = true;
@@ -203,32 +210,13 @@ public class PooledConnectionFactoryService implements Service<Void> {
         this.maxPoolSize = maxPoolSize;
         this.managedConnectionPoolClassName = managedConnectionPoolClassName;
         this.enlistmentTrace = enlistmentTrace;
-        this.pickAnyConnectors = false;
-    }
-
-    public PooledConnectionFactoryService(String name, List<String> connectors, String discoveryGroupName, String serverName, String jgroupsChannelName, List<PooledConnectionFactoryConfigProperties> adapterParams, BindInfo bindInfo, String txSupport, int minPoolSize, int maxPoolSize, String managedConnectionPoolClassName, Boolean enlistmentTrace, boolean pickAnyConnectors) {
-        this.name = name;
-        this.connectors = connectors;
-        this.discoveryGroupName = discoveryGroupName;
-        this.serverName = serverName;
-        this.jgroupsChannelName = jgroupsChannelName;
-        this.adapterParams = adapterParams;
-        this.bindInfo = bindInfo;
-        this.jndiAliases = EMPTY_LIST;
-        this.createBinderService = false;
-        this.txSupport = txSupport;
-        this.minPoolSize = minPoolSize;
-        this.maxPoolSize = maxPoolSize;
-        this.managedConnectionPoolClassName = managedConnectionPoolClassName;
-        this.enlistmentTrace = enlistmentTrace;
-        this.pickAnyConnectors = pickAnyConnectors;
     }
 
     private void initJNDIBindings(List<String> jndiNames) {
         // create the definition with the 1st jndi names and create jndi aliases for the rest
         String jndiName = jndiNames.get(0);
         this.bindInfo = ContextNames.bindInfoFor(jndiName);
-        this.jndiAliases = new ArrayList<String>();
+        this.jndiAliases = new ArrayList<>();
         if (jndiNames.size() > 1) {
             jndiAliases = jndiNames.subList(1, jndiNames.size());
         }
@@ -242,99 +230,89 @@ public class PooledConnectionFactoryService implements Service<Void> {
         return credentialSourceSupplier;
     }
 
-    public static PooledConnectionFactoryService installService(ServiceTarget serviceTarget,
-                                      String name,
-                                      String serverName,
-                                      List<String> connectors,
-                                      String discoveryGroupName,
-                                      String jgroupsChannelName,
-                                      List<PooledConnectionFactoryConfigProperties> adapterParams,
-                                      BindInfo bindInfo,
-                                      String txSupport,
-                                      int minPoolSize,
-                                      int maxPoolSize,
-                                      String managedConnectionPoolClassName,
-                                      Boolean enlistmentTrace,
-                                      boolean pickAnyConnectors) {
+    public static ExternalPooledConnectionFactoryService installService(OperationContext context,
+            String name,
+            TransportConfiguration[] connectors,
+            DiscoveryGroupConfiguration groupConfiguration,
+            Set<String> connectorsSocketBindings,
+            String jgroupClusterName,
+            String jgroupChannelName,
+            List<PooledConnectionFactoryConfigProperties> adapterParams,
+            List<String> jndiNames,
+            String txSupport,
+            int minPoolSize,
+            int maxPoolSize,
+            String managedConnectionPoolClassName,
+            Boolean enlistmentTrace,
+            ModelNode model) throws OperationFailedException {
 
-        ServiceName serverServiceName = MessagingServices.getActiveMQServiceName(serverName);
-        ServiceName serviceName = JMSServices.getPooledConnectionFactoryBaseServiceName(serverServiceName).append(name);
-
-        PooledConnectionFactoryService service = new PooledConnectionFactoryService(name,
-                connectors, discoveryGroupName, serverName, jgroupsChannelName, adapterParams,
-                bindInfo, txSupport, minPoolSize, maxPoolSize, managedConnectionPoolClassName, enlistmentTrace, pickAnyConnectors);
-
-        installService0(serviceTarget, serverServiceName, serviceName, service);
-        return service;
-    }
-
-    public static PooledConnectionFactoryService installService(OperationContext context,
-                                      String name,
-                                      String serverName,
-                                      List<String> connectors,
-                                      String discoveryGroupName,
-                                      String jgroupsChannelName,
-                                      List<PooledConnectionFactoryConfigProperties> adapterParams,
-                                      List<String> jndiNames,
-                                      String txSupport,
-                                      int minPoolSize,
-                                      int maxPoolSize,
-                                      String managedConnectionPoolClassName,
-                                      Boolean enlistmentTrace,
-                                      ModelNode model) throws OperationFailedException {
-
-        ServiceName serverServiceName = MessagingServices.getActiveMQServiceName(serverName);
-        ServiceName serviceName = JMSServices.getPooledConnectionFactoryBaseServiceName(serverServiceName).append(name);
-        PooledConnectionFactoryService service = new PooledConnectionFactoryService(name,
-                connectors, discoveryGroupName, serverName, jgroupsChannelName, adapterParams,
+        ServiceName serviceName = JMSServices.getPooledConnectionFactoryBaseServiceName(JBOSS_MESSAGING_ACTIVEMQ).append(name);
+        ExternalPooledConnectionFactoryService service = new ExternalPooledConnectionFactoryService(name,
+                connectors, groupConfiguration, jgroupClusterName, jgroupChannelName, adapterParams,
                 jndiNames, txSupport, minPoolSize, maxPoolSize, managedConnectionPoolClassName, enlistmentTrace);
 
-        installService0(context, serverServiceName, serviceName, service, model);
+        installService0(context, serviceName, service, groupConfiguration, jgroupClusterName, jgroupChannelName, connectorsSocketBindings, model);
         return service;
-    }
-
-    private static void installService0(ServiceTarget serviceTarget, ServiceName serverServiceName, ServiceName serviceName, PooledConnectionFactoryService service) {
-        ServiceBuilder serviceBuilder = createServiceBuilder(serviceTarget, serverServiceName, serviceName, service);
-        serviceBuilder.install();
     }
 
     private static void installService0(OperationContext context,
-                                        ServiceName serverServiceName,
-                                        ServiceName serviceName,
-                                        PooledConnectionFactoryService service,
-                                        ModelNode model) throws OperationFailedException {
-        ServiceBuilder serviceBuilder = createServiceBuilder(context.getServiceTarget(), serverServiceName, serviceName, service);
+            ServiceName serviceName,
+            ExternalPooledConnectionFactoryService service,
+            DiscoveryGroupConfiguration groupConfiguration,
+            String jgroupsClusterName,
+            String jgroupsChannelName,
+            Set<String> connectorsSocketBindings,
+            ModelNode model) throws OperationFailedException {
+        ServiceBuilder serviceBuilder = createServiceBuilder(context.getServiceTarget(), serviceName, service);
         ModelNode credentialReference = ConnectionFactoryAttributes.Pooled.CREDENTIAL_REFERENCE.resolveModelAttribute(context, model);
         if (credentialReference.isDefined()) {
             service.getCredentialSourceSupplierInjector().inject(CredentialReference.getCredentialSourceSupplier(context, ConnectionFactoryAttributes.Pooled.CREDENTIAL_REFERENCE, model, serviceBuilder));
         }
+        for (final String connectorSocketBinding : connectorsSocketBindings) {
+            // find whether the connectorSocketBinding references a SocketBinding or an OutboundSocketBinding
+            boolean outbound = isOutBoundSocketBinding(context, connectorSocketBinding);
+            if (outbound) {
+                final ServiceName outboundSocketName = OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME.append(connectorSocketBinding);
+                serviceBuilder.addDependency(outboundSocketName, OutboundSocketBinding.class, service.getOutboundSocketBindingInjector(connectorSocketBinding));
+            } else {
+                final ServiceName socketName = SocketBinding.JBOSS_BINDING_NAME.append(connectorSocketBinding);
+                serviceBuilder.addDependency(socketName, SocketBinding.class, service.getSocketBindingInjector(connectorSocketBinding));
+            }
+        }
+        if (groupConfiguration != null) {
+            final String key = "discovery" + groupConfiguration.getName();
+            if (jgroupsClusterName != null) {
+                ServiceName commandDispatcherFactoryServiceName = jgroupsChannelName != null ? ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context, jgroupsChannelName) : ClusteringDefaultRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context);
+                serviceBuilder.addDependency(commandDispatcherFactoryServiceName, CommandDispatcherFactory.class, service.getCommandDispatcherFactoryInjector(key));
+                service.clusterNames.put(key, jgroupsClusterName);
+            } else {
+                final ServiceName groupBinding = GroupBindingService.getDiscoveryBaseServiceName(JBOSS_MESSAGING_ACTIVEMQ).append(groupConfiguration.getName());
+                serviceBuilder.addDependency(groupBinding, SocketBinding.class, service.getGroupBindingInjector(key));
+            }
+        }
         serviceBuilder.install();
     }
 
-    private static ServiceBuilder createServiceBuilder(ServiceTarget serviceTarget, ServiceName serverServiceName, ServiceName serviceName, PooledConnectionFactoryService service) {
+    private static ServiceBuilder createServiceBuilder(ServiceTarget serviceTarget, ServiceName serviceName, ExternalPooledConnectionFactoryService service) {
         ServiceBuilder serviceBuilder = serviceTarget
                 .addService(serviceName, service)
                 .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, service.transactionManager)
-                .addDependency(serverServiceName, ActiveMQServer.class, service.activeMQServer)
-                .addDependency(ActiveMQActivationService.getServiceName(serverServiceName))
-                .addDependency(JMSServices.getJmsManagerBaseServiceName(serverServiceName))
                 // ensures that Artemis client thread pools are not stopped before any deployment depending on a pooled-connection-factory
-                .addDependency(MessagingServices.ACTIVEMQ_CLIENT_THREAD_POOL)
-                .setInitialMode(ServiceController.Mode.PASSIVE);
+                .addDependency(MessagingServices.ACTIVEMQ_CLIENT_THREAD_POOL);
         return serviceBuilder;
     }
 
+    @Override
     public Void getValue() throws IllegalStateException, IllegalArgumentException {
         return null;
     }
 
-
+    @Override
     public void start(StartContext context) throws StartException {
         ServiceTarget serviceTarget = context.getChildTarget();
         try {
             createService(serviceTarget, context.getController().getServiceContainer());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw MessagingLogger.ROOT_LOGGER.failedToCreate(e, "resource adapter");
         }
 
@@ -348,20 +326,10 @@ public class PooledConnectionFactoryService implements Service<Void> {
         try {
             StringBuilder connectorClassname = new StringBuilder();
             StringBuilder connectorParams = new StringBuilder();
-            // if there is no discovery-group and the connector list is empty,
-            // pick the first connector available if pickAnyConnectors is true
-            if (discoveryGroupName == null && connectors.isEmpty() && pickAnyConnectors) {
-                Set<String> connectorNames = activeMQServer.getValue().getConfiguration().getConnectorConfigurations().keySet();
-                if (connectorNames.size() > 0) {
-                    String connectorName = connectorNames.iterator().next();
-                    MessagingLogger.ROOT_LOGGER.connectorForPooledConnectionFactory(name, connectorName);
-                    connectors.add(connectorName);
-                }
-            }
-            for (String connector : connectors) {
-                TransportConfiguration tc = activeMQServer.getValue().getConfiguration().getConnectorConfigurations().get(connector);
-                if(tc == null) {
-                    throw MessagingLogger.ROOT_LOGGER.connectorNotDefined(connector);
+            TransportConfigOperationHandlers.processConnectorBindings(Arrays.asList(connectors), socketBindings, outboundSocketBindings);
+            for (TransportConfiguration tc : connectors) {
+                if (tc == null) {
+                    throw MessagingLogger.ROOT_LOGGER.connectorNotDefined(tc.getName());
                 }
                 if (connectorClassname.length() > 0) {
                     connectorClassname.append(",");
@@ -386,21 +354,36 @@ public class PooledConnectionFactoryService implements Service<Void> {
                 properties.add(simpleProperty15(CONNECTION_PARAMETERS, STRING_TYPE, connectorParams.toString()));
             }
 
-            if(discoveryGroupName != null) {
-                DiscoveryGroupConfiguration discoveryGroupConfiguration = activeMQServer.getValue().getConfiguration().getDiscoveryGroupConfigurations().get(discoveryGroupName);
-                BroadcastEndpointFactory bgCfg = discoveryGroupConfiguration.getBroadcastEndpointFactory();
+            if (discoveryGroupConfiguration != null) {
+
+                final String dgName = discoveryGroupConfiguration.getName();
+                final String key = "discovery" + dgName;
+                final DiscoveryGroupConfiguration config;
+                if (commandDispatcherFactories.containsKey(key)) {
+                    CommandDispatcherFactory commandDispatcherFactory = commandDispatcherFactories.get(key);
+                    String clusterName = clusterNames.get(key);
+                    config = DiscoveryGroupAdd.createDiscoveryGroupConfiguration(name, discoveryGroupConfiguration, commandDispatcherFactory, clusterName);
+                } else {
+                    final SocketBinding binding = groupBindings.get(key);
+                    if (binding == null) {
+                        throw MessagingLogger.ROOT_LOGGER.failedToFindDiscoverySocketBinding(dgName);
+                    }
+                    config = DiscoveryGroupAdd.createDiscoveryGroupConfiguration(name, discoveryGroupConfiguration, binding);
+                    binding.getSocketBindings().getNamedRegistry().registerBinding(ManagedBinding.Factory.createSimpleManagedBinding(binding));
+                }
+                BroadcastEndpointFactory bgCfg = config.getBroadcastEndpointFactory();
                 if (bgCfg instanceof UDPBroadcastEndpointFactory) {
                     UDPBroadcastEndpointFactory udpCfg = (UDPBroadcastEndpointFactory) bgCfg;
                     properties.add(simpleProperty15(GROUP_ADDRESS, STRING_TYPE, udpCfg.getGroupAddress()));
                     properties.add(simpleProperty15(GROUP_PORT, INTEGER_TYPE, "" + udpCfg.getGroupPort()));
                     properties.add(simpleProperty15(DISCOVERY_LOCAL_BIND_ADDRESS, STRING_TYPE, "" + udpCfg.getLocalBindAddress()));
                 } else if (bgCfg instanceof CommandDispatcherBroadcastEndpointFactory) {
-                    properties.add(simpleProperty15(JGROUPS_CHANNEL_NAME, STRING_TYPE, jgroupsChannelName));
-                    properties.add(simpleProperty15(JGROUPS_CHANNEL_REF_NAME, STRING_TYPE, serverName + "/discovery" + discoveryGroupConfiguration.getName()));
-
+                    String external = "/" + name + ":discovery" + dgName;
+                    properties.add(simpleProperty15(JGROUPS_CHANNEL_NAME, STRING_TYPE, jgroupsClusterName));
+                    properties.add(simpleProperty15(JGROUPS_CHANNEL_REF_NAME, STRING_TYPE, external));
                 }
-                properties.add(simpleProperty15(DISCOVERY_INITIAL_WAIT_TIMEOUT, LONG_TYPE, "" + discoveryGroupConfiguration.getDiscoveryInitialWaitTimeout()));
-                properties.add(simpleProperty15(REFRESH_TIMEOUT, LONG_TYPE, "" + discoveryGroupConfiguration.getRefreshTimeout()));
+                properties.add(simpleProperty15(DISCOVERY_INITIAL_WAIT_TIMEOUT, LONG_TYPE, "" + config.getDiscoveryInitialWaitTimeout()));
+                properties.add(simpleProperty15(REFRESH_TIMEOUT, LONG_TYPE, "" + config.getRefreshTimeout()));
             }
 
             boolean hasReconnect = false;
@@ -417,12 +400,20 @@ public class PooledConnectionFactoryService implements Service<Void> {
                         inboundProperties.add(p);
                     }
                 } else {
-                    if (adapterParam.getConfigType() == ConnectionFactoryAttribute.ConfigType.INBOUND) {
-                        inboundProperties.add(p);
-                    } else if (adapterParam.getConfigType() == ConnectionFactoryAttribute.ConfigType.OUTBOUND) {
-                        outboundProperties.add(p);
-                    } else {
+                    if (null == adapterParam.getConfigType()) {
                         properties.add(p);
+                    } else {
+                        switch (adapterParam.getConfigType()) {
+                            case INBOUND:
+                                inboundProperties.add(p);
+                                break;
+                            case OUTBOUND:
+                                outboundProperties.add(p);
+                                break;
+                            default:
+                                properties.add(p);
+                                break;
+                        }
                     }
                 }
             }
@@ -446,48 +437,49 @@ public class PooledConnectionFactoryService implements Service<Void> {
             Activation activation = createActivation(common, transactionSupport);
 
             ResourceAdapterActivatorService activator = new ResourceAdapterActivatorService(cmd, activation,
-                    PooledConnectionFactoryService.class.getClassLoader(), name);
+                    ExternalPooledConnectionFactoryService.class.getClassLoader(), name);
             activator.setBindInfo(bindInfo);
             activator.setCreateBinderService(createBinderService);
 
-            ServiceController<ResourceAdapterDeployment> controller =
-                    Services.addServerExecutorDependency(
-                        serviceTarget.addService(getResourceAdapterActivatorsServiceName(name), activator),
+            ServiceController<ResourceAdapterDeployment> controller
+                    = Services.addServerExecutorDependency(
+                            serviceTarget.addService(getResourceAdapterActivatorsServiceName(name), activator),
                             activator.getExecutorServiceInjector())
-                    .addDependency(ActiveMQActivationService.getServiceName(getActiveMQServiceName(serverName)))
-                    .addDependency(ConnectorServices.IRONJACAMAR_MDR, AS7MetadataRepository.class,
-                            activator.getMdrInjector())
-                    .addDependency(ConnectorServices.RA_REPOSITORY_SERVICE, ResourceAdapterRepository.class,
-                            activator.getRaRepositoryInjector())
-                    .addDependency(ConnectorServices.MANAGEMENT_REPOSITORY_SERVICE, ManagementRepository.class,
-                            activator.getManagementRepositoryInjector())
-                    .addDependency(ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE,
-                            ResourceAdapterDeploymentRegistry.class, activator.getRegistryInjector())
-                    .addDependency(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE, TransactionIntegration.class,
-                            activator.getTxIntegrationInjector())
-                    .addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE,
-                            JcaSubsystemConfiguration.class, activator.getConfigInjector())
-                    // No legacy security services needed as this activation's sole connection definition
-                    // does not configure a legacy security domain
-                    /*
+                            .addDependency(ConnectorServices.IRONJACAMAR_MDR, AS7MetadataRepository.class,
+                                    activator.getMdrInjector())
+                            .addDependency(ConnectorServices.RA_REPOSITORY_SERVICE, ResourceAdapterRepository.class,
+                                    activator.getRaRepositoryInjector())
+                            .addDependency(ConnectorServices.MANAGEMENT_REPOSITORY_SERVICE, ManagementRepository.class,
+                                    activator.getManagementRepositoryInjector())
+                            .addDependency(ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE,
+                                    ResourceAdapterDeploymentRegistry.class, activator.getRegistryInjector())
+                            .addDependency(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE, TransactionIntegration.class,
+                                    activator.getTxIntegrationInjector())
+                            .addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE,
+                                    JcaSubsystemConfiguration.class, activator.getConfigInjector())
+                            // No legacy security services needed as this activation's sole connection definition
+                            // does not configure a legacy security domain
+                            /*
                     .addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class,
                             activator.getSubjectFactoryInjector())
-                    */
-                    .addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class,
-                            activator.getCcmInjector()).addDependency(NamingService.SERVICE_NAME)
-                    .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER)
-                    .addDependency(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append("default"))
-                    .setInitialMode(ServiceController.Mode.PASSIVE).install();
+                             */
+                            .addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class,
+                                    activator.getCcmInjector()).addDependency(NamingService.SERVICE_NAME)
+                            .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER)
+                            .addDependency(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append("default"))
+                            .setInitialMode(ServiceController.Mode.PASSIVE).install();
 
             createJNDIAliases(bindInfo, jndiAliases, controller, serviceTarget);
 
             // Mock the deployment service to allow it to start
             serviceTarget.addService(ConnectorServices.RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX.append(name), Service.NULL).install();
         } finally {
-            if (is != null)
+            if (is != null) {
                 is.close();
-            if (isIj != null)
+            }
+            if (isIj != null) {
                 isIj.close();
+            }
         }
     }
 
@@ -536,7 +528,6 @@ public class PooledConnectionFactoryService implements Service<Void> {
         List<ConnectionDefinition> definitions = Collections.singletonList(common);
         return new ActivationImpl(null, null, transactionSupport, definitions, Collections.<AdminObject>emptyList(), Collections.<String, String>emptyMap(), Collections.<String>emptyList(), null, null);
     }
-
 
     private static ConnectionDefinition createConnDef(TransactionSupportEnum transactionSupport, String jndiName, int minPoolSize, int maxPoolSize, String managedConnectionPoolClassName, Boolean enlistmentTrace) throws ValidateException {
         Integer minSize = (minPoolSize == -1) ? null : minPoolSize;
@@ -587,8 +578,8 @@ public class PooledConnectionFactoryService implements Service<Void> {
     }
 
     private static OutboundResourceAdapter createOutbound(List<ConfigProperty> outboundProperties) {
-        List<org.jboss.jca.common.api.metadata.spec.ConnectionDefinition> definitions = new ArrayList();
-        List<ConfigProperty> props = new ArrayList(outboundProperties);
+        List<org.jboss.jca.common.api.metadata.spec.ConnectionDefinition> definitions = new ArrayList<>();
+        List<ConfigProperty> props = new ArrayList<>(outboundProperties);
         props.add(simpleProperty15(SESSION_DEFAULT_TYPE, STRING_TYPE, JMS_QUEUE));
         props.add(simpleProperty15(TRY_LOCK, INTEGER_TYPE, "0"));
         definitions.add(new org.jboss.jca.common.metadata.spec.ConnectionDefinitionImpl(str(RAMANAGED_CONN_FACTORY), props, str(RA_CONN_FACTORY), str(RA_CONN_FACTORY_IMPL), str(JMS_SESSION), str(ACTIVEMQ_RA_SESSION), null));
@@ -605,7 +596,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
         return new ConfigPropertyImpl(EMPTY_LOCL, str(name), str(type), str(value), null, null, null, null, false, null, null, null, null);
     }
 
-
+    @Override
     public void stop(StopContext context) {
         // Service context takes care of this
     }
@@ -615,11 +606,22 @@ public class PooledConnectionFactoryService implements Service<Void> {
     }
 
     Injector<SocketBinding> getSocketBindingInjector(String name) {
-        return new MapInjector<String, SocketBinding>(socketBindings, name);
+        return new MapInjector<>(socketBindings, name);
     }
 
-    public Injector<ActiveMQServer> getActiveMQServer() {
-        return activeMQServer;
+    Injector<OutboundSocketBinding> getOutboundSocketBindingInjector(String name) {
+        return new MapInjector<String, OutboundSocketBinding>(outboundSocketBindings, name);
     }
 
+    Injector<SocketBinding> getGroupBindingInjector(String name) {
+        return new MapInjector<String, SocketBinding>(groupBindings, name);
+    }
+
+    public CommandDispatcherFactory getCommandDispatcherFactory(String name) {
+        return this.commandDispatcherFactories.get(name);
+    }
+
+    Injector<CommandDispatcherFactory> getCommandDispatcherFactoryInjector(String name) {
+        return new MapInjector<>(this.commandDispatcherFactories, name);
+    }
 }
