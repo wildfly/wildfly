@@ -72,11 +72,18 @@ if $cygwin; then
     JAVA_HOME=`cygpath --path --windows "$JAVA_HOME"`
 fi
 
-CLASSPATH=$JAVA_HOME/lib/jconsole.jar
-CLASSPATH=$CLASSPATH:$JAVA_HOME/lib/tools.jar
-CLASSPATH=$CLASSPATH:./bin/client/jboss-cli-client.jar
-
-echo CLASSPATH $CLASSPATH
-
 cd "$JBOSS_HOME"
-$JAVA_HOME/bin/jconsole -J-Djava.class.path="$CLASSPATH" "$@"
+
+"$JAVA_HOME/bin/java" --add-modules=java.se -version > /dev/null 2>&1 && MODULAR_JDK=true || MODULAR_JDK=false
+
+if [ "$MODULAR_JDK" = "true" ]; then
+  $JAVA_HOME/bin/jconsole -J--add-modules=jdk.unsupported -J-Djava.class.path=./bin/client/jboss-cli-client.jar "$@"
+else
+  CLASSPATH=$JAVA_HOME/lib/jconsole.jar
+  CLASSPATH=$CLASSPATH:$JAVA_HOME/lib/tools.jar
+  CLASSPATH=$CLASSPATH:./bin/client/jboss-cli-client.jar
+
+  echo CLASSPATH $CLASSPATH
+
+  $JAVA_HOME/bin/jconsole -J-Djava.class.path="$CLASSPATH" "$@"
+fi
