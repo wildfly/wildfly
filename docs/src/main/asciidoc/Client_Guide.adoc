@@ -8,7 +8,7 @@
 :doctype: book
 :icons: font
 :source-highlighter: coderay
-:wildflyVersion: 13
+:wildflyVersion: 14
 :numbered:
 
 ifdef::basebackend-html[toc::[]]

@@ -9,7 +9,7 @@ WildFly team;
 :doctype: book
 :icons: font
 :source-highlighter: coderay
-:wildflyVersion: 13
+:wildflyVersion: 14
 
 :leveloffset: +1
 
