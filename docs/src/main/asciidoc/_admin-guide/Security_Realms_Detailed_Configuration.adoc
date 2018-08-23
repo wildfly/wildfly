@@ -347,14 +347,18 @@ definition of outbound connection is described here.
 
 === <ldap />
 
-At the moment we only support outbound connections to ldap servers for
-the authentication process - this will later be expanded when we add
-support for database based authentication.
+We only support outbound connections to ldap servers for the authentication process.
 
 [source, xml]
 ----
 <outbound-connections>
-  <ldap name="..." url="..." search-dn="..." search-credential="..." initial-context-factory="..." />
+  <ldap name="..." url="..." search-dn="..." search-credential="..." security-realm="..." initial-context-factory="..." 
+        referrals="..." handles-referrals-for="..." always-send-client-cert="...">
+    <properties>
+      <property name="..." value="..." />
+    </properties>
+    <security-credential-reference store="..." alias="..." type="..."  clear-text="..." />
+  </ldap>
 </outbound-connections>
 ----
 
@@ -366,7 +370,24 @@ connection.
 * *url* (mandatory) - The URL use to establish the LDAP connection.
 * *search-dn* (mandatory) - The distinguished name of the user to
 authenticate as to perform the searches.
-* *search-credential* (mandatory) - The password required to connect to
+* *search-credential* (optional) - The password required to connect to
 LDAP as the search-dn.
 * *initial-context-factory* (optional) - Allows overriding the initial
 context factory, defaults to ' `com.sun.jndi.ldap.LdapCtxFactory`'
+* *referrals* (optional) - The referral handling mode.
+** *IGNORE* - Ignore any referrals received.
+** *FOLLOW* - Automatically follow any referrals re-using the configuration for this connection.
+** *THROW* - Throw an exception is a referral is encountered, this allows an alternative connection to be identified to handle the referral.
+* *handles-referrals-for* (optional) - A space separated list of URIs this connection can be used for.
+* *always-send-client-cert* (optional) - By default the server's client certificate is not sent whilst verifying the users credential, if this is set to `true` it will always be sent. 
+
+The optional `<properties/>` element can be used to specify additional properties to be passed in to the `DirContext` when it is created.
+
+The optional `<security-credential-reference />` can be used to reference a credential stored in a credential store as an alternative to 
+the `search-credential` attribute.  This element supports the following attributes: -
+
+* *store* (optional) - Reference to the credential store to obtain the search credential from.
+* *alias* (optional) - The alias of the credential in the referenced store.
+* *type* (optional) - The fully qualified class name of the credential type to obtain from the credential store.
+* *clear-text* (optional) - Instead of referencing a credential store this attribute can be used to specify a clear text password.
+ 
