@@ -146,7 +146,7 @@ public class DomainAdjuster710 extends DomainAdjuster {
         final List<ModelNode> list = new ArrayList<>();
 
         list.add(createRemoveOperation(subsystem));
-        list.add(createRemoveOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.microprofile.opentracing")));
+        list.add(createRemoveOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.microprofile.opentracing-smallrye")));
         return list;
     }
 }

@@ -10,12 +10,12 @@ provided as a Tech Preview feature by the _microprofile-opentracing-smallrye_ su
 This extension is included in the standard configurations included in the WildFly distribution.
 
 You can also add the extension to a configuration without it either by adding
-an `<extension module="org.wildfly.extension.microprofile.opentracing"/>`
+an `<extension module="org.wildfly.extension.microprofile.opentracing-smallrye"/>`
 element to the xml or by using the following CLI operation:
 
 [source]
 ----
-[standalone@localhost:9990 /] /extension=org.wildfly.extension.microprofile.opentracing:add
+[standalone@localhost:9990 /] /extension=org.wildfly.extension.microprofile.opentracing-smallrye:add
 {"outcome" => "success"}
 
 [standalone@localhost:9990 /] /subsystem=microprofile-opentracing:add

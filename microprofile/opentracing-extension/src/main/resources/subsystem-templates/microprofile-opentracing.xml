@@ -23,7 +23,7 @@
   -->
 
 <config>
-    <extension-module>org.wildfly.extension.microprofile.opentracing</extension-module>
+    <extension-module>org.wildfly.extension.microprofile.opentracing-smallrye</extension-module>
     <subsystem xmlns="urn:wildfly:microprofile-opentracing:1.0">
     </subsystem>
 </config>
