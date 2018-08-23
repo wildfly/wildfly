@@ -31,7 +31,7 @@ import java.util.Collection;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
-import org.jboss.as.controller.PrimitiveListAttributeDefinition;
+import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
 import org.jboss.as.controller.access.management.ApplicationTypeAccessConstraintDefinition;
@@ -61,8 +61,7 @@ class DriverDefinition extends PersistentResourceDefinition {
             .setValidator(new StringLengthValidator(1))
             .build();
 
-    static final PrimitiveListAttributeDefinition CLASS_INFO = PrimitiveListAttributeDefinition.Builder.of("class-info", ModelType.LIST)
-            .setRequired(false)
+    static final PropertiesAttributeDefinition CLASS_INFO = new PropertiesAttributeDefinition.Builder("class-info", true)
             .setStorageRuntime()
             .build();
 
