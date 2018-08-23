@@ -43,7 +43,7 @@ For authentication purposes the username will be matched against the
 'uid' attribute, also the resulting group name will be taken from the
 'uid' attribute of the group entry.
 
-[[legacy-security-realm]]
+[[legacy-security-realm-ldap]]
 == Legacy Security Realm
 
 A connection to the LDAP server and related security realm can be

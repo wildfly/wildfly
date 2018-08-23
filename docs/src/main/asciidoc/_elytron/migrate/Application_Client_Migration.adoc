@@ -8,7 +8,7 @@ This migration example assumes a client application performs a remote
 JNDI lookup using an ﻿﻿ `InitialContext` backed by the
 `org.jboss.naming.remote.client.InitialContextFactory` class.
 
-[[original-configuration]]
+[[original-configuration-app-client]]
 === Original Configuration
 
 An `InitialContext` backed by the
@@ -28,7 +28,7 @@ Bar bar = (Bar) context.lookup("foo/bar");
 ...
 ----
 
-[[migrated-configuration]]
+[[migrated-configuration-app-client]]
 === Migrated Configuration
 
 An `InitialContext` backed by the
@@ -115,7 +115,7 @@ This migration example assumes a client application is configured to
 invoke an EJB deployed on a remote server using a
 `jboss-ejb-client.properties` file.
 
-[[original-configuration-1]]
+[[original-configuration-app-client-1]]
 === Original Configuration
 
 A `jboss-ejb-client.properties` file that contains the information
