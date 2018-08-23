@@ -28,7 +28,7 @@ import org.jboss.as.controller.PersistentResourceXMLParser;
 import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 
 public class SubsytemParser_1_0 extends PersistentResourceXMLParser {
-    public static final String NAMESPACE = "urn:wildfly:microprofile-opentracing:1.0";
+    public static final String NAMESPACE = "urn:wildfly:microprofile-opentracing-smallrye:1.0";
 
     static final PersistentResourceXMLParser INSTANCE = new SubsytemParser_1_0();
 
