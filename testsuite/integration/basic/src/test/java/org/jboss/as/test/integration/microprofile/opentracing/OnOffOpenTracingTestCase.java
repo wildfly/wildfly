@@ -87,7 +87,7 @@ public class OnOffOpenTracingTestCase {
     }
 
     private void opentracingSubsystem(String operationName, ModelControllerClient client) throws Exception {
-        final String OT_SUBSYSTEM_NAME = "microprofile-opentracing";
+        final String OT_SUBSYSTEM_NAME = "microprofile-opentracing-smallrye";
 
         // remove the OpenTracing subsystem
         ModelNode operation = createOpNode("subsystem=" + OT_SUBSYSTEM_NAME, operationName);

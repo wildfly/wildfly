@@ -36,7 +36,7 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
 public class SubsystemExtension implements Extension {
-    public static final String SUBSYSTEM_NAME = "microprofile-opentracing";
+    public static final String SUBSYSTEM_NAME = "microprofile-opentracing-smallrye";
     protected static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
 
     private static final String RESOURCE_NAME = SubsystemExtension.class.getPackage().getName() + ".LocalDescriptions";

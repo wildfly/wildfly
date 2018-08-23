@@ -18,7 +18,7 @@ element to the xml or by using the following CLI operation:
 [standalone@localhost:9990 /] /extension=org.wildfly.extension.microprofile.opentracing-smallrye:add
 {"outcome" => "success"}
 
-[standalone@localhost:9990 /] /subsystem=microprofile-opentracing:add
+[standalone@localhost:9990 /] /subsystem=microprofile-opentracing-smallrye:add
 {
     "outcome" => "success",
     "response-headers" => {

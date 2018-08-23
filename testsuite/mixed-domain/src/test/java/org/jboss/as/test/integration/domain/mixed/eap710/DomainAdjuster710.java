@@ -62,7 +62,7 @@ public class DomainAdjuster710 extends DomainAdjuster {
         list.addAll(removeEESecurity(profileAddress.append(SUBSYSTEM, "ee-security")));
         list.addAll(removeDiscovery(profileAddress.append(SUBSYSTEM, "discovery")));
         list.addAll(removeMicroProfileConfigSmallrye(profileAddress.append(SUBSYSTEM, "microprofile-config-smallrye")));
-        list.addAll(removeMicroProfileOpenTracing(profileAddress.append(SUBSYSTEM, "microprofile-opentracing")));
+        list.addAll(removeMicroProfileOpenTracing(profileAddress.append(SUBSYSTEM, "microprofile-opentracing-smallrye")));
         if (withMasterServers) {
             list.addAll(reconfigureServers());
         }

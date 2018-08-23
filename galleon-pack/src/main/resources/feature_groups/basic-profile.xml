@@ -85,7 +85,7 @@
     <feature spec="subsystem.jaxrs"/>
     <feature spec="subsystem.jdr"/>
     <feature spec="subsystem.microprofile-config-smallrye"/>
-    <feature spec="subsystem.microprofile-opentracing"/>
+    <feature spec="subsystem.microprofile-opentracing-smallrye"/>
     <feature spec="subsystem.pojo"/>
     <feature spec="subsystem.sar"/>
     <feature-group name="mail"/>
