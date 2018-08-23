@@ -30,7 +30,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.Value;
 import org.wildfly.extension.datasources.agroal.logging.AgroalLogger;
@@ -46,9 +45,6 @@ import java.util.ServiceLoader;
  */
 class DriverOperations {
 
-    static final ServiceName DRIVER_SERVICE_PREFIX = AgroalExtension.BASE_SERVICE_NAME.append("driver");
-
-    // --- //
 
     static final OperationStepHandler ADD_OPERATION = new DriverAdd();
 
@@ -99,7 +95,6 @@ class DriverOperations {
         @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             String driverName = context.getCurrentAddressValue();
-            ServiceName driverServiceName = ServiceName.of(DRIVER_SERVICE_PREFIX, driverName);
 
             String moduleName = DriverDefinition.MODULE_ATTRIBUTE.resolveModelAttribute(context, model).asString();
 
@@ -117,7 +112,7 @@ class DriverOperations {
                 }
             });
 
-            context.getServiceTarget().addService(driverServiceName).setInstance(driverService).install();
+            context.getCapabilityServiceTarget().addCapability(DriverDefinition.AGROAL_DRIVER_CAPABILITY.fromBaseCapability(driverName), driverService).install();
         }
     }
 
@@ -126,12 +121,8 @@ class DriverOperations {
     private static class DriverRemove extends AbstractRemoveStepHandler {
         @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-            String driverName = context.getCurrentAddressValue();
-
-            ServiceName driverServiceName = ServiceName.of(DRIVER_SERVICE_PREFIX, driverName);
-            context.removeService(driverServiceName);
-
-            AgroalLogger.DRIVER_LOGGER.debugf("unloaded driver: %s", driverName);
+            context.removeService(DriverDefinition.AGROAL_DRIVER_CAPABILITY.getCapabilityServiceName(context.getCurrentAddress()));
+            AgroalLogger.DRIVER_LOGGER.debugf("unloaded driver: %s", context.getCurrentAddressValue());
         }
     }
 
@@ -140,12 +131,9 @@ class DriverOperations {
     private static class DriverInfo implements OperationStepHandler {
 
         @Override
-        @SuppressWarnings("unchecked")
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             if (context.isNormalServer()) {
-
-                String driverName = context.getCurrentAddressValue();
-                Class<?> providerClass = (Class<?>) context.getServiceRegistry(false).getService(DRIVER_SERVICE_PREFIX.append(driverName)).getValue();
+                Class<?> providerClass = (Class<?>) context.getServiceRegistry(false).getService(DriverDefinition.AGROAL_DRIVER_CAPABILITY.getCapabilityServiceName(context.getCurrentAddress())).getValue();
 
                 if (providerClass == null) {
                     context.getResult().set(new ModelNode());
