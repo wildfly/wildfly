@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright 2018 Red Hat, Inc. and/or its affiliates
-  ~ and other contributors as indicated by the @author tags.
+  ~ Copyright 2018 Red Hat, Inc.
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
   ~ You may obtain a copy of the License at
   ~
-  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~   http://www.apache.org/licenses/LICENSE-2.0
   ~
   ~ Unless required by applicable law or agreed to in writing, software
   ~ distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,35 +14,26 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<module xmlns="urn:jboss:module:1.8" name="org.wildfly.microprofile.opentracing-smallrye">
+<module xmlns="urn:jboss:module:1.8" name="io.opentracing.contrib.opentracing-jaxrs2">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
 
     <resources>
-        <artifact name="${org.wildfly:wildfly-microprofile-opentracing-smallrye}"/>
+        <artifact name="${io.opentracing.contrib:opentracing-jaxrs2}"/>
     </resources>
 
     <dependencies>
-        <module name="javax.annotation.api"/>
-        <module name="javax.enterprise.api"/>
-        <module name="javax.inject.api"/>
-        <module name="javax.interceptor.api"/>
+        <module name="java.logging"/>
         <module name="javax.servlet.api"/>
         <module name="javax.ws.rs.api"/>
 
-        <module name="io.jaegertracing.jaeger-core"/>
-        <module name="io.jaegertracing.jaeger-thrift" services="export"/>
         <module name="io.opentracing.opentracing-api"/>
         <module name="io.opentracing.opentracing-noop"/>
         <module name="io.opentracing.opentracing-util"/>
         <module name="io.opentracing.contrib.opentracing-concurrent"/>
-        <module name="io.opentracing.contrib.opentracing-jaxrs2"/>
-        <module name="io.opentracing.contrib.opentracing-tracerresolver"/>
         <module name="io.opentracing.contrib.opentracing-web-servlet-filter"/>
-        <module name="io.smallrye.opentracing"/>
 
-        <module name="org.apache.thrift"/>
-        <module name="org.jboss.logging"/>
+        <module name="org.eclipse.microprofile.opentracing"/>
     </dependencies>
 </module>

@@ -31,12 +31,22 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 
 public class TracingDependencyProcessor implements DeploymentUnitProcessor {
-    public static final ModuleIdentifier MP_OT_MODULE = ModuleIdentifier.create("org.eclipse.microprofile.opentracing");
-    public static final ModuleIdentifier WF_OT_MODULE = ModuleIdentifier.create("org.wildfly.microprofile.opentracing-smallrye");
+    private static final String[] MODULES = {
+            "io.jaegertracing.jaeger-core",
+            "io.jaegertracing.jaeger-thrift",
+            "io.opentracing.contrib.opentracing-tracerresolver",
+            "io.opentracing.opentracing-api",
+            "io.opentracing.opentracing-util",
+            "org.eclipse.microprofile.opentracing",
+    };
+
+    private static final String[] EXPORTED_MODULES = {
+            "io.smallrye.opentracing",
+            "org.wildfly.microprofile.opentracing-smallrye",
+    };
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) {
@@ -51,9 +61,12 @@ public class TracingDependencyProcessor implements DeploymentUnitProcessor {
 
         ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         ModuleLoader moduleLoader = Module.getBootModuleLoader();
-
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, MP_OT_MODULE, false, true, true, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, WF_OT_MODULE, false, true, true, false));
+        for (String module : MODULES) {
+            moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, module, false, false, true, false));
+        }
+        for (String module : EXPORTED_MODULES) {
+            moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, module, false, true, true, false));
+        }
     }
 
     @Override
