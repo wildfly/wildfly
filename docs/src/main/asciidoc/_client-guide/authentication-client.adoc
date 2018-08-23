@@ -164,11 +164,11 @@ An individual <key-store /> definition must contain exactly one of the following
 
 Exactly one of the following elements must also be present to specify the protection parameter for initialisation of the KeyStore.
 
-key-store-clear-password password="..." />:: A password specified in the clear.
+<key-store-clear-password password="..." />:: A password specified in the clear.
 <key-store-credential>...</key-store-credential>:: A reference to another KeyStore to obtain an Entry to use as the protection parameter to access this KeyStore.
 
 [[key-store-credential]]
-The structure of the <key-store-credential /> element is.
+The structure of the <key-store-credential /> element is:
 
 [source, xml]
 ----
@@ -394,14 +394,17 @@ The overall structure of this element is: -
 
 [source, xml]
 ----
-<key-store-ssl-certificate key-store-name="..." alias="...">
+<key-store-ssl-certificate key-store-name="..." alias="..." provider-name="..." algorithm="...">
    <key-store-clear-password password="..." />
-    <credential-store-reference store="..." alias="..." clear-text="..." />
+   <credential-store-reference store="..." alias="..." clear-text="..." />
    <key-store-credential>...</key-store-credential>
 </key-store-ssl-certificate>
 ----
 
-This structure is identical to the structure use in [<key-store-credential />|#key-store-credential], the only difference being it is now to obtain the entry for the key and certificate, the nested elements however remain the protection parameter to unlock the entry.
+This structure is identical to the structure use in [<key-store-credential />|#key-store-credential], but it is to obtain the entry for the key and certificate. The nested elements however remain the protection parameter to unlock the entry. In comparison with the key-store-credential the key-store-ssl-certificate allows to configure also the TrustManager: -
+
+ provider-name:: - Name of the provider used to obtain the KeyManagerFactory.
+ algorithm:: - The algorithm name of the KeyManagerFactory to obtain.
 
  <trust-store-key-store-name />:: A reference to a KeyStore that will be used to initialise the TrustManager.
 
