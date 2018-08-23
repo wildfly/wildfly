@@ -233,11 +233,11 @@
         <version.groovy-all>2.4.7</version.groovy-all>
         <version.httpunit>1.7.2</version.httpunit>
         <version.io.agroal>1.1</version.io.agroal>
-        <version.io.jaegertracing>0.30.5</version.io.jaegertracing>
+        <version.io.jaegertracing>0.30.6</version.io.jaegertracing>
         <version.io.netty>4.1.25.Final</version.io.netty>
         <version.io.opentracing>0.31.0</version.io.opentracing>
         <version.io.opentracing.concurrent>0.1.0</version.io.opentracing.concurrent>
-        <version.io.opentracing.jaxrs2>0.1.6</version.io.opentracing.jaxrs2>
+        <version.io.opentracing.jaxrs2>0.1.7</version.io.opentracing.jaxrs2>
         <version.io.opentracing.tracerresolver>0.1.5</version.io.opentracing.tracerresolver>
         <version.io.opentracing.servlet>0.1.0</version.io.opentracing.servlet>
         <version.io.reactivex.rxjava>2.1.16</version.io.reactivex.rxjava>
