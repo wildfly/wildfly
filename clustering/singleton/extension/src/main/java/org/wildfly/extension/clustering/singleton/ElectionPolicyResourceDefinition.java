@@ -55,7 +55,7 @@ public abstract class ElectionPolicyResourceDefinition extends ChildResourceDefi
     }
 
     enum Capability implements org.jboss.as.clustering.controller.Capability {
-        ELECTION_POLICY("org.wildfly.clustering.singleton.policy.election", SingletonElectionPolicy.class),
+        ELECTION_POLICY("org.wildfly.clustering.singleton-policy.election", SingletonElectionPolicy.class),
         ;
         private final RuntimeCapability<Void> definition;
 

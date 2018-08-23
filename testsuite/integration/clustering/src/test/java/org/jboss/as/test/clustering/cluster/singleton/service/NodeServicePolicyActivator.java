@@ -49,7 +49,7 @@ public class NodeServicePolicyActivator implements ServiceActivator {
     @Override
     public void activate(ServiceActivatorContext context) {
         ServiceTarget target = context.getServiceTarget();
-        SingletonPolicy policy = new ActiveServiceSupplier<SingletonPolicy>(context.getServiceRegistry(), ServiceName.parse(SingletonDefaultRequirement.SINGLETON_POLICY.getName())).setTimeout(Duration.ofSeconds(30)).get();
+        SingletonPolicy policy = new ActiveServiceSupplier<SingletonPolicy>(context.getServiceRegistry(), ServiceName.parse(SingletonDefaultRequirement.POLICY.getName())).setTimeout(Duration.ofSeconds(30)).get();
         ServiceBuilder<?> builder = policy.createSingletonServiceConfigurator(SERVICE_NAME).build(target);
         Consumer<Node> member = builder.provides(SERVICE_NAME);
         Supplier<Group> group = builder.requires(ServiceName.parse("org.wildfly.clustering.default-group"));

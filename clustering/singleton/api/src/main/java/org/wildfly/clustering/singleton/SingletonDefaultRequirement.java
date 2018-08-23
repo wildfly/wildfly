@@ -23,14 +23,14 @@
 package org.wildfly.clustering.singleton;
 
 import org.wildfly.clustering.service.Requirement;
-import org.wildfly.clustering.singleton.service.SingletonPolicy;
 
 /**
  * Enumerates capability requirements for default singleton resources
  * @author Paul Ferraro
  */
 public enum SingletonDefaultRequirement implements Requirement {
-    SINGLETON_POLICY("org.wildfly.clustering.singleton.default-policy", SingletonPolicy.class),
+    @Deprecated SINGLETON_POLICY("org.wildfly.clustering.singleton.default-policy", org.wildfly.clustering.singleton.SingletonPolicy.class),
+    POLICY("org.wildfly.clustering.default-singleton-policy", org.wildfly.clustering.singleton.service.SingletonPolicy.class),
     ;
     private final String name;
     private final Class<?> type;
