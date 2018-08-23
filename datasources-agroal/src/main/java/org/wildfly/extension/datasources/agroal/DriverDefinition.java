@@ -49,13 +49,11 @@ class DriverDefinition extends PersistentResourceDefinition {
     static final String DRIVERS_ELEMENT_NAME = "drivers";
 
     static final SimpleAttributeDefinition MODULE_ATTRIBUTE = create("module", ModelType.STRING)
-            .setAllowExpression(true)
             .setRestartAllServices()
             .setValidator(new StringLengthValidator(1))
             .build();
 
     static final SimpleAttributeDefinition CLASS_ATTRIBUTE = create("class", ModelType.STRING)
-            .setAllowExpression(true)
             .setRequired(false)
             .setRestartAllServices()
             .setValidator(new StringLengthValidator(1))

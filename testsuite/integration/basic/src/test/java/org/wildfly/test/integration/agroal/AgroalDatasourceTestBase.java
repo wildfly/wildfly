@@ -116,8 +116,6 @@ public abstract class AgroalDatasourceTestBase extends ContainerResourceMgmtTest
         String username = "myds.username";
         String password = "myds.password";
         String jndiName = "myds.jndi";
-        String driverModule= "myds.driver.module";
-        String driverClass = "myds.driver.class";
 
         Datasource ds = Datasource.Builder("testAllBySystem")
                                   .connectionUrl(wrapProp(url))
@@ -125,8 +123,6 @@ public abstract class AgroalDatasourceTestBase extends ContainerResourceMgmtTest
                                   .password(wrapProp(password))
                                   .jndiName(wrapProp(jndiName))
                                   .driverName("h2_ref")
-                                  .driverModule(wrapProp(driverModule))
-                                  .driverClass(wrapProp(driverClass))
                                   .build();
 
         try {
@@ -135,8 +131,6 @@ public abstract class AgroalDatasourceTestBase extends ContainerResourceMgmtTest
             addSystemProperty(username, defaultPropertyDs.getUserName());
             addSystemProperty(password, defaultPropertyDs.getPassword());
             addSystemProperty(jndiName, defaultPropertyDs.getJndiName());
-            addSystemProperty(driverModule, defaultPropertyDs.getDriverModule());
-            addSystemProperty(driverClass, defaultPropertyDs.getDriverClass());
 
             createDriver(ds);
             createDataSource(ds);
@@ -149,8 +143,6 @@ public abstract class AgroalDatasourceTestBase extends ContainerResourceMgmtTest
             removeSystemPropertySilently(username);
             removeSystemPropertySilently(password);
             removeSystemPropertySilently(jndiName);
-            removeSystemPropertySilently(driverModule);
-            removeSystemPropertySilently(driverClass);
         }
     }
 
