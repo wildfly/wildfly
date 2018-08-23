@@ -26,6 +26,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.metadata.javaee.spec.DataSourceMetaData;
 import org.jboss.metadata.javaee.spec.DataSourcesMetaData;
 import org.jboss.metadata.javaee.spec.RemoteEnvironment;
+import org.wildfly.extension.datasources.agroal.logging.AgroalLogger;
 
 /**
  * Processor of the data-source element in ejb-jar.xml
@@ -41,10 +42,10 @@ public class DataSourceDefinitionDescriptorProcessor extends ResourceDefinitionD
             for (DataSourceMetaData dataSource : dataSources) {
 
                 if (dataSource.getName() == null || dataSource.getName().isEmpty()) {
-                    throw new IllegalArgumentException("element <data-source> must provide attribute 'name'");
+                    throw AgroalLogger.SERVICE_LOGGER.missingAttributeInDatasourceMetadata("name");
                 }
                 if (dataSource.getClassName() == null || dataSource.getClassName().isEmpty()) {
-                    throw new IllegalArgumentException("element <data-source> must provide attribute 'className'");
+                    throw AgroalLogger.SERVICE_LOGGER.missingAttributeInDatasourceMetadata("className");
                 }
 
                 DataSourceDefinitionInjectionSource injectionSource = new DataSourceDefinitionInjectionSource(dataSource.getName());

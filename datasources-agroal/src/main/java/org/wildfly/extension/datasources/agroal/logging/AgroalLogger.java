@@ -120,8 +120,11 @@ public interface AgroalLogger extends BasicLogger {
     @Message(id = 401, value = "Invalid connection provider. Either a java.sql.Driver or javax.sql.DataSource implementation is required. Fix the connection-provider for the driver")
     DeploymentUnitProcessingException invalidDeploymentConnectionProvider();
 
-    @Message(id = 203, value = "Failed to load connection provider class '%s'")
+    @Message(id = 402, value = "Failed to load connection provider class '%s'")
     DeploymentUnitProcessingException loadClassDeploymentException(@Cause Throwable cause, String className);
+
+    @Message(id = 403, value = "Element <data-source> must provide attribute '%s'")
+    DeploymentUnitProcessingException missingAttributeInDatasourceMetadata(String attributeName);
 
     // --- Driver //
 
