@@ -22,7 +22,6 @@
 package org.wildfly.extension.datasources.agroal;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
-import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -43,10 +42,6 @@ class AgroalSubsystemOperations {
 
     static final OperationStepHandler ADD_OPERATION = new AgroalSubsystemAdd();
 
-    static final OperationStepHandler REMOVE_OPERATION = new AgroalSubsystemRemove();
-
-    // --- //
-
     private static class AgroalSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         @Override
@@ -59,19 +54,6 @@ class AgroalSubsystemOperations {
                 }
             }, OperationContext.Stage.RUNTIME);
         }
-
-        @Override
-        protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-            // TODO:
-        }
     }
 
-    // --- //
-
-    private static class AgroalSubsystemRemove extends AbstractRemoveStepHandler {
-        @Override
-        protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-            // TODO:
-        }
-    }
 }

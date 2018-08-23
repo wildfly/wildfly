@@ -23,6 +23,7 @@ package org.wildfly.extension.datasources.agroal;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 
 import java.util.Collection;
 import java.util.List;
@@ -45,7 +46,7 @@ class AgroalSubsystemDefinition extends PersistentResourceDefinition {
     private static final List<PersistentResourceDefinition> CHILDREN = unmodifiableList(asList(DataSourceDefinition.INSTANCE, XADataSourceDefinition.INSTANCE, DriverDefinition.INSTANCE));
 
     private AgroalSubsystemDefinition() {
-        super(pathElement(SUBSYSTEM, AgroalExtension.SUBSYSTEM_NAME), AgroalExtension.getResolver(), AgroalSubsystemOperations.ADD_OPERATION, AgroalSubsystemOperations.REMOVE_OPERATION);
+        super(pathElement(SUBSYSTEM, AgroalExtension.SUBSYSTEM_NAME), AgroalExtension.getResolver(), AgroalSubsystemOperations.ADD_OPERATION, ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
     @Override
