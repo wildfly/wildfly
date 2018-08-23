@@ -37,6 +37,7 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.security.common.Utils;
+import org.jboss.as.test.shared.ServerSnapshot;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -45,7 +46,9 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 
 import jboss.as.test.integration.microprofile.opentracing.application.SimpleJaxRs;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -86,6 +89,18 @@ public class OnOffOpenTracingTestCase {
         return war;
     }
 
+    private AutoCloseable serverSnapshot;
+
+    @Before
+    public void before() throws Exception {
+        serverSnapshot = ServerSnapshot.takeSnapshot(managementClient);
+    }
+
+    @After
+    public void after() throws Exception {
+        serverSnapshot.close();
+    }
+
     private void opentracingSubsystem(String operationName, ModelControllerClient client) throws Exception {
         final String OT_SUBSYSTEM_NAME = "microprofile-opentracing";
 
@@ -96,10 +111,27 @@ public class OnOffOpenTracingTestCase {
         executeReloadAndWaitForCompletion(client, 100000);
     }
 
+    private void enableServletStackTraceOnError() throws Exception {
+        ModelControllerClient client = managementClient.getControllerClient();
+
+        ModelNode operation = createOpNode("subsystem=undertow/servlet-container=default",
+                ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION);
+        operation.get("name").set("stack-trace-on-error");
+        operation.get("value").set("all");
+
+        Utils.applyUpdate(operation, client);
+
+        executeReloadAndWaitForCompletion(client, 100000);
+    }
+
     @Test
     @OperateOnDeployment(DEPLOYMENT)
     public void testOpenTracingMultinodeServer() throws Exception {
         URI requestUri = new URI(url.toString() + "rest" + SimpleJaxRs.GET_TRACER);
+
+        // In case the server does not listen on localhost, enable stack-traces for deployments to be included in the
+        // HTTP response as we check its content later in this test case.
+        enableServletStackTraceOnError();
 
         // Perform request to the deployment on server where OpenTracing is enabled. Deployment has to have a JaegerTracer instance available.
         String response = Utils.makeCall(requestUri, 200);
