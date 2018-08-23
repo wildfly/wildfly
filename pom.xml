@@ -3689,6 +3689,12 @@
                 <artifactId>microprofile-health-api</artifactId>
                 <version>${version.org.eclipse.microprofile.health.api}</version>
             </dependency>
+            <dependency>
+                <groupId>org.eclipse.microprofile.health</groupId>
+                <artifactId>microprofile-health-tck</artifactId>
+                <version>${version.org.eclipse.microprofile.health.api}</version>
+                <scope>test</scope>
+            </dependency>
 
             <dependency>
                 <groupId>org.eclipse.microprofile.opentracing</groupId>
