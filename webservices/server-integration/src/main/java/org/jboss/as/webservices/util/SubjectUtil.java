@@ -142,7 +142,6 @@ public final class SubjectUtil {
                 }
             }
         }
-        identity.withRoleMapper(roleCategory, (rolesToMap) -> Roles.fromSet(roles));
         // convert public credentials
         IdentityCredentials publicCredentials = IdentityCredentials.NONE;
         for (Object credential : subject.getPublicCredentials()) {
@@ -174,6 +173,10 @@ public final class SubjectUtil {
             }
         }
         identity.withPrivateCredentials(privateCredentials);
+        if (!roles.isEmpty()) {
+            // identity.withRoleMapper will create NEW identity instance instead of set this roleMapper to identity
+            return identity.withRoleMapper(roleCategory, (rolesToMap) -> Roles.fromSet(roles));
+        }
         return identity;
     }
 
