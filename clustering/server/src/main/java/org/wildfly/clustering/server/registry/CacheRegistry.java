@@ -22,7 +22,6 @@
 package org.wildfly.clustering.server.registry;
 
 import java.security.PrivilegedAction;
-import java.time.Duration;
 import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.HashMap;
@@ -60,8 +59,7 @@ import org.jboss.threads.JBossThreadFactory;
 import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
-import org.wildfly.clustering.ee.Invoker;
-import org.wildfly.clustering.ee.retry.RetryingInvoker;
+import org.wildfly.clustering.ee.infinispan.retry.RetryingInvoker;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.infinispan.spi.distribution.ConsistentHashLocality;
 import org.wildfly.clustering.infinispan.spi.distribution.Locality;
@@ -86,8 +84,6 @@ public class CacheRegistry<K, V> implements Registry<K, V>, CacheEventFilter<Obj
         return WildFlySecurityManager.doUnchecked(action);
     }
 
-    private static final Invoker INVOKER = new RetryingInvoker(Duration.ZERO, Duration.ofMillis(100), Duration.ofSeconds(1));
-
     private final ExecutorService topologyChangeExecutor = Executors.newSingleThreadExecutor(createThreadFactory(this.getClass()));
     private final Map<RegistryListener<K, V>, ExecutorService> listeners = new ConcurrentHashMap<>();
     private final Cache<Address, Map.Entry<K, V>> cache;
@@ -102,7 +98,7 @@ public class CacheRegistry<K, V> implements Registry<K, V>, CacheEventFilter<Obj
         this.group = config.getGroup();
         this.closeTask = closeTask;
         this.entry = new AbstractMap.SimpleImmutableEntry<>(entry);
-        INVOKER.invoke(this::populateRegistry);
+        new RetryingInvoker(this.cache).invoke(this::populateRegistry);
         this.cache.addListener(this, new CacheRegistryFilter(), null);
     }
 

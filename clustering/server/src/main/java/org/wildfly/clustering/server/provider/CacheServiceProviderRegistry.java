@@ -22,7 +22,6 @@
 package org.wildfly.clustering.server.provider;
 
 import java.security.PrivilegedAction;
-import java.time.Duration;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -58,7 +57,7 @@ import org.wildfly.clustering.dispatcher.CommandDispatcherException;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.Invoker;
-import org.wildfly.clustering.ee.retry.RetryingInvoker;
+import org.wildfly.clustering.ee.infinispan.retry.RetryingInvoker;
 import org.wildfly.clustering.group.GroupListener;
 import org.wildfly.clustering.group.Membership;
 import org.wildfly.clustering.group.Node;
@@ -85,14 +84,13 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
         return WildFlySecurityManager.doUnchecked(action);
     }
 
-    private static final Invoker INVOKER = new RetryingInvoker(Duration.ZERO, Duration.ofMillis(100), Duration.ofSeconds(1));
-
     final Batcher<? extends Batch> batcher;
     private final ConcurrentMap<T, Map.Entry<Listener, ExecutorService>> listeners = new ConcurrentHashMap<>();
     private final Cache<T, Set<Address>> cache;
     private final Group<Address> group;
     private final Registration groupRegistration;
     private final CommandDispatcher<Set<T>> dispatcher;
+    private final Invoker invoker;
 
     public CacheServiceProviderRegistry(CacheServiceProviderRegistryConfiguration<T> config) {
         this.group = config.getGroup();
@@ -101,6 +99,7 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
         this.dispatcher = config.getCommandDispatcherFactory().createCommandDispatcher(config.getId(), this.listeners.keySet());
         this.cache.addListener(this);
         this.groupRegistration = this.group.register(this);
+        this.invoker = new RetryingInvoker(this.cache);
     }
 
     @Override
@@ -148,7 +147,7 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
                 CacheServiceProviderRegistry.this.registerLocal(service);
             }
         };
-        INVOKER.invoke(registerAction);
+        this.invoker.invoke(registerAction);
         return new SimpleServiceProviderRegistration<>(service, this, () -> {
             Address localAddress = this.group.getAddress(this.group.getLocalMember());
             try (Batch batch = this.batcher.createBatch()) {

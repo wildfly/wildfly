@@ -22,6 +22,8 @@
 package org.wildfly.clustering.ee.retry;
 
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.List;
 
 import org.jboss.logging.Logger;
 import org.wildfly.clustering.ee.Invoker;
@@ -37,22 +39,26 @@ public class RetryingInvoker implements Invoker {
     // No logger interface for this module and no reason to create one for this class only
     private static final Logger LOGGER = Logger.getLogger(RetryingInvoker.class);
 
-    private final Duration[] backOffIntervals;
+    private final List<Duration> retryIntevals;
 
-    public RetryingInvoker(Duration... backOffIntervals) {
-        this.backOffIntervals = backOffIntervals;
+    public RetryingInvoker(Duration... retryIntervals) {
+        this(Arrays.asList(retryIntervals));
+    }
+
+    protected RetryingInvoker(List<Duration> retryIntevals) {
+        this.retryIntevals = retryIntevals;
     }
 
     @Override
     public <R, E extends Exception> R invoke(ExceptionSupplier<R, E> task) throws E {
-        for (int i = 0; i < this.backOffIntervals.length; ++i) {
+        int attempt = 0;
+        for (Duration delay : this.retryIntevals) {
             if (Thread.currentThread().isInterrupted()) break;
             try {
                 return task.get();
             } catch (Exception e) {
-                LOGGER.debugf(e, "Attempt #%d failed", i + 1);
+                LOGGER.debugf(e, "Attempt #%d failed", ++attempt);
             }
-            Duration delay = this.backOffIntervals[i];
             if (delay.isZero() || delay.isNegative()) {
                 Thread.yield();
             } else {
