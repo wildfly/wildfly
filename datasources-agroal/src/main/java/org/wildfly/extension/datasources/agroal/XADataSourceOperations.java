@@ -29,12 +29,12 @@ import io.agroal.api.configuration.supplier.AgroalConnectionPoolConfigurationSup
 import io.agroal.api.configuration.supplier.AgroalDataSourceConfigurationSupplier;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -81,11 +81,11 @@ class XADataSourceOperations extends AbstractAddStepHandler {
 
             DataSourceService dataSourceService = new DataSourceService(datasourceName, jndiName, false, false, true, dataSourceConfiguration);
 
-            ServiceBuilder<AgroalDataSource> serviceBuilder = context.getCapabilityServiceTarget().addCapability(AbstractDataSourceDefinition.DATA_SOURCE_CAPABILITY.fromBaseCapability(datasourceName), dataSourceService);
+            CapabilityServiceBuilder<AgroalDataSource> serviceBuilder = context.getCapabilityServiceTarget().addCapability(AbstractDataSourceDefinition.DATA_SOURCE_CAPABILITY.fromBaseCapability(datasourceName), dataSourceService);
+            serviceBuilder.addCapabilityRequirement(DriverDefinition.AGROAL_DRIVER_CAPABILITY.getDynamicName(driverName), Class.class, dataSourceService.getDriverInjector());
 
             AbstractDataSourceOperations.setupElytronSecurity(context, factoryModel, dataSourceService, serviceBuilder);
 
-            serviceBuilder.addDependency(DriverOperations.DRIVER_SERVICE_PREFIX.append(driverName), Class.class, dataSourceService.getDriverInjector());
             serviceBuilder.install();
         }
     }

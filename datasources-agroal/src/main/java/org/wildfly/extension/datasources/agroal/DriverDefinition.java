@@ -31,10 +31,11 @@ import java.util.Collection;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
-import org.jboss.as.controller.PrimitiveListAttributeDefinition;
+import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
 import org.jboss.as.controller.access.management.ApplicationTypeAccessConstraintDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelType;
@@ -46,23 +47,24 @@ import org.jboss.dmr.ModelType;
  */
 class DriverDefinition extends PersistentResourceDefinition {
 
+    private static final String AGROAL_DRIVER_CAPABILITY_NAME = "org.wildfly.data-source.agroal-driver";
+
+    static final RuntimeCapability<Void> AGROAL_DRIVER_CAPABILITY = RuntimeCapability.Builder.of(AGROAL_DRIVER_CAPABILITY_NAME, true, Class.class).build();
+
     static final String DRIVERS_ELEMENT_NAME = "drivers";
 
     static final SimpleAttributeDefinition MODULE_ATTRIBUTE = create("module", ModelType.STRING)
-            .setAllowExpression(true)
             .setRestartAllServices()
             .setValidator(new StringLengthValidator(1))
             .build();
 
     static final SimpleAttributeDefinition CLASS_ATTRIBUTE = create("class", ModelType.STRING)
-            .setAllowExpression(true)
             .setRequired(false)
             .setRestartAllServices()
             .setValidator(new StringLengthValidator(1))
             .build();
 
-    static final PrimitiveListAttributeDefinition CLASS_INFO = PrimitiveListAttributeDefinition.Builder.of("class-info", ModelType.LIST)
-            .setRequired(false)
+    static final PropertiesAttributeDefinition CLASS_INFO = new PropertiesAttributeDefinition.Builder("class-info", true)
             .setStorageRuntime()
             .build();
 
@@ -75,6 +77,7 @@ class DriverDefinition extends PersistentResourceDefinition {
     private DriverDefinition() {
         // TODO The cast to PersistentResourceDefinition.Parameters is a workaround to WFCORE-4040
         super((Parameters) new Parameters(pathElement("driver"), getResolver("driver"))
+                .setCapabilities(AGROAL_DRIVER_CAPABILITY)
                 .setAddHandler(DriverOperations.ADD_OPERATION)
                 .setRemoveHandler(DriverOperations.REMOVE_OPERATION)
                 .setAccessConstraints(new ApplicationTypeAccessConstraintDefinition(

@@ -39,7 +39,6 @@ import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PersistentResourceDefinition;
-import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -241,7 +240,81 @@ abstract class AbstractDataSourceDefinition extends PersistentResourceDefinition
 
     // --- Runtime attributes //
 
-    private static final PrimitiveListAttributeDefinition STATISTICS = PrimitiveListAttributeDefinition.Builder.of("statistics", ModelType.LIST)
+    static final SimpleAttributeDefinition STATISTICS_ACQUIRE_COUNT_ATTRIBUTE = create("acquire-count", ModelType.INT)
+            .setStorageRuntime()
+            .build();
+
+    static final SimpleAttributeDefinition STATISTICS_ACTIVE_COUNT_ATTRIBUTE = create("active-count", ModelType.INT)
+            .setStorageRuntime()
+            .build();
+
+    static final SimpleAttributeDefinition STATISTICS_AVAILABLE_COUNT_ATTRIBUTE = create("available-count", ModelType.INT)
+            .setStorageRuntime()
+            .build();
+
+    static final SimpleAttributeDefinition STATISTICS_AWAITING_COUNT_ATTRIBUTE = create("awaiting-count", ModelType.INT)
+            .setStorageRuntime()
+            .build();
+
+    static final SimpleAttributeDefinition STATISTICS_CREATION_COUNT_ATTRIBUTE = create("creation-count", ModelType.INT)
+            .setStorageRuntime()
+            .build();
+
+    static final SimpleAttributeDefinition STATISTICS_DESTOY_COUNT_ATTRIBUTE = create("destroy-count", ModelType.INT)
+            .setStorageRuntime()
+            .build();
+
+    static final SimpleAttributeDefinition STATISTICS_FLUSH_COUNT_ATTRIBUTE = create("flush-count", ModelType.INT)
+            .setStorageRuntime()
+            .build();
+
+    static final SimpleAttributeDefinition STATISTICS_INVALID_COUNT_ATTRIBUTE = create("invalid-count", ModelType.INT)
+            .setStorageRuntime()
+            .build();
+
+    static final SimpleAttributeDefinition STATISTICS_LEAK_DETECTION_COUNT_ATTRIBUTE = create("leak-detection-count", ModelType.INT)
+            .setStorageRuntime()
+            .build();
+
+    static final SimpleAttributeDefinition STATISTICS_MAX_USED_COUNT_ATTRIBUTE = create("max-used-count", ModelType.INT)
+            .setStorageRuntime()
+            .build();
+
+    static final SimpleAttributeDefinition STATISTICS_REAP_COUNT_ATTRIBUTE = create("reap-count", ModelType.INT)
+            .setStorageRuntime()
+            .build();
+
+    static final SimpleAttributeDefinition STATISTICS_BLOCKING_TIME_AVERAGE_ATTRIBUTE = create("blocking-time-average-ms", ModelType.INT)
+            .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
+            .setStorageRuntime()
+            .build();
+
+    static final SimpleAttributeDefinition STATISTICS_BLOCKING_TIME_MAX_ATTRIBUTE = create("blocking-time-max-ms", ModelType.INT)
+            .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
+            .setStorageRuntime()
+            .build();
+
+    static final SimpleAttributeDefinition STATISTICS_BLOCKING_TIME_TOTAL_ATTRIBUTE = create("blocking-time-total-ms", ModelType.INT)
+            .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
+            .setStorageRuntime()
+            .build();
+
+    static final SimpleAttributeDefinition STATISTICS_CREATION_TIME_AVERAGE_ATTRIBUTE = create("creation-time-average-ms", ModelType.INT)
+            .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
+            .setStorageRuntime()
+            .build();
+
+    static final SimpleAttributeDefinition STATISTICS_CREATION_TIME_MAX_ATTRIBUTE = create("creation-time-max-ms", ModelType.INT)
+            .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
+            .setStorageRuntime()
+            .build();
+
+    static final SimpleAttributeDefinition STATISTICS_CREATION_TIME_TOTAL_ATTRIBUTE = create("creation-time-total-ms", ModelType.INT)
+            .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
+            .setStorageRuntime()
+            .build();
+
+    private static final ObjectTypeAttributeDefinition STATISTICS = ObjectTypeAttributeDefinition.create("statistics", STATISTICS_ACQUIRE_COUNT_ATTRIBUTE, STATISTICS_ACTIVE_COUNT_ATTRIBUTE, STATISTICS_AVAILABLE_COUNT_ATTRIBUTE, STATISTICS_AWAITING_COUNT_ATTRIBUTE, STATISTICS_CREATION_COUNT_ATTRIBUTE, STATISTICS_DESTOY_COUNT_ATTRIBUTE, STATISTICS_FLUSH_COUNT_ATTRIBUTE, STATISTICS_INVALID_COUNT_ATTRIBUTE, STATISTICS_LEAK_DETECTION_COUNT_ATTRIBUTE, STATISTICS_MAX_USED_COUNT_ATTRIBUTE, STATISTICS_REAP_COUNT_ATTRIBUTE, STATISTICS_BLOCKING_TIME_AVERAGE_ATTRIBUTE, STATISTICS_BLOCKING_TIME_MAX_ATTRIBUTE, STATISTICS_BLOCKING_TIME_TOTAL_ATTRIBUTE, STATISTICS_CREATION_TIME_AVERAGE_ATTRIBUTE, STATISTICS_CREATION_TIME_MAX_ATTRIBUTE, STATISTICS_CREATION_TIME_TOTAL_ATTRIBUTE)
             .setRequired(false)
             .setStorageRuntime()
             .build();

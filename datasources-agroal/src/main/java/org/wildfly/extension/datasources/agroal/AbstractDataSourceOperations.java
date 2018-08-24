@@ -281,25 +281,25 @@ class AbstractDataSourceOperations {
 
                 ModelNode result = new ModelNode();
 
-                result.get("acquire-count").set(metrics.acquireCount());
-                result.get("active-count").set(metrics.activeCount());
-                result.get("available-count").set(metrics.availableCount());
-                result.get("awaiting-count").set(metrics.awaitingCount());
-                result.get("creation-count").set(metrics.creationCount());
-                result.get("destroy-count").set(metrics.destroyCount());
-                result.get("flush-count").set(metrics.flushCount());
-                result.get("invalid-count").set(metrics.invalidCount());
-                result.get("leak-detection-count").set(metrics.leakDetectionCount());
-                result.get("max-used-count").set(metrics.maxUsedCount());
-                result.get("reap-count").set(metrics.reapCount());
+                result.get(AbstractDataSourceDefinition.STATISTICS_ACQUIRE_COUNT_ATTRIBUTE.getName()).set(metrics.acquireCount());
+                result.get(AbstractDataSourceDefinition.STATISTICS_ACTIVE_COUNT_ATTRIBUTE.getName()).set(metrics.activeCount());
+                result.get(AbstractDataSourceDefinition.STATISTICS_AVAILABLE_COUNT_ATTRIBUTE.getName()).set(metrics.availableCount());
+                result.get(AbstractDataSourceDefinition.STATISTICS_AWAITING_COUNT_ATTRIBUTE.getName()).set(metrics.awaitingCount());
+                result.get(AbstractDataSourceDefinition.STATISTICS_CREATION_COUNT_ATTRIBUTE.getName()).set(metrics.creationCount());
+                result.get(AbstractDataSourceDefinition.STATISTICS_DESTOY_COUNT_ATTRIBUTE.getName()).set(metrics.destroyCount());
+                result.get(AbstractDataSourceDefinition.STATISTICS_FLUSH_COUNT_ATTRIBUTE.getName()).set(metrics.flushCount());
+                result.get(AbstractDataSourceDefinition.STATISTICS_INVALID_COUNT_ATTRIBUTE.getName()).set(metrics.invalidCount());
+                result.get(AbstractDataSourceDefinition.STATISTICS_LEAK_DETECTION_COUNT_ATTRIBUTE.getName()).set(metrics.leakDetectionCount());
+                result.get(AbstractDataSourceDefinition.STATISTICS_MAX_USED_COUNT_ATTRIBUTE.getName()).set(metrics.maxUsedCount());
+                result.get(AbstractDataSourceDefinition.STATISTICS_REAP_COUNT_ATTRIBUTE.getName()).set(metrics.reapCount());
 
-                result.get("blocking-time-average-ms").set(metrics.blockingTimeAverage().toMillis());
-                result.get("blocking-time-max-ms").set(metrics.blockingTimeMax().toMillis());
-                result.get("blocking-time-total-ms").set(metrics.blockingTimeTotal().toMillis());
+                result.get(AbstractDataSourceDefinition.STATISTICS_BLOCKING_TIME_AVERAGE_ATTRIBUTE.getName()).set(metrics.blockingTimeAverage().toMillis());
+                result.get(AbstractDataSourceDefinition.STATISTICS_BLOCKING_TIME_MAX_ATTRIBUTE.getName()).set(metrics.blockingTimeMax().toMillis());
+                result.get(AbstractDataSourceDefinition.STATISTICS_BLOCKING_TIME_TOTAL_ATTRIBUTE.getName()).set(metrics.blockingTimeTotal().toMillis());
 
-                result.get("creation-time-average-ms").set(metrics.creationTimeAverage().toMillis());
-                result.get("creation-time-max-ms").set(metrics.creationTimeMax().toMillis());
-                result.get("creation-time-total-ms").set(metrics.creationTimeTotal().toMillis());
+                result.get(AbstractDataSourceDefinition.STATISTICS_CREATION_TIME_AVERAGE_ATTRIBUTE.getName()).set(metrics.creationTimeAverage().toMillis());
+                result.get(AbstractDataSourceDefinition.STATISTICS_CREATION_TIME_MAX_ATTRIBUTE.getName()).set(metrics.creationTimeMax().toMillis());
+                result.get(AbstractDataSourceDefinition.STATISTICS_CREATION_TIME_TOTAL_ATTRIBUTE.getName()).set(metrics.creationTimeTotal().toMillis());
 
                 context.getResult().set(result);
             }
