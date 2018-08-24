@@ -14,16 +14,21 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<module xmlns="urn:jboss:module:1.8" name="com.google.code.gson">
+<module xmlns="urn:jboss:module:1.8" name="io.jaegertracing.jaeger-core">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
 
     <resources>
-        <artifact name="${com.google.code.gson:gson}"/>
+        <artifact name="${io.jaegertracing:jaeger-core}"/>
     </resources>
 
     <dependencies>
-        <module name="javax.sql.api"/>
+        <module name="com.google.code.gson"/>
+
+        <module name="io.opentracing.opentracing-api"/>
+        <module name="io.opentracing.opentracing-util"/>
+
+        <module name="org.slf4j"/>
     </dependencies>
 </module>
