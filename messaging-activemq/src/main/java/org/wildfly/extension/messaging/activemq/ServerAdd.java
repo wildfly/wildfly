@@ -324,10 +324,10 @@ class ServerAdd extends AbstractAddStepHandler {
                 TransportConfigOperationHandlers.processConnectors(context, configuration, model, connectorsSocketBindings);
 
                 Map<String, Supplier<OutboundSocketBinding>> outboundSocketBindings = new HashMap<>();
+                Map<String, Boolean> outbounds = TransportConfigOperationHandlers.listOutBoundSocketBinding(context, connectorsSocketBindings);
                 for (final String connectorSocketBinding : connectorsSocketBindings) {
                     // find whether the connectorSocketBinding references a SocketBinding or an OutboundSocketBinding
-                    boolean outbound = isOutBoundSocketBinding(context, connectorSocketBinding);
-                    if (outbound) {
+                    if (outbounds.get(connectorSocketBinding)) {
                         final ServiceName outboundSocketName = OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME.append(connectorSocketBinding);
                         Supplier<OutboundSocketBinding> outboundSocketBinding = serviceBuilder.requires(outboundSocketName);
                         outboundSocketBindings.put(connectorSocketBinding, outboundSocketBinding);
@@ -452,24 +452,6 @@ class ServerAdd extends AbstractAddStepHandler {
                 context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
             }
         }, OperationContext.Stage.RUNTIME);
-    }
-
-    /**
-     * Determines whether a socket-binding with the given name corresponds to a (local or remote) outbound-socket-binding
-     * or a socket-binding.
-     *
-     * If no socket-binding or outbound-socket-binding resources matches, throw an OperationFailedException.
-     */
-    private boolean isOutBoundSocketBinding(OperationContext context, String name) throws OperationFailedException {
-        Resource root = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS);
-        for (Resource.ResourceEntry resource : root.getChildren(ModelDescriptionConstants.SOCKET_BINDING_GROUP)) {
-            if (resource.getChildrenNames(ModelDescriptionConstants.SOCKET_BINDING).contains(name)) {
-                return false;
-            } else if (resource.getChildrenNames(ModelDescriptionConstants.LOCAL_DESTINATION_OUTBOUND_SOCKET_BINDING).contains(name)
-                    || resource.getChildrenNames(ModelDescriptionConstants.REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING).contains(name))
-                return true;
-        }
-        throw MessagingLogger.ROOT_LOGGER.noSocketBinding(name);
     }
 
     /**
