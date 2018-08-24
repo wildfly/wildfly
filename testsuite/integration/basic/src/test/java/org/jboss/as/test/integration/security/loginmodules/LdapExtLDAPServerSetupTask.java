@@ -304,7 +304,8 @@ public class LdapExtLDAPServerSetupTask implements ServerSetupTask {
          */
         @Override
         protected SystemProperty[] getSystemProperties() {
-            return new SystemProperty[]{new DefaultSystemProperty("javax.net.ssl.trustStore", KEYSTORE_FILE.getAbsolutePath())};
+            return new SystemProperty[]{new DefaultSystemProperty("javax.net.ssl.trustStore", KEYSTORE_FILE.getAbsolutePath()),
+                    new DefaultSystemProperty("com.sun.jndi.ldap.object.disableEndpointIdentification","")};
         }
     }
 
