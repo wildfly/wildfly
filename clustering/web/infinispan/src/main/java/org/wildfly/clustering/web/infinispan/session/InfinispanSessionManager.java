@@ -54,6 +54,7 @@ import org.wildfly.clustering.Registrar;
 import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
+import org.wildfly.clustering.dispatcher.CommandDispatcherException;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.Invoker;
 import org.wildfly.clustering.ee.Recordable;
@@ -163,11 +164,11 @@ public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, Tr
         }
     }
 
-    private void executeOnPrimaryOwner(final String sessionId, final Command<Void, Scheduler> command) throws Exception {
+    private void executeOnPrimaryOwner(final String sessionId, final Command<Void, Scheduler> command) throws CommandDispatcherException {
         CommandDispatcher<Scheduler> dispatcher = this.dispatcher;
-        ExceptionSupplier<CompletionStage<Void>, Exception> action = new ExceptionSupplier<CompletionStage<Void>, Exception>() {
+        ExceptionSupplier<CompletionStage<Void>, CommandDispatcherException> action = new ExceptionSupplier<CompletionStage<Void>, CommandDispatcherException>() {
             @Override
-            public CompletionStage<Void> get() throws Exception {
+            public CompletionStage<Void> get() throws CommandDispatcherException {
                 // This should only go remote following a failover
                 Node node = InfinispanSessionManager.this.locatePrimaryOwner(sessionId);
                 return dispatcher.executeOnMember(command, node);
