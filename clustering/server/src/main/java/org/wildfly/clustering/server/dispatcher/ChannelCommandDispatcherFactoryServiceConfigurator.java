@@ -21,7 +21,7 @@
  */
 package org.wildfly.clustering.server.dispatcher;
 
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -93,7 +93,7 @@ public class ChannelCommandDispatcherFactoryServiceConfigurator extends SimpleSe
     private volatile SupplierDependency<JChannel> channel;
     private volatile SupplierDependency<Module> module;
     private volatile Supplier<ModuleLoader> loader;
-    private volatile long timeout = TimeUnit.MINUTES.toMillis(1);
+    private volatile Duration timeout = Duration.ofMinutes(1);
 
     public ChannelCommandDispatcherFactoryServiceConfigurator(ServiceName name, String group) {
         super(name);
@@ -122,8 +122,8 @@ public class ChannelCommandDispatcherFactoryServiceConfigurator extends SimpleSe
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.PASSIVE);
     }
 
-    public ChannelCommandDispatcherFactoryServiceConfigurator timeout(long value, TimeUnit unit) {
-        this.timeout = unit.toMillis(value);
+    public ChannelCommandDispatcherFactoryServiceConfigurator timeout(Duration timeout) {
+        this.timeout = timeout;
         return this;
     }
 
@@ -148,7 +148,7 @@ public class ChannelCommandDispatcherFactoryServiceConfigurator extends SimpleSe
     }
 
     @Override
-    public long getTimeout() {
+    public Duration getTimeout() {
         return this.timeout;
     }
 

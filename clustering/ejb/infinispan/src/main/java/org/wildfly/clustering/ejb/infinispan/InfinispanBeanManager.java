@@ -53,6 +53,7 @@ import org.jboss.ejb.client.NodeAffinity;
 import org.jboss.threads.JBossThreadFactory;
 import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
+import org.wildfly.clustering.dispatcher.CommandDispatcherException;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.Invoker;
@@ -219,11 +220,11 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
         }
     }
 
-    private void executeOnPrimaryOwner(Bean<I, T> bean, final Command<Void, Scheduler<I>> command) throws Exception {
+    private void executeOnPrimaryOwner(Bean<I, T> bean, final Command<Void, Scheduler<I>> command) throws CommandDispatcherException {
         CommandDispatcher<Scheduler<I>> dispatcher = this.dispatcher;
-        ExceptionSupplier<CompletionStage<Void>, Exception> action = new ExceptionSupplier<CompletionStage<Void>, Exception>() {
+        ExceptionSupplier<CompletionStage<Void>, CommandDispatcherException> action = new ExceptionSupplier<CompletionStage<Void>, CommandDispatcherException>() {
             @Override
-            public CompletionStage<Void> get() throws Exception {
+            public CompletionStage<Void> get() throws CommandDispatcherException {
                 // This should only go remote following a failover
                 Node node = InfinispanBeanManager.this.locatePrimaryOwner(bean.getId());
                 return dispatcher.executeOnMember(command, node);
