@@ -25,6 +25,7 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.net.InetSocketAddress;
 import java.security.PrivilegedAction;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -95,7 +96,7 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
     private final AtomicReference<View> view = new AtomicReference<>();
     private final MarshallingContext marshallingContext;
     private final MessageDispatcher dispatcher;
-    private final long timeout;
+    private final Duration timeout;
 
     @SuppressWarnings("resource")
     public ChannelCommandDispatcherFactory(ChannelCommandDispatcherFactoryConfiguration config) {
@@ -118,7 +119,7 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
     public void run() {
         this.executorService.shutdownNow();
         try {
-            this.executorService.awaitTermination(this.timeout, TimeUnit.MILLISECONDS);
+            this.executorService.awaitTermination(this.timeout.toMillis(), TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
@@ -204,7 +205,7 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
         if (executor != null) {
             executor.shutdownNow();
             try {
-                executor.awaitTermination(this.timeout, TimeUnit.MILLISECONDS);
+                executor.awaitTermination(this.timeout.toMillis(), TimeUnit.MILLISECONDS);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }

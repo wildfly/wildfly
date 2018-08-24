@@ -22,6 +22,7 @@
 package org.wildfly.clustering.server.dispatcher;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -68,12 +69,12 @@ public class ChannelCommandDispatcher<C> implements CommandDispatcher<C> {
     private final MessageDispatcher dispatcher;
     private final CommandMarshaller<C> marshaller;
     private final Group<Address> group;
-    private final long timeout;
+    private final Duration timeout;
     private final CommandDispatcher<C> localDispatcher;
     private final Runnable closeTask;
     private final Address localAddress;
 
-    public ChannelCommandDispatcher(MessageDispatcher dispatcher, CommandMarshaller<C> marshaller, Group<Address> group, long timeout, CommandDispatcher<C> localDispatcher, Runnable closeTask) {
+    public ChannelCommandDispatcher(MessageDispatcher dispatcher, CommandMarshaller<C> marshaller, Group<Address> group, Duration timeout, CommandDispatcher<C> localDispatcher, Runnable closeTask) {
         this.dispatcher = dispatcher;
         this.marshaller = marshaller;
         this.group = group;
@@ -145,7 +146,7 @@ public class ChannelCommandDispatcher<C> implements CommandDispatcher<C> {
     }
 
     private RequestOptions createRequestOptions() {
-        return new RequestOptions(ResponseMode.GET_ALL, this.timeout, false, FILTER, Message.Flag.DONT_BUNDLE, Message.Flag.OOB);
+        return new RequestOptions(ResponseMode.GET_ALL, this.timeout.toMillis(), false, FILTER, Message.Flag.DONT_BUNDLE, Message.Flag.OOB);
     }
 
     private static class PruneCancellationTask<T> implements BiConsumer<T, Throwable> {
