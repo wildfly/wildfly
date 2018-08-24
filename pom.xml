@@ -4469,6 +4469,10 @@
                 <version>${version.org.jboss.ironjacamar}</version>
                 <exclusions>
                     <exclusion>
+                        <groupId>org.jboss.ironjacamar</groupId>
+                        <artifactId>ironjacamar-spec-api</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.jboss</groupId>
                         <artifactId>jbossxb</artifactId>
                     </exclusion>
@@ -4500,6 +4504,10 @@
                 <artifactId>ironjacamar-core-api</artifactId>
                 <version>${version.org.jboss.ironjacamar}</version>
                 <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.ironjacamar</groupId>
+                        <artifactId>ironjacamar-spec-api</artifactId>
+                    </exclusion>
                     <exclusion>
                         <groupId>org.jboss.integration</groupId>
                         <artifactId>jboss-integration</artifactId>
