@@ -53,7 +53,7 @@ public class JBossWSTestCase extends TestBase {
         assertContains(errorLog, "OPVDX001: Validation error in standalone.xml");
         assertContains(errorLog, "<modify-wsdl-address/>");
         assertContains(errorLog, " ^^^^ Wrong type for 'modify-wsdl-address'. Expected [BOOLEAN] but was");
-        assertContains(errorLog, "|                  STRING");
+        assertContains(errorLog, "STRING");
     }
 
     /*

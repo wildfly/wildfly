@@ -45,7 +45,7 @@ public class JBossWSDomainTestCase extends TestBase {
         String errorLog = container().getErrorMessageFromServerStart();
         assertContains(errorLog, "<modify-wsdl-address/>");
         assertContains(errorLog, " ^^^^ Wrong type for 'modify-wsdl-address'. Expected [BOOLEAN] but was");
-        assertContains(errorLog, "                  STRING");
+        assertContains(errorLog, "STRING");
     }
 
     @Test
