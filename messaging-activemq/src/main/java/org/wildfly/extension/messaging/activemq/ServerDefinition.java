@@ -709,7 +709,8 @@ public class ServerDefinition extends PersistentResourceDefinition {
 
         children.add(new BridgeDefinition(registerRuntimeOnly));
         children.add(new BroadcastGroupDefinition(registerRuntimeOnly));
-        children.add(new DiscoveryGroupDefinition(registerRuntimeOnly));
+        // WFLY-10518 - keep discovery-group resource under server
+        children.add(new DiscoveryGroupDefinition(registerRuntimeOnly, false));
         children.add(new ClusterConnectionDefinition(registerRuntimeOnly));
         children.add(new QueueDefinition(registerRuntimeOnly, MessagingExtension.QUEUE_PATH));
         children.add(new JMSQueueDefinition(false, registerRuntimeOnly));

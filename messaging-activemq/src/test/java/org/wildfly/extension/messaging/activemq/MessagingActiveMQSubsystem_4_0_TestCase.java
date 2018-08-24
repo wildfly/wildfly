@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.messaging.activemq;
 
+import static org.jboss.as.controller.PathElement.pathElement;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.model.test.ModelTestControllerVersion.EAP_7_0_0;
@@ -47,7 +48,6 @@ import java.util.Properties;
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelTestControllerVersion;
@@ -63,6 +63,9 @@ import org.wildfly.clustering.spi.ClusteringDefaultRequirement;
 import org.wildfly.clustering.spi.ClusteringRequirement;
 import org.wildfly.extension.messaging.activemq.ha.HAAttributes;
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes;
+
+import static org.wildfly.extension.messaging.activemq.MessagingExtension.EXTERNAL_JMS_QUEUE_PATH;
+import static org.wildfly.extension.messaging.activemq.MessagingExtension.EXTERNAL_JMS_TOPIC_PATH;
 
 /**
  *  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2012 Red Hat inc
@@ -204,16 +207,12 @@ public class MessagingActiveMQSubsystem_4_0_TestCase extends AbstractSubsystemBa
                                 AddressSettingDefinition.AUTO_DELETE_QUEUES,
                                 AddressSettingDefinition.AUTO_CREATE_ADDRESSES,
                                 AddressSettingDefinition.AUTO_DELETE_ADDRESSES))
-                .addFailedAttribute(subsystemAddress.append(SERVER_PATH, PathElement.pathElement(CommonAttributes.HTTP_CONNECTOR)),
+                .addFailedAttribute(subsystemAddress.append(SERVER_PATH, pathElement(CommonAttributes.HTTP_CONNECTOR)),
                         new FailedOperationTransformationConfig.NewAttributesConfig(
                                 HTTPConnectorDefinition.SERVER_NAME))
                 .addFailedAttribute(subsystemAddress.append(SERVER_PATH, BRIDGE_PATH),
                         new FailedOperationTransformationConfig.NewAttributesConfig(
                                 BridgeDefinition.PRODUCER_WINDOW_SIZE))
-                .addFailedAttribute(subsystemAddress.append(SERVER_PATH, MessagingExtension.BROADCAST_GROUP_PATH),
-                        new FailedOperationTransformationConfig.NewAttributesConfig(BroadcastGroupDefinition.JGROUPS_CHANNEL))
-                .addFailedAttribute(subsystemAddress.append(SERVER_PATH, DiscoveryGroupDefinition.PATH),
-                        new FailedOperationTransformationConfig.NewAttributesConfig(DiscoveryGroupDefinition.JGROUPS_CHANNEL))
                 .addFailedAttribute(subsystemAddress.append(SERVER_PATH, CLUSTER_CONNECTION_PATH),
                         new FailedOperationTransformationConfig.NewAttributesConfig(
                                 ClusterConnectionDefinition.PRODUCER_WINDOW_SIZE))
@@ -238,10 +237,6 @@ public class MessagingActiveMQSubsystem_4_0_TestCase extends AbstractSubsystemBa
                             AddressSettingDefinition.AUTO_DELETE_QUEUES,
                             AddressSettingDefinition.AUTO_CREATE_ADDRESSES,
                             AddressSettingDefinition.AUTO_DELETE_ADDRESSES))
-                .addFailedAttribute(subsystemAddress.append(SERVER_PATH, MessagingExtension.BROADCAST_GROUP_PATH),
-                        new FailedOperationTransformationConfig.NewAttributesConfig(BroadcastGroupDefinition.JGROUPS_CHANNEL))
-                .addFailedAttribute(subsystemAddress.append(SERVER_PATH, DiscoveryGroupDefinition.PATH),
-                        new FailedOperationTransformationConfig.NewAttributesConfig(DiscoveryGroupDefinition.JGROUPS_CHANNEL))
                 .addFailedAttribute(subsystemAddress.append(SERVER_PATH),
                         new FailedOperationTransformationConfig.NewAttributesConfig(ServerDefinition.JOURNAL_JDBC_LOCK_EXPIRATION,
                                 ServerDefinition.JOURNAL_JDBC_LOCK_RENEW_PERIOD,
@@ -250,6 +245,17 @@ public class MessagingActiveMQSubsystem_4_0_TestCase extends AbstractSubsystemBa
                         new FailedOperationTransformationConfig.NewAttributesConfig(
                                 ConnectionFactoryAttributes.Common.INITIAL_MESSAGE_PACKET_SIZE));
         }
+        config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, MessagingExtension.BROADCAST_GROUP_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(BroadcastGroupDefinition.JGROUPS_CHANNEL));
+        config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, DiscoveryGroupDefinition.PATH), new FailedOperationTransformationConfig.NewAttributesConfig(DiscoveryGroupDefinition.JGROUPS_CHANNEL));
+        config.addFailedAttribute(subsystemAddress.append(DiscoveryGroupDefinition.PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
+        config.addFailedAttribute(subsystemAddress.append(pathElement(CommonAttributes.REMOTE_CONNECTOR)), FailedOperationTransformationConfig.REJECTED_RESOURCE);
+        config.addFailedAttribute(subsystemAddress.append(pathElement(CommonAttributes.IN_VM_CONNECTOR)), FailedOperationTransformationConfig.REJECTED_RESOURCE);
+        config.addFailedAttribute(subsystemAddress.append(pathElement(CommonAttributes.CONNECTOR)), FailedOperationTransformationConfig.REJECTED_RESOURCE);
+        config.addFailedAttribute(subsystemAddress.append(MessagingExtension.HTTP_CONNECTOR_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
+        config.addFailedAttribute(subsystemAddress.append(CONNECTION_FACTORY_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
+        config.addFailedAttribute(subsystemAddress.append(POOLED_CONNECTION_FACTORY_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
+        config.addFailedAttribute(subsystemAddress.append(EXTERNAL_JMS_QUEUE_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
+        config.addFailedAttribute(subsystemAddress.append(EXTERNAL_JMS_TOPIC_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
 
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, messagingVersion, ops, config);
     }

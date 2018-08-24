@@ -47,7 +47,6 @@ import org.apache.activemq.artemis.core.config.BridgeConfiguration;
 import org.apache.activemq.artemis.core.config.Configuration;
 import org.apache.activemq.artemis.core.config.storage.DatabaseStorageConfiguration;
 import org.apache.activemq.artemis.core.io.aio.AIOSequentialFileFactory;
-import org.apache.activemq.artemis.core.remoting.impl.netty.TransportConstants;
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.apache.activemq.artemis.core.server.JournalType;
 import org.apache.activemq.artemis.core.server.impl.ActiveMQServerImpl;
@@ -55,9 +54,7 @@ import org.apache.activemq.artemis.spi.core.security.ActiveMQSecurityManager;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.services.path.AbsolutePathService;
 import org.jboss.as.controller.services.path.PathManager;
-import org.jboss.as.network.ClientMapping;
 import org.jboss.as.network.ManagedBinding;
-import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.security.plugins.SecurityDomainContext;
@@ -189,60 +186,7 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
             Collection<TransportConfiguration> connectors = configuration.getConnectorConfigurations().values();
             Collection<BroadcastGroupConfiguration> broadcastGroups = configuration.getBroadcastGroupConfigurations();
             Map<String, DiscoveryGroupConfiguration> discoveryGroups = configuration.getDiscoveryGroupConfigurations();
-            if (connectors != null) {
-                for (TransportConfiguration tc : connectors) {
-                    // If there is a socket binding set the HOST/PORT values
-                    Object socketRef = tc.getParams().remove(SOCKET_REF);
-                    if (socketRef != null) {
-                        String name = socketRef.toString();
-                        String host;
-                        int port;
-                        Supplier<OutboundSocketBinding> bindingSupplier = outboundSocketBindings.get(name);
-                        if (bindingSupplier == null) {
-                            final Supplier<SocketBinding> socketBindingSupplier = socketBindings.get(name);
-                            if (socketBindingSupplier == null) {
-                                throw MessagingLogger.ROOT_LOGGER.failedToFindConnectorSocketBinding(tc.getName());
-                            }
-                            final SocketBinding socketBinding = socketBindingSupplier.get();
-                            if (socketBinding.getClientMappings() != null && !socketBinding.getClientMappings().isEmpty()) {
-                                // At the moment ActiveMQ doesn't allow to select mapping based on client's network.
-                                // Instead the first client-mapping element will always be used - see WFLY-8432
-                                ClientMapping clientMapping = socketBinding.getClientMappings().get(0);
-                                host = NetworkUtils.canonize(clientMapping.getDestinationAddress());
-                                port = clientMapping.getDestinationPort();
-
-                                if (socketBinding.getClientMappings().size() > 1) {
-                                    MessagingLogger.ROOT_LOGGER.multipleClientMappingsFound(socketBinding.getName(), tc.getName(), host, port);
-                                }
-                            } else {
-                                InetSocketAddress sa = socketBinding.getSocketAddress();
-                                port = sa.getPort();
-                                // resolve the host name of the address only if a loopback address has been set
-                                if (sa.getAddress().isLoopbackAddress()) {
-                                    host = NetworkUtils.canonize(sa.getAddress().getHostName());
-                                } else {
-                                    host = NetworkUtils.canonize(sa.getAddress().getHostAddress());
-                                }
-                            }
-                        } else {
-                            OutboundSocketBinding binding = bindingSupplier.get();
-                            port = binding.getDestinationPort();
-                            host = NetworkUtils.canonize(binding.getUnresolvedDestinationAddress());
-                            if (binding.getSourceAddress() != null) {
-                                tc.getParams().put(TransportConstants.LOCAL_ADDRESS_PROP_NAME,
-                                        NetworkUtils.canonize(binding.getSourceAddress().getHostAddress()));
-                            }
-                            if (binding.getSourcePort() != null) {
-                                // Use absolute port to account for source port offset/fixation
-                                tc.getParams().put(TransportConstants.LOCAL_PORT_PROP_NAME, binding.getAbsoluteSourcePort());
-                            }
-                        }
-
-                        tc.getParams().put(HOST, host);
-                        tc.getParams().put(PORT, port);
-                    }
-                }
-            }
+            TransportConfigOperationHandlers.processConnectorBindings(connectors, socketBindings, outboundSocketBindings);
             if (acceptors != null) {
                 for (TransportConfiguration tc : acceptors) {
                     // If there is a socket binding set the HOST/PORT values
@@ -397,8 +341,9 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
     static boolean isServiceInstalled(final OperationContext context) {
         if (context.isNormalServer()) {
             final ServiceName serviceName = MessagingServices.getActiveMQServiceName(context.getCurrentAddress());
-            final ServiceController<?> controller = context.getServiceRegistry(false).getService(serviceName);
-            return controller != null;
+            if (serviceName != null) {
+                return context.getServiceRegistry(false).getService(serviceName) != null;
+            }
         }
         return false;
     }

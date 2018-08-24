@@ -154,11 +154,16 @@ public class BroadcastGroupDefinition extends PersistentResourceDefinition {
         }
     }
 
+    // FIXME use capabilities & requirements
     private static Set<String> getAvailableConnectors(final OperationContext context,final ModelNode operation) throws OperationFailedException{
         PathAddress address = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
         PathAddress active = MessagingServices.getActiveMQServerPathAddress(address);
-        Resource activeMQServerResource = context.readResourceFromRoot(active, false);
         Set<String> availableConnectors = new HashSet<String>();
+
+        Resource subsystemResource = context.readResourceFromRoot(active.getParent(), false);
+        availableConnectors.addAll(subsystemResource.getChildrenNames(CommonAttributes.REMOTE_CONNECTOR));
+
+        Resource activeMQServerResource = context.readResourceFromRoot(active, false);
         availableConnectors.addAll(activeMQServerResource.getChildrenNames(CommonAttributes.HTTP_CONNECTOR));
         availableConnectors.addAll(activeMQServerResource.getChildrenNames(CommonAttributes.IN_VM_CONNECTOR));
         availableConnectors.addAll(activeMQServerResource.getChildrenNames(CommonAttributes.REMOTE_CONNECTOR));

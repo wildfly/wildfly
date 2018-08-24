@@ -19,8 +19,9 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.wildfly.extension.messaging.activemq;
+
+import static org.wildfly.extension.messaging.activemq.MessagingServices.JBOSS_MESSAGING_ACTIVEMQ;
 
 import java.security.AccessController;
 
@@ -29,12 +30,17 @@ import org.apache.activemq.artemis.ra.ConnectionFactoryProperties;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.service.ServiceContainer;
 import org.wildfly.extension.messaging.activemq.broadcast.CommandDispatcherBroadcastEndpointFactory;
+import org.wildfly.extension.messaging.activemq.jms.ExternalPooledConnectionFactoryService;
+import org.wildfly.extension.messaging.activemq.jms.JMSServices;
 
 /**
- * Custom resource adapter that returns an appropriate BroadcastEndpointFactory if discovery is configured using JGroups.
+ * Custom resource adapter that returns an appropriate BroadcastEndpointFactory if discovery is configured using
+ * JGroups.
+ *
  * @author Paul Ferraro
  */
 public class ActiveMQResourceAdapter extends org.apache.activemq.artemis.ra.ActiveMQResourceAdapter {
+
     private static final long serialVersionUID = 170278234232275756L;
 
     public ActiveMQResourceAdapter() {
@@ -52,8 +58,19 @@ public class ActiveMQResourceAdapter extends org.apache.activemq.artemis.ra.Acti
             String[] split = channelRefName.split("/");
             String serverName = split[0];
             String key = split[1];
+            String pcf = null;
+            if (key.indexOf(':') >= 0) {
+                split = key.split(":");
+                pcf = split[0];
+                key = split[1];
+            }
 
-            ActiveMQServerService service = (ActiveMQServerService) currentServiceContainer().getService(MessagingServices.getActiveMQServiceName(serverName)).getService();
+            if (serverName != null && !serverName.isEmpty()) {
+                ActiveMQServerService service = (ActiveMQServerService) currentServiceContainer().getService(MessagingServices.getActiveMQServiceName(serverName)).getService();
+                return new CommandDispatcherBroadcastEndpointFactory(service.getCommandDispatcherFactory(key), clusterName);
+            }
+            assert pcf != null;
+            ExternalPooledConnectionFactoryService service = (ExternalPooledConnectionFactoryService) currentServiceContainer().getService(JMSServices.getPooledConnectionFactoryBaseServiceName(JBOSS_MESSAGING_ACTIVEMQ).append(pcf)).getService();
             return new CommandDispatcherBroadcastEndpointFactory(service.getCommandDispatcherFactory(key), clusterName);
         }
         return super.createBroadcastEndpointFactory(overrideProperties);

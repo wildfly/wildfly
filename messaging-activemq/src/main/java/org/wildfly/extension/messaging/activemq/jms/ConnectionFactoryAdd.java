@@ -23,7 +23,6 @@
 package org.wildfly.extension.messaging.activemq.jms;
 
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.CALL_FAILOVER_TIMEOUT;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.CALL_TIMEOUT;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.CLIENT_ID;
@@ -67,8 +66,7 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-        final String name = address.getLastElement().getValue();
+        final String name = context.getCurrentAddressValue();
         final ServiceName activeMQServiceName = MessagingServices.getActiveMQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
 
         final ConnectionFactoryConfiguration configuration = createConfiguration(context, name, model);

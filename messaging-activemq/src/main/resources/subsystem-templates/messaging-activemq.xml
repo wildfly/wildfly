@@ -3,6 +3,7 @@
 <config default-supplement="default">
     <extension-module>org.wildfly.extension.messaging-activemq</extension-module>
     <subsystem xmlns="urn:jboss:domain:messaging-activemq:4.0">
+
         <server name="default">
             <?CLUSTERED?>
 
@@ -44,8 +45,8 @@
                 <param name="buffer-pooling" value="false" />
             </in-vm-acceptor>
 
-            <?BROADCAST-GROUPS?>
             <?DISCOVERY-GROUPS?>
+            <?BROADCAST-GROUPS?>
             <?CLUSTER-CONNECTIONS?>
 
             <jms-queue name="ExpiryQueue"
