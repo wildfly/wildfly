@@ -73,6 +73,7 @@ public class ChannelCommandDispatcher<C> implements CommandDispatcher<C> {
     private final CommandDispatcher<C> localDispatcher;
     private final Runnable closeTask;
     private final Address localAddress;
+    private final RequestOptions options;
 
     public ChannelCommandDispatcher(MessageDispatcher dispatcher, CommandMarshaller<C> marshaller, Group<Address> group, Duration timeout, CommandDispatcher<C> localDispatcher, Runnable closeTask) {
         this.dispatcher = dispatcher;
@@ -82,6 +83,7 @@ public class ChannelCommandDispatcher<C> implements CommandDispatcher<C> {
         this.localDispatcher = localDispatcher;
         this.closeTask = closeTask;
         this.localAddress = dispatcher.getChannel().getAddress();
+        this.options = new RequestOptions(ResponseMode.GET_ALL, this.timeout.toMillis(), false, FILTER, Message.Flag.DONT_BUNDLE, Message.Flag.OOB);
     }
 
     @Override
@@ -102,8 +104,7 @@ public class ChannelCommandDispatcher<C> implements CommandDispatcher<C> {
             return this.localDispatcher.executeOnMember(command, member);
         }
         Buffer buffer = this.createBuffer(command);
-        RequestOptions options = this.createRequestOptions();
-        ServiceRequest<R> request = new ServiceRequest<>(this.dispatcher.getCorrelator(), this.group.getAddress(member), options);
+        ServiceRequest<R> request = new ServiceRequest<>(this.dispatcher.getCorrelator(), this.group.getAddress(member), this.options);
         return request.send(buffer);
     }
 
@@ -112,7 +113,6 @@ public class ChannelCommandDispatcher<C> implements CommandDispatcher<C> {
         Set<Node> excluded = (excludedMembers != null) ? new HashSet<>(Arrays.asList(excludedMembers)) : Collections.emptySet();
         Map<Node, CompletionStage<R>> results = new ConcurrentHashMap<>();
         Buffer buffer = this.createBuffer(command);
-        RequestOptions options = this.createRequestOptions();
         for (Node member : this.group.getMembership().getMembers()) {
             if (!excluded.contains(member)) {
                 Address address = this.group.getAddress(member);
@@ -120,7 +120,7 @@ public class ChannelCommandDispatcher<C> implements CommandDispatcher<C> {
                     results.put(member, this.localDispatcher.executeOnMember(command, member));
                 } else {
                     try {
-                        ServiceRequest<R> request = new ServiceRequest<>(this.dispatcher.getCorrelator(), this.group.getAddress(member), options);
+                        ServiceRequest<R> request = new ServiceRequest<>(this.dispatcher.getCorrelator(), this.group.getAddress(member), this.options);
                         CompletionStage<R> future = request.send(buffer);
                         results.put(member, future);
                         future.whenComplete(new PruneCancellationTask<>(results, member));
@@ -143,10 +143,6 @@ public class ChannelCommandDispatcher<C> implements CommandDispatcher<C> {
         } catch (IOException e) {
             throw new IllegalArgumentException(e);
         }
-    }
-
-    private RequestOptions createRequestOptions() {
-        return new RequestOptions(ResponseMode.GET_ALL, this.timeout.toMillis(), false, FILTER, Message.Flag.DONT_BUNDLE, Message.Flag.OOB);
     }
 
     private static class PruneCancellationTask<T> implements BiConsumer<T, Throwable> {
