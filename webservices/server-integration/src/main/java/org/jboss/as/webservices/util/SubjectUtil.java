@@ -142,6 +142,10 @@ public final class SubjectUtil {
                 }
             }
         }
+        if (!roles.isEmpty()) {
+            // identity.withRoleMapper will create NEW identity instance instead of set this roleMapper to identity
+            identity = identity.withRoleMapper(roleCategory, (rolesToMap) -> Roles.fromSet(roles));
+        }
         // convert public credentials
         IdentityCredentials publicCredentials = IdentityCredentials.NONE;
         for (Object credential : subject.getPublicCredentials()) {
@@ -154,7 +158,7 @@ public final class SubjectUtil {
                 publicCredentials = publicCredentials.withCredential((Credential) credential);
             }
         }
-        identity.withPublicCredentials(publicCredentials);
+        identity = identity.withPublicCredentials(publicCredentials);
 
         // convert private credentials
         IdentityCredentials privateCredentials = IdentityCredentials.NONE;
@@ -172,11 +176,8 @@ public final class SubjectUtil {
                 privateCredentials = privateCredentials.withCredential((Credential) credential);
             }
         }
-        identity.withPrivateCredentials(privateCredentials);
-        if (!roles.isEmpty()) {
-            // identity.withRoleMapper will create NEW identity instance instead of set this roleMapper to identity
-            return identity.withRoleMapper(roleCategory, (rolesToMap) -> Roles.fromSet(roles));
-        }
+        identity = identity.withPrivateCredentials(privateCredentials);
+
         return identity;
     }
 
