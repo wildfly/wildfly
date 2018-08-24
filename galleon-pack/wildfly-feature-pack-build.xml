@@ -22,15 +22,13 @@
 
 <build xmlns="urn:wildfly:feature-pack-build:3.0" producer="wildfly@maven(org.jboss.universe:community-universe):current">
 
-    <include-plugin>false</include-plugin>
-
     <transitive>
-        <dependency group-id="org.wildfly.core" artifact-id="wildfly-core-galleon-pack" producer="wildfly-core@maven(org.jboss.universe:community-universe):current">
+        <dependency group-id="org.wildfly.core" artifact-id="wildfly-core-galleon-pack">
             <name>org.wildfly.core:wildfly-core-galleon-pack</name>
         </dependency>
     </transitive>
     <dependencies>
-        <dependency group-id="org.wildfly" artifact-id="wildfly-servlet-galleon-pack" producer="wildfly-servlet@maven(org.jboss.universe:community-universe):current">
+        <dependency group-id="org.wildfly" artifact-id="wildfly-servlet-galleon-pack">
             <name>org.wildfly:wildfly-servlet-galleon-pack</name>
             <packages inherit="false">
                 <exclude name="product.conf"/>
@@ -141,4 +139,69 @@
     <config name="host-slave.xml" model="host">
         <feature-group name="host-slave"/>
     </config>
+
+    <generate-feature-specs>
+        <extensions>
+            <standalone>
+                <extension>org.jboss.as.clustering.infinispan</extension>
+                <extension>org.jboss.as.clustering.jgroups</extension>
+                <extension>org.jboss.as.connector</extension>
+                <extension>org.jboss.as.ejb3</extension>
+                <extension>org.jboss.as.jaxrs</extension>
+                <extension>org.jboss.as.jdr</extension>
+                <extension>org.jboss.as.jpa</extension>
+                <extension>org.jboss.as.jsf</extension>
+                <extension>org.jboss.as.jsr77</extension>
+                <extension>org.jboss.as.mail</extension>
+                <extension>org.jboss.as.modcluster</extension>
+                <extension>org.jboss.as.pojo</extension>
+                <extension>org.jboss.as.sar</extension>
+                <extension>org.jboss.as.transactions</extension>
+                <extension>org.jboss.as.webservices</extension>
+                <extension>org.jboss.as.weld</extension>
+                <extension>org.jboss.as.xts</extension>
+                <extension>org.wildfly.extension.batch.jberet</extension>
+                <extension>org.wildfly.extension.bean-validation</extension>
+                <extension>org.wildfly.extension.clustering.singleton</extension>
+                <extension>org.wildfly.extension.ee-security</extension>
+                <extension>org.wildfly.extension.messaging-activemq</extension>
+                <extension>org.wildfly.extension.microprofile.config-smallrye</extension>
+                <extension>org.wildfly.extension.microprofile.health-smallrye</extension>
+                <extension>org.wildfly.extension.microprofile.opentracing-smallrye</extension>
+                <extension>org.wildfly.extension.picketlink</extension>
+                <extension>org.wildfly.extension.rts</extension>
+                <extension>org.wildfly.iiop-openjdk</extension>
+            </standalone>
+            <domain>
+                <extension>org.jboss.as.clustering.infinispan</extension>
+                <extension>org.jboss.as.clustering.jgroups</extension>
+                <extension>org.jboss.as.connector</extension>
+                <extension>org.jboss.as.ejb3</extension>
+                <extension>org.jboss.as.jaxrs</extension>
+                <extension>org.jboss.as.jdr</extension>
+                <extension>org.jboss.as.jpa</extension>
+                <extension>org.jboss.as.jsf</extension>
+                <extension>org.jboss.as.jsr77</extension>
+                <extension>org.jboss.as.mail</extension>
+                <extension>org.jboss.as.modcluster</extension>
+                <extension>org.jboss.as.pojo</extension>
+                <extension>org.jboss.as.sar</extension>
+                <extension>org.jboss.as.transactions</extension>
+                <extension>org.jboss.as.webservices</extension>
+                <extension>org.jboss.as.weld</extension>
+                <extension>org.jboss.as.xts</extension>
+                <extension>org.wildfly.extension.batch.jberet</extension>
+                <extension>org.wildfly.extension.bean-validation</extension>
+                <extension>org.wildfly.extension.clustering.singleton</extension>
+                <extension>org.wildfly.extension.ee-security</extension>
+                <extension>org.wildfly.extension.messaging-activemq</extension>
+                <extension>org.wildfly.extension.microprofile.config-smallrye</extension>
+                <extension>org.wildfly.extension.microprofile.health-smallrye</extension>
+                <extension>org.wildfly.extension.microprofile.opentracing-smallrye</extension>
+                <extension>org.wildfly.extension.picketlink</extension>
+                <extension>org.wildfly.extension.rts</extension>
+                <extension>org.wildfly.iiop-openjdk</extension>
+            </domain>
+        </extensions>
+    </generate-feature-specs>
 </build>
