@@ -20,7 +20,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<jboss umlns="urn:jboss:1.0">
+<jboss xmlns="urn:jboss:1.0">
     <batch xmlns="urn:jboss:batch-jberet:1.0">
       <job-repository>
         <named name="batch-ds"/>
