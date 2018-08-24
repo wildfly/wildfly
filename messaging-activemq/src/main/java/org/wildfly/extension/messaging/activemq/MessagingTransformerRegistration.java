@@ -24,10 +24,18 @@ package org.wildfly.extension.messaging.activemq;
 
 import static org.jboss.as.controller.transform.description.RejectAttributeChecker.DEFINED;
 import static org.jboss.as.controller.transform.description.RejectAttributeChecker.UNDEFINED;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.CONNECTOR;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.IN_VM_CONNECTOR;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.REMOTE_CONNECTOR;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.CONNECTION_FACTORY;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.POOLED_CONNECTION_FACTORY;
+import static org.wildfly.extension.messaging.activemq.MessagingExtension.EXTERNAL_JMS_QUEUE_PATH;
+import static org.wildfly.extension.messaging.activemq.MessagingExtension.EXTERNAL_JMS_TOPIC_PATH;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
 import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
@@ -45,7 +53,7 @@ import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes;
 import org.wildfly.extension.messaging.activemq.jms.bridge.JMSBridgeDefinition;
 
 /**
- * {@link ExtensionTransformerRegistration} for the messaging-activemq subsystem.
+ * {@link org.jboss.as.controller.transform.ExtensionTransformerRegistration} for the messaging-activemq subsystem.
  * @author Paul Ferraro
  */
 @MetaInfServices
@@ -67,7 +75,17 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
         builder.buildAndRegister(registration, new ModelVersion[] { MessagingExtension.VERSION_1_0_0, MessagingExtension.VERSION_2_0_0, MessagingExtension.VERSION_3_0_0 });
     }
 
-    private void registerTransformers_EAP_7_2_0(ResourceTransformationDescriptionBuilder subsystem) {
+    private static void registerTransformers_EAP_7_2_0(ResourceTransformationDescriptionBuilder subsystem) {
+        subsystem.rejectChildResource(DiscoveryGroupDefinition.PATH);
+        subsystem.rejectChildResource(PathElement.pathElement(REMOTE_CONNECTOR));
+        subsystem.rejectChildResource(MessagingExtension.HTTP_CONNECTOR_PATH);
+        subsystem.rejectChildResource(PathElement.pathElement(CONNECTOR));
+        subsystem.rejectChildResource(PathElement.pathElement(IN_VM_CONNECTOR));
+        subsystem.rejectChildResource(PathElement.pathElement(CONNECTION_FACTORY));
+        subsystem.rejectChildResource(PathElement.pathElement(POOLED_CONNECTION_FACTORY));
+        subsystem.rejectChildResource(EXTERNAL_JMS_QUEUE_PATH);
+        subsystem.rejectChildResource(EXTERNAL_JMS_TOPIC_PATH);
+
         ResourceTransformationDescriptionBuilder server = subsystem.addChildResource(MessagingExtension.SERVER_PATH);
         // WFLY-10165 - journal-jdbc-network-timeout default value is 20 seconds.
         defaultValueAttributeConverter(server, ServerDefinition.JOURNAL_JDBC_NETWORK_TIMEOUT);

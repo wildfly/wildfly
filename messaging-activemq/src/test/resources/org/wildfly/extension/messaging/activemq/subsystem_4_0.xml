@@ -1,6 +1,139 @@
 <subsystem xmlns="urn:jboss:domain:messaging-activemq:4.0">
     <global-client thread-pool-max-size="${global.client.thread-pool-max-size:32}"
                    scheduled-thread-pool-max-size="${global.client.scheduled.thread-pool-max-size:54}" />
+
+    <http-connector name="client-http"
+                    socket-binding="http"
+                    endpoint="http"
+                    server-name="=foo">
+        <param name="batch-delay" value="${batch.delay:50}"/>
+    </http-connector>
+
+    <remote-connector name="client-netty-throughput"
+                      socket-binding="messaging-throughput">
+        <param name="batch-delay" value="${batch.delay:50}"/>
+    </remote-connector>
+
+    <in-vm-connector name="in-vm-client"
+                     server-id="${my.server-id:0}"/>
+
+    <connector name="myconnector-client"
+               factory-class="org.apache.activemq.artemis.core.remoting.impl.netty.NettyConnectorFactory">
+        <param name="host" value="192.168.1.2"/>
+        <param name="port" value="5445"/>
+        <param name="key-store-path" value="path/to/server.jks"/>
+        <param name="key-store-password" value="${VAULT::server-key::key-store-password::sharedKey}"/>
+    </connector>
+
+    <discovery-group name="client-discovery-group-1"
+                     socket-binding="group-t-binding"/>
+    <discovery-group name="client-discovery-group-2"
+                     jgroups-channel="ee"
+                     jgroups-cluster="activemq-cluster"
+                     refresh-timeout="${discovery.group.refresh.timeout:2345}"
+                     initial-wait-timeout="${discovery.group.initial.wait.timeout:2345}"/>
+
+    <connection-factory name="InVmConnectionFactory"
+                        connectors="in-vm client"
+                        entries="${connection-factory.entries.entry:java:/ClientConnectionFactory}" />
+
+    <connection-factory name="RemoteClientConnectionFactory"
+                        factory-type="XA_QUEUE"
+                        connectors="client-http client-netty-throughput"
+                        entries="RemoteClientConnectionFactory java:/global/jms/RemoteClientConnectionFactory" />
+
+    <connection-factory name="otherClientConnectionFactory"
+                        discovery-group="client-discovery-group-1"
+                        ha="${ha:true}"
+                        entries="otherClientConnectionFactory" />
+
+    <pooled-connection-factory name="hornetq-ra-local"
+                               transaction="local"
+                               user="alice"
+                               password="alicepassword"
+                               use-auto-recovery="${use.auto.recovery:true}"
+                               connectors="in-vm-client"
+                               entries="java:/JmsLocal"/>
+
+    <pooled-connection-factory name="activemq-ra-none"
+                               transaction="none"
+                               user="alice"
+                               password="alicepassword"
+                               connectors="in-vm-client"
+                               entries="java:/JmsNone"/>
+
+    <pooled-connection-factory name="activemq-ra"
+                               transaction="${transaction:xa}"
+                               user="${user:alice}"
+                               password="${password:alicepassword}"
+                               min-pool-size="${min.pool.size:42}"
+                               max-pool-size="${max.pool.size:242}"
+                               managed-connection-pool="${managed.connection.pool:org.foo.bar.ConnectionPool}"
+                               enlistment-trace="${enlistment.trace:false}"
+                               initial-message-packet-size="${initial.message.packet.size:9876}"
+                               initial-connect-attempts="${initial.connect.attempts:5432}"
+                               connectors="in-vm-client"
+                               entries="${pooled-connection-factory.entries.entry:java:/JmsXA}"
+                               ha="${ha:true}"
+                               client-failure-check-period="${client.failure.check.period:12345}"
+                               connection-ttl="${connection.ttl:6789}"
+                               call-timeout="${call.timeout:123}"
+                               call-failover-timeout="${call.failover.timeout:456}"
+                               consumer-window-size="${consumer.window.size:456}"
+                               consumer-max-rate="${consumer.max.rate:789}"
+                               confirmation-window-size="${confirmation.window.size:-1}"
+                               producer-window-size="${producer.window.size:-1}"
+                               producer-max-rate="${producer.max.rate:1024}"
+                               protocol-manager-factory="com.foo.bar.ProtocolManagerFactory"
+                               compress-large-messages="${compress.large.messages:true}"
+                               cache-large-message-client="${cache.large.message.client:false}"
+                               min-large-message-size="${min.large.message.size:2048}"
+                               client-id="${client.id:myClientID}"
+                               dups-ok-batch-size="${dups.ok.batch.size:256}"
+                               transaction-batch-size="${transaction.batch.size:512}"
+                               block-on-acknowledge="${block.on.acknowledge:false}"
+                               block-on-non-durable-send="${block.on.non.durable.send:false}"
+                               block-on-durable-send="${block.on.durable.send:false}"
+                               auto-group="${auto.group:true}"
+                               pre-acknowledge="${pre.acknowledge:true}"
+                               retry-interval="${retry.interval:500}"
+                               retry-interval-multiplier="${retry.interval.multiplier:2.5}"
+                               max-retry-interval="${max.retry.interval:10000}"
+                               reconnect-attempts="${reconnect.attempts:2}"
+                               failover-on-initial-connection="${failover.on.initial.connection:true}"
+                               connection-load-balancing-policy-class-name="connection.load.balancing.policy.class"
+                               use-global-pools="${use.global.pools:true}"
+                               scheduled-thread-pool-max-size="${scheduled.thread.pool.max.size:24}"
+                               thread-pool-max-size="${thread.pool.max.size:48}"
+                               group-id="${group.id:myGroup}"
+                               deserialization-black-list="org.foo.Bar org.foo.Baz"
+                               deserialization-white-list="org.bar.Bar org.baz.Baz"
+                               statistics-enabled="${pcf.statistics-enabled:true}">
+        <inbound-config
+            use-jndi="${use.jndi:false}"
+            jndi-params="${jndi.params:whatever}"
+            rebalance-connections="${inbound.rebalance-connections:true}"
+            use-local-tx="${use.local.tx:true}"
+            setup-attempts="${setup-attempts:123}"
+            setup-interval="${setup-interval:456}" />
+        <outbound-config
+            allow-local-transactions="${allow.local.transactions:true}" />
+    </pooled-connection-factory>
+
+    <pooled-connection-factory name="pcf-with-credential-reference"
+                               entries="java:/JmsLocal2"
+                               connectors="in-vm-client"
+                               user="foo">
+        <credential-reference clear-text="passwordOut!"/>
+    </pooled-connection-factory>
+
+    <external-jms-queue name="testQueue"
+                   entries="${jms-queue.entry:queue/client-test}"/>
+    <external-jms-queue name="testQueue2"
+                   entries="java:/global/queue/test java:/global/queue/client-test2"/>
+    <external-jms-topic name="testTopic"
+                   entries="${jms-topic.entry:topic/client-test}"/>
+
     <server name="default"
             persistence-enabled="${persistence.enabled:false}"
             persist-id-cache="${persist.id.cache:false}"
@@ -24,20 +157,20 @@
         </outgoing-interceptors>
 
         <security
-                enabled="${security.enabled:false}"
-                elytron-domain="elytronDomain"
-                invalidation-interval="${security.invalidation.interval:1234}"
-                override-in-vm-security="${override.in-vm.security:false}"/>
+            enabled="${security.enabled:false}"
+            elytron-domain="elytronDomain"
+            invalidation-interval="${security.invalidation.interval:1234}"
+            override-in-vm-security="${override.in-vm.security:false}"/>
 
         <cluster
-                user="${messaging.cluster.user.name}"
-                password="${messaging.cluster.user.password}"/>
+            user="${messaging.cluster.user.name}"
+            password="${messaging.cluster.user.password}"/>
 
         <management
-                address="${management.address:my.management.address}"
-                notification-address="${management.notification.address:my.management.notif.address}"
-                jmx-enabled="${jmx.management.enabled:false}"
-                jmx-domain="${jmx.domain:my.jmx.domain}"/>
+            address="${management.address:my.management.address}"
+            notification-address="${management.notification.address:my.management.notif.address}"
+            jmx-enabled="${jmx.management.enabled:false}"
+            jmx-domain="${jmx.domain:my.jmx.domain}"/>
 
         <journal
                 type="${journal.type:NIO}"
@@ -67,24 +200,24 @@
                 node-manager-store-table="${journal.node-manager-store-table:NODE_MANAGER_STORE}" />
 
         <statistics
-                enabled="${statistics.enabled:true}"
-                message-counter-sample-period="${message.counter.sample.period:7654}"
-                message-counter-max-day-history="${message.counter.max.day.history:23}"/>
+            enabled="${statistics.enabled:true}"
+            message-counter-sample-period="${message.counter.sample.period:7654}"
+            message-counter-max-day-history="${message.counter.max.day.history:23}"/>
 
         <transaction
-                timeout="${transaction.timeout:4321}"
-                scan-period="${transaction.timeout.scan.period:5432}"/>
+            timeout="${transaction.timeout:4321}"
+            scan-period="${transaction.timeout.scan.period:5432}"/>
 
         <message-expiry
-                scan-period="${message.expiry.scan.period:7654}"
-                thread-priority="${message.expiry.thread.priority:7}"/>
+            scan-period="${message.expiry.scan.period:7654}"
+            thread-priority="${message.expiry.thread.priority:7}"/>
 
         <debug
-                perf-blast-pages="${perf.blast.pages:70}"
-                run-sync-speed-test="${run.sync.speed.test:false}"
-                server-dump-interval="${server.dump.interval:8642}"
-                memory-warning-threshold="${memory.warning.threshold:1024}"
-                memory-measure-interval="${memory.measure.interval:2048}"/>
+            perf-blast-pages="${perf.blast.pages:70}"
+            run-sync-speed-test="${run.sync.speed.test:false}"
+            server-dump-interval="${server.dump.interval:8642}"
+            memory-warning-threshold="${memory.warning.threshold:1024}"
+            memory-measure-interval="${memory.measure.interval:2048}"/>
 
         <bindings-directory path="${my.bindings.dir:test}" relative-to="test"/>
         <journal-directory path="${my.journal.dir:test}" relative-to="test"/>
@@ -441,14 +574,14 @@
                                    deserialization-white-list="org.bar.Bar org.baz.Baz"
                                    statistics-enabled="${pcf.statistics-enabled:true}">
             <inbound-config
-                    use-jndi="${use.jndi:false}"
-                    jndi-params="${jndi.params:whatever}"
-                    rebalance-connections="${inbound.rebalance-connections:true}"
-                    use-local-tx="${use.local.tx:true}"
-                    setup-attempts="${setup-attempts:123}"
-                    setup-interval="${setup-interval:456}" />
+                use-jndi="${use.jndi:false}"
+                jndi-params="${jndi.params:whatever}"
+                rebalance-connections="${inbound.rebalance-connections:true}"
+                use-local-tx="${use.local.tx:true}"
+                setup-attempts="${setup-attempts:123}"
+                setup-interval="${setup-interval:456}" />
             <outbound-config
-                    allow-local-transactions="${allow.local.transactions:true}" />
+                allow-local-transactions="${allow.local.transactions:true}" />
         </pooled-connection-factory>
         <pooled-connection-factory name="pcf-with-credential-reference"
                                    entries="java:/JmsLocal2"

@@ -73,10 +73,16 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.wildfly.extension.messaging.activemq.jms.ExternalConnectionFactoryDefinition;
+import org.wildfly.extension.messaging.activemq.jms.ExternalJMSQueueDefinition;
+import org.wildfly.extension.messaging.activemq.jms.ExternalJMSTopicDefinition;
 import org.wildfly.extension.messaging.activemq.jms.JMSQueueDefinition;
 import org.wildfly.extension.messaging.activemq.jms.JMSTopicDefinition;
 import org.wildfly.extension.messaging.activemq.jms.PooledConnectionFactoryDefinition;
 import org.wildfly.extension.messaging.activemq.jms.bridge.JMSBridgeDefinition;
+
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.EXTERNAL_JMS_QUEUE;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.EXTERNAL_JMS_TOPIC;
 
 /**
  * Domain extension that integrates Apache ActiveMQ 6.
@@ -139,6 +145,8 @@ public class MessagingExtension implements Extension {
     static final PathElement ADDRESS_SETTING_PATH = pathElement(ADDRESS_SETTING);
     static final PathElement ROLE_PATH = pathElement(ROLE);
     static final PathElement SECURITY_SETTING_PATH =  pathElement(SECURITY_SETTING);
+    public static final PathElement EXTERNAL_JMS_QUEUE_PATH = pathElement(EXTERNAL_JMS_QUEUE);
+    public static final PathElement EXTERNAL_JMS_TOPIC_PATH = pathElement(EXTERNAL_JMS_TOPIC);
     public static final PathElement JMS_QUEUE_PATH = pathElement(JMS_QUEUE);
     public static final PathElement JMS_TOPIC_PATH = pathElement(JMS_TOPIC);
     public static final PathElement POOLED_CONNECTION_FACTORY_PATH = pathElement(CommonAttributes.POOLED_CONNECTION_FACTORY);
@@ -190,6 +198,17 @@ public class MessagingExtension implements Extension {
         // Root resource
         final ManagementResourceRegistration subsystem = subsystemRegistration.registerSubsystemModel(MessagingSubsystemRootResourceDefinition.INSTANCE);
         subsystem.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
+
+        // WFLY-10518 - register new client resources under subsystem
+        subsystem.registerSubModel(new DiscoveryGroupDefinition(registerRuntimeOnly, true));
+        subsystem.registerSubModel(GenericTransportDefinition.createConnectorDefinition(registerRuntimeOnly));
+        subsystem.registerSubModel(InVMTransportDefinition.createConnectorDefinition(registerRuntimeOnly));
+        subsystem.registerSubModel(RemoteTransportDefinition.createConnectorDefinition(registerRuntimeOnly));
+        subsystem.registerSubModel(new HTTPConnectorDefinition(registerRuntimeOnly));
+        subsystem.registerSubModel(new ExternalConnectionFactoryDefinition(registerRuntimeOnly));
+        subsystem.registerSubModel(PooledConnectionFactoryDefinition.INSTANCE);
+        subsystem.registerSubModel(ExternalJMSQueueDefinition.INSTANCE);
+        subsystem.registerSubModel(ExternalJMSTopicDefinition.INSTANCE);
 
         // ActiveMQ Servers
         final ManagementResourceRegistration server = subsystem.registerSubModel(new ServerDefinition(registerRuntimeOnly));

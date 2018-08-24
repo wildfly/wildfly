@@ -27,11 +27,16 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.LOCAL;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.LOCAL_TX;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.NONE;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.NO_TX;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.SUBSYSTEM;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.XA_TX;
 import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttribute.getDefinitions;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import org.apache.activemq.artemis.api.core.DiscoveryGroupConfiguration;
+import org.apache.activemq.artemis.api.core.TransportConfiguration;
 
 import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeployment;
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -44,7 +49,9 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.messaging.activemq.CommonAttributes;
+import org.wildfly.extension.messaging.activemq.DiscoveryGroupDefinition;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
+import org.wildfly.extension.messaging.activemq.TransportConfigOperationHandlers;
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common;
 
 /**
@@ -105,21 +112,44 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
 
         List<String> connectors = Common.CONNECTORS.unwrap(context, model);
         String discoveryGroupName = getDiscoveryGroup(resolvedModel);
+        String jgroupClusterName = null;
         String jgroupsChannelName = null;
+        final PathAddress serverAddress = MessagingServices.getActiveMQServerPathAddress(address);
         if (discoveryGroupName != null) {
-            Resource dgResource = context.readResourceFromRoot(MessagingServices.getActiveMQServerPathAddress(address).append(CommonAttributes.DISCOVERY_GROUP, discoveryGroupName), false);
+            PathAddress dgAddress;
+            if(isSubsystemResource(context)) {
+                dgAddress = address.getParent().append(CommonAttributes.DISCOVERY_GROUP, discoveryGroupName);
+            } else {
+                dgAddress = serverAddress.append(CommonAttributes.DISCOVERY_GROUP, discoveryGroupName);
+            }
+            Resource dgResource = context.readResourceFromRoot(dgAddress, false);
             ModelNode dgModel = dgResource.getModel();
-            jgroupsChannelName = JGROUPS_CLUSTER.resolveModelAttribute(context, dgModel).asString();
+            ModelNode jgroupCluster = JGROUPS_CLUSTER.resolveModelAttribute(context, dgModel);
+            if(jgroupCluster.isDefined()) {
+                jgroupClusterName = jgroupCluster.asString();
+                ModelNode channel = DiscoveryGroupDefinition.JGROUPS_CHANNEL.resolveModelAttribute(context, dgModel);
+                if(channel.isDefined()) {
+                    jgroupsChannelName = channel.asString();
+                }
+            }
         }
 
         List<PooledConnectionFactoryConfigProperties> adapterParams = getAdapterParams(resolvedModel, context);
-
-        final PathAddress serverAddress = MessagingServices.getActiveMQServerPathAddress(address);
-
-        PooledConnectionFactoryService.installService(context,
-                name, serverAddress.getLastElement().getValue(), connectors, discoveryGroupName, jgroupsChannelName,
-                adapterParams, jndiNames, txSupport, minPoolSize, maxPoolSize, managedConnectionPoolClassName, enlistmentTrace, model);
-
+        if(isSubsystemResource(context)) {
+            DiscoveryGroupConfiguration discoveryGroupConfiguration = null;
+            if(discoveryGroupName != null) {
+                discoveryGroupConfiguration = ExternalConnectionFactoryAdd.getDiscoveryGroup(context, discoveryGroupName);
+            }
+            Set<String> connectorsSocketBindings = new HashSet<>();
+            TransportConfiguration[] transportConfigurations = TransportConfigOperationHandlers.processConnectors(context, connectors, connectorsSocketBindings);
+            ExternalPooledConnectionFactoryService.installService(context, name, transportConfigurations, discoveryGroupConfiguration, connectorsSocketBindings,
+                    jgroupClusterName, jgroupsChannelName, adapterParams, jndiNames, txSupport, minPoolSize, maxPoolSize, managedConnectionPoolClassName, enlistmentTrace, model);
+        } else {
+            String serverName = serverAddress.getLastElement().getValue();
+            PooledConnectionFactoryService.installService(context,
+                    name, serverName, connectors, discoveryGroupName, jgroupClusterName,
+                    adapterParams, jndiNames, txSupport, minPoolSize, maxPoolSize, managedConnectionPoolClassName, enlistmentTrace, model);
+        }
         boolean statsEnabled = ConnectionFactoryAttributes.Pooled.STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean();
 
         if (statsEnabled) {
@@ -131,6 +161,10 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
 
             installStatistics(context, name);
         }
+    }
+
+    private static boolean isSubsystemResource(final OperationContext context) {
+        return SUBSYSTEM.equals(context.getCurrentAddress().getParent().getLastElement().getKey());
     }
 
     static String getDiscoveryGroup(final ModelNode model) {

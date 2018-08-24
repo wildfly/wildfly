@@ -42,14 +42,16 @@ public class ConnectionHoldingBean implements RemoteConnectionHolding {
 
     private JMSContext context;
 
+    @Override
     public void createConnection() throws JMSException {
         // create a consumer on a temp queue to ensure the JMS
         // connection is actually created and started
-        context = factory.createContext();
+        context = factory.createContext("guest", "guest");
         TemporaryQueue tempQueue = context.createTemporaryQueue();
         context.createConsumer(tempQueue);
     }
 
+    @Override
     public void closeConnection() throws JMSException {
         context.close();
     }

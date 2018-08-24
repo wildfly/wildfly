@@ -96,13 +96,13 @@
                              jgroups-cluster="activemq-cluster"
                              connectors="http-connector-backup"/>
 
-            <discovery-group name="dg-group1"
+            <discovery-group name="dg-group2"
                              jgroups-cluster="activemq-cluster"/>
 
             <cluster-connection name="my-cluster"
                                 address="jms"
                                 connector-name="http-connector-backup"
-                                discovery-group="dg-group1" />
+                                discovery-group="dg-group2" />
         </server>
     </subsystem>
 </config>
