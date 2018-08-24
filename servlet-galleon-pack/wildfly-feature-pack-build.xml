@@ -22,10 +22,8 @@
 
 <build xmlns="urn:wildfly:feature-pack-build:3.0" producer="wildfly-servlet@maven(org.jboss.universe:community-universe):current">
 
-    <include-plugin>false</include-plugin>
-
     <dependencies>
-        <dependency group-id="org.wildfly.core" artifact-id="wildfly-core-galleon-pack" producer="wildfly-core@maven(org.jboss.universe:community-universe):current">
+        <dependency group-id="org.wildfly.core" artifact-id="wildfly-core-galleon-pack">
             <name>org.wildfly.core:wildfly-core-galleon-pack</name>
             <packages inherit="false">
                 <exclude name="product.conf"/>
@@ -84,4 +82,52 @@
         <feature-group name="host-slave"/>
     </config>
 
+    <plugins>
+        <plugin artifact="org.wildfly.galleon-plugins:wildfly-galleon-plugins"/>
+    </plugins>
+    <resources>
+        <copy artifact="org.wildfly.galleon-plugins:wildfly-config-gen" to="wildfly/wildfly-config-gen.jar"/>
+    </resources>
+
+    <generate-feature-specs>
+        <extensions>
+            <standalone>
+                <extension>org.jboss.as.deployment-scanner</extension>
+                <extension>org.jboss.as.ee</extension>
+                <extension>org.jboss.as.jmx</extension>
+                <extension>org.jboss.as.logging</extension>
+                <extension>org.jboss.as.naming</extension>
+                <extension>org.jboss.as.security</extension>
+                <extension>org.wildfly.extension.core-management</extension>
+                <extension>org.wildfly.extension.elytron</extension>
+                <extension>org.wildfly.extension.io</extension>
+                <extension>org.wildfly.extension.request-controller</extension>
+                <extension>org.wildfly.extension.security.manager</extension>
+                <extension>org.wildfly.extension.undertow</extension>
+                <extension>org.jboss.as.remoting</extension>
+                <extension>org.wildfly.extension.discovery</extension>
+            </standalone>
+            <domain>
+                <extension>org.jboss.as.ee</extension>
+                <extension>org.jboss.as.jmx</extension>
+                <extension>org.jboss.as.logging</extension>
+                <extension>org.jboss.as.naming</extension>
+                <extension>org.jboss.as.security</extension>
+                <extension>org.wildfly.extension.core-management</extension>
+                <extension>org.wildfly.extension.elytron</extension>
+                <extension>org.wildfly.extension.io</extension>
+                <extension>org.wildfly.extension.request-controller</extension>
+                <extension>org.wildfly.extension.undertow</extension>
+                <extension>org.jboss.as.remoting</extension>
+                <extension>org.wildfly.extension.discovery</extension>
+                <extension>org.wildfly.extension.security.manager</extension>
+            </domain>
+            <host>
+                <extension>org.jboss.as.jmx</extension>
+                <extension>org.wildfly.extension.core-management</extension>
+                <extension>org.wildfly.extension.discovery</extension>
+                <extension>org.wildfly.extension.elytron</extension>
+            </host>
+        </extensions>
+    </generate-feature-specs>
 </build>
