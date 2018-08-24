@@ -23,7 +23,11 @@
 package org.wildfly.clustering.server.dispatcher;
 
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.jgroups.Address;
 import org.jgroups.SuspectedException;
@@ -70,5 +74,30 @@ public class ServiceRequest<T> extends UnicastRequest<T> {
     @Override
     public boolean completeExceptionally(Throwable exception) {
         return super.completeExceptionally((exception instanceof SuspectedException) ? new CancellationException() : exception);
+    }
+
+    @Override
+    public T get() throws InterruptedException, ExecutionException {
+        try {
+            // Wait at most for the configured timeout
+            // If the message was dropped by the receiver, this would otherwise block forever
+            return super.get(super.options.timeout(), TimeUnit.MILLISECONDS);
+        } catch (TimeoutException e) {
+            // Auto-cancel on timeout
+            this.cancel(true);
+            throw new CancellationException(e.getLocalizedMessage());
+        }
+    }
+
+    @Override
+    public T join() {
+        try {
+            return this.get();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new CompletionException(e);
+        } catch (ExecutionException e) {
+            throw new CompletionException(e.getCause());
+        }
     }
 }
