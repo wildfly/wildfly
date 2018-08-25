@@ -67,6 +67,7 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask;
 import org.jboss.as.test.integration.security.common.AbstractSecurityRealmsServerSetupTask;
+import org.jboss.as.test.integration.security.common.AbstractSystemPropertiesServerSetupTask;
 import org.jboss.as.test.integration.security.common.ManagedCreateLdapServer;
 import org.jboss.as.test.integration.security.common.ManagedCreateTransport;
 import org.jboss.as.test.integration.security.common.Utils;
@@ -148,6 +149,7 @@ public class OutboundLdapConnectionClientCertTestCase {
     private final LDAPServerSetupTask ldapsSetup = new LDAPServerSetupTask();
     private final SecurityRealmsSetup realmsSetup = new SecurityRealmsSetup();
     private final SecurityDomainsSetup domainsSetup = new SecurityDomainsSetup();
+    private final SystemPropertiesSetup systemPropertiesSetup = new SystemPropertiesSetup();
     private static boolean serverConfigured = false;
 
     @ArquillianResource
@@ -194,6 +196,7 @@ public class OutboundLdapConnectionClientCertTestCase {
         ldapsSetup.startLdapServer();
         realmsSetup.setup(mgmtClient, CONTAINER);
         domainsSetup.setup(mgmtClient, CONTAINER);
+        systemPropertiesSetup.setup(mgmtClient, CONTAINER);
     }
 
     private void createTempKS(final String keystoreFilename, final File keystoreFile) throws IOException {
@@ -210,6 +213,7 @@ public class OutboundLdapConnectionClientCertTestCase {
         realmsSetup.tearDown(mgmtClient, CONTAINER);
         ldapsSetup.shutdownLdapServer();
         domainsSetup.tearDown(mgmtClient, CONTAINER);
+        systemPropertiesSetup.tearDown(mgmtClient, CONTAINER);
     }
 
     @Deployment(name = LDAPS_AUTHN_SD_ALWAYS, managed = false, testable = false)
@@ -400,6 +404,20 @@ public class OutboundLdapConnectionClientCertTestCase {
                     )
                     .build();
             return new SecurityRealm[]{sslConfRealm, ldapsAuthRealmAlways, ldapsAuthRealmSometimes};
+        }
+    }
+
+    /**
+     * This setup task disables hostname verification truststore file.
+     */
+    static class SystemPropertiesSetup extends AbstractSystemPropertiesServerSetupTask {
+
+        /**
+         * @see org.jboss.as.test.integration.security.common.AbstractSystemPropertiesServerSetupTask#getSystemProperties()
+         */
+        @Override
+        protected SystemProperty[] getSystemProperties() {
+            return new SystemProperty[]{new DefaultSystemProperty("com.sun.jndi.ldap.object.disableEndpointIdentification","")};
         }
     }
 
