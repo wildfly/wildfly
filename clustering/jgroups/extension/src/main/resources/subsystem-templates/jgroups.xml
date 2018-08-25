@@ -7,6 +7,20 @@
             <channel name="ee" stack="tcp" cluster="ejb"/>
         </channels>
         <stacks>
+            <stack name="tcp">
+                <transport type="TCP_NIO2" socket-binding="jgroups-tcp"/>
+                <?TCP-DISCOVERY?>
+                <protocol type="MERGE3"/>
+                <protocol type="FD_SOCK"/>
+                <protocol type="FD_ALL"/>
+                <protocol type="VERIFY_SUSPECT"/>
+                <protocol type="pbcast.NAKACK2"/>
+                <protocol type="UNICAST3"/>
+                <protocol type="pbcast.STABLE"/>
+                <protocol type="pbcast.GMS"/>
+                <?TCP-MULTICAST-FLOW-CONTROL?>
+                <protocol type="FRAG3"/>
+            </stack>
             <stack name="udp">
                 <transport type="UDP" socket-binding="jgroups-udp"/>
                 <?UDP-DISCOVERY?>
@@ -20,20 +34,6 @@
                 <protocol type="pbcast.GMS"/>
                 <protocol type="UFC"/>
                 <?UDP-MULTICAST-FLOW-CONTROL?>
-                <protocol type="FRAG3"/>
-            </stack>
-            <stack name="tcp">
-                <transport type="TCP_NIO2" socket-binding="jgroups-tcp"/>
-                <?TCP-DISCOVERY?>
-                <protocol type="MERGE3"/>
-                <protocol type="FD_SOCK"/>
-                <protocol type="FD_ALL"/>
-                <protocol type="VERIFY_SUSPECT"/>
-                <protocol type="pbcast.NAKACK2"/>
-                <protocol type="UNICAST3"/>
-                <protocol type="pbcast.STABLE"/>
-                <protocol type="pbcast.GMS"/>
-                <?TCP-MULTICAST-FLOW-CONTROL?>
                 <protocol type="FRAG3"/>
             </stack>
         </stacks>
