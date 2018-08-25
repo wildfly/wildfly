@@ -30,7 +30,7 @@
                 <feature spec="subsystem.jgroups.stack">
                     <param name="stack" value="tcp"/>
                     <feature spec="subsystem.jgroups.stack.transport">
-                        <param name="transport" value="TCP_NIO2"/>
+                        <param name="transport" value="TCP"/>
                         <param name="socket-binding" value="jgroups-tcp"/>
                     </feature>
                     <feature spec="subsystem.jgroups.stack.protocol">
