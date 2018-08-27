@@ -1,7 +1,5 @@
 #!/bin/sh
 
-GREP="grep"
-
 # Extract the directory and the program name
 # takes care of symlinks
 PRG="$0"
@@ -16,6 +14,9 @@ while [ -h "$PRG" ] ; do
 done
 DIRNAME=`dirname "$PRG"`
 PROGNAME=`basename "$PRG"`
+GREP="grep"
+
+. "$DIRNAME/common.sh"
 
 # OS specific support (must be 'true' or 'false').
 cygwin=false;
@@ -55,6 +56,10 @@ if [ "x$JAVA" = "x" ]; then
         JAVA="java"
     fi
 fi
+
+# Set default modular JVM options
+setDefaultModularJvmOptions $JAVA_OPTS
+JAVA_OPTS="$JAVA_OPTS $DEFAULT_MODULAR_JVM_OPTIONS"
 
 #JPDA options. Uncomment and modify as appropriate to enable remote debugging .
 #JAVA_OPTS="-classic -Xdebug -Xnoagent -Djava.compiler=NONE -agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=y $JAVA_OPTS"

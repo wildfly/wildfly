@@ -5,6 +5,8 @@ PROGNAME=`basename "$0"`
 GREP="grep"
 SERVER_OPTS=""
 
+. "$DIRNAME/common.sh"
+
 # Parsing incoming parameters
 while [ "$#" -gt 0 ]
 do
@@ -87,6 +89,10 @@ if [ "x$JAVA" = "x" ]; then
         JAVA="java"
     fi
 fi
+
+# Set default modular JVM options
+setDefaultModularJvmOptions $JAVA_OPTS
+JAVA_OPTS="$JAVA_OPTS $DEFAULT_MODULAR_JVM_OPTIONS"
 
 # Check for -d32/-d64 in JAVA_OPTS
 JVM_OPTVERSION="-version"
