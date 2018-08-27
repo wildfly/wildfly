@@ -111,6 +111,9 @@ public class TransformUtils {
                 }
             }
         }
+        if(!legacyModel.get(JacORBSubsystemConstants.ORB_SOCKET_BINDING).isDefined()){
+            model.get(JacORBSubsystemConstants.ORB_SOCKET_BINDING).set(JacORBSubsystemDefinitions.ORB_SOCKET_BINDING.getDefaultValue());
+        }
         return model;
     }
 
