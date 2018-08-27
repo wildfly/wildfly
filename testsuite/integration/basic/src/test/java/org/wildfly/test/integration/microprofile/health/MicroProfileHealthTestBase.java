@@ -98,7 +98,6 @@ public abstract class MicroProfileHealthTestBase {
             request.setEntity(new UrlEncodedFormEntity(nvps));
 
             CloseableHttpResponse response = client.execute(request);
-            System.out.println("response = " + response);
             assertEquals(200, response.getStatusLine().getStatusCode());
 
             checkGlobalOutcome(managementClient, false, "myProbe");
