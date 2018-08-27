@@ -44,11 +44,11 @@ import static org.jboss.logging.Logger.getMessageLogger;
 @MessageLogger(projectCode = "WFLYAG", length = 4)
 public interface AgroalLogger extends BasicLogger {
 
-    DriverLogger DRIVER_LOGGER = getMessageLogger(DriverLogger.class, "org.wildfly.extension.datasources.agroal.driver");
+    AgroalLogger DRIVER_LOGGER = getMessageLogger(AgroalLogger.class, "org.wildfly.extension.datasources.agroal.driver");
 
     AgroalLogger SERVICE_LOGGER = getMessageLogger(AgroalLogger.class, "org.wildfly.extension.datasources.agroal");
 
-    PoolLogger POOL_LOGGER = getMessageLogger(PoolLogger.class, "io.agroal.pool");
+    AgroalLogger POOL_LOGGER = getMessageLogger(AgroalLogger.class, "io.agroal.pool");
 
     // --- Extension //
 
@@ -128,28 +128,19 @@ public interface AgroalLogger extends BasicLogger {
 
     // --- Driver //
 
-    @MessageLogger(projectCode = "WFLYAG", length = 4)
-    interface DriverLogger extends BasicLogger {
+    @LogMessage(level = INFO)
+    @Message(id = 501, value = "Loaded class %s for driver '%s'")
+    void driverLoaded(String className, String driverName);
 
-        @LogMessage(level = INFO)
-        @Message(id = 501, value = "Loaded class %s for driver '%s'")
-        void driverLoaded(String className, String driverName);
+    @Message(id = 502, value = "Failed to load driver module '%s'")
+    IllegalArgumentException loadModuleException(@Cause Throwable cause, String moduleName);
 
-        @Message(id = 502, value = "Failed to load driver module '%s'")
-        IllegalArgumentException loadModuleException(@Cause Throwable cause, String moduleName);
-
-        @Message(id = 503, value = "Failed to load driver class '%s'")
-        IllegalArgumentException loadClassException(@Cause Throwable cause, String className);
-    }
+    @Message(id = 503, value = "Failed to load driver class '%s'")
+    IllegalArgumentException loadClassException(@Cause Throwable cause, String className);
 
     // --- Agroal Pool //
 
-    @MessageLogger(projectCode = "AGROAL", length = 4)
-    interface PoolLogger extends BasicLogger {
-
-        @LogMessage(level = WARN)
-        @Message(id = 1, value = "%s: %s")
-        void poolWarning(String datasourceName, String warn);
-
-    }
+    @LogMessage(level = WARN)
+    @Message(id = 601, value = "%s: %s")
+    void poolWarning(String datasourceName, String warn);
 }
