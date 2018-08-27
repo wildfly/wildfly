@@ -6952,13 +6952,10 @@
                 <jdk>[9,)</jdk>
             </activation>
             <properties>
-                <!-- There are lots of issues with checkstyle runtime on JDK9, it somewhat works but really slows down build, disabling it for now-->
-                <checkstyle.skip>true</checkstyle.skip>
                 <modular.jdk.args>--add-exports=java.base/sun.nio.ch=ALL-UNNAMED
                     --add-exports=jdk.unsupported/sun.reflect=ALL-UNNAMED
                     --add-exports=jdk.unsupported/sun.misc=ALL-UNNAMED
-                    --add-modules=java.se
-                    --illegal-access=permit</modular.jdk.args>
+                    --add-modules=java.se</modular.jdk.args>
             </properties>
 
         </profile>
