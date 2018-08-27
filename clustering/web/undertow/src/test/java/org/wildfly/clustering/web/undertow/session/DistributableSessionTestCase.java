@@ -543,7 +543,7 @@ public class DistributableSessionTestCase {
     @Test
     public void invalidate() {
         HttpServerExchange exchange = new HttpServerExchange(null);
-        this.validate(session -> session.invalidate(exchange));
+        this.validate(exchange, session -> session.invalidate(exchange));
 
         SessionManager<LocalSessionContext, Batch> manager = mock(SessionManager.class);
         Batcher<Batch> batcher = mock(Batcher.class);
@@ -578,7 +578,7 @@ public class DistributableSessionTestCase {
     public void changeSessionId() {
         HttpServerExchange exchange = new HttpServerExchange(null);
         SessionConfig config = mock(SessionConfig.class);
-        this.validate(session -> session.changeSessionId(exchange, config));
+        this.validate(exchange, session -> session.changeSessionId(exchange, config));
 
         SessionManager<LocalSessionContext, Batch> manager = mock(SessionManager.class);
         Batcher<Batch> batcher = mock(Batcher.class);
@@ -634,14 +634,21 @@ public class DistributableSessionTestCase {
         verify(context).close();
     }
 
+
     private <R> void validate(Consumer<io.undertow.server.session.Session> consumer) {
+        this.validate(null, consumer);
+    }
+
+    @SuppressWarnings("unchecked")
+    private <R> void validate(HttpServerExchange exchange, Consumer<io.undertow.server.session.Session> consumer) {
         when(this.session.isValid()).thenReturn(false, true);
 
         try {
             consumer.accept(this.adapter);
             fail("Invalid session should throw IllegalStateException");
         } catch (IllegalStateException e) {
-            // Expected
+            verify(this.closeTask).accept(exchange);
+            reset(this.closeTask);
         }
     }
 }
