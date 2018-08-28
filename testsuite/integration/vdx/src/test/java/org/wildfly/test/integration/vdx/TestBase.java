@@ -19,6 +19,7 @@ package org.wildfly.test.integration.vdx;
 
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.logging.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -41,6 +42,7 @@ public class TestBase {
 
     public static final String STANDALONE_ARQUILLIAN_CONTAINER = "jboss";
     public static final String DOMAIN_ARQUILLIAN_CONTAINER = "jboss-domain";
+    static final Logger log = Logger.getLogger(TestBase.class);
 
     @ArquillianResource private ContainerController controller;
 
@@ -56,7 +58,7 @@ public class TestBase {
     }
 
     @Before public void setUp() throws Exception {
-        System.out.println("----------------------------------------- Start " +
+        log.debug("----------------------------------------- Start " +
                 this.getClass().getSimpleName() + " - " + testName.getMethodName() + " -----------------------------------------");
 
         testArchiveDirectory = Paths.get("target", "test-output", this.getClass().getSimpleName(), testName.getMethodName());
@@ -64,7 +66,7 @@ public class TestBase {
     }
 
     @After public void tearDown() throws Exception {
-        System.out.println("----------------------------------------- Stop " +
+        log.debug("----------------------------------------- Stop " +
                 this.getClass().getSimpleName() + " - " + testName.getMethodName() + " -----------------------------------------");
         archiveServerLogAndDeleteIt(testArchiveDirectory);
     }

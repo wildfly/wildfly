@@ -9,6 +9,7 @@ import javax.ejb.Local;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 
+import org.jboss.logging.Logger;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.provider.ServiceProviderRegistration;
 import org.wildfly.clustering.provider.ServiceProviderRegistry;
@@ -17,6 +18,8 @@ import org.wildfly.clustering.provider.ServiceProviderRegistry;
 @Startup
 @Local(ServiceProviderRegistration.class)
 public class ServiceProviderRegistrationBean implements ServiceProviderRegistration<String>, ServiceProviderRegistration.Listener {
+    static final Logger log = Logger.getLogger(ServiceProviderRegistrationBean.class);
+
     @Resource(lookup = "java:jboss/clustering/providers/server/default")
     private ServiceProviderRegistry<String> factory;
     private ServiceProviderRegistration<String> registration;
@@ -48,6 +51,6 @@ public class ServiceProviderRegistrationBean implements ServiceProviderRegistrat
 
     @Override
     public void providersChanged(Set<Node> nodes) {
-        System.out.println(String.format("ProviderRegistration.Listener.providersChanged(%s)", nodes));
+        log.info(String.format("ProviderRegistration.Listener.providersChanged(%s)", nodes));
     }
 }
