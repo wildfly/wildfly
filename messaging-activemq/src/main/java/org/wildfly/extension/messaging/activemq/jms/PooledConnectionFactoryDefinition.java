@@ -83,14 +83,10 @@ public class PooledConnectionFactoryDefinition extends PersistentResourceDefinit
         AbstractAttributeDefinitionBuilder builder;
         if (attribute instanceof  SimpleListAttributeDefinition) {
             builder =  new SimpleListAttributeDefinition.Builder((SimpleListAttributeDefinition)attribute);
-            // TODO remove once WFCORE-95 is fixed
-            ((SimpleListAttributeDefinition.Builder)builder).setListValidator(attribute.getValidator());
         } else if (attribute instanceof  SimpleMapAttributeDefinition) {
             builder = new SimpleMapAttributeDefinition.Builder((SimpleMapAttributeDefinition)attribute);
         } else if (attribute instanceof PrimitiveListAttributeDefinition) {
             builder = new PrimitiveListAttributeDefinition.Builder((PrimitiveListAttributeDefinition)attribute);
-            // TODO remove once WFCORE-95 is fixed
-            ((PrimitiveListAttributeDefinition.Builder)builder).setListValidator(attribute.getValidator());
         } else {
             builder = new SimpleAttributeDefinitionBuilder((SimpleAttributeDefinition)attribute);
         }

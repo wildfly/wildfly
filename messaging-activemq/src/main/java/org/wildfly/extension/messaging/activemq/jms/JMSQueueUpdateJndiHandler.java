@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.messaging.activemq.jms;
 
+import static org.wildfly.extension.messaging.activemq.jms.JMSQueueService.JMS_QUEUE_PREFIX;
+
 import org.apache.activemq.artemis.jms.server.JMSServerManager;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -39,12 +41,12 @@ public class JMSQueueUpdateJndiHandler extends AbstractUpdateJndiHandler {
 
     @Override
     protected void addJndiName(JMSServerManager jmsServerManager, String resourceName, String jndiName) throws Exception {
-        jmsServerManager.addQueueToBindingRegistry(resourceName, jndiName);
+        jmsServerManager.addQueueToBindingRegistry(JMS_QUEUE_PREFIX + resourceName, jndiName);
     }
 
     @Override
     protected void removeJndiName(JMSServerManager jmsServerManager, String resourceName, String jndiName) throws Exception {
-        jmsServerManager.removeQueueFromBindingRegistry(resourceName, jndiName);
+        jmsServerManager.removeQueueFromBindingRegistry(JMS_QUEUE_PREFIX + resourceName, jndiName);
     }
 
     static void registerOperations(ManagementResourceRegistration registry, ResourceDescriptionResolver resolver) {

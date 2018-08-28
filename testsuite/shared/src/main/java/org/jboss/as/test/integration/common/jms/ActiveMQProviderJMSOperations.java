@@ -55,6 +55,11 @@ public class ActiveMQProviderJMSOperations implements JMSOperations {
         this.client = client.getControllerClient();
     }
 
+    private static final ModelNode subsystemAddress = new ModelNode();
+    static {
+        subsystemAddress.add("subsystem", "messaging-activemq");
+    }
+
     private static final ModelNode serverAddress = new ModelNode();
     static {
         serverAddress.add("subsystem", "messaging-activemq");
@@ -69,6 +74,11 @@ public class ActiveMQProviderJMSOperations implements JMSOperations {
     @Override
     public ModelNode getServerAddress() {
         return serverAddress.clone();
+    }
+
+    @Override
+    public ModelNode getSubsystemAddress() {
+        return subsystemAddress.clone();
     }
 
     @Override
@@ -127,6 +137,20 @@ public class ActiveMQProviderJMSOperations implements JMSOperations {
     @Override
     public void removeJmsConnectionFactory(String name) {
         ModelNode address = getServerAddress()
+                .add("connection-factory", name);
+        executeOperation(address, REMOVE_OPERATION, null);
+    }
+    @Override
+    public void addJmsExternalConnectionFactory(String name, String jndiName, ModelNode attributes) {
+        ModelNode address = getSubsystemAddress()
+                .add("connection-factory", name);
+        attributes.get("entries").add(jndiName);
+        executeOperation(address, ADD, attributes);
+    }
+
+    @Override
+    public void removeJmsExternalConnectionFactory(String name) {
+        ModelNode address = getSubsystemAddress()
                 .add("connection-factory", name);
         executeOperation(address, REMOVE_OPERATION, null);
     }
@@ -270,6 +294,26 @@ public class ActiveMQProviderJMSOperations implements JMSOperations {
     @Override
     public void removeHttpConnector(String connectorName) {
         ModelNode address = getServerAddress()
+                .add("http-connector", connectorName);
+        executeOperation(address, REMOVE_OPERATION, null);
+    }
+
+
+    @Override
+    public void addExternalHttpConnector(String connectorName, String socketBinding, String endpoint) {
+        ModelNode address = getSubsystemAddress()
+                .add("http-connector", connectorName);
+
+        ModelNode attributes = new ModelNode();
+        attributes.get("socket-binding").set(socketBinding);
+        attributes.get("endpoint").set(endpoint);
+
+        executeOperation(address, ADD, attributes);
+    }
+
+    @Override
+    public void removeExternalHttpConnector(String connectorName) {
+        ModelNode address = getSubsystemAddress()
                 .add("http-connector", connectorName);
         executeOperation(address, REMOVE_OPERATION, null);
     }

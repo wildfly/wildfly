@@ -3,7 +3,7 @@
 <config>
     <!-- This is very different from the normal messaging setup, do duplicating the config is easier -->
     <extension-module>org.wildfly.extension.messaging-activemq</extension-module>
-    <subsystem xmlns="urn:jboss:domain:messaging-activemq:3.0">
+    <subsystem xmlns="urn:jboss:domain:messaging-activemq:4.0">
         <server name="default"
                 persistence-enabled="true">
             <cluster password="${jboss.messaging.cluster.password:CHANGE ME!!}" />
@@ -96,13 +96,13 @@
                              jgroups-cluster="activemq-cluster"
                              connectors="http-connector-backup"/>
 
-            <discovery-group name="dg-group1"
+            <discovery-group name="dg-group2"
                              jgroups-cluster="activemq-cluster"/>
 
             <cluster-connection name="my-cluster"
                                 address="jms"
                                 connector-name="http-connector-backup"
-                                discovery-group="dg-group1" />
+                                discovery-group="dg-group2" />
         </server>
     </subsystem>
 </config>
