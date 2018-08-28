@@ -84,7 +84,7 @@ public class DiscoveryGroupExternalMessagingDeploymentTestCase {
             JMSOperations ops = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
             ops.createJmsQueue(QUEUE_NAME, "/queue/" + QUEUE_NAME);
             ops.createJmsTopic(TOPIC_NAME, "/topic/" + TOPIC_NAME);
-            execute(managementClient, addMulticastSocketBinding(MULTICAST_SOCKET_BINDING, "${jboss.messaging.group.address:231.7.7.7}", "${jboss.messaging.group.port:9876}", 0), true);
+            execute(managementClient, addMulticastSocketBinding(MULTICAST_SOCKET_BINDING, "${jboss.messaging.group.address:230.0.0.4}", "${jboss.messaging.group.port:45700}", 0), true);
             execute(managementClient, addClientDiscoveryGroup(DISCOVERY_GROUP_NAME, MULTICAST_SOCKET_BINDING), true);
             ModelNode op = Operations.createRemoveOperation(getInitialPooledConnectionFactoryAddress());
             execute(managementClient, op, true);
