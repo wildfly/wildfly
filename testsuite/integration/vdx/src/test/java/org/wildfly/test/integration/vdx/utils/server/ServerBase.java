@@ -18,6 +18,7 @@
 package org.wildfly.test.integration.vdx.utils.server;
 
 import org.jboss.arquillian.container.test.api.ContainerController;
+import org.jboss.logging.Logger;
 import org.junit.Assert;
 import org.wildfly.extras.creaper.commands.foundation.offline.ConfigurationFileBackup;
 import org.wildfly.extras.creaper.commands.foundation.offline.xml.GroovyXmlTransform;
@@ -40,6 +41,7 @@ public abstract class ServerBase implements Server {
     private ConfigurationFileBackup configurationFileBackup = new ConfigurationFileBackup();
     private static Server server = null;
     private OfflineManagementClient managementClient;
+    static final Logger log = Logger.getLogger(ServerBase.class);
 
     @Override
     public void tryStartAndWaitForFail(OfflineCommand... offlineCommands) throws Exception {
@@ -82,7 +84,7 @@ public abstract class ServerBase implements Server {
             Assert.fail("Server started successfully - probably xml was not invalidated/damaged correctly.");
 
         } catch (Exception ex) {
-            System.out.println("Start of the server failed. This is expected.");
+            log.debug("Start of the server failed. This is expected.");
         } finally {
 
             // restore original config if it exists
@@ -140,7 +142,7 @@ public abstract class ServerBase implements Server {
             throw new Exception("Backup config is null. This can happen if this method is called before " +
                     "startServer() call. Check tryStartAndWaitForFail() sequence that backupConfiguration() was called.");
         }
-        System.out.println("Restoring server configuration. Configuration to be restored " + getServerConfig());
+        log.debug("Restoring server configuration. Configuration to be restored " + getServerConfig());
         managementClient.apply(configurationFileBackup.restore());
     }
 

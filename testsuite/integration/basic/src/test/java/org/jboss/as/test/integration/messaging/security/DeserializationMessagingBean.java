@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.messaging.security;
 
+import org.jboss.logging.Logger;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -77,6 +79,7 @@ public class DeserializationMessagingBean {
     public static final String BLACK_LIST_CF_LOOKUP = "java:comp/env/myBlackListCF";
     public static final String WHITE_LIST_CF_LOOKUP = "java:comp/env/myWhiteListCF";
     public static final String BLACK_LIST_REGULAR_CF_LOOKUP = "java:/jms/myBlackListCF";
+    static final Logger log = Logger.getLogger(DeserializationMessagingBean.class);
 
     @Resource(lookup = "java:comp/env/myQueue")
     private Queue queue;
@@ -114,10 +117,9 @@ public class DeserializationMessagingBean {
                 }
             } catch (JMSException e) {
                 if (consumeMustFail) {
-                    // exception is expected
+                    log.trace("Expected JMSException", e);
                 } else {
-                    System.out.println("WTF e.getMessage() = " + e.getMessage());
-                    e.printStackTrace(System.out);
+                    log.error("Unexpected exception", e);
                     fail(serializable + " is allowed to be deserialized when message is consumed");
                 }
             }
