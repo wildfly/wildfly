@@ -27,14 +27,12 @@ import static org.jboss.as.controller.client.helpers.ClientConstants.OP;
 import static org.jboss.as.controller.client.helpers.ClientConstants.OP_ADDR;
 import static org.jboss.as.controller.client.helpers.ClientConstants.READ_ATTRIBUTE_OPERATION;
 
-import com.google.common.collect.Iterables;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -44,7 +42,6 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 public class DataSourceClassInfoTestCase extends ContainerResourceMgmtTestBase {
-    private static final String DRIVER_WITH_WRONG_DS_CLASS_NAME = "h2-wrong-ds-class";
 
     private ModelNode getDsClsInfoOperation(String driverName) {
         ModelNode driverAddress = new ModelNode();
@@ -155,61 +152,4 @@ public class DataSourceClassInfoTestCase extends ContainerResourceMgmtTestBase {
         Assert.assertEquals("int", dsInfo.get("loginTimeout").asString());
     }
 
-    @Test
-    @Ignore("https://issues.jboss.org/browse/WFCORE-3682")
-    public void testGetDsClsInfoWithWrongDataSourceClass() throws Exception {
-        ModelNode driverWithWrongDsClsAddr = new ModelNode();
-        driverWithWrongDsClsAddr.add("subsystem", "datasources");
-        driverWithWrongDsClsAddr.add("jdbc-driver", DRIVER_WITH_WRONG_DS_CLASS_NAME);
-
-        addH2DriverWithWrongDsClass(driverWithWrongDsClsAddr);
-
-        ModelNode op = Operations.createReadResourceOperation(driverWithWrongDsClsAddr);
-        op.get(INCLUDE_RUNTIME).set(true);
-
-        try {
-            ModelNode result = getManagementClient().getControllerClient().execute(op);
-            Assert.assertNotNull(result);
-            Assert.assertEquals("failed", result.get("outcome").asString());
-            Assert.assertTrue(result.hasDefined("failure-description"));
-        } finally {
-            removeDriver(driverWithWrongDsClsAddr);
-        }
-    }
-
-    @Test
-    public void testGetDsClsInfoByReadAttributeWithWrongDataSourceClass() throws Exception {
-        ModelNode driverWithWrongDsClsAddr = new ModelNode();
-        driverWithWrongDsClsAddr.add("subsystem", "datasources");
-        driverWithWrongDsClsAddr.add("jdbc-driver", DRIVER_WITH_WRONG_DS_CLASS_NAME);
-
-        addH2DriverWithWrongDsClass(driverWithWrongDsClsAddr);
-
-        ModelNode op = Operations.createReadAttributeOperation(driverWithWrongDsClsAddr, "datasource-class-info");
-
-        try {
-            ModelNode result = getManagementClient().getControllerClient().execute(op);
-            Assert.assertNotNull(result);
-            Assert.assertEquals("failed", result.get("outcome").asString());
-            Assert.assertTrue(result.hasDefined("failure-description"));
-        } finally {
-            removeDriver(driverWithWrongDsClsAddr);
-        }
-    }
-
-    private void addH2DriverWithWrongDsClass(ModelNode driverAddress) throws Exception {
-        ModelNode op = Operations.createAddOperation(driverAddress);
-        op.get("driver-name").set(Iterables.getLast(driverAddress.asList()).get("jdbc-driver"));
-        op.get("driver-module-name").set("com.h2database.h2");
-        op.get("driver-xa-datasource-class-name").set("non.existing.class");
-
-        ModelNode result = getManagementClient().getControllerClient().execute(op);
-        Assert.assertNotNull(result);
-        Assert.assertEquals("success", result.get("outcome").asString());
-    }
-
-    private void removeDriver(ModelNode driverAddress) throws Exception {
-        ModelNode op = Operations.createRemoveOperation(driverAddress);
-        getManagementClient().getControllerClient().execute(op);
-    }
 }

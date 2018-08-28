@@ -42,6 +42,7 @@ import javax.naming.Reference;
 import javax.resource.spi.ManagedConnectionFactory;
 import javax.security.auth.Subject;
 import javax.sql.DataSource;
+import javax.sql.XADataSource;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.metadata.api.common.Credential;
@@ -49,6 +50,7 @@ import org.jboss.as.connector.security.ElytronSubjectFactory;
 import org.jboss.as.connector.services.driver.InstalledDriver;
 import org.jboss.as.connector.services.driver.registry.DriverRegistry;
 import org.jboss.as.connector.util.Injection;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.jca.adapters.jdbc.BaseWrapperManagedConnectionFactory;
@@ -93,8 +95,8 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.security.SubjectFactory;
-import org.wildfly.security.auth.client.AuthenticationContext;
 import org.wildfly.common.function.ExceptionSupplier;
+import org.wildfly.security.auth.client.AuthenticationContext;
 import org.wildfly.security.credential.source.CredentialSource;
 import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.security.manager.action.ClearContextClassLoaderAction;
@@ -364,6 +366,20 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
 
                 DataSources dataSources = null;
                 if (dataSourceConfig != null) {
+                    String dsClsName = dataSourceConfig.getDataSourceClass();
+                    if (dsClsName != null) {
+                        try {
+                            Class<? extends DataSource> dsCls = driverClassLoader().loadClass(dsClsName).asSubclass(DataSource.class);
+                            JdbcDriverAdd.checkDSCls(dsCls, DataSource.class);
+                        } catch (OperationFailedException e) {
+                            throw ConnectorLogger.ROOT_LOGGER.cannotDeploy(e);
+                        } catch (ClassCastException e) {
+                            throw ConnectorLogger.ROOT_LOGGER.cannotDeploy(ConnectorLogger.ROOT_LOGGER.notAValidDataSourceClass(dsClsName, DataSource.class.getName()));
+                        } catch (ClassNotFoundException e) {
+                            throw ConnectorLogger.ROOT_LOGGER.cannotDeploy(ConnectorLogger.ROOT_LOGGER.failedToLoadDataSourceClass(dsClsName, e));
+                        }
+                    }
+
                     String driverName = dataSourceConfig.getDriver();
                     InstalledDriver installedDriver = driverRegistry.getValue().getInstalledDriver(driverName);
                     if (installedDriver != null) {
@@ -377,6 +393,20 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
                     }
                     dataSources = new DatasourcesImpl(Arrays.asList(dataSourceConfig), null, drivers);
                 } else if (xaDataSourceConfig != null) {
+                    String xaDSClsName = xaDataSourceConfig.getXaDataSourceClass();
+                    if (xaDSClsName != null) {
+                        try {
+                            Class<? extends XADataSource> xaDsCls = driverClassLoader().loadClass(xaDSClsName).asSubclass(XADataSource.class);
+                            JdbcDriverAdd.checkDSCls(xaDsCls, XADataSource.class);
+                        } catch (OperationFailedException e) {
+                            throw ConnectorLogger.ROOT_LOGGER.cannotDeploy(e);
+                        } catch (ClassCastException e) {
+                            throw ConnectorLogger.ROOT_LOGGER.cannotDeploy(ConnectorLogger.ROOT_LOGGER.notAValidDataSourceClass(xaDSClsName, XADataSource.class.getName()));
+                        } catch (ClassNotFoundException e) {
+                            throw ConnectorLogger.ROOT_LOGGER.cannotDeploy(ConnectorLogger.ROOT_LOGGER.failedToLoadDataSourceClass(xaDSClsName, e));
+                        }
+                    }
+
                     String driverName = xaDataSourceConfig.getDriver();
                     InstalledDriver installedDriver = driverRegistry.getValue().getInstalledDriver(driverName);
                     if (installedDriver != null) {
