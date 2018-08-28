@@ -21,11 +21,11 @@
  */
 package org.wildfly.clustering.web.infinispan.session.coarse;
 
+import java.io.NotSerializableException;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.infinispan.commons.marshall.NotSerializableException;
 import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.Mutator;
 import org.wildfly.clustering.ee.infinispan.CacheProperties;

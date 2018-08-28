@@ -21,6 +21,7 @@
  */
 package org.wildfly.clustering.web.infinispan.session.fine;
 
+import java.io.NotSerializableException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -28,7 +29,6 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.infinispan.Cache;
-import org.infinispan.commons.marshall.NotSerializableException;
 import org.infinispan.context.Flag;
 import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.Mutator;
