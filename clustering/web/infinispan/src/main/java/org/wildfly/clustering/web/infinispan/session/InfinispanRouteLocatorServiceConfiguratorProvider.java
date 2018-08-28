@@ -32,6 +32,8 @@ import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ClusteringConfiguration;
 import org.infinispan.configuration.cache.ClusteringConfigurationBuilder;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.configuration.cache.StateTransferConfiguration;
+import org.infinispan.configuration.cache.StateTransferConfigurationBuilder;
 import org.infinispan.eviction.EvictionStrategy;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.msc.service.ServiceName;
@@ -81,7 +83,7 @@ public class InfinispanRouteLocatorServiceConfiguratorProvider implements RouteL
     public void accept(ConfigurationBuilder builder) {
         ClusteringConfigurationBuilder clustering = builder.clustering();
         CacheMode mode = clustering.cacheMode();
-        clustering.cacheMode(mode.isClustered() ? CacheMode.REPL_SYNC : CacheMode.LOCAL);
+        clustering.cacheMode(mode.needsStateTransfer() ? CacheMode.REPL_SYNC : CacheMode.LOCAL);
         // don't use DefaultConsistentHashFactory for REPL caches (WFLY-9276)
         clustering.hash().consistentHashFactory(null);
         clustering.l1().disable();
@@ -97,5 +99,9 @@ public class InfinispanRouteLocatorServiceConfiguratorProvider implements RouteL
         // Disable eviction
         builder.memory().size(-1).evictionStrategy(EvictionStrategy.MANUAL);
         builder.persistence().clearStores();
+        StateTransferConfigurationBuilder stateTransfer = clustering.stateTransfer().fetchInMemoryState(mode.needsStateTransfer());
+        attributes = TemplateConfigurationServiceConfigurator.getAttributes(stateTransfer);
+        attributes.attribute(StateTransferConfiguration.AWAIT_INITIAL_TRANSFER).reset();
+        attributes.attribute(StateTransferConfiguration.TIMEOUT).reset();
     }
 }
