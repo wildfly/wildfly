@@ -28,7 +28,7 @@ import java.time.Instant;
  * Composite view of the meta data of a session, combining volatile and static aspects.
  * @author Paul Ferraro
  */
-public class CompositeSessionMetaData extends AbstractImmutableSessionMetaData implements InvalidatableSessionMetaData {
+public class CompositeSessionMetaData implements InvalidatableSessionMetaData {
 
     private final SessionCreationMetaData creationMetaData;
     private final SessionAccessMetaData accessMetaData;
@@ -40,7 +40,7 @@ public class CompositeSessionMetaData extends AbstractImmutableSessionMetaData i
 
     @Override
     public boolean isNew() {
-        // We can implement this more efficiently than the super implementation
+        // We can implement this more efficiently than the default implementation
         return this.accessMetaData.getLastAccessedDuration().isZero();
     }
 

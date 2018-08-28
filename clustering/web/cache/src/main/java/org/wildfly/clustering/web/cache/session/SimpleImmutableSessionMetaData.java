@@ -30,7 +30,7 @@ import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
  * An immutable "snapshot" of a session's meta-data which can be accessed outside the scope of a transaction.
  * @author Paul Ferraro
  */
-public class SimpleImmutableSessionMetaData extends AbstractImmutableSessionMetaData {
+public class SimpleImmutableSessionMetaData implements ImmutableSessionMetaData {
 
     private final Instant creationTime;
     private final Instant lastAccessedTime;
