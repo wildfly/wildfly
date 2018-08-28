@@ -105,23 +105,14 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
                 for (final VirtualFile root : testRoots) {
                     VirtualFile child = root.getChild(tld.getTaglibLocation());
                     if (child.exists()) {
-                        String pathNameRelativeToRoot;
-                        try {
-                            pathNameRelativeToRoot = child.getPathNameRelativeTo(deploymentRoot);
-                        } catch (IllegalArgumentException e) {
-                            throw new DeploymentUnitProcessingException(UndertowLogger.ROOT_LOGGER.tldFileNotContainedInRoot(child.getPathName(),
-                                    deploymentRoot.getPathName()), e);
+                        if (isTldFile(child)) {
+                            TldMetaData value = processTld(deploymentRoot, child, tlds, uniqueTlds);
+
+                            if (!tlds.containsKey(tld.getTaglibUri())) {
+                                tlds.put(tld.getTaglibUri(), value);
+                            }
                         }
-                        final TldMetaData value = parseTLD(child);
-                        value.setUri(tld.getTaglibUri());
-                        uniqueTlds.add(value);
-                        String key = "/" + pathNameRelativeToRoot;
-                        if (!tlds.containsKey(key)) {
-                            tlds.put(key, value);
-                        }
-                        if (!tlds.containsKey(tld.getTaglibUri())) {
-                            tlds.put(tld.getTaglibUri(), value);
-                        }
+
                         found = true;
                         break;
                     }
@@ -147,21 +138,8 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
         VirtualFile webInf = deploymentRoot.getChild(WEB_INF);
         if (webInf.exists() && webInf.isDirectory()) {
             for (VirtualFile file : webInf.getChildren()) {
-                if (file.isFile() && file.getName().toLowerCase(Locale.ENGLISH).endsWith(TLD)) {
-                    String pathNameRelativeToRoot;
-                    try {
-                        pathNameRelativeToRoot = file.getPathNameRelativeTo(deploymentRoot);
-                    } catch (IllegalArgumentException e) {
-                        throw new DeploymentUnitProcessingException(UndertowLogger.ROOT_LOGGER.tldFileNotContainedInRoot(file.getPathName(),
-                                deploymentRoot.getPathName()), e);
-                    }
-
-                    final TldMetaData value = parseTLD(file);
-                    uniqueTlds.add(value);
-                    String key = "/" + pathNameRelativeToRoot;
-                    if (!tlds.containsKey(key)) {
-                        tlds.put(key, value);
-                    }
+                if (isTldFile(file)) {
+                    processTld(deploymentRoot, file, tlds, uniqueTlds);
                 } else if (file.isDirectory() && !CLASSES.equals(file.getName()) && !LIB.equals(file.getName())) {
                     processTlds(deploymentRoot, file.getChildren(), tlds, uniqueTlds);
                 }
@@ -186,28 +164,40 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
         }
     }
 
-
     @Override
     public void undeploy(final DeploymentUnit context) {
+    }
+
+    private boolean isTldFile(VirtualFile file) {
+        return file.isFile() && file.getName().toLowerCase(Locale.ENGLISH).endsWith(TLD);
+    }
+
+    private TldMetaData processTld(VirtualFile root, VirtualFile file, Map<String, TldMetaData> tlds, List<TldMetaData> uniqueTlds) throws DeploymentUnitProcessingException {
+        String pathNameRelativeToRoot;
+
+        try {
+            pathNameRelativeToRoot = file.getPathNameRelativeTo(root);
+        } catch (IllegalArgumentException e) {
+            throw new DeploymentUnitProcessingException(UndertowLogger.ROOT_LOGGER.tldFileNotContainedInRoot(file.getPathName(),
+                    root.getPathName()), e);
+        }
+
+        final TldMetaData value = parseTLD(file);
+        String key = "/" + pathNameRelativeToRoot;
+        uniqueTlds.add(value);
+
+        if (!tlds.containsKey(key)) {
+            tlds.put(key, value);
+        }
+
+        return value;
     }
 
     private void processTlds(VirtualFile root, List<VirtualFile> files, Map<String, TldMetaData> tlds, final List<TldMetaData> uniqueTlds)
             throws DeploymentUnitProcessingException {
         for (VirtualFile file : files) {
-            if (file.isFile() && file.getName().toLowerCase(Locale.ENGLISH).endsWith(TLD)) {
-                String pathNameRelativeToRoot;
-                try {
-                    pathNameRelativeToRoot = file.getPathNameRelativeTo(root);
-                } catch (IllegalArgumentException e) {
-                    throw new DeploymentUnitProcessingException(UndertowLogger.ROOT_LOGGER.tldFileNotContainedInRoot(file.getPathName(),
-                            root.getPathName()), e);
-                }
-                final TldMetaData value = parseTLD(file);
-                String key = "/" + pathNameRelativeToRoot;
-                uniqueTlds.add(value);
-                if (!tlds.containsKey(key)) {
-                    tlds.put(key, value);
-                }
+            if (isTldFile(file)) {
+                processTld(root, file, tlds, uniqueTlds);
             } else if (file.isDirectory()) {
                 processTlds(root, file.getChildren(), tlds, uniqueTlds);
             }
