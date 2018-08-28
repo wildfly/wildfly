@@ -14,16 +14,26 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<module xmlns="urn:jboss:module:1.8" name="com.google.code.gson">
+<module xmlns="urn:jboss:module:1.8" name="io.opentracing.contrib.opentracing-jaxrs2">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
 
     <resources>
-        <artifact name="${com.google.code.gson:gson}"/>
+        <artifact name="${io.opentracing.contrib:opentracing-jaxrs2}"/>
     </resources>
 
     <dependencies>
-        <module name="javax.sql.api"/>
+        <module name="java.logging"/>
+        <module name="javax.servlet.api"/>
+        <module name="javax.ws.rs.api"/>
+
+        <module name="io.opentracing.opentracing-api"/>
+        <module name="io.opentracing.opentracing-noop"/>
+        <module name="io.opentracing.opentracing-util"/>
+        <module name="io.opentracing.contrib.opentracing-concurrent"/>
+        <module name="io.opentracing.contrib.opentracing-web-servlet-filter"/>
+
+        <module name="org.eclipse.microprofile.opentracing"/>
     </dependencies>
 </module>
