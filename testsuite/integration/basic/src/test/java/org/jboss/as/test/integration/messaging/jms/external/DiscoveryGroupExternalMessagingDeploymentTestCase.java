@@ -30,6 +30,8 @@ import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
 import java.net.URL;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -49,6 +51,10 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jgroups.util.StackType;
+import org.jgroups.util.Util;
+import org.junit.Assume;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -210,6 +216,14 @@ public class DiscoveryGroupExternalMessagingDeploymentTestCase {
                 .addClass(MessagingServlet.class)
                 .addClasses(QueueMDB.class, TopicMDB.class)
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+    }
+
+    @Before
+    public void before() {
+        AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
+            Assume.assumeFalse("[WFCI-32] Disable on Windows+IPv6 until CI environment is fixed", Util.checkForWindows() && (Util.getIpStackType() == StackType.IPv6));
+            return null;
+        });
     }
 
     @Test

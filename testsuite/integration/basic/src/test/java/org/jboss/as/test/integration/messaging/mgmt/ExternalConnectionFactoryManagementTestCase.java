@@ -36,6 +36,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
@@ -47,6 +50,10 @@ import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBa
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.integration.management.util.ServerReload;
 import org.jboss.dmr.ModelNode;
+import org.jgroups.util.StackType;
+import org.jgroups.util.Util;
+import org.junit.Assume;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -64,6 +71,14 @@ public class ExternalConnectionFactoryManagementTestCase extends ContainerResour
 
     @ContainerResource
     private ManagementClient managementClient;
+
+    @BeforeClass
+    public static void beforeClass() {
+        AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
+            Assume.assumeFalse("[WFCI-32] Disable on Windows+IPv6 until CI environment is fixed", Util.checkForWindows() && (Util.getIpStackType() == StackType.IPv6));
+            return null;
+        });
+    }
 
     @Test
     public void testWriteDiscoveryGroupAttributeWhenConnectorIsAlreadyDefined() throws Exception {
