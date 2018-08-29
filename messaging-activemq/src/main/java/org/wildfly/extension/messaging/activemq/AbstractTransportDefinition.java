@@ -28,6 +28,7 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
@@ -48,16 +49,33 @@ public abstract class AbstractTransportDefinition extends PersistentResourceDefi
     protected final boolean isAcceptor;
 
     protected AbstractTransportDefinition(final boolean isAcceptor, final String specificType, final boolean registerRuntimeOnly, AttributeDefinition... attrs) {
-        super(PathElement.pathElement(specificType),
+        super(new Parameters(PathElement.pathElement(specificType),
                 new StandardResourceDescriptionResolver((isAcceptor ? CommonAttributes.ACCEPTOR : CommonAttributes.CONNECTOR),
                         MessagingExtension.RESOURCE_NAME, MessagingExtension.class.getClassLoader(), true, false) {
                     @Override
                     public String getResourceDescription(Locale locale, ResourceBundle bundle) {
                         return bundle.getString(specificType);
                     }
-                },
-                new ActiveMQReloadRequiredHandlers.AddStepHandler(attrs),
-                new ActiveMQReloadRequiredHandlers.RemoveStepHandler());
+                })
+                .setAddHandler(new ActiveMQReloadRequiredHandlers.AddStepHandler(attrs))
+                .setRemoveHandler(new ActiveMQReloadRequiredHandlers.RemoveStepHandler()));
+        this.isAcceptor = isAcceptor;
+        this.registerRuntimeOnly = registerRuntimeOnly;
+        this.attrs = attrs;
+    }
+
+    protected AbstractTransportDefinition(final boolean isAcceptor, final String specificType, final boolean registerRuntimeOnly, ModelVersion deprecatedSince, AttributeDefinition... attrs) {
+        super(new Parameters(PathElement.pathElement(specificType),
+                new StandardResourceDescriptionResolver((isAcceptor ? CommonAttributes.ACCEPTOR : CommonAttributes.CONNECTOR),
+                        MessagingExtension.RESOURCE_NAME, MessagingExtension.class.getClassLoader(), true, false) {
+                    @Override
+                    public String getResourceDescription(Locale locale, ResourceBundle bundle) {
+                        return bundle.getString(specificType);
+                    }
+                })
+                .setAddHandler(new ActiveMQReloadRequiredHandlers.AddStepHandler(attrs))
+                .setRemoveHandler(new ActiveMQReloadRequiredHandlers.RemoveStepHandler())
+                .setDeprecatedSince(deprecatedSince));
         this.isAcceptor = isAcceptor;
         this.registerRuntimeOnly = registerRuntimeOnly;
         this.attrs = attrs;

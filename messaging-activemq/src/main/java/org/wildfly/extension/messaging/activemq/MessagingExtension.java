@@ -73,16 +73,29 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.wildfly.extension.messaging.activemq.jms.ExternalConnectionFactoryDefinition;
+import org.wildfly.extension.messaging.activemq.jms.ExternalJMSQueueDefinition;
+import org.wildfly.extension.messaging.activemq.jms.ExternalJMSTopicDefinition;
 import org.wildfly.extension.messaging.activemq.jms.JMSQueueDefinition;
 import org.wildfly.extension.messaging.activemq.jms.JMSTopicDefinition;
 import org.wildfly.extension.messaging.activemq.jms.PooledConnectionFactoryDefinition;
 import org.wildfly.extension.messaging.activemq.jms.bridge.JMSBridgeDefinition;
 
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.EXTERNAL_JMS_QUEUE;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.EXTERNAL_JMS_TOPIC;
+
 /**
  * Domain extension that integrates Apache ActiveMQ 6.
  *
  * <dl>
- *   <dt><strong>Current</strong> - WildFly 11</dt>
+ *   <dt><strong>Current</strong> - WildFly 12</dt>
+ *   <dd>
+ *     <ul>
+ *       <li>XML namespace: urn:jboss:domain:messaging-activemq:3.0
+ *       <li>Management model: 3.0.0
+ *     </ul>
+ *   </dd>
+ *   <dt>WildFly 11</dt>
  *   <dd>
  *     <ul>
  *       <li>XML namespace: urn:jboss:domain:messaging-activemq:2.0
@@ -132,6 +145,8 @@ public class MessagingExtension implements Extension {
     static final PathElement ADDRESS_SETTING_PATH = pathElement(ADDRESS_SETTING);
     static final PathElement ROLE_PATH = pathElement(ROLE);
     static final PathElement SECURITY_SETTING_PATH =  pathElement(SECURITY_SETTING);
+    public static final PathElement EXTERNAL_JMS_QUEUE_PATH = pathElement(EXTERNAL_JMS_QUEUE);
+    public static final PathElement EXTERNAL_JMS_TOPIC_PATH = pathElement(EXTERNAL_JMS_TOPIC);
     public static final PathElement JMS_QUEUE_PATH = pathElement(JMS_QUEUE);
     public static final PathElement JMS_TOPIC_PATH = pathElement(JMS_TOPIC);
     public static final PathElement POOLED_CONNECTION_FACTORY_PATH = pathElement(CommonAttributes.POOLED_CONNECTION_FACTORY);
@@ -149,12 +164,14 @@ public class MessagingExtension implements Extension {
 
     static final String RESOURCE_NAME = MessagingExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    protected static final ModelVersion VERSION_3_1_0 = ModelVersion.create(3, 1, 0);
+    protected static final ModelVersion VERSION_4_0_0 = ModelVersion.create(4, 0, 0);
     protected static final ModelVersion VERSION_3_0_0 = ModelVersion.create(3, 0, 0);
     protected static final ModelVersion VERSION_2_0_0 = ModelVersion.create(2, 0, 0);
     protected static final ModelVersion VERSION_1_0_0 = ModelVersion.create(1, 0, 0);
-    private static final ModelVersion CURRENT_MODEL_VERSION = VERSION_3_1_0;
-    private static final MessagingSubsystemParser_3_0 CURRENT_PARSER = new MessagingSubsystemParser_3_0();
+    private static final ModelVersion CURRENT_MODEL_VERSION = VERSION_4_0_0;
+
+    private static final MessagingSubsystemParser_4_0 CURRENT_PARSER = new MessagingSubsystemParser_4_0();
+
 
     public static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
         return getResourceDescriptionResolver(true, keyPrefix);
@@ -181,6 +198,17 @@ public class MessagingExtension implements Extension {
         // Root resource
         final ManagementResourceRegistration subsystem = subsystemRegistration.registerSubsystemModel(MessagingSubsystemRootResourceDefinition.INSTANCE);
         subsystem.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
+
+        // WFLY-10518 - register new client resources under subsystem
+        subsystem.registerSubModel(new DiscoveryGroupDefinition(registerRuntimeOnly, true));
+        subsystem.registerSubModel(GenericTransportDefinition.createConnectorDefinition(registerRuntimeOnly));
+        subsystem.registerSubModel(InVMTransportDefinition.createConnectorDefinition(registerRuntimeOnly));
+        subsystem.registerSubModel(RemoteTransportDefinition.createConnectorDefinition(registerRuntimeOnly));
+        subsystem.registerSubModel(new HTTPConnectorDefinition(registerRuntimeOnly));
+        subsystem.registerSubModel(new ExternalConnectionFactoryDefinition(registerRuntimeOnly));
+        subsystem.registerSubModel(PooledConnectionFactoryDefinition.INSTANCE);
+        subsystem.registerSubModel(ExternalJMSQueueDefinition.INSTANCE);
+        subsystem.registerSubModel(ExternalJMSTopicDefinition.INSTANCE);
 
         // ActiveMQ Servers
         final ManagementResourceRegistration server = subsystem.registerSubModel(new ServerDefinition(registerRuntimeOnly));
@@ -210,8 +238,11 @@ public class MessagingExtension implements Extension {
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
+        // use method references for legacay versions that may never be instantiated
+        // and use an instance for the current version that will be use if the extension is loaded.
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_1_0.NAMESPACE, MessagingSubsystemParser_1_0::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_2_0.NAMESPACE, MessagingSubsystemParser_2_0::new);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_3_0.NAMESPACE, CURRENT_PARSER);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_3_0.NAMESPACE, MessagingSubsystemParser_3_0::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_4_0.NAMESPACE, CURRENT_PARSER);
     }
 }

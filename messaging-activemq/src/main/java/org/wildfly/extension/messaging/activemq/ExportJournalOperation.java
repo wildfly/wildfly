@@ -35,7 +35,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Date;
 
-import org.apache.activemq.artemis.cli.commands.tools.XmlDataExporter;
+import org.apache.activemq.artemis.cli.commands.tools.xml.XmlDataExporter;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;

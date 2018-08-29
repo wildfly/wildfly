@@ -138,6 +138,6 @@ class AddressControlHandler extends AbstractRuntimeOnlyHandler {
         final ServiceName serviceName = MessagingServices.getActiveMQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
         ServiceController<?> service = context.getServiceRegistry(false).getService(serviceName);
         ActiveMQServer server = ActiveMQServer.class.cast(service.getValue());
-        return AddressControl.class.cast(server.getManagementService().getResource(ResourceNames.CORE_ADDRESS + addressName));
+        return AddressControl.class.cast(server.getManagementService().getResource(ResourceNames.ADDRESS + addressName));
     }
 }

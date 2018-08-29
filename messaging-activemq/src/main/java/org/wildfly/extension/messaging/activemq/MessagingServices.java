@@ -48,12 +48,11 @@ public class MessagingServices {
        // We are a handler for requests related to a jms-topic resource. Those reside on level below the server
         // resources in the resource tree. So we could look for the server in the 2nd to last element
         // in the PathAddress. But to be more generic and future-proof, we'll walk the tree looking
-       String serverName = null;
        PathAddress serverPathAddress = getActiveMQServerPathAddress(pathAddress);
-       if (serverPathAddress != null) {
-           serverName = serverPathAddress.getLastElement().getValue();
+       if (serverPathAddress != null && serverPathAddress.size() > 0) {
+           return JBOSS_MESSAGING_ACTIVEMQ.append(serverPathAddress.getLastElement().getValue());
        }
-       return JBOSS_MESSAGING_ACTIVEMQ.append(serverName);
+       return null;
    }
 
    public static PathAddress getActiveMQServerPathAddress(PathAddress pathAddress) {
@@ -67,6 +66,9 @@ public class MessagingServices {
    }
 
    public static ServiceName getActiveMQServiceName(String serverName) {
+       if(serverName == null || serverName.isEmpty()) {
+           return JBOSS_MESSAGING_ACTIVEMQ;
+       }
       return JBOSS_MESSAGING_ACTIVEMQ.append(serverName);
    }
 

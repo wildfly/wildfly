@@ -63,12 +63,14 @@ import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_DATABASE;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_DATASOURCE;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_FILE_SIZE;
+import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_JDBC_LOCK_EXPIRATION;
+import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_JDBC_LOCK_RENEW_PERIOD;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_JDBC_NETWORK_TIMEOUT;
-import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_JMS_BINDINGS_TABLE;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_LARGE_MESSAGES_TABLE;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_MAX_IO;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_MESSAGES_TABLE;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_MIN_FILES;
+import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_NODE_MANAGER_STORE_TABLE;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_PAGE_STORE_TABLE;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_POOL_FILES;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_SYNC_NON_TRANSACTIONAL;
@@ -85,11 +87,9 @@ import static org.wildfly.extension.messaging.activemq.ServerDefinition.MESSAGE_
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.MESSAGE_EXPIRY_THREAD_PRIORITY;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.OVERRIDE_IN_VM_SECURITY;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.PAGE_MAX_CONCURRENT_IO;
-import static org.wildfly.extension.messaging.activemq.ServerDefinition.PERF_BLAST_PAGES;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.PERSISTENCE_ENABLED;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.PERSIST_ID_CACHE;
-import static org.wildfly.extension.messaging.activemq.ServerDefinition.RUN_SYNC_SPEED_TEST;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.SCHEDULED_THREAD_POOL_MAX_SIZE;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.SECURITY_DOMAIN;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.SECURITY_ENABLED;
@@ -174,6 +174,12 @@ import org.wildfly.security.credential.source.CredentialSource;
  */
 class ServerAdd extends AbstractAddStepHandler {
     public static final ServerAdd INSTANCE = new ServerAdd();
+
+// Artemis-specific system properties
+    private static final String ARTEMIS_BROKER_CONFIG_NODEMANAGER_STORE_TABLE_NAME = "brokerconfig.storeConfiguration.nodeManagerStoreTableName";
+    private static final String ARTEMIS_BROKER_CONFIG_JBDC_LOCK_RENEW_PERIOD_MILLIS = "brokerconfig.storeConfiguration.jdbcLockRenewPeriodMillis";
+    private static final String ARTEMIS_BROKER_CONFIG_JBDC_LOCK_EXPIRATION_MILLIS = "brokerconfig.storeConfiguration.jdbcLockExpirationMillis";
+    private static final String ARTEMIS_BROKER_CONFIG_JDBC_LOCK_ACQUISITION_TIMEOUT_MILLIS = "brokerconfig.storeConfiguration.jdbcLockAcquisitionTimeoutMillis";
 
     private ServerAdd() {
         super(ACTIVEMQ_SERVER_CAPABILITY, ServerDefinition.ATTRIBUTES);
@@ -318,10 +324,10 @@ class ServerAdd extends AbstractAddStepHandler {
                 TransportConfigOperationHandlers.processConnectors(context, configuration, model, connectorsSocketBindings);
 
                 Map<String, Supplier<OutboundSocketBinding>> outboundSocketBindings = new HashMap<>();
+                Map<String, Boolean> outbounds = TransportConfigOperationHandlers.listOutBoundSocketBinding(context, connectorsSocketBindings);
                 for (final String connectorSocketBinding : connectorsSocketBindings) {
                     // find whether the connectorSocketBinding references a SocketBinding or an OutboundSocketBinding
-                    boolean outbound = isOutBoundSocketBinding(context, connectorSocketBinding);
-                    if (outbound) {
+                    if (outbounds.get(connectorSocketBinding)) {
                         final ServiceName outboundSocketName = OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME.append(connectorSocketBinding);
                         Supplier<OutboundSocketBinding> outboundSocketBinding = serviceBuilder.requires(outboundSocketName);
                         outboundSocketBindings.put(connectorSocketBinding, outboundSocketBinding);
@@ -449,24 +455,6 @@ class ServerAdd extends AbstractAddStepHandler {
     }
 
     /**
-     * Determines whether a socket-binding with the given name corresponds to a (local or remote) outbound-socket-binding
-     * or a socket-binding.
-     *
-     * If no socket-binding or outbound-socket-binding resources matches, throw an OperationFailedException.
-     */
-    private boolean isOutBoundSocketBinding(OperationContext context, String name) throws OperationFailedException {
-        Resource root = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS);
-        for (Resource.ResourceEntry resource : root.getChildren(ModelDescriptionConstants.SOCKET_BINDING_GROUP)) {
-            if (resource.getChildrenNames(ModelDescriptionConstants.SOCKET_BINDING).contains(name)) {
-                return false;
-            } else if (resource.getChildrenNames(ModelDescriptionConstants.LOCAL_DESTINATION_OUTBOUND_SOCKET_BINDING).contains(name)
-                    || resource.getChildrenNames(ModelDescriptionConstants.REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING).contains(name))
-                return true;
-        }
-        throw MessagingLogger.ROOT_LOGGER.noSocketBinding(name);
-    }
-
-    /**
      * Transform the detyped operation parameters into the ActiveMQ configuration.
      *
      * @param context the operation context
@@ -526,15 +514,12 @@ class ServerAdd extends AbstractAddStepHandler {
         configuration.setMessageExpiryScanPeriod(MESSAGE_EXPIRY_SCAN_PERIOD.resolveModelAttribute(context, model).asLong());
         configuration.setMessageExpiryThreadPriority(MESSAGE_EXPIRY_THREAD_PRIORITY.resolveModelAttribute(context, model).asInt());
 
-        configuration.setJournalPerfBlastPages(PERF_BLAST_PAGES.resolveModelAttribute(context, model).asInt());
         configuration.setPersistDeliveryCountBeforeDelivery(PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY.resolveModelAttribute(context, model).asBoolean());
 
         configuration.setPageMaxConcurrentIO(PAGE_MAX_CONCURRENT_IO.resolveModelAttribute(context, model).asInt());
 
         configuration.setPersistenceEnabled(PERSISTENCE_ENABLED.resolveModelAttribute(context, model).asBoolean());
         configuration.setPersistIDCache(PERSIST_ID_CACHE.resolveModelAttribute(context, model).asBoolean());
-
-        configuration.setRunSyncSpeedTest(RUN_SYNC_SPEED_TEST.resolveModelAttribute(context, model).asBoolean());
 
         configuration.setScheduledThreadPoolMaxSize(SCHEDULED_THREAD_POOL_MAX_SIZE.resolveModelAttribute(context, model).asInt());
         configuration.setSecurityEnabled(SECURITY_ENABLED.resolveModelAttribute(context, model).asBoolean());
@@ -570,13 +555,64 @@ class ServerAdd extends AbstractAddStepHandler {
         }
         DatabaseStorageConfiguration storageConfiguration = new DatabaseStorageConfiguration();
         storageConfiguration.setBindingsTableName(JOURNAL_BINDINGS_TABLE.resolveModelAttribute(context, model).asString());
-        storageConfiguration.setJMSBindingsTableName(JOURNAL_JMS_BINDINGS_TABLE.resolveModelAttribute(context, model).asString());
         storageConfiguration.setMessageTableName(JOURNAL_MESSAGES_TABLE.resolveModelAttribute(context, model).asString());
         storageConfiguration.setLargeMessageTableName(JOURNAL_LARGE_MESSAGES_TABLE.resolveModelAttribute(context, model).asString());
         storageConfiguration.setPageStoreTableName(JOURNAL_PAGE_STORE_TABLE.resolveModelAttribute(context, model).asString());
         long networkTimeout = SECONDS.toMillis(JOURNAL_JDBC_NETWORK_TIMEOUT.resolveModelAttribute(context, model).asInt());
         // ARTEMIS-1493: Artemis API is not correct. the value must be in millis but it requires an int instead of a long.
         storageConfiguration.setJdbcNetworkTimeout((int)networkTimeout);
+                // WFLY-9513 - check for System properties for HA JDBC store attributes
+        //
+        // if the attribute is defined, we use its value
+        // otherwise, we check first for a system property
+        // finally we use the attribute's default value
+        //
+        // this behaviour applies to JOURNAL_NODE_MANAGER_STORE_TABLE, JOURNAL_JDBC_LOCK_EXPIRATION
+        // and JOURNAL_JDBC_LOCK_RENEW_PERIOD attributes.
+        final String nodeManagerStoreTableName;
+        if (model.hasDefined(JOURNAL_NODE_MANAGER_STORE_TABLE.getName())) {
+            nodeManagerStoreTableName = JOURNAL_NODE_MANAGER_STORE_TABLE.resolveModelAttribute(context, model).asString();
+        } else if ( org.wildfly.security.manager.WildFlySecurityManager.getSystemPropertiesPrivileged().containsKey(ARTEMIS_BROKER_CONFIG_NODEMANAGER_STORE_TABLE_NAME)) {
+            nodeManagerStoreTableName = org.wildfly.security.manager.WildFlySecurityManager.getSystemPropertiesPrivileged().getProperty(ARTEMIS_BROKER_CONFIG_NODEMANAGER_STORE_TABLE_NAME);
+        } else {
+            nodeManagerStoreTableName = JOURNAL_NODE_MANAGER_STORE_TABLE.getDefaultValue().asString();
+        }
+        // the system property is removed, otherwise Artemis will use it to override the value from the configuration
+        org.wildfly.security.manager.WildFlySecurityManager.getSystemPropertiesPrivileged().remove(ARTEMIS_BROKER_CONFIG_NODEMANAGER_STORE_TABLE_NAME);
+        storageConfiguration.setNodeManagerStoreTableName(nodeManagerStoreTableName);
+        final long lockExpirationInMillis;
+        if (model.hasDefined(JOURNAL_JDBC_LOCK_EXPIRATION.getName())) {
+            lockExpirationInMillis = SECONDS.toMillis(JOURNAL_JDBC_LOCK_EXPIRATION.resolveModelAttribute(context, model).asInt());
+        } else if ( org.wildfly.security.manager.WildFlySecurityManager.getSystemPropertiesPrivileged().containsKey(ARTEMIS_BROKER_CONFIG_JBDC_LOCK_EXPIRATION_MILLIS)) {
+            lockExpirationInMillis = Long.parseLong( org.wildfly.security.manager.WildFlySecurityManager.getSystemPropertiesPrivileged().getProperty(ARTEMIS_BROKER_CONFIG_JBDC_LOCK_EXPIRATION_MILLIS));
+        } else {
+            lockExpirationInMillis = SECONDS.toMillis(JOURNAL_JDBC_LOCK_EXPIRATION.getDefaultValue().asInt());
+        }
+        // the system property is removed, otherwise Artemis will use it to override the value from the configuration
+        org.wildfly.security.manager.WildFlySecurityManager.getSystemPropertiesPrivileged().remove(ARTEMIS_BROKER_CONFIG_JBDC_LOCK_EXPIRATION_MILLIS);
+        storageConfiguration.setJdbcLockExpirationMillis(lockExpirationInMillis);
+        final long lockRenewPeriodInMillis;
+        if (model.hasDefined(JOURNAL_JDBC_LOCK_RENEW_PERIOD.getName())) {
+            lockRenewPeriodInMillis = SECONDS.toMillis(JOURNAL_JDBC_LOCK_RENEW_PERIOD.resolveModelAttribute(context, model).asInt());
+        } else if (org.wildfly.security.manager.WildFlySecurityManager.getSystemPropertiesPrivileged().containsKey(ARTEMIS_BROKER_CONFIG_JBDC_LOCK_RENEW_PERIOD_MILLIS)) {
+            lockRenewPeriodInMillis = Long.parseLong( org.wildfly.security.manager.WildFlySecurityManager.getSystemPropertiesPrivileged().getProperty(ARTEMIS_BROKER_CONFIG_JBDC_LOCK_RENEW_PERIOD_MILLIS));
+        } else {
+            lockRenewPeriodInMillis = SECONDS.toMillis(JOURNAL_JDBC_LOCK_RENEW_PERIOD.getDefaultValue().asInt());
+        }
+        // the system property is removed, otherwise Artemis will use it to override the value from the configuration
+        org.wildfly.security.manager.WildFlySecurityManager.getSystemPropertiesPrivileged().remove(ARTEMIS_BROKER_CONFIG_JBDC_LOCK_RENEW_PERIOD_MILLIS);
+        storageConfiguration.setJdbcLockRenewPeriodMillis(lockRenewPeriodInMillis);
+        // this property is used for testing only and has no corresponding model attribute.
+        // However the default value in Artemis is not correct (should be -1, not 60s)
+        final long jdbcLockAcquisitionTimeoutMillis;
+        if (org.wildfly.security.manager.WildFlySecurityManager.getSystemPropertiesPrivileged().containsKey(ARTEMIS_BROKER_CONFIG_JDBC_LOCK_ACQUISITION_TIMEOUT_MILLIS)) {
+            jdbcLockAcquisitionTimeoutMillis = Long.parseLong(org.wildfly.security.manager.WildFlySecurityManager.getSystemPropertiesPrivileged().getProperty(ARTEMIS_BROKER_CONFIG_JDBC_LOCK_ACQUISITION_TIMEOUT_MILLIS));
+        } else {
+            jdbcLockAcquisitionTimeoutMillis = -1;
+        }
+        // the system property is removed, otherwise Artemis will use it to override the value from the configuration
+        org.wildfly.security.manager.WildFlySecurityManager.getSystemPropertiesPrivileged().remove(ARTEMIS_BROKER_CONFIG_JDBC_LOCK_ACQUISITION_TIMEOUT_MILLIS);
+        storageConfiguration.setJdbcLockAcquisitionTimeoutMillis(jdbcLockAcquisitionTimeoutMillis);
         ModelNode databaseNode = JOURNAL_DATABASE.resolveModelAttribute(context, model);
         final String database = databaseNode.isDefined() ? databaseNode.asString() : null;
         try {

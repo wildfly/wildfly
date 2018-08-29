@@ -50,21 +50,21 @@ import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
  */
 public class JMSQueueService implements Service<Queue> {
 
+    static final String JMS_QUEUE_PREFIX = "jms.queue.";
+
     private final InjectedValue<JMSServerManager> jmsServer = new InjectedValue<JMSServerManager>();
     private final InjectedValue<ExecutorService> executorInjector = new InjectedValue<ExecutorService>();
 
     private final String queueName;
     private final String selectorString;
     private final boolean durable;
-    private final String[] jndi;
 
     private Queue queue;
 
-    public JMSQueueService(final String queueName, String selectorString, boolean durable, String[] jndi) {
+    public JMSQueueService(final String queueName, String selectorString, boolean durable) {
         this.queueName = queueName;
         this.selectorString = selectorString;
         this.durable = durable;
-        this.jndi = jndi;
     }
 
     @Override
@@ -74,11 +74,12 @@ public class JMSQueueService implements Service<Queue> {
             @Override
             public void run() {
                 try {
-                    jmsManager.createQueue(false, queueName, selectorString, durable, jndi);
-                    queue = new ActiveMQQueue(queueName);
+                    // add back the jms.queue. prefix to be consistent with ActiveMQ Artemis 1.x addressing scheme
+                    jmsManager.createQueue(false, JMS_QUEUE_PREFIX + queueName, queueName, selectorString, durable);
+                    JMSQueueService.this.queue = new ActiveMQQueue(JMS_QUEUE_PREFIX + queueName, queueName);
                     context.complete();
                 } catch (Throwable e) {
-                    context.failed(MessagingLogger.ROOT_LOGGER.failedToCreate(e, "queue"));
+                    context.failed(MessagingLogger.ROOT_LOGGER.failedToCreate(e, "JMS Queue"));
                 }
             }
         };
@@ -92,28 +93,7 @@ public class JMSQueueService implements Service<Queue> {
     }
 
     @Override
-    public synchronized void stop(final StopContext context) {
-        final JMSServerManager jmsManager = jmsServer.getValue();
-        final Runnable task = new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    jmsManager.removeQueueFromBindingRegistry(queueName);
-                    queue = null;
-                } catch (Throwable e) {
-                    MessagingLogger.ROOT_LOGGER.failedToDestroy(e, "queue", queueName);
-                }
-                context.complete();
-            }
-        };
-        // JMS Server Manager uses locking which waits on service completion, use async to prevent starvation
-        try {
-            executorInjector.getValue().execute(task);
-        } catch (RejectedExecutionException e) {
-            task.run();
-        } finally {
-            context.asynchronous();
-        }
+    public void stop(final StopContext context) {
     }
 
     @Override
@@ -121,8 +101,8 @@ public class JMSQueueService implements Service<Queue> {
         return queue;
     }
 
-    public static Service<Queue> installService(final String name, final ServiceTarget serviceTarget, final ServiceName serverServiceName, final String selector, final boolean durable, final String[] jndiBindings) {
-        final JMSQueueService service = new JMSQueueService(name, selector, durable, jndiBindings);
+    public static Service<Queue> installService(final String name, final ServiceTarget serviceTarget, final ServiceName serverServiceName, final String selector, final boolean durable) {
+        final JMSQueueService service = new JMSQueueService(name, selector, durable);
 
         final ServiceName serviceName = JMSServices.getJmsQueueBaseServiceName(serverServiceName).append(name);
         final ServiceBuilder<Queue> serviceBuilder = serviceTarget.addService(serviceName, service)
