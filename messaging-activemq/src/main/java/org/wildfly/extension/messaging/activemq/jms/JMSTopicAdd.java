@@ -60,7 +60,7 @@ public class JMSTopicAdd extends AbstractAddStepHandler {
 
         // Do not pass the JNDI bindings to ActiveMQ but install them directly instead so that the
         // dependencies from the BinderServices to the JMSQueueService are not broken
-        JMSTopicService jmsTopicService = JMSTopicService.installService(name, serviceName, serviceTarget, new String[0]);
+        JMSTopicService jmsTopicService = JMSTopicService.installService(name, serviceName, serviceTarget);
 
         final ServiceName jmsTopicServiceName = JMSServices.getJmsTopicBaseServiceName(serviceName).append(name);
         for (String entry : CommonAttributes.DESTINATION_ENTRIES.unwrap(context, model)) {

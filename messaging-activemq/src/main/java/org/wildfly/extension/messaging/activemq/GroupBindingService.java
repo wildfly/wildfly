@@ -34,7 +34,7 @@ import org.jboss.msc.value.InjectedValue;
 /**
  * @author Emanuel Muckenhuber
  */
-class GroupBindingService implements Service<SocketBinding> {
+public class GroupBindingService implements Service<SocketBinding> {
 
     private static final String BASE = "bindings";
     private static final String BROADCAST = "broadcast";

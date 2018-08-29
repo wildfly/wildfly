@@ -47,7 +47,7 @@ public class BroadcastGroupControlHandler extends AbstractActiveMQComponentContr
     @Override
     protected BroadcastGroupControl getActiveMQComponentControl(ActiveMQServer activeMQServer, PathAddress address) {
         final String resourceName = address.getLastElement().getValue();
-        return BroadcastGroupControl.class.cast(activeMQServer.getManagementService().getResource(ResourceNames.CORE_BROADCAST_GROUP + resourceName));
+        return BroadcastGroupControl.class.cast(activeMQServer.getManagementService().getResource(ResourceNames.BROADCAST_GROUP + resourceName));
     }
 
     @Override

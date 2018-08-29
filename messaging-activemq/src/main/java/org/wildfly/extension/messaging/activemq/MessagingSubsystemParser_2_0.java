@@ -583,7 +583,7 @@ public class MessagingSubsystemParser_2_0 extends PersistentResourceXMLParser {
                                                         ConnectionFactoryAttributes.Pooled.MAX_POOL_SIZE,
                                                         ConnectionFactoryAttributes.Pooled.MANAGED_CONNECTION_POOL,
                                                         ConnectionFactoryAttributes.Pooled.ENLISTMENT_TRACE,
-                                                        ConnectionFactoryAttributes.Pooled.INITIAL_MESSAGE_PACKET_SIZE,
+                                                        ConnectionFactoryAttributes.Common.INITIAL_MESSAGE_PACKET_SIZE,
                                                         ConnectionFactoryAttributes.Pooled.INITIAL_CONNECT_ATTEMPTS,
                                                         ConnectionFactoryAttributes.Pooled.STATISTICS_ENABLED)))
                 .addChild(

@@ -64,6 +64,7 @@ public interface CommonAttributes {
             .setMeasurementUnit(MILLISECONDS)
             .setRequired(false)
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition CALL_FAILOVER_TIMEOUT = create("call-failover-timeout", LONG)
@@ -73,6 +74,7 @@ public interface CommonAttributes {
             .setRequired(false)
             .setAllowExpression(true)
             .setMeasurementUnit(MILLISECONDS)
+            .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition CHECK_PERIOD = create("check-period", LONG)
@@ -87,6 +89,7 @@ public interface CommonAttributes {
     SimpleAttributeDefinition CLIENT_ID = create("client-id", ModelType.STRING)
             .setRequired(false)
             .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     AttributeDefinition CONSUMER_COUNT = create("consumer-count", INT)
@@ -318,6 +321,8 @@ public interface CommonAttributes {
     String BROADCAST_GROUPS = "broadcast-groups";
     String CHECK_FOR_LIVE_SERVER2 = "check-for-live-server";
     String CLASS_NAME = "class-name";
+    String EXTERNAL_JMS_QUEUE = "external-jms-queue";
+    String EXTERNAL_JMS_TOPIC = "external-jms-topic";
     String CLUSTER_CONNECTION = "cluster-connection";
     String CLUSTER_CONNECTIONS = "cluster-connections";
     String CLUSTER_NAME = "cluster-name";

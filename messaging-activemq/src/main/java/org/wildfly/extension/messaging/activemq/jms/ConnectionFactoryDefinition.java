@@ -30,7 +30,6 @@ import java.util.Collection;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.wildfly.extension.messaging.activemq.CommonAttributes;
 import org.wildfly.extension.messaging.activemq.MessagingExtension;
@@ -54,8 +53,6 @@ public class ConnectionFactoryDefinition extends PersistentResourceDefinition {
 
     public static final AttributeDefinition[] ATTRIBUTES = concat(Regular.ATTRIBUTES, getDefinitions(Common.ATTRIBUTES));
 
-    static final AttributeDefinition[] READONLY_ATTRIBUTES = { Regular.INITIAL_MESSAGE_PACKET_SIZE };
-
     private final boolean registerRuntimeOnly;
 
     public ConnectionFactoryDefinition(final boolean registerRuntimeOnly) {
@@ -69,21 +66,6 @@ public class ConnectionFactoryDefinition extends PersistentResourceDefinition {
     @Override
     public Collection<AttributeDefinition> getAttributes() {
         return Arrays.asList(ATTRIBUTES);
-    }
-
-    @Override
-    public void registerAttributes(ManagementResourceRegistration registry) {
-        for (AttributeDefinition attr : ATTRIBUTES) {
-            if (registerRuntimeOnly || !attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
-                registry.registerReadWriteAttribute(attr, null, ConnectionFactoryWriteAttributeHandler.INSTANCE);
-            }
-        }
-
-        if (registerRuntimeOnly) {
-            for (AttributeDefinition attr : READONLY_ATTRIBUTES) {
-                registry.registerReadOnlyAttribute(attr, ConnectionFactoryReadAttributeHandler.INSTANCE);
-            }
-        }
     }
 
     @Override
