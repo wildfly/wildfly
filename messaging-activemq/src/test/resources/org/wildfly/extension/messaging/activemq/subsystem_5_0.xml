@@ -27,6 +27,7 @@
 
     <discovery-group name="client-discovery-group-1"
                      socket-binding="group-t-binding"/>
+
     <discovery-group name="client-discovery-group-2"
                      jgroups-channel="ee"
                      jgroups-cluster="activemq-cluster"
@@ -321,10 +322,12 @@
                          broadcast-period="${broadcast.group.period:1234}"
                          connectors="http netty"/>
         <broadcast-group name="groupS"
-                         socket-binding="group-s-binding"/>
+                         socket-binding="group-s-binding"
+                         connectors="http netty"/>
 
         <discovery-group name="groupT"
                          socket-binding="group-t-binding"/>
+
         <discovery-group name="groupU"
                          jgroups-channel="ee"
                          jgroups-cluster="activemq-cluster"

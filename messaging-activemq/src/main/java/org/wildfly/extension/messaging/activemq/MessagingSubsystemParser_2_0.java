@@ -31,8 +31,13 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.IN_VM_CO
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.REMOTE_ACCEPTOR;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.REMOTE_CONNECTOR;
 
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.AttributeParser;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentResourceXMLParser;
+import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.messaging.activemq.ha.HAAttributes;
 import org.wildfly.extension.messaging.activemq.ha.LiveOnlyDefinition;
 import org.wildfly.extension.messaging.activemq.ha.ReplicationColocatedDefinition;
@@ -344,17 +349,31 @@ public class MessagingSubsystemParser_2_0 extends PersistentResourceXMLParser {
                                                 .addAttributes(
                                                         CommonAttributes.SOCKET_BINDING,
                                                         BroadcastGroupDefinition.JGROUPS_CHANNEL_FACTORY,
-                                                        CommonAttributes.JGROUPS_CHANNEL,
                                                         BroadcastGroupDefinition.BROADCAST_PERIOD,
-                                                        BroadcastGroupDefinition.CONNECTOR_REFS))
+                                                        BroadcastGroupDefinition.CONNECTOR_REFS)
+                                                .addAttribute(DiscoveryGroupDefinition.JGROUPS_CHANNEL, new AttributeParser() {
+                                                    @Override
+                                                    public void parseAndSetParameter(AttributeDefinition attribute, String value, ModelNode operation, XMLStreamReader reader) throws XMLStreamException {
+                                                        ModelNode paramVal = parse(attribute, value, reader);
+                                                        operation.get(attribute.getName()).set(paramVal);
+                                                        operation.get(DiscoveryGroupDefinition.JGROUPS_CLUSTER.getName()).set(paramVal);
+                                                    }
+                                                }))
                                 .addChild(
                                         builder(DiscoveryGroupDefinition.PATH)
                                                 .addAttributes(
                                                         CommonAttributes.SOCKET_BINDING,
                                                         DiscoveryGroupDefinition.JGROUPS_CHANNEL_FACTORY,
-                                                        CommonAttributes.JGROUPS_CHANNEL,
                                                         DiscoveryGroupDefinition.REFRESH_TIMEOUT,
-                                                        DiscoveryGroupDefinition.INITIAL_WAIT_TIMEOUT))
+                                                        DiscoveryGroupDefinition.INITIAL_WAIT_TIMEOUT)
+                                                .addAttribute(DiscoveryGroupDefinition.JGROUPS_CHANNEL, new AttributeParser() {
+                                                    @Override
+                                                    public void parseAndSetParameter(AttributeDefinition attribute, String value, ModelNode operation, XMLStreamReader reader) throws XMLStreamException {
+                                                        ModelNode paramVal = parse(attribute, value, reader);
+                                                        operation.get(attribute.getName()).set(paramVal);
+                                                        operation.get(DiscoveryGroupDefinition.JGROUPS_CLUSTER.getName()).set(paramVal);
+                                                    }
+                                                }))
                                 .addChild(
                                         builder(MessagingExtension.CLUSTER_CONNECTION_PATH)
                                                 .addAttributes(

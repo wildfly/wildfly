@@ -28,8 +28,6 @@ import static org.jboss.as.controller.registry.AttributeAccess.Flag.STORAGE_RUNT
 import static org.jboss.dmr.ModelType.LONG;
 import static org.jboss.dmr.ModelType.STRING;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.CONNECTORS;
-import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_CLUSTER;
-import static org.wildfly.extension.messaging.activemq.CommonAttributes.SOCKET_BINDING;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -71,7 +69,7 @@ public class BroadcastGroupDefinition extends PersistentResourceDefinition {
             .build();
 
     public static final PrimitiveListAttributeDefinition CONNECTOR_REFS = new StringListAttributeDefinition.Builder(CONNECTORS)
-            .setRequired(false)
+            .setRequired(true)
             .setElementValidator(new StringLengthValidator(1))
             .setAttributeParser(AttributeParser.STRING_LIST)
             .setAttributeMarshaller(AttributeMarshaller.STRING_LIST)
@@ -92,6 +90,14 @@ public class BroadcastGroupDefinition extends PersistentResourceDefinition {
 
     @Deprecated public static final SimpleAttributeDefinition JGROUPS_CHANNEL_FACTORY = create(CommonAttributes.JGROUPS_CHANNEL_FACTORY)
             .setCapabilityReference("org.wildfly.clustering.jgroups.channel-factory")
+            .build();
+
+    public static final SimpleAttributeDefinition JGROUPS_CLUSTER = create(CommonAttributes.JGROUPS_CLUSTER)
+            .setRequired(true)
+            .build();
+
+    public static final SimpleAttributeDefinition SOCKET_BINDING = create(CommonAttributes.SOCKET_BINDING)
+            .setRequired(true)
             .build();
 
     public static final SimpleAttributeDefinition JGROUPS_CHANNEL = create(CommonAttributes.JGROUPS_CHANNEL)
@@ -149,12 +155,10 @@ public class BroadcastGroupDefinition extends PersistentResourceDefinition {
         final Set<String> availableConnectors =  getAvailableConnectors(context,operation);
         final List<ModelNode> operationAddress = operation.get(ModelDescriptionConstants.ADDRESS).asList();
         final String broadCastGroup = operationAddress.get(operationAddress.size()-1).get(CommonAttributes.BROADCAST_GROUP).asString();
-        if(connectorRefs.isDefined()) {
-            for(ModelNode connectorRef:connectorRefs.asList()){
-                final String connectorName = connectorRef.asString();
-                if(!availableConnectors.contains(connectorName)){
-                    throw MessagingLogger.ROOT_LOGGER.wrongConnectorRefInBroadCastGroup(broadCastGroup, connectorName, availableConnectors);
-                }
+        for (ModelNode connectorRef : connectorRefs.asList()) {
+            final String connectorName = connectorRef.asString();
+            if (!availableConnectors.contains(connectorName)) {
+                throw MessagingLogger.ROOT_LOGGER.wrongConnectorRefInBroadCastGroup(broadCastGroup, connectorName, availableConnectors);
             }
         }
     }

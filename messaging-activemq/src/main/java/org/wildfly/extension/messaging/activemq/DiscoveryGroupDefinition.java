@@ -89,6 +89,14 @@ public class DiscoveryGroupDefinition extends PersistentResourceDefinition {
             .setCapabilityReference(ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getName())
             .build();
 
+    public static final SimpleAttributeDefinition JGROUPS_CLUSTER = create(CommonAttributes.JGROUPS_CLUSTER)
+            .setRequired(true)
+            .build();
+
+    public static final SimpleAttributeDefinition SOCKET_BINDING = create(CommonAttributes.SOCKET_BINDING)
+            .setRequired(true)
+            .build();
+
     public static final AttributeDefinition[] ATTRIBUTES = { JGROUPS_CHANNEL_FACTORY, JGROUPS_CHANNEL, JGROUPS_CLUSTER, SOCKET_BINDING,
             REFRESH_TIMEOUT, INITIAL_WAIT_TIMEOUT
     };

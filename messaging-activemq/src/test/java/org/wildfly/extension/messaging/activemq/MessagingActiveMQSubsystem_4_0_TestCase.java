@@ -107,6 +107,7 @@ public class MessagingActiveMQSubsystem_4_0_TestCase extends AbstractSubsystemBa
         return super.standardSubsystemTest(configId, false);
     }
 
+
     /////////////////////////////////////////
     //  Tests for HA Policy Configuration  //
     /////////////////////////////////////////
