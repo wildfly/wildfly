@@ -45,8 +45,8 @@
                 <param name="buffer-pooling" value="false" />
             </in-vm-acceptor>
 
-            <?DISCOVERY-GROUPS?>
             <?BROADCAST-GROUPS?>
+            <?DISCOVERY-GROUPS?>
             <?CLUSTER-CONNECTIONS?>
 
             <jms-queue name="ExpiryQueue"
