@@ -30,6 +30,8 @@ import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
 import java.net.URL;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -48,7 +50,12 @@ import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jgroups.util.StackType;
+import org.jgroups.util.Util;
+import org.junit.Assume;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -64,6 +71,9 @@ import org.junit.runner.RunWith;
 @ServerSetup(DiscoveryGroupExternalMessagingDeploymentTestCase.SetupTask.class)
 public class DiscoveryGroupExternalMessagingDeploymentTestCase {
 
+    public static final boolean SKIP = AccessController.doPrivileged((PrivilegedAction<Boolean>) () -> {
+                return Util.checkForWindows() && (Util.getIpStackType() == StackType.IPv6);
+            });
     public static final String QUEUE_LOOKUP = "java:/jms/DependentMessagingDeploymentTestCase/myQueue";
     public static final String TOPIC_LOOKUP = "java:/jms/DependentMessagingDeploymentTestCase/myTopic";
     public static final String REMOTE_PCF = "remote-artemis";
@@ -83,6 +93,11 @@ public class DiscoveryGroupExternalMessagingDeploymentTestCase {
 
         @Override
         public void doSetup(org.jboss.as.arquillian.container.ManagementClient managementClient, String s) throws Exception {
+            if(SKIP) {
+                logger.info("We are running on Windows with IPV6 stack");
+                logger.info("[WFCI-32] Disable on Windows+IPv6 until CI environment is fixed");
+                return;
+            }
             JMSOperations ops = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
             ops.createJmsQueue(QUEUE_NAME, "/queue/" + QUEUE_NAME);
             ops.createJmsTopic(TOPIC_NAME, "/topic/" + TOPIC_NAME);
@@ -206,10 +221,19 @@ public class DiscoveryGroupExternalMessagingDeploymentTestCase {
 
     @Deployment
     public static WebArchive createArchive() {
+        if(SKIP) {
+            return create(WebArchive.class, "ClientMessagingDeploymentTestCase.war")
+                    .addAsWebResource(new StringAsset("Root file"), "root-file.txt");
+        }
         return create(WebArchive.class, "ClientMessagingDeploymentTestCase.war")
                 .addClass(MessagingServlet.class)
                 .addClasses(QueueMDB.class, TopicMDB.class)
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+    }
+
+    @Before
+    public void before() {
+        Assume.assumeFalse("[WFCI-32] Disable on Windows+IPv6 until CI environment is fixed", SKIP);
     }
 
     @Test
