@@ -46,6 +46,7 @@ import org.jboss.as.weld.deployment.processors.WeldBeanManagerServiceProcessor;
 import org.jboss.as.weld.deployment.processors.WeldComponentIntegrationProcessor;
 import org.jboss.as.weld.deployment.processors.WeldConfigurationProcessor;
 import org.jboss.as.weld.deployment.processors.WeldDependencyProcessor;
+import org.jboss.as.weld.deployment.processors.WeldDeploymentCleanupProcessor;
 import org.jboss.as.weld.deployment.processors.WeldDeploymentProcessor;
 import org.jboss.as.weld.deployment.processors.WeldImplicitDeploymentProcessor;
 import org.jboss.as.weld.deployment.processors.WeldPortableExtensionProcessor;
@@ -107,6 +108,8 @@ class WeldSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(WeldExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_WELD_COMPONENT_INTEGRATION, new WeldComponentIntegrationProcessor());
                 processorTarget.addDeploymentProcessor(WeldExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_WELD_DEPLOYMENT, new WeldDeploymentProcessor(checkJtsEnabled(context)));
                 processorTarget.addDeploymentProcessor(WeldExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_WELD_BEAN_MANAGER, new WeldBeanManagerServiceProcessor());
+                // note that we want to go one step before Phase.CLEANUP_EE because we use metadata that it then cleans up
+                processorTarget.addDeploymentProcessor(WeldExtension.SUBSYSTEM_NAME, Phase.CLEANUP, Phase.CLEANUP_EE - 1, new WeldDeploymentCleanupProcessor());
 
                 // Add additional deployment processors
                 ServiceLoader<DeploymentUnitProcessorProvider> processorProviders = ServiceLoader.load(DeploymentUnitProcessorProvider.class,

@@ -71,7 +71,7 @@ public class WeldStartService implements Service<WeldStartService> {
          * Weld service restarts are not supported. Therefore, if we detect that Weld is being restarted we
          * trigger restart of the entire deployment.
          */
-        if (runOnce.get()) {
+        if (!runOnce.compareAndSet(false,true)) {
             ServiceController<?> controller = context.getController().getServiceContainer().getService(deploymentServiceName);
             controller.addListener(new LifecycleListener() {
                 @Override
@@ -85,7 +85,6 @@ public class WeldStartService implements Service<WeldStartService> {
             controller.setMode(Mode.NEVER);
             return;
         }
-        runOnce.set(true);
 
         ClassLoader oldTccl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         try {
