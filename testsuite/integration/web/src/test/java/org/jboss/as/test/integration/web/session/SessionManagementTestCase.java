@@ -228,6 +228,6 @@ public class SessionManagementTestCase {
         ModelNode opRes = managementClient.getControllerClient().execute(operation);
         Assert.assertEquals(opRes.toString(), "failed", opRes.get(ModelDescriptionConstants.OUTCOME).asString());
         String failDesc = opRes.get(ModelDescriptionConstants.FAILURE_DESCRIPTION).asString();
-        Assert.assertEquals("WFLYUT0100: Session non-existing-id not found", failDesc);
+        Assert.assertTrue(failDesc.contains("WFLYUT0100"));
     }
 }
