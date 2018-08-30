@@ -322,6 +322,36 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
         }
     }
 
+    @Test
+    public void testReadJdbcDriver() throws Exception {
+        String h2DriverName = "h2backup";
+        final ModelNode addrAddH2DriverAddr = new ModelNode();
+        addrAddH2DriverAddr.add("subsystem", "datasources").add("jdbc-driver", h2DriverName);
+        final ModelNode addH2DriverOp = new ModelNode();
+        addH2DriverOp.get(OP).set("add");
+        addH2DriverOp.get(OP_ADDR).set(addrAddH2DriverAddr);
+        addH2DriverOp.get("driver-name").set(h2DriverName);
+        addH2DriverOp.get("driver-module-name").set("com.h2database.h2");
+        executeOperation(addH2DriverOp);
+        try {
+            final ModelNode address = new ModelNode();
+            address.add("subsystem", "datasources");
+            address.protect();
+
+            final ModelNode operation = new ModelNode();
+            operation.get(OP).set("get-installed-driver");
+            operation.get(OP_ADDR).set(address);
+            operation.get("driver-name").set(h2DriverName);
+
+            final ModelNode result = executeOperation(operation).get(0);
+            Assert.assertEquals(h2DriverName, result.get("driver-name").asString());
+            Assert.assertEquals("com.h2database.h2", result.get("driver-module-name").asString());
+            Assert.assertEquals("", result.get("driver-xa-datasource-class-name").asString());
+        } finally {
+            remove(addrAddH2DriverAddr);
+        }
+    }
+
     /**
      * AS7-1203 test for missing xa-datasource properties
      *
