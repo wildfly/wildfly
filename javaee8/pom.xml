@@ -56,10 +56,10 @@
         <version.org.wildfly.security.elytron>1.5.4.Final</version.org.wildfly.security.elytron>
 
         <!-- Versions on server -->
-        <version.org.hibernate>5.3.5.Final</version.org.hibernate>
+        <version.org.hibernate>5.3.6.Final</version.org.hibernate>
         <version.org.hibernate.commons.annotations>5.0.4.Final</version.org.hibernate.commons.annotations>
         <version.org.hibernate.search>5.10.3.Final</version.org.hibernate.search>
-        <version.org.hibernate.validator>6.0.12.Final</version.org.hibernate.validator>
+        <version.org.hibernate.validator>6.0.13.Final</version.org.hibernate.validator>
         <version.org.infinispan>9.3.1.Final</version.org.infinispan>
         <version.org.jboss.arquillian.core>1.1.13.Final</version.org.jboss.arquillian.core>
         <version.org.jboss.ejb3.ext-api>2.2.0.Final</version.org.jboss.ejb3.ext-api>
