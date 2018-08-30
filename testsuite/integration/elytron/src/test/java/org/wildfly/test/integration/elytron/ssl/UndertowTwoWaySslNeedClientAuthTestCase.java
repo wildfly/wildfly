@@ -32,7 +32,10 @@ import java.net.MalformedURLException;
 import java.net.SocketException;
 import java.net.URISyntaxException;
 import java.net.URL;
+
+import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLHandshakeException;
+
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.codehaus.plexus.util.FileUtils;
@@ -140,6 +143,9 @@ public class UndertowTwoWaySslNeedClientAuthTestCase {
         } catch (SSLHandshakeException | SocketException e) {
             // expected
             return;
+        } catch (SSLException e) {
+            if (e.getCause() instanceof SocketException) return; // expected
+            throw new IllegalStateException("Unexpected SSLException", e);
         } catch (IOException | URISyntaxException ex) {
             throw new IllegalStateException("Unable to request server root over HTTPS", ex);
         }
