@@ -19,12 +19,16 @@ package org.jboss.as.test.integration.security.loginmodules;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.net.InetAddress;
 import java.security.KeyStore;
 import java.security.cert.X509Certificate;
+import java.util.Collections;
 
 import javax.security.auth.x500.X500Principal;
 
+import org.wildfly.security.x500.GeneralName;
 import org.wildfly.security.x500.cert.SelfSignedX509CertificateAndSigningKey;
+import org.wildfly.security.x500.cert.SubjectAlternativeNamesExtension;
 
 /**
  * Generates the ldaps.jks keystore needed for some of the LDAP tests
@@ -52,6 +56,8 @@ public class GenerateLDAPSJKSStore {
                 .setDn(new X500Principal(DN))
                 .setKeyAlgorithmName("RSA")
                 .setSignatureAlgorithmName(SHA_1_RSA)
+                .addExtension(new SubjectAlternativeNamesExtension(false, Collections.singletonList(
+                        new GeneralName.IPAddress(InetAddress.getLoopbackAddress().getHostAddress()))))
                 .setKeySize(1024)
                 .build();
     }
