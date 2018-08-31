@@ -37,6 +37,8 @@ public class Student {
     // address of the student
     private String address;
 
+    private Integer version;
+
     /**
      * Default constructor
      */
@@ -126,6 +128,14 @@ public class Student {
      */
     public void setAddress(String address) {
         this.address = address;
+    }
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(Integer version) {
+        this.version = version;
     }
 
     /**
