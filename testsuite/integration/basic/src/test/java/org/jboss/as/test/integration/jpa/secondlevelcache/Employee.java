@@ -23,8 +23,10 @@
 package org.jboss.as.test.integration.jpa.secondlevelcache;
 
 import javax.persistence.Cacheable;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 
 /**
  * Cachable Employee entity class
@@ -37,6 +39,9 @@ public class Employee {
 
     @Id
     private int id;
+
+    @ManyToOne(cascade={CascadeType.MERGE, CascadeType.PERSIST})
+    private Company company;
 
     private String name;
 
@@ -56,6 +61,14 @@ public class Employee {
 
     public void setAddress(String address) {
         this.address = address;
+    }
+
+    public Company getCompany() {
+        return company;
+    }
+
+    public void setCompany(Company company) {
+        this.company = company;
     }
 
     public int getId() {

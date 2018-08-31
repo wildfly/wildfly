@@ -61,6 +61,7 @@ public class JPA2LCTestCase {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
         jar.addClasses(JPA2LCTestCase.class,
                 Employee.class,
+                Company.class,
                 SFSB1.class,
                 SFSB2LC.class
         );
