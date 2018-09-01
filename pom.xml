@@ -4575,6 +4575,10 @@
                         <artifactId>jboss-transaction-spi</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>org.jboss.ironjacamar</groupId>
+                        <artifactId>ironjacamar-spec-api</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.jboss.javaee</groupId>
                         <artifactId>jboss-transaction-api</artifactId>
                     </exclusion>
