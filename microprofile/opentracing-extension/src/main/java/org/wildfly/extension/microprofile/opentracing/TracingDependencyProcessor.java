@@ -35,8 +35,7 @@ import org.jboss.modules.ModuleLoader;
 
 public class TracingDependencyProcessor implements DeploymentUnitProcessor {
     private static final String[] MODULES = {
-            "io.jaegertracing.jaeger-core",
-            "io.jaegertracing.jaeger-thrift",
+            "io.jaegertracing.jaeger",
             "io.opentracing.contrib.opentracing-tracerresolver",
             "io.opentracing.opentracing-api",
             "io.opentracing.opentracing-util",
