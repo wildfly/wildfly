@@ -5,7 +5,7 @@
     <container qualifier="jboss-domain" mode="manual" default="true" >
         <configuration>
             <property name="jbossHome">${jboss.home}</property>
-            <property name="javaVmArguments">-server -Xms64m -Xmx512m ${modular.jdk.args}</property>
+            <property name="javaVmArguments">-server -Xms64m -Xmx512m ${jbossas.server.locale} ${modular.jdk.args}</property>
             <property name="containerNameMap">
                 main-server-group=main-server-group,
                 master:server-one=jboss-domain,

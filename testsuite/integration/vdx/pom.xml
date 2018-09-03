@@ -39,6 +39,7 @@
         <jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
+        <jbossas.server.locale>-Duser.language=en -Duser.country=US</jbossas.server.locale>
         <wildfly.build.output.dir>dist/target/${server.output.dir.prefix}-${server.output.dir.version}</wildfly.build.output.dir>
     </properties>
 
@@ -122,6 +123,7 @@
                             </classpathDependencyExcludes>
                             <systemPropertyVariables>
                                 <jboss.home>${basedir}/target/wildfly</jboss.home>
+                                <jbossas.server.locale>${jbossas.server.locale}</jbossas.server.locale>
                                 <modular.jdk.args>${modular.jdk.args}</modular.jdk.args>
                             </systemPropertyVariables>
                         </configuration>
@@ -141,6 +143,7 @@
                             <systemPropertyVariables>
                                 <domain>true</domain>
                                 <jboss.home>${basedir}/target/wildfly</jboss.home>
+                                <jbossas.server.locale>${jbossas.server.locale}</jbossas.server.locale>
                                 <arquillian.xml>arquillian-domain.xml</arquillian.xml>
                                 <modular.jdk.args>${modular.jdk.args}</modular.jdk.args>
                             </systemPropertyVariables>
