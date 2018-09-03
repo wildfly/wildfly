@@ -437,22 +437,6 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.jboss.spec.javax.security.auth.message</groupId>
-      <artifactId>jboss-jaspi-api_1.1_spec</artifactId>
-      <licenses>
-        <license>
-          <name>Common Development and Distribution License 1.1</name>
-          <url>https://javaee.github.io/glassfish/LICENSE</url>
-          <distribution>repo</distribution>
-        </license>
-        <license>
-          <name>GNU General Public License v2.0 only, with Classpath exception</name>
-          <url>http://openjdk.java.net/legal/gplv2+ce.html</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
       <groupId>org.jboss.spec.javax.servlet</groupId>
       <artifactId>jboss-servlet-api_3.1_spec</artifactId>
       <licenses>
