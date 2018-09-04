@@ -1787,7 +1787,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.eclipse.microprofile.opentracing</groupId>
+      <groupId>org.eclipse.microprofile.health</groupId>
       <artifactId>microprofile-health-api</artifactId>
       <licenses>
         <license>
