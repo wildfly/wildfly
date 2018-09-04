@@ -53,5 +53,6 @@
         <module name="javax.xml.stream.api"/>
        <!--jgroups -->
         <module name="org.jgroups"/>
+        <module name="org.wildfly.transaction.client"/>
     </dependencies>
 </module>
