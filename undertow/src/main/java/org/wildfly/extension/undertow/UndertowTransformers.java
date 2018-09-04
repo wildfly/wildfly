@@ -23,6 +23,8 @@
 package org.wildfly.extension.undertow;
 
 import static org.wildfly.extension.undertow.ApplicationSecurityDomainDefinition.SECURITY_DOMAIN;
+import static org.wildfly.extension.undertow.ApplicationSecurityDomainDefinition.ENABLE_JASPI;
+import static org.wildfly.extension.undertow.ApplicationSecurityDomainDefinition.INTEGRATED_JASPI;
 import static org.wildfly.extension.undertow.Constants.ENABLE_HTTP2;
 import static org.wildfly.extension.undertow.HostDefinition.QUEUE_REQUESTS_ON_START;
 import static org.wildfly.extension.undertow.HttpListenerResourceDefinition.CERTIFICATE_FORWARDING;
@@ -105,6 +107,7 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
                 .addChildResource(UndertowExtension.PATH_APPLICATION_SECURITY_DOMAIN)
                 .getAttributeBuilder()
                     .addRejectCheck(RejectAttributeChecker.DEFINED, SECURITY_DOMAIN)
+                    .setDiscard(DiscardAttributeChecker.ALWAYS, ENABLE_JASPI, INTEGRATED_JASPI) // These are completely meaningless on the older host with no alternative required.
                 .end();
 
         subsystemBuilder

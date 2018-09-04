@@ -238,6 +238,8 @@ public interface Constants {
     String REFERENCING_DEPLOYMENTS = "referencing-deployments";
     String SECURITY_DOMAIN = "security-domain";
     String ENABLE_JACC = "enable-jacc";
+    String ENABLE_JASPI = "enable-jaspi";
+    String INTEGRATED_JASPI = "integrated-jaspi";
 
     String FILE_CACHE_MAX_FILE_SIZE = "file-cache-max-file-size";
     String FILE_CACHE_METADATA_SIZE = "file-cache-metadata-size";

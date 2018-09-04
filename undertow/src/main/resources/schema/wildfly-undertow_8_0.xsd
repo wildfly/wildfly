@@ -730,6 +730,23 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="enable-jaspi" type="xs:boolean" default="true">
+            <xs:annotation>
+                <xs:documentation>
+                    Should deployments matching against this 'application-security-domain' have
+                    JASPI enabled, by setting to false JASPI will be completely disabled for the deployment.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="integrated-jaspi" type="xs:boolean" default="true">
+            <xs:annotation>
+                <xs:documentation>
+                    When integrated-jaspi is enabled during JASPI authentication the resulting
+                    identity will be loaded from the SecurityDomain referenced by the deployment, if 
+                    this is switched off AdHoc identities will be created instead. 
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="applicationSecurityDomainSingleSignOnType">

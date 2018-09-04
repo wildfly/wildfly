@@ -1,0 +1,197 @@
+[[Elytron_and_Java_Authentication_SPI_for_Containers-JASPI]]
+= Elytron and Java Authentication SPI for Containers (JASPI)
+
+[abstract]
+== Introduction
+
+Starting from WildFly 14 an implementation of the Servlet profile from the Java Authentication SPI for Containers (JSR-196 / JASPI) is also provided by the WildFly Elytron subsystem allowing tighter integration with the security features provided by WildFly Elytron.  This JASPI implementation is available out of the box with minimal steps required to use it for deployments, this section of the documentation describes how to make use of it and the features it provides.
+
+== Activation
+
+Presently it is the SOAP profile from the JASPI specification which is supported by this integration, the following information applies to web applications deployed to WildFly.
+
+For the JASPI integration to be enabled for a web application that web application needs to be associated with either an Elytron `http-authentication-factory` or a `security-domain` - by doing this the WildFly Elytron security handlers will be installed for the deployment and the WildFly Elytron security framework activated for the deployment.  This is all that is required for a deployment to be 'securable' using a JASPI configuration.
+
+Once the WildFly Elytron security framework is activate for a deployment at the time requests are being handled the globally registered `AuthConfigFactory` will be queried to identify if an `AuthConfigProvider` has been registered which should be used for that deployment - if an `AuthConfigProvider` is found then JASPI authentication will be used instead of the deployments authentication configuration.  If no `AuthConfigProvider` is found then the authentication configuration for the deployment will be used instead, this could mean authentication mechanisms from a `http-authentication-factory` are used or mechanisms specified in the `web.xml` are used or it could even mean no authentication is performed if the application does not have any mechanisms defined. 
+
+Any updates made to the `AuthConfigFactory` are immediately available, this means that if an `AuthConfigProvider` is registered which is a match for an existing application it will start to be used immediately without requiring redeployment of the application.
+
+All web applications deployed to WildFly have a security domain which will be resolved in the following order: -
+ . From the deployment descriptors / annotations of the deployment being deployed.
+ . The value defined on the `default-security-domain` attribute on the Undertow subsystem.
+ . Default to 'other'.
+
+We assume that this security domain is a reference to a PicketBox security domain so the final step in activation is ensuring this is mapped to WildFly Elytron using an `application-security-domain` resource in the Undertow subsystem.  This mapping can either reference a WildFly Elytron security domain directly or it can reference a `http-authentication-factory` resource to obtain instances of authentication mechanisms.
+
+e.g.
+
+[source, ruby]
+----
+/subsystem=undertow/application-security-domain=MyAppSecurity:add(security-domain=ApplicationDomain)
+----
+
+or
+
+[source, ruby]
+----
+/subsystem=undertow/application-security-domain=MyAppSecurity:add(http-authentication-factory=application-http-authentication)
+----
+
+Although this latter form references a `http-authentication-factory` that in turn will reference a security domain - for both examples the referenced security domain is associated with the deployment.
+
+The minimal steps to enable the JASPI integration are: -
+ . Leave the `default-security-domain` attribute on the Undertow subsystem undefined so it defaults to 'other'.
+ . Add an `application-security-domain` mapping from 'other' to a WildFly Elytron security domain.
+
+All deployments that do not specify their own security domain will be assigned this default mapping automatically which will activate the WildFly Elytron handlers and subsequently make JASPI available for that deployment.
+
+The security domain associated with a deployment in these steps is the security domain that will be wrapped in a CallbackHandler to be passed into the `ServerAuthModule` instances used for authentication.
+
+=== Additional Options
+
+On the `application-security-domain` resource two additional attributes have been added to allow some further control of the JASPI behaviour.
+
+ * *enable-jaspi* - Can be set to `false` to disable JASPI support for all deployments using this mapping.
+ * *integrated-jaspi* - By default all identities are loaded from the security domain, if set to `false` ad-hoc identities will be created instead.
+
+== Subsystem Configuration
+
+One way to register a configuration which will result in an `AuthConfigProvider` being returned for a deployment is to register a `jaspi-configuration` in the Elytron subsystem.
+
+The following command demonstrates how to add a configuration containing two `ServerAuthModule` definitions: -
+
+[source, ruby]
+----
+./subsystem=elytron/jaspi-configuration=simple-configuration:add(layer=HttpServlet, application-context="default-host /webctx", \
+        description="Elytron Test Configuration", \
+        server-auth-modules=[{class-name=org.wildfly.security.examples.jaspi.SimpleServerAuthModule, module=org.wildfly.security.examples.jaspi, flag=OPTIONAL, options={a=b, c=d}}, \
+            {class-name=org.wildfly.security.examples.jaspi.SecondServerAuthModule, module=org.wildfly.security.examples.jaspi}])
+----
+
+This results in the following configuration being persisted: -
+
+[source, xml]
+----
+<jaspi>
+    <jaspi-configuration name="simple-configuration" layer="HttpServlet" application-context="default-host /webctx" description="Elytron Test Configuration">
+        <server-auth-modules>
+            <server-auth-module class-name="org.wildfly.security.examples.jaspi.SimpleServerAuthModule" module="org.wildfly.security.examples.jaspi" flag="OPTIONAL">
+                <options>
+                    <property name="a" value="b"/>
+                    <property name="c" value="d"/>
+                </options>
+            </server-auth-module>
+            <server-auth-module class-name="org.wildfly.security.examples.jaspi.SecondServerAuthModule" module="org.wildfly.security.examples.jaspi"/>
+        </server-auth-modules>
+    </jaspi-configuration>
+</jaspi>
+----
+
+The `name` attribute is just a name that allows the resource to be referenced in the management model.
+
+The `layer` and `application-context` attributes are used when registering this configuration with the `AuthConfigFactory` - both of these attributes can be omitted allowing wildcard matching.  The `description` attribute is also optional and is used to provide a description to the `AuthConfigFactory`. 
+
+Within the configuration one or more `server-auth-module` instances can be defined with the following attributes.
+ * *class-name* - The fully qualified class name of the `ServerAuthModule`.
+ * *module* - The module to load the `ServerAuthModule` from.
+ * *flag* - The control flag to indicate how this module operates in relation to the other modules.
+ * *options* - Configuration options to be passed into the `ServerAuthModule` on initialisation.
+
+Configuration defined in this way is immediately registered with the `AuthConfigFactory` so any existing deployments using the WildFly Elytron security framework that match against the `layer` and `application-context` will immediately start to make use of the configuration.
+
+== Programatic Configuration
+
+The APIs defined within the JASPI specification allow for applications to dynamically register custom `AuthConfigProvider` instances, however the specification does not provide the actual implementations to use or a standard way to create instances of the implementations, the WildFly Elytron project contains a simple utility that can be used by deployments to help with this: -
+
+`org.wildfly.security.auth.jaspi.JaspiConfigurationBuilder`
+
+The following piece of code illustrates how this API can be used to register a similar configuration to the one illustrated in the subsystem.
+
+[source, java]
+----
+String registraionId = JaspiConfigurationBuilder.builder("HttpServlet", servletContext.getVirtualServerName() + " " + servletContext.getContextPath())
+    .addAuthModuleFactory(SimpleServerAuthModule::new, Flag.OPTIONAL, Collections.singletonMap("a", "b"))
+    .addAuthModuleFactory(SecondServerAuthModule::new)
+.register();
+----
+
+As an example this code could be executed within the init() method of a Servlet to register the `AuthConfigProvider` specific for that deployment, in this code example the application context has also been assembled by consulting the `ServletContext`.
+
+The register method returns the resulting registration ID that can also be used to subsequently remove this registration directly from the `AuthConfigFactory`.
+
+As with the subsystem configuration this call has an immediate effect and will be live for all web applications using the WildFly Elytron security framework immediately.
+
+== Authentication Process
+
+=== CallbackHandler
+
+Based on the configuration on the `application-security-domain` resource in the Undertow subsystem the CallbackHandler passed to the ServerAuthModule in an integrated or non-integrated mode.
+
+=== Integrated
+
+When operating in integrated mode although the ServerAuthModule instances will be handling the actual authentication the resulting identity will be loaded from the referenced SecurityDomain using the SecurityRealms referenced by that SecurityDomain, it is still possible in this mode to override the roles that will be assigned within the Servlet container.
+
+The advantage of this mode is that ServerAuthModules are able to take advantage of the WildFly Elytron configuration for the loading of identities so identities stored in usual locations such as databases and LDAP can be loaded without the ServerAuthModule needing to be aware of these locations, additionally other WildFly Elytron configuration can be applied such as role and permission mapping.  The referenced SecurityDomain can also be referenced in other places such as for SASL authentication or other non JASPI applications all backed by a common repository of identities. 
+
+In this mode the CallbackHandlers operate as follows: -
+
+ * *PasswordValidationCallback*
+ 
+ The username and password will be used with the SecurityDomain to perform an authentication, if successful there is now an authenticated identity.
+ 
+ * *CallerPrincipalCallback*
+ 
+ This Callback is used to establish the authorized identity / the identity that will be seen once the request reached the web application.
+ 
+ If an authenticated identity has already been established via the PasswordValidationCallback this Callback is interpreted as a run-as request and authorization checks are performed to ensure the authenticated identity is authorized to run as the identity specified in this Callback.  If no authenticated identity has been established by a PasswordValidationCallback it is assumed the ServerAuthModule has handled the authentication step so this Callback will cause the specified identity to be loaded from the SecurityDomain and an authorization check to verify this identity has the LoginPermission.
+ 
+ If a Callback is received with a null Principal and name then if an authenticated identity has already been established authorization will be performed as that identity, if no identity has been established then authorization of the anonymous identity will be performed.  Where authorization of the anonymous identity is performed the SecurityDomain must have been configured to grant the anonymous identity the LoginPermission otherwise authorization will fail. 
+ 
+ * *GroupPrincipalCallback*
+ 
+ By default in this mode the attribute loading, role decoding, and role mapping configured on the security domain will be used to establish the identity - if this Callback is received the groups specified will be taken as the roles that will be assigned to the identity whilst the request is in the servlet container.  These roles will be visible in the servlet container only.
+
+=== Non Integrated
+
+When operating in non-integrated mode the ServerAuthModules are completely responsible for all authentication *AND* identity management, the Callbacks specified in the specification can be used to establish an identity.  The resulting identity will be created on the SecurityDomain but it will be independent of any identities stored in referenced SecurityRealms.
+
+The advantage of this mode is that JASPI configurations that are able to 100% handle the identities can be deployed to the application server without requiring anything beyond a simple SecurityDomain definitions, there is no need for this SecurityDomain to actually contain the identities that will be used at runtime.  The disadvantage of this mode is that the ServerAuthModule is now reposible for all identity handling potenitally making the implementation much more complex.   
+
+In this mode the CallbackHandlers operate as follows: -
+
+ * *PasswordValidationCallback*
+ 
+ The Callback is not supported in this mode, the purpose of this mode is for the ServerAuthModule to operate independently of the referenced SecurityDomain so requesting a password to be validated would not be suitable.
+  
+ * *CallerPrincipalCallback*
+ 
+ This Callback is used to establish the Principal for the resulting identity, as the ServerAuthModule is handling all of the identity checking requirements no checks are performed to verify if the identity exists in the security domain and no authorization checks are performed.
+ 
+ If a Callback is received with a null Principal and name then then the identity will be established as the anonymous identity, as the ServerAuthModule is making the decisions no authorizaton check will be performed with the SecurityDomain.
+ 
+  * *GroupPrincipalCallback*
+  
+  As the identity is created in this mode without loading from the SecurityDomain it will by default have no roles assigned, if this Callback is received the groups will be taken and assigned to the resulting identity whilst the request is in the servlet container. These roles will be visible in the servlet container only.
+  
+  
+
+=== Control Flags
+
+Where the configuration was provided either within the WildFly Elytron subsystem or using the `JaspiConfigurationBuilder` API it is possible to associate a control flag with each `ServerAuthModule` - if one is not specified we assume `REQUIRED`.  The flags have the following meanings depending on their result.
+
+|=== 
+| *Flag* | *AuthStatus.SEND_SUCCESS* | *AuthStatus.SEND_FAILURE, AuthStatus.SEND_CONTINUE*
+| Required | Validation will continue to the remaining modules, provided the requirements of the remaining modules are satisfied the request will be allowed to proceed to authorization.  | Validation will continue to the remaining modules, however regardless of their outcome the validation is not successful so control will return to the client.
+| Requisite | Validation will continue to the remaining modules, provided the requirements of the remaining modules are satisfied the request will be allowed to proceed to authorization.  | The request will return immediately to the client.
+| Sufficient | Validation is deemed successful and complete, provided no previous Required or Requisite module has returned an AuthStatus other than AuthStatus.SUCCESS the request will proceed to authorization of the secured resource. | Validation will continue down the list of remaining modules, this status will only affect the decision if there are no REQUIRED or REQUISITE modules.
+| Optional | Validation will continue to the remaining modules, provided no 'Required' or 'Requisite' modules have not returned SUCCESS this will be sufficient for validation to be deemed successful and for the request to proceed to the authorization stage and the secured resource. | Validation will continue down the list of remaining modules, this status will only affect the decision if there are no REQUIRED or REQUISITE modules.
+|===
+
+
+For all `ServerAuthModule` instances if they throw an `AuthException` an error will be immediately reported to the client without further modules being called.
+
+=== SecurityIdentity
+
+Once the authentication process has completed a `org.wildfly.security.auth.server.SecurityIdentity` for the deployments SecurityDomain will have been created as a result of the Callbacks to the CallbackHandler, depending on the Callbacks this will either be an identity loaded directly from the SecurityDomain or will be an ad-hoc identity described by the callbacks.  This SecurityIdentity will be associated with the request as we do for other authentication mechanisms  
+
+
