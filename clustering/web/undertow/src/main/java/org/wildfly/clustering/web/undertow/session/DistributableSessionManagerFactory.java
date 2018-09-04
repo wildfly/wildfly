@@ -50,6 +50,7 @@ public class DistributableSessionManagerFactory implements io.undertow.servlet.a
 
     private final SessionManagerFactory<LocalSessionContext, Batch> factory;
     private final DistributableSessionManagerConfiguration config;
+    private final SessionListeners sessionListeners = new SessionListeners();
 
     public DistributableSessionManagerFactory(SessionManagerFactory<LocalSessionContext, Batch> factory, DistributableSessionManagerConfiguration config) {
         this.factory = factory;
@@ -62,7 +63,6 @@ public class DistributableSessionManagerFactory implements io.undertow.servlet.a
         boolean statisticsEnabled = info.getMetricsCollector() != null;
         RecordableInactiveSessionStatistics inactiveSessionStatistics = statisticsEnabled ? new RecordableInactiveSessionStatistics() : null;
         IdentifierFactory<String> factory = new IdentifierFactoryAdapter(info.getSessionIdGenerator());
-        SessionListeners listeners = new SessionListeners();
         SessionExpirationListener expirationListener = new UndertowSessionExpirationListener(deployment, listeners);
         SessionManagerConfiguration configuration = new SessionManagerConfiguration() {
             @Override
@@ -102,6 +102,6 @@ public class DistributableSessionManagerFactory implements io.undertow.servlet.a
             }
         });
         RecordableSessionManagerStatistics statistics = (inactiveSessionStatistics != null) ? new DistributableSessionManagerStatistics(manager, inactiveSessionStatistics, this.config.getMaxActiveSessions()) : null;
-        return new DistributableSessionManager(info.getDeploymentName(), manager, listeners, statistics);
+        return new DistributableSessionManager(info.getDeploymentName(), manager, this.sessionListeners, statistics);
     }
 }
