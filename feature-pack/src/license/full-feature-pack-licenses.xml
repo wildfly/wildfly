@@ -2969,7 +2969,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.jboss.eap</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-picketlink</artifactId>
       <licenses>
         <license>
