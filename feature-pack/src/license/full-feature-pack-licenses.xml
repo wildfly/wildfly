@@ -544,18 +544,7 @@
     </dependency>
     <dependency>
       <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-tracerresolver</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-web-servlet-filter</artifactId>
+      <artifactId>opentracing-concurrent</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
@@ -577,7 +566,18 @@
     </dependency>
     <dependency>
       <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-concurrent</artifactId>
+      <artifactId>opentracing-tracerresolver</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>io.opentracing.contrib</groupId>
+      <artifactId>opentracing-web-servlet-filter</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
