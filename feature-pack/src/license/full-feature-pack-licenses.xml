@@ -1573,8 +1573,8 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.apache.velocity</groupId>
-      <artifactId>velocity-engine-core</artifactId>
+      <groupId>org.apache.thrift</groupId>
+      <artifactId>libthrift</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
@@ -1584,8 +1584,8 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.apache.thrift</groupId>
-      <artifactId>libthrift</artifactId>
+      <groupId>org.apache.velocity</groupId>
+      <artifactId>velocity-engine-core</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
