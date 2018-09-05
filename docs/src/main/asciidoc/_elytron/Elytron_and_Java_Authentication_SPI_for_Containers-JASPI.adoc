@@ -172,10 +172,13 @@ In this mode the CallbackHandlers operate as follows: -
   * *GroupPrincipalCallback*
   
   As the identity is created in this mode without loading from the SecurityDomain it will by default have no roles assigned, if this Callback is received the groups will be taken and assigned to the resulting identity whilst the request is in the servlet container. These roles will be visible in the servlet container only.
-  
-  
 
-=== Control Flags
+
+=== validateRequest
+
+During the call to `validateRequest` on the `ServerAuthContext` the individual `ServerAuthModule` instances will be called in the order they are defined.  A control flag can also be specified for each module, this defines how the response should be interpreted and if processing should continue to the next auth module or return immediately.
+
+==== Control Flags
 
 Where the configuration was provided either within the WildFly Elytron subsystem or using the `JaspiConfigurationBuilder` API it is possible to associate a control flag with each `ServerAuthModule` - if one is not specified we assume `REQUIRED`.  The flags have the following meanings depending on their result.
 
@@ -189,6 +192,15 @@ Where the configuration was provided either within the WildFly Elytron subsystem
 
 
 For all `ServerAuthModule` instances if they throw an `AuthException` an error will be immediately reported to the client without further modules being called.
+
+=== secureResponse
+
+During the call to `secureResponse` each `ServerAuthMdoule` is called but this time in reverse order.  Where a module only undertakes an action in `secureResponse` if it undertook an action in `validateResponse` it is the responsibility of the module to track this.
+
+The control flag has no effect on `secureResponse` processing, processing ends when one of the following is true: -
+. All of the `ServerAuthModule` instances have been called.
+. A module returns `AuthStatus.SEND_FAILURE`.
+. A module throws an `AuthException`. 
 
 === SecurityIdentity
 
