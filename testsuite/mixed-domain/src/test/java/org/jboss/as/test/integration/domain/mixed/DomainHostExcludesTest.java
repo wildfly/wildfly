@@ -108,7 +108,7 @@ public abstract class DomainHostExcludesTest {
 
         testSupport = MixedDomainTestSuite.getSupport(clazz);
 
-        if (version.getMajor() == 7) {
+        if (version.getMajor() >= 7) {
             // note that some of these 7+ specific changes may warrant creating a newer version of testing-host.xml for the newer slaves
             // at some point (the currently used host.xml is quite an old version). If these exceptions become more complicated than this, we should
             // probably do that.
@@ -379,7 +379,7 @@ public abstract class DomainHostExcludesTest {
     private Set<String> getExtensionsSet() {
         if (version.getMajor() == 6) {
             return EXTENSIONS_SET_6X;
-        } else if (version.getMajor() == 7) {
+        } else if (version.getMajor() >= 7) {
             return EXTENSIONS_SET_7X;
         }
         throw new IllegalStateException("Unknown version " + version);
@@ -388,7 +388,8 @@ public abstract class DomainHostExcludesTest {
     private static String[] getExcludedExtensions() {
         if (version.getMajor() == 6) {
             return EXCLUDED_EXTENSIONS_6X;
-        } else if (version.getMajor() == 7) {
+        } else if (version.getMajor() >= 7) {
+            // until EAP 7.2.0 is released, WildFly 14 is used to test EAP 7.2 mixed domain
             return EXCLUDED_EXTENSIONS_7X;
         }
         throw new IllegalStateException("Unknown version " + version);

@@ -225,7 +225,18 @@ public class MixedDomainTestSupport extends DomainTestSupport {
 
     static Path loadLegacyDomainXml(Version.AsVersion version) {
         String number = version.getVersion().replace('.', '-');
-        String fileName = "eap-" + number + ".xml";
+        final String fileName;
+        switch (version.basename) {
+            case Version.AS:
+                fileName = number + ".xml";
+                break;
+            case Version.EAP:
+                fileName = "eap-" + number + ".xml";
+                break;
+            case Version.WILDFLY:
+            default:
+                fileName = "wildfly-" + number + ".xml";
+        }
         return loadFile("..", "integration", "manualmode", "src", "test", "resources", "legacy-configs", "domain", fileName);
     }
 

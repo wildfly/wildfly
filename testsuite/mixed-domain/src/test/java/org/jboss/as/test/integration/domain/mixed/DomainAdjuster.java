@@ -23,11 +23,14 @@ package org.jboss.as.test.integration.domain.mixed;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
@@ -36,6 +39,7 @@ import static org.jboss.as.test.integration.domain.management.util.DomainTestUti
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -44,12 +48,14 @@ import java.util.Set;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.security.SecurityExtension;
 import org.jboss.as.test.integration.domain.management.util.DomainTestUtils;
 import org.jboss.as.test.integration.domain.mixed.eap640.DomainAdjuster640;
 import org.jboss.as.test.integration.domain.mixed.eap700.DomainAdjuster700;
 import org.jboss.as.test.integration.domain.mixed.eap710.DomainAdjuster710;
+import org.jboss.as.test.integration.domain.mixed.eap720.DomainAdjuster720;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.junit.Assert;
@@ -93,6 +99,9 @@ public class DomainAdjuster {
             case EAP_7_1_0:
                 adjuster = new DomainAdjuster710();
                 break;
+            case EAP_7_2_0_TEMP:
+                adjuster = new DomainAdjuster720();
+                break;
             default:
                 adjuster = new DomainAdjuster();
         }
@@ -127,6 +136,10 @@ public class DomainAdjuster {
 
         //Version specific changes
         final List<ModelNode> adjustments = adjustForVersion(client, PathAddress.pathAddress(PROFILE, profile), withMasterServers);
+        if (withMasterServers) {
+            adjustments.addAll(reconfigureServers());
+        }
+
         applyVersionAdjustments(client, adjustments);
     }
 
@@ -279,5 +292,17 @@ public class DomainAdjuster {
         for (ModelNode op : operations) {
             DomainTestUtils.executeForResult(op, client);
         }
+    }
+
+    private Collection<? extends ModelNode> reconfigureServers() {
+        final List<ModelNode> list = new ArrayList<>();
+        //Reconfigure master servers
+        final PathAddress masterHostAddress = PathAddress.pathAddress(HOST, "master");
+        list.add(Util.getWriteAttributeOperation(masterHostAddress.append(SERVER_CONFIG, "server-one"), AUTO_START, true));
+        list.add(Util.getWriteAttributeOperation(masterHostAddress.append(SERVER_CONFIG, "server-one"), ModelDescriptionConstants.GROUP, "main-server-group"));
+        list.add(Util.getUndefineAttributeOperation(masterHostAddress.append(SERVER_CONFIG, "server-one"), ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET));
+        list.add(Util.getWriteAttributeOperation(masterHostAddress.append(SERVER_CONFIG, "server-two"), AUTO_START, true));
+        list.add(Util.getWriteAttributeOperation(masterHostAddress.append(SERVER_CONFIG, "server-two"), ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET, 100));
+        return list;
     }
 }
