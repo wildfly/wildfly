@@ -31,4 +31,8 @@
         <artifact name="${com.squareup.okhttp3:okhttp}"/>
         <artifact name="${com.squareup.okio:okio}"/>
     </resources>
+
+    <dependencies>
+        <module name="java.logging"/>
+    </dependencies>
 </module>
