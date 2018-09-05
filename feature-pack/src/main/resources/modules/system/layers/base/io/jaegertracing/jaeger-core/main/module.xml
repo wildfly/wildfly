@@ -25,6 +25,7 @@
 
     <dependencies>
         <module name="com.google.code.gson"/>
+        <module name="com.squareup.okhttp3"/>
 
         <module name="io.opentracing.opentracing-api"/>
         <module name="io.opentracing.opentracing-util"/>
