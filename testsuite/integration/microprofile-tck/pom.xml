@@ -45,5 +45,6 @@
 
     <modules>
         <module>health</module>
+        <module>opentracing</module>
     </modules>
 </project>
