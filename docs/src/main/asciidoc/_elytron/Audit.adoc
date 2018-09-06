@@ -1,0 +1,15 @@
+[[Audit]]
+= Audit
+
+WildFly Elytron supports audit using security event listeners - components
+which captures security events, like successful or unsucceful login attempts.
+
+== File audit log
+
+File audit log logs security events into a local file.
+It requires to define `path` to the log file, which can be `relative-to` a system property.
+It also allows to set the file format - human readable `SIMPLE` or `JSON`.
+While in WildFly 14 there was only one attribute `synchronized`, which had influence on data reliability, now there is possible more fine grained performance and reliability tunning:
+* `autoflush` defines whether should be output stream flushed after every audit event (guarantees that the log message is passed to the operating system immediately)
+* `synchonized` defines whether should be file descriptor synchronized after every audit event (guarantees that all system buffers are synchronized with the underlying device)
+
