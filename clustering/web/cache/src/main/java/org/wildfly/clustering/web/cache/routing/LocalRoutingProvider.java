@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2019, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,21 +20,22 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.infinispan.routing;
+package org.wildfly.clustering.web.cache.routing;
+
+import java.util.Collection;
+import java.util.Collections;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
-import org.wildfly.clustering.web.WebDeploymentConfiguration;
-import org.wildfly.clustering.web.routing.RouteLocatorServiceConfiguratorFactory;
-import org.wildfly.clustering.web.session.DistributableSessionManagementConfiguration;
+import org.wildfly.clustering.service.SupplierDependency;
+import org.wildfly.clustering.web.routing.RoutingProvider;
 
 /**
- * Factory for creating a service configurator for a local route locator.
  * @author Paul Ferraro
  */
-public class LocalRouteLocatorServiceConfiguratorFactory<C extends DistributableSessionManagementConfiguration> implements RouteLocatorServiceConfiguratorFactory<C> {
+public class LocalRoutingProvider implements RoutingProvider {
 
     @Override
-    public CapabilityServiceConfigurator createRouteLocatorServiceConfigurator(C managementConfiguration, WebDeploymentConfiguration deploymentConfiguration) {
-        return new LocalRouteLocatorServiceConfigurator(deploymentConfiguration);
+    public Collection<CapabilityServiceConfigurator> getServiceConfigurators(String serverName, SupplierDependency<String> route) {
+        return Collections.singleton(new LocalRouteServiceConfigurator(serverName, route));
     }
 }

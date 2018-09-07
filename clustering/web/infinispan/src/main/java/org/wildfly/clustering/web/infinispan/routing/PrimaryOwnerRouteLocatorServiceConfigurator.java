@@ -45,6 +45,7 @@ import org.wildfly.clustering.service.SupplierDependency;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 import org.wildfly.clustering.spi.NodeFactory;
 import org.wildfly.clustering.web.WebDeploymentConfiguration;
+import org.wildfly.clustering.web.cache.routing.RouteLocatorServiceNameProvider;
 import org.wildfly.clustering.web.infinispan.session.InfinispanSessionManagementConfiguration;
 import org.wildfly.clustering.web.routing.RouteLocator;
 

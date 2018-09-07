@@ -20,20 +20,21 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.infinispan.routing;
+package org.wildfly.clustering.web.cache.routing;
 
-import org.jboss.as.controller.ServiceNameFactory;
-import org.wildfly.clustering.service.SimpleServiceNameProvider;
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.wildfly.clustering.web.WebDeploymentConfiguration;
-import org.wildfly.clustering.web.WebDeploymentRequirement;
+import org.wildfly.clustering.web.routing.RouteLocatorServiceConfiguratorFactory;
+import org.wildfly.clustering.web.session.DistributableSessionManagementConfiguration;
 
 /**
- * Service name provider for a route locator service.
+ * Factory for creating a service configurator for a local route locator.
  * @author Paul Ferraro
  */
-public class RouteLocatorServiceNameProvider extends SimpleServiceNameProvider {
+public class LocalRouteLocatorServiceConfiguratorFactory<C extends DistributableSessionManagementConfiguration> implements RouteLocatorServiceConfiguratorFactory<C> {
 
-    public RouteLocatorServiceNameProvider(WebDeploymentConfiguration configuration) {
-        super(ServiceNameFactory.parseServiceName(WebDeploymentRequirement.ROUTE_LOCATOR.resolve(configuration.getDeploymentName())));
+    @Override
+    public CapabilityServiceConfigurator createRouteLocatorServiceConfigurator(C managementConfiguration, WebDeploymentConfiguration deploymentConfiguration) {
+        return new LocalRouteLocatorServiceConfigurator(deploymentConfiguration);
     }
 }

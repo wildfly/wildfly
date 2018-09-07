@@ -20,35 +20,21 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.infinispan.routing;
-
-import java.util.function.Consumer;
+package org.wildfly.clustering.web.cache.routing;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
-import org.jboss.msc.Service;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.web.WebDeploymentConfiguration;
-import org.wildfly.clustering.web.routing.RouteLocator;
+import org.wildfly.clustering.web.routing.RouteLocatorServiceConfiguratorFactory;
+import org.wildfly.clustering.web.session.DistributableSessionManagementConfiguration;
 
 /**
- * Configures a service providing a null route locator.
+ * Factory for creating a service configurator for a null route locator.
  * @author Paul Ferraro
  */
-public class NullRouteLocatorServiceConfigurator extends RouteLocatorServiceNameProvider implements CapabilityServiceConfigurator {
-
-    public NullRouteLocatorServiceConfigurator(WebDeploymentConfiguration deploymentConfiguration) {
-        super(deploymentConfiguration);
-    }
+public class NullRouteLocatorServiceConfiguratorFactory<C extends DistributableSessionManagementConfiguration> implements RouteLocatorServiceConfiguratorFactory<C> {
 
     @Override
-    public ServiceBuilder<?> build(ServiceTarget target) {
-        ServiceName name = this.getServiceName();
-        ServiceBuilder<?> builder = target.addService(name);
-        Consumer<RouteLocator> locator = builder.provides(name);
-        Service service = Service.newInstance(locator, new NullRouteLocator());
-        return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
+    public CapabilityServiceConfigurator createRouteLocatorServiceConfigurator(C managementConfiguration, WebDeploymentConfiguration deploymentConfiguration) {
+        return new NullRouteLocatorServiceConfigurator(deploymentConfiguration);
     }
 }

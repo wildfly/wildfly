@@ -22,20 +22,15 @@
 
 package org.wildfly.extension.clustering.web;
 
-import java.util.Collection;
-import java.util.Collections;
-
-import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.PathAddress;
-import org.wildfly.clustering.service.SupplierDependency;
-import org.wildfly.clustering.web.infinispan.routing.LocalRouteServiceConfigurator;
+import org.wildfly.clustering.web.cache.routing.LocalRoutingProvider;
 import org.wildfly.clustering.web.routing.RoutingProvider;
 
 /**
  * Service configurator for the local routing provider.
  * @author Paul Ferraro
  */
-public class LocalRoutingProviderServiceConfigurator extends RoutingProviderServiceConfigurator implements RoutingProvider {
+public class LocalRoutingProviderServiceConfigurator extends RoutingProviderServiceConfigurator {
 
     public LocalRoutingProviderServiceConfigurator(PathAddress address) {
         super(address);
@@ -43,11 +38,6 @@ public class LocalRoutingProviderServiceConfigurator extends RoutingProviderServ
 
     @Override
     public RoutingProvider get() {
-        return this;
-    }
-
-    @Override
-    public Collection<CapabilityServiceConfigurator> getServiceConfigurators(String serverName, SupplierDependency<String> route) {
-        return Collections.singleton(new LocalRouteServiceConfigurator(serverName, route));
+        return new LocalRoutingProvider();
     }
 }

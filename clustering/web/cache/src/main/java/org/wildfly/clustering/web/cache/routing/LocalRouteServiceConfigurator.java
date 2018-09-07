@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.infinispan.routing;
+package org.wildfly.clustering.web.cache.routing;
 
 import java.util.function.Consumer;
 import java.util.function.Function;

@@ -20,18 +20,24 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.infinispan.routing;
+package org.wildfly.clustering.web.cache.routing;
 
 import org.wildfly.clustering.web.routing.RouteLocator;
 
 /**
- * Route locator that always returns {@code null}.
+ * Route locator that always returns the route of the local member.
  * @author Paul Ferraro
  */
-public class NullRouteLocator implements RouteLocator {
+public class LocalRouteLocator implements RouteLocator {
+
+    private final String route;
+
+    public LocalRouteLocator(String route) {
+        this.route = route;
+    }
 
     @Override
     public String locate(String sessionId) {
-        return null;
+        return this.route;
     }
 }
