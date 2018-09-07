@@ -27,7 +27,9 @@ import java.util.Queue;
 
 public class QueueOwner {
     private Integer id;
+    private Integer version;
     private Collection<String> strings = new LinkedList<>();
+    private Boolean type;
 
     public Queue<String> getStrings() {
         return (Queue<String>) strings;
@@ -43,5 +45,21 @@ public class QueueOwner {
 
     public void setId(Integer id) {
         this.id = id;
+    }
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(Integer version) {
+        this.version = version;
+    }
+
+    public Boolean getType() {
+        return type;
+    }
+
+    public void setType(Boolean type) {
+        this.type = type;
     }
 }

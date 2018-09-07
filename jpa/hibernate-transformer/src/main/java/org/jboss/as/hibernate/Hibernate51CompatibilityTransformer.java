@@ -320,8 +320,14 @@ public class Hibernate51CompatibilityTransformer implements ClassFileTransformer
 
                         rewriteSessionImplementor = true;
                     }
+
+                    if (rewriteSessionImplementor && name.equals("<init>")) {
+                        // update constructor methods to use SharedSessionContractImplementor instead of SessionImplementor
+                        desc = replaceSessionImplementor(desc);
+                    }
+
                     if (descOrig != desc) {  // if we are changing from type SessionImplementor to SharedSessionContractImplementor
-                                             // mark the class as transformed
+                        // mark the class as transformed
                         transformedState.setClassTransformed(true);
                     }
                     return new MethodAdapter(rewriteSessionImplementor, Opcodes.ASM6, super.visitMethod(access, name, desc,
@@ -401,5 +407,6 @@ public class Hibernate51CompatibilityTransformer implements ClassFileTransformer
             }
         }
         return major;
-    }}
+    }
+}
 

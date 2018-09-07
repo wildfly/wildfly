@@ -57,8 +57,8 @@ class MethodAdapter extends MethodVisitor {
     @Override
     public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
         if (rewriteSessionImplementor &&
-                (opcode == Opcodes.INVOKESPECIAL || opcode == Opcodes.INVOKEVIRTUAL) &&
-                owner.startsWith("org/hibernate/")) {
+                hasSessionImplementor(desc) &&
+                (opcode == Opcodes.INVOKESPECIAL || opcode == Opcodes.INVOKEVIRTUAL)) {
             // if we have a user type calling a method from org.hibernate, we rewrite it to use SharedSessionContractImplementor
             logger.debugf("Deprecated Hibernate51CompatibilityTransformer transformed application classes in '%s', " +
                             "class '%s' is calling method %s.%s, which must be changed to use SharedSessionContractImplementor as parameter.",
@@ -147,6 +147,10 @@ class MethodAdapter extends MethodVisitor {
     private static String replaceSessionImplementor(String desc) {
         return desc.replace("Lorg/hibernate/engine/spi/SessionImplementor;",
                 "Lorg/hibernate/engine/spi/SharedSessionContractImplementor;");
+    }
+
+    private boolean hasSessionImplementor(String desc) {
+        return desc.contains("Lorg/hibernate/engine/spi/SessionImplementor;");
     }
 
 }
