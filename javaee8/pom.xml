@@ -41,7 +41,7 @@
     <properties>
 
         <!-- Version of specs -->
-        <version.org.jboss.spec.jboss.javaee8>1.0.0.Alpha1</version.org.jboss.spec.jboss.javaee8>
+        <version.org.jboss.spec.jboss.javaee8>1.0.1.Final</version.org.jboss.spec.jboss.javaee8>
 
         <!-- Version of server -->
         <version.server>14.0.1.Final</version.server>
