@@ -21,8 +21,8 @@
  */
 package org.wildfly.extension.undertow;
 
-import static org.wildfly.extension.undertow.UndertowRootDefinition.HTTP_INVOKER_RUNTIME_CAPABILITY;
 import static org.wildfly.extension.undertow.Capabilities.CAPABILITY_HTTP_INVOKER_HOST;
+import static org.wildfly.extension.undertow.UndertowRootDefinition.HTTP_INVOKER_RUNTIME_CAPABILITY;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -42,7 +42,6 @@ import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraint
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.domain.management.SecurityRealm;
-import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
@@ -142,7 +141,7 @@ public class HttpInvokerDefinition extends PersistentResourceDefinition {
                 builder.addCapabilityRequirement(Capabilities.REF_HTTP_AUTHENTICATION_FACTORY, HttpAuthenticationFactory.class, service.getHttpAuthenticationFactoryInjectedValue(), httpAuthenticationFactory);
             } else  if(securityRealmString != null) {
                 final ServiceName realmServiceName = SecurityRealm.ServiceUtil.createServiceName(securityRealmString);
-                builder.addDependency(realmServiceName, SecurityRealmService.class, service.getRealmService());
+                builder.addDependency(realmServiceName, SecurityRealm.class, service.getRealmService());
             }
 
             builder.setInitialMode(ServiceController.Mode.ACTIVE)

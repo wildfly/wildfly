@@ -26,7 +26,12 @@ import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import org.jboss.as.domain.management.security.SecurityRealmService;
+import io.undertow.security.handlers.AuthenticationCallHandler;
+import io.undertow.security.handlers.AuthenticationConstraintHandler;
+import io.undertow.server.HttpHandler;
+import io.undertow.server.handlers.Cookie;
+import io.undertow.server.handlers.PathHandler;
+import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.web.session.SimpleRoutingSupport;
 import org.jboss.as.web.session.SimpleSessionIdentifierCodec;
 import org.jboss.msc.service.Service;
@@ -40,11 +45,6 @@ import org.wildfly.httpclient.common.ElytronIdentityHandler;
 import org.wildfly.security.auth.server.HttpAuthenticationFactory;
 import org.wildfly.security.auth.server.SecurityIdentity;
 import org.wildfly.security.http.HttpServerAuthenticationMechanism;
-import io.undertow.security.handlers.AuthenticationCallHandler;
-import io.undertow.security.handlers.AuthenticationConstraintHandler;
-import io.undertow.server.HttpHandler;
-import io.undertow.server.handlers.Cookie;
-import io.undertow.server.handlers.PathHandler;
 
 /**
  * @author Stuart Douglas
@@ -56,7 +56,7 @@ class HttpInvokerHostService implements Service<HttpInvokerHostService> {
     private final String path;
     private final InjectedValue<Host> host = new InjectedValue<>();
     private final InjectedValue<HttpAuthenticationFactory> httpAuthenticationFactoryInjectedValue = new InjectedValue<>();
-    private final InjectedValue<SecurityRealmService> realmService = new InjectedValue<>();
+    private final InjectedValue<SecurityRealm> realmService = new InjectedValue<>();
     private final InjectedValue<PathHandler> remoteHttpInvokerServiceInjectedValue = new InjectedValue<>();
 
     public HttpInvokerHostService(String path) {
@@ -146,7 +146,7 @@ class HttpInvokerHostService implements Service<HttpInvokerHostService> {
         return remoteHttpInvokerServiceInjectedValue;
     }
 
-    public InjectedValue<SecurityRealmService> getRealmService() {
+    public InjectedValue<SecurityRealm> getRealmService() {
         return realmService;
     }
 }
