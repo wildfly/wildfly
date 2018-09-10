@@ -28,7 +28,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>14.0.0.Final</version>
+        <version>14.0.1.Final-SNAPSHOT</version>
     </parent>
 
     <packaging>pom</packaging>
@@ -44,7 +44,7 @@
         <version.org.jboss.spec.jboss.javaee8>1.0.0.Alpha1</version.org.jboss.spec.jboss.javaee8>
 
         <!-- Version of server -->
-        <version.server>14.0.0.Final</version.server>
+        <version.server>14.0.1.Final</version.server>
 
         <!-- Versions on server's core -->
         <version.junit>4.12</version.junit>
