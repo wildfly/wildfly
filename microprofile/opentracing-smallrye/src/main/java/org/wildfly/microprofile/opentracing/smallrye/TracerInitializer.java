@@ -23,6 +23,7 @@
 package org.wildfly.microprofile.opentracing.smallrye;
 
 import io.jaegertracing.Configuration;
+import io.jaegertracing.internal.JaegerTracer;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.jaxrs2.server.SpanFinishingFilter;
 import io.opentracing.contrib.tracerresolver.TracerResolver;
@@ -41,6 +42,7 @@ import java.util.EnumSet;
 public class TracerInitializer implements ServletContextListener {
     public static final String SMALLRYE_OPENTRACING_SERVICE_NAME = "smallrye.opentracing.serviceName";
     public static final String SMALLRYE_OPENTRACING_TRACER = "smallrye.opentracing.tracer";
+    public static final String SMALLRYE_OPENTRACING_TRACER_MANAGED = "smallrye.opentracing.tracer.managed";
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
@@ -58,6 +60,7 @@ public class TracerInitializer implements ServletContextListener {
                 TracingLogger.ROOT_LOGGER.noServiceName();
                 tracer = NoopTracerFactory.create();
             } else {
+                sce.getServletContext().setAttribute(SMALLRYE_OPENTRACING_TRACER_MANAGED, true);
                 tracer = Configuration.fromEnv(serviceName).getTracer();
             }
         }
@@ -79,5 +82,17 @@ public class TracerInitializer implements ServletContextListener {
 
     @Override
     public void contextDestroyed(ServletContextEvent sce) {
+        boolean isManagedTracer = false;
+        Object managedTracer = sce.getServletContext().getAttribute(SMALLRYE_OPENTRACING_TRACER_MANAGED);
+        if (managedTracer instanceof Boolean) {
+            isManagedTracer = (boolean) managedTracer;
+        }
+
+        if (isManagedTracer) {
+            Object tracerObj = sce.getServletContext().getAttribute(SMALLRYE_OPENTRACING_TRACER);
+            if (tracerObj instanceof JaegerTracer) {
+                ((JaegerTracer) tracerObj).close();
+            }
+        }
     }
 }
