@@ -797,7 +797,7 @@ _BASIC_ instead of _FORM_.
 
 [source, ruby]
 ----
-/subsystem=elytron/credential-store=exampleCS:add(uri="cr-store://exampleCS?create=true",credential-reference={clear-text=cs-secret})
+/subsystem=elytron/credential-store=exampleCS:add(relative-to=jboss.server.data.dir, location=example.jceks,create=true,credential-reference={clear-text=cs-secret})
 ----
 
 [[add-a-credential-to-a-credential-store.]]
@@ -805,7 +805,7 @@ _BASIC_ instead of _FORM_.
 
 [source, ruby]
 ----
-/subsystem=elytron/credential-store=exampleCS/alias=keystorepw:add(secret-value="secret")
+/subsystem=elytron/credential-store=exampleCS:add-alias(alias=keystorepw,secret-value=secret)
 ----
 
 [[list-all-credentials-in-a-credential-store.]]
@@ -813,7 +813,7 @@ _BASIC_ instead of _FORM_.
 
 [source, ruby]
 ----
-/subsystem=elytron/credential-store=exampleCS:read-children-names(child-type=alias)
+/subsystem=elytron/credential-store=exampleCS:read-aliases()
 {
     "outcome" => "success",
     "result" => ["keystorepw"]
@@ -825,7 +825,7 @@ _BASIC_ instead of _FORM_.
 
 [source, ruby]
 ----
-/subsystem=elytron/credential-store=exampleCS/alias=keystorepw:remove
+/subsystem=elytron/credential-store=exampleCS:remove-alias(alias=keystorepw)
 ----
 
 [[use-a-credential-store.]]
