@@ -50,10 +50,10 @@
         <version.junit>4.12</version.junit>
         <version.org.jboss.logging.jboss-logging>3.3.2.Final</version.org.jboss.logging.jboss-logging>
         <version.org.jboss.logging.jboss-logging-tools>2.1.0.Final</version.org.jboss.logging.jboss-logging-tools>
-        <version.org.wildfly.client.config>1.0.0.Final</version.org.wildfly.client.config>
+        <version.org.wildfly.client.config>1.0.1.Final</version.org.wildfly.client.config>
         <version.org.wildfly.common>1.4.0.Final</version.org.wildfly.common>
         <version.org.wildfly.discovery>1.1.1.Final</version.org.wildfly.discovery>
-        <version.org.wildfly.security.elytron>1.5.4.Final</version.org.wildfly.security.elytron>
+        <version.org.wildfly.security.elytron>1.6.0.Final</version.org.wildfly.security.elytron>
 
         <!-- Versions on server -->
         <version.org.hibernate>5.3.6.Final</version.org.hibernate>
