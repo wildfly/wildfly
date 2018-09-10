@@ -34,6 +34,7 @@
         merge conflicts between commits changing the GA and those changing the V.
         -->
         <version>14.0.1.Final</version>
+        <relativePath/>
     </parent>
 
     <artifactId>wildfly-ejb-client-legacy-bom</artifactId>
