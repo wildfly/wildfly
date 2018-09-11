@@ -14,7 +14,7 @@
     </datasource>
     <datasource name="elytron" jndi-name="java:jboss/datasources/ElytronDS">
         <connection-factory driver="h2" url="jdbc:h2:tcp://localhost:1701" authentication-context="secure-context">
-            <credential-reference store="test-store" alias="another" type="org.wildfly.security.credential.PasswordCredential" />
+            <credential-reference store="test-store" alias="another" type="org.wildfly.security.credential.PasswordCredential"/>
         </connection-factory>
         <connection-pool max-size="30"/>
     </datasource>
@@ -25,6 +25,15 @@
             </connection-properties>
         </connection-factory>
         <connection-pool initial-size="5" min-size="1" max-size="10" blocking-timeout="2000" background-validation="8000" leak-detection="7000" idle-removal="7"/>
+    </xa-datasource>
+    <xa-datasource name="xa-no-recovery" jndi-name="java:jboss/datasources/ExampleXADS" recovery="false" recovery-username="sar" recovery-password="sar">
+        <connection-factory driver="h2-xa" url="jdbc:h2:tcp://localhost:1702" username="sa" password="sa"/>
+        <connection-pool initial-size="5" min-size="1" max-size="10"/>
+    </xa-datasource>
+    <xa-datasource name="xa-no-recovery-elytron" jndi-name="java:jboss/datasources/ExampleXADS" recovery="false" recovery-authentication-context="recovery-context">
+        <connection-factory driver="h2-xa" url="jdbc:h2:tcp://localhost:1702" username="sa" password="sa"/>
+        <connection-pool initial-size="5" min-size="1" max-size="10"/>
+        <recovery-credential-reference store="test-store" alias="another" type="org.wildfly.security.credential.PasswordCredential"/>
     </xa-datasource>
     <drivers>
         <driver name="h2" module="com.h2database.h2" class="org.h2.Driver"/>

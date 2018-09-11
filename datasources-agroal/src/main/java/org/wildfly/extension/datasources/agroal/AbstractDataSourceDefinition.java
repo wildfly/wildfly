@@ -125,9 +125,8 @@ abstract class AbstractDataSourceDefinition extends PersistentResourceDefinition
 
     static final SimpleAttributeDefinition USERNAME_ATTRIBUTE = create("username", ModelType.STRING)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
-            .addAlternatives("elytron-domain")
+            .addAlternatives("authentication-context")
             .setAllowExpression(true)
-            .setAttributeGroup("security")
             .setRequired(false)
             .setRestartAllServices()
             .setValidator(new StringLengthValidator(1))
@@ -137,7 +136,6 @@ abstract class AbstractDataSourceDefinition extends PersistentResourceDefinition
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
             .addAlternatives(CredentialReference.CREDENTIAL_REFERENCE)
             .setAllowExpression(true)
-            .setAttributeGroup("security")
             .setRequired(false)
             .setRequires(USERNAME_ATTRIBUTE.getName())
             .setRestartAllServices()
@@ -153,7 +151,6 @@ abstract class AbstractDataSourceDefinition extends PersistentResourceDefinition
 
     static final ObjectTypeAttributeDefinition CREDENTIAL_REFERENCE = CredentialReference.getAttributeBuilder(true, true)
                                                                                          .addAlternatives(PASSWORD_ATTRIBUTE.getName())
-                                                                                         .setAttributeGroup("security")
                                                                                          .build();
 
     static final PropertiesAttributeDefinition CONNECTION_PROPERTIES_ATTRIBUTE = new PropertiesAttributeDefinition.Builder("connection-properties", true)

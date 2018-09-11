@@ -21,14 +21,12 @@
  */
 package org.wildfly.extension.datasources.agroal;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
-import javax.transaction.TransactionSynchronizationRegistry;
-
 import io.agroal.api.AgroalDataSource;
 import io.agroal.api.configuration.supplier.AgroalConnectionFactoryConfigurationSupplier;
 import io.agroal.api.configuration.supplier.AgroalConnectionPoolConfigurationSupplier;
 import io.agroal.api.configuration.supplier.AgroalDataSourceConfigurationSupplier;
+import io.agroal.api.security.NamePrincipal;
+import io.agroal.api.security.SimplePassword;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.CapabilityServiceBuilder;
@@ -36,8 +34,18 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.security.CredentialReference;
+import org.jboss.as.txn.service.TxnServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.tm.XAResourceRecoveryRegistry;
+import org.wildfly.common.function.ExceptionSupplier;
+import org.wildfly.security.auth.client.AuthenticationContext;
+import org.wildfly.security.credential.source.CredentialSource;
+
+import javax.transaction.TransactionSynchronizationRegistry;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 /**
  * Operations for adding and removing an xa-datasource resource to the model
@@ -63,12 +71,21 @@ class XADataSourceOperations extends AbstractAddStepHandler {
         }
 
         @Override
-        @SuppressWarnings("unchecked")
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             String datasourceName = PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement().getValue();
 
             ModelNode factoryModel = AbstractDataSourceDefinition.CONNECTION_FACTORY_ATTRIBUTE.resolveModelAttribute(context, model);
             AgroalConnectionFactoryConfigurationSupplier connectionFactoryConfiguration = AbstractDataSourceOperations.connectionFactoryConfiguration(context, factoryModel);
+
+            // setup recovery security
+            String recoveryUsername = XADataSourceDefinition.RECOVERY_USERNAME_ATTRIBUTE.resolveModelAttribute(context, model).asStringOrNull();
+            String recoveryPassword = XADataSourceDefinition.RECOVERY_PASSWORD_ATTRIBUTE.resolveModelAttribute(context, model).asStringOrNull();
+            if (recoveryUsername != null) {
+                connectionFactoryConfiguration.recoveryPrincipal(new NamePrincipal(recoveryUsername));
+            }
+            if (recoveryPassword != null) {
+                connectionFactoryConfiguration.recoveryCredential(new SimplePassword(recoveryPassword));
+            }
 
             ModelNode poolModel = AbstractDataSourceDefinition.CONNECTION_POOL_ATTRIBUTE.resolveModelAttribute(context, model);
             AgroalConnectionPoolConfigurationSupplier connectionPoolConfiguration = AbstractDataSourceOperations.connectionPoolConfiguration(context, poolModel);
@@ -88,7 +105,22 @@ class XADataSourceOperations extends AbstractAddStepHandler {
             // TODO add a Stage.MODEL requirement
             serviceBuilder.addCapabilityRequirement("org.wildfly.transactions.transaction-synchronization-registry", TransactionSynchronizationRegistry.class, dataSourceService.getTransactionSynchronizationRegistryInjector());
 
+            if (XADataSourceDefinition.RECOVERY.resolveModelAttribute(context, model).asBoolean()) {
+                serviceBuilder.addDependency(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER, XAResourceRecoveryRegistry.class, dataSourceService.getRecoveryRegistryInjector());
+            }
+
             AbstractDataSourceOperations.setupElytronSecurity(context, factoryModel, dataSourceService, serviceBuilder);
+
+            // setup recovery security (elytron)
+            String recoveryAuthenticationContextName = XADataSourceDefinition.RECOVERY_AUTHENTICATION_CONTEXT.resolveModelAttribute(context, model).asStringOrNull();
+            if (recoveryAuthenticationContextName != null) {
+                ServiceName recoveryAuthenticationContextCapability = context.getCapabilityServiceName(AbstractDataSourceDefinition.AUTHENTICATION_CONTEXT_CAPABILITY, recoveryAuthenticationContextName, AuthenticationContext.class);
+                serviceBuilder.addDependency(recoveryAuthenticationContextCapability, AuthenticationContext.class, dataSourceService.getRecoveryAuthenticationContextInjector());
+            }
+            if (XADataSourceDefinition.RECOVERY_CREDENTIAL_REFERENCE.resolveModelAttribute(context, model).isDefined()) {
+                ExceptionSupplier<CredentialSource, Exception> recoveryCredentialSourceSupplier = CredentialReference.getCredentialSourceSupplier(context, AbstractDataSourceDefinition.CREDENTIAL_REFERENCE, model, serviceBuilder);
+                dataSourceService.getRecoveryCredentialSourceSupplierInjector().inject(recoveryCredentialSourceSupplier);
+            }
 
             serviceBuilder.install();
         }

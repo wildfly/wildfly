@@ -95,6 +95,14 @@ public interface AgroalLogger extends BasicLogger {
     @Message(id = 111, value = "CredentialSourceSupplier for datasource '%s' is invalid")
     StartException invalidCredentialSourceSupplier(@Cause Throwable cause, String dataSourceName);
 
+    @LogMessage(level = INFO)
+    @Message(id = 112, value = "Started NON-TRANSACTIONAL datasource '%s' bound to [%s]")
+    void startedNonTransactionalDataSource(String datasource, String jndiName);
+
+    @LogMessage(level = INFO)
+    @Message(id = 113, value = "Started NON-RECOVERABLE xa-datasource '%s' bound to [%s]")
+    void startedNonRecoverableXADataSource(String datasource, String jndiName);
+
     // --- Driver service //
 
     @LogMessage(level = INFO)

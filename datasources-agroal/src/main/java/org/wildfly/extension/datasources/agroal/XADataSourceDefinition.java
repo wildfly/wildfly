@@ -24,13 +24,22 @@ package org.wildfly.extension.datasources.agroal;
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableList;
 import static org.jboss.as.controller.PathElement.pathElement;
+import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.wildfly.extension.datasources.agroal.AgroalExtension.getResolver;
 
 import java.util.Collection;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ObjectTypeAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
 import org.jboss.as.controller.access.management.ApplicationTypeAccessConstraintDefinition;
+import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
+import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.security.CredentialReference;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * Definition for the xa-datasource resource
@@ -39,7 +48,46 @@ import org.jboss.as.controller.access.management.ApplicationTypeAccessConstraint
  */
 class XADataSourceDefinition extends AbstractDataSourceDefinition {
 
-    static final Collection<AttributeDefinition> ATTRIBUTES = unmodifiableList(asList(JNDI_NAME_ATTRIBUTE, STATISTICS_ENABLED_ATTRIBUTE, CONNECTION_FACTORY_ATTRIBUTE, CONNECTION_POOL_ATTRIBUTE));
+    static final SimpleAttributeDefinition RECOVERY = create("recovery", ModelType.BOOLEAN)
+            .setAllowExpression(true)
+            .setDefaultValue(ModelNode.TRUE)
+            .setRequired(false)
+            .setRestartAllServices()
+            .build();
+
+    static final SimpleAttributeDefinition RECOVERY_USERNAME_ATTRIBUTE = create("recovery-username", ModelType.STRING)
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
+            .addAlternatives("recovery-authentication-context")
+            .setAllowExpression(true)
+            .setRequired(false)
+            .setRequires(USERNAME_ATTRIBUTE.getName())
+            .setRestartAllServices()
+            .setValidator(new StringLengthValidator(1))
+            .build();
+
+    static final SimpleAttributeDefinition RECOVERY_PASSWORD_ATTRIBUTE = create("recovery-password", ModelType.STRING)
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
+            .addAlternatives("recovery-credential-reference")
+            .setAllowExpression(true)
+            .setRequired(false)
+            .setRequires(RECOVERY_USERNAME_ATTRIBUTE.getName())
+            .setRestartAllServices()
+            .setValidator(new StringLengthValidator(1))
+            .build();
+
+    static SimpleAttributeDefinition RECOVERY_AUTHENTICATION_CONTEXT = new SimpleAttributeDefinitionBuilder("recovery-authentication-context", ModelType.STRING, true)
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.AUTHENTICATION_CLIENT_REF)
+            .addAlternatives(RECOVERY_USERNAME_ATTRIBUTE.getName())
+            .setCapabilityReference(AUTHENTICATION_CONTEXT_CAPABILITY, DATA_SOURCE_CAPABILITY)
+            .setRequires(AUTHENTICATION_CONTEXT.getName())
+            .setRestartAllServices()
+            .build();
+
+    static final ObjectTypeAttributeDefinition RECOVERY_CREDENTIAL_REFERENCE = CredentialReference.getAttributeBuilder("recovery-credential-reference", "recovery-credential-reference", true, true)
+                                                                                                  .addAlternatives(RECOVERY_PASSWORD_ATTRIBUTE.getName())
+                                                                                                  .build();
+
+    static final Collection<AttributeDefinition> ATTRIBUTES = unmodifiableList(asList(JNDI_NAME_ATTRIBUTE, STATISTICS_ENABLED_ATTRIBUTE, CONNECTION_FACTORY_ATTRIBUTE, CONNECTION_POOL_ATTRIBUTE, RECOVERY, RECOVERY_USERNAME_ATTRIBUTE, RECOVERY_PASSWORD_ATTRIBUTE, RECOVERY_AUTHENTICATION_CONTEXT, RECOVERY_CREDENTIAL_REFERENCE));
 
     static final XADataSourceDefinition INSTANCE = new XADataSourceDefinition();
 

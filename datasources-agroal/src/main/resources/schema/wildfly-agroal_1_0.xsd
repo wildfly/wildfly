@@ -112,7 +112,32 @@
                     <xs:documentation><![CDATA[ Configuration for the connection pool ]]></xs:documentation>
                 </xs:annotation>
             </xs:element>
+            <xs:element name="recovery-credential-reference" type="credentialReferenceType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation><![CDATA[ Access to credentials defined through CredentialStorage. Alternative to username / password. Exclusively for transaction recovery. ]]></xs:documentation>
+                </xs:annotation>
+            </xs:element>
         </xs:all>
+        <xs:attribute name="recovery" type="xs:boolean" default="true">
+            <xs:annotation>
+                <xs:documentation><![CDATA[ Specifies that this XADataSource should be included in transaction recovery procedures ]]></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="recovery-username" type="xs:token">
+            <xs:annotation>
+                <xs:documentation><![CDATA[ Username to use for basic authentication with the database during transaction recovery ]]></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="recovery-password" type="xs:token">
+            <xs:annotation>
+                <xs:documentation><![CDATA[ Password to use for basic authentication with the database during transaction recovery ]]></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="recovery-authentication-context" type="xs:token">
+            <xs:annotation>
+                <xs:documentation><![CDATA[ Reference to a authentication context in Elytron. Alternative to username / password. Exclusively for transaction recovery. ]]></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
         <xs:attributeGroup ref="common-datasourceAttributes"/>
     </xs:complexType>
 
