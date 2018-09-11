@@ -16,6 +16,7 @@ limitations under the License.
 
 package org.jboss.as.connector.metadata.api.resourceadapter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.jca.common.api.metadata.common.Credential;
@@ -38,7 +39,13 @@ public final class ActivationSecurityUtil {
         if (!required) {
             List<ConnectionDefinition> connDefs = raxml.getConnectionDefinitions();
             if (connDefs != null) {
-                for (ConnectionDefinition cd : connDefs) {
+                final List<ConnectionDefinition> clonedDefs;
+                synchronized (raxml) {
+                    // Access to the collection is guarded by the instance
+                    clonedDefs = new ArrayList<>(connDefs);
+                }
+
+                for (ConnectionDefinition cd : clonedDefs) {
                     Security cdSecurity = cd.getSecurity();
                     Credential cdRecoveryCredential = cd.getRecovery() == null? null : cd.getRecovery().getCredential();
                     if (isLegacySecurityRequired(cdSecurity) || isLegacySecurityRequired(cdRecoveryCredential)) {
