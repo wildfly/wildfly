@@ -145,7 +145,10 @@ public class OnOffOpenTracingTestCase {
             // Perform request to the deployment on server where OpenTracing is disabled. Deployment must not have a Tracer instance available.
             // Actually 500 internal server error is responded with NoClassDefFoundError.
             response = Utils.makeCall(requestUri, 500);
-            Assert.assertTrue(response.contains("java.lang.NoClassDefFoundError: Lio/opentracing/Tracer"));
+            Assert.assertTrue(
+                    "HTTP response did not contain expected exception indicating that opentracing Tracer is not available.",
+                    response.matches("(?s).*java\\.lang\\.NoClassDefFoundError: L*io.opentracing.Tracer.*"));
+            // really dots because openjdk uses '/' whereas ibmjdk uses '.'      ---^        ---^
         } finally {
             opentracingSubsystem(ModelDescriptionConstants.ADD, managementClient.getControllerClient());
         }
