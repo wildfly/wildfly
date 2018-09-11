@@ -146,10 +146,12 @@ public class BroadcastGroupDefinition extends PersistentResourceDefinition {
         final Set<String> availableConnectors =  getAvailableConnectors(context,operation);
         final List<ModelNode> operationAddress = operation.get(ModelDescriptionConstants.ADDRESS).asList();
         final String broadCastGroup = operationAddress.get(operationAddress.size()-1).get(CommonAttributes.BROADCAST_GROUP).asString();
-        for(ModelNode connectorRef:connectorRefs.asList()){
-            final String connectorName = connectorRef.asString();
-            if(!availableConnectors.contains(connectorName)){
-                throw MessagingLogger.ROOT_LOGGER.wrongConnectorRefInBroadCastGroup(broadCastGroup, connectorName, availableConnectors);
+        if(connectorRefs.isDefined()) {
+            for(ModelNode connectorRef:connectorRefs.asList()){
+                final String connectorName = connectorRef.asString();
+                if(!availableConnectors.contains(connectorName)){
+                    throw MessagingLogger.ROOT_LOGGER.wrongConnectorRefInBroadCastGroup(broadCastGroup, connectorName, availableConnectors);
+                }
             }
         }
     }
