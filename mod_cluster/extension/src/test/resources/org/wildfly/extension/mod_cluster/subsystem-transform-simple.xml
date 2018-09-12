@@ -20,7 +20,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<subsystem xmlns="urn:jboss:domain:modcluster:4.0">
+<subsystem xmlns="urn:jboss:domain:modcluster:5.0">
     <proxy name="default" listener="ajp">
         <simple-load-provider factor="${some.expression:50}"/>
     </proxy>
