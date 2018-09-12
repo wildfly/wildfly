@@ -23,6 +23,8 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.EnumSet;
 
+import io.netty.util.internal.logging.InternalLoggerFactory;
+import io.netty.util.internal.logging.JdkLoggerFactory;
 import org.jboss.as.clustering.controller.ContextualSubsystemRegistration;
 import org.jboss.as.clustering.controller.descriptions.SubsystemResourceDescriptionResolver;
 import org.jboss.as.controller.Extension;
@@ -46,6 +48,8 @@ public class InfinispanExtension implements Extension {
 
     @Override
     public void initialize(ExtensionContext context) {
+        // Initialize the Netty logger factory
+        InternalLoggerFactory.setDefaultFactory(JdkLoggerFactory.INSTANCE);
         SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, InfinispanModel.CURRENT.getVersion());
 
         new InfinispanSubsystemResourceDefinition().register(new ContextualSubsystemRegistration(registration, context));

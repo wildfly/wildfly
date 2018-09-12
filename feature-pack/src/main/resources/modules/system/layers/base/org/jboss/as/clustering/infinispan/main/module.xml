@@ -38,6 +38,8 @@
     <dependencies>
         <module name="javax.api"/>
         <module name="javax.transaction.api"/>
+        <!-- The io.netty module is only require to initialize Netty's InternalLoggingFactory -->
+        <module name="io.netty"/>
         <module name="io.reactivex.rxjava2.rxjava"/>
         <module name="net.jcip"/>
         <module name="org.infinispan" services="import"/>
