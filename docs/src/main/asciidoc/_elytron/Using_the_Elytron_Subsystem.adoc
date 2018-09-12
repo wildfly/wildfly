@@ -2038,6 +2038,41 @@ As existing services and deployments could have cached the default `SSLContext` 
 }
 ----
 
+=== Configuring SNI
+
+Using the WildFly Elytron subsystem it is possible to configure an SSL context which supports SNI.  By supporting SNI if an SNI host name is available whilst the SSLSession is being negotiated a host specific SSLContext will be selected.  If no host specific SSLContext is identified either because no host name was received or because there is no match a default SSLContext will be used instead.  By identifying a host specific SSLContext it means that a certificate appropriate for that host can be used.
+
+The following command demonstrates how an SNI aware SSLContext can be added: - 
+
+[source, ruby]
+----
+[standalone@localhost:9990 /] ./subsystem=elytron/server-ssl-sni-context=test-sni:add(default-ssl-context=jboss,host-context-map={localhost=localhost, wildfly.org=wildfly})
+{"outcome" => "success"}
+----
+
+This example assumes that three SSLContexts have been previously defined following the steps available previously in this document, those contexts are `jboss`, `localhost`, and `wildfly`.
+
+During negotiation of the SSLSession if the SNI host name received is `localhost` then the `localhost` SSLContext will be used, if the SNI host name is `wildfly.org` then the `wildfly` SSLContext will be used.  If no SNI host name is received or if we receive a name that does not match this will fallback and use the `jboss` SSLContext.
+
+The resulting resource looks like: -
+
+[source, ruby]
+----
+[standalone@localhost:9990 /] ./subsystem=elytron/server-ssl-sni-context=test-sni:read-resource
+{
+    "outcome" => "success",
+    "result" => {
+        "default-ssl-context" => "jboss",
+        "host-context-map" => {
+            "localhost" => "localhost",
+            "wildfly.org" => "wildfly"
+        }
+    }
+}
+----
+
+Within the `host-context-map` it is also possible to define wildcard mappings such as `&#42;` and `&#42;.wildfly.org`.
+
 [[configuring-the-elytron-and-security-subsystems]]
 == Configuring the Elytron and Security Subsystems
 
