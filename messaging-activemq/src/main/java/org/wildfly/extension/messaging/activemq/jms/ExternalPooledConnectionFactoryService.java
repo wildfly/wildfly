@@ -22,7 +22,6 @@
 package org.wildfly.extension.messaging.activemq.jms;
 
 import static org.jboss.as.naming.deployment.ContextNames.BindInfo;
-import static org.wildfly.extension.messaging.activemq.BinderServiceUtil.installAliasBinderService;
 import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Pooled.REBALANCE_CONNECTIONS_PROP_NAME;
 
 import java.io.InputStream;
@@ -50,7 +49,6 @@ import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.security.CredentialReference;
-import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.network.ManagedBinding;
 import org.jboss.as.network.OutboundSocketBinding;
@@ -180,7 +178,6 @@ public class ExternalPooledConnectionFactoryService implements Service<Void> {
     // mapping between the {discovery}-groups and the command dispatcher factory they use
     private final Map<String, Supplier<CommandDispatcherFactory>> commandDispatcherFactories = new HashMap<>();
     private BindInfo bindInfo;
-    private List<String> jndiAliases;
     private String txSupport;
     private int minPoolSize;
     private int maxPoolSize;
@@ -194,14 +191,14 @@ public class ExternalPooledConnectionFactoryService implements Service<Void> {
 
 
     public ExternalPooledConnectionFactoryService(String name, TransportConfiguration[] connectors, DiscoveryGroupConfiguration groupConfiguration, String jgroupsClusterName,
-            String jgroupChannelName, List<PooledConnectionFactoryConfigProperties> adapterParams, List<String> jndiNames, String txSupport, int minPoolSize, int maxPoolSize, String managedConnectionPoolClassName, Boolean enlistmentTrace) {
+            String jgroupChannelName, List<PooledConnectionFactoryConfigProperties> adapterParams, BindInfo bindInfo, String txSupport, int minPoolSize, int maxPoolSize, String managedConnectionPoolClassName, Boolean enlistmentTrace) {
         this.name = name;
         this.connectors = connectors;
         this.discoveryGroupConfiguration = groupConfiguration;
         this.jgroupsClusterName = jgroupsClusterName;
         this.jgroupChannelName = jgroupChannelName;
         this.adapterParams = adapterParams;
-        initJNDIBindings(jndiNames);
+        this.bindInfo = bindInfo;
         createBinderService = true;
         this.txSupport = txSupport;
         this.minPoolSize = minPoolSize;
@@ -210,15 +207,6 @@ public class ExternalPooledConnectionFactoryService implements Service<Void> {
         this.enlistmentTrace = enlistmentTrace;
     }
 
-    private void initJNDIBindings(List<String> jndiNames) {
-        // create the definition with the 1st jndi names and create jndi aliases for the rest
-        String jndiName = jndiNames.get(0);
-        this.bindInfo = ContextNames.bindInfoFor(jndiName);
-        this.jndiAliases = new ArrayList<>();
-        if (jndiNames.size() > 1) {
-            jndiAliases = jndiNames.subList(1, jndiNames.size());
-        }
-    }
 
     static ServiceName getResourceAdapterActivatorsServiceName(String name) {
         return ConnectorServices.RESOURCE_ADAPTER_ACTIVATOR_SERVICE.append(name);
@@ -233,7 +221,7 @@ public class ExternalPooledConnectionFactoryService implements Service<Void> {
             String jgroupClusterName,
             String jgroupChannelName,
             List<PooledConnectionFactoryConfigProperties> adapterParams,
-            List<String> jndiNames,
+            BindInfo bindInfo,
             String txSupport,
             int minPoolSize,
             int maxPoolSize,
@@ -244,7 +232,7 @@ public class ExternalPooledConnectionFactoryService implements Service<Void> {
         ServiceName serviceName = JMSServices.getPooledConnectionFactoryBaseServiceName(JBOSS_MESSAGING_ACTIVEMQ).append(name);
         ExternalPooledConnectionFactoryService service = new ExternalPooledConnectionFactoryService(name,
                 connectors, groupConfiguration, jgroupClusterName, jgroupChannelName, adapterParams,
-                jndiNames, txSupport, minPoolSize, maxPoolSize, managedConnectionPoolClassName, enlistmentTrace);
+                bindInfo, txSupport, minPoolSize, maxPoolSize, managedConnectionPoolClassName, enlistmentTrace);
 
         installService0(context, serviceName, service, groupConfiguration, jgroupClusterName, jgroupChannelName, connectorsSocketBindings, model);
         return service;
@@ -463,8 +451,6 @@ public class ExternalPooledConnectionFactoryService implements Service<Void> {
                             .addDependency(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append("default"))
                             .setInitialMode(ServiceController.Mode.PASSIVE).install();
 
-            createJNDIAliases(bindInfo, jndiAliases, controller, serviceTarget);
-
             // Mock the deployment service to allow it to start
             serviceTarget.addService(ConnectorServices.RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX.append(name), Service.NULL).install();
         } finally {
@@ -495,17 +481,6 @@ public class ExternalPooledConnectionFactoryService implements Service<Void> {
                 }
             } catch (Exception e) {
                 throw new RuntimeException(e);
-            }
-        }
-    }
-
-    private void createJNDIAliases(final BindInfo bindInfo, List<String> aliases, ServiceController<ResourceAdapterDeployment> controller, ServiceTarget serviceTarget) {
-        for (final String alias : aliases) {
-            // do not install the alias' binder service if it is already registered
-            if (controller.getServiceContainer().getService(ContextNames.bindInfoFor(alias).getBinderServiceName()) == null) {
-                installAliasBinderService(serviceTarget,
-                        bindInfo,
-                        alias);
             }
         }
     }
