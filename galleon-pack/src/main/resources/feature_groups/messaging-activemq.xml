@@ -3,6 +3,7 @@
     <feature spec="subsystem.messaging-activemq">
         <feature spec="subsystem.messaging-activemq.server">
             <param name="server" value="default"/>
+            <param name="journal-pool-files" value="10"/>
             <feature spec="subsystem.messaging-activemq.server.http-connector">
                 <param name="http-connector" value="http-connector"/>
                 <param name="socket-binding" value="http"/>

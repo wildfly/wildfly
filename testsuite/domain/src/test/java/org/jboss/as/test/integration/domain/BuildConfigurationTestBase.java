@@ -158,9 +158,9 @@ public abstract class BuildConfigurationTestBase {
                 BufferedWriter writer = Files.newBufferedWriter(file.toPath())) {
             String line = reader.readLine();
             while (line != null) {
-                if (line.contains("<security-setting name=\"#\">")) { //super duper hackish, just IO optimization
-                    writer.write("        <journal type=\"NIO\" file-size=\"1024\" />");
-                    writer.newLine();
+
+                if (line.contains("<journal pool-files=\"10\"/>")) { //super duper hackish, just IO optimization
+                    line = "        <journal type=\"NIO\" file-size=\"1024\" pool-files=\"10\"/>";
                 }
 
                 int start = line.indexOf("java.net.preferIPv4Stack");
