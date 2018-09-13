@@ -166,7 +166,6 @@ public class PooledConnectionFactoryService implements Service<Void> {
     public static final String JGROUPS_CHANNEL_NAME = "jgroupsChannelName";
     public static final String JGROUPS_CHANNEL_REF_NAME = "jgroupsChannelRefName";
 
-    private Injector<Object> transactionManager = new InjectedValue<Object>();
     private List<String> connectors;
     private String discoveryGroupName;
     private List<PooledConnectionFactoryConfigProperties> adapterParams;
@@ -301,7 +300,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
     private static ServiceBuilder createServiceBuilder(ServiceTarget serviceTarget, ServiceName serverServiceName, ServiceName serviceName, PooledConnectionFactoryService service) {
         ServiceBuilder serviceBuilder = serviceTarget
                 .addService(serviceName, service)
-                .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, service.transactionManager)
+                .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER)
                 .addDependency(serverServiceName, ActiveMQServer.class, service.activeMQServer)
                 .addDependency(ActiveMQActivationService.getServiceName(serverServiceName))
                 .addDependency(JMSServices.getJmsManagerBaseServiceName(serverServiceName))
@@ -311,11 +310,13 @@ public class PooledConnectionFactoryService implements Service<Void> {
         return serviceBuilder;
     }
 
+    @Override
     public Void getValue() throws IllegalStateException, IllegalArgumentException {
         return null;
     }
 
 
+    @Override
     public void start(StartContext context) throws StartException {
         ServiceTarget serviceTarget = context.getChildTarget();
         try {
@@ -404,12 +405,18 @@ public class PooledConnectionFactoryService implements Service<Void> {
                         inboundProperties.add(p);
                     }
                 } else {
-                    if (adapterParam.getConfigType() == ConnectionFactoryAttribute.ConfigType.INBOUND) {
-                        inboundProperties.add(p);
-                    } else if (adapterParam.getConfigType() == ConnectionFactoryAttribute.ConfigType.OUTBOUND) {
-                        outboundProperties.add(p);
-                    } else {
+                    if (null == adapterParam.getConfigType()) {
                         properties.add(p);
+                    } else switch (adapterParam.getConfigType()) {
+                        case INBOUND:
+                            inboundProperties.add(p);
+                            break;
+                        case OUTBOUND:
+                            outboundProperties.add(p);
+                            break;
+                        default:
+                            properties.add(p);
+                            break;
                     }
                 }
             }
@@ -459,12 +466,6 @@ public class PooledConnectionFactoryService implements Service<Void> {
                             activator.getTxIntegrationInjector())
                     .addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE,
                             JcaSubsystemConfiguration.class, activator.getConfigInjector())
-                    // No legacy security services needed as this activation's sole connection definition
-                    // does not configure a legacy security domain
-                    /*
-                    .addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class,
-                            activator.getSubjectFactoryInjector())
-                    */
                     .addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class,
                             activator.getCcmInjector()).addDependency(NamingService.SERVICE_NAME)
                     .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER)
@@ -586,10 +587,6 @@ public class PooledConnectionFactoryService implements Service<Void> {
 
     public void stop(StopContext context) {
         // Service context takes care of this
-    }
-
-    public Injector<Object> getTransactionManager() {
-        return transactionManager;
     }
 
     Injector<SocketBinding> getSocketBindingInjector(String name) {
