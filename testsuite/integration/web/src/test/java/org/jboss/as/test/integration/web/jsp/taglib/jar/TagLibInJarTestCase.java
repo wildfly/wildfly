@@ -42,6 +42,7 @@ public class TagLibInJarTestCase {
 
     private static final String TLD_INSIDE_RESOURCES = "tld-inside-resources";
     private static final String TLD_OUTSIDE_RESOURCES = "tld-outside-resources";
+    private static final String TLD_INSIDE_JAR = "tld-inside-jar";
     private static final String JAR_NAME = "taglib.jar";
     private static final String JSP = "index.jsp";
     private static final String WEB_FRAGMENT = "web-fragment.xml";
@@ -54,6 +55,10 @@ public class TagLibInJarTestCase {
     @OperateOnDeployment(TLD_INSIDE_RESOURCES)
     private URL urlDep2;
 
+    @ArquillianResource
+    @OperateOnDeployment(TLD_INSIDE_JAR)
+    private URL urlDep3;
+
     @Deployment(name = TLD_OUTSIDE_RESOURCES)
     public static WebArchive deployment1() throws Exception {
         return createDeployment(TLD_OUTSIDE_RESOURCES + ".war", "tlds/taglib.tld");
@@ -64,6 +69,11 @@ public class TagLibInJarTestCase {
         return createDeployment(TLD_INSIDE_RESOURCES + ".war", "resources/tlds/taglib.tld");
     }
 
+    @Deployment(name = TLD_INSIDE_JAR)
+    public static WebArchive deployment3() throws Exception {
+        return createDeployment3(TLD_INSIDE_JAR + ".war");
+    }
+
     private static WebArchive createDeployment(String name, String tldLocation) throws Exception {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, JAR_NAME)
                 .addAsManifestResource(TagLibInJarTestCase.class.getPackage(), "taglib.tld", tldLocation)
@@ -71,6 +81,17 @@ public class TagLibInJarTestCase {
                 .addClass(TestTag.class);
         WebArchive war = ShrinkWrap.create(WebArchive.class, name)
                 .addAsLibraries(jar)
+                .addAsWebResource(TagLibInJarTestCase.class.getPackage(), JSP, JSP);
+        return war;
+    }
+
+    private static WebArchive createDeployment3(String name) throws Exception {
+        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, JAR_NAME)
+                .addAsManifestResource(TagLibInJarTestCase.class.getPackage(), "taglibInJar.tld", "tlds/taglibInJar.tld")
+                .addClass(TestTag.class);
+        WebArchive war = ShrinkWrap.create(WebArchive.class, name)
+                .addAsLibraries(jar)
+                .addAsWebInfResource(TagLibInJarTestCase.class.getPackage(), "web.xml", "web.xml")
                 .addAsWebResource(TagLibInJarTestCase.class.getPackage(), JSP, JSP);
         return war;
     }
@@ -85,6 +106,18 @@ public class TagLibInJarTestCase {
     @OperateOnDeployment(TLD_INSIDE_RESOURCES)
     public void testTldInsideResourcesFolder() throws Exception {
         checkJspAvailable(urlDep2);
+    }
+
+    /**
+     * Tests if deployment with taglib-location pointing to jar fails during deployment phase.
+     * Test passes if the correct response is returned from the JSP.
+     *
+     * @throws Exception
+     */
+    @Test
+    @OperateOnDeployment(TLD_INSIDE_JAR)
+    public void testTldInsideJar() throws Exception {
+        checkJspAvailable(urlDep3);
     }
 
     private void checkJspAvailable(URL url) throws Exception {
