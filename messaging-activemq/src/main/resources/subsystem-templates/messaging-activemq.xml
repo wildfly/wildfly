@@ -7,6 +7,8 @@
         <server name="default">
             <?CLUSTERED?>
 
+            <journal pool-files="10"/>
+
             <security-setting name="#">
                 <role name="guest"
                       send="true"

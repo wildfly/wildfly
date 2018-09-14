@@ -5,6 +5,7 @@
         <feature spec="subsystem.messaging-activemq.server">
             <param name="server" value="default"/>
             <param name="cluster-password" value="${jboss.messaging.cluster.password:CHANGE ME!!}"/>
+            <param name="journal-pool-files" value="10"/>
             <feature spec="subsystem.messaging-activemq.server.address-setting">
                 <param name="address-setting" value="#"/>
                 <param name="dead-letter-address" value="jms.queue.DLQ"/>
