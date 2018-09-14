@@ -30,8 +30,6 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.SOCKET_B
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.apache.activemq.artemis.api.config.ActiveMQDefaultConfiguration;
-import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
@@ -62,16 +60,22 @@ public class DiscoveryGroupDefinition extends PersistentResourceDefinition {
             // either under server (and it is deprecated) or under the subsystem.
             .build();
 
+    /**
+     * @see ActiveMQDefaultConfiguration#getDefaultBroadcastRefreshTimeout
+     */
     public static final SimpleAttributeDefinition REFRESH_TIMEOUT = create("refresh-timeout", ModelType.LONG)
-            .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultBroadcastRefreshTimeout()))
+            .setDefaultValue(new ModelNode(10000))
             .setMeasurementUnit(MILLISECONDS)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
+    /**
+     * @see ActiveMQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT
+     */
     public static final SimpleAttributeDefinition INITIAL_WAIT_TIMEOUT = create("initial-wait-timeout", ModelType.LONG)
-            .setDefaultValue(new ModelNode(ActiveMQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT))
+            .setDefaultValue(new ModelNode(10000L))
             .setMeasurementUnit(MILLISECONDS)
             .setRequired(false)
             .setAllowExpression(true)

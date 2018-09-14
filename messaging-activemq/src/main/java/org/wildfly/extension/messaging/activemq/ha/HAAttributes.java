@@ -29,7 +29,6 @@ import static org.jboss.dmr.ModelType.INT;
 import static org.jboss.dmr.ModelType.LONG;
 import static org.jboss.dmr.ModelType.STRING;
 
-import org.apache.activemq.artemis.api.config.ActiveMQDefaultConfiguration;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.AttributeParser;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -44,23 +43,31 @@ import org.wildfly.extension.messaging.activemq.InfiniteOrPositiveValidators;
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2014 Red Hat inc.
  */
 public class HAAttributes {
-
+    /**
+     * @see ActiveMQDefaultConfiguration#isDefaultAllowAutoFailback
+     */
     public static final SimpleAttributeDefinition ALLOW_FAILBACK = create("allow-failback", BOOLEAN)
-            .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.isDefaultAllowAutoFailback()))
+            .setDefaultValue(new ModelNode(true))
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
+    /**
+     * @see ActiveMQDefaultConfiguration#getDefaultHapolicyBackupPortOffset
+     */
     public static final SimpleAttributeDefinition BACKUP_PORT_OFFSET = create("backup-port-offset", INT)
-            .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultHapolicyBackupPortOffset()))
+            .setDefaultValue(new ModelNode(100))
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
+    /**
+     * @see ActiveMQDefaultConfiguration#getDefaultHapolicyBackupRequestRetries
+     */
     public static final SimpleAttributeDefinition BACKUP_REQUEST_RETRIES = create("backup-request-retries", INT)
-            .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultHapolicyBackupRequestRetries()))
+            .setDefaultValue(new ModelNode(-1))
             .setRequired(false)
             .setAllowExpression(true)
             .setCorrector(InfiniteOrPositiveValidators.NEGATIVE_VALUE_CORRECTOR)
@@ -68,8 +75,11 @@ public class HAAttributes {
             .setRestartAllServices()
             .build();
 
+    /**
+     * @see ActiveMQDefaultConfiguration#getDefaultHapolicyBackupRequestRetryInterval
+     */
     public static final SimpleAttributeDefinition BACKUP_REQUEST_RETRY_INTERVAL = create("backup-request-retry-interval", LONG)
-            .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultHapolicyBackupRequestRetryInterval()))
+            .setDefaultValue(new ModelNode(5000L))
             .setMeasurementUnit(MILLISECONDS)
             .setRequired(false)
             .setAllowExpression(true)
@@ -97,8 +107,11 @@ public class HAAttributes {
             .setRestartAllServices()
             .build();
 
+    /**
+     * @see ActiveMQDefaultConfiguration#isDefaultFailoverOnServerShutdown
+     */
     public static final SimpleAttributeDefinition FAILOVER_ON_SERVER_SHUTDOWN = create("failover-on-server-shutdown", ModelType.BOOLEAN)
-            .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.isDefaultFailoverOnServerShutdown()))
+            .setDefaultValue(new ModelNode(false))
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -110,37 +123,52 @@ public class HAAttributes {
             .setRestartAllServices()
             .build();
 
+    /**
+     * @see ActiveMQDefaultConfiguration#getDefaultInitialReplicationSyncTimeout
+     */
     public static final SimpleAttributeDefinition INITIAL_REPLICATION_SYNC_TIMEOUT = create("initial-replication-sync-timeout", LONG)
-            .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultInitialReplicationSyncTimeout()))
+            .setDefaultValue(new ModelNode(30000L))
             .setMeasurementUnit(MILLISECONDS)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
+    /**
+     * @see ActiveMQDefaultConfiguration#getDefaultHapolicyMaxBackups
+     */
     public static final SimpleAttributeDefinition MAX_BACKUPS = create("max-backups", INT)
-            .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultHapolicyMaxBackups()))
+            .setDefaultValue(new ModelNode(1))
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
+    /**
+     * @see ActiveMQDefaultConfiguration#getDefaultMaxSavedReplicatedJournalsSize
+     */
     public static final SimpleAttributeDefinition MAX_SAVED_REPLICATED_JOURNAL_SIZE = create("max-saved-replicated-journal-size", INT)
-            .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultMaxSavedReplicatedJournalsSize()))
+            .setDefaultValue(new ModelNode(2))
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
+    /**
+     * @see ActiveMQDefaultConfiguration#isDefaultHapolicyRequestBackup
+     */
     public static final SimpleAttributeDefinition REQUEST_BACKUP = create("request-backup", BOOLEAN)
-            .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.isDefaultHapolicyRequestBackup()))
+            .setDefaultValue(new ModelNode(false))
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
+    /**
+     * @see ActiveMQDefaultConfiguration#isDefaultRestartBackup
+     */
     public static final SimpleAttributeDefinition RESTART_BACKUP = create("restart-backup", BOOLEAN)
-            .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.isDefaultRestartBackup()))
+            .setDefaultValue(new ModelNode(true))
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()

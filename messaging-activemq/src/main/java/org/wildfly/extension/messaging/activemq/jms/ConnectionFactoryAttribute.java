@@ -69,6 +69,7 @@ public class ConnectionFactoryAttribute {
         switch (attributeDefinition.getType()) {
             case BOOLEAN:
                 return Boolean.class.getName();
+            case DOUBLE:
             case BIG_DECIMAL:
                 return Double.class.getName();
             case LONG:

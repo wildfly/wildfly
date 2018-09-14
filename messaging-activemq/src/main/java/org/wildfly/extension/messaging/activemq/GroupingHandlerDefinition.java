@@ -31,7 +31,6 @@ import static org.jboss.dmr.ModelType.STRING;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.apache.activemq.artemis.api.config.ActiveMQDefaultConfiguration;
 import org.apache.activemq.artemis.core.server.group.impl.GroupingHandlerConfiguration;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
@@ -53,17 +52,23 @@ public class GroupingHandlerDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .build();
 
+    /**
+     * @see ActiveMQDefaultConfiguration#getDefaultGroupingHandlerTimeout
+     */
     public static final SimpleAttributeDefinition TIMEOUT = create("timeout", LONG)
-            .setDefaultValue(new ModelNode(1L * ActiveMQDefaultConfiguration.getDefaultGroupingHandlerTimeout()))
+            .setDefaultValue(new ModelNode(5000L))
             .setMeasurementUnit(MILLISECONDS)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
+    /**
+     * @see ActiveMQDefaultConfiguration#getDefaultGroupingHandlerGroupTimeout
+     */
     public static final SimpleAttributeDefinition GROUP_TIMEOUT = create("group-timeout", LONG)
             // FIXME Cast to a long until Artemis type is fixed
-            .setDefaultValue(new ModelNode(1L * ActiveMQDefaultConfiguration.getDefaultGroupingHandlerGroupTimeout()))
+            .setDefaultValue(new ModelNode(-1L))
             .setMeasurementUnit(MILLISECONDS)
             .setRequired(false)
             .setAllowExpression(true)
@@ -71,8 +76,11 @@ public class GroupingHandlerDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .build();
 
+    /**
+     * @see ActiveMQDefaultConfiguration#getDefaultGroupingHandlerReaperPeriod
+     */
     public static final SimpleAttributeDefinition REAPER_PERIOD = create("reaper-period", LONG)
-            .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultGroupingHandlerReaperPeriod()))
+            .setDefaultValue(new ModelNode(30000L))
             .setMeasurementUnit(MILLISECONDS)
             .setRequired(false)
             .setAllowExpression(true)

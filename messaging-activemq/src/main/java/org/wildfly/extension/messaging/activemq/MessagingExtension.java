@@ -88,7 +88,14 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.EXTERNAL
  * Domain extension that integrates Apache ActiveMQ 6.
  *
  * <dl>
- *   <dt><strong>Current</strong> - WildFly 12</dt>
+ * <dt><strong>Current</strong> - WildFly 14</dt>
+ *   <dd>
+ *     <ul>
+ *       <li>XML namespace: urn:jboss:domain:messaging-activemq:4.0
+ *       <li>Management model: 4.0.0
+ *     </ul>
+ *   </dd>
+ *   <dt>WildFly 12</dt>
  *   <dd>
  *     <ul>
  *       <li>XML namespace: urn:jboss:domain:messaging-activemq:3.0

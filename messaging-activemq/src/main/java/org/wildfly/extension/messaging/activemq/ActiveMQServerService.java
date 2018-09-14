@@ -38,7 +38,6 @@ import java.util.function.Supplier;
 import javax.management.MBeanServer;
 import javax.sql.DataSource;
 
-import org.apache.activemq.artemis.api.config.ActiveMQDefaultConfiguration;
 import org.apache.activemq.artemis.api.core.BroadcastGroupConfiguration;
 import org.apache.activemq.artemis.api.core.DiscoveryGroupConfiguration;
 import org.apache.activemq.artemis.api.core.Interceptor;
@@ -281,7 +280,7 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
             server = new ActiveMQServerImpl(configuration,
                     mbs,
                     securityManager);
-            if (ActiveMQDefaultConfiguration.getDefaultClusterPassword().equals(server.getConfiguration().getClusterPassword())) {
+            if (ServerDefinition.CLUSTER_PASSWORD.getDefaultValue().asString().equals(server.getConfiguration().getClusterPassword())) {
                 server.getConfiguration().setClusterPassword(java.util.UUID.randomUUID().toString());
             }
 
