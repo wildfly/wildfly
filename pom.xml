@@ -1696,6 +1696,10 @@
                         <artifactId>commons-configuration2</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>org.apache.geronimo.specs</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.jboss.logging</groupId>
                         <artifactId>jboss-logging</artifactId>
                     </exclusion>
@@ -1832,7 +1836,7 @@
                     <!-- Exclude the JSR-353 implementation -->
                     <exclusion>
                         <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-json_1.0_spec</artifactId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.apache.johnzon</groupId>
@@ -1881,6 +1885,12 @@
                 <groupId>org.apache.activemq</groupId>
                 <artifactId>artemis-server</artifactId>
                 <version>${version.org.apache.activemq.artemis}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.geronimo.specs</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -3724,6 +3734,12 @@
                 <groupId>org.eclipse.microprofile.opentracing</groupId>
                 <artifactId>microprofile-opentracing-api</artifactId>
                 <version>${version.org.eclipse.microprofile.opentracing}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.geronimo.specs</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -3876,6 +3892,10 @@
                         <artifactId>slf4j-log4j12</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>org.apache.geronimo.specs</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.jboss.spec.javax.transaction</groupId>
                         <artifactId>jboss-transaction-api_1.2_spec</artifactId>
                     </exclusion>
@@ -3919,6 +3939,10 @@
                     <exclusion>
                         <groupId>cglib</groupId>
                         <artifactId>cglib</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.geronimo.specs</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.hibernate.javax.persistence</groupId>
