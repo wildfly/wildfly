@@ -894,6 +894,10 @@ to avoid the IllegalStateException, so they don't have to change their
 application right away (for compatibility purposes). This hint may be
 deprecated in a future release. See WFLY-7108 for more details. Defaults
 to false.
+
+|wildfly.jpa.regionfactory |Only applies to Hibernate ORM 5.3+, set to false to disable automatic use of Infinispan as second level cache (hibernate.cache.region.factory_class).
+
+|wildfly.jpa.jtaplatform |Only applies to Hibernate ORM 5.3+, set to false to disable automatic configuring of the JTA integration platform (hibernate.transaction.jta.platform).
 |=======================================================================
 
 [[determine-the-persistence-provider-module]]
