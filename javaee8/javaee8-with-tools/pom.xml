@@ -37,6 +37,14 @@
     <name>WildFly BOMs: Java EE 8 with Tools</name>
     <description>Dependency Management for Java EE 8 Specification APIs with Deployment and Testing Tools</description>
 
+    <licenses>
+        <license>
+            <name>Apache License 2.0</name>
+            <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
     <properties>
         <!-- Version properties are inherited from parent -->
     </properties>
