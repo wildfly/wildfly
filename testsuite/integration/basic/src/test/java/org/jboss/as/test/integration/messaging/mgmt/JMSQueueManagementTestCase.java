@@ -29,8 +29,6 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.HashSet;
-import java.util.Set;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -52,6 +50,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.logging.Logger;
@@ -76,6 +75,8 @@ public class JMSQueueManagementTestCase {
     private static final long SAMPLE_PERIOD = 1001;
 
     private static long count = System.currentTimeMillis();
+
+    private static final long TIMEOUT = TimeoutUtil.adjust(5000);
 
     @ContainerResource
     private Context remoteContext;
@@ -167,18 +168,15 @@ public class JMSQueueManagementTestCase {
 
     @Test
     public void testListAndCountMessages() throws Exception {
-
         MessageProducer producer = session.createProducer(queue);
-        producer.send(session.createTextMessage("A"));
-        producer.send(session.createTextMessage("B"));
-
-        ModelNode result = execute(getQueueOperation("list-messages"), true);
+        Message message1 = session.createTextMessage("A");
+        producer.send(message1);
+        Message message2 = session.createTextMessage("B");
+        producer.send(message2);
+        listMessages(2);
+        ModelNode result = execute(getQueueOperation("count-messages"), true);
         Assert.assertTrue(result.isDefined());
-        Assert.assertEquals(2, result.asList().size());
-
-        result = execute(getQueueOperation("count-messages"), true);
-        Assert.assertTrue(result.isDefined());
-        Assert.assertEquals(2, result.asInt());
+        Assert.assertEquals("count-messages result " + result, 2, result.asInt());
     }
 
     @Test
@@ -190,7 +188,6 @@ public class JMSQueueManagementTestCase {
             MessageProducer producer = session.createProducer(queue);
             producer.send(session.createTextMessage("A"));
             producer.send(session.createTextMessage("B"));
-
 
             // wait for 2 sample periods to let the counters be updated.
             checkMessageCounters(2, 2);
@@ -343,59 +340,74 @@ public class JMSQueueManagementTestCase {
     @Test
     public void testChangeMessagePriority() throws Exception {
 
+        final int priority = 3;
         MessageProducer producer = session.createProducer(queue);
+        producer.setPriority(priority);
         Message msgA = session.createTextMessage("A");
         producer.send(msgA);
-        producer.send(session.createTextMessage("B"));
-        producer.send(session.createTextMessage("C"));
+        String messageId = msgA.getJMSMessageID();
+        Message msgB = session.createTextMessage("B");
+        producer.send(msgB);
+        Message msgC = session.createTextMessage("C");
+        producer.send(msgC);
 
-        Set<Integer> priorities = new HashSet<Integer>();
-        ModelNode result = execute(getQueueOperation("list-messages"), true);
+        ModelNode result = listMessages(3);
         Assert.assertEquals(3, result.asInt());
         for (ModelNode node : result.asList()) {
-            priorities.add(node.get("JMSPriority").asInt());
-        }
-        int newPriority = -1;
-        for (int i = 0; i < 10; i++) {
-            if (!priorities.contains(i)) {
-                newPriority = i;
-                break;
-            }
+            Assert.assertEquals("Priority should be " + priority, priority, node.get("JMSPriority").asInt());
         }
 
+        int newPriority = 5;
         ModelNode op = getQueueOperation("change-message-priority");
-        op.get("message-id").set(msgA.getJMSMessageID());
+        op.get("message-id").set(messageId);
         op.get("new-priority").set(newPriority);
-
         result = execute(op, true);
         Assert.assertTrue(result.isDefined());
         Assert.assertTrue(result.asBoolean());
-
-        result = execute(getQueueOperation("list-messages"), true);
+        result = listMessages(3);
+        Assert.assertEquals("The expected messages are " + msgA + " "+ msgB + " "+ msgC + " and we got " + result, 3, result.asList().size());
         boolean found = false;
         for (ModelNode node : result.asList()) {
-            if (msgA.getJMSMessageID().equals(node.get("JMSMessageID").asString())) {
-                Assert.assertEquals(newPriority, node.get("JMSPriority").asInt());
+            if (messageId.equals(node.get("JMSMessageID").asString())) {
+                Assert.assertEquals("Message should have the new priority", newPriority, node.get("JMSPriority").asInt());
                 found = true;
-                break;
+            } else {
+                Assert.assertEquals("Message should have the set priority", priority, node.get("JMSPriority").asInt());
             }
         }
         Assert.assertTrue(found);
 
         op = getQueueOperation("change-messages-priority");
         op.get("new-priority").set(newPriority);
-
         result = execute(op, true);
         Assert.assertTrue(result.isDefined());
         Assert.assertTrue(result.asInt() > 1 && result.asInt() < 4);
-
-        result = execute(getQueueOperation("list-messages"), true);
+        result = listMessages(3);
+        Assert.assertEquals(3, result.asInt());
         for (ModelNode node : result.asList()) {
-            Assert.assertEquals(newPriority, node.get("JMSPriority").asInt());
+            Assert.assertEquals("Message should have the new priority", newPriority, node.get("JMSPriority").asInt());
         }
 
     }
 
+    private ModelNode listMessages(int expectedSize) throws IOException, InterruptedException {
+        final ModelNode listMessagesOperation = getQueueOperation("list-messages");
+        long end = System.currentTimeMillis() + TIMEOUT;
+        boolean passed = false;
+        ModelNode result = null;
+        while (end > System.currentTimeMillis()) {
+            result = execute(listMessagesOperation, true);
+            Assert.assertTrue(result.isDefined());
+            passed = result.asList().size() == expectedSize;
+            if (passed) {
+                break;
+            }
+            Thread.sleep(100);
+        }
+        Assert.assertTrue("Here is what  we got instead of the " + expectedSize + " messages " + result, passed);
+        return result;
+
+    }
     @Test
     public void testListConsumers() throws Exception {
         ConnectionFactory cf = (ConnectionFactory) remoteContext.lookup("jms/RemoteConnectionFactory");
