@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.messaging.activemq.jms;
 
+import static org.wildfly.extension.messaging.activemq.BinderServiceUtil.installAliasBinderService;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_CLUSTER;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.LOCAL;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.LOCAL_TX;
@@ -45,9 +46,13 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.naming.deployment.ContextNames;
+import org.jboss.as.naming.deployment.ContextNames.BindInfo;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.extension.messaging.activemq.CommonAttributes;
 import org.wildfly.extension.messaging.activemq.DiscoveryGroupDefinition;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
@@ -84,7 +89,7 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
         for (ModelNode node : resolvedModel.get(Common.ENTRIES.getName()).asList()) {
             jndiNames.add(node.asString());
         }
-
+        BindInfo bindInfo = installJNDIAliases(context, jndiNames);
         String managedConnectionPoolClassName = null;
         if (resolvedModel.hasDefined(ConnectionFactoryAttributes.Pooled.MANAGED_CONNECTION_POOL.getName())) {
             managedConnectionPoolClassName = resolvedModel.get(ConnectionFactoryAttributes.Pooled.MANAGED_CONNECTION_POOL.getName()).asString();
@@ -143,12 +148,12 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
             Set<String> connectorsSocketBindings = new HashSet<>();
             TransportConfiguration[] transportConfigurations = TransportConfigOperationHandlers.processConnectors(context, connectors, connectorsSocketBindings);
             ExternalPooledConnectionFactoryService.installService(context, name, transportConfigurations, discoveryGroupConfiguration, connectorsSocketBindings,
-                    jgroupClusterName, jgroupsChannelName, adapterParams, jndiNames, txSupport, minPoolSize, maxPoolSize, managedConnectionPoolClassName, enlistmentTrace, model);
+                    jgroupClusterName, jgroupsChannelName, adapterParams, bindInfo, txSupport, minPoolSize, maxPoolSize, managedConnectionPoolClassName, enlistmentTrace, model);
         } else {
             String serverName = serverAddress.getLastElement().getValue();
             PooledConnectionFactoryService.installService(context,
                     name, serverName, connectors, discoveryGroupName, jgroupClusterName,
-                    adapterParams, jndiNames, txSupport, minPoolSize, maxPoolSize, managedConnectionPoolClassName, enlistmentTrace, model);
+                    adapterParams, bindInfo, txSupport, minPoolSize, maxPoolSize, managedConnectionPoolClassName, enlistmentTrace, model);
         }
         boolean statsEnabled = ConnectionFactoryAttributes.Pooled.STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean();
 
@@ -205,5 +210,20 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
                 .addDependency(raActivatorsServiceName, ResourceAdapterDeployment.class, statsService.getRADeploymentInjector())
                 .setInitialMode(ServiceController.Mode.PASSIVE)
                 .install();
+    }
+
+    private ContextNames.BindInfo installJNDIAliases(OperationContext context, List<String> entries) {
+        final ServiceTarget serviceTarget = context.getServiceTarget();
+        final ServiceRegistry registry = context.getServiceRegistry(false);
+        final String jndiName = entries.get(0);
+        final BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
+        if (entries.size() > 1) {
+            for (int i = 1; i < entries.size(); i++) {
+                if (registry.getService(ContextNames.bindInfoFor(entries.get(i)).getBinderServiceName()) == null) {
+                    installAliasBinderService(serviceTarget, bindInfo, entries.get(i));
+                }
+            }
+        }
+        return bindInfo;
     }
 }

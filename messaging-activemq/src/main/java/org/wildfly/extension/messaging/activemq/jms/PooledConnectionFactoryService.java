@@ -22,9 +22,7 @@
 
 package org.wildfly.extension.messaging.activemq.jms;
 
-import static java.util.Collections.EMPTY_LIST;
 import static org.jboss.as.naming.deployment.ContextNames.BindInfo;
-import static org.wildfly.extension.messaging.activemq.BinderServiceUtil.installAliasBinderService;
 import static org.wildfly.extension.messaging.activemq.MessagingServices.getActiveMQServiceName;
 import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Pooled.REBALANCE_CONNECTIONS_PROP_NAME;
 import static org.wildfly.extension.messaging.activemq.jms.JMSQueueService.JMS_QUEUE_PREFIX;
@@ -54,7 +52,6 @@ import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.security.CredentialReference;
-import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.server.Services;
@@ -169,7 +166,6 @@ public class PooledConnectionFactoryService implements Service<Void> {
     public static final String JGROUPS_CHANNEL_NAME = "jgroupsChannelName";
     public static final String JGROUPS_CHANNEL_REF_NAME = "jgroupsChannelRefName";
 
-    private Injector<Object> transactionManager = new InjectedValue<Object>();
     private List<String> connectors;
     private String discoveryGroupName;
     private List<PooledConnectionFactoryConfigProperties> adapterParams;
@@ -178,7 +174,6 @@ public class PooledConnectionFactoryService implements Service<Void> {
     private InjectedValue<ActiveMQServer> activeMQServer = new InjectedValue<>();
     private BindInfo bindInfo;
     private final boolean pickAnyConnectors;
-    private List<String> jndiAliases;
     private String txSupport;
     private int minPoolSize;
     private int maxPoolSize;
@@ -191,14 +186,14 @@ public class PooledConnectionFactoryService implements Service<Void> {
     private InjectedValue<ExceptionSupplier<CredentialSource, Exception>> credentialSourceSupplier = new InjectedValue<>();
 
 
-    public PooledConnectionFactoryService(String name, List<String> connectors, String discoveryGroupName, String serverName, String jgroupsChannelName, List<PooledConnectionFactoryConfigProperties> adapterParams, List<String> jndiNames, String txSupport, int minPoolSize, int maxPoolSize, String managedConnectionPoolClassName, Boolean enlistmentTrace) {
+    public PooledConnectionFactoryService(String name, List<String> connectors, String discoveryGroupName, String serverName, String jgroupsChannelName, List<PooledConnectionFactoryConfigProperties> adapterParams, BindInfo bindInfo, String txSupport, int minPoolSize, int maxPoolSize, String managedConnectionPoolClassName, Boolean enlistmentTrace) {
         this.name = name;
         this.connectors = connectors;
         this.discoveryGroupName = discoveryGroupName;
         this.serverName = serverName;
         this.jgroupsChannelName = jgroupsChannelName;
         this.adapterParams = adapterParams;
-        initJNDIBindings(jndiNames);
+        this.bindInfo = bindInfo;
         createBinderService = true;
         this.txSupport = txSupport;
         this.minPoolSize = minPoolSize;
@@ -216,7 +211,6 @@ public class PooledConnectionFactoryService implements Service<Void> {
         this.jgroupsChannelName = jgroupsChannelName;
         this.adapterParams = adapterParams;
         this.bindInfo = bindInfo;
-        this.jndiAliases = EMPTY_LIST;
         this.createBinderService = false;
         this.txSupport = txSupport;
         this.minPoolSize = minPoolSize;
@@ -224,16 +218,6 @@ public class PooledConnectionFactoryService implements Service<Void> {
         this.managedConnectionPoolClassName = managedConnectionPoolClassName;
         this.enlistmentTrace = enlistmentTrace;
         this.pickAnyConnectors = pickAnyConnectors;
-    }
-
-    private void initJNDIBindings(List<String> jndiNames) {
-        // create the definition with the 1st jndi names and create jndi aliases for the rest
-        String jndiName = jndiNames.get(0);
-        this.bindInfo = ContextNames.bindInfoFor(jndiName);
-        this.jndiAliases = new ArrayList<String>();
-        if (jndiNames.size() > 1) {
-            jndiAliases = jndiNames.subList(1, jndiNames.size());
-        }
     }
 
     static ServiceName getResourceAdapterActivatorsServiceName(String name) {
@@ -277,7 +261,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
                                       String discoveryGroupName,
                                       String jgroupsChannelName,
                                       List<PooledConnectionFactoryConfigProperties> adapterParams,
-                                      List<String> jndiNames,
+                                      BindInfo bindInfo,
                                       String txSupport,
                                       int minPoolSize,
                                       int maxPoolSize,
@@ -289,7 +273,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
         ServiceName serviceName = JMSServices.getPooledConnectionFactoryBaseServiceName(serverServiceName).append(name);
         PooledConnectionFactoryService service = new PooledConnectionFactoryService(name,
                 connectors, discoveryGroupName, serverName, jgroupsChannelName, adapterParams,
-                jndiNames, txSupport, minPoolSize, maxPoolSize, managedConnectionPoolClassName, enlistmentTrace);
+                bindInfo, txSupport, minPoolSize, maxPoolSize, managedConnectionPoolClassName, enlistmentTrace);
 
         installService0(context, serverServiceName, serviceName, service, model);
         return service;
@@ -316,7 +300,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
     private static ServiceBuilder createServiceBuilder(ServiceTarget serviceTarget, ServiceName serverServiceName, ServiceName serviceName, PooledConnectionFactoryService service) {
         ServiceBuilder serviceBuilder = serviceTarget
                 .addService(serviceName, service)
-                .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, service.transactionManager)
+                .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER)
                 .addDependency(serverServiceName, ActiveMQServer.class, service.activeMQServer)
                 .addDependency(ActiveMQActivationService.getServiceName(serverServiceName))
                 .addDependency(JMSServices.getJmsManagerBaseServiceName(serverServiceName))
@@ -326,11 +310,13 @@ public class PooledConnectionFactoryService implements Service<Void> {
         return serviceBuilder;
     }
 
+    @Override
     public Void getValue() throws IllegalStateException, IllegalArgumentException {
         return null;
     }
 
 
+    @Override
     public void start(StartContext context) throws StartException {
         ServiceTarget serviceTarget = context.getChildTarget();
         try {
@@ -419,12 +405,18 @@ public class PooledConnectionFactoryService implements Service<Void> {
                         inboundProperties.add(p);
                     }
                 } else {
-                    if (adapterParam.getConfigType() == ConnectionFactoryAttribute.ConfigType.INBOUND) {
-                        inboundProperties.add(p);
-                    } else if (adapterParam.getConfigType() == ConnectionFactoryAttribute.ConfigType.OUTBOUND) {
-                        outboundProperties.add(p);
-                    } else {
+                    if (null == adapterParam.getConfigType()) {
                         properties.add(p);
+                    } else switch (adapterParam.getConfigType()) {
+                        case INBOUND:
+                            inboundProperties.add(p);
+                            break;
+                        case OUTBOUND:
+                            outboundProperties.add(p);
+                            break;
+                        default:
+                            properties.add(p);
+                            break;
                     }
                 }
             }
@@ -474,20 +466,11 @@ public class PooledConnectionFactoryService implements Service<Void> {
                             activator.getTxIntegrationInjector())
                     .addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE,
                             JcaSubsystemConfiguration.class, activator.getConfigInjector())
-                    // No legacy security services needed as this activation's sole connection definition
-                    // does not configure a legacy security domain
-                    /*
-                    .addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class,
-                            activator.getSubjectFactoryInjector())
-                    */
                     .addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class,
                             activator.getCcmInjector()).addDependency(NamingService.SERVICE_NAME)
                     .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER)
                     .addDependency(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append("default"))
                     .setInitialMode(ServiceController.Mode.PASSIVE).install();
-
-            createJNDIAliases(bindInfo, jndiAliases, controller, serviceTarget);
-
             // Mock the deployment service to allow it to start
             serviceTarget.addService(ConnectorServices.RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX.append(name), Service.NULL).install();
         } finally {
@@ -516,17 +499,6 @@ public class PooledConnectionFactoryService implements Service<Void> {
                 }
             } catch (Exception e) {
                 throw new RuntimeException(e);
-            }
-        }
-    }
-
-    private void createJNDIAliases(final BindInfo bindInfo, List<String> aliases, ServiceController<ResourceAdapterDeployment> controller, ServiceTarget serviceTarget) {
-        for (final String alias : aliases) {
-            // do not install the alias' binder service if it is already registered
-            if (controller.getServiceContainer().getService(ContextNames.bindInfoFor(alias).getBinderServiceName()) == null) {
-                installAliasBinderService(serviceTarget,
-                        bindInfo,
-                        alias);
             }
         }
     }
@@ -615,10 +587,6 @@ public class PooledConnectionFactoryService implements Service<Void> {
 
     public void stop(StopContext context) {
         // Service context takes care of this
-    }
-
-    public Injector<Object> getTransactionManager() {
-        return transactionManager;
     }
 
     Injector<SocketBinding> getSocketBindingInjector(String name) {
