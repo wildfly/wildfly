@@ -104,7 +104,7 @@ public class DistributableSession implements io.undertow.server.session.Session 
     public long getCreationTime() {
         Session<LocalSessionContext> session = this.entry.getKey();
         this.validate(session);
-        try (BatchContext context = this.manager.getSessionManager().getBatcher().resumeBatch(this.batch)) {
+        try (BatchContext context = this.resumeBatch()) {
             return session.getMetaData().getCreationTime().toEpochMilli();
         }
     }
@@ -113,7 +113,7 @@ public class DistributableSession implements io.undertow.server.session.Session 
     public long getLastAccessedTime() {
         Session<LocalSessionContext> session = this.entry.getKey();
         this.validate(session);
-        try (BatchContext context = this.manager.getSessionManager().getBatcher().resumeBatch(this.batch)) {
+        try (BatchContext context = this.resumeBatch()) {
             return session.getMetaData().getLastAccessedTime().toEpochMilli();
         }
     }
@@ -122,7 +122,7 @@ public class DistributableSession implements io.undertow.server.session.Session 
     public int getMaxInactiveInterval() {
         Session<LocalSessionContext> session = this.entry.getKey();
         this.validate(session);
-        try (BatchContext context = this.manager.getSessionManager().getBatcher().resumeBatch(this.batch)) {
+        try (BatchContext context = this.resumeBatch()) {
             return (int) session.getMetaData().getMaxInactiveInterval().getSeconds();
         }
     }
@@ -131,7 +131,7 @@ public class DistributableSession implements io.undertow.server.session.Session 
     public void setMaxInactiveInterval(int interval) {
         Session<LocalSessionContext> session = this.entry.getKey();
         this.validate(session);
-        try (BatchContext context = this.manager.getSessionManager().getBatcher().resumeBatch(this.batch)) {
+        try (BatchContext context = this.resumeBatch()) {
             session.getMetaData().setMaxInactiveInterval(Duration.ofSeconds(interval));
         }
     }
@@ -140,7 +140,7 @@ public class DistributableSession implements io.undertow.server.session.Session 
     public Set<String> getAttributeNames() {
         Session<LocalSessionContext> session = this.entry.getKey();
         this.validate(session);
-        try (BatchContext context = this.manager.getSessionManager().getBatcher().resumeBatch(this.batch)) {
+        try (BatchContext context = this.resumeBatch()) {
             return session.getAttributes().getAttributeNames();
         }
     }
@@ -149,7 +149,7 @@ public class DistributableSession implements io.undertow.server.session.Session 
     public Object getAttribute(String name) {
         Session<LocalSessionContext> session = this.entry.getKey();
         this.validate(session);
-        try (BatchContext context = this.manager.getSessionManager().getBatcher().resumeBatch(this.batch)) {
+        try (BatchContext context = this.resumeBatch()) {
             if (CachedAuthenticatedSessionHandler.ATTRIBUTE_NAME.equals(name)) {
                 AuthenticatedSession auth = (AuthenticatedSession) session.getAttributes().getAttribute(name);
                 return (auth != null) ? auth : session.getLocalContext().getAuthenticatedSession();
@@ -165,7 +165,7 @@ public class DistributableSession implements io.undertow.server.session.Session 
         }
         Session<LocalSessionContext> session = this.entry.getKey();
         this.validate(session);
-        try (BatchContext context = this.manager.getSessionManager().getBatcher().resumeBatch(this.batch)) {
+        try (BatchContext context = this.resumeBatch()) {
             if (CachedAuthenticatedSessionHandler.ATTRIBUTE_NAME.equals(name)) {
                 AuthenticatedSession auth = (AuthenticatedSession) value;
                 return AUTO_REAUTHENTICATING_MECHANISMS.contains(auth.getMechanism()) ? this.setLocalContext(auth) : session.getAttributes().setAttribute(name, new ImmutableAuthenticatedSession(auth));
@@ -184,7 +184,7 @@ public class DistributableSession implements io.undertow.server.session.Session 
     public Object removeAttribute(String name) {
         Session<LocalSessionContext> session = this.entry.getKey();
         this.validate(session);
-        try (BatchContext context = this.manager.getSessionManager().getBatcher().resumeBatch(this.batch)) {
+        try (BatchContext context = this.resumeBatch()) {
             if (CachedAuthenticatedSessionHandler.ATTRIBUTE_NAME.equals(name)) {
                 AuthenticatedSession auth = (AuthenticatedSession) session.getAttributes().removeAttribute(name);
                 return (auth != null) ? auth : this.setLocalContext(null);
@@ -204,7 +204,7 @@ public class DistributableSession implements io.undertow.server.session.Session 
         this.validate(exchange, session);
         // Invoke listeners outside of the context of the batch associated with this session
         this.manager.getSessionListeners().sessionDestroyed(this, exchange, SessionDestroyedReason.INVALIDATED);
-        try (BatchContext context = this.manager.getSessionManager().getBatcher().resumeBatch(this.batch)) {
+        try (BatchContext context = this.resumeBatch()) {
             session.invalidate();
             if (exchange != null) {
                 String id = session.getId();
@@ -222,7 +222,7 @@ public class DistributableSession implements io.undertow.server.session.Session 
         this.validate(exchange, oldSession);
         SessionManager<LocalSessionContext, Batch> manager = this.manager.getSessionManager();
         String id = manager.createIdentifier();
-        try (BatchContext context = this.manager.getSessionManager().getBatcher().resumeBatch(this.batch)) {
+        try (BatchContext context = this.resumeBatch()) {
             Session<LocalSessionContext> newSession = manager.createSession(id);
             for (String name: oldSession.getAttributes().getAttributeNames()) {
                 newSession.getAttributes().setAttribute(name, oldSession.getAttributes().getAttribute(name));
@@ -257,5 +257,10 @@ public class DistributableSession implements io.undertow.server.session.Session 
             this.closeTask.accept(exchange);
             throw UndertowClusteringLogger.ROOT_LOGGER.sessionIsInvalid(session.getId());
         }
+    }
+
+    private BatchContext resumeBatch() {
+        Batch batch = (this.batch.getState() != Batch.State.CLOSED) ? this.batch : null;
+        return this.manager.getSessionManager().getBatcher().resumeBatch(batch);
     }
 }
