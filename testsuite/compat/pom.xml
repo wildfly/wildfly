@@ -138,6 +138,10 @@
                     <groupId>javax.transaction</groupId>
                 </exclusion>
                 <exclusion>
+                    <groupId>org.apache.geronimo.specs</groupId>
+                    <artifactId>geronimo-jta_1.1_spec</artifactId>
+                </exclusion>
+                <exclusion>
                     <artifactId>slf4j-log4j12</artifactId>
                     <groupId>org.slf4j</groupId>
                 </exclusion>
@@ -177,6 +181,10 @@
                 <exclusion>
                     <artifactId>jta</artifactId>
                     <groupId>javax.transaction</groupId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.geronimo.specs</groupId>
+                    <artifactId>geronimo-jta_1.1_spec</artifactId>
                 </exclusion>
                 <exclusion>
                     <artifactId>hibernate-core</artifactId>
