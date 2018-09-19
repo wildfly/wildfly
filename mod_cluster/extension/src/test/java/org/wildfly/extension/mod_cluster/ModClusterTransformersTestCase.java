@@ -173,10 +173,16 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
 
         PathAddress subsystemAddress = PathAddress.pathAddress(ModClusterSubsystemResourceDefinition.PATH);
         PathAddress configurationAddress = subsystemAddress.append(ProxyConfigurationResourceDefinition.pathElement("default"));
+        PathAddress dynamicLoadProviderAddress = configurationAddress.append(DynamicLoadProviderResourceDefinition.PATH);
 
-//        if (ModClusterModel.VERSION_6_0_0.requiresTransformation(version)) {
+        if (ModClusterModel.VERSION_6_0_0.requiresTransformation(version)) {
 //            config.addFailedAttribute(subsystemAddress.append(ProxyConfigurationResourceDefinition.pathElement("other")), FailedOperationTransformationConfig.REJECTED_RESOURCE);
-//        }
+
+            config.addFailedAttribute(dynamicLoadProviderAddress.append(CustomLoadMetricResourceDefinition.pathElement("SomeFakeLoadMetricClass1")),
+                    FailedOperationTransformationConfig.ChainedConfig.createBuilder(CustomLoadMetricResourceDefinition.Attribute.MODULE.getName())
+                            .addConfig(new ModuleAttributeTransformationConfig())
+                            .build());
+        }
 
         if (ModClusterModel.VERSION_3_0_0.requiresTransformation(version)) {
             config.addFailedAttribute(configurationAddress, FailedOperationTransformationConfig.ChainedConfig.createBuilder(ProxyConfigurationResourceDefinition.Attribute.STATUS_INTERVAL.getName(), ProxyConfigurationResourceDefinition.Attribute.PROXIES.getName())
@@ -227,6 +233,27 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
         @Override
         protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
             return new ModelNode(10);
+        }
+    }
+
+    static class ModuleAttributeTransformationConfig extends FailedOperationTransformationConfig.AttributesPathAddressConfig<ModuleAttributeTransformationConfig> {
+        ModuleAttributeTransformationConfig() {
+            super(CustomLoadMetricResourceDefinition.Attribute.MODULE.getName());
+        }
+
+        @Override
+        protected boolean isAttributeWritable(String attributeName) {
+            return true;
+        }
+
+        @Override
+        protected boolean checkValue(String attrName, ModelNode attribute, boolean isWriteAttribute) {
+            return !attribute.equals(CustomLoadMetricResourceDefinition.Attribute.MODULE.getDefinition().getDefaultValue());
+        }
+
+        @Override
+        protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
+            return CustomLoadMetricResourceDefinition.Attribute.MODULE.getDefinition().getDefaultValue();
         }
     }
 }

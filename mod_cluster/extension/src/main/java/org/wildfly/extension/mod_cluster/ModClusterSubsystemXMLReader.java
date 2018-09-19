@@ -442,6 +442,10 @@ final class ModClusterSubsystemXMLReader implements XMLElementReader<List<ModelN
                     readAttribute(reader, i, operation, LoadMetricResourceDefinition.SharedAttribute.CAPACITY);
                     break;
                 }
+                case MODULE: {
+                    readAttribute(reader, i, operation, CustomLoadMetricResourceDefinition.Attribute.MODULE);
+                    break;
+                }
                 case WEIGHT: {
                     readAttribute(reader, i, operation, LoadMetricResourceDefinition.SharedAttribute.WEIGHT);
                     break;
