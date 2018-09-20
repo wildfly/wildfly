@@ -70,8 +70,6 @@ if /i "%RESOLVED_JBOSS_HOME%" NEQ "%SANITIZED_JBOSS_HOME%" (
    echo.
 )
 
-set DIRNAME=
-
 rem Setup JBoss specific properties
 set "JAVA_OPTS=-Dprogram.name=%PROGNAME% %JAVA_OPTS%"
 
@@ -82,6 +80,12 @@ if "x%JAVA_HOME%" == "x" (
 ) else (
   set "JAVA=%JAVA_HOME%\bin\java"
 )
+
+rem set default modular jvm parameters
+setlocal EnableDelayedExpansion
+call "!DIRNAME!common.bat" :setDefaultModularJvmOptions "!JAVA_OPTS!"
+set "JAVA_OPTS=!JAVA_OPTS! !DEFAULT_MODULAR_JVM_OPTIONS!"
+setlocal DisableDelayedExpansion
 
 rem Add -server to the JVM options, if supported
 "%JAVA%" -server -version 2>&1 | findstr /I hotspot > nul
