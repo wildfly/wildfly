@@ -349,7 +349,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
     public static final SimpleAttributeDefinition JOURNAL_POOL_FILES = create("journal-pool-files", INT)
             .setAttributeGroup("journal")
             .setXmlName("pool-files")
-            .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultJournalPoolFiles()))
+            .setDefaultValue(new ModelNode(10))
             .setRequired(false)
             .setAllowExpression(true)
             .setCorrector(InfiniteOrPositiveValidators.NEGATIVE_VALUE_CORRECTOR)
