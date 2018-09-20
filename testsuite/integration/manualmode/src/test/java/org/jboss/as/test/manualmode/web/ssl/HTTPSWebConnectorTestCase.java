@@ -41,6 +41,7 @@ import java.net.SocketException;
 import java.net.URL;
 import java.util.Locale;
 
+import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.servlet.http.HttpServletResponse;
@@ -292,6 +293,10 @@ public class HTTPSWebConnectorTestCase {
                 //depending on the OS and the version of HTTP client in use any one of these exceptions may be thrown
                 //in particular the SocketException gets thrown on Windows
                 // OK
+            } catch (SSLException e) {
+                if (! (e.getCause() instanceof SocketException)) { // OK
+                    throw e;
+                }
             }
 
             try {
@@ -299,6 +304,10 @@ public class HTTPSWebConnectorTestCase {
                 fail("Untrusted client should not be authenticated.");
             } catch (SSLHandshakeException |SSLPeerUnverifiedException | SocketException e) {
                 // OK
+            } catch (SSLException e) {
+                if (! (e.getCause() instanceof SocketException)) { // OK
+                    throw e;
+                }
             }
 
             try {
@@ -306,6 +315,10 @@ public class HTTPSWebConnectorTestCase {
                 fail("Untrusted client should not be authenticated.");
             } catch (SSLHandshakeException |SSLPeerUnverifiedException | SocketException e) {
                 // OK
+            } catch (SSLException e) {
+                if (! (e.getCause() instanceof SocketException)) { // OK
+                    throw e;
+                }
             }
 
         } finally {
