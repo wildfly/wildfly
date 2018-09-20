@@ -78,6 +78,7 @@ enum XMLAttribute {
     // Load metrics
     CAPACITY(LoadMetricResourceDefinition.SharedAttribute.CAPACITY),
     CLASS(CustomLoadMetricResourceDefinition.Attribute.CLASS),
+    MODULE(CustomLoadMetricResourceDefinition.Attribute.MODULE),
     TYPE(LoadMetricResourceDefinition.Attribute.TYPE),
     WEIGHT(LoadMetricResourceDefinition.SharedAttribute.WEIGHT),
 
