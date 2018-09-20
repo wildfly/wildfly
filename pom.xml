@@ -7005,7 +7005,6 @@
                     --add-exports=jdk.unsupported/sun.misc=ALL-UNNAMED
                     --add-modules=java.se</modular.jdk.args>
             </properties>
-
         </profile>
         <profile>
             <id>docs</id>
