@@ -156,7 +156,7 @@ public class DistributedWorkManagerAdd extends AbstractAddStepHandler {
         builder.addDependency(ThreadsServices.EXECUTOR.append(WORKMANAGER_SHORT_RUNNING).append(name), Executor.class, wmService.getExecutorShortInjector());
 
         builder.addDependency(TxnServices.JBOSS_TXN_CONTEXT_XA_TERMINATOR, JBossContextXATerminator.class, wmService.getXaTerminatorInjector())
-                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install();
         WorkManagerStatisticsService wmStatsService = new WorkManagerStatisticsService(context.getResourceRegistrationForUpdate(), name, true);
         serviceTarget
