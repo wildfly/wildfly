@@ -501,7 +501,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         if (context.hasOptionalCapability(SingletonDefaultRequirement.POLICY.getName(), CLUSTERED_SINGLETON_CAPABILITY.getName(), null)) {
             ServiceBuilder<?> builder = target.addService(SingletonBarrierService.SERVICE_NAME);
             Supplier<SingletonPolicy> policy = builder.requires(context.getCapabilityServiceName(SingletonDefaultRequirement.POLICY.getName(), SingletonDefaultRequirement.POLICY.getType()));
-            builder.setInstance(new SingletonBarrierService(policy)).install();
+            builder.setInstance(new SingletonBarrierService(policy)).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
         }
     }
 }
