@@ -169,7 +169,7 @@ public class JcaDistributedWorkManagerDefinition extends SimpleResourceDefinitio
     }
 
     enum DWmCapabilities {
-        CHANNEL_FACTORY(RuntimeCapability.Builder.of("org.wildfly.connector.workmanager").addRequirements(ClusteringDefaultRequirement.COMMAND_DISPATCHER_FACTORY.getName()).build());
+        CHANNEL_FACTORY(RuntimeCapability.Builder.of("org.wildfly.connector.workmanager", true).addRequirements(ClusteringDefaultRequirement.COMMAND_DISPATCHER_FACTORY.getName()).build());
 
         private final RuntimeCapability<Void> capability;
 
