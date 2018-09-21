@@ -30,20 +30,10 @@ import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
+import static org.wildfly.extension.microprofile.opentracing.SubsystemDefinition.EXPORTED_MODULES;
+import static org.wildfly.extension.microprofile.opentracing.SubsystemDefinition.MODULES;
 
 public class TracingDependencyProcessor implements DeploymentUnitProcessor {
-    private static final String[] MODULES = {
-            "io.jaegertracing.jaeger",
-            "io.opentracing.contrib.opentracing-tracerresolver",
-            "io.opentracing.opentracing-api",
-            "io.opentracing.opentracing-util",
-            "org.eclipse.microprofile.opentracing",
-    };
-
-    private static final String[] EXPORTED_MODULES = {
-            "io.smallrye.opentracing",
-            "org.wildfly.microprofile.opentracing-smallrye",
-    };
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) {

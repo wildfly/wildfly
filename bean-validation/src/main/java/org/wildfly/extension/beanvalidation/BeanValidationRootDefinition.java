@@ -32,6 +32,8 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.RuntimePackageDependency;
 
 /**
  * Defines the bean validation subsystem root resource.
@@ -61,5 +63,10 @@ class BeanValidationRootDefinition extends PersistentResourceDefinition {
     @Override
     public List<? extends PersistentResourceDefinition> getChildren() {
         return Collections.emptyList();
+    }
+
+    @Override
+    public void registerAdditionalRuntimePackages(ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerAdditionalRuntimePackages(RuntimePackageDependency.passive("org.hibernate.validator"));
     }
 }

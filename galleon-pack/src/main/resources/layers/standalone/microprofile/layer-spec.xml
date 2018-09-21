@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="microprofile">
+    <dependencies>
+        <layer name="web-server"/>
+        <layer name="management"/>
+    </dependencies>
+    <feature-group name="health"/>
+    <feature-group name="metrics"/>
+    <feature spec="subsystem.microprofile-config-smallrye"/>
+    <feature spec="subsystem.microprofile-opentracing-smallrye"/>
+</layer-spec>

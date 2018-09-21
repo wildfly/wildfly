@@ -1,0 +1,10 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="h2-database">
+    <dependencies>
+        <layer name="web-server"/>
+    </dependencies>
+    <feature-group name="datasources"/>
+    <packages>
+        <package name="com.h2database.h2"/>
+    </packages>
+</layer-spec>

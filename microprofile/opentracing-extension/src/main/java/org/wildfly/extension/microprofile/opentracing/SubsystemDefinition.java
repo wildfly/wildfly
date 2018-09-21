@@ -28,8 +28,23 @@ import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 
 import java.util.Collection;
 import java.util.Collections;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.RuntimePackageDependency;
 
 public class SubsystemDefinition extends PersistentResourceDefinition {
+
+    static final String[] MODULES = {
+            "io.jaegertracing.jaeger",
+            "io.opentracing.contrib.opentracing-tracerresolver",
+            "io.opentracing.opentracing-api",
+            "io.opentracing.opentracing-util",
+            "org.eclipse.microprofile.opentracing",
+    };
+
+    static final String[] EXPORTED_MODULES = {
+            "io.smallrye.opentracing",
+            "org.wildfly.microprofile.opentracing-smallrye",
+    };
     protected SubsystemDefinition() {
         super(
                 SubsystemExtension.SUBSYSTEM_PATH,
@@ -42,5 +57,15 @@ public class SubsystemDefinition extends PersistentResourceDefinition {
     @Override
     public Collection<AttributeDefinition> getAttributes() {
         return Collections.emptyList();
+    }
+
+    @Override
+    public void registerAdditionalRuntimePackages(final ManagementResourceRegistration resourceRegistration) {
+        for (String m : MODULES) {
+            resourceRegistration.registerAdditionalRuntimePackages(RuntimePackageDependency.required(m));
+        }
+        for (String m : EXPORTED_MODULES) {
+            resourceRegistration.registerAdditionalRuntimePackages(RuntimePackageDependency.required(m));
+        }
     }
 }

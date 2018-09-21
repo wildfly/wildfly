@@ -1,0 +1,13 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="jpa">
+    <dependencies>
+        <layer name="web-server"/>
+        <!-- required by transactions to add permissions -->
+        <layer name="elytron"/>
+    </dependencies>
+    <feature spec="subsystem.datasources"/>
+    <feature-group name="transactions-all"/>
+    <feature-group name="jca"/>
+    <feature-group name="jpa"/>
+    <feature-group name="infinispan-local-hibernate"/>
+</layer-spec>

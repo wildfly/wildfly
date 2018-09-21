@@ -34,6 +34,7 @@ import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.RuntimePackageDependency;
 import org.jboss.as.jpa.config.ExtendedPersistenceInheritance;
 import org.jboss.as.jpa.util.JPAServiceNames;
 import org.jboss.dmr.ModelNode;
@@ -94,5 +95,13 @@ public class JPADefinition extends SimpleResourceDefinition {
     public void registerAttributes(ManagementResourceRegistration registration) {
         registration.registerReadWriteAttribute(DEFAULT_DATASOURCE, null, new ReloadRequiredWriteAttributeHandler(DEFAULT_DATASOURCE));
         registration.registerReadWriteAttribute(DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE, null, new ReloadRequiredWriteAttributeHandler(DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE));
+    }
+
+    @Override
+    public void registerAdditionalRuntimePackages(final ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerAdditionalRuntimePackages(
+                // Only if annotation is in use.
+                RuntimePackageDependency.optional("org.hibernate.search.orm"),
+                RuntimePackageDependency.required("org.hibernate"));
     }
 }
