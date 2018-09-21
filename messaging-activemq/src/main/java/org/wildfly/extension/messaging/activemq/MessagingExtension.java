@@ -164,13 +164,14 @@ public class MessagingExtension implements Extension {
 
     static final String RESOURCE_NAME = MessagingExtension.class.getPackage().getName() + ".LocalDescriptions";
 
+    protected static final ModelVersion VERSION_5_0_0 = ModelVersion.create(5, 0, 0);
     protected static final ModelVersion VERSION_4_0_0 = ModelVersion.create(4, 0, 0);
     protected static final ModelVersion VERSION_3_0_0 = ModelVersion.create(3, 0, 0);
     protected static final ModelVersion VERSION_2_0_0 = ModelVersion.create(2, 0, 0);
     protected static final ModelVersion VERSION_1_0_0 = ModelVersion.create(1, 0, 0);
-    private static final ModelVersion CURRENT_MODEL_VERSION = VERSION_4_0_0;
+    private static final ModelVersion CURRENT_MODEL_VERSION = VERSION_5_0_0;
 
-    private static final MessagingSubsystemParser_4_0 CURRENT_PARSER = new MessagingSubsystemParser_4_0();
+    private static final MessagingSubsystemParser_5_0 CURRENT_PARSER = new MessagingSubsystemParser_5_0();
 
 
     public static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
@@ -243,6 +244,7 @@ public class MessagingExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_1_0.NAMESPACE, MessagingSubsystemParser_1_0::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_2_0.NAMESPACE, MessagingSubsystemParser_2_0::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_3_0.NAMESPACE, MessagingSubsystemParser_3_0::new);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_4_0.NAMESPACE, CURRENT_PARSER);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_4_0.NAMESPACE, MessagingSubsystemParser_4_0::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_5_0.NAMESPACE, CURRENT_PARSER);
     }
 }
