@@ -34,6 +34,7 @@ import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
+import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.jms.TopicSubscriber;
 import javax.naming.Context;
@@ -47,6 +48,7 @@ import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.junit.After;
@@ -402,6 +404,8 @@ public class JMSTopicManagementTestCase {
         MessageProducer producer = session.createProducer(topic);
         producer.send(session.createTextMessage("A"));
 
+        TextMessage  message = (TextMessage)consumer.receive(TimeoutUtil.adjust(500));
+        Assert.assertNull("The message was received by the consumer, this is wrong as the connection is stopped", message);
         ModelNode operation = getTopicOperation("count-messages-for-subscription");
         operation.get("client-id").set(consumerConn.getClientID());
         operation.get("subscription-name").set(subscriptionName);

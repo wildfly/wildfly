@@ -29,8 +29,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.apache.activemq.artemis.api.core.TransportConfiguration;
 import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
@@ -46,6 +44,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.junit.After;
@@ -64,6 +63,8 @@ import org.junit.runner.RunWith;
 public class CoreQueueManagementTestCase {
 
     private static long count = System.currentTimeMillis();
+
+    private static final long TIMEOUT = TimeoutUtil.adjust(5000);
 
     @ContainerResource
     private ManagementClient managementClient;
@@ -152,14 +153,28 @@ public class CoreQueueManagementTestCase {
 
     @Test
     public void testListAndCountMessages() throws Exception {
-
         ClientProducer producer = session.createProducer(getQueueName());
-        producer.send(session.createMessage(ClientMessage.TEXT_TYPE, false));
-        producer.send(session.createMessage(ClientMessage.TEXT_TYPE, false));
+        ClientMessage message1 = session.createMessage(ClientMessage.TEXT_TYPE, false);
+        message1.putStringProperty("hope", "message1");
+        producer.send(message1);
+        ClientMessage message2 = session.createMessage(ClientMessage.TEXT_TYPE, false);
+        message2.putStringProperty("hope", "message2");
+        producer.send(message2);
 
-        ModelNode result = execute(getQueueOperation("list-messages"), true);
-        Assert.assertTrue(result.isDefined());
-        Assert.assertEquals(2, result.asList().size());
+        final ModelNode listMessagesOperation = getQueueOperation("list-messages");
+        long end = System.currentTimeMillis() + TIMEOUT;
+        boolean passed = false;
+        ModelNode result = null;
+        while (end > System.currentTimeMillis()) {
+            result = execute(listMessagesOperation, true);
+            Assert.assertTrue(result.isDefined());
+            passed = result.asList().size() == 2;
+            if (passed) {
+                break;
+            }
+            Thread.sleep(100);
+        }
+        Assert.assertTrue("Here is what  we got instead of the 2 messages " + result, passed);
 
         result = execute(getQueueOperation("count-messages"), true);
         Assert.assertTrue(result.isDefined());
@@ -298,27 +313,19 @@ public class CoreQueueManagementTestCase {
     @Test
     public void testChangeMessagePriority() throws Exception {
 
+        final int priority = 3;
         ClientProducer producer = session.createProducer(getQueueName());
-        ClientMessage msgA = session.createMessage(ClientMessage.TEXT_TYPE, false);
-        producer.send(msgA);
-        producer.send(session.createMessage(ClientMessage.TEXT_TYPE, false));
-        producer.send(session.createMessage(ClientMessage.TEXT_TYPE, false));
+        producer.send(session.createMessage(ClientMessage.TEXT_TYPE, false).setPriority((byte)priority));
+        long id = findMessageID();
+        producer.send(session.createMessage(ClientMessage.TEXT_TYPE, false).setPriority((byte)priority));
+        producer.send(session.createMessage(ClientMessage.TEXT_TYPE, false).setPriority((byte)priority));
 
-        Set<Integer> priorities = new HashSet<Integer>();
         ModelNode result = execute(getQueueOperation("list-messages"), true);
         Assert.assertEquals(3, result.asInt());
         for (ModelNode node : result.asList()) {
-            priorities.add(node.get("priority").asInt());
+            Assert.assertEquals("Priority should be " + priority, priority, node.get("priority").asInt());
         }
-        int newPriority = -1;
-        for (int i = 0; i < 10; i++) {
-            if (!priorities.contains(i)) {
-                newPriority = i;
-                break;
-            }
-        }
-
-        long id = findMessageID();
+        int newPriority = 5;
         ModelNode op = getQueueOperation("change-message-priority");
         op.get("message-id").set(id);
         op.get("new-priority").set(newPriority);
@@ -328,26 +335,28 @@ public class CoreQueueManagementTestCase {
         Assert.assertTrue(result.asBoolean());
 
         result = execute(getQueueOperation("list-messages"), true);
+        Assert.assertEquals(3, result.asInt());
         boolean found = false;
         for (ModelNode node : result.asList()) {
             if (id == node.get("messageID").asLong()) {
-                Assert.assertEquals(newPriority, node.get("priority").asInt());
+                Assert.assertEquals("Message should have the new priority", newPriority, node.get("priority").asInt());
                 found = true;
-                break;
+            } else {
+                Assert.assertEquals("Message should have the set priority", priority, node.get("priority").asInt());
             }
         }
-        Assert.assertTrue(found);
+        Assert.assertTrue("We should have found the updated message", found);
 
         op = getQueueOperation("change-messages-priority");
         op.get("new-priority").set(newPriority);
-
         result = execute(op, true);
         Assert.assertTrue(result.isDefined());
         Assert.assertTrue(result.asInt() > 1 && result.asInt() < 4);
 
         result = execute(getQueueOperation("list-messages"), true);
+        Assert.assertEquals(3, result.asInt());
         for (ModelNode node : result.asList()) {
-            Assert.assertEquals(newPriority, node.get("priority").asInt());
+            Assert.assertEquals("Message should have the new priority", newPriority, node.get("priority").asInt());
         }
 
     }

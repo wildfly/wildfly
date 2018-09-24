@@ -279,14 +279,14 @@ public class JMSTopicControlHandler extends AbstractRuntimeOnlyHandler {
    }
 
 
-   private int countMessagesForSubscription(String clientID, String subscriptionName, String filterStr, ManagementService managementService) throws Exception {
+   private long countMessagesForSubscription(String clientID, String subscriptionName, String filterStr, ManagementService managementService) throws Exception {
       SimpleString queueName = ActiveMQDestination.createQueueNameForSubscription(true, clientID, subscriptionName);
       QueueControl coreQueueControl = (QueueControl) managementService.getResource(ResourceNames.QUEUE + queueName);
       if (coreQueueControl == null) {
          throw new IllegalArgumentException("No subscriptions with name " + queueName + " for clientID " + clientID);
       }
       String filter = createFilterFromJMSSelector(filterStr);
-      return coreQueueControl.listMessages(filter).length;
+      return coreQueueControl.countMessages(filter);
    }
 
    private void dropAllSubscriptions(AddressControl addressControl, ManagementService managementService) throws Exception {
@@ -354,11 +354,11 @@ public class JMSTopicControlHandler extends AbstractRuntimeOnlyHandler {
             String clientID = null;
             String subName = null;
 
-            if (queue.isDurable() && queue.getRoutingType() == RoutingType.MULTICAST.toString()) {
+            if (queue.isDurable() && RoutingType.MULTICAST.toString().equals(queue.getRoutingType())) {
                Pair<String, String> pair = ActiveMQDestination.decomposeQueueNameForDurableSubscription(queue.getName());
                clientID = pair.getA();
                subName = pair.getB();
-            } else if (queue.getRoutingType() == RoutingType.MULTICAST.toString()) {
+            } else if (RoutingType.MULTICAST.toString().equals(queue.getRoutingType())) {
                // in the case of heirarchical topics the queue name will not follow the <part>.<part> pattern of normal
                // durable subscribers so skip decomposing the name for the client ID and subscription name and just
                // hard-code it
