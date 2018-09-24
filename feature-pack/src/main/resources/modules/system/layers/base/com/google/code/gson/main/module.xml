@@ -25,5 +25,6 @@
 
     <dependencies>
         <module name="javax.sql.api"/>
+        <module name="sun.jdk"/>
     </dependencies>
 </module>
