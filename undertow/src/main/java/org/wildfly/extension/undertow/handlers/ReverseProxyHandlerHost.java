@@ -49,6 +49,7 @@ import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
+import org.jboss.as.controller.capability.DynamicNameMappers;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -80,9 +81,7 @@ public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
 
     private static final RuntimeCapability<Void> REVERSE_PROXY_HOST_RUNTIME_CAPABILITY =
                 RuntimeCapability.Builder.of(CAPABILITY_REVERSE_PROXY_HANDLER_HOST, true, ReverseProxyHostService.class)
-                        .setDynamicNameMapper(path -> new String[]{
-                                            path.getParent().getLastElement().getValue(),
-                                            path.getLastElement().getValue()})
+                        .setDynamicNameMapper(DynamicNameMappers.PARENT)
                         .build();
 
     public static final SimpleAttributeDefinition OUTBOUND_SOCKET_BINDING = new SimpleAttributeDefinitionBuilder("outbound-socket-binding", ModelType.STRING, true)
