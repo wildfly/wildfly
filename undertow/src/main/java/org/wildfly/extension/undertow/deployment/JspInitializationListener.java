@@ -47,7 +47,8 @@ public class JspInitializationListener implements ServletContextListener {
         // if the servlet version is 3.1 or higher, setup a ELResolver which allows usage of static fields java.lang.*
         final ServletContext servletContext = sce.getServletContext();
         final JspApplicationContext jspApplicationContext = JspFactory.getDefaultFactory().getJspApplicationContext(servletContext);
-        if (servletContext.getEffectiveMajorVersion() >= 3 && servletContext.getEffectiveMinorVersion() >= 1) {
+        if (servletContext.getEffectiveMajorVersion() > 3
+                || (servletContext.getEffectiveMajorVersion() == 3 && servletContext.getEffectiveMinorVersion() >= 1)) {
             jspApplicationContext.addELResolver(new ImportedClassELResolver());
         }
         // setup a wrapped JspApplicationContext if there are any EL expression factory wrappers for this servlet context
