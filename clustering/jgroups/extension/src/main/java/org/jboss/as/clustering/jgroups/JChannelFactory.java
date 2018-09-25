@@ -35,8 +35,8 @@ import org.jgroups.Message;
 import org.jgroups.blocks.RequestCorrelator;
 import org.jgroups.blocks.RequestCorrelator.Header;
 import org.jgroups.conf.ClassConfigurator;
+import org.jgroups.fork.ForkProtocolStack;
 import org.jgroups.fork.UnknownForkHandler;
-import org.jgroups.protocols.FORK;
 import org.jgroups.stack.Protocol;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
@@ -50,6 +50,12 @@ import org.wildfly.clustering.jgroups.spi.TransportConfiguration;
 public class JChannelFactory implements ChannelFactory {
 
     static final ByteBuffer UNKNOWN_FORK_RESPONSE = ByteBuffer.allocate(0);
+    static {
+        // Take advantage of non-final static variable...
+        org.jgroups.protocols.FORK.ID = 600;
+        ClassConfigurator.addProtocol(org.jgroups.protocols.FORK.ID, FORK.class);
+        ClassConfigurator.addProtocol((short) 601, ForkProtocolStack.class);
+    }
 
     private final ProtocolStackConfiguration configuration;
 
@@ -85,7 +91,7 @@ public class JChannelFactory implements ChannelFactory {
                 if ((header != null) && (header.type == Header.REQ) && header.rspExpected()) {
                     Message response = message.makeReply().setFlag(message.getFlags()).clearFlag(Message.Flag.RSVP, Message.Flag.INTERNAL);
 
-                    response.putHeader(FORK.ID, message.getHeader(FORK.ID));
+                    response.putHeader(fork.getId(), message.getHeader(fork.getId()));
                     response.putHeader(this.id, new Header(Header.RSP, header.req_id, header.corrId));
                     response.setBuffer(UNKNOWN_FORK_RESPONSE.array());
 
