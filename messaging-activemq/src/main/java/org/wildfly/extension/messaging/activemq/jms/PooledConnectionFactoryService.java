@@ -165,6 +165,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
     public static final String JGROUPS_CHANNEL_LOCATOR_CLASS = "jgroupsChannelLocatorClass";
     public static final String JGROUPS_CHANNEL_NAME = "jgroupsChannelName";
     public static final String JGROUPS_CHANNEL_REF_NAME = "jgroupsChannelRefName";
+    public static final String IGNORE_JTA = "ignoreJTA";
 
     private List<String> connectors;
     private String discoveryGroupName;
@@ -513,7 +514,11 @@ public class PooledConnectionFactoryService implements Service<Void> {
 
     private static Activation createActivation(ConnectionDefinition common, TransactionSupportEnum transactionSupport) {
         List<ConnectionDefinition> definitions = Collections.singletonList(common);
-        return new ActivationImpl(null, null, transactionSupport, definitions, Collections.<AdminObject>emptyList(), Collections.<String, String>emptyMap(), Collections.<String>emptyList(), null, null);
+        //fix of WFLY-9762 - JMSConnectionFactoryDefinition annotation with the transactional attribute set to false results in  TransactionSupportEnum.NoTransaction -> it has to be propagated
+        boolean ignoreJTA = transactionSupport == TransactionSupportEnum.NoTransaction;
+        //attribute is propagated only if it means to ignore JTA transaction; in case of not ignoring, default behavior is used
+        Map<String, String> configProperties = ignoreJTA ? Collections.<String, String>singletonMap(IGNORE_JTA, String.valueOf(ignoreJTA)) : Collections.emptyMap();
+        return new ActivationImpl(null, null, transactionSupport, definitions, Collections.<AdminObject>emptyList(), configProperties, Collections.<String>emptyList(), null, null);
     }
 
 

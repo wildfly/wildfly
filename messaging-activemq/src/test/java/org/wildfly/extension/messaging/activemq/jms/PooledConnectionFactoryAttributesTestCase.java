@@ -28,6 +28,7 @@ public class PooledConnectionFactoryAttributesTestCase extends AttributesTestBas
         UNSUPPORTED_ACTIVEMQ_RA_PROPERTIES.add(PooledConnectionFactoryService.JGROUPS_CHANNEL_LOCATOR_CLASS);
         UNSUPPORTED_ACTIVEMQ_RA_PROPERTIES.add(PooledConnectionFactoryService.JGROUPS_CHANNEL_REF_NAME);
         UNSUPPORTED_ACTIVEMQ_RA_PROPERTIES.add(PooledConnectionFactoryService.JGROUPS_CHANNEL_NAME);
+        UNSUPPORTED_ACTIVEMQ_RA_PROPERTIES.add(PooledConnectionFactoryService.IGNORE_JTA);
         UNSUPPORTED_ACTIVEMQ_RA_PROPERTIES.add("jgroupsFile");
         // these 2 props will *not* be supported since AS7 relies on vaulted passwords + expressions instead
         UNSUPPORTED_ACTIVEMQ_RA_PROPERTIES.add("passwordCodec");
