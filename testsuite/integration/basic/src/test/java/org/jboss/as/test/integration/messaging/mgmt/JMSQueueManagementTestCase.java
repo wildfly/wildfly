@@ -406,8 +406,8 @@ public class JMSQueueManagementTestCase {
         }
         Assert.assertTrue("Here is what  we got instead of the " + expectedSize + " messages " + result, passed);
         return result;
-
     }
+
     @Test
     public void testListConsumers() throws Exception {
         ConnectionFactory cf = (ConnectionFactory) remoteContext.lookup("jms/RemoteConnectionFactory");
