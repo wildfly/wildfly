@@ -161,6 +161,13 @@ public class CoreQueueManagementTestCase {
         message2.putStringProperty("hope", "message2");
         producer.send(message2);
 
+        listMessages(2);
+        ModelNode result = execute(getQueueOperation("count-messages"), true);
+        Assert.assertTrue(result.isDefined());
+        Assert.assertEquals(2, result.asInt());
+    }
+
+    private ModelNode listMessages(int expectedSize) throws IOException, InterruptedException {
         final ModelNode listMessagesOperation = getQueueOperation("list-messages");
         long end = System.currentTimeMillis() + TIMEOUT;
         boolean passed = false;
@@ -168,17 +175,14 @@ public class CoreQueueManagementTestCase {
         while (end > System.currentTimeMillis()) {
             result = execute(listMessagesOperation, true);
             Assert.assertTrue(result.isDefined());
-            passed = result.asList().size() == 2;
+            passed = result.asList().size() == expectedSize;
             if (passed) {
                 break;
             }
             Thread.sleep(100);
         }
-        Assert.assertTrue("Here is what  we got instead of the 2 messages " + result, passed);
-
-        result = execute(getQueueOperation("count-messages"), true);
-        Assert.assertTrue(result.isDefined());
-        Assert.assertEquals(2, result.asInt());
+        Assert.assertTrue("Here is what  we got instead of the " + expectedSize + " messages " + result, passed);
+        return result;
     }
 
     @Test
@@ -312,7 +316,6 @@ public class CoreQueueManagementTestCase {
 //    @org.junit.Ignore("AS7-2480")
     @Test
     public void testChangeMessagePriority() throws Exception {
-
         final int priority = 3;
         ClientProducer producer = session.createProducer(getQueueName());
         producer.send(session.createMessage(ClientMessage.TEXT_TYPE, false).setPriority((byte)priority));
@@ -320,8 +323,7 @@ public class CoreQueueManagementTestCase {
         producer.send(session.createMessage(ClientMessage.TEXT_TYPE, false).setPriority((byte)priority));
         producer.send(session.createMessage(ClientMessage.TEXT_TYPE, false).setPriority((byte)priority));
 
-        ModelNode result = execute(getQueueOperation("list-messages"), true);
-        Assert.assertEquals(3, result.asInt());
+        ModelNode result = listMessages(3);
         for (ModelNode node : result.asList()) {
             Assert.assertEquals("Priority should be " + priority, priority, node.get("priority").asInt());
         }
@@ -334,8 +336,7 @@ public class CoreQueueManagementTestCase {
         Assert.assertTrue(result.isDefined());
         Assert.assertTrue(result.asBoolean());
 
-        result = execute(getQueueOperation("list-messages"), true);
-        Assert.assertEquals(3, result.asInt());
+        result = listMessages(3);
         boolean found = false;
         for (ModelNode node : result.asList()) {
             if (id == node.get("messageID").asLong()) {
@@ -353,8 +354,7 @@ public class CoreQueueManagementTestCase {
         Assert.assertTrue(result.isDefined());
         Assert.assertTrue(result.asInt() > 1 && result.asInt() < 4);
 
-        result = execute(getQueueOperation("list-messages"), true);
-        Assert.assertEquals(3, result.asInt());
+        result = listMessages(3);
         for (ModelNode node : result.asList()) {
             Assert.assertEquals("Message should have the new priority", newPriority, node.get("priority").asInt());
         }
