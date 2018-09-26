@@ -81,7 +81,7 @@ to define `jdbc-realm`:
     data-source=ExampleDS, \
     sql="SELECT role, password FROM User WHERE username = ?", \
     attribute-mapping=[{index=1, to=Roles}] \
-    simple-digest-mapper={algorithm=simple-digest-md5, password-index=2}, \
+    simple-digest-mapper={algorithm=simple-digest-md5, password-index=2, hash-encoding=base64}, \
 }])
 ----
 
@@ -98,7 +98,7 @@ This results in the following overall configuration:
                         <attribute-mapping>
                             <attribute to="Roles" index="1"/>
                         </attribute-mapping>
-                        <simple-digest-mapper password-index="2"/>
+                        <simple-digest-mapper password-index="2" hash-encoding="base64"/>
                     </principal-query>
                 </jdbc-realm>
                 ...
