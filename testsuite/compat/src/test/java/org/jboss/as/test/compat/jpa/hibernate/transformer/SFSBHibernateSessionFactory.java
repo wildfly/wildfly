@@ -92,6 +92,8 @@ public class SFSBHibernateSessionFactory {
         student.setAddress(address);
         student.setFirstName(firstName);
         student.setLastName(lastName);
+        student.setRemote(true);
+        student.setForeigner(true);
 
         try {
             Session session = sessionFactory.openSession();

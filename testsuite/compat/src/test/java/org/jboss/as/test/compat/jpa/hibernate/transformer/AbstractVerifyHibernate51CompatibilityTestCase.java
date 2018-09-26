@@ -68,6 +68,8 @@ public abstract class AbstractVerifyHibernate51CompatibilityTestCase {
             + "<version name=\"version\" column=\"version\" type=\"org.jboss.as.test.compat.jpa.hibernate.transformer.IntegerUserVersionType\" />"
             + "<property name=\"firstName\" column=\"first_name\"/>" + "<property name=\"lastName\" column=\"last_name\"/>"
             + "<property name=\"address\"/>"
+            + "<property name=\"remote\" type=\"org.jboss.as.test.compat.jpa.hibernate.transformer.BooleanAbstractStandardBasicType\"/>"
+            + "<property name=\"foreigner\" type=\"org.jboss.as.test.compat.jpa.hibernate.transformer.BooleanType\"/>"
             + "</class>"
             + "<class name=\"org.jboss.as.test.compat.jpa.hibernate.transformer.Gene\" table=\"GENE\">"
             + "<id name=\"id\">" + "<generator class=\"assigned\"/>" + "</id>"
@@ -105,6 +107,8 @@ public abstract class AbstractVerifyHibernate51CompatibilityTestCase {
         lib.addClass(IntegerType.class);
         lib.addClass(IntegerUserVersionType.class);
         lib.addClass(BooleanSingleColumnType.class);
+        lib.addClass(BooleanAbstractStandardBasicType.class);
+        lib.addClass(BooleanType.class);
         lib.addClasses(Gene.class);
         lib.addClasses(State.class);
         lib.addClasses(StateType.class);
@@ -137,6 +141,7 @@ public abstract class AbstractVerifyHibernate51CompatibilityTestCase {
         try {
             Student s1 = sfsb.createStudent("MADHUMITA", "SADHUKHAN", "99 Purkynova REDHAT BRNO CZ", 1);
             Student st = sfsb.getStudent(s1.getStudentId());
+            assertEquals("student remote attribute read from hibernate session should be true", true, st.getRemote());
             assertEquals("name read from hibernate session is MADHUMITA", "MADHUMITA", st.getFirstName());
         } finally {
             sfsb.cleanup();
