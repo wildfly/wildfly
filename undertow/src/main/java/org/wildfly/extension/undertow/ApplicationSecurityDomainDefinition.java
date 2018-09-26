@@ -285,7 +285,10 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
                 ModelNode ssoModel = resource.getChild(UndertowExtension.PATH_SSO).getModel();
 
                 String cookieName = SingleSignOnDefinition.Attribute.COOKIE_NAME.resolveModelAttribute(context, ssoModel).asString();
-                String domain = SingleSignOnDefinition.Attribute.DOMAIN.resolveModelAttribute(context, ssoModel).asString();
+                String domain = null;
+                if (SingleSignOnDefinition.Attribute.DOMAIN.resolveModelAttribute(context, ssoModel).isDefined()) {
+                    domain = SingleSignOnDefinition.Attribute.DOMAIN.resolveModelAttribute(context, ssoModel).asString();
+                }
                 String path = SingleSignOnDefinition.Attribute.PATH.resolveModelAttribute(context, ssoModel).asString();
                 boolean httpOnly = SingleSignOnDefinition.Attribute.HTTP_ONLY.resolveModelAttribute(context, ssoModel).asBoolean();
                 boolean secure = SingleSignOnDefinition.Attribute.SECURE.resolveModelAttribute(context, ssoModel).asBoolean();
