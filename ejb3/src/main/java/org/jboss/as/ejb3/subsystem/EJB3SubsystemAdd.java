@@ -51,6 +51,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ejb3.clustering.SingletonBarrierService;
 import org.jboss.as.ejb3.component.EJBUtilities;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
+import org.jboss.as.ejb3.deployment.DeploymentRepositoryService;
 import org.jboss.as.ejb3.deployment.processors.AnnotatedEJBComponentDescriptionDeploymentUnitProcessor;
 import org.jboss.as.ejb3.deployment.processors.ApplicationExceptionAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.BusinessViewAnnotationProcessor;
@@ -221,7 +222,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         // Install the server association service
         final AssociationService associationService = new AssociationService();
         final ServiceBuilder<AssociationService> associationServiceBuilder = context.getServiceTarget().addService(AssociationService.SERVICE_NAME, associationService);
-        associationServiceBuilder.addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, associationService.getDeploymentRepositoryInjector())
+        associationServiceBuilder.addDependency(DeploymentRepositoryService.SERVICE_NAME, DeploymentRepository.class, associationService.getDeploymentRepositoryInjector())
                 .addDependency(SuspendController.SERVICE_NAME, SuspendController.class, associationService.getSuspendControllerInjector())
                 .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, associationService.getServerEnvironmentServiceInjector())
                 .setInitialMode(ServiceController.Mode.LAZY);
@@ -239,7 +240,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         //setup the substitution service, that translates between ejb proxies and IIOP stubs
         final RemoteObjectSubstitutionService substitutionService = new RemoteObjectSubstitutionService();
         context.getServiceTarget().addService(RemoteObjectSubstitutionService.SERVICE_NAME, substitutionService)
-                .addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, substitutionService.getDeploymentRepositoryInjectedValue())
+                .addDependency(DeploymentRepositoryService.SERVICE_NAME, DeploymentRepository.class, substitutionService.getDeploymentRepositoryInjectedValue())
                 .install();
 
         // register EJB context selector
@@ -391,7 +392,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
-        context.getServiceTarget().addService(DeploymentRepository.SERVICE_NAME, new DeploymentRepository()).install();
+        context.getServiceTarget().addService(DeploymentRepositoryService.SERVICE_NAME, new DeploymentRepositoryService()).install();
 
         addRemoteInvocationServices(context, model, appclient);
         // add clustering service
@@ -409,7 +410,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         context.getServiceTarget().addService(EJBSuspendHandlerService.SERVICE_NAME, ejbSuspendHandlerService)
                 .addDependency(SuspendController.SERVICE_NAME, SuspendController.class, ejbSuspendHandlerService.getSuspendControllerInjectedValue())
                 .addDependency(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT, LocalTransactionContext.class, ejbSuspendHandlerService.getLocalTransactionContextInjectedValue())
-                .addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, ejbSuspendHandlerService.getDeploymentRepositoryInjectedValue())
+                .addDependency(DeploymentRepositoryService.SERVICE_NAME, DeploymentRepository.class, ejbSuspendHandlerService.getDeploymentRepositoryInjectedValue())
                 .install();
 
         if (!appclient) {
@@ -472,14 +473,14 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
             //the default spec compliant EJB receiver
             final LocalTransportProvider byValueLocalEjbReceiver = new LocalTransportProvider(false);
             ServiceBuilder<LocalTransportProvider> byValueServiceBuilder = serviceTarget.addService(LocalTransportProvider.BY_VALUE_SERVICE_NAME, byValueLocalEjbReceiver)
-                    .addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, byValueLocalEjbReceiver.getDeploymentRepository())
+                    .addDependency(DeploymentRepositoryService.SERVICE_NAME, DeploymentRepository.class, byValueLocalEjbReceiver.getDeploymentRepository())
                     .setInitialMode(ServiceController.Mode.ON_DEMAND);
             byValueServiceBuilder.install();
 
             //the receiver for invocations that allow pass by reference
             final LocalTransportProvider byReferenceLocalEjbReceiver = new LocalTransportProvider(true);
             ServiceBuilder<LocalTransportProvider> byReferenceServiceBuilder = serviceTarget.addService(LocalTransportProvider.BY_REFERENCE_SERVICE_NAME, byReferenceLocalEjbReceiver)
-                    .addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, byReferenceLocalEjbReceiver.getDeploymentRepository())
+                    .addDependency(DeploymentRepositoryService.SERVICE_NAME, DeploymentRepository.class, byReferenceLocalEjbReceiver.getDeploymentRepository())
                     .setInitialMode(ServiceController.Mode.ON_DEMAND);
             byReferenceServiceBuilder.install();
 

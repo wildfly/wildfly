@@ -389,7 +389,7 @@ public class LocalEjbReceiver extends EJBReceiver {
         final String distinctName = locator.getDistinctName();
         final String beanName = locator.getBeanName();
         final DeploymentModuleIdentifier moduleIdentifier = new DeploymentModuleIdentifier(appName, moduleName, distinctName);
-        final ModuleDeployment module = deploymentRepository.getValue().getModules().get(moduleIdentifier);
+        final ModuleDeployment module = deploymentRepository.getModules().get(moduleIdentifier);
         if (module == null) {
             throw EjbLogger.ROOT_LOGGER.unknownDeployment(locator);
         }

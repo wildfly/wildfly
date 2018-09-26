@@ -38,6 +38,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
+import org.jboss.as.ejb3.deployment.DeploymentRepositoryService;
 import org.jboss.as.ejb3.remote.AssociationService;
 import org.jboss.as.ejb3.remote.EJBClientContextService;
 import org.jboss.as.ejb3.remote.RemoteViewManagedReferenceFactory;
@@ -101,7 +102,7 @@ class JSR77ManagementSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
                     RegisterManagementEJBService managementEjbService = new RegisterManagementEJBService();
                     target.addService(RegisterManagementEJBService.SERVICE_NAME, managementEjbService)
-                            .addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, managementEjbService.deploymentRepositoryValue)
+                            .addDependency(DeploymentRepositoryService.SERVICE_NAME, DeploymentRepository.class, managementEjbService.deploymentRepositoryValue)
                             .addDependency(mbeanServerServiceName, MBeanServer.class, managementEjbService.mbeanServerValue)
                                     //TODO I think this is needed here since we don't go through EjbClientContextSetupProcessor
                             .addDependency(EJBClientContextService.DEFAULT_SERVICE_NAME, EJBClientContextService.class, managementEjbService.ejbClientContextValue)
