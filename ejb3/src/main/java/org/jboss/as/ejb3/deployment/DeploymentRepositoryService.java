@@ -67,7 +67,7 @@ public class DeploymentRepositoryService implements DeploymentRepository, Servic
 
     @Override
     public void stop(StopContext context) {
-        modules = null;
+        modules = Collections.emptyMap();
     }
 
     @Override
