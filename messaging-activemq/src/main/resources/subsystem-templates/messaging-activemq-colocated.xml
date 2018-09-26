@@ -9,8 +9,7 @@
             <cluster password="${jboss.messaging.cluster.password:CHANGE ME!!}" />
             <journal type="ASYNCIO"
                      file-size="102400"
-                     min-files="2"
-                     pool-files="10"/>
+                     min-files="2"/>
 
             <shared-store-master />
 
