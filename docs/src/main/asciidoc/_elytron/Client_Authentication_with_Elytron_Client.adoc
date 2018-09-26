@@ -129,7 +129,7 @@ domain to match against.
 match against. For example, the host 127.0.0.1 would match on
 http://127.0.0.1:9990/my/path .
 
-|match-no-userinfo |Matches against URIs with no userinfo.
+|match-no-user |Matches against URIs with no user.
 
 |match-path |Takes a single name attribute specifying the path to match
 against. For example, the path /my/path/ would match on
@@ -149,7 +149,7 @@ to match against.
 |match-urn |Takes a single name attribute specifying the URN to match
 against.
 
-|match-userinfo |Takes a single name attribute specifying the userinfo
+|match-user |Takes a single name attribute specifying the user
 to match against.
 |=======================================================================
 
@@ -253,7 +253,7 @@ the configuration file approach.
 |matchUrnName(String name) |This is the same as match-urn in the
 configuration file approach.
 
-|matchUser(String userSpec) |This is the same as match-userinfo in the
+|matchUser(String userSpec) |This is the same as match-user in the
 configuration file approach.
 |=======================================================================
 
