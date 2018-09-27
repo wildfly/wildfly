@@ -16,6 +16,17 @@
         </s:security>
         <iiop:iiop>
             <ejb-name>*</ejb-name>
+            <iiop:ior-security-config>
+                <iiop:transport-config
+                    iiop:integrity="required"
+                    iiop:confidentiality="required"
+                    iiop:establish-trust-in-target="supported"
+                    iiop:establish-trust-in-client="supported"
+                />
+                <iiop:sas-context
+                    iiop:caller-propagation="supported"
+                />
+            </iiop:ior-security-config>
         </iiop:iiop>
     </assembly-descriptor>
 </jboss:ejb-jar>
