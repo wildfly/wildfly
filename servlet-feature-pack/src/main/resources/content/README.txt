@@ -31,7 +31,7 @@ WildFly has two modes of operation: Standalone and Domain. For more
 information regarding these modes, please refer to the documentation 
 available on the JBoss.org site:
 
-http://docs.wildfly.org/14/
+http://docs.wildfly.org/15/
 
 
 Starting a Standalone Server
