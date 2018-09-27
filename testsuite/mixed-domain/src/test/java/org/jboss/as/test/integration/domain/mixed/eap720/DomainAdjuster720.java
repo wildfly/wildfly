@@ -22,9 +22,12 @@
 
 package org.jboss.as.test.integration.domain.mixed.eap720;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.operations.common.Util.createRemoveOperation;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.jboss.as.controller.PathAddress;
@@ -35,7 +38,7 @@ import org.jboss.as.test.integration.domain.mixed.DomainAdjuster;
 import org.jboss.dmr.ModelNode;
 
 /**
- * Does adjustments to the domain model for 7.1.0 legacy slaves.
+ * Does adjustments to the domain model for 7.2.0 legacy slaves.
  *
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
@@ -46,6 +49,7 @@ public class DomainAdjuster720 extends DomainAdjuster {
         final List<ModelNode> list = new ArrayList<>();
 
         adjustUndertow(profileAddress.append(SUBSYSTEM, "undertow"), list);
+        list.addAll(removeDistributableWeb(profileAddress.append(SUBSYSTEM, "distributable-web")));
 
         return list;
     }
@@ -59,5 +63,13 @@ public class DomainAdjuster720 extends DomainAdjuster {
                 .append("server", "default-server")
                 .append("https-listener", "https");
         ops.add(Util.getEmptyOperation(ModelDescriptionConstants.REMOVE, httpsListener.toModelNode()));
+    }
+
+    private static Collection<? extends ModelNode> removeDistributableWeb(final PathAddress subsystem) {
+        final List<ModelNode> list = new ArrayList<>();
+        // distributable-web subsystem and extension don't exist so remove them
+        list.add(createRemoveOperation(subsystem));
+        list.add(createRemoveOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.clustering.web")));
+        return list;
     }
 }
