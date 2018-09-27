@@ -39,6 +39,7 @@ import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
+import org.jboss.as.controller.capability.DynamicNameMappers;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.domain.management.SecurityRealm;
@@ -55,9 +56,7 @@ public class HttpInvokerDefinition extends PersistentResourceDefinition {
 
     static final RuntimeCapability<Void> HTTP_INVOKER_HOST_CAPABILITY =
                 RuntimeCapability.Builder.of(CAPABILITY_HTTP_INVOKER_HOST, true, Void.class)
-                        .setDynamicNameMapper(address -> new String[]{
-                                address.getParent().getLastElement().getValue(),
-                                address.getLastElement().getValue()})
+                        .setDynamicNameMapper(DynamicNameMappers.PARENT)
                         //.addDynamicRequirements(Capabilities.CAPABILITY_HOST)
                         .addRequirements(Capabilities.CAPABILITY_HTTP_INVOKER)
                         .build();

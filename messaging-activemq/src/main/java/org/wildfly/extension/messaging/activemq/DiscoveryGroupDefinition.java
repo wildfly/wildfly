@@ -37,6 +37,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.capability.DynamicNameMappers;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -55,9 +56,7 @@ public class DiscoveryGroupDefinition extends PersistentResourceDefinition {
     public static final PathElement PATH = PathElement.pathElement(CommonAttributes.DISCOVERY_GROUP);
 
     public static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.messaging.activemq.discovery-group", true)
-            .setDynamicNameMapper(path -> new String[]{
-                                            path.getParent().getLastElement().getValue(),
-                                            path.getLastElement().getValue()})
+            .setDynamicNameMapper(DynamicNameMappers.PARENT)
             // WFLY-10518 - only the name of the discovery-group is used for its capability as the resource can be
             // either under server (and it is deprecated) or under the subsystem.
             .build();

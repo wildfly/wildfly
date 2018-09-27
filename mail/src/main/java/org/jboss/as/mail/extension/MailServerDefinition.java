@@ -41,6 +41,7 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
+import org.jboss.as.controller.capability.DynamicNameMappers;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -61,9 +62,7 @@ class MailServerDefinition extends PersistentResourceDefinition {
     static final String CREDENTIAL_STORE_CAPABILITY = "org.wildfly.security.credential-store";
 
     static final RuntimeCapability<Void> SERVER_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.mail.session.server", true)
-            .setDynamicNameMapper(path -> new String[]{
-                                  path.getParent().getLastElement().getValue(),
-                                  path.getLastElement().getValue()})
+            .setDynamicNameMapper(DynamicNameMappers.PARENT)
                     .build();
 
     static final SensitivityClassification MAIL_SERVER_SECURITY =

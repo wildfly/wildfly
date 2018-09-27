@@ -32,6 +32,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.capability.DynamicNameMappers;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -45,10 +46,7 @@ import org.wildfly.extension.undertow.filters.FilterRefDefinition;
 class LocationDefinition extends PersistentResourceDefinition {
     static final RuntimeCapability<Void> LOCATION_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_LOCATION, true, LocationService.class)
             .addRequirements(Capabilities.CAPABILITY_UNDERTOW)
-            .setDynamicNameMapper(path -> new String[]{
-                    path.getParent().getParent().getLastElement().getValue(),
-                    path.getParent().getLastElement().getValue(),
-                    path.getLastElement().getValue()})
+            .setDynamicNameMapper(DynamicNameMappers.GRAND_PARENT)
             .build();
 
     static final AttributeDefinition HANDLER = new SimpleAttributeDefinitionBuilder(Constants.HANDLER, ModelType.STRING)
