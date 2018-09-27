@@ -24,8 +24,13 @@ package org.jboss.as.xts.logging;
 
 import static org.jboss.logging.Logger.Level.WARN;
 
+import javax.xml.ws.handler.MessageContext;
+
+import static org.jboss.logging.Logger.Level.ERROR;
+
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
+import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
@@ -110,4 +115,8 @@ public interface XtsAsLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 9, value = "Rejecting call because it is not part of any XTS transaction")
     void rejectingCallBecauseNotPartOfXtsTx();
+
+    @LogMessage(level = ERROR)
+    @Message(id = 10, value = "Cannot get transaction status on handling context %s")
+    void cannotGetTransactionStatus(MessageContext ctx, @Cause Throwable cause);
 }

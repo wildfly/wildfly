@@ -65,6 +65,11 @@
         <module name="javax.annotation.api"  export="true" />
         <module name="javax.interceptor.api"  export="true" />
         <module name="org.jboss.weld.spi" />
+        <module name="org.jboss.as.xts" export="true">
+          <imports>
+            <include path="org.jboss.as.xts.txnclient"/>
+          </imports>
+        </module>
 
         <!-- TODO WFLY-5966 validate the need for these and remove if not needed.
              Prior to WFLY-5922 they were exported by javax.ejb.api. -->
