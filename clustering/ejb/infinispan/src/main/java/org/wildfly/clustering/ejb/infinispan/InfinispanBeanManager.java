@@ -159,7 +159,7 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
             public void close() {
             }
         };
-        this.dispatcher = this.dispatcherFactory.createCommandDispatcher(this.filter.toString(), this.scheduler);
+        this.dispatcher = this.dispatcherFactory.createCommandDispatcher(String.join("/", this.cache.getName(), this.filter.toString()), this.scheduler);
         this.cache.addListener(this, new PredicateCacheEventFilter<>(this.filter), null);
         this.schedule(new SimpleLocality(false), new CacheLocality(this.cache));
     }
