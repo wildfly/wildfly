@@ -9,7 +9,7 @@ for additional information.
 
 Key Features
 ------------
-* Java EE 7 support
+* Java EE 8 support
 * Fast Startup
 * Small Footprint
 * Modular Design
@@ -18,9 +18,9 @@ Key Features
 
 Release Notes
 -------------
-You can obtain the 10.0.0.Final release notes here:
+You can obtain the 14.0.1.Final release notes here:
 
-http://wildfly.org/news/2016/01/29/WildFly10-Released/
+http://wildfly.org/news/2018/08/30/WildFly14-Final-Released/
 
 Getting Started
 ---------------
@@ -31,7 +31,7 @@ WildFly has two modes of operation: Standalone and Domain. For more
 information regarding these modes, please refer to the documentation 
 available on the JBoss.org site:
 
-https://docs.jboss.org/author/display/WFLY10/Documentation
+http://docs.wildfly.org/15/
 
 
 Starting a Standalone Server
