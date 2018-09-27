@@ -42,6 +42,7 @@ import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
+import org.jboss.as.ejb3.deployment.DeploymentRepositoryService;
 import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
 import org.jboss.as.ejb3.iiop.EjbIIOPService;
@@ -131,14 +132,14 @@ public class DeploymentRepositoryProcessor implements DeploymentUnitProcessor {
         for (Map.Entry<ServiceName, InjectedValue<?>> entry : injectedValues.entrySet()) {
             builder.addDependency(entry.getKey(), (InjectedValue<Object>) entry.getValue());
         }
-        builder.addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, deployment.getDeploymentRepository());
+        builder.addDependency(DeploymentRepositoryService.SERVICE_NAME, DeploymentRepository.class, deployment.getDeploymentRepository());
         builder.install();
 
         final ModuleDeployment.ModuleDeploymentStartService deploymentStart = new ModuleDeployment.ModuleDeploymentStartService(identifier, countdown);
         final ServiceBuilder<Void> startBuilder = phaseContext.getServiceTarget().addService(deploymentUnit.getServiceName().append(ModuleDeployment.START_SERVICE_NAME), deploymentStart);
         startBuilder.addDependencies(componentStartServices);
         startBuilder.addDependency(moduleDeploymentService);
-        startBuilder.addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, deploymentStart.getDeploymentRepository());
+        startBuilder.addDependency(DeploymentRepositoryService.SERVICE_NAME, DeploymentRepository.class, deploymentStart.getDeploymentRepository());
         startBuilder.install();
     }
 
