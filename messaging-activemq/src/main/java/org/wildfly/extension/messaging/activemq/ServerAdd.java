@@ -116,7 +116,6 @@ import java.util.function.Supplier;
 import javax.management.MBeanServer;
 import javax.sql.DataSource;
 
-import org.apache.activemq.artemis.api.config.ActiveMQDefaultConfiguration;
 import org.apache.activemq.artemis.api.core.BroadcastGroupConfiguration;
 import org.apache.activemq.artemis.api.core.DiscoveryGroupConfiguration;
 import org.apache.activemq.artemis.api.core.Interceptor;
@@ -484,15 +483,21 @@ class ServerAdd extends AbstractAddStepHandler {
         final JournalType journalType = JournalType.valueOf(JOURNAL_TYPE.resolveModelAttribute(context, model).asString());
         configuration.setJournalType(journalType);
 
-        // AIO Journal
-        configuration.setJournalBufferSize_AIO(JOURNAL_BUFFER_SIZE.resolveModelAttribute(context, model).asInt(ActiveMQDefaultConfiguration.getDefaultJournalBufferSizeAio()));
-        configuration.setJournalBufferTimeout_AIO(JOURNAL_BUFFER_TIMEOUT.resolveModelAttribute(context, model).asInt(ActiveMQDefaultConfiguration.getDefaultJournalBufferTimeoutAio()));
-        configuration.setJournalMaxIO_AIO(JOURNAL_MAX_IO.resolveModelAttribute(context, model).asInt(ActiveMQDefaultConfiguration.getDefaultJournalMaxIoAio()));
-        // NIO Journal
-        configuration.setJournalBufferSize_NIO(JOURNAL_BUFFER_SIZE.resolveModelAttribute(context, model).asInt(ActiveMQDefaultConfiguration.getDefaultJournalBufferSizeNio()));
-        configuration.setJournalBufferTimeout_NIO(JOURNAL_BUFFER_TIMEOUT.resolveModelAttribute(context, model).asInt(ActiveMQDefaultConfiguration.getDefaultJournalBufferTimeoutNio()));
-        configuration.setJournalMaxIO_NIO(JOURNAL_MAX_IO.resolveModelAttribute(context, model).asInt(ActiveMQDefaultConfiguration.getDefaultJournalMaxIoNio()));
-        //
+        ModelNode value = JOURNAL_BUFFER_SIZE.resolveModelAttribute(context, model);
+        if(value.isDefined()) {
+            configuration.setJournalBufferSize_AIO(value.asInt());
+            configuration.setJournalBufferSize_NIO(value.asInt());
+        }
+        value = JOURNAL_BUFFER_TIMEOUT.resolveModelAttribute(context, model);
+        if(value.isDefined()) {
+            configuration.setJournalBufferTimeout_AIO(value.asInt());
+            configuration.setJournalBufferTimeout_NIO(value.asInt());
+        }
+        value = JOURNAL_MAX_IO.resolveModelAttribute(context, model);
+        if(value.isDefined()) {
+            configuration.setJournalMaxIO_AIO(value.asInt());
+            configuration.setJournalMaxIO_NIO(value.asInt());
+        }
         configuration.setJournalCompactMinFiles(JOURNAL_COMPACT_MIN_FILES.resolveModelAttribute(context, model).asInt());
         configuration.setJournalCompactPercentage(JOURNAL_COMPACT_PERCENTAGE.resolveModelAttribute(context, model).asInt());
         configuration.setJournalFileSize(JOURNAL_FILE_SIZE.resolveModelAttribute(context, model).asInt());

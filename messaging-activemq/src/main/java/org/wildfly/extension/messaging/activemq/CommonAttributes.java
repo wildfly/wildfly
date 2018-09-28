@@ -26,13 +26,12 @@ import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.BYTES;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECONDS;
 import static org.jboss.as.controller.registry.AttributeAccess.Flag.RESTART_ALL_SERVICES;
-import static org.jboss.dmr.ModelType.BIG_DECIMAL;
 import static org.jboss.dmr.ModelType.BOOLEAN;
+import static org.jboss.dmr.ModelType.DOUBLE;
 import static org.jboss.dmr.ModelType.INT;
 import static org.jboss.dmr.ModelType.LONG;
 import static org.wildfly.extension.messaging.activemq.jms.Validators.noDuplicateElements;
 
-import org.apache.activemq.artemis.api.config.ActiveMQDefaultConfiguration;
 import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
 import org.apache.activemq.artemis.core.config.impl.FileConfiguration;
 import org.jboss.as.controller.AttributeDefinition;
@@ -58,9 +57,11 @@ public interface CommonAttributes {
     String ENTRIES = "entries";
     String MODULE = "module";
     String NAME = "name";
-
+    /**
+     * @see ActiveMQClient.DEFAULT_CALL_TIMEOUT
+     */
     AttributeDefinition CALL_TIMEOUT = create("call-timeout", LONG)
-            .setDefaultValue(new ModelNode(ActiveMQClient.DEFAULT_CALL_TIMEOUT))
+            .setDefaultValue(new ModelNode(30000L))
             .setMeasurementUnit(MILLISECONDS)
             .setRequired(false)
             .setAllowExpression(true)
@@ -77,8 +78,11 @@ public interface CommonAttributes {
             .setRestartAllServices()
             .build();
 
+    /**
+     * @see ActiveMQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD
+     */
     SimpleAttributeDefinition CHECK_PERIOD = create("check-period", LONG)
-            .setDefaultValue(new ModelNode(ActiveMQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD))
+            .setDefaultValue(new ModelNode(30000L))
             .setRequired(false)
             .setAllowExpression(true)
             .setMeasurementUnit(MILLISECONDS)
@@ -107,8 +111,11 @@ public interface CommonAttributes {
             .setRestartAllServices()
             .build();
 
+    /**
+     * @see ActiveMQClient.DEFAULT_CONNECTION_TTL
+     */
     SimpleAttributeDefinition CONNECTION_TTL = create("connection-ttl", LONG)
-            .setDefaultValue(new ModelNode().set(ActiveMQClient.DEFAULT_CONNECTION_TTL))
+            .setDefaultValue(new ModelNode(60000L))
             .setRequired(false)
             .setAllowExpression(true)
             .setValidator(InfiniteOrPositiveValidators.LONG_INSTANCE)
@@ -167,9 +174,11 @@ public interface CommonAttributes {
             .setRestartAllServices()
             .build();
 
+    /**
+     * @see ActiveMQClient.DEFAULT_HA
+     */
     SimpleAttributeDefinition HA = create("ha", BOOLEAN)
-            .setDefaultValue(new ModelNode()
-                    .set(ActiveMQClient.DEFAULT_HA))
+            .setDefaultValue(new ModelNode(false))
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -206,8 +215,11 @@ public interface CommonAttributes {
             .setRestartAllServices()
             .build();
 
+    /**
+     * @see ActiveMQClient.DEFAULT_MAX_RETRY_INTERVAL
+     */
     AttributeDefinition MAX_RETRY_INTERVAL = create("max-retry-interval", LONG)
-            .setDefaultValue(new ModelNode(ActiveMQClient.DEFAULT_MAX_RETRY_INTERVAL))
+            .setDefaultValue(new ModelNode(2000L))
             .setMeasurementUnit(MILLISECONDS)
             .setRequired(false)
             .setAllowExpression(true)
@@ -224,8 +236,11 @@ public interface CommonAttributes {
             .setUndefinedMetricValue(new ModelNode(0))
             .build();
 
+    /**
+     * @see ActiveMQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE
+     */
     AttributeDefinition MIN_LARGE_MESSAGE_SIZE = create("min-large-message-size", INT)
-            .setDefaultValue(new ModelNode(ActiveMQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE))
+            .setDefaultValue(new ModelNode(100 * 1024))
             .setMeasurementUnit(BYTES)
             .setRequired(false)
             .setAllowExpression(true)
@@ -259,16 +274,22 @@ public interface CommonAttributes {
             .setMaxSize(Integer.MAX_VALUE)
             .build();
 
+    /**
+     * @see ActiveMQClient.DEFAULT_RETRY_INTERVAL
+     */
     AttributeDefinition RETRY_INTERVAL = create("retry-interval", LONG)
-            .setDefaultValue(new ModelNode().set(ActiveMQClient.DEFAULT_RETRY_INTERVAL))
+            .setDefaultValue(new ModelNode(2000L))
             .setMeasurementUnit(MILLISECONDS)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
-    AttributeDefinition RETRY_INTERVAL_MULTIPLIER = create("retry-interval-multiplier", BIG_DECIMAL)
-            .setDefaultValue(new ModelNode(ActiveMQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER))
+    /**
+     * @see ActiveMQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER
+     */
+    AttributeDefinition RETRY_INTERVAL_MULTIPLIER = create("retry-interval-multiplier", DOUBLE)
+            .setDefaultValue(new ModelNode(1.0d))
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -302,10 +323,6 @@ public interface CommonAttributes {
             .setRestartAllServices()
             .build();
 
-    SimpleAttributeDefinition USER = create("user", ModelType.STRING, true)
-            .setAllowExpression(true)
-            .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultClusterUser()))
-            .build();
 
     String ACCEPTOR = "acceptor";
     String ACCEPTORS = "acceptors";

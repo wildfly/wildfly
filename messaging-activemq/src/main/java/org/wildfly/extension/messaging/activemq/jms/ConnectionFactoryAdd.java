@@ -30,7 +30,6 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.HA;
 
 import java.util.List;
 
-import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
 import org.apache.activemq.artemis.api.jms.JMSFactoryType;
 import org.apache.activemq.artemis.jms.server.JMSServerManager;
 import org.apache.activemq.artemis.jms.server.config.ConnectionFactoryConfiguration;
@@ -86,7 +85,7 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
 
         final ConnectionFactoryConfiguration config = new ConnectionFactoryConfigurationImpl()
                 .setName(name)
-                .setHA(ActiveMQClient.DEFAULT_HA)
+                .setHA(false)
                 .setBindings(entries.toArray(new String[entries.size()]));
 
         config.setHA(HA.resolveModelAttribute(context, model).asBoolean());

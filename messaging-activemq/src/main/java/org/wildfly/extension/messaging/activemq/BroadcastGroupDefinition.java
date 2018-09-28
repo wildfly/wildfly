@@ -37,7 +37,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.activemq.artemis.api.config.ActiveMQDefaultConfiguration;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.AttributeParser;
@@ -80,8 +79,11 @@ public class BroadcastGroupDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .build();
 
+     /**
+     * @see ActiveMQDefaultConfiguration#getDefaultBroadcastPeriod
+     */
     public static final SimpleAttributeDefinition BROADCAST_PERIOD = create("broadcast-period", LONG)
-            .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultBroadcastPeriod()))
+            .setDefaultValue(new ModelNode(2000L))
             .setMeasurementUnit(MILLISECONDS)
             .setRequired(false)
             .setAllowExpression(true)

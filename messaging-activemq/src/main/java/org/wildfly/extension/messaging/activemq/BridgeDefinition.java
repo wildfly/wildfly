@@ -33,7 +33,6 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.STATIC_C
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.apache.activemq.artemis.api.config.ActiveMQDefaultConfiguration;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.AttributeParser;
@@ -73,9 +72,12 @@ public class BridgeDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .build();
 
+     /**
+     * @see ActiveMQDefaultConfiguration#getDefaultBridgeInitialConnectAttempts
+     */
     public static final SimpleAttributeDefinition INITIAL_CONNECT_ATTEMPTS = create("initial-connect-attempts", INT)
             .setRequired(false)
-            .setDefaultValue(new ModelNode().set(ActiveMQDefaultConfiguration.getDefaultBridgeInitialConnectAttempts()))
+            .setDefaultValue(new ModelNode().set(-1))
             .setAllowExpression(true)
             .setCorrector(InfiniteOrPositiveValidators.NEGATIVE_VALUE_CORRECTOR)
             .setValidator(InfiniteOrPositiveValidators.INT_INSTANCE)
@@ -87,8 +89,11 @@ public class BridgeDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .build();
 
+     /**
+     * @see ActiveMQDefaultConfiguration#getDefaultBridgeProducerWindowSize
+     */
     public static final SimpleAttributeDefinition PRODUCER_WINDOW_SIZE = create("producer-window-size", INT)
-            .setDefaultValue(new ModelNode(ActiveMQDefaultConfiguration.getDefaultBridgeProducerWindowSize()))
+            .setDefaultValue(new ModelNode(-1))
             .setMeasurementUnit(BYTES)
             .setRequired(false)
             .setAllowExpression(true)
@@ -97,19 +102,25 @@ public class BridgeDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .build();
 
+     /**
+     * @see ActiveMQDefaultConfiguration#getDefaultClusterPassword
+     */
     public static final SimpleAttributeDefinition PASSWORD = create("password", STRING, true)
             .setAllowExpression(true)
-            .setDefaultValue(new ModelNode().set(ActiveMQDefaultConfiguration.getDefaultClusterPassword()))
+            .setDefaultValue(new ModelNode("CHANGE ME!!"))
             .setRestartAllServices()
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
             .addAccessConstraint(MESSAGING_SECURITY_SENSITIVE_TARGET)
             .setAlternatives(CredentialReference.CREDENTIAL_REFERENCE)
             .build();
 
+     /**
+     * @see ActiveMQDefaultConfiguration#getDefaultClusterUser
+     */
     public static final SimpleAttributeDefinition USER = create("user", STRING)
             .setRequired(false)
             .setAllowExpression(true)
-            .setDefaultValue(new ModelNode().set(ActiveMQDefaultConfiguration.getDefaultClusterUser()))
+            .setDefaultValue(new ModelNode("ACTIVEMQ.CLUSTER.ADMIN.USER"))
             .setRestartAllServices()
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
             .addAccessConstraint(MESSAGING_SECURITY_SENSITIVE_TARGET)
@@ -123,25 +134,34 @@ public class BridgeDefinition extends PersistentResourceDefinition {
                     .setAlternatives(PASSWORD.getName())
                     .build();
 
+     /**
+     * @see ActiveMQDefaultConfiguration#isDefaultBridgeDuplicateDetection
+     */
     public static final SimpleAttributeDefinition USE_DUPLICATE_DETECTION = create("use-duplicate-detection", BOOLEAN)
             .setRequired(false)
-            .setDefaultValue(new ModelNode().set(ActiveMQDefaultConfiguration.isDefaultBridgeDuplicateDetection()))
+            .setDefaultValue(new ModelNode(true))
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
+     /**
+     * @see ActiveMQDefaultConfiguration#getDefaultBridgeReconnectAttempts
+     */
     public static final SimpleAttributeDefinition RECONNECT_ATTEMPTS = create("reconnect-attempts", INT)
             .setRequired(false)
-            .setDefaultValue(new ModelNode().set(ActiveMQDefaultConfiguration.getDefaultBridgeReconnectAttempts()))
+            .setDefaultValue(new ModelNode(-1))
             .setAllowExpression(true)
             .setCorrector(InfiniteOrPositiveValidators.NEGATIVE_VALUE_CORRECTOR)
             .setValidator(InfiniteOrPositiveValidators.INT_INSTANCE)
             .setRestartAllServices()
             .build();
 
+     /**
+     * @see ActiveMQDefaultConfiguration#getDefaultBridgeConnectSameNode
+     */
     public static final SimpleAttributeDefinition RECONNECT_ATTEMPTS_ON_SAME_NODE = create("reconnect-attempts-on-same-node", INT)
             .setRequired(false)
-            .setDefaultValue(new ModelNode().set(ActiveMQDefaultConfiguration.getDefaultBridgeConnectSameNode()))
+            .setDefaultValue(new ModelNode(10))
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();

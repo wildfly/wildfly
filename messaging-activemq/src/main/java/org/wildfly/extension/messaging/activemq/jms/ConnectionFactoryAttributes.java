@@ -25,8 +25,8 @@ import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.BYTES;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECONDS;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.PER_SECOND;
-import static org.jboss.dmr.ModelType.BIG_DECIMAL;
 import static org.jboss.dmr.ModelType.BOOLEAN;
+import static org.jboss.dmr.ModelType.DOUBLE;
 import static org.jboss.dmr.ModelType.INT;
 import static org.jboss.dmr.ModelType.LONG;
 import static org.jboss.dmr.ModelType.STRING;
@@ -37,6 +37,7 @@ import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttr
 
 import org.apache.activemq.artemis.api.config.ActiveMQDefaultConfiguration;
 import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
+import org.apache.activemq.artemis.api.core.client.loadbalance.RoundRobinConnectionLoadBalancingPolicy;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.AttributeParser;
@@ -55,43 +56,61 @@ import org.wildfly.extension.messaging.activemq.InfiniteOrPositiveValidators;
 public interface ConnectionFactoryAttributes {
 
     interface Common {
+    /**
+     * @see ActiveMQClient.DEFAULT_AUTO_GROUP
+     */
         AttributeDefinition AUTO_GROUP = SimpleAttributeDefinitionBuilder.create("auto-group", BOOLEAN)
-                .setDefaultValue(new ModelNode().set(ActiveMQClient.DEFAULT_AUTO_GROUP))
+                .setDefaultValue(new ModelNode(false))
                 .setRequired(false)
                 .setAllowExpression(true)
                 .setRestartAllServices()
                 .build();
 
+    /**
+     * @see ActiveMQClient.DEFAULT_BLOCK_ON_ACKNOWLEDGE
+     */
         AttributeDefinition BLOCK_ON_ACKNOWLEDGE = SimpleAttributeDefinitionBuilder.create("block-on-acknowledge", BOOLEAN)
-                .setDefaultValue(new ModelNode().set(ActiveMQClient.DEFAULT_BLOCK_ON_ACKNOWLEDGE))
+                .setDefaultValue(new ModelNode(false))
                 .setRequired(false)
                 .setAllowExpression(true)
                 .setRestartAllServices()
                 .build();
 
+    /**
+     * @see ActiveMQClient.DEFAULT_BLOCK_ON_DURABLE_SEND
+     */
         AttributeDefinition BLOCK_ON_DURABLE_SEND = SimpleAttributeDefinitionBuilder.create("block-on-durable-send", BOOLEAN)
-                .setDefaultValue(new ModelNode().set(ActiveMQClient.DEFAULT_BLOCK_ON_DURABLE_SEND))
+                .setDefaultValue(new ModelNode(true))
                 .setRequired(false)
                 .setAllowExpression(true)
                 .setRestartAllServices()
                 .build();
 
+    /**
+     * @see ActiveMQClient.DEFAULT_BLOCK_ON_NON_DURABLE_SEND
+     */
         AttributeDefinition BLOCK_ON_NON_DURABLE_SEND = SimpleAttributeDefinitionBuilder.create("block-on-non-durable-send", BOOLEAN)
-                .setDefaultValue(new ModelNode().set(ActiveMQClient.DEFAULT_BLOCK_ON_NON_DURABLE_SEND))
+                .setDefaultValue(new ModelNode(false))
                 .setRequired(false)
                 .setAllowExpression(true)
                 .setRestartAllServices()
                 .build();
 
+    /**
+     * @see ActiveMQClient.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT
+     */
         AttributeDefinition CACHE_LARGE_MESSAGE_CLIENT = SimpleAttributeDefinitionBuilder.create("cache-large-message-client", BOOLEAN)
-                .setDefaultValue(new ModelNode().set(ActiveMQClient.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT))
+                .setDefaultValue(new ModelNode(false))
                 .setRequired(false)
                 .setAllowExpression(true)
                 .setRestartAllServices()
                 .build();
 
+    /**
+     * @see ActiveMQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD
+     */
         AttributeDefinition CLIENT_FAILURE_CHECK_PERIOD =SimpleAttributeDefinitionBuilder.create("client-failure-check-period", LONG)
-                .setDefaultValue(new ModelNode().set(ActiveMQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD))
+                .setDefaultValue(new ModelNode(30000L))
                 .setMeasurementUnit(MILLISECONDS)
                 .setRequired(false)
                 .setAllowExpression(true)
@@ -99,15 +118,21 @@ public interface ConnectionFactoryAttributes {
                 .setRestartAllServices()
                 .build();
 
+    /**
+     * @see ActiveMQClient.DEFAULT_COMPRESS_LARGE_MESSAGES
+     */
         AttributeDefinition COMPRESS_LARGE_MESSAGES = SimpleAttributeDefinitionBuilder.create("compress-large-messages", BOOLEAN)
-                .setDefaultValue(new ModelNode().set(ActiveMQClient.DEFAULT_COMPRESS_LARGE_MESSAGES))
+                .setDefaultValue(new ModelNode(false))
                 .setRequired(false)
                 .setAllowExpression(true)
                 .setRestartAllServices()
                 .build();
 
+    /**
+     * @see ActiveMQClient.DEFAULT_CONFIRMATION_WINDOW_SIZE
+     */
         AttributeDefinition CONFIRMATION_WINDOW_SIZE = SimpleAttributeDefinitionBuilder.create("confirmation-window-size", INT)
-                .setDefaultValue(new ModelNode().set(ActiveMQClient.DEFAULT_CONFIRMATION_WINDOW_SIZE))
+                .setDefaultValue(new ModelNode(-1))
                 .setMeasurementUnit(BYTES)
                 .setRequired(false)
                 .setAllowExpression(true)
@@ -116,15 +141,21 @@ public interface ConnectionFactoryAttributes {
                 .setRestartAllServices()
                 .build();
 
+    /**
+     * @see ActiveMQClient.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME
+     */
         AttributeDefinition CONNECTION_LOAD_BALANCING_CLASS_NAME = SimpleAttributeDefinitionBuilder.create("connection-load-balancing-policy-class-name", STRING)
-                .setDefaultValue(new ModelNode().set(ActiveMQClient.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME))
+                .setDefaultValue(new ModelNode(RoundRobinConnectionLoadBalancingPolicy.class.getCanonicalName()))
                 .setRequired(false)
                 .setAllowExpression(false)
                 .setRestartAllServices()
                 .build();
 
+    /**
+     * @see ActiveMQClient.DEFAULT_CONNECTION_TTL
+     */
         AttributeDefinition CONNECTION_TTL = new SimpleAttributeDefinitionBuilder("connection-ttl", LONG)
-                .setDefaultValue(new ModelNode().set(ActiveMQClient.DEFAULT_CONNECTION_TTL))
+                .setDefaultValue(new ModelNode(60000L))
                 .setRequired(false)
                 .setAllowExpression(true)
                 .setValidator(InfiniteOrPositiveValidators.LONG_INSTANCE)
@@ -140,8 +171,11 @@ public interface ConnectionFactoryAttributes {
                 .setRestartAllServices()
                 .build();
 
+    /**
+     * @see ActiveMQClient.DEFAULT_CONSUMER_MAX_RATE
+     */
         AttributeDefinition CONSUMER_MAX_RATE = SimpleAttributeDefinitionBuilder.create("consumer-max-rate", INT)
-                .setDefaultValue(new ModelNode(ActiveMQClient.DEFAULT_CONSUMER_MAX_RATE))
+                .setDefaultValue(new ModelNode(-1))
                 .setMeasurementUnit(PER_SECOND)
                 .setRequired(false)
                 .setAllowExpression(true)
@@ -150,8 +184,11 @@ public interface ConnectionFactoryAttributes {
                 .setRestartAllServices()
                 .build();
 
+    /**
+     * @see ActiveMQClient.DEFAULT_CONSUMER_WINDOW_SIZE
+     */
         AttributeDefinition CONSUMER_WINDOW_SIZE = SimpleAttributeDefinitionBuilder.create("consumer-window-size", INT)
-                .setDefaultValue(new ModelNode().set(ActiveMQClient.DEFAULT_CONSUMER_WINDOW_SIZE))
+                .setDefaultValue(new ModelNode(1024 * 1024))
                 .setMeasurementUnit(BYTES)
                 .setRequired(false)
                 .setAllowExpression(true)
@@ -182,8 +219,11 @@ public interface ConnectionFactoryAttributes {
                 .setRestartAllServices()
                 .build();
 
+    /**
+     * @see ActiveMQClient.DEFAULT_ACK_BATCH_SIZE
+     */
         AttributeDefinition DUPS_OK_BATCH_SIZE = SimpleAttributeDefinitionBuilder.create("dups-ok-batch-size", INT)
-                .setDefaultValue(new ModelNode().set(ActiveMQClient.DEFAULT_ACK_BATCH_SIZE))
+                .setDefaultValue(new ModelNode(1024 * 1024))
                 .setRequired(false)
                 .setAllowExpression(true)
                 .setRestartAllServices()
@@ -198,8 +238,11 @@ public interface ConnectionFactoryAttributes {
                 .setRestartAllServices()
                 .build();
 
+    /**
+     * @see ActiveMQClient.DEFAULT_FAILOVER_ON_INITIAL_CONNECTION
+     */
         AttributeDefinition FAILOVER_ON_INITIAL_CONNECTION = SimpleAttributeDefinitionBuilder.create("failover-on-initial-connection", BOOLEAN)
-                .setDefaultValue(new ModelNode().set(ActiveMQClient.DEFAULT_FAILOVER_ON_INITIAL_CONNECTION))
+                .setDefaultValue(new ModelNode(false))
                 .setRequired(false)
                 .setAllowExpression(true)
                 .setRestartAllServices()
@@ -219,31 +262,43 @@ public interface ConnectionFactoryAttributes {
                 .setMeasurementUnit(BYTES)
                 .build();
 
+    /**
+     * @see ActiveMQClient.DEFAULT_MAX_RETRY_INTERVAL
+     */
         AttributeDefinition MAX_RETRY_INTERVAL = SimpleAttributeDefinitionBuilder.create("max-retry-interval", LONG)
-                .setDefaultValue(new ModelNode().set(ActiveMQClient.DEFAULT_MAX_RETRY_INTERVAL))
+                .setDefaultValue(new ModelNode(2000L))
                 .setMeasurementUnit(MILLISECONDS)
                 .setRequired(false)
                 .setAllowExpression(true)
                 .setRestartAllServices()
                 .build();
 
+    /**
+     * @see ActiveMQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE
+     */
         AttributeDefinition MIN_LARGE_MESSAGE_SIZE = SimpleAttributeDefinitionBuilder.create("min-large-message-size", INT)
-                .setDefaultValue(new ModelNode().set(ActiveMQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE))
+                .setDefaultValue(new ModelNode().set(100 * 1024))
                 .setMeasurementUnit(BYTES)
                 .setRequired(false)
                 .setAllowExpression(true)
                 .setRestartAllServices()
                 .build();
 
+    /**
+     * @see ActiveMQClient.DEFAULT_PRE_ACKNOWLEDGE
+     */
         AttributeDefinition PRE_ACKNOWLEDGE = SimpleAttributeDefinitionBuilder.create("pre-acknowledge", BOOLEAN)
-                .setDefaultValue(new ModelNode().set(ActiveMQClient.DEFAULT_PRE_ACKNOWLEDGE))
+                .setDefaultValue(new ModelNode(false))
                 .setRequired(false)
                 .setAllowExpression(true)
                 .setRestartAllServices()
                 .build();
 
+    /**
+     * @see ActiveMQClient.DEFAULT_PRODUCER_MAX_RATE
+     */
         AttributeDefinition PRODUCER_MAX_RATE = SimpleAttributeDefinitionBuilder.create("producer-max-rate", INT)
-                .setDefaultValue(new ModelNode().set(ActiveMQClient.DEFAULT_PRODUCER_MAX_RATE))
+                .setDefaultValue(new ModelNode(-1))
                 .setMeasurementUnit(PER_SECOND)
                 .setRequired(false)
                 .setAllowExpression(true)
@@ -252,8 +307,11 @@ public interface ConnectionFactoryAttributes {
                 .setRestartAllServices()
                 .build();
 
+    /**
+     * @see ActiveMQClient.DEFAULT_PRODUCER_WINDOW_SIZE
+     */
         AttributeDefinition PRODUCER_WINDOW_SIZE = SimpleAttributeDefinitionBuilder.create("producer-window-size", INT)
-                .setDefaultValue(new ModelNode().set(ActiveMQClient.DEFAULT_PRODUCER_WINDOW_SIZE))
+                .setDefaultValue(new ModelNode(64 * 1024))
                 .setMeasurementUnit(BYTES)
                 .setRequired(false)
                 .setAllowExpression(true)
@@ -265,30 +323,42 @@ public interface ConnectionFactoryAttributes {
                 .setRestartAllServices()
                 .build();
 
-        AttributeDefinition RECONNECT_ATTEMPTS = create("reconnect-attempts", INT)
-                .setDefaultValue(new ModelNode().set(ActiveMQClient.DEFAULT_RECONNECT_ATTEMPTS))
+        /**
+         * @see ActiveMQClient.DEFAULT_RECONNECT_ATTEMPTS
+         */
+        SimpleAttributeDefinition RECONNECT_ATTEMPTS = create("reconnect-attempts", INT)
+                .setDefaultValue(new ModelNode(0))
                 .setRequired(false)
                 .setAllowExpression(true)
                 .setRestartAllServices()
                 .build();
 
+        /**
+         * @see ActiveMQClient.DEFAULT_RETRY_INTERVAL
+         */
         AttributeDefinition RETRY_INTERVAL = SimpleAttributeDefinitionBuilder.create("retry-interval", LONG)
-                .setDefaultValue(new ModelNode().set(ActiveMQClient.DEFAULT_RETRY_INTERVAL))
+                .setDefaultValue(new ModelNode(2000L))
                 .setMeasurementUnit(MILLISECONDS)
                 .setRequired(false)
                 .setAllowExpression(true)
                 .setRestartAllServices()
                 .build();
 
-        AttributeDefinition RETRY_INTERVAL_MULTIPLIER = create("retry-interval-multiplier", BIG_DECIMAL)
-                .setDefaultValue(new ModelNode().set(ActiveMQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER))
+        /**
+         * @see ActiveMQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER
+         */
+        AttributeDefinition RETRY_INTERVAL_MULTIPLIER = create("retry-interval-multiplier", DOUBLE)
+                .setDefaultValue(new ModelNode(1.0d))
                 .setRequired(false)
                 .setAllowExpression(true)
                 .setRestartAllServices()
                 .build();
 
+        /**
+         * @see ActiveMQDefaultConfiguration#getDefaultScheduledThreadPoolMaxSize
+         */
         AttributeDefinition SCHEDULED_THREAD_POOL_MAX_SIZE = SimpleAttributeDefinitionBuilder.create("scheduled-thread-pool-max-size", INT)
-                .setDefaultValue(new ModelNode().set(ActiveMQDefaultConfiguration.getDefaultScheduledThreadPoolMaxSize()))
+                .setDefaultValue(new ModelNode(5))
                 .setRequired(false)
                 .setAllowExpression(true)
                 .setCorrector(InfiniteOrPositiveValidators.NEGATIVE_VALUE_CORRECTOR)
@@ -296,8 +366,11 @@ public interface ConnectionFactoryAttributes {
                 .setRestartAllServices()
                 .build();
 
+        /**
+         * @see ActiveMQDefaultConfiguration#getDefaultThreadPoolMaxSize
+         */
         AttributeDefinition THREAD_POOL_MAX_SIZE = SimpleAttributeDefinitionBuilder.create("thread-pool-max-size", INT)
-                .setDefaultValue(new ModelNode().set(ActiveMQDefaultConfiguration.getDefaultThreadPoolMaxSize()))
+                .setDefaultValue(new ModelNode(30))
                 .setRequired(false)
                 .setAllowExpression(true)
                 .setCorrector(InfiniteOrPositiveValidators.NEGATIVE_VALUE_CORRECTOR)
@@ -305,15 +378,21 @@ public interface ConnectionFactoryAttributes {
                 .setRestartAllServices()
                 .build();
 
+        /**
+         * @see ActiveMQClient.DEFAULT_ACK_BATCH_SIZE
+         */
         AttributeDefinition TRANSACTION_BATCH_SIZE = SimpleAttributeDefinitionBuilder.create("transaction-batch-size", INT)
-                .setDefaultValue(new ModelNode().set(ActiveMQClient.DEFAULT_ACK_BATCH_SIZE))
+                .setDefaultValue(new ModelNode(1024 * 1024))
                 .setRequired(false)
                 .setAllowExpression(true)
                 .setRestartAllServices()
                 .build();
 
+        /**
+         * @see ActiveMQClient.DEFAULT_USE_GLOBAL_POOLS
+         */
         AttributeDefinition USE_GLOBAL_POOLS = SimpleAttributeDefinitionBuilder.create("use-global-pools", BOOLEAN)
-                .setDefaultValue(new ModelNode().set(ActiveMQClient.DEFAULT_USE_GLOBAL_POOLS))
+                .setDefaultValue(new ModelNode(true))
                 .setRequired(false)
                 .setAllowExpression(true)
                 .setRestartAllServices()
@@ -411,10 +490,13 @@ public interface ConnectionFactoryAttributes {
                 .setRestartAllServices()
                 .build();
 
+        /**
+         * @see ActiveMQClient.INITIAL_CONNECT_ATTEMPTS
+         */
         SimpleAttributeDefinition INITIAL_CONNECT_ATTEMPTS = SimpleAttributeDefinitionBuilder.create("initial-connect-attempts", INT)
                 .setRequired(false)
                 .setAllowExpression(true)
-                .setDefaultValue(new ModelNode(ActiveMQClient.INITIAL_CONNECT_ATTEMPTS))
+                .setDefaultValue(new ModelNode(1))
                 .setRestartAllServices()
                 .build();
 
