@@ -144,7 +144,9 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
                 "org.wildfly.extension.microprofile.health-smallrye",
                 "org.wildfly.extension.microprofile.opentracing-smallrye"
         )),
-
+        WILDFLY_15_0("WildFly15.0", WILDFLY_14_0, Arrays.asList(
+                "org.wildfly.extension.clustering.web"
+        )),
 
         EAP62("EAP62", Arrays.asList(
                 "org.jboss.as.appclient",
