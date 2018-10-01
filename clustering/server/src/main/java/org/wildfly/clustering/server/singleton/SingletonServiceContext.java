@@ -22,11 +22,12 @@
 
 package org.wildfly.clustering.server.singleton;
 
-import org.wildfly.clustering.singleton.Singleton;
+import org.wildfly.clustering.service.ServiceNameProvider;
 import org.wildfly.clustering.singleton.SingletonElectionListener;
 
 /**
  * @author Paul Ferraro
  */
-public interface SingletonContext extends Lifecycle, Singleton, SingletonElectionListener {
+public interface SingletonServiceContext extends ServiceNameProvider {
+    SingletonElectionListener getElectionListener();
 }

@@ -47,6 +47,7 @@ import org.wildfly.clustering.provider.ServiceProviderRegistration;
 import org.wildfly.clustering.provider.ServiceProviderRegistry;
 import org.wildfly.clustering.provider.ServiceProviderRegistration.Listener;
 import org.wildfly.clustering.server.logging.ClusteringServerLogger;
+import org.wildfly.clustering.singleton.SingletonElectionListener;
 import org.wildfly.clustering.singleton.SingletonElectionPolicy;
 import org.wildfly.clustering.singleton.service.SingletonService;
 
@@ -60,6 +61,7 @@ public abstract class AbstractDistributedSingletonService<C extends SingletonCon
     private final Supplier<ServiceProviderRegistry<ServiceName>> registry;
     private final Supplier<CommandDispatcherFactory> dispatcherFactory;
     private final SingletonElectionPolicy electionPolicy;
+    private final SingletonElectionListener electionListener;
     private final int quorum;
     private final Function<ServiceTarget, Lifecycle> primaryLifecycleFactory;
 
@@ -74,6 +76,7 @@ public abstract class AbstractDistributedSingletonService<C extends SingletonCon
         this.registry = context.getServiceProviderRegistry();
         this.dispatcherFactory = context.getCommandDispatcherFactory();
         this.electionPolicy = context.getElectionPolicy();
+        this.electionListener = context.getElectionListener();
         this.quorum = context.getQuorum();
         this.primaryLifecycleFactory = primaryLifecycleFactory;
     }
@@ -115,8 +118,6 @@ public abstract class AbstractDistributedSingletonService<C extends SingletonCon
 
             try {
                 if (elected != null) {
-                    ClusteringServerLogger.ROOT_LOGGER.elected(elected.getName(), this.name.getCanonicalName());
-
                     // Stop service on every node except elected node
                     for (CompletionStage<Void> stage : this.dispatcher.executeOnGroup(new StopCommand(), elected).values()) {
                         try {
@@ -128,14 +129,22 @@ public abstract class AbstractDistributedSingletonService<C extends SingletonCon
                     // Start service on elected node
                     this.dispatcher.executeOnMember(new StartCommand(), elected).toCompletableFuture().join();
                 } else {
-                    if (quorumMet) {
-                        ClusteringServerLogger.ROOT_LOGGER.noPrimaryElected(this.name.getCanonicalName());
-                    } else {
+                    if (!quorumMet) {
                         ClusteringServerLogger.ROOT_LOGGER.quorumNotReached(this.name.getCanonicalName(), this.quorum);
                     }
 
                     // Stop service on every node
                     for (CompletionStage<Void> stage : this.dispatcher.executeOnGroup(new StopCommand()).values()) {
+                        try {
+                            stage.toCompletableFuture().join();
+                        } catch (CancellationException e) {
+                            // Ignore
+                        }
+                    }
+                }
+
+                if (this.electionListener != null) {
+                    for (CompletionStage<Void> stage : this.dispatcher.executeOnGroup(new SingletonElectionCommand(candidates, elected)).values()) {
                         try {
                             stage.toCompletableFuture().join();
                         } catch (CancellationException e) {
@@ -153,7 +162,6 @@ public abstract class AbstractDistributedSingletonService<C extends SingletonCon
     public void start() {
         // If we were not already the primary node
         if (this.primary.compareAndSet(false, true)) {
-            ClusteringServerLogger.ROOT_LOGGER.startSingleton(this.name.getCanonicalName());
             this.primaryLifecycle.start();
         }
     }
@@ -162,8 +170,16 @@ public abstract class AbstractDistributedSingletonService<C extends SingletonCon
     public void stop() {
         // If we were the previous the primary node
         if (this.primary.compareAndSet(true, false)) {
-            ClusteringServerLogger.ROOT_LOGGER.stopSingleton(this.name.getCanonicalName());
             this.primaryLifecycle.stop();
+        }
+    }
+
+    @Override
+    public void elected(List<Node> candidates, Node elected) {
+        try {
+            this.electionListener.elected(candidates, elected);
+        } catch (Throwable e) {
+            ClusteringServerLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
         }
     }
 

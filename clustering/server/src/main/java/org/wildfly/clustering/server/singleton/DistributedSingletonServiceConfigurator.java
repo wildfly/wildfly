@@ -36,11 +36,13 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.provider.ServiceProviderRegistry;
 import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.SimpleServiceNameProvider;
 import org.wildfly.clustering.service.SupplierDependency;
 import org.wildfly.clustering.singleton.Singleton;
+import org.wildfly.clustering.singleton.SingletonElectionListener;
 import org.wildfly.clustering.singleton.SingletonElectionPolicy;
 import org.wildfly.clustering.singleton.election.SimpleSingletonElectionPolicy;
 import org.wildfly.clustering.singleton.service.SingletonServiceBuilder;
@@ -50,18 +52,25 @@ import org.wildfly.clustering.singleton.service.SingletonServiceConfigurator;
  * Distributed {@link SingletonServiceConfigurator} implementation that uses JBoss MSC 1.4.x service installation.
  * @author Paul Ferraro
  */
-public class DistributedSingletonServiceConfigurator extends SimpleServiceNameProvider implements SingletonServiceConfigurator, DistributedSingletonServiceContext {
+public class DistributedSingletonServiceConfigurator extends SimpleServiceNameProvider implements SingletonServiceConfigurator, DistributedSingletonServiceContext, Supplier<Group> {
 
     private final SupplierDependency<ServiceProviderRegistry<ServiceName>> registry;
     private final SupplierDependency<CommandDispatcherFactory> dispatcherFactory;
 
     private volatile SingletonElectionPolicy electionPolicy = new SimpleSingletonElectionPolicy();
+    private volatile SingletonElectionListener electionListener;
     private volatile int quorum = 1;
 
     public DistributedSingletonServiceConfigurator(ServiceName name, DistributedSingletonServiceConfiguratorContext context) {
         super(name);
         this.registry = context.getServiceProviderRegistryDependency();
         this.dispatcherFactory = context.getCommandDispatcherFactoryDependency();
+        this.electionListener = new DefaultSingletonElectionListener(name, this);
+    }
+
+    @Override
+    public Group get() {
+        return this.registry.get().getGroup();
     }
 
     @Override
@@ -85,6 +94,12 @@ public class DistributedSingletonServiceConfigurator extends SimpleServiceNamePr
     }
 
     @Override
+    public SingletonServiceConfigurator electionListener(SingletonElectionListener listener) {
+        this.electionListener = listener;
+        return this;
+    }
+
+    @Override
     public Supplier<ServiceProviderRegistry<ServiceName>> getServiceProviderRegistry() {
         return this.registry;
     }
@@ -97,6 +112,11 @@ public class DistributedSingletonServiceConfigurator extends SimpleServiceNamePr
     @Override
     public SingletonElectionPolicy getElectionPolicy() {
         return this.electionPolicy;
+    }
+
+    @Override
+    public SingletonElectionListener getElectionListener() {
+        return this.electionListener;
     }
 
     @Override

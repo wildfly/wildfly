@@ -20,13 +20,21 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.server.singleton;
+package org.wildfly.clustering.singleton;
 
-import org.wildfly.clustering.singleton.Singleton;
-import org.wildfly.clustering.singleton.SingletonElectionListener;
+import java.util.List;
+
+import org.wildfly.clustering.group.Node;
 
 /**
+ * Listener for singleton election results.
  * @author Paul Ferraro
  */
-public interface SingletonContext extends Lifecycle, Singleton, SingletonElectionListener {
+public interface SingletonElectionListener {
+    /**
+     * Triggered when a singleton election completes, electing the specified member from the specified list of candidates.
+     * @param candidateMembers the list of candidate members
+     * @param electedMember the elected primary provider of a singleton service
+     */
+    void elected(List<Node> candidateMembers, Node electedMember);
 }
