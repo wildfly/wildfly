@@ -137,7 +137,7 @@ public class AbstractValidationUnitTest {
             }
             Map<String, BigDecimal> mostRecentVersions = new HashMap<>();
             Map<String, String> mostRecentNames = new HashMap<>();
-            Pattern pattern = Pattern.compile("(.*?)_(\\d)_(\\d).xsd");
+            Pattern pattern = Pattern.compile("(.*?)_(\\d+)_(\\d+).xsd");
             for(Map.Entry<String, File> entry : JBOSS_SCHEMAS_MAP.entrySet()) {
                 if (FUTURE_SCHEMA_FILES.contains(entry.getKey())) {
                     // not "current"; it's future.
