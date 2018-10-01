@@ -65,4 +65,11 @@ public class Capabilities {
      * @see <a href="https://github.com/wildfly/wildfly-capabilities/blob/master/org/wildfly/management/path-manager/capability.adoc">documentation</a>
      */
     static final String PATH_MANAGER_CAPABILITY = "org.wildfly.management.path-manager";
+
+    /**
+     * The capability for the SocketBinding capability
+     *
+     * @see <a href="https://github.com/wildfly/wildfly-capabilities/blob/master/org/wildfly/network/socket-binding/capability.adoc">documentation</a>
+     */
+    static final String SOCKET_BINDING_CAPABILITY = "org.wildfly.network.socket-binding";
 }

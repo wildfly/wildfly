@@ -30,20 +30,29 @@ import static org.jboss.dmr.ModelType.BOOLEAN;
 import static org.jboss.dmr.ModelType.DOUBLE;
 import static org.jboss.dmr.ModelType.INT;
 import static org.jboss.dmr.ModelType.LONG;
+import static org.wildfly.extension.messaging.activemq.Capabilities.SOCKET_BINDING_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.jms.Validators.noDuplicateElements;
 
+
+import java.util.Set;
 import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
 import org.apache.activemq.artemis.core.config.impl.FileConfiguration;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.AttributeParser;
+import org.jboss.as.controller.CapabilityReferenceRecorder;
 import org.jboss.as.controller.ObjectListAttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -212,6 +221,7 @@ public interface CommonAttributes {
             // do not allow expression as this may reference another resource
             .setAllowExpression(false)
             .setAlternatives("socket-binding")
+            .setCapabilityReference(new ConstantDependencyRecorder("org.wildfly.clustering.jgroups.default-channel-factory"))
             .setRestartAllServices()
             .build();
 
@@ -311,6 +321,7 @@ public interface CommonAttributes {
             .setAlternatives(JGROUPS_CLUSTER.getName())
             .setRestartAllServices()
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
+            .setCapabilityReference(SOCKET_BINDING_CAPABILITY)
             .build();
 
     AttributeDefinition TEMPORARY = create("temporary", BOOLEAN)
@@ -460,6 +471,72 @@ public interface CommonAttributes {
         if (!operation.hasDefined(CommonAttributes.JGROUPS_CLUSTER.getName()) && operation.hasDefined(CommonAttributes.JGROUPS_CHANNEL.getName())) {
             operation.get(CommonAttributes.JGROUPS_CLUSTER.getName()).set(operation.get(CommonAttributes.JGROUPS_CHANNEL.getName()));
             operation.remove(CommonAttributes.JGROUPS_CHANNEL.getName());
+        }
+    }
+
+    static class ConstantDependencyRecorder implements CapabilityReferenceRecorder {
+        private final String baseRequirementName;
+
+        ConstantDependencyRecorder(String baseRequirementName) {
+            this.baseRequirementName = baseRequirementName;
+        }
+
+         @Override
+        public final void addCapabilityRequirements(OperationContext context, Resource resource, String attributeName, String... attributeValues) {
+            processCapabilityRequirement(context, resource, attributeName, false, attributeValues);
+        }
+
+        @Override
+        public final void removeCapabilityRequirements(OperationContext context, Resource resource, String attributeName, String... attributeValues) {
+            processCapabilityRequirement(context, resource, attributeName, true, attributeValues);
+        }
+
+        void processCapabilityRequirement(OperationContext context, Resource resource, String attributeName, boolean remove, String... attributeValues) {
+            String dependentName = getDependentName(context);
+            for (String attributeValue : attributeValues) {
+                if (attributeValue != null) {
+                    String requirementName = getBaseRequirementName();
+                    if (remove) {
+                        context.deregisterCapabilityRequirement(requirementName, dependentName);
+                    } else {
+                        context.registerAdditionalCapabilityRequirement(requirementName, dependentName, attributeName);
+                    }
+                }
+            }
+        }
+
+        String getDependentName(OperationContext context) {
+            RuntimeCapability<?> cap = getDependentCapability(context);
+            return getDependentName(cap, context);
+        }
+
+        final String getDependentName(RuntimeCapability<?> cap, OperationContext context) {
+            if (cap.isDynamicallyNamed()) {
+                return cap.fromBaseCapability(context.getCurrentAddress()).getName();
+            }
+            return cap.getName();
+        }
+
+        RuntimeCapability<?> getDependentCapability(OperationContext context) {
+            ImmutableManagementResourceRegistration mrr = context.getResourceRegistration();
+            Set<RuntimeCapability> capabilities = mrr.getCapabilities();
+            assert capabilities != null && capabilities.size() == 1;
+            return capabilities.iterator().next();
+        }
+
+        @Override
+        public String getBaseRequirementName() {
+            return baseRequirementName;
+        }
+
+        @Override
+        public String[] getRequirementPatternSegments(String name, PathAddress address) {
+            return new String[0];
+        }
+
+        @Override
+        public String getBaseDependentName() {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
     }
 }

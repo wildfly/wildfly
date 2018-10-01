@@ -152,16 +152,15 @@ public class MigrateTestCase extends AbstractSubsystemTest {
         migrateOp.get(OP_ADDR).add(SUBSYSTEM, SUBSYSTEM_NAME);
 
         ModelNode response = services.executeOperation(migrateOp);
-        System.out.println("Response " + response);
         checkOutcome(response);
 
         ModelNode warnings = response.get(RESULT, "migration-warnings");
         // 6 warnings about broadcast-group attributes that can not be migrated.
         // 2 warnings about broadcast-group attributes not migrated because they have an expression.
-        // 3 warnings about broadcast-group not migrated because they don't have a proper network configuration.
+        // 3 warnings about broadcast-group not migrated because they don't have a proper network configuration (A, B, T).
         // 5 warnings about discovery-group attributes that can not be migrated.
         // 2 warnings about discovery-group attributes not migrated because they have an expression.
-        // 3 warnings about discovery-group not migrated because they don't have a proper network configuration.
+        // 3 warnings about discovery-group not migrated because they don't have a proper network configuration (C, D, U).
         // 3 warnings about interceptors that can not be migrated (for remoting-interceptors, remoting-incoming-interceptors & remoting-outgoing-interceptors attributes)
         // 1 warning about HA migration (attributes have expressions)
         // 1 warning about cluster-connection forward-when-no-consumers attribute having an expression.
