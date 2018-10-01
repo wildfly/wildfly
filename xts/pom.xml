@@ -131,7 +131,7 @@
         <dependency>
             <groupId>org.jboss.spec.javax.xml.ws</groupId>
             <artifactId>jboss-jaxws-api_2.3_spec</artifactId>
-            <scope>test</scope>
+            <scope>provided</scope>
         </dependency>
 
     </dependencies>
