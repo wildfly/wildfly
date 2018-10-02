@@ -72,6 +72,8 @@ class TransactedJMSContext extends AbstractJMSContext {
         public void afterCompletion(int status) {
             ROOT_LOGGER.debugf("Clean up JMSContext created from %s", TransactedJMSContext.this);
             context.close();
+            //ignore closing of context from PreDestroy method
+            contextClosedByListener(context);
         }
     }
 }
