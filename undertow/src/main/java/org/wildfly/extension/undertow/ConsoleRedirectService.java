@@ -23,6 +23,7 @@
 package org.wildfly.extension.undertow;
 
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -139,7 +140,12 @@ class ConsoleRedirectService implements Service<ConsoleRedirectService> {
         }
 
         private String getRedirectHostname(final InetAddress managementAddress, final HttpServerExchange exchange) {
-            final InetAddress destinationAddress = exchange.getDestinationAddress().getAddress();
+            InetAddress destinationAddress = exchange.getDestinationAddress().getAddress();
+
+            if (destinationAddress == null && exchange.getDestinationAddress().isUnresolved()) {
+                destinationAddress = new InetSocketAddress(exchange.getDestinationAddress().getHostName(), exchange.getDestinationAddress().getPort()).getAddress();
+            }
+
             // If hosts are equal use the host from the header
             if (managementAddress.equals(destinationAddress) || managementAddress.isAnyLocalAddress()) {
                 String hostname = exchange.getRequestHeaders().getFirst(Headers.HOST);
