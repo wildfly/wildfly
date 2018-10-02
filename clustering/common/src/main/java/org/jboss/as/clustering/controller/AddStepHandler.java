@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -118,6 +119,30 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
                 context.addStep(new RuntimeResourceRegistrationStepHandler(registration), OperationContext.Stage.MODEL);
             }
         }
+    }
+
+    @Override
+    protected Resource createResource(OperationContext context) {
+        Resource resource = Resource.Factory.create(context.getResourceRegistration().isRuntimeOnly());
+        if (context.isDefaultRequiresRuntime()) {
+            resource = this.descriptor.getResourceTransformation().apply(resource);
+        }
+        context.addResource(PathAddress.EMPTY_ADDRESS, resource);
+        return resource;
+    }
+
+    @Override
+    protected Resource createResource(OperationContext context, ModelNode operation) {
+        UnaryOperator<Resource> transformation = context.isDefaultRequiresRuntime() ? this.descriptor.getResourceTransformation() : UnaryOperator.identity();
+        ImmutableManagementResourceRegistration registration = context.getResourceRegistration();
+        Resource resource = transformation.apply(Resource.Factory.create(registration.isRuntimeOnly(), registration.getOrderedChildTypes()));
+        Integer index = registration.isOrderedChildResource() && operation.hasDefined(ModelDescriptionConstants.ADD_INDEX) ? operation.get(ModelDescriptionConstants.ADD_INDEX).asIntOrNull() : null;
+        if (index == null) {
+            context.addResource(PathAddress.EMPTY_ADDRESS, resource);
+        } else {
+            context.addResource(PathAddress.EMPTY_ADDRESS, index.intValue(), resource);
+        }
+        return resource;
     }
 
     @Override
