@@ -44,7 +44,7 @@ public class DistributedSingletonServiceConfiguratorFactory implements Singleton
 
     @Override
     public SingletonServiceConfigurator createSingletonServiceConfigurator(ServiceName name) {
-        return new DistributedSingletonServiceConfigurator(this, name);
+        return new DistributedSingletonServiceConfigurator(name, this);
     }
 
     @Override

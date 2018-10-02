@@ -22,10 +22,16 @@
 
 package org.wildfly.clustering.server.singleton;
 
+import java.util.Collections;
+import java.util.Set;
+import java.util.function.Supplier;
+
 import org.jboss.msc.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.wildfly.clustering.group.Group;
+import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.singleton.service.SingletonService;
 
 /**
@@ -35,9 +41,11 @@ import org.wildfly.clustering.singleton.service.SingletonService;
 public class LocalSingletonService implements SingletonService {
 
     private final Service service;
+    private final Supplier<Group> group;
 
-    public LocalSingletonService(Service service) {
+    public LocalSingletonService(Service service, LocalSingletonServiceContext context) {
         this.service = service;
+        this.group = context.getGroup();
     }
 
     @Override
@@ -54,5 +62,15 @@ public class LocalSingletonService implements SingletonService {
     public boolean isPrimary() {
         // A local singleton is always primary
         return true;
+    }
+
+    @Override
+    public Node getPrimaryProvider() {
+        return this.group.get().getLocalMember();
+    }
+
+    @Override
+    public Set<Node> getProviders() {
+        return Collections.singleton(this.group.get().getLocalMember());
     }
 }

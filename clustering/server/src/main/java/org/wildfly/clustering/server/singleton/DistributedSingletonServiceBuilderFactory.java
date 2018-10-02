@@ -51,7 +51,7 @@ public class DistributedSingletonServiceBuilderFactory extends DistributedSingle
 
     @Override
     public <T> SingletonServiceBuilder<T> createSingletonServiceBuilder(ServiceName name, Service<T> primaryService, Service<T> backupService) {
-        return new DistributedSingletonServiceBuilder<>(this.context, name, primaryService, backupService);
+        return new DistributedSingletonServiceBuilder<>(name, primaryService, backupService, this.context);
     }
 
     private class LegacyDistributedSingletonServiceConfiguratorContext implements DistributedSingletonServiceConfiguratorContext {
