@@ -2,6 +2,7 @@ package org.jboss.as.ee.component.deployers;
 
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Countdown tracker with capabilities similar to SE CountDownLatch, but allowing threads
@@ -44,6 +45,25 @@ public final class StartupCountdown {
       synchronized (this) {
         while (count != 0) wait();
       }
+    }
+  }
+
+  public boolean tryAwait(long timeout, TimeUnit timeUnit) throws InterruptedException {
+    if (isPrivileged()) return true;
+    if (count != 0) {
+      synchronized (this) {
+        long timeoutNano = timeUnit.toNanos(timeout);
+        long start = System.nanoTime();
+        long elapsed;
+        while (count != 0 && (elapsed = (System.nanoTime() - start)) < timeoutNano) {
+          // round up to nearest millisecond
+          long remaining = (timeoutNano - elapsed + 999_999L) / 1_000_000L;
+          wait(remaining);
+        }
+        return count == 0;
+      }
+    } else {
+      return true;
     }
   }
 
