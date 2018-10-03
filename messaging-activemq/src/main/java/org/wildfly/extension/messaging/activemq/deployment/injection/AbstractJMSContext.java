@@ -26,8 +26,11 @@ import static org.wildfly.extension.messaging.activemq.logging.MessagingLogger.R
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
+import javax.annotation.PreDestroy;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSContext;
 
@@ -41,12 +44,14 @@ import javax.jms.JMSContext;
 public abstract class AbstractJMSContext implements Serializable {
 
     private final Map<String, JMSContext> contexts = new HashMap<>();
+    private final Set<JMSContext> contextsToClose = new HashSet<>();
 
     synchronized JMSContext getContext(String injectionPointId, JMSInfo info, ConnectionFactory connectionFactory) {
         JMSContext context = contexts.get(injectionPointId);
         if (context == null) {
             context = createContext(info, connectionFactory);
             contexts.put(injectionPointId, context);
+            contextsToClose.add(context);
         }
         return context;
     }
@@ -65,11 +70,21 @@ public abstract class AbstractJMSContext implements Serializable {
         return context;
     }
 
+    /**
+     * If context is closed by transaction listener, it should not be closed again in PreDestroy method.
+     * (so it is removed from set with contexts to close)
+     */
+    void contextClosedByListener(JMSContext context) {
+        contextsToClose.remove(context);
+    }
+
+    @PreDestroy
     void cleanUp() {
         ROOT_LOGGER.debugf("Clean up JMSContext created from %s", this);
-        for (JMSContext jmsContext : contexts.values()) {
+        for (JMSContext jmsContext : contextsToClose) {
             jmsContext.close();
         }
         contexts.clear();
+        contextsToClose.clear();
     }
 }
