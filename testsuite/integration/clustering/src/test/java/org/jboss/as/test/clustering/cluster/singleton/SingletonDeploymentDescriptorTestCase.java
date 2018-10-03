@@ -36,9 +36,10 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 public class SingletonDeploymentDescriptorTestCase extends SingletonDeploymentTestCase {
 
     private static final String MODULE_NAME = SingletonDeploymentDescriptorTestCase.class.getSimpleName();
+    private static final String DEPLOYMENT_NAME = MODULE_NAME + ".ear";
 
     public SingletonDeploymentDescriptorTestCase() {
-        super(MODULE_NAME);
+        super(MODULE_NAME, DEPLOYMENT_NAME);
     }
 
     @Deployment(name = DEPLOYMENT_HELPER_1, managed = false, testable = false)
@@ -54,7 +55,7 @@ public class SingletonDeploymentDescriptorTestCase extends SingletonDeploymentTe
     }
 
     private static Archive<?> createDeployment() {
-        EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, MODULE_NAME + ".ear");
+        EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, DEPLOYMENT_NAME);
         WebArchive war = ShrinkWrap.create(WebArchive.class, MODULE_NAME + ".war");
         war.addPackage(TraceServlet.class.getPackage());
         ear.addAsModule(war);
