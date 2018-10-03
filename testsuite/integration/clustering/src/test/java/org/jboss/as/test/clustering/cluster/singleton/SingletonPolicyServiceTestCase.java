@@ -21,32 +21,28 @@
  */
 package org.jboss.as.test.clustering.cluster.singleton;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.clustering.ClusterTestUtil.execute;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.security.Permission;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.stream.Collectors;
 
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.utils.HttpClientUtils;
-import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.server.security.ServerPermission;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.singleton.service.NodeServicePolicyActivator;
-import org.jboss.as.test.clustering.cluster.singleton.service.NodeServiceServlet;
-import org.jboss.as.test.http.util.TestHttpClientUtils;
+import org.jboss.as.test.shared.PermissionUtils;
+import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceActivator;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -69,115 +65,69 @@ public class SingletonPolicyServiceTestCase extends AbstractClusteringTestCase {
     }
 
     private static Archive<?> createDeployment() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, MODULE_NAME + ".war");
-        war.addPackage(NodeServiceServlet.class.getPackage());
-        war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.as.server\n"));
-        war.addAsServiceProvider(org.jboss.msc.service.ServiceActivator.class, NodeServicePolicyActivator.class);
-        war.addAsManifestResource(createPermissionsXmlAsset(
-                new RuntimePermission("getClassLoader"), // See org.jboss.as.server.deployment.service.ServiceActivatorProcessor#deploy()
-                new ServerPermission("useServiceRegistry"), // See org.jboss.as.server.deployment.service.SecuredServiceRegistry
-                new ServerPermission("getCurrentServiceContainer")
-        ), "permissions.xml");
-        return war;
+        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
+        jar.addClass(NodeServicePolicyActivator.class);
+        jar.addAsServiceProvider(ServiceActivator.class, NodeServicePolicyActivator.class);
+        Permission classLoaderPermission = new RuntimePermission("getClassLoader"); // See org.jboss.as.server.deployment.service.ServiceActivatorProcessor#deploy()
+        Permission serviceRegistryPermission = new ServerPermission("useServiceRegistry"); // See org.jboss.as.server.deployment.service.SecuredServiceRegistry
+        jar.addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(classLoaderPermission, serviceRegistryPermission), "permissions.xml");
+        return jar;
     }
 
     @Test
     public void testSingletonService(
-            @ArquillianResource(NodeServiceServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
-            @ArquillianResource(NodeServiceServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
-            throws IOException, URISyntaxException {
+            @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) ManagementClient client1,
+            @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) ManagementClient client2)
+            throws Exception {
 
         // Needed to be able to inject ArquillianResource
         stop(NODE_2);
 
-        try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
-            HttpResponse response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL1, NodeServicePolicyActivator.SERVICE_NAME, NODE_1)));
-            try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertTrue(response.containsHeader(NodeServiceServlet.NODE_HEADER));
-                Assert.assertEquals(NODE_1, response.getFirstHeader(NodeServiceServlet.NODE_HEADER).getValue());
-            } finally {
-                HttpClientUtils.closeQuietly(response);
-            }
+        String primaryProviderRequest = String.format("/subsystem=singleton/singleton-policy=default/service=%s:read-attribute(name=primary-provider)", NodeServicePolicyActivator.SERVICE_NAME.getCanonicalName());
+        String isPrimaryRequest = String.format("/subsystem=singleton/singleton-policy=default/service=%s:read-attribute(name=is-primary)", NodeServicePolicyActivator.SERVICE_NAME.getCanonicalName());
+        String getProvidersRequest = String.format("/subsystem=singleton/singleton-policy=default/service=%s:read-attribute(name=providers)", NodeServicePolicyActivator.SERVICE_NAME.getCanonicalName());
 
-            start(NODE_2);
+        Assert.assertEquals(NODE_1, execute(client1, primaryProviderRequest).asStringOrNull());
+        Assert.assertTrue(execute(client1, isPrimaryRequest).asBoolean(false));
+        Assert.assertEquals(Collections.singletonList(NODE_1), execute(client1, getProvidersRequest).asList().stream().map(ModelNode::asString).collect(Collectors.toList()));
 
-            response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL1, NodeServicePolicyActivator.SERVICE_NAME, NODE_1)));
-            try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertTrue(response.containsHeader(NodeServiceServlet.NODE_HEADER));
-                Assert.assertEquals(NODE_1, response.getFirstHeader(NodeServiceServlet.NODE_HEADER).getValue());
-            } finally {
-                HttpClientUtils.closeQuietly(response);
-            }
+        start(NODE_2);
 
-            response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL2, NodeServicePolicyActivator.SERVICE_NAME)));
-            try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertFalse(response.containsHeader(NodeServiceServlet.NODE_HEADER));
-            } finally {
-                HttpClientUtils.closeQuietly(response);
-            }
+        Assert.assertEquals(NODE_1, execute(client1, primaryProviderRequest).asStringOrNull());
+        Assert.assertTrue(execute(client1, isPrimaryRequest).asBoolean(false));
+        Assert.assertEquals(Arrays.asList(NODE_1, NODE_2), execute(client1, getProvidersRequest).asList().stream().map(ModelNode::asString).sorted().collect(Collectors.toList()));
+        Assert.assertEquals(NODE_1, execute(client2, primaryProviderRequest).asStringOrNull());
+        Assert.assertFalse(execute(client2, isPrimaryRequest).asBoolean(true));
+        Assert.assertEquals(Arrays.asList(NODE_1, NODE_2), execute(client2, getProvidersRequest).asList().stream().map(ModelNode::asString).sorted().collect(Collectors.toList()));
 
-            stop(NODE_2);
+        stop(NODE_2);
 
-            response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL1, NodeServicePolicyActivator.SERVICE_NAME, NODE_1)));
-            try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertTrue(response.containsHeader(NodeServiceServlet.NODE_HEADER));
-                Assert.assertEquals(NODE_1, response.getFirstHeader(NodeServiceServlet.NODE_HEADER).getValue());
-            } finally {
-                HttpClientUtils.closeQuietly(response);
-            }
+        Assert.assertEquals(NODE_1, execute(client1, primaryProviderRequest).asStringOrNull());
+        Assert.assertTrue(execute(client1, isPrimaryRequest).asBoolean(false));
+        Assert.assertEquals(Collections.singletonList(NODE_1), execute(client1, getProvidersRequest).asList().stream().map(ModelNode::asString).collect(Collectors.toList()));
 
-            start(NODE_2);
+        start(NODE_2);
 
-            response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL1, NodeServicePolicyActivator.SERVICE_NAME, NODE_1)));
-            try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertTrue(response.containsHeader(NodeServiceServlet.NODE_HEADER));
-                Assert.assertEquals(NODE_1, response.getFirstHeader(NodeServiceServlet.NODE_HEADER).getValue());
-            } finally {
-                HttpClientUtils.closeQuietly(response);
-            }
+        Assert.assertEquals(NODE_1, execute(client1, primaryProviderRequest).asStringOrNull());
+        Assert.assertTrue(execute(client1, isPrimaryRequest).asBoolean(false));
+        Assert.assertEquals(Arrays.asList(NODE_1, NODE_2), execute(client1, getProvidersRequest).asList().stream().map(ModelNode::asString).sorted().collect(Collectors.toList()));
+        Assert.assertEquals(NODE_1, execute(client2, primaryProviderRequest).asStringOrNull());
+        Assert.assertFalse(execute(client2, isPrimaryRequest).asBoolean(true));
+        Assert.assertEquals(Arrays.asList(NODE_1, NODE_2), execute(client2, getProvidersRequest).asList().stream().map(ModelNode::asString).sorted().collect(Collectors.toList()));
 
-            response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL2, NodeServicePolicyActivator.SERVICE_NAME)));
-            try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertFalse(response.containsHeader(NodeServiceServlet.NODE_HEADER));
-            } finally {
-                HttpClientUtils.closeQuietly(response);
-            }
+        stop(NODE_1);
 
-            stop(NODE_1);
+        Assert.assertEquals(NODE_2, execute(client2, primaryProviderRequest).asStringOrNull());
+        Assert.assertTrue(execute(client2, isPrimaryRequest).asBoolean(false));
+        Assert.assertEquals(Collections.singletonList(NODE_2), execute(client2, getProvidersRequest).asList().stream().map(ModelNode::asString).collect(Collectors.toList()));
 
-            response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL2, NodeServicePolicyActivator.SERVICE_NAME, NODE_2)));
-            try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertTrue(response.containsHeader(NodeServiceServlet.NODE_HEADER));
-                Assert.assertEquals(NODE_2, response.getFirstHeader(NodeServiceServlet.NODE_HEADER).getValue());
-            } finally {
-                HttpClientUtils.closeQuietly(response);
-            }
+        start(NODE_1);
 
-            start(NODE_1);
-
-            response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL1, NodeServicePolicyActivator.SERVICE_NAME)));
-            try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertFalse(response.containsHeader(NodeServiceServlet.NODE_HEADER));
-            } finally {
-                HttpClientUtils.closeQuietly(response);
-            }
-
-            response = client.execute(new HttpGet(NodeServiceServlet.createURI(baseURL2, NodeServicePolicyActivator.SERVICE_NAME, NODE_2)));
-            try {
-                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertTrue(response.containsHeader(NodeServiceServlet.NODE_HEADER));
-                Assert.assertEquals(NODE_2, response.getFirstHeader(NodeServiceServlet.NODE_HEADER).getValue());
-            } finally {
-                HttpClientUtils.closeQuietly(response);
-            }
-        }
+        Assert.assertEquals(NODE_2, execute(client1, primaryProviderRequest).asStringOrNull());
+        Assert.assertFalse(execute(client1, isPrimaryRequest).asBoolean(true));
+        Assert.assertEquals(Arrays.asList(NODE_1, NODE_2), execute(client1, getProvidersRequest).asList().stream().map(ModelNode::asString).sorted().collect(Collectors.toList()));
+        Assert.assertEquals(NODE_2, execute(client2, primaryProviderRequest).asStringOrNull());
+        Assert.assertTrue(execute(client2, isPrimaryRequest).asBoolean(false));
+        Assert.assertEquals(Arrays.asList(NODE_1, NODE_2), execute(client2, getProvidersRequest).asList().stream().map(ModelNode::asString).sorted().collect(Collectors.toList()));
     }
 }

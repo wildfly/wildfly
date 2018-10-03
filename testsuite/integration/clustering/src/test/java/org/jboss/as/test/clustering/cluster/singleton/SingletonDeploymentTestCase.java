@@ -41,6 +41,7 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.singleton.servlet.TraceServlet;
@@ -59,6 +60,7 @@ import org.junit.runner.RunWith;
  * @author Paul Ferraro
  */
 @RunWith(Arquillian.class)
+@ServerSetup(SingletonDeploymentTestCase.ServerSetupTask.class)
 public abstract class SingletonDeploymentTestCase extends AbstractClusteringTestCase {
 
     private static final String MODULE_NAME = SingletonDeploymentTestCase.class.getSimpleName();
@@ -232,7 +234,7 @@ public abstract class SingletonDeploymentTestCase extends AbstractClusteringTest
         }
     }
 
-    class ServerSetupTask extends CLIServerSetupTask {
+    public static class ServerSetupTask extends CLIServerSetupTask {
         ServerSetupTask() {
             this.builder.node(TWO_NODES)
                     .setup("/subsystem=singleton/singleton-policy=default/election-policy=simple:write-attribute(name=name-preferences,value=%s)", Arrays.toString(TWO_NODES))
