@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,29 +22,32 @@
 
 package org.wildfly.extension.clustering.singleton;
 
-import org.jboss.as.clustering.controller.Model;
-import org.jboss.as.controller.ModelVersion;
+import org.jboss.msc.service.LifecycleListener;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.clustering.service.ServiceConfigurator;
 
 /**
- * Enumeration of supported versions of management model.
  * @author Paul Ferraro
  */
-public enum SingletonModel implements Model {
+public class SingletonServiceConfigurator implements ServiceConfigurator {
 
-    VERSION_1_0_0(1, 0, 0), // WildFly 10
-    VERSION_2_0_0(2, 0, 0), // WildFly 11-14
-    VERSION_3_0_0(3, 0, 0), // WildFly 15
-    ;
-    static final SingletonModel CURRENT = VERSION_3_0_0;
+    private final ServiceConfigurator configurator;
+    private final LifecycleListener listener;
 
-    private final ModelVersion version;
-
-    SingletonModel(int major, int minor, int micro) {
-        this.version = ModelVersion.create(major, minor, micro);
+    public SingletonServiceConfigurator(ServiceConfigurator configurator, LifecycleListener listener) {
+        this.configurator = configurator;
+        this.listener = listener;
     }
 
     @Override
-    public ModelVersion getVersion() {
-        return this.version;
+    public ServiceName getServiceName() {
+        return this.configurator.getServiceName();
+    }
+
+    @Override
+    public ServiceBuilder<?> build(ServiceTarget target) {
+        return this.configurator.build(target).addListener(this.listener);
     }
 }

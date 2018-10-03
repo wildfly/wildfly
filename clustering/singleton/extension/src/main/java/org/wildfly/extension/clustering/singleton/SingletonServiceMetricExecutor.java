@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,29 +22,15 @@
 
 package org.wildfly.extension.clustering.singleton;
 
-import org.jboss.as.clustering.controller.Model;
-import org.jboss.as.controller.ModelVersion;
+import org.jboss.msc.service.ServiceName;
 
 /**
- * Enumeration of supported versions of management model.
+ * Executor for singleton service metrics.
  * @author Paul Ferraro
  */
-public enum SingletonModel implements Model {
+public class SingletonServiceMetricExecutor extends SingletonMetricExecutor {
 
-    VERSION_1_0_0(1, 0, 0), // WildFly 10
-    VERSION_2_0_0(2, 0, 0), // WildFly 11-14
-    VERSION_3_0_0(3, 0, 0), // WildFly 15
-    ;
-    static final SingletonModel CURRENT = VERSION_3_0_0;
-
-    private final ModelVersion version;
-
-    SingletonModel(int major, int minor, int micro) {
-        this.version = ModelVersion.create(major, minor, micro);
-    }
-
-    @Override
-    public ModelVersion getVersion() {
-        return this.version;
+    public SingletonServiceMetricExecutor() {
+        super(ServiceName::parse);
     }
 }

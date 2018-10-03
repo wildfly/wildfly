@@ -27,9 +27,10 @@ import java.util.function.UnaryOperator;
 import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
+import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.clustering.controller.validation.IntRangeValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
@@ -37,7 +38,6 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
@@ -125,6 +125,9 @@ public class SingletonPolicyResourceDefinition extends ChildResourceDefinition<M
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Attribute.CACHE.getDefinition(), Attribute.CACHE_CONTAINER.getDefinition())
                 .end();
         }
+
+        SingletonDeploymentResourceDefinition.buildTransformation(version, builder);
+        SingletonServiceResourceDefinition.buildTransformation(version, builder);
     }
 
     SingletonPolicyResourceDefinition() {
@@ -139,12 +142,18 @@ public class SingletonPolicyResourceDefinition extends ChildResourceDefinition<M
                 .addAttributes(Attribute.class)
                 .addCapabilities(Capability.class)
                 .addRequiredSingletonChildren(SimpleElectionPolicyResourceDefinition.PATH)
+                .setResourceTransformation(SingletonPolicyResource::new)
                 ;
         ResourceServiceHandler handler = new SingletonPolicyServiceHandler();
         new SimpleResourceRegistration(descriptor, handler).register(registration);
 
         new RandomElectionPolicyResourceDefinition().register(registration);
         new SimpleElectionPolicyResourceDefinition().register(registration);
+
+        if (registration.isRuntimeOnlyRegistrationValid()) {
+            new SingletonDeploymentResourceDefinition().register(registration);
+            new SingletonServiceResourceDefinition().register(registration);
+        }
 
         return registration;
     }
