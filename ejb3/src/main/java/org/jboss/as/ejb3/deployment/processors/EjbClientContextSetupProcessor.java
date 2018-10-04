@@ -241,9 +241,12 @@ public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
             if (path != null && ! path.isEmpty()) {
                 rule = rule.matchPath(path);
             }
+            MatchRule ejbRule = rule.matchAbstractType("ejb", "jboss");
+            MatchRule jtaRule = rule.matchAbstractType("jta", "jboss");
             final OptionMap connectOptions = connectionSpec.getConnectOptions();
             authenticationConfiguration = RemotingOptions.mergeOptionsIntoAuthenticationConfiguration(connectOptions, authenticationConfiguration);
-            AuthenticationConfiguration configuration = CLIENT.getAuthenticationConfiguration(destinationUri, context, - 1, "ejb", "jboss");
+            AuthenticationConfiguration ejbConfiguration = CLIENT.getAuthenticationConfiguration(destinationUri, context, - 1, "ejb", "jboss");
+            AuthenticationConfiguration jtaConfiguration = CLIENT.getAuthenticationConfiguration(destinationUri, context, - 1, "jta", "jboss");
             if (sslContext == null) {
                 try {
                     sslContext = CLIENT.getSSLContext(destinationUri, context);
@@ -252,7 +255,7 @@ public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
                 }
             }
             final SSLContext finalSSLContext = sslContext;
-            AuthenticationContext mergedAuthenticationContext = context.with(0, rule, configuration.with(authenticationConfiguration));
+            AuthenticationContext mergedAuthenticationContext = context.with(0, ejbRule, ejbConfiguration.with(authenticationConfiguration)).with(jtaRule, jtaConfiguration.with(authenticationConfiguration));
             return mergedAuthenticationContext.withSsl(0, rule, () -> finalSSLContext);
         }
     }
