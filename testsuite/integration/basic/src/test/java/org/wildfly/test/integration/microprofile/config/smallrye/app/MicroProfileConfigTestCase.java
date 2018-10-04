@@ -66,6 +66,7 @@ public class MicroProfileConfigTestCase {
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
                 .addAsManifestResource(MicroProfileConfigTestCase.class.getPackage(),
                         "microprofile-config.properties", "microprofile-config.properties");
+
         return war;
     }
 

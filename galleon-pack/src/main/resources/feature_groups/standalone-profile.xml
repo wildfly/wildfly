@@ -7,5 +7,6 @@
 
     <feature-group name="basic-profile"/>
     <feature-group name="health"/>
+    <feature-group name="metrics" />
 
 </feature-group-spec>

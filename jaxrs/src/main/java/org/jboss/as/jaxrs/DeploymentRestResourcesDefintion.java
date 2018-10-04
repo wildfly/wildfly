@@ -135,7 +135,7 @@ public class DeploymentRestResourcesDefintion extends SimpleResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerMetric(RESOURCE_CLASS, new AbstractRestResReadHandler() {
+        resourceRegistration.registerReadOnlyAttribute(RESOURCE_CLASS, new AbstractRestResReadHandler() {
             @Override
             void handleAttribute(String className, List<JaxrsResourceMethodDescription> methodInvokers,
                     List<JaxrsResourceLocatorDescription> locatorIncokers, Collection<String> servletMappings,
@@ -143,7 +143,7 @@ public class DeploymentRestResourcesDefintion extends SimpleResourceDefinition {
                 response.set(className);
             }
         });
-        resourceRegistration.registerMetric(RESOURCE_PATHS, new AbstractRestResReadHandler() {
+        resourceRegistration.registerReadOnlyAttribute(RESOURCE_PATHS, new AbstractRestResReadHandler() {
             @Override
             void handleAttribute(String className, List<JaxrsResourceMethodDescription> methodInvokers,
                     List<JaxrsResourceLocatorDescription> locatorIncokers, Collection<String> servletMappings,
@@ -154,7 +154,7 @@ public class DeploymentRestResourcesDefintion extends SimpleResourceDefinition {
             }
         });
 
-        resourceRegistration.registerMetric(SUB_RESOURCE_LOCATORS, new AbstractRestResReadHandler() {
+        resourceRegistration.registerReadOnlyAttribute(SUB_RESOURCE_LOCATORS, new AbstractRestResReadHandler() {
             @Override
             void handleAttribute(String className, List<JaxrsResourceMethodDescription> methodInvokers,
                     List<JaxrsResourceLocatorDescription> locatorIncokers, Collection<String> servletMappings,
