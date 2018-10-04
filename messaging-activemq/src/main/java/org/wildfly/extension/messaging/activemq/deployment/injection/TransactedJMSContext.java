@@ -46,10 +46,10 @@ class TransactedJMSContext extends AbstractJMSContext {
      */
     void registerCleanUpListener(TransactionSynchronizationRegistry transactionSynchronizationRegistry, JMSContext contextInstance) {
         //to avoid registration of more listeners for one context, flag in transaction is used.
-        Object alreadyRegistered = transactionSynchronizationRegistry.getResource(AfterCompletionSynchronization.class.getName());
+        Object alreadyRegistered = transactionSynchronizationRegistry.getResource(contextInstance);
         if (alreadyRegistered == null) {
             transactionSynchronizationRegistry.registerInterposedSynchronization(new AfterCompletionSynchronization(contextInstance));
-            transactionSynchronizationRegistry.putResource(AfterCompletionSynchronization.class.getName(), contextInstance);
+            transactionSynchronizationRegistry.putResource(contextInstance, AfterCompletionSynchronization.class.getName());
         }
     }
 
