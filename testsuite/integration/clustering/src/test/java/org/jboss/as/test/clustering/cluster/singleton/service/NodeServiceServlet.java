@@ -27,6 +27,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.function.Supplier;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -37,8 +38,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.group.Node;
-import org.wildfly.clustering.service.PassiveServiceSupplier;
-import org.wildfly.clustering.service.ServiceSupplier;
+import org.wildfly.clustering.service.ActiveServiceSupplier;
 
 @WebServlet(urlPatterns = { NodeServiceServlet.SERVLET_PATH })
 public class NodeServiceServlet extends HttpServlet {
@@ -67,22 +67,19 @@ public class NodeServiceServlet extends HttpServlet {
         String serviceName = getRequiredParameter(req, SERVICE);
         String expected = req.getParameter(EXPECTED);
         this.log(String.format("Received request for %s, expecting %s", serviceName, expected));
-        ServiceSupplier<Node> localNodeSupplier = new PassiveServiceSupplier<Node>(CurrentServiceContainer.getServiceContainer(), ServiceName.parse(serviceName)).setTimeout(TIMEOUT);
+        Supplier<Supplier<Node>> serviceSupplier = new ActiveServiceSupplier<>(CurrentServiceContainer.getServiceContainer(), ServiceName.parse(serviceName));
+        Supplier<Node> primaryNodeSupplier = serviceSupplier.get();
         Instant stop = Instant.now().plus(TIMEOUT);
-        try {
-            Node node = localNodeSupplier.get();
-            if (expected != null) {
-                while (Instant.now().isBefore(stop)) {
-                    if ((node != null) && expected.equals(node.getName())) break;
-                    Thread.yield();
-                    node = localNodeSupplier.get();
-                }
+        Node node = primaryNodeSupplier.get();
+        if (expected != null) {
+            while (Instant.now().isBefore(stop)) {
+                if ((node != null) && expected.equals(node.getName())) break;
+                Thread.yield();
+                node = primaryNodeSupplier.get();
             }
-            if (node != null) {
-                resp.setHeader(NODE_HEADER, node.getName());
-            }
-        } catch (IllegalStateException e) {
-            // Thrown when quorum was not met
+        }
+        if (node != null) {
+            resp.setHeader(NODE_HEADER, node.getName());
         }
         resp.getWriter().write("Success");
     }
