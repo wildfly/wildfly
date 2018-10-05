@@ -27,12 +27,15 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.nio.file.Paths;
+import org.jboss.as.test.integration.security.common.Utils;
 
 import org.jboss.as.test.shared.FileUtils;
 import org.jboss.as.test.shared.ModelParserUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -93,6 +96,20 @@ public class ParseAndMarshalModelsTestCase {
     private static final Version[] AS_VERSIONS = {Version.AS_7_1_3, Version.AS_7_2_0};
 
     private static final File JBOSS_HOME = Paths.get("target" ,"jbossas-parse-marshal").toFile();
+
+    @BeforeClass
+    public static void setSystemPackages() {
+        if(Utils.IBM_JDK) {
+            System.setProperty("jboss.modules.system.pkgs", "org.jboss.modules,org.jboss.dmr,org.jboss.threads,org.jboss.as.controller.client,org.jboss.logging,org.jboss.logmanager");
+        }
+    }
+
+    @AfterClass
+    public static void unsetSystemPackages() {
+        if (Utils.IBM_JDK) {
+            System.clearProperty("jboss.modules.system.pkgs");
+        }
+    }
 
     @Test
     public void testStandaloneXml() throws Exception {
