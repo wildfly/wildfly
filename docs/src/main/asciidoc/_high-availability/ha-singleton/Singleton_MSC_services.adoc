@@ -34,6 +34,23 @@ public class MyServiceActivator implements ServiceActivator {
 }
 ----
 
+
+[[singleton-msc-service-metrics]]
+== Singleton MSC Service metrics ==
+
+The singleton subsystem registers a set of runtime metrics for each singleton MSC service installed via a given singleton policy.
+
+is-primary:: Indicates whether the node on which the operation was performed is the primary provider of the given singleton service
+primary-provider:: Identifies the node currently operating as the primary provider for the given singleton service
+providers:: Identifies the set of nodes on which the given singleton service is installed.
+
+e.g.
+
+----
+/subsystem=singleton/singleton-policy=foo/service=my.service.name:read-attribute(name=primary-provider)
+----
+
+
 [[installing-an-msc-service-using-dynamic-singleton-policy]]
 == Installing an MSC service using dynamic singleton policy
 
