@@ -103,7 +103,7 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
         this.marshallingContext = config.getMarshallingContext();
         this.timeout = config.getTimeout();
         JChannel channel = config.getChannel();
-        RequestCorrelator correlator = new RequestCorrelator(channel.getProtocolStack().getTransport(), this, channel.getAddress()).setMarshaller(new CommandResponseMarshaller(config));
+        RequestCorrelator correlator = new RequestCorrelator(channel.getProtocolStack(), this, channel.getAddress()).setMarshaller(new CommandResponseMarshaller(config));
         this.dispatcher = new MessageDispatcher()
                 .setChannel(channel)
                 .setRequestHandler(this)
