@@ -74,13 +74,14 @@ class Module extends AbstractConfigurableElement {
             }
         }
 
-        cli.sendLine(moduleAddCommand.toString());
+        cli.sendLine(moduleAddCommand.toString(), true);
     }
 
     @Override
     public void remove(CLIWrapper cli) throws Exception {
         String moduleRemove = "module remove --name=" + name;
-        cli.sendLine(moduleRemove);
+
+        cli.sendLine(moduleRemove, true);
     }
 
 
