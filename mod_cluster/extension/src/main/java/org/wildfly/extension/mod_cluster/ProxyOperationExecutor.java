@@ -69,9 +69,6 @@ public class ProxyOperationExecutor implements OperationExecutor<ModClusterServi
             .setStorageRuntime()
             .build();
 
-    static final String SESSION_DRAINING_COMPLETE = "session-draining-complete";
-
-
     @Override
     public ModelNode execute(OperationContext context, ModelNode operation, Operation<ModClusterServiceMBean> executable) throws OperationFailedException {
         ServiceName serviceName = ProxyConfigurationResourceDefinition.Capability.SERVICE.getDefinition().getCapabilityServiceName(context.getCurrentAddress());

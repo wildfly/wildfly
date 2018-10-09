@@ -469,7 +469,7 @@ public enum LegacyProxyOperation implements Definable<OperationDefinition>, Oper
                         int waitTime = WAIT_TIME.resolveModelAttribute(context, operation).asInt();
 
                         boolean success = service.stop(waitTime, TimeUnit.SECONDS);
-                        context.getResult().get(ProxyOperationExecutor.SESSION_DRAINING_COMPLETE).set(success);
+                        context.getResult().get(SESSION_DRAINING_COMPLETE).set(success);
 
                         context.completeStep(new OperationContext.RollbackHandler() {
                             @Override
@@ -510,7 +510,7 @@ public enum LegacyProxyOperation implements Definable<OperationDefinition>, Oper
 
                         try {
                             boolean success = service.stopContext(webHost, webContext, waitTime, TimeUnit.SECONDS);
-                            context.getResult().get(ProxyOperationExecutor.SESSION_DRAINING_COMPLETE).set(success);
+                            context.getResult().get(SESSION_DRAINING_COMPLETE).set(success);
                         } catch (IllegalArgumentException e) {
                             throw new OperationFailedException(ModClusterLogger.ROOT_LOGGER.contextOrHostNotFound(webHost, webContext));
                         }
@@ -528,6 +528,8 @@ public enum LegacyProxyOperation implements Definable<OperationDefinition>, Oper
         }
     },
     ;
+
+    static final String SESSION_DRAINING_COMPLETE = "session-draining-complete";
 
     private static ServiceController<?> getService(OperationContext context) throws OperationFailedException {
         PathAddress proxyAddress = LegacyMetricOperationsRegistration.translateProxyPath(context);

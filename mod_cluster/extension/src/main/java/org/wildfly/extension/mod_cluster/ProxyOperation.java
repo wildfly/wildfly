@@ -38,7 +38,6 @@ import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.modcluster.ModClusterServiceMBean;
@@ -99,7 +98,7 @@ enum ProxyOperation implements Operation<ModClusterServiceMBean>, UnaryOperator<
                         result.add(entry.getValue());
                     }
                 }
-                return new ModelNode().set(result);
+                return result;
             }
 
             return null;
@@ -121,7 +120,7 @@ enum ProxyOperation implements Operation<ModClusterServiceMBean>, UnaryOperator<
                 for (InetSocketAddress address : addresses) {
                     result.add(address.getHostName() + ":" + address.getPort());
                 }
-                return new ModelNode().set(result);
+                return result;
             }
 
             return null;
@@ -147,7 +146,7 @@ enum ProxyOperation implements Operation<ModClusterServiceMBean>, UnaryOperator<
                         result.add(entry.getValue());
                     }
                 }
-                return new ModelNode().set(result);
+                return result;
             }
 
             return null;
@@ -172,7 +171,7 @@ enum ProxyOperation implements Operation<ModClusterServiceMBean>, UnaryOperator<
         public ModelNode execute(ExpressionResolver expressionResolver, ModelNode operation, ModClusterServiceMBean service) {
             boolean enabled = service.enable();
 
-            return new ModelNode().get(ModelDescriptionConstants.RESULT).set(enabled);
+            return new ModelNode(enabled);
         }
     },
     DISABLE("disable") {
@@ -180,7 +179,7 @@ enum ProxyOperation implements Operation<ModClusterServiceMBean>, UnaryOperator<
         public ModelNode execute(ExpressionResolver expressionResolver, ModelNode operation, ModClusterServiceMBean service) {
             boolean disabled = service.disable();
 
-            return new ModelNode().get(ModelDescriptionConstants.RESULT).set(disabled);
+            return new ModelNode(disabled);
         }
     },
     STOP("stop") {
@@ -194,7 +193,7 @@ enum ProxyOperation implements Operation<ModClusterServiceMBean>, UnaryOperator<
             int waitTime = WAIT_TIME.resolveModelAttribute(expressionResolver, operation).asInt();
 
             boolean success = service.stop(waitTime, TimeUnit.SECONDS);
-            return new ModelNode().get(ProxyOperationExecutor.SESSION_DRAINING_COMPLETE).set(success);
+            return new ModelNode(success);
         }
     },
 
@@ -232,7 +231,7 @@ enum ProxyOperation implements Operation<ModClusterServiceMBean>, UnaryOperator<
 
             try {
                 boolean disabled = service.disableContext(virtualHost, webContext);
-                return new ModelNode().get(ModelDescriptionConstants.RESULT).set(disabled);
+                return new ModelNode(disabled);
             } catch (IllegalArgumentException e) {
                 throw new OperationFailedException(ModClusterLogger.ROOT_LOGGER.contextOrHostNotFound(virtualHost, webContext));
             }
@@ -252,7 +251,7 @@ enum ProxyOperation implements Operation<ModClusterServiceMBean>, UnaryOperator<
 
             try {
                 boolean success = service.stopContext(virtualHost, webContext, waitTime, TimeUnit.SECONDS);
-                return new ModelNode().get(ProxyOperationExecutor.SESSION_DRAINING_COMPLETE).set(success);
+                return new ModelNode(success);
             } catch (IllegalArgumentException e) {
                 throw new OperationFailedException(ModClusterLogger.ROOT_LOGGER.contextOrHostNotFound(virtualHost, webContext));
             }
