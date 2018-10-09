@@ -36,6 +36,7 @@ import java.util.concurrent.ExecutorService;
 
 import javax.enterprise.inject.spi.Extension;
 
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.naming.JavaNamespaceSetup;
 import org.jboss.as.ee.weld.WeldDeploymentMarker;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -270,8 +271,10 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         // make sure JNDI bindings are up
         startService.addDependency(JndiNamingDependencyProcessor.serviceName(deploymentUnit));
 
+        final CapabilityServiceSupport capabilities = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
+        boolean tx = capabilities.hasCapability("org.wildfly.transactions");
         // [WFLY-5232]
-        startService.addDependencies(getJNDISubsytemDependencies());
+        startService.addDependencies(getJNDISubsytemDependencies(tx));
 
         final EarMetaData earConfig = deploymentUnit.getAttachment(org.jboss.as.ee.structure.Attachments.EAR_METADATA);
         if (earConfig == null || !earConfig.getInitializeInOrder())  {
@@ -284,10 +287,12 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         startService.install();
     }
 
-    private List<ServiceName> getJNDISubsytemDependencies() {
+    private List<ServiceName> getJNDISubsytemDependencies(boolean tx) {
         List<ServiceName> dependencies = new ArrayList<>();
-        dependencies.add(ContextNames.JBOSS_CONTEXT_SERVICE_NAME.append(ServiceName.of("UserTransaction")));
-        dependencies.add(ContextNames.JBOSS_CONTEXT_SERVICE_NAME.append(ServiceName.of("TransactionSynchronizationRegistry")));
+        if (tx) {
+            dependencies.add(ContextNames.JBOSS_CONTEXT_SERVICE_NAME.append(ServiceName.of("UserTransaction")));
+            dependencies.add(ContextNames.JBOSS_CONTEXT_SERVICE_NAME.append(ServiceName.of("TransactionSynchronizationRegistry")));
+        }
         dependencies.add(NamingService.SERVICE_NAME);
         dependencies.add(DefaultNamespaceContextSelectorService.SERVICE_NAME);
         return dependencies;
