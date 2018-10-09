@@ -114,7 +114,29 @@ process the consumed messages and it can use the JMSReplyTo destination
 if it is defined on the message. +
 If the MDB needs any other JMS destinations defined on the remote
 server, it must use client-side JNDI by following the
-http://activemq.apache.org/artemis/docs/1.1.0/using-jms.html#jndi-configuration[Artemis
+http://http://activemq.apache.org/artemis/docs/2.6.0/using-jms.html#jndi-configuration[Artemis
 documentation] or configure external configuration context in the naming
 subsystem (which allows to inject the JMS resources using the
 `@Resource` annotation).
+
+[[configuration of a remote destination using annotations]]
+==== Configuration of a remote destination using annotations
+
+The annotation `@JMSDestinationDefinition` can be used to create a destination on a remote Artemis Server. This will work in the same way as for a local server.+
+For this it needs to be able to access Artemis management queue. If your remote Artemis Server management queue is not the default one you can pass the management queue address as a property to the `@JMSDestinationDefinition`.
+Please note that the destination is created remotely but won't be removed once the deployement is undeployed/removed.
+
+[source, java]
+----
+@JMSDestinationDefinition(
+    // explicitly mention a resourceAdapter corresponding to a pooled-connection-factory resource to the remote server
+    resourceAdapter = "activemq-ra",
+    name="java:global/env/myQueue2",
+    interfaceName="javax.jms.Queue",
+    destinationName="myQueue2",
+        properties = {
+            "management-address=my.management.queue",
+            "selector=color = 'red'"
+       }
+)
+----

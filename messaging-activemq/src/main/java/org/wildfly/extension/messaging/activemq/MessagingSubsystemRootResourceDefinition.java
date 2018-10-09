@@ -32,6 +32,8 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 
 /**
  * {@link org.jboss.as.controller.ResourceDefinition} for the messaging subsystem root resource.
@@ -39,6 +41,9 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class MessagingSubsystemRootResourceDefinition extends PersistentResourceDefinition {
+    public static final RuntimeCapability<Void> CONFIGURATION_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.messaging.activemq.external.configuration", false)
+            .setServiceType(ExternalBrokerConfigurationService.class)
+            .build();
 
     public static final SimpleAttributeDefinition GLOBAL_CLIENT_THREAD_POOL_MAX_SIZE = create("global-client-thread-pool-max-size", INT)
             .setAttributeGroup("global-client")
@@ -64,10 +69,11 @@ public class MessagingSubsystemRootResourceDefinition extends PersistentResource
     public static final MessagingSubsystemRootResourceDefinition INSTANCE = new MessagingSubsystemRootResourceDefinition();
 
     private MessagingSubsystemRootResourceDefinition() {
-        super(MessagingExtension.SUBSYSTEM_PATH,
-                MessagingExtension.getResourceDescriptionResolver(MessagingExtension.SUBSYSTEM_NAME),
-                MessagingSubsystemAdd.INSTANCE,
-                new ReloadRequiredRemoveStepHandler());
+        super(new SimpleResourceDefinition.Parameters(MessagingExtension.SUBSYSTEM_PATH,
+                MessagingExtension.getResourceDescriptionResolver(MessagingExtension.SUBSYSTEM_NAME))
+                .setAddHandler(MessagingSubsystemAdd.INSTANCE)
+                .setRemoveHandler(new ReloadRequiredRemoveStepHandler())
+                .setCapabilities(CONFIGURATION_CAPABILITY));
     }
 
     @Override

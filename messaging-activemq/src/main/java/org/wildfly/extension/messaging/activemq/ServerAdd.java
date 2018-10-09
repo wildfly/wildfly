@@ -102,7 +102,6 @@ import static org.wildfly.extension.messaging.activemq.ServerDefinition.THREAD_P
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.TRANSACTION_TIMEOUT;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.TRANSACTION_TIMEOUT_SCAN_PERIOD;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.WILD_CARD_ROUTING_ENABLED;
-import static org.wildfly.extension.messaging.activemq.ha.HAPolicyConfigurationBuilder.addHAPolicyConfiguration;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -161,6 +160,7 @@ import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.spi.ClusteringDefaultRequirement;
 import org.wildfly.clustering.spi.ClusteringRequirement;
 import org.wildfly.common.function.ExceptionSupplier;
+import org.wildfly.extension.messaging.activemq.ha.HAPolicyConfigurationBuilder;
 import org.wildfly.extension.messaging.activemq.jms.JMSService;
 import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 import org.wildfly.security.auth.server.SecurityDomain;
@@ -255,505 +255,515 @@ class ServerAdd extends AbstractAddStepHandler {
     protected void performRuntime(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
         // Add a RUNTIME step to actually install the ActiveMQ Service. This will execute after the runtime step
         // added by any child resources whose ADD handler executes after this one in the model stage.
-        context.addStep(new OperationStepHandler() {
-            @Override
-            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                final ServiceTarget serviceTarget = context.getServiceTarget();
+        context.addStep(new InstallServerHandler(resource), OperationContext.Stage.RUNTIME);
+    }
 
-                final String serverName = context.getCurrentAddressValue();
+    private class InstallServerHandler implements OperationStepHandler {
 
-                // Transform the configuration based on the recursive model
-                final ModelNode model = Resource.Tools.readModel(resource);
-                final Configuration configuration = transformConfig(context, serverName, model);
+        private final Resource resource;
 
-                // Create path services
-                String bindingsPath = PATHS.get(BINDINGS_DIRECTORY).resolveModelAttribute(context, model.get(PATH, BINDINGS_DIRECTORY)).asString();
-                String bindingsRelativeToPath = RELATIVE_TO.resolveModelAttribute(context, model.get(PATH, BINDINGS_DIRECTORY)).asString();
-                String journalPath = PATHS.get(JOURNAL_DIRECTORY).resolveModelAttribute(context, model.get(PATH, JOURNAL_DIRECTORY)).asString();
-                String journalRelativeToPath = RELATIVE_TO.resolveModelAttribute(context, model.get(PATH, JOURNAL_DIRECTORY)).asString();
-                String largeMessagePath = PATHS.get(LARGE_MESSAGES_DIRECTORY).resolveModelAttribute(context, model.get(PATH, LARGE_MESSAGES_DIRECTORY)).asString();
-                String largeMessageRelativeToPath = RELATIVE_TO.resolveModelAttribute(context, model.get(PATH, LARGE_MESSAGES_DIRECTORY)).asString();
-                String pagingPath = PATHS.get(PAGING_DIRECTORY).resolveModelAttribute(context, model.get(PATH, PAGING_DIRECTORY)).asString();
-                String pagingRelativeToPath = RELATIVE_TO.resolveModelAttribute(context, model.get(PATH, PAGING_DIRECTORY)).asString();
+        private InstallServerHandler(Resource resource) {
+            this.resource = resource;
+        }
 
-                // Add the ActiveMQ Service
-                ServiceName activeMQServiceName = MessagingServices.getActiveMQServiceName(serverName);
-                final ServiceBuilder serviceBuilder = serviceTarget.addService(activeMQServiceName);
-                Supplier pathManager = serviceBuilder.requires(context.getCapabilityServiceName(PATH_MANAGER_CAPABILITY, PathManager.class));
+        @Override
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+            final ServiceTarget serviceTarget = context.getServiceTarget();
 
-                Optional<Supplier<DataSource>> dataSource = Optional.empty();
-                ModelNode dataSourceModel = JOURNAL_DATASOURCE.resolveModelAttribute(context, model);
-                if (dataSourceModel.isDefined()) {
-                    ServiceName dataSourceCapability = context.getCapabilityServiceName(DATA_SOURCE_CAPABILITY, dataSourceModel.asString(), DataSource.class);
-                    dataSource = Optional.of(serviceBuilder.requires(dataSourceCapability));
-                }
-                Optional<Supplier<MBeanServer>> mbeanServer = Optional.empty();
-                if (context.hasOptionalCapability(JMX_CAPABILITY, ACTIVEMQ_SERVER_CAPABILITY.getDynamicName(serverName), null)) {
-                    ServiceName jmxCapability = context.getCapabilityServiceName(JMX_CAPABILITY, MBeanServer.class);
-                    mbeanServer = Optional.of(serviceBuilder.requires(jmxCapability));
-                }
+            final String serverName = context.getCurrentAddressValue();
 
-                // Inject a reference to the Elytron security domain if one has been defined.
-                Optional<Supplier<SecurityDomain>> elytronSecurityDomain = Optional.empty();
-                // legacy security
-                Optional<Supplier<SecurityDomainContext>> securityDomainContext = Optional.empty();
-                final ModelNode elytronSecurityDomainModel = ELYTRON_DOMAIN.resolveModelAttribute(context, model);
-                if (elytronSecurityDomainModel.isDefined()) {
-                    ServiceName elytronDomainCapability = context.getCapabilityServiceName(ELYTRON_DOMAIN_CAPABILITY, elytronSecurityDomainModel.asString(), SecurityDomain.class);
-                    elytronSecurityDomain = Optional.of(serviceBuilder.requires(elytronDomainCapability));
+            // Transform the configuration based on the recursive model
+            final ModelNode model = Resource.Tools.readModel(resource);
+            final Configuration configuration = transformConfig(context, serverName, model);
+
+            // Create path services
+            String bindingsPath = PATHS.get(BINDINGS_DIRECTORY).resolveModelAttribute(context, model.get(PATH, BINDINGS_DIRECTORY)).asString();
+            String bindingsRelativeToPath = RELATIVE_TO.resolveModelAttribute(context, model.get(PATH, BINDINGS_DIRECTORY)).asString();
+            String journalPath = PATHS.get(JOURNAL_DIRECTORY).resolveModelAttribute(context, model.get(PATH, JOURNAL_DIRECTORY)).asString();
+            String journalRelativeToPath = RELATIVE_TO.resolveModelAttribute(context, model.get(PATH, JOURNAL_DIRECTORY)).asString();
+            String largeMessagePath = PATHS.get(LARGE_MESSAGES_DIRECTORY).resolveModelAttribute(context, model.get(PATH, LARGE_MESSAGES_DIRECTORY)).asString();
+            String largeMessageRelativeToPath = RELATIVE_TO.resolveModelAttribute(context, model.get(PATH, LARGE_MESSAGES_DIRECTORY)).asString();
+            String pagingPath = PATHS.get(PAGING_DIRECTORY).resolveModelAttribute(context, model.get(PATH, PAGING_DIRECTORY)).asString();
+            String pagingRelativeToPath = RELATIVE_TO.resolveModelAttribute(context, model.get(PATH, PAGING_DIRECTORY)).asString();
+
+            // Add the ActiveMQ Service
+            ServiceName activeMQServiceName = MessagingServices.getActiveMQServiceName(serverName);
+            final ServiceBuilder serviceBuilder = serviceTarget.addService(activeMQServiceName);
+            Supplier pathManager = serviceBuilder.requires(context.getCapabilityServiceName(PATH_MANAGER_CAPABILITY, PathManager.class));
+
+            Optional<Supplier<DataSource>> dataSource = Optional.empty();
+            ModelNode dataSourceModel = JOURNAL_DATASOURCE.resolveModelAttribute(context, model);
+            if (dataSourceModel.isDefined()) {
+                ServiceName dataSourceCapability = context.getCapabilityServiceName(DATA_SOURCE_CAPABILITY, dataSourceModel.asString(), DataSource.class);
+                dataSource = Optional.of(serviceBuilder.requires(dataSourceCapability));
+            }
+            Optional<Supplier<MBeanServer>> mbeanServer = Optional.empty();
+            if (context.hasOptionalCapability(JMX_CAPABILITY, ACTIVEMQ_SERVER_CAPABILITY.getDynamicName(serverName), null)) {
+                ServiceName jmxCapability = context.getCapabilityServiceName(JMX_CAPABILITY, MBeanServer.class);
+                mbeanServer = Optional.of(serviceBuilder.requires(jmxCapability));
+            }
+
+            // Inject a reference to the Elytron security domain if one has been defined.
+            Optional<Supplier<SecurityDomain>> elytronSecurityDomain = Optional.empty();
+            // legacy security
+            Optional<Supplier<SecurityDomainContext>> securityDomainContext = Optional.empty();
+            final ModelNode elytronSecurityDomainModel = ELYTRON_DOMAIN.resolveModelAttribute(context, model);
+            if (elytronSecurityDomainModel.isDefined()) {
+                ServiceName elytronDomainCapability = context.getCapabilityServiceName(ELYTRON_DOMAIN_CAPABILITY, elytronSecurityDomainModel.asString(), SecurityDomain.class);
+                elytronSecurityDomain = Optional.of(serviceBuilder.requires(elytronDomainCapability));
+            } else {
+                // Add legacy security
+                String domain = SECURITY_DOMAIN.resolveModelAttribute(context, model).asString();
+                securityDomainContext = Optional.of(serviceBuilder.requires(SecurityDomainService.SERVICE_NAME.append(domain)));
+                // WFLY-6652 / WFLY-10292 this dependency ensures that Artemis will be able to destroy any queues created on behalf of a
+                // pooled-connection-factory client during server stop
+                serviceBuilder.requires(SecurityBootstrapService.SERVICE_NAME);
+            }
+
+            List<Interceptor> incomingInterceptors = processInterceptors(INCOMING_INTERCEPTORS.resolveModelAttribute(context, operation));
+            List<Interceptor> outgoingInterceptors = processInterceptors(OUTGOING_INTERCEPTORS.resolveModelAttribute(context, operation));
+
+            // Process acceptors and connectors
+            final Set<String> socketBindingNames = new HashSet<String>();
+            TransportConfigOperationHandlers.processAcceptors(context, configuration, model, socketBindingNames);
+
+            Map<String, Supplier<SocketBinding>> socketBindings = new HashMap<>();
+            for (final String socketBindingName : socketBindingNames) {
+                Supplier<SocketBinding> socketBinding = serviceBuilder.requires(SocketBinding.JBOSS_BINDING_NAME.append(socketBindingName));
+                socketBindings.put(socketBindingName, socketBinding);
+            }
+
+            final Set<String> connectorsSocketBindings = new HashSet<String>();
+            configuration.setConnectorConfigurations(TransportConfigOperationHandlers.processConnectors(context, configuration.getName(), model, connectorsSocketBindings));
+
+            Map<String, Supplier<OutboundSocketBinding>> outboundSocketBindings = new HashMap<>();
+            Map<String, Boolean> outbounds = TransportConfigOperationHandlers.listOutBoundSocketBinding(context, connectorsSocketBindings);
+            for (final String connectorSocketBinding : connectorsSocketBindings) {
+                // find whether the connectorSocketBinding references a SocketBinding or an OutboundSocketBinding
+                if (outbounds.get(connectorSocketBinding)) {
+                    final ServiceName outboundSocketName = OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME.append(connectorSocketBinding);
+                    Supplier<OutboundSocketBinding> outboundSocketBinding = serviceBuilder.requires(outboundSocketName);
+                    outboundSocketBindings.put(connectorSocketBinding, outboundSocketBinding);
                 } else {
-                    // Add legacy security
-                    String domain = SECURITY_DOMAIN.resolveModelAttribute(context, model).asString();
-                    securityDomainContext = Optional.of(serviceBuilder.requires(SecurityDomainService.SERVICE_NAME.append(domain)));
-                    // WFLY-6652 / WFLY-10292 this dependency ensures that Artemis will be able to destroy any queues created on behalf of a
-                    // pooled-connection-factory client during server stop
-                    serviceBuilder.requires(SecurityBootstrapService.SERVICE_NAME);
+                    // check if the socket binding has not already been added by the acceptors
+                    if (!socketBindings.containsKey(connectorSocketBinding)) {
+                        Supplier<SocketBinding> socketBinding = serviceBuilder.requires(SocketBinding.JBOSS_BINDING_NAME.append(connectorSocketBinding));
+                        socketBindings.put(connectorSocketBinding, socketBinding);
+                    }
                 }
-
-                List<Interceptor> incomingInterceptors = processInterceptors(INCOMING_INTERCEPTORS.resolveModelAttribute(context, operation));
-                List<Interceptor> outgoingInterceptors = processInterceptors(OUTGOING_INTERCEPTORS.resolveModelAttribute(context, operation));
-
-                // Process acceptors and connectors
-                final Set<String> socketBindingNames = new HashSet<String>();
-                TransportConfigOperationHandlers.processAcceptors(context, configuration, model, socketBindingNames);
-
-                Map<String, Supplier<SocketBinding>> socketBindings = new HashMap<>();
-                for (final String socketBindingName : socketBindingNames) {
-                    Supplier<SocketBinding> socketBinding = serviceBuilder.requires(SocketBinding.JBOSS_BINDING_NAME.append(socketBindingName));
-                    socketBindings.put(socketBindingName, socketBinding);
+            }
+            // if there is any HTTP acceptor, add a dependency on the http-upgrade-registry service to
+            // make sure that ActiveMQ server will be stopped *after* the registry (and its underlying XNIO thread)
+            // is stopped.
+            Set<String> httpListeners = new HashSet<>();
+            if (model.hasDefined(HTTP_ACCEPTOR)) {
+                for (final Property property : model.get(HTTP_ACCEPTOR).asPropertyList()) {
+                    String httpListener = HTTPAcceptorDefinition.HTTP_LISTENER.resolveModelAttribute(context, property.getValue()).asString();
+                    httpListeners.add(httpListener);
                 }
+            }
+            for (String httpListener : httpListeners) {
+                serviceBuilder.requires(MessagingServices.HTTP_UPGRADE_REGISTRY.append(httpListener));
+            }
 
-                final Set<String> connectorsSocketBindings = new HashSet<String>();
-                TransportConfigOperationHandlers.processConnectors(context, configuration, model, connectorsSocketBindings);
+            //this requires connectors
+            BroadcastGroupAdd.addBroadcastGroupConfigs(context, configuration.getBroadcastGroupConfigurations(), configuration.getConnectorConfigurations().keySet(), model);
 
-                Map<String, Supplier<OutboundSocketBinding>> outboundSocketBindings = new HashMap<>();
-                Map<String, Boolean> outbounds = TransportConfigOperationHandlers.listOutBoundSocketBinding(context, connectorsSocketBindings);
-                for (final String connectorSocketBinding : connectorsSocketBindings) {
-                    // find whether the connectorSocketBinding references a SocketBinding or an OutboundSocketBinding
-                    if (outbounds.get(connectorSocketBinding)) {
-                        final ServiceName outboundSocketName = OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME.append(connectorSocketBinding);
-                        Supplier<OutboundSocketBinding> outboundSocketBinding = serviceBuilder.requires(outboundSocketName);
-                        outboundSocketBindings.put(connectorSocketBinding, outboundSocketBinding);
+            final List<BroadcastGroupConfiguration> broadcastGroupConfigurations = configuration.getBroadcastGroupConfigurations();
+            final Map<String, DiscoveryGroupConfiguration> discoveryGroupConfigurations = configuration.getDiscoveryGroupConfigurations();
+
+            final Map<String, String> clusterNames = new HashMap<>();
+            final Map<String, Supplier<CommandDispatcherFactory>> commandDispatcherFactories = new HashMap<>();
+            final Map<ServiceName, Supplier<CommandDispatcherFactory>> commandDispatcherFactoryServices = new HashMap<>();
+            final Map<String, Supplier<SocketBinding>> groupBindings = new HashMap<>();
+            final Map<ServiceName, Supplier<SocketBinding>> groupBindingServices = new HashMap<>();
+
+            if (broadcastGroupConfigurations != null) {
+                for (final BroadcastGroupConfiguration config : broadcastGroupConfigurations) {
+                    final String name = config.getName();
+                    final String key = "broadcast" + name;
+                    ModelNode broadcastGroupModel = model.get(BROADCAST_GROUP, name);
+
+                    if (broadcastGroupModel.hasDefined(JGROUPS_CLUSTER.getName())) {
+                        ModelNode channel = BroadcastGroupDefinition.JGROUPS_CHANNEL.resolveModelAttribute(context, broadcastGroupModel);
+                        ServiceName commandDispatcherFactoryServiceName = channel.isDefined() ? ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context, channel.asString()) : ClusteringDefaultRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context);
+                        String clusterName = JGROUPS_CLUSTER.resolveModelAttribute(context, broadcastGroupModel).asString();
+                        if (!commandDispatcherFactoryServices.containsKey(commandDispatcherFactoryServiceName)) {
+                            Supplier<CommandDispatcherFactory> commandDispatcherFactory = serviceBuilder.requires(commandDispatcherFactoryServiceName);
+                            commandDispatcherFactoryServices.put(commandDispatcherFactoryServiceName, commandDispatcherFactory);
+                        }
+                        commandDispatcherFactories.put(key, commandDispatcherFactoryServices.get(commandDispatcherFactoryServiceName));
+                        clusterNames.put(key, clusterName);
                     } else {
-                        // check if the socket binding has not already been added by the acceptors
-                        if (!socketBindings.containsKey(connectorSocketBinding)) {
-                            Supplier<SocketBinding> socketBinding = serviceBuilder.requires(SocketBinding.JBOSS_BINDING_NAME.append(connectorSocketBinding));
-                            socketBindings.put(connectorSocketBinding, socketBinding);
+                        final ServiceName groupBindingServiceName = GroupBindingService.getBroadcastBaseServiceName(activeMQServiceName).append(name);
+                        if (!groupBindingServices.containsKey(groupBindingServiceName)) {
+                            Supplier<SocketBinding> groupBinding = serviceBuilder.requires(groupBindingServiceName);
+                            groupBindingServices.put(groupBindingServiceName, groupBinding);
                         }
+                        groupBindings.put(key, groupBindingServices.get(groupBindingServiceName));
                     }
                 }
-                // if there is any HTTP acceptor, add a dependency on the http-upgrade-registry service to
-                // make sure that ActiveMQ server will be stopped *after* the registry (and its underlying XNIO thread)
-                // is stopped.
-                Set<String> httpListeners = new HashSet<>();
-                if (model.hasDefined(HTTP_ACCEPTOR)) {
-                    for (final Property property : model.get(HTTP_ACCEPTOR).asPropertyList()) {
-                        String httpListener = HTTPAcceptorDefinition.HTTP_LISTENER.resolveModelAttribute(context, property.getValue()).asString();
-                        httpListeners.add(httpListener);
-                    }
-                }
-                for (String httpListener : httpListeners) {
-                    serviceBuilder.requires(MessagingServices.HTTP_UPGRADE_REGISTRY.append(httpListener));
-                }
-
-                //this requires connectors
-                BroadcastGroupAdd.addBroadcastGroupConfigs(context, configuration, model);
-
-                final List<BroadcastGroupConfiguration> broadcastGroupConfigurations = configuration.getBroadcastGroupConfigurations();
-                final Map<String, DiscoveryGroupConfiguration> discoveryGroupConfigurations = configuration.getDiscoveryGroupConfigurations();
-
-                final Map<String, String> clusterNames = new HashMap<>();
-                final Map<String, Supplier<CommandDispatcherFactory>> commandDispatcherFactories = new HashMap<>();
-                final Map<ServiceName, Supplier<CommandDispatcherFactory>> commandDispatcherFactoryServices = new HashMap<>();
-                final Map<String, Supplier<SocketBinding>> groupBindings = new HashMap<>();
-                final Map<ServiceName, Supplier<SocketBinding>> groupBindingServices = new HashMap<>();
-
-                if(broadcastGroupConfigurations != null) {
-                    for(final BroadcastGroupConfiguration config : broadcastGroupConfigurations) {
-                        final String name = config.getName();
-                        final String key = "broadcast" + name;
-                        ModelNode broadcastGroupModel = model.get(BROADCAST_GROUP, name);
-
-                        if (broadcastGroupModel.hasDefined(JGROUPS_CLUSTER.getName())) {
-                            ModelNode channel = BroadcastGroupDefinition.JGROUPS_CHANNEL.resolveModelAttribute(context, broadcastGroupModel);
-                            ServiceName commandDispatcherFactoryServiceName = channel.isDefined() ? ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context, channel.asString()) : ClusteringDefaultRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context);
-                            String clusterName = JGROUPS_CLUSTER.resolveModelAttribute(context, broadcastGroupModel).asString();
-                            if (!commandDispatcherFactoryServices.containsKey(commandDispatcherFactoryServiceName)) {
-                                Supplier<CommandDispatcherFactory> commandDispatcherFactory = serviceBuilder.requires(commandDispatcherFactoryServiceName);
-                                commandDispatcherFactoryServices.put(commandDispatcherFactoryServiceName, commandDispatcherFactory);
-                            }
-                            commandDispatcherFactories.put(key, commandDispatcherFactoryServices.get(commandDispatcherFactoryServiceName));
-                            clusterNames.put(key, clusterName);
-                        } else {
-                            final ServiceName groupBindingServiceName = GroupBindingService.getBroadcastBaseServiceName(activeMQServiceName).append(name);
-                            if (!groupBindingServices.containsKey(groupBindingServiceName)) {
-                                Supplier<SocketBinding> groupBinding = serviceBuilder.requires(groupBindingServiceName);
-                                groupBindingServices.put(groupBindingServiceName, groupBinding) ;
-                            }
-                            groupBindings.put(key, groupBindingServices.get(groupBindingServiceName));
+            }
+            if (discoveryGroupConfigurations != null) {
+                for (final DiscoveryGroupConfiguration config : discoveryGroupConfigurations.values()) {
+                    final String name = config.getName();
+                    final String key = "discovery" + name;
+                    ModelNode discoveryGroupModel = model.get(DISCOVERY_GROUP, name);
+                    if (discoveryGroupModel.hasDefined(JGROUPS_CLUSTER.getName())) {
+                        ModelNode channel = DiscoveryGroupDefinition.JGROUPS_CHANNEL.resolveModelAttribute(context, discoveryGroupModel);
+                        ServiceName commandDispatcherFactoryServiceName = channel.isDefined() ? ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context, channel.asString()) : ClusteringDefaultRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context);
+                        String clusterName = JGROUPS_CLUSTER.resolveModelAttribute(context, discoveryGroupModel).asString();
+                        if (!commandDispatcherFactoryServices.containsKey(commandDispatcherFactoryServiceName)) {
+                            Supplier<CommandDispatcherFactory> commandDispatcherFactory = serviceBuilder.requires(commandDispatcherFactoryServiceName);
+                            commandDispatcherFactoryServices.put(commandDispatcherFactoryServiceName, commandDispatcherFactory);
                         }
-                    }
-                }
-                if(discoveryGroupConfigurations != null) {
-                    for(final DiscoveryGroupConfiguration config : discoveryGroupConfigurations.values()) {
-                        final String name = config.getName();
-                        final String key = "discovery" + name;
-                        ModelNode discoveryGroupModel = model.get(DISCOVERY_GROUP, name);
-                        if (discoveryGroupModel.hasDefined(JGROUPS_CLUSTER.getName())) {
-                            ModelNode channel = DiscoveryGroupDefinition.JGROUPS_CHANNEL.resolveModelAttribute(context, discoveryGroupModel);
-                            ServiceName commandDispatcherFactoryServiceName = channel.isDefined() ? ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context, channel.asString()) : ClusteringDefaultRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context);
-                            String clusterName = JGROUPS_CLUSTER.resolveModelAttribute(context, discoveryGroupModel).asString();
-                            if (!commandDispatcherFactoryServices.containsKey(commandDispatcherFactoryServiceName)) {
-                                Supplier<CommandDispatcherFactory> commandDispatcherFactory = serviceBuilder.requires(commandDispatcherFactoryServiceName);
-                                commandDispatcherFactoryServices.put(commandDispatcherFactoryServiceName, commandDispatcherFactory);
-                            }
-                            commandDispatcherFactories.put(key, commandDispatcherFactoryServices.get(commandDispatcherFactoryServiceName));
-                            clusterNames.put(key, clusterName);
-                        } else {
-                            final ServiceName groupBindingServiceName = GroupBindingService.getDiscoveryBaseServiceName(activeMQServiceName).append(name);
-                            if (!groupBindingServices.containsKey(groupBindingServiceName)) {
-                                Supplier<SocketBinding> groupBinding = serviceBuilder.requires(groupBindingServiceName);
-                                groupBindingServices.put(groupBindingServiceName, groupBinding) ;
-                            }
-                            groupBindings.put(key, groupBindingServices.get(groupBindingServiceName));
+                        commandDispatcherFactories.put(key, commandDispatcherFactoryServices.get(commandDispatcherFactoryServiceName));
+                        clusterNames.put(key, clusterName);
+                    } else {
+                        final ServiceName groupBindingServiceName = GroupBindingService.getDiscoveryBaseServiceName(activeMQServiceName).append(name);
+                        if (!groupBindingServices.containsKey(groupBindingServiceName)) {
+                            Supplier<SocketBinding> groupBinding = serviceBuilder.requires(groupBindingServiceName);
+                            groupBindingServices.put(groupBindingServiceName, groupBinding);
                         }
+                        groupBindings.put(key, groupBindingServices.get(groupBindingServiceName));
                     }
                 }
-
-                // Create the ActiveMQ Service
-                final ActiveMQServerService serverService = new ActiveMQServerService(
-                        configuration,
-                        new ActiveMQServerService.PathConfig(bindingsPath, bindingsRelativeToPath, journalPath, journalRelativeToPath, largeMessagePath, largeMessageRelativeToPath, pagingPath, pagingRelativeToPath),
-                        pathManager,
-                        incomingInterceptors,
-                        outgoingInterceptors,
-                        socketBindings,
-                        outboundSocketBindings,
-                        groupBindings,
-                        commandDispatcherFactories,
-                        clusterNames,
-                        elytronSecurityDomain,
-                        securityDomainContext,
-                        mbeanServer,
-                        dataSource
-                );
-                // inject credential-references for bridges
-                addBridgeCredentialStoreReference(serverService, configuration, BridgeDefinition.CREDENTIAL_REFERENCE, context, model, serviceBuilder);
-                addClusterCredentialStoreReference(serverService, ServerDefinition.CREDENTIAL_REFERENCE, context, model, serviceBuilder);
-
-                // Install the ActiveMQ Service
-                ServiceController activeMQServerServiceController = serviceBuilder.setInstance(serverService)
-                        .install();
-
-                //Add the queue services for the core queues  created throught the internal broker configuration (those queues are not added as service via the QueueAdd OSH)
-                for (CoreQueueConfiguration queueConfiguration : configuration.getQueueConfigurations()) {
-                    final ServiceName queueServiceName = activeMQServiceName.append(queueConfiguration.getName());
-                    final ServiceBuilder sb = context.getServiceTarget().addService(queueServiceName);
-                    sb.requires(ActiveMQActivationService.getServiceName(activeMQServiceName));
-                    Supplier<ActiveMQServer> serverSupplier = sb.requires(activeMQServiceName);
-                    final QueueService queueService = new QueueService(serverSupplier, queueConfiguration, false, false);
-                    sb.setInitialMode(Mode.PASSIVE);
-                    sb.setInstance(queueService);
-                    sb.install();
-                }
-                // Provide our custom Resource impl a ref to the ActiveMQ server so it can create child runtime resources
-                ((ActiveMQServerResource)resource).setActiveMQServerServiceController(activeMQServerServiceController);
-
-                // Install the JMSService
-                boolean overrideInVMSecurity = OVERRIDE_IN_VM_SECURITY.resolveModelAttribute(context, operation).asBoolean();
-                JMSService.addService(serviceTarget, activeMQServiceName, overrideInVMSecurity);
-
-                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
             }
-        }, OperationContext.Stage.RUNTIME);
-    }
 
-    /**
-     * Transform the detyped operation parameters into the ActiveMQ configuration.
-     *
-     * @param context the operation context
-     * @param serverName the name of the ActiveMQ instance
-     * @param model the subsystem root resource model
-     * @return the ActiveMQ configuration
-     */
-    private Configuration transformConfig(final OperationContext context, String serverName, final ModelNode model) throws OperationFailedException {
+            // Create the ActiveMQ Service
+            final ActiveMQServerService serverService = new ActiveMQServerService(
+                    configuration,
+                    new ActiveMQServerService.PathConfig(bindingsPath, bindingsRelativeToPath, journalPath, journalRelativeToPath, largeMessagePath, largeMessageRelativeToPath, pagingPath, pagingRelativeToPath),
+                    pathManager,
+                    incomingInterceptors,
+                    outgoingInterceptors,
+                    socketBindings,
+                    outboundSocketBindings,
+                    groupBindings,
+                    commandDispatcherFactories,
+                    clusterNames,
+                    elytronSecurityDomain,
+                    securityDomainContext,
+                    mbeanServer,
+                    dataSource
+            );
 
-        Configuration configuration = new ConfigurationImpl();
+            // inject credential-references for bridges
+            addBridgeCredentialStoreReference(serverService, configuration, BridgeDefinition.CREDENTIAL_REFERENCE, context, model, serviceBuilder);
+            addClusterCredentialStoreReference(serverService, ServerDefinition.CREDENTIAL_REFERENCE, context, model, serviceBuilder);
 
-        configuration.setName(serverName);
-
-        configuration.setEnabledAsyncConnectionExecution(ASYNC_CONNECTION_EXECUTION_ENABLED.resolveModelAttribute(context, model).asBoolean());
-
-        configuration.setClusterPassword(CLUSTER_PASSWORD.resolveModelAttribute(context, model).asString());
-        configuration.setClusterUser(CLUSTER_USER.resolveModelAttribute(context, model).asString());
-        configuration.setConnectionTTLOverride(CONNECTION_TTL_OVERRIDE.resolveModelAttribute(context, model).asInt());
-        configuration.setCreateBindingsDir(CREATE_BINDINGS_DIR.resolveModelAttribute(context, model).asBoolean());
-        configuration.setCreateJournalDir(CREATE_JOURNAL_DIR.resolveModelAttribute(context, model).asBoolean());
-        configuration.setGlobalMaxSize(GLOBAL_MAX_MEMORY_SIZE.resolveModelAttribute(context, model).asLong());
-        configuration.setMaxDiskUsage(GLOBAL_MAX_DISK_USAGE.resolveModelAttribute(context, model).asInt());
-        configuration.setDiskScanPeriod(DISK_SCAN_PERIOD.resolveModelAttribute(context, model).asInt());
-        configuration.setIDCacheSize(ID_CACHE_SIZE.resolveModelAttribute(context, model).asInt());
-        // TODO do we want to allow the jmx configuration ?
-        configuration.setJMXDomain(JMX_DOMAIN.resolveModelAttribute(context, model).asString());
-        configuration.setJMXManagementEnabled(JMX_MANAGEMENT_ENABLED.resolveModelAttribute(context, model).asBoolean());
-        // Journal
-        final JournalType journalType = JournalType.valueOf(JOURNAL_TYPE.resolveModelAttribute(context, model).asString());
-        configuration.setJournalType(journalType);
-
-        ModelNode value = JOURNAL_BUFFER_SIZE.resolveModelAttribute(context, model);
-        if(value.isDefined()) {
-            configuration.setJournalBufferSize_AIO(value.asInt());
-            configuration.setJournalBufferSize_NIO(value.asInt());
-        }
-        value = JOURNAL_BUFFER_TIMEOUT.resolveModelAttribute(context, model);
-        if(value.isDefined()) {
-            configuration.setJournalBufferTimeout_AIO(value.asInt());
-            configuration.setJournalBufferTimeout_NIO(value.asInt());
-        }
-        value = JOURNAL_MAX_IO.resolveModelAttribute(context, model);
-        if(value.isDefined()) {
-            configuration.setJournalMaxIO_AIO(value.asInt());
-            configuration.setJournalMaxIO_NIO(value.asInt());
-        }
-        configuration.setJournalCompactMinFiles(JOURNAL_COMPACT_MIN_FILES.resolveModelAttribute(context, model).asInt());
-        configuration.setJournalCompactPercentage(JOURNAL_COMPACT_PERCENTAGE.resolveModelAttribute(context, model).asInt());
-        configuration.setJournalFileSize(JOURNAL_FILE_SIZE.resolveModelAttribute(context, model).asInt());
-        configuration.setJournalMinFiles(JOURNAL_MIN_FILES.resolveModelAttribute(context, model).asInt());
-        configuration.setJournalPoolFiles(JOURNAL_POOL_FILES.resolveModelAttribute(context, model).asInt());
-        configuration.setJournalSyncNonTransactional(JOURNAL_SYNC_NON_TRANSACTIONAL.resolveModelAttribute(context, model).asBoolean());
-        configuration.setJournalSyncTransactional(JOURNAL_SYNC_TRANSACTIONAL.resolveModelAttribute(context, model).asBoolean());
-        configuration.setLogJournalWriteRate(LOG_JOURNAL_WRITE_RATE.resolveModelAttribute(context, model).asBoolean());
-
-        configuration.setManagementAddress(SimpleString.toSimpleString(MANAGEMENT_ADDRESS.resolveModelAttribute(context, model).asString()));
-        configuration.setManagementNotificationAddress(SimpleString.toSimpleString(MANAGEMENT_NOTIFICATION_ADDRESS.resolveModelAttribute(context, model).asString()));
-
-        configuration.setMemoryMeasureInterval(MEMORY_MEASURE_INTERVAL.resolveModelAttribute(context, model).asLong());
-        configuration.setMemoryWarningThreshold(MEMORY_WARNING_THRESHOLD.resolveModelAttribute(context, model).asInt());
-
-        configuration.setMessageCounterEnabled(STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean());
-        configuration.setMessageCounterSamplePeriod(MESSAGE_COUNTER_SAMPLE_PERIOD.resolveModelAttribute(context, model).asInt());
-        configuration.setMessageCounterMaxDayHistory(MESSAGE_COUNTER_MAX_DAY_HISTORY.resolveModelAttribute(context, model).asInt());
-        configuration.setMessageExpiryScanPeriod(MESSAGE_EXPIRY_SCAN_PERIOD.resolveModelAttribute(context, model).asLong());
-        configuration.setMessageExpiryThreadPriority(MESSAGE_EXPIRY_THREAD_PRIORITY.resolveModelAttribute(context, model).asInt());
-
-        configuration.setPersistDeliveryCountBeforeDelivery(PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY.resolveModelAttribute(context, model).asBoolean());
-
-        configuration.setPageMaxConcurrentIO(PAGE_MAX_CONCURRENT_IO.resolveModelAttribute(context, model).asInt());
-
-        configuration.setPersistenceEnabled(PERSISTENCE_ENABLED.resolveModelAttribute(context, model).asBoolean());
-        configuration.setPersistIDCache(PERSIST_ID_CACHE.resolveModelAttribute(context, model).asBoolean());
-
-        configuration.setScheduledThreadPoolMaxSize(SCHEDULED_THREAD_POOL_MAX_SIZE.resolveModelAttribute(context, model).asInt());
-        configuration.setSecurityEnabled(SECURITY_ENABLED.resolveModelAttribute(context, model).asBoolean());
-        configuration.setSecurityInvalidationInterval(SECURITY_INVALIDATION_INTERVAL.resolveModelAttribute(context, model).asLong());
-        configuration.setServerDumpInterval(SERVER_DUMP_INTERVAL.resolveModelAttribute(context, model).asLong());
-        configuration.setThreadPoolMaxSize(THREAD_POOL_MAX_SIZE.resolveModelAttribute(context, model).asInt());
-        configuration.setTransactionTimeout(TRANSACTION_TIMEOUT.resolveModelAttribute(context, model).asLong());
-        configuration.setTransactionTimeoutScanPeriod(TRANSACTION_TIMEOUT_SCAN_PERIOD.resolveModelAttribute(context, model).asLong());
-        configuration.getWildcardConfiguration().setRoutingEnabled(WILD_CARD_ROUTING_ENABLED.resolveModelAttribute(context, model).asBoolean());
-
-        processStorageConfiguration(context, model, configuration);
-        addHAPolicyConfiguration(context, configuration, model);
-
-        processAddressSettings(context, configuration, model);
-        processSecuritySettings(context, configuration, model);
-
-        // Add in items from child resources
-        GroupingHandlerAdd.addGroupingHandlerConfig(context,configuration, model);
-        DiscoveryGroupAdd.addDiscoveryGroupConfigs(context, configuration, model);
-        DivertAdd.addDivertConfigs(context, configuration, model);
-        QueueAdd.addQueueConfigs(context, configuration, model);
-        BridgeAdd.addBridgeConfigs(context, configuration, model);
-        ClusterConnectionAdd.addClusterConnectionConfigs(context, configuration, model);
-        ConnectorServiceDefinition.addConnectorServiceConfigs(context, configuration, model);
-
-        return configuration;
-    }
-
-    private static void processStorageConfiguration(OperationContext context, ModelNode model, Configuration configuration) throws OperationFailedException {
-        ModelNode journalDataSource = JOURNAL_DATASOURCE.resolveModelAttribute(context, model);
-        if (!journalDataSource.isDefined()) {
-            return;
-        }
-        DatabaseStorageConfiguration storageConfiguration = new DatabaseStorageConfiguration();
-        storageConfiguration.setBindingsTableName(JOURNAL_BINDINGS_TABLE.resolveModelAttribute(context, model).asString());
-        storageConfiguration.setMessageTableName(JOURNAL_MESSAGES_TABLE.resolveModelAttribute(context, model).asString());
-        storageConfiguration.setLargeMessageTableName(JOURNAL_LARGE_MESSAGES_TABLE.resolveModelAttribute(context, model).asString());
-        storageConfiguration.setPageStoreTableName(JOURNAL_PAGE_STORE_TABLE.resolveModelAttribute(context, model).asString());
-        long networkTimeout = SECONDS.toMillis(JOURNAL_JDBC_NETWORK_TIMEOUT.resolveModelAttribute(context, model).asInt());
-        // ARTEMIS-1493: Artemis API is not correct. the value must be in millis but it requires an int instead of a long.
-        storageConfiguration.setJdbcNetworkTimeout((int)networkTimeout);
-                // WFLY-9513 - check for System properties for HA JDBC store attributes
-        //
-        // if the attribute is defined, we use its value
-        // otherwise, we check first for a system property
-        // finally we use the attribute's default value
-        //
-        // this behaviour applies to JOURNAL_NODE_MANAGER_STORE_TABLE, JOURNAL_JDBC_LOCK_EXPIRATION
-        // and JOURNAL_JDBC_LOCK_RENEW_PERIOD attributes.
-        final String nodeManagerStoreTableName;
-        if (model.hasDefined(JOURNAL_NODE_MANAGER_STORE_TABLE.getName())) {
-            nodeManagerStoreTableName = JOURNAL_NODE_MANAGER_STORE_TABLE.resolveModelAttribute(context, model).asString();
-        } else if ( org.wildfly.security.manager.WildFlySecurityManager.getSystemPropertiesPrivileged().containsKey(ARTEMIS_BROKER_CONFIG_NODEMANAGER_STORE_TABLE_NAME)) {
-            nodeManagerStoreTableName = org.wildfly.security.manager.WildFlySecurityManager.getSystemPropertiesPrivileged().getProperty(ARTEMIS_BROKER_CONFIG_NODEMANAGER_STORE_TABLE_NAME);
-        } else {
-            nodeManagerStoreTableName = JOURNAL_NODE_MANAGER_STORE_TABLE.getDefaultValue().asString();
-        }
-        // the system property is removed, otherwise Artemis will use it to override the value from the configuration
-        org.wildfly.security.manager.WildFlySecurityManager.getSystemPropertiesPrivileged().remove(ARTEMIS_BROKER_CONFIG_NODEMANAGER_STORE_TABLE_NAME);
-        storageConfiguration.setNodeManagerStoreTableName(nodeManagerStoreTableName);
-        final long lockExpirationInMillis;
-        if (model.hasDefined(JOURNAL_JDBC_LOCK_EXPIRATION.getName())) {
-            lockExpirationInMillis = SECONDS.toMillis(JOURNAL_JDBC_LOCK_EXPIRATION.resolveModelAttribute(context, model).asInt());
-        } else if ( org.wildfly.security.manager.WildFlySecurityManager.getSystemPropertiesPrivileged().containsKey(ARTEMIS_BROKER_CONFIG_JBDC_LOCK_EXPIRATION_MILLIS)) {
-            lockExpirationInMillis = Long.parseLong( org.wildfly.security.manager.WildFlySecurityManager.getSystemPropertiesPrivileged().getProperty(ARTEMIS_BROKER_CONFIG_JBDC_LOCK_EXPIRATION_MILLIS));
-        } else {
-            lockExpirationInMillis = SECONDS.toMillis(JOURNAL_JDBC_LOCK_EXPIRATION.getDefaultValue().asInt());
-        }
-        // the system property is removed, otherwise Artemis will use it to override the value from the configuration
-        org.wildfly.security.manager.WildFlySecurityManager.getSystemPropertiesPrivileged().remove(ARTEMIS_BROKER_CONFIG_JBDC_LOCK_EXPIRATION_MILLIS);
-        storageConfiguration.setJdbcLockExpirationMillis(lockExpirationInMillis);
-        final long lockRenewPeriodInMillis;
-        if (model.hasDefined(JOURNAL_JDBC_LOCK_RENEW_PERIOD.getName())) {
-            lockRenewPeriodInMillis = SECONDS.toMillis(JOURNAL_JDBC_LOCK_RENEW_PERIOD.resolveModelAttribute(context, model).asInt());
-        } else if (org.wildfly.security.manager.WildFlySecurityManager.getSystemPropertiesPrivileged().containsKey(ARTEMIS_BROKER_CONFIG_JBDC_LOCK_RENEW_PERIOD_MILLIS)) {
-            lockRenewPeriodInMillis = Long.parseLong( org.wildfly.security.manager.WildFlySecurityManager.getSystemPropertiesPrivileged().getProperty(ARTEMIS_BROKER_CONFIG_JBDC_LOCK_RENEW_PERIOD_MILLIS));
-        } else {
-            lockRenewPeriodInMillis = SECONDS.toMillis(JOURNAL_JDBC_LOCK_RENEW_PERIOD.getDefaultValue().asInt());
-        }
-        // the system property is removed, otherwise Artemis will use it to override the value from the configuration
-        org.wildfly.security.manager.WildFlySecurityManager.getSystemPropertiesPrivileged().remove(ARTEMIS_BROKER_CONFIG_JBDC_LOCK_RENEW_PERIOD_MILLIS);
-        storageConfiguration.setJdbcLockRenewPeriodMillis(lockRenewPeriodInMillis);
-        // this property is used for testing only and has no corresponding model attribute.
-        // However the default value in Artemis is not correct (should be -1, not 60s)
-        final long jdbcLockAcquisitionTimeoutMillis;
-        if (org.wildfly.security.manager.WildFlySecurityManager.getSystemPropertiesPrivileged().containsKey(ARTEMIS_BROKER_CONFIG_JDBC_LOCK_ACQUISITION_TIMEOUT_MILLIS)) {
-            jdbcLockAcquisitionTimeoutMillis = Long.parseLong(org.wildfly.security.manager.WildFlySecurityManager.getSystemPropertiesPrivileged().getProperty(ARTEMIS_BROKER_CONFIG_JDBC_LOCK_ACQUISITION_TIMEOUT_MILLIS));
-        } else {
-            jdbcLockAcquisitionTimeoutMillis = -1;
-        }
-        // the system property is removed, otherwise Artemis will use it to override the value from the configuration
-        org.wildfly.security.manager.WildFlySecurityManager.getSystemPropertiesPrivileged().remove(ARTEMIS_BROKER_CONFIG_JDBC_LOCK_ACQUISITION_TIMEOUT_MILLIS);
-        storageConfiguration.setJdbcLockAcquisitionTimeoutMillis(jdbcLockAcquisitionTimeoutMillis);
-        configuration.setStoreConfiguration(storageConfiguration);
-    }
-
-    /**
-     * Process the address settings.
-     *
-     * @param configuration the ActiveMQ configuration
-     * @param params        the detyped operation parameters
-     */
-    /**
-     * Process the address settings.
-     *
-     * @param configuration the ActiveMQ configuration
-     * @param params        the detyped operation parameters
-     * @throws org.jboss.as.controller.OperationFailedException
-     */
-    static void processAddressSettings(final OperationContext context, final Configuration configuration, final ModelNode params) throws OperationFailedException {
-        if (params.hasDefined(ADDRESS_SETTING)) {
-            for (final Property property : params.get(ADDRESS_SETTING).asPropertyList()) {
-                final String match = property.getName();
-                final ModelNode config = property.getValue();
-                final AddressSettings settings = AddressSettingAdd.createSettings(context, config);
-                configuration.getAddressesSettings().put(match, settings);
+            // Install the ActiveMQ Service
+            ServiceController activeMQServerServiceController = serviceBuilder.setInstance(serverService)
+                    .install();
+            //Add the queue services for the core queues  created throught the internal broker configuration (those queues are not added as service via the QueueAdd OSH)
+            for (CoreQueueConfiguration queueConfiguration : configuration.getQueueConfigurations()) {
+                final ServiceName queueServiceName = activeMQServiceName.append(queueConfiguration.getName());
+                final ServiceBuilder sb = context.getServiceTarget().addService(queueServiceName);
+                sb.requires(ActiveMQActivationService.getServiceName(activeMQServiceName));
+                Supplier<ActiveMQServer> serverSupplier = sb.requires(activeMQServiceName);
+                final QueueService queueService = new QueueService(serverSupplier, queueConfiguration, false, false);
+                sb.setInitialMode(Mode.PASSIVE);
+                sb.setInstance(queueService);
+                sb.install();
             }
+            // Provide our custom Resource impl a ref to the ActiveMQ server so it can create child runtime resources
+            ((ActiveMQServerResource) resource).setActiveMQServerServiceController(activeMQServerServiceController);
+
+            // Install the JMSService
+            boolean overrideInVMSecurity = OVERRIDE_IN_VM_SECURITY.resolveModelAttribute(context, operation).asBoolean();
+            JMSService.addService(serviceTarget, activeMQServiceName, overrideInVMSecurity);
+
+            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
         }
-    }
 
-    private List<Class> unwrapClasses(List<ModelNode> classesModel) throws OperationFailedException {
-        List<Class> classes = new ArrayList<>();
-
-        for (ModelNode classModel : classesModel) {
-            Class<?> clazz = unwrapClass(classModel);
-            classes.add(clazz);
-        }
-
-        return classes;
-    }
-
-    private static Class unwrapClass(ModelNode classModel) throws OperationFailedException {
-        String className = classModel.get(NAME).asString();
-        String moduleName = classModel.get(MODULE).asString();
-        try {
-            ModuleIdentifier moduleID = ModuleIdentifier.fromString(moduleName);
-            Module module = Module.getCallerModuleLoader().loadModule(moduleID);
-            Class<?> clazz = module.getClassLoader().loadClass(className);
-            return clazz;
-        } catch (Exception e) {
-            throw MessagingLogger.ROOT_LOGGER.unableToLoadClassFromModule(className, moduleName);
-        }
-    }
-
-    private List<Interceptor> processInterceptors(ModelNode model) throws OperationFailedException {
-        if (!model.isDefined()) {
-            return Collections.emptyList();
-        }
-        List<Interceptor> interceptors = new ArrayList<>();
-        List<ModelNode> interceptorModels = model.asList();
-        for (Class clazz : unwrapClasses(interceptorModels)) {
-            try {
-                Interceptor interceptor = Interceptor.class.cast(clazz.newInstance());
-                interceptors.add(interceptor);
-            } catch (Exception e) {
-                throw new OperationFailedException(e);
+        private void processStorageConfiguration(OperationContext context, ModelNode model, Configuration configuration) throws OperationFailedException {
+            ModelNode journalDataSource = JOURNAL_DATASOURCE.resolveModelAttribute(context, model);
+            if (!journalDataSource.isDefined()) {
+                return;
             }
-        }
-        return interceptors;
-    }
-
-    /**
-     * Process the security settings.
-     *
-     * @param configuration the ActiveMQ configuration
-     * @param params        the detyped operation parameters
-     */
-    static void processSecuritySettings(final OperationContext context, final Configuration configuration, final ModelNode params) throws OperationFailedException {
-        if (params.get(SECURITY_SETTING).isDefined()) {
-            for (final Property property : params.get(SECURITY_SETTING).asPropertyList()) {
-                final String match = property.getName();
-                final ModelNode config = property.getValue();
-
-                if(config.hasDefined(CommonAttributes.ROLE)) {
-                    final Set<Role> roles = new HashSet<Role>();
-                    for (final Property role : config.get(CommonAttributes.ROLE).asPropertyList()) {
-                        roles.add(SecurityRoleDefinition.transform(context, role.getName(), role.getValue()));
-                    }
-                    configuration.getSecurityRoles().put(match, roles);
-                }
+            DatabaseStorageConfiguration storageConfiguration = new DatabaseStorageConfiguration();
+            storageConfiguration.setBindingsTableName(JOURNAL_BINDINGS_TABLE.resolveModelAttribute(context, model).asString());
+            storageConfiguration.setMessageTableName(JOURNAL_MESSAGES_TABLE.resolveModelAttribute(context, model).asString());
+            storageConfiguration.setLargeMessageTableName(JOURNAL_LARGE_MESSAGES_TABLE.resolveModelAttribute(context, model).asString());
+            storageConfiguration.setPageStoreTableName(JOURNAL_PAGE_STORE_TABLE.resolveModelAttribute(context, model).asString());
+            long networkTimeout = SECONDS.toMillis(JOURNAL_JDBC_NETWORK_TIMEOUT.resolveModelAttribute(context, model).asInt());
+            // ARTEMIS-1493: Artemis API is not correct. the value must be in millis but it requires an int instead of a long.
+            storageConfiguration.setJdbcNetworkTimeout((int) networkTimeout);
+            // WFLY-9513 - check for System properties for HA JDBC store attributes
+            //
+            // if the attribute is defined, we use its value
+            // otherwise, we check first for a system property
+            // finally we use the attribute's default value
+            //
+            // this behaviour applies to JOURNAL_NODE_MANAGER_STORE_TABLE, JOURNAL_JDBC_LOCK_EXPIRATION
+            // and JOURNAL_JDBC_LOCK_RENEW_PERIOD attributes.
+            final String nodeManagerStoreTableName;
+            if (model.hasDefined(JOURNAL_NODE_MANAGER_STORE_TABLE.getName())) {
+                nodeManagerStoreTableName = JOURNAL_NODE_MANAGER_STORE_TABLE.resolveModelAttribute(context, model).asString();
+            } else if (org.wildfly.security.manager.WildFlySecurityManager.getSystemPropertiesPrivileged().containsKey(ARTEMIS_BROKER_CONFIG_NODEMANAGER_STORE_TABLE_NAME)) {
+                nodeManagerStoreTableName = org.wildfly.security.manager.WildFlySecurityManager.getSystemPropertiesPrivileged().getProperty(ARTEMIS_BROKER_CONFIG_NODEMANAGER_STORE_TABLE_NAME);
+            } else {
+                nodeManagerStoreTableName = JOURNAL_NODE_MANAGER_STORE_TABLE.getDefaultValue().asString();
             }
-        }
-    }
-
-    private static void addBridgeCredentialStoreReference(ActiveMQServerService amqService, Configuration configuration, ObjectTypeAttributeDefinition credentialReferenceAttributeDefinition, OperationContext context, ModelNode model, ServiceBuilder<?> serviceBuilder) throws OperationFailedException {
-        for (BridgeConfiguration bridgeConfiguration: configuration.getBridgeConfigurations()) {
-            String name = bridgeConfiguration.getName();
-            InjectedValue<ExceptionSupplier<CredentialSource, Exception>> injector = amqService.getBridgeCredentialSourceSupplierInjector(name);
-
-            String[] modelFilter = { CommonAttributes.BRIDGE, name };
-
-            ModelNode filteredModelNode = model;
-            if (modelFilter != null && modelFilter.length > 0) {
-                for (String path : modelFilter) {
-                    if (filteredModelNode.get(path).isDefined())
-                        filteredModelNode = filteredModelNode.get(path);
-                    else
-                        break;
-                }
+            // the system property is removed, otherwise Artemis will use it to override the value from the configuration
+            org.wildfly.security.manager.WildFlySecurityManager.getSystemPropertiesPrivileged().remove(ARTEMIS_BROKER_CONFIG_NODEMANAGER_STORE_TABLE_NAME);
+            storageConfiguration.setNodeManagerStoreTableName(nodeManagerStoreTableName);
+            final long lockExpirationInMillis;
+            if (model.hasDefined(JOURNAL_JDBC_LOCK_EXPIRATION.getName())) {
+                lockExpirationInMillis = SECONDS.toMillis(JOURNAL_JDBC_LOCK_EXPIRATION.resolveModelAttribute(context, model).asInt());
+            } else if (org.wildfly.security.manager.WildFlySecurityManager.getSystemPropertiesPrivileged().containsKey(ARTEMIS_BROKER_CONFIG_JBDC_LOCK_EXPIRATION_MILLIS)) {
+                lockExpirationInMillis = Long.parseLong(org.wildfly.security.manager.WildFlySecurityManager.getSystemPropertiesPrivileged().getProperty(ARTEMIS_BROKER_CONFIG_JBDC_LOCK_EXPIRATION_MILLIS));
+            } else {
+                lockExpirationInMillis = SECONDS.toMillis(JOURNAL_JDBC_LOCK_EXPIRATION.getDefaultValue().asInt());
             }
-            ModelNode value = credentialReferenceAttributeDefinition.resolveModelAttribute(context, filteredModelNode);
+            // the system property is removed, otherwise Artemis will use it to override the value from the configuration
+            org.wildfly.security.manager.WildFlySecurityManager.getSystemPropertiesPrivileged().remove(ARTEMIS_BROKER_CONFIG_JBDC_LOCK_EXPIRATION_MILLIS);
+            storageConfiguration.setJdbcLockExpirationMillis(lockExpirationInMillis);
+            final long lockRenewPeriodInMillis;
+            if (model.hasDefined(JOURNAL_JDBC_LOCK_RENEW_PERIOD.getName())) {
+                lockRenewPeriodInMillis = SECONDS.toMillis(JOURNAL_JDBC_LOCK_RENEW_PERIOD.resolveModelAttribute(context, model).asInt());
+            } else if (org.wildfly.security.manager.WildFlySecurityManager.getSystemPropertiesPrivileged().containsKey(ARTEMIS_BROKER_CONFIG_JBDC_LOCK_RENEW_PERIOD_MILLIS)) {
+                lockRenewPeriodInMillis = Long.parseLong(org.wildfly.security.manager.WildFlySecurityManager.getSystemPropertiesPrivileged().getProperty(ARTEMIS_BROKER_CONFIG_JBDC_LOCK_RENEW_PERIOD_MILLIS));
+            } else {
+                lockRenewPeriodInMillis = SECONDS.toMillis(JOURNAL_JDBC_LOCK_RENEW_PERIOD.getDefaultValue().asInt());
+            }
+            // the system property is removed, otherwise Artemis will use it to override the value from the configuration
+            org.wildfly.security.manager.WildFlySecurityManager.getSystemPropertiesPrivileged().remove(ARTEMIS_BROKER_CONFIG_JBDC_LOCK_RENEW_PERIOD_MILLIS);
+            storageConfiguration.setJdbcLockRenewPeriodMillis(lockRenewPeriodInMillis);
+            // this property is used for testing only and has no corresponding model attribute.
+            // However the default value in Artemis is not correct (should be -1, not 60s)
+            final long jdbcLockAcquisitionTimeoutMillis;
+            if (org.wildfly.security.manager.WildFlySecurityManager.getSystemPropertiesPrivileged().containsKey(ARTEMIS_BROKER_CONFIG_JDBC_LOCK_ACQUISITION_TIMEOUT_MILLIS)) {
+                jdbcLockAcquisitionTimeoutMillis = Long.parseLong(org.wildfly.security.manager.WildFlySecurityManager.getSystemPropertiesPrivileged().getProperty(ARTEMIS_BROKER_CONFIG_JDBC_LOCK_ACQUISITION_TIMEOUT_MILLIS));
+            } else {
+                jdbcLockAcquisitionTimeoutMillis = -1;
+            }
+            // the system property is removed, otherwise Artemis will use it to override the value from the configuration
+            org.wildfly.security.manager.WildFlySecurityManager.getSystemPropertiesPrivileged().remove(ARTEMIS_BROKER_CONFIG_JDBC_LOCK_ACQUISITION_TIMEOUT_MILLIS);
+            storageConfiguration.setJdbcLockAcquisitionTimeoutMillis(jdbcLockAcquisitionTimeoutMillis);
+            configuration.setStoreConfiguration(storageConfiguration);
+        }
+
+        /**
+         * Transform the detyped operation parameters into the ActiveMQ configuration.
+         *
+         * @param context the operation context
+         * @param serverName the name of the ActiveMQ instance
+         * @param model the subsystem root resource model
+         * @return the ActiveMQ configuration
+         */
+        private Configuration transformConfig(final OperationContext context, String serverName, final ModelNode model) throws OperationFailedException {
+
+            Configuration configuration = new ConfigurationImpl();
+
+            configuration.setName(serverName);
+
+            configuration.setEnabledAsyncConnectionExecution(ASYNC_CONNECTION_EXECUTION_ENABLED.resolveModelAttribute(context, model).asBoolean());
+
+            configuration.setClusterPassword(CLUSTER_PASSWORD.resolveModelAttribute(context, model).asString());
+            configuration.setClusterUser(CLUSTER_USER.resolveModelAttribute(context, model).asString());
+            configuration.setConnectionTTLOverride(CONNECTION_TTL_OVERRIDE.resolveModelAttribute(context, model).asInt());
+            configuration.setCreateBindingsDir(CREATE_BINDINGS_DIR.resolveModelAttribute(context, model).asBoolean());
+            configuration.setCreateJournalDir(CREATE_JOURNAL_DIR.resolveModelAttribute(context, model).asBoolean());
+            configuration.setGlobalMaxSize(GLOBAL_MAX_MEMORY_SIZE.resolveModelAttribute(context, model).asLong());
+            configuration.setMaxDiskUsage(GLOBAL_MAX_DISK_USAGE.resolveModelAttribute(context, model).asInt());
+            configuration.setDiskScanPeriod(DISK_SCAN_PERIOD.resolveModelAttribute(context, model).asInt());
+            configuration.setIDCacheSize(ID_CACHE_SIZE.resolveModelAttribute(context, model).asInt());
+            // TODO do we want to allow the jmx configuration ?
+            configuration.setJMXDomain(JMX_DOMAIN.resolveModelAttribute(context, model).asString());
+            configuration.setJMXManagementEnabled(JMX_MANAGEMENT_ENABLED.resolveModelAttribute(context, model).asBoolean());
+            // Journal
+            final JournalType journalType = JournalType.valueOf(JOURNAL_TYPE.resolveModelAttribute(context, model).asString());
+            configuration.setJournalType(journalType);
+
+            ModelNode value = JOURNAL_BUFFER_SIZE.resolveModelAttribute(context, model);
             if (value.isDefined()) {
-                injector.inject(CredentialReference.getCredentialSourceSupplier(context, credentialReferenceAttributeDefinition, filteredModelNode, serviceBuilder));
+                configuration.setJournalBufferSize_AIO(value.asInt());
+                configuration.setJournalBufferSize_NIO(value.asInt());
+            }
+            value = JOURNAL_BUFFER_TIMEOUT.resolveModelAttribute(context, model);
+            if (value.isDefined()) {
+                configuration.setJournalBufferTimeout_AIO(value.asInt());
+                configuration.setJournalBufferTimeout_NIO(value.asInt());
+            }
+            value = JOURNAL_MAX_IO.resolveModelAttribute(context, model);
+            if (value.isDefined()) {
+                configuration.setJournalMaxIO_AIO(value.asInt());
+                configuration.setJournalMaxIO_NIO(value.asInt());
+            }
+            configuration.setJournalCompactMinFiles(JOURNAL_COMPACT_MIN_FILES.resolveModelAttribute(context, model).asInt());
+            configuration.setJournalCompactPercentage(JOURNAL_COMPACT_PERCENTAGE.resolveModelAttribute(context, model).asInt());
+            configuration.setJournalFileSize(JOURNAL_FILE_SIZE.resolveModelAttribute(context, model).asInt());
+            configuration.setJournalMinFiles(JOURNAL_MIN_FILES.resolveModelAttribute(context, model).asInt());
+            configuration.setJournalPoolFiles(JOURNAL_POOL_FILES.resolveModelAttribute(context, model).asInt());
+            configuration.setJournalSyncNonTransactional(JOURNAL_SYNC_NON_TRANSACTIONAL.resolveModelAttribute(context, model).asBoolean());
+            configuration.setJournalSyncTransactional(JOURNAL_SYNC_TRANSACTIONAL.resolveModelAttribute(context, model).asBoolean());
+            configuration.setLogJournalWriteRate(LOG_JOURNAL_WRITE_RATE.resolveModelAttribute(context, model).asBoolean());
+
+            configuration.setManagementAddress(SimpleString.toSimpleString(MANAGEMENT_ADDRESS.resolveModelAttribute(context, model).asString()));
+            configuration.setManagementNotificationAddress(SimpleString.toSimpleString(MANAGEMENT_NOTIFICATION_ADDRESS.resolveModelAttribute(context, model).asString()));
+
+            configuration.setMemoryMeasureInterval(MEMORY_MEASURE_INTERVAL.resolveModelAttribute(context, model).asLong());
+            configuration.setMemoryWarningThreshold(MEMORY_WARNING_THRESHOLD.resolveModelAttribute(context, model).asInt());
+
+            configuration.setMessageCounterEnabled(STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean());
+            configuration.setMessageCounterSamplePeriod(MESSAGE_COUNTER_SAMPLE_PERIOD.resolveModelAttribute(context, model).asInt());
+            configuration.setMessageCounterMaxDayHistory(MESSAGE_COUNTER_MAX_DAY_HISTORY.resolveModelAttribute(context, model).asInt());
+            configuration.setMessageExpiryScanPeriod(MESSAGE_EXPIRY_SCAN_PERIOD.resolveModelAttribute(context, model).asLong());
+            configuration.setMessageExpiryThreadPriority(MESSAGE_EXPIRY_THREAD_PRIORITY.resolveModelAttribute(context, model).asInt());
+
+            configuration.setPersistDeliveryCountBeforeDelivery(PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY.resolveModelAttribute(context, model).asBoolean());
+
+            configuration.setPageMaxConcurrentIO(PAGE_MAX_CONCURRENT_IO.resolveModelAttribute(context, model).asInt());
+
+            configuration.setPersistenceEnabled(PERSISTENCE_ENABLED.resolveModelAttribute(context, model).asBoolean());
+            configuration.setPersistIDCache(PERSIST_ID_CACHE.resolveModelAttribute(context, model).asBoolean());
+
+            configuration.setScheduledThreadPoolMaxSize(SCHEDULED_THREAD_POOL_MAX_SIZE.resolveModelAttribute(context, model).asInt());
+            configuration.setSecurityEnabled(SECURITY_ENABLED.resolveModelAttribute(context, model).asBoolean());
+            configuration.setSecurityInvalidationInterval(SECURITY_INVALIDATION_INTERVAL.resolveModelAttribute(context, model).asLong());
+            configuration.setServerDumpInterval(SERVER_DUMP_INTERVAL.resolveModelAttribute(context, model).asLong());
+            configuration.setThreadPoolMaxSize(THREAD_POOL_MAX_SIZE.resolveModelAttribute(context, model).asInt());
+            configuration.setTransactionTimeout(TRANSACTION_TIMEOUT.resolveModelAttribute(context, model).asLong());
+            configuration.setTransactionTimeoutScanPeriod(TRANSACTION_TIMEOUT_SCAN_PERIOD.resolveModelAttribute(context, model).asLong());
+            configuration.getWildcardConfiguration().setRoutingEnabled(WILD_CARD_ROUTING_ENABLED.resolveModelAttribute(context, model).asBoolean());
+
+            processStorageConfiguration(context, model, configuration);
+            HAPolicyConfigurationBuilder.addHAPolicyConfiguration(context, configuration, model);
+
+            processAddressSettings(context, configuration, model);
+            processSecuritySettings(context, configuration, model);
+
+            // Add in items from child resources
+            GroupingHandlerAdd.addGroupingHandlerConfig(context, configuration, model);
+            configuration.setDiscoveryGroupConfigurations(DiscoveryGroupAdd.addDiscoveryGroupConfigs(context, model));
+            DivertAdd.addDivertConfigs(context, configuration, model);
+            QueueAdd.addQueueConfigs(context, configuration, model);
+            BridgeAdd.addBridgeConfigs(context, configuration, model);
+            ClusterConnectionAdd.addClusterConnectionConfigs(context, configuration, model);
+            ConnectorServiceDefinition.addConnectorServiceConfigs(context, configuration, model);
+
+            return configuration;
+        }
+
+        /**
+         * Process the address settings.
+         *
+         * @param configuration the ActiveMQ configuration
+         * @param params the detyped operation parameters
+         */
+        /**
+         * Process the address settings.
+         *
+         * @param configuration the ActiveMQ configuration
+         * @param params the detyped operation parameters
+         * @throws org.jboss.as.controller.OperationFailedException
+         */
+        private void processAddressSettings(final OperationContext context, final Configuration configuration, final ModelNode params) throws OperationFailedException {
+            if (params.hasDefined(ADDRESS_SETTING)) {
+                for (final Property property : params.get(ADDRESS_SETTING).asPropertyList()) {
+                    final String match = property.getName();
+                    final ModelNode config = property.getValue();
+                    final AddressSettings settings = AddressSettingAdd.createSettings(context, config);
+                    configuration.getAddressesSettings().put(match, settings);
+                }
             }
         }
-    }
 
-    private static void addClusterCredentialStoreReference(ActiveMQServerService amqService, ObjectTypeAttributeDefinition credentialReferenceAttributeDefinition, OperationContext context, ModelNode model, ServiceBuilder<?> serviceBuilder) throws OperationFailedException {
-        ModelNode value = credentialReferenceAttributeDefinition.resolveModelAttribute(context, model);
-        if (value.isDefined()) {
-            amqService.getClusterCredentialSourceSupplierInjector()
-                    .inject(CredentialReference.getCredentialSourceSupplier(context, credentialReferenceAttributeDefinition, model, serviceBuilder));
+        private List<Class> unwrapClasses(List<ModelNode> classesModel) throws OperationFailedException {
+            List<Class> classes = new ArrayList<>();
+
+            for (ModelNode classModel : classesModel) {
+                Class<?> clazz = unwrapClass(classModel);
+                classes.add(clazz);
+            }
+
+            return classes;
+        }
+
+        private Class unwrapClass(ModelNode classModel) throws OperationFailedException {
+            String className = classModel.get(NAME).asString();
+            String moduleName = classModel.get(MODULE).asString();
+            try {
+                ModuleIdentifier moduleID = ModuleIdentifier.fromString(moduleName);
+                Module module = Module.getCallerModuleLoader().loadModule(moduleID);
+                Class<?> clazz = module.getClassLoader().loadClass(className);
+                return clazz;
+            } catch (Exception e) {
+                throw MessagingLogger.ROOT_LOGGER.unableToLoadClassFromModule(className, moduleName);
+            }
+        }
+
+        private List<Interceptor> processInterceptors(ModelNode model) throws OperationFailedException {
+            if (!model.isDefined()) {
+                return Collections.emptyList();
+            }
+            List<Interceptor> interceptors = new ArrayList<>();
+            List<ModelNode> interceptorModels = model.asList();
+            for (Class clazz : unwrapClasses(interceptorModels)) {
+                try {
+                    Interceptor interceptor = Interceptor.class.cast(clazz.newInstance());
+                    interceptors.add(interceptor);
+                } catch (Exception e) {
+                    throw new OperationFailedException(e);
+                }
+            }
+            return interceptors;
+        }
+
+        /**
+         * Process the security settings.
+         *
+         * @param configuration the ActiveMQ configuration
+         * @param params the detyped operation parameters
+         */
+        private void processSecuritySettings(final OperationContext context, final Configuration configuration, final ModelNode params) throws OperationFailedException {
+            if (params.get(SECURITY_SETTING).isDefined()) {
+                for (final Property property : params.get(SECURITY_SETTING).asPropertyList()) {
+                    final String match = property.getName();
+                    final ModelNode config = property.getValue();
+
+                    if (config.hasDefined(CommonAttributes.ROLE)) {
+                        final Set<Role> roles = new HashSet<Role>();
+                        for (final Property role : config.get(CommonAttributes.ROLE).asPropertyList()) {
+                            roles.add(SecurityRoleDefinition.transform(context, role.getName(), role.getValue()));
+                        }
+                        configuration.getSecurityRoles().put(match, roles);
+                    }
+                }
+            }
+        }
+
+        private void addBridgeCredentialStoreReference(ActiveMQServerService amqService, Configuration configuration, ObjectTypeAttributeDefinition credentialReferenceAttributeDefinition, OperationContext context, ModelNode model, ServiceBuilder<?> serviceBuilder) throws OperationFailedException {
+            for (BridgeConfiguration bridgeConfiguration : configuration.getBridgeConfigurations()) {
+                String name = bridgeConfiguration.getName();
+                InjectedValue<ExceptionSupplier<CredentialSource, Exception>> injector = amqService.getBridgeCredentialSourceSupplierInjector(name);
+
+                String[] modelFilter = {CommonAttributes.BRIDGE, name};
+
+                ModelNode filteredModelNode = model;
+                if (modelFilter != null && modelFilter.length > 0) {
+                    for (String path : modelFilter) {
+                        if (filteredModelNode.get(path).isDefined()) {
+                            filteredModelNode = filteredModelNode.get(path);
+                        } else {
+                            break;
+                        }
+                    }
+                }
+                ModelNode value = credentialReferenceAttributeDefinition.resolveModelAttribute(context, filteredModelNode);
+                if (value.isDefined()) {
+                    injector.inject(CredentialReference.getCredentialSourceSupplier(context, credentialReferenceAttributeDefinition, filteredModelNode, serviceBuilder));
+                }
+            }
+        }
+
+        private void addClusterCredentialStoreReference(ActiveMQServerService amqService, ObjectTypeAttributeDefinition credentialReferenceAttributeDefinition, OperationContext context, ModelNode model, ServiceBuilder<?> serviceBuilder) throws OperationFailedException {
+            ModelNode value = credentialReferenceAttributeDefinition.resolveModelAttribute(context, model);
+            if (value.isDefined()) {
+                amqService.getClusterCredentialSourceSupplierInjector()
+                        .inject(CredentialReference.getCredentialSourceSupplier(context, credentialReferenceAttributeDefinition, model, serviceBuilder));
+            }
         }
     }
 }

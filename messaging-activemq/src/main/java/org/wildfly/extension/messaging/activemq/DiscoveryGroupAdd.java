@@ -35,7 +35,6 @@ import java.util.Map;
 import org.apache.activemq.artemis.api.core.BroadcastEndpointFactory;
 import org.apache.activemq.artemis.api.core.DiscoveryGroupConfiguration;
 import org.apache.activemq.artemis.api.core.UDPBroadcastEndpointFactory;
-import org.apache.activemq.artemis.core.config.Configuration;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -134,18 +133,14 @@ public class DiscoveryGroupAdd extends AbstractAddStepHandler {
         }
     }
 
-    static void addDiscoveryGroupConfigs(final OperationContext context, final Configuration configuration, final ModelNode model)  throws OperationFailedException {
+    static Map<String, DiscoveryGroupConfiguration> addDiscoveryGroupConfigs(final OperationContext context, final ModelNode model)  throws OperationFailedException {
+         Map<String, DiscoveryGroupConfiguration> configs = new HashMap<>();
         if (model.hasDefined(CommonAttributes.DISCOVERY_GROUP)) {
-            Map<String, DiscoveryGroupConfiguration> configs = configuration.getDiscoveryGroupConfigurations();
-            if (configs == null) {
-                configs = new HashMap<>();
-                configuration.setDiscoveryGroupConfigurations(configs);
-            }
             for (Property prop : model.get(CommonAttributes.DISCOVERY_GROUP).asPropertyList()) {
                 configs.put(prop.getName(), createDiscoveryGroupConfiguration(context, prop.getName(), prop.getValue()));
-
             }
         }
+        return configs;
     }
 
     static DiscoveryGroupConfiguration createDiscoveryGroupConfiguration(final OperationContext context, final String name, final ModelNode model) throws OperationFailedException {

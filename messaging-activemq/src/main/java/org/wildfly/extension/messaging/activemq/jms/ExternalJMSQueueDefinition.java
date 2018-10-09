@@ -34,10 +34,9 @@ import org.wildfly.extension.messaging.activemq.MessagingExtension;
 public class ExternalJMSQueueDefinition extends PersistentResourceDefinition {
 
     public static final AttributeDefinition[] ATTRIBUTES = {CommonAttributes.DESTINATION_ENTRIES};
-
     private final boolean registerRuntimeOnly;
 
-    public ExternalJMSQueueDefinition(final boolean registerRuntimeOnly) {
+    public ExternalJMSQueueDefinition(boolean registerRuntimeOnly) {
         super(MessagingExtension.EXTERNAL_JMS_QUEUE_PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.EXTERNAL_JMS_QUEUE),
                 ExternalJMSQueueAdd.INSTANCE,

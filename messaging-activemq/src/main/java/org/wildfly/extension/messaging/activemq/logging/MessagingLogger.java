@@ -858,4 +858,10 @@ public interface MessagingLogger extends BasicLogger {
 
     @Message(id = 98, value = "Unable to load module %s - the module or one of its dependencies is missing [%s]")
     OperationFailedException moduleNotFound(String moduleName, String missingModule, @Cause ModuleNotFoundException e);
+
+    @Message(id = 99, value = "Creating the remote destination %s failed with error %s")
+    StartException remoteDestinationCreationFailed(String destinationName, String error);
+
+    @Message(id = 100, value = "Deleting the remote destination %s failed with error %s")
+    RuntimeException remoteDestinationDeletionFailed(String destinationName, String error);
 }

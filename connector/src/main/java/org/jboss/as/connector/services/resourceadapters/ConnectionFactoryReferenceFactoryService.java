@@ -44,6 +44,15 @@ public class ConnectionFactoryReferenceFactoryService implements Service<Managed
 
     private final InjectedValue<Object> connectionFactoryValue = new InjectedValue<Object>();
     private ManagedReference reference;
+    private final String name;
+
+    public ConnectionFactoryReferenceFactoryService(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
 
     public synchronized void start(StartContext startContext) throws StartException {
         reference = new ValueManagedReference(new ImmediateValue<Object>(connectionFactoryValue.getValue()));

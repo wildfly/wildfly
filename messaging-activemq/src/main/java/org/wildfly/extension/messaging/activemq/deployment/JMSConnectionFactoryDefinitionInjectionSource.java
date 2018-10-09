@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.messaging.activemq.deployment;
 
+import static org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.CONNECTOR;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.CONNECTORS;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.DEFAULT;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_CLUSTER;
@@ -36,19 +38,25 @@ import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttr
 import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Pooled.MIN_POOL_SIZE;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.resource.spi.TransactionSupport;
+import org.apache.activemq.artemis.api.core.DiscoveryGroupConfiguration;
+import org.apache.activemq.artemis.api.core.TransportConfiguration;
 
 import org.jboss.as.connector.deployers.ra.ConnectionFactoryDefinitionInjectionSource;
 import org.jboss.as.connector.services.resourceadapters.ConnectionFactoryReferenceFactoryService;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.resource.definition.ResourceDefinitionInjectionSource;
 import org.jboss.as.naming.ManagedReferenceFactory;
@@ -62,14 +70,18 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.extension.messaging.activemq.CommonAttributes;
+import org.wildfly.extension.messaging.activemq.ExternalBrokerConfigurationService;
 import org.wildfly.extension.messaging.activemq.MessagingExtension;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
+import org.wildfly.extension.messaging.activemq.MessagingSubsystemRootResourceDefinition;
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttribute;
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes;
+import org.wildfly.extension.messaging.activemq.jms.ExternalPooledConnectionFactoryService;
 import org.wildfly.extension.messaging.activemq.jms.JMSServices;
 import org.wildfly.extension.messaging.activemq.jms.PooledConnectionFactoryConfigProperties;
 import org.wildfly.extension.messaging.activemq.jms.PooledConnectionFactoryConfigurationRuntimeHandler;
@@ -153,10 +165,13 @@ public class JMSConnectionFactoryDefinitionInjectionSource extends ResourceDefin
     @Override
     public void getResourceValue(ResolutionContext context, ServiceBuilder<?> serviceBuilder, DeploymentPhaseContext phaseContext, Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-
-        if (targetsPooledConnectionFactory(getActiveMQServerName(properties), resourceAdapter, phaseContext.getServiceRegistry())) {
+        if(resourceAdapter == null || resourceAdapter.isEmpty()) {
+            resourceAdapter = getDefaulResourceAdapter(deploymentUnit);
+        }
+        boolean external = targetsExternalPooledConnectionFactory(resourceAdapter, phaseContext.getServiceRegistry());
+        if (external || targetsPooledConnectionFactory(getActiveMQServerName(properties), resourceAdapter, phaseContext.getServiceRegistry())) {
             try {
-                startedPooledConnectionFactory(context, jndiName, serviceBuilder, phaseContext.getServiceTarget(), deploymentUnit, injector);
+                startedPooledConnectionFactory(context, jndiName, serviceBuilder, phaseContext.getServiceTarget(), deploymentUnit, injector, external);
             } catch (OperationFailedException e) {
                 throw new DeploymentUnitProcessingException(e);
             }
@@ -183,7 +198,9 @@ public class JMSConnectionFactoryDefinitionInjectionSource extends ResourceDefin
         }
     }
 
-    private void startedPooledConnectionFactory(ResolutionContext context, String name, ServiceBuilder<?> serviceBuilder, ServiceTarget serviceTarget, DeploymentUnit deploymentUnit, Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException, OperationFailedException {
+    private void startedPooledConnectionFactory(ResolutionContext context, String name, ServiceBuilder<?> serviceBuilder,
+            ServiceTarget serviceTarget, DeploymentUnit deploymentUnit, Injector<ManagedReferenceFactory> injector,
+            boolean external) throws DeploymentUnitProcessingException, OperationFailedException {
         Map<String, String> props = new HashMap<>(properties);
         List<String> connectors = getConnectors(props);
         clearUnknownProperties(properties);
@@ -225,13 +242,41 @@ public class JMSConnectionFactoryDefinitionInjectionSource extends ResourceDefin
         List<PooledConnectionFactoryConfigProperties> adapterParams = getAdapterParams(model);
         String txSupport = transactional ? XA_TX : NO_TX;
 
-        final String serverName = getActiveMQServerName(properties);
+        final String serverName;
         final String pcfName = uniqueName(context, name);
         final ContextNames.BindInfo bindInfo = ContextNames.bindInfoForEnvEntry(context.getApplicationName(), context.getModuleName(), context.getComponentName(), !context.isCompUsesModule(), name);
-        PooledConnectionFactoryService.installService(serviceTarget, pcfName, serverName, connectors,
-                discoveryGroupName, jgroupsChannelName, adapterParams,
-                bindInfo,
-                txSupport, minPoolSize, maxPoolSize, managedConnectionPoolClassName, enlistmentTrace, true);
+        if(external) {
+            serverName = null;
+            Set<String> connectorsSocketBindings = new HashSet<>();
+            ExternalBrokerConfigurationService configuration = (ExternalBrokerConfigurationService)deploymentUnit.getServiceRegistry().getRequiredService(MessagingSubsystemRootResourceDefinition.CONFIGURATION_CAPABILITY.getCapabilityServiceName()).getService().getValue();
+            TransportConfiguration[] tcs = new TransportConfiguration[connectors.size()];
+            for (int i = 0; i < tcs.length; i++) {
+                tcs[i] = configuration.getConnectors().get(connectors.get(i));
+                if (tcs[i].getParams().containsKey(ModelDescriptionConstants.SOCKET_BINDING)) {
+                    connectorsSocketBindings.add(tcs[i].getParams().get(ModelDescriptionConstants.SOCKET_BINDING).toString());
+                }
+            }
+            DiscoveryGroupConfiguration discoveryGroupConfiguration = null;
+            if(discoveryGroupName != null) {
+                discoveryGroupConfiguration = configuration.getDiscoveryGroupConfigurations().get(discoveryGroupName);
+            }
+            if (connectors.isEmpty() && discoveryGroupConfiguration == null) {
+                tcs = getExternalPooledConnectionFactory(resourceAdapter, deploymentUnit.getServiceRegistry()).getConnectors();
+                for(int i = 0 ; i < tcs.length; i++) {
+                 if(tcs[i].getParams().containsKey(ModelDescriptionConstants.SOCKET_BINDING)) {
+                    connectorsSocketBindings.add(tcs[i].getParams().get(ModelDescriptionConstants.SOCKET_BINDING).toString());
+                 }
+             }
+            }
+            ExternalPooledConnectionFactoryService.installService(serviceTarget, configuration, pcfName, tcs, discoveryGroupConfiguration,
+                    connectorsSocketBindings, null, jgroupsChannelName, adapterParams, bindInfo, Collections.emptyList(),
+                    txSupport, minPoolSize, maxPoolSize, managedConnectionPoolClassName, enlistmentTrace, deploymentUnit.getAttachment(CAPABILITY_SERVICE_SUPPORT));
+        } else {
+            serverName = getActiveMQServerName(properties);
+            PooledConnectionFactoryService.installService(serviceTarget, pcfName, serverName, connectors,
+                    discoveryGroupName, jgroupsChannelName, adapterParams, bindInfo, txSupport, minPoolSize,
+                    maxPoolSize, managedConnectionPoolClassName, enlistmentTrace, true);
+        }
 
         final ServiceName referenceFactoryServiceName = ConnectionFactoryReferenceFactoryService.SERVICE_NAME_BASE
                 .append(bindInfo.getBinderServiceName());
@@ -239,11 +284,17 @@ public class JMSConnectionFactoryDefinitionInjectionSource extends ResourceDefin
 
         //create the management registration
         String managementName = managementName(context, name);
-        final PathElement serverElement = PathElement.pathElement(SERVER, serverName);
         final DeploymentResourceSupport deploymentResourceSupport = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_RESOURCE_SUPPORT);
-        deploymentResourceSupport.getDeploymentSubModel(MessagingExtension.SUBSYSTEM_NAME, serverElement);
         final PathElement pcfPath = PathElement.pathElement(POOLED_CONNECTION_FACTORY, managementName);
-        PathAddress registration = PathAddress.pathAddress(serverElement, pcfPath);
+        PathAddress registration;
+        if (external) {
+            deploymentResourceSupport.getDeploymentSubsystemModel(MessagingExtension.SUBSYSTEM_NAME);
+            registration = PathAddress.pathAddress(pcfPath);
+        } else {
+            final PathElement serverElement = PathElement.pathElement(SERVER, serverName);
+            deploymentResourceSupport.getDeploymentSubModel(MessagingExtension.SUBSYSTEM_NAME, serverElement);
+            registration = PathAddress.pathAddress(serverElement, pcfPath);
+        }
         MessagingXmlInstallDeploymentUnitProcessor.createDeploymentSubModel(registration, deploymentUnit);
         PooledConnectionFactoryConfigurationRuntimeHandler.INSTANCE.registerResource(serverName, managementName, model);
     }
@@ -257,6 +308,12 @@ public class JMSConnectionFactoryDefinitionInjectionSource extends ResourceDefin
                 if (!connector.isEmpty()) {
                     connectors.add(connector);
                 }
+            }
+        }
+        if (props.containsKey(CONNECTOR)) {
+            String connector = properties.remove(CONNECTOR).trim();
+            if (!connector.isEmpty()) {
+                connectors.add(connector);
             }
         }
         return connectors;
@@ -280,16 +337,16 @@ public class JMSConnectionFactoryDefinitionInjectionSource extends ResourceDefin
 
     private static String uniqueName(InjectionSource.ResolutionContext context, final String jndiName) {
         StringBuilder uniqueName = new StringBuilder();
-        return uniqueName.append(context.getApplicationName() + "_")
+        return uniqueName.append(context.getApplicationName()).append("_")
                 .append(managementName(context, jndiName))
                 .toString();
     }
 
     private static String managementName(InjectionSource.ResolutionContext context, final String jndiName) {
         StringBuilder uniqueName = new StringBuilder();
-        uniqueName.append(context.getModuleName() + "_");
+        uniqueName.append(context.getModuleName()).append("_");
         if (context.getComponentName() != null) {
-            uniqueName.append(context.getComponentName() + "_");
+            uniqueName.append(context.getComponentName()).append("_");
         }
         return uniqueName
                 .append(jndiName.replace(':', '_'))
@@ -331,11 +388,49 @@ public class JMSConnectionFactoryDefinitionInjectionSource extends ResourceDefin
     }
 
     /**
+     * Return whether the definition targets an existing external pooled connection factory.
+     *
+     * Checks the service registry for a PooledConnectionFactoryService with the ServiceName
+     * created by the {@code server} property (or {@code "default") and the {@code resourceAdapter} property.
+     */
+    static boolean targetsExternalPooledConnectionFactory(String resourceAdapter, ServiceRegistry serviceRegistry) {
+        // if the resourceAdapter is not defined, the default behaviour is to create a pooled-connection-factory.
+        if (resourceAdapter == null || resourceAdapter.isEmpty()) {
+            return false;
+        }
+        //let's look into the external-pooled-connection-factory
+        ServiceName pcfName = JMSServices.getPooledConnectionFactoryBaseServiceName(MessagingServices.getActiveMQServiceName("")).append(resourceAdapter);
+        return serviceRegistry.getServiceNames().contains(pcfName);
+    }
+
+    private static ExternalPooledConnectionFactoryService getExternalPooledConnectionFactory(String resourceAdapter, ServiceRegistry serviceRegistry) {
+        //let's look into the external-pooled-connection-factory
+        ServiceName pcfName = JMSServices.getPooledConnectionFactoryBaseServiceName(MessagingServices.getActiveMQServiceName("")).append(resourceAdapter);
+        return (ExternalPooledConnectionFactoryService) serviceRegistry.getService(pcfName).getValue();
+    }
+
+    static String getDefaulResourceAdapter(DeploymentUnit deploymentUnit) {
+        EEModuleDescription eeDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
+        if (eeDescription != null) {
+            String defaultJndiName = eeDescription.getDefaultResourceJndiNames().getJmsConnectionFactory();
+            ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(defaultJndiName);
+            ServiceController binder = deploymentUnit.getServiceRegistry().getService(bindInfo.getBinderServiceName());
+            if (binder != null) {
+                Object pcf = binder.getService().getValue();
+                if (pcf != null && pcf instanceof ConnectionFactoryReferenceFactoryService) {
+                    return ((ConnectionFactoryReferenceFactoryService) pcf).getName();
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
      * The JMS connection factory can specify another server to deploy its destinations
      * by passing a property server=&lt;name of the server>. Otherwise, "default" is used by default.
      */
     static String getActiveMQServerName(Map<String, String> properties) {
-        return properties.containsKey(SERVER) ? properties.get(SERVER) : DEFAULT;
+        return properties.getOrDefault(SERVER, DEFAULT);
     }
 
     @Override
