@@ -162,8 +162,11 @@ public class LegacyMetricOperationsRegistration implements Registration<Manageme
         registration.registerOperationHandler(legacyRemoveCustomMetricOperation, legacyRemoveCustomMetricHandler);
     }
 
-    static PathAddress translateProxyPath(OperationContext context) throws OperationFailedException {
-        PathAddress address = context.getCurrentAddress().getParent();
+    private static PathAddress translateProxyPath(OperationContext context) throws OperationFailedException {
+        return translateProxyPath(context, context.getCurrentAddress().getParent());
+    }
+
+    static PathAddress translateProxyPath(OperationContext context, PathAddress address) throws OperationFailedException {
         Set<Resource.ResourceEntry> children = context.readResourceFromRoot(address).getChildren(ProxyConfigurationResourceDefinition.WILDCARD_PATH.getKey());
         if (children.size() != 1) {
             throw new OperationFailedException(ModClusterLogger.ROOT_LOGGER.legacyOperationsWithMultipleProxies());
