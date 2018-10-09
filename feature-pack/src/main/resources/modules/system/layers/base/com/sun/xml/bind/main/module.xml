@@ -28,7 +28,6 @@
     </properties>
 
     <resources>
-        <artifact name="${org.glassfish.jaxb:jaxb-core}"/>
         <artifact name="${org.glassfish.jaxb:jaxb-runtime}"/>
         <artifact name="${org.glassfish.jaxb:jaxb-xjc}"/>
         <artifact name="${org.glassfish.jaxb:jaxb-jxc}"/>
