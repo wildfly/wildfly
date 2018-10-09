@@ -177,12 +177,12 @@ public class ExternalPooledConnectionFactoryService implements Service<Void> {
     // mapping between the {discovery}-groups and the command dispatcher factory they use
     private final Map<String, Supplier<CommandDispatcherFactory>> commandDispatcherFactories = new HashMap<>();
     private BindInfo bindInfo;
+    private List<String> jndiAliases;
     private String txSupport;
     private int minPoolSize;
     private int maxPoolSize;
     private final String jgroupsClusterName;
     private final String jgroupsChannelName;
-    private final boolean createBinderService;
     private final String managedConnectionPoolClassName;
     // can be null. In that case the behaviour is depending on the IronJacamar container setting.
     private final Boolean enlistmentTrace;
@@ -190,7 +190,7 @@ public class ExternalPooledConnectionFactoryService implements Service<Void> {
 
 
     public ExternalPooledConnectionFactoryService(String name, TransportConfiguration[] connectors, DiscoveryGroupConfiguration groupConfiguration, String jgroupsClusterName,
-            String jgroupsChannelName, List<PooledConnectionFactoryConfigProperties> adapterParams, BindInfo bindInfo, String txSupport, int minPoolSize, int maxPoolSize, String managedConnectionPoolClassName, Boolean enlistmentTrace) {
+            String jgroupsChannelName, List<PooledConnectionFactoryConfigProperties> adapterParams, BindInfo bindInfo, List<String> jndiAliases, String txSupport, int minPoolSize, int maxPoolSize, String managedConnectionPoolClassName, Boolean enlistmentTrace) {
         this.name = name;
         this.connectors = connectors;
         this.discoveryGroupConfiguration = groupConfiguration;
@@ -198,7 +198,7 @@ public class ExternalPooledConnectionFactoryService implements Service<Void> {
         this.jgroupsChannelName = jgroupsChannelName;
         this.adapterParams = adapterParams;
         this.bindInfo = bindInfo;
-        createBinderService = true;
+        this.jndiAliases = new ArrayList<>(jndiAliases);
         this.txSupport = txSupport;
         this.minPoolSize = minPoolSize;
         this.maxPoolSize = maxPoolSize;
@@ -221,6 +221,7 @@ public class ExternalPooledConnectionFactoryService implements Service<Void> {
             String jgroupChannelName,
             List<PooledConnectionFactoryConfigProperties> adapterParams,
             BindInfo bindInfo,
+            List<String> jndiAliases,
             String txSupport,
             int minPoolSize,
             int maxPoolSize,
@@ -231,7 +232,7 @@ public class ExternalPooledConnectionFactoryService implements Service<Void> {
         ServiceName serviceName = JMSServices.getPooledConnectionFactoryBaseServiceName(JBOSS_MESSAGING_ACTIVEMQ).append(name);
         ExternalPooledConnectionFactoryService service = new ExternalPooledConnectionFactoryService(name,
                 connectors, groupConfiguration, jgroupClusterName, jgroupChannelName, adapterParams,
-                bindInfo, txSupport, minPoolSize, maxPoolSize, managedConnectionPoolClassName, enlistmentTrace);
+                bindInfo, jndiAliases, txSupport, minPoolSize, maxPoolSize, managedConnectionPoolClassName, enlistmentTrace);
 
         installService0(context, serviceName, service, groupConfiguration, connectorsSocketBindings, model);
         return service;
@@ -418,7 +419,8 @@ public class ExternalPooledConnectionFactoryService implements Service<Void> {
             ResourceAdapterActivatorService activator = new ResourceAdapterActivatorService(cmd, activation,
                     ExternalPooledConnectionFactoryService.class.getClassLoader(), name);
             activator.setBindInfo(bindInfo);
-            activator.setCreateBinderService(createBinderService);
+            activator.setCreateBinderService(true);
+            activator.addJndiAliases(jndiAliases);
 
             ServiceController<ResourceAdapterDeployment> controller
                     = Services.addServerExecutorDependency(
@@ -436,12 +438,6 @@ public class ExternalPooledConnectionFactoryService implements Service<Void> {
                                     activator.getTxIntegrationInjector())
                             .addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE,
                                     JcaSubsystemConfiguration.class, activator.getConfigInjector())
-                            // No legacy security services needed as this activation's sole connection definition
-                            // does not configure a legacy security domain
-                            /*
-                    .addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class,
-                            activator.getSubjectFactoryInjector())
-                             */
                             .addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class,
                                     activator.getCcmInjector()).addDependency(NamingService.SERVICE_NAME)
                             .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER)

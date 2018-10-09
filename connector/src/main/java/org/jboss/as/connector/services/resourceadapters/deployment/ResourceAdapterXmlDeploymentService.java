@@ -29,6 +29,8 @@ import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Collection;
+import java.util.Collections;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeployment;
@@ -146,6 +148,11 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
     @Override
     public void stop(StopContext context) {
         stopAsync(context, raName, deploymentServiceName);
+    }
+
+    @Override
+    public Collection<String> getJndiAliases() {
+        return Collections.emptyList();
     }
 
     public CommonDeployment getRaxmlDeployment() {

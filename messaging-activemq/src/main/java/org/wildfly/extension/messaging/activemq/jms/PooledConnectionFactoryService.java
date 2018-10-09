@@ -174,6 +174,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
     private Map<String, SocketBinding> socketBindings = new HashMap<String, SocketBinding>();
     private InjectedValue<ActiveMQServer> activeMQServer = new InjectedValue<>();
     private BindInfo bindInfo;
+    private List<String> jndiAliases;
     private final boolean pickAnyConnectors;
     private String txSupport;
     private int minPoolSize;
@@ -187,7 +188,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
     private InjectedValue<ExceptionSupplier<CredentialSource, Exception>> credentialSourceSupplier = new InjectedValue<>();
 
 
-    public PooledConnectionFactoryService(String name, List<String> connectors, String discoveryGroupName, String serverName, String jgroupsChannelName, List<PooledConnectionFactoryConfigProperties> adapterParams, BindInfo bindInfo, String txSupport, int minPoolSize, int maxPoolSize, String managedConnectionPoolClassName, Boolean enlistmentTrace) {
+    public PooledConnectionFactoryService(String name, List<String> connectors, String discoveryGroupName, String serverName, String jgroupsChannelName, List<PooledConnectionFactoryConfigProperties> adapterParams, BindInfo bindInfo, List<String> jndiAliases, String txSupport, int minPoolSize, int maxPoolSize, String managedConnectionPoolClassName, Boolean enlistmentTrace) {
         this.name = name;
         this.connectors = connectors;
         this.discoveryGroupName = discoveryGroupName;
@@ -195,6 +196,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
         this.jgroupsChannelName = jgroupsChannelName;
         this.adapterParams = adapterParams;
         this.bindInfo = bindInfo;
+        this.jndiAliases = new ArrayList<>(jndiAliases);
         createBinderService = true;
         this.txSupport = txSupport;
         this.minPoolSize = minPoolSize;
@@ -212,6 +214,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
         this.jgroupsChannelName = jgroupsChannelName;
         this.adapterParams = adapterParams;
         this.bindInfo = bindInfo;
+        this.jndiAliases = Collections.emptyList();
         this.createBinderService = false;
         this.txSupport = txSupport;
         this.minPoolSize = minPoolSize;
@@ -263,6 +266,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
                                       String jgroupsChannelName,
                                       List<PooledConnectionFactoryConfigProperties> adapterParams,
                                       BindInfo bindInfo,
+                                      List<String> jndiAliases,
                                       String txSupport,
                                       int minPoolSize,
                                       int maxPoolSize,
@@ -274,7 +278,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
         ServiceName serviceName = JMSServices.getPooledConnectionFactoryBaseServiceName(serverServiceName).append(name);
         PooledConnectionFactoryService service = new PooledConnectionFactoryService(name,
                 connectors, discoveryGroupName, serverName, jgroupsChannelName, adapterParams,
-                bindInfo, txSupport, minPoolSize, maxPoolSize, managedConnectionPoolClassName, enlistmentTrace);
+                bindInfo, jndiAliases, txSupport, minPoolSize, maxPoolSize, managedConnectionPoolClassName, enlistmentTrace);
 
         installService0(context, serverServiceName, serviceName, service, model);
         return service;
@@ -449,6 +453,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
                     PooledConnectionFactoryService.class.getClassLoader(), name);
             activator.setBindInfo(bindInfo);
             activator.setCreateBinderService(createBinderService);
+            activator.addJndiAliases(jndiAliases);
 
             ServiceController<ResourceAdapterDeployment> controller =
                     Services.addServerExecutorDependency(

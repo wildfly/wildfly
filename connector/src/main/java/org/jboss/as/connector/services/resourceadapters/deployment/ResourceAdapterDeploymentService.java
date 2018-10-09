@@ -26,6 +26,8 @@ import static org.jboss.as.connector.logging.ConnectorLogger.DEPLOYMENT_CONNECTO
 
 import java.io.File;
 import java.net.URL;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -186,6 +188,11 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
         } finally {
             context.asynchronous();
         }
+    }
+
+    @Override
+    public Collection<String> getJndiAliases() {
+        return Collections.emptyList();
     }
 
     /**
