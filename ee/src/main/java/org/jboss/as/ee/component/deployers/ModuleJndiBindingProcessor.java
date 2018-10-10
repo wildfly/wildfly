@@ -147,36 +147,6 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
             }
             processClassConfigurations(phaseContext, applicationClasses, moduleConfiguration, deploymentDescriptorBindings, handledClasses, componentConfiguration.getComponentDescription().getNamingMode(), classConfigurations, componentConfiguration.getComponentName(), dependencies);
         }
-        //now we need to process resource bindings that are not part of a component
-
-        if (!MetadataCompleteMarker.isMetadataComplete(phaseContext.getDeploymentUnit())) {
-            for (EEModuleClassDescription config : eeModuleDescription.getClassDescriptions()) {
-                if (handledClasses.contains(config.getClassName())) {
-                    continue;
-                }
-                if(config.isInvalid()) {
-                    continue;
-                }
-                final Set<BindingConfiguration> classLevelBindings = new HashSet<>(config.getBindingConfigurations());
-                for (BindingConfiguration binding : classLevelBindings) {
-                    final String bindingName = binding.getName();
-                    final boolean compBinding = bindingName.startsWith("java:comp") || !bindingName.startsWith("java:");
-                    if(compBinding && !DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
-                        //we don't have a comp namespace
-                        continue;
-                    }
-                    final ContextNames.BindInfo bindInfo = ContextNames.bindInfoForEnvEntry(moduleConfiguration.getApplicationName(), moduleConfiguration.getModuleName(), null, false, binding.getName());
-
-
-                    if (deploymentDescriptorBindings.containsKey(bindInfo.getBinderServiceName())) {
-                        continue; //this has been overridden by a DD binding
-                    }
-                    ROOT_LOGGER.tracef("Binding %s using service %s", binding.getName(), bindInfo.getBinderServiceName());
-                    addJndiBinding(moduleConfiguration, binding, phaseContext, dependencies);
-                }
-            }
-        }
-
     }
 
     private void processClassConfigurations(final DeploymentPhaseContext phaseContext, final EEApplicationClasses applicationClasses, final EEModuleConfiguration moduleConfiguration, final Map<ServiceName, BindingConfiguration> deploymentDescriptorBindings, final Set<String> handledClasses, final ComponentNamingMode namingMode, final Set<Class<?>> classes, final String componentName, final List<ServiceName> dependencies) throws DeploymentUnitProcessingException {
