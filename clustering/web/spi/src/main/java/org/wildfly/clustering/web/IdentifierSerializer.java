@@ -58,13 +58,9 @@ public enum IdentifierSerializer implements Serializer<String> {
     BASE64() {
         @Override
         public void write(DataOutput output, String id) throws IOException {
-            try {
-                byte[] bytes = Base64.getUrlDecoder().decode(id);
-                output.writeByte(bytes.length);
-                output.write(bytes);
-            } catch (IllegalArgumentException e) {
-                throw new IOException(e);
-            }
+            byte[] bytes = Base64.getUrlDecoder().decode(id);
+            output.writeByte(bytes.length);
+            output.write(bytes);
         }
 
         @Override
@@ -80,13 +76,9 @@ public enum IdentifierSerializer implements Serializer<String> {
     HEX() {
         @Override
         public void write(DataOutput output, String id) throws IOException {
-            try {
-                byte[] bytes = DatatypeConverter.parseHexBinary(id);
-                output.writeByte(bytes.length);
-                output.write(bytes);
-            } catch (IllegalArgumentException e) {
-                throw new IOException(e);
-            }
+            byte[] bytes = DatatypeConverter.parseHexBinary(id);
+            output.writeByte(bytes.length);
+            output.write(bytes);
         }
 
         @Override
@@ -107,7 +99,7 @@ public enum IdentifierSerializer implements Serializer<String> {
         try {
             this.write(NULL_SINK, id);
             return true;
-        } catch (IOException e) {
+        } catch (IOException | IllegalArgumentException e) {
             return false;
         }
     }
