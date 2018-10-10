@@ -31,5 +31,6 @@
         <!-- required to load ActiveMQ protocol SPI -->
         <module name="org.apache.activemq.artemis"/>
         <module name="org.jboss.logging"/>
+        <module name="io.netty"/>
     </dependencies>
 </module>

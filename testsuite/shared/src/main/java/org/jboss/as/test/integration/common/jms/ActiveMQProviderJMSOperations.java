@@ -39,6 +39,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.test.integration.common.jms.JMSOperationsProvider.execute;
 
+
 /**
  * An implementation of JMSOperations for Apache ActiveMQ 6.
  *
@@ -280,14 +281,18 @@ public class ActiveMQProviderJMSOperations implements JMSOperations {
     }
 
     @Override
-    public void addHttpConnector(String connectorName, String socketBinding, String endpoint) {
-        ModelNode address = getServerAddress()
-                .add("http-connector", connectorName);
+    public void addHttpConnector(String connectorName, String socketBinding, String endpoint, Map<String, String> parameters) {
+        ModelNode address = getServerAddress().add("http-connector", connectorName);
 
         ModelNode attributes = new ModelNode();
         attributes.get("socket-binding").set(socketBinding);
         attributes.get("endpoint").set(endpoint);
-
+        if (parameters != null && parameters.size() > 0) {
+            ModelNode params = attributes.get("params").setEmptyList();
+            for (Map.Entry<String, String> param : parameters.entrySet()) {
+                params.add(param.getKey(), param.getValue());
+            }
+        }
         executeOperation(address, ADD, attributes);
     }
 
