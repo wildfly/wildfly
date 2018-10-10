@@ -12,7 +12,7 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.ejb3.subsystem.deployment.EJBComponentType;
+import org.jboss.as.test.integration.ejb.remote.common.EJBManagementUtil;
 import org.jboss.as.test.integration.management.deploy.runtime.ejb.singleton.timer.PointLessBean;
 import org.jboss.as.test.integration.management.deploy.runtime.ejb.singleton.timer.PointlessInterface;
 import org.jboss.as.test.integration.management.util.ModelUtil;
@@ -34,7 +34,7 @@ import org.junit.runner.RunWith;
 public class TimerEJBRuntimeNameTestCase extends AbstractRuntimeTestCase {
 
     private static final Logger log = Logger.getLogger(TimerEJBRuntimeNameTestCase.class);
-    private static final String EJB_TYPE = EJBComponentType.SINGLETON.getResourceType();
+    private static final String EJB_TYPE = EJBManagementUtil.SINGLETON;
     private static final Package BEAN_PACKAGE = PointLessBean.class.getPackage();
     private static final Class BEAN_CLASS = PointlessInterface.class;
     private static final String BEAN_NAME = "POINT";

@@ -36,8 +36,6 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.connector.subsystems.datasources.DataSourcesExtension;
-import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.access.management.AccessConstraintKey;
 import org.jboss.as.controller.access.management.ApplicationTypeAccessConstraintDefinition;
@@ -45,7 +43,6 @@ import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraint
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.jdr.JdrReportExtension;
 import org.jboss.as.test.integration.management.rbac.Outcome;
 import org.jboss.as.test.integration.management.rbac.RbacUtil;
 import org.jboss.dmr.ModelNode;
@@ -55,8 +52,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.wildfly.extension.messaging.activemq.MessagingExtension;
-import org.wildfly.extension.undertow.UndertowExtension;
 
 /**
  * Test of the access constraint utilization resources.
@@ -102,23 +97,23 @@ public class AccessConstraintUtilizationTestCase extends AbstractRbacTestCase {
         new ExpectedDef(SensitiveTargetAccessConstraintDefinition.SNAPSHOTS.getKey(), false, false, true),
         new ExpectedDef(SensitiveTargetAccessConstraintDefinition.SYSTEM_PROPERTY.getKey(), true, true, true),
         // A few subsystem ones
-        new ExpectedDef(getSensKey(UndertowExtension.SUBSYSTEM_NAME, "web-access-log"), true, false, false),
-        new ExpectedDef(getSensKey(DataSourcesExtension.SUBSYSTEM_NAME, "data-source-security"), false, true, false),
-        new ExpectedDef(getSensKey(ResourceAdaptersExtension.SUBSYSTEM_NAME, "resource-adapter-security"), false, true, false),
-        new ExpectedDef(getSensKey(JdrReportExtension.SUBSYSTEM_NAME, "jdr"), false, false, true),
-        new ExpectedDef(getSensKey(MessagingExtension.SUBSYSTEM_NAME, "messaging-management"), false, true, false),
+        new ExpectedDef(getSensKey("undertow", "web-access-log"), true, false, false),
+        new ExpectedDef(getSensKey("datasources", "data-source-security"), false, true, false),
+        new ExpectedDef(getSensKey("resource-adapters", "resource-adapter-security"), false, true, false),
+        new ExpectedDef(getSensKey("jdr", "jdr"), false, false, true),
+        new ExpectedDef(getSensKey("messaging-activemq", "messaging-management"), false, true, false),
         /* N/A on standalone
         new ExpectedDef(SensitiveTargetAccessConstraintDefinition.DOMAIN_CONTROLLER, false, true, true),
         new ExpectedDef(SensitiveTargetAccessConstraintDefinition.DOMAIN_NAMES, false, true, false),
         new ExpectedDef(SensitiveTargetAccessConstraintDefinition.JVM, false, true, true),
         */
         new ExpectedDef(ApplicationTypeAccessConstraintDefinition.DEPLOYMENT.getKey(), true, false, true),
-        new ExpectedDef(getAppKey(DataSourcesExtension.SUBSYSTEM_NAME, "data-source"), true, false, false),
-        new ExpectedDef(getAppKey(DataSourcesExtension.SUBSYSTEM_NAME, "xa-data-source"), true, false, false),
-        new ExpectedDef(getAppKey(DataSourcesExtension.SUBSYSTEM_NAME, "jdbc-driver"), true, false, false),
-        new ExpectedDef(getAppKey(MessagingExtension.SUBSYSTEM_NAME, "queue"), true, false, false),
-        new ExpectedDef(getAppKey(MessagingExtension.SUBSYSTEM_NAME, "jms-queue"), true, false, false),
-        new ExpectedDef(getAppKey(MessagingExtension.SUBSYSTEM_NAME, "jms-topic"), true, false, false),
+        new ExpectedDef(getAppKey("datasources", "data-source"), true, false, false),
+        new ExpectedDef(getAppKey("datasources", "xa-data-source"), true, false, false),
+        new ExpectedDef(getAppKey("datasources", "jdbc-driver"), true, false, false),
+        new ExpectedDef(getAppKey("messaging-activemq", "queue"), true, false, false),
+        new ExpectedDef(getAppKey("messaging-activemq", "jms-queue"), true, false, false),
+        new ExpectedDef(getAppKey("messaging-activemq", "jms-topic"), true, false, false),
         // Agroal
         new ExpectedDef(getAppKey("datasources-agroal", "datasource"), true, false, false),
         new ExpectedDef(getAppKey("datasources-agroal", "xa-datasource"), true, false, false),

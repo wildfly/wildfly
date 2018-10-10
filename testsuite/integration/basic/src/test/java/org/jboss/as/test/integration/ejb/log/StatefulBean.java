@@ -21,11 +21,11 @@
  */
 package org.jboss.as.test.integration.ejb.log;
 
-import org.apache.log4j.Logger;
-
 import javax.ejb.CreateException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
+
+import org.jboss.logging.Logger;
 
 public class StatefulBean implements SessionBean, StatefulInterface {
 

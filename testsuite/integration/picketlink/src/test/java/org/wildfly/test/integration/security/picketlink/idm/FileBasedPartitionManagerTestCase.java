@@ -35,13 +35,11 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.picketlink.idm.PartitionManager;
-import org.wildfly.extension.picketlink.common.model.ModelElement;
 import org.wildfly.test.integration.security.picketlink.idm.util.AbstractIdentityManagementServerSetupTask;
 
 import javax.annotation.Resource;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.wildfly.extension.picketlink.common.model.ModelElement.FILE_STORE;
 
 /**
  * @author Pedro Igor
@@ -93,11 +91,11 @@ public class FileBasedPartitionManagerTestCase extends AbstractBasicIdentityMana
         }
 
         private ModelNode createIdentityStoreAddOperation(ModelNode identityConfigurationModelNode) {
-            PathAddress pathAddress = PathAddress.pathAddress(identityConfigurationModelNode.get(OP_ADDR)).append(FILE_STORE.getName(), FILE_STORE.getName());
+            PathAddress pathAddress = PathAddress.pathAddress(identityConfigurationModelNode.get(OP_ADDR)).append("file-store", "file-store");
             ModelNode fileStoreAddOperation = Util.createAddOperation(pathAddress);
 
-            fileStoreAddOperation.get(ModelElement.COMMON_RELATIVE_TO.getName()).set("jboss.server.data.dir");
-            fileStoreAddOperation.get(ModelElement.FILE_STORE_WORKING_DIR.getName()).set("picketlink-idm-dir");
+            fileStoreAddOperation.get("relative-to").set("jboss.server.data.dir");
+            fileStoreAddOperation.get("working-dir").set("picketlink-idm-dir");
 
             return fileStoreAddOperation;
         }

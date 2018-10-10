@@ -25,7 +25,6 @@ import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -34,11 +33,12 @@ import org.jboss.dmr.ModelNode;
  * @author Flavia Rainone
  */
 public class GracefulTxnShutdownSetup implements ServerSetupTask {
+    private static final String ENABLE_GRACEFUL_TXN_SHUTDOWN = "enable-graceful-txn-shutdown";
 
     public void setup(ManagementClient managementClient, String containerId) throws Exception {
         final ModelNode operation = Util
                 .createOperation(WRITE_ATTRIBUTE_OPERATION, PathAddress.pathAddress(SUBSYSTEM, "ejb3"));
-        operation.get(NAME).set(EJB3SubsystemRootResourceDefinition.ENABLE_GRACEFUL_TXN_SHUTDOWN.getName());
+        operation.get(NAME).set(ENABLE_GRACEFUL_TXN_SHUTDOWN);
         operation.get(VALUE).set(true);
         managementClient.getControllerClient().execute(operation);
     }
@@ -46,7 +46,7 @@ public class GracefulTxnShutdownSetup implements ServerSetupTask {
     public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
         final ModelNode operation = Util
                 .createOperation(UNDEFINE_ATTRIBUTE_OPERATION, PathAddress.pathAddress(SUBSYSTEM, "ejb3"));
-        operation.get(NAME).set(EJB3SubsystemRootResourceDefinition.ENABLE_GRACEFUL_TXN_SHUTDOWN.getName());
+        operation.get(NAME).set(ENABLE_GRACEFUL_TXN_SHUTDOWN);
         managementClient.getControllerClient().execute(operation);
     }
 }

@@ -27,26 +27,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
-import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.COMPONENT_CLASS_NAME;
-import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.DECLARED_ROLES;
-import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.POOL_AVAILABLE_COUNT;
-import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.POOL_CREATE_COUNT;
-import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.POOL_CURRENT_SIZE;
-import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.POOL_MAX_SIZE;
-import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.POOL_NAME;
-import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.POOL_REMOVE_COUNT;
-import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.RUN_AS_ROLE;
-import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.SECURITY_DOMAIN;
-import static org.jboss.as.ejb3.subsystem.deployment.TimerAttributeDefinition.CALENDAR_TIMER;
-import static org.jboss.as.ejb3.subsystem.deployment.TimerAttributeDefinition.DAY_OF_MONTH;
-import static org.jboss.as.ejb3.subsystem.deployment.TimerAttributeDefinition.DAY_OF_WEEK;
-import static org.jboss.as.ejb3.subsystem.deployment.TimerAttributeDefinition.END;
-import static org.jboss.as.ejb3.subsystem.deployment.TimerAttributeDefinition.HOUR;
-import static org.jboss.as.ejb3.subsystem.deployment.TimerAttributeDefinition.MINUTE;
-import static org.jboss.as.ejb3.subsystem.deployment.TimerAttributeDefinition.NEXT_TIMEOUT;
-import static org.jboss.as.ejb3.subsystem.deployment.TimerAttributeDefinition.TIMEZONE;
-import static org.jboss.as.ejb3.subsystem.deployment.TimerAttributeDefinition.TIME_REMAINING;
-import static org.jboss.as.ejb3.subsystem.deployment.TimerAttributeDefinition.YEAR;
+import static org.jboss.as.test.integration.ejb.remote.common.EJBManagementUtil.MESSAGE_DRIVEN;
+import static org.jboss.as.test.integration.ejb.remote.common.EJBManagementUtil.SINGLETON;
+import static org.jboss.as.test.integration.ejb.remote.common.EJBManagementUtil.STATEFUL;
+import static org.jboss.as.test.integration.ejb.remote.common.EJBManagementUtil.STATELESS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -56,13 +40,10 @@ import java.util.List;
 
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.ejb3.subsystem.deployment.EJBComponentType;
-import org.jboss.as.ejb3.subsystem.deployment.TimerAttributeDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.shrinkwrap.api.Archive;
@@ -77,15 +58,22 @@ import org.junit.Test;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class EjbJarRuntimeResourceTestBase {
+    protected static final String SECURITY_DOMAIN = "security-domain";
 
     protected static final String MODULE_NAME = "ejb-management";
     protected static final String JAR_NAME = MODULE_NAME + ".jar";
 
-    private static final AttributeDefinition[] POOL_ATTRIBUTES =
-            new AttributeDefinition[]{POOL_AVAILABLE_COUNT, POOL_CREATE_COUNT, POOL_CURRENT_SIZE, POOL_NAME, POOL_MAX_SIZE, POOL_REMOVE_COUNT};
+    private static final String COMPONENT_CLASS_NAME = "component-class-name";
+    private static final String DECLARED_ROLES = "declared-roles";
+    private static final String POOL_NAME = "pool-name";
+    private static final String RUN_AS_ROLE = "run-as-role";
+    private static final String TIMER_ATTRIBUTE = "timers";
 
-    private static final String[] TIMER_ATTRIBUTES = { TIME_REMAINING, NEXT_TIMEOUT, CALENDAR_TIMER};
-    private static final String[] SCHEDULE_ATTRIBUTES = { DAY_OF_MONTH, DAY_OF_WEEK, HOUR, MINUTE, YEAR, TIMEZONE, TimerAttributeDefinition.START, END };
+    private static final String[] POOL_ATTRIBUTES =
+            {"pool-available-count", "pool-create-count", "pool-current-size", POOL_NAME, "pool-max-size", "pool-remove-count"};
+
+    private static final String[] TIMER_ATTRIBUTES = { "time-remaining", "next-timeout", "calendar-timer"};
+    private static final String[] SCHEDULE_ATTRIBUTES = { "day-of-month", "day-of-week", "hour", "minute", "year", "timezone", "start", "end" };
 
     @ContainerResource
     private ManagementClient managementClient;
@@ -105,104 +93,104 @@ public class EjbJarRuntimeResourceTestBase {
 
     @Test
     public void testMDB() throws Exception {
-        testComponent(EJBComponentType.MESSAGE_DRIVEN, ManagedMDB.class.getSimpleName(), true);
+        testComponent(MESSAGE_DRIVEN, ManagedMDB.class.getSimpleName(), true);
     }
 
     @Test
     public void testNoTimerMDB() throws Exception {
-        testComponent(EJBComponentType.MESSAGE_DRIVEN, NoTimerMDB.class.getSimpleName(), false);
+        testComponent(MESSAGE_DRIVEN, NoTimerMDB.class.getSimpleName(), false);
     }
 
     @Test
     public void testSLSB() throws Exception {
-        testComponent(EJBComponentType.STATELESS, ManagedStatelessBean.class.getSimpleName(), true);
+        testComponent(STATELESS, ManagedStatelessBean.class.getSimpleName(), true);
     }
 
     @Test
     public void testNoTimerSLSB() throws Exception {
-        testComponent(EJBComponentType.STATELESS, NoTimerStatelessBean.class.getSimpleName(), false);
+        testComponent(STATELESS, NoTimerStatelessBean.class.getSimpleName(), false);
     }
 
     @Test
     public void testSingleton() throws Exception {
-        testComponent(EJBComponentType.SINGLETON, ManagedSingletonBean.class.getSimpleName(), true);
+        testComponent(SINGLETON, ManagedSingletonBean.class.getSimpleName(), true);
     }
 
     @Test
     public void testNoTimerSingleton() throws Exception {
-        testComponent(EJBComponentType.SINGLETON, NoTimerSingletonBean.class.getSimpleName(), false);
+        testComponent(SINGLETON, NoTimerSingletonBean.class.getSimpleName(), false);
     }
 
     @Test
     public void testSFSB() throws Exception {
-        testComponent(EJBComponentType.STATEFUL, ManagedStatefulBean.class.getSimpleName(), false);
+        testComponent(STATEFUL, ManagedStatefulBean.class.getSimpleName(), false);
     }
 
     /*
     TODO implement a test of entity beans
     @Test
     public void testEntityBean() throws Exception {
-        testComponent(EJBComponentType.ENTITY, ???.class.getSimpleName());
+        testComponent(ENTITY, ???.class.getSimpleName());
     }
     */
 
-    private void testComponent(EJBComponentType type, String name, boolean expectTimer) throws Exception {
+    private void testComponent(String type, String name, boolean expectTimer) throws Exception {
 
         ModelNode address = getComponentAddress(type, name).toModelNode();
         address.protect();
         ModelNode resourceDescription = executeOperation(managementClient, ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION, address);
         ModelNode resource = executeOperation(managementClient, ModelDescriptionConstants.READ_RESOURCE_OPERATION, address);
 
-        assertTrue(resourceDescription.get(ATTRIBUTES, COMPONENT_CLASS_NAME.getName()).isDefined());
-        assertEquals(ModelType.STRING, resourceDescription.get(ATTRIBUTES, COMPONENT_CLASS_NAME.getName(), DESCRIPTION).getType());
-        assertEquals(ModelType.STRING, resourceDescription.get(ATTRIBUTES, COMPONENT_CLASS_NAME.getName(), TYPE).asType());
+        assertTrue(resourceDescription.get(ATTRIBUTES, COMPONENT_CLASS_NAME).isDefined());
+        assertEquals(ModelType.STRING, resourceDescription.get(ATTRIBUTES, COMPONENT_CLASS_NAME, DESCRIPTION).getType());
+        assertEquals(ModelType.STRING, resourceDescription.get(ATTRIBUTES, COMPONENT_CLASS_NAME, TYPE).asType());
 
-        assertTrue(resource.get(COMPONENT_CLASS_NAME.getName()).isDefined());
+        assertTrue(resource.get(COMPONENT_CLASS_NAME).isDefined());
 
         validateSecurity(address, resourceDescription, resource);
 
-        if (type.hasPool()) {
+        if (!STATEFUL.equals(type) && !SINGLETON.equals(type)) {
             validatePool(address, resourceDescription, resource);
         } else {
-            for (AttributeDefinition attr : POOL_ATTRIBUTES) {
-                assertFalse(resourceDescription.get(ModelDescriptionConstants.ATTRIBUTES).has(attr.getName()));
-                assertFalse(resource.has(attr.getName()));
+            for (String attr : POOL_ATTRIBUTES) {
+                assertFalse(resourceDescription.get(ModelDescriptionConstants.ATTRIBUTES).has(attr));
+                assertFalse(resource.has(attr));
             }
         }
 
-        if (type.hasTimer()) {
+        if (STATELESS.equals(type) || SINGLETON.equals(type) || MESSAGE_DRIVEN.equals(type)) {
             validateTimer(address, resourceDescription, resource, expectTimer);
         } else {
-            assertFalse(resourceDescription.get(ModelDescriptionConstants.ATTRIBUTES).has(TimerAttributeDefinition.INSTANCE.getName()));
-            assertFalse(resource.has(TimerAttributeDefinition.INSTANCE.getName()));
+            assertFalse(resourceDescription.get(ModelDescriptionConstants.ATTRIBUTES).has(TIMER_ATTRIBUTE));
+            assertFalse(resource.has(TIMER_ATTRIBUTE));
         }
 
     }
 
     private void validateSecurity(ModelNode address, ModelNode resourceDescription, ModelNode resource) {
 
-        assertTrue(resourceDescription.get(ATTRIBUTES, SECURITY_DOMAIN.getName()).isDefined());
-        assertEquals(ModelType.STRING, resourceDescription.get(ATTRIBUTES, SECURITY_DOMAIN.getName(), DESCRIPTION).getType());
-        assertEquals(ModelType.STRING, resourceDescription.get(ATTRIBUTES, SECURITY_DOMAIN.getName(), TYPE).asType());
+        assertTrue(resourceDescription.get(ATTRIBUTES, SECURITY_DOMAIN).isDefined());
+        assertEquals(ModelType.STRING, resourceDescription.get(ATTRIBUTES, SECURITY_DOMAIN, DESCRIPTION).getType());
+        assertEquals(ModelType.STRING, resourceDescription.get(ATTRIBUTES, SECURITY_DOMAIN, TYPE).asType());
 
-        assertTrue(resource.get(SECURITY_DOMAIN.getName()).isDefined());
-        assertEquals("other", resource.get(SECURITY_DOMAIN.getName()).asString());
+        assertTrue(resource.get(SECURITY_DOMAIN).isDefined());
+        assertEquals("other", resource.get(SECURITY_DOMAIN).asString());
 
-        assertTrue(resourceDescription.get(ATTRIBUTES, RUN_AS_ROLE.getName()).isDefined());
-        assertEquals(ModelType.STRING, resourceDescription.get(ATTRIBUTES, RUN_AS_ROLE.getName(), DESCRIPTION).getType());
-        assertEquals(ModelType.STRING, resourceDescription.get(ATTRIBUTES, RUN_AS_ROLE.getName(), TYPE).asType());
+        assertTrue(resourceDescription.get(ATTRIBUTES, RUN_AS_ROLE).isDefined());
+        assertEquals(ModelType.STRING, resourceDescription.get(ATTRIBUTES, RUN_AS_ROLE, DESCRIPTION).getType());
+        assertEquals(ModelType.STRING, resourceDescription.get(ATTRIBUTES, RUN_AS_ROLE, TYPE).asType());
 
-        assertTrue(resource.get(RUN_AS_ROLE.getName()).isDefined());
-        assertEquals("Role3", resource.get(RUN_AS_ROLE.getName()).asString());
+        assertTrue(resource.get(RUN_AS_ROLE).isDefined());
+        assertEquals("Role3", resource.get(RUN_AS_ROLE).asString());
 
-        assertTrue(resourceDescription.get(ATTRIBUTES, DECLARED_ROLES.getName()).isDefined());
-        assertEquals(ModelType.STRING, resourceDescription.get(ATTRIBUTES, DECLARED_ROLES.getName(), DESCRIPTION).getType());
-        assertEquals(ModelType.LIST, resourceDescription.get(ATTRIBUTES, DECLARED_ROLES.getName(), TYPE).asType());
-        assertEquals(ModelType.STRING, resourceDescription.get(ATTRIBUTES, DECLARED_ROLES.getName(), VALUE_TYPE).asType());
+        assertTrue(resourceDescription.get(ATTRIBUTES, DECLARED_ROLES).isDefined());
+        assertEquals(ModelType.STRING, resourceDescription.get(ATTRIBUTES, DECLARED_ROLES, DESCRIPTION).getType());
+        assertEquals(ModelType.LIST, resourceDescription.get(ATTRIBUTES, DECLARED_ROLES, TYPE).asType());
+        assertEquals(ModelType.STRING, resourceDescription.get(ATTRIBUTES, DECLARED_ROLES, VALUE_TYPE).asType());
 
-        assertTrue(resource.get(DECLARED_ROLES.getName()).isDefined());
-        assertEquals(ModelType.LIST, resource.get(DECLARED_ROLES.getName()).getType());
-        final List<ModelNode> roles =  resource.get(DECLARED_ROLES.getName()).asList();
+        assertTrue(resource.get(DECLARED_ROLES).isDefined());
+        assertEquals(ModelType.LIST, resource.get(DECLARED_ROLES).getType());
+        final List<ModelNode> roles =  resource.get(DECLARED_ROLES).asList();
         for (int i = 1; i < 4; i++) {
             assertTrue(roles.contains(new ModelNode().set("Role" + i)));
         }
@@ -212,26 +200,25 @@ public class EjbJarRuntimeResourceTestBase {
 
     private void validatePool(ModelNode address, ModelNode resourceDescription, ModelNode resource) {
 
-        for (AttributeDefinition attr : POOL_ATTRIBUTES) {
-            final String name = attr.getName();
-            final ModelType expectedType = attr.getType();
-            assertTrue(resourceDescription.get(ATTRIBUTES, name).isDefined());
-            assertEquals(ModelType.STRING, resourceDescription.get(ATTRIBUTES, name, DESCRIPTION).getType());
-            assertEquals(expectedType, resourceDescription.get(ATTRIBUTES, name, TYPE).asType());
+        for (String attr : POOL_ATTRIBUTES) {
+            final ModelType expectedType = POOL_NAME.equals(attr) ? ModelType.STRING : ModelType.INT;
+            assertTrue(resourceDescription.get(ATTRIBUTES, attr).isDefined());
+            assertEquals(ModelType.STRING, resourceDescription.get(ATTRIBUTES, attr, DESCRIPTION).getType());
+            assertEquals(expectedType, resourceDescription.get(ATTRIBUTES, attr, TYPE).asType());
 
-            assertTrue(name + " is not defined", resource.get(name).isDefined());
-            assertEquals(expectedType, resource.get(name).getType());
+            assertTrue(attr + " is not defined", resource.get(attr).isDefined());
+            assertEquals(expectedType, resource.get(attr).getType());
         }
     }
 
     private void validateTimer(ModelNode address, ModelNode resourceDescription, ModelNode resource, boolean expectTimer) {
 
-        assertTrue(resourceDescription.get(ATTRIBUTES, TimerAttributeDefinition.INSTANCE.getName()).isDefined());
-        assertEquals(ModelType.STRING, resourceDescription.get(ATTRIBUTES, TimerAttributeDefinition.INSTANCE.getName(), DESCRIPTION).getType());
-        assertEquals(ModelType.LIST, resourceDescription.get(ATTRIBUTES, TimerAttributeDefinition.INSTANCE.getName(), TYPE).asType());
-        assertEquals(ModelType.OBJECT, resourceDescription.get(ATTRIBUTES, TimerAttributeDefinition.INSTANCE.getName(), VALUE_TYPE).getType());
+        assertTrue(resourceDescription.get(ATTRIBUTES, TIMER_ATTRIBUTE).isDefined());
+        assertEquals(ModelType.STRING, resourceDescription.get(ATTRIBUTES, TIMER_ATTRIBUTE, DESCRIPTION).getType());
+        assertEquals(ModelType.LIST, resourceDescription.get(ATTRIBUTES, TIMER_ATTRIBUTE, TYPE).asType());
+        assertEquals(ModelType.OBJECT, resourceDescription.get(ATTRIBUTES, TIMER_ATTRIBUTE, VALUE_TYPE).getType());
 
-        final ModelNode timerAttr = resource.get(TimerAttributeDefinition.INSTANCE.getName());
+        final ModelNode timerAttr = resource.get(TIMER_ATTRIBUTE);
         assertTrue(timerAttr.isDefined());
         final List<ModelNode> timers = timerAttr.asList();
         if (!expectTimer) {
@@ -276,11 +263,11 @@ public class EjbJarRuntimeResourceTestBase {
         return execute(managementClient, op);
     }
 
-    static PathAddress componentAddress(final PathAddress baseAddress, final EJBComponentType type, final String name) {
-        return baseAddress.append(PathElement.pathElement(SUBSYSTEM, "ejb3")).append(PathElement.pathElement(type.getResourceType(), name));
+    static PathAddress componentAddress(final PathAddress baseAddress, final String type, final String name) {
+        return baseAddress.append(PathElement.pathElement(SUBSYSTEM, "ejb3")).append(PathElement.pathElement(type, name));
     }
 
-    private PathAddress getComponentAddress(EJBComponentType type, String name) {
+    private PathAddress getComponentAddress(String type, String name) {
         return componentAddress(this.baseAddress, type, name);
     }
 }

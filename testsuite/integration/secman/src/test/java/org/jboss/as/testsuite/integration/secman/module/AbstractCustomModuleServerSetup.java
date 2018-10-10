@@ -26,10 +26,10 @@ import java.io.File;
 import java.net.URISyntaxException;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.management.util.CustomCLIExecutor;
+import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 

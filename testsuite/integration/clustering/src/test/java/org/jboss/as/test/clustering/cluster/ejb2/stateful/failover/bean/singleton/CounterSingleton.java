@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 
-import org.apache.log4j.Logger;
+import org.jboss.logging.Logger;
 
 @Singleton
 @Startup

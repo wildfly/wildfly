@@ -28,7 +28,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.jaxrs.JaxrsExtension;
 import org.jboss.as.test.integration.jaxrs.spec.basic.resource.JaxrsAppResource;
 import org.jboss.as.test.integration.jaxrs.spec.basic.resource.JaxrsAppTwo;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
@@ -44,7 +43,6 @@ import org.junit.Assert;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.jaxrs.DeploymentRestResourcesDefintion.REST_RESOURCE_NAME;
 
 /**
  */
@@ -74,8 +72,8 @@ public class JaxrsInitParamMgtApiTestCase  extends ContainerResourceMgmtTestBase
     public void testInitParam() throws IOException, MgmtOperationException {
         ModelNode op =  Util.createOperation(READ_RESOURCE_OPERATION,
             PathAddress.pathAddress(DEPLOYMENT, JaxrsInitParamMgtApiTestCase.class.getSimpleName() + ".war")
-                .append(SUBSYSTEM, JaxrsExtension.SUBSYSTEM_NAME)
-                .append(REST_RESOURCE_NAME, JaxrsAppResource.class.getCanonicalName()));
+                .append(SUBSYSTEM, "jaxrs")
+                .append("rest-resource", JaxrsAppResource.class.getCanonicalName()));
         op.get(ModelDescriptionConstants.INCLUDE_RUNTIME).set(true);
 
         ModelNode result = executeOperation(op);

@@ -23,8 +23,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.isA;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.APPLICATION_SECURITY_DOMAIN;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SECURITY_DOMAIN;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 import java.io.IOException;
@@ -117,7 +115,7 @@ public class WildFlyActivationRaWithWMElytronSecurityDomainWorkManagerElytronEna
 
     static class Ejb3Setup implements ServerSetupTask {
         private static final PathAddress EJB3_SUBSYSTEM_ADDRESS = PathAddress.pathAddress(ModelDescriptionConstants.SUBSYSTEM, "ejb3");
-        private static final PathAddress EJB3_APP_SEC_DOMAIN_ADDRESS = EJB3_SUBSYSTEM_ADDRESS.append(APPLICATION_SECURITY_DOMAIN, WM_EJB3_SECURITY_DOMAIN_NAME);
+        private static final PathAddress EJB3_APP_SEC_DOMAIN_ADDRESS = EJB3_SUBSYSTEM_ADDRESS.append("application-security-domain", WM_EJB3_SECURITY_DOMAIN_NAME);
 
         @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
@@ -133,7 +131,7 @@ public class WildFlyActivationRaWithWMElytronSecurityDomainWorkManagerElytronEna
 
         private void addApplicationSecurityDomain(ModelControllerClient client) throws Exception {
             ModelNode addAppSecDomainOperation = Operations.createAddOperation(EJB3_APP_SEC_DOMAIN_ADDRESS.toModelNode());
-            addAppSecDomainOperation.get(SECURITY_DOMAIN).set(WM_ELYTRON_SECURITY_DOMAIN_NAME);
+            addAppSecDomainOperation.get("security-domain").set(WM_ELYTRON_SECURITY_DOMAIN_NAME);
             ModelNode response = execute(addAppSecDomainOperation, client);
             Assert.assertEquals(response.toString(), SUCCESS, response.get(OUTCOME).asString());
         }

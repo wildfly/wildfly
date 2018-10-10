@@ -27,7 +27,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_DEFAULTS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
-import static org.jboss.as.messaging.AddressSettingDefinition.MESSAGE_COUNTER_HISTORY_DAY_LIMIT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -45,7 +44,6 @@ import org.jboss.dmr.ModelNode;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.wildfly.extension.messaging.activemq.CommonAttributes;
 
 /**
  * @author Emanuel Muckenhuber
@@ -53,6 +51,9 @@ import org.wildfly.extension.messaging.activemq.CommonAttributes;
 @RunWith(Arquillian.class)
 @RunAsClient
 public class AddressSettingsTestCase extends ContainerResourceMgmtTestBase {
+    private static final String ACTIVEMQ_ADDRESS = "activemq-address";
+    private static final String MESSAGE_COUNTER_HISTORY_DAY_LIMIT = "message-counter-history-day-limit";
+    private static final String RESOLVE_ADDRESS_SETTING = "resolve-address-setting";
 
     private ModelNode defaultAddress;
     private ModelNode address;
@@ -108,8 +109,8 @@ public class AddressSettingsTestCase extends ContainerResourceMgmtTestBase {
         // repository of address setting.
         final ModelNode resolve = new ModelNode();
         resolve.get(ModelDescriptionConstants.OP_ADDR).set(jmsOperations.getServerAddress());
-        resolve.get(ModelDescriptionConstants.OP).set(CommonAttributes.RESOLVE_ADDRESS_SETTING);
-        resolve.get(CommonAttributes.ACTIVEMQ_ADDRESS).set("jms.queue.foo");
+        resolve.get(ModelDescriptionConstants.OP).set(RESOLVE_ADDRESS_SETTING);
+        resolve.get(ACTIVEMQ_ADDRESS).set("jms.queue.foo");
         ModelNode result = executeOperation(resolve);
 
         for (String attributeName : attributeNames) {
@@ -131,15 +132,15 @@ public class AddressSettingsTestCase extends ContainerResourceMgmtTestBase {
         readResourceWithoutDefault.get(INCLUDE_DEFAULTS).set(false);
         ModelNode result = executeOperation(readResourceWithoutDefault);
         // the resource has not defined the message-counter-history-day-limit attribute
-        assertFalse(result.hasDefined(MESSAGE_COUNTER_HISTORY_DAY_LIMIT.getName()));
+        assertFalse(result.hasDefined(MESSAGE_COUNTER_HISTORY_DAY_LIMIT));
 
         final ModelNode resolve = new ModelNode();
         resolve.get(ModelDescriptionConstants.OP_ADDR).set(jmsOperations.getServerAddress());
-        resolve.get(ModelDescriptionConstants.OP).set(CommonAttributes.RESOLVE_ADDRESS_SETTING);
-        resolve.get(CommonAttributes.ACTIVEMQ_ADDRESS).set("jms.queue.foo");
+        resolve.get(ModelDescriptionConstants.OP).set(RESOLVE_ADDRESS_SETTING);
+        resolve.get(ACTIVEMQ_ADDRESS).set("jms.queue.foo");
         result = executeOperation(resolve);
         // inherit the message-counter-history-day-limit for the '#' address-setting
-        assertEquals(10, result.get(MESSAGE_COUNTER_HISTORY_DAY_LIMIT.getName()).asInt());
+        assertEquals(10, result.get(MESSAGE_COUNTER_HISTORY_DAY_LIMIT).asInt());
 
         remove(address);
     }

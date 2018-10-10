@@ -31,7 +31,7 @@ import javax.ejb.Timeout;
 import javax.ejb.Timer;
 import javax.ejb.TimerService;
 
-import org.apache.log4j.Logger;
+import org.jboss.logging.Logger;
 
 /**
  * @author Stuart Douglas

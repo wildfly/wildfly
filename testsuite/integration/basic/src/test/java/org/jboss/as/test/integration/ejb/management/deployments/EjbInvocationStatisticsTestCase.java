@@ -40,8 +40,6 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.ejb3.subsystem.EJB3Extension;
-import org.jboss.as.ejb3.subsystem.deployment.EJBComponentType;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -53,6 +51,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.test.integration.ejb.remote.common.EJBManagementUtil.SINGLETON;
+import static org.jboss.as.test.integration.ejb.remote.common.EJBManagementUtil.STATEFUL;
+import static org.jboss.as.test.integration.ejb.remote.common.EJBManagementUtil.STATELESS;
 import static org.jboss.as.test.integration.ejb.management.deployments.EjbJarRuntimeResourceTestBase.MODULE_NAME;
 import static org.jboss.as.test.integration.ejb.management.deployments.EjbJarRuntimeResourceTestBase.componentAddress;
 import static org.jboss.as.test.integration.ejb.management.deployments.EjbJarRuntimeResourceTestBase.execute;
@@ -70,6 +71,8 @@ import static org.junit.Assert.assertTrue;
 @RunAsClient
 @ServerSetup(EjbInvocationStatisticsTestCaseSetup.class)
 public class EjbInvocationStatisticsTestCase {
+    private static final String SUBSYSTEM_NAME = "ejb3";
+
     @ContainerResource
     private ManagementClient managementClient;
     private Boolean statisticsEnabled;
@@ -101,7 +104,7 @@ public class EjbInvocationStatisticsTestCase {
     }
 
     private static Boolean getEnableStatistics(final ManagementClient managementClient) throws IOException {
-        final ModelNode address = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME)).toModelNode();
+        final ModelNode address = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME)).toModelNode();
         address.protect();
         final ModelNode value = readAttribute(managementClient, address, "enable-statistics");
         if (value.isDefined())
@@ -118,7 +121,7 @@ public class EjbInvocationStatisticsTestCase {
     }
 
     private static void setEnableStatistics(final ManagementClient managementClient, final Boolean enableStatistics) throws IOException {
-        final ModelNode address = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME)).toModelNode();
+        final ModelNode address = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME)).toModelNode();
         address.protect();
         if (enableStatistics == null)
             undefineAttribute(managementClient, address, "enable-statistics");
@@ -128,33 +131,33 @@ public class EjbInvocationStatisticsTestCase {
 
     @Test
     public void testSingleton() throws Exception {
-        validateBean(EJBComponentType.SINGLETON, ManagedSingletonBean.class);
+        validateBean(SINGLETON, ManagedSingletonBean.class);
     }
 
     @Test
     //TODO Elytron - ejb-client4 integration
     public void testSFSB() throws Exception {
-        validateBean(EJBComponentType.STATEFUL, ManagedStatefulBean.class);
+        validateBean(STATEFUL, ManagedStatefulBean.class);
     }
 
     @Test
     public void testSLSB() throws Exception {
-        validateBean(EJBComponentType.STATELESS, ManagedStatelessBean.class);
+        validateBean(STATELESS, ManagedStatelessBean.class);
     }
 
     @Test
     @InSequence(1) // this needs to run after testSingleton because testSingleton doesn't expect any previously made invocations
     public void testSingletonWaitTime() throws Exception {
-        validateWaitTimeStatistic(EJBComponentType.SINGLETON, ManagedSingletonBean.class);
+        validateWaitTimeStatistic(SINGLETON, ManagedSingletonBean.class);
     }
 
     /*
       Invoke the singleton bean multiple times at once. The wait-time statistic should show a number greater than zero, because
       the singleton uses a write lock.
     */
-    private void validateWaitTimeStatistic(final EJBComponentType type, final Class<?> beanClass) throws Exception {
+    private void validateWaitTimeStatistic(final String type, final Class<?> beanClass) throws Exception {
         final String name = beanClass.getSimpleName();
-        final BusinessInterface bean = (BusinessInterface) context.lookup("ejb:/" + MODULE_NAME + "//" + name + "!" + BusinessInterface.class.getName() + (type == EJBComponentType.STATEFUL ? "?stateful" : ""));
+        final BusinessInterface bean = (BusinessInterface) context.lookup("ejb:/" + MODULE_NAME + "//" + name + "!" + BusinessInterface.class.getName() + (STATEFUL.equals(type) ? "?stateful" : ""));
         final Runnable invocationRunnable = new Runnable() {
             @Override
             public void run() {
@@ -180,7 +183,7 @@ public class EjbInvocationStatisticsTestCase {
         }
     }
 
-    private void validateBean(final EJBComponentType type, final Class<?> beanClass) throws Exception {
+    private void validateBean(final String type, final Class<?> beanClass) throws Exception {
         final String name = beanClass.getSimpleName();
         final ModelNode address = componentAddress(EjbJarRuntimeResourcesTestCase.BASE_ADDRESS, type, name).toModelNode();
         address.protect();
@@ -192,13 +195,13 @@ public class EjbInvocationStatisticsTestCase {
             assertEquals(0L, result.get("wait-time").asLong());
             assertEquals(0L, result.get("methods").asInt());
 
-            if (type.equals(EJBComponentType.STATEFUL)) {
+            if (type.equals(STATEFUL)) {
                 assertEquals(0L, result.get("cache-size").asLong());
                 assertEquals(0L, result.get("passivated-count").asLong());
                 assertEquals(0L, result.get("total-size").asLong());
             }
         }
-        final BusinessInterface bean = (BusinessInterface) context.lookup("ejb:/" + MODULE_NAME + "//" + name + "!" + BusinessInterface.class.getName() + (type == EJBComponentType.STATEFUL ? "?stateful" : ""));
+        final BusinessInterface bean = (BusinessInterface) context.lookup("ejb:/" + MODULE_NAME + "//" + name + "!" + BusinessInterface.class.getName() + (type == STATEFUL ? "?stateful" : ""));
         bean.doIt();
         {
             ModelNode result = executeOperation(managementClient, ModelDescriptionConstants.READ_RESOURCE_OPERATION, address);
@@ -215,13 +218,13 @@ public class EjbInvocationStatisticsTestCase {
             assertEquals(1L, invocationValues.get("invocations").asLong());
             assertTrue(invocationValues.get("wait-time").asLong() >= 0L);
 
-            if (type.equals(EJBComponentType.STATEFUL)) {
+            if (type.equals(STATEFUL)) {
                 assertEquals(1L, result.get("cache-size").asLong());
                 assertEquals(0L, result.get("passivated-count").asLong());
                 assertEquals(1L, result.get("total-size").asLong());
 
                 // Create a second bean forcing the first bean to passivate
-                BusinessInterface bean2 = (BusinessInterface) context.lookup("ejb:/" + MODULE_NAME + "//" + name + "!" + BusinessInterface.class.getName() + (type == EJBComponentType.STATEFUL ? "?stateful" : ""));
+                BusinessInterface bean2 = (BusinessInterface) context.lookup("ejb:/" + MODULE_NAME + "//" + name + "!" + BusinessInterface.class.getName() + (type == STATEFUL ? "?stateful" : ""));
                 bean2.doIt();
 
                 // Eviction is asynchronous, so wait a bit for this to take effect

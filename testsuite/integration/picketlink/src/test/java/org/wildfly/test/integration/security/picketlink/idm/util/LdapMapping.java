@@ -33,11 +33,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
-import static org.wildfly.extension.picketlink.common.model.ModelElement.COMMON_CODE;
-import static org.wildfly.extension.picketlink.common.model.ModelElement.LDAP_STORE_BASE_DN_SUFFIX;
-import static org.wildfly.extension.picketlink.common.model.ModelElement.LDAP_STORE_MAPPING;
-import static org.wildfly.extension.picketlink.common.model.ModelElement.LDAP_STORE_MAPPING_OBJECT_CLASSES;
-import static org.wildfly.extension.picketlink.common.model.ModelElement.LDAP_STORE_MAPPING_RELATES_TO;
 
 /**
  * @author Pedro Igor
@@ -73,13 +68,12 @@ public class LdapMapping {
 
         ModelNode steps = compositeOp.get(STEPS);
 
-        ModelNode mappingAddOperation = Util.createAddOperation(PathAddress.pathAddress(parentNode.get(OP_ADDR)).append(LDAP_STORE_MAPPING
-                                                                                                                        .getName(), this.type));
+        ModelNode mappingAddOperation = Util.createAddOperation(PathAddress.pathAddress(parentNode.get(OP_ADDR)).append("mapping", this.type));
 
-        mappingAddOperation.get(COMMON_CODE.getName()).set(this.type);
+        mappingAddOperation.get("code").set(this.type);
 
         if (this.baseDn != null) {
-            mappingAddOperation.get(LDAP_STORE_BASE_DN_SUFFIX.getName()).set(this.baseDn);
+            mappingAddOperation.get("base-dn-suffix").set(this.baseDn);
         }
 
         if (this.objectClass != null) {
@@ -93,11 +87,11 @@ public class LdapMapping {
                 objectClassesBuilder.append(objectClass);
             }
 
-            mappingAddOperation.get(LDAP_STORE_MAPPING_OBJECT_CLASSES.getName()).set(objectClassesBuilder.toString());
+            mappingAddOperation.get("object-classes").set(objectClassesBuilder.toString());
         }
 
         if (this.relatesTo != null) {
-            mappingAddOperation.get(LDAP_STORE_MAPPING_RELATES_TO.getName()).set(this.relatesTo);
+            mappingAddOperation.get("relates-to").set(this.relatesTo);
         }
 
         steps.add(mappingAddOperation);

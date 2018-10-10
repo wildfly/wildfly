@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.clustering.cluster;
 
+import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.TreeMap;
@@ -35,8 +36,6 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.WildFlyContainerController;
 import org.jboss.as.test.clustering.NodeUtil;
 import org.jboss.as.test.shared.TimeoutUtil;
-import org.jboss.as.web.session.RoutingSupport;
-import org.jboss.as.web.session.SimpleRoutingSupport;
 import org.jboss.logging.Logger;
 import org.junit.After;
 import org.junit.Before;
@@ -109,7 +108,6 @@ public abstract class AbstractClusteringTestCase {
     public static final String TESTSUITE_MCAST3 = System.getProperty("mcast3", "230.0.0.7");
 
     protected static final Logger log = Logger.getLogger(AbstractClusteringTestCase.class);
-    private static final RoutingSupport routing = new SimpleRoutingSupport();
     private static final Map<String, String> NODE_TO_DEPLOYMENT = new TreeMap<>();
     static {
         NODE_TO_DEPLOYMENT.put(NODE_1, DEPLOYMENT_1);
@@ -122,7 +120,9 @@ public abstract class AbstractClusteringTestCase {
         Header setCookieHeader = response.getFirstHeader("Set-Cookie");
         if (setCookieHeader == null) return null;
         String setCookieValue = setCookieHeader.getValue();
-        return routing.parse(setCookieValue.substring(setCookieValue.indexOf('=') + 1, setCookieValue.indexOf(';')));
+        final String id = setCookieValue.substring(setCookieValue.indexOf('=') + 1, setCookieValue.indexOf(';'));
+        final int index = id.indexOf('.');
+        return (index < 0) ? new AbstractMap.SimpleImmutableEntry<>(id, null) : new AbstractMap.SimpleImmutableEntry<>(id.substring(0, index), id.substring(index + 1));
     }
 
     @ArquillianResource

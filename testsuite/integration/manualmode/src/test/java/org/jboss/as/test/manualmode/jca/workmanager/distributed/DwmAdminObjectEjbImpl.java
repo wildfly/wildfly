@@ -28,10 +28,10 @@ import javax.ejb.Stateful;
 import javax.resource.spi.work.Work;
 import javax.resource.spi.work.WorkException;
 
-import org.jboss.as.connector.services.workmanager.NamedDistributedWorkManager;
 import org.jboss.as.test.manualmode.jca.workmanager.distributed.ra.DistributedAdminObject1;
 import org.jboss.as.test.manualmode.jca.workmanager.distributed.ra.DistributedAdminObject1Impl;
 import org.jboss.as.test.manualmode.jca.workmanager.distributed.ra.DistributedResourceAdapter1;
+import org.jboss.jca.core.api.workmanager.DistributedWorkManager;
 
 @Stateful(passivationCapable = false) //this is stateful so it maintains affinity, because standalone-ha.xml is used for the tests if a stateless bean is used invocations will go to other nodes
 @Remote
@@ -40,7 +40,7 @@ public class DwmAdminObjectEjbImpl implements DwmAdminObjectEjb {
     @Resource(mappedName = "java:jboss/A1")
     private DistributedAdminObject1 dao;
 
-    private NamedDistributedWorkManager dwm;
+    private DistributedWorkManager dwm;
 
     @PostConstruct
     public void initialize() {

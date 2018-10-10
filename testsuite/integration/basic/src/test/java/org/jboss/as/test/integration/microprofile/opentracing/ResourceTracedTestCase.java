@@ -17,7 +17,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.wildfly.microprofile.opentracing.smallrye.TracerInitializer;
 
 import javax.inject.Inject;
 import javax.servlet.ServletContext;
@@ -64,7 +63,7 @@ public class ResourceTracedTestCase {
         Assert.assertEquals(1, mockTracer.finishedSpans().size());
         Assert.assertEquals(
                 (servletContext.getContextPath() + ".war").substring(1),
-                servletContext.getInitParameter(TracerInitializer.SMALLRYE_OPENTRACING_SERVICE_NAME)
+                servletContext.getInitParameter("smallrye.opentracing.serviceName")
         );
     }
 

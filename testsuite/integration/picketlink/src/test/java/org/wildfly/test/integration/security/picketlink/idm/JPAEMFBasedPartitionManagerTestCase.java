@@ -40,8 +40,6 @@ import javax.annotation.Resource;
 import java.io.File;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.wildfly.extension.picketlink.common.model.ModelElement.JPA_STORE;
-import static org.wildfly.extension.picketlink.common.model.ModelElement.JPA_STORE_ENTITY_MANAGER_FACTORY;
 
 /**
  * @author Pedro Igor
@@ -96,10 +94,10 @@ public class JPAEMFBasedPartitionManagerTestCase extends AbstractBasicIdentityMa
 
         private ModelNode createIdentityStoreAddOperation(ModelNode identityConfigurationModelNode) {
             PathAddress pathAddress = PathAddress.pathAddress(identityConfigurationModelNode.get(OP_ADDR))
-                .append(JPA_STORE.getName(), JPA_STORE.getName());
+                .append("jpa-store", "jpa-store");
             ModelNode operationAddIdentityStore = Util.createAddOperation(pathAddress);
 
-            operationAddIdentityStore.get(JPA_STORE_ENTITY_MANAGER_FACTORY.getName()).set("jboss/TestingIDMEMF");
+            operationAddIdentityStore.get("entity-manager-factory").set("jboss/TestingIDMEMF");
 
             return operationAddIdentityStore;
         }

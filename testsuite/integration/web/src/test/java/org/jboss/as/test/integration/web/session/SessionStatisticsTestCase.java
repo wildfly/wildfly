@@ -54,8 +54,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.wildfly.extension.undertow.Constants;
-import org.wildfly.extension.undertow.DeploymentDefinition;
 import org.xnio.IoUtils;
 
 import io.undertow.util.StatusCodes;
@@ -66,6 +64,12 @@ import io.undertow.util.StatusCodes;
 @RunAsClient
 @ServerSetup(SessionStatisticsTestCase.SessionStatisticsServerSetup.class)
 public class SessionStatisticsTestCase {
+    private static final String ACTIVE_SESSIONS = "active-sessions";
+    private static final String EXPIRED_SESSIONS = "expired-sessions";
+    private static final String HIGHEST_SESSION_COUNT = "highest-session-count";
+    private static final String MAX_ACTIVE_SESSIONS = "max-active-sessions";
+    private static final String REJECTED_SESSIONS = "rejected-sessions";
+    private static final String SESSIONS_CREATED = "sessions-created";
 
     private static final int CLIENT_COUNT = 7;
     private static final int MAX_SESSIONS = 4;
@@ -79,7 +83,7 @@ public class SessionStatisticsTestCase {
             ModelNode op = new ModelNode();
             op.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
             op.get(OP_ADDR).add(SUBSYSTEM, "undertow");
-            op.get(NAME).set(Constants.STATISTICS_ENABLED);
+            op.get(NAME).set("statistics-enabled");
             op.get(VALUE).set(true);
             ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
             ServerReload.executeReloadAndWaitForCompletion(managementClient);
@@ -111,14 +115,14 @@ public class SessionStatisticsTestCase {
             Assert.assertEquals(opRes.toString(), "success", opRes.get(ModelDescriptionConstants.OUTCOME).asString());
             ModelNode result = opRes.get(ModelDescriptionConstants.RESULT);
             //check everything is zero
-            Assert.assertEquals(0, result.get(DeploymentDefinition.SessionStat.ACTIVE_SESSIONS.toString()).asInt());
-            Assert.assertEquals(0, result.get(DeploymentDefinition.SessionStat.EXPIRED_SESSIONS.toString()).asInt());
-            Assert.assertEquals(0, result.get(DeploymentDefinition.SessionStat.HIGHEST_SESSION_COUNT.toString()).asInt());
-            Assert.assertEquals(4, result.get(DeploymentDefinition.SessionStat.MAX_ACTIVE_SESSIONS.toString()).asInt());
-            Assert.assertEquals(0, result.get(DeploymentDefinition.SessionStat.REJECTED_SESSIONS.toString()).asInt());
-            Assert.assertEquals(0, result.get(DeploymentDefinition.SessionStat.SESSION_AVG_ALIVE_TIME.toString()).asInt());
-            Assert.assertEquals(0, result.get(DeploymentDefinition.SessionStat.SESSION_MAX_ALIVE_TIME.toString()).asInt());
-            Assert.assertEquals(0, result.get(DeploymentDefinition.SessionStat.SESSIONS_CREATED.toString()).asInt());
+            Assert.assertEquals(0, result.get(ACTIVE_SESSIONS).asInt());
+            Assert.assertEquals(0, result.get(EXPIRED_SESSIONS).asInt());
+            Assert.assertEquals(0, result.get(HIGHEST_SESSION_COUNT).asInt());
+            Assert.assertEquals(4, result.get(MAX_ACTIVE_SESSIONS).asInt());
+            Assert.assertEquals(0, result.get(REJECTED_SESSIONS).asInt());
+            Assert.assertEquals(0, result.get("session-avg-alive-time").asInt());
+            Assert.assertEquals(0, result.get("session-max-alive-time").asInt());
+            Assert.assertEquals(0, result.get(SESSIONS_CREATED).asInt());
 
             final HttpGet get = new HttpGet(uri.toString() + "/SessionPersistenceServlet");
             final HttpGet invalidate = new HttpGet(get.getURI().toString() + "?invalidate=true");
@@ -130,12 +134,12 @@ public class SessionStatisticsTestCase {
             result = opRes.get(ModelDescriptionConstants.RESULT);
 
             //create a session and check that it worked
-            Assert.assertEquals(1, result.get(DeploymentDefinition.SessionStat.ACTIVE_SESSIONS.toString()).asInt());
-            Assert.assertEquals(0, result.get(DeploymentDefinition.SessionStat.EXPIRED_SESSIONS.toString()).asInt());
-            Assert.assertEquals(1, result.get(DeploymentDefinition.SessionStat.HIGHEST_SESSION_COUNT.toString()).asInt());
-            Assert.assertEquals(MAX_SESSIONS, result.get(DeploymentDefinition.SessionStat.MAX_ACTIVE_SESSIONS.toString()).asInt());
-            Assert.assertEquals(0, result.get(DeploymentDefinition.SessionStat.REJECTED_SESSIONS.toString()).asInt());
-            Assert.assertEquals(1, result.get(DeploymentDefinition.SessionStat.SESSIONS_CREATED.toString()).asInt());
+            Assert.assertEquals(1, result.get(ACTIVE_SESSIONS).asInt());
+            Assert.assertEquals(0, result.get(EXPIRED_SESSIONS).asInt());
+            Assert.assertEquals(1, result.get(HIGHEST_SESSION_COUNT).asInt());
+            Assert.assertEquals(MAX_SESSIONS, result.get(MAX_ACTIVE_SESSIONS).asInt());
+            Assert.assertEquals(0, result.get(REJECTED_SESSIONS).asInt());
+            Assert.assertEquals(1, result.get(SESSIONS_CREATED).asInt());
 
             //this should use the same session
             res = clients[0].execute(get);
@@ -145,12 +149,12 @@ public class SessionStatisticsTestCase {
             Assert.assertEquals(opRes.toString(), "success", opRes.get(ModelDescriptionConstants.OUTCOME).asString());
             result = opRes.get(ModelDescriptionConstants.RESULT);
 
-            Assert.assertEquals(1, result.get(DeploymentDefinition.SessionStat.ACTIVE_SESSIONS.toString()).asInt());
-            Assert.assertEquals(0, result.get(DeploymentDefinition.SessionStat.EXPIRED_SESSIONS.toString()).asInt());
-            Assert.assertEquals(1, result.get(DeploymentDefinition.SessionStat.HIGHEST_SESSION_COUNT.toString()).asInt());
-            Assert.assertEquals(MAX_SESSIONS, result.get(DeploymentDefinition.SessionStat.MAX_ACTIVE_SESSIONS.toString()).asInt());
-            Assert.assertEquals(0, result.get(DeploymentDefinition.SessionStat.REJECTED_SESSIONS.toString()).asInt());
-            Assert.assertEquals(1, result.get(DeploymentDefinition.SessionStat.SESSIONS_CREATED.toString()).asInt());
+            Assert.assertEquals(1, result.get(ACTIVE_SESSIONS).asInt());
+            Assert.assertEquals(0, result.get(EXPIRED_SESSIONS).asInt());
+            Assert.assertEquals(1, result.get(HIGHEST_SESSION_COUNT).asInt());
+            Assert.assertEquals(MAX_SESSIONS, result.get(MAX_ACTIVE_SESSIONS).asInt());
+            Assert.assertEquals(0, result.get(REJECTED_SESSIONS).asInt());
+            Assert.assertEquals(1, result.get(SESSIONS_CREATED).asInt());
 
 
             res = clients[0].execute(invalidate);
@@ -161,12 +165,12 @@ public class SessionStatisticsTestCase {
             Assert.assertEquals(opRes.toString(), "success", opRes.get(ModelDescriptionConstants.OUTCOME).asString());
             result = opRes.get(ModelDescriptionConstants.RESULT);
 
-            Assert.assertEquals(0, result.get(DeploymentDefinition.SessionStat.ACTIVE_SESSIONS.toString()).asInt());
-            Assert.assertEquals(1, result.get(DeploymentDefinition.SessionStat.EXPIRED_SESSIONS.toString()).asInt());
-            Assert.assertEquals(1, result.get(DeploymentDefinition.SessionStat.HIGHEST_SESSION_COUNT.toString()).asInt());
-            Assert.assertEquals(MAX_SESSIONS, result.get(DeploymentDefinition.SessionStat.MAX_ACTIVE_SESSIONS.toString()).asInt());
-            Assert.assertEquals(0, result.get(DeploymentDefinition.SessionStat.REJECTED_SESSIONS.toString()).asInt());
-            Assert.assertEquals(1, result.get(DeploymentDefinition.SessionStat.SESSIONS_CREATED.toString()).asInt());
+            Assert.assertEquals(0, result.get(ACTIVE_SESSIONS).asInt());
+            Assert.assertEquals(1, result.get(EXPIRED_SESSIONS).asInt());
+            Assert.assertEquals(1, result.get(HIGHEST_SESSION_COUNT).asInt());
+            Assert.assertEquals(MAX_SESSIONS, result.get(MAX_ACTIVE_SESSIONS).asInt());
+            Assert.assertEquals(0, result.get(REJECTED_SESSIONS).asInt());
+            Assert.assertEquals(1, result.get(SESSIONS_CREATED).asInt());
 
             for (int i = 0; i < CLIENT_COUNT; ++i) {
                 res = clients[i].execute(get);
@@ -178,12 +182,12 @@ public class SessionStatisticsTestCase {
             Assert.assertEquals(opRes.toString(), "success", opRes.get(ModelDescriptionConstants.OUTCOME).asString());
             result = opRes.get(ModelDescriptionConstants.RESULT);
 
-            Assert.assertEquals(MAX_SESSIONS, result.get(DeploymentDefinition.SessionStat.ACTIVE_SESSIONS.toString()).asInt());
-            Assert.assertEquals(1, result.get(DeploymentDefinition.SessionStat.EXPIRED_SESSIONS.toString()).asInt());
-            Assert.assertEquals(MAX_SESSIONS, result.get(DeploymentDefinition.SessionStat.HIGHEST_SESSION_COUNT.toString()).asInt());
-            Assert.assertEquals(MAX_SESSIONS, result.get(DeploymentDefinition.SessionStat.MAX_ACTIVE_SESSIONS.toString()).asInt());
-            Assert.assertEquals(CLIENT_COUNT - MAX_SESSIONS, result.get(DeploymentDefinition.SessionStat.REJECTED_SESSIONS.toString()).asInt());
-            Assert.assertEquals(MAX_SESSIONS + 1, result.get(DeploymentDefinition.SessionStat.SESSIONS_CREATED.toString()).asInt());
+            Assert.assertEquals(MAX_SESSIONS, result.get(ACTIVE_SESSIONS).asInt());
+            Assert.assertEquals(1, result.get(EXPIRED_SESSIONS).asInt());
+            Assert.assertEquals(MAX_SESSIONS, result.get(HIGHEST_SESSION_COUNT).asInt());
+            Assert.assertEquals(MAX_SESSIONS, result.get(MAX_ACTIVE_SESSIONS).asInt());
+            Assert.assertEquals(CLIENT_COUNT - MAX_SESSIONS, result.get(REJECTED_SESSIONS).asInt());
+            Assert.assertEquals(MAX_SESSIONS + 1, result.get(SESSIONS_CREATED).asInt());
 
             for (int i = 0; i < MAX_SESSIONS; ++i) {
                 res = clients[i].execute(invalidate);
@@ -195,12 +199,12 @@ public class SessionStatisticsTestCase {
             Assert.assertEquals(opRes.toString(), "success", opRes.get(ModelDescriptionConstants.OUTCOME).asString());
             result = opRes.get(ModelDescriptionConstants.RESULT);
 
-            Assert.assertEquals(0, result.get(DeploymentDefinition.SessionStat.ACTIVE_SESSIONS.toString()).asInt());
-            Assert.assertEquals(MAX_SESSIONS + 1, result.get(DeploymentDefinition.SessionStat.EXPIRED_SESSIONS.toString()).asInt());
-            Assert.assertEquals(MAX_SESSIONS, result.get(DeploymentDefinition.SessionStat.HIGHEST_SESSION_COUNT.toString()).asInt());
-            Assert.assertEquals(MAX_SESSIONS, result.get(DeploymentDefinition.SessionStat.MAX_ACTIVE_SESSIONS.toString()).asInt());
-            Assert.assertEquals(CLIENT_COUNT - MAX_SESSIONS, result.get(DeploymentDefinition.SessionStat.REJECTED_SESSIONS.toString()).asInt());
-            Assert.assertEquals(MAX_SESSIONS + 1, result.get(DeploymentDefinition.SessionStat.SESSIONS_CREATED.toString()).asInt());
+            Assert.assertEquals(0, result.get(ACTIVE_SESSIONS).asInt());
+            Assert.assertEquals(MAX_SESSIONS + 1, result.get(EXPIRED_SESSIONS).asInt());
+            Assert.assertEquals(MAX_SESSIONS, result.get(HIGHEST_SESSION_COUNT).asInt());
+            Assert.assertEquals(MAX_SESSIONS, result.get(MAX_ACTIVE_SESSIONS).asInt());
+            Assert.assertEquals(CLIENT_COUNT - MAX_SESSIONS, result.get(REJECTED_SESSIONS).asInt());
+            Assert.assertEquals(MAX_SESSIONS + 1, result.get(SESSIONS_CREATED).asInt());
 
 
         } finally {

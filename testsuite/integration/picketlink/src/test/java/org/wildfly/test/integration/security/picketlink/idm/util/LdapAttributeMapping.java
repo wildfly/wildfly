@@ -27,11 +27,6 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.wildfly.extension.picketlink.common.model.ModelElement.LDAP_STORE_ATTRIBUTE;
-import static org.wildfly.extension.picketlink.common.model.ModelElement.LDAP_STORE_ATTRIBUTE_IS_IDENTIFIER;
-import static org.wildfly.extension.picketlink.common.model.ModelElement.LDAP_STORE_ATTRIBUTE_LDAP_NAME;
-import static org.wildfly.extension.picketlink.common.model.ModelElement.LDAP_STORE_ATTRIBUTE_NAME;
-import static org.wildfly.extension.picketlink.common.model.ModelElement.LDAP_STORE_ATTRIBUTE_READ_ONLY;
 
 /**
  * @author Pedro Igor
@@ -51,13 +46,12 @@ public class LdapAttributeMapping {
     }
 
     public ModelNode createAddOperation(ModelNode parentNode) {
-        ModelNode attributeAddOperation = Util.createAddOperation(PathAddress.pathAddress(parentNode.get(OP_ADDR)).append(LDAP_STORE_ATTRIBUTE
-                                                                                                                          .getName(), this.name));
+        ModelNode attributeAddOperation = Util.createAddOperation(PathAddress.pathAddress(parentNode.get(OP_ADDR)).append("attribute", this.name));
 
-        attributeAddOperation.get(LDAP_STORE_ATTRIBUTE_NAME.getName()).set(this.name);
-        attributeAddOperation.get(LDAP_STORE_ATTRIBUTE_LDAP_NAME.getName()).set(this.ldapName);
-        attributeAddOperation.get(LDAP_STORE_ATTRIBUTE_IS_IDENTIFIER.getName()).set(this.identifier);
-        attributeAddOperation.get(LDAP_STORE_ATTRIBUTE_READ_ONLY.getName()).set(this.readonly);
+        attributeAddOperation.get("name").set(this.name);
+        attributeAddOperation.get("ldap-name").set(this.ldapName);
+        attributeAddOperation.get("is-identifier").set(this.identifier);
+        attributeAddOperation.get("read-only").set(this.readonly);
 
         return attributeAddOperation;
     }

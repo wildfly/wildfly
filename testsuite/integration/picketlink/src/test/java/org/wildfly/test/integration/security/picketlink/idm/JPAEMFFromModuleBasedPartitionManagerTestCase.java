@@ -23,9 +23,6 @@
 package org.wildfly.test.integration.security.picketlink.idm;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.wildfly.extension.picketlink.common.model.ModelElement.JPA_STORE;
-import static org.wildfly.extension.picketlink.common.model.ModelElement.JPA_STORE_ENTITY_MODULE;
-import static org.wildfly.extension.picketlink.common.model.ModelElement.JPA_STORE_ENTITY_MODULE_UNIT_NAME;
 
 import java.io.File;
 import java.io.IOException;
@@ -157,12 +154,11 @@ public class JPAEMFFromModuleBasedPartitionManagerTestCase extends AbstractBasic
         }
 
         private ModelNode createIdentityStoreAddOperation(ModelNode identityConfigurationModelNode) {
-            PathAddress pathAddress = PathAddress.pathAddress(identityConfigurationModelNode.get(OP_ADDR)).append(JPA_STORE
-                .getName(), JPA_STORE.getName());
+            PathAddress pathAddress = PathAddress.pathAddress(identityConfigurationModelNode.get(OP_ADDR)).append("jpa-store", "jpa-store");
             ModelNode operationAddIdentityStore = Util.createAddOperation(pathAddress);
 
-            operationAddIdentityStore.get(JPA_STORE_ENTITY_MODULE.getName()).set("test.picketlink-emf-module-test");
-            operationAddIdentityStore.get(JPA_STORE_ENTITY_MODULE_UNIT_NAME.getName()).set("user-defined-pu");
+            operationAddIdentityStore.get("entity-module").set("test.picketlink-emf-module-test");
+            operationAddIdentityStore.get("entity-module-unit-name").set("user-defined-pu");
 
             return operationAddIdentityStore;
         }

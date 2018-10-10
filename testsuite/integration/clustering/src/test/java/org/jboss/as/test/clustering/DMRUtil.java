@@ -2,9 +2,9 @@ package org.jboss.as.test.clustering;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
+import org.jboss.logging.Logger;
 import org.junit.Assert;
 
-import org.apache.log4j.Logger;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.integration.management.ManagementOperations;
 import org.jboss.dmr.ModelNode;

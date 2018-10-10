@@ -40,10 +40,10 @@ import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
-import org.apache.log4j.Logger;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.security.WebSecurityPasswordBasedBase;
 import org.jboss.as.test.integration.web.security.SecuredServlet;
+import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 
