@@ -122,7 +122,7 @@
                         <phase>prepare-package</phase>
                         <configuration>
                             <output-dir>${basedir}/target/resources/features</output-dir>
-                            <fork-embedded>true</fork-embedded>
+                            <fork-embedded>${galleon.fork.embedded}</fork-embedded>
                         </configuration>
                     </execution>
                     <execution>
@@ -3397,6 +3397,10 @@
             </exclusions>
         </dependency>
 
+        <dependency>
+            <groupId>org.wildfly.galleon-plugins</groupId>
+            <artifactId>wildfly-config-gen</artifactId>
+        </dependency>
     </dependencies>
 
     <profiles>

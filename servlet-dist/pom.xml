@@ -77,7 +77,7 @@
                         <configuration>
                             <install-dir>${basedir}/target/${project.build.finalName}</install-dir>
                             <plugin-options>
-                                <jboss-fork-embedded/>
+                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                             </plugin-options>
                             <feature-packs>
                                 <feature-pack>

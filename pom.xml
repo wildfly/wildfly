@@ -139,6 +139,9 @@
         <!-- A short variant of product.release.version used in 'startsWith' tests done by dist verification logic -->
         <verifier.product.release.version>15.0</verifier.product.release.version>
 
+        <!-- Galleon -->
+        <galleon.fork.embedded>true</galleon.fork.embedded>
+
         <!-- Checkstyle configuration -->
         <linkXRef>false</linkXRef>
 
@@ -183,7 +186,7 @@
         <version.org.wildfly.checkstyle-config>1.0.7.Final</version.org.wildfly.checkstyle-config>
 
         <version.org.wildfly.component-matrix-plugin>1.0.2.Final</version.org.wildfly.component-matrix-plugin>
-        <version.org.wildfly.galleon-plugins>2.0.1.Final</version.org.wildfly.galleon-plugins>
+        <version.org.wildfly.galleon-plugins>2.0.2.Final</version.org.wildfly.galleon-plugins>
         <version.org.wildfly.maven.plugins>1.0.1</version.org.wildfly.maven.plugins>
         <version.org.wildfly.plugin>1.2.1.Final</version.org.wildfly.plugin>
         <!-- Non-default maven plugin versions and configuration -->
@@ -370,6 +373,7 @@
         <version.org.reactivestreams>1.0.2</version.org.reactivestreams>
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.wildfly.arquillian>2.1.1.Final</version.org.wildfly.arquillian>
+        <version.org.wildfly.common>1.4.0.Final</version.org.wildfly.common>
         <version.org.wildfly.core>7.0.0.Alpha2</version.org.wildfly.core>
         <version.org.wildfly.extras.creaper>1.6.1</version.org.wildfly.extras.creaper>
         <version.org.wildfly.http-client>1.0.12.Final</version.org.wildfly.http-client>
@@ -6264,31 +6268,19 @@
 
             <dependency>
                 <groupId>org.wildfly.galleon-plugins</groupId>
-                <artifactId>wildfly-config-gen</artifactId>
-                <version>${version.org.wildfly.galleon-plugins}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly.galleon-plugins</groupId>
-                <artifactId>wildfly-feature-spec-gen</artifactId>
-                <version>${version.org.wildfly.galleon-plugins}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly.galleon-plugins</groupId>
                 <artifactId>wildfly-galleon-plugins</artifactId>
+                <version>${version.org.wildfly.galleon-plugins}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.galleon</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.galleon-plugins</groupId>
+                <artifactId>wildfly-config-gen</artifactId>
                 <version>${version.org.wildfly.galleon-plugins}</version>
                 <exclusions>
                     <exclusion>
@@ -6907,6 +6899,20 @@
                     <groupId>org.wildfly.galleon-plugins</groupId>
                     <artifactId>wildfly-galleon-maven-plugin</artifactId>
                     <version>${version.org.wildfly.galleon-plugins}</version>
+                    <dependencies>
+                        <!-- feature-spec-gen uses wildfly-embedded to generate the feature specs, hence the designated wildfly-embedded version must match the pack one -->
+                        <dependency>
+                            <groupId>org.wildfly.core</groupId>
+                            <artifactId>wildfly-embedded</artifactId>
+                            <version>${version.org.wildfly.core}</version>
+                        </dependency>
+                        <!-- If you add a dependency on wildfly-embedded you need to bring your own transitives -->
+                        <dependency>
+                            <groupId>org.wildfly.common</groupId>
+                            <artifactId>wildfly-common</artifactId>
+                            <version>${version.org.wildfly.common}</version>
+                        </dependency>
+                    </dependencies>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
