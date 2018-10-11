@@ -27,8 +27,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Base64;
 
-import javax.xml.bind.DatatypeConverter;
-
 import org.wildfly.clustering.marshalling.spi.Serializer;
 
 /**
@@ -58,13 +56,9 @@ public enum IdentifierSerializer implements Serializer<String> {
     BASE64() {
         @Override
         public void write(DataOutput output, String id) throws IOException {
-            try {
-                byte[] bytes = Base64.getUrlDecoder().decode(id);
-                output.writeByte(bytes.length);
-                output.write(bytes);
-            } catch (IllegalArgumentException e) {
-                throw new IOException(e);
-            }
+            byte[] bytes = Base64.getUrlDecoder().decode(id);
+            output.writeByte(bytes.length);
+            output.write(bytes);
         }
 
         @Override
@@ -80,20 +74,30 @@ public enum IdentifierSerializer implements Serializer<String> {
     HEX() {
         @Override
         public void write(DataOutput output, String id) throws IOException {
-            try {
-                byte[] bytes = DatatypeConverter.parseHexBinary(id);
-                output.writeByte(bytes.length);
-                output.write(bytes);
-            } catch (IllegalArgumentException e) {
-                throw new IOException(e);
+            if (id.length() % 2 != 0) {
+                throw new IllegalArgumentException(id);
             }
+            byte[] bytes = new byte[id.length() / 2];
+            for (int i = 0; i < bytes.length; ++i) {
+                int index = i * 2;
+                int high = Character.digit(id.charAt(index), 16) << 4;
+                int low = Character.digit(id.charAt(index + 1), 16);
+                bytes[i] = (byte) (high + low);
+            }
+            output.writeByte(bytes.length);
+            output.write(bytes);
         }
 
         @Override
         public String read(DataInput input) throws IOException {
             byte[] decoded = new byte[input.readUnsignedByte()];
             input.readFully(decoded);
-            return DatatypeConverter.printHexBinary(decoded);
+            StringBuilder builder = new StringBuilder(decoded.length * 2);
+            for (byte b : decoded) {
+                builder.append(Character.toUpperCase(Character.forDigit((b >> 4) & 0xf, 16)));
+                builder.append(Character.toUpperCase(Character.forDigit(b & 0xf, 16)));
+            }
+            return builder.toString();
         }
     },
     ;
@@ -107,7 +111,7 @@ public enum IdentifierSerializer implements Serializer<String> {
         try {
             this.write(NULL_SINK, id);
             return true;
-        } catch (IOException e) {
+        } catch (IOException | IllegalArgumentException e) {
             return false;
         }
     }
