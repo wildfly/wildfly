@@ -31,6 +31,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.registry.Resource.NoSuchResourceException;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
@@ -131,8 +132,12 @@ class WeldSubsystemAdd extends AbstractBoottimeAddStepHandler {
     // (WFLY-3538). This hack is used obtain jts configuration in order to avoid doing this in non-jts environments when it is
     // not necessary.
     private boolean checkJtsEnabled(final OperationContext context) {
-        final ModelNode jtsNode = context.readResourceFromRoot(PathAddress.pathAddress("subsystem", "transactions"), false)
-                .getModel().get("jts");
-        return jtsNode.isDefined() ? jtsNode.asBoolean() : false;
+        try {
+            final ModelNode jtsNode = context.readResourceFromRoot(PathAddress.pathAddress("subsystem", "transactions"), false)
+                    .getModel().get("jts");
+            return jtsNode.isDefined() ? jtsNode.asBoolean() : false;
+        } catch (NoSuchResourceException ex) {
+            return false;
+        }
     }
 }
