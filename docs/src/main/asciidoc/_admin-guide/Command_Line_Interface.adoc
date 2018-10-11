@@ -576,6 +576,11 @@ You can use up/down arrows to retrieve previously typed text. NB: search history
 * 'N' to jump to the previous match if any. If no search text has been typed,
  then the last entry from the search history is used.
 
+There are two possible ways *to disable* the output paging and write the whole output of the commands at once:
+
+* _--no-output-paging_ command line parameter will disable the output paging;
+* Add _<output-paging>false<output-paging>_ in `jboss-cli.xml`.
+
 [WARNING]
 
 On Windows, searching and navigating backward is only supported starting with Windows 10 and Windows Server 2016.
