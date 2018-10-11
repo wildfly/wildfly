@@ -204,8 +204,9 @@
                     <!-- parallel>none</parallel -->
                     <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
 
-                    <!-- System properties to forked surefire JVM which runs clients. -->
-                    <argLine>${jvm.args.ip.client} ${jvm.args.timeouts} ${surefire.system.args}</argLine>
+                    <!-- System properties to forked surefire JVM which runs clients. The log manager is required to
+                         be defined when building with the IBM JDK. -->
+                    <argLine>-Djava.util.logging.manager=org.jboss.logmanager.LogManager ${jvm.args.ip.client} ${jvm.args.timeouts} ${surefire.system.args}</argLine>
 
                     <systemPropertyVariables>
                         <!-- Disabled assertions until new version of core with fix for WFCORE-1630 is used -->
