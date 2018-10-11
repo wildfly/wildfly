@@ -22,7 +22,10 @@
 
 package org.wildfly.clustering.web.infinispan.session;
 
+import javax.transaction.SystemException;
+
 import org.infinispan.Cache;
+import org.infinispan.commons.CacheException;
 import org.infinispan.context.Flag;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntriesEvicted;
@@ -117,12 +120,16 @@ public class InfinispanSessionMetaDataFactory<L> implements SessionMetaDataFacto
 
     private boolean remove(String id, Cache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<L>> creationMetaDataCache) {
         SessionCreationMetaDataKey key = new SessionCreationMetaDataKey(id);
-        if (!this.properties.isLockOnWrite() || creationMetaDataCache.getAdvancedCache().withFlags(Flag.ZERO_LOCK_ACQUISITION_TIMEOUT, Flag.FAIL_SILENTLY).lock(key)) {
-            creationMetaDataCache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(key);
-            this.accessMetaDataCache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(new SessionAccessMetaDataKey(id));
-            return true;
+        try {
+            if (!this.properties.isLockOnWrite() || (creationMetaDataCache.getAdvancedCache().getTransactionManager().getTransaction() == null) || creationMetaDataCache.getAdvancedCache().withFlags(Flag.ZERO_LOCK_ACQUISITION_TIMEOUT, Flag.FAIL_SILENTLY).lock(key)) {
+                creationMetaDataCache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(key);
+                this.accessMetaDataCache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(new SessionAccessMetaDataKey(id));
+                return true;
+            }
+            return false;
+        } catch (SystemException e) {
+            throw new CacheException(e);
         }
-        return false;
     }
 
     @CacheEntriesEvicted
