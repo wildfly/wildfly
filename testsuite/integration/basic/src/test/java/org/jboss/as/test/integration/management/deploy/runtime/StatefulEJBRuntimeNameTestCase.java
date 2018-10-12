@@ -6,7 +6,6 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.ejb3.subsystem.deployment.EJBComponentType;
 import org.jboss.as.test.integration.management.deploy.runtime.ejb.statefull.PointLessMathBean;
 import org.jboss.as.test.integration.management.util.ModelUtil;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
@@ -25,7 +24,7 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class StatefulEJBRuntimeNameTestCase extends AbstractRuntimeTestCase {
 
-    private static final String EJB_TYPE = EJBComponentType.STATEFUL.getResourceType();
+    private static final String EJB_TYPE = "stateful-session-bean";
     private static final Package BEAN_PACKAGE = PointLessMathBean.class.getPackage();
     private static final String BEAN_NAME = "POINT";
 

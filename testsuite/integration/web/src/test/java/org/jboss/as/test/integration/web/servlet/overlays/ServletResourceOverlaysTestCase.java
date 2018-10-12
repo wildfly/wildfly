@@ -40,7 +40,6 @@ import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.VirtualFilePermission;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.wildfly.extension.undertow.Constants;
 
 import java.io.File;
 import java.io.FilePermission;
@@ -58,7 +57,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRI
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import static org.wildfly.extension.undertow.UndertowExtension.SUBSYSTEM_NAME;
 
 /**
  */
@@ -66,6 +64,7 @@ import static org.wildfly.extension.undertow.UndertowExtension.SUBSYSTEM_NAME;
 @RunAsClient
 @ServerSetup(ServletResourceOverlaysTestCase.ServletResourceOverlaysTestCaseServerSetup.class)
 public class ServletResourceOverlaysTestCase {
+    private static final String SUBSYSTEM_NAME = "undertow";
 
     @ArquillianResource
     private URL url;
@@ -97,8 +96,8 @@ public class ServletResourceOverlaysTestCase {
             ModelNode op = new ModelNode();
             op.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
             op.get(OP_ADDR).add(SUBSYSTEM, SUBSYSTEM_NAME);
-            op.get(OP_ADDR).add(Constants.SERVER, Constants.DEFAULT_SERVER);
-            op.get(OP_ADDR).add(Constants.HTTP_LISTENER, "default");
+            op.get(OP_ADDR).add("server", "default-server");
+            op.get(OP_ADDR).add("http-server", "default");
             op.get(NAME).set("allow-encoded-slash");
             op.get(VALUE).set(true);
 
@@ -110,8 +109,8 @@ public class ServletResourceOverlaysTestCase {
             ModelNode op = new ModelNode();
             op.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
             op.get(OP_ADDR).add(SUBSYSTEM, SUBSYSTEM_NAME);
-            op.get(OP_ADDR).add(Constants.SERVER, Constants.DEFAULT_SERVER);
-            op.get(OP_ADDR).add(Constants.HTTP_LISTENER, "default");
+            op.get(OP_ADDR).add("server", "default-server");
+            op.get(OP_ADDR).add("http-server", "default");
             op.get(NAME).set("allow-encoded-slash");
             op.get(VALUE).set(false);
 

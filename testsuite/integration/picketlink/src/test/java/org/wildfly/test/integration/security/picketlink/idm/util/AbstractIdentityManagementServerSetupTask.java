@@ -36,13 +36,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.test.integration.security.common.Utils.applyUpdate;
-import static org.wildfly.extension.picketlink.common.model.ModelElement.COMMON_NAME;
-import static org.wildfly.extension.picketlink.common.model.ModelElement.COMMON_SUPPORTS_ALL;
-import static org.wildfly.extension.picketlink.common.model.ModelElement.IDENTITY_CONFIGURATION;
-import static org.wildfly.extension.picketlink.common.model.ModelElement.IDENTITY_MANAGEMENT_JNDI_NAME;
-import static org.wildfly.extension.picketlink.common.model.ModelElement.PARTITION_MANAGER;
-import static org.wildfly.extension.picketlink.common.model.ModelElement.SUPPORTED_TYPES;
-import static org.wildfly.extension.picketlink.idm.IDMExtension.SUBSYSTEM_NAME;
 
 /**
  * @author Pedro Igor
@@ -50,6 +43,7 @@ import static org.wildfly.extension.picketlink.idm.IDMExtension.SUBSYSTEM_NAME;
 public abstract class AbstractIdentityManagementServerSetupTask implements ServerSetupTask {
 
     public static final String EXTENSION_MODULE_NAME = "org.wildfly.extension.picketlink";
+    private static final String SUBSYSTEM_NAME = "picketlink-identity-management";
 
     private final String alias;
     private final String jndiName;
@@ -104,14 +98,14 @@ public abstract class AbstractIdentityManagementServerSetupTask implements Serve
     protected abstract void doCreateIdentityManagement(ModelNode identityManagementAddOperation, ModelNode operationSteps);
 
     protected PathAddress createIdentityConfigurationPathAddress(String name) {
-        return getIdentityManagementPathAddress().append(IDENTITY_CONFIGURATION.getName(), name);
+        return getIdentityManagementPathAddress().append("identity-configuration", name);
     }
 
     protected ModelNode createSupportedAllTypesAddOperation(ModelNode identityStoreModelNode) {
-        ModelNode operationAddSupportedTypes = Util.createAddOperation(PathAddress.pathAddress(identityStoreModelNode.get(OP_ADDR)).append(SUPPORTED_TYPES
-            .getName(), SUPPORTED_TYPES.getName()));
+        ModelNode operationAddSupportedTypes = Util.createAddOperation(PathAddress.pathAddress(identityStoreModelNode.get(OP_ADDR))
+                .append("supported-types", "supported-types"));
 
-        operationAddSupportedTypes.get(COMMON_SUPPORTS_ALL.getName()).set(true);
+        operationAddSupportedTypes.get("supports-all").set(true);
 
         return operationAddSupportedTypes;
     }
@@ -119,14 +113,14 @@ public abstract class AbstractIdentityManagementServerSetupTask implements Serve
     private ModelNode createIdentityManagementAddOperation() {
         ModelNode operationAddIdentityManagement = Util.createAddOperation(getIdentityManagementPathAddress());
 
-        operationAddIdentityManagement.get(COMMON_NAME.getName()).set(this.alias);
-        operationAddIdentityManagement.get(IDENTITY_MANAGEMENT_JNDI_NAME.getName()).set(this.jndiName);
+        operationAddIdentityManagement.get("name").set(this.alias);
+        operationAddIdentityManagement.get("jndi-name").set(this.jndiName);
 
         return operationAddIdentityManagement;
     }
 
     private PathAddress getIdentityManagementPathAddress() {
-        return PathAddress.pathAddress().append(SUBSYSTEM, SUBSYSTEM_NAME).append(PARTITION_MANAGER.getName(), this.alias);
+        return PathAddress.pathAddress().append(SUBSYSTEM, SUBSYSTEM_NAME).append("partition-manager", this.alias);
     }
 
     private void addExtensionAndSubsystem(ManagementClient managementClient) throws Exception {

@@ -54,6 +54,11 @@
             <artifactId>metainf-services</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-clustering-singleton-api</artifactId>
+            <scope>test</scope>
+        </dependency>
         <!-- Used for the infinispan-server-feature-pack -->
         <dependency>
             <groupId>org.wildfly</groupId>

@@ -30,7 +30,7 @@ import javax.resource.spi.endpoint.MessageEndpointFactory;
 import javax.resource.spi.work.WorkManager;
 import javax.transaction.xa.XAResource;
 
-import org.jboss.as.connector.services.workmanager.NamedDistributedWorkManager;
+import org.jboss.jca.core.workmanager.DistributedWorkManagerImpl;
 
 /**
  * DistributedResourceAdapter1 for use with DistributableWorkManager.
@@ -40,17 +40,17 @@ import org.jboss.as.connector.services.workmanager.NamedDistributedWorkManager;
  */
 public class DistributedResourceAdapter1 implements ResourceAdapter {
 
-    private NamedDistributedWorkManager dwm;
+    private DistributedWorkManagerImpl dwm;
 
     public DistributedResourceAdapter1() {
         // empty
     }
 
-    public void setDwm(NamedDistributedWorkManager dwm) {
+    public void setDwm(DistributedWorkManagerImpl dwm) {
         this.dwm = dwm;
     }
 
-    public NamedDistributedWorkManager getDwm() {
+    public DistributedWorkManagerImpl getDwm() {
         return dwm;
     }
 
@@ -81,10 +81,9 @@ public class DistributedResourceAdapter1 implements ResourceAdapter {
      */
     public void start(BootstrapContext ctx) throws ResourceAdapterInternalException {
         WorkManager wm = ctx.getWorkManager();
-
-        if (wm instanceof NamedDistributedWorkManager) {
-            NamedDistributedWorkManager ndwm = (NamedDistributedWorkManager) wm;
-            setDwm(ndwm);
+        if (wm instanceof DistributedWorkManagerImpl) {
+            DistributedWorkManagerImpl dwm = (DistributedWorkManagerImpl) wm;
+            setDwm(dwm);
         }
     }
 

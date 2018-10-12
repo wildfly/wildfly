@@ -30,7 +30,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
+import org.jboss.logging.Logger;
 
 /**
  * A simple servlet handles GET requests and tries to initialize a JBossPDP using {@link JBossPDPServiceBean}.

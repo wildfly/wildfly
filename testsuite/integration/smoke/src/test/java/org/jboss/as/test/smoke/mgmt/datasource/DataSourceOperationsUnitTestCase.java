@@ -41,6 +41,8 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.connector.subsystems.datasources.DataSourcesExtension;
+import org.jboss.as.connector.subsystems.datasources.Namespace;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.management.jca.ConnectionSecurityType;
@@ -567,5 +569,10 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
         Assert.assertEquals(rightChild.asString(), "Property6", rightChild.get("recovery-plugin-properties", "name1").asString());
 
         Assert.assertNotNull("xa-datasource-properties not propagated ", findNodeWithProperty(newList, "value", "jdbc:h2:mem:test"));
+    }
+
+    private List<ModelNode> marshalAndReparseDsResources(String childType) throws Exception {
+        DataSourcesExtension.DataSourceSubsystemParser parser = new DataSourcesExtension.DataSourceSubsystemParser();
+        return xmlToModelOperations(modelToXml("datasources", childType, parser), Namespace.CURRENT.getUriString(), parser);
     }
 }

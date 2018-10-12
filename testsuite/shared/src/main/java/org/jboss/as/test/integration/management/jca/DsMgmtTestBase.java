@@ -22,10 +22,6 @@
 
 package org.jboss.as.test.integration.management.jca;
 
-import java.util.List;
-
-import org.jboss.as.connector.subsystems.datasources.DataSourcesExtension.DataSourceSubsystemParser;
-import org.jboss.as.connector.subsystems.datasources.Namespace;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
@@ -62,11 +58,6 @@ public class DsMgmtTestBase extends ContainerResourceMgmtTestBase {
         operation.get("name").set(attribute);
         operation.get(OP_ADDR).set(address);
         return executeOperation(operation);
-    }
-
-    protected List<ModelNode> marshalAndReparseDsResources(String childType) throws Exception {
-        DataSourceSubsystemParser parser = new DataSourceSubsystemParser();
-        return xmlToModelOperations(modelToXml("datasources", childType, parser), Namespace.CURRENT.getUriString(), parser);
     }
 
     private void testCon(final String dsName, String type) throws Exception {

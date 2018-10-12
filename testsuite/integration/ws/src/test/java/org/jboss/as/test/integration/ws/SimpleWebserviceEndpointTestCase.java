@@ -45,7 +45,6 @@ import org.junit.runner.RunWith;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 @RunWith(Arquillian.class)
-@RunAsClient
 public class SimpleWebserviceEndpointTestCase {
 
     @ArquillianResource
@@ -70,6 +69,7 @@ public class SimpleWebserviceEndpointTestCase {
 
 
     @Test
+    @RunAsClient
     public void testSimpleStatelessWebserviceEndpoint() throws Exception {
         final QName serviceName = new QName("org.jboss.as.test.integration.ws", "SimpleService");
         final URL wsdlURL = new URL(baseUrl, "/ws-endpoint-example/SimpleService?wsdl");

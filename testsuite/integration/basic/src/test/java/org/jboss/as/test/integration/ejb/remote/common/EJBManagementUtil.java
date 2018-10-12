@@ -40,8 +40,6 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.ejb3.subsystem.EJB3Extension;
-import org.jboss.as.ejb3.subsystem.EJB3SubsystemModel;
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.remoting.RemotingExtension;
 import org.jboss.dmr.ModelNode;
@@ -79,6 +77,21 @@ import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNo
  */
 public class EJBManagementUtil {
 
+    public static final String MESSAGE_DRIVEN = "message-driven-bean";
+    public static final String SINGLETON = "singleton-bean";
+    public static final String STATELESS = "stateless-session-bean";
+    public static final String STATEFUL = "stateful-session-bean";
+
+    private static final String CONNECTOR_REF = "connector-ref";
+    private static final String DEFAULT_ENTITY_BEAN_INSTANCE_POOL = "default-entity-bean-instance-pool";
+    private static final String DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING = "default-entity-bean-optimistic-locking";
+    private static final String INSTANCE_ACQUISITION_TIMEOUT = "timeout";
+    private static final String INSTANCE_ACQUISITION_TIMEOUT_UNIT = "timeout-unit";
+    private static final String MAX_POOL_SIZE = "max-pool-size";
+    private static final String REMOTE = "remote";
+    private static final String SERVICE = "service";
+    private static final String STRICT_MAX_BEAN_INSTANCE_POOL = "strict-max-bean-instance-pool";
+    private static final String SUBSYSTEM_NAME = "ejb3";
     private static final Logger logger = Logger.getLogger(EJBManagementUtil.class);
 
     /**
@@ -95,10 +108,10 @@ public class EJBManagementUtil {
             // /subsystem=ejb3/service=remote:read-attribute(name=connector-ref)
             final ModelNode readConnectorRefAttribute = new ModelNode();
             readConnectorRefAttribute.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION);
-            readConnectorRefAttribute.get(NAME).set(EJB3SubsystemModel.CONNECTOR_REF);
+            readConnectorRefAttribute.get(NAME).set(CONNECTOR_REF);
 
-            final PathAddress ejbRemotingServiceAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME),
-                    EJB3SubsystemModel.REMOTE_SERVICE_PATH);
+            final PathAddress ejbRemotingServiceAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME),
+                    PathElement.pathElement(SERVICE, REMOTE));
             readConnectorRefAttribute.get(OP_ADDR).set(ejbRemotingServiceAddress.toModelNode());
 
             // execute the read-attribute
@@ -340,14 +353,14 @@ public class EJBManagementUtil {
             // /subsystem=ejb3/strict-max-bean-instance-pool=<name>:add(....)
             final ModelNode addStrictMaxPool = new ModelNode();
             addStrictMaxPool.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
-            final PathAddress strictMaxPoolAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME),
-                    PathElement.pathElement(EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL, poolName));
+            final PathAddress strictMaxPoolAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME),
+                    PathElement.pathElement(STRICT_MAX_BEAN_INSTANCE_POOL, poolName));
             addStrictMaxPool.get(OP_ADDR).set(strictMaxPoolAddress.toModelNode());
 
             // set the params
-            addStrictMaxPool.get(EJB3SubsystemModel.MAX_POOL_SIZE).set(maxPoolSize);
-            addStrictMaxPool.get(EJB3SubsystemModel.INSTANCE_ACQUISITION_TIMEOUT).set(timeout);
-            addStrictMaxPool.get(EJB3SubsystemModel.INSTANCE_ACQUISITION_TIMEOUT_UNIT).set(unit.name());
+            addStrictMaxPool.get(MAX_POOL_SIZE).set(maxPoolSize);
+            addStrictMaxPool.get(INSTANCE_ACQUISITION_TIMEOUT).set(timeout);
+            addStrictMaxPool.get(INSTANCE_ACQUISITION_TIMEOUT_UNIT).set(unit.name());
 
             // execute the add operation
             execute(modelControllerClient, addStrictMaxPool);
@@ -366,8 +379,8 @@ public class EJBManagementUtil {
             // /subsystem=ejb3/strict-max-bean-instance-pool=<name>:remove()
             final ModelNode removeStrictMaxPool = new ModelNode();
             removeStrictMaxPool.get(OP).set(REMOVE);
-            final PathAddress strictMaxPoolAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME),
-                    PathElement.pathElement(EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL, poolName));
+            final PathAddress strictMaxPoolAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME),
+                    PathElement.pathElement(STRICT_MAX_BEAN_INSTANCE_POOL, poolName));
             removeStrictMaxPool.get(OP_ADDR).set(strictMaxPoolAddress.toModelNode());
             removeStrictMaxPool.get(ModelDescriptionConstants.OPERATION_HEADERS, ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART).set(true);
 
@@ -382,7 +395,7 @@ public class EJBManagementUtil {
     public static void editEntityBeanInstancePool(final ModelControllerClient controllerClient, final String poolName, final boolean optimisticLocking) {
         try {
             // /subsystem=ejb3
-            final PathAddress ejb3SubsystemAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME));
+            final PathAddress ejb3SubsystemAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME));
 
             // /subsystem=ejb3:write-attribute(name="default-entity-bean-instance-pool", value=<poolName>)
             final ModelNode defaultEntityBeanInstancePool = new ModelNode();
@@ -391,7 +404,7 @@ public class EJBManagementUtil {
             // set the address
             defaultEntityBeanInstancePool.get(OP_ADDR).set(ejb3SubsystemAddress.toModelNode());
             // setup the parameters for the write attribute operation
-            defaultEntityBeanInstancePool.get(NAME).set(EJB3SubsystemModel.DEFAULT_ENTITY_BEAN_INSTANCE_POOL);
+            defaultEntityBeanInstancePool.get(NAME).set(DEFAULT_ENTITY_BEAN_INSTANCE_POOL);
             defaultEntityBeanInstancePool.get(VALUE).set(poolName);
             // execute the operation
             execute(controllerClient, defaultEntityBeanInstancePool);
@@ -403,7 +416,7 @@ public class EJBManagementUtil {
             // set the address
             defaultEntityBeanOptimisticLocking.get(OP_ADDR).set(ejb3SubsystemAddress.toModelNode());
             // setup the parameters for the write attribute operation
-            defaultEntityBeanOptimisticLocking.get(NAME).set(EJB3SubsystemModel.DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING);
+            defaultEntityBeanOptimisticLocking.get(NAME).set(DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING);
             defaultEntityBeanOptimisticLocking.get(VALUE).set(optimisticLocking);
             // execute the operation
             execute(controllerClient, defaultEntityBeanOptimisticLocking);
@@ -415,7 +428,7 @@ public class EJBManagementUtil {
     public static void undefineEntityBeanInstancePool(final ModelControllerClient controllerClient) {
         try {
             // /subsystem=ejb3
-            final PathAddress ejb3SubsystemAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME));
+            final PathAddress ejb3SubsystemAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME));
 
             // /subsystem=ejb3:undefine-attribute(name="default-entity-bean-instance-pool")
             final ModelNode defaultEntityBeanInstancePool = new ModelNode();
@@ -424,7 +437,7 @@ public class EJBManagementUtil {
             // set the address
             defaultEntityBeanInstancePool.get(OP_ADDR).set(ejb3SubsystemAddress.toModelNode());
             // setup the parameters for the undefine attribute operation
-            defaultEntityBeanInstancePool.get(NAME).set(EJB3SubsystemModel.DEFAULT_ENTITY_BEAN_INSTANCE_POOL);
+            defaultEntityBeanInstancePool.get(NAME).set(DEFAULT_ENTITY_BEAN_INSTANCE_POOL);
             // execute the operation
             execute(controllerClient, defaultEntityBeanInstancePool);
 
@@ -435,7 +448,7 @@ public class EJBManagementUtil {
             // set the address
             defaultEntityBeanOptimisticLocking.get(OP_ADDR).set(ejb3SubsystemAddress.toModelNode());
             // setup the parameters for the undefine attribute operation
-            defaultEntityBeanOptimisticLocking.get(NAME).set(EJB3SubsystemModel.DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING);
+            defaultEntityBeanOptimisticLocking.get(NAME).set(DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING);
             // execute the operation
             execute(controllerClient, defaultEntityBeanOptimisticLocking);
         } catch (IOException ioe) {
@@ -459,11 +472,11 @@ public class EJBManagementUtil {
             // set the operation
             passByValueWriteAttributeOperation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
             // set the address
-            final PathAddress ejb3SubsystemAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME));
+            final PathAddress ejb3SubsystemAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME));
             passByValueWriteAttributeOperation.get(OP_ADDR).set(ejb3SubsystemAddress.toModelNode());
 
             // setup the parameters for the write attribute operation
-            passByValueWriteAttributeOperation.get(NAME).set(EJB3SubsystemModel.IN_VM_REMOTE_INTERFACE_INVOCATION_PASS_BY_VALUE);
+            passByValueWriteAttributeOperation.get(NAME).set("in-vm-remote-interface-invocation-pass-by-value");
             passByValueWriteAttributeOperation.get(VALUE).set(passByValue);
 
             // execute the operations
@@ -485,11 +498,11 @@ public class EJBManagementUtil {
                 op.get(OP).set(UNDEFINE_ATTRIBUTE_OPERATION);
             }
             // set the address
-            final PathAddress ejb3SubsystemAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME));
+            final PathAddress ejb3SubsystemAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME));
             op.get(OP_ADDR).set(ejb3SubsystemAddress.toModelNode());
 
             // setup the parameters for the write attribute operation
-            op.get(NAME).set(EJB3SubsystemModel.DEFAULT_DISTINCT_NAME);
+            op.get(NAME).set("default-distinct-name");
 
             // execute the operations
             execute(modelControllerClient, op);

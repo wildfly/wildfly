@@ -29,7 +29,7 @@ import org.jboss.as.test.integration.security.common.config.JaspiAuthn;
 import org.jboss.as.test.integration.security.common.config.LoginModuleStack;
 import org.jboss.as.test.integration.security.common.config.SecurityDomain;
 import org.jboss.as.test.integration.security.common.config.SecurityModule;
-import org.wildfly.extension.undertow.security.jaspi.modules.HTTPSchemeServerAuthModule;
+import org.wildfly.test.undertow.common.TestConstants;
 
 /**
  * A {@link org.jboss.as.arquillian.api.ServerSetupTask} instance which creates security domains for test class JaspiFormAuthTestCase.
@@ -53,7 +53,7 @@ public class JaspiSimpleServerLoginDomainSetup extends AbstractSecurityDomainsSe
                                 .loginModules(new SecurityModule.Builder().name("org.jboss.security.auth.spi.SimpleServerLoginModule").flag(Constants.OPTIONAL).build())
                                 .build())
                         .authnModules(new AuthnModule.Builder()
-                                .name(HTTPSchemeServerAuthModule.class.getName())
+                                .name(TestConstants.JASPI_AUTH_MODULE)
                                 .loginModuleStackRef(loginModuleStackName)
                                 .module(UNDERTOW_MODULE_NAME)
                                 .build())

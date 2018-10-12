@@ -43,7 +43,6 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
@@ -87,13 +86,13 @@ public class ExternalConnectionFactoryManagementTestCase extends ContainerResour
             jmsOperations.addExternalHttpConnector(CONNECTOR_NAME, "http", "http-acceptor");
 
             ModelNode attributes = new ModelNode();
-            attributes.get(CommonAttributes.CONNECTORS).add(CONNECTOR_NAME);
+            attributes.get("connectors").add(CONNECTOR_NAME);
             jmsOperations.addJmsExternalConnectionFactory(CF_NAME, "java:/jms/" + CF_NAME, attributes);
 
             final ModelNode writeAttribute = new ModelNode();
             writeAttribute.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
             writeAttribute.get(OP_ADDR).set(jmsOperations.getSubsystemAddress().add("connection-factory", CF_NAME));
-            writeAttribute.get(NAME).set(CommonAttributes.DISCOVERY_GROUP);
+            writeAttribute.get(NAME).set("discovery-group");
             writeAttribute.get(VALUE).set(randomUUID().toString());
 
             try {

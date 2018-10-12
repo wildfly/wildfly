@@ -46,7 +46,6 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
-import org.jboss.as.webservices.dmr.WSExtension;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -96,7 +95,7 @@ public class WSTestCase {
     public void testManagementDescription() throws Exception {
         final ModelNode address = new ModelNode();
         address.add(ModelDescriptionConstants.DEPLOYMENT, "ws-example.war");
-        address.add(ModelDescriptionConstants.SUBSYSTEM, WSExtension.SUBSYSTEM_NAME); //EndpointService
+        address.add(ModelDescriptionConstants.SUBSYSTEM, "webservices"); //EndpointService
         address.add("endpoint", "*"); // get all endpoints
 
         final ModelNode operation = new ModelNode();
@@ -125,7 +124,7 @@ public class WSTestCase {
         setStatisticsEnabled(true);
         final ModelNode address = new ModelNode();
         address.add(ModelDescriptionConstants.DEPLOYMENT, "ws-example.war");
-        address.add(ModelDescriptionConstants.SUBSYSTEM, WSExtension.SUBSYSTEM_NAME); //EndpointService
+        address.add(ModelDescriptionConstants.SUBSYSTEM, "webservices"); //EndpointService
         address.add("endpoint", "*"); // get all endpoints
 
         final ModelNode operation = new ModelNode();

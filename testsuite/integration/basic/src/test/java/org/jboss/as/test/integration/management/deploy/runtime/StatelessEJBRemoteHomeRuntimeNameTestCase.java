@@ -13,10 +13,10 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.ejb3.subsystem.deployment.EJBComponentType;
 import org.jboss.as.test.integration.ejb.home.remotehome.SimpleHome;
 import org.jboss.as.test.integration.ejb.home.remotehome.SimpleInterface;
 import org.jboss.as.test.integration.ejb.home.remotehome.annotation.SimpleStatelessBean;
+import org.jboss.as.test.integration.ejb.remote.common.EJBManagementUtil;
 import org.jboss.as.test.integration.management.util.ModelUtil;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
@@ -37,7 +37,7 @@ public class StatelessEJBRemoteHomeRuntimeNameTestCase extends AbstractRuntimeTe
 
     private static Logger log = Logger.getLogger(StatelessEJBRemoteHomeRuntimeNameTestCase.class);
 
-    private static final String EJB_TYPE = EJBComponentType.STATELESS.getResourceType();
+    private static final String EJB_TYPE = EJBManagementUtil.STATELESS;
     private static final Package BEAN_PACKAGE = SimpleHome.class.getPackage();
     private static final Class<?> BEAN_CLASS = SimpleStatelessBean.class;
 

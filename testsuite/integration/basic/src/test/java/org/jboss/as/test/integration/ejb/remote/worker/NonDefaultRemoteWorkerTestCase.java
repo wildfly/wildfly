@@ -61,7 +61,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.wildfly.extension.undertow.logging.UndertowLogger;
 
 /**
  * Simple test case to check if we get proper feedback on write op to listener->worker
@@ -114,7 +113,7 @@ public class NonDefaultRemoteWorkerTestCase {
         Assert.assertEquals(Level.ALL,level);
         ModelNode warningWorker = warnings.get(1);
         message = warningWorker.get(WARNING).asString();
-        Assert.assertEquals(UndertowLogger.ROOT_LOGGER.workerValueInHTTPListenerMustMatchRemoting(), message);
+        Assert.assertTrue(String.format("Expected message to start with WFLYUT0097: found %s", message), message.startsWith("WFLYUT0097:"));
         level = Level.parse(warningWorker.get(LEVEL).asString());
         Assert.assertEquals(Level.WARNING,level);
         //default level is "WARNING, set to severe and check if there are warnings

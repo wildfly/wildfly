@@ -24,9 +24,9 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.ejb3.subsystem.deployment.EJBComponentType;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
+import org.jboss.as.test.integration.ejb.remote.common.EJBManagementUtil;
 import org.jboss.as.test.integration.management.deploy.runtime.ejb.message.Constants;
 import org.jboss.as.test.integration.management.deploy.runtime.ejb.message.SimpleMDB;
 import org.jboss.as.test.integration.management.util.ModelUtil;
@@ -54,7 +54,7 @@ public class MDBEJBRuntimeNameTestsCase extends AbstractRuntimeTestCase {
 
     private static final String QUEUE_NAME = "Queue-for-" + MDBEJBRuntimeNameTestsCase.class.getName();
 
-    private static final String EJB_TYPE = EJBComponentType.MESSAGE_DRIVEN.getResourceType();
+    private static final String EJB_TYPE = EJBManagementUtil.MESSAGE_DRIVEN;
     private static final Class BEAN_CLASS = SimpleMDB.class;
     private static final Package BEAN_PACKAGE = BEAN_CLASS.getPackage();
     private static final String BEAN_NAME = "POINT";

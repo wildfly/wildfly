@@ -48,7 +48,6 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.controller.client.helpers.Operations;
-import org.jboss.as.jsf.subsystem.JSFExtension;
 import org.jboss.as.test.integration.management.ManagementOperations;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
@@ -144,14 +143,14 @@ public class DoctypeDeclTestCase {
     }
 
     private void writeDisallowDoctypeDeclAttributeAndReload(boolean value) throws Exception {
-        final ModelNode address = Operations.createAddress(ClientConstants.SUBSYSTEM, JSFExtension.SUBSYSTEM_NAME);
+        final ModelNode address = Operations.createAddress(ClientConstants.SUBSYSTEM, "jsf");
         final ModelNode op = Operations.createWriteAttributeOperation(address, "disallow-doctype-decl", value);
         ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
         ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
     }
 
     private void undefineDisallowDoctypeDeclAttributeAndReload() throws Exception {
-        final ModelNode address = Operations.createAddress(ClientConstants.SUBSYSTEM, JSFExtension.SUBSYSTEM_NAME);
+        final ModelNode address = Operations.createAddress(ClientConstants.SUBSYSTEM, "jsf");
         final ModelNode op = Operations.createUndefineAttributeOperation(address, "disallow-doctype-decl");
         ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
         ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());

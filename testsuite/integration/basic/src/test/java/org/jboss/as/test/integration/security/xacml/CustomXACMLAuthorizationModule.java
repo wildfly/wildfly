@@ -29,7 +29,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.log4j.Logger;
+import org.jboss.logging.Logger;
 import org.jboss.security.authorization.AuthorizationContext;
 import org.jboss.security.authorization.Resource;
 import org.jboss.security.authorization.ResourceKeys;

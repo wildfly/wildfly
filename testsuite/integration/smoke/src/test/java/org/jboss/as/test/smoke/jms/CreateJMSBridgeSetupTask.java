@@ -22,7 +22,6 @@
 
 package org.jboss.as.test.smoke.jms;
 
-import org.apache.activemq.artemis.jms.bridge.QualityOfServiceMode;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
@@ -63,7 +62,7 @@ public class CreateJMSBridgeSetupTask extends CreateQueueSetupTask {
         jmsBridgeAttributes.get("source-destination").set(QUEUE1_JNDI_NAME);
         jmsBridgeAttributes.get("target-connection-factory").set(CF_JNDI_NAME);
         jmsBridgeAttributes.get("target-destination").set(QUEUE2_JNDI_NAME);
-        jmsBridgeAttributes.get("quality-of-service").set(QualityOfServiceMode.ONCE_AND_ONLY_ONCE.toString());
+        jmsBridgeAttributes.get("quality-of-service").set("ONCE_AND_ONLY_ONCE");
         jmsBridgeAttributes.get("failure-retry-interval").set(500);
         jmsBridgeAttributes.get("max-retries").set(2);
         jmsBridgeAttributes.get("max-batch-size").set(1024);

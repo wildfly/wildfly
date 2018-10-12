@@ -30,7 +30,7 @@ import java.util.Map;
 
 import javax.ejb.Singleton;
 
-import org.apache.log4j.Logger;
+import org.jboss.logging.Logger;
 
 /**
  * Singleton class to gather information on processing from the webservices.

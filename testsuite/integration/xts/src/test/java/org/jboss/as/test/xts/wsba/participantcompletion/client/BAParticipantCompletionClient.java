@@ -27,8 +27,8 @@ import io.undertow.util.NetworkUtils;
 import javax.xml.namespace.QName;
 import javax.xml.ws.Service;
 
-import org.apache.log4j.Logger;
 import org.jboss.as.test.xts.wsba.participantcompletion.service.BAParticipantCompletion;
+import org.jboss.logging.Logger;
 
 import java.net.URL;
 

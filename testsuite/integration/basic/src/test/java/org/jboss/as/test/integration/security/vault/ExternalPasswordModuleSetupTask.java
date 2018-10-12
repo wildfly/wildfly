@@ -24,9 +24,9 @@ package org.jboss.as.test.integration.security.vault;
 
 import org.jboss.as.arquillian.api.ServerSetupTask;
 
-import org.apache.log4j.Logger;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.module.util.TestModule;
+import org.jboss.logging.Logger;
 
 /**
  * @author <a href="mailto:pskopek@redhat.com">Peter Skopek</a>.

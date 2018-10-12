@@ -21,18 +21,6 @@
  */
 package org.jboss.as.test.integration.web.session;
 
-import static org.wildfly.extension.undertow.Constants.ATTRIBUTE;
-import static org.wildfly.extension.undertow.Constants.GET_SESSION_ATTRIBUTE;
-import static org.wildfly.extension.undertow.Constants.GET_SESSION_CREATION_TIME;
-import static org.wildfly.extension.undertow.Constants.GET_SESSION_CREATION_TIME_MILLIS;
-import static org.wildfly.extension.undertow.Constants.GET_SESSION_LAST_ACCESSED_TIME;
-import static org.wildfly.extension.undertow.Constants.GET_SESSION_LAST_ACCESSED_TIME_MILLIS;
-import static org.wildfly.extension.undertow.Constants.INVALIDATE_SESSION;
-import static org.wildfly.extension.undertow.Constants.LIST_SESSIONS;
-import static org.wildfly.extension.undertow.Constants.LIST_SESSION_ATTRIBUTES;
-import static org.wildfly.extension.undertow.Constants.LIST_SESSION_ATTRIBUTE_NAMES;
-import static org.wildfly.extension.undertow.Constants.SESSION_ID;
-
 import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -68,6 +56,17 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 public class SessionManagementTestCase {
+    private static final String SESSION_ID = "session-id";
+    private static final String ATTRIBUTE = "attribute";
+    private static final String INVALIDATE_SESSION = "invalidate-session";
+    private static final String LIST_SESSIONS = "list-sessions";
+    private static final String LIST_SESSION_ATTRIBUTE_NAMES = "list-session-attribute-names";
+    private static final String LIST_SESSION_ATTRIBUTES = "list-session-attributes";
+    private static final String GET_SESSION_ATTRIBUTE = "get-session-attribute";
+    private static final String GET_SESSION_LAST_ACCESSED_TIME = "get-session-last-accessed-time";
+    private static final String GET_SESSION_LAST_ACCESSED_TIME_MILLIS = "get-session-last-accessed-time-millis";
+    private static final String GET_SESSION_CREATION_TIME = "get-session-creation-time";
+    private static final String GET_SESSION_CREATION_TIME_MILLIS = "get-session-creation-time-millis";
 
     @ArquillianResource
     public ManagementClient managementClient;

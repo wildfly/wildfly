@@ -50,27 +50,26 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.jaxrs.DeploymentRestResourcesDefintion.CONSUMES;
-import static org.jboss.as.jaxrs.DeploymentRestResourcesDefintion.JAVA_METHOD;
-import static org.jboss.as.jaxrs.DeploymentRestResourcesDefintion.PRODUCES;
-import static org.jboss.as.jaxrs.DeploymentRestResourcesDefintion.RESOURCE_CLASS;
-import static org.jboss.as.jaxrs.DeploymentRestResourcesDefintion.RESOURCE_METHODS;
-import static org.jboss.as.jaxrs.DeploymentRestResourcesDefintion.RESOURCE_PATH;
-import static org.jboss.as.jaxrs.DeploymentRestResourcesDefintion.RESOURCE_PATHS;
-import static org.jboss.as.jaxrs.DeploymentRestResourcesDefintion.REST_RESOURCE_NAME;
-import static org.jboss.as.jaxrs.DeploymentRestResourcesDefintion.SUB_RESOURCE_LOCATORS;
 import static org.junit.Assert.assertThat;
 
 import org.hamcrest.CoreMatchers;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.jaxrs.JaxrsDeploymentDefinition;
-import org.jboss.as.jaxrs.JaxrsExtension;
 
 @RunWith(Arquillian.class)
 @RunAsClient
 public class JaxrsRuntimeNameTestCase extends AbstractRuntimeTestCase {
 
+    private static final String CONSUMES = "consumes";
     private static final String DEPLOYMENT_NAME = "hello-rs.war";
+    private static final String JAVA_METHOD = "java-method";
+    private static final String PRODUCES = "produces";
+    private static final String RESOURCE_CLASS = "resource-class";
+    private static final String RESOURCE_METHODS = "resource-methods";
+    private static final String RESOURCE_PATH = "resource-path";
+    private static final String RESOURCE_PATHS = "rest-resource-paths";
+    private static final String REST_RESOURCE_NAME = "rest-resource";
+    private static final String SUB_RESOURCE_LOCATORS = "sub-resource-locators";
+    private static final String SUBSYSTEM_NAME = "jaxrs";
     private static final ModelControllerClient controllerClient = TestSuiteEnvironment.getModelControllerClient();
 
     @ArquillianResource
@@ -101,32 +100,32 @@ public class JaxrsRuntimeNameTestCase extends AbstractRuntimeTestCase {
         ModelNode result = controllerClient.execute(readResource);
 
         assertThat("Failed to list resources: " + result, Operations.isSuccessfulOutcome(result), is(true));
-        PathAddress subsystemAddress = deploymentAddress.append(SUBSYSTEM, "jaxrs");
+        PathAddress subsystemAddress = deploymentAddress.append(SUBSYSTEM, SUBSYSTEM_NAME);
         readResource = Util.createOperation(READ_RESOURCE_OPERATION, subsystemAddress);
         result = controllerClient.execute(readResource);
         assertThat("Failed to list resources: " + result, Operations.isSuccessfulOutcome(result), is(true));
 
-        readResource = Util.createOperation(JaxrsDeploymentDefinition.SHOW_RESOURCES, subsystemAddress);
+        readResource = Util.createOperation("show-resources", subsystemAddress);
         result = controllerClient.execute(readResource);
         assertThat("Failed to list resources: " + result, Operations.isSuccessfulOutcome(result), is(true));
         List<ModelNode> jaxrsResources = Operations.readResult(result).asList();
         assertThat(jaxrsResources, is(notNullValue()));
         assertThat(jaxrsResources.size(), is(4));
         for (ModelNode jaxrsResource : jaxrsResources) {
-            assertThat(jaxrsResource.toString(), jaxrsResource.get(JaxrsDeploymentDefinition.CLASSNAME.getName()).asString(), is(HelloResource.class.getName()));
-            String path = jaxrsResource.get(JaxrsDeploymentDefinition.PATH.getName()).asString();
+            assertThat(jaxrsResource.toString(), jaxrsResource.get(RESOURCE_CLASS).asString(), is(HelloResource.class.getName()));
+            String path = jaxrsResource.get(RESOURCE_PATH).asString();
             switch (path) {
                 case "/update":
-                    assertThat(jaxrsResource.toString(), jaxrsResource.get(JaxrsDeploymentDefinition.METHODS.getName()).asList().get(0).asString(), is("PUT /hello-rs/hello/update - org.jboss.as.test.integration.management.deploy.runtime.jaxrs.HelloResource.updateMessage(...)"));
+                    assertThat(jaxrsResource.toString(), jaxrsResource.get(RESOURCE_METHODS).asList().get(0).asString(), is("PUT /hello-rs/hello/update - org.jboss.as.test.integration.management.deploy.runtime.jaxrs.HelloResource.updateMessage(...)"));
                     break;
                 case "/json":
-                    assertThat(jaxrsResource.toString(), jaxrsResource.get(JaxrsDeploymentDefinition.METHODS.getName()).asList().get(0).asString(), is("GET /hello-rs/hello/json - org.jboss.as.test.integration.management.deploy.runtime.jaxrs.HelloResource.getHelloWorldJSON()"));
+                    assertThat(jaxrsResource.toString(), jaxrsResource.get(RESOURCE_METHODS).asList().get(0).asString(), is("GET /hello-rs/hello/json - org.jboss.as.test.integration.management.deploy.runtime.jaxrs.HelloResource.getHelloWorldJSON()"));
                     break;
                 case "/xml":
-                    assertThat(jaxrsResource.toString(), jaxrsResource.get(JaxrsDeploymentDefinition.METHODS.getName()).asList().get(0).asString(), is("GET /hello-rs/hello/xml - org.jboss.as.test.integration.management.deploy.runtime.jaxrs.HelloResource.getHelloWorldXML()"));
+                    assertThat(jaxrsResource.toString(), jaxrsResource.get(RESOURCE_METHODS).asList().get(0).asString(), is("GET /hello-rs/hello/xml - org.jboss.as.test.integration.management.deploy.runtime.jaxrs.HelloResource.getHelloWorldXML()"));
                     break;
                 case "/":
-                    assertThat(jaxrsResource.toString(), jaxrsResource.get(JaxrsDeploymentDefinition.METHODS.getName()).asList().get(0).asString(), is("GET /hello-rs/hello/ - org.jboss.as.test.integration.management.deploy.runtime.jaxrs.HelloResource.getHelloWorld()"));
+                    assertThat(jaxrsResource.toString(), jaxrsResource.get(RESOURCE_METHODS).asList().get(0).asString(), is("GET /hello-rs/hello/ - org.jboss.as.test.integration.management.deploy.runtime.jaxrs.HelloResource.getHelloWorld()"));
                     break;
                 default:
                     assertThat(jaxrsResource.toString(), false, is(true));
@@ -137,10 +136,10 @@ public class JaxrsRuntimeNameTestCase extends AbstractRuntimeTestCase {
 
     @Test
     public void testReadRestResource() throws Exception {
-        ModelNode removeResource =  Util.createRemoveOperation(PathAddress.pathAddress(DEPLOYMENT, DEPLOYMENT_NAME).append(SUBSYSTEM, JaxrsExtension.SUBSYSTEM_NAME));
+        ModelNode removeResource =  Util.createRemoveOperation(PathAddress.pathAddress(DEPLOYMENT, DEPLOYMENT_NAME).append(SUBSYSTEM, SUBSYSTEM_NAME));
         assertThat(Operations.getFailureDescription(controllerClient.execute(removeResource)).asString(), CoreMatchers.containsString("WFLYCTL0031"));
         ModelNode readResource =  Util.createOperation(READ_RESOURCE_OPERATION, PathAddress.pathAddress(DEPLOYMENT, DEPLOYMENT_NAME)
-                .append(SUBSYSTEM, JaxrsExtension.SUBSYSTEM_NAME)
+                .append(SUBSYSTEM, SUBSYSTEM_NAME)
                 .append(REST_RESOURCE_NAME, HelloResource.class.getCanonicalName()));
         readResource.get(ModelDescriptionConstants.INCLUDE_RUNTIME).set(true);
         ModelNode result = controllerClient.execute(readResource);
@@ -149,70 +148,70 @@ public class JaxrsRuntimeNameTestCase extends AbstractRuntimeTestCase {
         ModelNode res = Operations.readResult(result);
         assertThat(res.isDefined(), is(true));
 
-        assertThat(res.get(RESOURCE_CLASS.getName()).asString(), is(HelloResource.class.getCanonicalName()));
-        List<ModelNode> subResList = res.get(RESOURCE_PATHS.getName()).asList();
+        assertThat(res.get(RESOURCE_CLASS).asString(), is(HelloResource.class.getCanonicalName()));
+        List<ModelNode> subResList = res.get(RESOURCE_PATHS).asList();
         assertThat(subResList.size(), is(4));
 
         ModelNode rootRes = subResList.get(0); // '/'
-        assertThat(rootRes.get(RESOURCE_PATH.getName()).asString(), is("/"));
-        assertThat(rootRes.get(JAVA_METHOD.getName()).asString(), is("java.lang.String " + HelloResource.class.getCanonicalName() + ".getHelloWorld()"));
-        assertThat(rootRes.get(CONSUMES.getName()).isDefined(), is(false));
-        assertThat(rootRes.get(PRODUCES.getName()).asList().size(), is(1));
-        assertThat(rootRes.get(PRODUCES.getName()).asList().get(0).asString(), is("text/plain"));
-        assertThat(rootRes.get(RESOURCE_METHODS.getName()).asList().size(), is(1));
-        assertThat(rootRes.get(RESOURCE_METHODS.getName()).asList().get(0).asString(), is("GET /hello-rs/hello/"));
+        assertThat(rootRes.get(RESOURCE_PATH).asString(), is("/"));
+        assertThat(rootRes.get(JAVA_METHOD).asString(), is("java.lang.String " + HelloResource.class.getCanonicalName() + ".getHelloWorld()"));
+        assertThat(rootRes.get(CONSUMES).isDefined(), is(false));
+        assertThat(rootRes.get(PRODUCES).asList().size(), is(1));
+        assertThat(rootRes.get(PRODUCES).asList().get(0).asString(), is("text/plain"));
+        assertThat(rootRes.get(RESOURCE_METHODS).asList().size(), is(1));
+        assertThat(rootRes.get(RESOURCE_METHODS).asList().get(0).asString(), is("GET /hello-rs/hello/"));
 
         ModelNode jsonRes = subResList.get(1);// '/json'
-        assertThat(jsonRes.get(RESOURCE_PATH.getName()).asString(), is("/json"));
-        assertThat(jsonRes.get(JAVA_METHOD.getName()).asString(), is("javax.json.JsonObject " + HelloResource.class.getCanonicalName() + ".getHelloWorldJSON()"));
-        assertThat(jsonRes.get(CONSUMES.getName()).isDefined(), is(false));
-        assertThat(jsonRes.get(PRODUCES.getName()).asList().size(), is(1));
-        assertThat(jsonRes.get(PRODUCES.getName()).asList().get(0).asString(), is("application/json"));
-        assertThat(jsonRes.get(RESOURCE_METHODS.getName()).asList().size(), is(1));
-        assertThat(jsonRes.get(RESOURCE_METHODS.getName()).asList().get(0).asString(), is("GET /hello-rs/hello/json"));
+        assertThat(jsonRes.get(RESOURCE_PATH).asString(), is("/json"));
+        assertThat(jsonRes.get(JAVA_METHOD).asString(), is("javax.json.JsonObject " + HelloResource.class.getCanonicalName() + ".getHelloWorldJSON()"));
+        assertThat(jsonRes.get(CONSUMES).isDefined(), is(false));
+        assertThat(jsonRes.get(PRODUCES).asList().size(), is(1));
+        assertThat(jsonRes.get(PRODUCES).asList().get(0).asString(), is("application/json"));
+        assertThat(jsonRes.get(RESOURCE_METHODS).asList().size(), is(1));
+        assertThat(jsonRes.get(RESOURCE_METHODS).asList().get(0).asString(), is("GET /hello-rs/hello/json"));
 
         ModelNode updateRes = subResList.get(2);// '/update'
-        assertThat(updateRes.get(RESOURCE_PATH.getName()).asString(), is("/update"));
-        assertThat(updateRes.get(JAVA_METHOD.getName()).asString(), is("void " + HelloResource.class.getCanonicalName() + ".updateMessage(@QueryParam java.lang.String content = 'Hello')"));
-        assertThat(updateRes.get(PRODUCES.getName()).isDefined(), is(false));
-        assertThat(updateRes.get(CONSUMES.getName()).asList().size(), is(1));
-        assertThat(updateRes.get(CONSUMES.getName()).asList().get(0).asString(), is("text/plain"));
-        assertThat(updateRes.get(RESOURCE_METHODS.getName()).asList().size(), is(1));
-        assertThat(updateRes.get(RESOURCE_METHODS.getName()).asList().get(0).asString(), is("PUT /hello-rs/hello/update"));
+        assertThat(updateRes.get(RESOURCE_PATH).asString(), is("/update"));
+        assertThat(updateRes.get(JAVA_METHOD).asString(), is("void " + HelloResource.class.getCanonicalName() + ".updateMessage(@QueryParam java.lang.String content = 'Hello')"));
+        assertThat(updateRes.get(PRODUCES).isDefined(), is(false));
+        assertThat(updateRes.get(CONSUMES).asList().size(), is(1));
+        assertThat(updateRes.get(CONSUMES).asList().get(0).asString(), is("text/plain"));
+        assertThat(updateRes.get(RESOURCE_METHODS).asList().size(), is(1));
+        assertThat(updateRes.get(RESOURCE_METHODS).asList().get(0).asString(), is("PUT /hello-rs/hello/update"));
 
         ModelNode xmlRes = subResList.get(3);// '/xml'
-        assertThat(xmlRes.get(RESOURCE_PATH.getName()).asString(), is("/xml"));
-        assertThat(xmlRes.get(JAVA_METHOD.getName()).asString(), is("java.lang.String " + HelloResource.class.getCanonicalName() + ".getHelloWorldXML()"));
-        assertThat(xmlRes.get(CONSUMES.getName()).isDefined(), is(false));
-        assertThat(xmlRes.get(PRODUCES.getName()).asList().size(), is(1));
-        assertThat(xmlRes.get(PRODUCES.getName()).asList().get(0).asString(), is("application/xml"));
-        assertThat(xmlRes.get(RESOURCE_METHODS.getName()).asList().size(), is(1));
-        assertThat(xmlRes.get(RESOURCE_METHODS.getName()).asList().get(0).asString(), is("GET /hello-rs/hello/xml"));
+        assertThat(xmlRes.get(RESOURCE_PATH).asString(), is("/xml"));
+        assertThat(xmlRes.get(JAVA_METHOD).asString(), is("java.lang.String " + HelloResource.class.getCanonicalName() + ".getHelloWorldXML()"));
+        assertThat(xmlRes.get(CONSUMES).isDefined(), is(false));
+        assertThat(xmlRes.get(PRODUCES).asList().size(), is(1));
+        assertThat(xmlRes.get(PRODUCES).asList().get(0).asString(), is("application/xml"));
+        assertThat(xmlRes.get(RESOURCE_METHODS).asList().size(), is(1));
+        assertThat(xmlRes.get(RESOURCE_METHODS).asList().get(0).asString(), is("GET /hello-rs/hello/xml"));
 
-        List<ModelNode> subLocatorList = res.get(SUB_RESOURCE_LOCATORS.getName()).asList();
+        List<ModelNode> subLocatorList = res.get(SUB_RESOURCE_LOCATORS).asList();
         assertThat(subLocatorList.size(), is(1));
         ModelNode subLocatorRes = subLocatorList.get(0);
-        assertThat(subLocatorRes.get(RESOURCE_CLASS.getName()).asString(), is(SubHelloResource.class.getCanonicalName()));
-        List<ModelNode> subResInsideSubLocator = subLocatorRes.get(RESOURCE_PATHS.getName()).asList();
+        assertThat(subLocatorRes.get(RESOURCE_CLASS).asString(), is(SubHelloResource.class.getCanonicalName()));
+        List<ModelNode> subResInsideSubLocator = subLocatorRes.get(RESOURCE_PATHS).asList();
         assertThat(subResInsideSubLocator.size(), is(2));
 
         ModelNode subRootHi = subResInsideSubLocator.get(0);
-        assertThat(subRootHi.get(RESOURCE_PATH.getName()).asString(), is("/sub/"));
-        assertThat(subRootHi.get(JAVA_METHOD.getName()).asString(), is("java.lang.String " + SubHelloResource.class.getCanonicalName() + ".hi()"));
-        assertThat(subRootHi.get(CONSUMES.getName()).isDefined(), is(false));
-        assertThat(subRootHi.get(PRODUCES.getName()).asList().size(), is(1));
-        assertThat(subRootHi.get(PRODUCES.getName()).asList().get(0).asString(), is("text/plain"));
-        assertThat(subRootHi.get(RESOURCE_METHODS.getName()).asList().size(), is(1));
-        assertThat(subRootHi.get(RESOURCE_METHODS.getName()).asList().get(0).asString(), is("GET /hello-rs/hello/sub/"));
+        assertThat(subRootHi.get(RESOURCE_PATH).asString(), is("/sub/"));
+        assertThat(subRootHi.get(JAVA_METHOD).asString(), is("java.lang.String " + SubHelloResource.class.getCanonicalName() + ".hi()"));
+        assertThat(subRootHi.get(CONSUMES).isDefined(), is(false));
+        assertThat(subRootHi.get(PRODUCES).asList().size(), is(1));
+        assertThat(subRootHi.get(PRODUCES).asList().get(0).asString(), is("text/plain"));
+        assertThat(subRootHi.get(RESOURCE_METHODS).asList().size(), is(1));
+        assertThat(subRootHi.get(RESOURCE_METHODS).asList().get(0).asString(), is("GET /hello-rs/hello/sub/"));
 
         ModelNode pingNode = subResInsideSubLocator.get(1);
-        assertThat(pingNode.get(RESOURCE_PATH.getName()).asString(), is("/sub/ping/{name}"));
-        assertThat(pingNode.get(JAVA_METHOD.getName()).asString(), is("java.lang.String " + SubHelloResource.class.getCanonicalName() + ".ping(@PathParam java.lang.String name = 'JBoss')"));
-        assertThat(pingNode.get(CONSUMES.getName()).isDefined(), is(false));
-        assertThat(pingNode.get(PRODUCES.getName()).asList().size(), is(1));
-        assertThat(pingNode.get(PRODUCES.getName()).asList().get(0).asString(), is("text/plain"));
-        assertThat(pingNode.get(RESOURCE_METHODS.getName()).asList().size(), is(1));
-        assertThat(pingNode.get(RESOURCE_METHODS.getName()).asList().get(0).asString(), is("GET /hello-rs/hello/sub/ping/{name}"));
+        assertThat(pingNode.get(RESOURCE_PATH).asString(), is("/sub/ping/{name}"));
+        assertThat(pingNode.get(JAVA_METHOD).asString(), is("java.lang.String " + SubHelloResource.class.getCanonicalName() + ".ping(@PathParam java.lang.String name = 'JBoss')"));
+        assertThat(pingNode.get(CONSUMES).isDefined(), is(false));
+        assertThat(pingNode.get(PRODUCES).asList().size(), is(1));
+        assertThat(pingNode.get(PRODUCES).asList().get(0).asString(), is("text/plain"));
+        assertThat(pingNode.get(RESOURCE_METHODS).asList().size(), is(1));
+        assertThat(pingNode.get(RESOURCE_METHODS).asList().get(0).asString(), is("GET /hello-rs/hello/sub/ping/{name}"));
 
     }
 
