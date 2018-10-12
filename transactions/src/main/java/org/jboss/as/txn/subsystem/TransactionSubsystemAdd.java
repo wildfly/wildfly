@@ -122,7 +122,6 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
     private static final String REMOTING_ENDPOINT_CAPABILITY_NAME = "org.wildfly.remoting.endpoint";
 
     private TransactionSubsystemAdd() {
-        super(TransactionSubsystemRootResourceDefinition.TRANSACTION_CAPABILITY);
     }
 
     @Override

@@ -49,7 +49,6 @@ import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.txn.logging.TransactionLogger;
 import org.jboss.dmr.ModelNode;
@@ -67,7 +66,7 @@ import com.arjuna.ats.arjuna.coordinator.TxControl;
  */
 public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDefinition {
 
-    public static final RuntimeCapability<Void> TRANSACTION_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.transactions")
+    static final RuntimeCapability<Void> TRANSACTION_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.transactions")
             .build();
 
     //recovery environment
@@ -255,10 +254,14 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
     private final boolean registerRuntimeOnly;
 
     TransactionSubsystemRootResourceDefinition(boolean registerRuntimeOnly) {
-        super(TransactionExtension.SUBSYSTEM_PATH,
-                TransactionExtension.getResourceDescriptionResolver(),
-                TransactionSubsystemAdd.INSTANCE, TransactionSubsystemRemove.INSTANCE,
-                OperationEntry.Flag.RESTART_ALL_SERVICES, OperationEntry.Flag.RESTART_ALL_SERVICES);
+        super(new Parameters(TransactionExtension.SUBSYSTEM_PATH,
+                TransactionExtension.getResourceDescriptionResolver())
+                .setAddHandler(TransactionSubsystemAdd.INSTANCE)
+                .setRemoveHandler(TransactionSubsystemRemove.INSTANCE)
+                .setCapabilities(TRANSACTION_CAPABILITY)
+                // Configuring these is not required as these are defaulted based on our add/remove handler types
+                //OperationEntry.Flag.RESTART_ALL_SERVICES, OperationEntry.Flag.RESTART_ALL_SERVICES
+        );
         this.registerRuntimeOnly = registerRuntimeOnly;
     }
 
@@ -332,11 +335,6 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
         if (registerRuntimeOnly) {
             TxStatsHandler.INSTANCE.registerMetrics(resourceRegistration);
         }
-    }
-
-    @Override
-    public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerCapability(TRANSACTION_CAPABILITY);
     }
 
     private static class AliasedHandler implements OperationStepHandler {
