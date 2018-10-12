@@ -63,11 +63,9 @@ public class BinderServiceUtil {
                                                  final Object obj) {
         final BindInfo bindInfo = ContextNames.bindInfoFor(name);
         final BinderService binderService = new BinderService(bindInfo.getBindName());
-
+        binderService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(Values.immediateValue(obj)));
         serviceTarget.addService(bindInfo.getBinderServiceName(), binderService)
                 .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector())
-                .addInjection(binderService.getManagedObjectInjector(), new ValueManagedReferenceFactory(Values.immediateValue(obj)))
-                .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
     }
 
@@ -84,10 +82,9 @@ public class BinderServiceUtil {
                                             final ServiceName... dependencies) {
         final BindInfo bindInfo = ContextNames.bindInfoFor(name);
         final BinderService binderService = new BinderService(bindInfo.getBindName());
-
+        binderService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(service));
         final ServiceBuilder serviceBuilder = serviceTarget.addService(bindInfo.getBinderServiceName(), binderService)
                 .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector())
-                .addInjection(binderService.getManagedObjectInjector(), new ValueManagedReferenceFactory(service))
                 // we set it in passive mode so that missing dependencies (which is possible/valid when it's a backup HornetQ server and the services
                 // haven't been activated on it due to the presence of a different live server) don't cause jms-topic/jms-queue add operations
                 // to fail

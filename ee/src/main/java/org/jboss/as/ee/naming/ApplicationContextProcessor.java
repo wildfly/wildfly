@@ -60,11 +60,11 @@ public class ApplicationContextProcessor implements DeploymentUnitProcessor {
         final ServiceName applicationContextServiceName = ContextNames.contextServiceNameOfApplication(moduleDescription.getApplicationName());
         final NamingStoreService contextService = new NamingStoreService(true);
         serviceTarget.addService(applicationContextServiceName, contextService).install();
-        final BinderService applicationNameBinder = new BinderService("AppName");
         final ServiceName appNameServiceName = applicationContextServiceName.append("AppName");
+        final BinderService applicationNameBinder = new BinderService("AppName");
+        applicationNameBinder.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(Values.immediateValue(moduleDescription.getApplicationName())));
         serviceTarget.addService(appNameServiceName, applicationNameBinder)
                 .addDependency(applicationContextServiceName, ServiceBasedNamingStore.class, applicationNameBinder.getNamingStoreInjector())
-                .addInjection(applicationNameBinder.getManagedObjectInjector(), new ValueManagedReferenceFactory(Values.immediateValue(moduleDescription.getApplicationName())))
                 .install();
         deploymentUnit.addToAttachmentList(org.jboss.as.server.deployment.Attachments.JNDI_DEPENDENCIES, appNameServiceName);
         deploymentUnit.putAttachment(Attachments.APPLICATION_CONTEXT_CONFIG, applicationContextServiceName);

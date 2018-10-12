@@ -172,11 +172,11 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
             // add service to bind SecurityDomainJndiInjectable to JNDI
             final SecurityDomainJndiInjectable securityDomainJndiInjectable = new SecurityDomainJndiInjectable();
             final BinderService binderService = new BinderService("jaas");
+            binderService.getManagedObjectInjector().inject(securityDomainJndiInjectable);
             target.addService(ContextNames.JBOSS_CONTEXT_SERVICE_NAME.append("jaas"), binderService)
-                .addInjection(binderService.getManagedObjectInjector(), securityDomainJndiInjectable)
                 .addDependency(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, ServiceBasedNamingStore.class, binderService.getNamingStoreInjector())
                 .addDependency(SecurityManagementService.SERVICE_NAME, ISecurityManagement.class, securityDomainJndiInjectable.getSecurityManagementInjector())
-                .setInitialMode(ServiceController.Mode.ACTIVE).install();
+                .install();
 
             // add security management service
             ModelNode modelNode = SecuritySubsystemRootResourceDefinition.DEEP_COPY_SUBJECT_MODE.resolveModelAttribute(context,model);

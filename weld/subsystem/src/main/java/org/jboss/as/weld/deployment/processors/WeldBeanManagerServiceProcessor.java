@@ -125,8 +125,8 @@ public class WeldBeanManagerServiceProcessor implements DeploymentUnitProcessor 
         dependencies.add(beanManagerBindingServiceName);
         BinderService beanManagerBindingService = new BinderService("BeanManager");
         final BeanManagerManagedReferenceFactory referenceFactory = new BeanManagerManagedReferenceFactory();
+        beanManagerBindingService.getManagedObjectInjector().inject(referenceFactory);
         serviceTarget.addService(beanManagerBindingServiceName, beanManagerBindingService)
-                .addInjection(beanManagerBindingService.getManagedObjectInjector(), referenceFactory)
                 .addDependency(contextServiceName, ServiceBasedNamingStore.class, beanManagerBindingService.getNamingStoreInjector())
                 .addDependency(beanManagerServiceName, BeanManager.class, referenceFactory.beanManager)
                 .install();

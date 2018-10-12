@@ -101,7 +101,6 @@ import org.jboss.msc.inject.CastingInjector;
 import org.jboss.msc.inject.InjectionException;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.service.ServiceTarget;
@@ -342,11 +341,6 @@ public class PersistenceUnitServiceHandler {
             }
             BeanManagerAfterDeploymentValidation beanManagerAfterDeploymentValidation = registerJPAEntityListenerRegister(deploymentUnit);
 
-            final PersistenceUnitServiceImpl service =
-                    new PersistenceUnitServiceImpl(classLoader, pu, adaptor, provider, PersistenceUnitRegistryImpl.INSTANCE,
-                            deploymentUnit.getServiceName(), validatorFactory, deploymentUnit.getAttachment(org.jboss.as.ee.naming.Attachments.JAVA_NAMESPACE_SETUP_ACTION),
-                            beanManagerAfterDeploymentValidation );
-
             final PersistenceAdaptorRemoval persistenceAdaptorRemoval = new PersistenceAdaptorRemoval(pu, adaptor);
             deploymentUnit.addToAttachmentList(REMOVAL_KEY, persistenceAdaptorRemoval);
 
@@ -360,6 +354,12 @@ public class PersistenceUnitServiceHandler {
 
             deploymentUnit.addToAttachmentList(Attachments.WEB_DEPENDENCIES, puServiceName);
 
+            final PersistenceUnitServiceImpl service =
+                    new PersistenceUnitServiceImpl(classLoader, pu, adaptor, provider, PersistenceUnitRegistryImpl.INSTANCE,
+                            deploymentUnit.getServiceName(), validatorFactory, deploymentUnit.getAttachment(org.jboss.as.ee.naming.Attachments.JAVA_NAMESPACE_SETUP_ACTION),
+                            beanManagerAfterDeploymentValidation );
+
+            service.getPropertiesInjector().inject(properties);
             ServiceBuilder<PersistenceUnitService> builder = serviceTarget.addService(puServiceName, service);
             boolean useDefaultDataSource = Configuration.allowDefaultDataSourceUse(pu);
             final String jtaDataSource = adjustJndi(pu.getJtaDataSourceName());
@@ -423,9 +423,6 @@ public class PersistenceUnitServiceHandler {
              */
             entityManagerFactoryBind(eeModuleDescription, serviceTarget, pu, puServiceName);
 
-            builder.setInitialMode(ServiceController.Mode.ACTIVE)
-                .addInjection(service.getPropertiesInjector(), properties);
-
             // get async executor from Services.addServerExecutorDependency
             addServerExecutorDependency(builder, service.getExecutorInjector());
 
@@ -471,8 +468,6 @@ public class PersistenceUnitServiceHandler {
                                                                    // EAR deployments that contain a WAR that has persistence units defined.
             }
 
-            final PhaseOnePersistenceUnitServiceImpl service = new PhaseOnePersistenceUnitServiceImpl(classLoader, pu, adaptor, deploymentUnit.getServiceName(), proxyBeanManager);
-
             deploymentUnit.addToAttachmentList(REMOVAL_KEY, new PersistenceAdaptorRemoval(pu, adaptor));
 
             // add persistence provider specific properties
@@ -486,6 +481,8 @@ public class PersistenceUnitServiceHandler {
 
             deploymentUnit.addToAttachmentList(Attachments.WEB_DEPENDENCIES, puServiceName);
 
+            final PhaseOnePersistenceUnitServiceImpl service = new PhaseOnePersistenceUnitServiceImpl(classLoader, pu, adaptor, deploymentUnit.getServiceName(), proxyBeanManager);
+            service.getPropertiesInjector().inject(properties);
             ServiceBuilder<PhaseOnePersistenceUnitServiceImpl> builder = serviceTarget.addService(puServiceName, service);
 
             boolean useDefaultDataSource = Configuration.allowDefaultDataSourceUse(pu);
@@ -534,9 +531,6 @@ public class PersistenceUnitServiceHandler {
                 CacheDeploymentListener.clearInternalDeploymentSupport();
             }
 
-            builder.setInitialMode(ServiceController.Mode.ACTIVE)
-                .addInjection(service.getPropertiesInjector(), properties);
-
             // get async executor from Services.addServerExecutorDependency
             addServerExecutorDependency(builder, service.getExecutorInjector());
 
@@ -580,7 +574,6 @@ public class PersistenceUnitServiceHandler {
                 validatorFactory = deploymentUnit.getAttachment(BeanValidationAttachments.VALIDATOR_FACTORY);
             }
             BeanManagerAfterDeploymentValidation beanManagerAfterDeploymentValidation = registerJPAEntityListenerRegister(deploymentUnit);
-            final PersistenceUnitServiceImpl service = new PersistenceUnitServiceImpl(classLoader, pu, adaptor, provider, PersistenceUnitRegistryImpl.INSTANCE, deploymentUnit.getServiceName(), validatorFactory, deploymentUnit.getAttachment(org.jboss.as.ee.naming.Attachments.JAVA_NAMESPACE_SETUP_ACTION), beanManagerAfterDeploymentValidation);
             final PersistenceAdaptorRemoval persistenceAdaptorRemoval =  new PersistenceAdaptorRemoval(pu, adaptor);
             deploymentUnit.addToAttachmentList(REMOVAL_KEY, persistenceAdaptorRemoval);
 
@@ -594,6 +587,8 @@ public class PersistenceUnitServiceHandler {
 
             deploymentUnit.addToAttachmentList(Attachments.WEB_DEPENDENCIES, puServiceName);
 
+            final PersistenceUnitServiceImpl service = new PersistenceUnitServiceImpl(classLoader, pu, adaptor, provider, PersistenceUnitRegistryImpl.INSTANCE, deploymentUnit.getServiceName(), validatorFactory, deploymentUnit.getAttachment(org.jboss.as.ee.naming.Attachments.JAVA_NAMESPACE_SETUP_ACTION), beanManagerAfterDeploymentValidation);
+            service.getPropertiesInjector().inject(properties);
             ServiceBuilder<PersistenceUnitService> builder = serviceTarget.addService(puServiceName, service);
             // the PU service has to depend on the JPAService which is responsible for setting up the necessary JPA infrastructure (like registering the cache EventListener(s))
             // @see https://issues.jboss.org/browse/WFLY-1531 for details
@@ -664,9 +659,6 @@ public class PersistenceUnitServiceHandler {
              * handle extension that binds an entity manager factory to specified JNDI location
              */
             entityManagerFactoryBind(eeModuleDescription, serviceTarget, pu, puServiceName);
-
-            builder.setInitialMode(ServiceController.Mode.ACTIVE)
-                .addInjection(service.getPropertiesInjector(), properties);
 
             // get async executor from Services.addServerExecutorDependency
             addServerExecutorDependency(builder, service.getExecutorInjector());

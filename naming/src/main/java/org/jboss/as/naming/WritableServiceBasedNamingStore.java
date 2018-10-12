@@ -79,10 +79,9 @@ public class WritableServiceBasedNamingStore extends ServiceBasedNamingStore imp
         try {
             // unlike on deployment processors, we may assume here it's a shareable bind if the owner is a deployment, because deployment unshareable namespaces are readonly stores
             final BinderService binderService = new BinderService(name.toString(), null, deploymentUnitServiceName != null);
+            binderService.getManagedObjectInjector().inject(new ImmediateManagedReferenceFactory(object));
             final ServiceBuilder<?> builder = serviceTarget.addService(bindName, binderService)
-                    .addDependency(getServiceNameBase(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector())
-                    .addInjection(binderService.getManagedObjectInjector(), new ImmediateManagedReferenceFactory(object))
-                    .setInitialMode(ServiceController.Mode.ACTIVE);
+                    .addDependency(getServiceNameBase(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector());
             final ServiceController<?> binderServiceController = builder.install();
             final StabilityMonitor monitor = new StabilityMonitor();
             monitor.addController(binderServiceController);

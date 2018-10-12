@@ -219,8 +219,8 @@ public class JMSDestinationDefinitionInjectionSource extends ResourceDefinitionI
 
     private <D extends Destination> void inject(ServiceBuilder<?> serviceBuilder, Injector<ManagedReferenceFactory> injector, Service<D> destinationService) {
         final ContextListAndJndiViewManagedReferenceFactory referenceFactoryService = new MessagingJMSDestinationManagedReferenceFactory(destinationService);
-        serviceBuilder.addInjection(injector, referenceFactoryService)
-                .addListener(new LifecycleListener() {
+        injector.inject(referenceFactoryService);
+        serviceBuilder.addListener(new LifecycleListener() {
                     public void handleEvent(final ServiceController<?> controller, final LifecycleEvent event) {
                         switch (event) {
                             case UP: {

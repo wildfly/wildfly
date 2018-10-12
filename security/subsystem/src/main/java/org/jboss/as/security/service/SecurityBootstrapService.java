@@ -40,7 +40,6 @@ import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
@@ -158,13 +157,11 @@ public class SecurityBootstrapService implements Service<Void> {
     private void setupPolicyRegistration(final StartContext context) {
         ServiceTarget target = context.getChildTarget();
         final BinderService binderService = new BinderService(POLICY_REGISTRATION);
+        binderService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(
+                Values.immediateValue(new JBossPolicyRegistration())));
         target.addService(ContextNames.buildServiceName(ContextNames.JAVA_CONTEXT_SERVICE_NAME, POLICY_REGISTRATION), binderService)
                 .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, ServiceBasedNamingStore.class, binderService.getNamingStoreInjector())
-                .addInjection(binderService.getManagedObjectInjector(), new ValueManagedReferenceFactory(
-                        Values.immediateValue(new JBossPolicyRegistration())))
-                .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
-
     }
 
     private Class<?> loadClass(final String module, final String className) throws ClassNotFoundException, ModuleLoadException {
