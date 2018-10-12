@@ -39,6 +39,7 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import org.jboss.staxmapper.XMLMapper;
 import org.wildfly.security.manager.WildFlySecurityManager;
+import org.wildfly.transaction.client.ContextTransactionManager;
 
 import javax.transaction.Status;
 import javax.transaction.Synchronization;
@@ -86,7 +87,6 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
     private final boolean createIfNotExists;
     private MarshallerFactory factory;
     private MarshallingConfiguration configuration;
-    private final InjectedValue<TransactionManager> transactionManager = new InjectedValue<TransactionManager>();
     private final InjectedValue<TransactionSynchronizationRegistry> transactionSynchronizationRegistry = new InjectedValue<TransactionSynchronizationRegistry>();
     private final InjectedValue<ModuleLoader> moduleLoader = new InjectedValue<ModuleLoader>();
     private final InjectedValue<PathManager> pathManager = new InjectedValue<PathManager>();
@@ -202,7 +202,7 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
     private void persistTimer(final TimerImpl timer, boolean newTimer) {
         final Lock lock = getLock(timer.getTimedObjectId());
         try {
-            final int status = transactionManager.getValue().getStatus();
+            final int status = ContextTransactionManager.getInstance().getStatus();
             if (status == Status.STATUS_MARKED_ROLLBACK || status == Status.STATUS_ROLLEDBACK ||
                     status == Status.STATUS_ROLLING_BACK) {
                 //no need to persist anyway
@@ -299,7 +299,7 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
      */
     private TimerImpl mostRecentEntityVersion(final TimerImpl timerImpl) {
         try {
-            final int status = transactionManager.getValue().getStatus();
+            final int status = ContextTransactionManager.getInstance().getStatus();
             if (status == Status.STATUS_UNKNOWN ||
                     status == Status.STATUS_NO_TRANSACTION) {
                 return timerImpl;
@@ -509,10 +509,6 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public InjectedValue<TransactionManager> getTransactionManager() {
-        return transactionManager;
     }
 
     public InjectedValue<TransactionSynchronizationRegistry> getTransactionSynchronizationRegistry() {

@@ -44,7 +44,12 @@ public class ConnectorServices {
      * A map whose key corresponds to a ra name and whose value is an identifier with which the RA is registered in the
      * {@link org.jboss.jca.core.spi.rar.ResourceAdapterRepository}
      */
-    private static Map<String, String> resourceAdapterRepositoryIdentifiers = new HashMap<String, String>();
+    private static final Map<String, String> resourceAdapterRepositoryIdentifiers = new HashMap<String, String>();
+
+    /**
+     * A map whose key corresponds to a capability name and whose value is the service name for that capability
+     */
+    private static final Map<String, ServiceName> capabilityServiceNames = new HashMap<String, ServiceName>();
 
     public static final ServiceName CONNECTOR_CONFIG_SERVICE = ServiceName.JBOSS.append("connector", "config");
 
@@ -237,6 +242,32 @@ public class ConnectorServices {
     public static void unregisterResourceAdapterIdentifier(final String raName) {
         synchronized (resourceAdapterRepositoryIdentifiers) {
             resourceAdapterRepositoryIdentifiers.remove(raName);
+        }
+    }
+
+    public static void registerCapabilityServiceName(String capabilityName, ServiceName serviceName) {
+        synchronized (capabilityServiceNames) {
+            // Minor check against misuse
+            ServiceName existing = capabilityServiceNames.get(capabilityName);
+            if (existing != null && ! existing.equals(serviceName)) {
+                throw new IllegalStateException();
+            }
+
+            capabilityServiceNames.put(capabilityName, serviceName);
+        }
+    }
+
+    /**
+     * Name of the capability that ensures a local provider of transactions is present.
+     * Once its service is started, calls to the getInstance() methods of ContextTransactionManager,
+     * ContextTransactionSynchronizationRegistry and LocalUserTransaction can be made knowing
+     * that the global default TM, TSR and UT will be from that provider.
+     */
+    public static final String LOCAL_TRANSACTION_PROVIDER_CAPABILITY = "org.wildfly.transactions.global-default-local-provider";
+
+    public static ServiceName getLocalTransactionProviderServiceName() {
+        synchronized (capabilityServiceNames) {
+            return capabilityServiceNames.get(LOCAL_TRANSACTION_PROVIDER_CAPABILITY);
         }
     }
 }

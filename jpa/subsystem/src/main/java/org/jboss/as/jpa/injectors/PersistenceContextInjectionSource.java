@@ -51,7 +51,6 @@ import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.as.txn.service.TransactionManagerService;
 import org.jboss.as.txn.service.TransactionSynchronizationRegistryService;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
@@ -59,6 +58,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.value.ImmediateValue;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
+import org.wildfly.transaction.client.ContextTransactionManager;
 
 /**
  * Represents the PersistenceContext injected into a component.
@@ -75,7 +75,6 @@ public class PersistenceContextInjectionSource extends InjectionSource {
 
     /**
      * Constructor for the PersistenceContextInjectorService
-     *
      * @param type              The persistence context type
      * @param properties        The persistence context properties
      * @param puServiceName     represents the deployed persistence.xml that we are going to use.
@@ -86,7 +85,7 @@ public class PersistenceContextInjectionSource extends InjectionSource {
      * @param pu
      * @param jpaDeploymentSettings Optional {@link JPADeploymentSettings} applicable for the persistence context
      */
-    public PersistenceContextInjectionSource(final PersistenceContextType type, final SynchronizationType synchronizationType , final Map properties, final ServiceName puServiceName,
+    public PersistenceContextInjectionSource(final PersistenceContextType type, final SynchronizationType synchronizationType, final Map properties, final ServiceName puServiceName,
                                              final ServiceRegistry serviceRegistry, final String scopedPuName, final String injectionTypeName, final PersistenceUnitMetadata pu, final JPADeploymentSettings jpaDeploymentSettings) {
 
         this.type = type;
@@ -157,7 +156,7 @@ public class PersistenceContextInjectionSource extends InjectionSource {
             //TODO: change all this to use injections
             //this is currntly safe, as there is a DUP dependency on the TSR
             TransactionSynchronizationRegistry tsr = (TransactionSynchronizationRegistry) serviceRegistry.getRequiredService(TransactionSynchronizationRegistryService.SERVICE_NAME).getValue();
-            TransactionManager transactionManager = (TransactionManager) serviceRegistry.getRequiredService(TransactionManagerService.SERVICE_NAME).getValue();
+            TransactionManager transactionManager = ContextTransactionManager.getInstance();
             if (type.equals(PersistenceContextType.TRANSACTION)) {
                 entityManager = new TransactionScopedEntityManager(unitName, properties, emf, synchronizationType, tsr, transactionManager);
                 if (ROOT_LOGGER.isDebugEnabled())

@@ -21,6 +21,8 @@
  */
 package org.jboss.as.weld;
 
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.msc.service.ServiceName;
 
@@ -38,6 +40,15 @@ public final class ServiceNames {
 
     public static ServiceName beanManagerServiceName(final DeploymentUnit deploymentUnit) {
         return deploymentUnit.getServiceName().append(BEAN_MANAGER_SERVICE_NAME);
+    }
+
+    public static ServiceName capabilityServiceName(final DeploymentUnit deploymentUnit, final String baseCapabilityName, final String... dynamicParts) {
+        CapabilityServiceSupport capabilityServiceSupport = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
+        if (dynamicParts == null || dynamicParts.length == 0) {
+            return capabilityServiceSupport.getCapabilityServiceName(baseCapabilityName);
+        } else {
+            return capabilityServiceSupport.getCapabilityServiceName(baseCapabilityName, dynamicParts);
+        }
     }
 
 }

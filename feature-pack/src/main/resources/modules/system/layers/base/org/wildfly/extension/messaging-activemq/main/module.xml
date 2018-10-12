@@ -85,6 +85,7 @@
         <module name="org.wildfly.clustering.api"/>
         <module name="org.wildfly.clustering.service"/>
         <module name="org.wildfly.clustering.spi"/>
+        <module name="org.wildfly.transaction.client"/>
         <!-- Use the HornetQ client module to create the legacy connection factory and destination resources -->
         <module name="org.hornetq.client" />
     </dependencies>

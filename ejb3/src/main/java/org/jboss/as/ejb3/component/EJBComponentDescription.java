@@ -565,8 +565,9 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                 componentConfiguration.getCreateDependencies().add(new DependencyConfigurator<EJBComponentCreateService>() {
                     @Override
                     public void configureDependency(final ServiceBuilder<?> serviceBuilder, final EJBComponentCreateService ejbComponentCreateService) throws DeploymentUnitProcessingException {
-                        // add dependency on transaction manager
-                        serviceBuilder.addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER);
+                        CapabilityServiceSupport support = context.getDeploymentUnit().getAttachment(org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT);
+                        // add dependency on the local transaction provider
+                        serviceBuilder.addDependency(support.getCapabilityServiceName("org.wildfly.transactions.global-default-local-provider"));
                         // add dependency on UserTransaction
                         serviceBuilder.addDependency(TxnServices.JBOSS_TXN_USER_TRANSACTION, UserTransaction.class, ejbComponentCreateService.getUserTransactionInjector());
                         // add dependency on TransactionSynchronizationRegistry

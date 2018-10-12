@@ -561,7 +561,7 @@ public class PersistenceUnitServiceHandler {
             final PersistenceUnitMetadata pu,
             final PersistenceProvider provider,
             final PersistenceProviderAdaptor adaptor) throws DeploymentUnitProcessingException {
-        TransactionManager transactionManager = deploymentUnit.getAttachment(JpaAttachments.TRANSACTION_MANAGER);
+        TransactionManager transactionManager = ContextTransactionManager.getInstance();
         TransactionSynchronizationRegistry transactionSynchronizationRegistry = deploymentUnit.getAttachment(JpaAttachments.TRANSACTION_SYNCHRONIZATION_REGISTRY);
         CapabilityServiceSupport capabilitySupport = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
         pu.setClassLoader(classLoader);

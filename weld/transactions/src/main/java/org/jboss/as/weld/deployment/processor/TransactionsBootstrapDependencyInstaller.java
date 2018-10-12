@@ -21,12 +21,11 @@
  */
 package org.jboss.as.weld.deployment.processor;
 
-import javax.transaction.TransactionManager;
 import javax.transaction.UserTransaction;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.txn.service.TransactionManagerService;
 import org.jboss.as.txn.service.UserTransactionService;
+import org.jboss.as.weld.ServiceNames;
 import org.jboss.as.weld.services.bootstrap.WeldTransactionServices;
 import org.jboss.as.weld.spi.BootstrapDependencyInstaller;
 import org.jboss.msc.service.ServiceName;
@@ -45,7 +44,8 @@ public class TransactionsBootstrapDependencyInstaller implements BootstrapDepend
         final ServiceName weldTransactionServiceName = deploymentUnit.getServiceName().append(WeldTransactionServices.SERVICE_NAME);
 
         serviceTarget.addService(weldTransactionServiceName, weldTransactionServices)
-                .addDependency(TransactionManagerService.SERVICE_NAME, TransactionManager.class, weldTransactionServices.getInjectedTransactionManager())
+                // Ensure the local transaction provider is started before we start
+                .addDependency(ServiceNames.capabilityServiceName(deploymentUnit, "org.wildfly.transactions.global-default-local-provider"))
                 .addDependency(UserTransactionService.SERVICE_NAME, UserTransaction.class, weldTransactionServices.getInjectedTransaction()).install();
 
         return weldTransactionServiceName;

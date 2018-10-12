@@ -37,6 +37,7 @@ import org.picketlink.idm.spi.IdentityStore;
 import org.wildfly.extension.picketlink.idm.config.JPAStoreSubsystemConfiguration;
 import org.wildfly.extension.picketlink.idm.config.JPAStoreSubsystemConfigurationBuilder;
 import org.wildfly.extension.picketlink.idm.jpa.transaction.TransactionalEntityManagerHelper;
+import org.wildfly.transaction.client.ContextTransactionManager;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -71,7 +72,6 @@ public class JPAIdentityStoreService implements Service<JPAIdentityStoreService>
     private final JPAStoreSubsystemConfigurationBuilder configurationBuilder;
     private JPAStoreSubsystemConfiguration storeConfig;
     private EntityManagerFactory emf;
-    private final InjectedValue<TransactionManager> transactionManager = new InjectedValue<TransactionManager>();
     private InjectedValue<TransactionSynchronizationRegistry> transactionSynchronizationRegistry = new InjectedValue<TransactionSynchronizationRegistry>();
     private TransactionalEntityManagerHelper transactionalEntityManagerHelper;
 
@@ -84,7 +84,7 @@ public class JPAIdentityStoreService implements Service<JPAIdentityStoreService>
         this.storeConfig = this.configurationBuilder.create();
         this.transactionalEntityManagerHelper = new TransactionalEntityManagerHelper(
             this.transactionSynchronizationRegistry.getValue(),
-            this.transactionManager.getValue());
+            ContextTransactionManager.getInstance());
 
         try {
             configureEntityManagerFactory();
@@ -100,7 +100,7 @@ public class JPAIdentityStoreService implements Service<JPAIdentityStoreService>
                     EntityManager entityManager = context.getParameter(JPAIdentityStore.INVOCATION_CTX_ENTITY_MANAGER);
 
                     if (entityManager == null || !entityManager.isOpen()) {
-                        context.setParameter(JPAIdentityStore.INVOCATION_CTX_ENTITY_MANAGER, getEntityManager(getTransactionManager().getValue()));
+                        context.setParameter(JPAIdentityStore.INVOCATION_CTX_ENTITY_MANAGER, getEntityManager(ContextTransactionManager.getInstance()));
                     }
                 }
             }
@@ -117,10 +117,6 @@ public class JPAIdentityStoreService implements Service<JPAIdentityStoreService>
     @Override
     public JPAIdentityStoreService getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
-    }
-
-    public InjectedValue<TransactionManager> getTransactionManager() {
-        return this.transactionManager;
     }
 
     public InjectedValue<TransactionSynchronizationRegistry> getTransactionSynchronizationRegistry() {

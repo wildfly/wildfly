@@ -25,7 +25,6 @@ package org.jboss.as.ejb3.component;
 import javax.ejb.TimerService;
 import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagementType;
-import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
 
@@ -99,7 +98,6 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
     private final String distinctName;
     private final String policyContextID;
 
-    private final InjectedValue<TransactionManager> transactionManagerInjectedValue = new InjectedValue<>();
     private final InjectedValue<UserTransaction> userTransactionInjectedValue = new InjectedValue<>();
     private final InjectedValue<TransactionSynchronizationRegistry> transactionSynchronizationRegistryValue = new InjectedValue<TransactionSynchronizationRegistry>();
     private final InjectedValue<ServerSecurityManager> serverSecurityManagerInjectedValue = new InjectedValue<>();

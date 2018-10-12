@@ -126,6 +126,9 @@ public class JBeretSubsystemParsingTestCase extends AbstractBatchTestCase {
 
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
-        return AdditionalInitialization.withCapabilities("org.wildfly.data-source.ExampleDS", "org.wildfly.security.security-domain.ApplicationDomain");
+        return AdditionalInitialization.withCapabilities(
+                "org.wildfly.data-source.ExampleDS",
+                "org.wildfly.security.security-domain.ApplicationDomain",
+                "org.wildfly.transactions.global-default-local-provider");
     }
 }

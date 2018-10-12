@@ -28,6 +28,7 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.SUBSYSTE
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -41,6 +42,9 @@ public class MessagingServices {
     static final ServiceName JBOSS_MESSAGING_ACTIVEMQ = ServiceName.JBOSS.append(MessagingExtension.SUBSYSTEM_NAME);
     static final ServiceName HTTP_UPGRADE_REGISTRY = ServiceName.JBOSS.append("http-upgrade-registry");
     public static final ServiceName ACTIVEMQ_CLIENT_THREAD_POOL = JBOSS_MESSAGING_ACTIVEMQ.append("client-thread-pool");
+
+    // Cached by MessagingSubsystemAdd at the beginning of runtime processing
+    static volatile CapabilityServiceSupport capabilityServiceSupport;
 
    public static ServiceName getActiveMQServiceName(PathAddress pathAddress) {
          // We need to figure out what ActiveMQ this operation is targeting.
@@ -88,7 +92,35 @@ public class MessagingServices {
 
     public static ServiceName getJMSBridgeServiceName(String bridgeName) {
        return JBOSS_MESSAGING_ACTIVEMQ.append(JMS_BRIDGE).append(bridgeName);
-   }
+    }
+
+    /**
+     * Determines a ServiceName from a capability name. Only supported for use by services installed by
+     * this subsystem; will not function reliably until the subsystem has begun adding runtime services.
+     *
+     * @param capabilityBaseName the base name of the capability, or its full name if it is not dynamic
+     * @param dynamicParts any dynamic parts of the capability name. May be {@code null}
+     * @return the service name
+     *
+     * @throws IllegalStateException if invoked before the subsystem has begun adding runtime services
+     */
+    public static ServiceName getCapabilityServiceName(String capabilityBaseName, String... dynamicParts) {
+        if (capabilityServiceSupport == null) {
+            throw new IllegalStateException();
+        }
+        if (dynamicParts == null || dynamicParts.length == 0) {
+            return capabilityServiceSupport.getCapabilityServiceName(capabilityBaseName);
+        }
+        return capabilityServiceSupport.getCapabilityServiceName(capabilityBaseName, dynamicParts);
+    }
+
+    /**
+     * Name of the capability that ensures a local provider of transactions is present.
+     * Once its service is started, calls to the getInstance() methods of ContextTransactionManager,
+     * ContextTransactionSynchronizationRegistry and LocalUserTransaction can be made knowing
+     * that the global default TM, TSR and UT will be from that provider.
+     */
+    public static final String LOCAL_TRANSACTION_PROVIDER_CAPABILITY = "org.wildfly.transactions.global-default-local-provider";
 
     public static boolean isSubsystemResource(final OperationContext context) {
         return context.getCurrentAddress().size() > 0 && SUBSYSTEM.equals(context.getCurrentAddress().getParent().getLastElement().getKey());

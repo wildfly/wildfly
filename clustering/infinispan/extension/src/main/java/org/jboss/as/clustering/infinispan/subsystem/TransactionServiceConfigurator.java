@@ -25,6 +25,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import static org.jboss.as.clustering.infinispan.subsystem.TransactionResourceDefinition.Attribute.LOCKING;
 import static org.jboss.as.clustering.infinispan.subsystem.TransactionResourceDefinition.Attribute.MODE;
 import static org.jboss.as.clustering.infinispan.subsystem.TransactionResourceDefinition.Attribute.STOP_TIMEOUT;
+import static org.jboss.as.clustering.infinispan.subsystem.TransactionResourceDefinition.TransactionRequirement.LOCAL_TRANSACTION_PROVIDER;
 
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -45,7 +46,9 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.service.ServiceConfigurator;
+import org.wildfly.transaction.client.ContextTransactionManager;
 
 /**
  * @author Paul Ferraro
@@ -58,6 +61,7 @@ public class TransactionServiceConfigurator extends ComponentServiceConfigurator
     private volatile LockingMode locking;
     private volatile long timeout;
     private volatile TransactionMode mode;
+    private volatile ServiceName transactionProviderServiceName;
 
     public TransactionServiceConfigurator(PathAddress address) {
         super(CacheComponent.TRANSACTION, address);
@@ -82,7 +86,17 @@ public class TransactionServiceConfigurator extends ComponentServiceConfigurator
                 this.tsr = builder.requires(TxnServices.JBOSS_TXN_SYNCHRONIZATION_REGISTRY);
             }
             default: {
-                this.tm = builder.requires(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER);
+                // Add a service dependency on the void service provided by the
+                // TransactionResourceDefinition.TransacationRequirement.LOCAL_TRANSACTION_PROVIDER
+                // capability, so we don't start before it
+                builder.requires(transactionProviderServiceName);
+
+                this.tm = new Supplier<TransactionManager>() {
+                    @Override
+                    public TransactionManager get() {
+                        return ContextTransactionManager.getInstance();
+                    }
+                };
             }
         }
         return super.register(builder);
@@ -93,6 +107,7 @@ public class TransactionServiceConfigurator extends ComponentServiceConfigurator
         this.mode = ModelNodes.asEnum(MODE.resolveModelAttribute(context, model), TransactionMode.class);
         this.locking = ModelNodes.asEnum(LOCKING.resolveModelAttribute(context, model), LockingMode.class);
         this.timeout = STOP_TIMEOUT.resolveModelAttribute(context, model).asLong();
+        this.transactionProviderServiceName = context.getCapabilityServiceName(LOCAL_TRANSACTION_PROVIDER.getName(), null);
         return this;
     }
 

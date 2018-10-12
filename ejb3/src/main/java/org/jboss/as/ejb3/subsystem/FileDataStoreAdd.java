@@ -24,7 +24,6 @@ package org.jboss.as.ejb3.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -37,7 +36,6 @@ import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.ejb3.timerservice.persistence.TimerPersistence;
 import org.jboss.as.ejb3.timerservice.persistence.filestore.FileTimerPersistence;
 import org.jboss.as.server.Services;
-import org.jboss.as.txn.service.TransactionManagerService;
 import org.jboss.as.txn.service.TransactionSynchronizationRegistryService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.ModuleLoader;
@@ -74,7 +72,7 @@ public class FileDataStoreAdd extends AbstractAddStepHandler {
         context.getServiceTarget().addService(serviceName, fileTimerPersistence)
                 .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, fileTimerPersistence.getModuleLoader())
                 .addDependency(PathManagerService.SERVICE_NAME, PathManager.class, fileTimerPersistence.getPathManager())
-                .addDependency(TransactionManagerService.SERVICE_NAME, TransactionManager.class, fileTimerPersistence.getTransactionManager())
+                .addDependency(context.getCapabilityServiceName("org.wildfly.transactions.global-default-local-provider", null))
                 .addDependency(TransactionSynchronizationRegistryService.SERVICE_NAME, TransactionSynchronizationRegistry.class, fileTimerPersistence.getTransactionSynchronizationRegistry())
                 .install();
 

@@ -48,13 +48,13 @@ import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.network.ManagedBinding;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.server.Services;
-import org.jboss.as.txn.service.TxnServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.metadata.Defaults;
 import org.jboss.jca.common.api.metadata.common.FlushStrategy;
@@ -187,10 +187,11 @@ public class ExternalPooledConnectionFactoryService implements Service<Void> {
     // can be null. In that case the behaviour is depending on the IronJacamar container setting.
     private final Boolean enlistmentTrace;
     private ExceptionSupplier<CredentialSource, Exception> credentialSourceSupplier;
-
+    private final CapabilityServiceSupport capabilityServiceSupport;
 
     public ExternalPooledConnectionFactoryService(String name, TransportConfiguration[] connectors, DiscoveryGroupConfiguration groupConfiguration, String jgroupsClusterName,
-            String jgroupsChannelName, List<PooledConnectionFactoryConfigProperties> adapterParams, BindInfo bindInfo, List<String> jndiAliases, String txSupport, int minPoolSize, int maxPoolSize, String managedConnectionPoolClassName, Boolean enlistmentTrace) {
+            String jgroupsChannelName, List<PooledConnectionFactoryConfigProperties> adapterParams, BindInfo bindInfo, List<String> jndiAliases, String txSupport,
+            int minPoolSize, int maxPoolSize, String managedConnectionPoolClassName, Boolean enlistmentTrace, CapabilityServiceSupport capabilityServiceSupport) {
         this.name = name;
         this.connectors = connectors;
         this.discoveryGroupConfiguration = groupConfiguration;
@@ -204,6 +205,7 @@ public class ExternalPooledConnectionFactoryService implements Service<Void> {
         this.maxPoolSize = maxPoolSize;
         this.managedConnectionPoolClassName = managedConnectionPoolClassName;
         this.enlistmentTrace = enlistmentTrace;
+        this.capabilityServiceSupport = capabilityServiceSupport;
     }
 
 
@@ -232,7 +234,8 @@ public class ExternalPooledConnectionFactoryService implements Service<Void> {
         ServiceName serviceName = JMSServices.getPooledConnectionFactoryBaseServiceName(JBOSS_MESSAGING_ACTIVEMQ).append(name);
         ExternalPooledConnectionFactoryService service = new ExternalPooledConnectionFactoryService(name,
                 connectors, groupConfiguration, jgroupClusterName, jgroupChannelName, adapterParams,
-                bindInfo, jndiAliases, txSupport, minPoolSize, maxPoolSize, managedConnectionPoolClassName, enlistmentTrace);
+                bindInfo, jndiAliases, txSupport, minPoolSize, maxPoolSize, managedConnectionPoolClassName, enlistmentTrace,
+                context.getCapabilityServiceSupport());
 
         installService0(context, serviceName, service, groupConfiguration, connectorsSocketBindings, model);
         return service;
@@ -245,7 +248,7 @@ public class ExternalPooledConnectionFactoryService implements Service<Void> {
             Set<String> connectorsSocketBindings,
             ModelNode model) throws OperationFailedException {
         ServiceBuilder serviceBuilder = context.getServiceTarget().addService(serviceName);
-        serviceBuilder.requires(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER);
+        serviceBuilder.requires(context.getCapabilityServiceName(MessagingServices.LOCAL_TRANSACTION_PROVIDER_CAPABILITY, null));
        // ensures that Artemis client thread pools are not stopped before any deployment depending on a pooled-connection-factory
        serviceBuilder.requires(MessagingServices.ACTIVEMQ_CLIENT_THREAD_POOL);
         ModelNode credentialReference = ConnectionFactoryAttributes.Pooled.CREDENTIAL_REFERENCE.resolveModelAttribute(context, model);
@@ -440,7 +443,7 @@ public class ExternalPooledConnectionFactoryService implements Service<Void> {
                                     JcaSubsystemConfiguration.class, activator.getConfigInjector())
                             .addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class,
                                     activator.getCcmInjector()).addDependency(NamingService.SERVICE_NAME)
-                            .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER)
+                            .addDependency(capabilityServiceSupport.getCapabilityServiceName(MessagingServices.LOCAL_TRANSACTION_PROVIDER_CAPABILITY))
                             .addDependency(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append("default"))
                             .setInitialMode(ServiceController.Mode.PASSIVE).install();
 

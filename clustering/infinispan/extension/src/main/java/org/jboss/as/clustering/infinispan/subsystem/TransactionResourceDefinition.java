@@ -22,16 +22,22 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.UnaryOperator;
 
 import org.infinispan.transaction.LockingMode;
+import org.jboss.as.clustering.controller.BinaryCapabilityNameResolver;
+import org.jboss.as.clustering.controller.BinaryRequirementCapability;
+import org.jboss.as.clustering.controller.Capability;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.Operations;
+import org.jboss.as.clustering.controller.ResourceCapabilityReference;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
@@ -43,8 +49,10 @@ import org.jboss.as.clustering.controller.transform.OperationTransformer;
 import org.jboss.as.clustering.controller.transform.RequiredChildResourceDiscardPolicy;
 import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
+import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -61,6 +69,8 @@ import org.jboss.as.controller.transform.description.AttributeConverter.DefaultV
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
+import org.wildfly.clustering.service.Requirement;
 
 /**
  * Resource description for the addressable resource and its alias
@@ -109,6 +119,28 @@ public class TransactionResourceDefinition extends ComponentResourceDefinition {
         @Override
         public AttributeDefinition getDefinition() {
             return this.definition;
+        }
+    }
+
+    enum TransactionRequirement implements Requirement {
+        LOCAL_TRANSACTION_PROVIDER("org.wildfly.transactions.global-default-local-provider", Void.class);
+
+        private final String name;
+        private final Class<?> type;
+
+        TransactionRequirement(String name, Class<?> type) {
+            this.name = name;
+            this.type = type;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public Class<?> getType() {
+            return type;
         }
     }
 
@@ -244,7 +276,11 @@ public class TransactionResourceDefinition extends ComponentResourceDefinition {
         ManagementResourceRegistration registration = parent.registerSubModel(this);
         parent.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
 
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class);
+        Capability dependentCapability = new BinaryRequirementCapability(InfinispanCacheRequirement.CACHE, BinaryCapabilityNameResolver.GRANDPARENT_PARENT);
+        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
+                .addAttributes(Attribute.class)
+                // Add a requirement on the tm capability to the parent cache capability
+                .addResourceCapabilityReference(new TransactionResourceCapabilityReference(dependentCapability, TransactionRequirement.LOCAL_TRANSACTION_PROVIDER, EnumSet.of(TransactionMode.NONE, TransactionMode.BATCH)));
         ResourceServiceHandler handler = new SimpleResourceServiceHandler(TransactionServiceConfigurator::new);
         new SimpleResourceRegistration(descriptor, handler).register(registration);
 
@@ -253,5 +289,43 @@ public class TransactionResourceDefinition extends ComponentResourceDefinition {
         }
 
         return registration;
+    }
+
+    /** ResourceCapabilityReference that only records tx requirements if the TransactionMode indicates they are necessary. */
+    private static class TransactionResourceCapabilityReference extends ResourceCapabilityReference {
+
+        private final Set<TransactionMode> excludedModes;
+
+        private TransactionResourceCapabilityReference(Capability capability, Requirement requirement, Set<TransactionMode> excludedModes) {
+            super(capability, requirement);
+            this.excludedModes = excludedModes;
+        }
+
+        @Override
+        public void addCapabilityRequirements(OperationContext context, Resource resource, String attributeName, String... values) {
+            if (isTransactionalSupportRequired(context, resource, excludedModes)) {
+                super.addCapabilityRequirements(context, resource, attributeName, values);
+            }
+        }
+
+        @Override
+        public void removeCapabilityRequirements(OperationContext context, Resource resource, String attributeName, String... values) {
+            if (isTransactionalSupportRequired(context, resource, excludedModes)) {
+                super.removeCapabilityRequirements(context, resource, attributeName, values);
+            }
+        }
+
+        private static boolean isTransactionalSupportRequired(OperationContext context, Resource resource, Set<TransactionMode> excludedModes) {
+            try {
+                TransactionMode mode = ModelNodes.asEnum(Attribute.MODE.resolveModelAttribute(context, resource.getModel()), TransactionMode.class);
+                return !excludedModes.contains(mode);
+            } catch (OperationFailedException | RuntimeException e) {
+                // OFE would be due to an expression that can't be resolved right now (OperationContext.Stage.MODEL).
+                // Very unlikely an expression is used and that it uses a resolution source not available in MODEL.
+                // In any case we add the requirement. Downside is they are forced to configure the tx subsystem when
+                // they otherwise wouldn't, but that "otherwise wouldn't" also is a less likely scenario.
+                return true;
+            }
+        }
     }
 }

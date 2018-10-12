@@ -27,8 +27,6 @@ import static org.jboss.as.server.Services.addServerExecutorDependency;
 
 import java.util.Properties;
 
-import javax.transaction.TransactionManager;
-
 import org.apache.activemq.artemis.jms.bridge.ConnectionFactoryFactory;
 import org.apache.activemq.artemis.jms.bridge.DestinationFactory;
 import org.apache.activemq.artemis.jms.bridge.JMSBridge;
@@ -46,7 +44,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.as.naming.deployment.ContextNames;
-import org.jboss.as.txn.service.TxnServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.modules.Module;
@@ -93,8 +90,7 @@ public class JMSBridgeAdd extends AbstractAddStepHandler {
                 final ServiceName bridgeServiceName = MessagingServices.getJMSBridgeServiceName(bridgeName);
 
                 final ServiceBuilder<JMSBridge> jmsBridgeServiceBuilder = context.getServiceTarget().addService(bridgeServiceName, bridgeService)
-                        .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER,
-                                TransactionManager.class, bridgeService.getTransactionManagerInjector())
+                        .addDependency(context.getCapabilityServiceName(MessagingServices.LOCAL_TRANSACTION_PROVIDER_CAPABILITY, null))
                         .setInitialMode(Mode.ACTIVE);
                 addServerExecutorDependency(jmsBridgeServiceBuilder, bridgeService.getExecutorInjector());
                 if (dependsOnLocalResources(context, model, JMSBridgeDefinition.SOURCE_CONTEXT)) {

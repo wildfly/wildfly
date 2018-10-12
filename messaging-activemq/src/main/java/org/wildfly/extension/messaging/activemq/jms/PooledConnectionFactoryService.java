@@ -55,7 +55,6 @@ import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.server.Services;
-import org.jboss.as.txn.service.TxnServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.metadata.Defaults;
 import org.jboss.jca.common.api.metadata.common.FlushStrategy;
@@ -305,7 +304,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
     private static ServiceBuilder createServiceBuilder(ServiceTarget serviceTarget, ServiceName serverServiceName, ServiceName serviceName, PooledConnectionFactoryService service) {
         ServiceBuilder serviceBuilder = serviceTarget
                 .addService(serviceName, service)
-                .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER)
+                .addDependency(MessagingServices.getCapabilityServiceName(MessagingServices.LOCAL_TRANSACTION_PROVIDER_CAPABILITY))
                 .addDependency(serverServiceName, ActiveMQServer.class, service.activeMQServer)
                 .addDependency(ActiveMQActivationService.getServiceName(serverServiceName))
                 .addDependency(JMSServices.getJmsManagerBaseServiceName(serverServiceName))
@@ -474,7 +473,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
                             JcaSubsystemConfiguration.class, activator.getConfigInjector())
                     .addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class,
                             activator.getCcmInjector()).addDependency(NamingService.SERVICE_NAME)
-                    .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER)
+                    .addDependency(MessagingServices.getCapabilityServiceName(MessagingServices.LOCAL_TRANSACTION_PROVIDER_CAPABILITY))
                     .addDependency(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append("default"))
                     .setInitialMode(ServiceController.Mode.PASSIVE).install();
             // Mock the deployment service to allow it to start

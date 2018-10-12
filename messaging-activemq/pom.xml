@@ -62,6 +62,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.wildfly.transaction</groupId>
+            <artifactId>wildfly-transaction-client</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.activemq.artemis.integration</groupId>
             <artifactId>artemis-wildfly-integration</artifactId>
         </dependency>
