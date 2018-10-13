@@ -41,6 +41,8 @@ public class ConfigValidator {
     public static List<String> validateConfig(final OperationContext context, final ModelNode resourceModel) throws OperationFailedException {
         final List<String> warnings = new LinkedList<>();
 
+        validateSocketBindings(context, resourceModel);
+
         final boolean supportSSL = IIOPRootDefinition.SUPPORT_SSL.resolveModelAttribute(context, resourceModel).asBoolean();
         final boolean serverRequiresSsl = IIOPRootDefinition.SERVER_REQUIRES_SSL.resolveModelAttribute(context, resourceModel).asBoolean();
         final boolean clientRequiresSsl = IIOPRootDefinition.CLIENT_REQUIRES_SSL.resolveModelAttribute(context, resourceModel).asBoolean();
@@ -53,6 +55,15 @@ public class ConfigValidator {
         validateORBInitializerConfig(context, resourceModel);
 
         return warnings;
+    }
+
+    private static void validateSocketBindings(final OperationContext context, final ModelNode resourceModel) throws OperationFailedException {
+        final ModelNode socketBinding = IIOPRootDefinition.SOCKET_BINDING.resolveModelAttribute(context, resourceModel);
+        final ModelNode sslSocketBinding = IIOPRootDefinition.SSL_SOCKET_BINDING.resolveModelAttribute(context, resourceModel);
+
+        if(!socketBinding.isDefined() && !sslSocketBinding.isDefined()){
+            throw IIOPLogger.ROOT_LOGGER.noSocketBindingsConfigured();
+        }
     }
 
     private static boolean isSSLConfigured(final OperationContext context, final ModelNode resourceModel) throws OperationFailedException {
