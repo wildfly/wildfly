@@ -49,7 +49,6 @@
         <module name="org.jboss.as.ee"/>
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.as.naming"/>
-        <module name="org.jboss.as.transactions" optional="true"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.metadata.common"/>
         <module name="org.jboss.metadata.web"/>
