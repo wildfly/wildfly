@@ -27,6 +27,7 @@ import static org.jboss.as.txn.subsystem.CommonAttributes.JDBC_STORE_DATASOURCE;
 import static org.jboss.as.txn.subsystem.CommonAttributes.JTS;
 import static org.jboss.as.txn.subsystem.CommonAttributes.USE_JOURNAL_STORE;
 import static org.jboss.as.txn.subsystem.CommonAttributes.USE_JDBC_STORE;
+import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -38,6 +39,7 @@ import javax.transaction.UserTransaction;
 import io.undertow.server.handlers.PathHandler;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.CapabilityServiceTarget;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -413,14 +415,26 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
     }
 
     private void performRecoveryEnvBoottime(OperationContext context, ModelNode model, final boolean jts, List<ServiceName> deps) throws OperationFailedException {
+        CapabilityServiceTarget serviceTarget = context.getCapabilityServiceTarget();
+
         //recovery environment
         final String recoveryBindingName = TransactionSubsystemRootResourceDefinition.BINDING.resolveModelAttribute(context, model).asString();
         final String recoveryStatusBindingName = TransactionSubsystemRootResourceDefinition.STATUS_BINDING.resolveModelAttribute(context, model).asString();
         final boolean recoveryListener = TransactionSubsystemRootResourceDefinition.RECOVERY_LISTENER.resolveModelAttribute(context, model).asBoolean();
 
         final ArjunaRecoveryManagerService recoveryManagerService = new ArjunaRecoveryManagerService(recoveryListener, jts);
-        final ServiceBuilder<RecoveryManagerService> recoveryManagerServiceServiceBuilder = context.getServiceTarget()
-                .addService(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER, recoveryManagerService);
+        final ServiceBuilder<RecoveryManagerService> recoveryManagerServiceServiceBuilder = serviceTarget
+                .addCapability(XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY, recoveryManagerService)
+                .addCapabilityRequirement("org.wildfly.network.socket-binding", SocketBinding.class, recoveryManagerService.getRecoveryBindingInjector(), recoveryBindingName)
+                .addCapabilityRequirement("org.wildfly.network.socket-binding", SocketBinding.class, recoveryManagerService.getStatusBindingInjector(), recoveryStatusBindingName)
+                .addCapabilityRequirement("org.wildfly.management.socket-binding-manager", SocketBindingManager.class, recoveryManagerService.getBindingManager())
+                .addDependency(SuspendController.SERVICE_NAME, SuspendController.class, recoveryManagerService.getSuspendControllerInjector())
+                .addDependency(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT)
+                .addDependency(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT)
+                .addAliases(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER)
+                .setInitialMode(ServiceController.Mode.ACTIVE);
+
+
         // add dependency on JTA environment bean
         for (final ServiceName dep : deps) {
             recoveryManagerServiceServiceBuilder.addDependency(dep);
@@ -428,17 +442,17 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         // Register WildFly transaction services - TODO: this should eventually be separated from the Narayana subsystem
         final LocalTransactionContextService localTransactionContextService = new LocalTransactionContextService();
-        context.getServiceTarget().addService(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT, localTransactionContextService)
+        serviceTarget.addService(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT, localTransactionContextService)
                 .addDependency(TxnServices.JBOSS_TXN_EXTENDED_JBOSS_XA_TERMINATOR, ExtendedJBossXATerminator.class, localTransactionContextService.getExtendedJBossXATerminatorInjector())
                 .addDependency(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER, com.arjuna.ats.jbossatx.jta.TransactionManagerService.class, localTransactionContextService.getTransactionManagerInjector())
-                .addDependency(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER, XAResourceRecoveryRegistry.class, localTransactionContextService.getXAResourceRecoveryRegistryInjector())
+                .addDependency(XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY.getCapabilityServiceName(), XAResourceRecoveryRegistry.class, localTransactionContextService.getXAResourceRecoveryRegistryInjector())
                 .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, localTransactionContextService.getServerEnvironmentInjector())
                 .setInitialMode(Mode.ACTIVE)
                 .install();
 
         if (context.hasOptionalCapability(REMOTING_ENDPOINT_CAPABILITY_NAME, TransactionSubsystemRootResourceDefinition.TRANSACTION_CAPABILITY.getName(),null)) {
             final RemotingTransactionServiceService remoteTransactionServiceService = new RemotingTransactionServiceService();
-            context.getServiceTarget().addService(TxnServices.JBOSS_TXN_REMOTE_TRANSACTION_SERVICE, remoteTransactionServiceService)
+            serviceTarget.addService(TxnServices.JBOSS_TXN_REMOTE_TRANSACTION_SERVICE, remoteTransactionServiceService)
                 .addDependency(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT, LocalTransactionContext.class, remoteTransactionServiceService.getLocalTransactionContextInjector())
                 .addDependency(context.getCapabilityServiceName(REMOTING_ENDPOINT_CAPABILITY_NAME, Endpoint.class), Endpoint.class, remoteTransactionServiceService.getEndpointInjector())
                 .setInitialMode(Mode.LAZY)
@@ -447,7 +461,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         if(context.hasOptionalCapability(UNDERTOW_HTTP_INVOKER_CAPABILITY_NAME, TransactionSubsystemRootResourceDefinition.TRANSACTION_CAPABILITY.getName(), null)) {
             final TransactionRemoteHTTPService remoteHTTPService = new TransactionRemoteHTTPService();
-            context.getServiceTarget().addService(TxnServices.JBOSS_TXN_HTTP_REMOTE_TRANSACTION_SERVICE, remoteHTTPService)
+            serviceTarget.addService(TxnServices.JBOSS_TXN_HTTP_REMOTE_TRANSACTION_SERVICE, remoteHTTPService)
                 .addDependency(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT, LocalTransactionContext.class, remoteHTTPService.getLocalTransactionContextInjectedValue())
                 .addDependency(context.getCapabilityServiceName(UNDERTOW_HTTP_INVOKER_CAPABILITY_NAME, PathHandler.class), PathHandler.class, remoteHTTPService.getPathHandlerInjectedValue())
                     .install();
@@ -456,7 +470,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final String nodeIdentifier = TransactionSubsystemRootResourceDefinition.NODE_IDENTIFIER.resolveModelAttribute(context, model).asString();
         // install JTA environment bean service
         final JTAEnvironmentBeanService jtaEnvironmentBeanService = new JTAEnvironmentBeanService(nodeIdentifier);
-        context.getServiceTarget().addService(TxnServices.JBOSS_TXN_JTA_ENVIRONMENT, jtaEnvironmentBeanService)
+        serviceTarget.addService(TxnServices.JBOSS_TXN_JTA_ENVIRONMENT, jtaEnvironmentBeanService)
                 .setInitialMode(Mode.ACTIVE)
                 .install();
 
@@ -480,29 +494,20 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
             extendedJBossXATerminatorService = new ExtendedJBossXATerminatorService(terminator);
         }
 
-        context.getServiceTarget().addService(TxnServices.JBOSS_TXN_XA_TERMINATOR, xaTerminatorService)
+        serviceTarget.addService(TxnServices.JBOSS_TXN_XA_TERMINATOR, xaTerminatorService)
                 .setInitialMode(Mode.ACTIVE).install();
-        context.getServiceTarget()
+        serviceTarget
                 .addService(TxnServices.JBOSS_TXN_EXTENDED_JBOSS_XA_TERMINATOR, extendedJBossXATerminatorService)
                 .setInitialMode(Mode.ACTIVE).install();
 
         final JBossContextXATerminatorService contextXATerminatorService = new JBossContextXATerminatorService();
-        context.getServiceTarget()
+        serviceTarget
                 .addService(TxnServices.JBOSS_TXN_CONTEXT_XA_TERMINATOR, contextXATerminatorService)
                 .addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class, contextXATerminatorService.getJBossXATerminatorInjector())
                 .addDependency(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT, LocalTransactionContext.class, contextXATerminatorService.getLocalTransactionContextInjector())
                 .setInitialMode(Mode.ACTIVE).install();
 
-
-        recoveryManagerServiceServiceBuilder
-                .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(recoveryBindingName), SocketBinding.class, recoveryManagerService.getRecoveryBindingInjector())
-                .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(recoveryStatusBindingName), SocketBinding.class, recoveryManagerService.getStatusBindingInjector())
-                .addDependency(SocketBindingManager.SOCKET_BINDING_MANAGER, SocketBindingManager.class, recoveryManagerService.getBindingManager())
-                .addDependency(SuspendController.SERVICE_NAME, SuspendController.class, recoveryManagerService.getSuspendControllerInjector())
-                .addDependency(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT)
-                .addDependency(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT)
-                .setInitialMode(ServiceController.Mode.ACTIVE)
-                .install();
+        recoveryManagerServiceServiceBuilder.install();
     }
 
     private void performCoordinatorEnvBoottime(OperationContext context, ModelNode coordEnvModel, final boolean jts) throws OperationFailedException {
@@ -535,7 +540,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 .addDependency(TxnServices.JBOSS_TXN_USER_TRANSACTION_REGISTRY, UserTransactionRegistry.class, transactionManagerService.getUserTransactionRegistry())
                 .addDependency(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT)
                 .addDependency(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT)
-                .addDependency(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER)
+                .addDependency(XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY.getCapabilityServiceName())
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
     }
