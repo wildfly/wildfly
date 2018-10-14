@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
+import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -83,7 +84,9 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
-        return AdditionalInitialization.withCapabilities(ClusteringDefaultRequirement.COMMAND_DISPATCHER_FACTORY.getName());
+        return AdditionalInitialization.withCapabilities(
+                ClusteringDefaultRequirement.COMMAND_DISPATCHER_FACTORY.getName(),
+                ConnectorServices.LOCAL_TRANSACTION_PROVIDER_CAPABILITY);
     }
 
     @Test

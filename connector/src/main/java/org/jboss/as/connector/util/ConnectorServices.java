@@ -64,6 +64,8 @@ public class ConnectorServices {
 
     public static final ServiceName BOOTSTRAP_CONTEXT_SERVICE = ServiceName.JBOSS.append("connector", "bootstrapcontext");
 
+    /** @deprecated Use the "org.wildfly.jca.transaction-integration" capability. */
+    @Deprecated
     public static final ServiceName TRANSACTION_INTEGRATION_SERVICE = ServiceName.JBOSS.append("connector",
             "transactionintegration");
 
