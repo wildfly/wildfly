@@ -105,10 +105,6 @@ public class CorbaORBService implements Service<ORB> {
             final SocketBinding socketBinding = iiopSocketBindingInjector.getOptionalValue();
             final SocketBinding sslSocketBinding = this.iiopSSLSocketBindingInjector.getOptionalValue();
 
-            if (socketBinding == null && sslSocketBinding == null) {
-                throw IIOPLogger.ROOT_LOGGER.noSocketBindingsConfigured();
-            }
-
             if (socketBinding != null) {
                 InetSocketAddress address = this.iiopSocketBindingInjector.getValue().getSocketAddress();
                 properties.setProperty(ORBConstants.SERVER_HOST_PROPERTY, address.getAddress().getHostAddress());

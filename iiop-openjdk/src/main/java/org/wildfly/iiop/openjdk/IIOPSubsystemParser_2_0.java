@@ -28,6 +28,7 @@ import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentResourceXMLParser;
+import org.jboss.dmr.ModelNode;
 
 /**
  * <p>
@@ -48,6 +49,11 @@ public class IIOPSubsystemParser_2_0 extends PersistentResourceXMLParser {
         return builder(IIOPRootDefinition.INSTANCE.getPathElement(), Namespace.IIOP_OPENJDK_2_0.getUriString())
                 .setMarshallDefaultValues(true)
                 .addAttributes(IIOPRootDefinition.ALL_ATTRIBUTES.toArray(new AttributeDefinition[0]))
+                .setAdditionalOperationsGenerator((address, addOperation, operations) -> {
+                    if(!addOperation.get(IIOPRootDefinition.SOCKET_BINDING.getName()).isDefined()){
+                        addOperation.get(IIOPRootDefinition.SOCKET_BINDING.getName()).set(new ModelNode().set("iiop"));
+                    }
+                })
                 .build();
     }
 
