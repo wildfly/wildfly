@@ -97,7 +97,12 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
     }
 
     private static void registerTransformers_EAP_7_2_0(ResourceTransformationDescriptionBuilder subsystemBuilder) {
-
+        subsystemBuilder
+                .addChildResource(UndertowExtension.PATH_APPLICATION_SECURITY_DOMAIN)
+                .getAttributeBuilder()
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, ENABLE_JASPI, INTEGRATED_JASPI)
+                    .setDiscard(DiscardAttributeChecker.ALWAYS, ENABLE_JASPI, INTEGRATED_JASPI) // Discard so we don't send over the defaults.
+                .end();
     }
 
     private static void registerTransformers_EAP_7_1_0(ResourceTransformationDescriptionBuilder subsystemBuilder) {
@@ -107,7 +112,6 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
                 .addChildResource(UndertowExtension.PATH_APPLICATION_SECURITY_DOMAIN)
                 .getAttributeBuilder()
                     .addRejectCheck(RejectAttributeChecker.DEFINED, SECURITY_DOMAIN)
-                    .setDiscard(DiscardAttributeChecker.ALWAYS, ENABLE_JASPI, INTEGRATED_JASPI) // These are completely meaningless on the older host with no alternative required.
                 .end();
 
         subsystemBuilder
