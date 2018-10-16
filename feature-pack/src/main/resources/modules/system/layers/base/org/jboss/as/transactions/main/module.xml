@@ -46,7 +46,6 @@
         <module name="org.jboss.as.ee"/>
         <module name="org.jboss.as.naming"/>
         <module name="org.jboss.as.network"/>
-        <module name="org.jboss.as.remoting"/>
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.jboss-transaction-spi"/>
         <module name="org.jboss.msc"/>
@@ -58,11 +57,20 @@
         <module name="org.wildfly.common"/>
         <module name="org.wildfly.transaction.client"/>
         <module name="org.jboss.jandex"/>
-        <module name="org.jboss.remoting"/>
         <module name="org.jboss.modules"/>
         <module name="org.jboss.narayana.compensations"/>
+        <module name="org.wildfly.security.manager"/>
+
+        <!-- Only used if the org.wildfly.undertow.http-invoker capability is present,
+             in which case this module will also be present.
+             TODO Work out how to mark http-client.transaction as 'passive' so we
+             can make it optional here but have it provisioned if http is available
+        -->
         <module name="io.undertow.core"/>
         <module name="org.wildfly.http-client.transaction" />
-        <module name="org.wildfly.security.manager"/>
+
+        <!-- Only used if the org.jboss.remoting.endpoint capability is present,
+             in which case this module will also be present. -->
+        <module name="org.jboss.remoting" optional="true"/>
     </dependencies>
 </module>
