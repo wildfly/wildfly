@@ -145,17 +145,6 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>com.github.relaxng</groupId>
-      <artifactId>relaxngDatatype</artifactId>
-      <licenses>
-        <license>
-          <name>BSD 3-Clause "New" or "Revised" License</name>
-          <url>http://www.opensource.org/licenses/BSD-3-Clause</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
       <groupId>com.github.spullara.mustache.java</groupId>
       <artifactId>compiler</artifactId>
       <licenses>
@@ -299,6 +288,22 @@
     <dependency>
       <groupId>com.sun.mail</groupId>
       <artifactId>javax.mail</artifactId>
+      <licenses>
+        <license>
+          <name>Common Development and Distribution License 1.1</name>
+          <url>https://javaee.github.io/glassfish/LICENSE</url>
+          <distribution>repo</distribution>
+        </license>
+        <license>
+          <name>GNU General Public License v2.0 only, with Classpath exception</name>
+          <url>http://openjdk.java.net/legal/gplv2+ce.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.xml.bind.external</groupId>
+      <artifactId>relaxng-datatype</artifactId>
       <licenses>
         <license>
           <name>Common Development and Distribution License 1.1</name>
