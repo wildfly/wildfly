@@ -72,7 +72,7 @@
         <version.org.jboss.arquillian.core>1.1.13.Final</version.org.jboss.arquillian.core>
         <version.org.jboss.ejb3.ext-api>2.2.0.Final</version.org.jboss.ejb3.ext-api>
         <version.org.jboss.narayana>5.9.0.Final</version.org.jboss.narayana>
-        <version.org.jboss.resteasy>3.6.1.Final</version.org.jboss.resteasy>
+        <version.org.jboss.resteasy>3.6.1.SP2</version.org.jboss.resteasy>
         <version.org.jboss.security.jboss-negotiation>3.0.4.Final</version.org.jboss.security.jboss-negotiation>
         <version.org.jboss.security.jbossxacml>2.0.8.Final</version.org.jboss.security.jbossxacml>
         <version.org.picketbox.picketbox-commons>1.0.0.final</version.org.picketbox.picketbox-commons>
