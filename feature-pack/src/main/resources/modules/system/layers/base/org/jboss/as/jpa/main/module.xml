@@ -74,7 +74,9 @@
         <module name="org.jboss.metadata.common"/>
         <module name="org.jboss.vfs"/>
         <module name="org.jboss.weld.core"/>
-        <module name="org.jboss.as.weld.common"/>
+        <!-- Optional; guarded by WeldDeploymentMarker which will not be present
+             if the weld subsystem isn't.-->
+        <module name="org.jboss.as.weld.common" optional="true"/>
         <module name="org.wildfly.clustering.infinispan.spi"/>
         <module name="org.wildfly.clustering.service"/>
         <module name="org.wildfly.transaction.client"/>
