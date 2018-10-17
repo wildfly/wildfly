@@ -254,15 +254,7 @@ public class RealmDirectLoginModule extends UsernamePasswordLoginModule {
 
         Object credential = oc.getCredential();
         if (credential instanceof DigestCredential) {
-            /*
-             * This change is an intermediate change to allow the use of a DigestCredential until we are ready to switch to
-             * JAAS.
-             *
-             * However we only wish to accept trusted implementations so perform this final check.
-             */
-            if (credential.getClass().getName().equals("org.wildfly.extension.undertow.security.DigestCredentialImpl")) {
-                return (DigestCredential) credential;
-            }
+            return (DigestCredential) credential;
         }
 
         return null;
