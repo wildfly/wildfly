@@ -52,8 +52,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.component.ComponentRegistry;
 import org.jboss.as.ee.component.EEModuleDescription;
-import org.jboss.as.security.deployment.AbstractSecurityDeployer;
-import org.jboss.as.security.deployment.SecurityAttachments;
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.security.service.JaccService;
 import org.jboss.as.security.service.SecurityDomainService;
@@ -97,7 +95,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.security.SecurityUtil;
+import org.jboss.security.SecurityConstants;
 import org.jboss.vfs.VirtualFile;
 import org.wildfly.extension.io.IOServices;
 import org.wildfly.extension.requestcontroller.ControlPoint;
@@ -128,6 +126,8 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
     public static final String OLD_URI_PREFIX = "http://java.sun.com";
     public static final String NEW_URI_PREFIX = "http://xmlns.jcp.org";
 
+    private static final String LEGACY_SECURITY_CAPABILITY_NAME = "org.wildfly.legacy-security";
+    private static final String LEGACY_JAAS_CONTEXT_ROOT = "java:/jaas/";
 
     private final String defaultServer;
     private final String defaultHost;
@@ -259,13 +259,15 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
 
         final String pathName = pathNameOfDeployment(deploymentUnit, metaData);
 
-        boolean securityEnabled = deploymentUnit.hasAttachment(SecurityAttachments.SECURITY_ENABLED);
+        final CapabilityServiceSupport capabilities = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
+        final boolean securityEnabled = capabilities.hasCapability(LEGACY_SECURITY_CAPABILITY_NAME);
 
         String tempSecurityDomain = metaData.getSecurityDomain();
         if (tempSecurityDomain == null) {
             tempSecurityDomain = getJBossAppSecurityDomain(deploymentUnit);
         }
-        tempSecurityDomain = tempSecurityDomain == null ? defaultSecurityDomain : SecurityUtil.unprefixSecurityDomain(tempSecurityDomain);
+
+        tempSecurityDomain = tempSecurityDomain == null ? defaultSecurityDomain : unprefixSecurityDomain(tempSecurityDomain);
         boolean known = tempSecurityDomain != null && knownSecurityDomain.test(tempSecurityDomain);
 
         final String securityDomain = (securityEnabled || known) ? tempSecurityDomain : null;
@@ -425,7 +427,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
 
         // adding JACC service
         if(securityEnabled) {
-            AbstractSecurityDeployer<WarMetaData> deployer = new WarJACCDeployer();
+            WarJACCDeployer deployer = new WarJACCDeployer();
             JaccService<WarMetaData> jaccService = deployer.deploy(deploymentUnit, jaccContextId);
             if (jaccService != null) {
                 final ServiceName jaccServiceName = deploymentUnit.getServiceName().append(JaccService.SERVICE_NAME);
@@ -718,4 +720,19 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         return tagLibraryInfo;
     }
 
+    public static String unprefixSecurityDomain(String securityDomain) {
+        String result = null;
+        if (securityDomain != null)
+        {
+            if (securityDomain.startsWith(SecurityConstants.JAAS_CONTEXT_ROOT))
+                result = securityDomain.substring(SecurityConstants.JAAS_CONTEXT_ROOT.length());
+            else if (securityDomain.startsWith(SecurityConstants.JASPI_CONTEXT_ROOT))
+                result = securityDomain.substring(SecurityConstants.JASPI_CONTEXT_ROOT.length());
+            else if (securityDomain.startsWith(LEGACY_JAAS_CONTEXT_ROOT))
+                result = securityDomain.substring(LEGACY_JAAS_CONTEXT_ROOT.length());
+            else
+                result = securityDomain;
+        }
+        return result;
+    }
 }
