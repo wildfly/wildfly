@@ -25,14 +25,21 @@
     <resources>
         <artifact name="${org.jboss.openjdk-orb:openjdk-orb}"/>
     </resources>
- 
+
     <dependencies>
         <module name="sun.jdk"/>
-        <module name="org.wildfly.iiop-openjdk"/>
-        <module name="org.jboss.as.transactions"/>
         <module name="org.jboss.jts"/>
         <module name="org.jboss.jts.integration"/>
         <module name="javax.transaction.api"/>
         <module name="org.jboss.iiop-client"/>
+
+        <!-- These dependencies are required only if the
+             iiop-openjdk or jacorb subsystems are present.
+             If they are the subsystem will initialize the
+             ORB with a specification to use classes from
+             these modules. -->
+        <module name="org.wildfly.iiop-openjdk" optional="true"/>
+        <module name="org.jboss.as.transactions" optional="true"/>
+
     </dependencies>
 </module>
