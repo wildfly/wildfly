@@ -36,6 +36,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.IOException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
@@ -43,6 +44,8 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
@@ -110,4 +113,39 @@ public class ExternalConnectionFactoryManagementTestCase extends ContainerResour
         ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
     }
 
+    @Test
+    public void testRemovePooledConnectionFactory() throws Exception {
+//      /subsystem=messaging-activemq/in-vm-connector=invm1:add(server-id=123)
+        ModelNode invmConnectorAddress = new ModelNode();
+        invmConnectorAddress.add("subsystem", "messaging-activemq");
+        invmConnectorAddress.add("in-vm-connector", "invm1");
+        ModelNode op = Operations.createAddOperation(invmConnectorAddress);
+        op.get("server-id").set("123");
+        execute(managementClient.getControllerClient(), op);
+
+//      /subsystem=messaging-activemq/pooled-connection-factory=pool3:add(connectors=[invm1],entries=[foo])
+        ModelNode pcfAddress = new ModelNode();
+        pcfAddress.add("subsystem", "messaging-activemq");
+        pcfAddress.add("pooled-connection-factory", "pool3");
+        op = Operations.createAddOperation(pcfAddress);
+        op.get("connectors").setEmptyList().add("invm1");
+        op.get("entries").setEmptyList().add("foo");
+        execute(managementClient.getControllerClient(), op);
+
+//      /subsystem=messaging-activemq/pooled-connection-factory=pool3:remove()
+        op = Operations.createRemoveOperation(pcfAddress);
+        execute(managementClient.getControllerClient(), op);
+
+        op = Operations.createRemoveOperation(invmConnectorAddress);
+        execute(managementClient.getControllerClient(), op);
+        ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+    }
+
+    private static ModelNode execute(final ModelControllerClient client, final ModelNode op) throws IOException {
+        final ModelNode result = client.execute(op);
+        if (!Operations.isSuccessfulOutcome(result)) {
+            throw new RuntimeException(Operations.getFailureDescription(result).asString());
+        }
+        return result;
+    }
 }
