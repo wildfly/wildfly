@@ -67,7 +67,8 @@ public class ImportedClassELResolver extends ELResolver {
             if(cacheResult == NULL_MARKER) {
                 return null;
             } else {
-                return cacheResult;
+                context.setPropertyResolved(true);
+                return new ELClass((Class) cacheResult);
             }
         }
         final Class<?> klass;

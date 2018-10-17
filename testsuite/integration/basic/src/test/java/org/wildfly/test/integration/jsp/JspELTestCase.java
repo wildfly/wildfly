@@ -73,8 +73,8 @@ public class JspELTestCase {
         return deploy().addAsWebInfResource(JspELTestCase.class.getResource("web-app_3_0.xml"), "web.xml");
     }
 
-    final String POSSIBLE_ISSUES_LINKS =
-            "Might be caused by: https://issues.jboss.org/browse/WFLY-6939 or https://issues.jboss.org/browse/WFLY-11065";
+    final String POSSIBLE_ISSUES_LINKS = "Might be caused by: https://issues.jboss.org/browse/WFLY-6939 or" +
+            " https://issues.jboss.org/browse/WFLY-11065 or https://issues.jboss.org/browse/WFLY-11086";
 
     /**
      * Test that for web application using default version of servlet spec, EL expressions that use implicitly imported
@@ -86,6 +86,7 @@ public class JspELTestCase {
     @OperateOnDeployment(Servlet_No_Spec_War)
     @Test
     public void testJavaLangImplicitClassELEvaluation(@ArquillianResource URL url) throws Exception {
+        commonTestPart(url, POSSIBLE_ISSUES_LINKS);
         commonTestPart(url, POSSIBLE_ISSUES_LINKS);
     }
 
@@ -100,6 +101,7 @@ public class JspELTestCase {
     @Test
     public void testJavaLangImplicitClassELEvaluation40(@ArquillianResource URL url) throws Exception {
         commonTestPart(url, POSSIBLE_ISSUES_LINKS);
+        commonTestPart(url, POSSIBLE_ISSUES_LINKS);
     }
 
     /**
@@ -112,6 +114,7 @@ public class JspELTestCase {
     @OperateOnDeployment(Servlet_Spec_3_1_War)
     @Test
     public void testJavaLangImplicitClassELEvaluation31(@ArquillianResource URL url) throws Exception {
+        commonTestPart(url, POSSIBLE_ISSUES_LINKS);
         commonTestPart(url, POSSIBLE_ISSUES_LINKS);
     }
 
