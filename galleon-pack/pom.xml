@@ -266,8 +266,8 @@
             <artifactId>jackson-datatype-jdk8</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.github.relaxng</groupId>
-            <artifactId>relaxngDatatype</artifactId>
+            <groupId>com.sun.xml.bind.external</groupId>
+            <artifactId>relaxng-datatype</artifactId>
         </dependency>
 
         <dependency>
