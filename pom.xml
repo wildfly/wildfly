@@ -242,7 +242,7 @@
         <version.io.opentracing.jaxrs2>0.1.7</version.io.opentracing.jaxrs2>
         <version.io.opentracing.tracerresolver>0.1.5</version.io.opentracing.tracerresolver>
         <version.io.opentracing.servlet>0.1.0</version.io.opentracing.servlet>
-        <version.io.reactivex.rxjava>2.1.16</version.io.reactivex.rxjava>
+        <version.io.reactivex.rxjava>2.2.2</version.io.reactivex.rxjava>
         <version.io.smallrye.smallrye-config>1.3.4</version.io.smallrye.smallrye-config>
         <version.io.smallrye.smallrye-health>1.0.2</version.io.smallrye.smallrye-health>
         <version.io.smallrye.opentracing>1.1.1</version.io.smallrye.opentracing>
@@ -301,7 +301,7 @@
         <version.org.hibernate.search>5.10.3.Final</version.org.hibernate.search>
         <version.org.hibernate.validator>6.0.13.Final</version.org.hibernate.validator>
         <version.org.hornetq>2.4.7.Final</version.org.hornetq>
-        <version.org.infinispan>9.3.3.Final</version.org.infinispan>
+        <version.org.infinispan>9.4.0.Final</version.org.infinispan>
         <version.org.jasypt>1.9.2</version.org.jasypt>
         <version.org.javassist>3.23.1-GA</version.org.javassist>
         <version.org.jberet>1.3.1.Final</version.org.jberet>
@@ -4264,10 +4264,6 @@
                         <groupId>io.netty</groupId>
                         <artifactId>netty-transport-native-epoll</artifactId>
                     </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.transaction</groupId>
-                        <artifactId>jboss-transaction-api_1.1_spec</artifactId>
-                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -4314,12 +4310,6 @@
                     <exclusion>
                         <groupId>org.jboss.marshalling</groupId>
                         <artifactId>jboss-marshalling-osgi</artifactId>
-                    </exclusion>
-                    <!-- TODO remove this exclusion once this supports JTA 1.2 -->
-                    <!-- superseded by org.jboss.spec.javax.transaction:jboss-transaction-api_1.2_spec -->
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.transaction</groupId>
-                        <artifactId>jboss-transaction-api_1.1_spec</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>io.reactivex.rxjava2</groupId>

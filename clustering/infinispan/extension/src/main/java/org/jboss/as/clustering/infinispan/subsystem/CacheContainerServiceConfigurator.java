@@ -34,6 +34,7 @@ import java.util.function.Supplier;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfiguration;
+import org.infinispan.factories.impl.BasicComponentRegistry;
 import org.infinispan.globalstate.GlobalConfigurationManager;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
@@ -98,18 +99,22 @@ public class CacheContainerServiceConfigurator extends CapabilityServiceNameProv
         if (defaultCacheName != null) {
             manager.undefineConfiguration(defaultCacheName);
         }
-        manager.addListener(this);
         // Override GlobalConfigurationManager with a local implementation
-        manager.getGlobalComponentRegistry().registerComponent(new LocalGlobalConfigurationManager(), GlobalConfigurationManager.class);
+        @SuppressWarnings("deprecation")
+        BasicComponentRegistry registry = manager.getGlobalComponentRegistry().getComponent(BasicComponentRegistry.class);
+        registry.replaceComponent(GlobalConfigurationManager.class.getName(), new LocalGlobalConfigurationManager(), false);
+        registry.rewire();
+
         manager.start();
+        manager.addListener(this);
         InfinispanLogger.ROOT_LOGGER.debugf("%s cache container started", this.name);
         return manager;
     }
 
     @Override
     public void accept(EmbeddedCacheManager manager) {
-        manager.stop();
         manager.removeListener(this);
+        manager.stop();
         InfinispanLogger.ROOT_LOGGER.debugf("%s cache container stopped", this.name);
     }
 

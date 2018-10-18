@@ -45,7 +45,7 @@
         <surefire.forked.process.timeout>3600</surefire.forked.process.timeout>
         <test-group>org/jboss/as/test/clustering/cluster</test-group>
         <!-- Needs to kept inline with what the infinispan-server-feature-pack requires -->
-        <version.org.jboss.infinispan-wildfly>13.0.0.Final</version.org.jboss.infinispan-wildfly>
+        <version.org.jboss.infinispan-wildfly>14.0.1.Final</version.org.jboss.infinispan-wildfly>
     </properties>
 
     <dependencies>

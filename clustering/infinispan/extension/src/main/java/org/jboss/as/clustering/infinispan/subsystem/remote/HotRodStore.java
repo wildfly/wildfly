@@ -25,8 +25,8 @@ package org.jboss.as.clustering.infinispan.subsystem.remote;
 import java.io.IOException;
 import java.util.AbstractMap;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 import java.util.function.Predicate;
 
@@ -34,22 +34,29 @@ import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.ProtocolVersion;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.exceptions.HotRodClientException;
+import org.infinispan.client.hotrod.impl.RemoteCacheImpl;
+import org.infinispan.client.hotrod.impl.operations.PingOperation;
 import org.infinispan.commons.io.ByteBuffer;
 import org.infinispan.commons.marshall.WrappedByteArray;
 import org.infinispan.commons.persistence.Store;
 import org.infinispan.commons.util.CloseableIterator;
+import org.infinispan.commons.util.IntSet;
 import org.infinispan.commons.util.IteratorMapper;
 import org.infinispan.marshall.core.MarshalledEntry;
 import org.infinispan.metadata.InternalMetadata;
+import org.infinispan.persistence.PersistenceUtil;
 import org.infinispan.persistence.spi.AdvancedLoadWriteStore;
 import org.infinispan.persistence.spi.InitializationContext;
 import org.infinispan.persistence.spi.PersistenceException;
+import org.infinispan.persistence.spi.SegmentedAdvancedLoadWriteStore;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.reactivestreams.Publisher;
 import org.wildfly.clustering.infinispan.spi.RemoteCacheContainer;
 
 import io.reactivex.Flowable;
+import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
+import io.reactivex.internal.functions.Functions;
 
 /**
  * Simple implementation of Infinispan {@link AdvancedLoadWriteStore} configured with a started container-managed {@link RemoteCacheContainer}
@@ -58,7 +65,7 @@ import io.reactivex.functions.Function;
  * @author Radoslav Husar
  */
 @Store(shared = true)
-public class HotRodStore<K, V> implements AdvancedLoadWriteStore<K, V>, Callable<CloseableIterator<byte[]>>, Function<CloseableIterator<byte[]>, Publisher<K>> {
+public class HotRodStore<K, V> implements SegmentedAdvancedLoadWriteStore<K, V>, Function<CloseableIterator<byte[]>, Publisher<K>>, Consumer<K> {
 
     private InitializationContext ctx;
 
@@ -144,22 +151,27 @@ public class HotRodStore<K, V> implements AdvancedLoadWriteStore<K, V>, Callable
 
     @Override
     public Flowable<K> publishKeys(Predicate<? super K> filter) {
-        Flowable<K> keys = Flowable.using(this, this, CloseableIterator::close);
+        return this.publishKeys(null, filter);
+    }
+
+    @Override
+    public Flowable<K> publishKeys(IntSet segments, Predicate<? super K> filter) {
+        Flowable<K> keys = Flowable.using(Functions.justCallable(this.remoteCache.keySet(segments).iterator()), this, CloseableIterator::close);
         return (filter != null) ? keys.filter(filter::test) : keys;
     }
 
     @Override
-    public CloseableIterator<byte[]> call() {
-        return this.remoteCache.keySet().iterator();
-    }
-
-    @Override
     public Publisher<K> apply(CloseableIterator<byte[]> iterator) {
-        return Flowable.fromIterable(() -> new IteratorMapper<>(iterator, HotRodStore.this::unmarshallKey));
+        return Flowable.fromIterable(new SimpleIterable<>(new IteratorMapper<>(iterator, this::unmarshallKey)));
     }
 
     @Override
     public Publisher<MarshalledEntry<K, V>> publishEntries(Predicate<? super K> filter, boolean fetchValue, boolean fetchMetadata) {
+        return this.publishEntries(null, filter, fetchValue, fetchMetadata);
+    }
+
+    @Override
+    public Publisher<MarshalledEntry<K, V>> publishEntries(IntSet segments, Predicate<? super K> filter, boolean fetchValue, boolean fetchMetadata) {
         Flowable<K> keys = this.publishKeys(filter);
         return (fetchValue || fetchMetadata) ? keys.map(this::load) : keys.map(this::asMarshalledEntry);
     }
@@ -206,6 +218,40 @@ public class HotRodStore<K, V> implements AdvancedLoadWriteStore<K, V>, Callable
             return this.ctx.getMarshaller().objectFromByteBuffer(bytes);
         } catch (IOException | ClassNotFoundException e) {
             throw new PersistenceException(e);
+        }
+    }
+
+    @Override
+    public boolean isAvailable() {
+        PingOperation.PingResponse response = ((RemoteCacheImpl<?, ?>) this.remoteCache).ping();
+        return response.isSuccess();
+    }
+
+    @Override
+    public int size(IntSet segments) {
+        return PersistenceUtil.count(this, segments);
+    }
+
+    @Override
+    public void clear(IntSet segments) {
+        this.publishKeys(segments, null).blockingForEach(this);
+    }
+
+    @Override
+    public void accept(K key) {
+        this.remoteCache.remove(this.marshall(key));
+    }
+
+    private static class SimpleIterable<T> implements Iterable<T> {
+        private final Iterator<T> iterator;
+
+        SimpleIterable(Iterator<T> iterator) {
+            this.iterator = iterator;
+        }
+
+        @Override
+        public Iterator<T> iterator() {
+            return this.iterator;
         }
     }
 }
