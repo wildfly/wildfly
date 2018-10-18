@@ -373,7 +373,7 @@
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.wildfly.arquillian>2.1.1.Final</version.org.wildfly.arquillian>
         <version.org.wildfly.common>1.4.0.Final</version.org.wildfly.common>
-        <version.org.wildfly.core>7.0.0.Alpha2</version.org.wildfly.core>
+        <version.org.wildfly.core>7.0.0.Alpha4</version.org.wildfly.core>
         <version.org.wildfly.extras.creaper>1.6.1</version.org.wildfly.extras.creaper>
         <version.org.wildfly.http-client>1.0.12.Final</version.org.wildfly.http-client>
         <version.org.wildfly.naming-client>1.0.9.Final</version.org.wildfly.naming-client>
@@ -7523,11 +7523,19 @@
             <repositories>
                 <repository>
                     <id>jboss-staging-repository-group</id>
-                    <name>JBoss Staging Reposiry Group</name>
+                    <name>JBoss Staging Repository Group</name>
                     <url>https://repository.jboss.org/nexus/content/groups/staging/</url>
                     <layout>default</layout>
                 </repository>
             </repositories>
+            <pluginRepositories>
+                <pluginRepository>
+                    <id>jboss-staging-repository-group</id>
+                    <name>JBoss Staging Repository Group</name>
+                    <url>https://repository.jboss.org/nexus/content/groups/staging/</url>
+                    <layout>default</layout>
+                </pluginRepository>
+            </pluginRepositories>
         </profile>
     </profiles>
 </project>
