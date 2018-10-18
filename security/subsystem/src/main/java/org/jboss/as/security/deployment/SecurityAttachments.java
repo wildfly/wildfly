@@ -31,11 +31,16 @@ public class SecurityAttachments {
 
     /**
      * Attachment key that if present signifies that the security subsystem is installed.
-     *
+     * <p>
      * If this is not present either the subsystem has been removed from the config or excluded
      * via jboss-deployment-structure.xml. This allows deployments to disable security, and
      * avoid the overhead of running unneeded security code.
+     *
+     * @deprecated Check the presence of {@link org.jboss.as.security.SecuritySubsystemRootResourceDefinition#SECURITY_SUBSYSTEM}
+     * capability instead to avoid classloading dependencies on org.jboss.as.security. If the capability is not in the
+     * capability registry, then we can assume that the security subsystem is not configured.
      */
+    @Deprecated
     public static final AttachmentKey<Boolean> SECURITY_ENABLED = AttachmentKey.create(Boolean.class);
 
 }
