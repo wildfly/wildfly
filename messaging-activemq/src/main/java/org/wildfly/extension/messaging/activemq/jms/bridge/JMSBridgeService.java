@@ -29,11 +29,9 @@ import java.util.function.Consumer;
 import javax.transaction.TransactionManager;
 
 import org.apache.activemq.artemis.jms.bridge.JMSBridge;
-import org.jboss.as.txn.service.TxnServices;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -57,7 +55,7 @@ class JMSBridgeService implements Service<JMSBridge> {
     private final InjectedValue<ExecutorService> executorInjector = new InjectedValue<>();
     private final InjectedValue<ExceptionSupplier<CredentialSource, Exception>> sourceCredentialSourceSupplierInjector = new InjectedValue<>();
     private final InjectedValue<ExceptionSupplier<CredentialSource, Exception>> targetCredentialSourceSupplierInjector = new InjectedValue<>();
-
+    private final InjectedValue<TransactionManager> tmInjector = new InjectedValue<>();
 
     public JMSBridgeService(final String moduleName, final String bridgeName, final JMSBridge bridge) {
         if(bridge == null) {
@@ -68,19 +66,13 @@ class JMSBridgeService implements Service<JMSBridge> {
         this.bridge = bridge;
     }
 
-    public static TransactionManager getTransactionManager(StartContext context) {
-        @SuppressWarnings("unchecked")
-        ServiceController<TransactionManager> service = (ServiceController<TransactionManager>) context.getController().getServiceContainer().getService(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER);
-        return service == null ? null : service.getValue();
-    }
-
     @Override
     public synchronized void start(final StartContext context) throws StartException {
         final Runnable task = new Runnable() {
             @Override
             public void run() {
                 try {
-                    bridge.setTransactionManager(getTransactionManager(context));
+                    bridge.setTransactionManager(tmInjector.getValue());
                     startBridge();
 
                     context.complete();
@@ -157,6 +149,10 @@ class JMSBridgeService implements Service<JMSBridge> {
 
     public InjectedValue<ExceptionSupplier<CredentialSource, Exception>> getTargetCredentialSourceSupplierInjector() {
         return targetCredentialSourceSupplierInjector;
+    }
+
+    InjectedValue<TransactionManager> getTransactionManagerInjector() {
+        return tmInjector;
     }
 
     private void setJMSBridgePasswordsFromCredentialSource() {
