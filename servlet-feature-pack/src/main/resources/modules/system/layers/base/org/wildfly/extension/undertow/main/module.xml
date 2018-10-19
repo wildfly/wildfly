@@ -67,7 +67,6 @@
         <module name="org.wildfly.security.elytron-web.undertow-server"/>
         <module name="org.wildfly.security.elytron-web.undertow-server-servlet"/>
         <module name="org.jboss.as.server"/>
-        <module name="org.jboss.as.threads"/>
         <module name="org.jboss.common-beans" services="import"/>
         <module name="org.jboss.marshalling"/>
         <module name="org.jboss.marshalling.river" services="import"/>

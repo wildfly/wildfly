@@ -59,7 +59,6 @@
         <module name="org.jboss.as.naming"/>
         <module name="org.wildfly.security.elytron-private"/>
         <module name="org.jboss.as.server"/>
-        <module name="org.jboss.as.threads"/>
         <module name="org.jboss.as.transactions"/>
         <module name="org.jboss.as.web-common"/>
         <module name="org.jboss.jboss-transaction-spi"/>
