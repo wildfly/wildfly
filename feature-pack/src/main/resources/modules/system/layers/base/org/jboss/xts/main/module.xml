@@ -65,7 +65,13 @@
         <module name="javax.annotation.api"  export="true" />
         <module name="javax.interceptor.api"  export="true" />
         <module name="org.jboss.weld.spi" />
-        <module name="org.jboss.as.xts" export="true">
+
+        <!-- This dependency is required only if the
+             xts subsystem is present. If it is the
+             subsystem may configure the deployment such
+             that this module will need to use classes from
+             the subsystem module.-->
+        <module name="org.jboss.as.xts" export="true" optional="true">
           <imports>
             <include path="org.jboss.as.xts.txnclient"/>
           </imports>
