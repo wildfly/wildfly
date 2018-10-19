@@ -26,6 +26,8 @@ package org.wildfly.extension.beanvalidation;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -38,11 +40,17 @@ import java.util.List;
  */
 class BeanValidationRootDefinition extends PersistentResourceDefinition {
 
+    private static final RuntimeCapability<Void> BEAN_VALIDATION_CAPABILITY =
+            RuntimeCapability.Builder.of("org.wildfly.bean-validation").build();
+
     static final BeanValidationRootDefinition INSTANCE = new BeanValidationRootDefinition();
 
     private BeanValidationRootDefinition() {
-        super (BeanValidationExtension.SUBSYSTEM_PATH, BeanValidationExtension.getResolver(),
-                BeanValidationSubsystemAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE);
+        super (new SimpleResourceDefinition.Parameters(BeanValidationExtension.SUBSYSTEM_PATH, BeanValidationExtension.getResolver())
+                .setAddHandler(BeanValidationSubsystemAdd.INSTANCE)
+                .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
+                .setCapabilities(BEAN_VALIDATION_CAPABILITY)
+        );
     }
 
     @Override
