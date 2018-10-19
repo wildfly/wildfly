@@ -363,7 +363,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
                     if (multiple) {
                         connectorParams.append(";");
                     }
-                    connectorParams.append(entry.getKey()).append("=").append(String.valueOf(entry.getValue()).replace(",", "\\,"));
+                    connectorParams.append(entry.getKey()).append("=").append(entry.getValue());
                     multiple = true;
                 }
             }

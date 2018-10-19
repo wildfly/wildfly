@@ -369,8 +369,6 @@ public class TransportConfigOperationHandlers {
                 // ARTEMIS-803 Artemis knows that is must not offset the HTTP port when it is used by colocated backups
                 parameters.put(TransportConstants.HTTP_UPGRADE_ENABLED_PROP_NAME, true);
                 parameters.put(TransportConstants.HTTP_UPGRADE_ENDPOINT_PROP_NAME, HTTPConnectorDefinition.ENDPOINT.resolveModelAttribute(context, config).asString());
-                // WFLY-9096 support TLSv1.x on IBM Java by default (default for Oracle Java)
-                parameters.putIfAbsent(TransportConstants.ENABLED_PROTOCOLS_PROP_NAME, "TLSv1,TLSv1.1,TLSv1.2");
                 // uses the parameters to pass the socket binding name that will be read in ActiveMQServerService.start()
                 parameters.put(HTTPConnectorDefinition.SOCKET_BINDING.getName(), binding);
                 ModelNode serverNameModelNode = HTTPConnectorDefinition.SERVER_NAME.resolveModelAttribute(context, config);
