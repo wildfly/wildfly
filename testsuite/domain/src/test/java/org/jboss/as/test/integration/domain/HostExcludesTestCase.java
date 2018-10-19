@@ -312,8 +312,9 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
         for (Property prop : result.asPropertyList()) {
             String name = prop.getName();
 
+            ModelNode value = prop.getValue();
             List<String> excludedExtensions = prop.getValue().get(EXCLUDED_EXTENSIONS)
-                    .asList()
+                    .asListOrEmpty()
                     .stream()
                     .map(p -> p.asString())
                     .collect(Collectors.toList());

@@ -22,10 +22,7 @@
 
 package org.jboss.as.test.integration.domain.mixed.eap710;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.operations.common.Util.createAddOperation;
 import static org.jboss.as.controller.operations.common.Util.createRemoveOperation;
@@ -38,7 +35,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.test.integration.domain.mixed.DomainAdjuster;
+import org.jboss.as.test.integration.domain.mixed.eap720.DomainAdjuster720;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -46,13 +43,12 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class DomainAdjuster710 extends DomainAdjuster {
+public class DomainAdjuster710 extends DomainAdjuster720 {
 
     @Override
     protected List<ModelNode> adjustForVersion(final DomainClient client, PathAddress profileAddress, boolean withMasterServers) throws Exception {
-        final List<ModelNode> list = new ArrayList<>();
+        final List<ModelNode> list = super.adjustForVersion(client, profileAddress, withMasterServers);
 
-        adjustUndertow(profileAddress.append(SUBSYSTEM, "undertow"), list);
         switch (profileAddress.getElement(0).getValue()) {
             case "full-ha": {
                 list.addAll(adjustJGroups(profileAddress.append(SUBSYSTEM, "jgroups")));
@@ -63,9 +59,6 @@ public class DomainAdjuster710 extends DomainAdjuster {
         list.addAll(removeDiscovery(profileAddress.append(SUBSYSTEM, "discovery")));
         list.addAll(removeMicroProfileConfigSmallrye(profileAddress.append(SUBSYSTEM, "microprofile-config-smallrye")));
         list.addAll(removeMicroProfileOpenTracing(profileAddress.append(SUBSYSTEM, "microprofile-opentracing-smallrye")));
-        if (withMasterServers) {
-            list.addAll(reconfigureServers());
-        }
 
         return list;
     }
@@ -104,18 +97,6 @@ public class DomainAdjuster710 extends DomainAdjuster {
         list.add(createRemoveOperation(tcp.append("protocol", "FRAG3")));
         list.add(createAddOperation(tcp.append("protocol", "FRAG2")));
 
-        return list;
-    }
-
-    private Collection<? extends ModelNode> reconfigureServers() {
-        final List<ModelNode> list = new ArrayList<>();
-        //Reconfigure master servers
-        final PathAddress masterHostAddress = PathAddress.pathAddress(HOST, "master");
-        list.add(Util.getWriteAttributeOperation(masterHostAddress.append(SERVER_CONFIG, "server-one"), AUTO_START, true));
-        list.add(Util.getWriteAttributeOperation(masterHostAddress.append(SERVER_CONFIG, "server-one"), ModelDescriptionConstants.GROUP, "main-server-group"));
-        list.add(Util.getUndefineAttributeOperation(masterHostAddress.append(SERVER_CONFIG, "server-one"), ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET));
-        list.add(Util.getWriteAttributeOperation(masterHostAddress.append(SERVER_CONFIG, "server-two"), AUTO_START, true));
-        list.add(Util.getWriteAttributeOperation(masterHostAddress.append(SERVER_CONFIG, "server-two"), ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET, 100));
         return list;
     }
 
