@@ -52,7 +52,7 @@ public class EEConcurrencyContextHandleFactoryProcessor implements DeploymentUni
             @Override
             public void configure(DeploymentPhaseContext context, ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
                 final TransactionLeakContextHandleFactory transactionLeakContextHandleFactory = new TransactionLeakContextHandleFactory();
-                context.addDependency(TransactionManagerService.SERVICE_NAME, TransactionManager.class, transactionLeakContextHandleFactory);
+                context.addDependency(TransactionManagerService.INTERNAL_SERVICE_NAME, TransactionManager.class, transactionLeakContextHandleFactory);
                 configuration.getConcurrentContext().addFactory(transactionLeakContextHandleFactory);
             }
         };

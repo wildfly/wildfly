@@ -23,6 +23,7 @@
 package org.jboss.as.txn.service;
 
 import static java.security.AccessController.doPrivileged;
+import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.LOCAL_PROVIDER_CAPABILITY;
 
 import java.security.PrivilegedAction;
 
@@ -66,6 +67,13 @@ public final class LocalTransactionContextService implements Service<LocalTransa
             LocalTransactionContext.getContextManager().setGlobalDefault(transactionContext);
             return null;
         });
+
+        // Install the void service required by capability org.wildfly.transactions.global-default-local-provider
+        // so other capabilities that require it can start their services after this capability
+        // has completed its work.
+        context.getChildTarget().addService(LOCAL_PROVIDER_CAPABILITY.getCapabilityServiceName())
+                .setInstance(Service.NULL)
+                .install();
     }
 
     public void stop(final StopContext context) {

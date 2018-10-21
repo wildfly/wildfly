@@ -47,12 +47,21 @@ public final class TxnServices {
 
     public static final ServiceName JBOSS_TXN_ARJUNA_RECOVERY_MANAGER = JBOSS_TXN.append("ArjunaRecoveryManager");
 
+    /** @deprecated Use the "org.wildfly.transactions.global-default-local-provider" capability to confirm existence of a local provider
+     *              and org.wildfly.transaction.client.ContextTransactionManager to obtain a TransactionManager reference. */
+    @Deprecated
     public static final ServiceName JBOSS_TXN_TRANSACTION_MANAGER = JBOSS_TXN.append("TransactionManager");
 
+    /** @deprecated Use the "org.wildfly.transactions.global-default-local-provider" capability to confirm existence of a local provider
+     *              and org.wildfly.transaction.client.LocalTransactionContext to obtain a UserTransaction reference. */
+    @Deprecated
     public static final ServiceName JBOSS_TXN_USER_TRANSACTION = JBOSS_TXN.append("UserTransaction");
 
     public static final ServiceName JBOSS_TXN_USER_TRANSACTION_REGISTRY = JBOSS_TXN.append("UserTransactionRegistry");
 
+    /** @deprecated Use the "org.wildfly.transactions.global-default-local-provider" capability to confirm existence of a local provider
+     *              and org.wildfly.transaction.client.ContextTransactionSynchronizationRegistry to obtain a TransactionSynchronizationRegistry reference. */
+    @Deprecated
     public static final ServiceName JBOSS_TXN_SYNCHRONIZATION_REGISTRY = JBOSS_TXN.append("TransactionSynchronizationRegistry");
 
     public static final ServiceName JBOSS_TXN_JTA_ENVIRONMENT = JBOSS_TXN.append("JTAEnvironment");

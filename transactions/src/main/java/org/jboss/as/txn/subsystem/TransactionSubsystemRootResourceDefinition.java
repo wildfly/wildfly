@@ -69,6 +69,10 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
     static final RuntimeCapability<Void> TRANSACTION_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.transactions")
             .build();
 
+    /** Capability that indicates a local TransactionManager provider is present. */
+    public static final RuntimeCapability<Void> LOCAL_PROVIDER_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.transactions.global-default-local-provider", Void.class)
+            .build();
+
     //recovery environment
     public static final SimpleAttributeDefinition BINDING = new SimpleAttributeDefinitionBuilder(CommonAttributes.BINDING, ModelType.STRING, false)
             .setValidator(new StringLengthValidator(1))
@@ -258,7 +262,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
                 TransactionExtension.getResourceDescriptionResolver())
                 .setAddHandler(TransactionSubsystemAdd.INSTANCE)
                 .setRemoveHandler(TransactionSubsystemRemove.INSTANCE)
-                .setCapabilities(TRANSACTION_CAPABILITY)
+                .setCapabilities(TRANSACTION_CAPABILITY, LOCAL_PROVIDER_CAPABILITY)
                 // Configuring these is not required as these are defaulted based on our add/remove handler types
                 //OperationEntry.Flag.RESTART_ALL_SERVICES, OperationEntry.Flag.RESTART_ALL_SERVICES
         );

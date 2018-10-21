@@ -92,7 +92,7 @@ public class TransactionJndiBindingProcessor implements DeploymentUnitProcessor 
         final UserTransactionBindingService userTransactionBindingService = new UserTransactionBindingService("UserTransaction");
         serviceTarget.addService(userTransactionServiceName, userTransactionBindingService)
             .addDependency(UserTransactionAccessControlService.SERVICE_NAME, UserTransactionAccessControlService.class,userTransactionBindingService.getUserTransactionAccessControlServiceInjector())
-            .addDependency(UserTransactionService.SERVICE_NAME, UserTransaction.class,
+            .addDependency(UserTransactionService.INTERNAL_SERVICE_NAME, UserTransaction.class,
                     new ManagedReferenceInjector<UserTransaction>(userTransactionBindingService.getManagedObjectInjector()))
             .addDependency(contextServiceName, ServiceBasedNamingStore.class, userTransactionBindingService.getNamingStoreInjector())
             .install();
@@ -101,7 +101,7 @@ public class TransactionJndiBindingProcessor implements DeploymentUnitProcessor 
         final ServiceName transactionSynchronizationRegistryName = contextServiceName.append("TransactionSynchronizationRegistry");
         BinderService transactionSyncBinderService = new BinderService("TransactionSynchronizationRegistry");
         serviceTarget.addService(transactionSynchronizationRegistryName, transactionSyncBinderService)
-            .addDependency(TransactionSynchronizationRegistryService.SERVICE_NAME, TransactionSynchronizationRegistry.class,
+            .addDependency(TransactionSynchronizationRegistryService.INTERNAL_SERVICE_NAME, TransactionSynchronizationRegistry.class,
                     new ManagedReferenceInjector<TransactionSynchronizationRegistry>(transactionSyncBinderService.getManagedObjectInjector()))
             .addDependency(contextServiceName, ServiceBasedNamingStore.class, transactionSyncBinderService.getNamingStoreInjector())
             .install();

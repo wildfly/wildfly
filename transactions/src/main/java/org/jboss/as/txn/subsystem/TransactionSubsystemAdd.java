@@ -274,7 +274,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final BinderService tmBinderService = new BinderService("TransactionManager");
         final ServiceBuilder<ManagedReferenceFactory> tmBuilder = context.getServiceTarget().addService(ContextNames.JBOSS_CONTEXT_SERVICE_NAME.append("TransactionManager"), tmBinderService);
         tmBuilder.addDependency(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, ServiceBasedNamingStore.class, tmBinderService.getNamingStoreInjector());
-        tmBuilder.addDependency(TransactionManagerService.SERVICE_NAME, javax.transaction.TransactionManager.class, new Injector<javax.transaction.TransactionManager>() {
+        tmBuilder.addDependency(TransactionManagerService.INTERNAL_SERVICE_NAME, javax.transaction.TransactionManager.class, new Injector<javax.transaction.TransactionManager>() {
             @Override
             public void inject(final javax.transaction.TransactionManager value) throws InjectionException {
                 tmBinderService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(new ImmediateValue<Object>(value)));
@@ -290,7 +290,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final BinderService tmLegacyBinderService = new BinderService("TransactionManager");
         final ServiceBuilder<ManagedReferenceFactory> tmLegacyBuilder = context.getServiceTarget().addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append("TransactionManager"), tmLegacyBinderService);
         tmLegacyBuilder.addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, ServiceBasedNamingStore.class, tmLegacyBinderService.getNamingStoreInjector());
-        tmLegacyBuilder.addDependency(TransactionManagerService.SERVICE_NAME, javax.transaction.TransactionManager.class, new Injector<javax.transaction.TransactionManager>() {
+        tmLegacyBuilder.addDependency(TransactionManagerService.INTERNAL_SERVICE_NAME, javax.transaction.TransactionManager.class, new Injector<javax.transaction.TransactionManager>() {
             @Override
             public void inject(final javax.transaction.TransactionManager value) throws InjectionException {
                 tmLegacyBinderService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(new ImmediateValue<Object>(value)));
@@ -306,7 +306,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final BinderService tsrBinderService = new BinderService("TransactionSynchronizationRegistry");
         final ServiceBuilder<ManagedReferenceFactory> tsrBuilder = context.getServiceTarget().addService(ContextNames.JBOSS_CONTEXT_SERVICE_NAME.append("TransactionSynchronizationRegistry"), tsrBinderService);
         tsrBuilder.addDependency(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, ServiceBasedNamingStore.class, tsrBinderService.getNamingStoreInjector());
-        tsrBuilder.addDependency(TransactionSynchronizationRegistryService.SERVICE_NAME, TransactionSynchronizationRegistry.class, new Injector<TransactionSynchronizationRegistry>() {
+        tsrBuilder.addDependency(TransactionSynchronizationRegistryService.INTERNAL_SERVICE_NAME, TransactionSynchronizationRegistry.class, new Injector<TransactionSynchronizationRegistry>() {
             @Override
             public void inject(final TransactionSynchronizationRegistry value) throws InjectionException {
                 tsrBinderService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(new ImmediateValue<Object>(value)));
@@ -328,14 +328,14 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final ServiceBuilder<ManagedReferenceFactory> utBuilder = context.getServiceTarget().addService(ContextNames.JBOSS_CONTEXT_SERVICE_NAME.append("UserTransaction"), userTransactionBindingService);
         utBuilder.addDependency(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, ServiceBasedNamingStore.class, userTransactionBindingService.getNamingStoreInjector())
                 .addDependency(UserTransactionAccessControlService.SERVICE_NAME, UserTransactionAccessControlService.class, userTransactionBindingService.getUserTransactionAccessControlServiceInjector())
-                .addDependency(UserTransactionService.SERVICE_NAME, UserTransaction.class,
+                .addDependency(UserTransactionService.INTERNAL_SERVICE_NAME, UserTransaction.class,
                         new ManagedReferenceInjector<UserTransaction>(userTransactionBindingService.getManagedObjectInjector()));
         utBuilder.install();
 
         // install the EE Concurrency transaction setup provider's service
         final TransactionSetupProviderService transactionSetupProviderService = new TransactionSetupProviderService();
         context.getServiceTarget().addService(ConcurrentServiceNames.TRANSACTION_SETUP_PROVIDER_SERVICE_NAME, transactionSetupProviderService)
-                .addDependency(TransactionManagerService.SERVICE_NAME, TransactionManager.class, transactionSetupProviderService.getTransactionManagerInjectedValue())
+                .addDependency(TransactionManagerService.INTERNAL_SERVICE_NAME, TransactionManager.class, transactionSetupProviderService.getTransactionManagerInjectedValue())
                 .install();
     }
 

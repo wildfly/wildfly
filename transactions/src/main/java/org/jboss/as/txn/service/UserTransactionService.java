@@ -38,7 +38,13 @@ import org.wildfly.transaction.client.LocalUserTransaction;
  * @since 29-Oct-2010
  */
 public class UserTransactionService extends AbstractService<UserTransaction> {
+    /** @deprecated Use the "org.wildfly.transactions.global-default-local-provider" capability to confirm existence of a local provider
+     *              and org.wildfly.transaction.client.LocalTransactionContext to obtain a UserTransaction reference. */
+    @Deprecated
     public static final ServiceName SERVICE_NAME = TxnServices.JBOSS_TXN_USER_TRANSACTION;
+    /** Non-deprecated service name only for use within the subsystem */
+    @SuppressWarnings("deprecation")
+    public static final ServiceName INTERNAL_SERVICE_NAME = TxnServices.JBOSS_TXN_USER_TRANSACTION;
 
     private static final UserTransactionService INSTANCE = new UserTransactionService();
 
@@ -46,7 +52,7 @@ public class UserTransactionService extends AbstractService<UserTransaction> {
     }
 
     public static ServiceController<UserTransaction> addService(final ServiceTarget target) {
-        ServiceBuilder<UserTransaction> serviceBuilder = target.addService(SERVICE_NAME, INSTANCE);
+        ServiceBuilder<UserTransaction> serviceBuilder = target.addService(INTERNAL_SERVICE_NAME, INSTANCE);
         serviceBuilder.addDependency(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT);
         return serviceBuilder.install();
     }
