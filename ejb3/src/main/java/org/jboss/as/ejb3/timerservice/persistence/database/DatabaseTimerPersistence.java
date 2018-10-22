@@ -223,7 +223,9 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                 EjbLogger.EJB3_TIMER_LOGGER.debugf("Detect database dialect as '%s'.  If this is incorrect, please specify the correct dialect using the 'database' attribute in your configuration.  Supported database dialect strings are %s", database, databaseDialects);
             }
         } else {
-            EjbLogger.EJB3_TIMER_LOGGER.debugf("Database dialect '%s' read from configuration", database);
+            EjbLogger.EJB3_TIMER_LOGGER.debugf("Database dialect '%s' read from configuration, adjusting it to match the final database valid value.", database);
+            database = identifyDialect(database);
+            EjbLogger.EJB3_TIMER_LOGGER.debugf("New Database dialect is '%s'.", database);
         }
     }
 
@@ -241,6 +243,8 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                unified = "postgresql";
             } else if (name.toLowerCase().contains("mysql")) {
                 unified = "mysql";
+            } else if (name.toLowerCase().contains("mariadb")) {
+                unified = "mariadb";
             } else if (name.toLowerCase().contains("db2")) {
                 unified = "db2";
             } else if (name.toLowerCase().contains("hsql") || name.toLowerCase().contains("hypersonic")) {
