@@ -18,16 +18,6 @@ if not errorlevel == 1 (
 )
 setlocal DisableDelayedExpansion
 
-rem check for secmgr property
-setlocal EnableDelayedExpansion
-echo(!JAVA_OPTS! | findstr /r /c:"-secmgr" > nul
-if not errorlevel == 1 (
-   set "line=%JAVA_OPTS%"
-   set JAVA_OPTS=!line:-secmgr= !
-   set SECMGR=true
-)
-setlocal DisableDelayedExpansion
-
 pushd "%DIRNAME%.."
 set "RESOLVED_JBOSS_HOME=%CD%"
 popd
