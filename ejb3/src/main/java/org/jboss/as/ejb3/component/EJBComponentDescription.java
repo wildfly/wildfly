@@ -570,8 +570,6 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                         serviceBuilder.addDependency(support.getCapabilityServiceName("org.wildfly.transactions.global-default-local-provider"));
                         // add dependency on UserTransaction
                         serviceBuilder.addDependency(TxnServices.JBOSS_TXN_USER_TRANSACTION, UserTransaction.class, ejbComponentCreateService.getUserTransactionInjector());
-                        // add dependency on TransactionSynchronizationRegistry
-                        serviceBuilder.addDependency(TxnServices.JBOSS_TXN_SYNCHRONIZATION_REGISTRY);
                     }
                 });
 

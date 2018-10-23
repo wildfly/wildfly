@@ -32,7 +32,6 @@ import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
-import org.jboss.as.txn.service.TxnServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.modules.Module;
@@ -61,7 +60,6 @@ import org.wildfly.extension.picketlink.idm.service.FileIdentityStoreService;
 import org.wildfly.extension.picketlink.idm.service.JPAIdentityStoreService;
 import org.wildfly.extension.picketlink.idm.service.PartitionManagerService;
 
-import javax.transaction.TransactionSynchronizationRegistry;
 import java.util.List;
 
 import static org.jboss.as.controller.PathAddress.EMPTY_ADDRESS;
@@ -343,10 +341,6 @@ public class PartitionManagerAddHandler extends AbstractAddStepHandler {
                ContextTransactionManager, ContextTransactionSynchronizationRegistry and LocalUserTransaction
                can be made knowing that the global default TM, TSR and UT will be from that provider. */
             storeServiceBuilder.addDependency(context.getCapabilityServiceName("org.wildfly.transactions.global-default-local-provider", null));
-
-            storeServiceBuilder
-                .addDependency(TxnServices.JBOSS_TXN_SYNCHRONIZATION_REGISTRY, TransactionSynchronizationRegistry.class, storeService
-                    .getTransactionSynchronizationRegistry());
 
             if (jpaDataSourceNode.isDefined()) {
                 storeConfig.dataSourceJndiUrl(toJndiName(jpaDataSourceNode.asString()));

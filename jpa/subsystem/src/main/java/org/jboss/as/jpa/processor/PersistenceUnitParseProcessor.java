@@ -41,7 +41,6 @@ import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.deployment.JPADeploymentMarker;
 import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.as.txn.service.TransactionSynchronizationRegistryService;
 import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.vfs.VirtualFile;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
@@ -96,7 +95,6 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
 
         CapabilityServiceSupport capabilitySupport = phaseContext.getDeploymentUnit().getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
         phaseContext.addDeploymentDependency(capabilitySupport.getCapabilityServiceName(JPAServiceNames.LOCAL_TRANSACTION_PROVIDER_CAPABILITY), JpaAttachments.LOCAL_TRANSACTION_PROVIDER);
-        phaseContext.addDeploymentDependency(TransactionSynchronizationRegistryService.SERVICE_NAME, JpaAttachments.TRANSACTION_SYNCHRONIZATION_REGISTRY);
     }
 
     @Override

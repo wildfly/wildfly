@@ -24,8 +24,6 @@ package org.jboss.as.connector.services.transactionintegration;
 
 import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
 
-import javax.transaction.TransactionSynchronizationRegistry;
-
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.txn.integration.JBossContextXATerminator;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
@@ -39,6 +37,7 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.tm.XAResourceRecoveryRegistry;
 import org.jboss.tm.usertx.UserTransactionRegistry;
 import org.wildfly.transaction.client.ContextTransactionManager;
+import org.wildfly.transaction.client.ContextTransactionSynchronizationRegistry;
 
 /**
  * A WorkManager Service.
@@ -47,8 +46,6 @@ import org.wildfly.transaction.client.ContextTransactionManager;
 public final class TransactionIntegrationService implements Service<TransactionIntegration> {
 
     private volatile TransactionIntegration value;
-
-    private final InjectedValue<TransactionSynchronizationRegistry> tsr = new InjectedValue<TransactionSynchronizationRegistry>();
 
     private final InjectedValue<UserTransactionRegistry> utr = new InjectedValue<UserTransactionRegistry>();
 
@@ -68,7 +65,8 @@ public final class TransactionIntegrationService implements Service<TransactionI
 
     @Override
     public void start(StartContext context) throws StartException {
-        this.value = new TransactionIntegrationImpl(ContextTransactionManager.getInstance(), tsr.getValue(), utr.getValue(), terminator.getValue(),
+        this.value = new TransactionIntegrationImpl(ContextTransactionManager.getInstance(),
+                ContextTransactionSynchronizationRegistry.getInstance(), utr.getValue(), terminator.getValue(),
                 rr.getValue());
         ROOT_LOGGER.debugf("Starting JCA TransactionIntegrationService");
     }
@@ -76,10 +74,6 @@ public final class TransactionIntegrationService implements Service<TransactionI
     @Override
     public void stop(StopContext context) {
 
-    }
-
-    public Injector<TransactionSynchronizationRegistry> getTsrInjector() {
-        return tsr;
     }
 
     public Injector<UserTransactionRegistry> getUtrInjector() {

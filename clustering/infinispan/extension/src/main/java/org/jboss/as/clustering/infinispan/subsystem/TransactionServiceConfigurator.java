@@ -43,12 +43,12 @@ import org.jboss.as.clustering.infinispan.TransactionSynchronizationRegistryProv
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.txn.service.TxnServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.transaction.client.ContextTransactionManager;
+import org.wildfly.transaction.client.ContextTransactionSynchronizationRegistry;
 
 /**
  * @author Paul Ferraro
@@ -83,7 +83,13 @@ public class TransactionServiceConfigurator extends ComponentServiceConfigurator
                 break;
             }
             case NON_XA: {
-                this.tsr = builder.requires(TxnServices.JBOSS_TXN_SYNCHRONIZATION_REGISTRY);
+                this.tsr = new Supplier<TransactionSynchronizationRegistry>() {
+                    @Override
+                    public TransactionSynchronizationRegistry get() {
+                        return ContextTransactionSynchronizationRegistry.getInstance();
+                    }
+                };
+                // fall through
             }
             default: {
                 // Add a service dependency on the void service provided by the
