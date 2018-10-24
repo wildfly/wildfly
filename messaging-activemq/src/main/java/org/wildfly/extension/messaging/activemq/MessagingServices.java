@@ -23,7 +23,9 @@
 package org.wildfly.extension.messaging.activemq;
 
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JMS_BRIDGE;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.SUBSYSTEM;
 
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.msc.service.ServiceName;
@@ -88,4 +90,7 @@ public class MessagingServices {
        return JBOSS_MESSAGING_ACTIVEMQ.append(JMS_BRIDGE).append(bridgeName);
    }
 
+    public static boolean isSubsystemResource(final OperationContext context) {
+        return context.getCurrentAddress().size() > 0 && SUBSYSTEM.equals(context.getCurrentAddress().getParent().getLastElement().getKey());
+    }
 }

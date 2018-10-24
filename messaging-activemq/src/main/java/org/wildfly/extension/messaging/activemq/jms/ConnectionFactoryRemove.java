@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.messaging.activemq.jms;
 
+import static org.wildfly.extension.messaging.activemq.MessagingServices.isSubsystemResource;
+
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -40,12 +42,18 @@ public class ConnectionFactoryRemove extends AbstractRemoveStepHandler {
 
     public static final ConnectionFactoryRemove INSTANCE = new ConnectionFactoryRemove();
 
+    @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        final String name = context.getCurrentAddressValue();
-        final ServiceName serviceName = MessagingServices.getActiveMQServiceName(context.getCurrentAddress());
-        context.removeService(JMSServices.getConnectionFactoryBaseServiceName(serviceName).append(name));
+        ServiceName serviceName;
+        if(isSubsystemResource(context)) {
+            serviceName = MessagingServices.getActiveMQServiceName("");
+        } else {
+            serviceName = MessagingServices.getActiveMQServiceName(context.getCurrentAddress());
+        }
+        context.removeService(JMSServices.getConnectionFactoryBaseServiceName(serviceName).append(context.getCurrentAddressValue()));
     }
 
+    @Override
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         ConnectionFactoryAdd.INSTANCE.performRuntime(context, operation, model);
     }

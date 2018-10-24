@@ -27,8 +27,8 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.LOCAL;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.LOCAL_TX;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.NONE;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.NO_TX;
-import static org.wildfly.extension.messaging.activemq.CommonAttributes.SUBSYSTEM;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.XA_TX;
+import static org.wildfly.extension.messaging.activemq.MessagingServices.isSubsystemResource;
 import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttribute.getDefinitions;
 
 import java.util.ArrayList;
@@ -170,10 +170,6 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
 
             installStatistics(context, name);
         }
-    }
-
-    private static boolean isSubsystemResource(final OperationContext context) {
-        return SUBSYSTEM.equals(context.getCurrentAddress().getParent().getLastElement().getKey());
     }
 
     static String getDiscoveryGroup(final ModelNode model) {
