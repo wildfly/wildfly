@@ -27,7 +27,6 @@ import org.glassfish.enterprise.concurrent.spi.TransactionSetupProvider;
 import org.jboss.as.ee.concurrent.ContextServiceImpl;
 import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
@@ -35,28 +34,20 @@ import org.jboss.msc.value.InjectedValue;
  * Service responsible for managing a context service impl's lifecycle.
  *
  * @author Eduardo Martins
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public class ContextServiceService extends EEConcurrentAbstractService<ContextServiceImpl> {
+public final class ContextServiceService extends EEConcurrentAbstractService<ContextServiceImpl> {
 
     private final String name;
-    private final InjectedValue<ContextSetupProvider> contextSetupProvider;
+    private final ContextSetupProvider contextSetupProvider;
     private final InjectedValue<TransactionSetupProvider> transactionSetupProvider;
-
     private volatile ContextServiceImpl contextService;
 
-    /**
-     * @param name
-     * @param jndiName
-     */
-    public ContextServiceService(String name, String jndiName) {
+    public ContextServiceService(final String name, final String jndiName, final ContextSetupProvider contextSetupProvider) {
         super(jndiName);
         this.name = name;
-        this.contextSetupProvider = new InjectedValue<>();
+        this.contextSetupProvider = contextSetupProvider;
         this.transactionSetupProvider = new InjectedValue<>();
-    }
-
-    public InjectedValue<ContextSetupProvider> getContextSetupProvider() {
-        return contextSetupProvider;
     }
 
     public InjectedValue<TransactionSetupProvider> getTransactionSetupProvider() {
@@ -64,12 +55,12 @@ public class ContextServiceService extends EEConcurrentAbstractService<ContextSe
     }
 
     @Override
-    void startValue(StartContext context) throws StartException {
-        contextService = new ContextServiceImpl(name, contextSetupProvider.getValue(), transactionSetupProvider.getOptionalValue());
+    void startValue(final StartContext context) {
+        contextService = new ContextServiceImpl(name, contextSetupProvider, transactionSetupProvider.getOptionalValue());
     }
 
     @Override
-    void stopValue(StopContext context) {
+    void stopValue(final StopContext context) {
         contextService = null;
     }
 
