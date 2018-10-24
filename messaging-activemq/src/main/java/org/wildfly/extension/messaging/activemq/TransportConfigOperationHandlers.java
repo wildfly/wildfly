@@ -37,6 +37,7 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.REMOTE_C
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -79,6 +80,7 @@ public class TransportConfigOperationHandlers {
 
     private static final Map<String, String> CONNECTORS_KEYS_MAP = new HashMap<>();
     private static final Map<String, String> ACCEPTOR_KEYS_MAP = new HashMap<>();
+    private static final Set<String> IN_VM_ALLOWABLE_KEYS;
 
     private static final String BATCH_DELAY = "batch-delay";
     private static final String HTTP_UPGRADE_ENABLED = "http-upgrade-enabled";
@@ -166,6 +168,8 @@ public class TransportConfigOperationHandlers {
                 TransportConstants.BATCH_DELAY);
         CONNECTORS_KEYS_MAP.put("connect-timeout-millis",
                 TransportConstants.NETTY_CONNECT_TIMEOUT);
+        CONNECTORS_KEYS_MAP.put("anycast-prefix", "anycastPrefix");
+        CONNECTORS_KEYS_MAP.put("multicast-prefix", "multicastPrefix");
 
         ACCEPTOR_KEYS_MAP.put(InVMTransportDefinition.SERVER_ID.getName(),
                 org.apache.activemq.artemis.core.remoting.impl.invm.TransportConstants.SERVER_ID_PROP_NAME);
@@ -230,6 +234,12 @@ public class TransportConfigOperationHandlers {
                 TransportConstants.USE_INVM_PROP_NAME);
         ACCEPTOR_KEYS_MAP.put(USE_NIO,
                 TransportConstants.USE_NIO_PROP_NAME);
+
+        Set<String>  allowable = new HashSet<>(3);
+        allowable.add(org.apache.activemq.artemis.core.remoting.impl.invm.TransportConstants.BUFFER_POOLING);
+        allowable.add(org.apache.activemq.artemis.core.remoting.impl.invm.TransportConstants.CONNECTIONS_ALLOWED);
+        allowable.add(org.apache.activemq.artemis.core.remoting.impl.invm.TransportConstants.SERVER_ID_PROP_NAME);
+        IN_VM_ALLOWABLE_KEYS = Collections.unmodifiableSet(allowable);
     }
 
     /**
@@ -242,12 +252,13 @@ public class TransportConfigOperationHandlers {
      * @throws OperationFailedException
      */
     static void processAcceptors(final OperationContext context, final Configuration configuration, final ModelNode params, final Set<String> bindings) throws OperationFailedException {
-        final Map<String, TransportConfiguration> acceptors = new HashMap<String, TransportConfiguration>();
+        final Map<String, TransportConfiguration> acceptors = new HashMap<>();
         if (params.hasDefined(ACCEPTOR)) {
             for (final Property property : params.get(ACCEPTOR).asPropertyList()) {
                 final String acceptorName = property.getName();
                 final ModelNode config = property.getValue();
                 final Map<String, Object> parameters = getParameters(context, config, ACCEPTOR_KEYS_MAP);
+                final Map<String, Object> extraParameters = getExtraParameters(TransportConstants.ALLOWABLE_ACCEPTOR_KEYS, parameters);
                 final String clazz = config.get(FACTORY_CLASS.getName()).asString();
                 ModelNode socketBinding = GenericTransportDefinition.SOCKET_BINDING.resolveModelAttribute(context, config);
                 if (socketBinding.isDefined()) {
@@ -255,7 +266,7 @@ public class TransportConfigOperationHandlers {
                     // uses the parameters to pass the socket binding name that will be read in ActiveMQServerService.start()
                     parameters.put(GenericTransportDefinition.SOCKET_BINDING.getName(), socketBinding.asString());
                 }
-                acceptors.put(acceptorName, new TransportConfiguration(clazz, parameters, acceptorName));
+                acceptors.put(acceptorName, new TransportConfiguration(clazz, parameters, acceptorName, extraParameters));
             }
         }
         if (params.hasDefined(REMOTE_ACCEPTOR)) {
@@ -263,11 +274,12 @@ public class TransportConfigOperationHandlers {
                 final String acceptorName = property.getName();
                 final ModelNode config = property.getValue();
                 final Map<String, Object> parameters = getParameters(context, config, ACCEPTOR_KEYS_MAP);
+                final Map<String, Object> extraParameters = getExtraParameters(TransportConstants.ALLOWABLE_ACCEPTOR_KEYS, parameters);
                 final String binding = config.get(RemoteTransportDefinition.SOCKET_BINDING.getName()).asString();
                 bindings.add(binding);
                 // uses the parameters to pass the socket binding name that will be read in ActiveMQServerService.start()
                 parameters.put(RemoteTransportDefinition.SOCKET_BINDING.getName(), binding);
-                acceptors.put(acceptorName, new TransportConfiguration(NettyAcceptorFactory.class.getName(), parameters, acceptorName));
+                acceptors.put(acceptorName, new TransportConfiguration(NettyAcceptorFactory.class.getName(), parameters, acceptorName, extraParameters));
             }
         }
         if (params.hasDefined(IN_VM_ACCEPTOR)) {
@@ -275,8 +287,9 @@ public class TransportConfigOperationHandlers {
                 final String acceptorName = property.getName();
                 final ModelNode config = property.getValue();
                 final Map<String, Object> parameters = getParameters(context, config, ACCEPTOR_KEYS_MAP);
+                final Map<String, Object> extraParameters = getExtraParameters(IN_VM_ALLOWABLE_KEYS, parameters);
                 parameters.put(SERVER_ID_PROP_NAME, InVMTransportDefinition.SERVER_ID.resolveModelAttribute(context, config).asInt());
-                acceptors.put(acceptorName, new TransportConfiguration(InVMAcceptorFactory.class.getName(), parameters, acceptorName));
+                acceptors.put(acceptorName, new TransportConfiguration(InVMAcceptorFactory.class.getName(), parameters, acceptorName, extraParameters));
             }
         }
         if (params.hasDefined(HTTP_ACCEPTOR)) {
@@ -284,13 +297,32 @@ public class TransportConfigOperationHandlers {
                 final String acceptorName = property.getName();
                 final ModelNode config = property.getValue();
                 final Map<String, Object> parameters = getParameters(context, config, ACCEPTOR_KEYS_MAP);
+                final Map<String, Object> extraParameters = getExtraParameters(TransportConstants.ALLOWABLE_ACCEPTOR_KEYS, parameters);
                 parameters.put(TransportConstants.HTTP_UPGRADE_ENABLED_PROP_NAME, true);
-                acceptors.put(acceptorName, new TransportConfiguration(NettyAcceptorFactory.class.getName(), parameters, acceptorName));
+                acceptors.put(acceptorName, new TransportConfiguration(NettyAcceptorFactory.class.getName(), parameters, acceptorName, extraParameters));
             }
         }
-        configuration.setAcceptorConfigurations(new HashSet<TransportConfiguration>(acceptors.values()));
+        configuration.setAcceptorConfigurations(new HashSet<>(acceptors.values()));
     }
 
+    /**
+     * Extract extra parameters from the map of parameters.
+     * @param allowedKeys: the keys for allowed parameters.
+     * @param parameters all the parameters (allowed and extra).
+     * @return a Map of extra parameters (those that are not allowed).
+     */
+    private static Map<String, Object> getExtraParameters(final Set<String> allowedKeys, final Map<String, Object> parameters) {
+        Map<String, Object> extraParameters = new HashMap<>();
+        for(Map.Entry<String, Object> parameter : parameters.entrySet()) {
+            if(!allowedKeys.contains(parameter.getKey())) {
+                extraParameters.put(parameter.getKey(), parameter.getValue());
+            }
+        }
+        for (String extraParam : extraParameters.keySet()) {
+            parameters.remove(extraParam);
+        }
+        return extraParameters;
+    }
     /**
      * Get the parameters.
      *
@@ -304,9 +336,7 @@ public class TransportConfigOperationHandlers {
         Map<String, String> fromModel = CommonAttributes.PARAMS.unwrap(context, config);
         Map<String, Object> parameters = new HashMap<>();
         for (Map.Entry<String, String> entry : fromModel.entrySet()) {
-            String key = entry.getKey();
-            String value = entry.getValue();
-            parameters.put(mapping.getOrDefault(key, key), value);
+            parameters.put(mapping.getOrDefault(entry.getKey(), entry.getKey()), entry.getValue());
         }
         return parameters;
     }
@@ -327,6 +357,7 @@ public class TransportConfigOperationHandlers {
                 final String connectorName = property.getName();
                 final ModelNode config = property.getValue();
                 final Map<String, Object> parameters = getParameters(context, config, CONNECTORS_KEYS_MAP);
+                final Map<String, Object> extraParameters = getExtraParameters(TransportConstants.ALLOWABLE_CONNECTOR_KEYS, parameters);
                 ModelNode socketBinding = GenericTransportDefinition.SOCKET_BINDING.resolveModelAttribute(context, config);
                 if (socketBinding.isDefined()) {
                     bindings.add(socketBinding.asString());
@@ -334,7 +365,7 @@ public class TransportConfigOperationHandlers {
                     parameters.put(GenericTransportDefinition.SOCKET_BINDING.getName(), socketBinding.asString());
                 }
                 final String clazz = FACTORY_CLASS.resolveModelAttribute(context, config).asString();
-                connectors.put(connectorName, new TransportConfiguration(clazz, parameters, connectorName));
+                connectors.put(connectorName, new TransportConfiguration(clazz, parameters, connectorName, extraParameters));
             }
         }
         if (params.hasDefined(REMOTE_CONNECTOR)) {
@@ -342,11 +373,12 @@ public class TransportConfigOperationHandlers {
                 final String connectorName = property.getName();
                 final ModelNode config = property.getValue();
                 final Map<String, Object> parameters = getParameters(context, config, CONNECTORS_KEYS_MAP);
+                final Map<String, Object> extraParameters = getExtraParameters(TransportConstants.ALLOWABLE_CONNECTOR_KEYS, parameters);
                 final String binding = config.get(RemoteTransportDefinition.SOCKET_BINDING.getName()).asString();
                 bindings.add(binding);
                 // uses the parameters to pass the socket binding name that will be read in ActiveMQServerService.start()
                 parameters.put(RemoteTransportDefinition.SOCKET_BINDING.getName(), binding);
-                connectors.put(connectorName, new TransportConfiguration(NettyConnectorFactory.class.getName(), parameters, connectorName));
+                connectors.put(connectorName, new TransportConfiguration(NettyConnectorFactory.class.getName(), parameters, connectorName, extraParameters));
             }
         }
         if (params.hasDefined(IN_VM_CONNECTOR)) {
@@ -354,8 +386,9 @@ public class TransportConfigOperationHandlers {
                 final String connectorName = property.getName();
                 final ModelNode config = property.getValue();
                 final Map<String, Object> parameters = getParameters(context, config, CONNECTORS_KEYS_MAP);
+                final Map<String, Object> extraParameters = getExtraParameters(IN_VM_ALLOWABLE_KEYS, parameters);
                 parameters.put(CONNECTORS_KEYS_MAP.get(InVMTransportDefinition.SERVER_ID.getName()), InVMTransportDefinition.SERVER_ID.resolveModelAttribute(context, config).asInt());
-                connectors.put(connectorName, new TransportConfiguration(InVMConnectorFactory.class.getName(), parameters, connectorName));
+                connectors.put(connectorName, new TransportConfiguration(InVMConnectorFactory.class.getName(), parameters, connectorName, extraParameters));
             }
         }
         if (params.hasDefined(HTTP_CONNECTOR)) {
@@ -363,6 +396,7 @@ public class TransportConfigOperationHandlers {
                 final String connectorName = property.getName();
                 final ModelNode config = property.getValue();
                 final Map<String, Object> parameters = getParameters(context, config, CONNECTORS_KEYS_MAP);
+                final Map<String, Object> extraParameters = getExtraParameters(TransportConstants.ALLOWABLE_CONNECTOR_KEYS, parameters);
 
                 final String binding = HTTPConnectorDefinition.SOCKET_BINDING.resolveModelAttribute(context, config).asString();
                 bindings.add(binding);
@@ -376,7 +410,7 @@ public class TransportConfigOperationHandlers {
                 String serverName = serverNameModelNode.isDefined() ? serverNameModelNode.asString() : configuration.getName();
                 parameters.put(ACTIVEMQ_SERVER_NAME, serverName);
 
-                connectors.put(connectorName, new TransportConfiguration(NettyConnectorFactory.class.getName(), parameters, connectorName));
+                connectors.put(connectorName, new TransportConfiguration(NettyConnectorFactory.class.getName(), parameters, connectorName, extraParameters));
             }
         }
         configuration.setConnectorConfigurations(connectors);

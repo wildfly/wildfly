@@ -91,7 +91,7 @@ public interface JMSOperations {
 
     void close();
 
-    void addHttpConnector(String connectorName, String socketBinding, String endpoint);
+    void addHttpConnector(String connectorName, String socketBinding, String endpoint, Map<String, String> parameters);
 
     void removeHttpConnector(String connectorName);
 

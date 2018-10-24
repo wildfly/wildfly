@@ -47,6 +47,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.junit.Assert.assertEquals;
 
+import java.util.HashMap;
+
 /**
  * Created by spyrkob on 18/05/2017.
  */
@@ -64,7 +66,10 @@ public class ConnectionFactoryClientMappingTestCase {
             JMSOperations ops = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
 
             addSocketBinding(managementClient, "test-binding", clientMapping("test", "8000"));
-            ops.addHttpConnector("http-test-connector", "test-binding", "http-acceptor");
+            Map<String, String> parameters = new HashMap<>();
+            parameters.put("multicast-prefix", "jms.topic");
+            parameters.put("anycast-prefix", "jms.queue");
+            ops.addHttpConnector("http-test-connector", "test-binding", "http-acceptor", parameters);
             ModelNode attr = new ModelNode();
             attr.get("connectors").add("http-test-connector");
             ops.addJmsConnectionFactory("TestConnectionFactory", CONNECTION_FACTORY_JNDI_NAME, attr);
