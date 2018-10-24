@@ -60,7 +60,6 @@ import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_BUFFER_TIMEOUT;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_COMPACT_MIN_FILES;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_COMPACT_PERCENTAGE;
-import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_DATABASE;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_DATASOURCE;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_FILE_SIZE;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JOURNAL_JDBC_LOCK_EXPIRATION;
@@ -102,7 +101,6 @@ import static org.wildfly.extension.messaging.activemq.ServerDefinition.TRANSACT
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.WILD_CARD_ROUTING_ENABLED;
 import static org.wildfly.extension.messaging.activemq.ha.HAPolicyConfigurationBuilder.addHAPolicyConfiguration;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -618,13 +616,6 @@ class ServerAdd extends AbstractAddStepHandler {
         // the system property is removed, otherwise Artemis will use it to override the value from the configuration
         org.wildfly.security.manager.WildFlySecurityManager.getSystemPropertiesPrivileged().remove(ARTEMIS_BROKER_CONFIG_JDBC_LOCK_ACQUISITION_TIMEOUT_MILLIS);
         storageConfiguration.setJdbcLockAcquisitionTimeoutMillis(jdbcLockAcquisitionTimeoutMillis);
-        ModelNode databaseNode = JOURNAL_DATABASE.resolveModelAttribute(context, model);
-        final String database = databaseNode.isDefined() ? databaseNode.asString() : null;
-        try {
-            storageConfiguration.setSqlProvider(new PropertySQLProviderFactory(database));
-        } catch (IOException e) {
-            throw new OperationFailedException(e);
-        }
         configuration.setStoreConfiguration(storageConfiguration);
     }
 

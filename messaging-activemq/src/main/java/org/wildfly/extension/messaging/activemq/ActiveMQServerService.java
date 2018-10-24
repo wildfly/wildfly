@@ -49,6 +49,7 @@ import org.apache.activemq.artemis.core.io.aio.AIOSequentialFileFactory;
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.apache.activemq.artemis.core.server.JournalType;
 import org.apache.activemq.artemis.core.server.impl.ActiveMQServerImpl;
+import org.apache.activemq.artemis.jdbc.store.sql.PropertySQLProvider;
 import org.apache.activemq.artemis.spi.core.security.ActiveMQSecurityManager;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.services.path.AbsolutePathService;
@@ -267,8 +268,8 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
                 dbConfiguration.setDataSource(ds);
                 // inject the datasource into the PropertySQLProviderFactory to be able to determine the
                 // type of database for the datasource metadata
-                PropertySQLProviderFactory sqlProviderFactory = (PropertySQLProviderFactory)dbConfiguration.getSqlProviderFactory();
-                sqlProviderFactory.investigateDialect(ds);
+                PropertySQLProvider.Factory sqlProviderFactory = new PropertySQLProvider.Factory(ds);
+                dbConfiguration.setSqlProvider(sqlProviderFactory);
                 configuration.setStoreConfiguration(dbConfiguration);
                 ROOT_LOGGER.infof("use JDBC store for Artemis server, bindingsTable:%s",
                         dbConfiguration.getBindingsTableName());
