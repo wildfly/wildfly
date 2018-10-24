@@ -3175,4 +3175,7 @@ public interface EjbLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 508, value = "Failed to persist timer's state %s due to %s")
     void exceptionPersistTimerState(Timer timer, Exception e);
+
+    @Message(id = 509, value = "Client mapping is bound to '%s' in cluster mode, please specify client mappings in socket-binding: %s")
+    RuntimeException badBindingInClusterMode(String destHostAddress, String socketBindingName);
 }

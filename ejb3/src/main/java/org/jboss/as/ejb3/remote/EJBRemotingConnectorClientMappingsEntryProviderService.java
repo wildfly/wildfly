@@ -34,6 +34,7 @@ import java.util.function.Supplier;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.network.ClientMapping;
 import org.jboss.as.remoting.RemotingConnectorBindingInfoService;
 import org.jboss.msc.Service;
@@ -101,7 +102,11 @@ public class EJBRemotingConnectorClientMappingsEntryProviderService implements C
             // This needs to be configurable (i.e. send either host name or the IP address). But
             // since this is a corner case (i.e. absence of any client-mappings for a socket binding),
             // this should be OK for now
-            final String destinationAddress = info.getSocketBinding().getAddress().getHostAddress();
+            InetAddress addr = info.getSocketBinding().getAddress();
+            String destinationAddress = addr.getHostAddress();
+            if (addr.isAnyLocalAddress() && !this.group.get().isSingleton()) {
+                throw EjbLogger.REMOTE_LOGGER.badBindingInClusterMode(destinationAddress, info.getSocketBinding().getName());
+            }
             final InetAddress clientNetworkAddress;
             try {
                 clientNetworkAddress = InetAddress.getByName("::");
