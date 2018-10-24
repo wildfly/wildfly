@@ -66,9 +66,9 @@ import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
  * The persistence unit scoped
  *
  * @author Scott Marlow
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class PersistenceUnitServiceImpl implements Service<PersistenceUnitService>, PersistenceUnitService {
-    private final InjectedValue<Map> properties = new InjectedValue<Map>();
     private final InjectedValue<DataSource> jtaDataSource = new InjectedValue<DataSource>();
     private final InjectedValue<DataSource> nonJtaDataSource = new InjectedValue<DataSource>();
     private final InjectedValue<ExecutorService> executorInjector = new InjectedValue<ExecutorService>();
@@ -78,6 +78,7 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
     private static final String CDI_BEAN_MANAGER = "javax.persistence.bean.manager";
     private static final String VALIDATOR_FACTORY = "javax.persistence.validation.factory";
 
+    private final Map properties;
     private final PersistenceProviderAdaptor persistenceProviderAdaptor;
     private final PersistenceProvider persistenceProvider;
     private final PersistenceUnitMetadata pu;
@@ -92,6 +93,7 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
     private final SetupAction javaNamespaceSetup;
 
     public PersistenceUnitServiceImpl(
+            final Map properties,
             final ClassLoader classLoader,
             final PersistenceUnitMetadata pu,
             final PersistenceProviderAdaptor persistenceProviderAdaptor,
@@ -100,6 +102,7 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
             final ServiceName deploymentUnitServiceName,
             final ValidatorFactory validatorFactory, SetupAction javaNamespaceSetup,
             BeanManagerAfterDeploymentValidation beanManagerAfterDeploymentValidation) {
+        this.properties = properties;
         this.pu = pu;
         this.persistenceProviderAdaptor = persistenceProviderAdaptor;
         this.persistenceProvider = persistenceProvider;
@@ -141,7 +144,7 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                                     // as per JPA specification contract, always pass ValidatorFactory in via standard property before
                                     // creating container EntityManagerFactory
                                     if (validatorFactory != null) {
-                                        properties.getValue().put(VALIDATOR_FACTORY, validatorFactory);
+                                        properties.put(VALIDATOR_FACTORY, validatorFactory);
                                     }
 
                                     // handle phase 2 of 2 of bootstrapping the persistence unit
@@ -178,10 +181,10 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                                             wrapperBeanManagerLifeCycle = persistenceProviderAdaptor.beanManagerLifeCycle(proxyBeanManager);
                                             if (wrapperBeanManagerLifeCycle != null) {
                                               // pass the wrapper object representing the bean manager life cycle object
-                                              properties.getValue().put(CDI_BEAN_MANAGER, wrapperBeanManagerLifeCycle);
+                                              properties.put(CDI_BEAN_MANAGER, wrapperBeanManagerLifeCycle);
                                             }
                                             else {
-                                              properties.getValue().put(CDI_BEAN_MANAGER, proxyBeanManager);
+                                              properties.put(CDI_BEAN_MANAGER, proxyBeanManager);
                                             }
                                         }
                                         entityManagerFactory = createContainerEntityManagerFactory();
@@ -312,10 +315,6 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
         return pu.getScopedPersistenceUnitName();
     }
 
-    public Injector<Map> getPropertiesInjector() {
-        return properties;
-    }
-
     public Injector<DataSource> getJtaDataSourceInjector() {
         return jtaDataSource;
     }
@@ -353,8 +352,8 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
         persistenceProviderAdaptor.beforeCreateContainerEntityManagerFactory(pu);
         try {
             ROOT_LOGGER.tracef("calling createContainerEntityManagerFactory for pu=%s with integration properties=%s, application properties=%s",
-                    pu.getScopedPersistenceUnitName(), properties.getValue(), pu.getProperties());
-            return persistenceProvider.createContainerEntityManagerFactory(pu, properties.getValue());
+                    pu.getScopedPersistenceUnitName(), properties, pu.getProperties());
+            return persistenceProvider.createContainerEntityManagerFactory(pu, properties);
         } finally {
             try {
                 persistenceProviderAdaptor.afterCreateContainerEntityManagerFactory(pu);
