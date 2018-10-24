@@ -58,6 +58,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.value.ImmediateValue;
+import org.jipijapa.plugin.spi.EntityManagerCache;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 
 /**
@@ -152,6 +153,7 @@ public class PersistenceContextInjectionSource extends InjectionSource {
         public ManagedReference getReference() {
             PersistenceUnitServiceImpl service = (PersistenceUnitServiceImpl) serviceRegistry.getRequiredService(puServiceName).getValue();
             EntityManagerFactory emf = service.getEntityManagerFactory();
+            EntityManagerCache cache = service.getEntityManagerCache();
             EntityManager entityManager;
             boolean standardEntityManager = ENTITY_MANAGER_CLASS.equals(injectionTypeName);
             //TODO: change all this to use injections
@@ -159,7 +161,7 @@ public class PersistenceContextInjectionSource extends InjectionSource {
             TransactionSynchronizationRegistry tsr = (TransactionSynchronizationRegistry) serviceRegistry.getRequiredService(TransactionSynchronizationRegistryService.SERVICE_NAME).getValue();
             TransactionManager transactionManager = (TransactionManager) serviceRegistry.getRequiredService(TransactionManagerService.SERVICE_NAME).getValue();
             if (type.equals(PersistenceContextType.TRANSACTION)) {
-                entityManager = new TransactionScopedEntityManager(unitName, properties, emf, synchronizationType, tsr, transactionManager);
+                entityManager = new TransactionScopedEntityManager(unitName, properties, emf, synchronizationType, tsr, transactionManager, cache);
                 if (ROOT_LOGGER.isDebugEnabled())
                     ROOT_LOGGER.debugf("created new TransactionScopedEntityManager for unit name=%s", unitName);
             } else {

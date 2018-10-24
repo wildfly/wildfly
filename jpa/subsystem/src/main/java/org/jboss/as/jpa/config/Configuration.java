@@ -157,6 +157,7 @@ public class Configuration {
      */
     private static final String JPA_ALLOW_DEFAULT_DATA_SOURCE_USE = "wildfly.jpa.allowdefaultdatasourceuse";
 
+    private static final String JPA_ENTITYMANAGER_CACHE = "wildfly.jpa.emcache";
     /**
      * set to true to defer detaching entities until persistence context is closed (WFLY-3674)
      */
@@ -365,6 +366,19 @@ public class Configuration {
         }
         else if(emf.getProperties() != null && emf.getProperties().containsKey(ALLOWJOINEDUNSYNCPC)) {
             result = Boolean.parseBoolean((String) emf.getProperties().get(ALLOWJOINEDUNSYNCPC));
+        }
+        return result;
+    }
+
+    /**
+     * Determine if the EntityManager cache is enabled.
+     * Cache is disabled by default.
+     * @return true if cache is enabled.
+     */
+    public static boolean entityManagerCache(PersistenceUnitMetadata pu) {
+        boolean result = false;
+        if (pu.getProperties().containsKey(Configuration.JPA_ENTITYMANAGER_CACHE)) {
+            result = Boolean.parseBoolean(pu.getProperties().getProperty(Configuration.JPA_ENTITYMANAGER_CACHE));
         }
         return result;
     }

@@ -39,6 +39,12 @@ public interface PersistenceUnitService {
     EntityManagerFactory getEntityManagerFactory();
 
     /**
+     * Returns the configured EntityManager cache.
+     * @return
+     */
+    EntityManagerCache getEntityManagerCache();
+
+    /**
      * Gets the scoped name of this persistence unit.
      *
      * @return the name

@@ -37,6 +37,7 @@
         <properties>
             <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
             <property name="hibernate.show_sql" value="false"/>
+            <property name="wildfly.jpa.emcache" value="true"/>
         </properties>
     </persistence-unit>
     <persistence-unit name="unsynchronized">

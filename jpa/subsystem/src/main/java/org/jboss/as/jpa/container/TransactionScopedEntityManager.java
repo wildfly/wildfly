@@ -45,6 +45,7 @@ import org.jboss.as.txn.service.TransactionManagerService;
 import org.jboss.as.txn.service.TransactionSynchronizationRegistryService;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
+import org.jipijapa.plugin.spi.EntityManagerCache;
 
 /**
  * Transaction scoped entity manager will be injected into SLSB or SFSB beans.  At bean invocation time, they
@@ -62,18 +63,20 @@ public class TransactionScopedEntityManager extends AbstractEntityManager implem
     private final String puScopedName;          // Scoped name of the persistent unit
     private final Map properties;
     private transient EntityManagerFactory emf;
+    private transient EntityManagerCache cache;
     private final SynchronizationType synchronizationType;
     private transient TransactionSynchronizationRegistry transactionSynchronizationRegistry;
     private transient TransactionManager transactionManager;
     private transient Boolean deferDetach;
 
-    public TransactionScopedEntityManager(String puScopedName, Map properties, EntityManagerFactory emf, SynchronizationType synchronizationType, TransactionSynchronizationRegistry transactionSynchronizationRegistry, TransactionManager transactionManager) {
+    public TransactionScopedEntityManager(String puScopedName, Map properties, EntityManagerFactory emf, SynchronizationType synchronizationType, TransactionSynchronizationRegistry transactionSynchronizationRegistry, TransactionManager transactionManager, EntityManagerCache cache) {
         this.puScopedName = puScopedName;
         this.properties = properties;
         this.emf = emf;
         this.synchronizationType = synchronizationType;
         this.transactionSynchronizationRegistry = transactionSynchronizationRegistry;
         this.transactionManager = transactionManager;
+        this.cache = cache;
     }
 
     @Override
@@ -153,13 +156,20 @@ public class TransactionScopedEntityManager extends AbstractEntityManager implem
             final Map properties,
             final SynchronizationType synchronizationType) {
         EntityManager entityManager = TransactionUtil.getTransactionScopedEntityManager(puScopedName, transactionSynchronizationRegistry);
+
         if (entityManager == null) {
-            entityManager = createEntityManager(emf, properties, synchronizationType);
-            if (ROOT_LOGGER.isDebugEnabled()) {
-                ROOT_LOGGER.debugf("%s: created entity manager session %s", TransactionUtil.getEntityManagerDetails(entityManager, scopedPuName),
-                        TransactionUtil.getTransaction(transactionManager).toString());
+            // create an EntityManager if em cache is null, or sync type is not joined to JTA TX or
+            // em cache is empty
+            if (cache == null ||
+                    SynchronizationType.UNSYNCHRONIZED.equals(synchronizationType) ||
+                    (entityManager = cache.get()) == null) {
+                entityManager = createEntityManager(emf, properties, synchronizationType);
+                if (ROOT_LOGGER.isDebugEnabled()) {
+                    ROOT_LOGGER.debugf("%s: created entity manager session %s", TransactionUtil.getEntityManagerDetails(entityManager, scopedPuName),
+                            TransactionUtil.getTransaction(transactionManager).toString());
+                }
             }
-            TransactionUtil.registerSynchronization(entityManager, scopedPuName, transactionSynchronizationRegistry, transactionManager);
+            TransactionUtil.registerSynchronization(entityManager, scopedPuName, transactionSynchronizationRegistry, transactionManager, cache);
             TransactionUtil.putEntityManagerInTransactionRegistry(scopedPuName, entityManager, transactionSynchronizationRegistry);
         }
         else {

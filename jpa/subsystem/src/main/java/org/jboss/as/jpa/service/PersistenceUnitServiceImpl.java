@@ -39,6 +39,9 @@ import javax.validation.ValidatorFactory;
 import org.jboss.as.jpa.beanmanager.BeanManagerAfterDeploymentValidation;
 import org.jboss.as.jpa.beanmanager.ProxyBeanManager;
 import org.jboss.as.jpa.classloader.TempClassLoaderFactoryImpl;
+import org.jboss.as.jpa.config.Configuration;
+import org.jboss.as.jpa.container.EntityManagerCacheGlobal;
+import org.jipijapa.plugin.spi.EntityManagerCache;
 import org.jboss.as.jpa.spi.PersistenceUnitService;
 import org.jboss.as.jpa.subsystem.PersistenceUnitRegistryImpl;
 import org.jboss.as.jpa.util.JPAServiceNames;
@@ -90,6 +93,7 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
     private volatile EntityManagerFactory entityManagerFactory;
     private volatile ProxyBeanManager proxyBeanManager;
     private final SetupAction javaNamespaceSetup;
+    private EntityManagerCache entityManagerCache;
 
     public PersistenceUnitServiceImpl(
             final ClassLoader classLoader,
@@ -109,6 +113,8 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
         this.validatorFactory = validatorFactory;
         this.javaNamespaceSetup = javaNamespaceSetup;
         this.beanManagerAfterDeploymentValidation = beanManagerAfterDeploymentValidation;
+        this.entityManagerCache = Configuration.entityManagerCache(pu) ?
+                new EntityManagerCacheGlobal() : null;
     }
 
     @Override
@@ -249,6 +255,9 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                                     if (entityManagerFactory != null) {
                                         WritableServiceBasedNamingStore.pushOwner(deploymentUnitServiceName);
                                         try {
+                                            if (entityManagerCache != null) {
+                                                entityManagerCache.clear();
+                                            }
                                             if (entityManagerFactory.isOpen()) {
                                                 entityManagerFactory.close();
                                             }
@@ -305,6 +314,11 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
     @Override
     public EntityManagerFactory getEntityManagerFactory() {
         return entityManagerFactory;
+    }
+
+    @Override
+    public EntityManagerCache getEntityManagerCache() {
+        return entityManagerCache;
     }
 
     @Override

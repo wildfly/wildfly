@@ -281,4 +281,16 @@ public class TransactionTestCase {
         }
     }
 
+    @Test
+    @InSequence(12)
+    public void testMultipleTXTransactionalEntityManagerInvocations() throws Exception {
+        SFSBCMT sfsbcmt = lookup("SFSBCMT", SFSBCMT.class);
+        long started = System.currentTimeMillis();
+        for(int looper = 0; looper < 100000; looper++) {
+            assertNotNull(sfsbcmt.queryEmployeeNameRequireNewTX(1));
+        }
+        System.out.println("XXX. testEntityManagerName100000 duration of 100000 finds " +
+                        (System.currentTimeMillis() - started ) + "ms.");
+    }
+
 }

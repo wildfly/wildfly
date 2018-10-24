@@ -705,7 +705,8 @@ public class PersistenceUnitServiceHandler {
                                                 pu.getScopedPersistenceUnitName(),
                                                 Collections.emptyMap(),
                                                 value.getEntityManagerFactory(),
-                                                SynchronizationType.SYNCHRONIZED, transactionSynchronizationRegistry, transactionManager))));
+                                                SynchronizationType.SYNCHRONIZED, transactionSynchronizationRegistry, transactionManager,
+                                                value.getEntityManagerCache()))));
                     }
 
                     @Override

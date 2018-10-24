@@ -30,6 +30,7 @@ import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
@@ -48,10 +49,18 @@ public class SFSBCMT {
     SessionContext sessionContext;
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public Employee queryEmployeeNameRequireNewTX(int id) {
-        Query q = em.createQuery("SELECT e FROM Employee e where id=?");
-        q.setParameter(1, new Integer(id));
-        return (Employee) q.getSingleResult();
+    public String queryEmployeeNameRequireNewTX(int id) {
+        Query q = em.createQuery("SELECT e.name FROM Employee e where e.id=:id");
+        q.setParameter("id", new Integer(id));
+        try {
+            String name = (String) q.getSingleResult();
+            return name;
+        } catch (NoResultException expected) {
+            return "success";
+        } catch (Exception unexpected) {
+            return unexpected.getMessage();
+        }
+
     }
 
 

@@ -39,7 +39,7 @@ public class ThreadLocalStack<E> {
     private final ThreadLocal<Deque<Object>> deque = new ThreadLocal<Deque<Object>>() {
         @Override
         protected ArrayDeque<Object> initialValue() {
-            return new ArrayDeque<>();
+            return new ArrayDeque<>(); // TODO: consider ArrayDeque<>(1) to allocate less memory.
         }
     };
 
