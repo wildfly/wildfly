@@ -9,7 +9,7 @@ How to create Public JBoss AS API aggregated JavaDoc
 This will print out a list of artifacts in this format:
 
 <include>com.h2database:h2</include>
-<include>dom4j:dom4j</include>
+<include>org.dom4j:dom4j</include>
 <include>javax.activation:activation</include>
 ...
 

@@ -55,6 +55,11 @@
     -->
     <dependencies>
         <dependency>
+            <groupId>org.dom4j</groupId>
+            <artifactId>dom4j</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.eclipse.persistence</groupId>
             <artifactId>eclipselink</artifactId>
             <scope>test</scope>
@@ -130,6 +135,10 @@
                     <groupId>com.fasterxml</groupId>
                 </exclusion>
                 <exclusion>
+                    <artifactId>dom4j</artifactId>
+                    <groupId>dom4j</groupId>
+                </exclusion>
+                <exclusion>
                     <artifactId>javassist</artifactId>
                     <groupId>javassist</groupId>
                 </exclusion>
@@ -164,6 +173,10 @@
                 <exclusion>
                     <artifactId>ejb3-persistence</artifactId>
                     <groupId>org.hibernate</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>dom4j</artifactId>
+                    <groupId>dom4j</groupId>
                 </exclusion>
                 <exclusion>
                     <artifactId>hibernate-java8</artifactId>

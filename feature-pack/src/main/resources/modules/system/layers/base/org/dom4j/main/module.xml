@@ -24,7 +24,7 @@
 
 <module xmlns="urn:jboss:module:1.5" name="org.dom4j">
   <resources>
-    <artifact name="${dom4j:dom4j}"/>
+    <artifact name="${org.dom4j:dom4j}"/>
   </resources>
 
   <dependencies>
