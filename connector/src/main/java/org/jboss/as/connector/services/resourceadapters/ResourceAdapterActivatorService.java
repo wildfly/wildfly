@@ -26,6 +26,9 @@ import static org.jboss.as.connector.logging.ConnectorLogger.DEPLOYMENT_CONNECTO
 
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -68,6 +71,7 @@ public final class ResourceAdapterActivatorService extends AbstractResourceAdapt
 
     private CommonDeployment deploymentMD;
     private ContextNames.BindInfo bindInfo;
+    private final List<String> jndiAliases = new ArrayList<>();
     private boolean createBinderService = true;
 
     public ResourceAdapterActivatorService(final Connector cmd, final Activation activation, ClassLoader cl,
@@ -81,9 +85,9 @@ public final class ResourceAdapterActivatorService extends AbstractResourceAdapt
     }
 
     public ContextNames.BindInfo getBindInfo(String jndi) {
-        if (bindInfo != null)
+        if (bindInfo != null) {
             return bindInfo;
-
+        }
         return ContextNames.bindInfoFor(jndi);
     }
 
@@ -91,6 +95,20 @@ public final class ResourceAdapterActivatorService extends AbstractResourceAdapt
         this.bindInfo = bindInfo;
     }
 
+    public void addJndiAlias(String alias) {
+        this.jndiAliases.add(alias);
+    }
+
+    public void addJndiAliases(Collection<String> aliases) {
+        this.jndiAliases.addAll(aliases);
+    }
+
+    @Override
+    public Collection<String> getJndiAliases() {
+        return Collections.unmodifiableList(this.jndiAliases);
+    }
+
+    @Override
     public boolean isCreateBinderService() {
         return createBinderService;
     }

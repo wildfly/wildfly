@@ -921,4 +921,11 @@ public interface ConnectorLogger extends BasicLogger {
     @Message(id = 117, value = "%s is not a valid %s implementation")
     OperationFailedException notAValidDataSourceClass(String clz, String dsClz);
 
+    @LogMessage(level = INFO)
+    @Message(id = 118, value = "Binding connection factory named %s to alias %s")
+    void bindingAlias(String jndiName, String alias);
+
+    @LogMessage(level = INFO)
+    @Message(id = 119, value = "Unbinding connection factory named %s to alias %s")
+    void unbindingAlias(String jndiName, String alias);
 }

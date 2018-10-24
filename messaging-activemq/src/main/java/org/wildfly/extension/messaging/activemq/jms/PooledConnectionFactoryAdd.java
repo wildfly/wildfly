@@ -22,7 +22,6 @@
 
 package org.wildfly.extension.messaging.activemq.jms;
 
-import static org.wildfly.extension.messaging.activemq.BinderServiceUtil.installAliasBinderService;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_CLUSTER;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.LOCAL;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.LOCAL_TX;
@@ -33,6 +32,7 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.XA_TX;
 import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttribute.getDefinitions;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -51,8 +51,6 @@ import org.jboss.as.naming.deployment.ContextNames.BindInfo;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceRegistry;
-import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.extension.messaging.activemq.CommonAttributes;
 import org.wildfly.extension.messaging.activemq.DiscoveryGroupDefinition;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
@@ -89,7 +87,13 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
         for (ModelNode node : resolvedModel.get(Common.ENTRIES.getName()).asList()) {
             jndiNames.add(node.asString());
         }
-        BindInfo bindInfo = installJNDIAliases(context, jndiNames);
+        final BindInfo bindInfo = ContextNames.bindInfoFor(jndiNames.get(0));
+        List<String> jndiAliases;
+        if(jndiNames.size() > 1) {
+            jndiAliases = new ArrayList<>(jndiNames.subList(1, jndiNames.size()));
+        } else {
+            jndiAliases = Collections.emptyList();
+        }
         String managedConnectionPoolClassName = null;
         if (resolvedModel.hasDefined(ConnectionFactoryAttributes.Pooled.MANAGED_CONNECTION_POOL.getName())) {
             managedConnectionPoolClassName = resolvedModel.get(ConnectionFactoryAttributes.Pooled.MANAGED_CONNECTION_POOL.getName()).asString();
@@ -148,12 +152,12 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
             Set<String> connectorsSocketBindings = new HashSet<>();
             TransportConfiguration[] transportConfigurations = TransportConfigOperationHandlers.processConnectors(context, connectors, connectorsSocketBindings);
             ExternalPooledConnectionFactoryService.installService(context, name, transportConfigurations, discoveryGroupConfiguration, connectorsSocketBindings,
-                    jgroupClusterName, jgroupsChannelName, adapterParams, bindInfo, txSupport, minPoolSize, maxPoolSize, managedConnectionPoolClassName, enlistmentTrace, model);
+                    jgroupClusterName, jgroupsChannelName, adapterParams, bindInfo, jndiAliases, txSupport, minPoolSize, maxPoolSize, managedConnectionPoolClassName, enlistmentTrace, model);
         } else {
             String serverName = serverAddress.getLastElement().getValue();
             PooledConnectionFactoryService.installService(context,
                     name, serverName, connectors, discoveryGroupName, jgroupClusterName,
-                    adapterParams, bindInfo, txSupport, minPoolSize, maxPoolSize, managedConnectionPoolClassName, enlistmentTrace, model);
+                    adapterParams, bindInfo, jndiAliases, txSupport, minPoolSize, maxPoolSize, managedConnectionPoolClassName, enlistmentTrace, model);
         }
         boolean statsEnabled = ConnectionFactoryAttributes.Pooled.STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean();
 
@@ -211,7 +215,7 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
                 .setInitialMode(ServiceController.Mode.PASSIVE)
                 .install();
     }
-
+/*
     private ContextNames.BindInfo installJNDIAliases(OperationContext context, List<String> entries) {
         final ServiceTarget serviceTarget = context.getServiceTarget();
         final ServiceRegistry registry = context.getServiceRegistry(false);
@@ -225,5 +229,5 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
             }
         }
         return bindInfo;
-    }
+    }*/
 }
