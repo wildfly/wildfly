@@ -128,6 +128,9 @@ public class CacheServiceHandler implements ResourceServiceHandler {
     }
 
     private static ServiceName getRecoveryServiceName(OperationContext context) {
-        return context.getCapabilityServiceName(XA_RESOURCE_RECOVERY_REGISTRY.getName(), XAResourceRecoveryRegistry.class);
+        if (context.hasOptionalCapability(XA_RESOURCE_RECOVERY_REGISTRY.getName(), null, null)) {
+            return context.getCapabilityServiceName(XA_RESOURCE_RECOVERY_REGISTRY.getName(), XAResourceRecoveryRegistry.class);
+        }
+        return null;
     }
 }

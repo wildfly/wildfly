@@ -65,7 +65,13 @@ public class XAResourceRecoveryServiceConfigurator extends SimpleServiceNameProv
         Cache<?, ?> cache = this.cache.get();
         XAResourceRecovery recovery = new InfinispanXAResourceRecovery(cache);
         if (cache.getCacheConfiguration().transaction().recovery().enabled()) {
-            this.registry.get().addXAResourceRecovery(recovery);
+            if (registry != null) {
+                this.registry.get().addXAResourceRecovery(recovery);
+            } else {
+                // Shouldn't happen in a transactional cache since TransactionResourceDefinition
+                // will add a requirement on the capability that results in requiring the registry
+                throw new IllegalStateException();
+            }
         }
         return recovery;
     }
@@ -73,7 +79,13 @@ public class XAResourceRecoveryServiceConfigurator extends SimpleServiceNameProv
     @Override
     public void accept(XAResourceRecovery recovery) {
         if (this.cache.get().getCacheConfiguration().transaction().recovery().enabled()) {
-            this.registry.get().removeXAResourceRecovery(recovery);
+            if (registry != null) {
+                this.registry.get().removeXAResourceRecovery(recovery);
+            } else {
+                // Shouldn't happen in a transactional cache since TransactionResourceDefinition
+                // will add a requirement on the capability that results in requiring the registry
+                throw new IllegalStateException();
+            }
         }
     }
 
@@ -81,7 +93,7 @@ public class XAResourceRecoveryServiceConfigurator extends SimpleServiceNameProv
     public ServiceBuilder<?> build(ServiceTarget target) {
         ServiceBuilder<?> builder = target.addService(this.getServiceName());
         this.cache = builder.requires(this.getServiceName().getParent());
-        this.registry = builder.requires(this.recoveryServiceName);
+        this.registry = this.recoveryServiceName != null ? builder.requires(this.recoveryServiceName) : null;
         Consumer<XAResourceRecovery> recovery = builder.provides(this.getServiceName());
         Service service = new FunctionalService<>(recovery, Function.identity(), this, this);
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.PASSIVE);
