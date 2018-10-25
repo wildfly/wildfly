@@ -69,6 +69,7 @@ import org.jboss.as.controller.transform.description.AttributeConverter.DefaultV
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.tm.XAResourceRecoveryRegistry;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.service.Requirement;
 
@@ -123,7 +124,8 @@ public class TransactionResourceDefinition extends ComponentResourceDefinition {
     }
 
     enum TransactionRequirement implements Requirement {
-        LOCAL_TRANSACTION_PROVIDER("org.wildfly.transactions.global-default-local-provider", Void.class);
+        LOCAL_TRANSACTION_PROVIDER("org.wildfly.transactions.global-default-local-provider", Void.class),
+        XA_RESOURCE_RECOVERY_REGISTRY("org.wildfly.transactions.xa-resource-recovery-registry", XAResourceRecoveryRegistry.class);
 
         private final String name;
         private final Class<?> type;
@@ -280,7 +282,9 @@ public class TransactionResourceDefinition extends ComponentResourceDefinition {
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
                 // Add a requirement on the tm capability to the parent cache capability
-                .addResourceCapabilityReference(new TransactionResourceCapabilityReference(dependentCapability, TransactionRequirement.LOCAL_TRANSACTION_PROVIDER, EnumSet.of(TransactionMode.NONE, TransactionMode.BATCH)));
+                .addResourceCapabilityReference(new TransactionResourceCapabilityReference(dependentCapability, TransactionRequirement.LOCAL_TRANSACTION_PROVIDER, EnumSet.of(TransactionMode.NONE, TransactionMode.BATCH)))
+                // Add a requirement on the XAResourceRecoveryRegistry capability to the parent cache capability
+                .addResourceCapabilityReference(new TransactionResourceCapabilityReference(dependentCapability, TransactionRequirement.XA_RESOURCE_RECOVERY_REGISTRY, EnumSet.complementOf(EnumSet.of(TransactionMode.FULL_XA))));
         ResourceServiceHandler handler = new SimpleResourceServiceHandler(TransactionServiceConfigurator::new);
         new SimpleResourceRegistration(descriptor, handler).register(registration);
 

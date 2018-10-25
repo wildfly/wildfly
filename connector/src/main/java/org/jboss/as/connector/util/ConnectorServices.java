@@ -267,6 +267,11 @@ public class ConnectorServices {
      */
     public static final String LOCAL_TRANSACTION_PROVIDER_CAPABILITY = "org.wildfly.transactions.global-default-local-provider";
 
+    /**
+     * The capability name for the transaction XAResourceRecoveryRegistry.
+     */
+    public static final String TRANSACTION_XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY = "org.wildfly.transactions.xa-resource-recovery-registry";
+
     public static ServiceName getLocalTransactionProviderServiceName() {
         synchronized (capabilityServiceNames) {
             return capabilityServiceNames.get(LOCAL_TRANSACTION_PROVIDER_CAPABILITY);

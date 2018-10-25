@@ -24,6 +24,7 @@ package org.wildfly.extension.rts;
 import java.io.IOException;
 
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.junit.Test;
 
 /**
@@ -56,5 +57,10 @@ public class RTSSubsystemTestCase extends AbstractSubsystemBaseTest {
     @Override
     public void testSchemaOfSubsystemTemplates() throws Exception {
         super.testSchemaOfSubsystemTemplates();
+    }
+
+    @Override
+    protected AdditionalInitialization createAdditionalInitialization() {
+        return AdditionalInitialization.withCapabilities("org.wildfly.transactions.xa-resource-recovery-registry");
     }
 }

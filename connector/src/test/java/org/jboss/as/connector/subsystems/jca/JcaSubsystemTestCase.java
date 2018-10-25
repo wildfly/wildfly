@@ -86,7 +86,8 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
     protected AdditionalInitialization createAdditionalInitialization() {
         return AdditionalInitialization.withCapabilities(
                 ClusteringDefaultRequirement.COMMAND_DISPATCHER_FACTORY.getName(),
-                ConnectorServices.LOCAL_TRANSACTION_PROVIDER_CAPABILITY);
+                ConnectorServices.LOCAL_TRANSACTION_PROVIDER_CAPABILITY,
+                ConnectorServices.TRANSACTION_XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY);
     }
 
     @Test

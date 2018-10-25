@@ -26,6 +26,7 @@ import static org.jboss.as.clustering.infinispan.subsystem.CacheResourceDefiniti
 import static org.jboss.as.clustering.infinispan.subsystem.CacheResourceDefinition.Attribute.MODULE;
 import static org.jboss.as.clustering.infinispan.subsystem.CacheResourceDefinition.Capability.CACHE;
 import static org.jboss.as.clustering.infinispan.subsystem.CacheResourceDefinition.Capability.CONFIGURATION;
+import static org.jboss.as.clustering.infinispan.subsystem.TransactionResourceDefinition.TransactionRequirement.XA_RESOURCE_RECOVERY_REGISTRY;
 
 import java.util.EnumSet;
 import java.util.ServiceLoader;
@@ -43,6 +44,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.tm.XAResourceRecoveryRegistry;
 import org.wildfly.clustering.infinispan.spi.service.CacheServiceConfigurator;
 import org.wildfly.clustering.service.IdentityServiceConfigurator;
 import org.wildfly.clustering.service.ServiceNameProvider;
@@ -84,7 +86,7 @@ public class CacheServiceHandler implements ResourceServiceHandler {
         this.configuratorFactory.createServiceConfigurator(cacheAddress).configure(context, model).build(target).install();
 
         new CacheServiceConfigurator<>(CACHE.getServiceName(cacheAddress), containerName, cacheName).configure(context).build(target).install();
-        new XAResourceRecoveryServiceConfigurator(cacheAddress).build(target).install();
+        new XAResourceRecoveryServiceConfigurator(cacheAddress, getRecoveryServiceName(context)).build(target).install();
 
         new BinderServiceConfigurator(InfinispanBindingFactory.createCacheConfigurationBinding(containerName, cacheName), CONFIGURATION.getServiceName(cacheAddress)).build(target).install();
         new BinderServiceConfigurator(InfinispanBindingFactory.createCacheBinding(containerName, cacheName), CACHE.getServiceName(cacheAddress)).build(target).install();
@@ -117,11 +119,15 @@ public class CacheServiceHandler implements ResourceServiceHandler {
         context.removeService(InfinispanBindingFactory.createCacheBinding(containerName, cacheName).getBinderServiceName());
         context.removeService(InfinispanBindingFactory.createCacheConfigurationBinding(containerName, cacheName).getBinderServiceName());
 
-        context.removeService(new XAResourceRecoveryServiceConfigurator(cacheAddress).getServiceName());
+        context.removeService(new XAResourceRecoveryServiceConfigurator(cacheAddress, getRecoveryServiceName(context)).getServiceName());
         context.removeService(CacheComponent.MODULE.getServiceName(cacheAddress));
 
         for (Capability capability : EnumSet.allOf(Capability.class)) {
             context.removeService(capability.getServiceName(cacheAddress));
         }
+    }
+
+    private static ServiceName getRecoveryServiceName(OperationContext context) {
+        return context.getCapabilityServiceName(XA_RESOURCE_RECOVERY_REGISTRY.getName(), XAResourceRecoveryRegistry.class);
     }
 }

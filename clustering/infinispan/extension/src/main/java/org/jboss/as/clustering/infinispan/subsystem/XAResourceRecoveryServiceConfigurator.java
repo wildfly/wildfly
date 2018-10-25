@@ -31,10 +31,10 @@ import java.util.function.Supplier;
 import org.infinispan.Cache;
 import org.jboss.as.clustering.infinispan.InfinispanXAResourceRecovery;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.txn.service.TxnServices;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.tm.XAResourceRecovery;
 import org.jboss.tm.XAResourceRecoveryRegistry;
@@ -48,14 +48,16 @@ import org.wildfly.clustering.service.SimpleServiceNameProvider;
  */
 public class XAResourceRecoveryServiceConfigurator extends SimpleServiceNameProvider implements ServiceConfigurator, Supplier<XAResourceRecovery>, Consumer<XAResourceRecovery> {
 
+    private final ServiceName recoveryServiceName;
     private volatile Supplier<Cache<?, ?>> cache;
     private volatile Supplier<XAResourceRecoveryRegistry> registry;
 
     /**
      * Constructs a new {@link XAResourceRecovery} builder.
      */
-    public XAResourceRecoveryServiceConfigurator(PathAddress cacheAddress) {
+    public XAResourceRecoveryServiceConfigurator(PathAddress cacheAddress, ServiceName recoveryServiceName) {
         super(CACHE.getServiceName(cacheAddress).append("recovery"));
+        this.recoveryServiceName = recoveryServiceName;
     }
 
     @Override
@@ -79,7 +81,7 @@ public class XAResourceRecoveryServiceConfigurator extends SimpleServiceNameProv
     public ServiceBuilder<?> build(ServiceTarget target) {
         ServiceBuilder<?> builder = target.addService(this.getServiceName());
         this.cache = builder.requires(this.getServiceName().getParent());
-        this.registry = builder.requires(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER);
+        this.registry = builder.requires(this.recoveryServiceName);
         Consumer<XAResourceRecovery> recovery = builder.provides(this.getServiceName());
         Service service = new FunctionalService<>(recovery, Function.identity(), this, this);
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.PASSIVE);

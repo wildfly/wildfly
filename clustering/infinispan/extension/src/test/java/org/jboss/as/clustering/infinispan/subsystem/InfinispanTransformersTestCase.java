@@ -155,6 +155,7 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
                 .require(JGroupsRequirement.CHANNEL_FACTORY, "maximal-channel")
                 .require(JGroupsDefaultRequirement.CHANNEL_FACTORY)
                 .require(TransactionResourceDefinition.TransactionRequirement.LOCAL_TRANSACTION_PROVIDER)
+                .require(TransactionResourceDefinition.TransactionRequirement.XA_RESOURCE_RECOVERY_REGISTRY)
                 ;
     }
 

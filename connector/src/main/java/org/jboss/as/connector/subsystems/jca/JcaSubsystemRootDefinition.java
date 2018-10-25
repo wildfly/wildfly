@@ -22,9 +22,10 @@
 
 package org.jboss.as.connector.subsystems.jca;
 
+import static org.jboss.as.connector.util.ConnectorServices.LOCAL_TRANSACTION_PROVIDER_CAPABILITY;
+import static org.jboss.as.connector.util.ConnectorServices.TRANSACTION_XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
-import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
@@ -39,7 +40,7 @@ public class JcaSubsystemRootDefinition extends SimpleResourceDefinition {
     protected static final PathElement PATH_SUBSYSTEM = PathElement.pathElement(SUBSYSTEM, JcaExtension.SUBSYSTEM_NAME);
 
     static final RuntimeCapability<Void> TRANSACTION_INTEGRATION_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.jca.transaction-integration", TransactionIntegration.class)
-            .addRequirements(ConnectorServices.LOCAL_TRANSACTION_PROVIDER_CAPABILITY)
+            .addRequirements(LOCAL_TRANSACTION_PROVIDER_CAPABILITY, TRANSACTION_XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY)
             .build();
 
     private final boolean registerRuntimeOnly;
