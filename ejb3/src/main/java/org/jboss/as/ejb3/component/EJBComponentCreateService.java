@@ -60,6 +60,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.requestcontroller.ControlPoint;
 import org.wildfly.security.auth.server.SecurityDomain;
+import org.wildfly.transaction.client.LocalUserTransaction;
 
 /**
  * @author Jaikiran Pai
@@ -97,7 +98,6 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
     private final String distinctName;
     private final String policyContextID;
 
-    private final InjectedValue<UserTransaction> userTransactionInjectedValue = new InjectedValue<>();
     private final InjectedValue<ServerSecurityManager> serverSecurityManagerInjectedValue = new InjectedValue<>();
     private final InjectedValue<ControlPoint> controlPoint = new InjectedValue<>();
     private final InjectedValue<AtomicBoolean> exceptionLoggingEnabled = new InjectedValue<>();
@@ -336,12 +336,8 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         return moduleName;
     }
 
-    Injector<UserTransaction> getUserTransactionInjector() {
-        return this.userTransactionInjectedValue;
-    }
-
     UserTransaction getUserTransaction() {
-        return this.userTransactionInjectedValue.getValue();
+        return LocalUserTransaction.getInstance();
     }
 
     public Injector<EJBSuspendHandlerService> getEJBSuspendHandlerInjector() {

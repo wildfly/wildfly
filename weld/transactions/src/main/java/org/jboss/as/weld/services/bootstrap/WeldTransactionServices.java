@@ -33,9 +33,9 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 import org.jboss.weld.transaction.spi.TransactionServices;
 import org.wildfly.transaction.client.ContextTransactionManager;
+import org.wildfly.transaction.client.LocalUserTransaction;
 
 /**
  * Service that implements welds {@link TransactionServices}
@@ -50,8 +50,6 @@ public class WeldTransactionServices implements TransactionServices, Service<Wel
 
     public static final ServiceName SERVICE_NAME = ServiceNames.WELD_TRANSACTION_SERVICES_SERVICE_NAME;
 
-    private final InjectedValue<UserTransaction> injectedTransaction = new InjectedValue<UserTransaction>();
-
     private final boolean jtsEnabled;
 
     public WeldTransactionServices(final boolean jtsEnabled) {
@@ -60,7 +58,7 @@ public class WeldTransactionServices implements TransactionServices, Service<Wel
 
     @Override
     public UserTransaction getUserTransaction() {
-        return injectedTransaction.getValue();
+        return LocalUserTransaction.getInstance();
     }
 
     @Override
@@ -115,10 +113,6 @@ public class WeldTransactionServices implements TransactionServices, Service<Wel
     @Override
     public WeldTransactionServices getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
-    }
-
-    public InjectedValue<UserTransaction> getInjectedTransaction() {
-        return injectedTransaction;
     }
 
 }
