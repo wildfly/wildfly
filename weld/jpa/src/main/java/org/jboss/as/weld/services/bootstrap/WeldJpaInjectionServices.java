@@ -47,6 +47,7 @@ import org.jboss.weld.injection.spi.JpaInjectionServices;
 import org.jboss.weld.injection.spi.ResourceReference;
 import org.jboss.weld.injection.spi.ResourceReferenceFactory;
 import org.jboss.weld.injection.spi.helpers.SimpleResourceReference;
+import org.jipijapa.plugin.spi.EntityManagerCache;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 import org.wildfly.transaction.client.ContextTransactionManager;
 
@@ -82,7 +83,7 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
         //now we have the service controller, as this method is only called at runtime the service should
         //always be up
         final PersistenceUnitServiceImpl persistenceUnitService = (PersistenceUnitServiceImpl) serviceController.getValue();
-        return new EntityManagerResourceReferenceFactory(scopedPuName, persistenceUnitService.getEntityManagerFactory(), context, deploymentUnit.getAttachment(JpaAttachments.TRANSACTION_SYNCHRONIZATION_REGISTRY), ContextTransactionManager.getInstance());
+        return new EntityManagerResourceReferenceFactory(scopedPuName, persistenceUnitService.getEntityManagerFactory(), context, deploymentUnit.getAttachment(JpaAttachments.TRANSACTION_SYNCHRONIZATION_REGISTRY), ContextTransactionManager.getInstance(), persistenceUnitService.getEntityManagerCache());
     }
 
     @Override
@@ -120,21 +121,23 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
     private static class EntityManagerResourceReferenceFactory implements ResourceReferenceFactory<EntityManager> {
         private final String scopedPuName;
         private final EntityManagerFactory entityManagerFactory;
+        private final EntityManagerCache cache;
         private final PersistenceContext context;
         private final TransactionSynchronizationRegistry transactionSynchronizationRegistry;
         private final TransactionManager transactionManager;
 
-        public EntityManagerResourceReferenceFactory(String scopedPuName, EntityManagerFactory entityManagerFactory, PersistenceContext context, TransactionSynchronizationRegistry transactionSynchronizationRegistry, TransactionManager transactionManager) {
+        public EntityManagerResourceReferenceFactory(String scopedPuName, EntityManagerFactory entityManagerFactory, PersistenceContext context, TransactionSynchronizationRegistry transactionSynchronizationRegistry, TransactionManager transactionManager, EntityManagerCache cache) {
             this.scopedPuName = scopedPuName;
             this.entityManagerFactory = entityManagerFactory;
             this.context = context;
             this.transactionSynchronizationRegistry = transactionSynchronizationRegistry;
             this.transactionManager = transactionManager;
+            this.cache = cache;
         }
 
         @Override
         public ResourceReference<EntityManager> createResource() {
-            final TransactionScopedEntityManager result = new TransactionScopedEntityManager(scopedPuName, new HashMap<>(), entityManagerFactory, context.synchronization(), transactionSynchronizationRegistry, transactionManager);
+            final TransactionScopedEntityManager result = new TransactionScopedEntityManager(scopedPuName, new HashMap<>(), entityManagerFactory, context.synchronization(), transactionSynchronizationRegistry, transactionManager, cache);
             return new SimpleResourceReference<EntityManager>(result);
         }
     }

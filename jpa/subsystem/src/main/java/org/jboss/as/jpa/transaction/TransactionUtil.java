@@ -39,6 +39,7 @@ import org.jboss.as.jpa.container.ExtendedEntityManager;
 import org.jboss.as.jpa.messages.JpaLogger;
 import org.jboss.tm.TxUtils;
 import org.jboss.tm.listener.EventType;
+import org.jipijapa.plugin.spi.EntityManagerCache;
 import org.wildfly.transaction.client.AbstractTransaction;
 import org.wildfly.transaction.client.AssociationListener;
 import org.wildfly.transaction.client.ContextTransactionManager;
@@ -69,8 +70,8 @@ public class TransactionUtil {
         return getEntityManagerInTransactionRegistry(puScopedName, tsr);
     }
 
-    public static void registerSynchronization(EntityManager entityManager, String puScopedName, TransactionSynchronizationRegistry tsr, TransactionManager transactionManager) {
-        SessionSynchronization sessionSynchronization = new SessionSynchronization(entityManager, puScopedName);
+    public static void registerSynchronization(EntityManager entityManager, String puScopedName, TransactionSynchronizationRegistry tsr, TransactionManager transactionManager, EntityManagerCache cache) {
+        SessionSynchronization sessionSynchronization = new SessionSynchronization(entityManager, puScopedName, cache);
         tsr.registerInterposedSynchronization(sessionSynchronization);
         final AbstractTransaction transaction = ((ContextTransactionManager) transactionManager).getTransaction();
         doPrivileged((PrivilegedAction<Void>) () -> {
@@ -137,6 +138,7 @@ public class TransactionUtil {
      */
     private static class SessionSynchronization implements Synchronization, AssociationListener {
         private EntityManager manager;  // the underlying entity manager
+        private EntityManagerCache cache;
         private String scopedPuName;
         private boolean afterCompletionCalled = false;
         private int associationCounter = 1; // set to one since transaction is associated with current thread already.
@@ -144,9 +146,10 @@ public class TransactionUtil {
                                             // decremented when a thread is disassociated from transaction.
                                             // synchronization on this object protects associationCounter.
 
-        public SessionSynchronization(EntityManager session, String scopedPuName) {
+        public SessionSynchronization(EntityManager session, String scopedPuName, EntityManagerCache cache) {
             this.manager = session;
             this.scopedPuName = scopedPuName;
+            this.cache = cache;
         }
 
         public void beforeCompletion() {
@@ -176,12 +179,20 @@ public class TransactionUtil {
             if ( afterCompletionCalled == true && associationCounter == 0) {
                 if (manager != null) {
                     try {
-                        if (ROOT_LOGGER.isDebugEnabled())
-                            ROOT_LOGGER.debugf("%s: closing entity managersession", getEntityManagerDetails(manager, scopedPuName));
-                        manager.close();
+                        if (cache != null) {
+                            if (ROOT_LOGGER.isDebugEnabled())
+                                ROOT_LOGGER.debugf("%s: putting transactional scoped entity manager back into cache", getEntityManagerDetails(manager, scopedPuName));
+                            // remove application state from EntityManager instance.
+                            manager.clear();
+                            cache.put(manager);
+                        } else {
+                            if (ROOT_LOGGER.isDebugEnabled())
+                                ROOT_LOGGER.debugf("%s: closing entity managersession", getEntityManagerDetails(manager, scopedPuName));
+                            manager.close();
+                        }
                     } catch (Exception ignored) {
                         if (ROOT_LOGGER.isDebugEnabled())
-                            ROOT_LOGGER.debugf(ignored, "ignoring error that occurred while closing EntityManager for %s (", scopedPuName);
+                            ROOT_LOGGER.debugf(ignored, "ignoring error that occurred while closing/clearing EntityManager for %s (", scopedPuName);
                     }
                     manager = null;
                 }

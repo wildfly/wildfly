@@ -898,6 +898,11 @@ to false.
 |wildfly.jpa.regionfactory |Only applies to Hibernate ORM 5.3+, set to false to disable automatic use of Infinispan as second level cache (hibernate.cache.region.factory_class).
 
 |wildfly.jpa.jtaplatform |Only applies to Hibernate ORM 5.3+, set to false to disable automatic configuring of the JTA integration platform (hibernate.transaction.jta.platform).
+
+|wildfly.jpa.emcache |Set to true to enable caching of entity manager instances (currently only for transaction scoped within JTA transactions), defaults to false.  Note that before an entity manager is put in the cache, EntityManager.clear() is called.  Each persistence unit has its own entity manager cache.
+
+|wildfly.jpa.emcache.size |Set to the cache size used with wildfly.jpa.emcache, defaults to 0 (for unbounded cache), specify size greater than zero for a bounded cache.
+
 |=======================================================================
 
 [[determine-the-persistence-provider-module]]

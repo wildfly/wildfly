@@ -39,6 +39,8 @@ import javax.validation.ValidatorFactory;
 import org.jboss.as.jpa.beanmanager.BeanManagerAfterDeploymentValidation;
 import org.jboss.as.jpa.beanmanager.ProxyBeanManager;
 import org.jboss.as.jpa.classloader.TempClassLoaderFactoryImpl;
+import org.jboss.as.jpa.config.Configuration;
+import org.jipijapa.plugin.spi.EntityManagerCache;
 import org.jboss.as.jpa.spi.PersistenceUnitService;
 import org.jboss.as.jpa.subsystem.PersistenceUnitRegistryImpl;
 import org.jboss.as.jpa.util.JPAServiceNames;
@@ -91,6 +93,7 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
     private volatile EntityManagerFactory entityManagerFactory;
     private volatile ProxyBeanManager proxyBeanManager;
     private final SetupAction javaNamespaceSetup;
+    private final EntityManagerCache entityManagerCache;
 
     public PersistenceUnitServiceImpl(
             final Map properties,
@@ -112,6 +115,8 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
         this.validatorFactory = validatorFactory;
         this.javaNamespaceSetup = javaNamespaceSetup;
         this.beanManagerAfterDeploymentValidation = beanManagerAfterDeploymentValidation;
+        this.entityManagerCache = Configuration.entityManagerCache(pu);
+
     }
 
     @Override
@@ -250,21 +255,26 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                                 }
                                 try {
                                     if (entityManagerFactory != null) {
-                                        // protect against race condition reported by WFLY-11563
-                                        synchronized (this) {
-                                            if (entityManagerFactory != null) {
-                                                WritableServiceBasedNamingStore.pushOwner(deploymentUnitServiceName);
-                                                try {
-                                                    if (entityManagerFactory.isOpen()) {
-                                                        entityManagerFactory.close();
+                                        if (entityManagerFactory != null) {
+                                            // protect against race condition reported by WFLY-11563
+                                            synchronized (this) {
+                                                if (entityManagerFactory != null) {
+                                                    WritableServiceBasedNamingStore.pushOwner(deploymentUnitServiceName);
+                                                    try {
+                                                        if (entityManagerCache != null) {
+                                                            entityManagerCache.clear();
+                                                        }
+                                                        if (entityManagerFactory.isOpen()) {
+                                                            entityManagerFactory.close();
+                                                        }
+                                                    } catch (Throwable t) {
+                                                        ROOT_LOGGER.failedToStopPUService(t, pu.getScopedPersistenceUnitName());
+                                                    } finally {
+                                                        entityManagerFactory = null;
+                                                        pu.setTempClassLoaderFactory(null);
+                                                        WritableServiceBasedNamingStore.popOwner();
+                                                        persistenceUnitRegistry.remove(getScopedPersistenceUnitName());
                                                     }
-                                                } catch (Throwable t) {
-                                                    ROOT_LOGGER.failedToStopPUService(t, pu.getScopedPersistenceUnitName());
-                                                } finally {
-                                                    entityManagerFactory = null;
-                                                    pu.setTempClassLoaderFactory(null);
-                                                    WritableServiceBasedNamingStore.popOwner();
-                                                    persistenceUnitRegistry.remove(getScopedPersistenceUnitName());
                                                 }
                                             }
                                         }
@@ -317,6 +327,11 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
     @Override
     public EntityManagerFactory getEntityManagerFactory() {
         return entityManagerFactory;
+    }
+
+    @Override
+    public EntityManagerCache getEntityManagerCache() {
+        return entityManagerCache;
     }
 
     @Override

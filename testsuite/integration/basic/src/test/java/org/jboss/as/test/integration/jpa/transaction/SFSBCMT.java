@@ -22,8 +22,6 @@
 
 package org.jboss.as.test.integration.jpa.transaction;
 
-import javax.annotation.Resource;
-import javax.ejb.SessionContext;
 import javax.ejb.Stateful;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -31,7 +29,6 @@ import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 
 /**
  * stateful session bean
@@ -44,15 +41,17 @@ public class SFSBCMT {
     @PersistenceContext(unitName = "mypc")
     EntityManager em;
 
-    @Resource
-    SessionContext sessionContext;
+    @PersistenceContext(unitName = "mypcNoBounds")
+    EntityManager emNoBounded;
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public Employee queryEmployeeNameRequireNewTX(int id) {
-        Query q = em.createQuery("SELECT e FROM Employee e where id=?");
-        q.setParameter(1, new Integer(id));
-        return (Employee) q.getSingleResult();
+    public Employee getEmployee(int id) {
+        return em.find(Employee.class, id);
     }
 
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public Employee getEmployeeNoBoundedCache(int id) {
+        return emNoBounded.find(Employee.class, id);
+    }
 
 }

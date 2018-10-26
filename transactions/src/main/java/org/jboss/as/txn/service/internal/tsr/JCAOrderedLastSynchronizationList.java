@@ -75,10 +75,17 @@ public class JCAOrderedLastSynchronizationList implements Synchronization {
         if (synchronization.getClass().getName().startsWith("org.jboss.jca")) {
             if (TransactionLogger.ROOT_LOGGER.isTraceEnabled()) {
                 TransactionLogger.ROOT_LOGGER.trace("JCAOrderedLastSynchronizationList.jcaSyncs.add - Class: " + synchronization.getClass() + " HashCode: "
-                    + synchronization.hashCode() + " toString: " + synchronization);
+                        + synchronization.hashCode() + " toString: " + synchronization);
             }
-            jcaSyncs.add(synchronization);
-
+            // always add jca to start of list, so that jca is called last during afterCompletion.
+            jcaSyncs.add(0, synchronization);
+        } else if(synchronization.getClass().getName().startsWith("org.jboss.as.jpa.transaction")) {
+            if (TransactionLogger.ROOT_LOGGER.isTraceEnabled()) {
+                TransactionLogger.ROOT_LOGGER.trace("JCAOrderedLastSynchronizationList.jcaSyncs.add - Class: " + synchronization.getClass() + " HashCode: "
+                        + synchronization.hashCode() + " toString: " + synchronization);
+            }
+            // always add jpa to end of list, so that jca syncs are called last during afterCompletion.
+            jcaSyncs.add(jcaSyncs.size(),synchronization);
         } else {
             if (TransactionLogger.ROOT_LOGGER.isTraceEnabled()) {
                 TransactionLogger.ROOT_LOGGER.trace("JCAOrderedLastSynchronizationList.preJcaSyncs.add - Class: " + synchronization.getClass() + " HashCode: "

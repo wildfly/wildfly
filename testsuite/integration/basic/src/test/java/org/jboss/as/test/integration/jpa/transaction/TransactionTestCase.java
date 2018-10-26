@@ -28,6 +28,10 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.persistence.TransactionRequiredException;
@@ -278,6 +282,50 @@ public class TransactionTestCase {
                     "thrown by the container.");
         } catch (/*EJBTransactionRolledbackException*/ Exception expected) {
             assertTrue("should of been caused by IllegalStateException", expected.getCause() instanceof IllegalStateException);
+        }
+    }
+
+    /**
+     * Start a concurrent number of threads that use the entity manager cache.
+     * TODO: add memory leak checking.  Currently this can be done manually by getting the app server process id and passing it into jmap, like:
+     *       jmap -histo:live 6403 | grep org.jboss.as.test.integration.jpa.transaction
+     *
+     * @throws Exception
+     */
+    @Test
+    @InSequence(12)
+    public void testConcurrentAccess() throws Exception {
+        SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
+        sfsb1.createEmployee("MultiTasker", "314 Littleton Rd, Westford, MA 01886", 500);
+        assertEquals(sfsb1.queryEmployeeNameNoTX(500),"MultiTasker");
+        final int numThreads = 10;
+        ExecutorService executorService = Executors.newFixedThreadPool(numThreads);
+        Future[] results = new Future[numThreads];
+        for(int i = 0; i < numThreads; ++i) {
+            results[i] = executorService.submit(new CallingClass());
+        }
+
+        for(int i = 0; i < numThreads; ++i) {
+            results[i].get();
+        }
+        executorService.shutdown();
+    }
+
+    private class CallingClass implements Runnable {
+
+        @Override
+        public void run() {
+            try {
+                SFSBCMT sfsbcmt = lookup("SFSBCMT", SFSBCMT.class);
+                assertNotNull(sfsbcmt);
+                for (int iterations = 0; iterations< 1000; iterations++) {
+                    assertEquals(sfsbcmt.getEmployee(500).getName(), "MultiTasker");
+                    assertEquals(sfsbcmt.getEmployeeNoBoundedCache(500).getName(), "MultiTasker");
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+
         }
     }
 

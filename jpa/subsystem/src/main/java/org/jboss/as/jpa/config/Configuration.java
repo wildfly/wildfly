@@ -27,6 +27,9 @@ import java.util.Map;
 
 import javax.persistence.EntityManagerFactory;
 
+import org.jboss.as.jpa.container.BoundedEntityManagerCacheImpl;
+import org.jboss.as.jpa.container.UnBoundedEntityManagerCacheImpl;
+import org.jipijapa.plugin.spi.EntityManagerCache;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 
 
@@ -157,6 +160,8 @@ public class Configuration {
      */
     private static final String JPA_ALLOW_DEFAULT_DATA_SOURCE_USE = "wildfly.jpa.allowdefaultdatasourceuse";
 
+    private static final String JPA_ENTITYMANAGER_CACHE = "wildfly.jpa.emcache";
+    private static final String JPA_ENTITYMANAGER_CACHE_SIZE = "wildfly.jpa.emcache.size";
     /**
      * set to true to defer detaching entities until persistence context is closed (WFLY-3674)
      */
@@ -367,5 +372,26 @@ public class Configuration {
             result = Boolean.parseBoolean((String) emf.getProperties().get(ALLOWJOINEDUNSYNCPC));
         }
         return result;
+    }
+
+    /**
+     * Determine the EntityManager cache to use if enabled.
+     *
+     * @return the configured EntityManager cache
+     */
+    public static EntityManagerCache entityManagerCache(PersistenceUnitMetadata pu) {
+
+        if (pu.getProperties().containsKey(JPA_ENTITYMANAGER_CACHE) &&
+                Boolean.parseBoolean(pu.getProperties().getProperty(JPA_ENTITYMANAGER_CACHE))) {
+            int cache_max_size = 0; // default to an unbounded cache which is represented by cache_max_size set to zero.
+            if (pu.getProperties().containsKey(JPA_ENTITYMANAGER_CACHE_SIZE)) {
+                cache_max_size = Integer.parseInt(pu.getProperties().getProperty(JPA_ENTITYMANAGER_CACHE_SIZE));
+            }
+            if (cache_max_size > 0) {
+                return new BoundedEntityManagerCacheImpl(cache_max_size);
+            }
+            return new UnBoundedEntityManagerCacheImpl();
+        }
+        return null;
     }
 }
