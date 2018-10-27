@@ -22,7 +22,7 @@
 
 package org.wildfly.clustering.web.infinispan;
 
-import java.util.stream.IntStream;
+import java.util.UUID;
 
 import org.junit.Test;
 import org.wildfly.clustering.infinispan.spi.persistence.KeyMapperTester;
@@ -48,7 +48,7 @@ public class KeyMapperTestCase {
         tester.test(new SessionAccessMetaDataKey(id));
         tester.test(new SessionAttributesKey(id));
         tester.test(new SessionAttributeNamesKey(id));
-        IntStream.range(0, 10).mapToObj(i -> new SessionAttributeKey(id, i)).forEach(key -> tester.test(key));
+        tester.test(new SessionAttributeKey(id, UUID.randomUUID()));
 
         tester.test(new AuthenticationKey(id));
         tester.test(new CoarseSessionsKey(id));

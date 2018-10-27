@@ -21,10 +21,11 @@
  */
 package org.wildfly.clustering.web.infinispan.session.fine;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
-import org.infinispan.Cache;
 import org.wildfly.clustering.marshalling.spi.InvalidSerializedFormException;
 import org.wildfly.clustering.marshalling.spi.Marshaller;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
@@ -36,14 +37,14 @@ import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
  */
 public class FineImmutableSessionAttributes<V> implements ImmutableSessionAttributes {
     private final String id;
-    private final Map<String, Integer> names;
-    private final Cache<SessionAttributeKey, V> cache;
+    private final Map<String, UUID> names;
+    private final Map<SessionAttributeKey, V> attributeCache;
     private final Marshaller<Object, V> marshaller;
 
-    public FineImmutableSessionAttributes(String id, Map<String, Integer> names, Cache<SessionAttributeKey, V> attributeCache, Marshaller<Object, V> marshaller) {
+    public FineImmutableSessionAttributes(String id, Map<String, UUID> names, Map<SessionAttributeKey, V> attributeCache, Marshaller<Object, V> marshaller) {
         this.id = id;
-        this.names = names;
-        this.cache = attributeCache;
+        this.names = Collections.unmodifiableMap(names);
+        this.attributeCache = attributeCache;
         this.marshaller = marshaller;
     }
 
@@ -54,15 +55,11 @@ public class FineImmutableSessionAttributes<V> implements ImmutableSessionAttrib
 
     @Override
     public Object getAttribute(String name) {
-        Integer attributeId = this.names.get(name);
-        return (attributeId != null) ? this.read(name, this.cache.get(this.createKey(attributeId))) : null;
+        UUID attributeId = this.names.get(name);
+        return (attributeId != null) ? this.read(name, this.attributeCache.get(new SessionAttributeKey(this.id, attributeId))) : null;
     }
 
-    protected SessionAttributeKey createKey(int attributeId) {
-        return new SessionAttributeKey(this.id, attributeId);
-    }
-
-    protected Object read(String name, V value) {
+    private Object read(String name, V value) {
         try {
             return this.marshaller.read(value);
         } catch (InvalidSerializedFormException e) {

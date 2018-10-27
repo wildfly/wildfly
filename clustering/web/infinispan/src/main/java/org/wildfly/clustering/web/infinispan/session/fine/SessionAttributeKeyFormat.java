@@ -20,20 +20,34 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.infinispan;
+package org.wildfly.clustering.web.infinispan.session.fine;
 
-import java.util.function.BiFunction;
-import java.util.function.ToIntFunction;
+import java.util.UUID;
+import java.util.function.Function;
 
-import org.wildfly.clustering.infinispan.spi.distribution.Key;
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.infinispan.spi.persistence.DelimitedKeyFormat;
+import org.wildfly.clustering.infinispan.spi.persistence.KeyFormat;
 
-/**
- * @author Paul Ferraro
- */
-public class IndexedSessionKeyFormat<K extends Key<String>> extends DelimitedKeyFormat<K> {
+@MetaInfServices(KeyFormat.class)
+public class SessionAttributeKeyFormat extends DelimitedKeyFormat<SessionAttributeKey> {
+    public SessionAttributeKeyFormat() {
+        super(SessionAttributeKey.class, "#", new SessionAttributeKeyParser(), new SessionAttributeKeyFormatter());
+    }
 
-    protected IndexedSessionKeyFormat(Class<K> targetClass, ToIntFunction<K> index, BiFunction<String, Integer, K> resolver) {
-        super(targetClass, "#", parts -> resolver.apply(parts[0], Integer.valueOf(parts[1])), key -> new String[] { key.getValue(), Integer.toString(index.applyAsInt(key)) });
+    static class SessionAttributeKeyFormatter implements Function<SessionAttributeKey, String[]> {
+
+        @Override
+        public String[] apply(SessionAttributeKey key) {
+            return new String[] { key.getValue(), key.getAttributeId().toString() };
+        }
+    }
+
+    static class SessionAttributeKeyParser implements Function<String[], SessionAttributeKey> {
+
+        @Override
+        public SessionAttributeKey apply(String[] parts) {
+            return new SessionAttributeKey(parts[0], UUID.fromString(parts[1]));
+        }
     }
 }

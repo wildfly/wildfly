@@ -21,6 +21,10 @@
  */
 package org.wildfly.clustering.web.infinispan.session.fine;
 
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
+
 import org.wildfly.clustering.infinispan.spi.distribution.Key;
 
 /**
@@ -29,29 +33,33 @@ import org.wildfly.clustering.infinispan.spi.distribution.Key;
  */
 public class SessionAttributeKey extends Key<String> {
 
-    private final int attributeId;
+    private final UUID attributeId;
 
-    public SessionAttributeKey(String sessionId, int attributeId) {
+    public SessionAttributeKey(Map.Entry<String, UUID> entry) {
+        this(entry.getKey(), entry.getValue());
+    }
+
+    public SessionAttributeKey(String sessionId, UUID attributeId) {
         super(sessionId);
         this.attributeId = attributeId;
     }
 
-    public int getAttributeId() {
+    public UUID getAttributeId() {
         return this.attributeId;
     }
 
     @Override
     public int hashCode() {
-        return (31 * super.hashCode()) + this.attributeId;
+        return Objects.hash(this.getClass(), this.getValue(), this.attributeId);
     }
 
     @Override
     public boolean equals(Object object) {
-        return super.equals(object) && (object instanceof SessionAttributeKey) && (this.attributeId == ((SessionAttributeKey) object).attributeId);
+        return super.equals(object) && (object instanceof SessionAttributeKey) && this.attributeId.equals(((SessionAttributeKey) object).attributeId);
     }
 
     @Override
     public String toString() {
-        return String.format("%s(%s[%d])", SessionAttributeKey.class.getSimpleName(), this.getValue(), this.attributeId);
+        return String.format("%s(%s[%s])", SessionAttributeKey.class.getSimpleName(), this.getValue(), this.attributeId);
     }
 }

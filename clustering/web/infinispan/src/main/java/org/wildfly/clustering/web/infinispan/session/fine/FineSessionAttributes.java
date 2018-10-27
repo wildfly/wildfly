@@ -21,18 +21,25 @@
  */
 package org.wildfly.clustering.web.infinispan.session.fine;
 
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.infinispan.Cache;
 import org.infinispan.commons.marshall.NotSerializableException;
 import org.infinispan.context.Flag;
-import org.wildfly.clustering.ee.infinispan.CacheProperties;
 import org.wildfly.clustering.ee.Mutator;
 import org.wildfly.clustering.ee.infinispan.CacheEntryMutator;
+import org.wildfly.clustering.ee.infinispan.CacheProperties;
+import org.wildfly.clustering.infinispan.spi.function.ConcurrentMapPutFunction;
+import org.wildfly.clustering.infinispan.spi.function.ConcurrentMapRemoveFunction;
+import org.wildfly.clustering.infinispan.spi.function.CopyOnWriteMapPutFunction;
+import org.wildfly.clustering.infinispan.spi.function.CopyOnWriteMapRemoveFunction;
+import org.wildfly.clustering.marshalling.spi.InvalidSerializedFormException;
 import org.wildfly.clustering.marshalling.spi.Marshaller;
+import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.infinispan.session.SessionAttributes;
 import org.wildfly.clustering.web.session.SessionAttributeImmutability;
 
@@ -40,32 +47,33 @@ import org.wildfly.clustering.web.session.SessionAttributeImmutability;
  * Exposes session attributes for fine granularity sessions.
  * @author Paul Ferraro
  */
-public class FineSessionAttributes<V> extends FineImmutableSessionAttributes<V> implements SessionAttributes {
-    private final AtomicInteger sequence;
-    private final ConcurrentMap<String, Integer> names;
-    private final Mutator namesMutator;
-    private final Cache<SessionAttributeKey, V> cache;
+public class FineSessionAttributes<V> implements SessionAttributes {
+    private final String id;
+    private final Cache<SessionAttributeNamesKey, Map<String, UUID>> namesCache;
+    private final Cache<SessionAttributeKey, V> attributeCache;
     private final Map<String, Mutator> mutations = new ConcurrentHashMap<>();
     private final Marshaller<Object, V> marshaller;
     private final CacheProperties properties;
 
-    public FineSessionAttributes(String id, AtomicInteger sequence, ConcurrentMap<String, Integer> names, Mutator namesMutator, Cache<SessionAttributeKey, V> cache, Marshaller<Object, V> marshaller, CacheProperties properties) {
-        super(id, names, cache, marshaller);
-        this.sequence = sequence;
-        this.names = names;
-        this.namesMutator = namesMutator;
-        this.cache = cache;
+    private volatile Map<String, UUID> names;
+
+    public FineSessionAttributes(String id, Map<String, UUID> names, Cache<SessionAttributeNamesKey, Map<String, UUID>> namesCache, Cache<SessionAttributeKey, V> attributeCache, Marshaller<Object, V> marshaller, CacheProperties properties) {
+        this.id = id;
+        this.setNames(names);
+        this.namesCache = namesCache;
+        this.attributeCache = attributeCache;
         this.marshaller = marshaller;
         this.properties = properties;
     }
 
     @Override
     public Object removeAttribute(String name) {
-        Integer attributeId = this.names.remove(name);
+        UUID attributeId = this.names.get(name);
         if (attributeId == null) return null;
-        this.namesMutator.mutate();
-        SessionAttributeKey key = this.createKey(attributeId);
-        Object result = this.read(name, this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).remove(key));
+
+        this.setNames(this.namesCache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).computeIfPresent(this.createKey(), this.properties.isTransactional() ? new CopyOnWriteMapRemoveFunction<>(name) : new ConcurrentMapRemoveFunction<>(name)));
+
+        Object result = this.read(name, this.attributeCache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).remove(this.createKey(attributeId)));
         this.mutations.remove(name);
         return result;
     }
@@ -78,29 +86,32 @@ public class FineSessionAttributes<V> extends FineImmutableSessionAttributes<V> 
         if (this.properties.isMarshalling() && !this.marshaller.isMarshallable(attribute)) {
             throw new IllegalArgumentException(new NotSerializableException(attribute.getClass().getName()));
         }
+
         V value = this.marshaller.write(attribute);
-        int currentId = this.sequence.get();
-        int attributeId = this.names.computeIfAbsent(name, key -> this.sequence.incrementAndGet());
-        if (attributeId > currentId) {
-            this.namesMutator.mutate();
+        UUID attributeId = this.names.get(name);
+        if (attributeId == null) {
+            UUID newAttributeId = UUID.randomUUID();
+            this.setNames(this.namesCache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).compute(this.createKey(), this.properties.isTransactional() ? new CopyOnWriteMapPutFunction<>(name, newAttributeId) : new ConcurrentMapPutFunction<>(name, newAttributeId)));
+            attributeId = this.names.get(name);
         }
-        SessionAttributeKey key = this.createKey(attributeId);
-        Object result = this.read(name, this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).put(key, value));
+
+        Object result = this.read(name, this.attributeCache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).put(this.createKey(attributeId), value));
         this.mutations.remove(name);
         return result;
     }
 
     @Override
     public Object getAttribute(String name) {
-        Integer attributeId = this.names.get(name);
+        UUID attributeId = this.names.get(name);
         if (attributeId == null) return null;
+
         SessionAttributeKey key = this.createKey(attributeId);
-        V value = this.cache.get(key);
+        V value = this.attributeCache.get(key);
         Object attribute = this.read(name, value);
         if (attribute != null) {
             // If the object is mutable, we need to indicate that the attribute should be replicated
             if (!SessionAttributeImmutability.INSTANCE.test(attribute)) {
-                Mutator mutator = this.mutations.computeIfAbsent(name, k -> new CacheEntryMutator<>(this.cache, key, value));
+                Mutator mutator = this.mutations.computeIfAbsent(name, k -> new CacheEntryMutator<>(this.attributeCache, key, value));
                 // If cache is not transactional, mutate on close instead.
                 if (this.properties.isTransactional()) {
                     mutator.mutate();
@@ -111,6 +122,11 @@ public class FineSessionAttributes<V> extends FineImmutableSessionAttributes<V> 
     }
 
     @Override
+    public Set<String> getAttributeNames() {
+        return this.names.keySet();
+    }
+
+    @Override
     public void close() {
         if (!this.properties.isTransactional()) {
             for (Mutator mutator : this.mutations.values()) {
@@ -118,5 +134,26 @@ public class FineSessionAttributes<V> extends FineImmutableSessionAttributes<V> 
             }
         }
         this.mutations.clear();
+    }
+
+    private void setNames(Map<String, UUID> names) {
+        this.names = (names != null) ? Collections.unmodifiableMap(names) : Collections.emptyMap();
+    }
+
+    private SessionAttributeNamesKey createKey() {
+        return new SessionAttributeNamesKey(this.id);
+    }
+
+    private SessionAttributeKey createKey(UUID attributeId) {
+        return new SessionAttributeKey(this.id, attributeId);
+    }
+
+    private Object read(String name, V value) {
+        try {
+            return this.marshaller.read(value);
+        } catch (InvalidSerializedFormException e) {
+            // This should not happen here, since attributes were pre-activated during FineSessionFactory.findValue(...)
+            throw InfinispanWebLogger.ROOT_LOGGER.failedToReadSessionAttribute(e, this.id, name);
+        }
     }
 }
