@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,40 +22,36 @@
 
 package org.wildfly.clustering.web.infinispan;
 
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.util.function.Function;
+import java.util.ServiceLoader;
 
-import org.wildfly.clustering.infinispan.spi.distribution.Key;
-import org.wildfly.clustering.marshalling.Externalizer;
+import org.wildfly.clustering.marshalling.spi.Serializer;
+import org.wildfly.clustering.web.IdentifierSerializerProvider;
 
 /**
- * Base externalizer for cache keys containing session identifiers.
  * @author Paul Ferraro
  */
-public class SessionKeyExternalizer<K extends Key<String>> implements Externalizer<K> {
+public enum SessionIdentifierSerializer implements Serializer<String> {
+    INSTANCE;
 
-    private final Class<K> targetClass;
-    private final Function<String, K> resolver;
+    private final Serializer<String> serializer = load(IdentifierSerializerProvider.class.getClassLoader());
 
-    protected SessionKeyExternalizer(Class<K> targetClass, Function<String, K> resolver) {
-        this.targetClass = targetClass;
-        this.resolver = resolver;
+    private static final Serializer<String> load(ClassLoader loader) {
+        for (IdentifierSerializerProvider provider : ServiceLoader.load(IdentifierSerializerProvider.class, loader)) {
+            return provider.getSerializer();
+        }
+        throw new IllegalStateException();
     }
 
     @Override
-    public void writeObject(ObjectOutput output, K key) throws IOException {
-        SessionIdentifierSerializer.INSTANCE.write(output, key.getValue());
+    public void write(DataOutput output, String value) throws IOException {
+        this.serializer.write(output, value);
     }
 
     @Override
-    public K readObject(ObjectInput input) throws IOException {
-        return this.resolver.apply(SessionIdentifierSerializer.INSTANCE.read(input));
-    }
-
-    @Override
-    public Class<K> getTargetClass() {
-        return this.targetClass;
+    public String read(DataInput input) throws IOException {
+        return this.serializer.read(input);
     }
 }
