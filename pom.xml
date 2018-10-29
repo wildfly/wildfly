@@ -3835,6 +3835,11 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+            <dependency>
+                <groupId>org.eclipse.microprofile.opentracing</groupId>
+                <artifactId>microprofile-opentracing-tck</artifactId>
+                <version>${version.org.eclipse.microprofile.opentracing}</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.eclipse.microprofile.rest.client</groupId>
