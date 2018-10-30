@@ -32,6 +32,8 @@ import static org.jboss.dmr.ModelType.BOOLEAN;
 import static org.jboss.dmr.ModelType.INT;
 import static org.jboss.dmr.ModelType.LONG;
 import static org.jboss.dmr.ModelType.STRING;
+import static org.wildfly.extension.messaging.activemq.InfiniteOrPositiveValidators.INT_INSTANCE;
+import static org.wildfly.extension.messaging.activemq.InfiniteOrPositiveValidators.NEGATIVE_VALUE_CORRECTOR;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.VERSION_3_0_0;
 
 import java.util.ArrayList;
@@ -48,6 +50,7 @@ import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
+import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
@@ -721,6 +724,45 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .build();
 
+    /**
+     * @see ActiveMQDefaultConfiguration#getDefaultMaxDiskUsage
+     */
+    public static final SimpleAttributeDefinition GLOBAL_MAX_DISK_USAGE = create("global-max-disk-usage", INT)
+            .setAttributeGroup("journal")
+            .setMeasurementUnit(MeasurementUnit.PERCENTAGE)
+            .setDefaultValue(new ModelNode(100))
+            .setRequired(false)
+            .setValidator(new IntRangeValidator(-1, 100))
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+    /**
+     * @see ActiveMQDefaultConfiguration#getDefaultDiskScanPeriod
+     */
+    public static final SimpleAttributeDefinition DISK_SCAN_PERIOD = create("disk-scan-period", INT)
+            .setAttributeGroup("journal")
+            .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
+            .setDefaultValue(new ModelNode(5000))
+            .setValidator(INT_INSTANCE)
+            .setCorrector(NEGATIVE_VALUE_CORRECTOR)
+            .setRequired(false)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
+    /**
+     * @see ActiveMQDefaultConfiguration#getDefaultMaxGlobalSize
+     */
+    public static final SimpleAttributeDefinition GLOBAL_MAX_MEMORY_SIZE = create("global-max-memory-size", LONG)
+            .setAttributeGroup("journal")
+            .setMeasurementUnit(MeasurementUnit.BYTES)
+            .setDefaultValue(new ModelNode(-1L))
+            .setCorrector(NEGATIVE_VALUE_CORRECTOR)
+            .setRequired(false)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
     public static final AttributeDefinition[] ATTRIBUTES = {PERSISTENCE_ENABLED, SCHEDULED_THREAD_POOL_MAX_SIZE,
             THREAD_POOL_MAX_SIZE, SECURITY_DOMAIN, ELYTRON_DOMAIN, SECURITY_ENABLED, SECURITY_INVALIDATION_INTERVAL,
             OVERRIDE_IN_VM_SECURITY, WILD_CARD_ROUTING_ENABLED, MANAGEMENT_ADDRESS, MANAGEMENT_NOTIFICATION_ADDRESS,
@@ -739,6 +781,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             JOURNAL_SYNC_TRANSACTIONAL, JOURNAL_SYNC_NON_TRANSACTIONAL, LOG_JOURNAL_WRITE_RATE,
             JOURNAL_FILE_SIZE, JOURNAL_MIN_FILES, JOURNAL_POOL_FILES, JOURNAL_COMPACT_PERCENTAGE, JOURNAL_COMPACT_MIN_FILES, JOURNAL_MAX_IO,
             PERF_BLAST_PAGES, RUN_SYNC_SPEED_TEST, SERVER_DUMP_INTERVAL, MEMORY_WARNING_THRESHOLD, MEMORY_MEASURE_INTERVAL,
+            GLOBAL_MAX_DISK_USAGE, DISK_SCAN_PERIOD, GLOBAL_MAX_MEMORY_SIZE
     };
 
     private final boolean registerRuntimeOnly;

@@ -51,7 +51,10 @@ import static org.wildfly.extension.messaging.activemq.ServerDefinition.CLUSTER_
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.CONNECTION_TTL_OVERRIDE;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.CREATE_BINDINGS_DIR;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.CREATE_JOURNAL_DIR;
+import static org.wildfly.extension.messaging.activemq.ServerDefinition.DISK_SCAN_PERIOD;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.ELYTRON_DOMAIN;
+import static org.wildfly.extension.messaging.activemq.ServerDefinition.GLOBAL_MAX_DISK_USAGE;
+import static org.wildfly.extension.messaging.activemq.ServerDefinition.GLOBAL_MAX_MEMORY_SIZE;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.ID_CACHE_SIZE;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JMX_DOMAIN;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.JMX_MANAGEMENT_ENABLED;
@@ -472,7 +475,9 @@ class ServerAdd extends AbstractAddStepHandler {
         configuration.setConnectionTTLOverride(CONNECTION_TTL_OVERRIDE.resolveModelAttribute(context, model).asInt());
         configuration.setCreateBindingsDir(CREATE_BINDINGS_DIR.resolveModelAttribute(context, model).asBoolean());
         configuration.setCreateJournalDir(CREATE_JOURNAL_DIR.resolveModelAttribute(context, model).asBoolean());
-
+        configuration.setGlobalMaxSize(GLOBAL_MAX_MEMORY_SIZE.resolveModelAttribute(context, model).asLong());
+        configuration.setMaxDiskUsage(GLOBAL_MAX_DISK_USAGE.resolveModelAttribute(context, model).asInt());
+        configuration.setDiskScanPeriod(DISK_SCAN_PERIOD.resolveModelAttribute(context, model).asInt());
         configuration.setIDCacheSize(ID_CACHE_SIZE.resolveModelAttribute(context, model).asInt());
         // TODO do we want to allow the jmx configuration ?
         configuration.setJMXDomain(JMX_DOMAIN.resolveModelAttribute(context, model).asString());

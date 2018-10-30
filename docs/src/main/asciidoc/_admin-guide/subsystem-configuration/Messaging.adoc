@@ -572,6 +572,36 @@ http://activemq.apache.org/artemis/docs.html
 
 ****
 
+=== Controlling internal broker usage of memory and disk space
+
+You can configure the disk space usage of the journal by using the `global-max-disk-usage` attribute, thus blocking the paging and processing of new messages until some disk space is available.
+This is done from the CLI:
+[source, ruby]
+----
+[standalone@localhost:9990 /] /subsystem=messaging-activemq/server=default:write-attribute(name=global-max-disk-usage, value=70)
+{
+    "outcome" => "success",
+    "response-headers" => {
+        "operation-requires-reload" => true,
+        "process-state" => "reload-required"
+    }
+}
+----
+You can define at which frequency the disk usage is checked using the `disk-scan-period` attribute.
+
+In the same way configure the maximal memory affected to processing messages by using the `global-max-memory-size` attribute, thus blocking the processing of new messages until some memory space is available.
+This is done from the CLI:
+[source, ruby]
+----
+[standalone@localhost:9990 /] /subsystem=messaging-activemq/server=default:write-attribute(name=global-max-memory-size, value=960000000)
+{
+    "outcome" => "success",
+    "response-headers" => {
+        "operation-requires-reload" => true,
+        "process-state" => "reload-required"
+    }
+}
+----
 :leveloffset: +1
 
 include::Messaging_Connect_a_pooled-connection-factory_to_a_Remote_Artemis_Server.adoc[]

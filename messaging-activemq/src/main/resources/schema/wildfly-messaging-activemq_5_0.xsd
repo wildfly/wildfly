@@ -210,6 +210,9 @@
                     <xs:attribute name="jdbc-lock-expiration" type="xs:int" />
                     <xs:attribute name="jdbc-lock-renew-period" type="xs:int" />
                     <xs:attribute name="jdbc-network-timeout" type="xs:int" />
+                    <xs:attribute name="global-max-memory-size" type="xs:long" />
+                    <xs:attribute name="global-max-disk-usage" type="xs:int" />
+                    <xs:attribute name="disk-scan-period" type="xs:int" />
                 </xs:complexType>
             </xs:element>
 
