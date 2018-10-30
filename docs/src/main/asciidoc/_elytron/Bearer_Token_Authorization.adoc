@@ -79,7 +79,7 @@ A list of strings representing the audiences supported by this configuration. Du
 * *public-key*
 +
 A public key in PEM Format. During validation, if a public key is provided, signature will be verified based on the key you provided here. Alternatively,
-you can define a `key-store` and `certificate` attributes to configure the public key.
+you can define a `key-store` and `certificate` attributes to configure the public key. This key will be used to verify tokens without "kid" claim.
 +
 * *key-store*
 +
@@ -88,11 +88,38 @@ As an alternative to `public-key`, you can also define a key store from where th
 * *certificate*
 +
 The name of the certificate with a public key to load from the key store in case you defined the `key-store` attribute
++
+* *client-ssl-context*
++
+The SSL context to be used if if you want to use remote JSON Web Keys. This enables you to use url from "jku" token claim to
+fetch public keys for token verification.
++
+* *host-name-verification-policy*
++
+A policy that defines how host names should be verified when using remote JSON Web Keys. Allowed values: "ANY", "DEFAULT".
+
+For being able to use different key pairs for signing / verification and for easier key rotation you can define key map. This will take the "kid" claim
+from the token and use corresponding public key for verification.
+
+```xml
+ <token-realm name="JwtRealm" principal-claim="sub">
+    <jwt issuer="as.example.com" audience="api.example.com">
+        <key kid="1" public-key="-----BEGIN PUBLIC KEY-----MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBANc4VlnN6oZwe1PoQQeJsTwu7LGS+eEbgYMNYXahidga4+BhdGKwzMZU54ABFQ11tUMJSENQ6o3n1YKVgMnxvcMCAwEAAQ==-----END PUBLIC KEY-----"/>
+        <key kid="2" public-key="-----BEGIN PUBLIC KEY-----MFswDQYJKoZIhvcNAQEBBQADSgAwRwJAcNpXy6psxC21DdnTtAdlgsEwEuJh/earH3q7xJPjmsygmrlpC66MG4/A/J9Gai2Hp+QdCSEVpBWkIoVff3sIlwIDAQAB-----END PUBLIC KEY-----"/>
+    </jwt>
+ </token-realm>
+```
+
+This `token-realm` will verify tokens with "kid" claims of value "1" or "2" using corresponding key.
+
+Tokens without "kid" claim will be verified using the 'public-key' attribute of 'jwt', or in this case invalidated, as there is
+no key specified.
 
 The `jwt` validator performs different checks in order to determine the validity of a JWT:
 
 * Expiration checks based on the values of the `exp` and `nbf` claims
-* Signature checks based on the public key provided via `public-key` or `certificate` attributes
+* Signature checks based on the public key provided via `public-key` or `certificate` attributes, key map with named public keys, or by fetching remote JSON Web Key Set
+using provided `client-ssl-context`. You can skip token signature verification by not defining any of these.
 
 It is strongly recommended that you use signed JWTs in order to guarantee authenticity of tokens and make sure they were not tampered.
 
@@ -132,7 +159,7 @@ The SSL context to be used if the introspection endpoint is using HTTPS.
 +
 * *host-name-verification-policy*
 +
-A policy that defines how host names should be verified when using HTTPS. Allowed values: "ANY".
+A policy that defines how host names should be verified when using HTTPS. Allowed values: "ANY", "DEFAULT".
 
 == Quickstarts
 
