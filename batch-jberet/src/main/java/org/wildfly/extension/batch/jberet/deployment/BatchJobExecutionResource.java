@@ -223,11 +223,10 @@ public class BatchJobExecutionResource implements Resource {
         for (JobInstance instance : instances) {
             executions.addAll(jobOperator.getJobExecutions(instance));
         }
+        children.clear();
         for (JobExecution execution : executions) {
             final String name = Long.toString(execution.getExecutionId());
-            if (!children.contains(name)) {
-                children.add(name);
-            }
+            children.add(name);
         }
     }
 }
