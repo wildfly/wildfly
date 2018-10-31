@@ -50,7 +50,6 @@ class ResourceAdaptersSubsystemAdd extends AbstractAddStepHandler {
 
     protected void populateModel(ModelNode operation, ModelNode model) {
         model.setEmptyObject();
-        model.get(RESOURCEADAPTER_NAME);
     }
 
 
