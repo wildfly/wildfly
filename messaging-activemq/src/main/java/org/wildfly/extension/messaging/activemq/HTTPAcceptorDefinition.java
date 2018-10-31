@@ -23,6 +23,7 @@
 package org.wildfly.extension.messaging.activemq;
 
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
+import static org.wildfly.extension.messaging.activemq.Capabilities.HTTP_LISTENER_REGISTRY_CAPABILITY_NAME;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.HTTP_ACCEPTOR;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.PARAMS;
 
@@ -36,11 +37,14 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.extension.messaging.activemq.MessagingServices.ServerNameMapper;
 
 /**
  * HTTP acceptor resource definition
@@ -57,21 +61,26 @@ public class HTTPAcceptorDefinition extends PersistentResourceDefinition {
             .setRequired(false)
             .setAllowExpression(true)
             .build();
-
+    static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.messaging.activemq", true, HTTPUpgradeService.class)
+            .setDynamicNameMapper(new ServerNameMapper("http-upgrade-service"))
+            .addRequirements(HTTP_LISTENER_REGISTRY_CAPABILITY_NAME)
+            .addAdditionalRequiredPackages("io.undertow.core", "org.jboss.as.remoting", "org.jboss.xnio", "org.jboss.xnio.netty.netty-xnio-transport")
+            .build();
     static AttributeDefinition[] ATTRIBUTES = { HTTP_LISTENER, PARAMS, UPGRADE_LEGACY };
 
     static final HTTPAcceptorDefinition INSTANCE = new HTTPAcceptorDefinition();
 
     private HTTPAcceptorDefinition() {
-        super(MessagingExtension.HTTP_ACCEPTOR_PATH,
+        super(new SimpleResourceDefinition.Parameters(MessagingExtension.HTTP_ACCEPTOR_PATH,
                 new StandardResourceDescriptionResolver(CommonAttributes.ACCEPTOR, MessagingExtension.RESOURCE_NAME, MessagingExtension.class.getClassLoader(), true, false) {
                     @Override
                     public String getResourceDescription(Locale locale, ResourceBundle bundle) {
                         return bundle.getString(HTTP_ACCEPTOR);
                     }
-                },
-                HTTPAcceptorAdd.INSTANCE,
-                HTTPAcceptorRemove.INSTANCE);
+                })
+                .addCapabilities(CAPABILITY)
+                .setAddHandler(HTTPAcceptorAdd.INSTANCE)
+                .setRemoveHandler(HTTPAcceptorRemove.INSTANCE));
     }
 
     @Override
