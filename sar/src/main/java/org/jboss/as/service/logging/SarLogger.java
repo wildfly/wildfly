@@ -22,9 +22,11 @@
 
 package org.jboss.as.service.logging;
 
+import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.WARN;
 
 import javax.xml.namespace.QName;
+import javax.management.ObjectName;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -35,9 +37,11 @@ import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.vfs.VirtualFile;
+import org.jboss.msc.service.StartException;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 @MessageLogger(projectCode = "WFLYSAR", length = 4)
 public interface SarLogger extends BasicLogger {
@@ -205,4 +209,33 @@ public interface SarLogger extends BasicLogger {
      */
     @Message(id = 14, value = "Could not find default constructor for %s")
     DeploymentUnitProcessingException defaultConstructorNotFound(Class<?> clazz);
+
+    /**
+     * Creates an exception indicating a failure to register the MBean.
+     *
+     * @param cause the cause of the error.
+     * @param name  the name of the MBean.
+     *
+     * @return a {@link StartException} for the error.
+     */
+    @Message(id = 15, value = "Failed to register mbean [%s]")
+    StartException mbeanRegistrationFailed(@Cause Throwable cause, String name);
+
+    /**
+     * Logs a warning message indicating no {@link javax.management.ObjectName} is available to unregister.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 16, value = "No ObjectName available to unregister")
+    void cannotUnregisterObject();
+
+    /**
+     * Logs an error message indicating a failure to unregister the object name.
+     *
+     * @param cause the cause of the error.
+     * @param name  the name of the object name.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 17, value = "Failed to unregister [%s]")
+    void unregistrationFailure(@Cause Throwable cause, ObjectName name);
+
 }
