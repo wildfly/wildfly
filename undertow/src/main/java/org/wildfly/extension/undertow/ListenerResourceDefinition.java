@@ -276,7 +276,6 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             ListenerService service =  getListenerService(context);
             if (service == null) {
-                context.getResult().set(0L);
                 return;
             }
             String op = operation.get(NAME).asString();
@@ -303,10 +302,7 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
                         context.getResult().set(stats.getRequestCount());
                         break;
                 }
-            } else {
-                context.getResult().set(0L);
             }
-            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
         }
     }
 
