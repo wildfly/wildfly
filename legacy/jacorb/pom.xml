@@ -94,7 +94,7 @@
 
         <dependency>
             <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-server</artifactId>
+            <artifactId>wildfly-controller</artifactId>
         </dependency>
 
         <dependency>
@@ -105,41 +105,6 @@
         <dependency>
             <groupId>org.jboss.openjdk-orb</groupId>
             <artifactId>openjdk-orb</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-naming</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-network</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.metadata</groupId>
-            <artifactId>jboss-metadata-common</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.spec.javax.rmi</groupId>
-            <artifactId>jboss-rmi-api_1.0_spec</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.metadata</groupId>
-            <artifactId>jboss-metadata-ejb</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.spec.javax.transaction</groupId>
-            <artifactId>jboss-transaction-api_1.2_spec</artifactId>
-        </dependency>
-
-        <dependency>
-         <groupId>org.picketbox</groupId>
-         <artifactId>picketbox</artifactId>
         </dependency>
 
         <dependency>
@@ -172,11 +137,6 @@
             <optional>true</optional>
         </dependency>
 
-        <dependency>
-         <groupId>org.slf4j</groupId>
-         <artifactId>slf4j-api</artifactId>
-         <scope>test</scope>
-        </dependency>
     </dependencies>
 
 </project>
