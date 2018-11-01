@@ -33,7 +33,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
@@ -57,10 +56,16 @@ import org.wildfly.clustering.dispatcher.CommandDispatcherException;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.Invoker;
+import org.wildfly.clustering.ee.infinispan.CacheProperties;
+import org.wildfly.clustering.ee.infinispan.InfinispanCacheProperties;
 import org.wildfly.clustering.ee.infinispan.retry.RetryingInvoker;
 import org.wildfly.clustering.group.GroupListener;
 import org.wildfly.clustering.group.Membership;
 import org.wildfly.clustering.group.Node;
+import org.wildfly.clustering.infinispan.spi.function.ConcurrentSetAddFunction;
+import org.wildfly.clustering.infinispan.spi.function.ConcurrentSetRemoveFunction;
+import org.wildfly.clustering.infinispan.spi.function.CopyOnWriteSetAddFunction;
+import org.wildfly.clustering.infinispan.spi.function.CopyOnWriteSetRemoveFunction;
 import org.wildfly.clustering.provider.ServiceProviderRegistration;
 import org.wildfly.clustering.provider.ServiceProviderRegistration.Listener;
 import org.wildfly.clustering.provider.ServiceProviderRegistry;
@@ -91,6 +96,7 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
     private final Registration groupRegistration;
     private final CommandDispatcher<Set<T>> dispatcher;
     private final Invoker invoker;
+    private final CacheProperties properties;
 
     public CacheServiceProviderRegistry(CacheServiceProviderRegistryConfiguration<T> config) {
         this.group = config.getGroup();
@@ -100,6 +106,7 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
         this.cache.addListener(this);
         this.groupRegistration = this.group.register(this);
         this.invoker = new RetryingInvoker(this.cache);
+        this.properties = new InfinispanCacheProperties(this.cache.getCacheConfiguration());
     }
 
     @Override
@@ -151,15 +158,7 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
         return new SimpleServiceProviderRegistration<>(service, this, () -> {
             Address localAddress = this.group.getAddress(this.group.getLocalMember());
             try (Batch batch = this.batcher.createBatch()) {
-                Set<Address> addresses = this.cache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK).get(service);
-                if ((addresses != null) && addresses.remove(localAddress)) {
-                    Cache<T, Set<Address>> cache = this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES);
-                    if (addresses.isEmpty()) {
-                        cache.remove(service);
-                    } else {
-                        cache.replace(service, addresses);
-                    }
-                }
+                this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS, Flag.IGNORE_RETURN_VALUES).compute(service, this.properties.isTransactional() ? new CopyOnWriteSetRemoveFunction<>(localAddress) : new ConcurrentSetRemoveFunction<>(localAddress));
             } finally {
                 Map.Entry<Listener, ExecutorService> oldEntry = this.listeners.remove(service);
                 if (oldEntry != null) {
@@ -185,10 +184,7 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
     }
 
     void register(Address address, T service) {
-        Set<Address> addresses = this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS, Flag.FORCE_WRITE_LOCK).computeIfAbsent(service, key -> new CopyOnWriteArraySet<>(Collections.singleton(address)));
-        if (addresses.add(address)) {
-            this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).replace(service, addresses);
-        }
+        this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS, Flag.IGNORE_RETURN_VALUES).compute(service, this.properties.isTransactional() ? new CopyOnWriteSetAddFunction<>(address) : new ConcurrentSetAddFunction<>(address));
     }
 
     @Override
