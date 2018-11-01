@@ -423,7 +423,9 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final ServiceBuilder<RecoveryManagerService> recoveryManagerServiceServiceBuilder = context.getServiceTarget()
                 .addService(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER, recoveryManagerService);
         // add dependency on JTA environment bean
-        recoveryManagerServiceServiceBuilder.addDependencies(deps);
+        for (final ServiceName dep : deps) {
+            recoveryManagerServiceServiceBuilder.addDependency(dep);
+        }
 
         // Register WildFly transaction services - TODO: this should eventually be separated from the Narayana subsystem
         final LocalTransactionContextService localTransactionContextService = new LocalTransactionContextService();

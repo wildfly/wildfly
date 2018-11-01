@@ -237,7 +237,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         // add the weld service
         final ServiceBuilder<WeldBootstrapService> weldBootstrapServiceBuilder = serviceTarget.addService(weldBootstrapServiceName, weldBootstrapService);
 
-        weldBootstrapServiceBuilder.addDependencies(TCCLSingletonService.SERVICE_NAME);
+        weldBootstrapServiceBuilder.addDependency(TCCLSingletonService.SERVICE_NAME);
         weldBootstrapServiceBuilder.addDependency(WeldExecutorServices.SERVICE_NAME, ExecutorServices.class, weldBootstrapService.getExecutorServices());
         weldBootstrapServiceBuilder.addDependency(Services.JBOSS_SERVER_EXECUTOR, ExecutorService.class, weldBootstrapService.getServerExecutor());
 
@@ -265,8 +265,10 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         final WeldStartService weldStartService = new WeldStartService(setupActions, module.getClassLoader(), Utils.getRootDeploymentUnit(deploymentUnit).getServiceName());
 
         ServiceBuilder<WeldStartService> startService = serviceTarget.addService(weldStartServiceName, weldStartService)
-                .addDependency(weldBootstrapServiceName, WeldBootstrapService.class, weldStartService.getBootstrap())
-                .addDependencies(dependencies);
+                .addDependency(weldBootstrapServiceName, WeldBootstrapService.class, weldStartService.getBootstrap());
+        for (final ServiceName dependency : dependencies) {
+            startService.addDependency(dependency);
+        }
 
         // make sure JNDI bindings are up
         startService.addDependency(JndiNamingDependencyProcessor.serviceName(deploymentUnit));
@@ -274,7 +276,9 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         final CapabilityServiceSupport capabilities = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
         boolean tx = capabilities.hasCapability("org.wildfly.transactions");
         // [WFLY-5232]
-        startService.addDependencies(getJNDISubsytemDependencies(tx));
+        for (final ServiceName jndiSubsystemDependency : getJNDISubsytemDependencies(tx)) {
+            startService.addDependency(jndiSubsystemDependency);
+        }
 
         final EarMetaData earConfig = deploymentUnit.getAttachment(org.jboss.as.ee.structure.Attachments.EAR_METADATA);
         if (earConfig == null || !earConfig.getInitializeInOrder())  {

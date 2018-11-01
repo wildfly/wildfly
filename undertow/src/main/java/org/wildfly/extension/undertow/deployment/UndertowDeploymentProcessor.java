@@ -342,8 +342,10 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
                 .addDependency(UndertowService.UNDERTOW, UndertowService.class, undertowDeploymentInfoService.getUndertowService())
                 .addDependency(hostServiceName, Host.class, undertowDeploymentInfoService.getHost())
                 .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, undertowDeploymentInfoService.getServerEnvironmentInjectedValue())
-                .addDependency(SuspendController.SERVICE_NAME, SuspendController.class, undertowDeploymentInfoService.getSuspendControllerInjectedValue())
-                .addDependencies(additionalDependencies);
+                .addDependency(SuspendController.SERVICE_NAME, SuspendController.class, undertowDeploymentInfoService.getSuspendControllerInjectedValue());
+        for (final ServiceName additionalDependency : additionalDependencies) {
+            infoBuilder.addDependency(additionalDependency);
+        }
         if(securityDomain != null) {
             if (known) {
                 infoBuilder.addDependency(
@@ -412,11 +414,15 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         final UndertowDeploymentService service = new UndertowDeploymentService(injectionContainer, true);
         final ServiceBuilder<UndertowDeploymentService> builder = serviceTarget.addService(deploymentServiceName, service)
                 .addAliases(legacyDeploymentServiceName)
-                .addDependencies(dependentComponents)
                 .addDependency(UndertowService.SERVLET_CONTAINER.append(defaultContainer), ServletContainerService.class, service.getContainer())
                 .addDependency(hostServiceName, Host.class, service.getHost())
-                .addDependencies(deploymentUnit.getAttachmentList(Attachments.WEB_DEPENDENCIES))
                 .addDependency(deploymentInfoServiceName, DeploymentInfo.class, service.getDeploymentInfoInjectedValue());
+        for (final ServiceName webDependency : deploymentUnit.getAttachmentList(Attachments.WEB_DEPENDENCIES)) {
+            builder.addDependency(webDependency);
+        }
+        for (final ServiceName dependentComponent : dependentComponents) {
+            builder.addDependency(dependentComponent);
+        }
         // inject the server executor which can be used by the WebDeploymentService for blocking tasks in start/stop
         // of that service
         Services.addServerExecutorDependency(builder, service.getServerExecutorInjector());

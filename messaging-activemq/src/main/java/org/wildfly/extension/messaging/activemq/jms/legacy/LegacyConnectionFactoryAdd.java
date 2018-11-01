@@ -91,7 +91,7 @@ public class LegacyConnectionFactoryAdd extends AbstractAddStepHandler {
 
         LegacyConnectionFactoryService service = LegacyConnectionFactoryService.installService(name, activeMQServerServiceName, context.getServiceTarget(), incompleteCF, discoveryGroupName, CONNECTORS.unwrap(context, model));
         for (String legacyEntry : LegacyConnectionFactoryDefinition.ENTRIES.unwrap(context, model)) {
-            BinderServiceUtil.installBinderService(context.getServiceTarget(), legacyEntry, service, new ServiceName[0]);
+            BinderServiceUtil.installBinderService(context.getServiceTarget(), legacyEntry, service, null);
         }
     }
 

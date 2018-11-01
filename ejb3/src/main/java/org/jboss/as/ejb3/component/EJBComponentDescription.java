@@ -361,7 +361,9 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                         @Override
                         public void configureDependency(final ServiceBuilder<?> serviceBuilder, final ComponentStartService service) throws DeploymentUnitProcessingException {
                             for (final SetupAction setupAction : ejbSetupActions) {
-                                serviceBuilder.addDependencies(setupAction.dependencies());
+                                for (final ServiceName setupActionDependency : setupAction.dependencies()) {
+                                    serviceBuilder.addDependency(setupActionDependency);
+                                }
                             }
                         }
                     });
