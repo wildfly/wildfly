@@ -24,7 +24,10 @@ package org.jboss.as.service;
 
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.function.Supplier;
+import java.util.function.Consumer;
 
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.service.logging.SarLogger;
@@ -43,14 +46,15 @@ final class StartStopService extends AbstractService {
     private final Method startMethod;
     private final Method stopMethod;
 
-    StartStopService(final Object mBeanInstance, final Method startMethod, final Method stopMethod, final List<SetupAction> setupActions,  final ClassLoader mbeanContextClassLoader) {
-        super(mBeanInstance, setupActions, mbeanContextClassLoader);
+    StartStopService(final Object mBeanInstance, final Method startMethod, final Method stopMethod, final List<SetupAction> setupActions, final ClassLoader mbeanContextClassLoader, final Consumer<Object> mBeanInstanceConsumer, final Supplier<ExecutorService> executorSupplier) {
+        super(mBeanInstance, setupActions, mbeanContextClassLoader, mBeanInstanceConsumer, executorSupplier);
         this.startMethod = startMethod;
         this.stopMethod = stopMethod;
     }
 
     /** {@inheritDoc} */
-    public void start(final StartContext context) throws StartException {
+    public void start(final StartContext context) {
+        super.start(context);
         if (SarLogger.ROOT_LOGGER.isTraceEnabled()) {
             SarLogger.ROOT_LOGGER.tracef("Starting Service: %s", context.getController().getName());
         }
@@ -66,7 +70,7 @@ final class StartStopService extends AbstractService {
             }
         };
         try {
-            executor.getValue().submit(task);
+            executorSupplier.get().submit(task);
         } catch (RejectedExecutionException e) {
             task.run();
         } finally {
@@ -76,6 +80,7 @@ final class StartStopService extends AbstractService {
 
     /** {@inheritDoc} */
     public void stop(final StopContext context) {
+        super.stop(context);
         if (SarLogger.ROOT_LOGGER.isTraceEnabled()) {
             SarLogger.ROOT_LOGGER.tracef("Stopping Service: %s", context.getController().getName());
         }
@@ -92,7 +97,7 @@ final class StartStopService extends AbstractService {
             }
         };
         try {
-            executor.getValue().submit(task);
+            executorSupplier.get().submit(task);
         } catch (RejectedExecutionException e) {
             task.run();
         } finally {

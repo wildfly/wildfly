@@ -28,11 +28,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.msc.service.LifecycleContext;
-import org.jboss.msc.service.Service;
-import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.Service;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StopContext;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -40,29 +43,35 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-abstract class AbstractService implements Service<Object> {
+abstract class AbstractService implements Service {
 
-    private final Object mBeanInstance;
+    protected final Object mBeanInstance;
     private final List<SetupAction> setupActions;
     private final ClassLoader mbeanContextClassLoader;
-    protected final InjectedValue<ExecutorService> executor = new InjectedValue<ExecutorService>();
+    private final Consumer<Object> mBeanInstanceConsumer;
+    protected final Supplier<ExecutorService> executorSupplier;
 
 
     /**
      * @param mBeanInstance
      * @param setupActions  actions to setup the thread local context
      */
-    protected AbstractService(final Object mBeanInstance, final List<SetupAction> setupActions, final ClassLoader mbeanContextClassLoader) {
+    protected AbstractService(final Object mBeanInstance, final List<SetupAction> setupActions, final ClassLoader mbeanContextClassLoader, final Consumer<Object> mBeanInstanceConsumer, final Supplier<ExecutorService> executorSupplier) {
         this.mBeanInstance = mBeanInstance;
         this.setupActions = setupActions;
         this.mbeanContextClassLoader = mbeanContextClassLoader;
+        this.mBeanInstanceConsumer = mBeanInstanceConsumer;
+        this.executorSupplier = executorSupplier;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public final Object getValue() {
-        return mBeanInstance;
+    @Override
+    public void start(final StartContext context) {
+        mBeanInstanceConsumer.accept(mBeanInstance);
+    }
+
+    @Override
+    public void stop(final StopContext context) {
+        mBeanInstanceConsumer.accept(null);
     }
 
     protected void invokeLifecycleMethod(final Method method, final LifecycleContext context) throws InvocationTargetException, IllegalAccessException {
@@ -86,9 +95,4 @@ abstract class AbstractService implements Service<Object> {
             }
         }
     }
-
-    public InjectedValue<ExecutorService> getExecutorInjector() {
-        return executor;
-    }
-
 }

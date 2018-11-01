@@ -22,13 +22,11 @@
 
 package org.jboss.as.service;
 
-import static org.jboss.msc.value.Values.cached;
-
 import java.beans.PropertyEditor;
+import java.util.function.Supplier;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -56,15 +54,8 @@ import org.jboss.as.service.descriptor.JBossServiceXmlDescriptor;
 import org.jboss.as.service.logging.SarLogger;
 import org.jboss.common.beans.property.finder.PropertyEditorFinder;
 import org.jboss.modules.Module;
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.inject.MethodInjector;
-import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.ImmediateValue;
-import org.jboss.msc.value.MethodValue;
-import org.jboss.msc.value.Value;
-import org.jboss.msc.value.Values;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -133,38 +124,36 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
         final MBeanServices mBeanServices = new MBeanServices(mBeanName, mBeanInstance, mBeanClassHierarchy, target, componentInstantiator, deploymentUnit.getAttachmentList(org.jboss.as.ee.component.Attachments.WEB_SETUP_ACTIONS), classLoader, mbeanServerServiceName);
 
         final JBossServiceDependencyConfig[] dependencyConfigs = mBeanConfig.getDependencyConfigs();
-        addDependencies(dependencyConfigs, mBeanClassHierarchy, mBeanServices);
+        addDependencies(dependencyConfigs, mBeanClassHierarchy, mBeanServices, mBeanInstance);
 
         final JBossServiceDependencyListConfig[] dependencyListConfigs = mBeanConfig.getDependencyConfigLists();
-        addDependencyLists(dependencyListConfigs, mBeanClassHierarchy, mBeanServices);
+        addDependencyLists(dependencyListConfigs, mBeanClassHierarchy, mBeanServices, mBeanInstance);
 
 
         final JBossServiceAttributeConfig[] attributeConfigs = mBeanConfig.getAttributeConfigs();
-        addAttributes(attributeConfigs, mBeanClassHierarchy, mBeanServices, classLoader);
+        addAttributes(attributeConfigs, mBeanClassHierarchy, mBeanServices, classLoader, mBeanInstance);
 
         // register all mBean related services
         mBeanServices.install();
     }
 
-    private void addDependencies(final JBossServiceDependencyConfig[] dependencyConfigs, final List<ClassReflectionIndex> mBeanClassHierarchy, final MBeanServices mBeanServices) throws DeploymentUnitProcessingException {
+    private void addDependencies(final JBossServiceDependencyConfig[] dependencyConfigs, final List<ClassReflectionIndex> mBeanClassHierarchy, final MBeanServices mBeanServices, final Object mBeanInstance) throws DeploymentUnitProcessingException {
         if (dependencyConfigs != null) {
-            final Service<Object> createDestroyService = mBeanServices.getCreateDestroyService();
             for (final JBossServiceDependencyConfig dependencyConfig : dependencyConfigs) {
                 final String optionalAttributeName = dependencyConfig.getOptionalAttributeName();
                 if(optionalAttributeName != null){
-                    final Injector<Object> injector = getOptionalAttributeInjector(optionalAttributeName, mBeanClassHierarchy, createDestroyService);
+                    final Method setter = ReflectionUtils.getSetter(mBeanClassHierarchy, optionalAttributeName);
                     final ObjectName dependencyObjectName = createDependencyObjectName(dependencyConfig.getDependencyName());
-                    final ImmediateValue<ObjectName> dependencyNameValue = new ImmediateValue<ObjectName>(dependencyObjectName);
-                    mBeanServices.addInjectionValue(injector, dependencyNameValue);
+                    final Supplier<Object> objectSupplier = new ObjectSupplier(dependencyObjectName);
+                    mBeanServices.addValue(setter, objectSupplier);
                 }
                 mBeanServices.addDependency(dependencyConfig.getDependencyName());
             }
         }
     }
 
-    private void addDependencyLists(final JBossServiceDependencyListConfig[] dependencyListConfigs, final List<ClassReflectionIndex> mBeanClassHierarchy, final MBeanServices mBeanServices) throws DeploymentUnitProcessingException {
+    private void addDependencyLists(final JBossServiceDependencyListConfig[] dependencyListConfigs, final List<ClassReflectionIndex> mBeanClassHierarchy, final MBeanServices mBeanServices, final Object mBeanInstance) throws DeploymentUnitProcessingException {
         if(dependencyListConfigs != null){
-            final Service<Object> createDestroyService = mBeanServices.getCreateDestroyService();
             for(final JBossServiceDependencyListConfig dependencyListConfig: dependencyListConfigs) {
                 final List<ObjectName> dependencyObjectNames = new ArrayList<ObjectName>(dependencyListConfig.getDependencyConfigs().length);
                 for(final JBossServiceDependencyConfig dependencyConfig: dependencyListConfig.getDependencyConfigs()){
@@ -175,34 +164,31 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
                 }
                 final String optionalAttributeName = dependencyListConfig.getOptionalAttributeName();
                 if(optionalAttributeName != null){
-                    final Injector<Object> injector = getOptionalAttributeInjector(optionalAttributeName, mBeanClassHierarchy, createDestroyService);
-                    final ImmediateValue<List<ObjectName>> dependencyNamesValue = new ImmediateValue<List<ObjectName>>(dependencyObjectNames);
-                    mBeanServices.addInjectionValue(injector, dependencyNamesValue);
+                    final Method setter = ReflectionUtils.getSetter(mBeanClassHierarchy, optionalAttributeName);
+                    final ObjectSupplier objectSupplier = new ObjectSupplier(dependencyObjectNames);
+                    mBeanServices.addValue(setter, objectSupplier);
                 }
             }
         }
     }
 
-    private void addAttributes(final JBossServiceAttributeConfig[] attributeConfigs, final List<ClassReflectionIndex> mBeanClassHierarchy, final MBeanServices mBeanServices, final ClassLoader classLoader) throws DeploymentUnitProcessingException {
+    private void addAttributes(final JBossServiceAttributeConfig[] attributeConfigs, final List<ClassReflectionIndex> mBeanClassHierarchy, final MBeanServices mBeanServices, final ClassLoader classLoader, final Object mBeanInstance) throws DeploymentUnitProcessingException {
         if (attributeConfigs != null) {
-            final Service<Object> createDestroyService = mBeanServices.getCreateDestroyService();
             for (final JBossServiceAttributeConfig attributeConfig : attributeConfigs) {
                 final String propertyName = attributeConfig.getName();
                 final Inject injectConfig = attributeConfig.getInject();
                 final ValueFactory valueFactoryConfig = attributeConfig.getValueFactory();
+                final Method setter = ReflectionUtils.getSetter(mBeanClassHierarchy, propertyName);
 
                 if (injectConfig != null) {
-                    final Value<?> value = getValue(injectConfig);
-                    final Injector<Object> injector = getPropertyInjector(propertyName, mBeanClassHierarchy, createDestroyService, value);
-                    mBeanServices.addAttribute(injectConfig.getBeanName(), injector);
+                    final DelegatingSupplier propertySupplier = getObjectSupplier(injectConfig);
+                    mBeanServices.addAttribute(injectConfig.getBeanName(), setter, propertySupplier);
                 } else if (valueFactoryConfig != null) {
-                    final Value<?> value = getValue(valueFactoryConfig, classLoader);
-                    final Injector<Object> injector = getPropertyInjector(propertyName, mBeanClassHierarchy, createDestroyService, value);
-                    mBeanServices.addAttribute(valueFactoryConfig.getBeanName(), injector);
+                    final DelegatingSupplier valueFactorySupplier = getObjectSupplier(valueFactoryConfig, classLoader);
+                    mBeanServices.addAttribute(valueFactoryConfig.getBeanName(), setter, valueFactorySupplier);
                 } else {
-                    final Value<?> value = getValue(attributeConfig, mBeanClassHierarchy);
-                    final Injector<Object> injector = getPropertyInjector(propertyName, mBeanClassHierarchy, createDestroyService, Values.injectedValue());
-                    mBeanServices.addInjectionValue(injector, value);
+                    final Supplier<Object> value = getObjectSupplier(attributeConfig, mBeanClassHierarchy);
+                    mBeanServices.addValue(setter, value);
                 }
             }
         }
@@ -216,50 +202,30 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
         }
     }
 
-    private static Injector<Object> getOptionalAttributeInjector(final String attributeName, final List<ClassReflectionIndex> mBeanClassHierarchy, final Service<Object> service) {
-        return getPropertyInjector(attributeName, mBeanClassHierarchy, service, Values.injectedValue());
+    private static DelegatingSupplier getObjectSupplier(final Inject injectConfig) {
+        return new PropertySupplier(injectConfig.getPropertyName());
     }
 
-    private static Value<?> getValue(final Inject injectConfig) {
-        final String propertyName = injectConfig.getPropertyName();
-        Value<?> valueToInject = Values.injectedValue();
-        if (propertyName != null) {
-            final Value<Method> methodValue = new InjectedBeanMethodValue(Values.injectedValue(), new InjectedBeanMethodValue.MethodFinder() {
-                @Override
-                public Method find(Class<?> clazz) {
-                    return ReflectionUtils.getGetter(clazz, propertyName);
-                }
-            });
-            valueToInject = cached(new MethodValue<Object>(methodValue, valueToInject, Values.<Object>emptyList()));
-        }
-        return valueToInject;
-    }
-
-    private static Value<?> getValue(final ValueFactory valueFactory, final ClassLoader classLoader) throws DeploymentUnitProcessingException {
+    private static DelegatingSupplier getObjectSupplier(final ValueFactory valueFactory, final ClassLoader classLoader) {
         final String methodName = valueFactory.getMethodName();
         final ValueFactoryParameter[] parameters = valueFactory.getParameters();
-        final List<Class<?>> paramTypes = new ArrayList<Class<?>>(parameters.length);
-        final List<Value<?>> paramValues = new ArrayList<Value<?>>(parameters.length);
+        final Class<?>[] paramTypes = new Class<?>[parameters.length];
+        final Object[] args = new Object[parameters.length];
+        int index = 0;
         for (ValueFactoryParameter parameter : parameters) {
-            final Class<?> attributeTypeValue = ReflectionUtils.getClass(parameter.getType(), classLoader);
-            paramTypes.add(attributeTypeValue);
-            paramValues.add(new ImmediateValue<Object>(newValue(attributeTypeValue, parameter.getValue())));
+            final Class<?> attributeType = ReflectionUtils.getClass(parameter.getType(), classLoader);
+            paramTypes[index] = attributeType;
+            args[index] = newValue(attributeType, parameter.getValue());
+            index++;
         }
-        final Value<Method> methodValue = new InjectedBeanMethodValue(Values.injectedValue(), new InjectedBeanMethodValue.MethodFinder() {
-            @Override
-            public Method find(Class<?> clazz) {
-                return ReflectionUtils.getMethod(clazz, methodName, paramTypes.toArray(new Class<?>[0]));
-            }
-        });
-        return cached(new MethodValue<Object>(methodValue, Values.injectedValue(), paramValues));
+        return new ValueFactorySupplier(methodName, paramTypes, args);
     }
 
-    private static Value<?> getValue(final JBossServiceAttributeConfig attributeConfig, final List<ClassReflectionIndex> mBeanClassHierarchy) {
+    private static Supplier<Object> getObjectSupplier(final JBossServiceAttributeConfig attributeConfig, final List<ClassReflectionIndex> mBeanClassHierarchy) {
         final String attributeName = attributeConfig.getName();
         final Method setterMethod = ReflectionUtils.getSetter(mBeanClassHierarchy, attributeName);
         final Class<?> setterType = setterMethod.getParameterTypes()[0];
-
-        return new ImmediateValue<Object>(newValue(setterType, attributeConfig.getValue()));
+        return new ObjectSupplier(newValue(setterType, attributeConfig.getValue()));
     }
 
     private static Object newInstance(final JBossServiceConfig serviceConfig, final List<ClassReflectionIndex> mBeanClassHierarchy, final ClassLoader deploymentClassLoader) throws DeploymentUnitProcessingException {
@@ -290,11 +256,6 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
             // switch back the TCCL
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTCCL);
         }
-    }
-
-    private static Injector<Object> getPropertyInjector(final String propertyName, final List<ClassReflectionIndex> mBeanClassHierarchy, final Service<?> service, final Value<?> value) {
-        final Method setterMethod = ReflectionUtils.getSetter(mBeanClassHierarchy, propertyName);
-        return new MethodInjector<Object>(setterMethod, service, Values.nullValue(), Collections.singletonList(value));
     }
 
     private static Object newValue(final Class<?> type, final String value) {

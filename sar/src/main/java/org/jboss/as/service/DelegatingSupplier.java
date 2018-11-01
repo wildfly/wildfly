@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,34 +22,17 @@
 
 package org.jboss.as.service;
 
-import org.jboss.msc.inject.InjectionException;
-import org.jboss.msc.inject.Injector;
+import java.util.function.Supplier;
 
 /**
- * Implements <b>Null Object</b> pattern with defined neutral ("null") behavior.
- *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-final class NullInjector implements Injector<Object> {
+abstract class DelegatingSupplier implements Supplier<Object> {
 
-    private static final Injector<Object> SINGLETON = new NullInjector();
+    protected volatile Supplier<Object> objectSupplier;
 
-    private NullInjector() {
-        // forbidden instantiation
-    }
-
-    static Injector<Object> getInstance() {
-        return SINGLETON;
-    }
-
-    @Override
-    public void inject(final Object value) throws InjectionException {
-        // does nothing
-    }
-
-    @Override
-    public void uninject() {
-        // does nothing
+    void setObjectSupplier(final Supplier<Object> objectSupplier) {
+        this.objectSupplier = objectSupplier;
     }
 
 }

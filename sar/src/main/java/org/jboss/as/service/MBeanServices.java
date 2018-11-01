@@ -24,21 +24,20 @@ package org.jboss.as.service;
 
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import javax.management.MBeanServer;
 
-import org.jboss.as.jmx.MBeanRegistrationService;
-import org.jboss.as.server.Services;
+import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.service.component.ServiceComponentInstantiator;
 import org.jboss.as.service.logging.SarLogger;
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.Value;
 
 /**
  * Services associated with MBean responsible for dependencies & injection management.
@@ -55,8 +54,8 @@ final class MBeanServices {
     private final String mBeanName;
     private final ServiceName createDestroyServiceName;
     private final ServiceName startStopServiceName;
-    private final Service<Object> createDestroyService;
-    private final Service<Object> startStopService;
+    private final CreateDestroyService createDestroyService;
+    private final StartStopService startStopService;
     private final ServiceBuilder<?> createDestroyServiceBuilder;
     private final ServiceBuilder<?> startStopServiceBuilder;
     private final ServiceTarget target;
@@ -65,20 +64,11 @@ final class MBeanServices {
 
     private final List<SetupAction> setupActions;
 
-    /**
-     * @param mBeanName
-     * @param mBeanInstance
-     * @param mBeanClassHierarchy
-     * @param target
-     * @param componentInstantiator
-     * @param setupActions the deployment unit's service name
-     * @param mbeanServerServiceName
-     */
     MBeanServices(final String mBeanName, final Object mBeanInstance, final List<ClassReflectionIndex> mBeanClassHierarchy,
                   final ServiceTarget target, final ServiceComponentInstantiator componentInstantiator,
                   final List<SetupAction> setupActions, final ClassLoader mbeanContextClassLoader, final ServiceName mbeanServerServiceName) {
         if (mBeanClassHierarchy == null) {
-            throw SarLogger.ROOT_LOGGER.nullVar("mBeanName");
+            throw SarLogger.ROOT_LOGGER.nullVar("mBeanClassHierarchy");
         }
         if (mBeanInstance == null) {
             throw SarLogger.ROOT_LOGGER.nullVar("mBeanInstance");
@@ -92,28 +82,33 @@ final class MBeanServices {
 
         final Method createMethod = ReflectionUtils.getMethod(mBeanClassHierarchy, CREATE_METHOD_NAME, NO_ARGS, false);
         final Method destroyMethod = ReflectionUtils.getMethod(mBeanClassHierarchy, DESTROY_METHOD_NAME, NO_ARGS, false);
-        createDestroyService = new CreateDestroyService(mBeanInstance, createMethod, destroyMethod,componentInstantiator, setupActions, mbeanContextClassLoader);
         createDestroyServiceName = ServiceNameFactory.newCreateDestroy(mBeanName);
-        createDestroyServiceBuilder = target.addService(createDestroyServiceName, createDestroyService);
-        Services.addServerExecutorDependency(createDestroyServiceBuilder, ((CreateDestroyService) createDestroyService).getExecutorInjector());
+        createDestroyServiceBuilder = target.addService(createDestroyServiceName);
+        Consumer<Object> mBeanInstanceConsumer = createDestroyServiceBuilder.provides(createDestroyServiceName);
+        Supplier<ExecutorService> executorSupplier = createDestroyServiceBuilder.requires(AbstractControllerService.EXECUTOR_CAPABILITY.getCapabilityServiceName());
+        createDestroyService = new CreateDestroyService(mBeanInstance, createMethod, destroyMethod, componentInstantiator, setupActions, mbeanContextClassLoader, mBeanInstanceConsumer, executorSupplier);
+        createDestroyServiceBuilder.setInstance(createDestroyService);
         if(componentInstantiator != null) {
             // the service that starts the EE component needs to start first
-            createDestroyServiceBuilder.addDependency(componentInstantiator.getComponentStartServiceName());
+            createDestroyServiceBuilder.requires(componentInstantiator.getComponentStartServiceName());
         }
 
         final Method startMethod = ReflectionUtils.getMethod(mBeanClassHierarchy, START_METHOD_NAME, NO_ARGS, false);
         final Method stopMethod = ReflectionUtils.getMethod(mBeanClassHierarchy, STOP_METHOD_NAME, NO_ARGS, false);
-        startStopService = new StartStopService(mBeanInstance, startMethod, stopMethod, setupActions, mbeanContextClassLoader);
         startStopServiceName = ServiceNameFactory.newStartStop(mBeanName);
-        startStopServiceBuilder = target.addService(startStopServiceName, startStopService);
-        startStopServiceBuilder.addDependency(createDestroyServiceName);
+        startStopServiceBuilder = target.addService(startStopServiceName);
+        mBeanInstanceConsumer = startStopServiceBuilder.provides(startStopServiceName);
+        executorSupplier = startStopServiceBuilder.requires(AbstractControllerService.EXECUTOR_CAPABILITY.getCapabilityServiceName());
+        startStopService = new StartStopService(mBeanInstance, startMethod, stopMethod, setupActions, mbeanContextClassLoader, mBeanInstanceConsumer, executorSupplier);
+        startStopServiceBuilder.setInstance(startStopService);
+        startStopServiceBuilder.requires(createDestroyServiceName);
 
-        for(SetupAction action : setupActions) {
-            startStopServiceBuilder.addDependencies(action.dependencies());
-            createDestroyServiceBuilder.addDependencies(action.dependencies());
+        for (SetupAction action : setupActions) {
+            for (ServiceName dependency : action.dependencies()) {
+                startStopServiceBuilder.requires(dependency);
+                createDestroyServiceBuilder.requires(dependency);
+            }
         }
-
-        Services.addServerExecutorDependency(startStopServiceBuilder, ((StartStopService) startStopService).getExecutorInjector());
 
         this.mBeanName = mBeanName;
         this.target = target;
@@ -121,36 +116,27 @@ final class MBeanServices {
         this.mbeanServerServiceName = mbeanServerServiceName;
     }
 
-    Service<Object> getCreateDestroyService() {
-        assertState();
-        return createDestroyService;
-    }
-
-    Service<Object> getStartStopService() {
-        assertState();
-        return startStopService;
-    }
-
     void addDependency(final String dependencyMBeanName)  {
         assertState();
         final ServiceName injectedMBeanCreateDestroyServiceName = ServiceNameFactory.newCreateDestroy(dependencyMBeanName);
-        createDestroyServiceBuilder.addDependency(injectedMBeanCreateDestroyServiceName);
+        createDestroyServiceBuilder.requires(injectedMBeanCreateDestroyServiceName);
         final ServiceName injectedMBeanStartStopServiceName = ServiceNameFactory.newStartStop(dependencyMBeanName);
-        startStopServiceBuilder.addDependency(injectedMBeanStartStopServiceName);
+        startStopServiceBuilder.requires(injectedMBeanStartStopServiceName);
     }
 
-       void addAttribute(final String attributeMBeanName, final Injector<Object> injector) {
-           assertState();
-           final ServiceName injectedMBeanCreateDestroyServiceName = ServiceNameFactory.newCreateDestroy(attributeMBeanName);
-           createDestroyServiceBuilder.addDependency(injectedMBeanCreateDestroyServiceName, injector);
-           final ServiceName injectedMBeanStartStopServiceName = ServiceNameFactory.newStartStop(attributeMBeanName);
-           startStopServiceBuilder.addDependency(injectedMBeanStartStopServiceName);
-       }
-
-
-    void addInjectionValue(final Injector<Object> injector, final Value<?> value) {
+    void addAttribute(final String attributeMBeanName, final Method setter, final DelegatingSupplier propertySupplier) {
         assertState();
-        createDestroyServiceBuilder.addInjectionValue(injector, value);
+        final ServiceName injectedMBeanCreateDestroyServiceName = ServiceNameFactory.newCreateDestroy(attributeMBeanName);
+        final Supplier<Object> injectedMBeanSupplier = createDestroyServiceBuilder.requires(injectedMBeanCreateDestroyServiceName);
+        propertySupplier.setObjectSupplier(injectedMBeanSupplier);
+        createDestroyService.inject(setter, propertySupplier);
+        final ServiceName injectedMBeanStartStopServiceName = ServiceNameFactory.newStartStop(attributeMBeanName);
+        startStopServiceBuilder.requires(injectedMBeanStartStopServiceName);
+    }
+
+    void addValue(final Method setter, final Supplier<Object> objectSupplier) {
+        assertState();
+        createDestroyService.inject(setter, objectSupplier);
     }
 
     void install() {
@@ -159,11 +145,11 @@ final class MBeanServices {
         startStopServiceBuilder.install();
 
         // Add service to register the mbean in the mbean server
-        final MBeanRegistrationService<Object> mbeanRegistrationService = new MBeanRegistrationService<Object>(mBeanName, setupActions);
-        target.addService(MBeanRegistrationService.SERVICE_NAME.append(mBeanName), mbeanRegistrationService)
-            .addDependency(mbeanServerServiceName, MBeanServer.class, mbeanRegistrationService.getMBeanServerInjector())
-            .addDependency(startStopServiceName, Object.class, mbeanRegistrationService.getValueInjector())
-                .install();
+        final ServiceBuilder<?> sb = target.addService(MBeanRegistrationService.SERVICE_NAME.append(mBeanName));
+        final Supplier<MBeanServer> mBeanServerSupplier = sb.requires(mbeanServerServiceName);
+        final Supplier<Object> objectSupplier = sb.requires(startStopServiceName);
+        sb.setInstance(new MBeanRegistrationService(mBeanName, setupActions, mBeanServerSupplier, objectSupplier));
+        sb.install();
 
         installed = true;
     }
