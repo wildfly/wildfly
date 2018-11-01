@@ -28,7 +28,6 @@ import io.agroal.api.transaction.TransactionIntegration;
 import io.agroal.narayana.NarayanaTransactionIntegration;
 import org.ietf.jgss.GSSException;
 import org.jboss.as.naming.ImmediateManagedReferenceFactory;
-import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
@@ -36,7 +35,6 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.common.function.ExceptionSupplier;
 import org.wildfly.extension.datasources.agroal.logging.AgroalLogger;
@@ -180,9 +178,8 @@ public class DataSourceService implements Service<AgroalDataSource>, Supplier<Ag
 
             ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
             BinderService binderService = new BinderService(bindInfo.getBindName());
-            ImmediateManagedReferenceFactory managedReferenceFactory = new ImmediateManagedReferenceFactory(agroalDataSource);
+            binderService.getManagedObjectInjector().inject(new ImmediateManagedReferenceFactory(agroalDataSource));
             context.getChildTarget().addService(bindInfo.getBinderServiceName(), binderService)
-                   .addInjectionValue(binderService.getManagedObjectInjector(), new ImmediateValue<ManagedReferenceFactory>(managedReferenceFactory))
                    .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector())
                    .install();
 

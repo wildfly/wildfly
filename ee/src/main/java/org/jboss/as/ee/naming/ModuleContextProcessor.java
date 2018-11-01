@@ -73,10 +73,10 @@ public class ModuleContextProcessor implements DeploymentUnitProcessor {
         final NamingStoreService contextService = new NamingStoreService(true);
         serviceTarget.addService(moduleContextServiceName, contextService).install();
 
-        final BinderService moduleNameBinder = new BinderService("ModuleName");
         final ServiceName moduleNameServiceName = moduleContextServiceName.append("ModuleName");
+        final BinderService moduleNameBinder = new BinderService("ModuleName");
+        moduleNameBinder.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(Values.immediateValue(moduleDescription.getModuleName())));
         serviceTarget.addService(moduleNameServiceName, moduleNameBinder)
-                .addInjection(moduleNameBinder.getManagedObjectInjector(), new ValueManagedReferenceFactory(Values.immediateValue(moduleDescription.getModuleName())))
                 .addDependency(moduleContextServiceName, ServiceBasedNamingStore.class, moduleNameBinder.getNamingStoreInjector())
                 .install();
         deploymentUnit.addToAttachmentList(org.jboss.as.server.deployment.Attachments.JNDI_DEPENDENCIES, moduleNameServiceName);

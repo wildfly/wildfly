@@ -79,15 +79,13 @@ public class InApplicationClientBindingProcessor implements DeploymentUnitProces
     }
 
     private void bindServices(DeploymentUnit deploymentUnit, ServiceTarget serviceTarget, ServiceName contextServiceName) {
-
-        final ServiceName inAppClientServiceName = contextServiceName.append("InAppClientContainer");
         BinderService inAppClientContainerService = new BinderService("InAppClientContainer");
+        final ServiceName inAppClientServiceName = contextServiceName.append("InAppClientContainer");
+        inAppClientContainerService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(Values.immediateValue(appclient)));
         serviceTarget.addService(inAppClientServiceName, inAppClientContainerService)
-            .addInjection(inAppClientContainerService.getManagedObjectInjector(), new ValueManagedReferenceFactory(Values.immediateValue(appclient)))
             .addDependency(contextServiceName, ServiceBasedNamingStore.class, inAppClientContainerService.getNamingStoreInjector())
             .install();
         deploymentUnit.addToAttachmentList(org.jboss.as.server.deployment.Attachments.JNDI_DEPENDENCIES, inAppClientServiceName);
-
     }
 
 
