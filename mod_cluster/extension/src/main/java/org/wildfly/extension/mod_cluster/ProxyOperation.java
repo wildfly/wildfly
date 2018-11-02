@@ -169,6 +169,11 @@ enum ProxyOperation implements Operation<ModClusterServiceMBean>, UnaryOperator<
     },
     ENABLE("enable") {
         @Override
+        public SimpleOperationDefinitionBuilder apply(SimpleOperationDefinitionBuilder builder) {
+            return builder.setReplyType(ModelType.BOOLEAN);
+        }
+
+        @Override
         public ModelNode execute(ExpressionResolver expressionResolver, ModelNode operation, ModClusterServiceMBean service) {
             boolean enabled = service.enable();
 
@@ -176,6 +181,11 @@ enum ProxyOperation implements Operation<ModClusterServiceMBean>, UnaryOperator<
         }
     },
     DISABLE("disable") {
+        @Override
+        public SimpleOperationDefinitionBuilder apply(SimpleOperationDefinitionBuilder builder) {
+            return builder.setReplyType(ModelType.BOOLEAN);
+        }
+
         @Override
         public ModelNode execute(ExpressionResolver expressionResolver, ModelNode operation, ModClusterServiceMBean service) {
             boolean disabled = service.disable();
@@ -186,7 +196,7 @@ enum ProxyOperation implements Operation<ModClusterServiceMBean>, UnaryOperator<
     STOP("stop") {
         @Override
         public SimpleOperationDefinitionBuilder apply(SimpleOperationDefinitionBuilder builder) {
-            return builder.setParameters(WAIT_TIME);
+            return builder.setParameters(WAIT_TIME).setReplyType(ModelType.BOOLEAN);
         }
 
         @Override
@@ -202,7 +212,7 @@ enum ProxyOperation implements Operation<ModClusterServiceMBean>, UnaryOperator<
     ENABLE_CONTEXT("enable-context") {
         @Override
         public SimpleOperationDefinitionBuilder apply(SimpleOperationDefinitionBuilder builder) {
-            return builder.setParameters(VIRTUAL_HOST, CONTEXT);
+            return builder.setParameters(VIRTUAL_HOST, CONTEXT).setReplyType(ModelType.BOOLEAN);
         }
 
         @Override
@@ -211,18 +221,17 @@ enum ProxyOperation implements Operation<ModClusterServiceMBean>, UnaryOperator<
             String webContext = CONTEXT.resolveModelAttribute(expressionResolver, operation).asString();
 
             try {
-                service.enableContext(virtualHost, webContext);
+                boolean enabled = service.enableContext(virtualHost, webContext);
+                return new ModelNode(enabled);
             } catch (IllegalArgumentException e) {
                 throw new OperationFailedException(ModClusterLogger.ROOT_LOGGER.contextOrHostNotFound(virtualHost, webContext));
             }
-
-            return null;
         }
     },
     DISABLE_CONTEXT("disable-context") {
         @Override
         public SimpleOperationDefinitionBuilder apply(SimpleOperationDefinitionBuilder builder) {
-            return builder.setParameters(VIRTUAL_HOST, CONTEXT);
+            return builder.setParameters(VIRTUAL_HOST, CONTEXT).setReplyType(ModelType.BOOLEAN);
         }
 
         @Override
@@ -241,7 +250,7 @@ enum ProxyOperation implements Operation<ModClusterServiceMBean>, UnaryOperator<
     STOP_CONTEXT("stop-context") {
         @Override
         public SimpleOperationDefinitionBuilder apply(SimpleOperationDefinitionBuilder builder) {
-            return builder.setParameters(VIRTUAL_HOST, CONTEXT, WAIT_TIME);
+            return builder.setParameters(VIRTUAL_HOST, CONTEXT, WAIT_TIME).setReplyType(ModelType.BOOLEAN);
         }
 
         @Override
