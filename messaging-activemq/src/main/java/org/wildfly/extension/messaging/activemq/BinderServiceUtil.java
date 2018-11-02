@@ -79,7 +79,7 @@ public class BinderServiceUtil {
     public static void installBinderService(final ServiceTarget serviceTarget,
                                             final String name,
                                             final Service<?> service,
-                                            final ServiceName... dependencies) {
+                                            final ServiceName dependency) {
         final BindInfo bindInfo = ContextNames.bindInfoFor(name);
         final BinderService binderService = new BinderService(bindInfo.getBindName());
         binderService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(service));
@@ -89,8 +89,8 @@ public class BinderServiceUtil {
                 // haven't been activated on it due to the presence of a different live server) don't cause jms-topic/jms-queue add operations
                 // to fail
                 .setInitialMode(ServiceController.Mode.PASSIVE);
-        if (dependencies != null && dependencies.length > 0) {
-            serviceBuilder.addDependencies(dependencies);
+        if (dependency != null) {
+            serviceBuilder.addDependency(dependency);
         }
         serviceBuilder.install();
     }
