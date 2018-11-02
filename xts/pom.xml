@@ -121,10 +121,6 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-weld</artifactId>
-        </dependency>
-        <dependency>
             <groupId>javax.jws</groupId>
             <artifactId>jsr181-api</artifactId>
         </dependency>

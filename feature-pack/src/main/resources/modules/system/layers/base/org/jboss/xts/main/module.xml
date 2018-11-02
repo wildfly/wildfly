@@ -30,16 +30,19 @@
     </resources>
 
     <dependencies>
+        <module name="org.jboss.jts"/>
+
         <module name="javax.transaction.api"/>
         <module name="javax.resource.api"/>
-        <module name="org.jboss.jts"/>
+        <module name="javax.enterprise.api"/>
+
         <module name="org.jboss.ws.api" services="export"/>
         <module name="org.jboss.ws.jaxws-client" services="export"/>
         <module name="org.jboss.ws.cxf.jbossws-cxf-client" services="export"/>
-        <module name="org.jboss.logging"/>
         <module name="javax.xml.soap.api"/>
         <module name="javax.xml.ws.api"/>
         <module name="javax.xml.stream.api"/>
+
         <!-- this is needed to get javax.xml.namespace.QName but it would be better if it were exposed on its own -->
         <module name="javax.api"/>
         <!-- this is needed because our endpoints are not in a normal deployment and we need to be able
@@ -52,19 +55,12 @@
         <module name="javax.annotation.api"/>
         <!-- this is needed to ensure the JaxWS endpoint classes canb refer to HttpServletRequest etc -->
         <module name="javax.servlet.api"/>
-        <module name="javax.ejb.api" />
-        <module name="org.jboss.jts" />
-        <module name="javax.xml.ws.api" />
-        <module name="org.jboss.weld.api" />
-        <module name="org.jboss.weld.core" />
-        <module name="javax.enterprise.api"/>
-        <module name="javax.transaction.api" />
+
         <module name="org.jboss.logging" />
         <module name="org.jboss.narayana.compensations" export="true" />
         <module name="org.jboss.narayana.txframework" export="true" />
         <module name="javax.annotation.api"  export="true" />
         <module name="javax.interceptor.api"  export="true" />
-        <module name="org.jboss.weld.spi" />
 
         <!-- This dependency is required only if the
              xts subsystem is present. If it is the
@@ -77,10 +73,5 @@
           </imports>
         </module>
 
-        <!-- TODO WFLY-5966 validate the need for these and remove if not needed.
-             Prior to WFLY-5922 they were exported by javax.ejb.api. -->
-        <module name="javax.xml.rpc.api"/>
-        <module name="javax.rmi.api"/>
-        <module name="org.omg.api"/>
     </dependencies>
 </module>
