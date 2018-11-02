@@ -28,10 +28,9 @@ import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
+import org.jboss.as.controller.ReloadRequiredAddStepHandler;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
@@ -39,7 +38,6 @@ import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.metadata.ejb.jboss.IORSASContextMetaData;
 
 /**
  * <p>
@@ -95,26 +93,5 @@ public class IORSASContextDefinition extends PersistentResourceDefinition {
         public String toString() {
             return this.name;
         }
-    }
-
-    /**
-     * <p>
-     * Builds a {@code IORSASContextMetaData} using the specified {@code OperationContext} and {@code ModelNode}.
-     * </p>
-     *
-     * @param context a reference to the {@code OperationContext}.
-     * @param model a {@code ModelNode} containing the configured secure attribute service (SAS) metadata.
-     * @return the constructed {@code IORSASContextMetaData} or {@code null} if the specified model is undefined.
-     * @throws OperationFailedException if an error occurs while creating the transport metadata,
-     */
-    protected IORSASContextMetaData getIORSASContextMetaData(final OperationContext context, final ModelNode model)
-            throws OperationFailedException {
-
-        if (!model.isDefined())
-            return null;
-
-        IORSASContextMetaData metaData = new IORSASContextMetaData();
-        metaData.setCallerPropagation(CALLER_PROPAGATION.resolveModelAttribute(context, model).asString());
-        return metaData;
     }
 }

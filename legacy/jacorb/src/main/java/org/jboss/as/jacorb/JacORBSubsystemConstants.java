@@ -41,7 +41,6 @@ public final class JacORBSubsystemConstants {
 
     // subsystem configuration constants (elements and attributes).
 
-    public static final String CLIENT = "client";
     public static final String ORB = "orb";
     public static final String NAME = "name";
     public static final String ON = "on";
@@ -120,22 +119,6 @@ public final class JacORBSubsystemConstants {
     public static final String IOR_SAS_CONTEXT_CALLER_PROPAGATION = "caller-propagation";
 
     // constants for common org.omg properties.
-    public static final String ORB_ADDRESS = "OAIAddr";
-    public static final String ORB_PORT = "OAPort";
-    public static final String ORB_SSL_PORT = "OASSLPort";
-    public static final String ORB_CLASS = "org.omg.CORBA.ORBClass";
-    public static final String ORB_SINGLETON_CLASS = "org.omg.CORBA.ORBSingletonClass";
     public static final String ORB_INITIALIZER_PREFIX = "org.omg.PortableInterceptor.ORBInitializerClass.";
 
-    // JacORB implementation classes and standard interceptors.
-    public static final String JACORB_ORB_CLASS = "org.jacorb.orb.ORB";
-    public static final String JacORB_ORB_SINGLETON_CLASS = "org.jacorb.orb.ORBSingleton";
-    public static final String JACORB_STD_INITIALIZER_KEY = ORB_INITIALIZER_PREFIX + "standard_init";
-    public static final String JACORB_STD_INITIALIZER_VALUE = "org.jacorb.orb.standardInterceptors.IORInterceptorInitializer";
-    public static final String JACORB_SSL_SOCKET_FACTORY = "jacorb.ssl.socket_factory";
-    public static final String JACORB_SSL_SERVER_SOCKET_FACTORY = "jacorb.ssl.server_socket_factory";
-
-    // JacORB configuration properties that are built and set by the ORB service.
-    public static final String JACORB_NAME_SERVICE_INIT_REF = "ORBInitRef.NameService";
-    public static final String JACORB_NAME_SERVICE_MAP_KEY = "jacorb.orb.objectKeyMap.NameService";
 }

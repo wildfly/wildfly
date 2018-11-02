@@ -28,10 +28,9 @@ import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
+import org.jboss.as.controller.ReloadRequiredAddStepHandler;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
@@ -40,7 +39,6 @@ import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.metadata.ejb.jboss.IORASContextMetaData;
 
 /**
  * <p>
@@ -110,30 +108,5 @@ public class IORASContextDefinition extends PersistentResourceDefinition {
         public String toString() {
             return this.name;
         }
-    }
-
-    /**
-     * <p>
-     * Builds a {@code IORASContextMetaData} using the specified {@code OperationContext} and {@code ModelNode}.
-     * </p>
-     *
-     * @param context a reference to the {@code OperationContext}.
-     * @param model a {@code ModelNode} containing the configured authentication service (AS) metadata.
-     * @return the constructed {@code IORASContextMetaData} or {@code null} if the specified model is undefined.
-     * @throws OperationFailedException if an error occurs while creating the transport metadata,
-     */
-    protected IORASContextMetaData getIORASContextMetaData(final OperationContext context, final ModelNode model)
-            throws OperationFailedException {
-
-        if (!model.isDefined())
-            return null;
-
-        IORASContextMetaData metaData = new IORASContextMetaData();
-        metaData.setAuthMethod(AUTH_METHOD.resolveModelAttribute(context, model).asString());
-        if (model.hasDefined(REALM.getName())) {
-            metaData.setRealm(REALM.resolveModelAttribute(context, model).asString());
-        }
-        metaData.setRequired(REQUIRED.resolveModelAttribute(context, model).asBoolean());
-        return metaData;
     }
 }

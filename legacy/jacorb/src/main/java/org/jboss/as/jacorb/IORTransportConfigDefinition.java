@@ -28,10 +28,9 @@ import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
+import org.jboss.as.controller.ReloadRequiredAddStepHandler;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -39,9 +38,7 @@ import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.metadata.ejb.jboss.IORTransportConfigMetaData;
 
 /**
  * <p>
@@ -135,31 +132,5 @@ class IORTransportConfigDefinition extends PersistentResourceDefinition {
         public String toString() {
             return this.name;
         }
-    }
-
-    /**
-     * <p>
-     * Builds a {@code IORTransportConfigMetaData} using the specified {@code OperationContext} and {@code ModelNode}.
-     * </p>
-     *
-     * @param context a reference to the {@code OperationContext}.
-     * @param model a {@code ModelNode} containing the configured transport metadata.
-     * @return the constructed {@code IORTransportConfigMetaData} or {@code null} if the specified model is undefined.
-     * @throws OperationFailedException if an error occurs while creating the transport metadata,
-     */
-    protected IORTransportConfigMetaData getTransportConfigMetaData(final OperationContext context, final ModelNode model)
-            throws OperationFailedException {
-
-        if (!model.isDefined())
-            return null;
-
-        IORTransportConfigMetaData metaData = new IORTransportConfigMetaData();
-        metaData.setIntegrity(INTEGRITY.resolveModelAttribute(context, model).asString());
-        metaData.setConfidentiality(CONFIDENTIALITY.resolveModelAttribute(context, model).asString());
-        metaData.setEstablishTrustInTarget(TRUST_IN_TARGET.resolveModelAttribute(context, model).asString());
-        metaData.setEstablishTrustInClient(TRUST_IN_CLIENT.resolveModelAttribute(context, model).asString());
-        metaData.setDetectMisordering(DETECT_MISORDERING.resolveModelAttribute(context, model).asString());
-        metaData.setDetectReplay(DETECT_REPLAY.resolveModelAttribute(context, model).asString());
-        return metaData;
     }
 }

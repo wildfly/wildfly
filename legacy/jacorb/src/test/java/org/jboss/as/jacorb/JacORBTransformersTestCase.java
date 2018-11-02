@@ -28,7 +28,6 @@ import static org.junit.Assert.assertTrue;
 import java.util.List;
 
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelFixer;
@@ -56,16 +55,6 @@ public class JacORBTransformersTestCase extends AbstractSubsystemTest {
     //eap64=1.4
 
     @Test
-    public void testTransformersEAP620() throws Exception {
-        testTransformers(ModelTestControllerVersion.EAP_6_2_0, ModelVersion.create(1, 3));
-    }
-
-    @Test
-    public void testTransformersEAP630() throws Exception {
-        testTransformers(ModelTestControllerVersion.EAP_6_3_0, ModelVersion.create(1, 4));
-    }
-
-    @Test
     public void testTransformersEAP640() throws Exception {
         testTransformers(ModelTestControllerVersion.EAP_6_4_0, ModelVersion.create(1, 4));
     }
@@ -78,6 +67,7 @@ public class JacORBTransformersTestCase extends AbstractSubsystemTest {
         // Add legacy subsystems
         builder.createLegacyKernelServicesBuilder(AdditionalInitialization.ADMIN_ONLY_HC, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-jacorb:" + controllerVersion.getMavenGavVersion())
+                .addMavenResourceURL("org.jboss.spec.javax.rmi:jboss-rmi-api_1.0_spec:1.0.4.Final-redhat-3")
                 .configureReverseControllerCheck(AdditionalInitialization.ADMIN_ONLY_HC, null);
 
         KernelServices mainServices = builder.build();
@@ -96,16 +86,6 @@ public class JacORBTransformersTestCase extends AbstractSubsystemTest {
     }
 
     @Test
-    public void testTransformersSecurityIdentityEAP620() throws Exception {
-        testTransformersSecurityIdentity(ModelTestControllerVersion.EAP_6_2_0, ModelVersion.create(1, 3, 0));
-    }
-
-    @Test
-    public void testTransformersSecurityIdentityEAP630() throws Exception {
-        testTransformersSecurityIdentity(ModelTestControllerVersion.EAP_6_3_0, ModelVersion.create(1, 3, 0));
-    }
-
-    @Test
     public void testTransformersSecurityIdentityEAP640() throws Exception {
         testTransformersSecurityIdentity(ModelTestControllerVersion.EAP_6_4_0, ModelVersion.create(1, 4, 0));
     }
@@ -118,6 +98,7 @@ public class JacORBTransformersTestCase extends AbstractSubsystemTest {
         // Add legacy subsystems
         builder.createLegacyKernelServicesBuilder(AdditionalInitialization.ADMIN_ONLY_HC, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-jacorb:" + controllerVersion.getMavenGavVersion())
+                .addMavenResourceURL("org.jboss.spec.javax.rmi:jboss-rmi-api_1.0_spec:1.0.4.Final-redhat-3")
                 .configureReverseControllerCheck(AdditionalInitialization.ADMIN_ONLY_HC, null);
 
         KernelServices mainServices = builder.build();
@@ -134,16 +115,6 @@ public class JacORBTransformersTestCase extends AbstractSubsystemTest {
     }
 
     @Test
-    public void testTransformersSecurityClientEAP620() throws Exception {
-        testTransformersSecurityClient(ModelTestControllerVersion.EAP_6_2_0, ModelVersion.create(1, 3, 0));
-    }
-
-    @Test
-    public void testTransformersSecurityClientEAP630() throws Exception {
-        testTransformersSecurityClient(ModelTestControllerVersion.EAP_6_3_0, ModelVersion.create(1, 3, 0));
-    }
-
-    @Test
     public void testTransformersSecurityClientEAP640() throws Exception {
         testTransformersSecurityClient(ModelTestControllerVersion.EAP_6_4_0, ModelVersion.create(1, 4, 0));
     }
@@ -155,6 +126,7 @@ public class JacORBTransformersTestCase extends AbstractSubsystemTest {
         // Add legacy subsystems
         builder.createLegacyKernelServicesBuilder(AdditionalInitialization.ADMIN_ONLY_HC, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-jacorb:" + controllerVersion.getMavenGavVersion())
+                .addMavenResourceURL("org.jboss.spec.javax.rmi:jboss-rmi-api_1.0_spec:1.0.4.Final-redhat-3")
                 .configureReverseControllerCheck(AdditionalInitialization.ADMIN_ONLY_HC, null);
 
         KernelServices mainServices = builder.build();
@@ -167,51 +139,6 @@ public class JacORBTransformersTestCase extends AbstractSubsystemTest {
 
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, builder.parseXmlResource("subsystem-security-client.xml"), config);
         checkSubsystemModelTransformation(mainServices, modelVersion);
-    }
-
-    @Test
-    public void testTransformersIORSettingsEAP620() throws Exception {
-        testTransformersIORSettings(ModelTestControllerVersion.EAP_6_2_0, ModelVersion.create(1, 3, 0));
-    }
-
-    @Test
-    public void testTransformersIORSettingsEAP630() throws Exception {
-        testTransformersIORSettings(ModelTestControllerVersion.EAP_6_3_0, ModelVersion.create(1, 3, 0));
-    }
-
-    private void testTransformersIORSettings(ModelTestControllerVersion controllerVersion, ModelVersion modelVersion) throws Exception {
-
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.ADMIN_ONLY_HC);
-
-        // Add legacy subsystems
-        builder.createLegacyKernelServicesBuilder(AdditionalInitialization.ADMIN_ONLY_HC, controllerVersion, modelVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-jacorb:" + controllerVersion.getMavenGavVersion())
-                .configureReverseControllerCheck(AdditionalInitialization.ADMIN_ONLY_HC, null);
-
-        KernelServices mainServices = builder.build();
-        assertTrue(mainServices.isSuccessfulBoot());
-        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
-        assertNotNull(legacyServices);
-        assertTrue(legacyServices.isSuccessfulBoot());
-
-        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion,
-                builder.parseXmlResource("subsystem-ior-settings.xml"),
-                new FailedOperationTransformationConfig()
-                        .addFailedAttribute(PathAddress.pathAddress(JacORBSubsystemResource.INSTANCE.getPathElement(),
-                                IORSettingsDefinition.INSTANCE.getPathElement()),
-                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
-                        .addFailedAttribute(PathAddress.pathAddress(JacORBSubsystemResource.INSTANCE.getPathElement(),
-                                IORSettingsDefinition.INSTANCE.getPathElement(),
-                                IORTransportConfigDefinition.INSTANCE.getPathElement()),
-                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
-                        .addFailedAttribute(PathAddress.pathAddress(JacORBSubsystemResource.INSTANCE.getPathElement(),
-                                IORSettingsDefinition.INSTANCE.getPathElement(),
-                                IORASContextDefinition.INSTANCE.getPathElement()),
-                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
-                        .addFailedAttribute(PathAddress.pathAddress(JacORBSubsystemResource.INSTANCE.getPathElement(),
-                                IORSettingsDefinition.INSTANCE.getPathElement(),
-                                IORSASContextDefinition.INSTANCE.getPathElement()),
-                                FailedOperationTransformationConfig.REJECTED_RESOURCE));
     }
 
 
