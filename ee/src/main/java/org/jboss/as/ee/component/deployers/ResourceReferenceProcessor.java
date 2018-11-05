@@ -84,6 +84,9 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
             return bindings;
         }
         for (ResourceEnvironmentReferenceMetaData resourceEnvRef : resourceEnvRefs) {
+            if(resourceEnvRef.isDependencyIgnored()) {
+                continue;
+            }
             final String name;
             if (resourceEnvRef.getName().startsWith("java:")) {
                 name = resourceEnvRef.getName();
@@ -139,6 +142,9 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
             return bindings;
         }
         for (final ResourceReferenceMetaData resourceRef : resourceRefs) {
+            if(resourceRef.isDependencyIgnored()) {
+                continue;
+            }
             final String name;
             if (resourceRef.getName().startsWith("java:")) {
                 name = resourceRef.getName();
@@ -225,6 +231,9 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
             return bindings;
         }
         for (final EnvironmentEntryMetaData envEntry : envEntries) {
+            if(envEntry.isDependencyIgnored()) {
+                continue;
+            }
             final String name;
             if (envEntry.getName().startsWith("java:")) {
                 name = envEntry.getName();
@@ -310,6 +319,9 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
             return bindings;
         }
         for (final MessageDestinationReferenceMetaData messageRef : messageDestinationReferences) {
+            if(messageRef.isDependencyIgnored()) {
+                continue;
+            }
             final String name;
             if (messageRef.getName().startsWith("java:")) {
                 name = messageRef.getName();

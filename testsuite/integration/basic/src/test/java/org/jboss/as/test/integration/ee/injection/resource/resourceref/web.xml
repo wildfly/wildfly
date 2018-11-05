@@ -13,4 +13,9 @@
         </injection-target>
     </resource-ref>
 
+    <resource-ref>
+        <res-ref-name>ds-ignored</res-ref-name>
+        <lookup-name>java:jboss/datasources/ExampleDS</lookup-name>
+    </resource-ref>
+
 </web-app>
