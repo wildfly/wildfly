@@ -35,10 +35,6 @@
         <module name="com.google.guava"/>
         <module name="javax.api"/>
         <module name="org.apache.commons.beanutils" />
-        <!-- the journal module depends on org.apache.activemq.artemis so that
-             Artemis's ClassLoadingUtil (from artemis-commons.jar) can load classes
-              from the org.apache.activemq.artemis module) -->
-        <module name="org.apache.activemq.artemis" />
         <module name="org.jboss.logging"/>
         <module name="io.netty"/>
         <!-- https://issues.jboss.org/browse/AS7-4936  this is to avoid an issue on IBM JDK -->
