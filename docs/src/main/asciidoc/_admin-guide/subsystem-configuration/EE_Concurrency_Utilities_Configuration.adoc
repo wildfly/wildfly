@@ -133,8 +133,9 @@ not specified then a Managed Thread Factory with default configuration
 will be created and used internally.
 
 The mandatory `core-threads` provides the number of threads to keep in
-the executor's pool, even if they are idle. A value of `0` means there
-is no limit.
+the executor's pool, even if they are idle. If this is not defined or
+is set to 0, the core pool size will be calculated based on the number
+of available processors.
 
 The optional `queue-length` indicates the number of tasks that can be
 stored in the input queue. The default value is `0`, which means the
