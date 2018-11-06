@@ -31,11 +31,7 @@ import io.undertow.util.AttachmentKey;
 
 import java.time.Duration;
 import java.util.Collections;
-import java.util.OptionalLong;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.StampedLock;
 import java.util.function.Consumer;
 
 import org.wildfly.clustering.ee.Batch;
@@ -51,7 +47,7 @@ import org.wildfly.clustering.web.undertow.logging.UndertowClusteringLogger;
  * Adapts a distributable {@link SessionManager} to an Undertow {@link io.undertow.server.session.SessionManager}.
  * @author Paul Ferraro
  */
-public class DistributableSessionManager implements UndertowSessionManager {
+public class DistributableSessionManager implements UndertowSessionManager, Consumer<HttpServerExchange> {
 
     private static final IdentifierSerializer IDENTIFIER_SERIALIZER = new UndertowIdentifierSerializerProvider().getSerializer();
 
@@ -60,10 +56,6 @@ public class DistributableSessionManager implements UndertowSessionManager {
     private final SessionListeners listeners;
     private final SessionManager<LocalSessionContext, Batch> manager;
     private final RecordableSessionManagerStatistics statistics;
-    private final StampedLock lifecycleLock = new StampedLock();
-
-    // Guarded by this
-    private OptionalLong lifecycleStamp = OptionalLong.empty();
 
     public DistributableSessionManager(String deploymentName, SessionManager<LocalSessionContext, Batch> manager, SessionListeners listeners, RecordableSessionManagerStatistics statistics) {
         this.deploymentName = deploymentName;
@@ -84,7 +76,6 @@ public class DistributableSessionManager implements UndertowSessionManager {
 
     @Override
     public synchronized void start() {
-        this.lifecycleStamp.ifPresent(stamp -> this.lifecycleLock.unlock(stamp));
         this.manager.start();
         if (this.statistics != null) {
             this.statistics.reset();
@@ -93,43 +84,14 @@ public class DistributableSessionManager implements UndertowSessionManager {
 
     @Override
     public synchronized void stop() {
-        if (!this.lifecycleStamp.isPresent()) {
-            try {
-                long stamp = this.lifecycleLock.tryWriteLock(this.manager.getDefaultMaxInactiveInterval().getSeconds(), TimeUnit.SECONDS);
-                if (stamp != 0) {
-                    this.lifecycleStamp = OptionalLong.of(stamp);
-                }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-            this.manager.stop();
-        }
+        this.manager.stop();
     }
 
-    private Consumer<HttpServerExchange> getSessionCloseTask() {
-        StampedLock lock = this.lifecycleLock;
-        long stamp = lock.tryReadLock();
-        if (stamp == 0L) {
-            throw UndertowClusteringLogger.ROOT_LOGGER.sessionManagerStopped();
+    @Override
+    public void accept(HttpServerExchange exchange) {
+        if (exchange != null) {
+            exchange.removeAttachment(this.key);
         }
-        AttachmentKey<io.undertow.server.session.Session> key = this.key;
-        AtomicLong stampRef = new AtomicLong(stamp);
-        return new Consumer<HttpServerExchange>() {
-            @Override
-            public void accept(HttpServerExchange exchange) {
-                try {
-                    // Ensure we only unlock once.
-                    long stamp = stampRef.getAndSet(0L);
-                    if (stamp != 0L) {
-                        lock.unlock(stamp);
-                    }
-                } finally {
-                    if (exchange != null) {
-                        exchange.removeAttachment(key);
-                    }
-                }
-            }
-        };
     }
 
     @Override
@@ -141,40 +103,33 @@ public class DistributableSessionManager implements UndertowSessionManager {
         String requestedId = config.findSessionId(exchange);
         String id = (requestedId == null) ? this.manager.createIdentifier() : requestedId;
 
-        Consumer<HttpServerExchange> closeTask = this.getSessionCloseTask();
         boolean close = true;
+        Batcher<Batch> batcher = this.manager.getBatcher();
+        // Batch will be closed by Session.close();
+        Batch batch = batcher.createBatch();
         try {
-            Batcher<Batch> batcher = this.manager.getBatcher();
-            // Batch will be closed by Session.close();
-            Batch batch = batcher.createBatch();
-            try {
-                Session<LocalSessionContext> session = this.manager.createSession(id);
-                if (session == null) {
-                    throw UndertowClusteringLogger.ROOT_LOGGER.sessionAlreadyExists(id);
-                }
-                if (requestedId == null) {
-                    config.setSessionId(exchange, id);
-                }
-
-                io.undertow.server.session.Session result = new DistributableSession(this, session, config, batcher.suspendBatch(), closeTask);
-                this.listeners.sessionCreated(result, exchange);
-                if (this.statistics != null) {
-                    this.statistics.record(result);
-                }
-                close = false;
-                exchange.putAttachment(this.key, result);
-                return result;
-            } catch (RuntimeException | Error e) {
-                batch.discard();
-                throw e;
-            } finally {
-                if (close) {
-                    batch.close();
-                }
+            Session<LocalSessionContext> session = this.manager.createSession(id);
+            if (session == null) {
+                throw UndertowClusteringLogger.ROOT_LOGGER.sessionAlreadyExists(id);
             }
+            if (requestedId == null) {
+                config.setSessionId(exchange, id);
+            }
+
+            io.undertow.server.session.Session result = new DistributableSession(this, session, config, batcher.suspendBatch(), this);
+            this.listeners.sessionCreated(result, exchange);
+            if (this.statistics != null) {
+                this.statistics.record(result);
+            }
+            close = false;
+            exchange.putAttachment(this.key, result);
+            return result;
+        } catch (RuntimeException | Error e) {
+            batch.discard();
+            throw e;
         } finally {
             if (close) {
-                closeTask.accept(exchange);
+                batch.close();
             }
         }
     }
@@ -202,34 +157,27 @@ public class DistributableSessionManager implements UndertowSessionManager {
             return null;
         }
 
-        Consumer<HttpServerExchange> closeTask = this.getSessionCloseTask();
         boolean close = true;
+        Batcher<Batch> batcher = this.manager.getBatcher();
+        Batch batch = batcher.createBatch();
         try {
-            Batcher<Batch> batcher = this.manager.getBatcher();
-            Batch batch = batcher.createBatch();
-            try {
-                Session<LocalSessionContext> session = this.manager.findSession(id);
-                if (session == null) {
-                    return null;
-                }
-
-                io.undertow.server.session.Session result = new DistributableSession(this, session, config, batcher.suspendBatch(), closeTask);
-                close = false;
-                if (exchange != null) {
-                    exchange.putAttachment(this.key, result);
-                }
-                return result;
-            } catch (RuntimeException | Error e) {
-                batch.discard();
-                throw e;
-            } finally {
-                if (close) {
-                    batch.close();
-                }
+            Session<LocalSessionContext> session = this.manager.findSession(id);
+            if (session == null) {
+                return null;
             }
+
+            io.undertow.server.session.Session result = new DistributableSession(this, session, config, batcher.suspendBatch(), this);
+            close = false;
+            if (exchange != null) {
+                exchange.putAttachment(this.key, result);
+            }
+            return result;
+        } catch (RuntimeException | Error e) {
+            batch.discard();
+            throw e;
         } finally {
             if (close) {
-                closeTask.accept(exchange);
+                batch.close();
             }
         }
     }
