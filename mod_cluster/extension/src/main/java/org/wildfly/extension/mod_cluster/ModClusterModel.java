@@ -36,7 +36,7 @@ public enum ModClusterModel implements Model {
     VERSION_3_0_0(3, 0, 0), // WildFly 9
     VERSION_4_0_0(4, 0, 0), // WildFly 10, EAP 7.0
     VERSION_5_0_0(5, 0, 0), // WildFly 11 & 12 & 13, EAP 7.1
-    VERSION_6_0_0(6, 0, 0), // WildFly 14
+    VERSION_6_0_0(6, 0, 0), // WildFly 14, EAP 7.2
     ;
     public static final ModClusterModel CURRENT = VERSION_6_0_0;
 
