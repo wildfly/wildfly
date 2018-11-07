@@ -25,6 +25,7 @@ package org.jboss.as.clustering.controller;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Supplier;
 
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -36,6 +37,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.service.Dependency;
 import org.wildfly.clustering.service.ServiceDependency;
+import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SupplierDependency;
 import org.wildfly.common.function.ExceptionSupplier;
 import org.wildfly.security.credential.source.CredentialSource;
@@ -94,6 +96,13 @@ public class CredentialSourceDependency implements SupplierDependency<Credential
         public ServiceBuilder<Object> addDependency(ServiceName serviceName) {
             this.dependencies.add(new ServiceDependency(serviceName));
             return this;
+        }
+
+        @Override
+        public <V> Supplier<V> requires(ServiceName name) {
+            SupplierDependency<V> dependency = new ServiceSupplierDependency<>(name);
+            this.dependencies.add(dependency);
+            return dependency;
         }
     }
 }
