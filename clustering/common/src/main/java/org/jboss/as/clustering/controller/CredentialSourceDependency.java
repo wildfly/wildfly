@@ -25,6 +25,7 @@ package org.jboss.as.clustering.controller;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Supplier;
 
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -89,11 +90,16 @@ public class CredentialSourceDependency implements SupplierDependency<Credential
             return this.dependencies.iterator();
         }
 
-        @Deprecated
         @Override
         public ServiceBuilder<Object> addDependency(ServiceName serviceName) {
             this.dependencies.add(new ServiceDependency(serviceName));
             return this;
+        }
+
+        @Override
+        public Supplier<Object> requires(ServiceName serviceName) {
+            this.dependencies.add(new ServiceDependency(serviceName));
+            return null;
         }
     }
 }
