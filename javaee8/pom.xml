@@ -52,7 +52,7 @@
         <version.org.jboss.spec.jboss.javaee8>1.0.1.Final</version.org.jboss.spec.jboss.javaee8>
 
         <!-- Version of server -->
-        <version.server>14.0.1.Final</version.server>
+        <version.server>15.0.0.Alpha1-SNAPSHOT</version.server>
 
         <!-- Versions on server's core -->
         <version.junit>4.12</version.junit>
@@ -107,7 +107,7 @@
             </dependency>
 
         <!-- Wildfly client dependency sets -->
-            <!-- The ejb and jms client BOMs should be used as a normal dependency with
+            <!-- The ejb, jaxws and jms client BOMs should be used as a normal dependency with
                  <type>pom</type>.  This adds a set of dependencies to the build.
                  This is in contrast to dependency management using the "import" 
                  scope which manages dependency versions, but does not add the 
@@ -115,6 +115,12 @@
             <dependency>
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-ejb-client-bom</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-jaxws-client-bom</artifactId>
                 <version>${project.version}</version>
                 <type>pom</type>
             </dependency>
