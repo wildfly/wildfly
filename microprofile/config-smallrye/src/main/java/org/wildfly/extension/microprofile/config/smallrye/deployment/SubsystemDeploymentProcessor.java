@@ -25,19 +25,16 @@ package org.wildfly.extension.microprofile.config.smallrye.deployment;
 import java.util.List;
 
 import io.smallrye.config.SmallRyeConfigBuilder;
-import io.smallrye.config.inject.ConfigExtension;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigBuilder;
 import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.eclipse.microprofile.config.spi.ConfigSourceProvider;
-import org.jboss.as.ee.weld.WeldDeploymentMarker;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.weld.deployment.WeldPortableExtensions;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -69,12 +66,6 @@ public class SubsystemDeploymentProcessor implements DeploymentUnitProcessor {
         deploymentUnit.putAttachment(CONFIG_PROVIDER_RESOLVER, configProviderResolver);
 
         configProviderResolver.registerConfig(config, module.getClassLoader());
-
-        if (WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
-            WeldPortableExtensions extensions = WeldPortableExtensions.getPortableExtensions(deploymentUnit);
-            extensions.registerExtensionInstance(new ConfigExtension(), deploymentUnit);
-        }
-
     }
 
     private void addConfigSourcesFromServices(ConfigBuilder builder, ServiceRegistry serviceRegistry, ClassLoader classloader) {
