@@ -114,9 +114,9 @@ management CLI.
 
 [source,ruby]
 ----
-/subsystem=elytron/filesystem-realm=exampleFsRealm/identity=user1:add()
-/subsystem=elytron/filesystem-realm=exampleFsRealm/identity=user1:set-password( clear={password="password123"})
-/subsystem=elytron/filesystem-realm=exampleFsRealm/identity=user1:add-attribute(name=Roles, value=["Admin","Guest"])
+/subsystem=elytron/filesystem-realm=exampleFsRealm:add-identity(identity=user1)
+/subsystem=elytron/filesystem-realm=exampleFsRealm:set-password(clear={password="password123"}, identity=user1)
+/subsystem=elytron/filesystem-realm=exampleFsRealm:add-identity-attribute(identity=user1, name=Roles, value=["Admin","Guest"])
 ----
 
 [[add-a-simple-role-decoder]]
