@@ -202,8 +202,8 @@ public class ConnectionDefinitionAdd extends AbstractAddStepHandler {
             ConnectionDefinitionStatisticsService connectionDefinitionStatisticsService = new ConnectionDefinitionStatisticsService(context.getResourceRegistrationForUpdate(), jndiName, poolName, statsEnabled);
 
             ServiceBuilder statsServiceBuilder = serviceTarget.addService(serviceName.append(ConnectorServices.STATISTICS_SUFFIX), connectionDefinitionStatisticsService);
-            statsServiceBuilder.addDependency(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append(bootStrapCtxName), connectionDefinitionStatisticsService.getBootstrapContextInjector())
-                    .addDependency(deploymentServiceName, connectionDefinitionStatisticsService.getResourceAdapterDeploymentInjector())
+            statsServiceBuilder.addDependency(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append(bootStrapCtxName), Object.class, connectionDefinitionStatisticsService.getBootstrapContextInjector())
+                    .addDependency(deploymentServiceName, Object.class, connectionDefinitionStatisticsService.getResourceAdapterDeploymentInjector())
                     .setInitialMode(ServiceController.Mode.PASSIVE)
                     .install();
 

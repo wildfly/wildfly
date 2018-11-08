@@ -92,7 +92,7 @@ public class DefaultConfigVisitor extends AbstractConfigVisitor {
 
     @Override
     public void addDependency(ServiceName name, Injector injector) {
-        builder.addDependency(name, injector);
+        builder.addDependency(name, Object.class, injector);
     }
 
     @Override
@@ -106,6 +106,6 @@ public class DefaultConfigVisitor extends AbstractConfigVisitor {
     public void addDependency(String bean, BeanState state, Injector injector) {
         if (state != BeanState.DESCRIBED)
             builder.requires(BeanMetaDataConfig.toBeanName(bean, BeanState.DESCRIBED));
-        builder.addDependency(BeanMetaDataConfig.toBeanName(bean, state), injector);
+        builder.addDependency(BeanMetaDataConfig.toBeanName(bean, state), Object.class, injector);
     }
 }

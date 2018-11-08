@@ -59,7 +59,7 @@ public class CdiBeanValidationFactoryProcessor implements DeploymentUnitProcesso
         final ServiceName serviceName = deploymentUnit.getServiceName().append(CdiValidatorFactoryService.SERVICE_NAME);
         final CdiValidatorFactoryService cdiValidatorFactoryService = new CdiValidatorFactoryService(deploymentUnit);
         final ServiceBuilder sb = serviceTarget.addService(serviceName, cdiValidatorFactoryService);
-        sb.addDependency(ServiceNames.beanManagerServiceName(deploymentUnit),
+        sb.addDependency(ServiceNames.beanManagerServiceName(deploymentUnit), Object.class,
                 new CastingInjector<BeanManager>(cdiValidatorFactoryService.getBeanManagerInjector(), BeanManager.class));
         sb.requires(weldStartService);
         sb.install();
