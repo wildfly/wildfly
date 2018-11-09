@@ -128,11 +128,11 @@ public class ExternalConnectionFactoryAdd extends AbstractAddStepHandler {
                 }
             }
             service = new ExternalConnectionFactoryService(transportConfigurations, socketBindings, outboundSocketBindings, jmsFactoryType, ha);
-            builder.setInstance(service);
         }
+        builder.setInstance(service);
         builder.install();
         for (String entry : Common.ENTRIES.unwrap(context, model)) {
-            MessagingLogger.ROOT_LOGGER.infof("Referencing %s with JNDI name %s", serviceName, entry);
+            MessagingLogger.ROOT_LOGGER.debugf("Referencing %s with JNDI name %s", serviceName, entry);
             BinderServiceUtil.installBinderService(context.getServiceTarget(), entry, service, serviceName);
         }
     }
