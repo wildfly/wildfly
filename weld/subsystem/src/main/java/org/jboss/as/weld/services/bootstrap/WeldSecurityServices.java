@@ -26,7 +26,7 @@ import java.security.Principal;
 import java.security.PrivilegedAction;
 import java.util.function.Consumer;
 
-import org.jboss.as.security.service.SimpleSecurityManager;
+import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.weld.ServiceNames;
 import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.msc.service.Service;
@@ -46,7 +46,10 @@ public class WeldSecurityServices implements Service<WeldSecurityServices>, Secu
 
     public static final ServiceName SERVICE_NAME = ServiceNames.WELD_SECURITY_SERVICES_SERVICE_NAME;
 
-    private final InjectedValue<SimpleSecurityManager> securityManagerValue = new InjectedValue<SimpleSecurityManager>();
+    // This is a InjectedValue<ServerSecurityManager>. I use ? even though with type erasure
+    // that doesn't matter, just to make it harder for someone to modify this class and
+    // accidentally introduce any unnecessary loading of ServerSecurityManager
+    private final InjectedValue<?> securityManagerValue = new InjectedValue<>();
 
     @Override
     public void start(StartContext context) throws StartException {
@@ -70,17 +73,19 @@ public class WeldSecurityServices implements Service<WeldSecurityServices>, Secu
             return elytronDomain.getCurrentSecurityIdentity().getPrincipal();
         }
 
-        final SimpleSecurityManager securityManager = securityManagerValue.getOptionalValue();
+        // Use 'Object' initially to avoid loading ServerSecurityManager (which may not be present)
+        // until we know for sure we need it.
+        final Object securityManager = securityManagerValue.getOptionalValue();
         if (securityManager == null)
             throw WeldLogger.ROOT_LOGGER.securityNotEnabled();
-        return securityManager.getCallerPrincipal();
+        return ((ServerSecurityManager) securityManager).getCallerPrincipal();
     }
 
     @Override
     public void cleanup() {
     }
 
-    public InjectedValue<SimpleSecurityManager> getSecurityManagerValue() {
+    public InjectedValue<?> getSecurityManagerValue() {
         return securityManagerValue;
     }
 
