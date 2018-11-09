@@ -1999,6 +1999,45 @@ use custom implementations of the following components:
 When creating custom implementations of Elytron components, they must
 present the appropriate capabilities and requirements.
 
+=== Default SSLContext
+
+Many libraries that can be used within deployments may require SSL configuration for any connections they establish, these libraries tend to be configurable by the caller or if no configuration is provided fall back to using the default `SSLContext` for the process available from: -
+
+[source, java]
+----
+javax.net.ssl.SSLContext.getDefault();
+----
+
+By default this `SSLContext` is configured using system properties, however within the WildFly Elytron subsystem it is possible to specify that one of the configured contexts should be associated and used as the default.
+
+To make use of this feature configure your `SSLContext` as normal, the following command can then be used to specify which `SSLContext` should be used as the default.
+
+[source, ruby]
+----
+/subsystem=elytron:write-attribute(name=default-ssl-context, value=client-context)
+----
+
+As existing services and deployments could have cached the default `SSLContext` prior to this being set a reload is required to ensure the default gets set before the deployments are activated.
+
+[source, ruby]
+----
+:reload
+----
+
+*Note:* If the `default-ssl-context` attribute is subsequently 'undefined' the standard APIs do not provide us with a mechanism to revert the default so in this situation the Java process would need be restarted.
+
+[source, ruby]
+----
+/subsystem=elytron:undefine-attribute(name=default-ssl-context)
+{
+    "outcome" => "success",
+    "response-headers" => {
+        "operation-requires-restart" => true,
+        "process-state" => "restart-required"
+    }
+}
+----
+
 [[configuring-the-elytron-and-security-subsystems]]
 == Configuring the Elytron and Security Subsystems
 
