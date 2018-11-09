@@ -87,7 +87,8 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
         return AdditionalInitialization.withCapabilities(
                 ClusteringDefaultRequirement.COMMAND_DISPATCHER_FACTORY.getName(),
                 ConnectorServices.LOCAL_TRANSACTION_PROVIDER_CAPABILITY,
-                ConnectorServices.TRANSACTION_XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY);
+                ConnectorServices.TRANSACTION_XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY,
+                "org.wildfly.threads.thread-factory.string");
     }
 
     @Test
