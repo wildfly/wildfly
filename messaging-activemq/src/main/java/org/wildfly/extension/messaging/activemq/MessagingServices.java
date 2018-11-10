@@ -25,6 +25,7 @@ package org.wildfly.extension.messaging.activemq;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JMS_BRIDGE;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.SUBSYSTEM;
 
+import java.util.function.Function;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -129,5 +130,28 @@ public class MessagingServices {
 
     public static boolean isSubsystemResource(final OperationContext context) {
         return context.getCurrentAddress().size() > 0 && SUBSYSTEM.equals(context.getCurrentAddress().getParent().getLastElement().getKey());
+    }
+
+    public static class ServerNameMapper implements Function<PathAddress, String[]> {
+        private final String name;
+        public ServerNameMapper(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public String[] apply(PathAddress pathAddress) {
+            PathAddress serverAddress = getActiveMQServerPathAddress(pathAddress);
+            if (serverAddress.size() > 0) {
+                String servername = getActiveMQServerPathAddress(pathAddress).getLastElement().getValue();
+                return new String[]{
+                    servername,
+                    name,
+                    pathAddress.getLastElement().getValue()
+                };
+            }
+            return new String[]{name,
+                pathAddress.getLastElement().getValue()
+            };
+        }
     }
 }

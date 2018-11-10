@@ -92,7 +92,8 @@ public class HTTPUpgradeService implements Service<HTTPUpgradeService> {
 
         final HTTPUpgradeService service = new HTTPUpgradeService(activeMQServerName, acceptorName, httpListenerName);
 
-        serviceTarget.addService(MessagingServices.getHttpUpgradeServiceName(activeMQServerName, acceptorName), service)
+        serviceTarget.addService(HTTPAcceptorDefinition.CAPABILITY.getCapabilityServiceName(activeMQServerName,"http-upgrade-service", acceptorName), service)
+                .addAliases(MessagingServices.getHttpUpgradeServiceName(activeMQServerName, acceptorName))
                 .addDependency(MessagingServices.HTTP_UPGRADE_REGISTRY.append(httpListenerName), ChannelUpgradeHandler.class, service.injectedRegistry)
                 .addDependency(HttpListenerRegistryService.SERVICE_NAME, ListenerRegistry.class, service.listenerRegistry)
                 .addDependency(ActiveMQActivationService.getServiceName(MessagingServices.getActiveMQServiceName(activeMQServerName)))

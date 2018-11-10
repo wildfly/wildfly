@@ -222,7 +222,7 @@ public class MigrateTestCase extends AbstractSubsystemTest {
                             rootRegistration, ExtensionRegistryType.SERVER));
                 }
             }, null));
-            registerCapabilities(capabilityRegistry, JGroupsDefaultRequirement.CHANNEL_FACTORY.getName());
+            registerCapabilities(capabilityRegistry, JGroupsDefaultRequirement.CHANNEL_FACTORY.getName(), "org.wildfly.remoting.http-listener-registry");
         }
 
         @Override

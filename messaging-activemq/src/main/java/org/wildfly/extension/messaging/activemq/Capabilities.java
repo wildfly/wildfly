@@ -65,4 +65,11 @@ public class Capabilities {
      * @see <a href="https://github.com/wildfly/wildfly-capabilities/blob/master/org/wildfly/management/path-manager/capability.adoc">documentation</a>
      */
     static final String PATH_MANAGER_CAPABILITY = "org.wildfly.management.path-manager";
+
+    /**
+     * The capability for the Http Listener Registry
+     *
+     * @see <a href="https://github.com/wildfly/wildfly-capabilities/blob/master/org/wildfly/remoting/http-listener-registry/capability.adoc">documentation</a>
+     */
+    static final String HTTP_LISTENER_REGISTRY_CAPABILITY_NAME = "org.wildfly.remoting.http-listener-registry";
 }
