@@ -29,7 +29,6 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 import org.picketlink.idm.jpa.internal.JPAIdentityStore;
 import org.picketlink.idm.spi.ContextInitializer;
 import org.picketlink.idm.spi.IdentityContext;
@@ -37,6 +36,8 @@ import org.picketlink.idm.spi.IdentityStore;
 import org.wildfly.extension.picketlink.idm.config.JPAStoreSubsystemConfiguration;
 import org.wildfly.extension.picketlink.idm.config.JPAStoreSubsystemConfigurationBuilder;
 import org.wildfly.extension.picketlink.idm.jpa.transaction.TransactionalEntityManagerHelper;
+import org.wildfly.transaction.client.ContextTransactionManager;
+import org.wildfly.transaction.client.ContextTransactionSynchronizationRegistry;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -46,7 +47,6 @@ import javax.persistence.Persistence;
 import javax.persistence.metamodel.EntityType;
 import javax.transaction.Status;
 import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
@@ -71,8 +71,6 @@ public class JPAIdentityStoreService implements Service<JPAIdentityStoreService>
     private final JPAStoreSubsystemConfigurationBuilder configurationBuilder;
     private JPAStoreSubsystemConfiguration storeConfig;
     private EntityManagerFactory emf;
-    private final InjectedValue<TransactionManager> transactionManager = new InjectedValue<TransactionManager>();
-    private InjectedValue<TransactionSynchronizationRegistry> transactionSynchronizationRegistry = new InjectedValue<TransactionSynchronizationRegistry>();
     private TransactionalEntityManagerHelper transactionalEntityManagerHelper;
 
     public JPAIdentityStoreService(JPAStoreSubsystemConfigurationBuilder configurationBuilder) {
@@ -83,8 +81,8 @@ public class JPAIdentityStoreService implements Service<JPAIdentityStoreService>
     public void start(StartContext startContext) throws StartException {
         this.storeConfig = this.configurationBuilder.create();
         this.transactionalEntityManagerHelper = new TransactionalEntityManagerHelper(
-            this.transactionSynchronizationRegistry.getValue(),
-            this.transactionManager.getValue());
+            ContextTransactionSynchronizationRegistry.getInstance(),
+            ContextTransactionManager.getInstance());
 
         try {
             configureEntityManagerFactory();
@@ -100,7 +98,7 @@ public class JPAIdentityStoreService implements Service<JPAIdentityStoreService>
                     EntityManager entityManager = context.getParameter(JPAIdentityStore.INVOCATION_CTX_ENTITY_MANAGER);
 
                     if (entityManager == null || !entityManager.isOpen()) {
-                        context.setParameter(JPAIdentityStore.INVOCATION_CTX_ENTITY_MANAGER, getEntityManager(getTransactionManager().getValue()));
+                        context.setParameter(JPAIdentityStore.INVOCATION_CTX_ENTITY_MANAGER, getEntityManager(ContextTransactionManager.getInstance()));
                     }
                 }
             }
@@ -117,14 +115,6 @@ public class JPAIdentityStoreService implements Service<JPAIdentityStoreService>
     @Override
     public JPAIdentityStoreService getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
-    }
-
-    public InjectedValue<TransactionManager> getTransactionManager() {
-        return this.transactionManager;
-    }
-
-    public InjectedValue<TransactionSynchronizationRegistry> getTransactionSynchronizationRegistry() {
-        return this.transactionSynchronizationRegistry;
     }
 
     private void configureEntityManagerFactory() {

@@ -41,10 +41,10 @@ import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
 import org.jboss.as.jpa.transaction.TransactionUtil;
 import org.jboss.as.jpa.util.JPAServiceNames;
 import org.jboss.as.server.CurrentServiceContainer;
-import org.jboss.as.txn.service.TransactionManagerService;
-import org.jboss.as.txn.service.TransactionSynchronizationRegistryService;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
+import org.wildfly.transaction.client.ContextTransactionManager;
+import org.wildfly.transaction.client.ContextTransactionSynchronizationRegistry;
 
 /**
  * Transaction scoped entity manager will be injected into SLSB or SFSB beans.  At bean invocation time, they
@@ -119,8 +119,8 @@ public class TransactionScopedEntityManager extends AbstractEntityManager implem
         in.defaultReadObject();
         final ServiceController<?> controller = currentServiceContainer().getService(JPAServiceNames.getPUServiceName(puScopedName));
         final PersistenceUnitServiceImpl persistenceUnitService = (PersistenceUnitServiceImpl) controller.getService();
-        transactionManager = (TransactionManager) currentServiceContainer().getService(TransactionManagerService.SERVICE_NAME).getValue();
-        transactionSynchronizationRegistry = (TransactionSynchronizationRegistry) currentServiceContainer().getService(TransactionSynchronizationRegistryService.SERVICE_NAME).getValue();
+        transactionManager = ContextTransactionManager.getInstance();
+        transactionSynchronizationRegistry = ContextTransactionSynchronizationRegistry.getInstance();
 
         emf = persistenceUnitService.getEntityManagerFactory();
     }

@@ -36,7 +36,13 @@ import org.jboss.msc.value.InjectedValue;
  * @author Stuart Douglas
  */
 public class TransactionSynchronizationRegistryService extends AbstractService<TransactionSynchronizationRegistry> {
+    /** @deprecated Use the "org.wildfly.transactions.global-default-local-provider" capability to confirm existence of a local provider
+     *              and org.wildfly.transaction.client.ContextTransactionSynchronizationRegistry to obtain a TransactionSynchronizationRegistry reference. */
+    @Deprecated
     public static final ServiceName SERVICE_NAME = TxnServices.JBOSS_TXN_SYNCHRONIZATION_REGISTRY;
+    /** Non-deprecated service name only for use within the subsystem */
+    @SuppressWarnings("deprecation")
+    public static final ServiceName INTERNAL_SERVICE_NAME = TxnServices.JBOSS_TXN_SYNCHRONIZATION_REGISTRY;
 
     private final InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService> injectedArjunaTM = new InjectedValue<com.arjuna.ats.jbossatx.jta.TransactionManagerService>();
 
@@ -46,7 +52,7 @@ public class TransactionSynchronizationRegistryService extends AbstractService<T
 
     public static ServiceController<TransactionSynchronizationRegistry> addService(final ServiceTarget target) {
         TransactionSynchronizationRegistryService service = new TransactionSynchronizationRegistryService();
-        ServiceBuilder<TransactionSynchronizationRegistry> serviceBuilder = target.addService(SERVICE_NAME, service);
+        ServiceBuilder<TransactionSynchronizationRegistry> serviceBuilder = target.addService(INTERNAL_SERVICE_NAME, service);
         serviceBuilder.addDependency(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT);
         serviceBuilder.addDependency(ArjunaTransactionManagerService.SERVICE_NAME, com.arjuna.ats.jbossatx.jta.TransactionManagerService.class, service.injectedArjunaTM);
         return serviceBuilder.install();

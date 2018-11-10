@@ -179,8 +179,12 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
     public static final RuntimeCapability<Void> CLUSTERED_SINGLETON_CAPABILITY =  RuntimeCapability.Builder.of(
             "org.wildfly.ejb3.clustered.singleton", Void.class).build();
 
-    public static final RuntimeCapability<Void> EJB_CAPABILITY =  RuntimeCapability.Builder.of(
-            "org.wildfly.ejb3", Void.class).build();
+    public static final RuntimeCapability<Void> EJB_CAPABILITY =  RuntimeCapability.Builder.of("org.wildfly.ejb3", Void.class)
+            // EJBComponentDescription adds a create dependency on the local tx provider to all components,
+            // so in the absence of relevant finer grained EJB capabilities, we'll say that EJB overall
+            // requires the local provider
+            .addRequirements("org.wildfly.transactions.global-default-local-provider")
+            .build();
 
     //We don't want to actually expose the service, we just want to use optional deps
     public static final RuntimeCapability<Void>  EJB_CLIENT_CONFIGURATOR = RuntimeCapability.Builder.of("org.wildfly.ejb3.remote.client-configurator", Void.class)

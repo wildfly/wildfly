@@ -47,7 +47,7 @@ public class TransactionLeakRollbackProcessor implements DeploymentUnitProcessor
         final ServiceName serviceName = deploymentUnit.getServiceName().append(SERVICE_NAME);
         final TransactionRollbackSetupAction service = new TransactionRollbackSetupAction(serviceName);
         phaseContext.getServiceTarget().addService(serviceName, service)
-                .addDependency(TransactionManagerService.SERVICE_NAME, TransactionManager.class, service.getTransactionManager())
+                .addDependency(TransactionManagerService.INTERNAL_SERVICE_NAME, TransactionManager.class, service.getTransactionManager())
                 .install();
 
         deploymentUnit.addToAttachmentList(Attachments.WEB_SETUP_ACTIONS, service);

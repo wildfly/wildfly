@@ -25,6 +25,7 @@ import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelType;
@@ -36,6 +37,13 @@ import org.wildfly.extension.rts.configuration.Attribute;
  *
  */
 public final class RTSSubsystemDefinition extends SimpleResourceDefinition {
+
+    static final String XA_RESOURCE_RECOVERY_CAPABILITY = "org.wildfly.transactions.xa-resource-recovery-registry";
+    /** Private capability that currently just represents the existence of the subsystem */
+    private static final RuntimeCapability<Void> RTS_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.extension.rts")
+            .addRequirements(XA_RESOURCE_RECOVERY_CAPABILITY)
+            .build();
+
     public static final RTSSubsystemDefinition INSTANCE = new RTSSubsystemDefinition();
 
     protected static final SimpleAttributeDefinition SERVER =
@@ -60,10 +68,11 @@ public final class RTSSubsystemDefinition extends SimpleResourceDefinition {
                     .build();
 
     private RTSSubsystemDefinition() {
-        super(RTSSubsystemExtension.SUBSYSTEM_PATH,
-                RTSSubsystemExtension.getResourceDescriptionResolver(null),
-                RTSSubsystemAdd.INSTANCE,
-                RTSSubsystemRemove.INSTANCE);
+        super(new Parameters(RTSSubsystemExtension.SUBSYSTEM_PATH, RTSSubsystemExtension.getResourceDescriptionResolver(null))
+                .setAddHandler(RTSSubsystemAdd.INSTANCE)
+                .setRemoveHandler(RTSSubsystemRemove.INSTANCE)
+                .setCapabilities(RTS_CAPABILITY)
+        );
     }
 
     @Override

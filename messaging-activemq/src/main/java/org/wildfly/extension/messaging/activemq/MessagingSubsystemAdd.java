@@ -68,6 +68,10 @@ class MessagingSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     @Override
     protected void performBoottime(final OperationContext context, ModelNode operation, final ModelNode model) throws OperationFailedException {
+
+        // Cache support for capability service name lookups by our services
+        MessagingServices.capabilityServiceSupport = context.getCapabilityServiceSupport();
+
         context.addStep(new AbstractDeploymentChainStep() {
             @Override
             protected void execute(DeploymentProcessorTarget processorTarget) {

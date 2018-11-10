@@ -35,7 +35,6 @@ import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.security.service.SimpleSecurityManagerService;
 import org.jboss.as.security.service.SubjectFactoryService;
-import org.jboss.as.txn.service.TxnServices;
 import org.jboss.jca.common.api.metadata.Defaults;
 import org.jboss.jca.common.api.metadata.common.Pool;
 import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
@@ -248,7 +247,7 @@ public class DirectConnectionFactoryActivatorService implements org.jboss.msc.se
                     .addDependency(NamingService.SERVICE_NAME)
                     .addDependency(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE, TransactionIntegration.class,
                             activator.getTxIntegrationInjector())
-                    .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER)
+                    .addDependency(ConnectorServices.getLocalTransactionProviderServiceName())
                     .addDependency(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append("default"));
 
             if (ActivationSecurityUtil.isLegacySecurityRequired(security)) {

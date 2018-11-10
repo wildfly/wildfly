@@ -32,7 +32,6 @@ import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
-import org.jboss.as.txn.service.TxnServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.modules.Module;
@@ -61,8 +60,6 @@ import org.wildfly.extension.picketlink.idm.service.FileIdentityStoreService;
 import org.wildfly.extension.picketlink.idm.service.JPAIdentityStoreService;
 import org.wildfly.extension.picketlink.idm.service.PartitionManagerService;
 
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
 import java.util.List;
 
 import static org.jboss.as.controller.PathAddress.EMPTY_ADDRESS;
@@ -339,12 +336,11 @@ public class PartitionManagerAddHandler extends AbstractAddStepHandler {
             ServiceBuilder<JPAIdentityStoreService> storeServiceBuilder = context.getServiceTarget()
                 .addService(storeServiceName, storeService);
 
-            storeServiceBuilder.addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, TransactionManager.class, storeService
-                .getTransactionManager());
-
-            storeServiceBuilder
-                .addDependency(TxnServices.JBOSS_TXN_SYNCHRONIZATION_REGISTRY, TransactionSynchronizationRegistry.class, storeService
-                    .getTransactionSynchronizationRegistry());
+            /* org.wildfly.transactions.global-default-local-provider capability ensures a local provider of
+               transactions is present. Once its service is started, calls to the getInstance() methods of
+               ContextTransactionManager, ContextTransactionSynchronizationRegistry and LocalUserTransaction
+               can be made knowing that the global default TM, TSR and UT will be from that provider. */
+            storeServiceBuilder.addDependency(context.getCapabilityServiceName("org.wildfly.transactions.global-default-local-provider", null));
 
             if (jpaDataSourceNode.isDefined()) {
                 storeConfig.dataSourceJndiUrl(toJndiName(jpaDataSourceNode.asString()));

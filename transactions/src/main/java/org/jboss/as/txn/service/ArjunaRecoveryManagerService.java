@@ -65,6 +65,9 @@ import com.arjuna.orbportability.internal.utils.PostInitLoader;
  */
 public class ArjunaRecoveryManagerService implements Service<RecoveryManagerService> {
 
+    /** @deprecated Use the "org.wildfly.transactions.xa-resource-recovery-registry" capability */
+    @Deprecated
+    @SuppressWarnings("deprecation")
     public static final ServiceName SERVICE_NAME = TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER;
 
     private final InjectedValue<ORB> orbInjector = new InjectedValue<ORB>();

@@ -52,6 +52,11 @@ public class SubsystemTransformerTestCase extends AbstractBatchTestCase {
         return readResource("/security-domain-subsystem.xml");
     }
 
+    @Override
+    protected AdditionalInitialization createAdditionalInitialization() {
+        return AdditionalInitialization.withCapabilities("org.wildfly.transactions.global-default-local-provider");
+    }
+
     @Test
     public void testTransformersEAP700() throws Exception {
         final KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
@@ -63,7 +68,8 @@ public class SubsystemTransformerTestCase extends AbstractBatchTestCase {
         // Add legacy subsystems
         builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, legacyVersion)
                 .addMavenResourceURL(controllerVersion.getMavenGroupId() + ":wildfly-batch-jberet:" + controllerVersion.getMavenGavVersion())
-                .addMavenResourceURL(controllerVersion.getCoreMavenGroupId() + ":wildfly-threads:" + controllerVersion.getCoreVersion());
+                .addMavenResourceURL(controllerVersion.getCoreMavenGroupId() + ":wildfly-threads:" + controllerVersion.getCoreVersion())
+                .configureReverseControllerCheck(createAdditionalInitialization(), null);
         final KernelServices mainServices = builder.build();
         assertTrue(mainServices.isSuccessfulBoot());
         final KernelServices legacyServices = mainServices.getLegacyServices(legacyVersion);
@@ -76,7 +82,7 @@ public class SubsystemTransformerTestCase extends AbstractBatchTestCase {
     @Test
     public void testFailedTransformersEAP700() throws Exception {
 
-        final KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+        final KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
         final ModelVersion legacyVersion = ModelVersion.create(1, 1, 0);
 
         final ModelTestControllerVersion controllerVersion = ModelTestControllerVersion.EAP_7_0_0;

@@ -36,10 +36,9 @@ import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.jpa.messages.JpaLogger;
 import org.jboss.as.jpa.transaction.TransactionUtil;
-import org.jboss.as.server.CurrentServiceContainer;
-import org.jboss.as.txn.service.TransactionManagerService;
-import org.jboss.as.txn.service.TransactionSynchronizationRegistryService;
 import org.wildfly.security.manager.WildFlySecurityManager;
+import org.wildfly.transaction.client.ContextTransactionManager;
+import org.wildfly.transaction.client.ContextTransactionSynchronizationRegistry;
 
 /**
  * Represents the Extended persistence context injected into a stateful bean.  At bean invocation time,
@@ -276,14 +275,14 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
             AccessController.doPrivileged(new PrivilegedAction<Object>() {
                 @Override
                 public Object run() {
-                    transactionManager = (TransactionManager) CurrentServiceContainer.getServiceContainer().getService(TransactionManagerService.SERVICE_NAME).getValue();
-                    transactionSynchronizationRegistry = (TransactionSynchronizationRegistry) CurrentServiceContainer.getServiceContainer().getService(TransactionSynchronizationRegistryService.SERVICE_NAME).getValue();
+                    transactionManager = ContextTransactionManager.getInstance();
+                    transactionSynchronizationRegistry = ContextTransactionSynchronizationRegistry.getInstance();
                     return null;
                 }
             });
         } else {
-            transactionManager = (TransactionManager) CurrentServiceContainer.getServiceContainer().getService(TransactionManagerService.SERVICE_NAME).getValue();
-            transactionSynchronizationRegistry = (TransactionSynchronizationRegistry) CurrentServiceContainer.getServiceContainer().getService(TransactionSynchronizationRegistryService.SERVICE_NAME).getValue();
+            transactionManager = ContextTransactionManager.getInstance();
+            transactionSynchronizationRegistry = ContextTransactionSynchronizationRegistry.getInstance();
         }
     }
 }

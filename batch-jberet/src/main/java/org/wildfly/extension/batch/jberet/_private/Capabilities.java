@@ -40,9 +40,19 @@ public class Capabilities {
     public static final String DATA_SOURCE_CAPABILITY = "org.wildfly.data-source";
 
     /**
+     * Name of the capability that ensures a local provider of transactions is present.
+     * Once its service is started, calls to the getInstance() methods of ContextTransactionManager,
+     * ContextTransactionSynchronizationRegistry and LocalUserTransaction can be made knowing
+     * that the global default TM, TSR and UT will be from that provider.
+     */
+    public static final String LOCAL_TRANSACTION_PROVIDER_CAPABILITY = "org.wildfly.transactions.global-default-local-provider";
+
+    /**
      * A capability for the current batch configuration.
      */
     public static final RuntimeCapability<Void> BATCH_CONFIGURATION_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.batch.configuration", false, BatchConfiguration.class)
+            // BatchConfiguration itself doesn't require a TM, but any effective use of it does (BatchEnvironment)
+            .addRequirements(LOCAL_TRANSACTION_PROVIDER_CAPABILITY)
             .build();
 
     /**

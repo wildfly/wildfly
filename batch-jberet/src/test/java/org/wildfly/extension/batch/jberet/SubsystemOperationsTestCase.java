@@ -61,7 +61,7 @@ public class SubsystemOperationsTestCase extends AbstractBatchTestCase {
             @Override
             protected void initializeExtraSubystemsAndModel(ExtensionRegistry extensionRegistry, Resource rootResource, ManagementResourceRegistration rootRegistration, RuntimeCapabilityRegistry capabilityRegistry) {
                 super.initializeExtraSubystemsAndModel(extensionRegistry, rootResource, rootRegistration, capabilityRegistry);
-                registerCapabilities(capabilityRegistry, "org.wildfly.batch.thread.pool.new-job-repo");
+                registerCapabilities(capabilityRegistry, "org.wildfly.batch.thread.pool.new-job-repo", "org.wildfly.transactions.global-default-local-provider");
             }
         };
     }

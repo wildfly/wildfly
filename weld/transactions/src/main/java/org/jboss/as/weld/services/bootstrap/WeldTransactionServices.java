@@ -25,7 +25,6 @@ import javax.transaction.RollbackException;
 import javax.transaction.Status;
 import javax.transaction.Synchronization;
 import javax.transaction.SystemException;
-import javax.transaction.TransactionManager;
 import javax.transaction.UserTransaction;
 
 import org.jboss.as.weld.ServiceNames;
@@ -34,8 +33,9 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 import org.jboss.weld.transaction.spi.TransactionServices;
+import org.wildfly.transaction.client.ContextTransactionManager;
+import org.wildfly.transaction.client.LocalUserTransaction;
 
 /**
  * Service that implements welds {@link TransactionServices}
@@ -50,10 +50,6 @@ public class WeldTransactionServices implements TransactionServices, Service<Wel
 
     public static final ServiceName SERVICE_NAME = ServiceNames.WELD_TRANSACTION_SERVICES_SERVICE_NAME;
 
-    private final InjectedValue<UserTransaction> injectedTransaction = new InjectedValue<UserTransaction>();
-
-    private final InjectedValue<TransactionManager> injectedTransactionManager = new InjectedValue<TransactionManager>();
-
     private final boolean jtsEnabled;
 
     public WeldTransactionServices(final boolean jtsEnabled) {
@@ -62,13 +58,13 @@ public class WeldTransactionServices implements TransactionServices, Service<Wel
 
     @Override
     public UserTransaction getUserTransaction() {
-        return injectedTransaction.getValue();
+        return LocalUserTransaction.getInstance();
     }
 
     @Override
     public boolean isTransactionActive() {
         try {
-            final int status = injectedTransactionManager.getValue().getStatus();
+            final int status = ContextTransactionManager.getInstance().getStatus();
             return status == Status.STATUS_ACTIVE ||
                     status == Status.STATUS_COMMITTING ||
                     status == Status.STATUS_MARKED_ROLLBACK ||
@@ -94,7 +90,7 @@ public class WeldTransactionServices implements TransactionServices, Service<Wel
             } else {
                 synchronization = new JTSSynchronizationWrapper(synchronizedObserver);
             }
-            injectedTransactionManager.getValue().getTransaction().registerSynchronization(synchronization);
+            ContextTransactionManager.getInstance().getTransaction().registerSynchronization(synchronization);
         } catch (IllegalStateException e) {
             throw new RuntimeException(e);
         } catch (RollbackException e) {
@@ -117,14 +113,6 @@ public class WeldTransactionServices implements TransactionServices, Service<Wel
     @Override
     public WeldTransactionServices getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
-    }
-
-    public InjectedValue<UserTransaction> getInjectedTransaction() {
-        return injectedTransaction;
-    }
-
-    public InjectedValue<TransactionManager> getInjectedTransactionManager() {
-        return injectedTransactionManager;
     }
 
 }

@@ -51,7 +51,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class TransactionManagerService extends AbstractService<TransactionManager> {
 
+    /** @deprecated Use the "org.wildfly.transactions.global-default-local-provider" capability to confirm existence of a local provider
+     *              and org.wildfly.transaction.client.ContextTransactionManager to obtain a TransactionManager reference. */
+    @Deprecated
     public static final ServiceName SERVICE_NAME = TxnServices.JBOSS_TXN_TRANSACTION_MANAGER;
+    /** Non-deprecated service name only for use within the subsystem */
+    @SuppressWarnings("deprecation")
+    public static final ServiceName INTERNAL_SERVICE_NAME = TxnServices.JBOSS_TXN_TRANSACTION_MANAGER;
 
     private InjectedValue<UserTransactionRegistry> registryInjector = new InjectedValue<>();
 
@@ -60,7 +66,7 @@ public class TransactionManagerService extends AbstractService<TransactionManage
 
     public static ServiceController<TransactionManager> addService(final ServiceTarget target) {
         final TransactionManagerService service = new TransactionManagerService();
-        ServiceBuilder<TransactionManager> serviceBuilder = target.addService(SERVICE_NAME, service);
+        ServiceBuilder<TransactionManager> serviceBuilder = target.addService(INTERNAL_SERVICE_NAME, service);
         // This is really a dependency on the global context.  TODO: Break this later; no service is needed for TM really
         serviceBuilder.addDependency(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT);
         serviceBuilder.addDependency(UserTransactionRegistryService.SERVICE_NAME, UserTransactionRegistry.class, service.registryInjector);

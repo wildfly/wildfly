@@ -39,6 +39,8 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import org.jboss.staxmapper.XMLMapper;
 import org.wildfly.security.manager.WildFlySecurityManager;
+import org.wildfly.transaction.client.ContextTransactionManager;
+import org.wildfly.transaction.client.ContextTransactionSynchronizationRegistry;
 
 import javax.transaction.Status;
 import javax.transaction.Synchronization;
@@ -86,8 +88,6 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
     private final boolean createIfNotExists;
     private MarshallerFactory factory;
     private MarshallingConfiguration configuration;
-    private final InjectedValue<TransactionManager> transactionManager = new InjectedValue<TransactionManager>();
-    private final InjectedValue<TransactionSynchronizationRegistry> transactionSynchronizationRegistry = new InjectedValue<TransactionSynchronizationRegistry>();
     private final InjectedValue<ModuleLoader> moduleLoader = new InjectedValue<ModuleLoader>();
     private final InjectedValue<PathManager> pathManager = new InjectedValue<PathManager>();
     private final String path;
@@ -202,7 +202,7 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
     private void persistTimer(final TimerImpl timer, boolean newTimer) {
         final Lock lock = getLock(timer.getTimedObjectId());
         try {
-            final int status = transactionManager.getValue().getStatus();
+            final int status = ContextTransactionManager.getInstance().getStatus();
             if (status == Status.STATUS_MARKED_ROLLBACK || status == Status.STATUS_ROLLEDBACK ||
                     status == Status.STATUS_ROLLING_BACK) {
                 //no need to persist anyway
@@ -227,13 +227,14 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
             } else {
 
                 final String key = timerTransactionKey(timer);
-                Object existing = transactionSynchronizationRegistry.getValue().getResource(key);
+                final TransactionSynchronizationRegistry tsr = ContextTransactionSynchronizationRegistry.getInstance();
+                Object existing = tsr.getResource(key);
                 //check is there is already a persist sync for this timer
                 if (existing == null) {
-                    transactionSynchronizationRegistry.getValue().registerInterposedSynchronization(new PersistTransactionSynchronization(lock, key, newTimer));
+                    tsr.registerInterposedSynchronization(new PersistTransactionSynchronization(lock, key, newTimer));
                 }
                 //update the most recent version of the timer to be persisted
-                transactionSynchronizationRegistry.getValue().putResource(key, timer);
+                tsr.putResource(key, timer);
             }
         } catch (SystemException e) {
             throw new RuntimeException(e);
@@ -299,13 +300,13 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
      */
     private TimerImpl mostRecentEntityVersion(final TimerImpl timerImpl) {
         try {
-            final int status = transactionManager.getValue().getStatus();
+            final int status = ContextTransactionManager.getInstance().getStatus();
             if (status == Status.STATUS_UNKNOWN ||
                     status == Status.STATUS_NO_TRANSACTION) {
                 return timerImpl;
             }
             final String key = timerTransactionKey(timerImpl);
-            TimerImpl existing = (TimerImpl) transactionSynchronizationRegistry.getValue().getResource(key);
+            TimerImpl existing = (TimerImpl) ContextTransactionSynchronizationRegistry.getInstance().getResource(key);
             return existing != null ? existing : timerImpl;
         } catch (SystemException e) {
             throw new RuntimeException(e);
@@ -444,7 +445,7 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
         @Override
         public void beforeCompletion() {
             //get the latest version of the entity
-            timer = (TimerImpl) transactionSynchronizationRegistry.getValue().getResource(transactionKey);
+            timer = (TimerImpl) ContextTransactionSynchronizationRegistry.getInstance().getResource(transactionKey);
             if (timer == null) {
                 return;
             }
@@ -509,14 +510,6 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public InjectedValue<TransactionManager> getTransactionManager() {
-        return transactionManager;
-    }
-
-    public InjectedValue<TransactionSynchronizationRegistry> getTransactionSynchronizationRegistry() {
-        return transactionSynchronizationRegistry;
     }
 
     public InjectedValue<ModuleLoader> getModuleLoader() {

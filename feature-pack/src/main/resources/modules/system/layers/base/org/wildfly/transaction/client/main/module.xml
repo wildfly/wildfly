@@ -37,9 +37,12 @@
         <module name="javax.transaction.api"/>
 
         <module name="org.jboss.ejb-client" services="import"/>
-        <module name="org.jboss.jboss-transaction-spi"/>
-        <module name="org.jboss.jts"/>
-        <module name="org.jboss.jts.integration"/>
+        <!-- Not needed if the transaction subsystem is not present to build a JBossLocalTransactionProvider -->
+        <module name="org.jboss.jboss-transaction-spi" optional="true"/>
+        <!-- Not needed if the transaction subsystem is not present to build a JBossLocalTransactionProvider -->
+        <module name="org.jboss.jts" optional="true"/>
+        <!-- Not needed if the transaction subsystem is not present to build a JBossLocalTransactionProvider -->
+        <module name="org.jboss.jts.integration" optional="true"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.remoting"/>
         <module name="org.jboss.xnio"/>

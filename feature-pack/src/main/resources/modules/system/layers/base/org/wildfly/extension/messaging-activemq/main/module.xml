@@ -45,7 +45,6 @@
         <module name="org.apache.activemq.artemis"/>
         <module name="org.apache.activemq.artemis.ra"/>
         <module name="org.jboss.common-beans"/>
-        <module name="org.jboss.as.transactions"/>
         <module name="org.jboss.staxmapper"/>
         <!-- required to provide high-level JMS CLI commands loaded by the extension -->
         <module name="org.jboss.as.cli" />
@@ -85,6 +84,7 @@
         <module name="org.wildfly.clustering.api"/>
         <module name="org.wildfly.clustering.service"/>
         <module name="org.wildfly.clustering.spi"/>
+        <module name="org.wildfly.transaction.client"/>
         <!-- Use the HornetQ client module to create the legacy connection factory and destination resources -->
         <module name="org.hornetq.client" />
     </dependencies>

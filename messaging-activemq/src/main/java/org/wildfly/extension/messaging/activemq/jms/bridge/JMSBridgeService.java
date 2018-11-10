@@ -26,8 +26,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.function.Consumer;
 
-import javax.transaction.TransactionManager;
-
 import org.apache.activemq.artemis.jms.bridge.JMSBridge;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
@@ -42,6 +40,7 @@ import org.wildfly.security.credential.PasswordCredential;
 import org.wildfly.security.credential.source.CredentialSource;
 import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.security.password.interfaces.ClearPassword;
+import org.wildfly.transaction.client.ContextTransactionManager;
 
 /**
  * Service responsible for JMS Bridges.
@@ -55,7 +54,6 @@ class JMSBridgeService implements Service<JMSBridge> {
     private final InjectedValue<ExecutorService> executorInjector = new InjectedValue<>();
     private final InjectedValue<ExceptionSupplier<CredentialSource, Exception>> sourceCredentialSourceSupplierInjector = new InjectedValue<>();
     private final InjectedValue<ExceptionSupplier<CredentialSource, Exception>> targetCredentialSourceSupplierInjector = new InjectedValue<>();
-    private final InjectedValue<TransactionManager> tmInjector = new InjectedValue<>();
 
     public JMSBridgeService(final String moduleName, final String bridgeName, final JMSBridge bridge) {
         if(bridge == null) {
@@ -72,7 +70,7 @@ class JMSBridgeService implements Service<JMSBridge> {
             @Override
             public void run() {
                 try {
-                    bridge.setTransactionManager(tmInjector.getValue());
+                    bridge.setTransactionManager(ContextTransactionManager.getInstance());
                     startBridge();
 
                     context.complete();
@@ -149,10 +147,6 @@ class JMSBridgeService implements Service<JMSBridge> {
 
     public InjectedValue<ExceptionSupplier<CredentialSource, Exception>> getTargetCredentialSourceSupplierInjector() {
         return targetCredentialSourceSupplierInjector;
-    }
-
-    InjectedValue<TransactionManager> getTransactionManagerInjector() {
-        return tmInjector;
     }
 
     private void setJMSBridgePasswordsFromCredentialSource() {

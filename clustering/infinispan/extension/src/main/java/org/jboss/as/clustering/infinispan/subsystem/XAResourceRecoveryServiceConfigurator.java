@@ -31,10 +31,10 @@ import java.util.function.Supplier;
 import org.infinispan.Cache;
 import org.jboss.as.clustering.infinispan.InfinispanXAResourceRecovery;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.txn.service.TxnServices;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.tm.XAResourceRecovery;
 import org.jboss.tm.XAResourceRecoveryRegistry;
@@ -48,14 +48,16 @@ import org.wildfly.clustering.service.SimpleServiceNameProvider;
  */
 public class XAResourceRecoveryServiceConfigurator extends SimpleServiceNameProvider implements ServiceConfigurator, Supplier<XAResourceRecovery>, Consumer<XAResourceRecovery> {
 
+    private final ServiceName recoveryServiceName;
     private volatile Supplier<Cache<?, ?>> cache;
     private volatile Supplier<XAResourceRecoveryRegistry> registry;
 
     /**
      * Constructs a new {@link XAResourceRecovery} builder.
      */
-    public XAResourceRecoveryServiceConfigurator(PathAddress cacheAddress) {
+    public XAResourceRecoveryServiceConfigurator(PathAddress cacheAddress, ServiceName recoveryServiceName) {
         super(CACHE.getServiceName(cacheAddress).append("recovery"));
+        this.recoveryServiceName = recoveryServiceName;
     }
 
     @Override
@@ -63,7 +65,13 @@ public class XAResourceRecoveryServiceConfigurator extends SimpleServiceNameProv
         Cache<?, ?> cache = this.cache.get();
         XAResourceRecovery recovery = new InfinispanXAResourceRecovery(cache);
         if (cache.getCacheConfiguration().transaction().recovery().enabled()) {
-            this.registry.get().addXAResourceRecovery(recovery);
+            if (registry != null) {
+                this.registry.get().addXAResourceRecovery(recovery);
+            } else {
+                // Shouldn't happen in a transactional cache since TransactionResourceDefinition
+                // will add a requirement on the capability that results in requiring the registry
+                throw new IllegalStateException();
+            }
         }
         return recovery;
     }
@@ -71,7 +79,13 @@ public class XAResourceRecoveryServiceConfigurator extends SimpleServiceNameProv
     @Override
     public void accept(XAResourceRecovery recovery) {
         if (this.cache.get().getCacheConfiguration().transaction().recovery().enabled()) {
-            this.registry.get().removeXAResourceRecovery(recovery);
+            if (registry != null) {
+                this.registry.get().removeXAResourceRecovery(recovery);
+            } else {
+                // Shouldn't happen in a transactional cache since TransactionResourceDefinition
+                // will add a requirement on the capability that results in requiring the registry
+                throw new IllegalStateException();
+            }
         }
     }
 
@@ -79,7 +93,7 @@ public class XAResourceRecoveryServiceConfigurator extends SimpleServiceNameProv
     public ServiceBuilder<?> build(ServiceTarget target) {
         ServiceBuilder<?> builder = target.addService(this.getServiceName());
         this.cache = builder.requires(this.getServiceName().getParent());
-        this.registry = builder.requires(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER);
+        this.registry = this.recoveryServiceName != null ? builder.requires(this.recoveryServiceName) : null;
         Consumer<XAResourceRecovery> recovery = builder.provides(this.getServiceName());
         Service service = new FunctionalService<>(recovery, Function.identity(), this, this);
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.PASSIVE);

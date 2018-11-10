@@ -43,6 +43,7 @@ import org.wildfly.extension.requestcontroller.RequestController;
 import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.auth.server.SecurityIdentity;
 import org.wildfly.security.manager.WildFlySecurityManager;
+import org.wildfly.transaction.client.ContextTransactionManager;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -53,7 +54,6 @@ public class BatchEnvironmentService implements Service<SecurityAwareBatchEnviro
 
     private final InjectedValue<WildFlyArtifactFactory> artifactFactoryInjector = new InjectedValue<>();
     private final InjectedValue<JobExecutor> jobExecutorInjector = new InjectedValue<>();
-    private final InjectedValue<TransactionManager> transactionManagerInjector = new InjectedValue<>();
     private final InjectedValue<RequestController> requestControllerInjector = new InjectedValue<>();
     private final InjectedValue<JobRepository> jobRepositoryInjector = new InjectedValue<>();
     private final InjectedValue<BatchConfiguration> batchConfigurationInjector = new InjectedValue<>();
@@ -86,7 +86,7 @@ public class BatchEnvironmentService implements Service<SecurityAwareBatchEnviro
         }
 
         this.batchEnvironment = new WildFlyBatchEnvironment(artifactFactoryInjector.getValue(),
-                jobExecutor, transactionManagerInjector.getValue(),
+                jobExecutor, ContextTransactionManager.getInstance(),
                 jobRepository, jobXmlResolver);
 
         final RequestController requestController = requestControllerInjector.getOptionalValue();
@@ -118,10 +118,6 @@ public class BatchEnvironmentService implements Service<SecurityAwareBatchEnviro
 
     public InjectedValue<JobExecutor> getJobExecutorInjector() {
         return jobExecutorInjector;
-    }
-
-    public InjectedValue<TransactionManager> getTransactionManagerInjector() {
-        return transactionManagerInjector;
     }
 
     public InjectedValue<RequestController> getRequestControllerInjector() {

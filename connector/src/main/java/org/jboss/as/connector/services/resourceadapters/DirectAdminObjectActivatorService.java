@@ -35,7 +35,6 @@ import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.NamingService;
-import org.jboss.as.txn.service.TxnServices;
 import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
 import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
 import org.jboss.jca.common.api.metadata.resourceadapter.ConnectionDefinition;
@@ -178,7 +177,7 @@ public class DirectAdminObjectActivatorService implements Service<ContextNames.B
                     */
                     .addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class,
                             activator.getCcmInjector()).addDependency(NamingService.SERVICE_NAME)
-                    .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER)
+                    .addDependency(ConnectorServices.getLocalTransactionProviderServiceName())
                     .addDependency(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append("default"));
 
 

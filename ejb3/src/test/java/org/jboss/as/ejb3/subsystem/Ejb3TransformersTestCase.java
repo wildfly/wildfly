@@ -177,9 +177,14 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
                 formatArtifact("org.jboss.as:jboss-as-threads:%s", controller), LEGACY_EJB_CLIENT_ARTIFACT);
     }
 
+    @Override
+    protected AdditionalInitialization createAdditionalInitialization() {
+        return AdditionalInitialization.withCapabilities("org.wildfly.transactions.global-default-local-provider", buildDynamicCapabilityName("org.wildfly.security.security-domain", "ApplicationDomain"));
+    }
+
     private void testRejections(ModelVersion model, ModelTestControllerVersion controller, String ... mavenResourceURLs) throws Exception {
         // create builder for current subsystem version
-        KernelServicesBuilder builder = createKernelServicesBuilder(this.createAdditionalInitialization().withCapabilities(buildDynamicCapabilityName("org.wildfly.security.security-domain", "ApplicationDomain")));
+        KernelServicesBuilder builder = createKernelServicesBuilder(this.createAdditionalInitialization());
 
         // initialize the legacy services and add required jars
         builder.createLegacyKernelServicesBuilder(null, controller, model)
