@@ -137,12 +137,12 @@ public class TransactionResourceDefinition extends ComponentResourceDefinition {
 
         @Override
         public String getName() {
-            return name;
+            return this.name;
         }
 
         @Override
         public Class<?> getType() {
-            return type;
+            return this.type;
         }
     }
 
@@ -300,21 +300,21 @@ public class TransactionResourceDefinition extends ComponentResourceDefinition {
 
         private final Set<TransactionMode> excludedModes;
 
-        private TransactionResourceCapabilityReference(Capability capability, Requirement requirement, Set<TransactionMode> excludedModes) {
+        TransactionResourceCapabilityReference(Capability capability, Requirement requirement, Set<TransactionMode> excludedModes) {
             super(capability, requirement);
             this.excludedModes = excludedModes;
         }
 
         @Override
         public void addCapabilityRequirements(OperationContext context, Resource resource, String attributeName, String... values) {
-            if (isTransactionalSupportRequired(context, resource, excludedModes)) {
+            if (isTransactionalSupportRequired(context, resource, this.excludedModes)) {
                 super.addCapabilityRequirements(context, resource, attributeName, values);
             }
         }
 
         @Override
         public void removeCapabilityRequirements(OperationContext context, Resource resource, String attributeName, String... values) {
-            if (isTransactionalSupportRequired(context, resource, excludedModes)) {
+            if (isTransactionalSupportRequired(context, resource, this.excludedModes)) {
                 super.removeCapabilityRequirements(context, resource, attributeName, values);
             }
         }
