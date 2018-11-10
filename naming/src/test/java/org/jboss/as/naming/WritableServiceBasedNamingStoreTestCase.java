@@ -253,7 +253,9 @@ public class WritableServiceBasedNamingStoreTestCase {
         WritableServiceBasedNamingStore.pushOwner(OWNER_FOO);
         try {
             permissions.add(new JndiPermission(store.getBaseName()+"/"+name,"bind,list,listBindings"));
-            store.bind(new CompositeName(name), value);
+            Name nameObj = new CompositeName(name);
+            store.bind(nameObj, value);
+            store.lookup(nameObj);
         } finally {
             WritableServiceBasedNamingStore.popOwner();
         }
