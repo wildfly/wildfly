@@ -47,6 +47,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -55,6 +56,7 @@ import org.junit.runner.RunWith;
  * @author Paul Ferraro
  */
 @RunWith(Arquillian.class)
+@Ignore("WFLY-11322")
 public class RemoteStatefulEJBConcurrentFailoverTestCase extends AbstractClusteringTestCase {
     private static final String MODULE_NAME = RemoteStatefulEJBConcurrentFailoverTestCase.class.getSimpleName();
 
