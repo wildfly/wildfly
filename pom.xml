@@ -2852,7 +2852,15 @@
                     </exclusion>
                     <exclusion>
                         <groupId>com.sun.xml.bind</groupId>
+                        <artifactId>jaxb-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.sun.xml.bind</groupId>
                         <artifactId>jaxb-impl</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.sun.xml.bind</groupId>
+                        <artifactId>jaxb-xjc</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>javax.xml.bind</groupId>
@@ -2960,6 +2968,10 @@
                     </exclusion>
                     <exclusion>
                         <groupId>com.sun.xml.bind</groupId>
+                        <artifactId>jaxb-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.sun.xml.bind</groupId>
                         <artifactId>jaxb-impl</artifactId>
                     </exclusion>
                     <exclusion>
@@ -3018,6 +3030,10 @@
                 <artifactId>cxf-tools-wsdlto-core</artifactId>
                 <version>${version.org.apache.cxf}</version>
                 <exclusions>
+                    <exclusion>
+                        <groupId>com.sun.xml.bind</groupId>
+                        <artifactId>jaxb-core</artifactId>
+                    </exclusion>
                     <exclusion>
                         <groupId>com.sun.xml.bind</groupId>
                         <artifactId>jaxb-impl</artifactId>
@@ -3094,6 +3110,10 @@
                 <artifactId>cxf-tools-wsdlto-databinding-jaxb</artifactId>
                 <version>${version.org.apache.cxf}</version>
                 <exclusions>
+                    <exclusion>
+                        <groupId>com.sun.xml.bind</groupId>
+                        <artifactId>jaxb-core</artifactId>
+                    </exclusion>
                     <exclusion>
                         <groupId>com.sun.xml.bind</groupId>
                         <artifactId>jaxb-impl</artifactId>
@@ -5749,6 +5769,11 @@
                     <exclusion>
                         <groupId>stax</groupId>
                         <artifactId>stax-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <!-- required yet banned, use org.jboss.slf4j:slf4j-jboss-logmanager -->
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-log4j12</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
