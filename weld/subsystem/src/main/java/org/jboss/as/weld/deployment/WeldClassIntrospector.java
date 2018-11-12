@@ -21,6 +21,7 @@ import org.jboss.as.weld.injection.InjectionTargets;
 import org.jboss.as.weld.services.BeanManagerService;
 import org.jboss.as.weld.util.Utils;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
@@ -43,10 +44,10 @@ public class WeldClassIntrospector implements EEClassIntrospector, Service<EECla
 
     public static void install(final DeploymentUnit deploymentUnit, final ServiceTarget serviceTarget) {
         final WeldClassIntrospector introspector = new WeldClassIntrospector();
-        serviceTarget.addService(serviceName(deploymentUnit), introspector)
-                .addDependency(BeanManagerService.serviceName(deploymentUnit), BeanManager.class, introspector.beanManager)
-                .addDependency(Utils.getRootDeploymentUnit(deploymentUnit).getServiceName().append(WeldStartService.SERVICE_NAME))
-                .install();
+        final ServiceBuilder sb = serviceTarget.addService(serviceName(deploymentUnit), introspector);
+        sb.addDependency(BeanManagerService.serviceName(deploymentUnit), BeanManager.class, introspector.beanManager);
+        sb.requires(Utils.getRootDeploymentUnit(deploymentUnit).getServiceName().append(WeldStartService.SERVICE_NAME));
+        sb.install();
     }
 
     public static ServiceName serviceName(DeploymentUnit deploymentUnit) {
