@@ -71,10 +71,10 @@ public class JMSService implements Service<JMSServerManager> {
 
     public static ServiceController<JMSServerManager> addService(final ServiceTarget target, ServiceName serverServiceName, boolean overrideInVMSecurity) {
         final JMSService service = new JMSService(serverServiceName, overrideInVMSecurity);
-        ServiceBuilder<JMSServerManager> builder = target.addService(JMSServices.getJmsManagerBaseServiceName(serverServiceName), service)
-                .addDependency(serverServiceName, ActiveMQServer.class, service.activeMQServer)
-                .addDependency(MessagingServices.ACTIVEMQ_CLIENT_THREAD_POOL)
-                .setInitialMode(Mode.ACTIVE);
+        ServiceBuilder<JMSServerManager> builder = target.addService(JMSServices.getJmsManagerBaseServiceName(serverServiceName), service);
+        builder.addDependency(serverServiceName, ActiveMQServer.class, service.activeMQServer);
+        builder.requires(MessagingServices.ACTIVEMQ_CLIENT_THREAD_POOL);
+        builder.setInitialMode(Mode.ACTIVE);
         addServerExecutorDependency(builder, service.serverExecutor);
         return builder.install();
     }
