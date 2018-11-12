@@ -81,24 +81,19 @@ public class CredentialSourceDependency implements SupplierDependency<Credential
             super(null);
         }
 
-        @Override
         protected ServiceBuilder<Object> getDelegate() {
             throw new UnsupportedOperationException();
         }
 
-        @Override
         public Iterator<Dependency> iterator() {
             return this.dependencies.iterator();
         }
 
-        @Deprecated
-        @Override
         public ServiceBuilder<Object> addDependency(ServiceName serviceName) {
             this.dependencies.add(new ServiceDependency(serviceName));
             return this;
         }
 
-        @Override
         public <V> Supplier<V> requires(ServiceName name) {
             SupplierDependency<V> dependency = new ServiceSupplierDependency<>(name);
             this.dependencies.add(dependency);
