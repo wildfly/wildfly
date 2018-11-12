@@ -93,10 +93,10 @@ public class AdministeredObjectDefinitionInjectionSource extends ResourceDefinit
         DirectAdminObjectActivatorService service = new DirectAdminObjectActivatorService(jndiName, className, resourceAdapter,
                 raId, properties, module, bindInfo);
         ServiceName serviceName = DirectAdminObjectActivatorService.SERVICE_NAME_BASE.append(jndiName);
-        phaseContext.getServiceTarget().addService(serviceName, service)
-                .addDependency(ConnectorServices.IRONJACAMAR_MDR, AS7MetadataRepository.class, service.getMdrInjector())
-                .addDependency(ConnectorServices.RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX.append(deployerServiceName))
-                .setInitialMode(ServiceController.Mode.ACTIVE).install();
+        final ServiceBuilder sb = phaseContext.getServiceTarget().addService(serviceName, service);
+        sb.addDependency(ConnectorServices.IRONJACAMAR_MDR, AS7MetadataRepository.class, service.getMdrInjector());
+        sb.requires(ConnectorServices.RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX.append(deployerServiceName));
+        sb.setInitialMode(ServiceController.Mode.ACTIVE).install();
 
         serviceBuilder.addDependency(AdminObjectReferenceFactoryService.SERVICE_NAME_BASE.append(bindInfo.getBinderServiceName()), ManagedReferenceFactory.class, injector);
         serviceBuilder.addListener(new LifecycleListener() {

@@ -87,6 +87,7 @@ import org.jboss.jca.deployers.common.DeployException;
 import org.jboss.logging.Logger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -166,11 +167,11 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
             DS_DEPLOYER_LOGGER.debugf("Adding datasource: %s", deploymentMD.getCfJndiNames()[0]);
             CommonDeploymentService cdService = new CommonDeploymentService(deploymentMD);
             final ServiceName cdServiceName = CommonDeploymentService.getServiceName(jndiName);
-            startContext.getChildTarget().addService(cdServiceName, cdService)
+            final ServiceBuilder cdServiceSB = startContext.getChildTarget().addService(cdServiceName, cdService);
                     // The dependency added must be the JNDI name which for subsystem resources is an alias. This service
                     // is also used in deployments where the capability service name is not registered for the service.
-                    .addDependency(getServiceName(jndiName))
-                    .setInitialMode(ServiceController.Mode.ACTIVE).install();
+            cdServiceSB.requires(getServiceName(jndiName));
+            cdServiceSB.setInitialMode(ServiceController.Mode.ACTIVE).install();
         } catch (Throwable t) {
             throw ConnectorLogger.ROOT_LOGGER.deploymentError(t, dsName);
         }

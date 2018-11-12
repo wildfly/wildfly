@@ -224,14 +224,15 @@ public class DataSourceDefinitionInjectionSource extends ResourceDefinitionInjec
                         dataSourceService.getExecutorServiceInjector())
                 .addDependency(ConnectorServices.IRONJACAMAR_MDR, MetadataRepository.class, dataSourceService.getMdrInjector())
                 .addDependency(ConnectorServices.RA_REPOSITORY_SERVICE, ResourceAdapterRepository.class, dataSourceService.getRaRepositoryInjector())
-                .addDependency(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append(DEFAULT_NAME))
                 .addDependency(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE, TransactionIntegration.class,
                         dataSourceService.getTransactionIntegrationInjector())
                 .addDependency(ConnectorServices.MANAGEMENT_REPOSITORY_SERVICE, ManagementRepository.class,
                         dataSourceService.getManagementRepositoryInjector())
                 .addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class, dataSourceService.getCcmInjector())
                 .addDependency(ConnectorServices.JDBC_DRIVER_REGISTRY_SERVICE, DriverRegistry.class,
-                        dataSourceService.getDriverRegistryInjector()).addDependency(NamingService.SERVICE_NAME);
+                        dataSourceService.getDriverRegistryInjector());
+        dataSourceServiceBuilder.requires(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append(DEFAULT_NAME));
+        dataSourceServiceBuilder.requires(NamingService.SERVICE_NAME);
 
         // We don't need to inject legacy security subsystem services. They are only used with a configured legacy
         // security domain, and the annotation does not support configuring that

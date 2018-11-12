@@ -43,6 +43,7 @@ import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
@@ -84,9 +85,9 @@ public class RaDeploymentActivator {
                 .install();
 
         ResourceAdapterDeploymentRegistryService registryService = new ResourceAdapterDeploymentRegistryService();
-        serviceTarget.addService(ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE, registryService)
-                .addDependency(ConnectorServices.IRONJACAMAR_MDR)
-                .install();
+        final ServiceBuilder sb = serviceTarget.addService(ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE, registryService);
+        sb.requires(ConnectorServices.IRONJACAMAR_MDR);
+        sb.install();
     }
 
 

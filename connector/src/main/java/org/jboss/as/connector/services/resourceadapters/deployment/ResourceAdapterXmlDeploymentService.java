@@ -52,6 +52,7 @@ import org.jboss.jca.deployers.common.DeployException;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -132,11 +133,11 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
             value = new ResourceAdapterDeployment(raxmlDeployment, raName, raServiceName);
             managementRepository.getValue().getConnectors().add(value.getDeployment().getConnector());
             registry.getValue().registerResourceAdapterDeployment(value);
-            context.getChildTarget()
+            final ServiceBuilder raServiceSB = context.getChildTarget()
                 .addService(raServiceName,
-                        new ResourceAdapterService(raServiceName, value.getDeployment().getResourceAdapter()))
-                .addDependency(deploymentServiceName)
-                .setInitialMode(ServiceController.Mode.ACTIVE).install();
+                        new ResourceAdapterService(raServiceName, value.getDeployment().getResourceAdapter()));
+            raServiceSB.requires(deploymentServiceName);
+            raServiceSB.setInitialMode(ServiceController.Mode.ACTIVE).install();
         } catch (Throwable t) {
             cleanupStartAsync(context, raName, deploymentServiceName, t);
         }
