@@ -1147,4 +1147,8 @@ public interface EeLogger extends BasicLogger {
     //        "Support for this setting will be removed once all EE 8 APIs are provided and certified.")
     //void notUsingEE8PreviewMode();
 
+    @LogMessage(level = WARN)
+    @Message(id = 120, value = "Aborting hung thread '%s' started by managed-scheduled-executor-service '%s'")
+    void abortingHungThread(String thread, String executorName);
+
 }

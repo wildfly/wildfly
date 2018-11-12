@@ -23,6 +23,7 @@
 package org.jboss.as.ee.concurrent.service;
 
 import org.glassfish.enterprise.concurrent.AbstractManagedExecutorService;
+import org.glassfish.enterprise.concurrent.AbstractManagedThread;
 import org.glassfish.enterprise.concurrent.ContextServiceImpl;
 import org.glassfish.enterprise.concurrent.ManagedScheduledExecutorServiceAdapter;
 import org.glassfish.enterprise.concurrent.ManagedThreadFactoryImpl;
@@ -36,6 +37,11 @@ import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.requestcontroller.ControlPoint;
 import org.wildfly.extension.requestcontroller.RequestController;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -49,8 +55,11 @@ public class ManagedScheduledExecutorServiceService extends EEConcurrentAbstract
 
     private volatile ManagedScheduledExecutorServiceImpl executorService;
 
+    private static HungTaskAborter hungTaskAborter;
+
     private final String name;
     private final InjectedValue<ManagedThreadFactoryImpl> managedThreadFactoryInjectedValue;
+    private final InjectedValue<ScheduledExecutorService> scheduledExecutorValue;
     private final long hungTaskThreshold;
     private final boolean longRunningTasks;
     private final int corePoolSize;
@@ -61,6 +70,7 @@ public class ManagedScheduledExecutorServiceService extends EEConcurrentAbstract
     private final AbstractManagedExecutorService.RejectPolicy rejectPolicy;
     private final InjectedValue<RequestController> requestController = new InjectedValue<>();
     private ControlPoint controlPoint;
+
 
     /**
      * @param name
@@ -78,6 +88,7 @@ public class ManagedScheduledExecutorServiceService extends EEConcurrentAbstract
         super(jndiName);
         this.name = name;
         this.managedThreadFactoryInjectedValue = new InjectedValue<>();
+        this.scheduledExecutorValue = new InjectedValue<>();
         this.hungTaskThreshold = hungTaskThreshold;
         this.longRunningTasks = longRunningTasks;
         this.corePoolSize = corePoolSize;
@@ -100,6 +111,24 @@ public class ManagedScheduledExecutorServiceService extends EEConcurrentAbstract
             controlPoint = requestController.getValue().getControlPoint(name, "managed-scheduled-executor-service");
         }
         executorService = new ManagedScheduledExecutorServiceImpl(name, managedThreadFactory, hungTaskThreshold, longRunningTasks, corePoolSize, keepAliveTime, keepAliveTimeUnit, threadLifeTime, contextService.getOptionalValue(), rejectPolicy, controlPoint);
+
+        //if it is necessary, start thread to abort hung threads
+        if(!longRunningTasks && hungTaskThreshold > 0) {
+            boolean start = false;
+
+            synchronized (ManagedScheduledExecutorServiceService.class) {
+                if(hungTaskAborter == null) {
+                    hungTaskAborter = new HungTaskAborter();
+                    start = true;
+                }
+            }
+
+            hungTaskAborter.addManagedScheduledExecutorService(executorService);
+
+            if(start) {
+                scheduledExecutorValue.getValue().scheduleAtFixedRate(hungTaskAborter, 10, 10, TimeUnit.SECONDS);
+            }
+        }
     }
 
     @Override
@@ -134,5 +163,41 @@ public class ManagedScheduledExecutorServiceService extends EEConcurrentAbstract
 
     public InjectedValue<RequestController> getRequestController() {
         return requestController;
+    }
+
+    public InjectedValue<ScheduledExecutorService> getScheduledexectorValue() {
+        return scheduledExecutorValue;
+    }
+
+    /**
+     * Task responsible for aborting hung tasks.
+     *
+     * Task hold references to all ManagedScheduledExecutorServiceImpl with longRunningTasks == false && hungTaskThreshold > 0 and periodically  kills all hung tasks.
+     */
+    private static class HungTaskAborter implements Runnable {
+
+        private final List<ManagedScheduledExecutorServiceImpl> managedScheduledExecutorServices = new LinkedList<>();
+
+        public void addManagedScheduledExecutorService(ManagedScheduledExecutorServiceImpl managedScheduledExecutorService) {
+            synchronized (managedScheduledExecutorServices) {
+                this.managedScheduledExecutorServices.add(managedScheduledExecutorService);
+            }
+        }
+
+        public  void run() {
+            List<ManagedScheduledExecutorServiceImpl> threadSaveList;
+            synchronized (managedScheduledExecutorServices) {
+                threadSaveList = new ArrayList<>(managedScheduledExecutorServices);
+            }
+            for(ManagedScheduledExecutorServiceImpl service : threadSaveList) {
+                Collection<AbstractManagedThread> hungThreads = service.getHungThreads();
+                if (hungThreads != null && !hungThreads.isEmpty()) {
+                    for (AbstractManagedThread hungThread : hungThreads) {
+                        EeLogger.ROOT_LOGGER.abortingHungThread(hungThread.toString(), service.getName());
+                        hungThread.interrupt();
+                    }
+                }
+            }
+        }
     }
 }

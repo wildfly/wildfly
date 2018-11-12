@@ -27,6 +27,7 @@ import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
@@ -34,6 +35,9 @@ import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.ee.component.deployers.DefaultBindingsConfigurationProcessor;
+import org.jboss.msc.service.ServiceName;
+
+import java.util.concurrent.ExecutorService;
 
 /**
  * JBossAS domain extension used to initialize the ee subsystem handlers and associated classes.
@@ -49,6 +53,13 @@ public class EeExtension implements Extension {
     private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(4, 0, 0);
 
     protected static final PathElement PATH_SUBSYSTEM = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
+
+    private static final RuntimeCapability<Void> EXECUTOR_CAPABILITY =
+            RuntimeCapability.Builder.of("org.wildfly.management.executor", ExecutorService.class)
+                    .build();
+
+    /** Service is not for general use, so the service name is not declared in the more visible {@code Services} */
+    protected static final ServiceName JBOSS_SERVER_SCHEDULED_EXECUTOR = EXECUTOR_CAPABILITY.getCapabilityServiceName().append("scheduled");
 
     static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
         return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, EeExtension.class.getClassLoader(), true, true);

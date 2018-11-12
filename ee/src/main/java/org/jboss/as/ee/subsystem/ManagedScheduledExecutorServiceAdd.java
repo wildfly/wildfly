@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ee.subsystem;
 
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.glassfish.enterprise.concurrent.AbstractManagedExecutorService;
@@ -96,7 +97,7 @@ public class ManagedScheduledExecutorServiceAdd extends AbstractAddStepHandler {
         if(rcPresent) {
             serviceBuilder.addDependency(RequestController.SERVICE_NAME, RequestController.class, service.getRequestController());
         }
-
+        serviceBuilder.addDependency(EeExtension.JBOSS_SERVER_SCHEDULED_EXECUTOR, ScheduledExecutorService.class, service.getScheduledexectorValue());
         serviceBuilder.install();
     }
 }
