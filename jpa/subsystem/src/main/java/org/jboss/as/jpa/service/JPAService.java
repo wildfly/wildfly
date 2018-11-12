@@ -47,6 +47,7 @@ import org.jboss.as.jpa.util.JPAServiceNames;
 import org.jboss.as.server.deployment.DeploymentModelUtils;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -97,10 +98,10 @@ public class JPAService implements Service<Void> {
         JPAService jpaService = new JPAService();
         setDefaultDataSourceName(defaultDataSourceName);
         setDefaultExtendedPersistenceInheritance(defaultExtendedPersistenceInheritance);
-        target.addService(SERVICE_NAME, jpaService)
-            .setInitialMode(ServiceController.Mode.ACTIVE)
-            .addDependency(JPAUserTransactionListenerService.SERVICE_NAME)
-            .install();
+        final ServiceBuilder sb = target.addService(SERVICE_NAME, jpaService);
+        sb.setInitialMode(ServiceController.Mode.ACTIVE);
+        sb.requires(JPAUserTransactionListenerService.SERVICE_NAME);
+        sb.install();
     }
 
     /**
