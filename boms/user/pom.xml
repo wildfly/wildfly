@@ -26,7 +26,7 @@
     <parent>
         <artifactId>jboss-parent</artifactId>
         <groupId>org.jboss</groupId>
-        <version>29</version>
+        <version>35</version>
     </parent>
 
     <groupId>org.wildfly.bom</groupId>
@@ -70,6 +70,23 @@
         <system>JIRA</system>
         <url>https://issues.jboss.org/</url>
     </issueManagement>
+
+    <properties>
+        <version.server>17.0.0.Alpha1</version.server>
+        <version.bom-builder-plugin>2.0.0.Alpha1</version.bom-builder-plugin>
+    </properties>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.wildfly.plugins</groupId>
+                    <artifactId>wildfly-bom-builder-plugin</artifactId>
+                    <version>${version.bom-builder-plugin}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 
     <modules>
         <module>client</module>

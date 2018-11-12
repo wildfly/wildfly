@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
   ~ JBoss, Home of Professional Open Source
   ~ Copyright 2018, Red Hat, Inc., and individual contributors as indicated
@@ -16,13 +16,15 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>org.wildfly.bom</groupId>
-        <artifactId>wildfly-javaee8</artifactId>
+        <artifactId>wildfly-javaee8-builder</artifactId>
         <!--
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
@@ -32,10 +34,10 @@
 
     <packaging>pom</packaging>
 
-    <artifactId>wildfly-javaee8-with-tools</artifactId>
+    <artifactId>wildfly-javaee8-with-tools-builder</artifactId>
 
-    <name>WildFly BOMs: Java EE 8 with Tools</name>
-    <description>Dependency Management for Java EE 8 Specification APIs with Deployment and Testing Tools</description>
+    <name>WildFly BOMs: Java EE 8 with Tools Builder</name>
+    <description>This artifact builds a bill of materials (BOM) for Java EE 8 Specification APIs with Deployment and Testing Tools</description>
 
     <licenses>
         <license>
@@ -46,21 +48,14 @@
     </licenses>
 
     <properties>
-        <!-- Version properties are inherited from parent -->
+        <version.org.jboss.arquillian.extension.drone>2.3.1</version.org.jboss.arquillian.extension.drone>
+        <version.org.jboss.arquillian.graphene>2.3.1</version.org.jboss.arquillian.graphene>
+        <version.org.jboss.shrinkwrap.resolver>2.2.6</version.org.jboss.shrinkwrap.resolver>
+        <version.org.testng>6.11</version.org.testng>
     </properties>
 
     <dependencyManagement>
-
         <dependencies>
-
-            <!-- Recommended JUnit version -->
-            <!-- Note that JUnit is preferred framework -->
-            <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>${version.junit}</version>
-                <scope>test</scope>
-            </dependency>
 
             <!-- Recommended TestNG version -->
             <dependency>
@@ -76,16 +71,6 @@
                 <artifactId>shrinkwrap-resolver-bom</artifactId>
                 <version>${version.org.jboss.shrinkwrap.resolver}</version>
                 <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-
-            <!-- Arquillian lets test you your applications in real environment -->
-            <dependency>
-                <groupId>org.jboss.arquillian</groupId>
-                <artifactId>arquillian-bom</artifactId>
-                <version>${version.org.jboss.arquillian.core}</version>
-                <type>pom</type>
-                <scope>import</scope>
             </dependency>
 
             <!-- Arquillian Drone adds support for visual testing of your
@@ -95,7 +80,6 @@
                 <artifactId>arquillian-drone-bom</artifactId>
                 <version>${version.org.jboss.arquillian.extension.drone}</version>
                 <type>pom</type>
-                <scope>import</scope>
             </dependency>
 
             <!-- Arquillian Drone bindings for WebDriver based browsers -->
@@ -115,45 +99,118 @@
                 <type>pom</type>
             </dependency>
 
-            <!-- Arquillian support for JBoss WildFly 8 container -->
-            <!-- Note: Managed version of container allows Arquillian to
-                control startup and shutdown of the container -->
-            <dependency>
-                <groupId>org.wildfly.arquillian</groupId>
-                <artifactId>wildfly-arquillian-container-managed</artifactId>
-                <version>${version.org.wildfly.arquillian}</version>
-            </dependency>
-
-            <!-- Arquillian support for JBoss WildFly 8 container -->
-            <!-- Note: Remote version of container allows Arquillian to connect
-                to already running container -->
-            <dependency>
-                <groupId>org.wildfly.arquillian</groupId>
-                <artifactId>wildfly-arquillian-container-remote</artifactId>
-                <version>${version.org.wildfly.arquillian}</version>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
     <build>
         <pluginManagement>
             <plugins>
-                <!-- The Maven Surefire plugin tests your application. Here
-                    we ensure we are using a version compatible with Arquillian -->
-                <plugin>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <version>${version.surefire.plugin}</version>
-                </plugin>
                 <!-- The WildFly plugin deploys your war to a local WildFly container -->
                 <!-- To use, set the JBOSS_HOME environment variable and
                     run: mvn package wildfly:deploy -->
                 <plugin>
                     <groupId>org.wildfly.plugins</groupId>
                     <artifactId>wildfly-maven-plugin</artifactId>
-                    <version>${version.org.wildfly.plugin}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.wildfly.plugins</groupId>
+                <artifactId>wildfly-bom-builder-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>build-bom</id>
+                        <goals>
+                            <goal>build-bom</goal>
+                        </goals>
+                        <configuration>
+                            <parent>
+                                <groupId>${project.groupId}</groupId>
+                                <artifactId>wildfly-javaee8</artifactId>
+                                <version>${project.version}</version>
+                                <relativePath/>
+                            </parent>
+                            <bomGroupId>${project.groupId}</bomGroupId>
+                            <bomArtifactId>wildfly-javaee8-with-tools</bomArtifactId>
+                            <bomVersion>${project.version}</bomVersion>
+                            <bomName>WildFly BOMs: Java EE 8 with Tools</bomName>
+                            <bomDescription>Dependency Management for Java EE 8 Specification APIs with Deployment and Testing Tools.</bomDescription>
+                            <licenses>true</licenses>
+                            <inheritExclusions>NONE</inheritExclusions>
+                            <includeTransitives>false</includeTransitives>
+                            <includeDependencies>
+                                <dependency>
+                                    <groupId>junit</groupId>
+                                    <artifactId>junit</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.testng</groupId>
+                                    <artifactId>testng</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.arquillian.extension</groupId>
+                                    <artifactId>arquillian-drone-webdriver-depchain</artifactId>
+                                    <type>pom</type>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.arquillian.graphene</groupId>
+                                    <artifactId>graphene-webdriver</artifactId>
+                                    <type>pom</type>
+                                </dependency>
+                                <!-- Arquillian support for JBoss WildFly container -->
+                                <!-- Note: Managed version of container allows Arquillian to control startup and shutdown of the container -->
+                                <dependency>
+                                    <groupId>org.wildfly.arquillian</groupId>
+                                    <artifactId>wildfly-arquillian-container-managed</artifactId>
+                                </dependency>
+                                <!-- Note: Remote version of container allows Arquillian to connect to already running container -->
+                                <dependency>
+                                    <groupId>org.wildfly.arquillian</groupId>
+                                    <artifactId>wildfly-arquillian-container-remote</artifactId>
+                                </dependency>
+                            </includeDependencies>
+                            <importDependencies>
+                                <!-- ShrinkWrap Resolvers project provides a Java API to obtain artifacts from a repository system. -->
+                                <dependency>
+                                    <groupId>org.jboss.shrinkwrap.resolver</groupId>
+                                    <artifactId>shrinkwrap-resolver-bom</artifactId>
+                                    <type>pom</type>
+                                </dependency>
+                                <!-- Arquillian lets test you your applications in real environment -->
+                                <dependency>
+                                    <groupId>org.jboss.arquillian</groupId>
+                                    <artifactId>arquillian-bom</artifactId>
+                                    <type>pom</type>
+                                </dependency>
+                                <!-- Arquillian Drone adds support for visual testing of your application -->
+                                <dependency>
+                                    <groupId>org.jboss.arquillian.extension</groupId>
+                                    <artifactId>arquillian-drone-bom</artifactId>
+                                    <type>pom</type>
+                                </dependency>
+                            </importDependencies>
+                            <versionRefDependencies>
+                                <dependency>
+                                    <groupId>org.wildfly.arquillian</groupId>
+                                    <artifactId>wildfly-arquillian-container-remote</artifactId>
+                                    <version>org.wildfly.arquillian:wildfly-arquillian-container-managed:jar</version>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.arquillian</groupId>
+                                    <artifactId>arquillian-bom</artifactId>
+                                    <type>pom</type>
+                                    <version>org.jboss.arquillian.junit:arquillian-junit-container:jar</version>
+                                </dependency>
+                            </versionRefDependencies>
+                            <includePlugins>
+                                <includePlugin>org.wildfly.plugins:wildfly-maven-plugin</includePlugin>
+                            </includePlugins>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
     </build>
 
 </project>
