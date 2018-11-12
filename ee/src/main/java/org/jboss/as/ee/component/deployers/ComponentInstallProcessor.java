@@ -156,7 +156,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         Services.addServerExecutorDependency(startBuilder, startService.getExecutorInjector());
 
         //don't start components until all bindings are up
-        startBuilder.addDependency(bindingDependencyService);
+        startBuilder.requires(bindingDependencyService);
         final ServiceName contextServiceName;
         //set up the naming context if necessary
         if (configuration.getComponentDescription().getNamingMode() == ComponentNamingMode.CREATE) {
@@ -182,7 +182,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
                 depConfig.configureDependency(componentViewServiceBuilder, viewService);
             }
             componentViewServiceBuilder.install();
-            startBuilder.addDependency(serviceName);
+            startBuilder.requires(serviceName);
             // The bindings for the view
             for (BindingConfiguration bindingConfiguration : viewConfiguration.getBindingConfigurations()) {
                 final String bindingName = bindingConfiguration.getName();
@@ -190,7 +190,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
                 final BinderService service = new BinderService(bindInfo.getBindName(), bindingConfiguration.getSource());
 
                 //these bindings should never be merged, if a view binding is duplicated it is an error
-                jndiDepServiceBuilder.addDependency(bindInfo.getBinderServiceName());
+                jndiDepServiceBuilder.requires(bindInfo.getBinderServiceName());
 
                 ServiceBuilder<ManagedReferenceFactory> serviceBuilder = serviceTarget.addService(bindInfo.getBinderServiceName(), service);
                 bindingConfiguration.getSource().getResourceValue(resolutionContext, serviceBuilder, phaseContext, service.getManagedObjectInjector());
@@ -258,7 +258,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
                 bound.add(bindInfo.getBinderServiceName());
                 try {
                     final BinderService service = new BinderService(bindInfo.getBindName(), bindingConfiguration.getSource());
-                    jndiDepServiceBuilder.addDependency(bindInfo.getBinderServiceName());
+                    jndiDepServiceBuilder.requires(bindInfo.getBinderServiceName());
                     ServiceBuilder<ManagedReferenceFactory> serviceBuilder = serviceTarget.addService(bindInfo.getBinderServiceName(), service);
                     bindingConfiguration.getSource().getResourceValue(resolutionContext, serviceBuilder, phaseContext, service.getManagedObjectInjector());
                     serviceBuilder.addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, service.getNamingStoreInjector());

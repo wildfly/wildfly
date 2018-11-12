@@ -95,7 +95,7 @@ class DefaultComponentViewConfigurator extends AbstractComponentConfigurator imp
             @Override
             public void configureDependency(final ServiceBuilder<?> serviceBuilder, ComponentStartService service) {
                 for (ServiceName dependencyName : description.getDependencies()) {
-                    serviceBuilder.addDependency(dependencyName);
+                    serviceBuilder.requires(dependencyName);
                 }
             }
         });
