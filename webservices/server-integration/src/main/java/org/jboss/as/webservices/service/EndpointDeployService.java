@@ -105,7 +105,7 @@ public final class EndpointDeployService implements Service<DeploymentUnit> {
         }
         final EndpointDeployService service = new EndpointDeployService(context, unit);
         final ServiceBuilder<DeploymentUnit> builder = serviceTarget.addService(service.getName(), service);
-        builder.addDependency(WSServices.CONFIG_SERVICE);
+        builder.requires(WSServices.CONFIG_SERVICE);
         builder.setInitialMode(Mode.ACTIVE);
         builder.install();
         return unit;

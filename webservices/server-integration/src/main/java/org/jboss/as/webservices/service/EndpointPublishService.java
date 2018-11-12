@@ -117,10 +117,10 @@ public final class EndpointPublishService implements Service<Context> {
         final DeploymentUnit unit = EndpointDeployService.install(serviceTarget, context, loader, hostName, urlPatternToClassName, jbwmd, wsmd, jbwsmd, deploymentAttachments);
         final EndpointPublishService service = new EndpointPublishService(context, unit);
         final ServiceBuilder<Context> builder = serviceTarget.addService(service.getName(), service);
-        builder.addDependency(WSServices.CONFIG_SERVICE);
+        builder.requires(WSServices.CONFIG_SERVICE);
         builder.addDependency(WebHost.SERVICE_NAME.append(hostName), WebHost.class, service.getHostInjector());
         for (ServiceName epServiceName : EndpointService.getServiceNamesFromDeploymentUnit(unit)) {
-            builder.addDependency(epServiceName);
+            builder.requires(epServiceName);
         }
         return builder;
     }
