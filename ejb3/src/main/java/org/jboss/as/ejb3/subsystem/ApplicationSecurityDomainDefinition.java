@@ -162,7 +162,7 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
 
             if (model.hasDefined(ENABLE_JACC.getName())) {
                 if (ENABLE_JACC.resolveModelAttribute(context, model).asBoolean()) {
-                    serviceBuilder.addDependency(context.getCapabilityServiceName(JACC_POLICY_CAPABILITY, Policy.class));
+                    serviceBuilder.requires(context.getCapabilityServiceName(JACC_POLICY_CAPABILITY, Policy.class));
                 }
             }
 
