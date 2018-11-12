@@ -37,6 +37,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.SocketPermission;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -349,7 +350,7 @@ public class AuthenticationTestCase {
                 final HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 if (username != null) {
                     final String userpassword = username + ":" + password;
-                    final String basicAuthorization = java.util.Base64.getEncoder().encodeToString(userpassword.getBytes());
+                    final String basicAuthorization = java.util.Base64.getEncoder().encodeToString(userpassword.getBytes(StandardCharsets.UTF_8));
                     conn.setRequestProperty("Authorization", "Basic " + basicAuthorization);
                 }
                 conn.setDoInput(true);

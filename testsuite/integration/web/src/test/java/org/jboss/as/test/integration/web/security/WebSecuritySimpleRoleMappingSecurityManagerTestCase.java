@@ -26,6 +26,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -126,7 +127,7 @@ public class WebSecuritySimpleRoleMappingSecurityManagerTestCase {
             StatusLine statusLine = response.getStatusLine();
             assertEquals(expectedCode, statusLine.getStatusCode());
             InputStream input = entity.getContent();
-            assertEquals(expectedOut, new String(IOUtil.asByteArray(input)));
+            assertEquals(expectedOut, new String(IOUtil.asByteArray(input), StandardCharsets.UTF_8));
             input.close();
         }
     }

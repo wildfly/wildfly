@@ -25,6 +25,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -118,7 +119,7 @@ public class BeanValidationCdiIntegrationTestCase {
             HttpGet getRequest = new HttpGet(requestUrl);
             HttpResponse response = client.execute(getRequest);
             try {
-                String responseString = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
+                String responseString = IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8);
 
                 // Get the JSF view state
                 Matcher jsfViewMatcher = viewStatePattern.matcher(responseString);
@@ -140,11 +141,11 @@ public class BeanValidationCdiIntegrationTestCase {
             list.add(new BasicNameValuePair("register:inputNumber", Integer.toString(numberOfPeople)));
             list.add(new BasicNameValuePair("register:registerButton", "Register"));
 
-            post.setEntity(new StringEntity(URLEncodedUtils.format(list, "UTF-8"), ContentType.APPLICATION_FORM_URLENCODED));
+            post.setEntity(new StringEntity(URLEncodedUtils.format(list, StandardCharsets.UTF_8), ContentType.APPLICATION_FORM_URLENCODED));
             response = client.execute(post);
 
             try {
-                return IOUtils.toString(response.getEntity().getContent(), "UTF-8");
+                return IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8);
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }

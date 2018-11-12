@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.security.common.negotiation;
 
+import java.nio.charset.StandardCharsets;
+
 import org.apache.commons.codec.binary.Base64;
 import org.apache.http.Header;
 import org.apache.http.HttpHost;
@@ -170,7 +172,7 @@ public class JBossNegotiateScheme extends AuthSchemeBase {
             }
 
             state = State.TOKEN_GENERATED;
-            String tokenstr = new String(base64codec.encode(token));
+            String tokenstr = new String(base64codec.encode(token), StandardCharsets.UTF_8);
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Sending response '" + tokenstr + "' back to the auth server");
             }
@@ -244,7 +246,7 @@ public class JBossNegotiateScheme extends AuthSchemeBase {
             LOGGER.debug("Received challenge '" + challenge + "' from the auth server");
         }
         if (state == State.UNINITIATED) {
-            token = new Base64().decode(challenge.getBytes());
+            token = new Base64().decode(challenge.getBytes(StandardCharsets.UTF_8));
             state = State.CHALLENGE_RECEIVED;
         } else {
             LOGGER.debug("Authentication already attempted");

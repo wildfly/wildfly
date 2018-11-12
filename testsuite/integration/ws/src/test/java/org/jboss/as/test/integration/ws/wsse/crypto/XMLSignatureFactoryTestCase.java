@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.ws.wsse.crypto;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
 import javax.xml.crypto.dsig.XMLSignatureFactory;
 
@@ -64,7 +65,7 @@ public class XMLSignatureFactoryTestCase {
         XMLSignatureFactory fac = XMLSignatureFactory.getInstance("DOM");
         Assert.assertNotNull(fac);
 
-        BufferedReader br = new BufferedReader(new InputStreamReader(baseUrl.openStream()));
+        BufferedReader br = new BufferedReader(new InputStreamReader(baseUrl.openStream(), StandardCharsets.UTF_8));
         try {
             Assert.assertEquals("OK", br.readLine());
         } finally {

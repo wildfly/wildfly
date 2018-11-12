@@ -61,6 +61,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.charset.StandardCharsets;
 import java.util.StringTokenizer;
 
 import static org.junit.Assert.assertEquals;
@@ -565,7 +566,7 @@ public class WSTrustTestCase {
     private static String replaceNodeAddress(String resourceName) {
         String content = null;
         try {
-            content = IOUtils.toString(WSTrustTestCase.class.getResourceAsStream(resourceName), "UTF-8");
+            content = IOUtils.toString(WSTrustTestCase.class.getResourceAsStream(resourceName), StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new RuntimeException("Exception during replacing node address in resource", e);
         }

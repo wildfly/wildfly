@@ -23,6 +23,7 @@ package org.jboss.as.test.integration.ws.wsrm;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.Set;
 import javax.xml.namespace.QName;
@@ -234,7 +235,7 @@ public class ReliableCheckHandler implements SOAPHandler<SOAPMessageContext> {
             }
             final byte[] theBytes = new byte[count];
             System.arraycopy(buf, 0, theBytes, 0, count);
-            logger.log(level, new String(theBytes));
+            logger.log(level, new String(theBytes, StandardCharsets.UTF_8));
             reset();
         }
 

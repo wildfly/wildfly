@@ -73,6 +73,7 @@ import java.io.StringWriter;
 import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.security.SecurityPermission;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -161,7 +162,7 @@ public class AuthenticationPolicyContextTestCase {
     private static String replaceNodeAddress(String resourceName) {
         String content = null;
         try {
-            content = IOUtils.toString(AuthenticationPolicyContextTestCase.class.getResourceAsStream(resourceName), "UTF-8");
+            content = IOUtils.toString(AuthenticationPolicyContextTestCase.class.getResourceAsStream(resourceName), StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new RuntimeException("Exception during replacing node address in resource", e);
         }

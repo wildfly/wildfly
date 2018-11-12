@@ -25,6 +25,7 @@ package org.jboss.as.test.integration.ws.schemalocations;
 
 import java.io.ByteArrayInputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import org.jboss.logging.Logger;
@@ -134,7 +135,7 @@ public class SchemaLocationsRewriteTestCase {
 
         List<String> values = new ArrayList<>();
         XMLInputFactory xmlif = XMLInputFactory.newInstance();
-        XMLEventReader eventReader = xmlif.createXMLEventReader(new ByteArrayInputStream(document.getBytes()));
+        XMLEventReader eventReader = xmlif.createXMLEventReader(new ByteArrayInputStream(document.getBytes(StandardCharsets.UTF_8)));
 
         while (eventReader.hasNext()) {
             XMLEvent xmlEvent = eventReader.nextEvent();

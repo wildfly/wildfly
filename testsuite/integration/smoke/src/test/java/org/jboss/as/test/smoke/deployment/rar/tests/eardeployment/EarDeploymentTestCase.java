@@ -29,6 +29,7 @@ import static org.junit.Assert.assertNotNull;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -100,7 +101,7 @@ public class EarDeploymentTestCase extends ContainerResourceMgmtTestBase {
     @Test
     public void testWebConfiguration() throws Throwable {
         URL servletURL = new URL("http://" + url.getHost() + ":8080/servlet" + RaServlet.URL_PATTERN);
-        BufferedReader br = new BufferedReader(new InputStreamReader(servletURL.openStream()));
+        BufferedReader br = new BufferedReader(new InputStreamReader(servletURL.openStream(), StandardCharsets.UTF_8));
         String message = br.readLine();
         assertEquals(RaServlet.SUCCESS, message);
     }

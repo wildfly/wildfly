@@ -28,6 +28,7 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -133,7 +134,7 @@ public class JspMappingTestCase {
     }
 
     private String getContent(InputStream content) throws Exception {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(content, "UTF-8"));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(content, StandardCharsets.UTF_8));
         StringBuilder out = new StringBuilder();
         String line;
         while ((line = reader.readLine()) != null) {

@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -131,7 +132,7 @@ public class DuplicateIDIntegrationTestCase {
                 params.add(new BasicNameValuePair(input.getName(), input.getValue()));
             }
         }
-        request.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
+        request.setEntity(new UrlEncodedFormEntity(params, StandardCharsets.UTF_8));
         log.debug("Clicking on submit button '{}'.", buttonValue);
         return client.execute(request);
     }

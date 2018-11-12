@@ -34,6 +34,7 @@ import org.junit.Test;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 import static org.junit.Assert.*;
 
@@ -72,23 +73,23 @@ public class JdrTestCase {
     @Test
     public void testXMLSanitizer() throws Exception {
         String xml = "<test><password>foobar</password></test>";
-        InputStream is = new ByteArrayInputStream(xml.getBytes());
+        InputStream is = new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8));
         XMLSanitizer s = new XMLSanitizer("//password", Filters.TRUE);
         InputStream res = s.sanitize(is);
         byte [] buf = new byte [res.available()];
         res.read(buf);
-        assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?><test><password/></test>", new String(buf));
+        assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?><test><password/></test>", new String(buf, StandardCharsets.UTF_8));
     }
 
     @Test
     public void testPatternSanitizer() throws Exception {
         String propf = "password=123456";
-        InputStream is = new ByteArrayInputStream(propf.getBytes());
+        InputStream is = new ByteArrayInputStream(propf.getBytes(StandardCharsets.UTF_8));
         PatternSanitizer s = new PatternSanitizer("password=.*", "password=*", Filters.TRUE);
         InputStream res = s.sanitize(is);
         byte [] buf = new byte [res.available()];
         res.read(buf);
-        assertEquals("password=*", new String(buf));
+        assertEquals("password=*", new String(buf, StandardCharsets.UTF_8));
     }
 
     @Test

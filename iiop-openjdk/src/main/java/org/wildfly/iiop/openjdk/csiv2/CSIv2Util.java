@@ -310,7 +310,7 @@ public final class CSIv2Util {
             // finally, encode the "realm" name as a CSI.GSS_NT_ExportedName.
             // clientAuthMech should contain the DER encoded GSSUPMechOID at this point.
             String realm = asMeta.getRealm();
-            targetName = createGSSExportedName(clientAuthMech, realm.getBytes());
+            targetName = createGSSExportedName(clientAuthMech, realm.getBytes(StandardCharsets.UTF_8));
 
             context = new AS_ContextSec((short) support, (short) require, clientAuthMech, targetName);
         }

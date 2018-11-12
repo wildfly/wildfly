@@ -23,6 +23,7 @@
 package org.jboss.as.test.integration.deployment.deploymentoverlay;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -72,7 +73,7 @@ public abstract class AbstractOverlayTestBase {
             op = new ModelNode();
             op.get(ModelDescriptionConstants.OP_ADDR).set(new ModelNode());
             op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.UPLOAD_DEPLOYMENT_BYTES);
-            op.get(ModelDescriptionConstants.BYTES).set(overlayItem.getValue().getBytes());
+            op.get(ModelDescriptionConstants.BYTES).set(overlayItem.getValue().getBytes(StandardCharsets.UTF_8));
             ModelNode result = ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
 
             // link content to specific file

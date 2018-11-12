@@ -30,6 +30,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -201,7 +202,7 @@ public class StepExecutionMarshaller {
         if (data == null) {
             return null;
         }
-        final ByteArrayInputStream bais = new ByteArrayInputStream(data.getBytes());
+        final ByteArrayInputStream bais = new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8));
         final ObjectInputStream in = new ObjectInputStream(bais);
         return (Serializable) in.readObject();
     }

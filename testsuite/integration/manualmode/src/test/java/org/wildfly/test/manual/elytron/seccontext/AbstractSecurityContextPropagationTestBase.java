@@ -42,7 +42,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -54,6 +53,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -330,7 +330,7 @@ public abstract class AbstractSecurityContextPropagationTestBase {
             nvps.add(new BasicNameValuePair("j_username", username));
             nvps.add(new BasicNameValuePair("j_password", password));
 
-            httpPost.setEntity(new UrlEncodedFormEntity(nvps, "UTF-8"));
+            httpPost.setEntity(new UrlEncodedFormEntity(nvps, StandardCharsets.UTF_8));
 
             response = httpClient.execute(httpPost);
             entity = response.getEntity();
@@ -723,7 +723,7 @@ public abstract class AbstractSecurityContextPropagationTestBase {
                 LOGGER.error("Command line error occured during JGroups reconfiguration", e);
             } finally {
                 LOGGER.debugf("Output of JGroups reconfiguration (switch to TCPPING): %s",
-                        new String(consoleOut.toByteArray()));
+                        new String(consoleOut.toByteArray(), StandardCharsets.UTF_8));
             }
         }
 
@@ -790,12 +790,11 @@ public abstract class AbstractSecurityContextPropagationTestBase {
         }
 
         private void addCliCommands(File file, List<String> commands) throws IOException {
-            try (BufferedWriter bw = new BufferedWriter(new FileWriter(file, true))) {
+            try (BufferedWriter bw = Files.newBufferedWriter(file.toPath(), StandardCharsets.UTF_8, StandardOpenOption.APPEND)) {
                 for (String command : commands) {
                     bw.append(command);
                 }
             }
-
         }
     }
 

@@ -50,6 +50,7 @@ import org.junit.runner.RunWith;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -166,7 +167,7 @@ public class FormAuthUnitTestCase {
         List<NameValuePair> formparams = new ArrayList<NameValuePair>();
         formparams.add(new BasicNameValuePair("j_username", "baduser"));
         formparams.add(new BasicNameValuePair("j_password", "badpass"));
-        formPost.setEntity(new UrlEncodedFormEntity(formparams, "UTF-8"));
+        formPost.setEntity(new UrlEncodedFormEntity(formparams, StandardCharsets.UTF_8));
 
         log.trace("Executing request " + formPost.getRequestLine());
         HttpResponse postResponse = httpclient.execute(formPost);
@@ -215,7 +216,7 @@ public class FormAuthUnitTestCase {
 
         List<NameValuePair> restrictedParams = new ArrayList<NameValuePair>();
         restrictedParams.add(new BasicNameValuePair("checkParam", "123456"));
-        restrictedPost.setEntity(new UrlEncodedFormEntity(restrictedParams, "UTF-8"));
+        restrictedPost.setEntity(new UrlEncodedFormEntity(restrictedParams, StandardCharsets.UTF_8));
 
         log.trace("Executing request " + restrictedPost.getRequestLine());
         HttpResponse restrictedResponse = httpclient.execute(restrictedPost);
@@ -247,7 +248,7 @@ public class FormAuthUnitTestCase {
         List<NameValuePair> formparams = new ArrayList<NameValuePair>();
         formparams.add(new BasicNameValuePair("j_username", "user1"));
         formparams.add(new BasicNameValuePair("j_password", "password1"));
-        formPost.setEntity(new UrlEncodedFormEntity(formparams, "UTF-8"));
+        formPost.setEntity(new UrlEncodedFormEntity(formparams, StandardCharsets.UTF_8));
 
         log.trace("Executing request " + formPost.getRequestLine());
         HttpResponse postResponse = httpclient.execute(formPost);
@@ -367,7 +368,7 @@ public class FormAuthUnitTestCase {
         List<NameValuePair> formparams = new ArrayList<NameValuePair>();
         formparams.add(new BasicNameValuePair("j_username", username));
         formparams.add(new BasicNameValuePair("j_password", password));
-        formPost.setEntity(new UrlEncodedFormEntity(formparams, "UTF-8"));
+        formPost.setEntity(new UrlEncodedFormEntity(formparams, StandardCharsets.UTF_8));
 
         log.trace("Executing request " + formPost.getRequestLine());
         HttpResponse postResponse = httpclient.execute(formPost);

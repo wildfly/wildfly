@@ -23,6 +23,7 @@ package org.wildfly.test.integration.elytron.roledecoders;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -83,7 +84,7 @@ public class SimpleRoleDecoderTestCase {
         for (final String role : ALL_TESTED_ROLES) {
             qparams.add(new BasicNameValuePair(RolePrintingServlet.PARAM_ROLE_NAME, role));
         }
-        QUERY_ROLES = URLEncodedUtils.format(qparams, "UTF-8");
+        QUERY_ROLES = URLEncodedUtils.format(qparams, StandardCharsets.UTF_8);
     }
 
     @Deployment(name = DECODE_FROM_ROLE_ATTRIBUTE_A)

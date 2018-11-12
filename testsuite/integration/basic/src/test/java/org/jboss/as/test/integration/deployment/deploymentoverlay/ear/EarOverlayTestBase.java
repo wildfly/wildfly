@@ -26,6 +26,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -90,7 +91,7 @@ public class EarOverlayTestBase extends WarOverlayTestBase {
         @Override
         protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
             try (InputStream input = getClass().getClassLoader().getResourceAsStream(META_RESOURCE_IN_JAR_STATIC);
-                 InputStreamReader inputReader = new InputStreamReader(input);
+                 InputStreamReader inputReader = new InputStreamReader(input, StandardCharsets.UTF_8);
                  BufferedReader reader = new BufferedReader(inputReader)) {
                 resp.getWriter().write(reader.readLine());
                 resp.flushBuffer();
@@ -109,7 +110,7 @@ public class EarOverlayTestBase extends WarOverlayTestBase {
                     resp.sendError(404);
                     return;
                 }
-                try (InputStreamReader inputReader = new InputStreamReader(input);
+                try (InputStreamReader inputReader = new InputStreamReader(input, StandardCharsets.UTF_8);
                      BufferedReader reader = new BufferedReader(inputReader)) {
                     resp.getWriter().write(reader.readLine());
                     resp.flushBuffer();

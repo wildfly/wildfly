@@ -29,6 +29,7 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -128,7 +129,7 @@ public class HttpRequest {
     }
 
     private static void write(OutputStream out, String message) throws IOException {
-        final OutputStreamWriter writer = new OutputStreamWriter(out);
+        final OutputStreamWriter writer = new OutputStreamWriter(out, StandardCharsets.UTF_8);
         writer.write(message);
         writer.flush();
     }

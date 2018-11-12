@@ -39,6 +39,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.MessageDigest;
 import java.security.PrivilegedActionException;
@@ -65,7 +66,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.apache.commons.lang.text.StrSubstitutor;
 import org.apache.directory.server.annotations.CreateTransport;
-import org.apache.http.Consts;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpRequest;
@@ -237,7 +237,7 @@ public class Utils extends CoreUtils {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        byte[] bytes = target.getBytes();
+        byte[] bytes = target.getBytes(StandardCharsets.UTF_8);
         byte[] byteHash = md.digest(bytes);
 
         String encodedHash = null;
@@ -373,7 +373,7 @@ public class Utils extends CoreUtils {
             nvps.add(new BasicNameValuePair("j_username", user));
             nvps.add(new BasicNameValuePair("j_password", pass));
 
-            httpost.setEntity(new UrlEncodedFormEntity(nvps, "UTF-8"));
+            httpost.setEntity(new UrlEncodedFormEntity(nvps, StandardCharsets.UTF_8));
 
             response = httpClient.execute(httpost);
             entity = response.getEntity();
@@ -522,8 +522,8 @@ public class Utils extends CoreUtils {
 
         // use UTF-8 charset for credentials
         Registry<AuthSchemeProvider> authSchemeRegistry = RegistryBuilder.<AuthSchemeProvider>create()
-                .register(AuthSchemes.BASIC, new BasicSchemeFactory(Consts.UTF_8))
-                .register(AuthSchemes.DIGEST, new DigestSchemeFactory(Consts.UTF_8))
+                .register(AuthSchemes.BASIC, new BasicSchemeFactory(StandardCharsets.UTF_8))
+                .register(AuthSchemes.DIGEST, new DigestSchemeFactory(StandardCharsets.UTF_8))
                 .build();
         try (CloseableHttpClient httpClient = HttpClientBuilder.create()
                 .setDefaultAuthSchemeRegistry(authSchemeRegistry)
@@ -995,7 +995,7 @@ public class Utils extends CoreUtils {
         map.put("password", keystorePassword);
 
         try {
-            content = StrSubstitutor.replace(IOUtils.toString(CoreUtils.class.getResourceAsStream(originalFile), "UTF-8"), map);
+            content = StrSubstitutor.replace(IOUtils.toString(CoreUtils.class.getResourceAsStream(originalFile), StandardCharsets.UTF_8), map);
         } catch (IOException ex) {
             String message = "Cannot find or modify configuration file " + originalFile + " , error : " + ex.getMessage();
             LOGGER.error(message);

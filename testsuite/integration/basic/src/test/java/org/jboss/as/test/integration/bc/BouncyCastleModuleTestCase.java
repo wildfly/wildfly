@@ -23,6 +23,7 @@ package org.jboss.as.test.integration.bc;
 
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.security.Security;
 import java.security.SecurityPermission;
@@ -101,7 +102,7 @@ public class BouncyCastleModuleTestCase {
         desCipher.init(Cipher.ENCRYPT_MODE, myDesKey);
 
         // Sensitive information
-        byte[] text = "Nobody can see me".getBytes();
+        byte[] text = "Nobody can see me".getBytes(StandardCharsets.UTF_8);
         logger.debug("Text [Byte Format]: " + Arrays.toString(text));
         logger.debug("Text: " + new String(text));
 
@@ -114,6 +115,6 @@ public class BouncyCastleModuleTestCase {
 
         // Decrypt the text
         byte[] textDecrypted = desCipher.doFinal(textEncrypted);
-        logger.debug("Text Decryted: " + new String(textDecrypted));
+        logger.debug("Text Decryted: " + new String(textDecrypted,StandardCharsets.UTF_8));
     }
 }

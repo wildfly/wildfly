@@ -23,6 +23,7 @@ package org.jboss.as.test.clustering.cluster.jsf;
 
 import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -103,7 +104,7 @@ public class JSFFailoverTestCase extends AbstractClusteringTestCase {
         Matcher matcher;
 
         NumberGuessState state = new NumberGuessState();
-        String responseString = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
+        String responseString = IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8);
 
         Map.Entry<String, String> sessionRouteEntry = parseSessionRoute(response);
         state.sessionId = (sessionRouteEntry != null) ? sessionRouteEntry.getKey() : sessionId;
@@ -144,7 +145,7 @@ public class JSFFailoverTestCase extends AbstractClusteringTestCase {
         list.add(new BasicNameValuePair("numberGuess:guessButton", "Guess"));
         list.add(new BasicNameValuePair("numberGuess:inputGuess", guess));
 
-        post.setEntity(new StringEntity(URLEncodedUtils.format(list, "UTF-8"), ContentType.APPLICATION_FORM_URLENCODED));
+        post.setEntity(new StringEntity(URLEncodedUtils.format(list, StandardCharsets.UTF_8), ContentType.APPLICATION_FORM_URLENCODED));
         if (sessionId != null) {
             post.setHeader("Cookie", "JSESSIONID=" + sessionId);
         }

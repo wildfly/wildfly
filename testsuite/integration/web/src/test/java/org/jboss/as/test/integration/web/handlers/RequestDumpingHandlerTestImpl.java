@@ -2,11 +2,12 @@ package org.jboss.as.test.integration.web.handlers;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -132,7 +133,7 @@ public abstract class RequestDumpingHandlerTestImpl {
         Assert.assertTrue("The '" + logFilePath + "' is not a file", logFilePath.toFile().isFile());
 
         // logfile exists -> read its content...
-        LineNumberReader lnr = new LineNumberReader(new FileReader(logFilePath.toFile()));
+        LineNumberReader lnr = new LineNumberReader(Files.newBufferedReader(logFilePath, StandardCharsets.UTF_8));
         StringBuilder sb = new StringBuilder();
 
         log.trace("I am skipping '" + skipBytes + "' bytes from the beggining of the file.");
@@ -357,7 +358,7 @@ public abstract class RequestDumpingHandlerTestImpl {
                 }
             });
 
-            BufferedReader br = new BufferedReader(new InputStreamReader(httpsConn.getInputStream()));
+            BufferedReader br = new BufferedReader(new InputStreamReader(httpsConn.getInputStream(), StandardCharsets.UTF_8));
 
             StringBuilder sb = new StringBuilder();
             String input;
