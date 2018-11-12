@@ -344,7 +344,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
                 .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, undertowDeploymentInfoService.getServerEnvironmentInjectedValue())
                 .addDependency(SuspendController.SERVICE_NAME, SuspendController.class, undertowDeploymentInfoService.getSuspendControllerInjectedValue());
         for (final ServiceName additionalDependency : additionalDependencies) {
-            infoBuilder.addDependency(additionalDependency);
+            infoBuilder.requires(additionalDependency);
         }
         if(securityDomain != null) {
             if (known) {
@@ -418,10 +418,10 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
                 .addDependency(hostServiceName, Host.class, service.getHost())
                 .addDependency(deploymentInfoServiceName, DeploymentInfo.class, service.getDeploymentInfoInjectedValue());
         for (final ServiceName webDependency : deploymentUnit.getAttachmentList(Attachments.WEB_DEPENDENCIES)) {
-            builder.addDependency(webDependency);
+            builder.requires(webDependency);
         }
         for (final ServiceName dependentComponent : dependentComponents) {
-            builder.addDependency(dependentComponent);
+            builder.requires(dependentComponent);
         }
         // inject the server executor which can be used by the WebDeploymentService for blocking tasks in start/stop
         // of that service
@@ -445,7 +445,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
                             jaccService.getParentPolicyInjector());
                 }
                 // add dependency to web deployment service
-                jaccBuilder.addDependency(deploymentServiceName);
+                jaccBuilder.requires(deploymentServiceName);
                 jaccBuilder.setInitialMode(Mode.PASSIVE).install();
             }
         }
