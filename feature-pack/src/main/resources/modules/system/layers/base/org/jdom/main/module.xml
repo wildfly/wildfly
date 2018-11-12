@@ -21,6 +21,11 @@
   -->
 
 <module xmlns="urn:jboss:module:1.5" name="org.jdom">
+    <properties>
+        <!-- WFLY-11326. Remove this in WildFly 16.
+             It is not used by WildFly. -->
+        <property name="jboss.api" value="deprecated"/>
+    </properties>
 
     <dependencies>
         <module name="org.jaxen"/>
