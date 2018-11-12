@@ -98,7 +98,7 @@ public class IdentityProviderAddHandler extends AbstractEntityProviderAddHandler
         IDPConfiguration configuration = service.getConfiguration();
 
         if (!configuration.isExternal()) {
-            serviceBuilder.addDependency(SecurityDomainService.SERVICE_NAME.append(configuration.getSecurityDomain()));
+            serviceBuilder.requires(SecurityDomainService.SERVICE_NAME.append(configuration.getSecurityDomain()));
         }
 
         serviceBuilder.install();
