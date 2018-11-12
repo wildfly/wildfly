@@ -68,7 +68,7 @@ public class TransactionManagerService extends AbstractService<TransactionManage
         final TransactionManagerService service = new TransactionManagerService();
         ServiceBuilder<TransactionManager> serviceBuilder = target.addService(INTERNAL_SERVICE_NAME, service);
         // This is really a dependency on the global context.  TODO: Break this later; no service is needed for TM really
-        serviceBuilder.addDependency(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT);
+        serviceBuilder.requires(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT);
         serviceBuilder.addDependency(UserTransactionRegistryService.SERVICE_NAME, UserTransactionRegistry.class, service.registryInjector);
         return serviceBuilder.install();
     }

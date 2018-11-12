@@ -53,7 +53,7 @@ public class UserTransactionService extends AbstractService<UserTransaction> {
 
     public static ServiceController<UserTransaction> addService(final ServiceTarget target) {
         ServiceBuilder<UserTransaction> serviceBuilder = target.addService(INTERNAL_SERVICE_NAME, INSTANCE);
-        serviceBuilder.addDependency(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT);
+        serviceBuilder.requires(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT);
         return serviceBuilder.install();
     }
 
