@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.batch.jberet.deployment;
 
+import static org.jboss.as.server.deployment.Attachments.DEPLOYMENT_COMPLETE_SERVICES;
+
 import javax.enterprise.inject.spi.BeanManager;
 
 import org.jberet.repository.JobRepository;
@@ -158,7 +160,8 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
             serviceBuilder.install();
 
             // Install the JobOperatorService
-            Services.addServerExecutorDependency(serviceTarget.addService(BatchServiceNames.jobOperatorServiceName(deploymentUnit), jobOperatorService)
+            ServiceName jobOperatorServiceName = BatchServiceNames.jobOperatorServiceName(deploymentUnit);
+            Services.addServerExecutorDependency(serviceTarget.addService(jobOperatorServiceName, jobOperatorService)
                             .addDependency(support.getCapabilityServiceName(Capabilities.BATCH_CONFIGURATION_CAPABILITY.getName()), BatchConfiguration.class, jobOperatorService.getBatchConfigurationInjector())
                             .addDependency(SuspendController.SERVICE_NAME, SuspendController.class, jobOperatorService.getSuspendControllerInjector())
                             .addDependency(BatchServiceNames.batchEnvironmentServiceName(deploymentUnit), SecurityAwareBatchEnvironment.class, jobOperatorService.getBatchEnvironmentInjector()),
@@ -167,6 +170,7 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
 
             // Add the JobOperatorService to the deployment unit
             deploymentUnit.putAttachment(BatchAttachments.JOB_OPERATOR, jobOperatorService);
+            deploymentUnit.addToAttachmentList(DEPLOYMENT_COMPLETE_SERVICES, jobOperatorServiceName);
 
             // Add the JobOperator to the context selector
             selector.registerContext(moduleClassLoader, JobOperatorContext.create(jobOperatorService));
