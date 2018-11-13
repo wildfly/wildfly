@@ -1,4 +1,4 @@
-[[MicroProfile_OpenTracing SmallRye]]
+[[MicroProfile_OpenTracing_SmallRye]]
 = MicroProfile OpenTracing Subsystem Configuration
 
 Support for https://microprofile.io/project/eclipse/microprofile-opentracing[Eclipse MicroProfile OpenTracing] is
