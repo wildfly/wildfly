@@ -115,17 +115,6 @@
                 <artifactId>wildfly-galleon-maven-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>feature-spec-build</id>
-                        <goals>
-                            <goal>generate-feature-specs</goal>
-                        </goals>
-                        <phase>prepare-package</phase>
-                        <configuration>
-                            <output-dir>${basedir}/target/resources/features</output-dir>
-                            <fork-embedded>${galleon.fork.embedded}</fork-embedded>
-                        </configuration>
-                    </execution>
-                    <execution>
                         <id>feature-pack-build</id>
                         <goals>
                             <goal>build-feature-pack</goal>
@@ -133,6 +122,7 @@
                         <phase>prepare-package</phase>
                         <configuration>
                             <release-name>${full.dist.product.release.name}</release-name>
+                            <fork-embedded>${galleon.fork.embedded}</fork-embedded>
                             <task-properties>
                                 <product.release.version>${product.release.version}</product.release.version>
                             </task-properties>
@@ -3384,11 +3374,6 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.wildfly.galleon-plugins</groupId>
-            <artifactId>wildfly-config-gen</artifactId>
         </dependency>
     </dependencies>
 

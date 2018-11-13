@@ -51,94 +51,14 @@
         <group name="org.wildfly.security"/>
     </package-schemas>
 
-    <config model="standalone">
-        <packages>
-            <package name="product.conf" optional="true"/>
-            <package name="misc.standalone"/>
-        </packages>
-    </config>
-
-    <config model="domain">
-        <packages>
-            <package name="product.conf" optional="true"/>
-            <package name="misc.domain"/>
-        </packages>
-    </config>
-
-    <config name="standalone.xml" model="standalone">
-        <feature-group name="standalone"/>
-    </config>
-
-    <config name="standalone-ha.xml" model="standalone">
-        <feature-group name="standalone-ha"/>
-     </config>
-
-    <config name="standalone-full.xml" model="standalone">
-        <feature-group name="standalone-full"/>
-    </config>
-
-    <config name="standalone-full-ha.xml" model="standalone">
-        <feature-group name="standalone-full-ha"/>
-    </config>
-
-
-    <config name="domain.xml" model="domain">
-        <!-- domain.server-group features are excluded from every domain group below
-             simply to preserve the order of the profiles specified here.
-             Not excluding the server groups will work but profiles full and full-ha
-             will appear in the resulting config before ha because the server groups that are
-             introduced into the config by the first domain group and overriden to reference
-             full and full-ha below will make those profiles installed before ha.
-        -->
-        <feature-group name="domain">
-            <exclude spec="domain.server-group"/>
-        </feature-group>
-        <feature-group name="domain-ha">
-            <exclude spec="domain.server-group"/>
-        </feature-group>
-        <feature-group name="domain-full">
-            <exclude spec="domain.server-group"/>
-        </feature-group>
-        <feature-group name="domain-full-ha">
-            <exclude spec="domain.server-group"/>
-        </feature-group>
-        <feature-group name="domain-load-balancer">
-            <exclude spec="domain.server-group"/>
-        </feature-group>
-
-        <feature spec="domain.server-group">
-            <param name="server-group" value="main-server-group"/>
-            <param name="profile" value="full" />
-            <param name="socket-binding-group" value="full-sockets" />
-            <feature spec="domain.server-group.jvm">
-                <param name="jvm" value="default"/>
-                <param name="heap-size" value="64m"/>
-                <param name="max-heap-size" value="512m"/>
-            </feature>
-        </feature>
-        <feature spec="domain.server-group">
-            <param name="server-group" value="other-server-group"/>
-            <param name="profile" value="full-ha" />
-            <param name="socket-binding-group" value="full-ha-sockets" />
-            <feature spec="domain.server-group.jvm">
-                <param name="jvm" value="default"/>
-                <param name="heap-size" value="64m"/>
-                <param name="max-heap-size" value="512m"/>
-            </feature>
-        </feature>
-    </config>
-
-    <config name="host.xml" model="host">
-        <feature-group name="host"/>
-    </config>
-
-    <config name="host-master.xml" model="host">
-        <feature-group name="host-master"/>
-    </config>
-
-    <config name="host-slave.xml" model="host">
-        <feature-group name="host-slave"/>
-    </config>
+    <config name="standalone.xml" model="standalone"/>
+    <config name="standalone-ha.xml" model="standalone"/>
+    <config name="standalone-full.xml" model="standalone"/>
+    <config name="standalone-full-ha.xml" model="standalone"/>
+    <config name="domain.xml" model="domain"/>
+    <config name="host.xml" model="host"/>
+    <config name="host-master.xml" model="host"/>
+    <config name="host-slave.xml" model="host"/>
 
     <generate-feature-specs>
         <extensions>

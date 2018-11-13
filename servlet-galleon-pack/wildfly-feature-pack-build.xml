@@ -44,43 +44,12 @@
 <!--        <group name="org.wildfly.security"/> -->
     </package-schemas>
 
-    <config model="standalone">
-        <packages>
-            <package name="product.conf" optional="true"/>
-            <package name="misc.standalone"/>
-        </packages>
-    </config>
-
-    <config model="domain">
-        <packages>
-            <package name="product.conf" optional="true"/>
-            <package name="misc.domain"/>
-        </packages>
-    </config>
-
-    <config name="standalone.xml" model="standalone">
-        <feature-group name="standalone"/>
-    </config>
-
-    <config name="standalone-load-balancer.xml" model="standalone">
-        <feature-group name="standalone-load-balancer"/>
-    </config>
-
-    <config name="domain.xml" model="domain">
-        <feature-group name="domain"/>
-    </config>
-
-    <config name="host.xml" model="host">
-        <feature-group name="host"/>
-    </config>
-
-    <config name="host-master.xml" model="host">
-        <feature-group name="host-master"/>
-    </config>
-
-    <config name="host-slave.xml" model="host">
-        <feature-group name="host-slave"/>
-    </config>
+    <config name="standalone.xml" model="standalone"/>
+    <config name="standalone-load-balancer.xml" model="standalone"/>
+    <config name="domain.xml" model="domain"/>
+    <config name="host.xml" model="host"/>
+    <config name="host-master.xml" model="host"/>
+    <config name="host-slave.xml" model="host"/>
 
     <generate-feature-specs>
         <extensions>
