@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="metrics" xmlns="urn:jboss:galleon:feature-group:1.0">
+    <feature spec="subsystem.microprofile-metrics-smallrye">
+      <param name="security-enabled" value="false"/>
+      <param name="exposed-subsystems" value="[*]" />
+    </feature>
+</feature-group-spec>

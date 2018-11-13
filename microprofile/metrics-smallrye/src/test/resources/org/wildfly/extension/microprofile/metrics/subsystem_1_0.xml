@@ -1,0 +1,3 @@
+<subsystem xmlns="urn:wildfly:microprofile-metrics-smallrye:1.0"
+           security-enabled="${security-enabled:true}"
+           exposed-subsystems="undertow transactions" />

@@ -1,0 +1,85 @@
+[[MicroProfile_Metrics_SmallRye]]
+= MicroProfile Metrics Subsystem Configuration
+
+Support for https://microprofile.io/project/eclipse/microprofile-metrics[Eclipse MicroProfile Metrics] is provided by
+ the _microprofile-metrics-smallrye_ subsystem.
+
+[[required-extension]]
+== Required Extension
+
+This extension is included in all the standalone configurations included in the
+WildFly distribution.
+
+You can also add the extension to a configuration without it either by adding
+an `<extension module="org.wildfly.extension.microprofile.metrics-smallrye"/>`
+element to the xml or by using the following CLI operation:
+
+[source,ruby]
+----
+[standalone@localhost:9990 /]/extension=org.wildfly.extension.microprofile.metrics-smallrye:add
+----
+
+== Management Model
+
+The `/subsystem=microprofile-metrics-smallrye` resource defines two attributes:
+
+* `security-enabled` - a boolean to indicate whether authentication is required to access the HTTP metrics endpoint (described below). By default, it is `true`. The
+standalone configurations explicitly sets it to `false` to accept unauthenticated access to the HTTP endpoints.
+* `exposed-subsystems` - a list of strings corresponding to the names of subsystems that exposes their metrics in the HTTP metrics endpoints.
+  By default, it is not defined (there will be no metrics exposed by subsystem. The special wildcard `*` can be used to expose metrics from _all_ subsystems. The standalone
+  configuration sets this attribute to `*`.
+
+== HTTP Endpoint
+
+The Metric HTTP endpoint is accessible on WildFly HTTP management interface http://localhost:9990/metrics[http://localhost:9990/metrics].
+
+Secured access to the HTTP endpoint is controlled by the `security-enabled` attribute of the `/subsystem=microprofile-metrics-smallrye` resource.
+If it is set to `true`, the HTTP client must be authenticated.
+
+If the application server is healthy, it will return a `200 OK` response:
+
+----
+$ curl -v http://localhost:9990/metrics
+< HTTP/1.1 200 OK
+...
+# HELP base:classloader_total_loaded_class_count Displays the total number of classes that have been loaded since the Java virtual machine has started execution
+.
+# TYPE base:classloader_total_loaded_class_count counter
+base:classloader_total_loaded_class_count 10822.0
+...
+----
+
+If security has been enabled, the HTTP client must pass the credentials corresponding to a management user
+created by the `add-user` script. For example:
+
+----
+$ curl -v --digest -u myadminuser:myadminpassword http://localhost:9990/metrics
+< HTTP/1.1 200 OK
+...
+# HELP base:classloader_total_loaded_class_count Displays the total number of classes that have been loaded since the Java virtual machine has started execution
+.
+# TYPE base:classloader_total_loaded_class_count counter
+base:classloader_total_loaded_class_count 10822.0
+...
+----
+
+If the authentication fails, the  server will reply with a `401 NOT AUTHORIZED` response.
+
+== Exposed Metrics
+
+The HTTP endpoint exposes the following metrics:
+
+* Base metrics - Required metrics specified in the MicroProfile 1.1 specification are exposed in the `base`  scope.
+* Vendor metrics - Metrics from WildFly subsystems are exposed in the `vendor` scope
+* Application metrics - Metrics from the application and from the deployment's subsystems are exposed in the `application` scope.
+
+== Component Reference
+
+The Eclipse MicroProfile Health is implemented by the SmallRye Health project.
+
+****
+
+* https://microprofile.io/project/eclipse/microprofile-metrics[Eclipse MicroProfile Metrics]
+* http://github.com/smallrye/smallrye-metrics/[SmallRye Metrics]
+
+****

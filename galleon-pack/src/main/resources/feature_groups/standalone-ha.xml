@@ -22,6 +22,7 @@
     <feature-group name="management-interfaces"/>
     <feature-group name="access-control"/>
     <feature-group name="health"/>
+    <feature-group name="metrics" />
 
     <origin name="org.wildfly:wildfly-servlet-galleon-pack">
         <feature-group name="standalone-profile"/>
