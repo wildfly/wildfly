@@ -26,7 +26,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.security.AccessController;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -34,13 +33,11 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.as.webservices.logging.WSLogger;
+import org.jboss.as.webservices.util.ServiceContainerEndpointRegistry;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.wsf.spi.deployment.Endpoint;
@@ -130,9 +127,8 @@ final class WSEndpointMetrics implements OperationStepHandler {
         final String metricName = operation.require(NAME).asString();
         final String webContext = endpointId.substring(0, endpointId.indexOf(":"));
         final String endpointName = endpointId.substring(endpointId.indexOf(":") + 1);
-        ServiceName endpointServiceName = WSServices.ENDPOINT_SERVICE.append("context="+webContext).append(endpointName);
-        ServiceController<Endpoint> service = (ServiceController<Endpoint>) currentServiceContainer().getService(endpointServiceName);
-        Endpoint endpoint= service.getValue();
+        ServiceName endpointSN = WSServices.ENDPOINT_SERVICE.append("context="+webContext).append(endpointName);
+        Endpoint endpoint = ServiceContainerEndpointRegistry.getEndpoint(endpointSN);
         if (endpoint == null) {
             throw new OperationFailedException(WSLogger.ROOT_LOGGER.noMetricsAvailable());
         }
@@ -158,12 +154,5 @@ final class WSEndpointMetrics implements OperationStepHandler {
 
     private static String getFallbackMessage() {
         return WSLogger.ROOT_LOGGER.noMetricsAvailable();
-    }
-
-    private static ServiceContainer currentServiceContainer() {
-        if(System.getSecurityManager() == null) {
-            return CurrentServiceContainer.getServiceContainer();
-        }
-        return AccessController.doPrivileged(CurrentServiceContainer.GET_ACTION);
     }
 }
