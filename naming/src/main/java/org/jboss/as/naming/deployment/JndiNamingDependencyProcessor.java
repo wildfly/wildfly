@@ -60,14 +60,14 @@ public class JndiNamingDependencyProcessor implements DeploymentUnitProcessor {
         final ServiceName serviceName = serviceName(deploymentUnit.getServiceName());
         final ServiceBuilder<?> serviceBuilder = phaseContext.getServiceTarget().addService(serviceName, new RuntimeBindReleaseService());
         for (final ServiceName dependency : dependencies) {
-            serviceBuilder.addDependency(dependency);
+            serviceBuilder.requires(dependency);
         }
         if(deploymentUnit.getParent() != null) {
             for (final ServiceName jndiDependency : deploymentUnit.getParent().getAttachment(Attachments.JNDI_DEPENDENCIES)) {
-                serviceBuilder.addDependency(jndiDependency);
+                serviceBuilder.requires(jndiDependency);
             }
         }
-        serviceBuilder.addDependency(namingStoreServiceName);
+        serviceBuilder.requires(namingStoreServiceName);
         serviceBuilder.install();
     }
 

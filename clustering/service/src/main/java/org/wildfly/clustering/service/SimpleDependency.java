@@ -39,6 +39,7 @@ public class SimpleDependency extends ServiceDependency {
 
     @Override
     public <T> ServiceBuilder<T> register(ServiceBuilder<T> builder) {
-        return builder.addDependency(this.getServiceName());
+        builder.requires(this.getServiceName());
+        return builder;
     }
 }

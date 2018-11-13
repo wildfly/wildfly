@@ -49,6 +49,7 @@ import org.apache.activemq.artemis.core.server.cluster.ha.HAManager;
 import org.jboss.as.remoting.HttpListenerRegistryService;
 import org.jboss.as.remoting.SimpleHttpUpgradeHandshake;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
@@ -91,14 +92,14 @@ public class HTTPUpgradeService implements Service<HTTPUpgradeService> {
     public static void installService(final ServiceTarget serviceTarget, String activeMQServerName, final String acceptorName, final String httpListenerName) {
 
         final HTTPUpgradeService service = new HTTPUpgradeService(activeMQServerName, acceptorName, httpListenerName);
-
-        serviceTarget.addService(HTTPAcceptorDefinition.CAPABILITY.getCapabilityServiceName(activeMQServerName,"http-upgrade-service", acceptorName), service)
-                .addAliases(MessagingServices.getHttpUpgradeServiceName(activeMQServerName, acceptorName))
-                .addDependency(MessagingServices.HTTP_UPGRADE_REGISTRY.append(httpListenerName), ChannelUpgradeHandler.class, service.injectedRegistry)
-                .addDependency(HttpListenerRegistryService.SERVICE_NAME, ListenerRegistry.class, service.listenerRegistry)
-                .addDependency(ActiveMQActivationService.getServiceName(MessagingServices.getActiveMQServiceName(activeMQServerName)))
-                .setInitialMode(ServiceController.Mode.PASSIVE)
-                .install();
+        final ServiceBuilder sb =
+        serviceTarget.addService(HTTPAcceptorDefinition.CAPABILITY.getCapabilityServiceName(activeMQServerName,"http-upgrade-service", acceptorName), service);
+        sb.addAliases(MessagingServices.getHttpUpgradeServiceName(activeMQServerName, acceptorName));
+        sb.addDependency(MessagingServices.HTTP_UPGRADE_REGISTRY.append(httpListenerName), ChannelUpgradeHandler.class, service.injectedRegistry);
+        sb.addDependency(HttpListenerRegistryService.SERVICE_NAME, ListenerRegistry.class, service.listenerRegistry);
+        sb.requires(ActiveMQActivationService.getServiceName(MessagingServices.getActiveMQServiceName(activeMQServerName)));
+        sb.setInitialMode(ServiceController.Mode.PASSIVE);
+        sb.install();
     }
 
     @Override
@@ -243,13 +244,13 @@ public class HTTPUpgradeService implements Service<HTTPUpgradeService> {
         public static void installService(final ServiceTarget serviceTarget, String activeMQServerName, final String acceptorName, final String httpListenerName) {
 
             final LegacyHttpUpgradeService service = new LegacyHttpUpgradeService(activeMQServerName, acceptorName, httpListenerName);
-
-            serviceTarget.addService(MessagingServices.getLegacyHttpUpgradeServiceName(activeMQServerName, acceptorName), service)
-                    .addDependency(MessagingServices.HTTP_UPGRADE_REGISTRY.append(httpListenerName), ChannelUpgradeHandler.class, service.injectedRegistry)
-                    .addDependency(HttpListenerRegistryService.SERVICE_NAME, ListenerRegistry.class, service.listenerRegistry)
-                    .addDependency(ActiveMQActivationService.getServiceName(MessagingServices.getActiveMQServiceName(activeMQServerName)))
-                    .setInitialMode(ServiceController.Mode.PASSIVE)
-                    .install();
+            final ServiceBuilder sb =
+            serviceTarget.addService(MessagingServices.getLegacyHttpUpgradeServiceName(activeMQServerName, acceptorName), service);
+            sb.addDependency(MessagingServices.HTTP_UPGRADE_REGISTRY.append(httpListenerName), ChannelUpgradeHandler.class, service.injectedRegistry);
+            sb.addDependency(HttpListenerRegistryService.SERVICE_NAME, ListenerRegistry.class, service.listenerRegistry);
+            sb.requires(ActiveMQActivationService.getServiceName(MessagingServices.getActiveMQServiceName(activeMQServerName)));
+            sb.setInitialMode(ServiceController.Mode.PASSIVE);
+            sb.install();
         }
 
         private LegacyHttpUpgradeService(String activeMQServerName, String acceptorName, String httpListenerName) {

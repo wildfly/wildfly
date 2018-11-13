@@ -81,12 +81,12 @@ public class RaServicesFactory {
                         service.getTxIntegrationInjector())
                 .addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE, JcaSubsystemConfiguration.class,
                         service.getConfigInjector())
-                .addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class, service.getCcmInjector())
-                .addDependency(ConnectorServices.IDLE_REMOVER_SERVICE)
-                .addDependency(ConnectorServices.CONNECTION_VALIDATOR_SERVICE)
-                .addDependency(NamingService.SERVICE_NAME)
-                .addDependency(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append(bootStrapCtxName))
-                .addDependency(ConnectorServices.RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX.append(connectorXmlDescriptor.getDeploymentName()));
+                .addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class, service.getCcmInjector());
+        builder.requires(ConnectorServices.IDLE_REMOVER_SERVICE);
+        builder.requires(ConnectorServices.CONNECTION_VALIDATOR_SERVICE);
+        builder.requires(NamingService.SERVICE_NAME);
+        builder.requires(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append(bootStrapCtxName));
+        builder.requires(ConnectorServices.RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX.append(connectorXmlDescriptor.getDeploymentName()));
 
         String raName = deployment;
         if (raxml.getId() != null) {
@@ -96,7 +96,7 @@ public class RaServicesFactory {
         for(ServiceName subServiceName: serviceRegistry.getServiceNames()) {
             if (parentName.isParentOf(subServiceName)
                     && !subServiceName.getSimpleName().equals(ConnectorServices.STATISTICS_SUFFIX)) {
-                builder.addDependency(subServiceName);
+                builder.requires(subServiceName);
             }
         }
 

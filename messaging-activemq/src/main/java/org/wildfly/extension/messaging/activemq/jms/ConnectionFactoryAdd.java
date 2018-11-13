@@ -71,10 +71,10 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
         final ConnectionFactoryConfiguration configuration = createConfiguration(context, name, model);
         final ConnectionFactoryService service = new ConnectionFactoryService(configuration);
         final ServiceName serviceName = JMSServices.getConnectionFactoryBaseServiceName(activeMQServiceName).append(name);
-        ServiceBuilder<?> serviceBuilder = context.getServiceTarget().addService(serviceName, service)
-                .addDependency(ActiveMQActivationService.getServiceName(activeMQServiceName))
-                .addDependency(JMSServices.getJmsManagerBaseServiceName(activeMQServiceName), JMSServerManager.class, service.getJmsServer())
-                .setInitialMode(Mode.PASSIVE);
+        ServiceBuilder<?> serviceBuilder = context.getServiceTarget().addService(serviceName, service);
+        serviceBuilder.requires(ActiveMQActivationService.getServiceName(activeMQServiceName));
+        serviceBuilder.addDependency(JMSServices.getJmsManagerBaseServiceName(activeMQServiceName), JMSServerManager.class, service.getJmsServer());
+        serviceBuilder.setInitialMode(Mode.PASSIVE);
         org.jboss.as.server.Services.addServerExecutorDependency(serviceBuilder, service.getExecutorInjector());
         serviceBuilder.install();
     }

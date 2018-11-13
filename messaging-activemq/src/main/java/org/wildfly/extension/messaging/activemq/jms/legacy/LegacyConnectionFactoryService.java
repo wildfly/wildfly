@@ -43,6 +43,7 @@ import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -252,11 +253,11 @@ public class LegacyConnectionFactoryService implements Service<ConnectionFactory
         final LegacyConnectionFactoryService service = new LegacyConnectionFactoryService(uncompletedConnectionFactory, discoveryGroupName, connectors);
         final ServiceName serviceName = JMSServices.getConnectionFactoryBaseServiceName(activeMQServerServiceName).append(LEGACY, name);
 
-        serviceTarget.addService(serviceName, service)
-                .addDependency(ActiveMQActivationService.getServiceName(activeMQServerServiceName))
-                .addDependency(activeMQServerServiceName, ActiveMQServer.class, service.injectedActiveMQServer)
-                .setInitialMode(ServiceController.Mode.PASSIVE)
-                .install();
+        final ServiceBuilder sb = serviceTarget.addService(serviceName, service);
+        sb.requires(ActiveMQActivationService.getServiceName(activeMQServerServiceName));
+        sb.addDependency(activeMQServerServiceName, ActiveMQServer.class, service.injectedActiveMQServer);
+        sb.setInitialMode(ServiceController.Mode.PASSIVE);
+        sb.install();
         return service;
     }
 

@@ -90,7 +90,7 @@ public class BinderServiceUtil {
                 // to fail
                 .setInitialMode(ServiceController.Mode.PASSIVE);
         if (dependency != null) {
-            serviceBuilder.addDependency(dependency);
+            serviceBuilder.requires(dependency);
         }
         serviceBuilder.install();
     }
@@ -102,11 +102,10 @@ public class BinderServiceUtil {
 
         final BinderService aliasBinderService = new BinderService(alias);
         aliasBinderService.getManagedObjectInjector().inject(new AliasManagedReferenceFactory(bindInfo.getAbsoluteJndiName()));
-
-        serviceTarget.addService(aliasBindInfo.getBinderServiceName(), aliasBinderService)
-                .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, aliasBinderService.getNamingStoreInjector())
-                .addDependency(bindInfo.getBinderServiceName())
-                .addListener(new LifecycleListener() {
+        final ServiceBuilder sb = serviceTarget.addService(aliasBindInfo.getBinderServiceName(), aliasBinderService);
+        sb.addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, aliasBinderService.getNamingStoreInjector());
+        sb.requires(bindInfo.getBinderServiceName());
+        sb.addListener(new LifecycleListener() {
                     @Override
                     public void handleEvent(ServiceController<?> controller, LifecycleEvent event) {
                         switch (event) {
@@ -124,8 +123,8 @@ public class BinderServiceUtil {
                             }
                         }
                     }
-                })
-                .install();
+                });
+        sb.install();
     }
 
     private static final class AliasManagedReferenceFactory implements ContextListAndJndiViewManagedReferenceFactory {

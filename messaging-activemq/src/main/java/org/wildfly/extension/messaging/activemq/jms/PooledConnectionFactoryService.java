@@ -43,7 +43,6 @@ import org.apache.activemq.artemis.api.core.UDPBroadcastEndpointFactory;
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.jboss.as.connector.metadata.common.CredentialImpl;
 import org.jboss.as.connector.metadata.common.SecurityImpl;
-import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeployment;
 import org.jboss.as.connector.services.mdr.AS7MetadataRepository;
 import org.jboss.as.connector.services.resourceadapters.ResourceAdapterActivatorService;
 import org.jboss.as.connector.services.resourceadapters.deployment.registry.ResourceAdapterDeploymentRegistry;
@@ -302,15 +301,14 @@ public class PooledConnectionFactoryService implements Service<Void> {
     }
 
     private static ServiceBuilder createServiceBuilder(ServiceTarget serviceTarget, ServiceName serverServiceName, ServiceName serviceName, PooledConnectionFactoryService service) {
-        ServiceBuilder serviceBuilder = serviceTarget
-                .addService(serviceName, service)
-                .addDependency(MessagingServices.getCapabilityServiceName(MessagingServices.LOCAL_TRANSACTION_PROVIDER_CAPABILITY))
-                .addDependency(serverServiceName, ActiveMQServer.class, service.activeMQServer)
-                .addDependency(ActiveMQActivationService.getServiceName(serverServiceName))
-                .addDependency(JMSServices.getJmsManagerBaseServiceName(serverServiceName))
-                // ensures that Artemis client thread pools are not stopped before any deployment depending on a pooled-connection-factory
-                .addDependency(MessagingServices.ACTIVEMQ_CLIENT_THREAD_POOL)
-                .setInitialMode(ServiceController.Mode.PASSIVE);
+        ServiceBuilder serviceBuilder = serviceTarget.addService(serviceName, service);
+        serviceBuilder.requires(MessagingServices.getCapabilityServiceName(MessagingServices.LOCAL_TRANSACTION_PROVIDER_CAPABILITY));
+        serviceBuilder.addDependency(serverServiceName, ActiveMQServer.class, service.activeMQServer);
+        serviceBuilder.requires(ActiveMQActivationService.getServiceName(serverServiceName));
+        serviceBuilder.requires(JMSServices.getJmsManagerBaseServiceName(serverServiceName));
+        // ensures that Artemis client thread pools are not stopped before any deployment depending on a pooled-connection-factory
+        serviceBuilder.requires(MessagingServices.ACTIVEMQ_CLIENT_THREAD_POOL);
+        serviceBuilder.setInitialMode(ServiceController.Mode.PASSIVE);
         return serviceBuilder;
     }
 
@@ -454,11 +452,10 @@ public class PooledConnectionFactoryService implements Service<Void> {
             activator.setCreateBinderService(createBinderService);
             activator.addJndiAliases(jndiAliases);
 
-            ServiceController<ResourceAdapterDeployment> controller =
+            final ServiceBuilder sb =
                     Services.addServerExecutorDependency(
                         serviceTarget.addService(getResourceAdapterActivatorsServiceName(name), activator),
                             activator.getExecutorServiceInjector())
-                    .addDependency(ActiveMQActivationService.getServiceName(getActiveMQServiceName(serverName)))
                     .addDependency(ConnectorServices.IRONJACAMAR_MDR, AS7MetadataRepository.class,
                             activator.getMdrInjector())
                     .addDependency(ConnectorServices.RA_REPOSITORY_SERVICE, ResourceAdapterRepository.class,
@@ -472,10 +469,12 @@ public class PooledConnectionFactoryService implements Service<Void> {
                     .addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE,
                             JcaSubsystemConfiguration.class, activator.getConfigInjector())
                     .addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class,
-                            activator.getCcmInjector()).addDependency(NamingService.SERVICE_NAME)
-                    .addDependency(MessagingServices.getCapabilityServiceName(MessagingServices.LOCAL_TRANSACTION_PROVIDER_CAPABILITY))
-                    .addDependency(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append("default"))
-                    .setInitialMode(ServiceController.Mode.PASSIVE).install();
+                            activator.getCcmInjector());
+            sb.requires(ActiveMQActivationService.getServiceName(getActiveMQServiceName(serverName)));
+            sb.requires(NamingService.SERVICE_NAME);
+            sb.requires(MessagingServices.getCapabilityServiceName(MessagingServices.LOCAL_TRANSACTION_PROVIDER_CAPABILITY));
+            sb.requires(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append("default"));
+            sb.setInitialMode(ServiceController.Mode.PASSIVE).install();
             // Mock the deployment service to allow it to start
             serviceTarget.addService(ConnectorServices.RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX.append(name), Service.NULL).install();
         } finally {

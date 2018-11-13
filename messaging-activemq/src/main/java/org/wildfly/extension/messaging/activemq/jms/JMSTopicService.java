@@ -98,10 +98,10 @@ public class JMSTopicService implements Service<Topic> {
         final JMSTopicService service = new JMSTopicService(name);
         final ServiceName serviceName = JMSServices.getJmsTopicBaseServiceName(serverServiceName).append(name);
 
-        final ServiceBuilder<Topic> serviceBuilder = serviceTarget.addService(serviceName, service)
-                .addDependency(ActiveMQActivationService.getServiceName(serverServiceName))
-                .addDependency(JMSServices.getJmsManagerBaseServiceName(serverServiceName), JMSServerManager.class, service.jmsServer)
-                .setInitialMode(ServiceController.Mode.PASSIVE);
+        final ServiceBuilder<Topic> serviceBuilder = serviceTarget.addService(serviceName, service);
+        serviceBuilder.requires(ActiveMQActivationService.getServiceName(serverServiceName));
+        serviceBuilder.addDependency(JMSServices.getJmsManagerBaseServiceName(serverServiceName), JMSServerManager.class, service.jmsServer);
+        serviceBuilder.setInitialMode(ServiceController.Mode.PASSIVE);
         org.jboss.as.server.Services.addServerExecutorDependency(serviceBuilder, service.executorInjector);
         serviceBuilder.install();
 

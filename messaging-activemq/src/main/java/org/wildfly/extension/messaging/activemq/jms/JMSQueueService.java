@@ -105,10 +105,10 @@ public class JMSQueueService implements Service<Queue> {
         final JMSQueueService service = new JMSQueueService(name, selector, durable);
 
         final ServiceName serviceName = JMSServices.getJmsQueueBaseServiceName(serverServiceName).append(name);
-        final ServiceBuilder<Queue> serviceBuilder = serviceTarget.addService(serviceName, service)
-                .addDependency(ActiveMQActivationService.getServiceName(serverServiceName))
-                .addDependency(JMSServices.getJmsManagerBaseServiceName(serverServiceName), JMSServerManager.class, service.jmsServer)
-                .setInitialMode(ServiceController.Mode.PASSIVE);
+        final ServiceBuilder<Queue> serviceBuilder = serviceTarget.addService(serviceName, service);
+        serviceBuilder.requires(ActiveMQActivationService.getServiceName(serverServiceName));
+        serviceBuilder.addDependency(JMSServices.getJmsManagerBaseServiceName(serverServiceName), JMSServerManager.class, service.jmsServer);
+        serviceBuilder.setInitialMode(ServiceController.Mode.PASSIVE);
         addServerExecutorDependency(serviceBuilder, service.executorInjector);
         serviceBuilder.install();
 

@@ -60,6 +60,7 @@ import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -183,10 +184,10 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
             final SecurityManagementService securityManagementService = new SecurityManagementService(
                 AUTHENTICATION_MANAGER, modelNode.isDefined() && modelNode.asBoolean(), CALLBACK_HANDLER,
                 AUTHORIZATION_MANAGER, AUDIT_MANAGER, IDENTITY_TRUST_MANAGER, MAPPING_MANAGER);
-            target.addService(SecurityManagementService.SERVICE_NAME, securityManagementService)
-                    .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ServiceModuleLoader.class, securityManagementService.getServiceModuleLoaderInjectedValue())
-                    .addDependency(JaasConfigurationService.SERVICE_NAME) // We need to ensure the global JAAS Configuration has been set.
-                    .setInitialMode(ServiceController.Mode.ACTIVE).install();
+            final ServiceBuilder securityManagementServiceSB = target.addService(SecurityManagementService.SERVICE_NAME, securityManagementService);
+            securityManagementServiceSB.addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ServiceModuleLoader.class, securityManagementService.getServiceModuleLoaderInjectedValue());
+            securityManagementServiceSB.requires(JaasConfigurationService.SERVICE_NAME); // We need to ensure the global JAAS Configuration has been set.
+            securityManagementServiceSB.setInitialMode(ServiceController.Mode.ACTIVE).install();
 
             // add subject factory service
             final SubjectFactoryService subjectFactoryService = new SubjectFactoryService(SUBJECT_FACTORY);
@@ -216,10 +217,10 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
             //add Simple Security Manager Service
             final SimpleSecurityManagerService simpleSecurityManagerService = new SimpleSecurityManagerService();
 
-            target.addService(SERVER_SECURITY_MANAGER.getCapabilityServiceName(), simpleSecurityManagerService)
-                .addAliases(SimpleSecurityManagerService.SERVICE_NAME)
-                .addDependency(SecurityManagementService.SERVICE_NAME)
-                .install();
+            final ServiceBuilder simpleSecurityManagerServiceSB = target.addService(SERVER_SECURITY_MANAGER.getCapabilityServiceName(), simpleSecurityManagerService);
+            simpleSecurityManagerServiceSB.addAliases(SimpleSecurityManagerService.SERVICE_NAME);
+            simpleSecurityManagerServiceSB.requires(SecurityManagementService.SERVICE_NAME);
+            simpleSecurityManagerServiceSB.install();
 
             context.addStep(new AbstractDeploymentChainStep() {
                 @Override

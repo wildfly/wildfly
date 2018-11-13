@@ -51,7 +51,7 @@ public class SingletonDeploymentUnitPhaseBuilder implements DeploymentUnitPhaseB
     public <T> ServiceBuilder<T> build(ServiceTarget target, ServiceName name, Service<T> service) {
         ServiceBuilder<T> builder = this.policy.createSingletonServiceBuilder(name, service).build(target).setInitialMode(ServiceController.Mode.ACTIVE);
         if (this.support.hasCapability(EJB_REMOTE_CAPABILITY)) {
-            builder.addDependency(this.support.getCapabilityServiceName(EJB_REMOTE_CAPABILITY));
+            builder.requires(this.support.getCapabilityServiceName(EJB_REMOTE_CAPABILITY));
         }
         return builder;
     }

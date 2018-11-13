@@ -182,13 +182,14 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
         final WeldComponentService weldComponentService = new WeldComponentService(componentClass, beanName, interceptorClasses, classLoader,
                 beanDeploymentArchiveId, description.isCDIInterceptorEnabled(), description, isComponentWithView(description, componentIntegrators));
         final ServiceBuilder<WeldComponentService> builder = target.addService(serviceName, weldComponentService)
-                .addDependency(weldServiceName, WeldBootstrapService.class, weldComponentService.getWeldContainer()).addDependency(weldStartService);
+                .addDependency(weldServiceName, WeldBootstrapService.class, weldComponentService.getWeldContainer());
+        builder.requires(weldStartService);
 
         configuration.setInstanceFactory(WeldManagedReferenceFactory.INSTANCE);
         configuration.getStartDependencies().add(new DependencyConfigurator<ComponentStartService>() {
             @Override
             public void configureDependency(final ServiceBuilder<?> serviceBuilder, ComponentStartService service) throws DeploymentUnitProcessingException {
-                serviceBuilder.addDependency(serviceName);
+                serviceBuilder.requires(serviceName);
             }
         });
 
@@ -248,10 +249,10 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
     private static ServiceName addWeldInterceptorBindingService(final ServiceTarget target, final ComponentConfiguration configuration, final Class<?> componentClass, final String beanName, final ServiceName weldServiceName, final ServiceName weldStartService, final String beanDeploymentArchiveId, final ComponentInterceptorSupport componentInterceptorSupport) {
         final WeldInterceptorBindingsService weldInterceptorBindingsService = new WeldInterceptorBindingsService(beanDeploymentArchiveId, beanName, componentClass, componentInterceptorSupport);
         ServiceName bindingServiceName = configuration.getComponentDescription().getServiceName().append(WeldInterceptorBindingsService.SERVICE_NAME);
-        target.addService(bindingServiceName, weldInterceptorBindingsService)
-                .addDependency(weldServiceName, WeldBootstrapService.class, weldInterceptorBindingsService.getWeldContainer())
-                .addDependency(weldStartService)
-                .install();
+        final ServiceBuilder sb = target.addService(bindingServiceName, weldInterceptorBindingsService);
+        sb.addDependency(weldServiceName, WeldBootstrapService.class, weldInterceptorBindingsService.getWeldContainer());
+        sb.requires(weldStartService);
+        sb.install();
         return bindingServiceName;
     }
 

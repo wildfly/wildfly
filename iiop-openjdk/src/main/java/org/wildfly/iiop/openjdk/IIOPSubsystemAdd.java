@@ -169,27 +169,27 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
         // if a security domain has been specified, add a dependency to the domain service.
         String securityDomain = props.getProperty(Constants.SECURITY_SECURITY_DOMAIN);
         if (securityDomain != null) {
-            builder.addDependency(context.getCapabilityServiceName(Capabilities.LEGACY_SECURITY_DOMAIN_CAPABILITY, securityDomain, null));
-            builder.addDependency(DefaultNamespaceContextSelectorService.SERVICE_NAME);
+            builder.requires(context.getCapabilityServiceName(Capabilities.LEGACY_SECURITY_DOMAIN_CAPABILITY, securityDomain, null));
+            builder.requires(DefaultNamespaceContextSelectorService.SERVICE_NAME);
         }
 
         // add dependencies to the ssl context services if needed.
         final String serverSSLContextName = props.getProperty(Constants.SERVER_SSL_CONTEXT);
         if (serverSSLContextName != null) {
             ServiceName serverContextServiceName = context.getCapabilityServiceName(Capabilities.SSL_CONTEXT_CAPABILITY, serverSSLContextName, SSLContext.class);
-            builder.addDependency(serverContextServiceName);
+            builder.requires(serverContextServiceName);
         }
         final String clientSSLContextName = props.getProperty(Constants.CLIENT_SSL_CONTEXT);
         if (clientSSLContextName != null) {
             ServiceName clientContextServiceName = context.getCapabilityServiceName(Capabilities.SSL_CONTEXT_CAPABILITY, clientSSLContextName, SSLContext.class);
-            builder.addDependency(clientContextServiceName);
+            builder.requires(clientContextServiceName);
         }
 
         // if an authentication context has ben specified, add a dependency to its service.
         final String authContext = props.getProperty(Constants.ORB_INIT_AUTH_CONTEXT);
         if (authContext != null) {
             ServiceName authContextServiceName = context.getCapabilityServiceName(Capabilities.AUTH_CONTEXT_CAPABILITY, authContext, AuthenticationContext.class);
-            builder.addDependency(authContextServiceName);
+            builder.requires(authContextServiceName);
         }
 
         final boolean serverRequiresSsl = IIOPRootDefinition.SERVER_REQUIRES_SSL.resolveModelAttribute(context, model).asBoolean();
@@ -220,7 +220,7 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 .addService(IORSecConfigMetaDataService.SERVICE_NAME, securityConfigMetaDataService)
                 .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
-        builder.addDependency(IORSecConfigMetaDataService.SERVICE_NAME);
+        builder.requires(IORSecConfigMetaDataService.SERVICE_NAME);
 
         // set the initial mode and install the service.
         builder.setInitialMode(ServiceController.Mode.ACTIVE).install();

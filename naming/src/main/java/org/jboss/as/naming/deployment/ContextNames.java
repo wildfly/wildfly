@@ -300,9 +300,9 @@ public class ContextNames {
             final ServiceName dependencyServiceName = parentExternalContextServiceName == null ? getBinderServiceName() : parentExternalContextServiceName;
             final ServiceContainer container = CurrentServiceContainer.getServiceContainer();
             if (optional) {
-                if (container.getService(dependencyServiceName) != null) serviceBuilder.addDependency(dependencyServiceName);
+                if (container.getService(dependencyServiceName) != null) serviceBuilder.requires(dependencyServiceName);
             } else {
-                serviceBuilder.addDependency(dependencyServiceName);
+                serviceBuilder.requires(dependencyServiceName);
             }
 
             // an injector which upon being injected with the naming store, injects a factory - which does the lookup - to the

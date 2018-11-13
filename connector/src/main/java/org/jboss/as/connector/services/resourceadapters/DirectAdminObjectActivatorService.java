@@ -176,14 +176,11 @@ public class DirectAdminObjectActivatorService implements Service<ContextNames.B
                             ServerSecurityManager.class, activator.getServerSecurityManager())
                     */
                     .addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class,
-                            activator.getCcmInjector()).addDependency(NamingService.SERVICE_NAME)
-                    .addDependency(ConnectorServices.getLocalTransactionProviderServiceName())
-                    .addDependency(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append("default"));
-
-
+                            activator.getCcmInjector());
+            adminObjectServiceBuilder.requires(NamingService.SERVICE_NAME);
+            adminObjectServiceBuilder.requires(ConnectorServices.getLocalTransactionProviderServiceName());
+            adminObjectServiceBuilder.requires(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append("default"));
             adminObjectServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
-
-
         } catch (Exception e) {
             throw new StartException(e);
         }

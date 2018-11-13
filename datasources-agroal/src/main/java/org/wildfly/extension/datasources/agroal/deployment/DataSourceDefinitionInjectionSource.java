@@ -231,6 +231,7 @@ class DataSourceDefinitionInjectionSource extends ResourceDefinitionInjectionSou
         DataSourceDefinitionService dataSourceService = new DataSourceDefinitionService(bindInfo, transactional, dataSourceConfiguration);
         phaseContext.getServiceTarget().addService(dataSourceServiceName).setInstance(dataSourceService).install();
 
-        serviceBuilder.addDependency(bindInfo.getBinderServiceName()).addDependency(dataSourceServiceName, ManagedReferenceFactory.class, injector);
+        serviceBuilder.requires(bindInfo.getBinderServiceName());
+        serviceBuilder.addDependency(dataSourceServiceName, ManagedReferenceFactory.class, injector);
     }
 }

@@ -309,14 +309,15 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                         dataSourceService.getExecutorServiceInjector())
                 .addDependency(ConnectorServices.IRONJACAMAR_MDR, MetadataRepository.class, dataSourceService.getMdrInjector())
                 .addDependency(ConnectorServices.RA_REPOSITORY_SERVICE, ResourceAdapterRepository.class, dataSourceService.getRaRepositoryInjector())
-                .addDependency(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append(DEFAULT_NAME))
                 .addDependency(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE, TransactionIntegration.class,
                         dataSourceService.getTransactionIntegrationInjector())
                 .addDependency(ConnectorServices.MANAGEMENT_REPOSITORY_SERVICE, ManagementRepository.class,
                         dataSourceService.getManagementRepositoryInjector())
                 .addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class, dataSourceService.getCcmInjector())
                 .addDependency(ConnectorServices.JDBC_DRIVER_REGISTRY_SERVICE, DriverRegistry.class,
-                        dataSourceService.getDriverRegistryInjector()).addDependency(NamingService.SERVICE_NAME);
+                        dataSourceService.getDriverRegistryInjector());
+        dataSourceServiceBuilder.requires(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append(DEFAULT_NAME));
+        dataSourceServiceBuilder.requires(NamingService.SERVICE_NAME);
 
         if (requireLegacySecurity) {
             dataSourceServiceBuilder.addDependency(SimpleSecurityManagerService.SERVICE_NAME, ServerSecurityManager.class,
@@ -332,11 +333,12 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                 overrideRegistration = registration.registerOverrideModel(managementName, DataSourcesSubsystemProviders.OVERRIDE_DS_DESC);
             }
             DataSourceStatisticsService statsService = new DataSourceStatisticsService(registration, false );
-                            serviceTarget.addService(dataSourceServiceName.append(Constants.STATISTICS), statsService)
-                                    .addDependency(dataSourceServiceName)
-                                    .addDependency(CommonDeploymentService.getServiceName(bindInfo), CommonDeployment.class, statsService.getCommonDeploymentInjector())
-                                    .setInitialMode(ServiceController.Mode.PASSIVE)
-                                    .install();
+            final ServiceBuilder statsServiceSB =
+                            serviceTarget.addService(dataSourceServiceName.append(Constants.STATISTICS), statsService);
+            statsServiceSB.requires(dataSourceServiceName);
+            statsServiceSB.addDependency(CommonDeploymentService.getServiceName(bindInfo), CommonDeployment.class, statsService.getCommonDeploymentInjector());
+            statsServiceSB.setInitialMode(ServiceController.Mode.PASSIVE);
+            statsServiceSB.install();
             DataSourceStatisticsService.registerStatisticsResources(resource);
         } // else should probably throw an ISE or something
 

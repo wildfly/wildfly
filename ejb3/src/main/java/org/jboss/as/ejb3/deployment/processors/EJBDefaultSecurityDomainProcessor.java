@@ -121,7 +121,7 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
             for(final ComponentDescription componentDescription : componentDescriptions) {
                 if (componentDescription instanceof EJBComponentDescription) {
                     componentDescription.getConfigurators().add((context, description, configuration) ->
-                                    configuration.getCreateDependencies().add((serviceBuilder, service) -> serviceBuilder.addDependency(serviceName))
+                                    configuration.getCreateDependencies().add((serviceBuilder, service) -> serviceBuilder.requires(serviceName))
                     );
                 }
             }

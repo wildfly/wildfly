@@ -81,7 +81,7 @@ public class ServiceProviderAddHandler extends AbstractEntityProviderAddHandler 
 
         SPConfiguration configuration = service.getConfiguration();
 
-        serviceBuilder.addDependency(SecurityDomainService.SERVICE_NAME.append(configuration.getSecurityDomain()));
+        serviceBuilder.requires(SecurityDomainService.SERVICE_NAME.append(configuration.getSecurityDomain()));
 
         serviceBuilder.install();
     }

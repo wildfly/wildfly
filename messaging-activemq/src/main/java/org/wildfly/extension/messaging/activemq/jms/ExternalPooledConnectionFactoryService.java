@@ -40,7 +40,6 @@ import org.apache.activemq.artemis.api.core.TransportConfiguration;
 import org.apache.activemq.artemis.api.core.UDPBroadcastEndpointFactory;
 import org.jboss.as.connector.metadata.common.CredentialImpl;
 import org.jboss.as.connector.metadata.common.SecurityImpl;
-import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeployment;
 import org.jboss.as.connector.services.mdr.AS7MetadataRepository;
 import org.jboss.as.connector.services.resourceadapters.ResourceAdapterActivatorService;
 import org.jboss.as.connector.services.resourceadapters.deployment.registry.ResourceAdapterDeploymentRegistry;
@@ -425,7 +424,7 @@ public class ExternalPooledConnectionFactoryService implements Service<Void> {
             activator.setCreateBinderService(true);
             activator.addJndiAliases(jndiAliases);
 
-            ServiceController<ResourceAdapterDeployment> controller
+            final ServiceBuilder sb
                     = Services.addServerExecutorDependency(
                             serviceTarget.addService(getResourceAdapterActivatorsServiceName(name), activator),
                             activator.getExecutorServiceInjector())
@@ -442,10 +441,11 @@ public class ExternalPooledConnectionFactoryService implements Service<Void> {
                             .addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE,
                                     JcaSubsystemConfiguration.class, activator.getConfigInjector())
                             .addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class,
-                                    activator.getCcmInjector()).addDependency(NamingService.SERVICE_NAME)
-                            .addDependency(capabilityServiceSupport.getCapabilityServiceName(MessagingServices.LOCAL_TRANSACTION_PROVIDER_CAPABILITY))
-                            .addDependency(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append("default"))
-                            .setInitialMode(ServiceController.Mode.PASSIVE).install();
+                                    activator.getCcmInjector());
+            sb.requires(NamingService.SERVICE_NAME);
+            sb.requires(capabilityServiceSupport.getCapabilityServiceName(MessagingServices.LOCAL_TRANSACTION_PROVIDER_CAPABILITY));
+            sb.requires(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append("default"));
+            sb.setInitialMode(ServiceController.Mode.PASSIVE).install();
 
             // Mock the deployment service to allow it to start
             serviceTarget.addService(ConnectorServices.RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX.append(name), Service.NULL).install();

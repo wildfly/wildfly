@@ -111,7 +111,7 @@ class ServerAdd extends AbstractAddStepHandler {
         if (listeners.isDefined()) {
             for (Property p : listeners.asPropertyList()) {
                 for (Property listener : p.getValue().asPropertyList()) {
-                    builder.addDependency(ListenerResourceDefinition.LISTENER_CAPABILITY.getCapabilityServiceName(listener.getName()));
+                    builder.requires(ListenerResourceDefinition.LISTENER_CAPABILITY.getCapabilityServiceName(listener.getName()));
                 }
             }
         }
