@@ -28,6 +28,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.wildfly.extension.picketlink.federation.service.FederationService;
 import org.wildfly.extension.undertow.UndertowService;
@@ -52,9 +53,9 @@ public class FederationAddHandler extends AbstractAddStepHandler {
         PathAddress pathAddress = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
         String alias = pathAddress.getLastElement().getValue();
         FederationService service = new FederationService(alias);
-        context.getServiceTarget().addService(FederationService.createServiceName(alias), service)
-                .addDependency(UndertowService.UNDERTOW)
-                .setInitialMode(Mode.ACTIVE)
-                .install();
+        ServiceBuilder sb = context.getServiceTarget().addService(FederationService.createServiceName(alias), service);
+        sb.requires(UndertowService.UNDERTOW);
+        sb.setInitialMode(Mode.ACTIVE);
+        sb.install();
     }
 }

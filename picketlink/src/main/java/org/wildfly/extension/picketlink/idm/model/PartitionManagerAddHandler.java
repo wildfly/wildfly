@@ -301,7 +301,7 @@ public class PartitionManagerAddHandler extends AbstractAddStepHandler {
 
             storeServiceBuilder.addDependency(PathManagerService.SERVICE_NAME, PathManager.class, storeService.getPathManager());
 
-            serviceBuilder.addDependency(storeServiceName);
+            serviceBuilder.requires(storeServiceName);
 
             ServiceController<FileIdentityStoreService> controller = storeServiceBuilder
                 .setInitialMode(Mode.PASSIVE)
@@ -340,12 +340,12 @@ public class PartitionManagerAddHandler extends AbstractAddStepHandler {
                transactions is present. Once its service is started, calls to the getInstance() methods of
                ContextTransactionManager, ContextTransactionSynchronizationRegistry and LocalUserTransaction
                can be made knowing that the global default TM, TSR and UT will be from that provider. */
-            storeServiceBuilder.addDependency(context.getCapabilityServiceName("org.wildfly.transactions.global-default-local-provider", null));
+            storeServiceBuilder.requires(context.getCapabilityServiceName("org.wildfly.transactions.global-default-local-provider", null));
 
             if (jpaDataSourceNode.isDefined()) {
                 storeConfig.dataSourceJndiUrl(toJndiName(jpaDataSourceNode.asString()));
                 storeServiceBuilder
-                    .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME
+                    .requires(ContextNames.JAVA_CONTEXT_SERVICE_NAME
                         .append(toJndiName(jpaDataSourceNode.asString()).split("/")));
             }
 
@@ -356,7 +356,7 @@ public class PartitionManagerAddHandler extends AbstractAddStepHandler {
                         ValueManagedReferenceFactory.class, new InjectedValue<ValueManagedReferenceFactory>());
             }
 
-            serviceBuilder.addDependency(storeServiceName);
+            serviceBuilder.requires(storeServiceName);
 
             ServiceController<JPAIdentityStoreService> controller = storeServiceBuilder
                 .setInitialMode(Mode.PASSIVE)

@@ -184,7 +184,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
                         securityDomainService.getConfigurationInjector());
 
         if (jsseSecurityDomain != null) {
-            builder.addDependency(ContextNames.JBOSS_CONTEXT_SERVICE_NAME.append("jaas"));
+            builder.requires(ContextNames.JBOSS_CONTEXT_SERVICE_NAME.append("jaas"));
         }
 
         if (SecurityDomainResourceDefinition.INFINISPAN_CACHE_TYPE.equals(cacheType)) {

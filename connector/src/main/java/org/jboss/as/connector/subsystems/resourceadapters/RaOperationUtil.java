@@ -418,23 +418,23 @@ public class RaOperationUtil {
                     final boolean elytronEnabled = (security instanceof SecurityMetadata && ((SecurityMetadata) security).isElytronEnabled());
                     if (security.getSecurityDomain() != null) {
                         if (!elytronEnabled) {
-                            builder.addDependency(SecurityDomainService.SERVICE_NAME.append(security.getSecurityDomain()));
+                            builder.requires(SecurityDomainService.SERVICE_NAME.append(security.getSecurityDomain()));
                         } else {
-                            builder.addDependency(context.getCapabilityServiceName(AUTHENTICATION_CONTEXT_CAPABILITY, security.getSecurityDomain(), AuthenticationContext.class));
+                            builder.requires(context.getCapabilityServiceName(AUTHENTICATION_CONTEXT_CAPABILITY, security.getSecurityDomain(), AuthenticationContext.class));
                         }
                     }
                     if (security.getSecurityDomainAndApplication() != null) {
                         if (!elytronEnabled) {
-                            builder.addDependency(SecurityDomainService.SERVICE_NAME.append(security.getSecurityDomainAndApplication()));
+                            builder.requires(SecurityDomainService.SERVICE_NAME.append(security.getSecurityDomainAndApplication()));
                         } else {
-                            builder.addDependency(context.getCapabilityServiceName(AUTHENTICATION_CONTEXT_CAPABILITY, security.getSecurityDomainAndApplication(), AuthenticationContext.class));
+                            builder.requires(context.getCapabilityServiceName(AUTHENTICATION_CONTEXT_CAPABILITY, security.getSecurityDomainAndApplication(), AuthenticationContext.class));
                         }
                     }
                     if (cd.getRecovery() != null && cd.getRecovery().getCredential() != null && cd.getRecovery().getCredential().getSecurityDomain() != null) {
                         if (!elytronEnabled) {
-                            builder.addDependency(SecurityDomainService.SERVICE_NAME.append(cd.getRecovery().getCredential().getSecurityDomain()));
+                            builder.requires(SecurityDomainService.SERVICE_NAME.append(cd.getRecovery().getCredential().getSecurityDomain()));
                         } else {
-                            builder.addDependency(context.getCapabilityServiceName(AUTHENTICATION_CONTEXT_CAPABILITY, cd.getRecovery().getCredential().getSecurityDomain(), AuthenticationContext.class));
+                            builder.requires(context.getCapabilityServiceName(AUTHENTICATION_CONTEXT_CAPABILITY, cd.getRecovery().getCredential().getSecurityDomain(), AuthenticationContext.class));
                         }
                     }
                 }
@@ -447,9 +447,9 @@ public class RaOperationUtil {
                     final String securityDomainName = workManagerSecurity.getDomain();
                     if (securityDomainName != null) {
                         if (!elytronEnabled) {
-                            builder.addDependency(SecurityDomainService.SERVICE_NAME.append(securityDomainName));
+                            builder.requires(SecurityDomainService.SERVICE_NAME.append(securityDomainName));
                         } else {
-                            builder.addDependency(context.getCapabilityServiceName(ELYTRON_SECURITY_DOMAIN_CAPABILITY, securityDomainName, SecurityDomain.class));
+                            builder.requires(context.getCapabilityServiceName(ELYTRON_SECURITY_DOMAIN_CAPABILITY, securityDomainName, SecurityDomain.class));
                         }
                     }
                 }
@@ -520,7 +520,8 @@ public class RaOperationUtil {
                 final ServiceController<?> deployerService = context.getServiceRegistry(true).getService(deployerServiceName);
                 if (deployerService == null) {
                     ServiceBuilder builder = ParsedRaDeploymentProcessor.process(connectorXmlDescriptor, ironJacamarXmlDescriptor, module.getClassLoader(), serviceTarget, annotationIndexes, RAR_MODULE.append(name), null, null);
-                    newControllers.add(builder.addDependency(raServiceName).setInitialMode(ServiceController.Mode.ACTIVE).install());
+                    builder.requires(raServiceName);
+                    newControllers.add(builder.setInitialMode(ServiceController.Mode.ACTIVE).install());
                 }
                 String rarName = resourceAdapter.getArchive();
 

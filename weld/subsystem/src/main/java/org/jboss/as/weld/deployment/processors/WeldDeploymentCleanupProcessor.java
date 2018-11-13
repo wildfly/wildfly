@@ -103,8 +103,8 @@ public class WeldDeploymentCleanupProcessor implements DeploymentUnitProcessor {
         ServiceBuilder<WeldStartCompletionService> weldStartCompletionServiceBuilder = serviceTarget
             .addService(weldStartCompletionServiceName, weldStartCompletionService)
             .addDependency(weldBootstrapServiceName, WeldBootstrapService.class, weldStartCompletionService.getBootstrap())
-            .addDependency(Services.JBOSS_SERVER_EXECUTOR, ExecutorService.class, weldStartCompletionService.getServerExecutor())
-            .addDependency(weldStartServiceName);
+            .addDependency(Services.JBOSS_SERVER_EXECUTOR, ExecutorService.class, weldStartCompletionService.getServerExecutor());
+        weldStartCompletionServiceBuilder.requires(weldStartServiceName);
         weldStartCompletionServiceBuilder.install();
     }
 

@@ -417,7 +417,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
 
             ServiceBuilder connectionFactoryBuilder = serviceTarget.addService(connectionFactoryServiceName, connectionFactoryService);
             if (deploymentServiceName != null)
-                connectionFactoryBuilder.addDependency(deploymentServiceName);
+                connectionFactoryBuilder.requires(deploymentServiceName);
 
             connectionFactoryBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
 
@@ -475,10 +475,10 @@ public abstract class AbstractResourceAdapterDeploymentService {
                 final ContextNames.BindInfo aliasBindInfo = ContextNames.bindInfoFor(alias);
                 final BinderService aliasBinderService = new BinderService(alias);
                 aliasBinderService.getManagedObjectInjector().inject(new AliasManagedReferenceFactory(bindInfo.getAbsoluteJndiName()));
-                serviceTarget.addService(aliasBindInfo.getBinderServiceName(), aliasBinderService)
-                        .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, aliasBinderService.getNamingStoreInjector())
-                        .addDependency(bindInfo.getBinderServiceName())
-                        .addListener(new LifecycleListener() {
+                final ServiceBuilder sb = serviceTarget.addService(aliasBindInfo.getBinderServiceName(), aliasBinderService);
+                sb.addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, aliasBinderService.getNamingStoreInjector());
+                sb.requires(bindInfo.getBinderServiceName());
+                sb.addListener(new LifecycleListener() {
                             @Override
                             public void handleEvent(ServiceController<?> controller, LifecycleEvent event) {
                                 switch (event) {
@@ -496,8 +496,8 @@ public abstract class AbstractResourceAdapterDeploymentService {
                                     }
                                 }
                             }
-                        })
-                        .install();
+                        });
+                sb.install();
             }
         }
 

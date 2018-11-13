@@ -42,6 +42,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
@@ -77,11 +78,11 @@ public class QueueAdd extends AbstractAddStepHandler {
             final CoreQueueConfiguration queueConfiguration = createCoreQueueConfiguration(context, queueName, model);
             final QueueService service = new QueueService(queueConfiguration, false);
             final ServiceName queueServiceName = MessagingServices.getQueueBaseServiceName(serviceName).append(queueName);
-            context.getServiceTarget().addService(queueServiceName, service)
-                    .addDependency(ActiveMQActivationService.getServiceName(serviceName))
-                    .addDependency(serviceName, ActiveMQServer.class, service.getActiveMQServer())
-                    .setInitialMode(Mode.PASSIVE)
-                    .install();
+            final ServiceBuilder sb = context.getServiceTarget().addService(queueServiceName, service);
+            sb.requires(ActiveMQActivationService.getServiceName(serviceName));
+            sb.addDependency(serviceName, ActiveMQServer.class, service.getActiveMQServer());
+            sb.setInitialMode(Mode.PASSIVE);
+            sb.install();
         }
         // else the initial subsystem install is not complete; MessagingSubsystemAdd will add a
         // handler that calls addQueueConfigs

@@ -148,7 +148,7 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
                             configuration.getStartDependencies().add(new DependencyConfigurator<ComponentStartService>() {
                                 @Override
                                 public void configureDependency(final ServiceBuilder<?> serviceBuilder, final ComponentStartService service) throws DeploymentUnitProcessingException {
-                                    serviceBuilder.addDependency(serviceName);
+                                    serviceBuilder.requires(serviceName);
                                 }
                             });
                         }
@@ -176,7 +176,7 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
                             configuration.getStartDependencies().add(new DependencyConfigurator<ComponentStartService>() {
                                 @Override
                                 public void configureDependency(ServiceBuilder<?> serviceBuilder, ComponentStartService service) throws DeploymentUnitProcessingException {
-                                    serviceBuilder.addDependency(nonFunctionalTimerServiceName);
+                                    serviceBuilder.requires(nonFunctionalTimerServiceName);
                                 }
                             });
                         }

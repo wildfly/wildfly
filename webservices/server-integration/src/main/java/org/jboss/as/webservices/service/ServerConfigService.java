@@ -97,7 +97,7 @@ public final class ServerConfigService implements Service<ServerConfig> {
             serverConfig.getUndertowServiceInjector().setValue(new ImmediateValue<UndertowService>(null));
         }
         for (ServiceName dep : dependencies) {
-            builder.addDependency(dep);
+            builder.requires(dep);
         }
         builder.setInitialMode(Mode.ACTIVE);
         return builder.install();

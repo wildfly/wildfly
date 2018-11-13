@@ -368,12 +368,12 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         ServiceTarget target = context.getServiceTarget();
         // Configure the ObjectStoreEnvironmentBeans
         final ArjunaObjectStoreEnvironmentService objStoreEnvironmentService = new ArjunaObjectStoreEnvironmentService(useJournalStore, enableAsyncIO, objectStorePath, objectStorePathRef, useJdbcStore, dataSourceJndiName, confiBuilder.build());
-        ServiceBuilder<Void> builder = target.addService(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT, objStoreEnvironmentService)
-                .addDependency(PathManagerService.SERVICE_NAME, PathManager.class, objStoreEnvironmentService.getPathManagerInjector())
-                .addDependency(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT);
+        ServiceBuilder<Void> builder = target.addService(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT, objStoreEnvironmentService);
+        builder.addDependency(PathManagerService.SERVICE_NAME, PathManager.class, objStoreEnvironmentService.getPathManagerInjector());
+        builder.requires(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT);
         if (useJdbcStore) {
             final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(dataSourceJndiName);
-            builder.addDependency(bindInfo.getBinderServiceName());
+            builder.requires(bindInfo.getBinderServiceName());
         }
         builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
 
@@ -428,16 +428,16 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 .addCapabilityRequirement("org.wildfly.network.socket-binding", SocketBinding.class, recoveryManagerService.getRecoveryBindingInjector(), recoveryBindingName)
                 .addCapabilityRequirement("org.wildfly.network.socket-binding", SocketBinding.class, recoveryManagerService.getStatusBindingInjector(), recoveryStatusBindingName)
                 .addCapabilityRequirement("org.wildfly.management.socket-binding-manager", SocketBindingManager.class, recoveryManagerService.getBindingManager())
-                .addDependency(SuspendController.SERVICE_NAME, SuspendController.class, recoveryManagerService.getSuspendControllerInjector())
-                .addDependency(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT)
-                .addDependency(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT)
-                .addAliases(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER)
-                .setInitialMode(ServiceController.Mode.ACTIVE);
+                .addDependency(SuspendController.SERVICE_NAME, SuspendController.class, recoveryManagerService.getSuspendControllerInjector());
+        recoveryManagerServiceServiceBuilder.requires(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT);
+        recoveryManagerServiceServiceBuilder.requires(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT);
+        recoveryManagerServiceServiceBuilder.addAliases(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER);
+        recoveryManagerServiceServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
 
 
         // add dependency on JTA environment bean
         for (final ServiceName dep : deps) {
-            recoveryManagerServiceServiceBuilder.addDependency(dep);
+            recoveryManagerServiceServiceBuilder.requires(dep);
         }
 
         // Register WildFly transaction services - TODO: this should eventually be separated from the Narayana subsystem
@@ -532,17 +532,16 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         //if jts is enabled we need the ORB
         if (jts) {
             transactionManagerServiceServiceBuilder.addDependency(ServiceName.JBOSS.append("iiop-openjdk", "orb-service"), ORB.class, transactionManagerService.getOrbInjector());
-            transactionManagerServiceServiceBuilder.addDependency(CorbaNamingService.SERVICE_NAME);
+            transactionManagerServiceServiceBuilder.requires(CorbaNamingService.SERVICE_NAME);
         }
 
-        transactionManagerServiceServiceBuilder
-                .addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class, transactionManagerService.getXaTerminatorInjector())
-                .addDependency(TxnServices.JBOSS_TXN_USER_TRANSACTION_REGISTRY, UserTransactionRegistry.class, transactionManagerService.getUserTransactionRegistry())
-                .addDependency(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT)
-                .addDependency(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT)
-                .addDependency(XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY.getCapabilityServiceName())
-                .setInitialMode(ServiceController.Mode.ACTIVE)
-                .install();
+        transactionManagerServiceServiceBuilder.addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class, transactionManagerService.getXaTerminatorInjector());
+        transactionManagerServiceServiceBuilder.addDependency(TxnServices.JBOSS_TXN_USER_TRANSACTION_REGISTRY, UserTransactionRegistry.class, transactionManagerService.getUserTransactionRegistry());
+        transactionManagerServiceServiceBuilder.requires(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT);
+        transactionManagerServiceServiceBuilder.requires(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT);
+        transactionManagerServiceServiceBuilder.requires(XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY.getCapabilityServiceName());
+        transactionManagerServiceServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
+        transactionManagerServiceServiceBuilder.install();
     }
 
     private void checkIfNodeIdentifierIsDefault(final OperationContext context, final ModelNode model) throws OperationFailedException {

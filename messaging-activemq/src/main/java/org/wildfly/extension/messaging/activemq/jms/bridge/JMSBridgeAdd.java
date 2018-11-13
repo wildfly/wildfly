@@ -89,9 +89,9 @@ public class JMSBridgeAdd extends AbstractAddStepHandler {
                 final JMSBridgeService bridgeService = new JMSBridgeService(moduleName, bridgeName, bridge);
                 final ServiceName bridgeServiceName = MessagingServices.getJMSBridgeServiceName(bridgeName);
 
-                final ServiceBuilder<JMSBridge> jmsBridgeServiceBuilder = context.getServiceTarget().addService(bridgeServiceName, bridgeService)
-                        .addDependency(context.getCapabilityServiceName(MessagingServices.LOCAL_TRANSACTION_PROVIDER_CAPABILITY, null))
-                        .setInitialMode(Mode.ACTIVE);
+                final ServiceBuilder<JMSBridge> jmsBridgeServiceBuilder = context.getServiceTarget().addService(bridgeServiceName, bridgeService);
+                jmsBridgeServiceBuilder.requires(context.getCapabilityServiceName(MessagingServices.LOCAL_TRANSACTION_PROVIDER_CAPABILITY, null));
+                jmsBridgeServiceBuilder.setInitialMode(Mode.ACTIVE);
                 addServerExecutorDependency(jmsBridgeServiceBuilder, bridgeService.getExecutorInjector());
                 if (dependsOnLocalResources(context, model, JMSBridgeDefinition.SOURCE_CONTEXT)) {
                     addDependencyForJNDIResource(jmsBridgeServiceBuilder, model, context, JMSBridgeDefinition.SOURCE_CONNECTION_FACTORY);
@@ -103,7 +103,7 @@ public class JMSBridgeAdd extends AbstractAddStepHandler {
                 }
                 // add a dependency to the Artemis thread pool so that if either the source or target JMS broker
                 // corresponds to a local Artemis server, the pool will be cleaned up after the JMS bridge is stopped.
-                jmsBridgeServiceBuilder.addDependency(MessagingServices.ACTIVEMQ_CLIENT_THREAD_POOL);
+                jmsBridgeServiceBuilder.requires(MessagingServices.ACTIVEMQ_CLIENT_THREAD_POOL);
                 // adding credential source supplier which will later resolve password from CredentialStore using credential-reference
                 addCredentialStoreReference(bridgeService.getSourceCredentialSourceSupplierInjector(), JMSBridgeDefinition.SOURCE_CREDENTIAL_REFERENCE, context, model, jmsBridgeServiceBuilder);
                 addCredentialStoreReference(bridgeService.getTargetCredentialSourceSupplierInjector(), JMSBridgeDefinition.TARGET_CREDENTIAL_REFERENCE, context, model, jmsBridgeServiceBuilder);
@@ -126,7 +126,7 @@ public class JMSBridgeAdd extends AbstractAddStepHandler {
     private void addDependencyForJNDIResource(final ServiceBuilder<JMSBridge> builder, final ModelNode model, final OperationContext context,
             final AttributeDefinition attribute) throws OperationFailedException {
         String jndiName = attribute.resolveModelAttribute(context, model).asString();
-        builder.addDependency(ContextNames.bindInfoFor(jndiName).getBinderServiceName());
+        builder.requires(ContextNames.bindInfoFor(jndiName).getBinderServiceName());
     }
 
     private JMSBridge createJMSBridge(OperationContext context, ModelNode model) throws OperationFailedException {

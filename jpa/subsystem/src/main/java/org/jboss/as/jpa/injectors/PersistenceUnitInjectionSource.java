@@ -63,7 +63,7 @@ public class PersistenceUnitInjectionSource extends InjectionSource {
 
     public void getResourceValue(final ResolutionContext resolutionContext, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) throws
         DeploymentUnitProcessingException {
-        serviceBuilder.addDependency(puServiceName);
+        serviceBuilder.requires(puServiceName);
         injector.inject(injectable);
     }
 

@@ -237,7 +237,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         // add the weld service
         final ServiceBuilder<WeldBootstrapService> weldBootstrapServiceBuilder = serviceTarget.addService(weldBootstrapServiceName, weldBootstrapService);
 
-        weldBootstrapServiceBuilder.addDependency(TCCLSingletonService.SERVICE_NAME);
+        weldBootstrapServiceBuilder.requires(TCCLSingletonService.SERVICE_NAME);
         weldBootstrapServiceBuilder.addDependency(WeldExecutorServices.SERVICE_NAME, ExecutorServices.class, weldBootstrapService.getExecutorServices());
         weldBootstrapServiceBuilder.addDependency(Services.JBOSS_SERVER_EXECUTOR, ExecutorService.class, weldBootstrapService.getServerExecutor());
 
@@ -267,24 +267,24 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         ServiceBuilder<WeldStartService> startService = serviceTarget.addService(weldStartServiceName, weldStartService)
                 .addDependency(weldBootstrapServiceName, WeldBootstrapService.class, weldStartService.getBootstrap());
         for (final ServiceName dependency : dependencies) {
-            startService.addDependency(dependency);
+            startService.requires(dependency);
         }
 
         // make sure JNDI bindings are up
-        startService.addDependency(JndiNamingDependencyProcessor.serviceName(deploymentUnit));
+        startService.requires(JndiNamingDependencyProcessor.serviceName(deploymentUnit));
 
         final CapabilityServiceSupport capabilities = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
         boolean tx = capabilities.hasCapability("org.wildfly.transactions");
         // [WFLY-5232]
         for (final ServiceName jndiSubsystemDependency : getJNDISubsytemDependencies(tx)) {
-            startService.addDependency(jndiSubsystemDependency);
+            startService.requires(jndiSubsystemDependency);
         }
 
         final EarMetaData earConfig = deploymentUnit.getAttachment(org.jboss.as.ee.structure.Attachments.EAR_METADATA);
         if (earConfig == null || !earConfig.getInitializeInOrder())  {
             // in-order install of sub-deployments may result in service dependencies deadlocks if the jndi dependency services of subdeployments are added as dependencies
             for (DeploymentUnit sub : subDeployments) {
-                startService.addDependency(JndiNamingDependencyProcessor.serviceName(sub));
+                startService.requires(JndiNamingDependencyProcessor.serviceName(sub));
             }
         }
 

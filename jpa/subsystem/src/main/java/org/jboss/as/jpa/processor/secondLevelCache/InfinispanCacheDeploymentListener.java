@@ -121,7 +121,7 @@ public class InfinispanCacheDeploymentListener implements EventListener {
         CapabilityServiceSupport support = CacheDeploymentListener.getInternalDeploymentCapablityServiceSupport();
         String container = properties.getProperty(CONTAINER);
         for (String cache : properties.getProperty(CACHES).split("\\s+")) {
-            builder.addDependency(InfinispanCacheRequirement.CONFIGURATION.getServiceName(support, container, cache));
+            builder.requires(InfinispanCacheRequirement.CONFIGURATION.getServiceName(support, container, cache));
         }
     }
 

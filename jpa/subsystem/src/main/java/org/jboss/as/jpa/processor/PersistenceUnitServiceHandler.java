@@ -590,7 +590,7 @@ public class PersistenceUnitServiceHandler {
             ServiceBuilder<PersistenceUnitService> builder = serviceTarget.addService(puServiceName, service);
             // the PU service has to depend on the JPAService which is responsible for setting up the necessary JPA infrastructure (like registering the cache EventListener(s))
             // @see https://issues.jboss.org/browse/WFLY-1531 for details
-            builder.addDependency(JPAServiceNames.getJPAServiceName());
+            builder.requires(JPAServiceNames.getJPAServiceName());
 
             // add dependency on first phase
             builder.addDependency(puServiceName.append(FIRST_PHASE), new CastingInjector<>(service.getPhaseOnePersistenceUnitServiceImplInjector(), PhaseOnePersistenceUnitServiceImpl.class));

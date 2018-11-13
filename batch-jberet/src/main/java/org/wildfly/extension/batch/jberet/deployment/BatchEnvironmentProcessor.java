@@ -128,7 +128,7 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
             // Register the required services
             serviceBuilder.addDependency(Capabilities.BATCH_CONFIGURATION_CAPABILITY.getCapabilityServiceName(), BatchConfiguration.class, service.getBatchConfigurationInjector());
             // Ensure local transaction support is started
-            serviceBuilder.addDependency(support.getCapabilityServiceName(Capabilities.LOCAL_TRANSACTION_PROVIDER_CAPABILITY));
+            serviceBuilder.requires(support.getCapabilityServiceName(Capabilities.LOCAL_TRANSACTION_PROVIDER_CAPABILITY));
 
             final ServiceName artifactFactoryServiceName = BatchServiceNames.batchArtifactFactoryServiceName(deploymentUnit);
             final ArtifactFactoryService artifactFactoryService = new ArtifactFactoryService();

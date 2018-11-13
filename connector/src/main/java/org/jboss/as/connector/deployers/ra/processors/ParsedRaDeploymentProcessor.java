@@ -134,7 +134,7 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
             if (bootstrapCtx == null)
                 bootstrapCtx = "default";
 
-            builder.addDependency(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append(bootstrapCtx));
+            builder.requires(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append(bootstrapCtx));
             //Register an empty override model regardless of we're enabled or not - the statistics listener will add the relevant childresources
             if (registration.isAllowsOverride() && registration.getOverrideModel(deploymentUnit.getName()) == null) {
                 registration.registerOverrideModel(deploymentUnit.getName(), new OverrideDescriptionProvider() {
@@ -211,10 +211,10 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
                 .addDependency(ConnectorServices.MANAGEMENT_REPOSITORY_SERVICE, ManagementRepository.class, raDeploymentService.getManagementRepositoryInjector())
                 .addDependency(ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE, ResourceAdapterDeploymentRegistry.class, raDeploymentService.getRegistryInjector())
                 .addDependency(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE, TransactionIntegration.class, raDeploymentService.getTxIntegrationInjector())
-                .addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE, JcaSubsystemConfiguration.class, raDeploymentService.getConfigInjector())
-                .addDependency(ConnectorServices.IDLE_REMOVER_SERVICE)
-                .addDependency(ConnectorServices.CONNECTION_VALIDATOR_SERVICE)
-                .addDependency(NamingService.SERVICE_NAME);
+                .addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE, JcaSubsystemConfiguration.class, raDeploymentService.getConfigInjector());
+            builder.requires(ConnectorServices.IDLE_REMOVER_SERVICE);
+            builder.requires(ConnectorServices.CONNECTION_VALIDATOR_SERVICE);
+            builder.requires(NamingService.SERVICE_NAME);
             if (transactionSupport == null || transactionSupport.equals(TransactionSupportEnum.NoTransaction)) {
                 builder.addDependency(ConnectorServices.NON_TX_CCM_SERVICE, CachedConnectionManager.class, raDeploymentService.getCcmInjector());
             } else {
