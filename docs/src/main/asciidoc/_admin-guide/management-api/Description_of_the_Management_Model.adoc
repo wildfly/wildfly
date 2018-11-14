@@ -331,6 +331,14 @@ m, h, KB, MB, TB. See the
 `org.jboss.as.controller.client.helpers.MeasurementUnit` in the
 org.jboss.as:jboss-as-controller-client artifact for a listing of legal
 measurement units..
+* `filesystem-path` – boolean – a flag to indicate that the attribute is a 
+path on the filesystem.
+* `attached-streams` – boolean – a flag to indicate that the attribute is a 
+stream id to an attached stream.
+* `relative-to` – boolean – a flag to indicate that the attribute is a 
+relative path.
+* `feature-reference` – boolean – a flag to indicate that the attribute is a
+reference to a provisioning feature via a capability.
 
 Some examples:
 
