@@ -28,6 +28,7 @@ import static org.jboss.as.webservices.dmr.PackageUtils.getHandlerChainServiceNa
 import static org.jboss.as.webservices.dmr.PackageUtils.getHandlerServiceName;
 
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -39,10 +40,10 @@ import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.as.webservices.service.HandlerService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData;
 
 /**
  * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
@@ -78,7 +79,6 @@ final class HandlerAdd extends AbstractAddStepHandler {
             final String handlerName = address.getElement(address.size() - 1).getValue();
             final String handlerClass = operation.require(CLASS).asString();
 
-            final HandlerService service = new HandlerService(handlerName, handlerClass, counter.incrementAndGet());
             final ServiceTarget target = context.getServiceTarget();
             final ServiceName configServiceName = getConfigServiceName(configType, configName);
             final ServiceRegistry registry = context.getServiceRegistry(false);
@@ -90,9 +90,10 @@ final class HandlerAdd extends AbstractAddStepHandler {
                 throw WSLogger.ROOT_LOGGER.missingHandlerChain(configName, handlerChainType, handlerChainId);
             }
             final ServiceName handlerServiceName = getHandlerServiceName(handlerChainServiceName, handlerName);
-
-            final ServiceBuilder<?> handlerServiceBuilder = target.addService(handlerServiceName, service);
-            ServiceController<?> controller = handlerServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
+            final ServiceBuilder<?> handlerServiceBuilder = target.addService(handlerServiceName);
+            final Consumer<UnifiedHandlerMetaData> handlerConsumer = handlerServiceBuilder.provides(handlerServiceName);
+            handlerServiceBuilder.setInstance(new HandlerService(handlerName, handlerClass, counter.incrementAndGet(), handlerConsumer));
+            handlerServiceBuilder.install();
         } else {
             context.reloadRequired();
         }
