@@ -19,21 +19,32 @@
 package org.jboss.as.webservices.publish;
 
 import org.jboss.as.web.host.WebHost;
-import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.wsf.spi.publish.EndpointPublisher;
 import org.jboss.wsf.spi.publish.EndpointPublisherFactory;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Factory for retrieving an EndpointPublisher instance for the currently running JBoss Application Server container.
  *
  * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public class EndpointPublisherFactoryImpl implements EndpointPublisherFactory {
+public final class EndpointPublisherFactoryImpl implements EndpointPublisherFactory {
 
-    public EndpointPublisher newEndpointPublisher(String hostname) throws Exception {
-        WebHost virtualHost = ASHelper.getMSCService(WebHost.SERVICE_NAME.append(hostname),
-                WebHost.class);
-        return new EndpointPublisherImpl(virtualHost);
+    private static final Map<String,WebHost> virtualHosts = new ConcurrentHashMap<>();
+
+    public EndpointPublisher newEndpointPublisher(final String hostname) {
+        return new EndpointPublisherImpl(virtualHosts.get(hostname));
+    }
+
+    public static void addHost(final String hostname, final WebHost virtualHost) {
+        virtualHosts.put(hostname, virtualHost);
+    }
+
+    public static void removeHost(final String hostname, final WebHost virtualHost) {
+        virtualHosts.remove(hostname, virtualHost);
     }
 
 }

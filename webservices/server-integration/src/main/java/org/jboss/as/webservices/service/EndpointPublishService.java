@@ -29,6 +29,7 @@ import java.util.function.Supplier;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.web.host.WebHost;
 import org.jboss.as.webservices.logging.WSLogger;
+import org.jboss.as.webservices.publish.EndpointPublisherFactoryImpl;
 import org.jboss.as.webservices.publish.EndpointPublisherHelper;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
@@ -53,13 +54,16 @@ import org.jboss.wsf.spi.publish.Context;
 public final class EndpointPublishService implements Service {
 
     private final ServiceName name;
+    private final String hostName;
     private volatile Context wsctx;
     private final DeploymentUnit deploymentUnit;
     private final Consumer<Context> wsctxConsumer;
     private final Supplier<WebHost> hostSupplier;
 
-    private EndpointPublishService(final ServiceName name, final DeploymentUnit deploymentUnit, final Consumer<Context> wsctxConsumer, final Supplier<WebHost> hostSupplier) {
+    private EndpointPublishService(final ServiceName name, final String hostName, final DeploymentUnit deploymentUnit,
+                                   final Consumer<Context> wsctxConsumer, final Supplier<WebHost> hostSupplier) {
         this.name = name;
+        this.hostName = hostName;
         this.deploymentUnit = deploymentUnit;
         this.wsctxConsumer = wsctxConsumer;
         this.hostSupplier = hostSupplier;
@@ -69,6 +73,7 @@ public final class EndpointPublishService implements Service {
     public void start(final StartContext ctx) throws StartException {
         WSLogger.ROOT_LOGGER.starting(name);
         try {
+            EndpointPublisherFactoryImpl.addHost(hostName, hostSupplier.get());
             wsctxConsumer.accept(wsctx = EndpointPublisherHelper.doPublishStep(hostSupplier.get(), ctx.getChildTarget(), deploymentUnit));
         } catch (Exception e) {
             throw new StartException(e);
@@ -78,6 +83,8 @@ public final class EndpointPublishService implements Service {
     @Override
     public void stop(final StopContext ctx) {
         WSLogger.ROOT_LOGGER.stopping(name);
+        EndpointPublisherFactoryImpl.removeHost(hostName, hostSupplier.get());
+        wsctxConsumer.accept(null);
         List<Endpoint> eps = wsctx.getEndpoints();
         if (eps == null || eps.isEmpty()) {
             return;
@@ -107,7 +114,7 @@ public final class EndpointPublishService implements Service {
         }
         final Consumer<Context> contextConsumer = builder.provides(serviceName);
         final Supplier<WebHost> hostSupplier = builder.requires(WebHost.SERVICE_NAME.append(hostName));
-        builder.setInstance(new EndpointPublishService(serviceName, unit, contextConsumer, hostSupplier));
+        builder.setInstance(new EndpointPublishService(serviceName, hostName, unit, contextConsumer, hostSupplier));
         return builder;
     }
 
