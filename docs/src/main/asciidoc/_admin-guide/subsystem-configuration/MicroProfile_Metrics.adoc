@@ -73,6 +73,25 @@ The HTTP endpoint exposes the following metrics:
 * Vendor metrics - Metrics from WildFly subsystems are exposed in the `vendor` scope
 * Application metrics - Metrics from the application and from the deployment's subsystems are exposed in the `application` scope.
 
+=== WildFly Metrics Description
+
+WildFly metrics can appears in two scopes:
+
+* `vendor` for metrics defined in subsystem resources (e.g. the `bytes-received` attribute of the `/subsystem=undertow/server=default-server/http-listener=default` resource)
+* `applications` for metrics defined in deployment resources (e.g. the `request-count` attribute on the `/deployment=<deployment name>/subsystem=undertow/servlet=<servlet name>` resource).
+
+The name of the MicroProfile metric is composed of the whole resource address appended by the attribute name.
+For example, `subsystem/undertow/server/default-server/http-listener/default/request-count` and `deployment/example.war/subsystem/undertow/servlet/org.example.MyServlet/request-count` for the two attributes above.
+
+==== Tags
+
+WildFly metrics provides tags corresponding to the resource address elements as well as a tag with the attribute name.
+This allows to be able to query all MicroProfile metrics for a subsystem (e.g. `subsystem="undertow"`) or a deployment (e.g. `deployment="example.war`).
+
+For example, the MicroProfile metric registered for the `request-count` attribute on the `/deployment=example.war/subsystem=undertow/servlet=org.example.MyServlet` resource will have the following tags:
+
+* `subsystem="undertow", servlet="org.example.MyServlet", deployment="example.war", attribute="request-count"` (note that the tag order does not preserve order of the resource address)
+
 == Component Reference
 
 The Eclipse MicroProfile Health is implemented by the SmallRye Health project.

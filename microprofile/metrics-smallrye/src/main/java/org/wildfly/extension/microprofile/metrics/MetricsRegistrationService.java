@@ -21,6 +21,7 @@
  */
 package org.wildfly.extension.microprofile.metrics;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
@@ -46,6 +47,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import io.smallrye.metrics.ExtendedMetadata;
@@ -122,7 +124,7 @@ public class MetricsRegistrationService implements Service<MetricsRegistrationSe
         registerMetrics(rootResource,
                 rootResourceRegistration,
                 MetricRegistries.get(MetricRegistry.Type.VENDOR),
-                (address, attributeName) -> address.toPathStyleString().substring(1) + "/" + attributeName);
+                Function.identity());
     }
 
     @Override
@@ -144,20 +146,12 @@ public class MetricsRegistrationService implements Service<MetricsRegistrationSe
         return this;
     }
 
-    public interface MetricNameCreator {
-        String createName(PathAddress address, String attributeName);
-
-        default PathAddress getResourceAddress(PathAddress address) {
-            return address;
-        }
-    }
-
     public Set<String> registerMetrics(Resource rootResource,
                                        ImmutableManagementResourceRegistration managementResourceRegistration,
                                        MetricRegistry metricRegistry,
-                                       MetricNameCreator metricNameCreator) {
+                                       Function<PathAddress, PathAddress> resourceAddressResolver) {
         Map<PathAddress, Map<String, ModelNode>> metrics = findMetrics(rootResource, managementResourceRegistration);
-        Set<String> registeredMetrics = registerMetrics(metrics, metricRegistry, metricNameCreator);
+        Set<String> registeredMetrics = registerMetrics(metrics, metricRegistry, resourceAddressResolver);
         return registeredMetrics;
     }
 
@@ -206,20 +200,29 @@ public class MetricsRegistrationService implements Service<MetricsRegistrationSe
         }
     }
 
-    public Set<String> registerMetrics(Map<PathAddress, Map<String, ModelNode>> metrics, MetricRegistry registry, MetricNameCreator metricNameCreator) {
+    public Set<String> registerMetrics(Map<PathAddress, Map<String, ModelNode>> metrics, MetricRegistry registry, Function<PathAddress, PathAddress> resourceAddressResolver) {
         Set<String> registeredMetricNames = new HashSet<>();
 
         for (Map.Entry<PathAddress, Map<String, ModelNode>> entry : metrics.entrySet()) {
-            PathAddress address = entry.getKey();
+            PathAddress resourceAddress = resourceAddressResolver.apply(entry.getKey());
             for (Map.Entry<String, ModelNode> wildflyMetric : entry.getValue().entrySet()) {
                 String attributeName = wildflyMetric.getKey();
                 ModelNode attributeDescription = wildflyMetric.getValue();
 
-                String metricName = metricNameCreator.createName(address, attributeName);
+                String metricName = resourceAddress.toPathStyleString().substring(1) + "/" + attributeName;
                 String unit = attributeDescription.get(UNIT).asString(MetricUnits.NONE).toLowerCase();
                 String description = attributeDescription.get(DESCRIPTION).asStringOrNull();
 
-                Metadata metadata = new ExtendedMetadata(metricName, attributeName + " for " + address.toHttpStyleString(), description, MetricType.GAUGE, unit);
+                // fill the MP Metric tags with the address key/value pairs (that will be not preserve order)
+                // and an attribute=<attributeName> tag
+                HashMap<String, String> tags = new HashMap<>();
+                for (PathElement element: resourceAddress) {
+                    tags.put(element.getKey(), element.getValue());
+                }
+                tags.put(ATTRIBUTE, attributeName);
+
+                Metadata metadata = new ExtendedMetadata(metricName, attributeName + " for " + resourceAddress.toHttpStyleString(), description, MetricType.GAUGE, unit);
+                metadata.setTags(tags);
 
                 ModelType type = attributeDescription.get(TYPE).asType();
 
@@ -241,7 +244,7 @@ public class MetricsRegistrationService implements Service<MetricsRegistrationSe
                     case TYPE:
                     case UNDEFINED:
                     default:
-                        LOGGER.debugf("Type %s is not supported for MicroProfile Metrics, the attribute %s on %s will not be registered.", type, attributeName, address);
+                        LOGGER.debugf("Type %s is not supported for MicroProfile Metrics, the attribute %s on %s will not be registered.", type, attributeName, resourceAddress);
                         continue;
                 }
                 Metric metric = new Gauge() {
@@ -249,14 +252,14 @@ public class MetricsRegistrationService implements Service<MetricsRegistrationSe
                     public Number getValue() {
                         final ModelNode readAttributeOp = new ModelNode();
                         readAttributeOp.get(OP).set(READ_ATTRIBUTE_OPERATION);
-                        readAttributeOp.get(OP_ADDR).set(metricNameCreator.getResourceAddress(address).toModelNode());
+                        readAttributeOp.get(OP_ADDR).set(resourceAddress.toModelNode());
                         readAttributeOp.get(ModelDescriptionConstants.INCLUDE_UNDEFINED_METRIC_VALUES).set(true);
                         readAttributeOp.get(NAME).set(attributeName);
                         ModelNode response = modelControllerClient.execute(readAttributeOp);
                         String error = getFailureDescription(response);
                         if (error != null) {
                             registry.remove(metricName);
-                            throw LOGGER.unableToReadAttribute(attributeName, address, error);
+                            throw LOGGER.unableToReadAttribute(attributeName, resourceAddress, error);
                         }
                         ModelNode result = response.get(RESULT);
                         if (result.isDefined()) {
@@ -271,11 +274,11 @@ public class MetricsRegistrationService implements Service<MetricsRegistrationSe
                                         return result.asDouble();
                                 }
                             } catch (Exception e) {
-                                throw LOGGER.unableToConvertAttribute(attributeName, address, e);
+                                throw LOGGER.unableToConvertAttribute(attributeName, resourceAddress, e);
                             }
                         } else {
                             registry.remove(metricName);
-                            throw LOGGER.undefinedMetric(attributeName, address);
+                            throw LOGGER.undefinedMetric(attributeName, resourceAddress);
                         }
                     }
                 };
