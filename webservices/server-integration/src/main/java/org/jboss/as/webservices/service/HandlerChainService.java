@@ -25,13 +25,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
-import org.jboss.as.webservices.dmr.ListInjector;
 import org.jboss.as.webservices.logging.WSLogger;
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.Service;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerChainMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData;
@@ -40,48 +39,51 @@ import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData;
  * A service for creating handler chain metadata.
  *
  * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public final class HandlerChainService implements Service<UnifiedHandlerChainMetaData> {
+public final class HandlerChainService implements Service {
 
-    private final List<UnifiedHandlerMetaData> handlers = new ArrayList<UnifiedHandlerMetaData>(2);
     private final String handlerChainId;
     private final String protocolBindings;
-    private volatile UnifiedHandlerChainMetaData handlerChain;
+    private final List<Supplier<UnifiedHandlerMetaData>> handlerSuppliers;
+    private final Consumer<UnifiedHandlerChainMetaData> handlerChainConsumer;
 
-    public HandlerChainService(String handlerChainType, String handlerChainId, String protocolBindings) {
+    public HandlerChainService(final String handlerChainType, final String handlerChainId, final String protocolBindings,
+                               final Consumer<UnifiedHandlerChainMetaData> handlerChainConsumer,
+                               final List<Supplier<UnifiedHandlerMetaData>> handlerSuppliers) {
         if (!handlerChainType.equalsIgnoreCase("pre-handler-chain") && !handlerChainType.equals("post-handler-chain")) {
             throw new RuntimeException(
                     WSLogger.ROOT_LOGGER.wrongHandlerChainType(handlerChainType, "pre-handler-chain", "post-handler-chain"));
         }
         this.handlerChainId = handlerChainId;
         this.protocolBindings = protocolBindings;
+        this.handlerChainConsumer = handlerChainConsumer;
+        this.handlerSuppliers = handlerSuppliers;
     }
 
     @Override
-    public UnifiedHandlerChainMetaData getValue() {
-        return handlerChain;
-    }
-
-    @Override
-    public void start(final StartContext context) throws StartException {
-        Comparator<UnifiedHandlerMetaData> c = new Comparator<UnifiedHandlerMetaData>() {
-            @Override
-            public int compare(UnifiedHandlerMetaData o1, UnifiedHandlerMetaData o2) {
-                return o1.getId().compareTo(o2.getId());
-            }
-        };
-        synchronized (handlers) {
-            Collections.sort(handlers, c);
+    public void start(final StartContext context) {
+        final List<UnifiedHandlerMetaData> handlers = new ArrayList<>();
+        for (final Supplier<UnifiedHandlerMetaData> handlerSupplier : handlerSuppliers) {
+            handlers.add(handlerSupplier.get());
         }
-        handlerChain = new UnifiedHandlerChainMetaData(null, null, protocolBindings, handlers, false, handlerChainId);
+        Collections.sort(handlers, HandlersComparator.INSTANCE);
+        handlerChainConsumer.accept(new UnifiedHandlerChainMetaData(null, null, protocolBindings, handlers, false, handlerChainId));
     }
 
     @Override
     public void stop(final StopContext context) {
-        handlerChain = null;
+        handlerChainConsumer.accept(null);
     }
 
-    public Injector<UnifiedHandlerMetaData> getHandlersInjector() {
-        return new ListInjector<UnifiedHandlerMetaData>(handlers);
+    private static final class HandlersComparator implements Comparator<UnifiedHandlerMetaData> {
+
+        private static final Comparator<UnifiedHandlerMetaData> INSTANCE = new HandlersComparator();
+
+        @Override
+        public int compare(final UnifiedHandlerMetaData o1, final UnifiedHandlerMetaData o2) {
+            return o1.getId().compareTo(o2.getId());
+        }
     }
+
 }
