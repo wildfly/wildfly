@@ -52,11 +52,8 @@
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.xts"/>
-        <module name="org.jboss.threads"/>
         <!-- need this to get the SPIProviderResolver  -->
         <module name="org.jboss.ws.spi"/>
-        <!-- need this to get the actual SPIProvider  -->
-        <module name="org.jboss.ws.common"/>
         <module name="org.jboss.jandex"/>
         <module name="org.jboss.modules"/>
         <module name="javax.enterprise.api"/>
