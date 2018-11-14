@@ -34,16 +34,12 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.as.webservices.service.ConfigService;
 import org.jboss.as.webservices.service.PropertyService;
-import org.jboss.as.webservices.util.ASHelper;
-import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.wsf.spi.management.ServerConfig;
 import org.jboss.wsf.spi.metadata.config.AbstractCommonConfig;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerChainMetaData;
 
@@ -79,11 +75,6 @@ final class EndpointConfigAdd extends AbstractAddStepHandler {
         if (context.isBooting()) {
            final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
            final String name = address.getLastElement().getValue();
-           //get the server config object from the ServerConfigService (service installed but not started yet, but the object is fine for our needs here)
-           final ServerConfig serverConfig = ASHelper.getMSCService(WSServices.CONFIG_SERVICE, ServerConfig.class, context);
-           if (serverConfig == null) {
-               throw WSLogger.ROOT_LOGGER.serviceNotAvailable(WSServices.CONFIG_SERVICE.getCanonicalName());
-           }
            final ServiceName serviceName = getEndpointConfigServiceName(name);
            final ServiceTarget target = context.getServiceTarget();
            final ServiceBuilder<?> serviceBuilder = target.addService(serviceName);
@@ -100,7 +91,7 @@ final class EndpointConfigAdd extends AbstractAddStepHandler {
                postHandlerChainSuppliers.add(serviceBuilder.requires(sn));
            }
            final Consumer<AbstractCommonConfig> config = serviceBuilder.provides(serviceName);
-           serviceBuilder.setInstance(new ConfigService(serverConfig, name, false, config, propertySuppliers, preHandlerChainSuppliers, postHandlerChainSuppliers));
+           serviceBuilder.setInstance(new ConfigService(name, false, config, propertySuppliers, preHandlerChainSuppliers, postHandlerChainSuppliers));
            serviceBuilder.install();
         } else {
            context.reloadRequired();

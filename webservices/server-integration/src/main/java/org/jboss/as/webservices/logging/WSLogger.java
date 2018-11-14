@@ -293,8 +293,8 @@ public interface WSLogger extends BasicLogger {
     @Message(id = 67, value = "Could not activate the webservices subsystem.")
     void couldNotActivateSubsystem(@Cause Throwable cause);
 
-    @Message(id = 68, value = "Service %s not available")
-    OperationFailedException serviceNotAvailable(String serviceName);
+//    @Message(id = 68, value = "Service %s not available")
+//    OperationFailedException serviceNotAvailable(String serviceName);
 
 //    @Message(id = 69, value = "String format password is required")
 //    IllegalArgumentException invalidPasswordType();

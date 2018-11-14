@@ -28,10 +28,10 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import org.jboss.as.webservices.config.ServerConfigFactoryImpl;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
-import org.jboss.wsf.spi.management.ServerConfig;
 import org.jboss.wsf.spi.metadata.config.AbstractCommonConfig;
 import org.jboss.wsf.spi.metadata.config.ClientConfig;
 import org.jboss.wsf.spi.metadata.config.EndpointConfig;
@@ -46,7 +46,6 @@ import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerChainMetaData;
  */
 public final class ConfigService implements Service {
 
-    private final ServerConfig serverConfig;
     private final String configName;
     private final boolean client;
     private volatile AbstractCommonConfig config;
@@ -55,13 +54,12 @@ public final class ConfigService implements Service {
     private final List<Supplier<UnifiedHandlerChainMetaData>> postHandlerChainSuppliers;
     private final List<Supplier<PropertyService>> propertySuppliers;
 
-    public ConfigService(final ServerConfig serverConfig, final String configName, final boolean client,
+    public ConfigService(final String configName, final boolean client,
                          final Consumer<AbstractCommonConfig> configConsumer,
                          final List<Supplier<PropertyService>> propertySuppliers,
                          final List<Supplier<UnifiedHandlerChainMetaData>> preHandlerChainSuppliers,
                          final List<Supplier<UnifiedHandlerChainMetaData>> postHandlerChainSuppliers
     ) {
-        this.serverConfig = serverConfig;
         this.configName = configName;
         this.client = client;
         this.configConsumer = configConsumer;
@@ -89,11 +87,11 @@ public final class ConfigService implements Service {
         }
         if (client) {
             ClientConfig clientConfig = new ClientConfig(configName, preHandlerChains, postHandlerChains, props, null);
-            serverConfig.registerClientConfig(clientConfig);
+            ServerConfigFactoryImpl.getConfig().registerClientConfig(clientConfig);
             configConsumer.accept(config = clientConfig);
         } else {
             EndpointConfig endpointConfig = new EndpointConfig(configName, preHandlerChains, postHandlerChains, props, null);
-            serverConfig.registerEndpointConfig(endpointConfig);
+            ServerConfigFactoryImpl.getConfig().registerEndpointConfig(endpointConfig);
             configConsumer.accept(config = endpointConfig);
         }
     }
@@ -102,9 +100,9 @@ public final class ConfigService implements Service {
     public void stop(final StopContext context) {
         configConsumer.accept(null);
         if (client) {
-            serverConfig.unregisterClientConfig((ClientConfig)config);
+            ServerConfigFactoryImpl.getConfig().unregisterClientConfig((ClientConfig)config);
         } else {
-            serverConfig.unregisterEndpointConfig((EndpointConfig)config);
+            ServerConfigFactoryImpl.getConfig().unregisterEndpointConfig((EndpointConfig)config);
         }
         config = null;
     }

@@ -21,9 +21,6 @@
  */
 package org.jboss.as.webservices.config;
 
-import static org.jboss.as.webservices.util.ASHelper.getMSCService;
-
-import org.jboss.as.webservices.util.WSServices;
 import org.jboss.wsf.spi.management.ServerConfig;
 import org.jboss.wsf.spi.management.ServerConfigFactory;
 
@@ -35,8 +32,18 @@ import org.jboss.wsf.spi.management.ServerConfigFactory;
  */
 public final class ServerConfigFactoryImpl extends ServerConfigFactory {
 
+    private static volatile ServerConfig config;
+
     public ServerConfig getServerConfig() {
-        return getMSCService(WSServices.CONFIG_SERVICE, ServerConfig.class);
+        return config;
+    }
+
+    public static void setConfig(final ServerConfig config) {
+        ServerConfigFactoryImpl.config = config;
+    }
+
+    public static ServerConfig getConfig() {
+        return ServerConfigFactoryImpl.config;
     }
 
 }
