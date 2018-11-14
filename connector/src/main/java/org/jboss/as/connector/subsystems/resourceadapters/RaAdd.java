@@ -160,8 +160,8 @@ public class RaAdd extends AbstractAddStepHandler {
         ResourceAdapterStatisticsService raStatsService = new ResourceAdapterStatisticsService(context.getResourceRegistrationForUpdate(), name, statsEnabled);
 
         ServiceBuilder statsServiceBuilder = context.getServiceTarget().addService(ServiceName.of(ConnectorServices.RA_SERVICE, name).append(ConnectorServices.STATISTICS_SUFFIX), raStatsService);
-        statsServiceBuilder.addDependency(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append(bootStrapCtxName), raStatsService.getBootstrapContextInjector())
-                .addDependency(serviceName, raStatsService.getResourceAdapterDeploymentInjector())
+        statsServiceBuilder.addDependency(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append(bootStrapCtxName), Object.class, raStatsService.getBootstrapContextInjector())
+                .addDependency(serviceName, Object.class, raStatsService.getResourceAdapterDeploymentInjector())
                 .setInitialMode(ServiceController.Mode.PASSIVE)
                 .install();
 

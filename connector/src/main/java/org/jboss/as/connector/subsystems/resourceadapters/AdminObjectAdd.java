@@ -118,8 +118,8 @@ public class AdminObjectAdd extends AbstractAddStepHandler {
         AdminObjectStatisticsService adminObjectStatisticsService = new AdminObjectStatisticsService(context.getResourceRegistrationForUpdate(), poolName, statsEnabled);
 
         ServiceBuilder statsServiceBuilder = serviceTarget.addService(serviceName.append(ConnectorServices.STATISTICS_SUFFIX), adminObjectStatisticsService);
-        statsServiceBuilder.addDependency(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append(bootStrapCtxName), adminObjectStatisticsService.getBootstrapContextInjector())
-                .addDependency(deploymentServiceName, adminObjectStatisticsService.getResourceAdapterDeploymentInjector())
+        statsServiceBuilder.addDependency(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append(bootStrapCtxName), Object.class, adminObjectStatisticsService.getBootstrapContextInjector())
+                .addDependency(deploymentServiceName, Object.class, adminObjectStatisticsService.getResourceAdapterDeploymentInjector())
                 .setInitialMode(ServiceController.Mode.PASSIVE)
                 .install();
 

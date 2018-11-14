@@ -72,7 +72,7 @@ public class JPAUserTransactionListenerService implements Service<Void> {
         JPAUserTransactionListenerService jpaUserTransactionListenerService = new JPAUserTransactionListenerService();
 
         target.addService(SERVICE_NAME, jpaUserTransactionListenerService)
-                .addDependency(UserTransactionRegistryService.SERVICE_NAME, new CastingInjector<UserTransactionRegistry>(jpaUserTransactionListenerService.getUserTransactionRegistryInjectedValue(), UserTransactionRegistry.class))
+                .addDependency(UserTransactionRegistryService.SERVICE_NAME, Object.class, new CastingInjector<UserTransactionRegistry>(jpaUserTransactionListenerService.getUserTransactionRegistryInjectedValue(), UserTransactionRegistry.class))
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
     }

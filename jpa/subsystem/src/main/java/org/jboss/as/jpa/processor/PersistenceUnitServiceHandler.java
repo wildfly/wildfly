@@ -400,7 +400,7 @@ public class PersistenceUnitServiceHandler {
             // JPA 2.1 sections 3.5.1 + 9.1 require the CDI bean manager to be passed to the peristence provider
             // if the persistence unit is contained in a deployment that is a CDI bean archive (has beans.xml).
             if (allowCdiBeanManagerAccess && WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
-                builder.addDependency(beanManagerServiceName(deploymentUnit),  new CastingInjector<BeanManager>(service.getBeanManagerInjector(), BeanManager.class));
+                builder.addDependency(beanManagerServiceName(deploymentUnit), Object.class, new CastingInjector<BeanManager>(service.getBeanManagerInjector(), BeanManager.class));
             }
 
             try {
@@ -593,7 +593,7 @@ public class PersistenceUnitServiceHandler {
             builder.requires(JPAServiceNames.getJPAServiceName());
 
             // add dependency on first phase
-            builder.addDependency(puServiceName.append(FIRST_PHASE), new CastingInjector<>(service.getPhaseOnePersistenceUnitServiceImplInjector(), PhaseOnePersistenceUnitServiceImpl.class));
+            builder.addDependency(puServiceName.append(FIRST_PHASE), Object.class, new CastingInjector<>(service.getPhaseOnePersistenceUnitServiceImplInjector(), PhaseOnePersistenceUnitServiceImpl.class));
 
             boolean useDefaultDataSource = Configuration.allowDefaultDataSourceUse(pu);
             final String jtaDataSource = adjustJndi(pu.getJtaDataSourceName());
@@ -635,7 +635,7 @@ public class PersistenceUnitServiceHandler {
             // JPA 2.1 sections 3.5.1 + 9.1 require the CDI bean manager to be passed to the peristence provider
             // if the persistence unit is contained in a deployment that is a CDI bean archive (has beans.xml).
             if (WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
-                builder.addDependency(beanManagerServiceName(deploymentUnit),  new CastingInjector<BeanManager>(service.getBeanManagerInjector(), BeanManager.class));
+                builder.addDependency(beanManagerServiceName(deploymentUnit), Object.class, new CastingInjector<BeanManager>(service.getBeanManagerInjector(), BeanManager.class));
             }
 
             try {
