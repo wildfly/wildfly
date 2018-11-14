@@ -72,7 +72,7 @@ public class WebservicesSubsystemRuntimeTestCase extends AbstractSubsystemBaseTe
             @Override
             protected void addExtraServices(ServiceTarget target) {
                 super.addExtraServices(target);
-                target.addService(Services.JBOSS_SERVICE_MODULE_LOADER, new ServiceModuleLoader(null)).install();
+                target.addService(Services.JBOSS_SERVICE_MODULE_LOADER).setInstance(new ServiceModuleLoader(null)).install();
             }
         };
     }
