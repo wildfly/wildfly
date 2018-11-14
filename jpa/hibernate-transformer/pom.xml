@@ -108,6 +108,10 @@
                     <groupId>com.fasterxml</groupId>
                 </exclusion>
                 <exclusion>
+                    <artifactId>dom4j</artifactId>
+                    <groupId>dom4j</groupId>
+                </exclusion>
+                <exclusion>
                     <artifactId>javassist</artifactId>
                     <groupId>javassist</groupId>
                 </exclusion>

@@ -70,6 +70,10 @@
             <version>${version.org.hibernate4_2}</version>
             <scope>provided</scope>
 	    <exclusions>
+                <exclusion>
+                    <artifactId>dom4j</artifactId>
+                    <groupId>dom4j</groupId>
+                </exclusion>
 	       <exclusion>
               <groupId>org.hibernate.common</groupId>
               <artifactId>hibernate-commons-annotations</artifactId>
@@ -89,6 +93,10 @@
             <version>${version.org.hibernate4_2}</version>
             <scope>provided</scope>
            <exclusions>
+               <exclusion>
+                   <artifactId>dom4j</artifactId>
+                   <groupId>dom4j</groupId>
+               </exclusion>
                <exclusion>
                   <groupId>org.jboss.spec.javax.transaction</groupId>
                   <artifactId>jboss-transaction-api_1.1_spec</artifactId>
