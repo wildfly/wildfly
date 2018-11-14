@@ -65,7 +65,8 @@ public class ManagedScheduledExecutorServiceAdd extends AbstractAddStepHandler {
 
         final int coreThreads;
         final ModelNode coreThreadsModel = ManagedScheduledExecutorServiceResourceDefinition.CORE_THREADS_AD.resolveModelAttribute(context, model);
-        if (coreThreadsModel.isDefined()) {
+        //value 0 means the same as undefined
+        if (coreThreadsModel.isDefined() && coreThreadsModel.asInt() != 0) {
             coreThreads = coreThreadsModel.asInt();
         } else {
             coreThreads = (ProcessorInfo.availableProcessors() * 2);
