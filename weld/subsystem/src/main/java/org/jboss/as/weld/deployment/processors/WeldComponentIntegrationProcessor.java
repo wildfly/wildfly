@@ -263,10 +263,10 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
 
     private static void addJsr299BindingsCreateInterceptor(final ComponentConfiguration configuration, final ComponentDescription description, final String beanName, final ServiceName weldServiceName, ServiceBuilder<?> builder, final ServiceName bindingServiceName, final ComponentInterceptorSupport componentInterceptorSupport) {
         //add the create interceptor that creates the CDI interceptors
-        final Jsr299BindingsCreateInterceptor createInterceptor = new Jsr299BindingsCreateInterceptor(description.getBeanDeploymentArchiveId(), beanName, componentInterceptorSupport);
+        final Supplier<WeldBootstrapService> weldContainerSupplier = builder.requires(weldServiceName);
+        final Supplier<InterceptorBindings> interceptorBindingsSupplier = builder.requires(bindingServiceName);
+        final Jsr299BindingsCreateInterceptor createInterceptor = new Jsr299BindingsCreateInterceptor(weldContainerSupplier, interceptorBindingsSupplier, description.getBeanDeploymentArchiveId(), beanName, componentInterceptorSupport);
         configuration.addPostConstructInterceptor(new ImmediateInterceptorFactory(createInterceptor), InterceptorOrder.ComponentPostConstruct.CREATE_CDI_INTERCEPTORS);
-        builder.addDependency(weldServiceName, WeldBootstrapService.class, createInterceptor.getWeldContainer());
-        builder.addDependency(bindingServiceName, InterceptorBindings.class, createInterceptor.getInterceptorBindings());
     }
 
     private static void addCommonLifecycleInterceptionSupport(final ComponentConfiguration configuration, ServiceBuilder<?> builder, final ServiceName bindingServiceName, final ServiceName beanManagerServiceName, final ComponentInterceptorSupport componentInterceptorSupport) {
