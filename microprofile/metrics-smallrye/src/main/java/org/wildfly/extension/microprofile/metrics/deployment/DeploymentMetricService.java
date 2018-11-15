@@ -57,18 +57,11 @@ public class DeploymentMetricService implements Service {
     @Override
     public void start(StartContext startContext) {
         MetricRegistry applicationRegistry = MetricRegistries.get(APPLICATION);
-        registeredMetrics = registrationService.get().registerMetrics(rootResource, managementResourceRegistration, applicationRegistry,
-                new MetricsRegistrationService.MetricNameCreator() {
-                    @Override
-                    public String createName(PathAddress address, String attributeName) {
-                        return deploymentAddress.append(address).toPathStyleString().substring(1) + "/" + attributeName;
-                    }
-
-                    @Override
-                    public PathAddress getResourceAddress(PathAddress address) {
-                        return deploymentAddress.append(address);
-                    }
-                });
+        registeredMetrics = registrationService.get().registerMetrics(rootResource,
+                managementResourceRegistration,
+                applicationRegistry,
+                // prepend the deployment address to the subsystem resource address
+                address -> deploymentAddress.append(address));
     }
 
     @Override

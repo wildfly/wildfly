@@ -22,6 +22,9 @@
 
 package org.wildfly.test.integration.microprofile.metrics.application;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STATISTICS_ENABLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.test.shared.ServerReload.reloadIfRequired;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -30,6 +33,7 @@ import static org.wildfly.test.integration.microprofile.metrics.MetricsHelper.ge
 import static org.wildfly.test.integration.microprofile.metrics.MetricsHelper.getMetricValueFromPrometheusOutput;
 import static org.wildfly.test.integration.microprofile.metrics.MetricsHelper.getPrometheusMetrics;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
@@ -41,8 +45,12 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ContainerResource;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.integration.common.HttpRequest;
+import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -57,7 +65,28 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@ServerSetup({MicroProfileMetricsApplicationTestCase.EnablesUndertowStatistics.class})
 public class MicroProfileMetricsApplicationTestCase {
+
+    static class EnablesUndertowStatistics implements ServerSetupTask {
+
+        @Override
+        public void setup(ManagementClient managementClient, String containerId) throws Exception {
+            managementClient.getControllerClient().execute(enableStatistics(true));
+            reloadIfRequired(managementClient);
+        }
+
+        @Override
+        public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
+            managementClient.getControllerClient().execute(enableStatistics(false));
+            reloadIfRequired(managementClient);
+        }
+
+        private ModelNode enableStatistics(boolean enabled) {
+            final ModelNode address = Operations.createAddress(SUBSYSTEM, "undertow");
+            return Operations.createWriteAttributeOperation(address, STATISTICS_ENABLED, enabled);
+        }
+    }
 
     @Deployment(name = "MicroProfileMetricsApplicationTestCase", managed = false)
     public static Archive<?> deploy() {
@@ -72,6 +101,8 @@ public class MicroProfileMetricsApplicationTestCase {
 
     @ArquillianResource
     private Deployer deployer;
+
+    private static int requestCalled = 0;
 
     @Test
     @InSequence(1)
@@ -136,6 +167,16 @@ public class MicroProfileMetricsApplicationTestCase {
 
     @Test
     @InSequence(4)
+    @OperateOnDeployment("MicroProfileMetricsApplicationTestCase")
+    public void testDeploymentWildFlyMetrics(@ArquillianResource URL url) throws Exception {
+        // test the request-count metric on the deployment's undertow resources
+        checkRequestCount(requestCalled);
+        performCall(url);
+        checkRequestCount(requestCalled);
+    }
+
+    @Test
+    @InSequence(5)
     public void tesApplicationMetricAfterUndeployment() throws Exception {
         deployer.undeploy("MicroProfileMetricsApplicationTestCase");
 
@@ -143,8 +184,36 @@ public class MicroProfileMetricsApplicationTestCase {
         getJSONMetrics(managementClient, "application", false);
     }
 
-    private String performCall(URL url) throws Exception {
+    private static String performCall(URL url) throws Exception {
+        requestCalled++;
         URL appURL = new URL(url.toExternalForm() + "microprofile-metrics-app/hello");
         return HttpRequest.get(appURL.toExternalForm(), 10, TimeUnit.SECONDS);
     }
+
+    private void checkRequestCount(int expectedCount) throws IOException {
+        // Prometheus conversion of the metric deployment/MicroProfileMetricsApplicationTestCase.war/subsystem/undertow/servlet/org.wildfly.test.integration.microprofile.metrics.application.TestApplication/request-count
+        String prometheusMetricName = "deployment_micro_profile_metrics_application_test_case_war_subsystem_undertow_servlet_org_wildfly_test_integration_microprofile_metrics_application_test_application_request_count";
+
+        String tags = null;
+        Double value = null;
+        String metrics = getPrometheusMetrics(managementClient, "application", true);
+        for (String line : metrics.split("\\R")) {
+            if (line.startsWith("application:" + prometheusMetricName)) {
+                String[] split = line.split("\\s+");
+                tags = split[0].substring(("application:" + prometheusMetricName).length());
+                value = Double.valueOf(split[1]);
+            }
+        }
+
+        assertNotNull(tags);
+        assertNotNull(value);
+
+        assertTrue(tags.contains("subsystem=\"undertow\""));
+        assertTrue(tags.contains("deployment=\"MicroProfileMetricsApplicationTestCase.war\""));
+        assertTrue(tags.contains("servlet=\"org.wildfly.test.integration.microprofile.metrics.application.TestApplication\""));
+        assertTrue(tags.contains("attribute=\"request-count\""));
+
+        assertEquals(Integer.valueOf(expectedCount).doubleValue(), value, 0);
+    }
+
 }
