@@ -27,25 +27,26 @@ import org.jboss.as.ee.beanvalidation.BeanValidationAttachments;
 import org.jboss.as.ee.weld.WeldDeploymentMarker;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.weld.CdiValidatorFactoryService;
 import org.jboss.as.weld.ServiceNames;
-import org.jboss.msc.inject.CastingInjector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+
+import java.util.function.Supplier;
 
 /**
  * Deployment processor that replaces the delegate of LazyValidatorFactory with a CDI-enabled ValidatorFactory.
  *
  * @author Farah Juma
  * @author Martin Kouba
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class CdiBeanValidationFactoryProcessor implements DeploymentUnitProcessor {
 
     @Override
-    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+    public void deploy(DeploymentPhaseContext phaseContext) {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final DeploymentUnit topLevelDeployment = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
         final ServiceName weldStartService = topLevelDeployment.getServiceName().append(ServiceNames.WELD_START_SERVICE_NAME);
@@ -57,11 +58,10 @@ public class CdiBeanValidationFactoryProcessor implements DeploymentUnitProcesso
         }
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
         final ServiceName serviceName = deploymentUnit.getServiceName().append(CdiValidatorFactoryService.SERVICE_NAME);
-        final CdiValidatorFactoryService cdiValidatorFactoryService = new CdiValidatorFactoryService(deploymentUnit);
-        final ServiceBuilder sb = serviceTarget.addService(serviceName, cdiValidatorFactoryService);
-        sb.addDependency(ServiceNames.beanManagerServiceName(deploymentUnit), Object.class,
-                new CastingInjector<BeanManager>(cdiValidatorFactoryService.getBeanManagerInjector(), BeanManager.class));
+        final ServiceBuilder<?> sb = serviceTarget.addService(serviceName);
+        final Supplier<BeanManager> beanManagerSupplier = sb.requires(ServiceNames.beanManagerServiceName(deploymentUnit));
         sb.requires(weldStartService);
+        sb.setInstance(new CdiValidatorFactoryService(deploymentUnit, beanManagerSupplier));
         sb.install();
     }
 
