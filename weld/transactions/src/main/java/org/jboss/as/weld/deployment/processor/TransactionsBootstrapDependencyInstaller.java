@@ -29,21 +29,22 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
+import java.util.function.Consumer;
+
 /**
- *
  * @author Martin Kouba
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class TransactionsBootstrapDependencyInstaller implements BootstrapDependencyInstaller {
 
     @Override
     public ServiceName install(ServiceTarget serviceTarget, DeploymentUnit deploymentUnit, boolean jtsEnabled) {
-        final WeldTransactionServices weldTransactionServices = new WeldTransactionServices(jtsEnabled);
-
         final ServiceName weldTransactionServiceName = deploymentUnit.getServiceName().append(WeldTransactionServices.SERVICE_NAME);
-
-        final ServiceBuilder sb = serviceTarget.addService(weldTransactionServiceName, weldTransactionServices);
+        final ServiceBuilder<?> sb = serviceTarget.addService(weldTransactionServiceName);
+        final Consumer<WeldTransactionServices> weldTransactionServicesConsumer = sb.provides(weldTransactionServiceName);
         // Ensure the local transaction provider is started before we start
         sb.requires(ServiceNames.capabilityServiceName(deploymentUnit, "org.wildfly.transactions.global-default-local-provider"));
+        sb.setInstance(new WeldTransactionServices(jtsEnabled, weldTransactionServicesConsumer));
         sb.install();
 
         return weldTransactionServiceName;
