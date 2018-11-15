@@ -28,6 +28,9 @@ import static org.jboss.as.clustering.infinispan.subsystem.TransactionResourceDe
 import static org.jboss.as.clustering.infinispan.subsystem.TransactionResourceDefinition.TransactionRequirement.LOCAL_TRANSACTION_PROVIDER;
 
 import java.util.EnumSet;
+import java.util.function.Supplier;
+
+import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.TransactionConfiguration;
@@ -40,13 +43,13 @@ import org.jboss.as.clustering.infinispan.TransactionSynchronizationRegistryProv
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.txn.service.TxnServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.wildfly.clustering.service.Dependency;
 import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.ServiceDependency;
 import org.wildfly.transaction.client.ContextTransactionManager;
-import org.wildfly.transaction.client.ContextTransactionSynchronizationRegistry;
 
 /**
  * @author Paul Ferraro
@@ -57,6 +60,7 @@ public class TransactionServiceConfigurator extends ComponentServiceConfigurator
     private volatile long timeout;
     private volatile TransactionMode mode;
     private volatile Dependency transactionDependency;
+    private volatile Supplier<TransactionSynchronizationRegistry> tsrSupplier;
 
     public TransactionServiceConfigurator(PathAddress address) {
         super(CacheComponent.TRANSACTION, address);
@@ -66,6 +70,9 @@ public class TransactionServiceConfigurator extends ComponentServiceConfigurator
     public <T> ServiceBuilder<T> register(ServiceBuilder<T> builder) {
         if (this.transactionDependency != null) {
             this.transactionDependency.register(builder);
+        }
+        if (this.mode == TransactionMode.NON_XA) {
+            this.tsrSupplier = builder.requires(TxnServices.JBOSS_TXN_SYNCHRONIZATION_REGISTRY);
         }
         return super.register(builder);
     }
@@ -98,7 +105,7 @@ public class TransactionServiceConfigurator extends ComponentServiceConfigurator
                 break;
             }
             case NON_XA: {
-                builder.transactionSynchronizationRegistryLookup(new TransactionSynchronizationRegistryProvider(ContextTransactionSynchronizationRegistry.getInstance()));
+                builder.transactionSynchronizationRegistryLookup(new TransactionSynchronizationRegistryProvider(this.tsrSupplier.get()));
                 // fall through
             }
             default: {
