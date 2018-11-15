@@ -34,8 +34,8 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.webservices.config.DisabledOperationException;
+import org.jboss.as.webservices.config.ServerConfigFactoryImpl;
 import org.jboss.as.webservices.config.ServerConfigImpl;
-import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -62,7 +62,7 @@ final class WSServerConfigAttributeHandler extends AbstractWriteAttributeHandler
         }
 
         final String value = resolvedValue.isDefined() ? resolvedValue.asString() : null;
-        boolean done = updateServerConfig(context, attributeName, value, false);
+        boolean done = updateServerConfig(attributeName, value, false);
         handbackHolder.setHandback(new RollbackInfo(done));
         return !done; //reload required if runtime has not been updated
     }
@@ -84,7 +84,7 @@ final class WSServerConfigAttributeHandler extends AbstractWriteAttributeHandler
         if (handback != null && handback.isRuntimeUpdated()) { //nothing to do if the runtime was not updated
             final String value = valueToRestore.isDefined() ? valueToRestore.asString() : null;
             try {
-                updateServerConfig(context, attributeName, value, true);
+                updateServerConfig(attributeName, value, true);
             } catch (DisabledOperationException e) { //revert rejected by WS stack
                 throw new OperationFailedException(e);
             }
@@ -94,15 +94,14 @@ final class WSServerConfigAttributeHandler extends AbstractWriteAttributeHandler
     /**
      * Returns true if the update operation succeeds in modifying the runtime, false otherwise.
      *
-     * @param context
      * @param attributeName
      * @param value
      * @return
      * @throws OperationFailedException
      * @throws DisabledOperationException
      */
-    private boolean updateServerConfig(OperationContext context, String attributeName, String value, boolean isRevert) throws OperationFailedException, DisabledOperationException {
-        ServerConfigImpl config = (ServerConfigImpl)context.getServiceRegistry(false).getRequiredService(WSServices.CONFIG_SERVICE).getValue();
+    private boolean updateServerConfig(String attributeName, String value, boolean isRevert) throws OperationFailedException, DisabledOperationException {
+        final ServerConfigImpl config = (ServerConfigImpl) ServerConfigFactoryImpl.getConfig();
         try {
             if (MODIFY_WSDL_ADDRESS.equals(attributeName)) {
                 final boolean modifyWSDLAddress = value != null && Boolean.parseBoolean(value);
