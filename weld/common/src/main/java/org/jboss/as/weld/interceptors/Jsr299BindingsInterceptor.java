@@ -24,6 +24,7 @@ package org.jboss.as.weld.interceptors;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 import javax.enterprise.inject.spi.InterceptionType;
 import javax.enterprise.inject.spi.Interceptor;
@@ -37,7 +38,6 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.value.InjectedValue;
 import org.jboss.weld.ejb.spi.InterceptorBindings;
 
 /**
@@ -48,22 +48,23 @@ import org.jboss.weld.ejb.spi.InterceptorBindings;
  *
  * @author Marius Bogoevici
  * @author Stuart Douglas
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class Jsr299BindingsInterceptor implements org.jboss.invocation.Interceptor {
 
     private final InterceptionType interceptionType;
-    private final InjectedValue<InterceptorBindings> interceptorBindings = new InjectedValue<InterceptorBindings>();
     private final ComponentInterceptorSupport interceptorSupport;
+    private final Supplier<InterceptorBindings> interceptorBindingsSupplier;
 
-    private Jsr299BindingsInterceptor(InterceptionType interceptionType, ComponentInterceptorSupport interceptorSupport) {
+    private Jsr299BindingsInterceptor(final InterceptionType interceptionType, final ComponentInterceptorSupport interceptorSupport, final Supplier<InterceptorBindings> interceptorBindingsSupplier) {
         this.interceptionType = interceptionType;
         this.interceptorSupport = interceptorSupport;
+        this.interceptorBindingsSupplier = interceptorBindingsSupplier;
     }
 
     public static InterceptorFactory factory(final InterceptionType interceptionType, final ServiceBuilder<?> builder, final ServiceName interceptorBindingServiceName, final ComponentInterceptorSupport interceptorSupport) {
-        Jsr299BindingsInterceptor interceptor = new Jsr299BindingsInterceptor(interceptionType, interceptorSupport);
-        builder.addDependency(interceptorBindingServiceName, InterceptorBindings.class, interceptor.interceptorBindings);
-        return new ImmediateInterceptorFactory(interceptor);
+        final Supplier<InterceptorBindings> interceptorBindingsSupplier = builder.requires(interceptorBindingServiceName);
+        return new ImmediateInterceptorFactory(new Jsr299BindingsInterceptor(interceptionType, interceptorSupport, interceptorBindingsSupplier));
     }
 
     protected Object delegateInterception(InvocationContext invocationContext, InterceptionType interceptionType, List<Interceptor<?>> currentInterceptors, InterceptorInstances interceptorInstances)
@@ -95,7 +96,7 @@ public class Jsr299BindingsInterceptor implements org.jboss.invocation.Intercept
     public Object processInvocation(final InterceptorContext context) throws Exception {
         final ComponentInstance componentInstance = context.getPrivateData(ComponentInstance.class);
         final InterceptorInstances interceptorInstances = interceptorSupport.getInterceptorInstances(componentInstance);
-        final InterceptorBindings interceptorBindings = this.interceptorBindings.getValue();
+        final InterceptorBindings interceptorBindings = interceptorBindingsSupplier.get();
         switch (interceptionType) {
             case AROUND_INVOKE:
                 return doMethodInterception(context.getInvocationContext(), InterceptionType.AROUND_INVOKE, interceptorInstances, interceptorBindings);
