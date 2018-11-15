@@ -7,12 +7,14 @@ package org.jboss.as.ejb3.cache.distributable;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import org.jboss.as.controller.ServiceNameFactory;
+import javax.transaction.TransactionSynchronizationRegistry;
+
 import org.jboss.as.ejb3.cache.Cache;
 import org.jboss.as.ejb3.cache.CacheFactory;
 import org.jboss.as.ejb3.cache.Contextual;
 import org.jboss.as.ejb3.cache.Identifiable;
 import org.jboss.as.ejb3.cache.StatefulObjectFactory;
+import org.jboss.as.txn.service.TxnServices;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -24,7 +26,6 @@ import org.wildfly.clustering.ejb.IdentifierFactory;
 import org.wildfly.clustering.ejb.PassivationListener;
 import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.SimpleServiceNameProvider;
-import org.wildfly.transaction.client.ContextTransactionSynchronizationRegistry;
 
 /**
  * Service that provides a distributable {@link CacheFactory}.
@@ -37,6 +38,7 @@ public class DistributableCacheFactoryService<K, V extends Identifiable<K> & Con
 
     private final ServiceConfigurator configurator;
     private volatile Supplier<BeanManagerFactory<K, V, Batch>> factory;
+    private volatile Supplier<TransactionSynchronizationRegistry> tsr;
 
     public DistributableCacheFactoryService(ServiceName name, ServiceConfigurator configurator) {
         super(name);
@@ -48,12 +50,7 @@ public class DistributableCacheFactoryService<K, V extends Identifiable<K> & Con
         this.configurator.build(target).install();
         ServiceBuilder<?> builder = target.addService(this.getServiceName());
         this.factory = builder.requires(this.configurator.getServiceName());
-        // Ensure the local transaction provider is started before the cache
-        // This parsing isn't 100% ideal as it's somewhat 'internal' knowledge of the relationship between
-        // capability names and service names. But at this point that relationship really needs to become
-        // a contract anyway
-        ServiceName txServiceName = ServiceNameFactory.parseServiceName("org.wildfly.transactions.global-default-local-provider");
-        builder.requires(txServiceName);
+        this.tsr = builder.requires(TxnServices.JBOSS_TXN_SYNCHRONIZATION_REGISTRY);
         Consumer<CacheFactory<K, V>> factory = builder.provides(this.getServiceName());
         Service service = Service.newInstance(factory, this);
         return builder.setInstance(service);
@@ -62,6 +59,6 @@ public class DistributableCacheFactoryService<K, V extends Identifiable<K> & Con
     @Override
     public Cache<K, V> createCache(IdentifierFactory<K> identifierFactory, StatefulObjectFactory<V> factory, PassivationListener<V> passivationListener) {
         BeanManager<K, V, Batch> manager = this.factory.get().createBeanManager(identifierFactory, passivationListener, new RemoveListenerAdapter<>(factory));
-        return new DistributableCache<>(manager, factory, ContextTransactionSynchronizationRegistry.getInstance());
+        return new DistributableCache<>(manager, factory, this.tsr.get());
     }
 }

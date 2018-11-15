@@ -36,8 +36,7 @@ import org.jboss.msc.value.InjectedValue;
  * @author Stuart Douglas
  */
 public class TransactionSynchronizationRegistryService extends AbstractService<TransactionSynchronizationRegistry> {
-    /** @deprecated Use the "org.wildfly.transactions.global-default-local-provider" capability to confirm existence of a local provider
-     *              and org.wildfly.transaction.client.ContextTransactionSynchronizationRegistry to obtain a TransactionSynchronizationRegistry reference. */
+    /** @deprecated Use {@link TxnServices#JBOSS_TXN_SYNCHRONIZATION_REGISTRY}  */
     @Deprecated
     public static final ServiceName SERVICE_NAME = TxnServices.JBOSS_TXN_SYNCHRONIZATION_REGISTRY;
     /** Non-deprecated service name only for use within the subsystem */

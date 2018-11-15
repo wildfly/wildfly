@@ -36,9 +36,10 @@ import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.jpa.messages.JpaLogger;
 import org.jboss.as.jpa.transaction.TransactionUtil;
+import org.jboss.as.server.CurrentServiceContainer;
+import org.jboss.as.txn.service.TransactionSynchronizationRegistryService;
 import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.transaction.client.ContextTransactionManager;
-import org.wildfly.transaction.client.ContextTransactionSynchronizationRegistry;
 
 /**
  * Represents the Extended persistence context injected into a stateful bean.  At bean invocation time,
@@ -276,13 +277,13 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
                 @Override
                 public Object run() {
                     transactionManager = ContextTransactionManager.getInstance();
-                    transactionSynchronizationRegistry = ContextTransactionSynchronizationRegistry.getInstance();
+                    transactionSynchronizationRegistry = (TransactionSynchronizationRegistry) CurrentServiceContainer.getServiceContainer().getService(TransactionSynchronizationRegistryService.SERVICE_NAME).getValue();
                     return null;
                 }
             });
         } else {
             transactionManager = ContextTransactionManager.getInstance();
-            transactionSynchronizationRegistry = ContextTransactionSynchronizationRegistry.getInstance();
+            transactionSynchronizationRegistry = (TransactionSynchronizationRegistry) CurrentServiceContainer.getServiceContainer().getService(TransactionSynchronizationRegistryService.SERVICE_NAME).getValue();
         }
     }
 }

@@ -27,6 +27,8 @@ import static org.jboss.as.connector.subsystems.jca.JcaSubsystemRootDefinition.T
 import static org.jboss.as.connector.util.ConnectorServices.LOCAL_TRANSACTION_PROVIDER_CAPABILITY;
 import static org.jboss.as.connector.util.ConnectorServices.TRANSACTION_XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY;
 
+import javax.transaction.TransactionSynchronizationRegistry;
+
 import org.jboss.as.connector.deployers.ra.RaDeploymentActivator;
 import org.jboss.as.connector.services.driver.registry.DriverRegistryService;
 import org.jboss.as.connector.services.transactionintegration.TransactionIntegrationService;
@@ -78,6 +80,7 @@ class JcaSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 // Ensure the local transaction provider is started
                 .addCapabilityRequirement(LOCAL_TRANSACTION_PROVIDER_CAPABILITY, Void.class)
                 .addCapabilityRequirement(TRANSACTION_XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY, XAResourceRecoveryRegistry.class, tiService.getRrInjector())
+                .addDependency(TxnServices.JBOSS_TXN_SYNCHRONIZATION_REGISTRY, TransactionSynchronizationRegistry.class, tiService.getTsrInjector())
                 .addDependency(TxnServices.JBOSS_TXN_USER_TRANSACTION_REGISTRY, org.jboss.tm.usertx.UserTransactionRegistry.class, tiService.getUtrInjector())
                 .addDependency(TxnServices.JBOSS_TXN_CONTEXT_XA_TERMINATOR, JBossContextXATerminator.class, tiService.getTerminatorInjector())
                 .setInitialMode(ServiceController.Mode.ACTIVE)
