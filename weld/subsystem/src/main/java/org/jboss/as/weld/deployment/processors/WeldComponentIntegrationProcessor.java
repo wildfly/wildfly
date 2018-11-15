@@ -27,6 +27,7 @@ import static org.jboss.as.weld.util.Utils.getRootDeploymentUnit;
 import java.util.HashSet;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import javax.enterprise.inject.spi.InterceptionType;
@@ -250,11 +251,12 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
     }
 
     private static ServiceName addWeldInterceptorBindingService(final ServiceTarget target, final ComponentConfiguration configuration, final Class<?> componentClass, final String beanName, final ServiceName weldServiceName, final ServiceName weldStartService, final String beanDeploymentArchiveId, final ComponentInterceptorSupport componentInterceptorSupport) {
-        final WeldInterceptorBindingsService weldInterceptorBindingsService = new WeldInterceptorBindingsService(beanDeploymentArchiveId, beanName, componentClass, componentInterceptorSupport);
         ServiceName bindingServiceName = configuration.getComponentDescription().getServiceName().append(WeldInterceptorBindingsService.SERVICE_NAME);
-        final ServiceBuilder sb = target.addService(bindingServiceName, weldInterceptorBindingsService);
-        sb.addDependency(weldServiceName, WeldBootstrapService.class, weldInterceptorBindingsService.getWeldContainer());
+        final ServiceBuilder<?> sb = target.addService(bindingServiceName);
+        final Consumer<InterceptorBindings> interceptorBindingsConsumer = sb.provides(bindingServiceName);
+        final Supplier<WeldBootstrapService> weldContainerSupplier = sb.requires(weldServiceName);
         sb.requires(weldStartService);
+        sb.setInstance(new WeldInterceptorBindingsService(interceptorBindingsConsumer, weldContainerSupplier, beanDeploymentArchiveId, beanName, componentClass, componentInterceptorSupport));
         sb.install();
         return bindingServiceName;
     }
