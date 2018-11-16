@@ -25,6 +25,7 @@ package org.jboss.as.weld;
 import static org.jboss.as.weld.WeldResourceDefinition.REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE;
 
 import java.util.ServiceLoader;
+import java.util.function.Consumer;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -55,7 +56,9 @@ import org.jboss.as.weld.services.TCCLSingletonService;
 import org.jboss.as.weld.services.bootstrap.WeldExecutorServices;
 import org.jboss.as.weld.spi.DeploymentUnitProcessorProvider;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.weld.manager.api.ExecutorServices;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -125,7 +128,11 @@ class WeldSubsystemAdd extends AbstractBoottimeAddStepHandler {
         context.getServiceTarget().addService(TCCLSingletonService.SERVICE_NAME, singleton).setInitialMode(
                 Mode.ON_DEMAND).install();
 
-        context.getServiceTarget().addService(WeldExecutorServices.SERVICE_NAME, new WeldExecutorServices(threadPoolSize)).setInitialMode(Mode.ON_DEMAND).install();
+        ServiceBuilder<?> builder = context.getServiceTarget().addService(WeldExecutorServices.SERVICE_NAME);
+        final Consumer<ExecutorServices> executorServicesConsumer = builder.provides(WeldExecutorServices.SERVICE_NAME);
+        builder.setInstance(new WeldExecutorServices(executorServicesConsumer, threadPoolSize));
+        builder.setInitialMode(Mode.ON_DEMAND);
+        builder.install();
     }
 
     // Synchronization objects created by iiop ejb beans require wrapping by JTSSychronizationWrapper to work correctly
