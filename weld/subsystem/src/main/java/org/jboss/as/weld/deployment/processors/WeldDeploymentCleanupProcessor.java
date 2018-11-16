@@ -19,6 +19,7 @@ package org.jboss.as.weld.deployment.processors;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Supplier;
 
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
@@ -47,6 +48,7 @@ import org.jboss.msc.service.ServiceTarget;
  * This allows Weld to do metadata cleanup on unused items.
  *
  * @author <a href="mailto:manovotn@redhat.com">Matej Novotny</a>
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class WeldDeploymentCleanupProcessor implements DeploymentUnitProcessor {
 
@@ -99,12 +101,11 @@ public class WeldDeploymentCleanupProcessor implements DeploymentUnitProcessor {
 
         // pass on service controllers so that we can do StabilityMonitor.awaitStability() on those with our service
         // we also add dependency on our WeldBootstrapService and WeldStartService to ensure this goes after them
-        WeldStartCompletionService weldStartCompletionService = new WeldStartCompletionService(module.getClassLoader(), serviceControllers);
-        ServiceBuilder<WeldStartCompletionService> weldStartCompletionServiceBuilder = serviceTarget
-            .addService(weldStartCompletionServiceName, weldStartCompletionService)
-            .addDependency(weldBootstrapServiceName, WeldBootstrapService.class, weldStartCompletionService.getBootstrap())
-            .addDependency(Services.JBOSS_SERVER_EXECUTOR, ExecutorService.class, weldStartCompletionService.getServerExecutor());
+        ServiceBuilder<?> weldStartCompletionServiceBuilder = serviceTarget.addService(weldStartCompletionServiceName);
+        final Supplier<WeldBootstrapService> bootstrapSupplier = weldStartCompletionServiceBuilder.requires(weldBootstrapServiceName);
+        final Supplier<ExecutorService> executorServiceSupplier = weldStartCompletionServiceBuilder.requires(Services.JBOSS_SERVER_EXECUTOR);
         weldStartCompletionServiceBuilder.requires(weldStartServiceName);
+        weldStartCompletionServiceBuilder.setInstance(new WeldStartCompletionService(bootstrapSupplier, executorServiceSupplier, module.getClassLoader(), serviceControllers));
         weldStartCompletionServiceBuilder.install();
     }
 
