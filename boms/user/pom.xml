@@ -26,7 +26,7 @@
     <parent>
         <artifactId>jboss-parent</artifactId>
         <groupId>org.jboss</groupId>
-        <version>28</version>
+        <version>29</version>
     </parent>
 
     <groupId>org.wildfly.bom</groupId>
