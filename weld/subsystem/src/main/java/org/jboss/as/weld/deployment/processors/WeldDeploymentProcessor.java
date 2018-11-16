@@ -266,10 +266,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
             setupActions.add(naming);
         }
 
-        final WeldStartService weldStartService = new WeldStartService(setupActions, module.getClassLoader(), Utils.getRootDeploymentUnit(deploymentUnit).getServiceName());
-
-        ServiceBuilder<WeldStartService> startService = serviceTarget.addService(weldStartServiceName, weldStartService)
-                .addDependency(weldBootstrapServiceName, WeldBootstrapService.class, weldStartService.getBootstrap());
+        ServiceBuilder<?> startService = serviceTarget.addService(weldStartServiceName);
         for (final ServiceName dependency : dependencies) {
             startService.requires(dependency);
         }
@@ -291,7 +288,8 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
                 startService.requires(JndiNamingDependencyProcessor.serviceName(sub));
             }
         }
-
+        final Supplier<WeldBootstrapService> bootstrapSupplier = startService.requires(weldBootstrapServiceName);
+        startService.setInstance(new WeldStartService(bootstrapSupplier, setupActions, module.getClassLoader(), Utils.getRootDeploymentUnit(deploymentUnit).getServiceName()));
         startService.install();
     }
 
