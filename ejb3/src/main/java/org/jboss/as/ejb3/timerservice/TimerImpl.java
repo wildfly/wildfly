@@ -23,7 +23,7 @@ package org.jboss.as.ejb3.timerservice;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.Semaphore;
 
 import javax.ejb.EJBException;
 import javax.ejb.ScheduleExpression;
@@ -117,7 +117,7 @@ public class TimerImpl implements Timer {
      *
      * todo: we can probably just use a sync block here
      */
-    private final ReentrantLock inUseLock = new ReentrantLock();
+    private final Semaphore inUseLock = new Semaphore(1);
 
     /**
      * Creates a {@link TimerImpl}
@@ -153,7 +153,11 @@ public class TimerImpl implements Timer {
      */
     @Override
     public void cancel() throws IllegalStateException, EJBException {
-        timerService.cancelTimer(this);
+        try {
+            timerService.cancelTimer(this);
+        } catch (InterruptedException e) {
+            throw new EJBException(e);
+        }
     }
 
     /**
@@ -515,12 +519,12 @@ public class TimerImpl implements Timer {
         return new TimerTask<TimerImpl>(this);
     }
 
-    public void lock() {
-        inUseLock.lock();
+    public void lock() throws InterruptedException {
+        inUseLock.acquire();
     }
 
     public void unlock() {
-        inUseLock.unlock();
+        inUseLock.release();
     }
 
     /**
