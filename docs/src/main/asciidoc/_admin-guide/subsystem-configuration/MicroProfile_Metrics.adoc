@@ -28,6 +28,7 @@ standalone configurations explicitly sets it to `false` to accept unauthenticate
 * `exposed-subsystems` - a list of strings corresponding to the names of subsystems that exposes their metrics in the HTTP metrics endpoints.
   By default, it is not defined (there will be no metrics exposed by subsystem. The special wildcard `*` can be used to expose metrics from _all_ subsystems. The standalone
   configuration sets this attribute to `*`.
+* `prefix` - A string to prepend to WildFly metrics that are exposed by the HTTP endpoint `/metrics` with the Prometheus output format.
 
 == HTTP Endpoint
 
@@ -70,27 +71,28 @@ If the authentication fails, the  server will reply with a `401 NOT AUTHORIZED` 
 The HTTP endpoint exposes the following metrics:
 
 * Base metrics - Required metrics specified in the MicroProfile 1.1 specification are exposed in the `base`  scope.
-* Vendor metrics - Metrics from WildFly subsystems are exposed in the `vendor` scope
+* Vendor metrics - Vendor-specific metrics (e.g. for memory pools)
 * Application metrics - Metrics from the application and from the deployment's subsystems are exposed in the `application` scope.
+
+The WildFly metrics (that measures activity in the subsystem or application deployments) are exposed only on the `/metrics`
+endpoint with the Prometheus format.
 
 === WildFly Metrics Description
 
-WildFly metrics can appears in two scopes:
+WildFly metrics names is based on the subsystem that provides them as well as the name of the attribute from the management model.
+Their name can also be prepended with a `prefix` (specified on the `/subsystem=microprofile-metrics` resource).
+Other information are stored using labels.
 
-* `vendor` for metrics defined in subsystem resources (e.g. the `bytes-received` attribute of the `/subsystem=undertow/server=default-server/http-listener=default` resource)
-* `applications` for metrics defined in deployment resources (e.g. the `request-count` attribute on the `/deployment=<deployment name>/subsystem=undertow/servlet=<servlet name>` resource).
+For example Undertow exposes a metric attribute `request-count` for every Servlet in an application deployment.
+This attribute will be exposed to Prometheus with the name `wildfly_undertow_request_count`.
+Other information such as the name of the Servlet are added to the labels of the metrics.
 
-The name of the MicroProfile metric is composed of the whole resource address appended by the attribute name.
-For example, `subsystem/undertow/server/default-server/http-listener/default/request-count` and `deployment/example.war/subsystem/undertow/servlet/org.example.MyServlet/request-count` for the two attributes above.
+The [helloworld-rs quickstart](https://github.com/wildfly/quickstart/tree/master/helloworld-rs) creates a JAX-RS application
+that can be deployed in WildFly.
+A corresponding metric will be exposed for it with the name and labels:
 
-==== Tags
+* `wildfly_undertow_request_count{deployment="helloworld-rs.war",servlet="org.jboss.as.quickstarts.rshelloworld.JAXActivator",subdeployment="helloworld-rs.war"}`
 
-WildFly metrics provides tags corresponding to the resource address elements as well as a tag with the attribute name.
-This allows to be able to query all MicroProfile metrics for a subsystem (e.g. `subsystem="undertow"`) or a deployment (e.g. `deployment="example.war`).
-
-For example, the MicroProfile metric registered for the `request-count` attribute on the `/deployment=example.war/subsystem=undertow/servlet=org.example.MyServlet` resource will have the following tags:
-
-* `subsystem="undertow", servlet="org.example.MyServlet", deployment="example.war", attribute="request-count"` (note that the tag order does not preserve order of the resource address)
 
 == Component Reference
 

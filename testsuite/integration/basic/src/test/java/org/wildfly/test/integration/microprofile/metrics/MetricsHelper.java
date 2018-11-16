@@ -31,7 +31,10 @@ public class MetricsHelper {
     }
 
     private static String getMetrics(ManagementClient managementClient, String accept, String scope, boolean metricMustExist) throws IOException {
-        final String url = "http://" + managementClient.getMgmtAddress() + ":" + managementClient.getMgmtPort() + "/metrics/" + scope;
+        String url = "http://" + managementClient.getMgmtAddress() + ":" + managementClient.getMgmtPort() + "/metrics";
+        if (scope != null && !scope.isEmpty()) {
+            url += "/" + scope;
+        }
 
         try (CloseableHttpClient client = HttpClients.createDefault()) {
 

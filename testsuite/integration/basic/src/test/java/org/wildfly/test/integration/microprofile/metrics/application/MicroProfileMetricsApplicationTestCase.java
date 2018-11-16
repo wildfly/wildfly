@@ -28,6 +28,7 @@ import static org.jboss.as.test.shared.ServerReload.reloadIfRequired;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.wildfly.test.integration.microprofile.metrics.MetricsHelper.getJSONMetrics;
 import static org.wildfly.test.integration.microprofile.metrics.MetricsHelper.getMetricValueFromJSONOutput;
 import static org.wildfly.test.integration.microprofile.metrics.MetricsHelper.getMetricValueFromPrometheusOutput;
@@ -57,7 +58,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -174,13 +174,12 @@ public class MicroProfileMetricsApplicationTestCase {
 
     @Test
     @InSequence(4)
-    @Ignore("WFLY-11399 - do not expose WildFly metrics")
     @OperateOnDeployment("MicroProfileMetricsApplicationTestCase")
     public void testDeploymentWildFlyMetrics(@ArquillianResource URL url) throws Exception {
         // test the request-count metric on the deployment's undertow resources
-        checkRequestCount(requestCalled);
+        checkRequestCount(requestCalled, true);
         performCall(url);
-        checkRequestCount(requestCalled);
+        checkRequestCount(requestCalled, true);
     }
 
     @Test
@@ -188,6 +187,7 @@ public class MicroProfileMetricsApplicationTestCase {
     public void tesApplicationMetricAfterUndeployment() throws Exception {
         deployer.undeploy("MicroProfileMetricsApplicationTestCase");
 
+        checkRequestCount(requestCalled, false);
         getPrometheusMetrics(managementClient, "application", false);
         getJSONMetrics(managementClient, "application", false);
     }
@@ -198,30 +198,36 @@ public class MicroProfileMetricsApplicationTestCase {
         return HttpRequest.get(appURL.toExternalForm(), 10, TimeUnit.SECONDS);
     }
 
-    private void checkRequestCount(int expectedCount) throws IOException {
-        // Prometheus conversion of the metric deployment/MicroProfileMetricsApplicationTestCase.war/subsystem/undertow/servlet/org.wildfly.test.integration.microprofile.metrics.application.TestApplication/request-count
-        String prometheusMetricName = "deployment_micro_profile_metrics_application_test_case_war_subsystem_undertow_servlet_org_wildfly_test_integration_microprofile_metrics_application_test_application_request_count";
+    private void checkRequestCount(int expectedCount, boolean deploymentMetricMustExist) throws IOException {
+        String prometheusMetricName = "wildfly_undertow_request_count";
 
-        String tags = null;
-        Double value = null;
-        String metrics = getPrometheusMetrics(managementClient, "application", true);
+        String metrics = getPrometheusMetrics(managementClient, "", true);
         for (String line : metrics.split("\\R")) {
-            if (line.startsWith("application:" + prometheusMetricName)) {
+            if (line.startsWith(prometheusMetricName)) {
                 String[] split = line.split("\\s+");
-                tags = split[0].substring(("application:" + prometheusMetricName).length());
-                value = Double.valueOf(split[1]);
+                String labels = split[0].substring((prometheusMetricName).length());
+
+                // we are only interested by the metric for this deployment
+                if (labels.contains("deployment=\"MicroProfileMetricsApplicationTestCase.war\"")) {
+                    if (deploymentMetricMustExist) {
+                        Double value = Double.valueOf(split[1]);
+
+                        assertTrue(labels.contains("deployment=\"MicroProfileMetricsApplicationTestCase.war\""));
+                        assertTrue(labels.contains("subdeployment=\"MicroProfileMetricsApplicationTestCase.war\""));
+                        assertTrue(labels.contains("servlet=\"org.wildfly.test.integration.microprofile.metrics.application.TestApplication\""));
+                        assertEquals(Integer.valueOf(expectedCount).doubleValue(), value, 0);
+
+                        return;
+                    } else {
+                        fail("Metric for the deployment must not exist");
+                    }
+                }
             }
         }
 
-        assertNotNull(tags);
-        assertNotNull(value);
-
-        assertTrue(tags.contains("subsystem=\"undertow\""));
-        assertTrue(tags.contains("deployment=\"MicroProfileMetricsApplicationTestCase.war\""));
-        assertTrue(tags.contains("servlet=\"org.wildfly.test.integration.microprofile.metrics.application.TestApplication\""));
-        assertTrue(tags.contains("attribute=\"request-count\""));
-
-        assertEquals(Integer.valueOf(expectedCount).doubleValue(), value, 0);
+        if (deploymentMetricMustExist) {
+            fail(prometheusMetricName + "metric not found for deployment");
+        }
     }
 
 }

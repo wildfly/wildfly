@@ -1,15 +1,10 @@
 package org.wildfly.extension.microprofile.metrics.deployment;
 
-import static org.eclipse.microprofile.metrics.MetricRegistry.Type.APPLICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBDEPLOYMENT;
 
-import java.util.HashSet;
-import java.util.Set;
 import java.util.function.Supplier;
 
-import io.smallrye.metrics.MetricRegistries;
-import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -20,6 +15,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
+import org.wildfly.extension.microprofile.metrics.MetricCollector;
 import org.wildfly.extension.microprofile.metrics.MetricsRegistrationService;
 import org.wildfly.extension.microprofile.metrics.MicroProfileMetricsSubsystemDefinition;
 
@@ -30,7 +26,7 @@ public class DeploymentMetricService implements Service {
     private final ManagementResourceRegistration managementResourceRegistration;
     private PathAddress deploymentAddress;
     private final Supplier<MetricsRegistrationService> registrationService;
-    private Set<String> registeredMetrics = new HashSet<>();
+    private MetricCollector.MetricRegistration registration;
 
     public static void install(ServiceTarget serviceTarget, DeploymentUnit deploymentUnit, Resource rootResource, ManagementResourceRegistration managementResourceRegistration) {
         PathAddress deploymentAddress = createDeploymentAddressPrefix(deploymentUnit);
@@ -56,26 +52,16 @@ public class DeploymentMetricService implements Service {
 
     @Override
     public void start(StartContext startContext) {
-        // WFLY-11399 - do not expose WildFly metrics as their representation is not correct
-        /*
-         * MetricRegistry applicationRegistry = MetricRegistries.get(APPLICATION);
-         * registeredMetrics = registrationService.get().registerMetrics(rootResource,
-         *        managementResourceRegistration,
-         *        applicationRegistry,
-         *        // prepend the deployment address to the subsystem resource address
-         *        address -> deploymentAddress.append(address));
-         */
+        registration = registrationService.get().registerMetrics(rootResource,
+                managementResourceRegistration,
+                // prepend the deployment address to the subsystem resource address
+                address -> deploymentAddress.append(address));
+
     }
 
     @Override
     public void stop(StopContext stopContext) {
-        if (registeredMetrics != null) {
-            MetricRegistry applicationRegistry = MetricRegistries.get(APPLICATION);
-            for (String registeredMetric : registeredMetrics) {
-                applicationRegistry.remove(registeredMetric);
-            }
-            registeredMetrics = null;
-        }
+        registration.unregister();
     }
 
     private static PathAddress createDeploymentAddressPrefix(DeploymentUnit deploymentUnit) {
