@@ -124,9 +124,7 @@ class WeldSubsystemAdd extends AbstractBoottimeAddStepHandler {
             }
         }, OperationContext.Stage.RUNTIME);
 
-        TCCLSingletonService singleton = new TCCLSingletonService();
-        context.getServiceTarget().addService(TCCLSingletonService.SERVICE_NAME, singleton).setInitialMode(
-                Mode.ON_DEMAND).install();
+        context.getServiceTarget().addService(TCCLSingletonService.SERVICE_NAME).setInstance(new TCCLSingletonService()).setInitialMode(Mode.ON_DEMAND).install();
 
         ServiceBuilder<?> builder = context.getServiceTarget().addService(WeldExecutorServices.SERVICE_NAME);
         final Consumer<ExecutorServices> executorServicesConsumer = builder.provides(WeldExecutorServices.SERVICE_NAME);
