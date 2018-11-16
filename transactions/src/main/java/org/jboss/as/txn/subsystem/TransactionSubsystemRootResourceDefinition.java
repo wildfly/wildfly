@@ -28,6 +28,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.transaction.TransactionSynchronizationRegistry;
+
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
@@ -73,6 +75,13 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
     /** Capability that indicates a local TransactionManager provider is present. */
     public static final RuntimeCapability<Void> LOCAL_PROVIDER_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.transactions.global-default-local-provider", Void.class)
             .build();
+    /**
+     * Provides access to the special TransactionSynchronizationRegistry impl that ensures proper ordering between
+     * JCA and other synchronizations.
+     */
+    public static final RuntimeCapability<Void> TRANSACTION_SYNCHRONIZATION_REGISTRY_CAPABILITY =
+            RuntimeCapability.Builder.of("org.wildfly.transactions.transaction-synchronization-registry", TransactionSynchronizationRegistry.class)
+                    .build();
     static final RuntimeCapability<Void> XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY =
             RuntimeCapability.Builder.of("org.wildfly.transactions.xa-resource-recovery-registry", XAResourceRecoveryRegistry.class)
                     .build();
@@ -267,6 +276,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
                 .setAddHandler(TransactionSubsystemAdd.INSTANCE)
                 .setRemoveHandler(TransactionSubsystemRemove.INSTANCE)
                 .setCapabilities(TRANSACTION_CAPABILITY, LOCAL_PROVIDER_CAPABILITY,
+                        TRANSACTION_SYNCHRONIZATION_REGISTRY_CAPABILITY,
                         XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY)
                 // Configuring these is not required as these are defaulted based on our add/remove handler types
                 //OperationEntry.Flag.RESTART_ALL_SERVICES, OperationEntry.Flag.RESTART_ALL_SERVICES

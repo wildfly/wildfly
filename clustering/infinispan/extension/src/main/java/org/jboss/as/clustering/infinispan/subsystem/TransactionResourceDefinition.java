@@ -30,6 +30,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 
+import javax.transaction.TransactionSynchronizationRegistry;
+
 import org.infinispan.transaction.LockingMode;
 import org.jboss.as.clustering.controller.BinaryCapabilityNameResolver;
 import org.jboss.as.clustering.controller.BinaryRequirementCapability;
@@ -125,6 +127,7 @@ public class TransactionResourceDefinition extends ComponentResourceDefinition {
 
     enum TransactionRequirement implements Requirement {
         LOCAL_TRANSACTION_PROVIDER("org.wildfly.transactions.global-default-local-provider", Void.class),
+        TRANSACTION_SYNCHRONIZATION_REGISTRY("org.wildfly.transactions.transaction-synchronization-registry", TransactionSynchronizationRegistry.class),
         XA_RESOURCE_RECOVERY_REGISTRY("org.wildfly.transactions.xa-resource-recovery-registry", XAResourceRecoveryRegistry.class);
 
         private final String name;
@@ -283,6 +286,8 @@ public class TransactionResourceDefinition extends ComponentResourceDefinition {
                 .addAttributes(Attribute.class)
                 // Add a requirement on the tm capability to the parent cache capability
                 .addResourceCapabilityReference(new TransactionResourceCapabilityReference(dependentCapability, TransactionRequirement.LOCAL_TRANSACTION_PROVIDER, EnumSet.of(TransactionMode.NONE, TransactionMode.BATCH)))
+                // Add a requirement on the XAResourceRecoveryRegistry capability to the parent cache capability
+                .addResourceCapabilityReference(new TransactionResourceCapabilityReference(dependentCapability, TransactionRequirement.TRANSACTION_SYNCHRONIZATION_REGISTRY, EnumSet.complementOf(EnumSet.of(TransactionMode.NON_XA))))
                 // Add a requirement on the XAResourceRecoveryRegistry capability to the parent cache capability
                 .addResourceCapabilityReference(new TransactionResourceCapabilityReference(dependentCapability, TransactionRequirement.XA_RESOURCE_RECOVERY_REGISTRY, EnumSet.complementOf(EnumSet.of(TransactionMode.FULL_XA))));
         ResourceServiceHandler handler = new SimpleResourceServiceHandler(TransactionServiceConfigurator::new);

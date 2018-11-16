@@ -61,6 +61,8 @@ public final class TxnServices {
 
     public static final ServiceName JBOSS_TXN_USER_TRANSACTION_REGISTRY = JBOSS_TXN.append("UserTransactionRegistry");
 
+    /** @deprecated Use the "org.wildfly.transactions.transaction-synchronization-registry" capability */
+    @Deprecated
     public static final ServiceName JBOSS_TXN_SYNCHRONIZATION_REGISTRY = JBOSS_TXN.append("TransactionSynchronizationRegistry");
 
     public static final ServiceName JBOSS_TXN_JTA_ENVIRONMENT = JBOSS_TXN.append("JTAEnvironment");

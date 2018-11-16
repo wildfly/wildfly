@@ -41,7 +41,6 @@ import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
 import org.jboss.as.jpa.transaction.TransactionUtil;
 import org.jboss.as.jpa.util.JPAServiceNames;
 import org.jboss.as.server.CurrentServiceContainer;
-import org.jboss.as.txn.service.TransactionSynchronizationRegistryService;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.wildfly.transaction.client.ContextTransactionManager;
@@ -120,7 +119,7 @@ public class TransactionScopedEntityManager extends AbstractEntityManager implem
         final ServiceController<?> controller = currentServiceContainer().getService(JPAServiceNames.getPUServiceName(puScopedName));
         final PersistenceUnitServiceImpl persistenceUnitService = (PersistenceUnitServiceImpl) controller.getService();
         transactionManager = ContextTransactionManager.getInstance();
-        transactionSynchronizationRegistry = (TransactionSynchronizationRegistry) currentServiceContainer().getService(TransactionSynchronizationRegistryService.SERVICE_NAME).getValue();
+        transactionSynchronizationRegistry = (TransactionSynchronizationRegistry) currentServiceContainer().getService(JPAServiceNames.TRANSACTION_SYNCHRONIZATION_REGISTRY_SERVICE).getValue();
 
         emf = persistenceUnitService.getEntityManagerFactory();
     }
