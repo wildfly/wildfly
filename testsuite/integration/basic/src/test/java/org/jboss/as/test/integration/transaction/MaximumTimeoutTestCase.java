@@ -22,6 +22,8 @@
 package org.jboss.as.test.integration.transaction;
 
 
+import java.io.FilePermission;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -35,6 +37,7 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.transactions.TestXAResource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
+import org.jboss.remoting3.security.RemotingPermission;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -55,6 +58,7 @@ import java.io.IOException;
 import java.util.List;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * Tests for EAP7-981 / WFLY-10009
@@ -93,7 +97,13 @@ public class MaximumTimeoutTestCase {
         return ShrinkWrap.create(JavaArchive.class)
                 .addClasses(MaximumTimeoutTestCase.class, MaximumTimeoutTestCase.TimeoutSetup.class)
                 .addPackage(TestXAResource.class.getPackage())
-                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller\n"), "MANIFEST.MF");
+                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller, org.jboss.remoting3\n"), "MANIFEST.MF")
+                .addAsManifestResource(createPermissionsXmlAsset(
+                    // ManagementClient needs the following permissions and a dependency on 'org.jboss.remoting3' module
+                    new RemotingPermission("createEndpoint"),
+                    new RemotingPermission("connect"),
+                    new FilePermission(System.getProperty("jboss.inst") + "/standalone/tmp/auth/*", "read")
+                ), "permissions.xml");
     }
 
     static void setMaximumTimeout(final ModelControllerClient client, int timeout) {
