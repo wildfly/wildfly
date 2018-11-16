@@ -22,7 +22,6 @@
 package org.jboss.as.weld.deployment.processors;
 
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
-import org.jboss.as.security.service.SimpleSecurityManager;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.weld.services.bootstrap.WeldSecurityServices;
@@ -30,24 +29,28 @@ import org.jboss.as.weld.spi.BootstrapDependencyInstaller;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.weld.security.spi.SecurityServices;
+
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
- *
  * @author Martin Kouba
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class SecurityBootstrapDependencyInstaller implements BootstrapDependencyInstaller {
 
     @Override
     public ServiceName install(ServiceTarget serviceTarget, DeploymentUnit deploymentUnit, boolean jtsEnabled) {
-        final WeldSecurityServices service = new WeldSecurityServices();
-
         final ServiceName serviceName = deploymentUnit.getServiceName().append(WeldSecurityServices.SERVICE_NAME);
-
-        final ServiceBuilder sb = serviceTarget.addService(serviceName, service);
         final CapabilityServiceSupport capabilities = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
+        final ServiceBuilder<?> sb = serviceTarget.addService(serviceName);
+        final Consumer<SecurityServices> securityServicesConsumer = sb.provides(serviceName);
+        Supplier<?> securityManagerSupplier = null;
         if (capabilities.hasCapability("org.wildfly.legacy-security.server-security-manager")) {
-            sb.addDependency(capabilities.getCapabilityServiceName("org.wildfly.legacy-security.server-security-manager"), SimpleSecurityManager.class, service.getSecurityManagerValue());
+            securityManagerSupplier = sb.requires(capabilities.getCapabilityServiceName("org.wildfly.legacy-security.server-security-manager"));
         }
+        sb.setInstance(new WeldSecurityServices(securityServicesConsumer, securityManagerSupplier));
         sb.install();
         return serviceName;
     }
