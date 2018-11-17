@@ -174,7 +174,7 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
                         profileService);
                 if (ejbClientDescriptorMetaData.isLocalReceiverExcluded() != Boolean.TRUE) {
                     final Boolean passByValue = ejbClientDescriptorMetaData.isLocalReceiverPassByValue();
-                    profileServiceBuilder.addDependency(passByValue == Boolean.TRUE ? LocalTransportProvider.BY_VALUE_SERVICE_NAME : LocalTransportProvider.BY_REFERENCE_SERVICE_NAME, EJBTransportProvider.class, profileService.getLocalTransportProviderInjector());
+                    profileServiceBuilder.addDependency(passByValue == Boolean.FALSE ? LocalTransportProvider.BY_REFERENCE_SERVICE_NAME : LocalTransportProvider.BY_VALUE_SERVICE_NAME, EJBTransportProvider.class, profileService.getLocalTransportProviderInjector());
                 }
                 final Collection<EJBClientDescriptorMetaData.RemotingReceiverConfiguration> receiverConfigurations = ejbClientDescriptorMetaData.getRemotingReceiverConfigurations();
                 for (EJBClientDescriptorMetaData.RemotingReceiverConfiguration receiverConfiguration : receiverConfigurations) {
