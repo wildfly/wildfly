@@ -40,7 +40,7 @@ import org.jboss.as.ejb3.component.messagedriven.DefaultResourceAdapterService;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.logging.EjbLogger;
-import org.jboss.as.ejb3.util.MdbValidationsUtil;
+import org.jboss.as.ejb3.util.EjbValidationsUtil;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.EjbDeploymentMarker;
@@ -103,7 +103,7 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
         for (final AnnotationInstance messageBeanAnnotation : messageBeanAnnotations) {
             final AnnotationTarget target = messageBeanAnnotation.target();
             final ClassInfo beanClassInfo = (ClassInfo) target;
-            if (! MdbValidationsUtil.assertMDBClassValidity(beanClassInfo).isEmpty() ) {
+            if (! EjbValidationsUtil.assertEjbClassValidity(beanClassInfo).isEmpty() ) {
                 continue;
             }
             final String ejbName = beanClassInfo.name().local();

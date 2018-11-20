@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ejb3.util;
 
+import static org.jboss.as.ejb3.util.EjbValidationsUtil.assertEjbClassValidity;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -38,36 +39,52 @@ import org.junit.Test;
  *
  * @author <a href="mailto:romain@redhat.com">Romain Pelisse</a>
  */
-public class MdbValidationsUtilTest {
+public class EjbValidationsUtilTest {
 
     @Test
     public void mdbWithFinalClass() throws IOException, DeploymentUnitProcessingException {
-        assertTrue(MdbValidationsUtil.assertMDBClassValidity(buildClassInfoForClass(InvalidMdbFinalClass.class.getName())).contains(MdbValidityStatus.MDB_CLASS_CANNOT_BE_PRIVATE_ABSTRACT_OR_FINAL));
+        assertTrue(assertEjbClassValidity(buildClassInfoForClass(InvalidMdbFinalClass.class.getName())).contains(
+                MdbValidityStatus.MDB_CLASS_CANNOT_BE_PRIVATE_ABSTRACT_OR_FINAL));
     }
 
     @Test
     public void mdbWithInterface() throws IOException, DeploymentUnitProcessingException {
-        assertTrue(MdbValidationsUtil.assertMDBClassValidity(buildClassInfoForClass(InvalidMdbInterface.class.getName())).contains(MdbValidityStatus.MDB_CANNOT_BE_AN_INTERFACE));
+        assertTrue(assertEjbClassValidity(buildClassInfoForClass(InvalidMdbInterface.class.getName())).contains(
+                MdbValidityStatus.MDB_CANNOT_BE_AN_INTERFACE));
     }
 
     @Test
     public void mdbWithFinalOnMessageMethod() throws IOException, DeploymentUnitProcessingException {
-        assertTrue(MdbValidationsUtil.assertMDBClassValidity(buildClassInfoForClass(InvalidMdbOnMessageCantBeFinal.class.getName())).contains(MdbValidityStatus.MDB_ON_MESSAGE_METHOD_CANT_BE_FINAL));
+        assertTrue(assertEjbClassValidity(buildClassInfoForClass(InvalidMdbOnMessageCantBeFinal.class.getName())).contains(
+                MdbValidityStatus.MDB_ON_MESSAGE_METHOD_CANT_BE_FINAL));
     }
 
     @Test
     public void mdbWithStaticOnMessageMethod() throws IOException, DeploymentUnitProcessingException {
-        assertTrue(MdbValidationsUtil.assertMDBClassValidity(buildClassInfoForClass(InvalidMdbOnMessageCantBeStatic.class.getName())).contains(MdbValidityStatus.MDB_ON_MESSAGE_METHOD_CANT_BE_STATIC));
+        assertTrue(assertEjbClassValidity(buildClassInfoForClass(InvalidMdbOnMessageCantBeStatic.class.getName())).contains(
+                MdbValidityStatus.MDB_ON_MESSAGE_METHOD_CANT_BE_STATIC));
     }
 
     @Test
     public void mdbWithPrivateOnMessageMethod() throws IOException, DeploymentUnitProcessingException {
-        assertTrue(MdbValidationsUtil.assertMDBClassValidity(buildClassInfoForClass(InvalidMdbOnMessageCantBePrivate.class.getName())).contains(MdbValidityStatus.MDB_ON_MESSAGE_METHOD_CANT_BE_PRIVATE));
+        assertTrue(assertEjbClassValidity(buildClassInfoForClass(InvalidMdbOnMessageCantBePrivate.class.getName())).contains(
+                MdbValidityStatus.MDB_ON_MESSAGE_METHOD_CANT_BE_PRIVATE));
     }
 
     @Test
     public void mdbWithFinalizeMethod() throws IOException, DeploymentUnitProcessingException {
-        assertTrue(MdbValidationsUtil.assertMDBClassValidity(buildClassInfoForClass(InvalidMdbWithFinalizeMethod.class.getName())).contains(MdbValidityStatus.MDB_SHOULD_NOT_HAVE_FINALIZE_METHOD));
+        assertTrue(assertEjbClassValidity(buildClassInfoForClass(InvalidMdbWithFinalizeMethod.class.getName())).contains(
+                MdbValidityStatus.MDB_SHOULD_NOT_HAVE_FINALIZE_METHOD));
+    }
+
+    @Test
+    public void ejbWithPrivateFinalOrStaticMethods() throws DeploymentUnitProcessingException {
+        assertTrue(assertEjbClassValidity(buildClassInfoForClass(EjbWithPrivateFinalMethod.class.getName())).isEmpty());
+    }
+
+    @Test
+    public void returnsOnlyBusinessMethod() {
+        EjbValidationsUtil.getBusinessMethods(ClassWithBusinessMethod.class);
     }
 
     private ClassInfo buildClassInfoForClass(String mdbClassName) {
@@ -75,6 +92,7 @@ public class MdbValidationsUtilTest {
         Index index = indexStream(getClass().getClassLoader().getResourceAsStream(mdbClassNameAsResource)).complete();
         return index.getClassByName(DotName.createSimple(mdbClassName));
     }
+
 
     private Indexer indexStream(InputStream stream) {
         try {
