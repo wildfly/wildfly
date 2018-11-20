@@ -24,7 +24,9 @@ package org.wildfly.extension.microprofile.metrics;
 
 import static org.jboss.as.controller.OperationContext.Stage.RUNTIME;
 import static org.jboss.as.server.deployment.Phase.DEPENDENCIES;
+import static org.jboss.as.server.deployment.Phase.DEPENDENCIES_MICROPROFILE_METRICS;
 import static org.jboss.as.server.deployment.Phase.INSTALL;
+import static org.jboss.as.server.deployment.Phase.POST_MODULE_MICROPROFILE_METRICS;
 
 import java.util.List;
 
@@ -47,10 +49,6 @@ class MicroProfileMetricsSubsystemAdd extends AbstractBoottimeAddStepHandler {
     MicroProfileMetricsSubsystemAdd() {
         super(MicroProfileMetricsSubsystemDefinition.ATTRIBUTES);
     }
-
-    // temporary until https://issues.jboss.org/browse/WFCORE-4204 is integrated
-    private final int DEPENDENCIES_MICROPROFILE_METRICS = 0x1860;
-    private static final int POST_MODULE_MICROPROFILE_METRICS = 0x3760;
 
     static final MicroProfileMetricsSubsystemAdd INSTANCE = new MicroProfileMetricsSubsystemAdd();
 
