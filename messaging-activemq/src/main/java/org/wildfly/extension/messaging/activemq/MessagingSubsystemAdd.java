@@ -91,8 +91,8 @@ class MessagingSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         ModelNode threadPoolMaxSize = operation.get(GLOBAL_CLIENT_THREAD_POOL_MAX_SIZE.getName());
         ModelNode scheduledThreadPoolMaxSize = operation.get(GLOBAL_CLIENT_SCHEDULED_THREAD_POOL_MAX_SIZE.getName());
-        final Integer threadPoolMaxSizeValue;
-        final Integer scheduledThreadPoolMaxSizeValue;
+        Integer threadPoolMaxSizeValue;
+        Integer scheduledThreadPoolMaxSizeValue;
 
         // if the attributes are defined, their value is used (and the system properties are ignored)
         Properties sysprops = System.getProperties();
@@ -115,7 +115,14 @@ class MessagingSubsystemAdd extends AbstractBoottimeAddStepHandler {
             scheduledThreadPoolMaxSizeValue = null;
         }
 
-        if (threadPoolMaxSizeValue != null && scheduledThreadPoolMaxSizeValue != null) {
+        if (threadPoolMaxSizeValue != null || scheduledThreadPoolMaxSizeValue != null) {
+            ActiveMQClient.initializeGlobalThreadPoolProperties();
+            if(threadPoolMaxSizeValue == null) {
+                threadPoolMaxSizeValue = ActiveMQClient.getGlobalThreadPoolSize();
+            }
+            if(scheduledThreadPoolMaxSizeValue == null) {
+                scheduledThreadPoolMaxSizeValue = ActiveMQClient.getGlobalScheduledThreadPoolSize();
+            }
             MessagingLogger.ROOT_LOGGER.debugf("Setting global client thread pool size to: regular=%s, scheduled=%s", threadPoolMaxSizeValue, scheduledThreadPoolMaxSizeValue);
             ActiveMQClient.setGlobalThreadPoolProperties(threadPoolMaxSizeValue, scheduledThreadPoolMaxSizeValue);
         }
