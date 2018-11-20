@@ -629,7 +629,7 @@ class ServerAdd extends AbstractAddStepHandler {
             configuration.getWildcardConfiguration().setRoutingEnabled(WILD_CARD_ROUTING_ENABLED.resolveModelAttribute(context, model).asBoolean());
 
             processStorageConfiguration(context, model, configuration);
-            HAPolicyConfigurationBuilder.addHAPolicyConfiguration(context, configuration, model);
+            HAPolicyConfigurationBuilder.getInstance().addHAPolicyConfiguration(context, configuration, model);
 
             processAddressSettings(context, configuration, model);
             processSecuritySettings(context, configuration, model);

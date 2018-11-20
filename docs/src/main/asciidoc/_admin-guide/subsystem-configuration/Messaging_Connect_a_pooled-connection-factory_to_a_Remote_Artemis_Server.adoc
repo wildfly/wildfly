@@ -22,7 +22,7 @@ created at step (1).
 
 [source, ruby]
 ----
-  /subsystem=messaging-activemq/server=default/remote-connector=remote-artemis:add(socket-binding=remote-artemis)
+  /subsystem=messaging-activemq/remote-connector=remote-artemis:add(socket-binding=remote-artemis)
 
 ----
 
@@ -31,9 +31,36 @@ created at step (2).
 
 [source,ruby]
 ----
-  /subsystem=messaging-activemq/server=default/pooled-connection-factory=remote-artemis:add(connectors=[remote-artemis], entries=[java:/jms/remoteCF])
+  /subsystem=messaging-activemq/pooled-connection-factory=remote-artemis:add(connectors=[remote-artemis], entries=[java:/jms/remoteCF])
    
 ----
+[[configuration-of-a-mdb-using-a-pooled-connection-factory]]
+== JMS Queues and Topics on a remote Artemis Server
+
+You can also add queues and topics defined on a remote Artemis server to be used as if they were local to the server. This mean,s that you can make those remote destinations available viza JNDI just like local destinations. Those destinations are defined out-of the server element:
+
+[source,xml]
+----
+<subsystem xmlns="urn:jboss:domain:messaging-activemq:1.0">
+    <external-jms-queue name="testQueue"
+               entries="jms/queue/test java:jboss/exported/jms/queue/test" />
+    <external-jms-topic name="testTopic"
+               entries="jms/topic/test java:jboss/exported/jms/topic/test" />
+</subsystem>
+----
+
+JMS endpoints can easily be created through the CLI:
+[source,ruby]
+----
+[standalone@localhost:9990 /] /subsystem=messaging-activemq/external-jms-queue=myQueue:read-resource
+{
+    "outcome" => "success",
+    "result" => {
+        "entries" => ["queues/myQueue"]
+    }
+}
+----
+You don't have operations to see or manage attributes of those destinations.
 
 [[configuration-of-a-mdb-using-a-pooled-connection-factory]]
 == Configuration of a MDB using a pooled-connection-factory
@@ -78,8 +105,7 @@ A MDB must also specify which destination it will consume messages from.
 
 The standard way is to define a `destinationLookup` activation config
 property that corresponds to a JNDI lookup on the local server. +
-When the MDB is consuming from a remote Artemis server, there may not
-have such a JNDI binding in the local WildFly. +
+When the MDB is consuming from a remote Artemis server it will now create those bindings locally. +
 It is possible to use the naming subsystem to configure
 <<Naming,external context federation>> to have local JNDI
 bindings delegating to external bindings.

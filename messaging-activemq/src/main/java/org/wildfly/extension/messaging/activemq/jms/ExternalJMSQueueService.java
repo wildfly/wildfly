@@ -16,20 +16,19 @@
 package org.wildfly.extension.messaging.activemq.jms;
 
 
-import static org.wildfly.extension.messaging.activemq.logging.MessagingLogger.ROOT_LOGGER;
-
+import java.util.Collection;
+import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
-import javax.jms.Message;
 import javax.jms.Queue;
-import javax.jms.QueueConnection;
-import javax.jms.QueueConnectionFactory;
-import javax.jms.QueueRequestor;
-import javax.jms.QueueSession;
-import javax.jms.Session;
 import javax.naming.NamingException;
-import org.apache.activemq.artemis.api.core.RoutingType;
-import org.apache.activemq.artemis.api.core.management.ResourceNames;
+import org.apache.activemq.artemis.api.core.client.ClientSessionFactory;
+import org.apache.activemq.artemis.api.core.client.ClusterTopologyListener;
+import org.apache.activemq.artemis.api.core.client.ServerLocator;
+import org.apache.activemq.artemis.api.core.client.TopologyMember;
 import org.apache.activemq.artemis.api.jms.ActiveMQJMSClient;
+import org.apache.activemq.artemis.core.client.impl.TopologyMemberImpl;
+import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory;
+import org.apache.activemq.artemis.ra.ActiveMQRAConnectionFactory;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.naming.NamingContext;
 import org.jboss.as.naming.NamingStore;
@@ -43,6 +42,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 
 /**
  * Service responsible for creating and destroying a client {@code javax.jms.Queue}.
@@ -57,14 +57,15 @@ public class ExternalJMSQueueService implements Service<Queue> {
     private final InjectedValue<NamingStore> namingStoreInjector = new InjectedValue<NamingStore>();
     private final InjectedValue<ExternalPooledConnectionFactoryService> pcfInjector = new InjectedValue<ExternalPooledConnectionFactoryService>();
     private Queue queue;
+    private ClientSessionFactory sessionFactory;
 
-    public ExternalJMSQueueService(final String queueName) {
-        this.queueName = queueName;
+    private ExternalJMSQueueService(final String queueName) {
+        this.queueName = JMS_QUEUE_PREFIX + queueName;
         this.config = null;
     }
 
     private ExternalJMSQueueService(final DestinationConfiguration config) {
-        this.queueName = config.getName();
+        this.queueName = JMS_QUEUE_PREFIX + config.getName();
         this.config = config;
     }
 
@@ -72,29 +73,48 @@ public class ExternalJMSQueueService implements Service<Queue> {
     public synchronized void start(final StartContext context) throws StartException {
         NamingStore namingStore = namingStoreInjector.getOptionalValue();
         if(namingStore!= null) {
-            Queue managementQueue = config.getManagementQueue();
+            final Queue managementQueue = config.getManagementQueue();
             final NamingContext storeBaseContext = new NamingContext(namingStore, null);
             try {
-                QueueConnectionFactory cf = (QueueConnectionFactory) storeBaseContext.lookup(pcfInjector.getValue().getBindInfo().getAbsoluteJndiName());
-                try (QueueConnection connection = config.createQueueConnection(cf)) {
-                    QueueSession session = connection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
-                    connection.start();
-                    QueueRequestor requestor = new QueueRequestor(session, managementQueue);
-                    Message m = session.createMessage();
-                    if (config.getSelector() != null && !config.getSelector().isEmpty()) {
-                        org.apache.activemq.artemis.api.jms.management.JMSManagementHelper.putOperationInvocation(m, ResourceNames.BROKER, "createQueue", JMS_QUEUE_PREFIX + queueName, JMS_QUEUE_PREFIX + queueName, config.getSelector(), config.isDurable(), RoutingType.ANYCAST.name());
-                    } else {
-                        org.apache.activemq.artemis.api.jms.management.JMSManagementHelper.putOperationInvocation(m, ResourceNames.BROKER, "createQueue", JMS_QUEUE_PREFIX + queueName, JMS_QUEUE_PREFIX + queueName, config.isDurable(), RoutingType.ANYCAST.name());
+                ConnectionFactory cf = (ConnectionFactory) storeBaseContext.lookup(pcfInjector.getValue().getBindInfo().getAbsoluteJndiName());
+                if (cf instanceof ActiveMQRAConnectionFactory) {
+                    ActiveMQRAConnectionFactory raCf = (ActiveMQRAConnectionFactory) cf;
+                    ServerLocator locator = raCf.getDefaultFactory().getServerLocator();
+                    sessionFactory = locator.createSessionFactory();
+                    ClusterTopologyListener listener = new ClusterTopologyListener() {
+                        @Override
+                        public void nodeUP(TopologyMember member, boolean last) {
+                            try (ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(false, member.getLive())) {
+                                MessagingLogger.ROOT_LOGGER.infof("Creating queue %s on node UP %s - %s", queueName, member.getNodeId(), member.getLive().toJson());
+                                config.createQueue(factory, managementQueue, queueName);
+                            } catch (JMSException | StartException ex) {
+                                MessagingLogger.ROOT_LOGGER.errorf(ex, "Creating queue %s on node UP %s failed", queueName, member.getLive().toJson());
+                                throw new RuntimeException(ex);
+                            }
+                            if (member.getBackup() != null) {
+                                try (ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(false, member.getBackup())) {
+                                    MessagingLogger.ROOT_LOGGER.infof("Creating queue %s on backup node UP %s - %s", queueName, member.getNodeId(), member.getBackup().toJson());
+                                    config.createQueue(factory, managementQueue, queueName);
+                                } catch (JMSException | StartException ex) {
+                                    throw new RuntimeException(ex);
+                                }
+                            }
+                        }
+
+                        @Override
+                        public void nodeDown(long eventUID, String nodeID) {}
+                    };
+                    locator.addClusterTopologyListener(listener);
+                    Collection<TopologyMemberImpl> members = locator.getTopology().getMembers();
+                    if (members == null || members.isEmpty()) {
+                        config.createQueue(cf, managementQueue, queueName);
                     }
-                    Message reply = requestor.request(m);
-                    ROOT_LOGGER.debugf("Creating queue %s returned %s", JMS_QUEUE_PREFIX + queueName, reply);
-                    if(!reply.getBooleanProperty("_AMQ_OperationSucceeded")) {
-                        throw ROOT_LOGGER.remoteDestinationCreationFailed(JMS_QUEUE_PREFIX + queueName, reply.getBody(String.class));
-                    }
-                    ROOT_LOGGER.debugf("Queue %s has been created", JMS_QUEUE_PREFIX + queueName);
+                } else {
+                    config.createQueue(cf, managementQueue, queueName);
                 }
-            } catch (NamingException | JMSException ex) {
-                    throw new StartException(ex);
+            } catch (Exception ex) {
+                MessagingLogger.ROOT_LOGGER.errorf(ex, "Error starting the external queue service %s", ex.getMessage());
+                throw new StartException(ex);
             } finally {
                 try {
                     storeBaseContext.close();
@@ -103,41 +123,15 @@ public class ExternalJMSQueueService implements Service<Queue> {
                 }
             }
         }
-        queue = ActiveMQJMSClient.createQueue(JMS_QUEUE_PREFIX + queueName);
+        queue = ActiveMQJMSClient.createQueue(queueName);
     }
+
 
     @Override
     public synchronized void stop(final StopContext context) {
-        NamingStore namingStore = namingStoreInjector.getOptionalValue();
-        if(namingStore!= null) {
-            Queue managementQueue = config.getManagementQueue();
-            final NamingContext storeBaseContext = new NamingContext(namingStore, null);
-            try {
-                QueueConnectionFactory cf = (QueueConnectionFactory) storeBaseContext.lookup(pcfInjector.getValue().getBindInfo().getAbsoluteJndiName());
-                try (QueueConnection connection = config.createQueueConnection(cf)) {
-                    QueueSession session = connection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
-                    connection.start();
-                    QueueRequestor requestor = new QueueRequestor(session, managementQueue);
-                    Message m = session.createMessage();
-                    org.apache.activemq.artemis.api.jms.management.JMSManagementHelper.putOperationInvocation(m, ResourceNames.BROKER, "destroyQueue", JMS_QUEUE_PREFIX + queueName, true, true);
-                    Message reply = requestor.request(m);
-                    ROOT_LOGGER.debugf("Deleting queue %s returned %s", JMS_QUEUE_PREFIX + queueName, reply);
-                    if(!reply.getBooleanProperty("_AMQ_OperationSucceeded")) {
-                        throw ROOT_LOGGER.remoteDestinationDeletionFailed(JMS_QUEUE_PREFIX + queueName, reply.getBody(String.class));
-                    }
-                    ROOT_LOGGER.debugf("Queue %s has been deleted", JMS_QUEUE_PREFIX + queueName);
-                }
-            } catch (NamingException | JMSException ex) {
-                    throw new RuntimeException(ex);
-            } finally {
-                try {
-                    storeBaseContext.close();
-                } catch (NamingException ex) {
-                    throw new RuntimeException(ex);
-                }
-            }
+        if(sessionFactory != null) {
+            sessionFactory.close();
         }
-        queue = null;
     }
 
     @Override
@@ -161,4 +155,5 @@ public class ExternalJMSQueueService implements Service<Queue> {
         serviceBuilder.install();
         return service;
     }
+
 }

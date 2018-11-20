@@ -15,12 +15,21 @@
  */
 package org.wildfly.extension.messaging.activemq.jms;
 
+import static org.wildfly.extension.messaging.activemq.logging.MessagingLogger.ROOT_LOGGER;
+
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
+import javax.jms.Message;
 import javax.jms.Queue;
-import javax.jms.QueueConnection;
-import javax.jms.QueueConnectionFactory;
+import javax.jms.QueueRequestor;
+import javax.jms.QueueSession;
+import javax.jms.Session;
+import org.apache.activemq.artemis.api.core.RoutingType;
+import org.apache.activemq.artemis.api.core.management.ResourceNames;
 import org.apache.activemq.artemis.api.jms.ActiveMQJMSClient;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.StartException;
 
 /**
  *
@@ -73,13 +82,90 @@ public class DestinationConfiguration {
         return ActiveMQJMSClient.createQueue(this.managementQueueAddress);
     }
 
-    public QueueConnection createQueueConnection(QueueConnectionFactory cf) throws JMSException {
+    private Connection createQueueConnection(ConnectionFactory cf) throws JMSException {
         if(this.managementUsername != null && !this.managementUsername.isEmpty()) {
-            return cf.createQueueConnection(managementUsername, managementPassword);
+            return cf.createConnection(managementUsername, managementPassword);
         }
-        return cf.createQueueConnection();
+        return cf.createConnection();
     }
 
+    public void createQueue(ConnectionFactory cf, Queue managementQueue, String queueName) throws JMSException, StartException {
+        try (Connection connection = createQueueConnection(cf)) {
+            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            connection.start();
+            QueueRequestor requestor = new QueueRequestor((QueueSession) session, managementQueue);
+            Message m = session.createMessage();
+            if (getSelector() != null && !getSelector().isEmpty()) {
+                org.apache.activemq.artemis.api.jms.management.JMSManagementHelper.putOperationInvocation(m, ResourceNames.BROKER, "createQueue", queueName, queueName, getSelector(), isDurable(), RoutingType.ANYCAST.name());
+            } else {
+                org.apache.activemq.artemis.api.jms.management.JMSManagementHelper.putOperationInvocation(m, ResourceNames.BROKER, "createQueue", queueName, queueName, isDurable(), RoutingType.ANYCAST.name());
+            }
+            Message reply = requestor.request(m);
+            ROOT_LOGGER.infof("Creating queue %s returned %s", queueName, reply);
+            if (!reply.getBooleanProperty("_AMQ_OperationSucceeded")) {
+                String body = reply.getBody(String.class);
+                if (!destinationAlreadyExist(body)) {
+                    throw ROOT_LOGGER.remoteDestinationCreationFailed(queueName, body);
+                }
+            }
+            ROOT_LOGGER.infof("Queue %s has been created", queueName);
+        }
+    }
+
+    private boolean destinationAlreadyExist(String body) {
+        return body.contains("AMQ119019") || body.contains("AMQ119018") || body.contains("AMQ229019") || body.contains("AMQ229018");
+    }
+
+    public void destroyQueue(ConnectionFactory cf, Queue managementQueue, String queueName) throws JMSException {
+        try (Connection connection = createQueueConnection(cf)) {
+            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            connection.start();
+            QueueRequestor requestor = new QueueRequestor((QueueSession) session, managementQueue);
+            Message m = session.createMessage();
+            org.apache.activemq.artemis.api.jms.management.JMSManagementHelper.putOperationInvocation(m, ResourceNames.BROKER, "destroyQueue", queueName, true, true);
+            Message reply = requestor.request(m);
+            ROOT_LOGGER.debugf("Deleting queue %s returned %s", queueName, reply);
+            if (!reply.getBooleanProperty("_AMQ_OperationSucceeded")) {
+                throw ROOT_LOGGER.remoteDestinationDeletionFailed(queueName, reply.getBody(String.class));
+            }
+            ROOT_LOGGER.debugf("Queue %s has been deleted", queueName);
+        }
+    }
+
+    public void createTopic(ConnectionFactory cf, Queue managementQueue, String topicName) throws JMSException, StartException {
+        try (Connection connection = createQueueConnection(cf)) {
+            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            connection.start();
+            QueueRequestor requestor = new QueueRequestor((QueueSession) session, managementQueue);
+            Message m = session.createMessage();
+            org.apache.activemq.artemis.api.jms.management.JMSManagementHelper.putOperationInvocation(m, ResourceNames.BROKER, "createQueue", topicName, topicName, isDurable(), RoutingType.MULTICAST.name());
+            Message reply = requestor.request(m);
+            ROOT_LOGGER.infof("Creating topic %s returned %s", topicName, reply);
+            if (!reply.getBooleanProperty("_AMQ_OperationSucceeded")) {
+                String body = reply.getBody(String.class);
+                if (!destinationAlreadyExist(body)) {
+                    throw ROOT_LOGGER.remoteDestinationCreationFailed(topicName, body);
+                }
+            }
+            ROOT_LOGGER.infof("Topic %s has been created", topicName);
+        }
+    }
+
+    public void destroyTopic(ConnectionFactory cf, Queue managementQueue, String topicName) throws JMSException {
+        try (Connection connection = createQueueConnection(cf)) {
+            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            connection.start();
+            QueueRequestor requestor = new QueueRequestor((QueueSession) session, managementQueue);
+            Message m = session.createMessage();
+            org.apache.activemq.artemis.api.jms.management.JMSManagementHelper.putOperationInvocation(m, ResourceNames.BROKER, "destroyQueue", topicName, true, true);
+            Message reply = requestor.request(m);
+            ROOT_LOGGER.debugf("Deleting topic " + topicName + " returned " + reply);
+            if (!reply.getBooleanProperty("_AMQ_OperationSucceeded")) {
+                throw ROOT_LOGGER.remoteDestinationDeletionFailed(topicName, reply.getBody(String.class));
+            }
+            ROOT_LOGGER.debugf("Topic %s has been deleted", topicName);
+        }
+    }
     public static class Builder {
 
         private boolean durable = false;

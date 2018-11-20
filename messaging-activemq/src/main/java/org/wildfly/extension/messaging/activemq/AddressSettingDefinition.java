@@ -34,9 +34,6 @@ import static org.wildfly.extension.messaging.activemq.MessagingExtension.VERSIO
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.apache.activemq.artemis.core.settings.impl.AddressFullMessagePolicy;
-import org.apache.activemq.artemis.core.settings.impl.AddressSettings;
-import org.apache.activemq.artemis.core.settings.impl.SlowConsumerPolicy;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -96,107 +93,107 @@ public class AddressSettingDefinition extends PersistentResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition ADDRESS_FULL_MESSAGE_POLICY = create("address-full-policy", ModelType.STRING)
-            .setDefaultValue(new ModelNode(AddressSettings.DEFAULT_ADDRESS_FULL_MESSAGE_POLICY.toString()))
+            .setDefaultValue(new ModelNode(AddressFullMessagePolicy.PAGE.toString()))
             .setValidator(new EnumValidator<>(AddressFullMessagePolicy.class, true, false))
             .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     public static final SimpleAttributeDefinition EXPIRY_DELAY = create("expiry-delay", ModelType.LONG)
-            .setDefaultValue(new ModelNode(AddressSettings.DEFAULT_EXPIRY_DELAY))
+            .setDefaultValue(new ModelNode(-1L))
             .setMeasurementUnit(MILLISECONDS)
             .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     public static final SimpleAttributeDefinition LAST_VALUE_QUEUE = create("last-value-queue", ModelType.BOOLEAN)
-            .setDefaultValue(new ModelNode(AddressSettings.DEFAULT_LAST_VALUE_QUEUE))
+            .setDefaultValue(new ModelNode(false))
             .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     public static final SimpleAttributeDefinition MAX_DELIVERY_ATTEMPTS = create("max-delivery-attempts", ModelType.INT)
-            .setDefaultValue(new ModelNode(AddressSettings.DEFAULT_MAX_DELIVERY_ATTEMPTS))
+            .setDefaultValue(new ModelNode(10))
             .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     public static final SimpleAttributeDefinition MAX_REDELIVERY_DELAY = create("max-redelivery-delay", ModelType.LONG)
-            .setDefaultValue(new ModelNode(AddressSettings.DEFAULT_REDELIVER_DELAY * 10))
+            .setDefaultValue(new ModelNode(0L))
             .setMeasurementUnit(MILLISECONDS)
             .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     public static final SimpleAttributeDefinition MAX_SIZE_BYTES = create("max-size-bytes", ModelType.LONG)
-            .setDefaultValue(new ModelNode(AddressSettings.DEFAULT_MAX_SIZE_BYTES))
+            .setDefaultValue(new ModelNode(-1L))
             .setMeasurementUnit(BYTES)
             .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     public static final SimpleAttributeDefinition MESSAGE_COUNTER_HISTORY_DAY_LIMIT = create("message-counter-history-day-limit", ModelType.INT)
-            .setDefaultValue(new ModelNode(AddressSettings.DEFAULT_MESSAGE_COUNTER_HISTORY_DAY_LIMIT))
+            .setDefaultValue(new ModelNode(0))
             .setMeasurementUnit(DAYS)
             .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     public static final SimpleAttributeDefinition PAGE_MAX_CACHE_SIZE = create("page-max-cache-size", ModelType.INT)
-            .setDefaultValue(new ModelNode(AddressSettings.DEFAULT_PAGE_MAX_CACHE))
+            .setDefaultValue(new ModelNode(5))
             .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     public static final SimpleAttributeDefinition PAGE_SIZE_BYTES = create("page-size-bytes", ModelType.LONG)
-            .setDefaultValue(new ModelNode(AddressSettings.DEFAULT_PAGE_SIZE))
+            .setDefaultValue(new ModelNode(10 * 1024 * 1024))
             .setMeasurementUnit(BYTES)
             .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     public static final SimpleAttributeDefinition REDELIVERY_DELAY = create("redelivery-delay", ModelType.LONG)
-            .setDefaultValue(new ModelNode(AddressSettings.DEFAULT_REDELIVER_DELAY))
+            .setDefaultValue(new ModelNode(0L))
             .setMeasurementUnit(MILLISECONDS)
             .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     public static final SimpleAttributeDefinition REDELIVERY_MULTIPLIER = create("redelivery-multiplier", ModelType.DOUBLE)
-            .setDefaultValue(new ModelNode(AddressSettings.DEFAULT_REDELIVER_MULTIPLIER))
+            .setDefaultValue(new ModelNode(1.0d))
             .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     public static final SimpleAttributeDefinition REDISTRIBUTION_DELAY = create("redistribution-delay", ModelType.LONG)
-            .setDefaultValue(new ModelNode(AddressSettings.DEFAULT_REDISTRIBUTION_DELAY))
+            .setDefaultValue(new ModelNode(-1L))
             .setMeasurementUnit(MILLISECONDS)
             .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     public static final SimpleAttributeDefinition SEND_TO_DLA_ON_NO_ROUTE = create("send-to-dla-on-no-route", ModelType.BOOLEAN)
-            .setDefaultValue(new ModelNode(AddressSettings.DEFAULT_SEND_TO_DLA_ON_NO_ROUTE))
+            .setDefaultValue(new ModelNode(false))
             .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     public static final SimpleAttributeDefinition SLOW_CONSUMER_CHECK_PERIOD = create("slow-consumer-check-period", ModelType.LONG)
-            .setDefaultValue(new ModelNode(AddressSettings.DEFAULT_SLOW_CONSUMER_CHECK_PERIOD))
+            .setDefaultValue(new ModelNode(5L))
             .setMeasurementUnit(SECONDS)
             .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     public static final SimpleAttributeDefinition SLOW_CONSUMER_POLICY = create("slow-consumer-policy", ModelType.STRING)
-            .setDefaultValue(new ModelNode(AddressSettings.DEFAULT_SLOW_CONSUMER_POLICY.toString()))
+            .setDefaultValue(new ModelNode(SlowConsumerPolicy.NOTIFY.toString()))
             .setValidator(new EnumValidator<>(SlowConsumerPolicy.class, true, true))
             .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     public static final SimpleAttributeDefinition SLOW_CONSUMER_THRESHOLD = create("slow-consumer-threshold", ModelType.LONG)
-            .setDefaultValue(new ModelNode(AddressSettings.DEFAULT_SLOW_CONSUMER_THRESHOLD))
+            .setDefaultValue(new ModelNode(-1L))
             .setRequired(false)
             .setAllowExpression(true)
             .build();
@@ -255,4 +252,13 @@ public class AddressSettingDefinition extends PersistentResourceDefinition {
     public Collection<AttributeDefinition> getAttributes() {
         return Arrays.asList(ATTRIBUTES);
     }
+
+    private enum AddressFullMessagePolicy {
+        DROP, PAGE, BLOCK, FAIL;
+    }
+
+    private enum SlowConsumerPolicy {
+        KILL, NOTIFY;
+    }
+
 }

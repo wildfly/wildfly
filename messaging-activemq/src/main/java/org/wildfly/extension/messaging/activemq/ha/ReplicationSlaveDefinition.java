@@ -30,23 +30,17 @@ import static org.wildfly.extension.messaging.activemq.ha.HAAttributes.INITIAL_R
 import static org.wildfly.extension.messaging.activemq.ha.HAAttributes.MAX_SAVED_REPLICATED_JOURNAL_SIZE;
 import static org.wildfly.extension.messaging.activemq.ha.HAAttributes.RESTART_BACKUP;
 import static org.wildfly.extension.messaging.activemq.ha.ManagementHelper.createAddOperation;
-import static org.wildfly.extension.messaging.activemq.ha.ScaleDownAttributes.addScaleDownConfiguration;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
-import org.apache.activemq.artemis.core.config.HAPolicyConfiguration;
-import org.apache.activemq.artemis.core.config.ha.ReplicaPolicyConfiguration;
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.messaging.activemq.ActiveMQReloadRequiredHandlers;
 import org.wildfly.extension.messaging.activemq.MessagingExtension;
 
@@ -94,23 +88,4 @@ public class ReplicationSlaveDefinition extends PersistentResourceDefinition {
         return ATTRIBUTES;
     }
 
-    static HAPolicyConfiguration buildConfiguration(OperationContext context, ModelNode model) throws OperationFailedException {
-        ReplicaPolicyConfiguration haPolicyConfiguration = new ReplicaPolicyConfiguration()
-                .setAllowFailBack(ALLOW_FAILBACK.resolveModelAttribute(context, model).asBoolean())
-                .setInitialReplicationSyncTimeout(INITIAL_REPLICATION_SYNC_TIMEOUT.resolveModelAttribute(context, model).asLong())
-                .setMaxSavedReplicatedJournalsSize(MAX_SAVED_REPLICATED_JOURNAL_SIZE.resolveModelAttribute(context, model).asInt())
-                .setScaleDownConfiguration(addScaleDownConfiguration(context, model))
-                .setRestartBackup(RESTART_BACKUP.resolveModelAttribute(context, model).asBoolean());
-
-        ModelNode clusterName = CLUSTER_NAME.resolveModelAttribute(context, model);
-        if (clusterName.isDefined()) {
-            haPolicyConfiguration.setClusterName(clusterName.asString());
-        }
-        ModelNode groupName = GROUP_NAME.resolveModelAttribute(context, model);
-        if (groupName.isDefined()) {
-            haPolicyConfiguration.setGroupName(groupName.asString());
-        }
-
-        return haPolicyConfiguration;
-    }
 }

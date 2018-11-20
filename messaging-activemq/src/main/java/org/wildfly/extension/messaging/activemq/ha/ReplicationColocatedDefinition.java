@@ -23,10 +23,7 @@
 package org.wildfly.extension.messaging.activemq.ha;
 
 
-import static org.wildfly.extension.messaging.activemq.CommonAttributes.CONFIGURATION;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.HA_POLICY;
-import static org.wildfly.extension.messaging.activemq.CommonAttributes.MASTER;
-import static org.wildfly.extension.messaging.activemq.CommonAttributes.SLAVE;
 import static org.wildfly.extension.messaging.activemq.ha.HAAttributes.BACKUP_PORT_OFFSET;
 import static org.wildfly.extension.messaging.activemq.ha.HAAttributes.BACKUP_REQUEST_RETRIES;
 import static org.wildfly.extension.messaging.activemq.ha.HAAttributes.BACKUP_REQUEST_RETRY_INTERVAL;
@@ -40,16 +37,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.activemq.artemis.core.config.HAPolicyConfiguration;
-import org.apache.activemq.artemis.core.config.ha.ColocatedPolicyConfiguration;
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.messaging.activemq.ActiveMQReloadRequiredHandlers;
 import org.wildfly.extension.messaging.activemq.MessagingExtension;
 
@@ -94,29 +86,5 @@ public class ReplicationColocatedDefinition extends PersistentResourceDefinition
         return Collections.unmodifiableList(Arrays.asList(
                 ReplicationMasterDefinition.CONFIGURATION_INSTANCE,
                 ReplicationSlaveDefinition.CONFIGURATION_INSTANCE));
-    }
-
-    static HAPolicyConfiguration buildConfiguration(OperationContext context, ModelNode model) throws OperationFailedException {
-        ColocatedPolicyConfiguration haPolicyConfiguration = new ColocatedPolicyConfiguration()
-                .setRequestBackup(REQUEST_BACKUP.resolveModelAttribute(context, model).asBoolean())
-                .setBackupRequestRetries(BACKUP_REQUEST_RETRIES.resolveModelAttribute(context, model).asInt())
-                .setBackupRequestRetryInterval(BACKUP_REQUEST_RETRY_INTERVAL.resolveModelAttribute(context, model).asLong())
-                .setMaxBackups(MAX_BACKUPS.resolveModelAttribute(context, model).asInt())
-                .setBackupPortOffset(BACKUP_PORT_OFFSET.resolveModelAttribute(context, model).asInt());
-
-        List<String> connectors = EXCLUDED_CONNECTORS.unwrap(context, model);
-        if (!connectors.isEmpty()) {
-            haPolicyConfiguration.setExcludedConnectors(connectors);
-        }
-
-        ModelNode masterConfigurationModel = model.get(CONFIGURATION, MASTER);
-        HAPolicyConfiguration masterConfiguration = ReplicationMasterDefinition.buildConfiguration(context, masterConfigurationModel);
-        haPolicyConfiguration.setLiveConfig(masterConfiguration);
-
-        ModelNode slaveConfigurationModel = model.get(CONFIGURATION, SLAVE);
-        HAPolicyConfiguration slaveConfiguration = ReplicationSlaveDefinition.buildConfiguration(context, slaveConfigurationModel);
-        haPolicyConfiguration.setBackupConfig(slaveConfiguration);
-
-        return haPolicyConfiguration;
     }
 }

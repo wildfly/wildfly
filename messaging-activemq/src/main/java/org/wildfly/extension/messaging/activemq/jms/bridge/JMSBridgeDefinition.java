@@ -38,7 +38,6 @@ import static org.wildfly.extension.messaging.activemq.MessagingExtension.MESSAG
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.apache.activemq.artemis.jms.bridge.QualityOfServiceMode;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshallers;
 import org.jboss.as.controller.AttributeParsers;
@@ -265,4 +264,7 @@ public class JMSBridgeDefinition extends PersistentResourceDefinition {
         }
     }
 
+    private enum QualityOfServiceMode {
+        AT_MOST_ONCE, DUPLICATES_OK, ONCE_AND_ONLY_ONCE;
+    }
 }

@@ -32,17 +32,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
-import org.apache.activemq.artemis.core.config.HAPolicyConfiguration;
-import org.apache.activemq.artemis.core.config.ha.SharedStoreSlavePolicyConfiguration;
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.messaging.activemq.ActiveMQReloadRequiredHandlers;
 import org.wildfly.extension.messaging.activemq.MessagingExtension;
 
@@ -88,11 +83,4 @@ public class SharedStoreSlaveDefinition extends PersistentResourceDefinition {
         return ATTRIBUTES;
     }
 
-    static HAPolicyConfiguration buildConfiguration(OperationContext context, ModelNode model) throws OperationFailedException {
-        return new SharedStoreSlavePolicyConfiguration()
-                .setAllowFailBack(ALLOW_FAILBACK.resolveModelAttribute(context, model).asBoolean())
-                .setFailoverOnServerShutdown(FAILOVER_ON_SERVER_SHUTDOWN.resolveModelAttribute(context, model).asBoolean())
-                .setRestartBackup(RESTART_BACKUP.resolveModelAttribute(context, model).asBoolean())
-                .setScaleDownConfiguration(ScaleDownAttributes.addScaleDownConfiguration(context, model));
-    }
 }
