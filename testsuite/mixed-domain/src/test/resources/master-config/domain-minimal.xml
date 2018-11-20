@@ -79,7 +79,7 @@
             <socket-binding name="txn-status-manager" port="4713"/>
             <socket-binding name="messaging" port="5445" />
             <socket-binding name="messaging-throughput" port="5455"/>
-             <socket-binding name="http" port="8080"/>
+             <socket-binding name="http" port="${jboss.http.port:8080}"/>
              <socket-binding name="https" port="8443"/>
             <outbound-socket-binding name="mail-smtp">
                 <remote-destination host="localhost" port="25"/>
@@ -87,7 +87,7 @@
          </socket-binding-group>
         <socket-binding-group name="other-sockets" default-interface="public">
             <socket-binding name="ajp" port="8009"/>
-            <socket-binding name="http" port="8080"/>
+            <socket-binding name="http" port="${jboss.http.port:8080}"/>
             <socket-binding name="https" port="8443"/>
             <socket-binding name="jmx-connector-registry" interface="management" port="1090"/>
             <socket-binding name="jmx-connector-server" interface="management" port="1091"/>

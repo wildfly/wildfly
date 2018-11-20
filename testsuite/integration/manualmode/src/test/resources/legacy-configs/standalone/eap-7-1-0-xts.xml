@@ -520,7 +520,7 @@
         <subsystem xmlns="urn:jboss:domain:weld:4.0"/>
         <subsystem xmlns="urn:jboss:domain:xts:2.0">
             <host name="default-host"/>
-            <xts-environment url="http://${jboss.bind.address:127.0.0.1}:8080/ws-c11/ActivationService"/>
+            <xts-environment url="http://${jboss.bind.address:127.0.0.1}:${jboss.http.port:8080}/ws-c11/ActivationService"/>
             <default-context-propagation enabled="true"/>
         </subsystem>
     </profile>

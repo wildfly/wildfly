@@ -72,7 +72,7 @@
 
     <socket-binding-groups>
         <socket-binding-group name="standard-sockets" default-interface="public">
-            <socket-binding name="http" port="8080"/>
+            <socket-binding name="http" port="${jboss.http.port:8080}"/>
         </socket-binding-group>
     </socket-binding-groups>
 

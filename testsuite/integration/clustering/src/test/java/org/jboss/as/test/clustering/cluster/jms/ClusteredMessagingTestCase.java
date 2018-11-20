@@ -172,7 +172,7 @@ public class ClusteredMessagingTestCase extends AbstractClusteringTestCase {
     protected static InitialContext createJNDIContextFromServer0() throws NamingException {
         final Properties env = new Properties();
         env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
-        env.put(Context.PROVIDER_URL, "remote+http://" + TestSuiteEnvironment.getServerAddress() + ":8080");
+        env.put(Context.PROVIDER_URL, "remote+http://" + TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getHttpPort());
         env.put(Context.SECURITY_PRINCIPAL, "guest");
         env.put(Context.SECURITY_CREDENTIALS, "guest");
         return new InitialContext(env);

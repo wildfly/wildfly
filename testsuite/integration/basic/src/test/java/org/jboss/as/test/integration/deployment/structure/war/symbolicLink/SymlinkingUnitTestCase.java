@@ -156,7 +156,7 @@ public class SymlinkingUnitTestCase {
     private int getURLcode(String htmlPage) {
         int code = 0;
         try {
-            String url = "http://" + TestSuiteEnvironment.getServerAddress() + ":8080/explodedDeployment/"
+            String url = "http://" + TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getHttpPort() + "/explodedDeployment/"
                     + htmlPage + ".html";
             logger.infof("%s is the built URL.", url);
             HttpURLConnection urlConnection = (HttpURLConnection) new URL(url).openConnection();

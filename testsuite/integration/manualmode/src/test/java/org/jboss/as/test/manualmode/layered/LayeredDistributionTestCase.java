@@ -74,7 +74,7 @@ public class LayeredDistributionTestCase {
     private static final String PRODUCT_NAME = "Test-Product";
     private static final String PRODUCT_VERSION = "1.0.0-Test";
     private static final String DEPLOYMENT = "test-deployment";
-    private static final String webURI = "http://" + TestSuiteEnvironment.getServerAddress() + ":8080";
+    private static final String webURI = "http://" + TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getHttpPort();
 
     @ArquillianResource
     private ContainerController controller;

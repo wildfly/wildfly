@@ -58,7 +58,7 @@ public class EJBClientInvocationTimeoutTestCase {
     private static final String MODULE_NAME = "ejb-client-invocation-timeout";
 
     final String INVOCATION_URL = "remote+http://" +
-            NetworkUtils.formatPossibleIpv6Address(System.getProperty("node0", "localhost")) + ":8080";
+            NetworkUtils.formatPossibleIpv6Address(System.getProperty("node0", "localhost")) + ":" + System.getProperty("jboss.http.port", "8080");
 
     @Deployment(testable = false)
     public static Archive createDeployment() {

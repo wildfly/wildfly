@@ -394,7 +394,7 @@
         <socket-binding name="management-http" interface="management" port="${jboss.management.http.port:9990}"/>
         <socket-binding name="management-https" interface="management" port="${jboss.management.https.port:9443}"/>
         <socket-binding name="ajp" port="8009"/>
-        <socket-binding name="http" port="8080"/>
+        <socket-binding name="http" port="${jboss.http.port:8080}"/>
         <socket-binding name="https" port="8443"/>
         <socket-binding name="jgroups-mping" port="0" multicast-address="${jboss.default.multicast.address:230.0.0.4}" multicast-port="45700"/>
         <socket-binding name="jgroups-tcp" port="7600"/>

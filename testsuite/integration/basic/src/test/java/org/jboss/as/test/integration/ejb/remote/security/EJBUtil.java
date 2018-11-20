@@ -89,7 +89,7 @@ class EJBUtil {
         pr.put("remote.connection.default.connect.options.org.xnio.Options.SASL_DISALLOWED_MECHANISMS", "JBOSS-LOCAL-USER");
         pr.put("remote.connections", "default");
         pr.put("remote.connection.default.host", hostName);
-        pr.put("remote.connection.default.port", "8080");
+        pr.put("remote.connection.default.port", System.getProperty("jboss.http.port", "8080"));
         pr.put("remote.connection.default.username", CONNECTION_USERNAME);
         pr.put("remote.connection.default.password", CONNECTION_PASSWORD);
         return pr;

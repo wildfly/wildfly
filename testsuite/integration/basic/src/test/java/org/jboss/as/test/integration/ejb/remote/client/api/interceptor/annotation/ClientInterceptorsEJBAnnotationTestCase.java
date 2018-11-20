@@ -63,7 +63,7 @@ public class ClientInterceptorsEJBAnnotationTestCase {
         properties.put(Context.INITIAL_CONTEXT_FACTORY, WildFlyInitialContextFactory.class.getName());
         properties.put(Context.PROVIDER_URL, "remote+http://" +
                 NetworkUtils.formatPossibleIpv6Address(System.getProperty("node0", "localhost"))
-                + ":8080");
+                + ":" + System.getProperty("jboss.http.port", "8080"));
         final InitialContext ejbCtx = new InitialContext(properties);
         try {
             SLSBReturningContextDataRemote bean = (SLSBReturningContextDataRemote)ejbCtx.lookup(

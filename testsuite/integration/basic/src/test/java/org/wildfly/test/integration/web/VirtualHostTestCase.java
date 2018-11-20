@@ -138,12 +138,12 @@ public class VirtualHostTestCase {
     public void testDefaultHost() throws IOException {
         Assume.assumeTrue("This needs to be localhost, as it is by host mapping",
                 InetAddress.getByName(TestSuiteEnvironment.getServerAddress()).isLoopbackAddress());
-        callAndTest("http://localhost:8080/", "ROOT");
+        callAndTest("http://localhost:" + TestSuiteEnvironment.getHttpPort() + "/", "ROOT");
     }
 
     @Test
     public void testNonDefaultHost() throws IOException {
-        callAndTest("http://" + TestSuiteEnvironment.getServerAddress() + ":8080/", "test"); //second host on first server has alias 127.0.0.1 or ::1
+        callAndTest("http://" + TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getHttpPort() + "/", "test"); //second host on first server has alias 127.0.0.1 or ::1
     }
 
     @Test

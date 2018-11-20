@@ -104,7 +104,7 @@ class EJBUtil {
         pr.put("remote.connectionprovider.create.options.org.xnio.Options.SSL_ENABLED", "false");
         pr.put("remote.connections", "default");
         pr.put("remote.connection.default.host", hostName);
-        pr.put("remote.connection.default.port", "8080");
+        pr.put("remote.connection.default.port", System.getProperty("jboss.http.port", "8080"));
         pr.put("remote.connection.default.username", username);
         return pr;
     }

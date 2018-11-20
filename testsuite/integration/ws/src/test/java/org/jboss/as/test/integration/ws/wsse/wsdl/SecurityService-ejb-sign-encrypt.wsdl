@@ -40,7 +40,7 @@
     </binding>
     <service name="EJBEncryptSecurityService">
         <port name="EJBEncryptSecurityServicePort" binding="tns:EJBEncryptSecurityServicePortBinding">
-            <soap:address location="http://@jboss.bind.address@:8080/jaxws-wsse-sign-encrypt"/>
+            <soap:address location="http://@jboss.bind.address@:${jboss.http.port:8080}/jaxws-wsse-sign-encrypt"/>
         </port>
     </service>
 

@@ -63,7 +63,7 @@ public class SocketBindingBoundPortsTestCase {
         ModelNode response = execute(operation);
         ModelNode result = response.get(RESULT);
         Assert.assertTrue("http socket binding is not set as bound.", result.get(BOUND).asBoolean());
-        Assert.assertEquals(result.get(BOUND_PORT).asInt(), 8080);
+        Assert.assertEquals(result.get(BOUND_PORT).asInt(), Integer.parseInt(System.getProperty("jboss.http.port", "8080")));
     }
 
     @Test

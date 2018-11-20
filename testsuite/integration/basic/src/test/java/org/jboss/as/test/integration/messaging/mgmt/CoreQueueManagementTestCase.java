@@ -80,7 +80,7 @@ public class CoreQueueManagementTestCase {
 
         HashMap<String, Object> map = new HashMap<String, Object>();
         map.put("host", TestSuiteEnvironment.getServerAddress());
-        map.put("port", 8080);
+        map.put("port", TestSuiteEnvironment.getHttpPort());
         map.put(TransportConstants.HTTP_UPGRADE_ENABLED_PROP_NAME, true);
         map.put(TransportConstants.HTTP_UPGRADE_ENDPOINT_PROP_NAME, "http-acceptor");
         TransportConfiguration transportConfiguration =

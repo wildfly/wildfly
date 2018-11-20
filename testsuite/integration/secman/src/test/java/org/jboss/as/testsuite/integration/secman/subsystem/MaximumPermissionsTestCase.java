@@ -65,7 +65,7 @@ public class MaximumPermissionsTestCase extends ReloadableCliTestBase {
     private static final String DEPLOYMENT_NO_PERM = "deployment-no-perm";
 
     private static Logger LOGGER = Logger.getLogger(MaximumPermissionsTestCase.class);
-    private static final String ADDRESS_WEB = "http://" + TestSuiteEnvironment.getServerAddress() + ":8080/";
+    private static final String ADDRESS_WEB = "http://" + TestSuiteEnvironment.getServerAddress() + ":" + System.getProperty("jboss.http.port", "8080") + "/";
 
     private static final String INDEX_HTML = "OK";
 

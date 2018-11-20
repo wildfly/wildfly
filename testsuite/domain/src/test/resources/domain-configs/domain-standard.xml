@@ -679,12 +679,12 @@
 
     <socket-binding-groups>
         <socket-binding-group name="web-sockets" default-interface="public">
-            <socket-binding name="http" port="8080"/>
+            <socket-binding name="http" port="${jboss.http.port:8080}"/>
             <socket-binding name="https" port="8443"/>
         </socket-binding-group>
         <socket-binding-group name="standard-sockets" default-interface="public">
             <socket-binding name="ajp" port="8009"/>
-            <socket-binding name="http" port="8080"/>
+            <socket-binding name="http" port="${jboss.http.port:8080}"/>
             <socket-binding name="https" port="8443"/>
             <!-- include socket-binding-group="web-sockets"/-->
             <socket-binding name="jmx-connector-registry" interface="management" port="1090"/>
@@ -705,7 +705,7 @@
         </socket-binding-group>
         <socket-binding-group name="other-sockets" default-interface="public">
             <socket-binding name="ajp" port="8009"/>
-            <socket-binding name="http" port="8080"/>
+            <socket-binding name="http" port="${jboss.http.port:8080}"/>
             <socket-binding name="https" port="8443"/>
             <socket-binding name="jmx-connector-registry" interface="management" port="1090"/>
             <socket-binding name="jmx-connector-server" interface="management" port="1091"/>
@@ -725,7 +725,7 @@
             <!-- include socket-binding-group="standard-sockets"/-->
         </socket-binding-group>
         <socket-binding-group name="ignored" default-interface="public">
-            <socket-binding name="http" port="8080"/>
+            <socket-binding name="http" port="${jboss.http.port:8080}"/>
         </socket-binding-group>
         <socket-binding-group name="reload-sockets" default-interface="public"/>
     </socket-binding-groups>

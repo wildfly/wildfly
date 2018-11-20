@@ -71,7 +71,7 @@
     </wsdl:binding>
     <wsdl:service name="ReliableService">
         <wsdl:port binding="tns:ReliableServiceSoapBinding" name="ReliableServicePort">
-            <soap:address location="http://server.domain:8080/ws-reliable-messaging-example/ReliableService"/>
+            <soap:address location="http://server.domain:${jboss.http.port:8080}/ws-reliable-messaging-example/ReliableService"/>
         </wsdl:port>
     </wsdl:service>
 </wsdl:definitions>

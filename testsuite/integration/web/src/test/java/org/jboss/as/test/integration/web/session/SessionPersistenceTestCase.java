@@ -64,7 +64,7 @@ public class SessionPersistenceTestCase {
     @Test
     public void testLifeCycle() throws Exception {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-            HttpGet get = new HttpGet("http://" + TestSuiteEnvironment.getServerAddress() + ":8080/sessionPersistence/SessionPersistenceServlet");
+            HttpGet get = new HttpGet("http://" + TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getHttpPort() + "/sessionPersistence/SessionPersistenceServlet");
             deployer.deploy("web");
             String result = runGet(get, client);
             assertEquals("0", result);

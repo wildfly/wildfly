@@ -101,7 +101,7 @@ public class AuthenticationPolicyContextTestCase {
     private static final String USERNAME = "UserA";
     private static final String PASSWORD = "PassA";
     private static final String DEFAULT_HOST = getHostname();
-    private static final int DEFAULT_PORT = 8080;
+    private static final int DEFAULT_PORT = Integer.parseInt(System.getProperty("jboss.http.port", "8080"));
 
     private volatile ModelControllerClient modelControllerClient;
     private static WSTrustClient wsClient;

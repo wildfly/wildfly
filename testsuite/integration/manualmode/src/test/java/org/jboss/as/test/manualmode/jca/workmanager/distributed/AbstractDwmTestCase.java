@@ -222,7 +222,7 @@ public abstract class AbstractDwmTestCase {
 
         // set up ejb proxies
         try {
-            server1Proxy = lookupAdminObject(TestSuiteEnvironment.getServerAddress(), "8080");
+            server1Proxy = lookupAdminObject(TestSuiteEnvironment.getServerAddress(), System.getProperty("jboss.http.port", "8080"));
             server2Proxy = lookupAdminObject(TestSuiteEnvironment.getServerAddressNode1(), "8180");
             Assert.assertNotNull(server1Proxy);
             Assert.assertNotNull(server2Proxy);

@@ -181,7 +181,7 @@
 
     <wsdl:service name="SecurityTokenService">
         <wsdl:port name="UT_Port" binding="tns:UT_Binding">
-            <soap:address location="http://@node0@:8080/SecurityTokenService/UT"/>
+            <soap:address location="http://@node0@:${jboss.http.port:8080}/SecurityTokenService/UT"/>
         </wsdl:port>
     </wsdl:service>
 

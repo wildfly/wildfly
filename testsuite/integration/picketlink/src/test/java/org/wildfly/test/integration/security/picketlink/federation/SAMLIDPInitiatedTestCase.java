@@ -60,7 +60,7 @@ public class SAMLIDPInitiatedTestCase {
 
     static {
         String node0 = System.getProperty("node0", "127.0.0.1");
-        String port0 = "8080";
+        String port0 = System.getProperty("jboss.http.port", "8080");
         try {
             webURI = URLEncoder.encode("http://" + (node0.indexOf(":") > -1 ? "[" + node0 + "]" : node0) + ":" + port0, "ISO-8859-1");
         } catch (UnsupportedEncodingException e) {

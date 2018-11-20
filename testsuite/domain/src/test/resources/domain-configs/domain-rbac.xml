@@ -382,7 +382,7 @@
     <socket-binding-groups>
         <socket-binding-group name="sockets-a" default-interface="public">
             <socket-binding name="ajp" port="8009"/>
-            <socket-binding name="http" port="8080"/>
+            <socket-binding name="http" port="${jboss.http.port:8080}"/>
             <socket-binding name="https" port="8443"/>
             <!-- include socket-binding-group="web-sockets"/-->
             <socket-binding name="jmx-connector-registry" interface="management" port="1090"/>
@@ -392,7 +392,7 @@
         </socket-binding-group>
         <socket-binding-group name="sockets-b" default-interface="public">
             <socket-binding name="ajp" port="8009"/>
-            <socket-binding name="http" port="8080"/>
+            <socket-binding name="http" port="${jboss.http.port:8080}"/>
             <socket-binding name="https" port="8443"/>
             <!-- include socket-binding-group="web-sockets"/-->
             <socket-binding name="jmx-connector-registry" interface="management" port="1090"/>
@@ -402,7 +402,7 @@
         </socket-binding-group>
         <socket-binding-group name="sockets-shared" default-interface="public">
             <socket-binding name="ajp" port="8009"/>
-            <socket-binding name="http" port="8080"/>
+            <socket-binding name="http" port="${jboss.http.port:8080}"/>
             <socket-binding name="https" port="8443"/>
             <!-- include socket-binding-group="web-sockets"/-->
             <socket-binding name="jmx-connector-registry" interface="management" port="1090"/>

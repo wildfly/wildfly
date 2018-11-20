@@ -82,7 +82,7 @@ public class IIOPTimeoutTestCase {
     @Before
     public void startUp() throws NamingException {
         if(checker == null) {
-            checker = TransactionTestLookupUtil.lookupEjbStateless(mgmtClient.getMgmtAddress(), 8080,
+            checker = TransactionTestLookupUtil.lookupEjbStateless(mgmtClient.getMgmtAddress(), Integer.parseInt(System.getProperty("jboss.http.port", "8080")),
                     DEPLOYMENT_NAME, TransactionCheckerSingleton.class, TransactionCheckerSingletonRemote.class);
         }
         checker.resetAll();

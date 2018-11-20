@@ -151,7 +151,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
     private static final String BARE_REMOTING_PROTOCOL = "remote";
     private static final int SSL_REMOTING_PORT = 54448;
     private static final String SSL_REMOTING_PROTOCOL = "remote";
-    private static final int HTTP_REMOTING_PORT = 8080;
+    private static final int HTTP_REMOTING_PORT = Integer.parseInt(System.getProperty("jboss.http.port", "8080"));
     private static final String HTTP_REMOTING_PROTOCOL = "http-remoting";
     private static final int HTTPS_REMOTING_PORT = 8443;
     private static final String HTTPS_REMOTING_PROTOCOL = "https-remoting";

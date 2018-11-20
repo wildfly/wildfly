@@ -155,7 +155,7 @@ public class ServletRuntimeNameTestCase extends AbstractRuntimeTestCase {
 
     @Test
     public void testServletCall() throws Exception {
-        String url = "http://" + TestSuiteEnvironment.getServerAddress() + ":8080/"+SUB_DEPLOYMENT_MODULE_NAME+Servlet.URL_PATTERN;
+        String url = "http://" + TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getHttpPort() + "/"+SUB_DEPLOYMENT_MODULE_NAME+Servlet.URL_PATTERN;
         String res = HttpRequest.get(url, 2, TimeUnit.SECONDS);
         Assert.assertEquals(Servlet.SUCCESS, res);
     }

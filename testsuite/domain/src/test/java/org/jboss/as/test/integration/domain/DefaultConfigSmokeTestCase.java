@@ -64,7 +64,7 @@ public class DefaultConfigSmokeTestCase extends BuildConfigurationTestBase {
         try {
             utils.start();
             // Double-check server status by confirming server-one can accept a web request to the root
-            URLConnection connection = new URL("http://" + TestSuiteEnvironment.formatPossibleIpv6Address(masterAddress) + ":8080").openConnection();
+            URLConnection connection = new URL("http://" + TestSuiteEnvironment.formatPossibleIpv6Address(masterAddress) + ":" + TestSuiteEnvironment.getHttpPort()).openConnection();
             connection.connect();
 
             if (Boolean.getBoolean("expression.audit")) {
@@ -86,7 +86,7 @@ public class DefaultConfigSmokeTestCase extends BuildConfigurationTestBase {
             masterUtils.start();
             slaveUtils.start();
             // Double-check server status by confirming server-one can accept a web request to the root
-            URLConnection connection = new URL("http://" + TestSuiteEnvironment.formatPossibleIpv6Address(slaveAddress) + ":8080").openConnection();
+            URLConnection connection = new URL("http://" + TestSuiteEnvironment.formatPossibleIpv6Address(slaveAddress) + ":" + TestSuiteEnvironment.getHttpPort()).openConnection();
             connection.connect();
         } finally {
             try {

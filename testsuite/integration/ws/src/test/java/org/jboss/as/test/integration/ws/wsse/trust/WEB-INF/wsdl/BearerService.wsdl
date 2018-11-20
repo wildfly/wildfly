@@ -99,7 +99,7 @@
                                 <wsaws:Address>http://@node0@:8080/jaxws-samples-wsse-policy-trust-sts-bearer/SecurityTokenService</wsaws:Address>
                                 <wsaws:Metadata
                                         xmlns:wsdli="http://www.w3.org/2006/01/wsdl-instance"
-                                        wsdli:wsdlLocation="http://@node0@:8080/jaxws-samples-wsse-policy-trust-sts-bearer/SecurityTokenService?wsdl">
+                                        wsdli:wsdlLocation="http://@node0@:${jboss.http.port:8080}/jaxws-samples-wsse-policy-trust-sts-bearer/SecurityTokenService?wsdl">
                                     <wsaw:ServiceName
                                             xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl"
                                             xmlns:stsns="http://docs.oasis-open.org/ws-sx/ws-trust/200512/"

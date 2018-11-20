@@ -84,8 +84,8 @@ public class SharedSessionTestCase {
         // Note that this test should not need to use a relaxed domain handling, however the http client does not treat ipv6 domains (e.g. ::1) properly
         HttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient();
 
-        HttpGet get1 = new HttpGet("http://" + TestSuiteEnvironment.getServerAddress() + ":8080/war1/SharedSessionServlet");
-        HttpGet get2 = new HttpGet("http://" + TestSuiteEnvironment.getServerAddress() + ":8080/war2/SharedSessionServlet");
+        HttpGet get1 = new HttpGet("http://" + TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getHttpPort() + "/war1/SharedSessionServlet");
+        HttpGet get2 = new HttpGet("http://" + TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getHttpPort() + "/war2/SharedSessionServlet");
 
         String result = runGet(get1, client);
         assertEquals("0", result);
@@ -115,8 +115,8 @@ public class SharedSessionTestCase {
         // Note that this test should not need to use a relaxed domain handling, however the http client does not treat ipv6 domains (e.g. ::1) properly
         HttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient();
 
-        HttpGet getX = new HttpGet("http://" + TestSuiteEnvironment.getServerAddress() + ":8080/warX/SharedSessionServlet");
-        HttpGet getY = new HttpGet("http://" + TestSuiteEnvironment.getServerAddress() + ":8080/warY/SharedSessionServlet");
+        HttpGet getX = new HttpGet("http://" + TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getHttpPort() + "/warX/SharedSessionServlet");
+        HttpGet getY = new HttpGet("http://" + TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getHttpPort() + "/warY/SharedSessionServlet");
 
         String result = runGet(getX, client);
         assertEquals("0", result);
@@ -141,10 +141,10 @@ public class SharedSessionTestCase {
         // Note that this test should not need to use a relaxed domain handling, however the http client does not treat ipv6 domains (e.g. ::1) properly
         HttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient();
 
-        HttpGet get1 = new HttpGet("http://" + TestSuiteEnvironment.getServerAddress() + ":8080/war1/SharedSessionServlet");
-        HttpGet get2 = new HttpGet("http://" + TestSuiteEnvironment.getServerAddress() + ":8080/war2/SharedSessionServlet");
-        HttpGet getX = new HttpGet("http://" + TestSuiteEnvironment.getServerAddress() + ":8080/warX/SharedSessionServlet");
-        HttpGet getY = new HttpGet("http://" + TestSuiteEnvironment.getServerAddress() + ":8080/warY/SharedSessionServlet");
+        HttpGet get1 = new HttpGet("http://" + TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getHttpPort() + "/war1/SharedSessionServlet");
+        HttpGet get2 = new HttpGet("http://" + TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getHttpPort() + "/war2/SharedSessionServlet");
+        HttpGet getX = new HttpGet("http://" + TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getHttpPort() + "/warX/SharedSessionServlet");
+        HttpGet getY = new HttpGet("http://" + TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getHttpPort() + "/warY/SharedSessionServlet");
 
         String result = runGet(get1, client);
         assertEquals("0", result);

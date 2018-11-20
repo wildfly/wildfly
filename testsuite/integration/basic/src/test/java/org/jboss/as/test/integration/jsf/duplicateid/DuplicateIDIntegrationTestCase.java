@@ -65,7 +65,7 @@ public class DuplicateIDIntegrationTestCase {
             COMPONENTS = "components",
             RESOURCES = "resources";
 
-    private static final int APPLICATION_PORT = 8080;
+    private static final int APPLICATION_PORT = Integer.parseInt(System.getProperty("jboss.http.port", "8080"));
 
     @Deployment(testable = false, name = APP_NAME)
     public static Archive<?> deploy() {

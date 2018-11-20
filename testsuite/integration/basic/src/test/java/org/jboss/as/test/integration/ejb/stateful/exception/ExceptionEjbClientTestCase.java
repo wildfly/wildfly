@@ -49,7 +49,7 @@ public class ExceptionEjbClientTestCase extends ExceptionTestCase {
     public static void beforeClass() throws Exception {
         final Properties props = new Properties();
         props.put(Context.INITIAL_CONTEXT_FACTORY, WildFlyInitialContextFactory.class.getName());
-        props.put(Context.PROVIDER_URL, "remote+http://" + TestSuiteEnvironment.getServerAddress() + ":" + 8080);
+        props.put(Context.PROVIDER_URL, "remote+http://" + TestSuiteEnvironment.getServerAddress() + ":" + Integer.parseInt(System.getProperty("jboss.http.port", "8080")));
         context = new InitialContext(props);
     }
 

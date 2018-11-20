@@ -75,7 +75,7 @@ public class SessionInvalidateTestCase {
             ModelNode opRes = managementClient.getControllerClient().execute(operation);
             Assert.assertEquals("success", opRes.get(ModelDescriptionConstants.OUTCOME).asString());
             Assert.assertEquals(false, opRes.get(ModelDescriptionConstants.RESULT).asBoolean());
-            HttpGet get = new HttpGet("http://" + TestSuiteEnvironment.getServerAddress() + ":8080/invalidate/SessionPersistenceServlet");
+            HttpGet get = new HttpGet("http://" + TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getHttpPort() + "/invalidate/SessionPersistenceServlet");
             HttpResponse res = client.execute(get);
             String sessionId = null;
             for (Header cookie : res.getHeaders("Set-Cookie")) {

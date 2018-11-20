@@ -100,7 +100,7 @@ public class EarDeploymentTestCase extends ContainerResourceMgmtTestBase {
      */
     @Test
     public void testWebConfiguration() throws Throwable {
-        URL servletURL = new URL("http://" + url.getHost() + ":8080/servlet" + RaServlet.URL_PATTERN);
+        URL servletURL = new URL("http://" + url.getHost() + ":" + System.getProperty("jboss.http.port", "8080") + "/servlet" + RaServlet.URL_PATTERN);
         BufferedReader br = new BufferedReader(new InputStreamReader(servletURL.openStream(), StandardCharsets.UTF_8));
         String message = br.readLine();
         assertEquals(RaServlet.SUCCESS, message);

@@ -52,7 +52,7 @@
     </wsdl:binding>
     <wsdl:service name="AddressingService">
         <wsdl:port binding="tns:AddressingServiceSoapBinding" name="AddressingServicePort">
-            <soap:address location="http://server.domain:8080/jaxws-wsa/AddressingService"/>
+            <soap:address location="http://server.domain:${jboss.http.port:8080}/jaxws-wsa/AddressingService"/>
         </wsdl:port>
     </wsdl:service>
     <wsp:Policy wsu:Id="AddressingServiceSoapBinding_WSAM_Addressing_Policy"

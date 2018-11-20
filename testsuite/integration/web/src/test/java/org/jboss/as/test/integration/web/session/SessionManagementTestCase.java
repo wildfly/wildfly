@@ -89,7 +89,7 @@ public class SessionManagementTestCase {
             Assert.assertEquals(opRes.toString(), "success", opRes.get(ModelDescriptionConstants.OUTCOME).asString());
             Assert.assertEquals(Collections.emptyList(), opRes.get(ModelDescriptionConstants.RESULT).asList());
             long c1 = System.currentTimeMillis();
-            HttpGet get = new HttpGet("http://" + TestSuiteEnvironment.getServerAddress() + ":8080/management/SessionPersistenceServlet");
+            HttpGet get = new HttpGet("http://" + TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getHttpPort() + "/management/SessionPersistenceServlet");
             HttpResponse res = client.execute(get);
             long c2 = System.currentTimeMillis();
             String sessionId = null;
@@ -192,7 +192,7 @@ public class SessionManagementTestCase {
             executeOperation(operation, INVALIDATE_SESSION);
 
             HttpGet get = new HttpGet("http://" + TestSuiteEnvironment.getServerAddress() +
-                    ":8080/management/SessionPersistenceServlet");
+                    ":" + TestSuiteEnvironment.getHttpPort() + "/management/SessionPersistenceServlet");
             HttpResponse res = client.execute(get);
             sessionId = null;
             for (Header cookie : res.getHeaders("Set-Cookie")) {

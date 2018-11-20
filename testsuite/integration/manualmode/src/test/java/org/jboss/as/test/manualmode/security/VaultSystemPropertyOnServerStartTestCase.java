@@ -79,7 +79,7 @@ public class VaultSystemPropertyOnServerStartTestCase {
     public static final String TESTING_SYSTEM_PROPERTY = "vault.testing.property";
     public static final PathAddress SYSTEM_PROPERTIES_PATH = PathAddress.pathAddress().append(SYSTEM_PROPERTY,
             TESTING_SYSTEM_PROPERTY);
-    private static final String printPropertyServlet = "http://" + TestSuiteEnvironment.getServerAddress() + ":8080/"
+    private static final String printPropertyServlet = "http://" + TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getHttpPort() + "/"
             + DEPLOYMENT + PrintSystemPropertyServlet.SERVLET_PATH + "?" + PrintSystemPropertyServlet.PARAM_PROPERTY_NAME + "="
             + TESTING_SYSTEM_PROPERTY;
 

@@ -41,7 +41,7 @@
     </wsdl:binding>
     <wsdl:service name="AnotherService">
         <wsdl:port binding="tns:AnotherServiceSoapBinding" name="AnotherServicePort">
-            <soap:address location="http://server.domain:8080/schema-location-rewrite/AnotherService"/>
+            <soap:address location="http://server.domain:${jboss.http.port:8080}/schema-location-rewrite/AnotherService"/>
         </wsdl:port>
     </wsdl:service>
 </wsdl:definitions>

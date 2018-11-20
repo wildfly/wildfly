@@ -98,7 +98,7 @@ public class ServiceRefTestCase {
                         new RuntimePermission("org.apache.cxf.permission", "resolveUri"),
                         new RuntimePermission("createClassLoader"),
                         new RuntimePermission("accessDeclaredMembers"),
-                        new SocketPermission(node0 + ":8080", "connect,resolve")
+                        new SocketPermission(node0 + ":" + System.getProperty("jboss.http.port", "8080"), "connect,resolve")
                 ), "jboss-permissions.xml");
     }
 

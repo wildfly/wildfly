@@ -327,14 +327,14 @@
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:picketlink-federation:2.0">
             <federation name="federation-simple-redirect-binding">
-                <identity-provider name="idp-redirect.war" url="http://${jboss.bind.address:127.0.0.1}:8080/idp-redirect/" security-domain="idp" support-signatures="false" strict-post-binding="false">
+                <identity-provider name="idp-redirect.war" url="http://${jboss.bind.address:127.0.0.1}:${jboss.http.port:8080}/idp-redirect/" security-domain="idp" support-signatures="false" strict-post-binding="false">
                     <trust>
                         <trust-domain name="${jboss.bind.address:127.0.0.1}"/>
                     </trust>
                 </identity-provider>
                 <service-providers>
-                    <service-provider name="sp-redirect1.war" security-domain="sp" url="http://${jboss.bind.address:127.0.0.1}:8080/sp-redirect1/" post-binding="false" support-signatures="false"/>
-                    <service-provider name="sp-redirect2.war" security-domain="sp" url="http://${jboss.bind.address:127.0.0.1}:8080/sp-redirect2/" post-binding="false" support-signatures="false"/>
+                    <service-provider name="sp-redirect1.war" security-domain="sp" url="http://${jboss.bind.address:127.0.0.1}:${jboss.http.port:8080}/sp-redirect1/" post-binding="false" support-signatures="false"/>
+                    <service-provider name="sp-redirect2.war" security-domain="sp" url="http://${jboss.bind.address:127.0.0.1}:${jboss.http.port:8080}/sp-redirect2/" post-binding="false" support-signatures="false"/>
                 </service-providers>
             </federation>
             <federation name="federation-redirect-with-signatures">
@@ -343,25 +343,25 @@
                         <key name="servercert" host="${jboss.bind.address:localhost},127.0.0.1"/>
                     </keys>
                 </key-store>
-                <identity-provider name="idp-redirect-sig.war" url="http://${jboss.bind.address:127.0.0.1}:8080/idp-redirect-sig/" security-domain="idp" support-signatures="true" strict-post-binding="false">
+                <identity-provider name="idp-redirect-sig.war" url="http://${jboss.bind.address:127.0.0.1}:${jboss.http.port:8080}/idp-redirect-sig/" security-domain="idp" support-signatures="true" strict-post-binding="false">
                     <trust>
                         <trust-domain name="${jboss.bind.address:127.0.0.1}"/>
                     </trust>
                 </identity-provider>
                 <service-providers>
-                    <service-provider name="sp-redirect-sig1.war" security-domain="sp" url="http://${jboss.bind.address:127.0.0.1}:8080/sp-redirect-sig1/" post-binding="false" support-signatures="true"/>
-                    <service-provider name="sp-redirect-sig2.war" security-domain="sp" url="http://${jboss.bind.address:127.0.0.1}:8080/sp-redirect-sig2/" post-binding="false" support-signatures="true"/>
+                    <service-provider name="sp-redirect-sig1.war" security-domain="sp" url="http://${jboss.bind.address:127.0.0.1}:${jboss.http.port:8080}/sp-redirect-sig1/" post-binding="false" support-signatures="true"/>
+                    <service-provider name="sp-redirect-sig2.war" security-domain="sp" url="http://${jboss.bind.address:127.0.0.1}:${jboss.http.port:8080}/sp-redirect-sig2/" post-binding="false" support-signatures="true"/>
                 </service-providers>
             </federation>
             <federation name="federation-simple-post-binding">
-                <identity-provider name="idp-post.war" url="http://${jboss.bind.address:127.0.0.1}:8080/idp-post/" security-domain="idp">
+                <identity-provider name="idp-post.war" url="http://${jboss.bind.address:127.0.0.1}:${jboss.http.port:8080}/idp-post/" security-domain="idp">
                     <trust>
                         <trust-domain name="${jboss.bind.address:127.0.0.1}"/>
                     </trust>
                 </identity-provider>
                 <service-providers>
-                    <service-provider name="sp-post1.war" security-domain="sp" url="http://${jboss.bind.address:127.0.0.1}:8080/sp-post1/"/>
-                    <service-provider name="sp-post2.war" security-domain="sp" url="http://${jboss.bind.address:127.0.0.1}:8080/sp-post2/"/>
+                    <service-provider name="sp-post1.war" security-domain="sp" url="http://${jboss.bind.address:127.0.0.1}:${jboss.http.port:8080}/sp-post1/"/>
+                    <service-provider name="sp-post2.war" security-domain="sp" url="http://${jboss.bind.address:127.0.0.1}:${jboss.http.port:8080}/sp-post2/"/>
                 </service-providers>
             </federation>
             <federation name="federation-post-with-signatures">
@@ -370,14 +370,14 @@
                         <key name="servercert" host="${jboss.bind.address:localhost},127.0.0.1"/>
                     </keys>
                 </key-store>
-                <identity-provider name="idp-post-sig.war" url="http://${jboss.bind.address:127.0.0.1}:8080/idp-post-sig/" security-domain="idp" support-signatures="true">
+                <identity-provider name="idp-post-sig.war" url="http://${jboss.bind.address:127.0.0.1}:${jboss.http.port:8080}/idp-post-sig/" security-domain="idp" support-signatures="true">
                     <trust>
                         <trust-domain name="${jboss.bind.address:127.0.0.1}"/>
                     </trust>
                 </identity-provider>
                 <service-providers>
-                    <service-provider name="sp-post-sig1.war" security-domain="sp" url="http://${jboss.bind.address:127.0.0.1}:8080/sp-post-sig1/" support-signatures="true"/>
-                    <service-provider name="sp-post-sig2.war" security-domain="sp" url="http://${jboss.bind.address:127.0.0.1}:8080/sp-post-sig2/" support-signatures="true"/>
+                    <service-provider name="sp-post-sig1.war" security-domain="sp" url="http://${jboss.bind.address:127.0.0.1}:${jboss.http.port:8080}/sp-post-sig1/" support-signatures="true"/>
+                    <service-provider name="sp-post-sig2.war" security-domain="sp" url="http://${jboss.bind.address:127.0.0.1}:${jboss.http.port:8080}/sp-post-sig2/" support-signatures="true"/>
                 </service-providers>
             </federation>
             <federation name="federation-with-metadata">
@@ -386,20 +386,20 @@
                         <key name="servercert" host="${jboss.bind.address:localhost},127.0.0.1"/>
                     </keys>
                 </key-store>
-                <identity-provider name="idp-metadata.war" url="http://${jboss.bind.address:127.0.0.1}:8080/idp-metadata/" security-domain="idp" support-signatures="true" support-metadata="true">
+                <identity-provider name="idp-metadata.war" url="http://${jboss.bind.address:127.0.0.1}:${jboss.http.port:8080}/idp-metadata/" security-domain="idp" support-signatures="true" support-metadata="true">
                     <trust>
                         <trust-domain name="${jboss.bind.address:127.0.0.1}"/>
                     </trust>
                 </identity-provider>
                 <service-providers>
-                    <service-provider name="sp-metadata1.war" security-domain="sp" url="http://${jboss.bind.address:127.0.0.1}:8080/sp-metadata1/" support-signatures="true" support-metadata="true"/>
-                    <service-provider name="sp-metadata2.war" security-domain="sp" url="http://${jboss.bind.address:127.0.0.1}:8080/sp-metadata2/" support-signatures="true" support-metadata="true"/>
+                    <service-provider name="sp-metadata1.war" security-domain="sp" url="http://${jboss.bind.address:127.0.0.1}:${jboss.http.port:8080}/sp-metadata1/" support-signatures="true" support-metadata="true"/>
+                    <service-provider name="sp-metadata2.war" security-domain="sp" url="http://${jboss.bind.address:127.0.0.1}:${jboss.http.port:8080}/sp-metadata2/" support-signatures="true" support-metadata="true"/>
                 </service-providers>
             </federation>
             <federation name="federation-with-external-idp">
                 <identity-provider name="idp-external" url="http://idp.external.com/" external="true"/>
                 <service-providers>
-                    <service-provider name="sales-on-external.war" security-domain="sp" url="http://${jboss.bind.address:127.0.0.1}:8080/sales-on-external/" post-binding="false" support-signatures="false"/>
+                    <service-provider name="sales-on-external.war" security-domain="sp" url="http://${jboss.bind.address:127.0.0.1}:${jboss.http.port:8080}/sales-on-external/" post-binding="false" support-signatures="false"/>
                 </service-providers>
             </federation>
         </subsystem>

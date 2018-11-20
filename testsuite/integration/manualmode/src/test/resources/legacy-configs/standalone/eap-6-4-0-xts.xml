@@ -406,7 +406,7 @@
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:weld:1.0"/>
         <subsystem xmlns="urn:jboss:domain:xts:1.0">
-            <xts-environment url="http://${jboss.bind.address:127.0.0.1}:8080/ws-c11/ActivationService"/>
+            <xts-environment url="http://${jboss.bind.address:127.0.0.1}:${jboss.http.port:8080}/ws-c11/ActivationService"/>
         </subsystem>
     </profile>
     <interfaces>
@@ -430,7 +430,7 @@
         <socket-binding name="management-http" interface="management" port="${jboss.management.http.port:9990}"/>
         <socket-binding name="management-https" interface="management" port="${jboss.management.https.port:9443}"/>
         <socket-binding name="ajp" port="8009"/>
-        <socket-binding name="http" port="8080"/>
+        <socket-binding name="http" port="${jboss.http.port:8080}"/>
         <socket-binding name="https" port="8443"/>
         <socket-binding name="jacorb" interface="unsecure" port="3528"/>
         <socket-binding name="jacorb-ssl" interface="unsecure" port="3529"/>

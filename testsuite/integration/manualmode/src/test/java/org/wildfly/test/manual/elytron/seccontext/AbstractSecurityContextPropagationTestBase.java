@@ -653,7 +653,7 @@ public abstract class AbstractSecurityContextPropagationTestBase {
         }
 
         public int getApplicationPort() {
-            return 8080 + portOffset;
+            return Integer.parseInt(System.getProperty("jboss.http.port", "8080")) + portOffset;
         }
 
         public String getApplicationHttpUrl() throws IOException {

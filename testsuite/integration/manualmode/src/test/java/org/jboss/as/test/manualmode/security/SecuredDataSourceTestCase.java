@@ -81,7 +81,7 @@ public class SecuredDataSourceTestCase extends AbstractCliTestBase {
 
     @Test
     public void test() throws Exception {
-        final URI uri = new URI("http://" + TestSuiteEnvironment.getServerAddress() + ":8080/" + TEST_NAME
+        final URI uri = new URI("http://" + TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getHttpPort() + "/" + TEST_NAME
                 + DataSourceTestServlet.SERVLET_PATH + "?" + DataSourceTestServlet.PARAM_DS + "=" + TEST_NAME);
         final String body = Utils.makeCall(uri, HttpServletResponse.SC_OK);
         assertEquals("true", body);

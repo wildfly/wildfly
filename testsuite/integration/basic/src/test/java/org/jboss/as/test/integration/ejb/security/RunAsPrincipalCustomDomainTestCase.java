@@ -101,7 +101,7 @@ public class RunAsPrincipalCustomDomainTestCase {
         String caller = AuthenticationContext.empty()
                 .with(MatchRule.ALL,
                         AuthenticationConfiguration.empty().useName("guest").usePassword("guest").useRealm("ApplicationRealm")
-                                .useHost(Utils.getDefaultHost(false)).usePort(8080)
+                                .useHost(Utils.getDefaultHost(false)).usePort(Integer.parseInt(System.getProperty("jboss.http.port", "8080")))
                                 .setSaslMechanismSelector(SaslMechanismSelector.fromString("DIGEST-MD5")))
                 .runCallable(callable);
         assertEquals("Unexpected principal name returned", "principalFromEntryBean", caller);

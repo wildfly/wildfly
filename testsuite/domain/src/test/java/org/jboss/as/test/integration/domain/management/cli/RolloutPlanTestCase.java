@@ -422,7 +422,7 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
         String address = CLITestSuite.hostAddresses.get(getServerHost(server));
         Integer portOffset = CLITestSuite.portOffsets.get(server);
 
-        URL url = new URL("http", address, 8080 + portOffset, path);
+        URL url = new URL("http", address, Integer.parseInt(System.getProperty("jboss.http.port", "8080")) + portOffset, path);
         boolean failed = false;
         String response = null;
         try {

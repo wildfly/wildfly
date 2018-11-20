@@ -129,7 +129,7 @@ public abstract class LegacyConfigTest {
 
     private void verifyHttp(String profile) {
         try {
-            URLConnection connection = new URL("http://" + TestSuiteEnvironment.formatPossibleIpv6Address(DomainTestSupport.slaveAddress) + ":8080").openConnection();
+            URLConnection connection = new URL("http://" + TestSuiteEnvironment.formatPossibleIpv6Address(DomainTestSupport.slaveAddress) + ":" + TestSuiteEnvironment.getHttpPort()).openConnection();
             connection.connect();
         } catch (IOException e) {
             Assert.fail("Cannot connect to profile " + profile + " " + e.toString());

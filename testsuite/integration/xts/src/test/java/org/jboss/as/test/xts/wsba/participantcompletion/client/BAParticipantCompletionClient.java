@@ -39,7 +39,7 @@ public class BAParticipantCompletionClient {
     private static final Logger log = Logger.getLogger(BAParticipantCompletionClient.class);
 
     private static final String NODE0_ADDR = NetworkUtils.formatPossibleIpv6Address(System.getProperty("node0", "localhost"));
-    private static final int NODE0_PORT = 8080;
+    private static final int NODE0_PORT = Integer.parseInt(System.getProperty("jboss.http.port", "8080"));
 
     private static final String TARGET_NAMESPACE = "http://www.jboss.com/jbossas/test/xts/ba/participantcompletion/";
     private static final String DEFAULT_PORT_NAME = "BAParticipantCompletion";

@@ -162,7 +162,7 @@ public class DeploySingleServerGroupTestCase extends AbstractCliTestBase {
                 if (! CLITestSuite.serverStatus.get(server)) continue; // server not started
                 Integer portOffset = CLITestSuite.portOffsets.get(server);
 
-                URL url = new URL("http", address, 8080 + portOffset, path);
+                URL url = new URL("http", address, Integer.parseInt(System.getProperty("jboss.http.port", "8080")) + portOffset, path);
                 boolean failed = false;
                 try {
                     String response = HttpRequest.get(url.toString(), 10, TimeUnit.SECONDS);

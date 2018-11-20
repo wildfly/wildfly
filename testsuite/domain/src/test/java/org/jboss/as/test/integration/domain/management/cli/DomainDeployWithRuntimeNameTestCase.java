@@ -159,7 +159,7 @@ public class DomainDeployWithRuntimeNameTestCase extends AbstractCliTestBase {
                 if (!CLITestSuite.serverStatus.get(server)) {
                     continue; // server not started
                 }
-                int port = 8080 + CLITestSuite.portOffsets.get(server);
+                int port = Integer.parseInt(System.getProperty("jboss.http.port", "8080")) + CLITestSuite.portOffsets.get(server);
 
                 URL url = new URL("http", address, port, path);
                 boolean failed = false;

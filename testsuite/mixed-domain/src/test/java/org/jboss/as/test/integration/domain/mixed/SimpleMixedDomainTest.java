@@ -110,7 +110,7 @@ public abstract class SimpleMixedDomainTest  {
 
     @Test
     public void test00001_ServerRunning() throws Exception {
-        URLConnection connection = new URL("http://" + TestSuiteEnvironment.formatPossibleIpv6Address(DomainTestSupport.slaveAddress) + ":8080").openConnection();
+        URLConnection connection = new URL("http://" + TestSuiteEnvironment.formatPossibleIpv6Address(DomainTestSupport.slaveAddress) + ":" + TestSuiteEnvironment.getHttpPort()).openConnection();
         connection.connect();
     }
 
