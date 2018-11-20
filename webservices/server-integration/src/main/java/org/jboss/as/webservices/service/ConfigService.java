@@ -25,14 +25,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
-import org.jboss.as.webservices.dmr.ListInjector;
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.Service;
+import org.jboss.as.webservices.config.ServerConfigFactoryImpl;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.wsf.spi.management.ServerConfig;
 import org.jboss.wsf.spi.metadata.config.AbstractCommonConfig;
 import org.jboss.wsf.spi.metadata.config.ClientConfig;
 import org.jboss.wsf.spi.metadata.config.EndpointConfig;
@@ -43,67 +42,68 @@ import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerChainMetaData;
  *
  * @author paul.robinson@jboss.com
  * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public final class ConfigService implements Service<AbstractCommonConfig> {
+public final class ConfigService implements Service {
 
-    private final ServerConfig serverConfig;
     private final String configName;
     private final boolean client;
-    private final List<UnifiedHandlerChainMetaData> preHandlerChains = new ArrayList<UnifiedHandlerChainMetaData>(1);
-    private final List<UnifiedHandlerChainMetaData> postHandlerChains = new ArrayList<UnifiedHandlerChainMetaData>(1);
-    private final List<PropertyService> properties = new ArrayList<PropertyService>(1);
     private volatile AbstractCommonConfig config;
+    private final Consumer<AbstractCommonConfig> configConsumer;
+    private final List<Supplier<UnifiedHandlerChainMetaData>> preHandlerChainSuppliers;
+    private final List<Supplier<UnifiedHandlerChainMetaData>> postHandlerChainSuppliers;
+    private final List<Supplier<PropertyService>> propertySuppliers;
 
-    public ConfigService(ServerConfig serverConfig, String configName, boolean client) {
+    public ConfigService(final String configName, final boolean client,
+                         final Consumer<AbstractCommonConfig> configConsumer,
+                         final List<Supplier<PropertyService>> propertySuppliers,
+                         final List<Supplier<UnifiedHandlerChainMetaData>> preHandlerChainSuppliers,
+                         final List<Supplier<UnifiedHandlerChainMetaData>> postHandlerChainSuppliers
+    ) {
         this.configName = configName;
         this.client = client;
-        this.serverConfig = serverConfig;
+        this.configConsumer = configConsumer;
+        this.propertySuppliers = propertySuppliers;
+        this.preHandlerChainSuppliers = preHandlerChainSuppliers;
+        this.postHandlerChainSuppliers = postHandlerChainSuppliers;
     }
 
     @Override
-    public AbstractCommonConfig getValue() {
-        return config;
-    }
-
-    @Override
-    public void start(final StartContext context) throws StartException {
+    public void start(final StartContext context) {
         Map<String, String> props = null;
-        if (!properties.isEmpty()) {
-            props = new HashMap<String, String>(properties.size(), 1);
-            for (PropertyService ps : properties) {
-                props.put(ps.getPropName(), ps.getPropValue());
+        if (!propertySuppliers.isEmpty()) {
+            props = new HashMap<>(propertySuppliers.size(), 1);
+            for (final Supplier<PropertyService> propertySupplier : propertySuppliers) {
+                props.put(propertySupplier.get().getPropName(), propertySupplier.get().getPropValue());
             }
+        }
+        List<UnifiedHandlerChainMetaData> preHandlerChains = new ArrayList<>();
+        for (final Supplier<UnifiedHandlerChainMetaData> preHandlerChainSupplier : preHandlerChainSuppliers) {
+            preHandlerChains.add(preHandlerChainSupplier.get());
+        }
+        List<UnifiedHandlerChainMetaData> postHandlerChains = new ArrayList<>();
+        for (final Supplier<UnifiedHandlerChainMetaData> postHandlerChainSupplier : postHandlerChainSuppliers) {
+            postHandlerChains.add(postHandlerChainSupplier.get());
         }
         if (client) {
             ClientConfig clientConfig = new ClientConfig(configName, preHandlerChains, postHandlerChains, props, null);
-            serverConfig.registerClientConfig(clientConfig);
-            config = clientConfig;
+            ServerConfigFactoryImpl.getConfig().registerClientConfig(clientConfig);
+            configConsumer.accept(config = clientConfig);
         } else {
             EndpointConfig endpointConfig = new EndpointConfig(configName, preHandlerChains, postHandlerChains, props, null);
-            serverConfig.registerEndpointConfig(endpointConfig);
-            config = endpointConfig;
+            ServerConfigFactoryImpl.getConfig().registerEndpointConfig(endpointConfig);
+            configConsumer.accept(config = endpointConfig);
         }
     }
 
     @Override
     public void stop(final StopContext context) {
+        configConsumer.accept(null);
         if (client) {
-            serverConfig.unregisterClientConfig((ClientConfig)config);
+            ServerConfigFactoryImpl.getConfig().unregisterClientConfig((ClientConfig)config);
         } else {
-            serverConfig.unregisterEndpointConfig((EndpointConfig)config);
+            ServerConfigFactoryImpl.getConfig().unregisterEndpointConfig((EndpointConfig)config);
         }
+        config = null;
     }
-
-    public Injector<UnifiedHandlerChainMetaData> getPreHandlerChainsInjector() {
-        return new ListInjector<UnifiedHandlerChainMetaData>(preHandlerChains);
-    }
-
-    public Injector<UnifiedHandlerChainMetaData> getPostHandlerChainsInjector() {
-        return new ListInjector<UnifiedHandlerChainMetaData>(postHandlerChains);
-    }
-
-    public Injector<PropertyService> getPropertiesInjector() {
-        return new ListInjector<PropertyService>(properties);
-    }
-
 }

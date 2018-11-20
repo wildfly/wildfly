@@ -44,6 +44,7 @@ import org.jboss.as.jmx.JMXExtension;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.web.host.CommonWebServer;
+import org.jboss.as.webservices.config.ServerConfigFactoryImpl;
 import org.jboss.as.webservices.config.ServerConfigImpl;
 import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.as.webservices.service.ServerConfigService;
@@ -85,10 +86,12 @@ class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final boolean jmxAvailable = isJMXSubsystemAvailable(context);
         if (appclient && model.hasDefined(WSDL_HOST)) {
             ServerConfigImpl serverConfig = createServerConfig(model, true, context);
+            ServerConfigFactoryImpl.setConfig(serverConfig);
             ServerConfigService.install(serviceTarget, serverConfig, getServerConfigDependencies(context, appclient), jmxAvailable, false);
         }
         if (!appclient) {
             ServerConfigImpl serverConfig = createServerConfig(model, false, context);
+            ServerConfigFactoryImpl.setConfig(serverConfig);
             ServerConfigService.install(serviceTarget, serverConfig, getServerConfigDependencies(context, appclient), jmxAvailable, true);
         }
         XTSClientIntegrationService.install(serviceTarget);

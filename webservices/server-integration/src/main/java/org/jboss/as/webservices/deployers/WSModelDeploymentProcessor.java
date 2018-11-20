@@ -23,12 +23,11 @@ package org.jboss.as.webservices.deployers;
 
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.webservices.config.ServerConfigFactoryImpl;
 import org.jboss.as.webservices.config.ServerConfigImpl;
 import org.jboss.as.webservices.deployers.deployment.WSDeploymentBuilder;
 import org.jboss.as.webservices.util.WSAttachmentKeys;
-import org.jboss.as.webservices.util.WSServices;
 
 /**
  * This deployer initializes JBossWS deployment meta data.
@@ -39,12 +38,12 @@ import org.jboss.as.webservices.util.WSServices;
 public final class WSModelDeploymentProcessor extends TCCLDeploymentProcessor implements DeploymentUnitProcessor {
 
     @Override
-    public void internalDeploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+    public void internalDeploy(final DeploymentPhaseContext phaseContext) {
         final DeploymentUnit unit = phaseContext.getDeploymentUnit();
         WSDeploymentBuilder.getInstance().build(unit);
 
         if (isWebServiceDeployment(unit)) { //note, this check works only after the WSDeploymentBuilder above has run
-            ServerConfigImpl config = (ServerConfigImpl)phaseContext.getServiceRegistry().getRequiredService(WSServices.CONFIG_SERVICE).getValue();
+            ServerConfigImpl config = (ServerConfigImpl)ServerConfigFactoryImpl.getConfig();
             config.incrementWSDeploymentCount();
         }
     }
@@ -52,7 +51,7 @@ public final class WSModelDeploymentProcessor extends TCCLDeploymentProcessor im
     @Override
     public void internalUndeploy(final DeploymentUnit context) {
         if (isWebServiceDeployment(context)) {
-            ServerConfigImpl config = (ServerConfigImpl)context.getServiceRegistry().getRequiredService(WSServices.CONFIG_SERVICE).getValue();
+            ServerConfigImpl config = (ServerConfigImpl)ServerConfigFactoryImpl.getConfig();
             config.decrementWSDeploymentCount();
         }
 

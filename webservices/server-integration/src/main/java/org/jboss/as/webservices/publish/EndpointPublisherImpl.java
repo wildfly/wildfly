@@ -33,15 +33,14 @@ import org.jboss.as.web.host.ServletBuilder;
 import org.jboss.as.web.host.WebDeploymentBuilder;
 import org.jboss.as.web.host.WebDeploymentController;
 import org.jboss.as.web.host.WebHost;
+import org.jboss.as.webservices.config.ServerConfigFactoryImpl;
 import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.as.webservices.deployers.AllowWSRequestPredicate;
 import org.jboss.as.webservices.deployers.EndpointServiceDeploymentAspect;
 import org.jboss.as.webservices.deployers.deployment.DeploymentAspectsProvider;
 import org.jboss.as.webservices.deployers.deployment.WSDeploymentBuilder;
 import org.jboss.as.webservices.service.EndpointService;
-import org.jboss.as.webservices.service.ServerConfigService;
 import org.jboss.as.webservices.util.WSAttachmentKeys;
-import org.jboss.as.webservices.util.WSServices;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.jboss.JBossServletMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
@@ -50,6 +49,7 @@ import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.StabilityMonitor;
 import org.jboss.ws.common.deployment.DeploymentAspectManagerImpl;
 import org.jboss.ws.common.deployment.EndpointHandlerDeploymentAspect;
 import org.jboss.ws.common.integration.AbstractDeploymentAspect;
@@ -94,18 +94,18 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
 
     @Override
     public Context publish(String context, ClassLoader loader, Map<String, String> urlPatternToClassNameMap) throws Exception {
-        return publish(getBaseTarget(), context, loader, urlPatternToClassNameMap, null, null, null);
+        return publish(currentServiceContainer(), context, loader, urlPatternToClassNameMap, null, null, null);
     }
 
     @Override
     public Context publish(String context, ClassLoader loader, Map<String, String> urlPatternToClassNameMap, WebservicesMetaData metadata) throws Exception {
-        return publish(getBaseTarget(), context, loader, urlPatternToClassNameMap, null, metadata, null);
+        return publish(currentServiceContainer(), context, loader, urlPatternToClassNameMap, null, metadata, null);
     }
 
     @Override
     public Context publish(String context, ClassLoader loader, Map<String, String> urlPatternToClassNameMap,
             WebservicesMetaData metadata, JBossWebservicesMetaData jbwsMetadata) throws Exception {
-        return publish(getBaseTarget(), context, loader, urlPatternToClassNameMap, null, metadata, jbwsMetadata);
+        return publish(currentServiceContainer(), context, loader, urlPatternToClassNameMap, null, metadata, jbwsMetadata);
     }
 
     protected Context publish(ServiceTarget target, String context, ClassLoader loader,
@@ -114,10 +114,6 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
         DeploymentUnit unit = doPrepare(context, loader, urlPatternToClassNameMap, jbwmd, metadata, jbwsMetadata);
         doDeploy(target, unit);
         return doPublish(target, unit);
-    }
-
-    private static ServiceTarget getBaseTarget() {
-        return currentServiceContainer().getService(WSServices.CONFIG_SERVICE).getServiceContainer();
     }
 
     /**
@@ -185,9 +181,15 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
         //otherwise we need to explicitly wait for the endpoint services to be started before creating the webapp.
         if (!runningInService) {
             final ServiceRegistry registry = unit.getServiceRegistry();
+            final StabilityMonitor monitor = new StabilityMonitor();
             for (Endpoint ep : endpoints) {
                 final ServiceName serviceName = EndpointService.getServiceName(unit, ep.getShortName());
-                registry.getRequiredService(serviceName).awaitValue();
+                monitor.addController(registry.getRequiredService(serviceName));
+            }
+            try {
+                monitor.awaitStability();
+            } finally {
+                monitor.clear();
             }
         }
         deployment.addAttachment(WebDeploymentController.class, startWebApp(host, unit)); //TODO simplify and use findChild later in destroy()/stopWebApp()
@@ -200,8 +202,7 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
         try {
             JBossWebMetaData jbwebMD = unit.getAttachment(WSAttachmentKeys.JBOSSWEB_METADATA_KEY);
             deployment.setContextRoot(jbwebMD.getContextRoot());
-            ServerConfigService config = (ServerConfigService)unit.getServiceRegistry().getService(WSServices.CONFIG_SERVICE).getService();
-            File docBase = new File(config.getValue().getServerTempDir(), jbwebMD.getContextRoot());
+            File docBase = new File(ServerConfigFactoryImpl.getConfig().getServerTempDir(), jbwebMD.getContextRoot());
             if (!docBase.exists()) {
                 docBase.mkdirs();
             }
@@ -271,7 +272,6 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
      * Triggers the WS deployment aspects, which process
      * the deployment unit and stop the endpoint services.
      *
-     * @param context
      * @throws Exception
      */
     protected void undeploy(DeploymentUnit unit) throws Exception {

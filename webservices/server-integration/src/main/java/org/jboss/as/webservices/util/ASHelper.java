@@ -36,7 +36,6 @@ import java.util.List;
 import javax.jws.WebService;
 import javax.xml.ws.WebServiceProvider;
 
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.metadata.ClassAnnotationInformation;
 import org.jboss.as.server.CurrentServiceContainer;
@@ -395,12 +394,6 @@ public final class ASHelper {
     @SuppressWarnings("unchecked")
     public static <T> T getMSCService(final ServiceName serviceName, final Class<T> clazz) {
         ServiceController<T> service = (ServiceController<T>) CurrentServiceContainer.getServiceContainer().getService(serviceName);
-        return service != null ? service.getValue() : null;
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <T> T getMSCService(final ServiceName serviceName, final Class<T> clazz, final OperationContext context) {
-        ServiceController<T> service = (ServiceController<T>)context.getServiceRegistry(false).getService(serviceName);
         return service != null ? service.getValue() : null;
     }
 

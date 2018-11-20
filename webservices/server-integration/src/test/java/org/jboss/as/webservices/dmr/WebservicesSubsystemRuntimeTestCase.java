@@ -32,10 +32,7 @@ import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
-import org.jboss.as.webservices.util.WSServices;
-import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
+import org.jboss.as.webservices.config.ServerConfigFactoryImpl;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.wsf.spi.classloading.ClassLoaderProvider;
 import org.jboss.wsf.spi.management.ServerConfig;
@@ -50,6 +47,7 @@ import org.junit.Test;
  * A test for checking the services that are created by the subsystem after boot.
  *
  * @author <a href="mailto:alessio.soldano@jboss.com>Alessio Soldano</a>
+ * @author <a href="mailto:ropalka@redhat.com>Richard Opalka</a>
  */
 public class WebservicesSubsystemRuntimeTestCase extends AbstractSubsystemBaseTest {
 
@@ -72,7 +70,7 @@ public class WebservicesSubsystemRuntimeTestCase extends AbstractSubsystemBaseTe
             @Override
             protected void addExtraServices(ServiceTarget target) {
                 super.addExtraServices(target);
-                target.addService(Services.JBOSS_SERVICE_MODULE_LOADER, new ServiceModuleLoader(null)).install();
+                target.addService(Services.JBOSS_SERVICE_MODULE_LOADER).setInstance(new ServiceModuleLoader(null)).install();
             }
         };
     }
@@ -112,7 +110,7 @@ public class WebservicesSubsystemRuntimeTestCase extends AbstractSubsystemBaseTe
         }
 
         //WSDL soap:address rewrite engine options test
-        ServerConfig serverConfig = getMSCService(mainServices.getContainer(), WSServices.CONFIG_SERVICE, ServerConfig.class);
+        ServerConfig serverConfig = ServerConfigFactoryImpl.getConfig();
         Assert.assertTrue(serverConfig.isModifySOAPAddress());
         Assert.assertEquals("localhost", serverConfig.getWebServiceHost());
         Assert.assertEquals(9895, serverConfig.getWebServicePort());
@@ -175,11 +173,5 @@ public class WebservicesSubsystemRuntimeTestCase extends AbstractSubsystemBaseTe
         Assert.assertEquals("AnotherRecordingHandler2", epCfg.getPostHandlerChains().get(0).getHandlers().get(1).getHandlerName());
         Assert.assertEquals("org.jboss.ws.common.invocation.RecordingServerHandler", epCfg.getPostHandlerChains().get(0).getHandlers().get(1).getHandlerClass());
         Assert.assertEquals("##SOAP11_HTTP ##SOAP11_HTTP_MTOM ##SOAP12_HTTP ##SOAP12_HTTP_MTOM", epCfg.getPostHandlerChains().get(0).getProtocolBindings());
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <T> T getMSCService(final ServiceContainer container, final ServiceName serviceName, final Class<T> clazz) {
-        ServiceController<T> service = (ServiceController<T>) container.getService(serviceName);
-        return service != null ? service.getValue() : null;
     }
 }

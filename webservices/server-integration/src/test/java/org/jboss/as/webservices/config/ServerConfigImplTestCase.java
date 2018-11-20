@@ -27,9 +27,7 @@ import static org.junit.Assert.fail;
 
 import java.net.URL;
 import java.net.URLClassLoader;
-import javax.management.MBeanServer;
 
-import org.jboss.msc.value.ImmediateValue;
 import org.jboss.wsf.spi.management.ServerConfig;
 import org.jboss.wsf.spi.management.StackConfig;
 import org.jboss.wsf.spi.management.StackConfigFactory;
@@ -194,9 +192,7 @@ public class ServerConfigImplTestCase {
     }
 
     private static ServerConfigImpl newServerConfigImpl() {
-        ServerConfigImpl sc = ServerConfigImpl.newInstance();
-        sc.getMBeanServerInjector().setValue(new ImmediateValue<MBeanServer>(null));
-        return sc;
+        return ServerConfigImpl.newInstance();
     }
 
     @BeforeClass

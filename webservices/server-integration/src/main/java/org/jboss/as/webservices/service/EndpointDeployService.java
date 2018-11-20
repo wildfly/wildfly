@@ -30,9 +30,8 @@ import org.jboss.as.webservices.publish.EndpointPublisherHelper;
 import org.jboss.as.webservices.util.WSAttachmentKeys;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
-import org.jboss.msc.service.Service;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
@@ -49,7 +48,7 @@ import org.jboss.wsf.spi.metadata.webservices.WebservicesMetaData;
  * @author alessio.soldano@jboss.com
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public final class EndpointDeployService implements Service<DeploymentUnit> {
+public final class EndpointDeployService implements Service {
 
     private final ServiceName name;
     private final DeploymentUnit unit;
@@ -57,11 +56,6 @@ public final class EndpointDeployService implements Service<DeploymentUnit> {
     private EndpointDeployService(final String context, final DeploymentUnit unit) {
         this.name = WSServices.ENDPOINT_DEPLOY_SERVICE.append(context);
         this.unit = unit;
-    }
-
-    @Override
-    public DeploymentUnit getValue() {
-        return unit;
     }
 
     public ServiceName getName() {
@@ -104,9 +98,9 @@ public final class EndpointDeployService implements Service<DeploymentUnit> {
             }
         }
         final EndpointDeployService service = new EndpointDeployService(context, unit);
-        final ServiceBuilder<DeploymentUnit> builder = serviceTarget.addService(service.getName(), service);
+        final ServiceBuilder builder = serviceTarget.addService(service.getName());
         builder.requires(WSServices.CONFIG_SERVICE);
-        builder.setInitialMode(Mode.ACTIVE);
+        builder.setInstance(service);
         builder.install();
         return unit;
     }

@@ -29,7 +29,6 @@ import javax.management.MBeanServer;
 
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.webservices.logging.WSLogger;
-import org.jboss.msc.value.InjectedValue;
 import org.jboss.ws.common.management.AbstractServerConfig;
 import org.jboss.ws.common.management.AbstractServerConfigMBean;
 import org.jboss.wsf.spi.metadata.config.ClientConfig;
@@ -49,9 +48,9 @@ import org.wildfly.extension.undertow.UndertowService;
  */
 public final class ServerConfigImpl extends AbstractServerConfig implements AbstractServerConfigMBean {
 
-    private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
-    private final InjectedValue<ServerEnvironment> injectedServerEnvironment = new InjectedValue<ServerEnvironment>();
-    private final InjectedValue<UndertowService> injectedUndertowService = new InjectedValue<UndertowService>();
+    private volatile MBeanServer mBeanServer;
+    private volatile ServerEnvironment serverEnvironment;
+    private volatile UndertowService undertowService;
     private final AtomicInteger wsDeploymentCount = new AtomicInteger(0);
 
     private final DMRSynchCheckHandler webServiceHostUCH = new DMRSynchCheckHandler();
@@ -155,30 +154,26 @@ public final class ServerConfigImpl extends AbstractServerConfig implements Abst
 
     @Override
     public MBeanServer getMbeanServer() {
-        return injectedMBeanServer.getValue();
+        return mBeanServer;
     }
 
     @Override
-    public void setMbeanServer(final MBeanServer mbeanServer) {
-        throw new UnsupportedOperationException();
+    public void setMbeanServer(final MBeanServer mBeanServer) {
+        this.mBeanServer = mBeanServer;
     }
 
-    public InjectedValue<MBeanServer> getMBeanServerInjector() {
-        return injectedMBeanServer;
+    public void setServerEnvironment(final ServerEnvironment serverEnvironment) {
+        this.serverEnvironment = serverEnvironment;
     }
-
-    public InjectedValue<ServerEnvironment> getServerEnvironmentInjector() {
-        return injectedServerEnvironment;
-    }
-    public InjectedValue<UndertowService> getUndertowServiceInjector() {
-        return injectedUndertowService;
+    public void setUndertowService(final UndertowService undertowService) {
+        this.undertowService = undertowService;
     }
 
     private ServerEnvironment getServerEnvironment() {
-        return injectedServerEnvironment.getValue();
+        return serverEnvironment;
     }
     private UndertowService getUndertowService() {
-        return injectedUndertowService.getValue();
+        return undertowService;
     }
 
     public static ServerConfigImpl newInstance() {

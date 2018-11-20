@@ -24,25 +24,27 @@ package org.jboss.as.webservices.dmr;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.webservices.dmr.PackageUtils.getClientConfigServiceName;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.as.webservices.service.ConfigService;
 import org.jboss.as.webservices.service.PropertyService;
-import org.jboss.as.webservices.util.ASHelper;
-import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.wsf.spi.management.ServerConfig;
+import org.jboss.wsf.spi.metadata.config.AbstractCommonConfig;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerChainMetaData;
 
 /**
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
  */
 final class ClientConfigAdd extends AbstractAddStepHandler {
@@ -54,10 +56,9 @@ final class ClientConfigAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
+    protected void populateModel(final ModelNode operation, final ModelNode model) {
         // does nothing
     }
-
 
     @Override
     protected void rollbackRuntime(OperationContext context, ModelNode operation, Resource resource) {
@@ -73,27 +74,27 @@ final class ClientConfigAdd extends AbstractAddStepHandler {
       if (context.isBooting()) {
          final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
          final String name = address.getLastElement().getValue();
-         //get the server config object from the ServerConfigService (service installed and not started yet, but the object is fine for our needs here)
-         final ServerConfig serverConfig = ASHelper.getMSCService(WSServices.CONFIG_SERVICE, ServerConfig.class, context);
-         if (serverConfig == null) {
-             throw WSLogger.ROOT_LOGGER.serviceNotAvailable(WSServices.CONFIG_SERVICE.getCanonicalName());
-         }
          final ServiceName serviceName = getClientConfigServiceName(name);
-         final ConfigService clientConfigService = new ConfigService(serverConfig, name, true);
          final ServiceTarget target = context.getServiceTarget();
-         final ServiceBuilder<?> clientServiceBuilder = target.addService(serviceName, clientConfigService);
+         final ServiceBuilder<?> clientServiceBuilder = target.addService(serviceName);
+         final List<Supplier<PropertyService>> propertySuppliers = new ArrayList<>();
          for (ServiceName sn : PackageUtils.getServiceNameDependencies(context, serviceName, address, Constants.PROPERTY)) {
-             clientServiceBuilder.addDependency(sn, PropertyService.class, clientConfigService.getPropertiesInjector()); //get a new injector instance each time
+             propertySuppliers.add(clientServiceBuilder.requires(sn));
          }
+         final List<Supplier<UnifiedHandlerChainMetaData>> preHandlerChainSuppliers = new ArrayList<>();
          for (ServiceName sn : PackageUtils.getServiceNameDependencies(context, serviceName, address, Constants.PRE_HANDLER_CHAIN)) {
-             clientServiceBuilder.addDependency(sn, UnifiedHandlerChainMetaData.class, clientConfigService.getPreHandlerChainsInjector()); //get a new injector instance each time
+             preHandlerChainSuppliers.add(clientServiceBuilder.requires(sn));
          }
+         final List<Supplier<UnifiedHandlerChainMetaData>> postHandlerChainSuppliers = new ArrayList<>();
          for (ServiceName sn : PackageUtils.getServiceNameDependencies(context, serviceName, address, Constants.POST_HANDLER_CHAIN)) {
-             clientServiceBuilder.addDependency(sn, UnifiedHandlerChainMetaData.class, clientConfigService.getPostHandlerChainsInjector()); //get a new injector instance each time
+             postHandlerChainSuppliers.add(clientServiceBuilder.requires(sn));
          }
-         clientServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
+         final Consumer<AbstractCommonConfig> config = clientServiceBuilder.provides(serviceName);
+         clientServiceBuilder.setInstance(new ConfigService(name, true, config, propertySuppliers, preHandlerChainSuppliers, postHandlerChainSuppliers));
+         clientServiceBuilder.install();
       } else {
          context.reloadRequired();
       }
     }
+
 }
