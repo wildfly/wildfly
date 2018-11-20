@@ -25,7 +25,6 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
-import org.jboss.as.clustering.function.Consumers;
 import org.jboss.as.clustering.function.Functions;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.Service;
@@ -46,7 +45,7 @@ import org.wildfly.clustering.spi.ClusteringRequirement;
  * Builds a non-clustered {@link org.wildfly.clustering.dispatcher.CommandDispatcherFactory} service.
  * @author Paul Ferraro
  */
-public class LocalCommandDispatcherFactoryServiceConfigurator extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, Supplier<AutoCloseableCommandDispatcherFactory> {
+public class LocalCommandDispatcherFactoryServiceConfigurator extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, Supplier<CommandDispatcherFactory> {
 
     private final String groupName;
 
@@ -58,8 +57,8 @@ public class LocalCommandDispatcherFactoryServiceConfigurator extends SimpleServ
     }
 
     @Override
-    public AutoCloseableCommandDispatcherFactory get() {
-        return new ManagedCommandDispatcherFactory(new LocalCommandDispatcherFactory(this.group.get()));
+    public CommandDispatcherFactory get() {
+        return new LocalCommandDispatcherFactory(this.group.get());
     }
 
     @Override
@@ -72,7 +71,7 @@ public class LocalCommandDispatcherFactoryServiceConfigurator extends SimpleServ
     public ServiceBuilder<?> build(ServiceTarget target) {
         ServiceBuilder<?> builder = target.addService(this.getServiceName());
         Consumer<CommandDispatcherFactory> factory = this.group.register(builder).provides(this.getServiceName());
-        Service service = new FunctionalService<>(factory, Functions.identity(), this, Consumers.close());
+        Service service = new FunctionalService<>(factory, Functions.identity(), this);
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 }
