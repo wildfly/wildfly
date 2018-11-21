@@ -34,12 +34,14 @@ import org.jboss.as.test.integration.microprofile.opentracing.application.OpenTr
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import javax.inject.Inject;
+
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
@@ -50,6 +52,22 @@ public class ResourceNotTracedTestCase {
 
     @ArquillianResource
     private URL url;
+
+    /**
+     * Permissions required in case security manager is enabled.
+     */
+    private static final String PERMISSIONS = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+            + "<permissions version=\"7\">\n"
+            + "    <permission>\n"
+            + "        <class-name>java.lang.RuntimePermission</class-name>\n"
+            + "        <name>modifyThread</name>\n"
+            + "    </permission>\n"
+            + "    <permission>\n"
+            + "        <class-name>java.net.SocketPermission</class-name>\n"
+            + "        <name>*</name>\n"
+            + "        <actions>connect,resolve</actions>\n"
+            + "    </permission>\n"
+            + "</permissions>";
 
     @Deployment
     public static Archive<?> deploy() {
@@ -66,6 +84,8 @@ public class ResourceNotTracedTestCase {
         war.addClass(NotTracedEndpoint.class);
 
         war.addClass(HttpRequest.class);
+
+        war.addAsManifestResource(new StringAsset(PERMISSIONS), "permissions.xml");
 
         return war;
     }

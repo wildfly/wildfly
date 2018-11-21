@@ -36,6 +36,7 @@ import org.jboss.as.test.integration.microprofile.opentracing.application.Traced
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
@@ -57,6 +58,19 @@ public class SimpleRestClientTestCase {
     @ArquillianResource
     URL url;
 
+    /**
+     * Permissions required in case security manager is enabled.
+     * Note: I was not able to properly determine what exact permission is required,
+     * thus allowed all of them... should not be problem for the test, though.
+     */
+    private static final String PERMISSIONS = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+            + "<permissions version=\"7\">\n"
+            + "    <permission>\n"
+            + "        <class-name>java.security.AllPermission</class-name>\n"
+            + "        <name>*</name>\n"
+            + "    </permission>\n"
+            + "</permissions>";
+
     @Deployment
     public static Archive<?> deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class);
@@ -70,6 +84,9 @@ public class SimpleRestClientTestCase {
         war.addAsServiceProvider(TracerFactory.class, MockTracerFactory.class);
 
         war.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+
+        war.addAsManifestResource(new StringAsset(PERMISSIONS), "permissions.xml");
+
         return war;
     }
 
