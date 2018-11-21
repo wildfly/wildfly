@@ -140,7 +140,8 @@ It is also possible to override the ear-subdeployments-isolated element
 value at a per deployment level. See the section on
 jboss-deployment-structure.xml below.
 
-`Dependencies:` *Manifest Entries*
+[[dependencies-manifest-entries]]
+=== `Dependencies:` Manifest Entries
 
 Deployments (or more correctly modules within a deployment) may set up
 dependencies on other modules by adding a `Dependencies:` manifest
