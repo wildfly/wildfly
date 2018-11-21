@@ -18,12 +18,11 @@
  */
 package org.jboss.as.webservices.publish;
 
+import static org.jboss.as.webservices.util.ASHelper.getMSCService;
+
 import org.jboss.as.web.host.WebHost;
 import org.jboss.wsf.spi.publish.EndpointPublisher;
 import org.jboss.wsf.spi.publish.EndpointPublisherFactory;
-
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Factory for retrieving an EndpointPublisher instance for the currently running JBoss Application Server container.
@@ -33,18 +32,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class EndpointPublisherFactoryImpl implements EndpointPublisherFactory {
 
-    private static final Map<String,WebHost> virtualHosts = new ConcurrentHashMap<>();
-
     public EndpointPublisher newEndpointPublisher(final String hostname) {
-        return new EndpointPublisherImpl(virtualHosts.get(hostname));
-    }
-
-    public static void addHost(final String hostname, final WebHost virtualHost) {
-        virtualHosts.put(hostname, virtualHost);
-    }
-
-    public static void removeHost(final String hostname, final WebHost virtualHost) {
-        virtualHosts.remove(hostname, virtualHost);
+        return new EndpointPublisherImpl(getMSCService(WebHost.SERVICE_NAME.append(hostname), WebHost.class));
     }
 
 }
