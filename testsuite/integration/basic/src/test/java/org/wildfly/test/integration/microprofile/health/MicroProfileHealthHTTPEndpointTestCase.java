@@ -25,10 +25,7 @@ package org.wildfly.test.integration.microprofile.health;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.StringReader;
 
 import javax.json.Json;
@@ -36,11 +33,11 @@ import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.json.JsonValue;
 
-import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.jboss.as.arquillian.container.ManagementClient;
 
 /**
@@ -57,7 +54,7 @@ public class MicroProfileHealthHTTPEndpointTestCase extends MicroProfileHealthTe
             CloseableHttpResponse resp = client.execute(new HttpGet(healthURL));
             assertEquals(mustBeUP ? 200 : 503, resp.getStatusLine().getStatusCode());
 
-            String content = getContent(resp);
+            String content = EntityUtils.toString(resp.getEntity());
             resp.close();
 
             try (
@@ -78,19 +75,6 @@ public class MicroProfileHealthHTTPEndpointTestCase extends MicroProfileHealthTe
                     fail("Probe named " + probeName + " not found in " + content);
                 }
             }
-        }
-    }
-
-    public static String getContent(HttpResponse response) throws IOException {
-        try (InputStream stream = response.getEntity().getContent()){
-            StringBuilder builder = new StringBuilder();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
-            char[] buff = new char[512];
-            int read;
-            while ((read = reader.read(buff)) != -1) {
-                builder.append(buff, 0, read);
-            }
-            return builder.toString();
         }
     }
 }

@@ -31,6 +31,7 @@ import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -68,7 +69,7 @@ public class MicroProfileHealthSecuredHTTPEndpointTestCase {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             CloseableHttpResponse resp = client.execute(new HttpGet(healthURL));
             assertEquals(401, resp.getStatusLine().getStatusCode());
-            String content = MicroProfileHealthHTTPEndpointTestCase.getContent(resp);
+            String content = EntityUtils.toString(resp.getEntity());
             resp.close();
             assertTrue("'401 - Unauthorized' message is expected", content.contains("401 - Unauthorized"));
         }
@@ -87,7 +88,7 @@ public class MicroProfileHealthSecuredHTTPEndpointTestCase {
 
             CloseableHttpResponse resp = client.execute(new HttpGet(healthURL), hcContext);
             assertEquals(200, resp.getStatusLine().getStatusCode());
-            String content = MicroProfileHealthHTTPEndpointTestCase.getContent(resp);
+            String content = EntityUtils.toString(resp.getEntity());
             resp.close();
             assertTrue("'UP' message is expected", content.contains("UP"));
         }

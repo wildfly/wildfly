@@ -23,7 +23,6 @@
 package org.wildfly.test.integration.microprofile.config.smallrye.app;
 
 import static org.wildfly.test.integration.microprofile.config.smallrye.AssertUtils.assertTextContainsProperty;
-import static org.wildfly.test.integration.microprofile.config.smallrye.HttpUtils.getContent;
 
 import java.net.URL;
 import java.util.Arrays;
@@ -36,6 +35,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -86,7 +86,7 @@ public class MicroProfileConfigTestCase {
         try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
             HttpResponse response = client.execute(new HttpGet(url + appContext + TestApplication.APP_PATH));
             Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-            String text = getContent(response);
+            String text = EntityUtils.toString(response.getEntity());
 
             assertTextContainsProperty(text, "my.prop.never.defined", Optional.empty().toString());
             assertTextContainsProperty(text, "my.prop", "BAR");
@@ -112,7 +112,7 @@ public class MicroProfileConfigTestCase {
         try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
             HttpResponse response = client.execute(new HttpGet(url + appContext + TestApplication.BOOLEAN_APP_PATH));
             Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-            String text = getContent(response);
+            String text = EntityUtils.toString(response.getEntity());
 
             assertTextContainsProperty(text, "boolTrue", true);
             assertTextContainsProperty(text, "bool1", true);
@@ -139,7 +139,7 @@ public class MicroProfileConfigTestCase {
         try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
             HttpResponse response = client.execute(new HttpGet(url + appContext + TestApplication.INTEGER_APP_PATH));
             Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-            String text = getContent(response);
+            String text = EntityUtils.toString(response.getEntity());
 
             assertTextContainsProperty(text, "intDefault", -42);
             assertTextContainsProperty(text, SubsystemConfigSourceTask.INT_OVERRIDDEN_PROP_NAME,
@@ -165,7 +165,7 @@ public class MicroProfileConfigTestCase {
         try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
             HttpResponse response = client.execute(new HttpGet(url + appContext + TestApplication.LONG_APP_PATH));
             Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-            String text = getContent(response);
+            String text = EntityUtils.toString(response.getEntity());
 
             assertTextContainsProperty(text, "longDefault", -42);
             assertTextContainsProperty(text, SubsystemConfigSourceTask.LONG_OVERRIDDEN_PROP_NAME, SubsystemConfigSourceTask.LONG_OVERRIDDEN_PROP_VALUE);
@@ -189,7 +189,7 @@ public class MicroProfileConfigTestCase {
         try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
             HttpResponse response = client.execute(new HttpGet(url + appContext + TestApplication.FLOAT_APP_PATH));
             Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-            String text = getContent(response);
+            String text = EntityUtils.toString(response.getEntity());
 
             assertTextContainsProperty(text, "floatDefault", -3.14);
             assertTextContainsProperty(text, SubsystemConfigSourceTask.FLOAT_OVERRIDDEN_PROP_NAME, SubsystemConfigSourceTask.FLOAT_OVERRIDDEN_PROP_VALUE);
@@ -213,7 +213,7 @@ public class MicroProfileConfigTestCase {
         try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
             HttpResponse response = client.execute(new HttpGet(url + appContext + TestApplication.DOUBLE_APP_PATH));
             Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-            String text = getContent(response);
+            String text = EntityUtils.toString(response.getEntity());
 
             assertTextContainsProperty(text, "doubleDefault", -3.14);
             assertTextContainsProperty(text, SubsystemConfigSourceTask.DOUBLE_OVERRIDDEN_PROP_NAME, SubsystemConfigSourceTask.DOUBLE_OVERRIDDEN_PROP_VALUE);
@@ -236,7 +236,7 @@ public class MicroProfileConfigTestCase {
         try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
             HttpResponse response = client.execute(new HttpGet(url + appContext + TestApplication.ARRAY_SET_LIST_DEFAULT_APP_PATH));
             Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-            String text = getContent(response);
+            String text = EntityUtils.toString(response.getEntity());
 
             LinkedList<String> petsList = new LinkedList<>();
             petsList.add("cat");
@@ -262,7 +262,7 @@ public class MicroProfileConfigTestCase {
         try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
             HttpResponse response = client.execute(new HttpGet(url + appContext + TestApplication.ARRAY_SET_LIST_OVERRIDE_APP_PATH));
             Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-            String text = getContent(response);
+            String text = EntityUtils.toString(response.getEntity());
 
             LinkedList<String> petsList = new LinkedList<>();
             petsList.add("donkey");
@@ -289,7 +289,7 @@ public class MicroProfileConfigTestCase {
         try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
             HttpResponse response = client.execute(new HttpGet(url + appContext + TestApplication.PRIORITY_APP_PATH));
             Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-            String text = getContent(response);
+            String text = EntityUtils.toString(response.getEntity());
 
             // Values from META-INF
             assertTextContainsProperty(text, SubsystemConfigSourceTask.PROPERTIES_PROP_NAME0, "Value prop0 from META-INF/microprofile-config.properties");

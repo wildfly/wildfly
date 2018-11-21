@@ -2,7 +2,6 @@ package org.wildfly.test.integration.microprofile.metrics;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.wildfly.test.integration.microprofile.config.smallrye.HttpUtils.getContent;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -16,6 +15,7 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.junit.Assert;
 
@@ -43,7 +43,7 @@ public class MetricsHelper {
             try (CloseableHttpResponse resp = client.execute(getMetrics)) {
                 if (metricMustExist) {
                     assertEquals(200, resp.getStatusLine().getStatusCode());
-                    String content = getContent(resp);
+                    String content = EntityUtils.toString(resp.getEntity());
                     assertNotNull(content);
                     return content;
                 } else {
