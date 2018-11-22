@@ -70,6 +70,8 @@ import javax.net.ssl.SSLSession;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -465,6 +467,13 @@ final class AssociationImpl implements Association, AutoCloseable {
                 final List<ClientMapping> clientMappingList = entry.getValue();
                 final List<ClusterTopologyListener.MappingInfo> mappingInfoList = new ArrayList<>(clientMappingList.size());
                 for (ClientMapping clientMapping : clientMappingList) {
+                    try {
+                        if (InetAddress.getByName(clientMapping.getDestinationAddress()).isAnyLocalAddress()) {
+                            EjbLogger.REMOTE_LOGGER.clusteredEJBsBoundToINADDRANY(nodeName, clientMapping.getDestinationAddress());
+                        }
+                    } catch (UnknownHostException e) {
+                        // ignore
+                    }
                     mappingInfoList.add(new ClusterTopologyListener.MappingInfo(
                         clientMapping.getDestinationAddress(),
                         clientMapping.getDestinationPort(),
