@@ -260,11 +260,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         weldBootstrapServiceBuilder.setInstance(weldBootstrapService);
         weldBootstrapServiceBuilder.install();
 
-        final List<SetupAction> setupActions = new ArrayList<SetupAction>();
-        JavaNamespaceSetup naming = deploymentUnit.getAttachment(org.jboss.as.ee.naming.Attachments.JAVA_NAMESPACE_SETUP_ACTION);
-        if (naming != null) {
-            setupActions.add(naming);
-        }
+        final List<SetupAction> setupActions = getSetupActions(deploymentUnit);
 
         ServiceBuilder<?> startService = serviceTarget.addService(weldStartServiceName);
         for (final ServiceName dependency : dependencies) {
@@ -328,4 +324,12 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         }
     }
 
+    static List<SetupAction> getSetupActions(DeploymentUnit deploymentUnit) {
+        final List<SetupAction> setupActions = new ArrayList<SetupAction>();
+        JavaNamespaceSetup naming = deploymentUnit.getAttachment(org.jboss.as.ee.naming.Attachments.JAVA_NAMESPACE_SETUP_ACTION);
+        if (naming != null) {
+            setupActions.add(naming);
+        }
+        return setupActions;
+    }
 }

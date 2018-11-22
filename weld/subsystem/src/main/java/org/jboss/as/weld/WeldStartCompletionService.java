@@ -27,6 +27,8 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
+import org.jboss.as.server.deployment.SetupAction;
+import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -55,6 +57,7 @@ public class WeldStartCompletionService implements Service {
 
     private final Supplier<WeldBootstrapService> bootstrapSupplier;
     private final Supplier<ExecutorService> executorServiceSupplier;
+    private final List<SetupAction> setupActions;
     private final ClassLoader classLoader;
     private final List<ServiceController> serviceControllers;
 
@@ -62,9 +65,11 @@ public class WeldStartCompletionService implements Service {
 
     public WeldStartCompletionService(final Supplier<WeldBootstrapService> bootstrapSupplier,
                                       final Supplier<ExecutorService> executorServiceSupplier,
+                                      final List<SetupAction> setupActions,
                                       final ClassLoader classLoader, final List<ServiceController> serviceControllers) {
         this.bootstrapSupplier = bootstrapSupplier;
         this.executorServiceSupplier = executorServiceSupplier;
+        this.setupActions = setupActions;
         this.classLoader = classLoader;
         this.serviceControllers = serviceControllers;
     }
@@ -96,9 +101,19 @@ public class WeldStartCompletionService implements Service {
                 }
                 ClassLoader oldTccl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
                 try {
+                    for (SetupAction action : setupActions) {
+                        action.setup(null);
+                    }
                     WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
                     bootstrapSupplier.get().getBootstrap().endInitialization();
                 } finally {
+                    for (SetupAction action : setupActions) {
+                        try {
+                            action.teardown(null);
+                        } catch (Exception e) {
+                            WeldLogger.DEPLOYMENT_LOGGER.exceptionClearingThreadState(e);
+                        }
+                    }
                     WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTccl);
                     context.complete();
                 }
