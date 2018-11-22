@@ -120,11 +120,13 @@ public class MetricsRegistrationService implements Service<MetricsRegistrationSe
         }
 
         modelControllerClient = modelControllerClientFactory.get().createClient(managementExecutor.get());
-        // register metrics from WildFly subsystems in the VENDOR metric registry
-        registerMetrics(rootResource,
-                rootResourceRegistration,
-                MetricRegistries.get(MetricRegistry.Type.VENDOR),
-                Function.identity());
+        // WFLY-11399 - do not expose WildFly metrics as their representation is not correct
+        /*
+         * registerMetrics(rootResource,
+         *        rootResourceRegistration,
+         *        MetricRegistries.get(MetricRegistry.Type.VENDOR),
+         *        Function.identity());
+         */
     }
 
     @Override
