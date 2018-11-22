@@ -79,7 +79,7 @@ public class DefaultElytronEjbSecurityDomainTestCase {
                 .addAsResource(currentPackage, "users.properties", "users.properties")
                 .addAsResource(currentPackage, "roles.properties", "roles.properties")
                 .addAsManifestResource(currentPackage, "jboss-ejb3.xml", "jboss-ejb3.xml")
-                .addAsManifestResource(createPermissionsXmlAsset(new ElytronPermission("getSecurityDomain")), "permissions.xml");
+                .addAsManifestResource(createPermissionsXmlAsset(new ElytronPermission("getSecurityDomain"), new ElytronPermission("authenticate")), "permissions.xml");
     }
 
     @Test
