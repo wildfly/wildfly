@@ -3179,4 +3179,9 @@ public interface EjbLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 508, value = "Failed to persist timer's state %s due to %s")
     void exceptionPersistTimerState(Timer timer, Exception e);
+
+    @LogMessage(level = WARN)
+    @Message(id = 509, value = "Clustered EJBs in Node: %s are bound to INADDR_ANY(%s). Client cannot reach back the cluster when they are not in the same local network.")
+    void clusteredEJBsBoundToINADDRANY(String nodeName, String ip);
+
 }
