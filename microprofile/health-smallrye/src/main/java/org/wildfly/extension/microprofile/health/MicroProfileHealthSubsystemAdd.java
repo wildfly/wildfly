@@ -43,7 +43,9 @@ class MicroProfileHealthSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     public static final int PRIORITY = 0x4000;
 
-    MicroProfileHealthSubsystemAdd() {
+    static MicroProfileHealthSubsystemAdd INSTANCE = new MicroProfileHealthSubsystemAdd();
+
+    private MicroProfileHealthSubsystemAdd() {
         super(MicroProfileHealthSubsystemDefinition.ATTRIBUTES);
     }
 

@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.microprofile.metrics;
 
+import static org.wildfly.extension.microprofile.metrics.MicroProfileMetricsSubsystemDefinition.HTTP_CONTEXT_SERVICE;
+
 import java.util.Iterator;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -40,7 +42,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.server.mgmt.domain.ExtensibleHttpManagement;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 
@@ -49,8 +50,6 @@ import org.jboss.msc.service.StopContext;
  */
 public class MetricsContextService implements Service {
 
-    static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("extension", "metrics", "context");
-
     private static final String CONTEXT_NAME = "metrics";
 
     private final Supplier<ExtensibleHttpManagement> extensibleHttpManagement;
@@ -58,7 +57,7 @@ public class MetricsContextService implements Service {
     private final MetricsRequestHandler metricsRequestHandler;
 
     static void install(OperationContext context, boolean securityEnabled) {
-        ServiceBuilder<?> serviceBuilder = context.getServiceTarget().addService(SERVICE_NAME);
+        ServiceBuilder<?> serviceBuilder = context.getServiceTarget().addService(HTTP_CONTEXT_SERVICE);
 
         Supplier<ExtensibleHttpManagement> extensibleHttpManagement = serviceBuilder.requires(context.getCapabilityServiceName(MicroProfileMetricsSubsystemDefinition.HTTP_EXTENSIBILITY_CAPABILITY, ExtensibleHttpManagement.class));
 
