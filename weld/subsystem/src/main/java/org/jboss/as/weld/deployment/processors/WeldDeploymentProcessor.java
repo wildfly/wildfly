@@ -33,6 +33,8 @@ import java.util.Map.Entry;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import javax.enterprise.inject.spi.Extension;
 
@@ -94,6 +96,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  *
  * @author Stuart Douglas
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
 
@@ -225,21 +228,16 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
 
         final WeldDeployment deployment = new WeldDeployment(beanDeploymentArchives, extensions, module, subDeploymentLoaders, deploymentUnit, rootBeanDeploymentModule, eeModuleDescriptors);
 
-        final WeldBootstrapService weldBootstrapService = new WeldBootstrapService(deployment, WildFlyWeldEnvironment.INSTANCE, deploymentUnit.getName());
-
         installBootstrapConfigurationService(deployment, parent);
 
-        // Add root module services to WeldDeployment
-        for (Entry<Class<? extends Service>, Service> entry : rootModuleServices.entrySet()) {
-            weldBootstrapService.addWeldService(entry.getKey(), Reflections.cast(entry.getValue()));
-        }
-
         // add the weld service
-        final ServiceBuilder<WeldBootstrapService> weldBootstrapServiceBuilder = serviceTarget.addService(weldBootstrapServiceName, weldBootstrapService);
-
+        final ServiceBuilder<?> weldBootstrapServiceBuilder = serviceTarget.addService(weldBootstrapServiceName);
+        final Consumer<WeldBootstrapService> weldBootstrapServiceConsumer = weldBootstrapServiceBuilder.provides(weldBootstrapServiceName);
         weldBootstrapServiceBuilder.requires(TCCLSingletonService.SERVICE_NAME);
-        weldBootstrapServiceBuilder.addDependency(WeldExecutorServices.SERVICE_NAME, ExecutorServices.class, weldBootstrapService.getExecutorServices());
-        weldBootstrapServiceBuilder.addDependency(Services.JBOSS_SERVER_EXECUTOR, ExecutorService.class, weldBootstrapService.getServerExecutor());
+        final Supplier<ExecutorServices> executorServicesSupplier = weldBootstrapServiceBuilder.requires(WeldExecutorServices.SERVICE_NAME);
+        final Supplier<ExecutorService> serverExecutorSupplier = weldBootstrapServiceBuilder.requires(Services.JBOSS_SERVER_EXECUTOR);
+        Supplier<SecurityServices> securityServicesSupplier = null;
+        Supplier<TransactionServices> weldTransactionServicesSupplier = null;
 
         // Install additional services
         final ServiceLoader<BootstrapDependencyInstaller> installers = ServiceLoader.load(BootstrapDependencyInstaller.class,
@@ -248,12 +246,18 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
             ServiceName serviceName = installer.install(serviceTarget, deploymentUnit, jtsEnabled);
             // Add dependency for recognized services
             if (ServiceNames.WELD_SECURITY_SERVICES_SERVICE_NAME.getSimpleName().equals(serviceName.getSimpleName())) {
-                weldBootstrapServiceBuilder.addDependency(serviceName, SecurityServices.class, weldBootstrapService.getSecurityServices());
+                securityServicesSupplier = weldBootstrapServiceBuilder.requires(serviceName);
             } else if (ServiceNames.WELD_TRANSACTION_SERVICES_SERVICE_NAME.getSimpleName().equals(serviceName.getSimpleName())) {
-                weldBootstrapServiceBuilder.addDependency(serviceName, TransactionServices.class, weldBootstrapService.getWeldTransactionServices());
+                weldTransactionServicesSupplier = weldBootstrapServiceBuilder.requires(serviceName);
             }
         }
-
+        final WeldBootstrapService weldBootstrapService = new WeldBootstrapService(deployment, WildFlyWeldEnvironment.INSTANCE, deploymentUnit.getName(),
+                weldBootstrapServiceConsumer, executorServicesSupplier, serverExecutorSupplier, securityServicesSupplier, weldTransactionServicesSupplier);
+        // Add root module services to WeldDeployment
+        for (Entry<Class<? extends Service>, Service> entry : rootModuleServices.entrySet()) {
+            weldBootstrapService.addWeldService(entry.getKey(), Reflections.cast(entry.getValue()));
+        }
+        weldBootstrapServiceBuilder.setInstance(weldBootstrapService);
         weldBootstrapServiceBuilder.install();
 
         final List<SetupAction> setupActions = new ArrayList<SetupAction>();
@@ -262,10 +266,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
             setupActions.add(naming);
         }
 
-        final WeldStartService weldStartService = new WeldStartService(setupActions, module.getClassLoader(), Utils.getRootDeploymentUnit(deploymentUnit).getServiceName());
-
-        ServiceBuilder<WeldStartService> startService = serviceTarget.addService(weldStartServiceName, weldStartService)
-                .addDependency(weldBootstrapServiceName, WeldBootstrapService.class, weldStartService.getBootstrap());
+        ServiceBuilder<?> startService = serviceTarget.addService(weldStartServiceName);
         for (final ServiceName dependency : dependencies) {
             startService.requires(dependency);
         }
@@ -287,7 +288,8 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
                 startService.requires(JndiNamingDependencyProcessor.serviceName(sub));
             }
         }
-
+        final Supplier<WeldBootstrapService> bootstrapSupplier = startService.requires(weldBootstrapServiceName);
+        startService.setInstance(new WeldStartService(bootstrapSupplier, setupActions, module.getClassLoader(), Utils.getRootDeploymentUnit(deploymentUnit).getServiceName()));
         startService.install();
     }
 

@@ -21,6 +21,8 @@
  */
 package org.jboss.as.weld.services.bootstrap;
 
+import java.util.function.Consumer;
+
 import javax.transaction.RollbackException;
 import javax.transaction.Status;
 import javax.transaction.Synchronization;
@@ -28,10 +30,9 @@ import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
 
 import org.jboss.as.weld.ServiceNames;
-import org.jboss.msc.service.Service;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.weld.transaction.spi.TransactionServices;
 import org.wildfly.transaction.client.ContextTransactionManager;
@@ -44,16 +45,17 @@ import org.wildfly.transaction.client.LocalUserTransaction;
  *
  * @author Stuart Douglas
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
- *
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public class WeldTransactionServices implements TransactionServices, Service<WeldTransactionServices> {
+public class WeldTransactionServices implements TransactionServices, Service {
 
     public static final ServiceName SERVICE_NAME = ServiceNames.WELD_TRANSACTION_SERVICES_SERVICE_NAME;
-
+    private final Consumer<WeldTransactionServices> weldTransactionServicesConsumer;
     private final boolean jtsEnabled;
 
-    public WeldTransactionServices(final boolean jtsEnabled) {
+    public WeldTransactionServices(final boolean jtsEnabled, final Consumer<WeldTransactionServices> weldTransactionServicesConsumer) {
         this.jtsEnabled = jtsEnabled;
+        this.weldTransactionServicesConsumer = weldTransactionServicesConsumer;
     }
 
     @Override
@@ -101,18 +103,13 @@ public class WeldTransactionServices implements TransactionServices, Service<Wel
     }
 
     @Override
-    public void start(StartContext context) throws StartException {
-
+    public void start(final StartContext context) {
+        weldTransactionServicesConsumer.accept(this);
     }
 
     @Override
-    public void stop(StopContext context) {
-
-    }
-
-    @Override
-    public WeldTransactionServices getValue() throws IllegalStateException, IllegalArgumentException {
-        return this;
+    public void stop(final StopContext context) {
+        weldTransactionServicesConsumer.accept(null);
     }
 
 }

@@ -1,13 +1,19 @@
 package org.jboss.as.weld.ejb;
 
+import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 import org.jboss.as.weld.WeldBootstrapService;
 import org.jboss.as.weld.spi.ComponentInterceptorSupport;
-import org.jboss.msc.service.Service;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 import org.jboss.weld.annotated.enhanced.EnhancedAnnotatedType;
 import org.jboss.weld.annotated.slim.SlimAnnotatedType;
 import org.jboss.weld.bean.interceptor.InterceptorBindingsAdapter;
@@ -17,14 +23,18 @@ import org.jboss.weld.interceptor.spi.model.InterceptionModel;
 import org.jboss.weld.manager.BeanManagerImpl;
 import org.jboss.weld.resources.ClassTransformer;
 
+import javax.enterprise.inject.spi.InterceptionType;
+import javax.enterprise.inject.spi.Interceptor;
+
 /**
  * @author Stuart Douglas
  * @author Jozef Hartinger
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public class WeldInterceptorBindingsService implements Service<InterceptorBindings> {
+public class WeldInterceptorBindingsService implements Service {
 
-    private volatile InterceptorBindings interceptorBindings;
-    private final InjectedValue<WeldBootstrapService> weldContainer = new InjectedValue<WeldBootstrapService>();
+    private final Consumer<InterceptorBindings> interceptorBindingsConsumer;
+    private final Supplier<WeldBootstrapService> weldContainerSupplier;
     private final String beanArchiveId;
     private final String ejbName;
     private final Class<?> componentClass;
@@ -32,7 +42,12 @@ public class WeldInterceptorBindingsService implements Service<InterceptorBindin
 
     public static final ServiceName SERVICE_NAME = ServiceName.of("WeldInterceptorBindingsService");
 
-    public WeldInterceptorBindingsService(String beanArchiveId, String ejbName, Class<?> componentClass, ComponentInterceptorSupport componentInterceptorSupport) {
+    public WeldInterceptorBindingsService(final Consumer<InterceptorBindings> interceptorBindingsConsumer,
+                                          final Supplier<WeldBootstrapService> weldContainerSupplier,
+                                          final String beanArchiveId, final String ejbName, final Class<?> componentClass,
+                                          final ComponentInterceptorSupport componentInterceptorSupport) {
+        this.interceptorBindingsConsumer = interceptorBindingsConsumer;
+        this.weldContainerSupplier = weldContainerSupplier;
         this.beanArchiveId = beanArchiveId;
         this.ejbName = ejbName;
         this.componentClass = componentClass;
@@ -40,16 +55,22 @@ public class WeldInterceptorBindingsService implements Service<InterceptorBindin
     }
 
     @Override
-    public void start(StartContext startContext) throws StartException {
-        BeanManagerImpl beanManager = this.weldContainer.getValue().getBeanManager(beanArchiveId);
+    public void start(final StartContext startContext) throws StartException {
+        BeanManagerImpl beanManager = weldContainerSupplier.get().getBeanManager(beanArchiveId);
         //this is not always called with the deployments TCCL set
         //which causes weld to blow up
-        interceptorBindings = getInterceptorBindings(this.ejbName, beanManager);
+        interceptorBindingsConsumer.accept(getInterceptorBindings(this.ejbName, beanManager));
     }
 
-    protected InterceptorBindings getInterceptorBindings(String ejbName, final BeanManagerImpl manager) {
+    @Override
+    public void stop(final StopContext stopContext) {
+        interceptorBindingsConsumer.accept(null);
+    }
+
+    private InterceptorBindings getInterceptorBindings(final String ejbName, final BeanManagerImpl manager) {
+        InterceptorBindings retVal = null;
         if (ejbName != null) {
-            return interceptorSupport.getInterceptorBindings(ejbName, manager);
+            retVal = interceptorSupport.getInterceptorBindings(ejbName, manager);
         } else {
             // This is a managed bean
             SlimAnnotatedType<?> type = (SlimAnnotatedType<?>) manager.createAnnotatedType(componentClass);
@@ -59,24 +80,29 @@ public class WeldInterceptorBindingsService implements Service<InterceptorBindin
             }
             InterceptionModel model = manager.getInterceptorModelRegistry().get(type);
             if (model != null) {
-                return new InterceptorBindingsAdapter(manager.getInterceptorModelRegistry().get(type));
+                retVal = new InterceptorBindingsAdapter(manager.getInterceptorModelRegistry().get(type));
             }
         }
-        return null;
+        return retVal != null ? retVal : NullInterceptorBindings.INSTANCE;
     }
 
+    private static final class NullInterceptorBindings implements InterceptorBindings {
+        private static final InterceptorBindings INSTANCE = new NullInterceptorBindings();
 
-    @Override
-    public void stop(StopContext stopContext) {
-        this.interceptorBindings = null;
+        @Override
+        public Collection<Interceptor<?>> getAllInterceptors() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public List<Interceptor<?>> getMethodInterceptors(final InterceptionType interceptionType, final Method method) {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public List<Interceptor<?>> getLifecycleInterceptors(final InterceptionType interceptionType) {
+            return Collections.emptyList();
+        }
     }
 
-    @Override
-    public InterceptorBindings getValue() throws IllegalStateException, IllegalArgumentException {
-        return interceptorBindings;
-    }
-
-    public InjectedValue<WeldBootstrapService> getWeldContainer() {
-        return weldContainer;
-    }
 }

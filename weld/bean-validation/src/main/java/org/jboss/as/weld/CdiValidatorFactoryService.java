@@ -23,6 +23,7 @@ package org.jboss.as.weld;
 
 import java.util.Iterator;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.Default;
@@ -36,13 +37,10 @@ import org.jboss.as.ee.beanvalidation.LazyValidatorFactory;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.modules.Module;
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.Service;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -50,12 +48,13 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * ValidatorFactory.
  *
  * @author Farah Juma
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public class CdiValidatorFactoryService implements Service<CdiValidatorFactoryService> {
+public class CdiValidatorFactoryService implements Service {
 
     public static final ServiceName SERVICE_NAME = ServiceName.of("CdiValidatorFactoryService");
 
-    private final InjectedValue<BeanManager> beanManagerInjector = new InjectedValue<>();
+    private final Supplier<BeanManager> beanManagerSupplier;
 
     private final ClassLoader classLoader;
 
@@ -66,21 +65,21 @@ public class CdiValidatorFactoryService implements Service<CdiValidatorFactorySe
      *
      * @param deploymentUnit the deployment unit
      */
-    public CdiValidatorFactoryService(DeploymentUnit deploymentUnit) {
+    public CdiValidatorFactoryService(final DeploymentUnit deploymentUnit, final Supplier<BeanManager> beanManagerSupplier) {
         this.deploymentUnit = deploymentUnit;
         final Module module = this.deploymentUnit.getAttachment(Attachments.MODULE);
         this.classLoader = module.getClassLoader();
+        this.beanManagerSupplier = beanManagerSupplier;
     }
 
     @Override
-    public void start(final StartContext context) throws StartException {
+    public void start(final StartContext context) {
         final ClassLoader cl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         try {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
-            BeanManager beanManager = beanManagerInjector.getValue();
 
             // Get the CDI-enabled ValidatorFactory
-            ValidatorFactory validatorFactory = getReference(ValidatorFactory.class, beanManager);
+            ValidatorFactory validatorFactory = getReference(ValidatorFactory.class, beanManagerSupplier.get());
 
             // Replace the delegate of LazyValidatorFactory
             LazyValidatorFactory lazyValidatorFactory = (LazyValidatorFactory)(deploymentUnit.getAttachment(BeanValidationAttachments.VALIDATOR_FACTORY));
@@ -104,12 +103,6 @@ public class CdiValidatorFactoryService implements Service<CdiValidatorFactorySe
         }
     }
 
-    @Override
-    public CdiValidatorFactoryService getValue()
-            throws IllegalStateException, IllegalArgumentException {
-        return this;
-    }
-
     private <T> T getReference(Class<T> clazz, BeanManager beanManager) {
         Set<Bean<?>> beans = beanManager.getBeans(clazz, new AnnotationLiteral<Default>() {});
         Iterator<Bean<?>> i = beans.iterator();
@@ -120,10 +113,6 @@ public class CdiValidatorFactoryService implements Service<CdiValidatorFactorySe
         Bean<?> bean = i.next();
         CreationalContext<?> context = beanManager.createCreationalContext(bean);
         return (T) beanManager.getReference(bean, clazz, context);
-    }
-
-    public Injector<BeanManager> getBeanManagerInjector() {
-        return beanManagerInjector;
     }
 
 }

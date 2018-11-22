@@ -28,6 +28,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import javax.enterprise.inject.spi.BeanManager;
 
@@ -35,11 +37,10 @@ import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl;
 import org.jboss.as.weld.deployment.WeldDeployment;
 import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.as.weld.services.ModuleGroupSingletonProvider;
-import org.jboss.msc.service.Service;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 import org.jboss.weld.Container;
 import org.jboss.weld.ContainerState;
 import org.jboss.weld.bootstrap.WeldBootstrap;
@@ -56,8 +57,9 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * the point that the bean manager is available.
  *
  * @author Stuart Douglas
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public class WeldBootstrapService implements Service<WeldBootstrapService> {
+public class WeldBootstrapService implements Service {
 
     public static final ServiceName SERVICE_NAME = ServiceName.of("WeldBootstrapService");
 
@@ -68,18 +70,29 @@ public class WeldBootstrapService implements Service<WeldBootstrapService> {
     private final BeanDeploymentArchiveImpl rootBeanDeploymentArchive;
 
     private final String deploymentName;
-
-    private final InjectedValue<SecurityServices> securityServices = new InjectedValue<SecurityServices>();
-    private final InjectedValue<TransactionServices> weldTransactionServices = new InjectedValue<TransactionServices>();
-    private final InjectedValue<ExecutorServices> executorServices = new InjectedValue<ExecutorServices>();
-    private final InjectedValue<ExecutorService> serverExecutor = new InjectedValue<ExecutorService>();
+    private final Consumer<WeldBootstrapService> weldBootstrapServiceConsumer;
+    private final Supplier<ExecutorServices> executorServicesSupplier;
+    private final Supplier<ExecutorService> serverExecutorSupplier;
+    private final Supplier<SecurityServices> securityServicesSupplier;
+    private final Supplier<TransactionServices> weldTransactionServicesSupplier;
 
     private volatile boolean started;
 
-    public WeldBootstrapService(WeldDeployment deployment, Environment environment, final String deploymentName) {
+    public WeldBootstrapService(final WeldDeployment deployment, final Environment environment, final String deploymentName,
+                                final Consumer<WeldBootstrapService> weldBootstrapServiceConsumer,
+                                final Supplier<ExecutorServices> executorServicesSupplier,
+                                final Supplier<ExecutorService> serverExecutorSupplier,
+                                final Supplier<SecurityServices> securityServicesSupplier,
+                                final Supplier<TransactionServices> weldTransactionServicesSupplier
+    ) {
         this.deployment = deployment;
         this.environment = environment;
         this.deploymentName = deploymentName;
+        this.weldBootstrapServiceConsumer = weldBootstrapServiceConsumer;
+        this.executorServicesSupplier = executorServicesSupplier;
+        this.serverExecutorSupplier = serverExecutorSupplier;
+        this.securityServicesSupplier = securityServicesSupplier;
+        this.weldTransactionServicesSupplier = weldTransactionServicesSupplier;
         this.bootstrap = new WeldBootstrap();
         Map<String, BeanDeploymentArchive> bdas = new HashMap<String, BeanDeploymentArchive>();
         BeanDeploymentArchiveImpl rootBeanDeploymentArchive = null;
@@ -109,15 +122,15 @@ public class WeldBootstrapService implements Service<WeldBootstrapService> {
 
         WeldLogger.DEPLOYMENT_LOGGER.startingWeldService(deploymentName);
         // set up injected services
-        addWeldService(SecurityServices.class, securityServices.getValue());
+        addWeldService(SecurityServices.class, securityServicesSupplier.get());
 
-        TransactionServices transactionServices = weldTransactionServices.getOptionalValue();
+        TransactionServices transactionServices = weldTransactionServicesSupplier.get();
         if (transactionServices != null) {
             addWeldService(TransactionServices.class, transactionServices);
         }
 
         if (!deployment.getServices().contains(ExecutorServices.class)) {
-            addWeldService(ExecutorServices.class, executorServices.getValue());
+            addWeldService(ExecutorServices.class, executorServicesSupplier.get());
         }
 
         ModuleGroupSingletonProvider.addClassLoaders(deployment.getModule().getClassLoader(),
@@ -131,7 +144,7 @@ public class WeldBootstrapService implements Service<WeldBootstrapService> {
         } finally {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTccl);
         }
-
+        weldBootstrapServiceConsumer.accept(this);
     }
 
     /**
@@ -139,11 +152,12 @@ public class WeldBootstrapService implements Service<WeldBootstrapService> {
      * {@link WeldStartService#stop(org.jboss.msc.service.StopContext)}.
      */
     public synchronized void stop(final StopContext context) {
+        weldBootstrapServiceConsumer.accept(null);
         if (started) {
             // WeldStartService#stop() not completed - attempt to perform the container cleanup
             final Container container = Container.instance(deploymentName);
             if (container != null && !ContainerState.SHUTDOWN.equals(container.getState())) {
-                final ExecutorService executorService = serverExecutor.getValue();
+                final ExecutorService executorService = serverExecutorSupplier.get();
                 final Runnable task = new Runnable() {
                     @Override
                     public void run() {
@@ -238,24 +252,4 @@ public class WeldBootstrapService implements Service<WeldBootstrapService> {
         return bootstrap;
     }
 
-    @Override
-    public WeldBootstrapService getValue() throws IllegalStateException, IllegalArgumentException {
-        return this;
-    }
-
-    public InjectedValue<SecurityServices> getSecurityServices() {
-        return securityServices;
-    }
-
-    public InjectedValue<TransactionServices> getWeldTransactionServices() {
-        return weldTransactionServices;
-    }
-
-    public InjectedValue<ExecutorServices> getExecutorServices() {
-        return executorServices;
-    }
-
-    public InjectedValue<ExecutorService> getServerExecutor() {
-        return serverExecutor;
-    }
 }

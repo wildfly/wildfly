@@ -24,6 +24,7 @@ package org.jboss.as.weld.interceptors;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.Interceptor;
@@ -33,7 +34,6 @@ import org.jboss.as.weld.WeldBootstrapService;
 import org.jboss.as.weld.spi.ComponentInterceptorSupport;
 import org.jboss.as.weld.spi.InterceptorInstances;
 import org.jboss.invocation.InterceptorContext;
-import org.jboss.msc.value.InjectedValue;
 import org.jboss.weld.bean.SessionBean;
 import org.jboss.weld.ejb.spi.EjbDescriptor;
 import org.jboss.weld.ejb.spi.InterceptorBindings;
@@ -46,17 +46,23 @@ import org.jboss.weld.serialization.spi.helpers.SerializableContextualInstance;
  *
  * @author Marius Bogoevici
  * @author Stuart Douglas
+ * @author <a href="mailto:ropalka@redhat.com>Richard Opalka</a>
  */
 public class Jsr299BindingsCreateInterceptor implements org.jboss.invocation.Interceptor {
 
-    private final InjectedValue<WeldBootstrapService> weldContainer = new InjectedValue<WeldBootstrapService>();
-    private final InjectedValue<InterceptorBindings> interceptorBindings = new InjectedValue<InterceptorBindings>();
+    private final Supplier<WeldBootstrapService> weldContainerSupplier;
+    private final Supplier<InterceptorBindings> interceptorBindingsSupplier;
     private final String beanArchiveId;
     private final String ejbName;
     private final ComponentInterceptorSupport interceptorSupport;
     private volatile BeanManagerImpl beanManager;
 
-    public Jsr299BindingsCreateInterceptor(String beanArchiveId, String ejbName, ComponentInterceptorSupport interceptorSupport) {
+    public Jsr299BindingsCreateInterceptor(final Supplier<WeldBootstrapService> weldContainerSupplier,
+                                           final Supplier<InterceptorBindings> interceptorBindingsSupplier,
+                                           final String beanArchiveId, final String ejbName,
+                                           final ComponentInterceptorSupport interceptorSupport) {
+        this.weldContainerSupplier = weldContainerSupplier;
+        this.interceptorBindingsSupplier = interceptorBindingsSupplier;
         this.beanArchiveId = beanArchiveId;
         this.ejbName = ejbName;
         this.interceptorSupport = interceptorSupport;
@@ -75,7 +81,7 @@ public class Jsr299BindingsCreateInterceptor implements org.jboss.invocation.Int
         BeanManagerImpl beanManager = this.beanManager;
         if(beanManager == null) {
             //cache the BM lookup, as it is quite slow
-           beanManager = this.beanManager = this.weldContainer.getValue().getBeanManager(beanArchiveId);
+           beanManager = this.beanManager = weldContainerSupplier.get().getBeanManager(beanArchiveId);
         }
         //this is not always called with the deployments TCCL set
         //which causes weld to blow up
@@ -86,7 +92,7 @@ public class Jsr299BindingsCreateInterceptor implements org.jboss.invocation.Int
                 bean = beanManager.getBean(descriptor);
             }
         }
-        InterceptorBindings interceptorBindings = this.interceptorBindings.getValue();
+        InterceptorBindings interceptorBindings = interceptorBindingsSupplier.get();
 
         final ComponentInstance componentInstance = interceptorContext.getPrivateData(ComponentInstance.class);
         InterceptorInstances existing = interceptorSupport.getInterceptorInstances(componentInstance);
@@ -105,11 +111,4 @@ public class Jsr299BindingsCreateInterceptor implements org.jboss.invocation.Int
         return interceptorContext.proceed();
     }
 
-    public InjectedValue<WeldBootstrapService> getWeldContainer() {
-        return weldContainer;
-    }
-
-    public InjectedValue<InterceptorBindings> getInterceptorBindings() {
-        return interceptorBindings;
-    }
 }

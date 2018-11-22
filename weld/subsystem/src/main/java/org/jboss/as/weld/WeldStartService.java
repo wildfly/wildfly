@@ -23,20 +23,20 @@ package org.jboss.as.weld;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.as.weld.services.ModuleGroupSingletonProvider;
 import org.jboss.msc.service.LifecycleEvent;
 import org.jboss.msc.service.LifecycleListener;
-import org.jboss.msc.service.Service;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 import org.jboss.weld.Container;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
@@ -45,21 +45,22 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * {@link WeldBootstrapService}
  *
  * @author Stuart Douglas
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  * @see WeldStartCompletionService
  */
-public class WeldStartService implements Service<WeldStartService> {
+public class WeldStartService implements Service {
 
     public static final ServiceName SERVICE_NAME = ServiceNames.WELD_START_SERVICE_NAME;
 
-    private final InjectedValue<WeldBootstrapService> bootstrap = new InjectedValue<WeldBootstrapService>();
-
+    private final Supplier<WeldBootstrapService> bootstrapSupplier;
     private final List<SetupAction> setupActions;
     private final ClassLoader classLoader;
     private final ServiceName deploymentServiceName;
 
     private final AtomicBoolean runOnce = new AtomicBoolean();
 
-    public WeldStartService(final List<SetupAction> setupActions, final ClassLoader classLoader, final ServiceName deploymentServiceName) {
+    public WeldStartService(final Supplier<WeldBootstrapService> bootstrapSupplier, final List<SetupAction> setupActions, final ClassLoader classLoader, final ServiceName deploymentServiceName) {
+        this.bootstrapSupplier = bootstrapSupplier;
         this.setupActions = setupActions;
         this.classLoader = classLoader;
         this.deploymentServiceName = deploymentServiceName;
@@ -92,9 +93,9 @@ public class WeldStartService implements Service<WeldStartService> {
                 action.setup(null);
             }
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
-            bootstrap.getValue().getBootstrap().startInitialization();
-            bootstrap.getValue().getBootstrap().deployBeans();
-            bootstrap.getValue().getBootstrap().validateBeans();
+            bootstrapSupplier.get().getBootstrap().startInitialization();
+            bootstrapSupplier.get().getBootstrap().deployBeans();
+            bootstrapSupplier.get().getBootstrap().validateBeans();
         } finally {
 
             for (SetupAction action : setupActions) {
@@ -116,7 +117,7 @@ public class WeldStartService implements Service<WeldStartService> {
      */
     @Override
     public void stop(final StopContext context) {
-        final WeldBootstrapService bootstrapService = bootstrap.getValue();
+        final WeldBootstrapService bootstrapService = bootstrapSupplier.get();
         if (!bootstrapService.isStarted()) {
             throw WeldLogger.ROOT_LOGGER.notStarted("WeldContainer");
         }
@@ -133,12 +134,4 @@ public class WeldStartService implements Service<WeldStartService> {
         bootstrapService.setStarted(false);
     }
 
-    @Override
-    public WeldStartService getValue() throws IllegalStateException, IllegalArgumentException {
-        return this;
-    }
-
-    public InjectedValue<WeldBootstrapService> getBootstrap() {
-        return bootstrap;
-    }
 }

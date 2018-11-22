@@ -21,6 +21,8 @@
  */
 package org.jboss.as.weld.services;
 
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import javax.enterprise.inject.spi.BeanManager;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -31,48 +33,49 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 import org.jboss.weld.bean.builtin.BeanManagerProxy;
-import org.jboss.weld.manager.BeanManagerImpl;
 
 /**
  * Service that provides access to the BeanManger for a (sub)deployment
  *
  * @author Stuart Douglas
- *
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public class BeanManagerService implements Service<BeanManager> {
+public final class BeanManagerService implements Service<BeanManager> {
 
     public static final ServiceName NAME = ServiceNames.BEAN_MANAGER_SERVICE_NAME;
-
-    private final InjectedValue<WeldBootstrapService> weldContainer = new InjectedValue<WeldBootstrapService>();
+    private final Consumer<BeanManager> beanManagerConsumer;
+    private final Supplier<WeldBootstrapService> weldContainerSupplier;
     private final String beanDeploymentArchiveId;
-    private volatile BeanManagerImpl beanManager;
+    private volatile BeanManagerProxy beanManager;
 
-    public BeanManagerService(String beanDeploymentArchiveId) {
+    public BeanManagerService(final String beanDeploymentArchiveId,
+                              final Consumer<BeanManager> beanManagerConsumer,
+                              final Supplier<WeldBootstrapService> weldContainerSupplier) {
         this.beanDeploymentArchiveId = beanDeploymentArchiveId;
+        this.beanManagerConsumer = beanManagerConsumer;
+        this.weldContainerSupplier = weldContainerSupplier;
     }
 
     @Override
-    public void start(StartContext context) throws StartException {
-        beanManager = weldContainer.getValue().getBeanManager(beanDeploymentArchiveId);
+    public void start(final StartContext context) throws StartException {
+        beanManager = new BeanManagerProxy(weldContainerSupplier.get().getBeanManager(beanDeploymentArchiveId));
+        beanManagerConsumer.accept(beanManager);
     }
 
     @Override
-    public void stop(StopContext context) {
+    public void stop(final StopContext context) {
+        beanManagerConsumer.accept(null);
         beanManager = null;
     }
 
     @Override
-    public BeanManager getValue() throws IllegalStateException, IllegalArgumentException {
-        return new BeanManagerProxy(beanManager);
-    }
-
-    public InjectedValue<WeldBootstrapService> getWeldContainer() {
-        return weldContainer;
+    public BeanManager getValue() {
+        return beanManager;
     }
 
     public static ServiceName serviceName(final DeploymentUnit deploymentUnit) {
         return deploymentUnit.getServiceName().append(BeanManagerService.NAME);
     }
+
 }

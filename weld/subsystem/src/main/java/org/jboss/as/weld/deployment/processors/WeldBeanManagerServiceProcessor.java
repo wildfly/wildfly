@@ -22,6 +22,8 @@
 package org.jboss.as.weld.deployment.processors;
 
 import java.util.Collection;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import javax.enterprise.inject.spi.BeanManager;
 
@@ -49,6 +51,7 @@ import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl;
 import org.jboss.as.weld.deployment.WeldAttachments;
 import org.jboss.as.weld.services.BeanManagerService;
 import org.jboss.as.weld.util.Utils;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
@@ -59,6 +62,7 @@ import org.jboss.msc.value.InjectedValue;
  * {@link DeploymentUnitProcessor} that binds the bean manager to JNDI
  *
  * @author Stuart Douglas
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class WeldBeanManagerServiceProcessor implements DeploymentUnitProcessor {
 
@@ -91,10 +95,11 @@ public class WeldBeanManagerServiceProcessor implements DeploymentUnitProcessor 
 
         // add the BeanManager service
         final ServiceName beanManagerServiceName = BeanManagerService.serviceName(deploymentUnit);
-        BeanManagerService beanManagerService = new BeanManagerService(rootBda.getId());
-        serviceTarget.addService(beanManagerServiceName, beanManagerService).addDependency(weldServiceName,
-                WeldBootstrapService.class, beanManagerService.getWeldContainer()).install();
-
+        final ServiceBuilder<?> builder = serviceTarget.addService(beanManagerServiceName);
+        final Consumer<BeanManager> beanManagerConsumer = builder.provides(beanManagerServiceName);
+        final Supplier<WeldBootstrapService> weldContainerSupplier = builder.requires(weldServiceName);
+        builder.setInstance(new BeanManagerService(rootBda.getId(), beanManagerConsumer, weldContainerSupplier));
+        builder.install();
 
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
 

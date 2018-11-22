@@ -26,9 +26,10 @@ import java.security.PrivilegedAction;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.function.Consumer;
 
 import org.jboss.as.server.Services;
-import org.jboss.msc.service.Service;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -42,27 +43,29 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * Weld's ExecutorServices implementation. The executor is shared across all CDI-enabled deployments and used primarily for parallel Weld bootstrap.
  *
  * @author Jozef Hartinger
- *
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public class WeldExecutorServices extends AbstractExecutorServices implements Service<ExecutorServices> {
+public class WeldExecutorServices extends AbstractExecutorServices implements Service {
 
     public static final int DEFAULT_BOUND = Runtime.getRuntime().availableProcessors() + 1;
     public static final ServiceName SERVICE_NAME = Services.JBOSS_AS.append("weld", "executor");
     private static final String THREAD_NAME_PATTERN = "Weld Thread Pool -- %t";
 
     private final int bound;
+    private final Consumer<ExecutorServices> executorServicesConsumer;
     private ExecutorService executor;
 
     public WeldExecutorServices() {
-        this(DEFAULT_BOUND);
+        this(null, DEFAULT_BOUND);
     }
 
-    public WeldExecutorServices(int bound) {
+    public WeldExecutorServices(final Consumer<ExecutorServices> executorServicesConsumer, int bound) {
+        this.executorServicesConsumer = executorServicesConsumer;
         this.bound = bound;
     }
 
     @Override
-    public void start(StartContext context) throws StartException {
+    public void start(final StartContext context) throws StartException {
         final ThreadGroup threadGroup = new ThreadGroup("Weld ThreadGroup");
         final ThreadFactory factory = new JBossThreadFactory(threadGroup, Boolean.FALSE, null, THREAD_NAME_PATTERN, null, null);
         // set TCCL to null for new threads to make sure no deployment classloader leaks through this executor's TCCL
@@ -82,10 +85,12 @@ public class WeldExecutorServices extends AbstractExecutorServices implements Se
             return thread;
         }
         );
+        if (executorServicesConsumer != null) executorServicesConsumer.accept(this);
     }
 
     @Override
-    public void stop(StopContext context) {
+    public void stop(final StopContext context) {
+        if (executorServicesConsumer != null) executorServicesConsumer.accept(null);
         if (executor != null) {
             context.asynchronous();
             new Thread(() -> {
@@ -99,10 +104,6 @@ public class WeldExecutorServices extends AbstractExecutorServices implements Se
     @Override
     protected synchronized int getThreadPoolSize() {
         return bound;
-    }
-
-    public synchronized ExecutorServices getValue() throws IllegalStateException, IllegalArgumentException {
-        return this;
     }
 
     @Override
