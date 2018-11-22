@@ -60,6 +60,7 @@ import org.wildfly.extension.picketlink.idm.service.FileIdentityStoreService;
 import org.wildfly.extension.picketlink.idm.service.JPAIdentityStoreService;
 import org.wildfly.extension.picketlink.idm.service.PartitionManagerService;
 
+import javax.transaction.TransactionSynchronizationRegistry;
 import java.util.List;
 
 import static org.jboss.as.controller.PathAddress.EMPTY_ADDRESS;
@@ -338,9 +339,13 @@ public class PartitionManagerAddHandler extends AbstractAddStepHandler {
 
             /* org.wildfly.transactions.global-default-local-provider capability ensures a local provider of
                transactions is present. Once its service is started, calls to the getInstance() methods of
-               ContextTransactionManager, ContextTransactionSynchronizationRegistry and LocalUserTransaction
+               ContextTransactionManager and LocalUserTransaction
                can be made knowing that the global default TM, TSR and UT will be from that provider. */
             storeServiceBuilder.requires(context.getCapabilityServiceName("org.wildfly.transactions.global-default-local-provider", null));
+
+            storeServiceBuilder
+                .addDependency(context.getCapabilityServiceName("org.wildfly.transactions.transaction-synchronization-registry", null), TransactionSynchronizationRegistry.class, storeService
+                    .getTransactionSynchronizationRegistry());
 
             if (jpaDataSourceNode.isDefined()) {
                 storeConfig.dataSourceJndiUrl(toJndiName(jpaDataSourceNode.asString()));

@@ -24,6 +24,8 @@ package org.jboss.as.ejb3.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
+import javax.transaction.TransactionSynchronizationRegistry;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -67,6 +69,7 @@ public class FileDataStoreAdd extends AbstractAddStepHandler {
         sb.addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, fileTimerPersistence.getModuleLoader());
         sb.addDependency(PathManagerService.SERVICE_NAME, PathManager.class, fileTimerPersistence.getPathManager());
         sb.requires(context.getCapabilityServiceName("org.wildfly.transactions.global-default-local-provider", null));
+        sb.addDependency(context.getCapabilityServiceName("org.wildfly.transactions.transaction-synchronization-registry", null), TransactionSynchronizationRegistry.class, fileTimerPersistence.getTransactionSynchronizationRegistry());
         sb.install();
     }
 

@@ -95,6 +95,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
 
         CapabilityServiceSupport capabilitySupport = phaseContext.getDeploymentUnit().getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
         phaseContext.addDeploymentDependency(capabilitySupport.getCapabilityServiceName(JPAServiceNames.LOCAL_TRANSACTION_PROVIDER_CAPABILITY), JpaAttachments.LOCAL_TRANSACTION_PROVIDER);
+        phaseContext.addDeploymentDependency(capabilitySupport.getCapabilityServiceName(JPAServiceNames.TRANSACTION_SYNCHRONIZATION_REGISTRY_CAPABILITY), JpaAttachments.TRANSACTION_SYNCHRONIZATION_REGISTRY);
     }
 
     @Override

@@ -46,6 +46,7 @@ import org.jboss.as.jpa.container.TransactionScopedEntityManager;
 import org.jboss.as.jpa.messages.JpaLogger;
 import org.jboss.as.jpa.service.JPAService;
 import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
+import org.jboss.as.jpa.util.JPAServiceNames;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ValueManagedReference;
@@ -58,7 +59,6 @@ import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.value.ImmediateValue;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 import org.wildfly.transaction.client.ContextTransactionManager;
-import org.wildfly.transaction.client.ContextTransactionSynchronizationRegistry;
 
 /**
  * Represents the PersistenceContext injected into a component.
@@ -153,7 +153,9 @@ public class PersistenceContextInjectionSource extends InjectionSource {
             EntityManagerFactory emf = service.getEntityManagerFactory();
             EntityManager entityManager;
             boolean standardEntityManager = ENTITY_MANAGER_CLASS.equals(injectionTypeName);
-            TransactionSynchronizationRegistry tsr = ContextTransactionSynchronizationRegistry.getInstance();
+            //TODO: change all this to use injections
+            //this is currntly safe, as there is a DUP dependency on the TSR
+            TransactionSynchronizationRegistry tsr = (TransactionSynchronizationRegistry) serviceRegistry.getRequiredService(JPAServiceNames.TRANSACTION_SYNCHRONIZATION_REGISTRY_SERVICE).getValue();
             TransactionManager transactionManager = ContextTransactionManager.getInstance();
             if (type.equals(PersistenceContextType.TRANSACTION)) {
                 entityManager = new TransactionScopedEntityManager(unitName, properties, emf, synchronizationType, tsr, transactionManager);

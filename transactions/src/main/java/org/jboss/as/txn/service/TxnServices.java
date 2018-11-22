@@ -61,8 +61,7 @@ public final class TxnServices {
 
     public static final ServiceName JBOSS_TXN_USER_TRANSACTION_REGISTRY = JBOSS_TXN.append("UserTransactionRegistry");
 
-    /** @deprecated Use the "org.wildfly.transactions.global-default-local-provider" capability to confirm existence of a local provider
-     *              and org.wildfly.transaction.client.ContextTransactionSynchronizationRegistry to obtain a TransactionSynchronizationRegistry reference. */
+    /** @deprecated Use the "org.wildfly.transactions.transaction-synchronization-registry" capability */
     @Deprecated
     public static final ServiceName JBOSS_TXN_SYNCHRONIZATION_REGISTRY = JBOSS_TXN.append("TransactionSynchronizationRegistry");
 
