@@ -25,10 +25,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.Executor;
-import java.util.function.Supplier;
 
 import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
@@ -44,12 +41,10 @@ public class LocalCommandDispatcher<C> implements CommandDispatcher<C> {
 
     private final C context;
     private final Node node;
-    private final Executor executor;
 
-    public LocalCommandDispatcher(Node node, C context, Executor executor) {
+    public LocalCommandDispatcher(Node node, C context) {
         this.node = node;
         this.context = context;
-        this.executor = executor;
     }
 
     @Override
@@ -62,7 +57,14 @@ public class LocalCommandDispatcher<C> implements CommandDispatcher<C> {
         if (!this.node.equals(this.node)) {
             throw new IllegalArgumentException(member.getName());
         }
-        return CompletableFuture.supplyAsync(new CommandTask<>(command, this.context), this.executor);
+        try {
+            R result = command.execute(this.context);
+            return CompletableFuture.completedFuture(result);
+        } catch (Exception e) {
+            CompletableFuture<R> future = new CompletableFuture<>();
+            future.completeExceptionally(e);
+            return future;
+        }
     }
 
     @Override
@@ -74,24 +76,5 @@ public class LocalCommandDispatcher<C> implements CommandDispatcher<C> {
     @Override
     public void close() {
         // Do nothing
-    }
-
-    private static class CommandTask<R, C> implements Supplier<R> {
-        private final C context;
-        private final Command<R, C> command;
-
-        CommandTask(Command<R, C> command, C context) {
-            this.command = command;
-            this.context = context;
-        }
-
-        @Override
-        public R get() {
-            try {
-                return this.command.execute(this.context);
-            } catch (Exception e) {
-                throw new CompletionException(e);
-            }
-        }
     }
 }

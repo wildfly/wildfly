@@ -21,34 +21,20 @@
  */
 package org.wildfly.clustering.server.dispatcher;
 
-import java.security.PrivilegedAction;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-
-import org.jboss.threads.JBossThreadFactory;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.group.Group;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Non-clustered {@link CommandDispatcherFactory} implementation
  * @author Paul Ferraro
  */
-public class LocalCommandDispatcherFactory implements AutoCloseableCommandDispatcherFactory, PrivilegedAction<Void> {
-
-    private static ThreadFactory createThreadFactory() {
-        PrivilegedAction<ThreadFactory> action = () -> new JBossThreadFactory(new ThreadGroup(LocalCommandDispatcher.class.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null);
-        return WildFlySecurityManager.doUnchecked(action);
-    }
+public class LocalCommandDispatcherFactory implements CommandDispatcherFactory {
 
     private final Group group;
-    private final ExecutorService executor;
 
     public LocalCommandDispatcherFactory(Group group) {
         this.group = group;
-        this.executor = Executors.newCachedThreadPool(createThreadFactory());
     }
 
     @Override
@@ -58,17 +44,6 @@ public class LocalCommandDispatcherFactory implements AutoCloseableCommandDispat
 
     @Override
     public <C> CommandDispatcher<C> createCommandDispatcher(Object id, C context) {
-        return new LocalCommandDispatcher<>(this.group.getLocalMember(), context, this.executor);
-    }
-
-    @Override
-    public void close() {
-        WildFlySecurityManager.doUnchecked(this);
-    }
-
-    @Override
-    public Void run() {
-        this.executor.shutdownNow();
-        return null;
+        return new LocalCommandDispatcher<>(this.group.getLocalMember(), context);
     }
 }

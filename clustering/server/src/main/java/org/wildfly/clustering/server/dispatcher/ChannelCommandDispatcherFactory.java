@@ -187,7 +187,7 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
             throw ClusteringServerLogger.ROOT_LOGGER.commandDispatcherAlreadyExists(id);
         }
         CommandMarshaller<C> marshaller = new CommandDispatcherMarshaller<>(this.marshallingContext, id);
-        CommandDispatcher<C> localDispatcher = new LocalCommandDispatcher<>(this.getLocalMember(), context, this.executorService);
+        CommandDispatcher<C> localDispatcher = new LocalCommandDispatcher<>(this.getLocalMember(), context);
         return new ChannelCommandDispatcher<>(this.dispatcher, marshaller, this, this.timeout, localDispatcher, () -> {
             localDispatcher.close();
             this.contexts.remove(id);
