@@ -55,6 +55,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -118,8 +119,7 @@ public class MicroProfileMetricsApplicationTestCase {
     @InSequence(2)
     @OperateOnDeployment("MicroProfileMetricsApplicationTestCase")
     public void testApplicationMetricWithPrometheusAfterDeployment(@ArquillianResource URL url) throws Exception {
-        // metrics from deployment subsystems are exposed
-        getPrometheusMetrics(managementClient, "application", true);
+        getPrometheusMetrics(managementClient, "application", false);
 
         String text = performCall(url);
         assertNotNull(text);
@@ -167,6 +167,7 @@ public class MicroProfileMetricsApplicationTestCase {
 
     @Test
     @InSequence(4)
+    @Ignore("WFLY-11399 - do not expose WildFly metrics")
     @OperateOnDeployment("MicroProfileMetricsApplicationTestCase")
     public void testDeploymentWildFlyMetrics(@ArquillianResource URL url) throws Exception {
         // test the request-count metric on the deployment's undertow resources

@@ -56,12 +56,15 @@ public class DeploymentMetricService implements Service {
 
     @Override
     public void start(StartContext startContext) {
-        MetricRegistry applicationRegistry = MetricRegistries.get(APPLICATION);
-        registeredMetrics = registrationService.get().registerMetrics(rootResource,
-                managementResourceRegistration,
-                applicationRegistry,
-                // prepend the deployment address to the subsystem resource address
-                address -> deploymentAddress.append(address));
+        // WFLY-11399 - do not expose WildFly metrics as their representation is not correct
+        /*
+         * MetricRegistry applicationRegistry = MetricRegistries.get(APPLICATION);
+         * registeredMetrics = registrationService.get().registerMetrics(rootResource,
+         *        managementResourceRegistration,
+         *        applicationRegistry,
+         *        // prepend the deployment address to the subsystem resource address
+         *        address -> deploymentAddress.append(address));
+         */
     }
 
     @Override
