@@ -93,7 +93,7 @@ public class CalendarTimerTask extends TimerTask<CalendarTimer> {
     }
 
     @Override
-    protected void postTimeoutProcessing(TimerImpl timer) {
+    protected void postTimeoutProcessing(TimerImpl timer) throws InterruptedException {
         timer.lock();
         try {
             final CalendarTimer calendarTimer = (CalendarTimer) timer;

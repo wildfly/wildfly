@@ -237,7 +237,7 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
      *
      * @param timer timer to post processing and persist
      */
-    protected void postTimeoutProcessing(TimerImpl timer) {
+    protected void postTimeoutProcessing(TimerImpl timer) throws InterruptedException {
         timer.lock();
         try {
             TimerState timerState = timer.getState();

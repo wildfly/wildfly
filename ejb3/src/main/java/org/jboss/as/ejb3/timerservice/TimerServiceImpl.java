@@ -626,7 +626,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         }
     }
 
-    public void cancelTimer(final TimerImpl timer) {
+    public void cancelTimer(final TimerImpl timer) throws InterruptedException {
         timer.lock();
         boolean release = true;
         try {
