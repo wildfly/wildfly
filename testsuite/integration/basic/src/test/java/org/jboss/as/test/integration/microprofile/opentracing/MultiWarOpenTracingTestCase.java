@@ -21,14 +21,13 @@
  */
 package org.jboss.as.test.integration.microprofile.opentracing;
 
-import static org.wildfly.test.integration.microprofile.config.smallrye.HttpUtils.getContent;
-
 import java.net.URL;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -98,10 +97,10 @@ public class MultiWarOpenTracingTestCase {
         try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
             HttpResponse svcOneResponse = client.execute(new HttpGet(serviceOneUrl.toString() + "service-endpoint/app"));
             Assert.assertEquals(200, svcOneResponse.getStatusLine().getStatusCode());
-            String serviceOneTracer = getContent(svcOneResponse);
+            String serviceOneTracer = EntityUtils.toString(svcOneResponse.getEntity());
             HttpResponse svcTwoResponse = client.execute(new HttpGet(serviceTwoUrl.toString() + "service-endpoint/app"));
             Assert.assertEquals(200, svcTwoResponse.getStatusLine().getStatusCode());
-            String serviceTwoTracer = getContent(svcTwoResponse);
+            String serviceTwoTracer = EntityUtils.toString(svcTwoResponse.getEntity());
             Assert.assertNotEquals("Service one and service two tracer instance hash is same - " + serviceTwoTracer,
                     serviceOneTracer, serviceTwoTracer);
         }

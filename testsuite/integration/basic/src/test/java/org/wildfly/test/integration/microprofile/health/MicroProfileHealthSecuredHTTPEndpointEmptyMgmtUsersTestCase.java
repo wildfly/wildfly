@@ -26,6 +26,7 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -71,7 +72,7 @@ public class MicroProfileHealthSecuredHTTPEndpointEmptyMgmtUsersTestCase {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             CloseableHttpResponse resp = client.execute(new HttpGet(healthURL));
             assertEquals(500, resp.getStatusLine().getStatusCode());
-            String content = MicroProfileHealthHTTPEndpointTestCase.getContent(resp);
+            String content = EntityUtils.toString(resp.getEntity());
             resp.close();
             assertTrue("'WFLYDMHTTP0016: Your Application Server is running. However ...' message is expected", content.contains("WFLYDMHTTP0016"));
         }
