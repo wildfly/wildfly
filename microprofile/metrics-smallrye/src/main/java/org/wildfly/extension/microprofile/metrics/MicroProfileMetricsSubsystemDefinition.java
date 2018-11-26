@@ -52,9 +52,10 @@ public class MicroProfileMetricsSubsystemDefinition extends PersistentResourceDe
     public static final ServiceName WILDFLY_REGISTRATION_SERVICE = METRICS_REGISTRATION_RUNTIME_CAPABILITY.getCapabilityServiceName();
 
     static final String HTTP_EXTENSIBILITY_CAPABILITY = "org.wildfly.management.http.extensible";
-    static final RuntimeCapability<Void> EXTENSION_CAPABILITY = RuntimeCapability.Builder.of(MicroProfileMetricsExtension.EXTENSION_NAME)
+    static final RuntimeCapability<Void> HTTP_CONTEXT_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.extension.microprofile.metrics.http-context", MetricsContextService.class)
             .addRequirements(HTTP_EXTENSIBILITY_CAPABILITY)
             .build();
+    static final ServiceName HTTP_CONTEXT_SERVICE = HTTP_CONTEXT_CAPABILITY.getCapabilityServiceName();
 
     static final AttributeDefinition SECURITY_ENABLED = SimpleAttributeDefinitionBuilder.create("security-enabled", ModelType.BOOLEAN)
             .setDefaultValue(new ModelNode(true))
@@ -75,7 +76,7 @@ public class MicroProfileMetricsSubsystemDefinition extends PersistentResourceDe
                 MicroProfileMetricsExtension.getResourceDescriptionResolver(MicroProfileMetricsExtension.SUBSYSTEM_NAME))
                 .setAddHandler(MicroProfileMetricsSubsystemAdd.INSTANCE)
                 .setRemoveHandler(new ServiceRemoveStepHandler(MicroProfileMetricsSubsystemAdd.INSTANCE))
-                .setCapabilities(METRICS_REGISTRATION_RUNTIME_CAPABILITY, EXTENSION_CAPABILITY));
+                .setCapabilities(METRICS_REGISTRATION_RUNTIME_CAPABILITY, HTTP_CONTEXT_CAPABILITY));
     }
 
     @Override

@@ -28,6 +28,7 @@ import java.util.Collection;
 import io.smallrye.health.SmallRyeHealthReporter;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
+import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -48,9 +49,10 @@ public class MicroProfileHealthSubsystemDefinition extends PersistentResourceDef
     public static final ServiceName HEALTH_REPORTER_SERVICE = ServiceName.parse(HEALTH_REPORTER_CAPABILITY);
 
     static final String HTTP_EXTENSIBILITY_CAPABILITY = "org.wildfly.management.http.extensible";
-    static final RuntimeCapability<Void> EXTENSION_CAPABILITY = RuntimeCapability.Builder.of(MicroProfileHealthExtension.EXTENSION_NAME)
+    static final RuntimeCapability<Void> HTTP_CONTEXT_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.extension.microprofile.health.http-context", HealthContextService.class)
             .addRequirements(HTTP_EXTENSIBILITY_CAPABILITY)
             .build();
+    static final ServiceName HTTP_CONTEXT_SERVICE = HTTP_CONTEXT_CAPABILITY.getCapabilityServiceName();
 
     static final AttributeDefinition SECURITY_ENABLED = SimpleAttributeDefinitionBuilder.create("security-enabled", ModelType.BOOLEAN)
             .setDefaultValue(new ModelNode(true))
@@ -63,9 +65,9 @@ public class MicroProfileHealthSubsystemDefinition extends PersistentResourceDef
     protected MicroProfileHealthSubsystemDefinition() {
         super(new Parameters(MicroProfileHealthExtension.SUBSYSTEM_PATH,
                 MicroProfileHealthExtension.getResourceDescriptionResolver(MicroProfileHealthExtension.SUBSYSTEM_NAME))
-                .setAddHandler(new MicroProfileHealthSubsystemAdd())
-                .setRemoveHandler(new MicroProfileHealthSubsystemRemove())
-                .setCapabilities(HEALTH_REPORTER_RUNTIME_CAPABILITY, EXTENSION_CAPABILITY));
+                .setAddHandler(MicroProfileHealthSubsystemAdd.INSTANCE)
+                .setRemoveHandler(new ServiceRemoveStepHandler(MicroProfileHealthSubsystemAdd.INSTANCE))
+                .setCapabilities(HEALTH_REPORTER_RUNTIME_CAPABILITY, HTTP_CONTEXT_CAPABILITY));
     }
 
     @Override

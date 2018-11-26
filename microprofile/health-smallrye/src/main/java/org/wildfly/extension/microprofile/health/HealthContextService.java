@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.microprofile.health;
 
+import static org.wildfly.extension.microprofile.health.MicroProfileHealthSubsystemDefinition.HTTP_CONTEXT_SERVICE;
+
 import java.util.function.Supplier;
 
 import io.smallrye.health.SmallRyeHealth;
@@ -33,7 +35,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.server.mgmt.domain.ExtensibleHttpManagement;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 
@@ -42,7 +43,6 @@ import org.jboss.msc.service.StopContext;
  */
 public class HealthContextService implements Service {
 
-    static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("extension", "health", "context");
     private static final String CONTEXT_NAME = "health";
 
     private final Supplier<ExtensibleHttpManagement> extensibleHttpManagement;
@@ -51,7 +51,7 @@ public class HealthContextService implements Service {
 
 
     static void install(OperationContext context, boolean securityEnabled) {
-        ServiceBuilder<?> serviceBuilder = context.getServiceTarget().addService(SERVICE_NAME);
+        ServiceBuilder<?> serviceBuilder = context.getServiceTarget().addService(HTTP_CONTEXT_SERVICE);
 
         Supplier<ExtensibleHttpManagement> extensibleHttpManagement = serviceBuilder.requires(context.getCapabilityServiceName(MicroProfileHealthSubsystemDefinition.HTTP_EXTENSIBILITY_CAPABILITY, ExtensibleHttpManagement.class));
         Supplier<SmallRyeHealthReporter> healthReporter = serviceBuilder.requires(context.getCapabilityServiceName(MicroProfileHealthSubsystemDefinition.HEALTH_REPORTER_CAPABILITY, SmallRyeHealthReporter.class));
