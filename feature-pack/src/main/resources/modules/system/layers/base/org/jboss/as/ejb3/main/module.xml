@@ -113,9 +113,6 @@
         <!-- Needed for EJB over HTTP support-->
         <module name="io.undertow.core" />
 
-        <!-- TODO WFLY-5966 validate the need for these and remove if not needed.
-             Prior to WFLY-5922 they were exported by javax.ejb.api. -->
-        <module name="javax.transaction.api"/>
         <module name="javax.rmi.api"/>
 
         <module name="org.wildfly.common"/>
