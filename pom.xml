@@ -56,6 +56,7 @@
         <module>bean-validation</module>
         <module>build</module>
         <module>build-legacy</module>
+        <module>client/properties</module>
         <module>client/shade</module>
         <module>clustering</module>
         <module>component-matrix-builder</module>
@@ -557,6 +558,12 @@
                         <artifactId>jconsole</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>wildfly-client-properties</artifactId>
+                <version>${project.version}</version>
             </dependency>
 
             <dependency>

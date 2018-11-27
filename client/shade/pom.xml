@@ -50,6 +50,12 @@
     </description>
 
     <dependencies>
+
+         <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-client-properties</artifactId>
+        </dependency>
+
         <!-- all deps of wildfly-ejb-client-bom and wildfly-jms-client-bom-->
 
         <dependency>
