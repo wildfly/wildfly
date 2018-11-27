@@ -56,6 +56,7 @@ import org.junit.Test;
 import org.wildfly.security.auth.jaspi.Flag;
 import org.wildfly.test.security.common.AbstractElytronSetupTask;
 import org.wildfly.test.security.common.elytron.ConfigurableElement;
+import org.wildfly.test.undertow.common.UndertowApplicationSecurityDomain;
 
 /**
  * A base for the configured JASPI testing allowing us to repeat the same set of tests across a different set of server

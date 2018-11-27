@@ -46,6 +46,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.security.common.AbstractElytronSetupTask;
 import org.wildfly.test.security.common.elytron.ConfigurableElement;
+import org.wildfly.test.undertow.common.UndertowApplicationSecurityDomain;
 
 /**
  * Test case testing a deployment secured using JASPI dynamically registered by the deployment.
