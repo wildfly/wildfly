@@ -41,11 +41,8 @@ import org.wildfly.clustering.infinispan.spi.CacheContainer;
  */
 public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManager implements CacheContainer, EmbeddedCacheManagerAdmin {
 
-    private final BatcherFactory batcherFactory;
-
-    public DefaultCacheContainer(EmbeddedCacheManager container, BatcherFactory batcherFactory) {
+    public DefaultCacheContainer(EmbeddedCacheManager container) {
         super(container);
-        this.batcherFactory = batcherFactory;
     }
 
     @Override
@@ -104,7 +101,7 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
     }
 
     private <K, V> Cache<K, V> wrap(Cache<K, V> cache) {
-        return new DefaultCache<>(this, this.batcherFactory, cache.getAdvancedCache());
+        return new DefaultCache<>(this, cache.getAdvancedCache());
     }
 
     @Override

@@ -90,7 +90,7 @@ public class TransactionServiceConfigurator extends ComponentServiceConfigurator
                 .lockingMode(this.locking)
                 .cacheStopTimeout(this.timeout)
                 .transactionMode((this.mode == TransactionMode.NONE) ? org.infinispan.transaction.TransactionMode.NON_TRANSACTIONAL : org.infinispan.transaction.TransactionMode.TRANSACTIONAL)
-                .useSynchronization(EnumSet.of(TransactionMode.BATCH, TransactionMode.NON_XA).contains(this.mode))
+                .useSynchronization(this.mode == TransactionMode.NON_XA)
                 .recovery().enabled(this.mode == TransactionMode.FULL_XA).transaction()
                 ;
 

@@ -55,9 +55,8 @@ import org.wildfly.clustering.infinispan.spi.CacheContainer;
  * @author Paul Ferraro
  */
 public class DefaultCacheContainerTestCase {
-    private final BatcherFactory batcherFactory = mock(BatcherFactory.class);
     private final EmbeddedCacheManager manager = mock(EmbeddedCacheManager.class);
-    private final CacheContainer subject = new DefaultCacheContainer(this.manager, this.batcherFactory);
+    private final CacheContainer subject = new DefaultCacheContainer(this.manager);
 
     @After
     public void cleanup() {
