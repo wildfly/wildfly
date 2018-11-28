@@ -129,8 +129,6 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         final ServiceName startServiceName = configuration.getComponentDescription().getStartServiceName();
         final BasicComponentCreateService createService = configuration.getComponentCreateServiceFactory().constructService(configuration);
         final ServiceBuilder<Component> createBuilder = serviceTarget.addService(createServiceName, createService);
-        // inject the DU
-        createBuilder.addDependency(deploymentUnit.getServiceName(), DeploymentUnit.class, createService.getDeploymentUnitInjector());
 
         final ComponentStartService startService = new ComponentStartService();
         final ServiceBuilder<Component> startBuilder = serviceTarget.addService(startServiceName, startService);

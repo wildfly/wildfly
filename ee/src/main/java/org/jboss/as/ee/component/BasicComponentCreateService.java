@@ -29,7 +29,6 @@ import java.util.Map;
 
 import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.naming.context.NamespaceContextSelector;
-import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.Interceptors;
 import org.jboss.msc.service.Service;
@@ -37,15 +36,14 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 
 /**
  * A service for creating a component.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class BasicComponentCreateService implements Service<Component> {
-    private final InjectedValue<DeploymentUnit> deploymentUnit = new InjectedValue<DeploymentUnit>();
 
     private final ServiceName serviceName;
     private final String componentName;
@@ -54,9 +52,7 @@ public class BasicComponentCreateService implements Service<Component> {
     private final InterceptorFactory preDestroy;
     private final Map<Method, InterceptorFactory> componentInterceptors;
     private final NamespaceContextSelector namespaceContextSelector;
-
     private BasicComponent component;
-
 
     /**
      * Construct a new instance.
@@ -115,15 +111,6 @@ public class BasicComponentCreateService implements Service<Component> {
             throw EeLogger.ROOT_LOGGER.serviceNotStarted();
         }
         return component;
-    }
-
-    /**
-     * Get the deployment unit injector.
-     *
-     * @return the deployment unit injector
-     */
-    public InjectedValue<DeploymentUnit> getDeploymentUnitInjector() {
-        return deploymentUnit;
     }
 
     /**
