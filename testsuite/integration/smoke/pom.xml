@@ -58,6 +58,11 @@
         </dependency>
         <!-- Required for artemis-commons, just needs to be on the class path -->
         <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
             <scope>test</scope>
