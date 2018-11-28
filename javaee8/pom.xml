@@ -52,7 +52,7 @@
         <version.org.jboss.spec.jboss.javaee8>1.0.1.Final</version.org.jboss.spec.jboss.javaee8>
 
         <!-- Version of server -->
-        <version.server>15.0.0.Beta1</version.server>
+        <version.server>15.0.0.CR1-SNAPSHOT</version.server>
 
         <!-- Versions on server's core -->
         <version.junit>4.12</version.junit>
