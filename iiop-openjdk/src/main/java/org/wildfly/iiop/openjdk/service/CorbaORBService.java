@@ -28,6 +28,7 @@ import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 
+import org.jboss.as.network.ManagedBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.inject.Injector;
@@ -110,6 +111,8 @@ public class CorbaORBService implements Service<ORB> {
                 properties.setProperty(ORBConstants.SERVER_HOST_PROPERTY, address.getAddress().getHostAddress());
                 properties.setProperty(ORBConstants.SERVER_PORT_PROPERTY, String.valueOf(address.getPort()));
                 properties.setProperty(ORBConstants.PERSISTENT_SERVER_PORT_PROPERTY, String.valueOf(address.getPort()));
+
+                socketBinding.getSocketBindings().getNamedRegistry().registerBinding(ManagedBinding.Factory.createSimpleManagedBinding(socketBinding));
             }
             if (sslSocketBinding != null) {
                 InetSocketAddress address = this.iiopSSLSocketBindingInjector.getValue().getSocketAddress();
@@ -121,6 +124,8 @@ public class CorbaORBService implements Service<ORB> {
                 if (!properties.containsKey(Constants.ORB_ADDRESS)) {
                     properties.setProperty(Constants.ORB_ADDRESS, address.getAddress().getHostAddress());
                 }
+
+                sslSocketBinding.getSocketBindings().getNamedRegistry().registerBinding(ManagedBinding.Factory.createSimpleManagedBinding(sslSocketBinding));
             }
 
             // initialize the ORB - the thread context classloader needs to be adjusted as the ORB classes are loaded via reflection.
@@ -155,6 +160,15 @@ public class CorbaORBService implements Service<ORB> {
     public void stop(StopContext context) {
         if (IIOPLogger.ROOT_LOGGER.isDebugEnabled()) {
             IIOPLogger.ROOT_LOGGER.debugf("Stopping service %s", context.getController().getName().getCanonicalName());
+        }
+
+        final SocketBinding socketBinding = iiopSocketBindingInjector.getOptionalValue();
+        final SocketBinding sslSocketBinding = iiopSSLSocketBindingInjector.getOptionalValue();
+        if (socketBinding != null) {
+            socketBinding.getSocketBindings().getNamedRegistry().unregisterBinding(socketBinding.getName());
+        }
+        if (sslSocketBinding != null) {
+            sslSocketBinding.getSocketBindings().getNamedRegistry().unregisterBinding(sslSocketBinding.getName());
         }
         // stop the ORB asynchronously.
         final ORBDestroyer destroyer = new ORBDestroyer(this.orb, context);
