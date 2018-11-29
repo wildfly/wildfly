@@ -28,6 +28,7 @@ import javax.persistence.spi.PersistenceUnitInfo;
 
 import org.hibernate.cfg.AvailableSettings;
 import org.jboss.as.jpa.hibernate5.management.HibernateManagementAdaptor;
+import org.jboss.as.jpa.hibernate5.service.WildFlyCustomJtaPlatform;
 import org.jipijapa.cache.spi.Classification;
 import org.jipijapa.event.impl.internal.Notification;
 import org.jipijapa.plugin.spi.EntityManagerFactoryBuilder;
@@ -54,6 +55,7 @@ public class HibernatePersistenceProviderAdaptor implements PersistenceProviderA
 
     @Override
     public void injectJtaManager(JtaManager jtaManager) {
+        WildFlyCustomJtaPlatform.setTransactionSynchronizationRegistry(jtaManager.getSynchronizationRegistry());
     }
 
     @Override

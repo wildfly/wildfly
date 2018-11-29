@@ -48,5 +48,6 @@
         <module name="org.hibernate.commons-annotations"/>
         <module name="org.infinispan" services="import"/>
         <module name="org.infinispan.hibernate-cache" services="import"/>
+        <module name="org.wildfly.common"/>
     </dependencies>
 </module>
