@@ -26,17 +26,4 @@
         <artifact name="${org.jboss.ejb3:jboss-ejb3-ext-api}"/>
     </resources>
 
-    <dependencies>
-        <module name="javax.ejb.api"/>
-        <module name="javax.persistence.api"/>
-        <module name="javax.interceptor.api"/>
-        <!-- EJBUtilities class needs it -->
-        <module name="org.jboss.common-beans"/>
-        <!-- org.jboss.util.deadlock.ApplicationDeadlockException -->
-        <module name="org.jboss.jboss-transaction-spi"/>
-        <module name="org.jboss.logging"/>
-        <module name="org.jboss.marshalling"/>
-        <module name="org.jboss.marshalling.river"/>
-        <module name="org.jboss.metadata.ejb"/>
-    </dependencies>
 </module>
