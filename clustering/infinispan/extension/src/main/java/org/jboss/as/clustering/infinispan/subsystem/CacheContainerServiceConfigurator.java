@@ -46,9 +46,7 @@ import org.infinispan.notifications.cachemanagerlistener.event.CacheStoppedEvent
 import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
 import org.jboss.as.clustering.dmr.ModelNodes;
-import org.jboss.as.clustering.infinispan.BatcherFactory;
 import org.jboss.as.clustering.infinispan.DefaultCacheContainer;
-import org.jboss.as.clustering.infinispan.InfinispanBatcherFactory;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.clustering.infinispan.LocalGlobalConfigurationManager;
 import org.jboss.as.controller.OperationContext;
@@ -75,7 +73,6 @@ public class CacheContainerServiceConfigurator extends CapabilityServiceNameProv
     private final List<ServiceName> aliases = new LinkedList<>();
     private final String name;
     private final SupplierDependency<GlobalConfiguration> configuration;
-    private final BatcherFactory batcherFactory = new InfinispanBatcherFactory();
 
     public CacheContainerServiceConfigurator(PathAddress address) {
         super(CONTAINER, address);
@@ -85,7 +82,7 @@ public class CacheContainerServiceConfigurator extends CapabilityServiceNameProv
 
     @Override
     public CacheContainer apply(EmbeddedCacheManager manager) {
-        return new DefaultCacheContainer(manager, this.batcherFactory);
+        return new DefaultCacheContainer(manager);
     }
 
     @Override

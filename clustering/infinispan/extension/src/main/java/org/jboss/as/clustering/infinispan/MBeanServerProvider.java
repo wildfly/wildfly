@@ -26,7 +26,7 @@ import java.util.Properties;
 
 import javax.management.MBeanServer;
 
-import org.infinispan.jmx.MBeanServerLookup;
+import org.infinispan.commons.jmx.MBeanServerLookup;
 
 /**
  * @author Paul Ferraro
