@@ -94,8 +94,6 @@ public class SimpleServerAuthModule implements ServerAuthModule {
         final String roles = request.getHeader(ROLES_HEADER);
         final String session = request.getHeader(SESSION_HEADER);
 
-        System.out.println(String.format("authType=%s, username=%s, password=%s, roles=%s, session=%s", authType, username, password, roles, session));
-
         if (username == null || username.length() == 0 || ((password == null || password.length() == 0) && !ANONYMOUS.equals(username))) {
             sendChallenge(response);
             return AuthStatus.SEND_CONTINUE;

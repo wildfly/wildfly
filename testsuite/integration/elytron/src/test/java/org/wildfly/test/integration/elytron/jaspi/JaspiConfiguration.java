@@ -88,8 +88,6 @@ class JaspiConfiguration extends AbstractConfigurableElement {
            modules.add(module);
        }
 
-       System.out.println(add);
-
        Utils.applyUpdate(add, client);
    }
 
