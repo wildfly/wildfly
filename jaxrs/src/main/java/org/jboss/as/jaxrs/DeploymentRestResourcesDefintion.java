@@ -214,8 +214,16 @@ public class DeploymentRestResourcesDefintion extends SimpleResourceDefinition {
                                         for (ResourceInvoker resourceInvoker : resouceInvokers) {
                                             if (ResourceMethodInvoker.class.isAssignableFrom(resourceInvoker.getClass())) {
                                                 ResourceMethodInvoker methodInvoker = (ResourceMethodInvoker) resourceInvoker;
-                                                if (methodInvoker.getResourceClass().getCanonicalName().equals(clsName)) {
-                                                    JaxrsResourceMethodDescription resMethodDesc = resMethodDescription(methodInvoker, contextPath, mapping, servletMappings);
+                                                Class<?> resClass = methodInvoker.getResourceClass();
+                                                Class<?> resClsInModel;
+                                                try {
+                                                    resClsInModel = Class.forName(clsName, false, resClass.getClassLoader());
+                                                } catch (ClassNotFoundException e) {
+                                                    throw new OperationFailedException(e);
+                                                }
+                                                if (resClass.equals(resClsInModel)
+                                                        || (resClass.isInterface() && resClass.isAssignableFrom(resClsInModel) && !clsInResourceInvokers(registry.getBounded(), resClsInModel))) {
+                                                    JaxrsResourceMethodDescription resMethodDesc = resMethodDescription(methodInvoker, contextPath, mapping, servletMappings, clsName);
                                                     resMethodInvokers.add(resMethodDesc);
                                                 }
                                             } else if (ResourceLocatorInvoker.class.isAssignableFrom(resourceInvoker.getClass())) {
@@ -233,6 +241,7 @@ public class DeploymentRestResourcesDefintion extends SimpleResourceDefinition {
                                     handleAttribute(clsName, resMethodInvokers, resLocatorInvokers, servletMappings, response);
                                     context.getResult().set(response);
                                 }
+
                             }, OperationContext.Stage.RUNTIME);
                         }
 
@@ -245,6 +254,21 @@ public class DeploymentRestResourcesDefintion extends SimpleResourceDefinition {
                 JaxrsLogger.JAXRS_LOGGER.failedToReadAttribute(ex, address, operation.get(NAME));
                 context.addResponseWarning(Level.WARN, ex.getMessage());
             }
+        }
+
+        private boolean clsInResourceInvokers(Map<String, List<ResourceInvoker>> resources, Class<?> cls) {
+            for (Map.Entry<String, List<ResourceInvoker>> resource : resources.entrySet()) {
+                List<ResourceInvoker> resouceInvokers = resource.getValue();
+                for (ResourceInvoker resourceInvoker: resouceInvokers) {
+                    if (ResourceMethodInvoker.class.isAssignableFrom(resourceInvoker.getClass())) {
+                        ResourceMethodInvoker methodInvoker = (ResourceMethodInvoker) resourceInvoker;
+                        if (methodInvoker.getResourceClass().equals(cls)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
         }
 
         abstract void handleAttribute(String className, List<JaxrsResourceMethodDescription> methodInvokers,
@@ -263,7 +287,7 @@ public class DeploymentRestResourcesDefintion extends SimpleResourceDefinition {
             jaxrsRes.httpMethods = resMethod.getHttpMethods();
             jaxrsRes.method = resMethod.getMethod();
             jaxrsRes.produceTypes = resMethod.getProduces();
-            jaxrsRes.resourceClass = resClass.getClazz();
+            jaxrsRes.resourceClass = resClass.getClazz().getCanonicalName();
             String resPath = new StringBuilder(mapping).append("/").append(resMethod.getFullpath()).toString().replace("//", "/");
             jaxrsRes.resourcePath = resPath;
             jaxrsRes.servletMappings = servletMappings;
@@ -291,14 +315,14 @@ public class DeploymentRestResourcesDefintion extends SimpleResourceDefinition {
     }
 
     private JaxrsResourceMethodDescription resMethodDescription(ResourceMethodInvoker methodInvoker, String contextPath,
-            String mapping, Collection<String> servletMappings) {
+            String mapping, Collection<String> servletMappings, String clsName) {
         JaxrsResourceMethodDescription jaxrsRes = new JaxrsResourceMethodDescription();
         jaxrsRes.consumeTypes = methodInvoker.getConsumes();
         jaxrsRes.contextPath = contextPath;
         jaxrsRes.httpMethods = methodInvoker.getHttpMethods();
         jaxrsRes.method = methodInvoker.getMethod();
         jaxrsRes.produceTypes = methodInvoker.getProduces();
-        jaxrsRes.resourceClass = methodInvoker.getResourceClass();
+        jaxrsRes.resourceClass = clsName;
         jaxrsRes.resourcePath = mapping;
         jaxrsRes.servletMappings = servletMappings;
         addMethodParameters(jaxrsRes, methodInvoker.getMethod());
@@ -391,7 +415,7 @@ public class DeploymentRestResourcesDefintion extends SimpleResourceDefinition {
 
     private static class JaxrsResourceMethodDescription implements Comparable<JaxrsResourceMethodDescription> {
 
-        private Class<?> resourceClass;
+        private String resourceClass;
         private String resourcePath;
         private Method method;
         private List<ParamInfo> parameters = new ArrayList<>();
@@ -406,7 +430,7 @@ public class DeploymentRestResourcesDefintion extends SimpleResourceDefinition {
         public int compareTo(JaxrsResourceMethodDescription other) {
             int result = this.resourcePath.compareTo(other.resourcePath);
             if (result == 0) {
-                result = this.resourceClass.getCanonicalName().compareTo(other.resourceClass.getCanonicalName());
+                result = this.resourceClass.compareTo(other.resourceClass);
             }
             if (result == 0) {
                 result = this.method.getName().compareTo(other.method.getName());
@@ -450,7 +474,7 @@ public class DeploymentRestResourcesDefintion extends SimpleResourceDefinition {
 
         private String formatJavaMethod() {
             StringBuilder sb = new StringBuilder();
-            sb.append(method.getReturnType().getCanonicalName()).append(" ").append(resourceClass.getCanonicalName())
+            sb.append(method.getReturnType().getCanonicalName()).append(" ").append(resourceClass)
                     .append(".").append(method.getName()).append('(');
             int i = 0;
             for (ParamInfo param : this.parameters) {
