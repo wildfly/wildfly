@@ -128,7 +128,7 @@ public class StartupSingletonFailureTestCase extends AbstractCliTestBase {
 
             try(CloseableHttpClient client = HttpClientBuilder.create().build()) {
                 final HttpGet get = new HttpGet(url.toExternalForm() + "/test/index.html");
-                Assert.assertEquals(404, client.execute(get).getStatusLine().getStatusCode());
+                Assert.assertEquals(500, client.execute(get).getStatusLine().getStatusCode());
             }
         } finally {
             cli.sendLine("undeploy " + earFile.getName());

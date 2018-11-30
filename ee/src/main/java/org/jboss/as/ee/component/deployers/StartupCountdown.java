@@ -2,7 +2,6 @@ package org.jboss.as.ee.component.deployers;
 
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Countdown tracker with capabilities similar to SE CountDownLatch, but allowing threads
@@ -15,22 +14,46 @@ public final class StartupCountdown {
   private static final ThreadLocal<Frame> frames = new ThreadLocal<>();
 
   private volatile int count;
-  private final Queue<Runnable> callbacks = new LinkedList<Runnable>();
+  private volatile boolean startupFailed = false;
+  private Queue<StartupCallback> callbacks = new LinkedList<>();
 
   public StartupCountdown(int count) {
     this.count = count;
   }
 
-  public void countDown() {
+  public void startupFailure() {
+    synchronized (this) {
+      startupFailed = true;
+      try {
+        while (!callbacks.isEmpty()) {
+          callbacks.poll().onFailure();
+        }
+      } finally {
+        notifyAll();
+      }
+    }
+  }
+
+  public void startupSuccessful() {
     synchronized (this) {
       if (-- count == 0) {
         try {
-          while (!callbacks.isEmpty()) callbacks.poll().run();
+          while (!callbacks.isEmpty()) {
+            callbacks.poll().onSuccess();
+          }
         } finally {
           notifyAll();
         }
       }
     }
+  }
+
+  /*
+   * use {@code startupSuccessful}/{@code startupFailure} instead
+   */
+  @Deprecated
+  public void countDown() {
+    startupSuccessful();
   }
 
   public void countUp(final int count) {
@@ -48,35 +71,36 @@ public final class StartupCountdown {
     }
   }
 
-  public boolean tryAwait(long timeout, TimeUnit timeUnit) throws InterruptedException {
-    if (isPrivileged()) return true;
-    if (count != 0) {
-      synchronized (this) {
-        long timeoutNano = timeUnit.toNanos(timeout);
-        long start = System.nanoTime();
-        long elapsed;
-        while (count != 0 && (elapsed = (System.nanoTime() - start)) < timeoutNano) {
-          // round up to nearest millisecond
-          long remaining = (timeoutNano - elapsed + 999_999L) / 1_000_000L;
-          wait(remaining);
-        }
-        return count == 0;
-      }
-    } else {
-      return true;
-    }
-  }
-
   /**
    * Executes a lightweight action when the countdown reaches 0.
    * If StartupCountdown is not at zero when the method is called, passed callback will be executed by the last thread to call countDown.
    * If StartupCountdown is at zero already, passed callback will be executed immediately by the caller thread.
    * @param callback to execute. Should not be null.
    */
+  @Deprecated
   public void addCallback(final Runnable callback) {
+    addCallback(new StartupCallback() {
+      @Override
+      public void onSuccess() {
+        callback.run();
+      }
+
+      @Override
+      public void onFailure() {
+        // do nothing by default
+      }
+    });
+  }
+
+  public void addCallback(final StartupCallback callback) {
     synchronized (this) {
-      if (count != 0) callbacks.add(callback);
-      else callback.run();
+      if (count == 0) {
+        callback.onSuccess();
+      } else if (startupFailed) {
+        callback.onFailure();
+      } else {
+        callbacks.add(callback);
+      }
     }
   }
 
@@ -111,5 +135,11 @@ public final class StartupCountdown {
     boolean contains(StartupCountdown countdown) {
       return countdown == this.countdown || prev != null && prev.contains(countdown);
     }
+  }
+
+  public interface StartupCallback {
+    void onSuccess();
+
+    void onFailure();
   }
 }
