@@ -28,30 +28,45 @@ import org.jboss.as.test.integration.microprofile.opentracing.application.Tracer
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.runner.RunWith;
 
-
 /**
- * Test verifying the assumption that different services inside single EAR have different tracers.
+ * Same test case as {@link EarOpenTracingTestCase} only adding Weld Probe to the mix. For monitoring purposes, Probe forces
+ * creation of Weld subclasses on all beans, including those coming from MP OpenTracing extension
  *
- * @author <a href="mailto:mjurc@redhat.com">Michal Jurc</a> (c) 2018 Red Hat, Inc.
+ * @see WFLY-11432
+ *
+ * @author <a href="mailto:manovotn@redhat.com">Matej Novotny</a>
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class EarOpenTracingTestCase extends AbstractEarOpenTracingTestCase {
+public class EarOpenTracingWithWeldProbeTestCase extends AbstractEarOpenTracingTestCase {
+
+    private static String DEVEL_MODE_STRING = "<web-app version=\"2.5\"\n"
+        + "xmlns=\"http://java.sun.com/xml/ns/javaee\"\n"
+        + "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+        + "xsi:schemaLocation=\"http://java.sun.com/xml/ns/javaee\n"
+        + "http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd\">\n<context-param>\n"
+        + "<param-name>org.jboss.weld.development</param-name>\n"
+        + "<param-value>true</param-value>\n</context-param>\n"
+        + "</web-app>";
 
     @Deployment
     public static Archive<?> deploy() {
         WebArchive serviceOne = ShrinkWrap.create(WebArchive.class, "ServiceOne.war")
             .addClass(TracerIdentityApplication.class)
-            .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+            .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
+            .addAsWebInfResource(new StringAsset(DEVEL_MODE_STRING), "web.xml");
         WebArchive serviceTwo = ShrinkWrap.create(WebArchive.class, "ServiceTwo.war")
             .addClass(TracerIdentityApplication.class)
-            .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+            .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
+            .addAsWebInfResource(new StringAsset(DEVEL_MODE_STRING), "web.xml");
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "EarOpenTracingTestCase.ear")
             .addAsModules(serviceOne, serviceTwo);
         return ear;
     }
+
 }
