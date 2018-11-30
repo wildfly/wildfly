@@ -28,6 +28,7 @@ import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
@@ -77,7 +78,7 @@ public class MicroProfileHealthExtension implements Extension {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
         subsystem.registerXMLElementWriter(CURRENT_PARSER);
 
-        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new MicroProfileHealthSubsystemDefinition());
+        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new MicroProfileHealthSubsystemDefinition(context.isRuntimeOnlyRegistrationValid()  && context.getRunningMode() == RunningMode.NORMAL));
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
     }
 
