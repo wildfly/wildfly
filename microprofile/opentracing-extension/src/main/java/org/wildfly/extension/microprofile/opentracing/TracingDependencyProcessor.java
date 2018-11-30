@@ -22,8 +22,6 @@
 
 package org.wildfly.extension.microprofile.opentracing;
 
-import org.jboss.as.ee.structure.DeploymentType;
-import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -54,10 +52,6 @@ public class TracingDependencyProcessor implements DeploymentUnitProcessor {
     }
 
     private void addDependencies(DeploymentUnit deploymentUnit) {
-        if (DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
-            return;
-        }
-
         ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         ModuleLoader moduleLoader = Module.getBootModuleLoader();
         for (String module : MODULES) {
