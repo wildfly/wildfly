@@ -39,12 +39,10 @@
         <module name="org.jboss.as.weld.common" />
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.as.ee"/>
-        <module name="org.jboss.as.security"/>
         <module name="org.wildfly.security.elytron-private"/>
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
         <module name="org.wildfly.extension.bean-validation"/>
-        <module name="org.hibernate.validator.cdi" />
         <module name="javax.enterprise.api"/>
         <module name="javax.validation.api"/>
     </dependencies>
