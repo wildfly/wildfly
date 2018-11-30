@@ -44,6 +44,7 @@ public class CheckOperation extends AbstractRuntimeOnlyHandler {
             .setRuntimeOnly()
             .setReplyType(ModelType.OBJECT)
             .setReplyValueType(ModelType.OBJECT)
+            .setRuntimeOnly()
             .build();
 
     static void register(ManagementResourceRegistration resourceRegistration) {

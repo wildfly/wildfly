@@ -61,13 +61,15 @@ public class MicroProfileHealthSubsystemDefinition extends PersistentResourceDef
             .setAllowExpression(true)
             .build();
     static final AttributeDefinition[] ATTRIBUTES = { SECURITY_ENABLED };
+    private boolean registerRuntimeOperations;
 
-    protected MicroProfileHealthSubsystemDefinition() {
+    protected MicroProfileHealthSubsystemDefinition(boolean registerRuntimeOperations) {
         super(new Parameters(MicroProfileHealthExtension.SUBSYSTEM_PATH,
                 MicroProfileHealthExtension.getResourceDescriptionResolver(MicroProfileHealthExtension.SUBSYSTEM_NAME))
                 .setAddHandler(MicroProfileHealthSubsystemAdd.INSTANCE)
                 .setRemoveHandler(new ServiceRemoveStepHandler(MicroProfileHealthSubsystemAdd.INSTANCE))
                 .setCapabilities(HEALTH_REPORTER_RUNTIME_CAPABILITY, HTTP_CONTEXT_CAPABILITY));
+        this.registerRuntimeOperations = registerRuntimeOperations;
     }
 
     @Override
@@ -79,7 +81,9 @@ public class MicroProfileHealthSubsystemDefinition extends PersistentResourceDef
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         super.registerOperations(resourceRegistration);
 
-        CheckOperation.register(resourceRegistration);
+        if (registerRuntimeOperations) {
+            CheckOperation.register(resourceRegistration);
+        }
     }
 
 
