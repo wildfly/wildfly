@@ -55,6 +55,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>javax.security.enterprise</groupId>
+            <artifactId>javax.security.enterprise-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
             <scope>test</scope>
@@ -120,7 +125,7 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-batch-jberet</artifactId>
             <scope>test</scope>
-        </dependency>
+        </dependency>        
     </dependencies>
 
     <build>
