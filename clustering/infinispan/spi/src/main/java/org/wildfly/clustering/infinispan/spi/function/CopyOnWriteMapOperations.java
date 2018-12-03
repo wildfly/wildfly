@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,25 +20,27 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.infinispan.session.fine;
+package org.wildfly.clustering.infinispan.spi.function;
 
-import java.io.IOException;
-import java.util.UUID;
-
-import org.junit.Test;
-import org.wildfly.clustering.infinispan.spi.persistence.KeyFormatTester;
-import org.wildfly.clustering.marshalling.ExternalizerTester;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * Unit test for {@link SessionAttributeKeyResolver}.
+ * Defines operations for creating and copying a non-concurrent map.
+ * A non-concurrent map must perform writes against a copy, thus the underlying map need not be concurrent.
  * @author Paul Ferraro
+ * @param <K> the map key type
+ * @param <V> the map value type
  */
-public class SessionAttributeKeyResolverTestCase {
+public class CopyOnWriteMapOperations<K, V> implements Operations<Map<K, V>> {
 
-    @Test
-    public void test() throws ClassNotFoundException, IOException {
-        SessionAttributeKey key = new SessionAttributeKey("ABC123", UUID.randomUUID());
-        new ExternalizerTester<>(new SessionAttributeKeyExternalizer()).test(key);
-        new KeyFormatTester<>(new SessionAttributeKeyFormat()).test(key);
+    @Override
+    public Map<K, V> apply(Map<K, V> map) {
+        return new HashMap<>(map);
+    }
+
+    @Override
+    public Map<K, V> get() {
+        return new HashMap<>();
     }
 }

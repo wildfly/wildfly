@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,29 +20,30 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.infinispan.session.fine;
+package org.wildfly.clustering.infinispan.spi.function;
 
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Map;
+
+import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
- * Cache entry containing the names of the attributes of a session.
+ * Externalizer for instances of {@link CopyOnWriteMapPutFunction}.
  * @author Paul Ferraro
+ * @param <K> the map key type
+ * @param <V> the map value type
  */
-public class SessionAttributeNamesEntry {
-    private final AtomicInteger sequence;
-    private final ConcurrentMap<String, Integer> names;
+@MetaInfServices(Externalizer.class)
+public class CopyOnWriteMapPutFunctionExternalizer<K, V> extends AbstractFunctionExternalizer<Map.Entry<K, V>, Map<K, V>, CopyOnWriteMapPutFunction<K, V>> {
 
-    public SessionAttributeNamesEntry(AtomicInteger sequence, ConcurrentMap<String, Integer> names) {
-        this.sequence = sequence;
-        this.names = names;
+    @SuppressWarnings("unchecked")
+    @Override
+    public Class<CopyOnWriteMapPutFunction<K, V>> getTargetClass() {
+        return (Class<CopyOnWriteMapPutFunction<K, V>>) (Class<?>) CopyOnWriteMapPutFunction.class;
     }
 
-    public AtomicInteger getSequence() {
-        return this.sequence;
-    }
-
-    public ConcurrentMap<String, Integer> getNames() {
-        return this.names;
+    @Override
+    public CopyOnWriteMapPutFunction<K, V> apply(Map.Entry<K, V> entry) {
+        return new CopyOnWriteMapPutFunction<>(entry);
     }
 }

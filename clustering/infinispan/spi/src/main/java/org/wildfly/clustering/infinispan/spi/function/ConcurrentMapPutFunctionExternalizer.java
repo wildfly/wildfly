@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,25 +20,30 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.infinispan.session.fine;
+package org.wildfly.clustering.infinispan.spi.function;
 
-import java.io.IOException;
-import java.util.UUID;
+import java.util.Map;
 
-import org.junit.Test;
-import org.wildfly.clustering.infinispan.spi.persistence.KeyFormatTester;
-import org.wildfly.clustering.marshalling.ExternalizerTester;
+import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
- * Unit test for {@link SessionAttributeKeyResolver}.
+ * Externalizer for instances of {@link ConcurrentMapPutFunction}.
  * @author Paul Ferraro
+ * @param <K> the map key type
+ * @param <V> the map value type
  */
-public class SessionAttributeKeyResolverTestCase {
+@MetaInfServices(Externalizer.class)
+public class ConcurrentMapPutFunctionExternalizer<K, V> extends AbstractFunctionExternalizer<Map.Entry<K, V>, Map<K, V>, ConcurrentMapPutFunction<K, V>> {
 
-    @Test
-    public void test() throws ClassNotFoundException, IOException {
-        SessionAttributeKey key = new SessionAttributeKey("ABC123", UUID.randomUUID());
-        new ExternalizerTester<>(new SessionAttributeKeyExternalizer()).test(key);
-        new KeyFormatTester<>(new SessionAttributeKeyFormat()).test(key);
+    @SuppressWarnings("unchecked")
+    @Override
+    public Class<ConcurrentMapPutFunction<K, V>> getTargetClass() {
+        return (Class<ConcurrentMapPutFunction<K, V>>) (Class<?>) ConcurrentMapPutFunction.class;
+    }
+
+    @Override
+    public ConcurrentMapPutFunction<K, V> apply(Map.Entry<K, V> entry) {
+        return new ConcurrentMapPutFunction<>(entry);
     }
 }

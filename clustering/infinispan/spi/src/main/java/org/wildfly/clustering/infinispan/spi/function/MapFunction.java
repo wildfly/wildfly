@@ -20,20 +20,21 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.infinispan;
+package org.wildfly.clustering.infinispan.spi.function;
 
-import java.util.function.BiFunction;
-import java.util.function.ToIntFunction;
-
-import org.wildfly.clustering.infinispan.spi.distribution.Key;
-import org.wildfly.clustering.infinispan.spi.persistence.DelimitedKeyFormat;
+import java.util.Map;
+import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 /**
+ * Function that operates on a map.
  * @author Paul Ferraro
+ * @param <K> the map key type
+ * @param <V> the map value type
  */
-public class IndexedSessionKeyFormat<K extends Key<String>> extends DelimitedKeyFormat<K> {
+public abstract class MapFunction<K, V, T> extends AbstractFunction<T, Map<K, V>> {
 
-    protected IndexedSessionKeyFormat(Class<K> targetClass, ToIntFunction<K> index, BiFunction<String, Integer, K> resolver) {
-        super(targetClass, "#", parts -> resolver.apply(parts[0], Integer.valueOf(parts[1])), key -> new String[] { key.getValue(), Integer.toString(index.applyAsInt(key)) });
+    public MapFunction(T operand, UnaryOperator<Map<K, V>> copier, Supplier<Map<K, V>> factory) {
+        super(operand, copier, factory, Map::isEmpty);
     }
 }

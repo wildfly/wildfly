@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,42 +20,36 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.infinispan;
+package org.wildfly.clustering.web.infinispan.session.fine;
 
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.function.Function;
+import java.util.UUID;
 
-import org.wildfly.clustering.infinispan.spi.distribution.Key;
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
+import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
+import org.wildfly.clustering.web.infinispan.SessionIdentifierSerializer;
 
-/**
- * Base externalizer for cache keys containing session identifiers.
- * @author Paul Ferraro
- */
-public class SessionKeyExternalizer<K extends Key<String>> implements Externalizer<K> {
-
-    private final Class<K> targetClass;
-    private final Function<String, K> resolver;
-
-    protected SessionKeyExternalizer(Class<K> targetClass, Function<String, K> resolver) {
-        this.targetClass = targetClass;
-        this.resolver = resolver;
-    }
+@MetaInfServices(Externalizer.class)
+public class SessionAttributeKeyExternalizer implements Externalizer<SessionAttributeKey> {
 
     @Override
-    public void writeObject(ObjectOutput output, K key) throws IOException {
+    public void writeObject(ObjectOutput output, SessionAttributeKey key) throws IOException {
         SessionIdentifierSerializer.INSTANCE.write(output, key.getValue());
+        DefaultExternalizer.UUID.cast(UUID.class).writeObject(output, key.getAttributeId());
     }
 
     @Override
-    public K readObject(ObjectInput input) throws IOException {
-        return this.resolver.apply(SessionIdentifierSerializer.INSTANCE.read(input));
+    public SessionAttributeKey readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+        String sessionId = SessionIdentifierSerializer.INSTANCE.read(input);
+        UUID attributeId = DefaultExternalizer.UUID.cast(UUID.class).readObject(input);
+        return new SessionAttributeKey(sessionId, attributeId);
     }
 
     @Override
-    public Class<K> getTargetClass() {
-        return this.targetClass;
+    public Class<SessionAttributeKey> getTargetClass() {
+        return SessionAttributeKey.class;
     }
 }

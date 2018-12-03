@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,25 +20,17 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.infinispan.session.fine;
-
-import java.io.IOException;
-import java.util.UUID;
-
-import org.junit.Test;
-import org.wildfly.clustering.infinispan.spi.persistence.KeyFormatTester;
-import org.wildfly.clustering.marshalling.ExternalizerTester;
+package org.wildfly.clustering.infinispan.spi.function;
 
 /**
- * Unit test for {@link SessionAttributeKeyResolver}.
+ * Function that removes an entry from a map within a transactional cache.
  * @author Paul Ferraro
+ * @param <K> the map key type
+ * @param <V> the map value type
  */
-public class SessionAttributeKeyResolverTestCase {
+public class CopyOnWriteMapRemoveFunction<K, V> extends MapRemoveFunction<K, V> {
 
-    @Test
-    public void test() throws ClassNotFoundException, IOException {
-        SessionAttributeKey key = new SessionAttributeKey("ABC123", UUID.randomUUID());
-        new ExternalizerTester<>(new SessionAttributeKeyExternalizer()).test(key);
-        new KeyFormatTester<>(new SessionAttributeKeyFormat()).test(key);
+    public CopyOnWriteMapRemoveFunction(K key) {
+        super(key, new CopyOnWriteMapOperations<>());
     }
 }
