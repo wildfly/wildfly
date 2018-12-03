@@ -1,5 +1,7 @@
 package org.jboss.as.test.integration.microprofile.opentracing;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+
 import io.opentracing.Scope;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.tracerresolver.TracerFactory;
@@ -12,6 +14,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.microprofile.opentracing.application.MockTracerFactory;
 import org.jboss.as.test.integration.microprofile.opentracing.application.OpenTracingApplication;
 import org.jboss.as.test.integration.microprofile.opentracing.application.TracedEndpoint;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -25,6 +28,8 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
+import java.io.FilePermission;
+import java.net.SocketPermission;
 import java.net.URL;
 import java.util.List;
 
@@ -49,6 +54,16 @@ public class SimpleRestClientTestCase {
         war.addAsServiceProvider(TracerFactory.class, MockTracerFactory.class);
 
         war.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+
+        war.addAsManifestResource(createPermissionsXmlAsset(
+                // Required for the ClientBuilder.newBuilder() so the ServiceLoader will work
+                new FilePermission("<<ALL FILES>>", "read"),
+                // Required for com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider. During <init> there is a
+                // reflection test to check for JAXRS 2.0.
+                new RuntimePermission("accessDeclaredMembers"),
+                // Required for the client to connect
+                new SocketPermission(TestSuiteEnvironment.getHttpAddress() + ":" + TestSuiteEnvironment.getHttpPort(), "connect,resolve")
+        ), "permissions.xml");
         return war;
     }
 
