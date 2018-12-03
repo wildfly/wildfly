@@ -7,6 +7,7 @@
         <param name="process-id-uuid" value="true"/>
         <param name="object-store-path" value="tx-object-store"/>
         <param name="object-store-relative-to" value="jboss.server.data.dir"/>
+        <param name="statistics-enabled" value="${wildfly.transactions.statistics-enabled:${wildfly.statistics-enabled:false}}"/>
         <feature spec="subsystem.transactions.log-store.log-store"/>
     </feature>
     <feature spec="subsystem.elytron.permission-set.permissions">

@@ -5,7 +5,10 @@
     <subsystem xmlns="urn:jboss:domain:messaging-activemq:5.0">
 
         <server name="default">
+
             <?CLUSTERED?>
+
+            <statistics enabled="${wildfly.messaging-activemq.statistics-enabled:${wildfly.statistics-enabled:false}}" />
 
             <security-setting name="#">
                 <role name="guest"

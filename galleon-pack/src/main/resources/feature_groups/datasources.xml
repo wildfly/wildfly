@@ -17,6 +17,7 @@
             <param name="driver-name" value="h2"/>
             <param name="user-name" value="sa"/>
             <param name="password" value="sa"/>
+            <param name="statistics-enabled" value="${wildfly.datasources.statistics-enabled:${wildfly.statistics-enabled:false}}" />
         </feature>
     </feature>
 
