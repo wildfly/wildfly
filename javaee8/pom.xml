@@ -52,7 +52,7 @@
         <version.org.jboss.spec.jboss.javaee8>1.0.1.Final</version.org.jboss.spec.jboss.javaee8>
 
         <!-- Version of server -->
-        <version.server>15.0.0.CR1-SNAPSHOT</version.server>
+        <version.server>15.0.0.Final</version.server>
 
         <!-- Versions on server's core -->
         <version.junit>4.12</version.junit>
@@ -68,7 +68,7 @@
         <version.org.hibernate.commons.annotations>5.0.4.Final</version.org.hibernate.commons.annotations>
         <version.org.hibernate.search>5.10.3.Final</version.org.hibernate.search>
         <version.org.hibernate.validator>6.0.13.Final</version.org.hibernate.validator>
-        <version.org.infinispan>9.4.1.Final</version.org.infinispan>
+        <version.org.infinispan>9.4.3.Final</version.org.infinispan>
         <version.org.jboss.arquillian.core>1.1.13.Final</version.org.jboss.arquillian.core>
         <version.org.jboss.ejb3.ext-api>2.2.0.Final</version.org.jboss.ejb3.ext-api>
         <version.org.jboss.narayana>5.9.0.Final</version.org.jboss.narayana>
