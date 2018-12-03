@@ -33,24 +33,6 @@
 
     <dependencies>
         <module name="org.jboss.metadata.common"/>
-        <module name="javax.annotation.api"/>
         <module name="javax.api"/>
-        <module name="javax.ejb.api" optional="true"/>
-        <module name="javax.interceptor.api" optional="true"/>
-        <module name="javax.jws.api" optional="true"/>
-        <module name="javax.persistence.api" optional="true"/>
-        <module name="javax.servlet.api" optional="true"/>
-        <module name="javax.servlet.jsp.api" optional="true"/>
-        <module name="javax.xml.bind.api" optional="true"/>
-        <module name="javax.xml.ws.api" optional="true"/>
-        <module name="org.jboss.ejb3" optional="true"/>
-        <module name="org.jboss.staxmapper"/>
-        <module name="org.jboss.logging"/>
-
-        <!-- TODO WFLY-5966 validate the need for these and remove if not needed.
-             Prior to WFLY-5922 they were exported by javax.ejb.api. -->
-        <module name="javax.transaction.api" optional="true"/>
-        <module name="javax.xml.rpc.api" optional="true"/>
-        <module name="javax.rmi.api" optional="true"/>
     </dependencies>
 </module>
