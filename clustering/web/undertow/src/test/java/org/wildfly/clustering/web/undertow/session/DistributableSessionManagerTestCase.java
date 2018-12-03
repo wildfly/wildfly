@@ -81,7 +81,7 @@ public class DistributableSessionManagerTestCase {
 
     @Test
     public void stop() {
-        when(this.manager.getDefaultMaxInactiveInterval()).thenReturn(Duration.ZERO);
+        when(this.manager.getStopTimeout()).thenReturn(Duration.ZERO);
 
         this.adapter.stop();
 
