@@ -25,14 +25,13 @@ import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.ejb3.component.EJBUtilities;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceRegistry;
 
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.STATISTICS_ENABLED;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 class StatisticsEnabledWriteHandler extends AbstractWriteAttributeHandler<Void> {
     static StatisticsEnabledWriteHandler INSTANCE = new StatisticsEnabledWriteHandler();
@@ -57,11 +56,6 @@ class StatisticsEnabledWriteHandler extends AbstractWriteAttributeHandler<Void> 
 
     void updateToRuntime(final OperationContext context, final ModelNode model) throws OperationFailedException {
         final boolean statisticsEnabled = STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean();
-        utilities(context).setStatisticsEnabled(statisticsEnabled);
-    }
-
-    private static EJBUtilities utilities(final OperationContext context) {
-        final ServiceRegistry serviceRegistry = context.getServiceRegistry(true);
-        return (EJBUtilities) serviceRegistry.getRequiredService(EJBUtilities.SERVICE_NAME).getValue();
+        EJBStatistics.getInstance().setEnabled(statisticsEnabled);
     }
 }

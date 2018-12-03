@@ -50,12 +50,10 @@ import org.jboss.as.ejb3.deployment.ApplicationExceptions;
 import org.jboss.as.ejb3.security.EJBSecurityMetaData;
 import org.jboss.as.ejb3.subsystem.ApplicationSecurityDomainService.ApplicationSecurityDomain;
 import org.jboss.as.ejb3.suspend.EJBSuspendHandlerService;
-import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.Interceptors;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.requestcontroller.ControlPoint;
@@ -64,6 +62,7 @@ import org.wildfly.transaction.client.LocalUserTransaction;
 
 /**
  * @author Jaikiran Pai
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class EJBComponentCreateService extends BasicComponentCreateService {
 
@@ -231,18 +230,6 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         } catch (NoSuchMethodException e) {
             return null;
         }
-    }
-
-    /**
-     * @return
-     * @deprecated {@link EJBUtilities} is deprecated post 7.2.0.Final version.
-     */
-    @Deprecated
-    protected EJBUtilities getEJBUtilities() {
-        // constructs
-        final DeploymentUnit deploymentUnit = getDeploymentUnitInjector().getValue();
-        final ServiceController<EJBUtilities> serviceController = (ServiceController<EJBUtilities>) deploymentUnit.getServiceRegistry().getRequiredService(EJBUtilities.SERVICE_NAME);
-        return serviceController.getValue();
     }
 
     Map<MethodTransactionAttributeKey, TransactionAttributeType> getTxAttrs() {

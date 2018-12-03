@@ -21,7 +21,6 @@
  */
 package org.jboss.as.ejb3.component.messagedriven;
 
-
 import java.util.Properties;
 
 import javax.ejb.MessageDrivenBean;
@@ -45,7 +44,6 @@ import org.jboss.as.ee.component.interceptors.InvocationType;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
-import org.jboss.as.ejb3.component.EJBUtilities;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.interceptors.CurrentInvocationContextInterceptor;
@@ -63,6 +61,7 @@ import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
+import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
 import org.jboss.metadata.ejb.spec.MessageDrivenBeanMetaData;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.Service;
@@ -71,6 +70,7 @@ import org.jboss.msc.service.ServiceName;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class MessageDrivenComponentDescription extends EJBComponentDescription {
     private final Properties activationProps;
@@ -105,8 +105,6 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
         this.activationProps = activationProps;
         this.messageListenerInterfaceName = messageListenerInterfaceName;
         this.defaultMdbPoolAvailable = defaultMdbPoolAvailable;
-        // setup a dependency on the EJBUtilities service
-        this.addDependency(EJBUtilities.SERVICE_NAME);
 
         registerView(getEJBClassName(), MethodIntf.MESSAGE_ENDPOINT);
         // add the interceptor which will invoke the setMessageDrivenContext() method on a MDB which implements
@@ -142,7 +140,6 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
         mdbComponentConfiguration.getCreateDependencies().add(new DependencyConfigurator<MessageDrivenComponentCreateService>() {
             @Override
             public void configureDependency(final ServiceBuilder<?> serviceBuilder, final MessageDrivenComponentCreateService mdbComponentCreateService) throws DeploymentUnitProcessingException {
-                serviceBuilder.addDependency(EJBUtilities.SERVICE_NAME, EJBUtilities.class, mdbComponentCreateService.getEJBUtilitiesInjector());
                 serviceBuilder.addDependency(SuspendController.SERVICE_NAME, SuspendController.class, mdbComponentCreateService.getSuspendControllerInjectedValue());
             }
         });
@@ -348,10 +345,11 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
     private class ResourceAdapterInjectingConfiguration implements DependencyConfigurator<MessageDrivenComponentCreateService> {
 
         @Override
-        public void configureDependency(ServiceBuilder<?> serviceBuilder, MessageDrivenComponentCreateService service) throws DeploymentUnitProcessingException {
+        public void configureDependency(ServiceBuilder<?> serviceBuilder, MessageDrivenComponentCreateService service) {
             final ServiceName raServiceName =
                 ConnectorServices.getResourceAdapterServiceName(MessageDrivenComponentDescription.this.resourceAdapterName);
             // add the dependency on the RA service
+            serviceBuilder.addDependency(ConnectorServices.RA_REPOSITORY_SERVICE, ResourceAdapterRepository.class, service.getResourceAdapterRepositoryInjector());
             serviceBuilder.addDependency(raServiceName, ResourceAdapter.class, service.getResourceAdapterInjector());
         }
     }
