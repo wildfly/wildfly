@@ -17,9 +17,10 @@ Once the WildFly Elytron security framework is activate for a deployment at the 
 Any updates made to the `AuthConfigFactory` are immediately available, this means that if an `AuthConfigProvider` is registered which is a match for an existing application it will start to be used immediately without requiring redeployment of the application.
 
 All web applications deployed to WildFly have a security domain which will be resolved in the following order: -
- . From the deployment descriptors / annotations of the deployment being deployed.
- . The value defined on the `default-security-domain` attribute on the Undertow subsystem.
- . Default to 'other'.
+
+. From the deployment descriptors / annotations of the deployment being deployed.
+. The value defined on the `default-security-domain` attribute on the Undertow subsystem.
+. Default to 'other'.
 
 We assume that this security domain is a reference to a PicketBox security domain so the final step in activation is ensuring this is mapped to WildFly Elytron using an `application-security-domain` resource in the Undertow subsystem.  This mapping can either reference a WildFly Elytron security domain directly or it can reference a `http-authentication-factory` resource to obtain instances of authentication mechanisms.
 
