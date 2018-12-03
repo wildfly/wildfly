@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Red Hat, inc., and individual contributors
+ * Copyright (C) 2018 Red Hat, inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,24 +20,14 @@
  */
 package org.jboss.as.test.integration.management.deploy.runtime.jaxrs;
 
-import java.util.HashSet;
-import java.util.Set;
-import javax.ws.rs.ApplicationPath;
-import javax.ws.rs.core.Application;
-
 /**
- *
- * @author <a href="mailto:ehugonne@redhat.com">Emmanuel Hugonnet</a> (c) 2014
- * Red Hat, inc.
+ * @author <a href="mailto:lgao@redhat.com">Lin Gao</a>
  */
-@ApplicationPath("/hello")
-public class HelloApplication extends Application {
+public class PureProxyEndPoint implements PureProxyApiService {
 
     @Override
-    public Set<Class<?>> getClasses() {
-        final Set<Class<?>> classes = new HashSet<>();
-        classes.add(HelloResource.class);
-        classes.add(PureProxyEndPoint.class);
-        return classes;
+    public String test(String a, String b) {
+        return a + " " + b;
     }
+
 }

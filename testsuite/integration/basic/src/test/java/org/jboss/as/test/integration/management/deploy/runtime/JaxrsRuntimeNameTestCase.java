@@ -36,6 +36,8 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.management.deploy.runtime.jaxrs.HelloApplication;
 import org.jboss.as.test.integration.management.deploy.runtime.jaxrs.HelloResource;
+import org.jboss.as.test.integration.management.deploy.runtime.jaxrs.PureProxyApiService;
+import org.jboss.as.test.integration.management.deploy.runtime.jaxrs.PureProxyEndPoint;
 import org.jboss.as.test.integration.management.deploy.runtime.jaxrs.SubHelloResource;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
@@ -81,6 +83,8 @@ public class JaxrsRuntimeNameTestCase extends AbstractRuntimeTestCase {
         war.addClass(HelloApplication.class);
         war.addClass(HelloResource.class);
         war.addClass(SubHelloResource.class);
+        war.addClass(PureProxyApiService.class);
+        war.addClass(PureProxyEndPoint.class);
         return war;
     }
 
@@ -110,28 +114,36 @@ public class JaxrsRuntimeNameTestCase extends AbstractRuntimeTestCase {
         assertThat("Failed to list resources: " + result, Operations.isSuccessfulOutcome(result), is(true));
         List<ModelNode> jaxrsResources = Operations.readResult(result).asList();
         assertThat(jaxrsResources, is(notNullValue()));
-        assertThat(jaxrsResources.size(), is(4));
-        for (ModelNode jaxrsResource : jaxrsResources) {
-            assertThat(jaxrsResource.toString(), jaxrsResource.get(RESOURCE_CLASS).asString(), is(HelloResource.class.getName()));
-            String path = jaxrsResource.get(RESOURCE_PATH).asString();
-            switch (path) {
-                case "/update":
-                    assertThat(jaxrsResource.toString(), jaxrsResource.get(RESOURCE_METHODS).asList().get(0).asString(), is("PUT /hello-rs/hello/update - org.jboss.as.test.integration.management.deploy.runtime.jaxrs.HelloResource.updateMessage(...)"));
-                    break;
-                case "/json":
-                    assertThat(jaxrsResource.toString(), jaxrsResource.get(RESOURCE_METHODS).asList().get(0).asString(), is("GET /hello-rs/hello/json - org.jboss.as.test.integration.management.deploy.runtime.jaxrs.HelloResource.getHelloWorldJSON()"));
-                    break;
-                case "/xml":
-                    assertThat(jaxrsResource.toString(), jaxrsResource.get(RESOURCE_METHODS).asList().get(0).asString(), is("GET /hello-rs/hello/xml - org.jboss.as.test.integration.management.deploy.runtime.jaxrs.HelloResource.getHelloWorldXML()"));
-                    break;
-                case "/":
-                    assertThat(jaxrsResource.toString(), jaxrsResource.get(RESOURCE_METHODS).asList().get(0).asString(), is("GET /hello-rs/hello/ - org.jboss.as.test.integration.management.deploy.runtime.jaxrs.HelloResource.getHelloWorld()"));
-                    break;
-                default:
-                    assertThat(jaxrsResource.toString(), false, is(true));
+        assertThat(jaxrsResources.size(), is(5));
+        int count = 0;
+        for (ModelNode jaxrsResource: jaxrsResources) {
+            if (jaxrsResource.get(RESOURCE_CLASS).asString().equals(HelloResource.class.getName())) {
+                count++;
+                String path = jaxrsResource.get(RESOURCE_PATH).asString();
+                switch (path) {
+                    case "/update":
+                        assertThat(jaxrsResource.toString(), jaxrsResource.get(RESOURCE_METHODS).asList().get(0).asString(), is("PUT /hello-rs/hello/update - org.jboss.as.test.integration.management.deploy.runtime.jaxrs.HelloResource.updateMessage(...)"));
+                        break;
+                    case "/json":
+                        assertThat(jaxrsResource.toString(), jaxrsResource.get(RESOURCE_METHODS).asList().get(0).asString(), is("GET /hello-rs/hello/json - org.jboss.as.test.integration.management.deploy.runtime.jaxrs.HelloResource.getHelloWorldJSON()"));
+                        break;
+                    case "/xml":
+                        assertThat(jaxrsResource.toString(), jaxrsResource.get(RESOURCE_METHODS).asList().get(0).asString(), is("GET /hello-rs/hello/xml - org.jboss.as.test.integration.management.deploy.runtime.jaxrs.HelloResource.getHelloWorldXML()"));
+                        break;
+                    case "/":
+                        assertThat(jaxrsResource.toString(), jaxrsResource.get(RESOURCE_METHODS).asList().get(0).asString(), is("GET /hello-rs/hello/ - org.jboss.as.test.integration.management.deploy.runtime.jaxrs.HelloResource.getHelloWorld()"));
+                        break;
+                    default:
+                        assertThat(jaxrsResource.toString(), false, is(true));
+                }
+            } else if (jaxrsResource.get(RESOURCE_CLASS).asString().equals(PureProxyApiService.class.getName())) {
+                count++;
+                String path = jaxrsResource.get(RESOURCE_PATH).asString();
+                assertThat(jaxrsResource.toString(), path, is("pure/proxy/test/{a}/{b}"));
+                assertThat(jaxrsResource.toString(), jaxrsResource.get(RESOURCE_METHODS).asList().get(0).asString(), is("GET /hello-rs/hello/pure/proxy/test/{a}/{b} - org.jboss.as.test.integration.management.deploy.runtime.jaxrs.PureProxyApiService.test(...)"));
             }
         }
-
+        assertThat(count, is(5));
     }
 
     @Test
@@ -212,6 +224,33 @@ public class JaxrsRuntimeNameTestCase extends AbstractRuntimeTestCase {
         assertThat(pingNode.get(PRODUCES).asList().get(0).asString(), is("text/plain"));
         assertThat(pingNode.get(RESOURCE_METHODS).asList().size(), is(1));
         assertThat(pingNode.get(RESOURCE_METHODS).asList().get(0).asString(), is("GET /hello-rs/hello/sub/ping/{name}"));
+
+    }
+
+    @Test
+    public void testReadRestEndPointIntf() throws Exception {
+        assertThat(performCall("hello/pure/proxy/test/Hello/World"), is("Hello World"));
+        ModelNode readResource =  Util.createOperation(READ_RESOURCE_OPERATION, PathAddress.pathAddress(DEPLOYMENT, DEPLOYMENT_NAME)
+                .append(SUBSYSTEM, SUBSYSTEM_NAME)
+                .append(REST_RESOURCE_NAME, PureProxyEndPoint.class.getCanonicalName()));
+        readResource.get(ModelDescriptionConstants.INCLUDE_RUNTIME).set(true);
+        ModelNode result = controllerClient.execute(readResource);
+        assertThat("Failed to list resources: " + result, Operations.isSuccessfulOutcome(result), is(true));
+
+        ModelNode res = Operations.readResult(result);
+        assertThat(res.isDefined(), is(true));
+
+        assertThat(res.get(RESOURCE_CLASS).asString(), is(PureProxyEndPoint.class.getCanonicalName()));
+        List<ModelNode> subResList = res.get(RESOURCE_PATHS).asList();
+        assertThat(subResList.size(), is(1));
+
+        ModelNode rootRes = subResList.get(0);
+        assertThat(rootRes.get(RESOURCE_PATH).asString(), is("pure/proxy/test/{a}/{b}"));
+        assertThat(rootRes.get(JAVA_METHOD).asString(), is("java.lang.String " + PureProxyEndPoint.class.getCanonicalName() + ".test(@PathParam java.lang.String a, @PathParam java.lang.String b)"));
+        assertThat(rootRes.get(CONSUMES).isDefined(), is(false));
+        assertThat(rootRes.get(PRODUCES).isDefined(), is(false));
+        assertThat(rootRes.get(RESOURCE_METHODS).asList().size(), is(1));
+        assertThat(rootRes.get(RESOURCE_METHODS).asList().get(0).asString(), is("GET /hello-rs/hello/pure/proxy/test/{a}/{b}"));
 
     }
 
