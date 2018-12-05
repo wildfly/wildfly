@@ -490,6 +490,7 @@
                                         <include>org/jboss/as/test/integration/ejb/management/deployments/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/ejb/singleton/dependson/mdb/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/ejb/transaction/bmt/lazyenlist</include>
+                                        <include>org/jboss/as/test/integration/ejb/transaction/messaging/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/ejb/timerservice/gettimers/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/jaxr/**/*TestCase*.java</include>
                                         <include>org/jboss/as/test/integration/jca/bootstrap/**/*TestCase*.java</include>
