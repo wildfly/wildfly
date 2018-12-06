@@ -144,6 +144,11 @@ public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, Tr
         this.identifierFactory.stop();
     }
 
+    @Override
+    public Duration getStopTimeout() {
+        return Duration.ofMillis(this.cache.getCacheConfiguration().transaction().cacheStopTimeout());
+    }
+
     boolean isPersistent() {
         return this.properties.isPersistent();
     }
