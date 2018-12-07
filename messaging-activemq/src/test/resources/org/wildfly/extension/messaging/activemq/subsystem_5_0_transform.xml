@@ -41,7 +41,10 @@
                 compact-min-files="${journal.compact.min.files:2}"
                 max-io="${journal.max.io:50}"
                 create-bindings-dir="${create.bindings.dir:false}"
-                create-journal-dir="${create.journal.dir:true}"/>
+                create-journal-dir="${create.journal.dir:true}"
+                global-max-disk-usage="100"
+                disk-scan-period="5000"
+                global-max-memory-size="-1"/>
 
         <statistics
                 enabled="${statistics.enabled:true}"

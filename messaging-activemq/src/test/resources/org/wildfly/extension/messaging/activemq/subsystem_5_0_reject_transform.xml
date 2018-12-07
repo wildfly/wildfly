@@ -63,7 +63,10 @@
                  jms-bindings-table="MY_JMS_BINDINGS"
                  large-messages-table="MY_LARGE_MESSAGES"
                  node-manager-store-table="MY_NODE_MANAGER_STORE"
-                 page-store-table="MY_PAGE_STORE" />
+                 page-store-table="MY_PAGE_STORE"
+                 global-max-disk-usage="70"
+                 global-max-memory-size="100000"
+                 disk-scan-period="10000"/>
 
         <replication-colocated>
             <master />

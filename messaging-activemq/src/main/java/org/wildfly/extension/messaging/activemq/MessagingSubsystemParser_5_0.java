@@ -189,8 +189,7 @@ public class MessagingSubsystemParser_5_0 extends PersistentResourceXMLParser {
                                 ))
                 .addChild(
                         builder(MessagingExtension.SERVER_PATH)
-                                .addAttributes(
-                                        // no attribute groups
+                                .addAttributes(// no attribute groups
                                         ServerDefinition.PERSISTENCE_ENABLED,
                                         ServerDefinition.PERSIST_ID_CACHE,
                                         ServerDefinition.PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY,
@@ -242,6 +241,9 @@ public class MessagingSubsystemParser_5_0 extends PersistentResourceXMLParser {
                                         ServerDefinition.JOURNAL_JDBC_LOCK_EXPIRATION,
                                         ServerDefinition.JOURNAL_JDBC_LOCK_RENEW_PERIOD,
                                         ServerDefinition.JOURNAL_JDBC_NETWORK_TIMEOUT,
+                                        ServerDefinition.GLOBAL_MAX_DISK_USAGE,
+                                        ServerDefinition.DISK_SCAN_PERIOD,
+                                        ServerDefinition.GLOBAL_MAX_MEMORY_SIZE,
                                         // statistics
                                         ServerDefinition.STATISTICS_ENABLED,
                                         ServerDefinition.MESSAGE_COUNTER_SAMPLE_PERIOD,
