@@ -128,7 +128,8 @@ class EJBClientDescriptor10Parser implements XMLElementReader<EJBClientDescripto
 
     protected void parseEJBReceivers(final XMLExtendedStreamReader reader, final EJBClientDescriptorMetaData ejbClientDescriptorMetaData) throws XMLStreamException {
 
-        // initialize the local-receiver-pass-by-value to the default true
+        // initialize the local-receiver-pass-by-value to the default null - to indicate it has not been initialized via XML
+        // check for 'true' - localReceiverPassByValue != Boolean.FALSE
         Boolean localReceiverPassByValue = null;
 
         final int count = reader.getAttributeCount();
@@ -148,7 +149,7 @@ class EJBClientDescriptor10Parser implements XMLElementReader<EJBClientDescripto
             }
         }
         // set the local receiver pass by value into the metadata
-        ejbClientDescriptorMetaData.setLocalReceiverPassByValue(localReceiverPassByValue);
+        ejbClientDescriptorMetaData.setLocalReceiverPassByValue(localReceiverPassByValue != Boolean.FALSE);
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
                 case END_ELEMENT: {
