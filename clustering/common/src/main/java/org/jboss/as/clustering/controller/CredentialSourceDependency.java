@@ -36,7 +36,6 @@ import org.jboss.msc.service.DelegatingServiceBuilder;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.service.Dependency;
-import org.wildfly.clustering.service.ServiceDependency;
 import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SupplierDependency;
 import org.wildfly.common.function.ExceptionSupplier;
@@ -81,19 +80,17 @@ public class CredentialSourceDependency implements SupplierDependency<Credential
             super(null);
         }
 
+        @Override
         protected ServiceBuilder<Object> getDelegate() {
             throw new UnsupportedOperationException();
         }
 
+        @Override
         public Iterator<Dependency> iterator() {
             return this.dependencies.iterator();
         }
 
-        public ServiceBuilder<Object> addDependency(ServiceName serviceName) {
-            this.dependencies.add(new ServiceDependency(serviceName));
-            return this;
-        }
-
+        @Override
         public <V> Supplier<V> requires(ServiceName name) {
             SupplierDependency<V> dependency = new ServiceSupplierDependency<>(name);
             this.dependencies.add(dependency);
