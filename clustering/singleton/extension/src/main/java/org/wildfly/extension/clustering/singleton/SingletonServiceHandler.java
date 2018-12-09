@@ -33,13 +33,12 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.service.AliasServiceBuilder;
 import org.wildfly.clustering.service.IdentityServiceConfigurator;
-import org.wildfly.clustering.singleton.SingletonRequirement;
 import org.wildfly.extension.clustering.singleton.SingletonResourceDefinition.Capability;
 
 /**
  * @author Paul Ferraro
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 @SuppressWarnings("deprecation")
 public class SingletonServiceHandler implements ResourceServiceHandler {
@@ -55,8 +54,7 @@ public class SingletonServiceHandler implements ResourceServiceHandler {
 
         // Use legacy service installation for legacy capability
         ServiceName legacyServiceName = Capability.DEFAULT_LEGACY_POLICY.getServiceName(context.getCurrentAddress());
-
-        new AliasServiceBuilder<>(legacyServiceName, targetServiceName, SingletonRequirement.SINGLETON_POLICY.getType()).build(target).install();
+        new IdentityServiceConfigurator(legacyServiceName, targetServiceName).build(target).install();
     }
 
     @Override
@@ -66,4 +64,5 @@ public class SingletonServiceHandler implements ResourceServiceHandler {
             context.removeService(capability.getServiceName(address));
         }
     }
+
 }

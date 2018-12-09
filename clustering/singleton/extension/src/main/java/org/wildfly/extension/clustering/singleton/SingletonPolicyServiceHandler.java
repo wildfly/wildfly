@@ -32,13 +32,13 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.service.AliasServiceBuilder;
+import org.wildfly.clustering.service.IdentityServiceConfigurator;
 import org.wildfly.clustering.service.ServiceConfigurator;
-import org.wildfly.clustering.singleton.SingletonRequirement;
 import org.wildfly.extension.clustering.singleton.SingletonPolicyResourceDefinition.Capability;
 
 /**
  * @author Paul Ferraro
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 @SuppressWarnings("deprecation")
 public class SingletonPolicyServiceHandler implements ResourceServiceHandler {
@@ -52,14 +52,15 @@ public class SingletonPolicyServiceHandler implements ResourceServiceHandler {
         configurator.build(target).install();
 
         // Use legacy service installation for legacy capability
-        new AliasServiceBuilder<>(LEGACY_POLICY.getServiceName(address), configurator.getServiceName(), SingletonRequirement.SINGLETON_POLICY.getType()).build(target).install();
+        new IdentityServiceConfigurator(LEGACY_POLICY.getServiceName(address), configurator.getServiceName()).build(target).install();
     }
 
     @Override
-    public void removeServices(OperationContext context, ModelNode model) throws OperationFailedException {
+    public void removeServices(OperationContext context, ModelNode model) {
         PathAddress address = context.getCurrentAddress();
         for (Capability capability : EnumSet.allOf(Capability.class)) {
             context.removeService(capability.getServiceName(address));
         }
     }
+
 }
