@@ -25,14 +25,15 @@
  */
 package org.wildfly.extension.messaging.activemq;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
+import org.apache.activemq.artemis.api.core.SimpleString;
+import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 
 /**
  * Removes a queue.
@@ -46,14 +47,24 @@ class QueueRemove extends AbstractRemoveStepHandler {
     private QueueRemove() {
     }
 
+    @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
-        final ServiceName serviceName = MessagingServices.getActiveMQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
-        PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-        final String name = address.getLastElement().getValue();
+        final ServiceName serviceName = MessagingServices.getActiveMQServiceName(context.getCurrentAddress());
+        final String name = context.getCurrentAddressValue();
         final ServiceName queueServiceName = MessagingServices.getQueueBaseServiceName(serviceName).append(name);
-        context.removeService(queueServiceName);
+        if (context.getServiceRegistry(false).getService(queueServiceName) != null) {
+            context.removeService(queueServiceName);
+        } else {
+            ServiceController<?> serverService = context.getServiceRegistry(false).getService(serviceName);
+            try {
+                ((ActiveMQServer) serverService.getValue()).destroyQueue(new SimpleString(name), null, false);
+            } catch (Exception ex) {
+                MessagingLogger.ROOT_LOGGER.failedToDestroy("queue", name);
+            }
+        }
     }
 
+    @Override
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {
         // TODO:  RE-ADD SERVICES
     }
