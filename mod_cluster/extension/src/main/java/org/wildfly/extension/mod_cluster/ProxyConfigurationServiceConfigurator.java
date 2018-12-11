@@ -75,6 +75,7 @@ import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.network.ManagedBinding;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
@@ -101,7 +102,7 @@ import org.wildfly.clustering.service.SupplierDependency;
 /**
  * @author Radoslav Husar
  */
- public class ProxyConfigurationServiceConfigurator extends CapabilityServiceNameProvider implements ResourceServiceConfigurator, Supplier<ModClusterConfiguration> {
+ public class ProxyConfigurationServiceConfigurator extends CapabilityServiceNameProvider implements ResourceServiceConfigurator, Supplier<ModClusterConfiguration>, Consumer<ModClusterConfiguration> {
 
     private volatile SupplierDependency<SocketBinding> advertiseSocketDependency = null;
     private final List<SupplierDependency<OutboundSocketBinding>> outboundSocketBindings = new LinkedList<>();
@@ -318,7 +319,7 @@ import org.wildfly.clustering.service.SupplierDependency;
         for (Dependency dependency : this.outboundSocketBindings) {
             dependency.register(builder);
         }
-        Service service = new FunctionalService<>(config, Function.identity(), this);
+        Service service = new FunctionalService<>(config, Function.identity(), this, this);
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.PASSIVE);
     }
 
@@ -332,6 +333,11 @@ import org.wildfly.clustering.service.SupplierDependency;
                     .setAdvertiseSocketAddress(binding.getMulticastSocketAddress())
                     .setAdvertiseInterface(binding.getNetworkInterfaceBinding().getAddress())
             ;
+
+            // Register the binding with named registry as bound (WFLY-11447)
+            ManagedBinding simpleManagedBinding = ManagedBinding.Factory.createSimpleManagedBinding(binding);
+            binding.getSocketBindings().getNamedRegistry().registerBinding(simpleManagedBinding);
+
             if (!isMulticastEnabled(binding.getSocketBindings().getDefaultInterfaceBinding().getNetworkInterfaces())) {
                 ROOT_LOGGER.multicastInterfaceNotAvailable();
             }
@@ -372,6 +378,16 @@ import org.wildfly.clustering.service.SupplierDependency;
         }
 
         return builder.build();
+    }
+
+    // FunctionalService#destroyer implementation
+    @Override
+    public void accept(ModClusterConfiguration modClusterConfiguration) {
+        if (advertiseSocketDependency != null) {
+            SocketBinding binding = advertiseSocketDependency.get();
+            ManagedBinding simpleManagedBinding = ManagedBinding.Factory.createSimpleManagedBinding(binding);
+            binding.getSocketBindings().getNamedRegistry().unregisterBinding(simpleManagedBinding);
+        }
     }
 
     private static boolean isMulticastEnabled(Collection<NetworkInterface> interfaces) {
