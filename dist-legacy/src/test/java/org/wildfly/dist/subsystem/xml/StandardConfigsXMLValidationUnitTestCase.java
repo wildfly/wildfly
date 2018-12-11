@@ -208,6 +208,10 @@ public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidation
         result = result.replace("${jboss.ajp.port:8009}", "8009");
         result = result.replace("${jboss.mcmp.port:8090}", "8090");
         result = result.replace("${jboss.deployment.scanner.rollback.on.failure:false}", "false");
+        result = result.replace("${wildfly.datasources.statistics-enabled:${wildfly.statistics-enabled:false}}", "false");
+        result = result.replace("${wildfly.messaging-activemq.statistics-enabled:${wildfly.statistics-enabled:false}}", "false");
+        result = result.replace("${wildfly.transactions.statistics-enabled:${wildfly.statistics-enabled:false}}", "false");
+        result = result.replace("${wildfly.undertow.statistics-enabled:${wildfly.statistics-enabled:false}}", "false");
         return result;
     }
 }
