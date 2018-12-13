@@ -21,27 +21,34 @@
  */
 package org.jboss.as.ejb3.component.stateful;
 
+import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
+import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.modules.Module;
+import org.jboss.msc.Service;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.value.Value;
+import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.marshalling.jboss.ExternalizerObjectTable;
 import org.wildfly.clustering.marshalling.jboss.MarshallingConfigurationRepository;
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingConfigurationRepository;
+import org.wildfly.clustering.service.FunctionalService;
+import org.wildfly.clustering.service.ServiceConfigurator;
+import org.wildfly.clustering.service.ServiceSupplierDependency;
+import org.wildfly.clustering.service.SimpleServiceNameProvider;
+import org.wildfly.clustering.service.SupplierDependency;
 
 /**
  * Service that provides a versioned marshalling configuration for a deployment unit.
  * @author Paul Ferraro
  */
-public class MarshallingConfigurationRepositoryValue implements Value<MarshallingConfigurationRepository>, MarshallingConfigurationContext {
-
-    public static ServiceName getServiceName(ServiceName deploymentUnitServiceName) {
-        return deploymentUnitServiceName.append("marshalling");
-    }
+public class MarshallingConfigurationRepositoryServiceConfigurator extends SimpleServiceNameProvider implements ServiceConfigurator, MarshallingConfigurationContext, Supplier<MarshallingConfigurationRepository> {
 
     enum MarshallingVersion implements Function<MarshallingConfigurationContext, MarshallingConfiguration> {
         VERSION_1() {
@@ -76,26 +83,36 @@ public class MarshallingConfigurationRepositoryValue implements Value<Marshallin
         static final MarshallingVersion CURRENT = VERSION_2;
     }
 
-    private final Value<ModuleDeployment> deployment;
-    private final Value<Module> module;
+    private final Module module;
+    private final SupplierDependency<ModuleDeployment> deployment;
 
-    public MarshallingConfigurationRepositoryValue(Value<ModuleDeployment> deployment, Value<Module> module) {
-        this.deployment = deployment;
-        this.module = module;
+    public MarshallingConfigurationRepositoryServiceConfigurator(DeploymentUnit unit) {
+        super(unit.getServiceName().append("marshalling"));
+        this.module = unit.getAttachment(Attachments.MODULE);
+        this.deployment = new ServiceSupplierDependency<>(unit.getServiceName().append(ModuleDeployment.SERVICE_NAME));
     }
 
     @Override
-    public MarshallingConfigurationRepository getValue() {
+    public ServiceBuilder<?> build(ServiceTarget target) {
+        ServiceName name = this.getServiceName();
+        ServiceBuilder<?> builder = target.addService(name);
+        Consumer<MarshallingConfigurationRepository> repository = this.deployment.register(builder).provides(name);
+        Service service = new FunctionalService<>(repository, Function.identity(), this);
+        return builder.setInstance(service);
+    }
+
+    @Override
+    public MarshallingConfigurationRepository get() {
         return new SimpleMarshallingConfigurationRepository(MarshallingVersion.class, MarshallingVersion.CURRENT, this);
     }
 
     @Override
     public Module getModule() {
-        return this.module.getValue();
+        return this.module;
     }
 
     @Override
     public ModuleDeployment getDeployment() {
-        return this.deployment.getValue();
+        return this.deployment.get();
     }
 }

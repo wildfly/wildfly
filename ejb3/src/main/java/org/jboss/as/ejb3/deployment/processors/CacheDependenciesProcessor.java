@@ -12,22 +12,17 @@ import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.cache.CacheFactoryBuilder;
 import org.jboss.as.ejb3.cache.CacheFactoryBuilderService;
 import org.jboss.as.ejb3.cache.CacheInfo;
-import org.jboss.as.ejb3.component.stateful.MarshallingConfigurationRepositoryValue;
+import org.jboss.as.ejb3.component.stateful.MarshallingConfigurationRepositoryServiceConfigurator;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponentInstance;
-import org.jboss.as.ejb3.deployment.ModuleDeployment;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.ejb.client.SessionID;
-import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.ImmediateValue;
-import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.service.ChildTargetService;
 import org.wildfly.clustering.service.Dependency;
 import org.wildfly.clustering.service.ServiceSupplierDependency;
@@ -79,13 +74,7 @@ public class CacheDependenciesProcessor implements DeploymentUnitProcessor {
         builder.setInstance(new ChildTargetService(installer)).install();
 
         // Install versioned marshalling configuration
-        InjectedValue<ModuleDeployment> deployment = new InjectedValue<>();
-        Module module = unit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
-        target.addService(MarshallingConfigurationRepositoryValue.getServiceName(name), new ValueService<>(new MarshallingConfigurationRepositoryValue(deployment, new ImmediateValue<>(module))))
-                .addDependency(name.append(ModuleDeployment.SERVICE_NAME), ModuleDeployment.class, deployment)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                .install()
-        ;
+        new MarshallingConfigurationRepositoryServiceConfigurator(unit).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
     }
 
     @Override
