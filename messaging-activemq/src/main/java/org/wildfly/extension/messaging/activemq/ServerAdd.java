@@ -123,9 +123,11 @@ import org.apache.activemq.artemis.api.core.Interceptor;
 import org.apache.activemq.artemis.api.core.SimpleString;
 import org.apache.activemq.artemis.core.config.BridgeConfiguration;
 import org.apache.activemq.artemis.core.config.Configuration;
+import org.apache.activemq.artemis.core.config.CoreQueueConfiguration;
 import org.apache.activemq.artemis.core.config.impl.ConfigurationImpl;
 import org.apache.activemq.artemis.core.config.storage.DatabaseStorageConfiguration;
 import org.apache.activemq.artemis.core.security.Role;
+import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.apache.activemq.artemis.core.server.JournalType;
 import org.apache.activemq.artemis.core.settings.impl.AddressSettings;
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -151,6 +153,7 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
@@ -434,7 +437,6 @@ class ServerAdd extends AbstractAddStepHandler {
                         mbeanServer,
                         dataSource
                 );
-
                 // inject credential-references for bridges
                 addBridgeCredentialStoreReference(serverService, configuration, BridgeDefinition.CREDENTIAL_REFERENCE, context, model, serviceBuilder);
                 addClusterCredentialStoreReference(serverService, ServerDefinition.CREDENTIAL_REFERENCE, context, model, serviceBuilder);
@@ -442,6 +444,18 @@ class ServerAdd extends AbstractAddStepHandler {
                 // Install the ActiveMQ Service
                 ServiceController activeMQServerServiceController = serviceBuilder.setInstance(serverService)
                         .install();
+
+                //Add the queue services for the core queues  created throught the internal broker configuration (those queues are not added as service via the QueueAdd OSH)
+                for (CoreQueueConfiguration queueConfiguration : configuration.getQueueConfigurations()) {
+                    final ServiceName queueServiceName = activeMQServiceName.append(queueConfiguration.getName());
+                    final ServiceBuilder sb = context.getServiceTarget().addService(queueServiceName);
+                    sb.requires(ActiveMQActivationService.getServiceName(activeMQServiceName));
+                    Supplier<ActiveMQServer> serverSupplier = sb.requires(activeMQServiceName);
+                    final QueueService queueService = new QueueService(serverSupplier, queueConfiguration, false, false);
+                    sb.setInitialMode(Mode.PASSIVE);
+                    sb.setInstance(queueService);
+                    sb.install();
+                }
                 // Provide our custom Resource impl a ref to the ActiveMQ server so it can create child runtime resources
                 ((ActiveMQServerResource)resource).setActiveMQServerServiceController(activeMQServerServiceController);
 
