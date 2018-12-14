@@ -40,4 +40,21 @@ public class SimpleServiceNameProvider implements ServiceNameProvider {
     public ServiceName getServiceName() {
         return this.name;
     }
+
+    @Override
+    public int hashCode() {
+        return this.name.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof ServiceNameProvider)) return false;
+        ServiceNameProvider provider = (ServiceNameProvider) object;
+        return this.name.equals(provider.getServiceName());
+    }
+
+    @Override
+    public String toString() {
+        return this.name.getCanonicalName();
+    }
 }
