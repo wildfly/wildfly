@@ -22,6 +22,8 @@
 
 package org.jboss.as.txn.subsystem;
 
+import static org.jboss.as.controller.client.helpers.MeasurementUnit.NANOSECONDS;
+
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -57,7 +59,9 @@ public class TxStatsHandler extends AbstractRuntimeOnlyHandler {
         NUMBER_OF_APPLICATION_ROLLBACKS(SimpleAttributeDefinitionBuilder.create(CommonAttributes.NUMBER_OF_APPLICATION_ROLLBACKS, ModelType.LONG, true).build()),
         NUMBER_OF_RESOURCE_ROLLBACKS(SimpleAttributeDefinitionBuilder.create(CommonAttributes.NUMBER_OF_RESOURCE_ROLLBACKS, ModelType.LONG, true).build()),
         NUMBER_OF_SYSTEM_ROLLBACKS(SimpleAttributeDefinitionBuilder.create(CommonAttributes.NUMBER_OF_SYSTEM_ROLLBACKS, ModelType.LONG, true).build()),
-        AVERAGE_COMMIT_TIME(SimpleAttributeDefinitionBuilder.create(CommonAttributes.AVERAGE_COMMIT_TIME, ModelType.LONG, true).build());
+        AVERAGE_COMMIT_TIME(SimpleAttributeDefinitionBuilder.create(CommonAttributes.AVERAGE_COMMIT_TIME, ModelType.LONG, true)
+                .setMeasurementUnit(NANOSECONDS)
+                .build());
 
         private static final Map<String, TxStat> MAP = new HashMap<String, TxStat>();
         static {
