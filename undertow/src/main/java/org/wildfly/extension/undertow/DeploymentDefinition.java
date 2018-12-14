@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.undertow;
 
+import static org.jboss.as.controller.client.helpers.MeasurementUnit.SECONDS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
@@ -33,6 +34,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import io.undertow.server.session.Session;
+import io.undertow.server.session.SessionManager;
+import io.undertow.server.session.SessionManagerStatistics;
+import io.undertow.servlet.api.Deployment;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -53,11 +58,6 @@ import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceController;
 import org.wildfly.extension.undertow.deployment.UndertowDeploymentService;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
-
-import io.undertow.server.session.Session;
-import io.undertow.server.session.SessionManager;
-import io.undertow.server.session.SessionManagerStatistics;
-import io.undertow.servlet.api.Deployment;
 
 /**
  * @author Tomaz Cerar
@@ -403,9 +403,15 @@ public class DeploymentDefinition extends SimpleResourceDefinition {
                 .setUndefinedMetricValue(new ModelNode(0)).setStorageRuntime().build()),
         //DUPLICATED_SESSION_IDS(new SimpleAttributeDefinition("duplicated-session-ids", ModelType.INT, false)),
         SESSION_AVG_ALIVE_TIME(new SimpleAttributeDefinitionBuilder("session-avg-alive-time", ModelType.INT)
-                .setUndefinedMetricValue(new ModelNode(0)).setStorageRuntime().build()),
+                .setUndefinedMetricValue(new ModelNode(0))
+                .setMeasurementUnit(SECONDS)
+                .setStorageRuntime()
+                .build()),
         SESSION_MAX_ALIVE_TIME(new SimpleAttributeDefinitionBuilder("session-max-alive-time", ModelType.INT)
-                .setUndefinedMetricValue(new ModelNode(0)).setStorageRuntime().build()),
+                .setUndefinedMetricValue(new ModelNode(0))
+                .setMeasurementUnit(SECONDS)
+                .setStorageRuntime()
+                .build()),
         REJECTED_SESSIONS(new SimpleAttributeDefinitionBuilder("rejected-sessions", ModelType.INT)
                 .setUndefinedMetricValue(new ModelNode(0)).setStorageRuntime().build()),
         MAX_ACTIVE_SESSIONS(new SimpleAttributeDefinitionBuilder("max-active-sessions", ModelType.INT)

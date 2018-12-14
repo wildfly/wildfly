@@ -22,6 +22,11 @@
 
 package org.wildfly.extension.undertow;
 
+import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECONDS;
+
+import io.undertow.server.handlers.MetricsHandler;
+import io.undertow.servlet.api.DeploymentInfo;
+import io.undertow.servlet.api.ServletInfo;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -40,10 +45,6 @@ import org.jboss.msc.service.ServiceController;
 import org.wildfly.extension.undertow.deployment.UndertowDeploymentService;
 import org.wildfly.extension.undertow.deployment.UndertowMetricsCollector;
 
-import io.undertow.server.handlers.MetricsHandler;
-import io.undertow.servlet.api.DeploymentInfo;
-import io.undertow.servlet.api.ServletInfo;
-
 /**
  * @author Tomaz Cerar
  * @created 23.2.12 18:35
@@ -55,14 +56,17 @@ public class DeploymentServletDefinition extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition SERVLET_CLASS = new SimpleAttributeDefinitionBuilder("servlet-class", ModelType.STRING, false).setStorageRuntime().build();
     static final SimpleAttributeDefinition MAX_REQUEST_TIME = new SimpleAttributeDefinitionBuilder("max-request-time", ModelType.LONG)
             .setUndefinedMetricValue(new ModelNode(0))
+            .setMeasurementUnit(MILLISECONDS)
             .setStorageRuntime()
             .build();
     static final SimpleAttributeDefinition MIN_REQUEST_TIME = new SimpleAttributeDefinitionBuilder("min-request-time", ModelType.LONG)
             .setUndefinedMetricValue(new ModelNode(0))
+            .setMeasurementUnit(MILLISECONDS)
             .setStorageRuntime()
             .build();
     static final SimpleAttributeDefinition TOTAL_REQUEST_TIME = new SimpleAttributeDefinitionBuilder("total-request-time", ModelType.LONG)
             .setUndefinedMetricValue(new ModelNode(0))
+            .setMeasurementUnit(MILLISECONDS)
             .setStorageRuntime()
             .build();
     static final SimpleAttributeDefinition REQUEST_COUNT = new SimpleAttributeDefinitionBuilder("request-count", ModelType.LONG)
