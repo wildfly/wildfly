@@ -27,6 +27,7 @@ import org.jboss.as.ejb3.cache.Cache;
 import org.jboss.as.ejb3.cache.CacheFactory;
 import org.jboss.as.ejb3.cache.Identifiable;
 import org.jboss.as.ejb3.cache.StatefulObjectFactory;
+import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.ejb3.component.stateful.StatefulTimeoutInfo;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
@@ -35,7 +36,6 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
-import org.wildfly.clustering.ejb.BeanContext;
 import org.wildfly.clustering.ejb.IdentifierFactory;
 import org.wildfly.clustering.ejb.PassivationListener;
 
@@ -49,11 +49,11 @@ import org.wildfly.clustering.ejb.PassivationListener;
  */
 public class SimpleCacheFactoryService<K, V extends Identifiable<K>> extends AbstractService<CacheFactory<K, V>> implements CacheFactory<K, V> {
 
-    public static <K, V extends Identifiable<K>> ServiceBuilder<CacheFactory<K, V>> build(String name, ServiceTarget target, ServiceName serviceName, BeanContext context, StatefulTimeoutInfo timeout) {
-        SimpleCacheFactoryService<K, V> service = new SimpleCacheFactoryService<>(timeout);
+    public static <K, V extends Identifiable<K>> ServiceBuilder<CacheFactory<K, V>> build(String name, ServiceTarget target, ServiceName serviceName, StatefulComponentDescription description) {
+        SimpleCacheFactoryService<K, V> service = new SimpleCacheFactoryService<>(description.getStatefulTimeout());
         return target.addService(serviceName, service)
                 .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.environment)
-                .addDependency(context.getDeploymentUnitServiceName().append(name, "expiration"), ScheduledExecutorService.class, service.executor)
+                .addDependency(description.getDeploymentUnitServiceName().append(name, "expiration"), ScheduledExecutorService.class, service.executor)
         ;
     }
 

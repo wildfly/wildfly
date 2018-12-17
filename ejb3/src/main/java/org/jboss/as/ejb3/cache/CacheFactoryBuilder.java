@@ -22,11 +22,11 @@
 package org.jboss.as.ejb3.cache;
 
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
-import org.jboss.as.ejb3.component.stateful.StatefulTimeoutInfo;
+import org.jboss.as.ee.component.ComponentConfiguration;
+import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.ejb.BeanContext;
 
 /**
  * Builds a {@link CacheFactory} service.
@@ -40,7 +40,7 @@ public interface CacheFactoryBuilder<K, V extends Identifiable<K>> {
 
     void installDeploymentUnitDependencies(CapabilityServiceSupport support, ServiceTarget target, ServiceName deploymentUnitServiceName);
 
-    ServiceBuilder<?> build(ServiceTarget target, ServiceName name, BeanContext context, StatefulTimeoutInfo timeout);
+    ServiceBuilder<?> build(ServiceTarget target, ServiceName name, StatefulComponentDescription description, ComponentConfiguration configuration);
 
     /**
      * Indicates whether or not cache factories built by this object can support passivation.

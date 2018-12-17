@@ -21,15 +21,20 @@
  */
 package org.jboss.as.ejb3.cache.distributable;
 
+import java.time.Duration;
 import java.util.ServiceLoader;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ejb3.cache.CacheFactoryBuilderService;
 import org.jboss.as.ejb3.cache.Contextual;
 import org.jboss.as.ejb3.cache.Identifiable;
+import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.ejb3.component.stateful.StatefulTimeoutInfo;
+import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -95,7 +100,35 @@ public class DistributableCacheFactoryBuilderService<K, V extends Identifiable<K
     }
 
     @Override
-    public ServiceBuilder<?> build(ServiceTarget target, ServiceName serviceName, BeanContext context, StatefulTimeoutInfo statefulTimeout) {
+    public ServiceBuilder<?> build(ServiceTarget target, ServiceName serviceName, StatefulComponentDescription description, ComponentConfiguration configuration) {
+        BeanContext context = new BeanContext() {
+            @Override
+            public String getBeanName() {
+                return configuration.getComponentName();
+            }
+
+            @Override
+            public ServiceName getDeploymentUnitServiceName() {
+                return description.getDeploymentUnitServiceName();
+            }
+
+            @Override
+            public ModuleLoader getModuleLoader() {
+                return configuration.getModuleLoader();
+            }
+
+            @Override
+            public ClassLoader getClassLoader() {
+                return configuration.getModuleClassLoader();
+            }
+
+            @Override
+            public Duration getTimeout() {
+                StatefulTimeoutInfo info = description.getStatefulTimeout();
+                // TODO Once based on JDK9+, change to Duration.of(this.info.getValue(), this.info.getTimeUnit().toChronoUnit())
+                return (info != null) ? Duration.ofMillis(TimeUnit.MILLISECONDS.convert(info.getValue(), info.getTimeUnit())) : null;
+            }
+        };
         ServiceConfigurator configurator = this.builder.getBeanManagerFactoryServiceConfigurator(context);
         return new DistributableCacheFactoryService<K, V>(serviceName, configurator).build(target);
     }

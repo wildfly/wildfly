@@ -40,22 +40,18 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
 
 import java.lang.reflect.Method;
-import java.time.Duration;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.ejb3.cache.CacheFactoryBuilder;
-import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.wildfly.clustering.ejb.BeanContext;
 
 /**
  * @author Stuart Douglas
  */
-public class StatefulSessionComponentCreateService extends SessionBeanComponentCreateService implements BeanContext {
+public class StatefulSessionComponentCreateService extends SessionBeanComponentCreateService {
 
     private final InterceptorFactory afterBegin;
     private final Method afterBeginMethod;
@@ -65,9 +61,7 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
     private final Method beforeCompletionMethod;
     private final InterceptorFactory prePassivate;
     private final InterceptorFactory postActivate;
-    private final StatefulTimeoutInfo statefulTimeout;
     private final CacheInfo cache;
-    private final ClassLoader loader;
     private final InjectedValue<DefaultAccessTimeoutService> defaultAccessTimeoutService = new InjectedValue<DefaultAccessTimeoutService>();
     private final InterceptorFactory ejb2XRemoveMethod;
     private final Value<CacheFactory> cacheFactory;
@@ -75,9 +69,9 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
     private final InjectedValue<CacheFactoryBuilder> cacheFactoryBuilder = new InjectedValue<>();
     private final Set<Object> serializableInterceptorContextKeys;
     final boolean passivationCapable;
-    private final ModuleLoader moduleLoader;
-    private final ServiceName deploymentUnitServiceName;
     private final ServiceName componentServiceName;
+    private final StatefulComponentDescription description;
+    private final ComponentConfiguration configuration;
 
     /**
      * Construct a new instance.
@@ -100,16 +94,14 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
         this.beforeCompletion = (this.beforeCompletionMethod != null) ? Interceptors.getChainedInterceptorFactory(tcclInterceptorFactory, namespaceContextInterceptorFactory, CurrentInvocationContextInterceptor.FACTORY, invokeMethodOnTarget(this.beforeCompletionMethod)) : null;
         this.prePassivate = Interceptors.getChainedInterceptorFactory(componentConfiguration.getPrePassivateInterceptors());
         this.postActivate = Interceptors.getChainedInterceptorFactory(componentConfiguration.getPostActivateInterceptors());
-        this.statefulTimeout = componentDescription.getStatefulTimeout();
         //the interceptor chain for EJB e.x remove methods
         this.ejb2XRemoveMethod = Interceptors.getChainedInterceptorFactory(StatefulSessionSynchronizationInterceptor.factory(componentDescription.getTransactionManagementType()), new ImmediateInterceptorFactory(new StatefulRemoveInterceptor(false)), Interceptors.getTerminalInterceptorFactory());
         this.cache = componentDescription.getCache();
-        this.loader = componentConfiguration.getModuleClassLoader();
-        this.moduleLoader = componentConfiguration.getModuleLoader();
         this.serializableInterceptorContextKeys = componentConfiguration.getInterceptorContextKeys();
         this.passivationCapable = componentDescription.isPassivationApplicable();
-        this.deploymentUnitServiceName = componentDescription.getDeploymentUnitServiceName();
         this.componentServiceName = componentDescription.getServiceName();
+        this.description = componentDescription;
+        this.configuration = componentConfiguration;
         this.cacheFactory = cacheFactory;
     }
 
@@ -121,7 +113,7 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
     @Override
     public void start(StartContext context) throws StartException {
         super.start(context);
-        this.cacheFactoryBuilder.getValue().build(context.getChildTarget(), this.componentServiceName.append("cache"), this, this.statefulTimeout).install();
+        this.cacheFactoryBuilder.getValue().build(context.getChildTarget(), this.componentServiceName.append("cache"), this.description, this.configuration).install();
     }
 
     @Override
@@ -198,31 +190,5 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
 
     boolean isPassivationCapable() {
         return this.passivationCapable;
-    }
-
-    @Override
-    public ClassLoader getClassLoader() {
-        return this.loader;
-    }
-
-    @Override
-    public String getBeanName() {
-        return this.getComponentName();
-    }
-
-    @Override
-    public ModuleLoader getModuleLoader() {
-        return this.moduleLoader;
-    }
-
-    @Override
-    public ServiceName getDeploymentUnitServiceName() {
-        return this.deploymentUnitServiceName;
-    }
-
-    @Override
-    public Duration getTimeout() {
-        // TODO Once based on JDK9+, change to Duration.of(this.statefulTimeout.getValue(), this.statefulTimeout.getTimeUnit().toChronoUnit())
-        return (this.statefulTimeout != null) ? Duration.ofMillis(TimeUnit.MILLISECONDS.convert(this.statefulTimeout.getValue(), this.statefulTimeout.getTimeUnit())) : null;
     }
 }
