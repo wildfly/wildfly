@@ -21,6 +21,8 @@
  */
 package org.wildfly.clustering.ejb;
 
+import java.time.Duration;
+
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceName;
 
@@ -58,5 +60,5 @@ public interface BeanContext {
      * Returns the duration of time this bean can be idle after which it will expire.
      * @return the timeout of this bean
      */
-    Time getTimeout();
+    Duration getTimeout();
 }
