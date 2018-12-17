@@ -25,10 +25,13 @@ package org.wildfly.clustering.web.infinispan;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.security.PrivilegedAction;
+import java.util.Iterator;
 import java.util.ServiceLoader;
 
 import org.wildfly.clustering.marshalling.spi.Serializer;
 import org.wildfly.clustering.web.IdentifierSerializerProvider;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author Paul Ferraro
@@ -36,14 +39,16 @@ import org.wildfly.clustering.web.IdentifierSerializerProvider;
 public enum SessionIdentifierSerializer implements Serializer<String> {
     INSTANCE;
 
-    private final Serializer<String> serializer = load(IdentifierSerializerProvider.class.getClassLoader());
-
-    private static final Serializer<String> load(ClassLoader loader) {
-        for (IdentifierSerializerProvider provider : ServiceLoader.load(IdentifierSerializerProvider.class, loader)) {
-            return provider.getSerializer();
+    private final Serializer<String> serializer = WildFlySecurityManager.doUnchecked(new PrivilegedAction<Serializer<String>>() {
+        @Override
+        public Serializer<String> run() {
+            Iterator<IdentifierSerializerProvider> providerIterator = ServiceLoader.load(IdentifierSerializerProvider.class, IdentifierSerializerProvider.class.getClassLoader()).iterator();
+            if (!providerIterator.hasNext()) {
+                throw new IllegalStateException();
+            }
+            return providerIterator.next().getSerializer();
         }
-        throw new IllegalStateException();
-    }
+    });
 
     @Override
     public void write(DataOutput output, String value) throws IOException {
