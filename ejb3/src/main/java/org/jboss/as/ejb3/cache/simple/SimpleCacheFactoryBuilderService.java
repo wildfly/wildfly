@@ -27,16 +27,16 @@ import java.security.PrivilegedAction;
 import java.util.concurrent.ThreadFactory;
 
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ejb3.cache.CacheFactory;
 import org.jboss.as.ejb3.cache.CacheFactoryBuilder;
 import org.jboss.as.ejb3.cache.CacheFactoryBuilderService;
 import org.jboss.as.ejb3.cache.Identifiable;
-import org.jboss.as.ejb3.component.stateful.StatefulTimeoutInfo;
+import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.threads.JBossThreadFactory;
-import org.wildfly.clustering.ejb.BeanContext;
 import org.wildfly.clustering.service.concurrent.RemoveOnCancelScheduledExecutorServiceBuilder;
 
 /**
@@ -74,8 +74,8 @@ public class SimpleCacheFactoryBuilderService<K, V extends Identifiable<K>> exte
     }
 
     @Override
-    public ServiceBuilder<? extends CacheFactory<K, V>> build(ServiceTarget target, ServiceName name, BeanContext context, StatefulTimeoutInfo timeout) {
-        return SimpleCacheFactoryService.build(this.name, target, name, context, timeout);
+    public ServiceBuilder<? extends CacheFactory<K, V>> build(ServiceTarget target, ServiceName name, StatefulComponentDescription description, ComponentConfiguration configuration) {
+        return SimpleCacheFactoryService.build(this.name, target, name, description);
     }
 
     @Override
