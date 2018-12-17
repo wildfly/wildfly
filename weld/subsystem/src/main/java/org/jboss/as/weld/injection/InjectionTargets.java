@@ -21,6 +21,8 @@
  */
 package org.jboss.as.weld.injection;
 
+import static java.security.AccessController.doPrivileged;
+
 import javax.enterprise.inject.spi.Bean;
 
 import org.jboss.weld.annotated.enhanced.EnhancedAnnotatedType;
@@ -29,6 +31,8 @@ import org.jboss.weld.manager.api.WeldInjectionTarget;
 import org.jboss.weld.manager.api.WeldInjectionTargetBuilder;
 import org.jboss.weld.resources.ClassTransformer;
 import org.jboss.weld.util.Beans;
+import org.wildfly.security.manager.WildFlySecurityManager;
+import org.wildfly.security.manager.action.GetClassLoaderAction;
 
 /**
  * Utility class for working with CDI InjectionTargets
@@ -65,7 +69,8 @@ public class InjectionTargets {
              * If this happens, use a combination of a bean archive identifier and class' classloader hashCode as the BDA ID.
              * This breaks AnnotatedType serialization but that does not matter as these are non-contextual components.
              */
-            final String bdaId = beanManager.getId() + componentClass.getClassLoader().hashCode();
+            final ClassLoader classLoader = WildFlySecurityManager.isChecking() ? doPrivileged(new GetClassLoaderAction(componentClass)) : componentClass.getClassLoader();
+            final String bdaId = beanManager.getId() + classLoader.hashCode();
             type = transformer.getEnhancedAnnotatedType(clazz, bdaId);
         }
 
