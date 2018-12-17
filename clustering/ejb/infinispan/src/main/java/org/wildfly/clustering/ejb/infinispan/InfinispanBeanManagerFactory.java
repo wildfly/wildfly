@@ -21,6 +21,7 @@
  */
 package org.wildfly.clustering.ejb.infinispan;
 
+import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Predicate;
@@ -37,7 +38,6 @@ import org.wildfly.clustering.ejb.BeanPassivationConfiguration;
 import org.wildfly.clustering.ejb.PassivationListener;
 import org.wildfly.clustering.ejb.IdentifierFactory;
 import org.wildfly.clustering.ejb.RemoveListener;
-import org.wildfly.clustering.ejb.Time;
 import org.wildfly.clustering.ejb.infinispan.bean.InfinispanBeanFactory;
 import org.wildfly.clustering.ejb.infinispan.group.InfinispanBeanGroupFactory;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
@@ -94,11 +94,11 @@ public class InfinispanBeanManagerFactory<I, T> implements BeanManagerFactory<I,
         Registry<String, ?> registry = this.configuration.getRegistry();
         KeyAffinityServiceFactory affinityFactory = this.configuration.getKeyAffinityServiceFactory();
         CommandDispatcherFactory dispatcherFactory = this.configuration.getCommandDispatcherFactory();
-        Time timeout = this.configuration.getBeanContext().getTimeout();
+        Duration timeout = this.configuration.getBeanContext().getTimeout();
         ScheduledExecutorService scheduler = this.configuration.getScheduler();
         ExpirationConfiguration<T> expiration = new ExpirationConfiguration<T>() {
             @Override
-            public Time getTimeout() {
+            public Duration getTimeout() {
                 return timeout;
             }
 

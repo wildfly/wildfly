@@ -21,6 +21,7 @@
  */
 package org.wildfly.clustering.ejb.infinispan;
 
+import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -30,7 +31,6 @@ import java.util.concurrent.TimeUnit;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.infinispan.TransactionBatch;
-import org.wildfly.clustering.ejb.Time;
 import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
 import org.wildfly.clustering.infinispan.spi.distribution.Locality;
 
@@ -56,15 +56,13 @@ public class BeanExpirationScheduler<I, T> implements Scheduler<I> {
 
     @Override
     public void schedule(I id) {
-        Time timeout = this.expiration.getTimeout();
-        long value = timeout.getValue();
-        if (value >= 0) {
-            TimeUnit unit = timeout.getUnit();
-            InfinispanEjbLogger.ROOT_LOGGER.tracef("Scheduling stateful session bean %s to expire in %d %s", id, value, unit);
+        Duration timeout = this.expiration.getTimeout();
+        if (!timeout.isNegative()) {
+            InfinispanEjbLogger.ROOT_LOGGER.tracef("Scheduling stateful session bean %s to expire in %s", id, timeout);
             Runnable task = new ExpirationTask(id);
             // Make sure the expiration future map insertion happens before map removal (during task execution).
             synchronized (task) {
-                this.expirationFutures.put(id, this.expiration.getExecutor().schedule(task, value, unit));
+                this.expirationFutures.put(id, this.expiration.getExecutor().schedule(task, timeout.toMillis(), TimeUnit.MILLISECONDS));
             }
         }
     }

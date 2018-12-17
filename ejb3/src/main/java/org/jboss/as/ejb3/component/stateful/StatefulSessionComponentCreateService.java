@@ -40,7 +40,9 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
 
 import java.lang.reflect.Method;
+import java.time.Duration;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.ejb3.cache.CacheFactoryBuilder;
 import org.jboss.modules.ModuleLoader;
@@ -49,7 +51,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.wildfly.clustering.ejb.BeanContext;
-import org.wildfly.clustering.ejb.Time;
 
 /**
  * @author Stuart Douglas
@@ -220,7 +221,8 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
     }
 
     @Override
-    public Time getTimeout() {
-        return (this.statefulTimeout != null) ? new Time(this.statefulTimeout.getValue(), this.statefulTimeout.getTimeUnit()) : null;
+    public Duration getTimeout() {
+        // TODO Once based on JDK9+, change to Duration.of(this.statefulTimeout.getValue(), this.statefulTimeout.getTimeUnit().toChronoUnit())
+        return (this.statefulTimeout != null) ? Duration.ofMillis(TimeUnit.MILLISECONDS.convert(this.statefulTimeout.getValue(), this.statefulTimeout.getTimeUnit())) : null;
     }
 }
