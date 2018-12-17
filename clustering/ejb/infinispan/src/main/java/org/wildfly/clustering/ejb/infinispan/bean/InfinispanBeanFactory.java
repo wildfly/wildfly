@@ -21,15 +21,16 @@
  */
 package org.wildfly.clustering.ejb.infinispan.bean;
 
+import java.time.Duration;
+
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
-import org.wildfly.clustering.ee.infinispan.CacheProperties;
-import org.wildfly.clustering.ee.infinispan.CacheEntryMutator;
 import org.wildfly.clustering.ee.Mutator;
+import org.wildfly.clustering.ee.infinispan.CacheEntryMutator;
+import org.wildfly.clustering.ee.infinispan.CacheProperties;
 import org.wildfly.clustering.ejb.Bean;
 import org.wildfly.clustering.ejb.PassivationListener;
 import org.wildfly.clustering.ejb.RemoveListener;
-import org.wildfly.clustering.ejb.Time;
 import org.wildfly.clustering.ejb.infinispan.BeanEntry;
 import org.wildfly.clustering.ejb.infinispan.BeanFactory;
 import org.wildfly.clustering.ejb.infinispan.BeanGroup;
@@ -52,10 +53,10 @@ public class InfinispanBeanFactory<I, T> implements BeanFactory<I, T> {
     private final BeanGroupFactory<I, T> groupFactory;
     private final Cache<BeanKey<I>, BeanEntry<I>> cache;
     private final Cache<BeanKey<I>, BeanEntry<I>> findCache;
-    private final Time timeout;
+    private final Duration timeout;
     private final PassivationListener<T> listener;
 
-    public InfinispanBeanFactory(String beanName, BeanGroupFactory<I, T> groupFactory, Cache<BeanKey<I>, BeanEntry<I>> cache, CacheProperties properties, Time timeout, PassivationListener<T> listener) {
+    public InfinispanBeanFactory(String beanName, BeanGroupFactory<I, T> groupFactory, Cache<BeanKey<I>, BeanEntry<I>> cache, CacheProperties properties, Duration timeout, PassivationListener<T> listener) {
         this.beanName = beanName;
         this.groupFactory = groupFactory;
         this.cache = cache;
