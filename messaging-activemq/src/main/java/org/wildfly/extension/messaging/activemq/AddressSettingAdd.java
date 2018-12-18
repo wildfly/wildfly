@@ -36,8 +36,6 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -66,9 +64,8 @@ class AddressSettingAdd extends AbstractAddStepHandler {
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
         final ActiveMQServer server = getActiveMQServer(context, operation);
         if(server != null) {
-            final PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
             final AddressSettings settings = createSettings(context, model);
-            server.getAddressSettingsRepository().addMatch(address.getLastElement().getValue(), settings);
+            server.getAddressSettingsRepository().addMatch(context.getCurrentAddressValue(), settings);
         }
     }
 

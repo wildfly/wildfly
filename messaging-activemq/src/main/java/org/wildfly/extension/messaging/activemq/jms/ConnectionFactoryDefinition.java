@@ -30,6 +30,9 @@ import java.util.Collection;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
+import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.capability.DynamicNameMappers;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.wildfly.extension.messaging.activemq.CommonAttributes;
 import org.wildfly.extension.messaging.activemq.MessagingExtension;
@@ -42,6 +45,11 @@ import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.
  * @author <a href="http://jmesnil.net">Jeff Mesnil</a> (c) 2012 Red Hat Inc.
  */
 public class ConnectionFactoryDefinition extends PersistentResourceDefinition {
+
+    static final String CAPABILITY_NAME = "org.wildfly.messaging.activemq.server.connection-factory";
+    static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of(CAPABILITY_NAME, true, ConnectionFactoryService.class)
+            .setDynamicNameMapper(DynamicNameMappers.PARENT)
+            .build();
 
     static final AttributeDefinition[] concat(AttributeDefinition[] common, AttributeDefinition... specific) {
         int size = common.length + specific.length;
@@ -56,10 +64,11 @@ public class ConnectionFactoryDefinition extends PersistentResourceDefinition {
     private final boolean registerRuntimeOnly;
 
     public ConnectionFactoryDefinition(final boolean registerRuntimeOnly) {
-        super(MessagingExtension.CONNECTION_FACTORY_PATH,
-                MessagingExtension.getResourceDescriptionResolver(CommonAttributes.CONNECTION_FACTORY),
-                ConnectionFactoryAdd.INSTANCE,
-                ConnectionFactoryRemove.INSTANCE);
+        super(new SimpleResourceDefinition.Parameters(MessagingExtension.CONNECTION_FACTORY_PATH,
+                MessagingExtension.getResourceDescriptionResolver(CommonAttributes.CONNECTION_FACTORY))
+                .setCapabilities(CAPABILITY)
+                .setAddHandler(ConnectionFactoryAdd.INSTANCE)
+                .setRemoveHandler(ConnectionFactoryRemove.INSTANCE));
         this.registerRuntimeOnly = registerRuntimeOnly;
     }
 

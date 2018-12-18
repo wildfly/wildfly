@@ -30,10 +30,12 @@ import static org.jboss.dmr.ModelType.DOUBLE;
 import static org.jboss.dmr.ModelType.INT;
 import static org.jboss.dmr.ModelType.LONG;
 import static org.jboss.dmr.ModelType.STRING;
+import static org.wildfly.extension.messaging.activemq.AbstractTransportDefinition.CONNECTOR_CAPABILITY_NAME;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.MESSAGING_SECURITY_SENSITIVE_TARGET;
 import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttribute.ConfigType.INBOUND;
 import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttribute.ConfigType.OUTBOUND;
 import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttribute.create;
+import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryDefinition.CAPABILITY_NAME;
 
 import org.apache.activemq.artemis.api.config.ActiveMQDefaultConfiguration;
 import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
@@ -50,6 +52,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.dmr.ModelNode;
+import org.wildfly.extension.messaging.activemq.AbstractTransportDefinition;
 import org.wildfly.extension.messaging.activemq.CommonAttributes;
 import org.wildfly.extension.messaging.activemq.InfiniteOrPositiveValidators;
 
@@ -168,6 +171,7 @@ public interface ConnectionFactoryAttributes {
                 .setRequired(true)
                 .setAttributeParser(AttributeParser.STRING_LIST)
                 .setAttributeMarshaller(AttributeMarshaller.STRING_LIST)
+                .setCapabilityReference(new AbstractTransportDefinition.TransportCapabilityReferenceRecorder(CAPABILITY_NAME, CONNECTOR_CAPABILITY_NAME, false))
                 .setRestartAllServices()
                 .build();
 

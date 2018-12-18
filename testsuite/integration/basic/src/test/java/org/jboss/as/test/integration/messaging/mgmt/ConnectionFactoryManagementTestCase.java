@@ -29,7 +29,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLED_BACK;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.junit.Assert.assertEquals;
@@ -40,6 +42,8 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
@@ -90,4 +94,38 @@ public class ConnectionFactoryManagementTestCase extends ContainerResourceMgmtTe
         ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
     }
 
+    @Test
+    public void testRemoveReferencedConnector() throws Exception {
+        JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
+        ModelNode address = jmsOperations.getServerAddress().add("in-vm-connector", "in-vm-test");
+        ModelNode addOp = Operations.createAddOperation(address);
+        addOp.get("server-id").set(0);
+        ModelNode params = addOp.get("params").setEmptyList();
+        params.add("buffer-pooling", ModelNode.FALSE);
+        managementClient.getControllerClient().execute(addOp);
+        ModelNode attributes = new ModelNode();
+        attributes.get("connectors").add("in-vm-test");
+        jmsOperations.addJmsConnectionFactory(CF_NAME, "java:/jms/" + CF_NAME, attributes);
+        try {
+            execute(managementClient.getControllerClient(), Operations.createRemoveOperation(address));
+            fail("it is not possible to remove a connector when it is referenced from a connection factory");
+        } catch (Exception e) {
+            assertTrue(e.getMessage(), e.getMessage().contains("WFLYCTL0367"));
+        } finally {
+            jmsOperations.removeJmsConnectionFactory(CF_NAME);
+            managementClient.getControllerClient().execute( Operations.createRemoveOperation(address));
+        }
+        ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+    }
+
+    private static ModelNode execute(ModelControllerClient client, ModelNode operation) throws Exception {
+        //System.out.println("operation = " + operation);
+        ModelNode response = client.execute(operation);
+        //System.out.println("response = " + response);
+        boolean success = SUCCESS.equals(response.get(OUTCOME).asString());
+        if (success) {
+            return response.get(RESULT);
+        }
+        throw new Exception(response.get(FAILURE_DESCRIPTION).asString());
+    }
 }

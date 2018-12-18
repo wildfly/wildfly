@@ -13,16 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.wildfly.extension.messaging.activemq.jms;
 
+import static org.wildfly.extension.messaging.activemq.AbstractTransportDefinition.CONNECTOR_CAPABILITY_NAME;
 
 import java.util.Arrays;
 import java.util.Collection;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
+import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.StringListAttributeDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.wildfly.extension.messaging.activemq.AbstractTransportDefinition;
 import org.wildfly.extension.messaging.activemq.CommonAttributes;
 import org.wildfly.extension.messaging.activemq.MessagingExtension;
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common;
@@ -35,16 +39,21 @@ import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.
  */
 public class ExternalConnectionFactoryDefinition extends PersistentResourceDefinition {
 
-    public static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] {
-        CommonAttributes.HA, Regular.FACTORY_TYPE, Common.DISCOVERY_GROUP, Common.CONNECTORS, Common.ENTRIES};
+    private static StringListAttributeDefinition CONNECTORS = new StringListAttributeDefinition.Builder(Common.CONNECTORS)
+            .setCapabilityReference(new AbstractTransportDefinition.TransportCapabilityReferenceRecorder("org.wildfly.messaging.activemq.external.connection-factory", CONNECTOR_CAPABILITY_NAME, true))
+            .build();
+    static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.messaging.activemq.external.connection-factory", true, ExternalConnectionFactoryService.class).
+            build();
+    public static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[]{
+        CommonAttributes.HA, Regular.FACTORY_TYPE, Common.DISCOVERY_GROUP, CONNECTORS, Common.ENTRIES};
 
     private final boolean registerRuntimeOnly;
 
     public ExternalConnectionFactoryDefinition(final boolean registerRuntimeOnly) {
-        super(MessagingExtension.CONNECTION_FACTORY_PATH,
-                MessagingExtension.getResourceDescriptionResolver(CommonAttributes.CONNECTION_FACTORY),
-                ExternalConnectionFactoryAdd.INSTANCE,
-                ExternalConnectionFactoryRemove.INSTANCE);
+        super(new SimpleResourceDefinition.Parameters(MessagingExtension.CONNECTION_FACTORY_PATH, MessagingExtension.getResourceDescriptionResolver(CommonAttributes.CONNECTION_FACTORY))
+                .setCapabilities(CAPABILITY)
+                .setAddHandler(ExternalConnectionFactoryAdd.INSTANCE)
+                .setRemoveHandler(ExternalConnectionFactoryRemove.INSTANCE));
         this.registerRuntimeOnly = registerRuntimeOnly;
     }
 
@@ -60,5 +69,5 @@ public class ExternalConnectionFactoryDefinition extends PersistentResourceDefin
         if (registerRuntimeOnly) {
             ConnectionFactoryUpdateJndiHandler.registerOperations(registry, getResourceDescriptionResolver());
         }
-   }
+    }
 }

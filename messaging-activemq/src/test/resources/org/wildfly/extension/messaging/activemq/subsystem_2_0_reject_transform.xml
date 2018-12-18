@@ -20,6 +20,12 @@
             <master />
         </replication-colocated>
 
+        <remote-connector name="netty"
+                                           socket-binding="messaging-throughput">
+            <param name="batch-delay" value="${batch.delay:50}"/>
+        </remote-connector>
+
+        <in-vm-connector name="in-vm" server-id="${my.server-id:0}"/>
         <http-connector name="http"
                         socket-binding="http"
                         endpoint="http"

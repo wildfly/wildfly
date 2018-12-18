@@ -44,7 +44,6 @@ import org.wildfly.extension.messaging.activemq.ha.SharedStoreColocatedDefinitio
 import org.wildfly.extension.messaging.activemq.ha.SharedStoreMasterDefinition;
 import org.wildfly.extension.messaging.activemq.ha.SharedStoreSlaveDefinition;
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes;
-import org.wildfly.extension.messaging.activemq.jms.PooledConnectionFactoryDefinition;
 import org.wildfly.extension.messaging.activemq.jms.bridge.JMSBridgeDefinition;
 import org.wildfly.extension.messaging.activemq.jms.legacy.LegacyConnectionFactoryDefinition;
 
@@ -97,7 +96,7 @@ public class MessagingSubsystemParser_6_0 extends PersistentResourceXMLParser {
                         CommonAttributes.PARAMS);
 
         final PersistentResourceXMLBuilder pooledConnectionFactory =
-                                        builder(PooledConnectionFactoryDefinition.INSTANCE.getPathElement())
+                                        builder(MessagingExtension.POOLED_CONNECTION_FACTORY_PATH)
                                                 .addAttributes(
                                                         ConnectionFactoryAttributes.Common.ENTRIES,
                                                         // common
