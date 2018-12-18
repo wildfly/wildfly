@@ -24,20 +24,25 @@ package org.jboss.as.ejb3.cache.simple;
 import static java.security.AccessController.doPrivileged;
 
 import java.security.PrivilegedAction;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.concurrent.ThreadFactory;
 
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
+import org.jboss.as.clustering.controller.ServiceConfiguratorAdapter;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ejb3.cache.CacheFactory;
 import org.jboss.as.ejb3.cache.CacheFactoryBuilder;
 import org.jboss.as.ejb3.cache.CacheFactoryBuilderService;
 import org.jboss.as.ejb3.cache.Identifiable;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.threads.JBossThreadFactory;
-import org.wildfly.clustering.service.concurrent.RemoveOnCancelScheduledExecutorServiceBuilder;
+import org.wildfly.clustering.service.ServiceConfigurator;
+import org.wildfly.clustering.service.concurrent.RemoveOnCancelScheduledExecutorServiceConfigurator;
 
 /**
  * Service that provides a simple {@link CacheFactoryBuilder}.
@@ -69,8 +74,9 @@ public class SimpleCacheFactoryBuilderService<K, V extends Identifiable<K>> exte
     }
 
     @Override
-    public void installDeploymentUnitDependencies(CapabilityServiceSupport support, ServiceTarget target, ServiceName deploymentUnitServiceName) {
-        new RemoveOnCancelScheduledExecutorServiceBuilder(deploymentUnitServiceName.append(this.name, "expiration"), THREAD_FACTORY).build(target).install();
+    public Collection<CapabilityServiceConfigurator> getDeploymentServiceConfigurators(DeploymentUnit unit) {
+        ServiceConfigurator configurator = new RemoveOnCancelScheduledExecutorServiceConfigurator(unit.getServiceName().append(this.name, "expiration"), THREAD_FACTORY);
+        return Collections.singleton(new ServiceConfiguratorAdapter(configurator));
     }
 
     @Override

@@ -22,6 +22,7 @@
 package org.jboss.as.ejb3.cache.distributable;
 
 import java.time.Duration;
+import java.util.Collection;
 import java.util.ServiceLoader;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -34,6 +35,7 @@ import org.jboss.as.ejb3.cache.Contextual;
 import org.jboss.as.ejb3.cache.Identifiable;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.ejb3.component.stateful.StatefulTimeoutInfo;
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -93,10 +95,8 @@ public class DistributableCacheFactoryBuilderService<K, V extends Identifiable<K
     }
 
     @Override
-    public void installDeploymentUnitDependencies(CapabilityServiceSupport support, ServiceTarget target, ServiceName deploymentUnitServiceName) {
-        for (CapabilityServiceConfigurator configurator : this.builder.getDeploymentServiceConfigurators(deploymentUnitServiceName)) {
-            configurator.configure(support).build(target).install();
-        }
+    public Collection<CapabilityServiceConfigurator> getDeploymentServiceConfigurators(DeploymentUnit unit) {
+        return this.builder.getDeploymentServiceConfigurators(unit.getServiceName());
     }
 
     @Override

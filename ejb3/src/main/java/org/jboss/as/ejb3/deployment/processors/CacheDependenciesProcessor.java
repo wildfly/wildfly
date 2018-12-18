@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentDescription;
@@ -58,7 +59,9 @@ public class CacheDependenciesProcessor implements DeploymentUnitProcessor {
             @Override
             public void accept(ServiceTarget target) {
                 for (Supplier<CacheFactoryBuilder<SessionID, StatefulSessionComponentInstance>> dependency : dependencies) {
-                    dependency.get().installDeploymentUnitDependencies(support, target, name);
+                    for (CapabilityServiceConfigurator configurator : dependency.get().getDeploymentServiceConfigurators(unit)) {
+                        configurator.configure(support).build(target).install();
+                    }
                 }
             }
         };
