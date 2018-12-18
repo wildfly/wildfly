@@ -21,9 +21,12 @@
  */
 package org.jboss.as.ejb3.cache;
 
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import java.util.Collection;
+
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -37,8 +40,12 @@ import org.jboss.msc.service.ServiceTarget;
  * @param <V> the cache value
  */
 public interface CacheFactoryBuilder<K, V extends Identifiable<K>> {
-
-    void installDeploymentUnitDependencies(CapabilityServiceSupport support, ServiceTarget target, ServiceName deploymentUnitServiceName);
+    /**
+     * Returns configurators for services to be installed for the specified deployment.
+     * @param unit a deployment unit
+     * @return a collection of service configurators
+     */
+    Collection<CapabilityServiceConfigurator> getDeploymentServiceConfigurators(DeploymentUnit unit);
 
     ServiceBuilder<?> build(ServiceTarget target, ServiceName name, StatefulComponentDescription description, ComponentConfiguration configuration);
 
