@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 import javax.ejb.ConcurrentAccessException;
 import javax.ejb.ConcurrentAccessTimeoutException;
@@ -64,7 +65,6 @@ import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.value.Value;
 import org.wildfly.clustering.ejb.IdentifierFactory;
 import org.wildfly.clustering.ejb.PassivationListener;
 import org.wildfly.extension.requestcontroller.ControlPoint;
@@ -95,7 +95,7 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
     private Interceptor postActivateInterceptor;
     private final Map<EJBBusinessMethod, AccessTimeoutDetails> methodAccessTimeouts;
     private final DefaultAccessTimeoutService defaultAccessTimeoutProvider;
-    private final Value<CacheFactory> cacheFactory;
+    private final Supplier<CacheFactory<SessionID, StatefulSessionComponentInstance>> cacheFactory;
     private final InterceptorFactory ejb2XRemoveMethod;
     private Interceptor ejb2XRemoveMethodInterceptor;
 
@@ -334,10 +334,10 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
     }
 
     @Override
-    public void init() {
+    public synchronized void init() {
         super.init();
 
-        this.cache = this.cacheFactory.getValue().createCache(this, this, this);
+        this.cache = this.cacheFactory.get().createCache(this, this, this);
         this.cache.start();
     }
 
@@ -395,6 +395,7 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
         return AccessController.doPrivileged(CurrentServiceContainer.GET_ACTION);
     }
 
+    @Override
     public boolean isRemotable(Throwable throwable) {
         return cache.isRemotable(throwable);
     }
