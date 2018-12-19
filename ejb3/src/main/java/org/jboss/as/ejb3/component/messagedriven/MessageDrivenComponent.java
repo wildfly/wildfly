@@ -57,6 +57,8 @@ import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
 
 import static org.jboss.as.ejb3.component.MethodIntf.MESSAGE_ENDPOINT;
 
+import org.jboss.as.naming.context.NamespaceContextSelector;
+
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
@@ -273,8 +275,12 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
         ClassLoader oldTccl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         try {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
-
-            this.endpoint.activate(endpointFactory, activationSpec);
+            NamespaceContextSelector.pushCurrentSelector(this.getNamespaceContextSelector());
+            try {
+                this.endpoint.activate(endpointFactory, activationSpec);
+            } finally {
+                NamespaceContextSelector.popCurrentSelector();
+            }
         } catch (Exception e) {
             throw EjbLogger.ROOT_LOGGER.failedToActivateMdb(getComponentName(), e);
         } finally {
