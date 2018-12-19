@@ -21,47 +21,38 @@
  */
 package org.jboss.as.ejb3.cache;
 
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.Value;
+import org.wildfly.clustering.service.SimpleServiceNameProvider;
 
-public abstract class CacheFactoryBuilderService<K, V extends Identifiable<K>> implements Value<CacheFactoryBuilder<K, V>> {
+public class CacheFactoryBuilderServiceNameProvider extends SimpleServiceNameProvider {
 
-    public static final ServiceName BASE_CACHE_SERVICE_NAME = ServiceName.JBOSS.append("ejb", "cache");
+    private static final ServiceName BASE_CACHE_SERVICE_NAME = ServiceName.JBOSS.append("ejb", "cache");
     public static final ServiceName DEFAULT_CACHE_SERVICE_NAME = BASE_CACHE_SERVICE_NAME.append("sfsb-default");
     public static final ServiceName DEFAULT_PASSIVATION_DISABLED_CACHE_SERVICE_NAME = BASE_CACHE_SERVICE_NAME.append("sfsb-default-passivation-disabled");
 
-    public static final ServiceName BASE_CACHE_FACTORY_SERVICE_NAME = BASE_CACHE_SERVICE_NAME.append("factory");
+    protected static final ServiceName BASE_CACHE_FACTORY_SERVICE_NAME = BASE_CACHE_SERVICE_NAME.append("factory");
 
-    public static ServiceName getServiceName(String name) {
-        return BASE_CACHE_FACTORY_SERVICE_NAME.append(name);
+    public CacheFactoryBuilderServiceNameProvider(String cacheName) {
+        this(BASE_CACHE_FACTORY_SERVICE_NAME.append(cacheName));
     }
 
-    private final String name;
-
-    protected CacheFactoryBuilderService(String name) {
-        this.name = name;
-    }
-
-    public ServiceBuilder<CacheFactoryBuilder<K, V>> build(ServiceTarget target) {
-        return target.addService(getServiceName(this.name), new ValueService<>(this));
+    protected CacheFactoryBuilderServiceNameProvider(ServiceName name) {
+        super(name);
     }
 
     @Override
     public int hashCode() {
-        return this.name.hashCode();
+        return this.toString().hashCode();
     }
 
     @Override
     public boolean equals(Object object) {
-        if (!(object instanceof CacheFactoryBuilderService)) return false;
-        return this.name.equals(((CacheFactoryBuilderService<?, ?>) object).name);
+        if (!(object instanceof CacheFactoryBuilderServiceNameProvider)) return false;
+        return this.getServiceName().equals(((CacheFactoryBuilderServiceNameProvider) object).getServiceName());
     }
 
     @Override
     public String toString() {
-        return this.name;
+        return this.getServiceName().getSimpleName();
     }
 }

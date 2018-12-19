@@ -35,6 +35,7 @@ import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;
 import javax.ejb.TransactionManagementType;
 
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentConfiguration;
@@ -49,15 +50,15 @@ import org.jboss.as.ee.component.interceptors.InterceptorClassDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.component.serialization.WriteReplaceInterface;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
-import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.cache.CacheFactoryBuilder;
-import org.jboss.as.ejb3.cache.CacheFactoryBuilderService;
+import org.jboss.as.ejb3.cache.CacheFactoryBuilderServiceNameProvider;
 import org.jboss.as.ejb3.cache.CacheInfo;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.interceptors.ComponentTypeIdentityInterceptorFactory;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.tx.LifecycleCMTTxInterceptor;
 import org.jboss.as.ejb3.tx.StatefulBMTInterceptor;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -169,7 +170,6 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
 
     @Override
     public ComponentConfiguration createConfiguration(final ClassReflectionIndex classIndex, final ClassLoader moduleClassLoader, final ModuleLoader moduleLoader) {
-
         final ComponentConfiguration statefulComponentConfiguration = new ComponentConfiguration(this, classIndex, moduleClassLoader, moduleLoader);
         // setup the component create service
         statefulComponentConfiguration.setComponentCreateServiceFactory(new StatefulComponentCreateServiceFactory());
@@ -212,14 +212,16 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
         this.getConfigurators().add(new ComponentConfigurator() {
             @Override
             public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
+                CapabilityServiceSupport support = context.getDeploymentUnit().getAttachment(org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT);
                 StatefulComponentDescription statefulDescription = (StatefulComponentDescription) description;
                 ServiceName cacheFactoryServiceName = statefulDescription.getCacheFactoryServiceName();
-                ServiceBuilder<?> builder = context.getServiceTarget().addService(cacheFactoryServiceName.append("installer"));
+                ServiceTarget target = context.getServiceTarget();
+                ServiceBuilder<?> builder = target.addService(cacheFactoryServiceName.append("installer"));
                 Supplier<CacheFactoryBuilder<SessionID, StatefulSessionComponentInstance>> cacheFactoryBuilder = builder.requires(this.getCacheFactoryBuilderRequirement(statefulDescription));
                 Service service = new ChildTargetService(new Consumer<ServiceTarget>() {
                     @Override
                     public void accept(ServiceTarget target) {
-                        cacheFactoryBuilder.get().build(target, cacheFactoryServiceName, statefulDescription, configuration).install();
+                        cacheFactoryBuilder.get().getServiceConfigurator(cacheFactoryServiceName, statefulDescription, configuration).configure(support).build(target).install();
                     }
                 });
                 builder.setInstance(service).install();
@@ -227,10 +229,10 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
 
             private ServiceName getCacheFactoryBuilderRequirement(StatefulComponentDescription description) {
                 if (!description.isPassivationApplicable()) {
-                    return CacheFactoryBuilderService.DEFAULT_PASSIVATION_DISABLED_CACHE_SERVICE_NAME;
+                    return CacheFactoryBuilderServiceNameProvider.DEFAULT_PASSIVATION_DISABLED_CACHE_SERVICE_NAME;
                 }
                 CacheInfo cache = description.getCache();
-                return (cache != null) ? CacheFactoryBuilderService.getServiceName(cache.getName()) : CacheFactoryBuilderService.DEFAULT_CACHE_SERVICE_NAME;
+                return (cache != null) ? new CacheFactoryBuilderServiceNameProvider(cache.getName()).getServiceName() : CacheFactoryBuilderServiceNameProvider.DEFAULT_CACHE_SERVICE_NAME;
             }
         });
 
