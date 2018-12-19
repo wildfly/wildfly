@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ejb3.cache.distributable;
 
+import java.security.PrivilegedAction;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Iterator;
@@ -47,6 +48,7 @@ import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfigura
 import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorFactory;
 import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorFactoryProvider;
 import org.wildfly.clustering.service.ServiceConfigurator;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Service that returns a distributable {@link org.jboss.as.ejb3.cache.CacheFactoryBuilder}.
@@ -64,11 +66,21 @@ public class DistributableCacheFactoryBuilderServiceConfigurator<K, V extends Id
     }
 
     private static BeanManagerFactoryServiceConfiguratorFactoryProvider load() {
-        Iterator<BeanManagerFactoryServiceConfiguratorFactoryProvider> providers = ServiceLoader.load(BeanManagerFactoryServiceConfiguratorFactoryProvider.class, BeanManagerFactoryServiceConfiguratorFactoryProvider.class.getClassLoader()).iterator();
+        Iterator<BeanManagerFactoryServiceConfiguratorFactoryProvider> providers = load(BeanManagerFactoryServiceConfiguratorFactoryProvider.class).iterator();
         if (!providers.hasNext()) {
             throw new ServiceConfigurationError(BeanManagerFactoryServiceConfiguratorFactoryProvider.class.getName());
         }
         return providers.next();
+    }
+
+    private static <T> Iterable<T> load(Class<T> providerClass) {
+        PrivilegedAction<Iterable<T>> action = new PrivilegedAction<Iterable<T>>() {
+            @Override
+            public Iterable<T> run() {
+                return ServiceLoader.load(providerClass, providerClass.getClassLoader());
+            }
+        };
+        return WildFlySecurityManager.doUnchecked(action);
     }
 
     public DistributableCacheFactoryBuilderServiceConfigurator(String name, BeanManagerFactoryServiceConfiguratorFactoryProvider provider, BeanManagerFactoryServiceConfiguratorConfiguration config) {
