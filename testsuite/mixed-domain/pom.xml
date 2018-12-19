@@ -46,6 +46,10 @@
         <jboss.dist>${project.basedir}/../../${wildfly.build.output.dir}</jboss.dist>
         <jboss.home>${jboss.dist}</jboss.home>
 
+        <!-- Don't set the modular.jdk.args args so the slaves can use a different JVM -->
+        <modular.jdk.args/>
+        <modular.jdk.testsuite.args/>
+
         <!-- Used to provide an absolute location for the XSLT scripts. -->
         <!-- This value is overridden in submodules with the correct relative path. -->
         <xslt.scripts.dir>${basedir}/../integration/src/test/xslt</xslt.scripts.dir>
@@ -176,6 +180,28 @@
                                 <maven.repo.local>${settings.localRepository}</maven.repo.local>
                                 <module.path>${jboss.dist}/modules</module.path>
                             </system-properties>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>legacy-slave-java-home</id>
+            <activation>
+                <jdk>[9,)</jdk>
+                <property>
+                    <name>java8.home</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <jboss.test.host.slave.jvmhome>${java8.home}</jboss.test.host.slave.jvmhome>
+                                <jboss.test.host.slave.controller.jvmhome>${java8.home}</jboss.test.host.slave.controller.jvmhome>
+                            </systemPropertyVariables>
                         </configuration>
                     </plugin>
                 </plugins>
