@@ -5,12 +5,10 @@
 package org.jboss.as.ejb3.cache.distributable;
 
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
-import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ejb3.cache.Cache;
 import org.jboss.as.ejb3.cache.CacheFactory;
@@ -26,6 +24,7 @@ import org.wildfly.clustering.ejb.BeanManager;
 import org.wildfly.clustering.ejb.BeanManagerFactory;
 import org.wildfly.clustering.ejb.IdentifierFactory;
 import org.wildfly.clustering.ejb.PassivationListener;
+import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SimpleServiceNameProvider;
@@ -43,7 +42,7 @@ public class DistributableCacheFactoryServiceConfigurator<K, V extends Identifia
     private final CapabilityServiceConfigurator configurator;
     private final SupplierDependency<BeanManagerFactory<K, V, Batch>> factory;
 
-    private volatile Supplier<TransactionSynchronizationRegistry> tsr;
+    private volatile SupplierDependency<TransactionSynchronizationRegistry> tsr;
 
     public DistributableCacheFactoryServiceConfigurator(ServiceName name, CapabilityServiceConfigurator configurator) {
         super(name);
@@ -54,6 +53,7 @@ public class DistributableCacheFactoryServiceConfigurator<K, V extends Identifia
     @Override
     public ServiceConfigurator configure(CapabilityServiceSupport support) {
         this.configurator.configure(support);
+        this.tsr = new ServiceSupplierDependency<>(support.getCapabilityServiceName("org.wildfly.transactions.transaction-synchronization-registry"));
         return this;
     }
 
@@ -62,13 +62,7 @@ public class DistributableCacheFactoryServiceConfigurator<K, V extends Identifia
         this.configurator.build(target).install();
         ServiceName name = this.getServiceName();
         ServiceBuilder<?> builder = target.addService(name);
-        // Ensure the local transaction synchronization registry is started before the cache
-        // This parsing isn't 100% ideal as it's somewhat 'internal' knowledge of the relationship between
-        // capability names and service names. But at this point that relationship really needs to become
-        // a contract anyway
-        ServiceName tsrServiceName = ServiceNameFactory.parseServiceName("org.wildfly.transactions.transaction-synchronization-registry");
-        this.tsr = builder.requires(tsrServiceName);
-        Consumer<CacheFactory<K, V>> factory = this.factory.register(builder).provides(name);
+        Consumer<CacheFactory<K, V>> factory = new CompositeDependency(this.factory, this.tsr).register(builder).provides(name);
         Service service = Service.newInstance(factory, this);
         return builder.setInstance(service);
     }
