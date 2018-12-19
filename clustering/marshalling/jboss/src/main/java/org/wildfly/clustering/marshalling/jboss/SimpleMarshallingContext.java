@@ -24,6 +24,8 @@ package org.wildfly.clustering.marshalling.jboss;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 
 import org.jboss.marshalling.ClassExternalizerFactory;
 import org.jboss.marshalling.Marshaller;
@@ -32,6 +34,7 @@ import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.ObjectTable;
 import org.jboss.marshalling.SerializabilityChecker;
 import org.jboss.marshalling.Unmarshaller;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author Paul Ferraro
@@ -65,7 +68,17 @@ public class SimpleMarshallingContext implements MarshallingContext {
 
     @Override
     public Marshaller createMarshaller(int version) throws IOException {
-        return this.factory.createMarshaller(this.getMarshallingConfiguration(version));
+        MarshallingConfiguration marshallingConfiguration = this.getMarshallingConfiguration(version);
+        try {
+            return WildFlySecurityManager.doUnchecked(new PrivilegedExceptionAction<Marshaller>() {
+                @Override
+                public Marshaller run() throws Exception {
+                    return factory.createMarshaller(marshallingConfiguration);
+                }
+            });
+        } catch (PrivilegedActionException e) {
+            throw new IOException(e.getException());
+        }
     }
 
     private MarshallingConfiguration getMarshallingConfiguration(int version) {
