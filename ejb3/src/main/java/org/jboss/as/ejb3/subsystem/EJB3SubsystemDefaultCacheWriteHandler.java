@@ -27,14 +27,11 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.ejb3.cache.CacheFactoryBuilder;
-import org.jboss.as.ejb3.cache.CacheFactoryBuilderService;
+import org.jboss.as.ejb3.cache.CacheFactoryBuilderServiceNameProvider;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
-import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.InjectedValue;
+import org.wildfly.clustering.service.IdentityServiceConfigurator;
 
 /**
  * @author Paul Ferraro
@@ -42,11 +39,11 @@ import org.jboss.msc.value.InjectedValue;
 public class EJB3SubsystemDefaultCacheWriteHandler extends AbstractWriteAttributeHandler<Void> {
 
     public static final EJB3SubsystemDefaultCacheWriteHandler SFSB_CACHE =
-            new EJB3SubsystemDefaultCacheWriteHandler(CacheFactoryBuilderService.DEFAULT_CACHE_SERVICE_NAME,
+            new EJB3SubsystemDefaultCacheWriteHandler(CacheFactoryBuilderServiceNameProvider.DEFAULT_CACHE_SERVICE_NAME,
                     EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_CACHE);
 
     public static final EJB3SubsystemDefaultCacheWriteHandler SFSB_PASSIVATION_DISABLED_CACHE =
-            new EJB3SubsystemDefaultCacheWriteHandler(CacheFactoryBuilderService.DEFAULT_PASSIVATION_DISABLED_CACHE_SERVICE_NAME,
+            new EJB3SubsystemDefaultCacheWriteHandler(CacheFactoryBuilderServiceNameProvider.DEFAULT_PASSIVATION_DISABLED_CACHE_SERVICE_NAME,
                     EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE);
 
     private final ServiceName serviceName;
@@ -84,16 +81,7 @@ public class EJB3SubsystemDefaultCacheWriteHandler extends AbstractWriteAttribut
             context.removeService(this.serviceName);
         }
         if (cacheName.isDefined()) {
-            this.installValueService(context, this.serviceName, CacheFactoryBuilder.class, CacheFactoryBuilderService.getServiceName(cacheName.asString()));
+            new IdentityServiceConfigurator<>(this.serviceName, new CacheFactoryBuilderServiceNameProvider(cacheName.asString()).getServiceName()).build(context.getServiceTarget()).install();
         }
-    }
-
-    private <T> ServiceController<T> installValueService(final OperationContext context, final ServiceName serviceName, final Class<T> targetClass, final ServiceName dependencyServiceName) {
-        final InjectedValue<T> value = new InjectedValue<>();
-        return context.getServiceTarget().addService(serviceName, new ValueService<>(value))
-                .addDependency(dependencyServiceName, targetClass, value)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                .install()
-        ;
     }
 }

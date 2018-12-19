@@ -19,31 +19,24 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.ejb3.cache;
 
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.InjectedValue;
+import org.wildfly.clustering.service.SimpleServiceNameProvider;
 
-public class DelegateCacheFactoryBuilderService<K, V extends Identifiable<K>> extends CacheFactoryBuilderService<K, V> {
-    @SuppressWarnings("rawtypes")
-    private final InjectedValue<CacheFactoryBuilder> builder = new InjectedValue<>();
-    private final ServiceName delegateName;
+public class CacheFactoryBuilderServiceNameProvider extends SimpleServiceNameProvider {
 
-    public DelegateCacheFactoryBuilderService(String name, ServiceName delegateName) {
+    private static final ServiceName BASE_CACHE_SERVICE_NAME = ServiceName.JBOSS.append("ejb", "cache");
+    public static final ServiceName DEFAULT_CACHE_SERVICE_NAME = BASE_CACHE_SERVICE_NAME.append("sfsb-default");
+    public static final ServiceName DEFAULT_PASSIVATION_DISABLED_CACHE_SERVICE_NAME = BASE_CACHE_SERVICE_NAME.append("sfsb-default-passivation-disabled");
+
+    protected static final ServiceName BASE_CACHE_FACTORY_SERVICE_NAME = BASE_CACHE_SERVICE_NAME.append("factory");
+
+    public CacheFactoryBuilderServiceNameProvider(String cacheName) {
+        this(BASE_CACHE_FACTORY_SERVICE_NAME.append(cacheName));
+    }
+
+    protected CacheFactoryBuilderServiceNameProvider(ServiceName name) {
         super(name);
-        this.delegateName = delegateName;
-    }
-
-    @Override
-    public ServiceBuilder<CacheFactoryBuilder<K, V>> build(ServiceTarget target) {
-        return super.build(target).addDependency(this.delegateName, CacheFactoryBuilder.class, this.builder);
-    }
-
-    @Override
-    public CacheFactoryBuilder<K, V> getValue() {
-        return this.builder.getValue();
     }
 }

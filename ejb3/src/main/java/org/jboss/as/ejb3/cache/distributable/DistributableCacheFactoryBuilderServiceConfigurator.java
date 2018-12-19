@@ -23,14 +23,14 @@ package org.jboss.as.ejb3.cache.distributable;
 
 import java.time.Duration;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.component.ComponentConfiguration;
-import org.jboss.as.ejb3.cache.CacheFactoryBuilderService;
 import org.jboss.as.ejb3.cache.Contextual;
 import org.jboss.as.ejb3.cache.Identifiable;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
@@ -47,7 +47,6 @@ import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfigura
 import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorFactory;
 import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorFactoryProvider;
 import org.wildfly.clustering.service.ServiceConfigurator;
-import org.wildfly.clustering.service.SimpleServiceNameProvider;
 
 /**
  * Service that returns a distributable {@link org.jboss.as.ejb3.cache.CacheFactoryBuilder}.
@@ -55,36 +54,34 @@ import org.wildfly.clustering.service.SimpleServiceNameProvider;
  * @param <K> the cache key type
  * @param <V> the cache value type
  */
-public class DistributableCacheFactoryBuilderService<K, V extends Identifiable<K> & Contextual<Batch>> extends SimpleServiceNameProvider implements ServiceConfigurator, DistributableCacheFactoryBuilder<K, V> {
-
-    public static ServiceName getServiceName(String name) {
-        return CacheFactoryBuilderService.BASE_CACHE_FACTORY_SERVICE_NAME.append("distributable", name);
-    }
+public class DistributableCacheFactoryBuilderServiceConfigurator<K, V extends Identifiable<K> & Contextual<Batch>> extends DistributableCacheFactoryBuilderServiceNameProvider implements ServiceConfigurator, DistributableCacheFactoryBuilder<K, V> {
 
     private final BeanManagerFactoryServiceConfiguratorFactory builder;
     private final BeanManagerFactoryServiceConfiguratorConfiguration config;
 
-    public DistributableCacheFactoryBuilderService(CapabilityServiceSupport support, String name, BeanManagerFactoryServiceConfiguratorConfiguration config) {
-        this(support, name, load(), config);
+    public DistributableCacheFactoryBuilderServiceConfigurator(String name, BeanManagerFactoryServiceConfiguratorConfiguration config) {
+        this(name, load(), config);
     }
 
     private static BeanManagerFactoryServiceConfiguratorFactoryProvider load() {
-        for (BeanManagerFactoryServiceConfiguratorFactoryProvider provider: ServiceLoader.load(BeanManagerFactoryServiceConfiguratorFactoryProvider.class, BeanManagerFactoryServiceConfiguratorFactoryProvider.class.getClassLoader())) {
-            return provider;
+        Iterator<BeanManagerFactoryServiceConfiguratorFactoryProvider> providers = ServiceLoader.load(BeanManagerFactoryServiceConfiguratorFactoryProvider.class, BeanManagerFactoryServiceConfiguratorFactoryProvider.class.getClassLoader()).iterator();
+        if (!providers.hasNext()) {
+            throw new ServiceConfigurationError(BeanManagerFactoryServiceConfiguratorFactoryProvider.class.getName());
         }
-        return null;
+        return providers.next();
     }
 
-    public DistributableCacheFactoryBuilderService(CapabilityServiceSupport support, String name, BeanManagerFactoryServiceConfiguratorFactoryProvider provider, BeanManagerFactoryServiceConfiguratorConfiguration config) {
-        super(getServiceName(name));
+    public DistributableCacheFactoryBuilderServiceConfigurator(String name, BeanManagerFactoryServiceConfiguratorFactoryProvider provider, BeanManagerFactoryServiceConfiguratorConfiguration config) {
+        super(name);
         this.config = config;
-        this.builder = provider.getBeanManagerFactoryBuilder(support, name, config);
+        this.builder = provider.getBeanManagerFactoryBuilder(name, config);
     }
 
     @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
-        ServiceBuilder<?> builder = target.addService(this.getServiceName());
-        Consumer<DistributableCacheFactoryBuilder<K, V>> cacheFactoryBuilder = builder.provides(this.getServiceName());
+        ServiceName name = this.getServiceName();
+        ServiceBuilder<?> builder = target.addService(name);
+        Consumer<DistributableCacheFactoryBuilder<K, V>> cacheFactoryBuilder = builder.provides(name);
         Service service = Service.newInstance(cacheFactoryBuilder, this);
         return builder.setInstance(service);
     }
@@ -100,7 +97,7 @@ public class DistributableCacheFactoryBuilderService<K, V extends Identifiable<K
     }
 
     @Override
-    public ServiceBuilder<?> build(ServiceTarget target, ServiceName serviceName, StatefulComponentDescription description, ComponentConfiguration configuration) {
+    public CapabilityServiceConfigurator getServiceConfigurator(ServiceName name, StatefulComponentDescription description, ComponentConfiguration configuration) {
         BeanContext context = new BeanContext() {
             @Override
             public String getBeanName() {
@@ -129,8 +126,8 @@ public class DistributableCacheFactoryBuilderService<K, V extends Identifiable<K
                 return (info != null) ? Duration.ofMillis(TimeUnit.MILLISECONDS.convert(info.getValue(), info.getTimeUnit())) : null;
             }
         };
-        ServiceConfigurator configurator = this.builder.getBeanManagerFactoryServiceConfigurator(context);
-        return new DistributableCacheFactoryService<K, V>(serviceName, configurator).build(target);
+        CapabilityServiceConfigurator configurator = this.builder.getBeanManagerFactoryServiceConfigurator(context);
+        return new DistributableCacheFactoryServiceConfigurator<K, V>(name, configurator);
     }
 
     @Override

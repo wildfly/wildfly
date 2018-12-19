@@ -25,7 +25,6 @@ import java.util.Collection;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.service.ServiceConfigurator;
 
 public interface BeanManagerFactoryServiceConfiguratorFactory {
 
@@ -40,5 +39,5 @@ public interface BeanManagerFactoryServiceConfiguratorFactory {
      * @param context the bean context
      * @return a service builder
      */
-    ServiceConfigurator getBeanManagerFactoryServiceConfigurator(BeanContext context);
+    CapabilityServiceConfigurator getBeanManagerFactoryServiceConfigurator(BeanContext context);
 }

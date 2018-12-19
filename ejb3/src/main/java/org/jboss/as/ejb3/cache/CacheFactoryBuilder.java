@@ -27,9 +27,7 @@ import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
 
 /**
  * Builds a {@link CacheFactory} service.
@@ -47,7 +45,14 @@ public interface CacheFactoryBuilder<K, V extends Identifiable<K>> {
      */
     Collection<CapabilityServiceConfigurator> getDeploymentServiceConfigurators(DeploymentUnit unit);
 
-    ServiceBuilder<?> build(ServiceTarget target, ServiceName name, StatefulComponentDescription description, ComponentConfiguration configuration);
+    /**
+     * Returns a configurator for a service supplying a cache factory.
+     * @param name the service name of the cache factory
+     * @param description the component description
+     * @param configuration the component configuration
+     * @return a service configurator
+     */
+    CapabilityServiceConfigurator getServiceConfigurator(ServiceName name, StatefulComponentDescription description, ComponentConfiguration configuration);
 
     /**
      * Indicates whether or not cache factories built by this object can support passivation.

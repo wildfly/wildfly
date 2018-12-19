@@ -29,7 +29,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.ejb3.cache.distributable.DistributableCacheFactoryBuilder;
-import org.jboss.as.ejb3.cache.distributable.DistributableCacheFactoryBuilderService;
+import org.jboss.as.ejb3.cache.distributable.DistributableCacheFactoryBuilderServiceNameProvider;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.service.PassiveServiceSupplier;
@@ -59,7 +59,7 @@ public class PassivationStoreWriteHandler extends AbstractWriteAttributeHandler<
 
     private void applyModelToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode model) throws OperationFailedException {
         String name = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
-        ServiceName serviceName = DistributableCacheFactoryBuilderService.getServiceName(name);
+        ServiceName serviceName = new DistributableCacheFactoryBuilderServiceNameProvider(name).getServiceName();
         DistributableCacheFactoryBuilder<?, ?> builder = new PassiveServiceSupplier<DistributableCacheFactoryBuilder<?, ?>>(context.getServiceRegistry(true), serviceName).get();
         if (builder != null) {
             if (this.maxSizeAttribute.getName().equals(attributeName)) {

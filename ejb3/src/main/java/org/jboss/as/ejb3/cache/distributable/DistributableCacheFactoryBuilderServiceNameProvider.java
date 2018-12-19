@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,21 +19,17 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.ejb.infinispan;
 
-import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorFactory;
-import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
-import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorFactoryProvider;
+package org.jboss.as.ejb3.cache.distributable;
+
+import org.jboss.as.ejb3.cache.CacheFactoryBuilderServiceNameProvider;
 
 /**
  * @author Paul Ferraro
  */
-@MetaInfServices(BeanManagerFactoryServiceConfiguratorFactoryProvider.class)
-public class InfinispanBeanManagerFactoryServiceConfiguratorFactoryProvider implements BeanManagerFactoryServiceConfiguratorFactoryProvider {
+public class DistributableCacheFactoryBuilderServiceNameProvider extends CacheFactoryBuilderServiceNameProvider {
 
-    @Override
-    public BeanManagerFactoryServiceConfiguratorFactory getBeanManagerFactoryBuilder(String name, BeanManagerFactoryServiceConfiguratorConfiguration config) {
-        return new InfinispanBeanManagerFactoryServiceConfiguratorFactory<>(name, config);
+    public DistributableCacheFactoryBuilderServiceNameProvider(String name) {
+        super(BASE_CACHE_FACTORY_SERVICE_NAME.append("distributable", name));
     }
 }
