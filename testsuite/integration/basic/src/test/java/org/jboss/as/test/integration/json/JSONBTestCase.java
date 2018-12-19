@@ -27,13 +27,16 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
+import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.io.FilePermission;
 import java.net.URL;
+import java.security.Permission;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
@@ -52,7 +55,12 @@ public class JSONBTestCase {
 
     @Deployment(testable = false)
     public static Archive<?> deploy() {
-        return ShrinkWrap.create(WebArchive.class, "jsonb10-test.war").addClasses(JSONBServlet.class);
+        final Permission[] permissions = new Permission[] {
+                new FilePermission("<<ALL FILES>>","read")
+                };
+        return ShrinkWrap.create(WebArchive.class, "jsonb10-test.war")
+                .addClasses(JSONBServlet.class)
+                .addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(permissions), "permissions.xml");
     }
 
     @Test
