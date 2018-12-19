@@ -22,7 +22,9 @@
 package org.jboss.as.ejb3.cache.simple;
 
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.function.Consumer;
 
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.ejb3.cache.Cache;
 import org.jboss.as.ejb3.cache.CacheFactory;
 import org.jboss.as.ejb3.cache.Identifiable;
@@ -31,13 +33,16 @@ import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.ejb3.component.stateful.StatefulTimeoutInfo;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
-import org.jboss.msc.service.AbstractService;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.ejb.IdentifierFactory;
 import org.wildfly.clustering.ejb.PassivationListener;
+import org.wildfly.clustering.service.CompositeDependency;
+import org.wildfly.clustering.service.ServiceSupplierDependency;
+import org.wildfly.clustering.service.SimpleServiceNameProvider;
+import org.wildfly.clustering.service.SupplierDependency;
 
 /**
  * Service that provides a simple {@link CacheFactory}.
@@ -47,31 +52,29 @@ import org.wildfly.clustering.ejb.PassivationListener;
  * @param <K> the cache key type
  * @param <V> the cache value type
  */
-public class SimpleCacheFactoryService<K, V extends Identifiable<K>> extends AbstractService<CacheFactory<K, V>> implements CacheFactory<K, V> {
+public class SimpleCacheFactoryServiceConfigurator<K, V extends Identifiable<K>> extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, CacheFactory<K, V> {
 
-    public static <K, V extends Identifiable<K>> ServiceBuilder<CacheFactory<K, V>> build(String name, ServiceTarget target, ServiceName serviceName, StatefulComponentDescription description) {
-        SimpleCacheFactoryService<K, V> service = new SimpleCacheFactoryService<>(description.getStatefulTimeout());
-        return target.addService(serviceName, service)
-                .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.environment)
-                .addDependency(description.getDeploymentUnitServiceName().append(name, "expiration"), ScheduledExecutorService.class, service.executor)
-        ;
-    }
-
-    private final InjectedValue<ServerEnvironment> environment = new InjectedValue<>();
-    private final InjectedValue<ScheduledExecutorService> executor = new InjectedValue<>();
     private final StatefulTimeoutInfo timeout;
+    private final SupplierDependency<ServerEnvironment> environment = new ServiceSupplierDependency<>(ServerEnvironmentService.SERVICE_NAME);
+    private final SupplierDependency<ScheduledExecutorService> executor;
 
-    private SimpleCacheFactoryService(StatefulTimeoutInfo timeout) {
-        this.timeout = timeout;
+    public SimpleCacheFactoryServiceConfigurator(ServiceName name, StatefulComponentDescription description, SupplierDependency<ScheduledExecutorService> executor) {
+        super(name);
+        this.timeout = description.getStatefulTimeout();
+        this.executor = executor;
     }
 
     @Override
-    public CacheFactory<K, V> getValue() {
-        return this;
+    public ServiceBuilder<?> build(ServiceTarget target) {
+        ServiceName name = this.getServiceName();
+        ServiceBuilder<?> builder = target.addService(name);
+        Consumer<CacheFactory<K, V>> factory = new CompositeDependency(this.environment, this.executor).register(builder).provides(name);
+        Service service = Service.newInstance(factory, this);
+        return builder.setInstance(service);
     }
 
     @Override
     public Cache<K, V> createCache(IdentifierFactory<K> identifierFactory, StatefulObjectFactory<V> factory, PassivationListener<V> passivationListener) {
-        return new SimpleCache<>(factory, identifierFactory, this.timeout, this.environment.getValue(), this.executor.getValue());
+        return new SimpleCache<>(factory, identifierFactory, this.timeout, this.environment.get(), this.executor.get());
     }
 }

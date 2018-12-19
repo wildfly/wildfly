@@ -65,8 +65,9 @@ public class IdentityServiceConfigurator<T> extends SimpleServiceNameProvider im
 
     @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
-        ServiceBuilder<?> builder = target.addService(this.getServiceName());
-        Consumer<T> injector = builder.provides(this.getServiceName());
+        ServiceName name = this.getServiceName();
+        ServiceBuilder<?> builder = target.addService(name);
+        Consumer<T> injector = builder.provides(name);
         Supplier<T> requirement = builder.requires(this.requirementName);
         Service service = new FunctionalService<>(injector, Function.identity(), requirement);
         return builder.setInstance(service).setInitialMode(this.initialMode);
