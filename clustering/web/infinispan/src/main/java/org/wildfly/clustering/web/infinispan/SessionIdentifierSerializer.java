@@ -27,6 +27,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.security.PrivilegedAction;
 import java.util.Iterator;
+import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 
 import org.wildfly.clustering.marshalling.spi.Serializer;
@@ -39,16 +40,25 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 public enum SessionIdentifierSerializer implements Serializer<String> {
     INSTANCE;
 
-    private final Serializer<String> serializer = WildFlySecurityManager.doUnchecked(new PrivilegedAction<Serializer<String>>() {
-        @Override
-        public Serializer<String> run() {
-            Iterator<IdentifierSerializerProvider> providerIterator = ServiceLoader.load(IdentifierSerializerProvider.class, IdentifierSerializerProvider.class.getClassLoader()).iterator();
-            if (!providerIterator.hasNext()) {
-                throw new IllegalStateException();
-            }
-            return providerIterator.next().getSerializer();
+    private final Serializer<String> serializer = loadSerializer();
+
+    private static Serializer<String> loadSerializer() {
+        Iterator<IdentifierSerializerProvider> providers = load(IdentifierSerializerProvider.class).iterator();
+        if (!providers.hasNext()) {
+            throw new ServiceConfigurationError(IdentifierSerializerProvider.class.getName());
         }
-    });
+        return providers.next().getSerializer();
+    }
+
+    private static <T> Iterable<T> load(Class<T> providerClass) {
+        PrivilegedAction<Iterable<T>> action = new PrivilegedAction<Iterable<T>>() {
+            @Override
+            public Iterable<T> run() {
+                return ServiceLoader.load(providerClass, providerClass.getClassLoader());
+            }
+        };
+        return WildFlySecurityManager.doUnchecked(action);
+    }
 
     @Override
     public void write(DataOutput output, String value) throws IOException {
