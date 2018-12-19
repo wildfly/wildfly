@@ -35,6 +35,8 @@ import static org.wildfly.test.integration.microprofile.metrics.MetricsHelper.ge
 
 import java.io.IOException;
 import java.net.URL;
+//import java.security.AllPermission;
+import java.security.Permission;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.arquillian.container.test.api.Deployer;
@@ -50,6 +52,7 @@ import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.integration.common.HttpRequest;
+import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -91,9 +94,11 @@ public class MicroProfileMetricsApplicationTestCase {
 
     @Deployment(name = "MicroProfileMetricsApplicationTestCase", managed = false)
     public static Archive<?> deploy() {
+        final Permission[] permissions = new Permission[] {new RuntimePermission("getenv.MP_METRICS_TAGS")};
         WebArchive war = ShrinkWrap.create(WebArchive.class, "MicroProfileMetricsApplicationTestCase.war")
                 .addClasses(TestApplication.class)
-                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
+                .addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(permissions), "permissions.xml");
         return war;
     }
 
