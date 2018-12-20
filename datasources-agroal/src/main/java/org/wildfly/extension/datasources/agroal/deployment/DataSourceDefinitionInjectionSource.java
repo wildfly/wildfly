@@ -21,17 +21,29 @@
  */
 package org.wildfly.extension.datasources.agroal.deployment;
 
+import static org.jboss.as.server.deployment.Attachments.MODULE;
+
+import java.sql.Driver;
+import java.time.Duration;
+import java.util.Map;
+import java.util.function.Supplier;
+
+import javax.sql.DataSource;
+import javax.transaction.TransactionSynchronizationRegistry;
+
 import io.agroal.api.configuration.AgroalConnectionFactoryConfiguration;
 import io.agroal.api.configuration.supplier.AgroalConnectionFactoryConfigurationSupplier;
 import io.agroal.api.configuration.supplier.AgroalConnectionPoolConfigurationSupplier;
 import io.agroal.api.configuration.supplier.AgroalDataSourceConfigurationSupplier;
 import io.agroal.api.security.NamePrincipal;
 import io.agroal.api.security.SimplePassword;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.resource.definition.ResourceDefinitionInjectionSource;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.msc.inject.Injector;
@@ -39,13 +51,6 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.datasources.agroal.AgroalExtension;
 import org.wildfly.extension.datasources.agroal.logging.AgroalLogger;
-
-import javax.sql.DataSource;
-import java.sql.Driver;
-import java.time.Duration;
-import java.util.Map;
-
-import static org.jboss.as.server.deployment.Attachments.MODULE;
 
 /**
  * Injection source for a DataSource
@@ -228,8 +233,16 @@ class DataSourceDefinitionInjectionSource extends ResourceDefinitionInjectionSou
                     .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector())
                     .install();
 
-        DataSourceDefinitionService dataSourceService = new DataSourceDefinitionService(bindInfo, transactional, dataSourceConfiguration);
-        phaseContext.getServiceTarget().addService(dataSourceServiceName).setInstance(dataSourceService).install();
+        ServiceBuilder svcBuilder = phaseContext.getServiceTarget().addService(dataSourceServiceName);
+        Supplier<TransactionSynchronizationRegistry> tsrSupplier = null;
+        if (transactional) {
+            CapabilityServiceSupport css = phaseContext.getDeploymentUnit().getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
+            ServiceName tsrName = css.getCapabilityServiceName("org.wildfly.transactions.transaction-synchronization-registry");
+            //noinspection unchecked
+            tsrSupplier = (Supplier<TransactionSynchronizationRegistry>) svcBuilder.requires(tsrName);
+        }
+        DataSourceDefinitionService dataSourceService = new DataSourceDefinitionService(bindInfo, transactional, dataSourceConfiguration, tsrSupplier);
+        svcBuilder.setInstance(dataSourceService).install();
 
         serviceBuilder.requires(bindInfo.getBinderServiceName());
         serviceBuilder.addDependency(dataSourceServiceName, ManagedReferenceFactory.class, injector);
