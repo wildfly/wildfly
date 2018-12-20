@@ -21,6 +21,15 @@
  */
 package org.jboss.as.ejb3.component.stateful;
 
+import static org.jboss.as.ejb3.component.stateful.StatefulComponentInstanceInterceptor.getComponentInstance;
+import static org.jboss.as.ejb3.component.stateful.StatefulSessionComponentInstance.SYNC_STATE_AFTER_COMPLETE_DELAYED_COMMITTED;
+import static org.jboss.as.ejb3.component.stateful.StatefulSessionComponentInstance.SYNC_STATE_AFTER_COMPLETE_DELAYED_NO_COMMIT;
+import static org.jboss.as.ejb3.component.stateful.StatefulSessionComponentInstance.SYNC_STATE_INVOCATION_IN_PROGRESS;
+import static org.jboss.as.ejb3.component.stateful.StatefulSessionComponentInstance.SYNC_STATE_NO_INVOCATION;
+import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
+
+import java.util.concurrent.atomic.AtomicInteger;
+
 import javax.ejb.EJBException;
 import javax.ejb.TransactionManagementType;
 import javax.transaction.Status;
@@ -29,24 +38,14 @@ import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstanceInterceptorFactory;
-import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.interceptors.AbstractEJBInterceptor;
 import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.tx.OwnableReentrantLock;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
-import org.wildfly.transaction.client.ContextTransactionSynchronizationRegistry;
-
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.jboss.as.ejb3.component.stateful.StatefulSessionComponentInstance.SYNC_STATE_AFTER_COMPLETE_DELAYED_COMMITTED;
-import static org.jboss.as.ejb3.component.stateful.StatefulSessionComponentInstance.SYNC_STATE_AFTER_COMPLETE_DELAYED_NO_COMMIT;
-import static org.jboss.as.ejb3.component.stateful.StatefulSessionComponentInstance.SYNC_STATE_INVOCATION_IN_PROGRESS;
-import static org.jboss.as.ejb3.component.stateful.StatefulSessionComponentInstance.SYNC_STATE_NO_INVOCATION;
-import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
-import static org.jboss.as.ejb3.component.stateful.StatefulComponentInstanceInterceptor.getComponentInstance;
 
 /**
  * {@link org.jboss.invocation.Interceptor} which manages {@link Synchronization} semantics on a stateful session bean.
@@ -81,8 +80,8 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
         final Object threadLock = instance.getThreadLock();
         final AtomicInteger invocationSyncState = instance.getInvocationSynchState();
 
-        final TransactionSynchronizationRegistry transactionSynchronizationRegistry = ContextTransactionSynchronizationRegistry.getInstance();
-        final Object lockOwner = getLockOwner();
+        final TransactionSynchronizationRegistry transactionSynchronizationRegistry = component.getTransactionSynchronizationRegistry();
+        final Object lockOwner = getLockOwner(transactionSynchronizationRegistry);
         final AccessTimeoutDetails timeout = component.getAccessTimeout(context.getMethod());
         boolean toDiscard = false;
         if (ROOT_LOGGER.isTraceEnabled()) {
@@ -192,8 +191,8 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
      *
      * @return The lock owner
      */
-    private static Object getLockOwner() {
-        Object owner = ContextTransactionSynchronizationRegistry.getInstance().getTransactionKey();
+    private static Object getLockOwner(final TransactionSynchronizationRegistry transactionSynchronizationRegistry) {
+        Object owner = transactionSynchronizationRegistry.getTransactionKey();
         return owner != null ? owner : Thread.currentThread();
     }
 
@@ -221,7 +220,7 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
      * Releases the lock, held by this thread, on the stateful component instance.
      */
     static void releaseLock(final StatefulSessionComponentInstance instance) {
-        instance.getLock().unlock(getLockOwner());
+        instance.getLock().unlock(getLockOwner(instance.getComponent().getTransactionSynchronizationRegistry()));
         ROOT_LOGGER.tracef("Released lock: %s", instance.getLock());
     }
 
