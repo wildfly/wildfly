@@ -84,13 +84,12 @@ public class FilePassivationStoreResourceDefinition extends LegacyPassivationSto
 
     private static final FilePassivationStoreAdd ADD = new FilePassivationStoreAdd(ATTRIBUTES);
     private static final PassivationStoreRemove REMOVE = new PassivationStoreRemove(ADD);
-    private static final PassivationStoreWriteHandler WRITE_HANDLER = new PassivationStoreWriteHandler(ATTRIBUTES);
 
     @Deprecated
     public static final FilePassivationStoreResourceDefinition INSTANCE = new FilePassivationStoreResourceDefinition();
 
     private FilePassivationStoreResourceDefinition() {
-        super(EJB3SubsystemModel.FILE_PASSIVATION_STORE, ADD, REMOVE, OperationEntry.Flag.RESTART_NONE, OperationEntry.Flag.RESTART_RESOURCE_SERVICES, WRITE_HANDLER, ATTRIBUTES);
+        super(EJB3SubsystemModel.FILE_PASSIVATION_STORE, ADD, REMOVE, OperationEntry.Flag.RESTART_NONE, OperationEntry.Flag.RESTART_RESOURCE_SERVICES, ATTRIBUTES);
     }
 
 }
