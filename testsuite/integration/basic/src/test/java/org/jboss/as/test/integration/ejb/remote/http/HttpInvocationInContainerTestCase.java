@@ -2,6 +2,7 @@ package org.jboss.as.test.integration.ejb.remote.http;
 
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
+import java.io.FilePermission;
 import java.net.SocketPermission;
 import java.net.URL;
 import java.util.Hashtable;
@@ -33,7 +34,8 @@ public class HttpInvocationInContainerTestCase {
         return ShrinkWrap.create(WebArchive.class, "http-test.war")
                 .addPackage(HttpInvocationInContainerTestCase.class.getPackage())
                 .addAsManifestResource(createPermissionsXmlAsset(
-                        new SocketPermission(SERVER_HOST_PORT, "connect,resolve")
+                        new SocketPermission(SERVER_HOST_PORT, "connect,resolve"),
+                        new FilePermission("<<ALL FILES>>", "read")
                 ), "permissions.xml");
     }
 
