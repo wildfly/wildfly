@@ -10,7 +10,7 @@ WildFly team;
 :icons: font
 :source-highlighter: coderay
 
-ifndef::ebook-format[:leveloffset: 1]
+// ifndef::ebook-format[:leveloffset: 1]
 
 (C) 2017 The original authors.
 

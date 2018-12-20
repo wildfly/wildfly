@@ -297,7 +297,7 @@ client API project for doing EJB lookups ( <<EJB_invocations_from_a_remote_clien
 invocations from a remote client using JNDI>>) as against using
 remote-naming project for doing the same thing.
 
-[[summary]]
+[[summary-remote-ejb-invocations]]
 == Summary
 
 That pretty much covers whatever is important to know, in the

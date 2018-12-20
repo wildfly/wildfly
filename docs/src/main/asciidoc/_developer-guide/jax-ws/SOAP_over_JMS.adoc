@@ -73,7 +73,7 @@ The endpoint classes can be deployed as part of _jar_ or _war_ archives.
 The _web.xml_ descriptor in _war_ archives doesn't need any entry for
 JMS endpoints.
 
-[[examples]]
+[[examples-soap-over-jms]]
 == Examples
 
 [[jms-endpoint-only-deployment]]

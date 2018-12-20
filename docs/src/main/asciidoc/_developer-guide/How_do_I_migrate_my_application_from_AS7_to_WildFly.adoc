@@ -1,87 +1,55 @@
+:ProductName: WildFly
+:ProductVersion: 10
+:PrevProductName: JBoss AS
+:PrevProductVersion: 7
+
 [[How_do_I_migrate_my_application_from_AS7_to_WildFly]]
-= How do I migrate my application from AS7 to WildFly
+= How do I migrate my application from {PrevProductName} {PrevProductVersion}  to {ProductName} {ProductVersion}
 
 [[about-this-document]]
 == About this Document
 
-The purpose of this guide is to document changes that are needed to
-successfully run and deploy AS 7 applications on WildFly. It provides
-information on to resolve deployment and runtime problems and how to
-prevent changes in application behavior. This is the first step in
-moving to the new platform. Once the application is successfully
-deployed and running on the new platform, plans can be made to upgrade
-individual components to use the new functions and features of WildFly.
+The purpose of this guide is to document changes that are needed to successfully run and deploy {PrevProductName} {PrevProductVersion} applications on {ProductName} {ProductVersion}. It provides information on to resolve deployment and runtime problems and how to prevent changes in application behavior. This is the first step in moving to the new platform. Once the application is successfully deployed and running on the new platform, plans can be made to upgrade individual components to use the new functions and features of {ProductName}.
 
 [[overview-of-wildfly]]
-== Overview of WildFly
+== Overview of {ProductName}
 
-The list of WildFly new functionality is extensive, being the most
-relevant, with respect to server and application migrations:
+The list of {ProductName} new functionality is extensive, being the most relevant, with respect to server and application migrations:
 
-* Java EE7 - WildFly is a certified implementation of Java EE7, meeting
-both the Web and the Full profiles, and already includes support for the
-latest iterations of CDI (1.2) and Web Sockets (1.1).
-* Undertow - A new cutting-edge web server in WildFly, designed for
-maximum throughput and scalability, including environments with over a
-million connections. And the latest web technologies, such as the new
-HTTP/2 standard, are already onboard.
-* Apache ActiveMQ Artemis - WildFly's new JMS broker. Based on an code
-donation from HornetQ, this Apache subproject provides outstanding
-performance based on a proven non-blocking architecture.
-* IronJacamar 1.2 - The latest IronJacamar provides a stable and feature
-rich JCA & Datasources support.
-* JBossWS 5 - The fifth generation of JBossWS, a major leap forward,
-brings new features and performances improvements to WildFly Web
-Services
-* RESTEasy 3 - WildFly includes the latest generation of RESTEasy, which
-goes beyond the standard Java EE REST APIs (JAX-RS 2.0), by also
-providing a number of useful extensions, such as JSON Web Encryption,
-Jackson, Yaml, JSON-P, and Jettison.
-* OpenJDK ORB - WildFly switched the IIOP implementation from JacORB, to
-a downstream branch of the OpenJDK Orb, leading to better
-interoperability with the JVM ORB and the Java EE RI.
-* Feature Rich Clustering - Clustering support was heavily refactored in
-WildFly, and includes several APIs for applications
-* Port Reduction - By utilising HTTP upgrade, WildFly has moved nearly
-all of its protocols to be multiplexed over just two HTTP ports: a
-management port (9990), and an application port (8080).
-* Enhanced Logging - The management API now supports the ability to list
-and view the available log files on a server, or even define custom
-formatters other than the default pattern formatter. Deployment's
-logging setup is also greatly enhanced.
+* Java EE7 - {ProductName} is a certified implementation of Java EE7, meeting both the Web and the Full profiles, and already includes support for the latest iterations of CDI (1.2) and Web Sockets (1.1).
+* Undertow - A new cutting-edge web server in {ProductName}, designed for maximum throughput and scalability, including environments with over a million connections. And the latest web technologies, such as the new HTTP/2 standard, are already onboard.
+* Apache ActiveMQ Artemis - {ProductName}'s new JMS broker. Based on an code donation from HornetQ, this Apache subproject provides outstanding performance based on a proven non-blocking architecture.
+* IronJacamar 1.2 - The latest IronJacamar provides a stable and feature rich JCA & Datasources support.
+* JBossWS 5 - The fifth generation of JBossWS, a major leap forward, brings new features and performances improvements to {ProductName} Web Services
+* RESTEasy 3 - {ProductName} includes the latest generation of RESTEasy, which goes beyond the standard Java EE REST APIs (JAX-RS 2.0), by also providing a number of useful extensions, such as JSON Web Encryption, Jackson, Yaml, JSON-P, and Jettison.
+* OpenJDK ORB - {ProductName} switched the IIOP implementation from JacORB, to a downstream branch of the OpenJDK Orb, leading to better interoperability with the JVM ORB and the Java EE RI.
+* Feature Rich Clustering - Clustering support was heavily refactored in {ProductName}, and includes several APIs for applications
+* Port Reduction - By utilizing HTTP upgrade, {ProductName} has moved nearly all of its protocols to be multiplexed over just two HTTP ports: a management port (9990), and an application port (8080).
+* Enhanced Logging - The management API now supports the ability to list and view the available log files on a server, or even define custom formatters other than the default pattern formatter. Deployment's logging setup is also greatly enhanced.
 
-The support for some technologies was removed, due to the high
-maintenance cost, low community interest, and much better alternative
-solutions:
+The support for some technologies was removed, due to the high maintenance cost, low community interest, and much better alternative solutions:
 
 * CMP EJB - JPA offers a much more performant and flexible API
 * JAX-RPC - JAX-WS offers a much more accurate and complete solution
-* JSR-88 - With very little adoption, the more complete deployment APIs
-provided by vendors are preferred
+* JSR-88 - With very little adoption, the more complete deployment APIs provided by vendors are preferred
 
 [[server-migration]]
 == Server Migration
 
-Migrating an AS7 server to WildFly consists of migrating custom
-configuration files, and some persisted data that may exist.
+Migrating a {PrevProductName} {PrevProductVersion} server to {ProductName} consists of migrating custom configuration files, and some persisted data that may exist.
 
 [[jacorb-subsystem]]
 === JacORB Subsystem
 
-WildFly ORB support is provided by the JDK itself, instead of relying on
-JacORB. A subsystem configuration migration is required.
+{ProductName} ORB support is provided by the JDK itself, instead of relying on JacORB. A subsystem configuration migration is required.
 
 [[jacorb-subsystem-configuration]]
 ==== JacORB Subsystem Configuration
 
-The extension's module *org.jboss.as.jacorb *is replaced by module
-*org.wildfly.iiop-openjdk*, while the subsystem configuration namespace
-*urn:jboss:domain:jacorb:2.0* is replaced by
-*urn:jboss:domain:iiop-openjdk:1.0*.
+The extension's module `org.jboss.as.jacorb` is replaced by module `org.wildfly.iiop-openjdk`, while the subsystem configuration namespace `urn:jboss:domain:jacorb:2.0` is replaced by
+`urn:jboss:domain:iiop-openjdk:1.0`.
 
-The XML configuration of the new subsystem accepts only a subset of the
-legacy elements/attributes. Consider the following example of the JacORB
-subsystem configuration, containing all valid elements and attributes:
+The XML configuration of the new subsystem accepts only a subset of the legacy elements and attributes. Consider the following example of the JacORB subsystem configuration, containing all valid elements and attributes:
 
 [source,xml]
 ----
@@ -109,84 +77,52 @@ subsystem configuration, containing all valid elements and attributes:
 
 Properties that are not supported and have to be removed:
 
-* <orb/>: client-timeout, max-managed-buf-size, max-server-connections,
-outbuf-cache-timeout, outbuf-size, connection retries, retry-interval,
-name,server-timeout
-* <poa/>: queue-min, queue-max, pool-size, max-threads
+* `<orb/>`: `client-timeout`, `max-managed-buf-size`, `max-server-connections`, `outbuf-cache-timeout`, `outbuf-size`, `connection-retries`, `retry-interval`, `name,server-timeout`
+* `<poa/>`: `queue-min`, `queue-max`, `pool-size`, `max-threads`
 
 On-off properties: have to either be removed or in off mode:
 
-* <orb/>: cache-poa-names, cache-typecodes, print-version, use-bom,
-use-imr
-* <interop/>: all except sun
-* <poa/>: monitoring, queue-wait
+* `<orb/>`: `cache-poa-names`, `cache-typecodes`, `print-version`, `use-bom`, `use-imr`
+* `<interop/>`: all except `sun`
+* `<poa/>`: `monitoring`, `queue-wait`
 
-In case the legacy subsystem configuration is available, such
-configuration may be migrated to the new subsystem by invoking its
-`migrate` operation, using the CLI management client:
+In case the legacy subsystem configuration is available, such configuration may be migrated to the new subsystem by invoking its `migrate` operation, using the management CLI:
 
-[source,ruby]
+[source]
 ----
 /subsystem=jacorb:migrate
 ----
 
-There is also a `describe-migration` operation that returns a list of
-all the management operations that are performed to migrate from the
-legacy subsystem to the new one:
+There is also a `describe-migration` operation that returns a list of all the management operations that are performed to migrate from the legacy subsystem to the new one:
 
-[source,ruby]
+[source]
 ----
 /subsystem=jacorb:describe-migration
 ----
 
-Both `migrate` and `describe-migration` will also display a list of
-migration-warnings if there are some resource or attributes that can not
-be migrated automatically. The following is a list of these warnings:
+Both `migrate` and `describe-migration` will also display a list of migration-warnings if there are some resource or attributes that can not be migrated automatically. The following is a list of these warnings:
 
-* Properties X cannot be emulated using OpenJDK ORB and are not
-supported +
-This warning means that mentioned properties are not supported and won't
-be included in the new subsystem configuration. As a result of that
-admin must be aware that any behaviour implied by those properties would
-be inexistent. Admin has to check whether subsystem is able to operate
-correctly without that behaviour on the new server.Unsupported
-properties: cache-poa-names, cache-typecodes,
-chunk-custom-rmi-valuetypes, client-timeout, comet,
-indirection-encoding-disable, iona, lax-boolean-encoding,
-max-managed-buf-size, max-server-connections, max-threads,
-outbuf-cache-timeout, outbuf-size, queue-max, queue-min, poa-monitoring,
-print-version, retries, retry-interval, queue-wait, server-timeout,
-strict-check-on-tc-creation, use-bom, use-imr.
+* Properties X cannot be emulated using OpenJDK ORB and are not supported
++
+This warning means that mentioned properties are not supported and won't be included in the new subsystem configuration. As a result of that admin must be aware that any behavior implied by those properties would be nonexistent. Admin has to check whether subsystem is able to operate
+correctly without that behavior on the new server.Unsupported properties: `cache-poa-names`, `cache-typecodes`, `chunk-custom-rmi-valuetypes`, `client-timeout`, `comet`, `indirection-encoding-disable`, `iona`, `lax-boolean-encoding`, `max-managed-buf-size`, `max-server-connections`, `max-threads`, `outbuf-cache-timeout`, `outbuf-size`, `queue-max`, `queue-min`, `poa-monitoring`, `print-version`, `retries`, `retry-interval`, `queue-wait`, `server-timeout`, `strict-check-on-tc-creation`, `use-bom`, `use-imr`.
 
-* The properties X use expressions. Configuration properties that are
-used to resolve those expressions should be transformed manually to the
-new iiop-openjdk subsystem format +
-Admin has to transform all the configuration files to work correctly
-with the jacorb subsystem. f.e. jacorb has a property giop-minor-version
-whereas openjdk uses property giop-version. Let's suppose we use '1'
-minor version in jacorb and have it configured in standalone.conf file
-as system variable: -Diiop-giop-minor-version=1. Admin is responsible
-for changing this variable to 1.1 after the migration to make sure that
-the new subsystem will work correctly.
+* The properties X use expressions. Configuration properties that are used to resolve those expressions should be transformed manually to the new `iiop-openjdk` subsystem format.
++
+Admin has to transform all the configuration files to work correctly with the `jacorb` subsystem. For example, `jacorb` has a property `giop-minor-version` whereas `iiop-openjdk` uses the property `giop-version`. Let's suppose we use `1` minor version in `jacorb` and have it configured in `standalone.conf` file as system variable: `-Diiop-giop-minor-version=1`. Admin is responsible for changing this variable to 1.1 after the migration to make sure that the new subsystem will work correctly.
 
 [[jboss-web-subsystem]]
 === JBoss Web Subsystem
 
-JBoss Web is replaced by Undertow in WildFly, which means that the
-legacy subsystem configuration should be migrated to WildFly's Undertow
-subsystem configuration.
+JBoss Web is replaced by Undertow in {ProductName}, which means that the legacy subsystem configuration should be migrated to {ProductName}'s Undertow subsystem configuration.
 
 [[jboss-web-subsystem-configuration]]
 ==== JBoss Web Subsystem Configuration
 
-The extension's module *org.jboss.as.web *is replaced by module
-*org.wildfly.extension.undertow*, while the subsystem configuration
-namespace *urn:jboss:domain:web:** is replaced by
-*urn:jboss:domain:undertow:3.0*.
+The extension's module `org.jboss.as.web` is replaced by module `org.wildfly.extension.undertow`, while the subsystem configuration namespace `urn:jboss:domain:web:` is replaced by
+`urn:jboss:domain:undertow:`.
 
-The XML configuration of the new subsystem is relatively different.
-Consider the following example of the JBoss Web subsystem configuration,
-containing all valid elements and attributes:
+The XML configuration of the new subsystem is relatively different. Consider the following example of the JBoss Web subsystem configuration, containing all valid elements and attributes:
 
 [source,xml]
 ----
@@ -308,55 +244,44 @@ containing all valid elements and attributes:
 </subsystem>
 ----
 
-FIXME compare with Undertow, list unsupported features
+// FIXME compare with Undertow, list unsupported features
 
-It's possible to do a migration of the legacy subsystem configuration,
-and related persisted data. , by invoking the legacy's subsystem's
-`migrate` operation, using the CLI management client:
+It is possible to do a migration of the legacy subsystem configuration and related persisted data by invoking the legacy subsystem's `migrate` operation, using the management CLI:
 
-[source,ruby]
+[source]
 ----
 /subsystem=web:migrate
 ----
 
-There is also a `describe-migration` operation that returns a list of
-all the management operations that are performed to migrate from the
-legacy subsystem to the new one:
+There is also a `describe-migration` operation that returns a list of all the management operations that are performed to migrate from the legacy subsystem to the new one:
 
-[source,ruby]
+[source]
 ----
 /subsystem=web:describe-migration
 ----
 
-Both `migrate` and `describe-migration` will also display a list of
-migration-warnings if there are some resource or attributes that can not
-be migrated automatically. The following is a list of these warnings:
+Both `migrate` and `describe-migration` will also display a list of migration-warnings if there are some resource or attributes that can not be migrated automatically. The following is a list of these warnings:
 
-* Could not migrate resource X +
-This warning means that mentioned resource configuration is not
-supported and won't be included in the new subsystem configuration. As a
-result of that admin must be aware that any behaviour implied by those
-resources would be inexistent. Admin has to check whether subsystem is
-able to operate correctly without that behaviour on the new server. +
-FIXME must document which are the resources that trigger this
-* Could not migrate attribute X from resource Y. +
-This warning means that mentioned resource configuration property is not
-supported and won't be included in the new subsystem configuration. As a
-result of that admin must be aware that any behaviour implied by those
-properties would be inexistent. Admin has to check whether subsystem is
-able to operate correctly without that behaviour on the new server. +
-FIXME must document which are the properties that trigger this
+* Could not migrate resource X
++
+This warning means that mentioned resource configuration is not supported and won't be included in the new subsystem configuration. As a result of that admin must be aware that any behavior implied by those resources would be nonexistent. Admin has to check whether subsystem is able to operate correctly without that behavior on the new server.
++
+// FIXME must document which are the resources that trigger this
+
+* Could not migrate attribute X from resource Y.
++
+This warning means that mentioned resource configuration property is not supported and won't be included in the new subsystem configuration. As a result of that admin must be aware that any behavior implied by those properties would be nonexistent. Admin has to check whether subsystem is
+able to operate correctly without that behavior on the new server.
++
+// FIXME must document which are the properties that trigger this
+
 * Could not migrate SSL connector as no SSL config is defined
-* Could not migrate verify-client attribute %s to the Undertow
-equivalent
+* Could not migrate verify-client attribute %s to the Undertow equivalent
 * Could not migrate verify-client expression %s
-* Could not migrate valve X +
-This warning means that mentioned valve configuration is not supported
-and won't be included in the new subsystem configuration. As a result of
-that admin must be aware that any behaviour implied by those resources
-would be inexistent. Admin has to check whether subsystem is able to
-operate correctly without that behaviour on the new server. This warning
-may happen for :
+* Could not migrate valve X
++
+This warning means that mentioned valve configuration is not supported and won't be included in the new subsystem configuration. As a result of that admin must be aware that any behavior implied by those resources would be nonexistent. Admin has to check whether subsystem is able to operate correctly without that behavior on the new server. This warning may happen for:
+
 ** org.apache.catalina.valves.RemoteAddrValve : must have at least one
 allowed or denied value.
 ** org.apache.catalina.valves.RemoteHostValve : must have at least one
@@ -367,33 +292,25 @@ allowed or denied value.
 ** org.apache.catalina.authenticator.SSLAuthenticator
 ** org.apache.catalina.authenticator.SpnegoAuthenticator
 ** custom valves
-* Could not migrate attribute X from valve Y +
-This warning means that mentioned valve configuration property is not
-supported and won't be included in the new subsystem configuration. As a
-result of that admin must be aware that any behaviour implied by those
-properties would be inexistent. Admin has to check whether subsystem is
-able to operate correctly without that behaviour on the new server. This
-warning may happen for :
-** org.apache.catalina.valves.AccessLogValve : if you use the following
-parameters _resolveHosts_, _fileDateFormat_, _renameOnRotate_,
-_encoding_, _locale_, _requestAttributesEnabled_, _buffered_.
-** org.apache.catalina.valves.ExtendedAccessLogValve : if you use the
-following parameters _resolveHosts_, _fileDateFormat_, _renameOnRotate_,
-_encoding_, _locale_, _requestAttributesEnabled_, _buffered_.
-** org.apache.catalina.valves.RemoteIpValve:
-*** if _remoteIpHeader_ is defined and isn't set to "x-forwarded-for".
-*** if _protocolHeader_ is defined and isn't set to "x-forwarded-proto".
-*** if you use the following parameters _httpServerPort_ and
-_httpsServerPort_ .
+* Could not migrate attribute X from valve Y
++
+This warning means that mentioned valve configuration property is not supported and won't be included in the new subsystem configuration. As a result of that admin must be aware that any behavior implied by those properties would be nonexistent. Admin has to check whether subsystem is
+able to operate correctly without that behavior on the new server. This warning may happen for :
 
-Also, please note that Undertow doesn't support JBoss Web *valves*, but
-some of these may be migrated to Undertow handlers, and JBoss Web
-subsystem's `migrate` operation do that too.
+** `org.apache.catalina.valves.AccessLogValve` : if you use the following parameters `resolveHosts`, `fileDateFormat`, `renameOnRotate`,
+`encoding`, `locale`, `requestAttributesEnabled`, `buffered`.
+** `org.apache.catalina.valves.ExtendedAccessLogValve` : if you use the following parameters `resolveHosts`, `fileDateFormat`, `renameOnRotate`, `encoding`, `locale`, `requestAttributesEnabled`, `buffered`.
+** `org.apache.catalina.valves.RemoteIpValve`:
+*** if `remoteIpHeader` is defined and isn't set to "x-forwarded-for".
+*** if `protocolHeader` is defined and isn't set to "x-forwarded-proto".
+*** if you use the following parameters `httpServerPort` and `httpsServerPort` .
+
+Also, note that Undertow doesn't support JBoss Web `valves`, but some of these may be migrated to Undertow handlers, and JBoss Web subsystem's `migrate` operation do that too.
 
 Here is a list of those valves and their corresponding Undertow handler:
 
 [cols=",",options="header"]
-|=======================================================================
+|===
 |Valve |Handler
 
 |org.apache.catalina.valves.AccessLogValve
@@ -422,19 +339,15 @@ Here is a list of those valves and their corresponding Undertow handler:
 
 |org.apache.catalina.valves.CrawlerSessionManagerValve
 |io.undertow.servlet.handlers.CrawlerSessionManagerHandler
-|=======================================================================
+|===
 
-The *org.apache.catalina.valves.JDBCAccessLogValve* can't be
-automatically migrated to *io.undertow.server.handlers.JDBCLogHandler*
-as the expectations differ. +
-The migration can be done manually thought :
+The `org.apache.catalina.valves.JDBCAccessLogValve` can't be automatically migrated to `io.undertow.server.handlers.JDBCLogHandler` as the expectations differ.
 
-1.  create the driver module and add the driver to the list of available
-drivers
-2.  create a datasource pointing to the database where the log entries
-are going to be stored
-3.  add an *expression-filter* definition with the following expression:
-"jdbc-access-log(datasource='datasource-jndi-name')
+The migration can be done manually though :
+
+.  Create the driver module and add the driver to the list of available drivers
+.  Create a datasource pointing to the database where the log entries are going to be stored
+.  Add an `expression-filter` definition with the following expression: "jdbc-access-log(datasource='datasource-jndi-name")
 +
 [source,xml]
 ----
@@ -461,213 +374,149 @@ should become:
                <password>password</password>
             </security>
         </datasource>
-...
+        ...
         <drivers>
             <driver name="mysql" module="com.mysql">
                 <driver-class>com.mysql.jdbc.Driver</driver-class>
             </driver>
-...
+        ...
         </drivers>
     </datasources>
 </subsystem>
 ...
 <subsystem xmlns="urn:jboss:domain:undertow:3.1" default-virtual-host="default-virtual-host" default-servlet-container="myContainer"
            default-server="some-server" instance-id="some-id" statistics-enabled="true">
-...
+    ...
     <server name="some-server" default-host="other-host" servlet-container="myContainer">
-...
+    ...
         <host name="other-host" alias="www.mysite.com, ${prop.value:default-alias}" default-web-module="something.war" disable-console-redirect="true">
             <location name="/" handler="welcome-content" />
             <filter-ref name="jdbc-access"/>
         </host>
     </server>
-...
+    ...
     <filters>
         <expression-filter name="jdbc-access" expression="jdbc-access-log(datasource='java:jboss/datasources/accessLogDS')" />
-...
+    ...
     </filters>
  
 </subsystem>
 ----
 
-Please note that any custom valve won't be migrated at all and will just
-be removed from the configuration. +
-Also the authentication related valves are to be replaced by Undertow
-authentication mechanisms, and this have to be done manually.
+Note that any custom valve won't be migrated at all and will just be removed from the configuration.
 
-FIXME how this last "manual" replacement is done? Need whole process
-documented and concrete example
+Also the authentication related valves are to be replaced by Undertow authentication mechanisms, and this have to be done manually.
+
+// FIXME how this last "manual" replacement is done? Need whole process documented and concrete example
 
 [[websockets]]
 ==== WebSockets
 
-In AS7, to use WebSockets, you had to configure the 'http' *connector*
-in the *web* subsystem of the server configuration file to use the NIO2
-protocol. The following is an example of the Management CLI command to
-configure WebSockets in the previous releases.
+In {PrevProductName} {PrevProductVersion}, to use WebSockets, you had to configure the 'http' `connector` in the `web` subsystem of the server configuration file to use the NIO2 protocol. The following is an example of the management CLI command to configure WebSockets in the previous releases.
 
-[source,ruby]
+[source]
 ----
 /subsystem=web/connector=http/:write-attribute(name=protocol,value=org.apache.coyote.http11.Http11NioProtocol)
 ----
 
-WebSockets are a requirement of the Java EE 7 specification and the
-default configuration is included in WildFly. More complex WebSocket
-configuration is done in the *servlet-container* of the *undertow*
-subsystem of the server configuration file.
+WebSockets are a requirement of the Java EE 7 specification and the default configuration is included in {ProductName}. More complex WebSocket configuration is done in the `servlet-container` of the `undertow` subsystem of the server configuration file.
 
-You no longer need to configure the server for default WebSocket
-support. +
-FIXME isn't <websockets /> required for that?
+You no longer need to configure the server for default WebSocket support.
+
+// FIXME isn't <websockets /> required for that?
 
 [[messaging-subsystem]]
 === Messaging Subsystem
 
-WildFly JMS support is provided by ActiveMQ Artemis, instead of HornetQ.
-It's possible to do a migration of the legacy subsystem configuration,
-and related persisted data.
+{ProductName} JMS support is provided by ActiveMQ Artemis, instead of HornetQ. It's possible to do a migration of the legacy subsystem configuration, and related persisted data.
 
 [[messaging-subsystem-configuration]]
 ==== Messaging Subsystem Configuration
 
-The extension's module *org.jboss.as.messaging* is replaced by module
-*org.wildfly.extension.messaging-activemq*, while the subsystem
-configuration namespace *urn:jboss:domain:messaging:3.0* is replaced by
-*urn:jboss:domain:messaging-activemq:1.0*.
+The extension's module `org.jboss.as.messaging` is replaced by module `org.wildfly.extension.messaging-activemq`, while the subsystem configuration namespace `urn:jboss:domain:messaging:3.0` is replaced by `urn:jboss:domain:messaging-activemq:1.0`.
 
 [[management-model]]
 ===== Management model
 
-In most cases, an effort was made to keep resource and attribute names
-as similar as possible to those used in previous releases. The following
-table lists some of the changes.
+In most cases, an effort was made to keep resource and attribute names as similar as possible to those used in previous releases. The following table lists some of the changes.
 
 [cols=",",options="header"]
-|=====================================
+|===
 |HornetQ name |ActiveMQ name
 |hornetq-server |server
 |hornetq-serverType |serverType
 |connectors |connector
 |discovery-group-name |discovery-group
-|=====================================
+|===
 
-The management operations invoked on the new messaging-subsystem starts
-with `/subsystem=messaging-activemq/server=X` while the legacy messaging
-subsystem was at `/subsystem=messaging/hornetq-server=X`.
+The management operations invoked on the new messaging-subsystem starts with `/subsystem=messaging-activemq/server=X` while the legacy `messaging` subsystem was at `/subsystem=messaging/hornetq-server=X`.
 
-In case the legacy subsystem configuration is available, such
-configuration may be migrated to the new subsystem by invoking its
-`migrate` operation, using the CLI management client:
+In case the legacy subsystem configuration is available, such configuration may be migrated to the new subsystem by invoking its `migrate` operation, using the management CLI:
 
-[source,ruby]
+[source]
 ----
 /subsystem=messaging:migrate
 ----
 
-There is also a `describe-migration` operation that returns a list of
-all the management operations that are performed to migrate from the
-legacy subsystem to the new one:
+There is also a `describe-migration` operation that returns a list of all the management operations that are performed to migrate from the legacy subsystem to the new one:
 
-[source,ruby]
+[source]
 ----
 /subsystem=messaging:describe-migration
 ----
 
-Both `migrate` and `describe-migration` will also display a list of
-migration-warnings if there are some resource or attributes that can not
-be migrated automatically. The following is a list of these warnings:
+Both `migrate` and `describe-migration` will also display a list of migration-warnings if there are some resource or attributes that can not be migrated automatically. The following is a list of these warnings:
 
-* The migrate operation can not be performed: the server must be in
-admin-only mode +
-The `migrate` operation requires starting the server in admin-only mode,
-which is done by adding parameter `--admin-only` to the server start
-command, e.g.
+* The migrate operation can not be performed: the server must be in admin-only mode
 +
-[source,bash]
+The `migrate` operation requires starting the server in admin-only mode, which is done by adding parameter `--admin-only` to the server start command, e.g.
++
+[source]
 ----
 ./standalone.sh --admin-only
 ----
 
-* Can not migrate attribute local-bind-address from resource X. Use
-instead the socket-attribute to configure this broadcast-group.
-* Can not migrate attribute local-bind-port from resource X. Use instead
-the socket-binding attribute to configure this broadcast-group.
-* Can not migrate attribute group-address from resource X. Use instead
-the socket-binding attribute to configure this broadcast-group.
-* Can not migrate attribute group-port from resource X. Use instead the
-socket-binding attribute to configure this broadcast-group. +
-Broadcast-group resources no longer accept local-bind-address,
-local-bind-port, group-address, group-port attributes. It only accepts a
-socket-binding. The warning notifies that resource X has an unsupported
-attribute. The user will have to set the socket-binding attribute on the
-resource and ensures it corresponds to a defined socket-binding
+* Can not migrate attribute local-bind-address from resource X. Use instead the socket-attribute to configure this broadcast-group.
+* Can not migrate attribute local-bind-port from resource X. Use instead the socket-binding attribute to configure this broadcast-group.
+* Can not migrate attribute group-address from resource X. Use instead the socket-binding attribute to configure this broadcast-group.
+* Can not migrate attribute group-port from resource X. Use instead the socket-binding attribute to configure this broadcast-group.
++
+Broadcast-group resources no longer accept local-bind-address, local-bind-port, group-address, group-port attributes. It only accepts a socket-binding. The warning notifies that resource X has an unsupported attribute. The user will have to set the socket-binding attribute on the resource and ensures it corresponds to a defined socket-binding
 resource.
 
-* Classes providing the %s are discarded during the migration. To use
-them in the new messaging-activemq subsystem, you will have to extend
-the Artemis-based Interceptor. +
-Messaging interceptors support is significantly different in WildFly 10,
-any interceptors configured in the legacy subsystem are discarded during
-migration. Please refer to the Messaging Interceptors section to learn
-how to migrate legacy Messaging interceptors.
+* Classes providing the %s are discarded during the migration. To use them in the new `messaging-activemq` subsystem, you will have to extend the Artemis-based Interceptor.
++
+Messaging interceptors support is significantly different in {ProductName} {ProductVersion}, any interceptors configured in the legacy subsystem are discarded during migration. See  the <<messaging-interceptors, Messaging Interceptors>> section to learn how to migrate legacy Messaging interceptors.
 
-* Can not migrate the HA configuration of X. Its shared-store and backup
-attributes holds expressions and it is not possible to determine
-unambiguously how to create the corresponding ha-policy for the
-messaging-activemq's server. +
-If the hornetq-server X's shared-store or backup attributes hold an
-expression, such as $\{xxx}, then it's not possible to determine the
-actual ha-policy of the migrated server. In that case, we discard it and
-the user will have to add the correct ha-policy afterwards (ha-policy is
-a single resource underneath the messaging-activemq's server resource).
+* Can not migrate the HA configuration of X. Its shared-store and backup attributes holds expressions and it is not possible to determine unambiguously how to create the corresponding ha-policy for the `messaging-activemq` server.
++
+If the `hornetq-server` X's shared-store or backup attributes hold an expression, such as $\{xxx}, then it's not possible to determine the actual ha-policy of the migrated server. In that case, we discard it and the user will have to add the correct `ha-policy` afterwards. The `ha-policy` is a single resource underneath the `messaging-activemq` server resource.
 
-* Can not migrate attribute local-bind-address from resource X. Use
-instead the socket-binding attribute to configure this
-discovery-group.Can not migrate attribute local-bind-port from resource
-X. Use instead the socket-binding attribute to configure this
-discovery-group.
-* Can not migrate attribute group-address from resource X. Use instead
-the socket-binding attribute to configure this discovery-group.
-* Can not migrate attribute group-port from resource X. Use instead the
-socket-binding attribute to configure this discovery-group. +
-discovery-group resources no longer accept local-bind-address,
-local-bind-port, group-address, group-port attributes. It only accepts a
-socket-binding. The warning notifies that resource X has an unsupported
-attribute. +
-The user will have to set the socket-binding attribute on the resource
-and ensures it corresponds to a defined socket-binding resource.
+* Can not migrate attribute local-bind-address from resource X. Use instead the socket-binding attribute to configure this discovery-group.Can not migrate attribute local-bind-port from resource X. Use instead the socket-binding attribute to configure this discovery-group.
+* Can not migrate attribute group-address from resource X. Use instead the socket-binding attribute to configure this discovery-group.
 
-* Can not create a legacy-connection-factory based on connection-factory
-X. It uses a HornetQ in-vm connector that is not compatible with Artemis
-in-vm connector +
-Legacy subsystem's remote connection-factory resources are migrated into
-legacy-connection-factory resources, to allow old EAP6 clients to
-connect to EAP7. However a connection-factory using in-vm will not be
-migrated, because a in-vm client will be based on EAP7, not EAP 6. In
-other words, legacy-connection-factory are created only when the CF is
-using remote connectors, and this warning notifies about in-vm
-connection-factory X not migrated.
+* Can not migrate attribute group-port from resource X. Use instead the socket-binding attribute to configure this discovery-group.
++
+The `discovery-group` resources no longer accept `local-bind-address`, `local-bind-port`, `group-address`, `group-port` attributes. It only accepts a `socket-binding`. The warning notifies that resource X has an unsupported attribute.
++
+The user will have to set the socket-binding attribute on the resource and ensures it corresponds to a defined socket-binding resource.
 
-* Can not migrate attribute X from resource Y. The attribute uses an
-expression that can be resolved differently depending on system
-properties. After migration, this attribute must be added back with an
-actual value instead of the expression. +
-This warning appears when the migration logic needs to know the concrete
-value of attribute X during migration, but instead such value includes
-an expression that's can't be resolved, so the actual value can not be
-determined, and the attribute is discarded. It happens in several cases,
+* Can not create a legacy-connection-factory based on connection-factory X. It uses a HornetQ in-vm connector that is not compatible with Artemis in-vm connector
++
+Legacy subsystem's remote connection-factory resources are migrated into legacy-connection-factory resources, to allow old EAP6 clients to connect to EAP7. However a connection-factory using in-vm will not be migrated, because a in-vm client will be based on EAP7, not EAP 6. In other words, legacy-connection-factory are created only when the CF is using remote connectors, and this warning notifies about in-vm connection-factory X not migrated.
+
+* Can not migrate attribute X from resource Y. The attribute uses an expression that can be resolved differently depending on system properties. After migration, this attribute must be added back with an actual value instead of the expression.
++
+This warning appears when the migration logic needs to know the concrete value of attribute X during migration, but instead such value includes an expression that's can't be resolved, so the actual value can not be determined, and the attribute is discarded. It happens in several cases,
 for instance:
-** cluster-connection forward-when-no-consumers. This boolean attribute
-has been replaced by the message-load-balancing-type attribute (which is
-an enum of OFF, STRICT, ON_DEMAND)
-** broadcast-group and discovery-group's jgroups-stack and
-jgroups-channel attributes. They reference other resources and we no
-longer accept expressions for them.
++
+** cluster-connection forward-when-no-consumers. This boolean attribute has been replaced by the message-load-balancing-type attribute (which is an enum of OFF, STRICT, ON_DEMAND)
+** broadcast-group and discovery-group's jgroups-stack and jgroups-channel attributes. They reference other resources and we no longer accept expressions for them.
 
-* Can not migrate attribute X from resource Y. This attribute is not
-supported by the new messaging-activemq subsystem. +
-Some attributes are no longer supported in the new messaging-activemq
-subsystem and are simply discarded:
+* Can not migrate attribute X from resource Y. This attribute is not supported by the new `messaging-activemq` subsystem.
++
+Some attributes are no longer supported in the new `messaging-activemq` subsystem and are simply discarded:
++
 ** hornetq-server's failback-delay
 ** http-connector's use-nio attribute
 ** http-acceptor's use-nio attribute
@@ -677,29 +526,16 @@ subsystem and are simply discarded:
 [[xml-configuration]]
 ===== XML Configuration
 
-The XML configuration has changed significantly with the new
-messaging-activemq subsystem to provide a XML scheme more consistent
-with other WildFly subsystems. +
-It is not advised to change the XML configuration of the legacy
-messaging subsystem to conform to the new messaging-activemq subsystem.
-Instead, invoke the legacy subsystem `migrate` operation. This operation
-will write the XML configuration of the new *messaging-activemq*
-subsystem as a part of its execution.
+The XML configuration has changed significantly with the new `messaging-activemq` subsystem to provide a XML scheme more consistent with other {ProductName} subsystems.
+
+It is not advised to change the XML configuration of the legacy `messaging` subsystem to conform to the new `messaging-activemq` subsystem. Instead, invoke the legacy subsystem `migrate` operation. This operation will write the XML configuration of the new `messaging-activemq` subsystem as a part of its execution.
 
 [[messaging-interceptors]]
 ===== Messaging Interceptors
 
-Messaging Interceptors are significantly different in EAP 7, requiring
-both code and configuration changes by the user. In concrete the
-interceptor base Java class is now
-*org.apache.artemis.activemq.api.core.interceptor.Interceptor*, and the
-user interceptor implementation classes may now be loaded by any server
-module. Note that prior to EAP 7 the interceptor classes could only be
-installed by adding these to the HornetQ module, thus requiring the user
-to change such module XML descriptor, its *module.xml*. +
-With respect to the server XML configuration, the user must now specify
-the module to load its interceptors in the new *messaging-activemq*
-subsystem XML config, e.g:
+Messaging Interceptors are significantly different in {ProductName} {ProductVersion}, requiring both code and configuration changes by the user. In concrete the interceptor base Java class is now `org.apache.artemis.activemq.api.core.interceptor.Interceptor`, and the user interceptor implementation classes may now be loaded by any server module. Note that prior to {ProductName} {ProductVersion} the interceptor classes could only be installed by adding these to the HornetQ module, thus requiring the user to change such module XML descriptor, its `module.xml`.
+
+With respect to the server XML configuration, the user must now specify the module to load its interceptors in the new `messaging-activemq` subsystem XML config, e.g:
 
 [source,xml]
 ----
@@ -721,22 +557,19 @@ subsystem XML config, e.g:
 [[jms-destinations]]
 ===== JMS Destinations
 
-In previous releases, JMS destination queues were configured in the
-<jms-destinations> element under the hornetq-server section of the
-*messaging* subsystem.
+In previous releases, JMS destination queues were configured in the `<jms-destinations>` element under the hornetq-server section of the `messaging` subsystem.
 
 [source,xml]
 ----
 <jms-destinations>
-<jms-queue name="testQueue">
-<entry name="queue/test"/>
-<entry name="java:jboss/exported/jms/queue/test"/>
-</jms-queue>
+    <jms-queue name="testQueue">
+        <entry name="queue/test"/>
+        <entry name="java:jboss/exported/jms/queue/test"/>
+    </jms-queue>
 </jms-destinations>
 ----
 
-In WildFly, the JMS destination queue is configured in the default
-server of the messaging-activemq subsystem.
+In {ProductName}, the JMS destination queue is configured in the default server of the `messaging-activemq` subsystem.
 
 [source,xml]
 ----
@@ -746,38 +579,31 @@ server of the messaging-activemq subsystem.
 [[messaging-logging]]
 ==== Messaging Logging
 
-The prefix of messaging log messages in WildFly is *WFLYMSGAMQ*, instead
-of *WFLYMSG*.
+The prefix of messaging log messages in {ProductName} is `WFLYMSGAMQ`, instead of `WFLYMSG`.
 
 [[messaging-data]]
 ==== Messaging Data
 
-The location of the messaging data has been changed in the new
-messaging-activemq subsystem:
+The location of the messaging data has been changed in the new `messaging-activemq` subsystem:
 
 * messagingbindings/ -> activemq/bindings/
 * messagingjournal/ -> activemq/journal/
 * messaginglargemessages/ -> activemq/largemessages/
 * messagingpaging/ -> activemq/paging/
 
-To migrate legacy messaging data, you will have to export the
-directories used by the legacy messaging subsystem and import them into
-the new subsystem's server by using its `import-journal operation:`
+To migrate legacy messaging data, you will have to export the directories used by the legacy `messaging` subsystem and import them into the new subsystem's server by using its `import-journal` operation:
 
-[source,xml]
+[source]
 ----
 /subsystem=messaging-activemq/server=default:import-journal(file=<path to XML dump>)
 ----
 
-The XML dump is a XML file generated by HornetQ `XmlDataExporter` util
-class.
+The XML dump is a XML file generated by HornetQ `XmlDataExporter` util class.
 
 [[application-migration]]
 == Application Migration
 
-Before you migrate your application, you should be aware that some
-features that were available in previous releases are now deprecated or
-missing.
+Before you migrate your application, you should be aware that some features that were available in previous releases are now deprecated or missing.
 
 [[ejbs]]
 === EJBs
@@ -785,13 +611,9 @@ missing.
 [[cmp-entity-ejbs]]
 ==== CMP Entity EJBs
 
-Container-Managed Persistence entity beans support is optional in Java
-EE 7, and WildFly does not provide support for these.
+Container-Managed Persistence entity beans support is optional in Java EE 7, and {ProductName} does not provide support for these.
 
-CMP entity beans are defined in the *ejb-jar.xml* descriptor, in
-concrete an entity bean is CMP only if the *<entity/>*'s child element
-named *persistence-type* is included and has a value of *Container*. An
-example:
+CMP entity beans are defined in the `ejb-jar.xml` descriptor, in concrete an entity bean is CMP only if the `<entity/>` child element named `persistence-type` is included and has a value of `Container`. An example:
 
 [source,xml]
 ----
@@ -822,55 +644,44 @@ CMP entity beans should be replaced by JPA entities.
 [[default-remote-connection-port]]
 ===== Default Remote Connection Port
 
-The default remote connection port has changed from '4447' to '8080'.
+The default remote connection port has changed from `4447` to `8080`.
 
-In JBoss AS7, the *jboss-ejb-client.properties* file looked similar to
+In {PrevProductName} {PrevProductVersion}, the `jboss-ejb-client.properties` file looked similar to
 the following:
-
-....
+[source]
+----
 remote.connectionprovider.create.options.org.xnio.Options.SSL_ENABLED=false
 remote.connections=default
 remote.connection.default.host=localhost
 remote.connection.default.port=4447
 remote.connection.default.connect.options.org.xnio.Options.SASL_POLICY_NOANONYMOUS=false
-....
+----
 
-In WildFly, the properties file looks like this:
-
-....
+In {ProductName}, the properties file looks like this:
+[source]
+----
 remote.connectionprovider.create.options.org.xnio.Options.SSL_ENABLED=false
 remote.connections=default
 remote.connection.default.host=localhost
 remote.connection.default.port=8080
 remote.connection.default.connect.options.org.xnio.Options.SASL_POLICY_NOANONYMOUS=false
-....
+----
 
 [[default-connector]]
 ===== Default Connector
 
-In WildFly, the default connector has changed from "remoting" to
-"http-remoting". This change impacts clients that use libraries from one
-release of JBoss and to connect to server in a different release.
+In {ProductName}, the default connector has changed from `remoting` to `http-remoting`. This change impacts clients that use libraries from one release of JBoss and to connect to server in a different release.
 
-* If a client application uses the EJB client library from JBoss AS 7
-and wants to connect to WildFly 10 server, the server must be configured
-to expose a remoting connector on a port other than "8080". The client
-must then connect using that newly configured connector.
+* If a client application uses the EJB client library from {PrevProductName} {PrevProductVersion} and wants to connect to {ProductName} {ProductVersion} server, the server must be configured to expose a remoting connector on a port other than `8080`. The client must then connect using that newly configured connector.
 
-* A client application that uses the EJB client library from WildFly 10
-and wants to connect to a JBoss AS 7 server must be aware that the
-server instance does not use the http-remoting connector and instead
-uses a remoting connector. This is achieved by defining a new
-client-side connection property.
+* A client application that uses the EJB client library from {ProductName} {ProductVersion} and wants to connect to a {PrevProductName} {PrevProductVersion} server must be aware that the server instance does not use the http-remoting connector and instead uses a remoting connector. This is achieved by defining a new client-side connection property.
 +
-....
+[source]
+----
 remote.connection.default.protocol=remote
-....
+----
 
-External applications using JNDI, to remotely lookup up EJBs in a
-WildFly 10 server, may also need to be migrated, please refer to
-<<remote-jndi-clients,#Remote
-JNDI Clients>> section for further information.
+External applications using JNDI, to remotely lookup up EJBs in a {ProductName} {ProductVersion} server, may also need to be migrated, see  <<remote-jndi-clients,#Remote JNDI Clients>> section for further information.
 
 [[jms]]
 === JMS
@@ -878,23 +689,14 @@ JNDI Clients>> section for further information.
 [[proprietary-jms-resource-definitions]]
 ==== Proprietary JMS Resource Definitions
 
-The proprietary XML descriptors, previously used to setup JMS resources,
-are deprecated in WildFly. Java EE 7 (section EE.5.18) standardised such
-functionality.
+The proprietary XML descriptors, previously used to setup JMS resources, are deprecated in {ProductName}. Java EE 7 (section EE.5.18) standardized such functionality.
 
-The deprecated descriptors are files bundled in the application package,
-which name ends with *-jms.xml*. +
-Their namespace has been changed to
-*urn:jboss:messaging-activemq-deployment:1.0*.
+The deprecated descriptors are files bundled in the application package, which name ends with `-jms.xml`. Their namespace has been changed to `urn:jboss:messaging-activemq-deployment:1.0`.
 
 [[external-jms-clients]]
 ==== External JMS Clients
 
-JMS Resources are remotely looked up using JNDI, and looking up
-resources in a WildFly 10 server may require changes in the application
-code, please refer to
-<<remote-jndi-clients,#Remote
-JNDI Clients>> section for further information.
+JMS Resources are remotely looked up using JNDI, and looking up resources in a {ProductName} {ProductVersion} server may require changes in the application code, see  <<remote-jndi-clients,#Remote JNDI Clients>> section for further information.
 
 [[jpa-and-hibernate]]
 === JPA (and Hibernate)
@@ -902,15 +704,11 @@ JNDI Clients>> section for further information.
 [[applications-that-plan-to-use-hibernate-orm-5.0]]
 ==== Applications That Plan to Use Hibernate ORM 5.0
 
-WildFly ships with Hibernate ORM 5.0 and those libraries are implicitly
-added to the application classpath when a persistence.xml is detected
-during deployment. If your application uses JPA, it will default to
-using the Hibernate ORM 5.0 libraries.
+{ProductName} ships with Hibernate ORM 5.0 and those libraries are implicitly added to the application classpath when a `persistence.xml` is detected during deployment. If your application uses JPA, it will default to using the Hibernate ORM 5.0 libraries.
 
 Hibernate ORM 5.0 introduces:
 
-* Redesigned metamodel - Complete replacement for the current
-org.hibernate.mapping code
+* Redesigned metamodel - Complete replacement for the current `org.hibernate.mapping` code
 * Query parser - Improved query parser based on Antlr 3/4
 * Multi-tenancy improvements - Discriminator-based multi-tenancy
 * Follow-on fetches - Two-phase loading via LoadPlans/EntityGraphs
@@ -918,27 +716,16 @@ org.hibernate.mapping code
 [[applications-that-currently-use-hibernate-orm-4.0---4.3]]
 ==== Applications that currently use Hibernate ORM 4.0 - 4.3
 
-If your application needs second-level cache enabled, you should migrate
-to Hibernate ORM 5.0, which is integrated with Infinispan 8.0.
-Applications written with Hibernate ORM 4.x can still use Hibernate 4.x
-if you define a custom JBoss module with Hibernate 4.x JARs and exclude
-the Hibernate 5 classes from your application. It is recommended that
-you migrate your application to use Hibernate 5.
+If your application needs second-level cache enabled, you should migrate to Hibernate ORM 5.0, which is integrated with Infinispan 8.0. Applications written with Hibernate ORM 4.x can still use Hibernate 4.x if you define a custom JBoss module with Hibernate 4.x JARs and exclude the Hibernate 5 classes from your application. It is recommended that you migrate your application to use Hibernate 5.
 
-For information about the changes implemented between Hibernate 4 and
-Hibernate 5, see
+For information about the changes implemented between Hibernate 4 and Hibernate 5, see
 https://github.com/hibernate/hibernate-orm/blob/master/migration-guide.adoc
 
 [[applications-that-currently-use-hibernate-3]]
 ==== Applications that currently use Hibernate 3
 
-The integration classes that made it easier to use Hibernate 3 in AS 7
-were removed from WildFly 10. If your application still uses Hibernate 3
-libraries, it is strongly recommended that you migrate your application
-to use Hibernate 5 as Hibernate 3 will no longer work in WildFly without
-a lot of effort. If you can not migrate to Hibernate 5, you must define
-a custom JBoss Module for the Hibernate 3 classes and exclude the
-Hibernate 5 classes from your application.
+The integration classes that made it easier to use Hibernate 3 in {PrevProductName} {PrevProductVersion} were removed from {ProductName} {ProductVersion}. If your application still uses Hibernate 3 libraries, it is strongly recommended that you migrate your application to use Hibernate 5 as Hibernate 3 will no longer work in {ProductName} without
+a lot of effort. If you can not migrate to Hibernate 5, you must define a custom JBoss Module for the Hibernate 3 classes and exclude the Hibernate 5 classes from your application.
 
 [[web-applications]]
 === Web Applications
@@ -946,18 +733,11 @@ Hibernate 5 classes from your application.
 [[jboss-web-valves]]
 ==== JBoss Web Valves
 
-Undertow does not support the JBoss Web Valve functionality. This can be
-replaced by Undertow Handlers (see
-http://undertow.io/undertow-docs/undertow-docs-1.3.0/index.html#undertow-handler-authors-guide
-for more).
+Undertow does not support the JBoss Web Valve functionality. This can be replaced by Undertow Handlers. See the http://undertow.io/undertow-docs/undertow-docs-1.3.0/index.html#undertow-handler-authors-guide[Undertow Handler Authors Guide] for more information.
 
-List of valves that were provided with JBoss Web, together with a
-corresponding Undertow handler, is provided above, in the section on the
-JBoss Web subsystem.
+List of valves that were provided with JBoss Web, together with a corresponding Undertow handler, is provided above, in the section on the JBoss Web subsystem.
 
-JBoss Web Valves are specified in the proprietary *jboss-web.xml*
-descriptor, through *<valve />* element(s). These can be replaced using
-the *<http-handler />* element(s). For example:
+JBoss Web Valves are specified in the proprietary `jboss-web.xml` descriptor, through `<valve />` element(s). These can be replaced using the `<http-handler />` element(s). For example:
 
 [source,xml]
 ----
@@ -987,29 +767,16 @@ can be replaced by
 [[cxf-spring-webservices]]
 ==== CXF Spring Webservices
 
-The setup of web service's endpoints and clients, through a Spring XML
-descriptor, driving a CXF bus creation, is no longer supported in
-WildFly.
+The setup of web service's endpoints and clients, through a Spring XML descriptor, driving a CXF bus creation, is no longer supported in {ProductName}.
 
-Any application containing a jbossws-cxf.xml must migrate all
-functionality specified in such XML descriptor, mostly already supported
-by the JAX-WS specification, included in Java EE 7. It is still possible
-to rely on direct Apache CXF API usage, loosing the Java EE portability
-of the application, for instance when specific Apache CXF
-functionalities are needed. Please refer to the Apache CXF Integration
-document for further information.
+Any application containing a `jbossws-cxf.xml` must migrate all functionality specified in such XML descriptor, mostly already supported by the JAX-WS specification, included in Java EE 7. It is still possible to rely on direct Apache CXF API usage, loosing the Java EE portability of the application, for instance when specific Apache CXF functionalities are needed. See the Apache CXF Integration document for further information.
 
 [[jax-rpc]]
 ==== JAX-RPC
 
-JAX-RPC is an API for building Web services and clients that used remote
-procedure calls (RPC) and XML, which was deprecated in Java EE 6, and is
-no longer supported by WildFly.
+JAX-RPC is an API for building Web services and clients that used remote procedure calls (RPC) and XML, which was deprecated in Java EE 6, and is no longer supported by {ProductName}.
 
-JAX-RPC Web Services may be identified by the presence of the XML
-descriptor named web services.xml, containing a
-*<webservice-description/>* element that includes a child element named
-*<jaxrpc-mapping-file/>*. An example:
+JAX-RPC Web Services may be identified by the presence of the XML descriptor named `webservices.xml`, containing a `<webservice-description/>` element that includes a child element named `<jaxrpc-mapping-file/>`. An example:
 
 [source,xml]
 ----
@@ -1032,22 +799,18 @@ descriptor named web services.xml, containing a
 </webservices>
 ----
 
-Applications using JAX-RPC should be migrated to use JAX-WS, the current
-Java EE standard web service framework.
+Applications using JAX-RPC should be migrated to use JAX-WS, the current Java EE standard web service framework.
 
 [[jax-rs-2.0]]
 ==== JAX-RS 2.0
 
-JSR 339: JAX-RS 2.0: The Java API for RESTful Web Services specification
-is located here: https://jcp.org/en/jsr/detail?id=339
+JSR 339: JAX-RS 2.0: The Java API for RESTful Web Services specification is located at https://jcp.org/en/jsr/detail?id=339
 
-Some changes to the `MessageBodyWriter` interface may represent a
-backward incompatible change with respect to JAX-RS 1.X.
+Some changes to the `MessageBodyWriter` interface may represent a backward incompatible change with respect to JAX-RS 1.X.
 
-Be sure to define an @Produces or @Consumes for your endpoints. Failure
-to do so may result in an error similar to the following.
+Be sure to define an `@Produces` or `@Consumes` for your endpoints. Failure to do so may result in an error similar to the following.
 
-[source,xml]
+[source]
 ----
 org.jboss.resteasy.core.NoMessageBodyWriterFoundFailure: Could not find MessageBodyWriter for response object of type: <OBJECT> of media type: <CONTENT_TYPE>
 ----
@@ -1055,13 +818,8 @@ org.jboss.resteasy.core.NoMessageBodyWriterFoundFailure: Could not find MessageB
 [[rest-client-api]]
 ==== REST Client API
 
-Some REST Client API classes and methods are deprecated, for example:
-org.jboss.resteasy.client.ClientRequest and
-org.jboss.resteasy.client.ClientResponse. Instead, use
-https://docs.jboss.org/resteasy/docs/3.0-rc-1/javadocs/index.html?org/jboss/resteasy/client/jaxrs/ResteasyClient.html[﻿org.jboss.resteasy.client.jaxrs.ResteasyClient]
-and javax.ws.rs.core.Response. See the `resteasy-jaxrs-client
-quickstart` for an example of an external JAX-RS RestEasy client that
-interacts with a JAX-RS Web service.
+Some REST Client API classes and methods are deprecated, for example: `org.jboss.resteasy.client.ClientRequest` and `org.jboss.resteasy.client.ClientResponse`. Instead, use
+https://docs.jboss.org/resteasy/docs/3.0-rc-1/javadocs/index.html?org/jboss/resteasy/client/jaxrs/ResteasyClient.html[﻿`org.jboss.resteasy.client.jaxrs.ResteasyClient`] and `javax.ws.rs.core.Response`. See the `resteasy-jaxrs-client` quickstart for an example of an external JAX-RS RestEasy client that interacts with a JAX-RS Web service.
 
 [[application-clustering]]
 === Application Clustering
@@ -1069,164 +827,115 @@ interacts with a JAX-RS Web service.
 [[ha-singleton]]
 ==== HA Singleton
 
-JBoss AS7 introduced singleton services - a mechanism for installing an
-service such that it would only start on one node in the cluster at a
-time, a HA Singleton. Such mechanism required usage of a private JBoss
-EAP Clustering API, designed around the class
-*org.jboss.as.clustering.singleton.SingletonService*, and was documented
-in detail at
-https://access.redhat.com/documentation/en-US/JBoss_Enterprise_Application_Platform/6.4/html/Development_Guide/Implement_an_HA_Singleton.html
-, and while not difficult to implement, the installation process
-suffered from a couple shortcomings:
+{PrevProductName} {PrevProductVersion} introduced singleton services - a mechanism for installing an service such that it would only start on one node in the cluster at a time, a HA Singleton. Such mechanism required usage of a private {ProductName} Clustering API, designed around the class `org.jboss.as.clustering.singleton.SingletonService`, and was documented in detail at
+https://access.redhat.com/documentation/en-US/JBoss_Enterprise_Application_Platform/6.4/html/Development_Guide/Implement_an_HA_Singleton.html, and while not difficult to implement, the installation process suffered from a couple shortcomings:
 
-* Installing multiple singleton services within a single deployment
-caused the deployer to hang.
-* Installing a singleton service required the user to specify several
-private module dependencies in /META-INF/MANIFEST.MF
+* Installing multiple singleton services within a single deployment caused the deployer to hang.
+* Installing a singleton service required the user to specify several private module dependencies in `/META-INF/MANIFEST.MF`
 
-WildFly 10 introduces a new public API for building such services, which
-significantly simplifies the process, and solves the issues found in the
-legacy solution. The JBoss EAP 7 Quickstart application named
-*cluster-ha-singleton* examples a HA Singleton implementation using the
-new API, and may be found at
-https://github.com/jboss-developer/jboss-eap-quickstarts/tree/7.0.x-develop/cluster-ha-singleton
+{ProductName} {ProductVersion} introduces a new public API for building such services, which significantly simplifies the process, and solves the issues found in the legacy solution. The {ProductName} {ProductVersion} Quickstart application named `cluster-ha-singleton` examples a HA Singleton implementation using the new API, and may be found at https://github.com/jboss-developer/jboss-eap-quickstarts/tree/7.0.x-develop/cluster-ha-singleton
 . +
-FIXME: community URLs instead
+// FIXME: community URLs instead
 
 [[stateful-session-ejb-clustering]]
 ==== Stateful Session EJB Clustering
 
-WildFly 10 no longer requires Stateful Session EJBs to use the
-*org.jboss.ejb3.annotation.Clustered* annotation to enable clustering
-behaviour. By default, if the server is started using an HA profile, the
-state of your SFSBs will be replicated automatically. Disabling this
-behaviour is achievable on a per-EJB basis, by annotating your bean
-using *@Stateful(passivationCapable=false)*, which is new to the EJB 3.2
-specification; or globally through the configuration of the EJB3
-subsystem, in the server configuration.
+{ProductName} {ProductVersion} no longer requires Stateful Session EJBs to use the `org.jboss.ejb3.annotation.Clustered` annotation to enable clustering behavior. By default, if the server is started using an HA profile, the state of your SFSBs will be replicated automatically. Disabling this behavior is achievable on a per-EJB basis, by annotating your bean using `@Stateful(passivationCapable=false)`, which is new to the EJB 3.2 specification; or globally through the configuration of the EJB3 subsystem, in the server configuration.
 
-Note that the *@Clustered* annotation, if used by an application, is
-simply ignored, the application deployment will not fail.
+Note that the `@Clustered` annotation, if used by an application, is simply ignored, the application deployment will not fail.
 
 [[web-session-clustering]]
 ==== Web Session Clustering
 
-WildFly 10 introduces a new web session clustering implementation,
-replacing the one found in AS7, which has been around for ages (since
-JBoss AS 3.2!), and was tightly coupled to the legacy JBoss Web
-subsystem source code. The most relevant changes in the new
-implementation are:
+{ProductName} {ProductVersion} introduces a new web session clustering implementation, replacing the one found in {PrevProductName} {PrevProductVersion}, which has been around for ages (since JBoss AS 3.2!), and was tightly coupled to the legacy JBoss Web subsystem source code. The most relevant changes in the new implementation are:
 
-* Introduction of a proper session manager SPI, and an Infinispan
-implementation of it, decoupled from the web subsystem implementation
-* Sessions are implemented as a facade over one or more cache entries,
-which means that the container's session manager itself does not retain
-a separate reference to each HttpSession
-* Pessimistic locking of cache entries effectively ensures that only a
-single client on a single node ever accesses a given session at any
-given time
-* Usage of cache entry grouping, instead of atomic maps, to ensure that
-multiple cache entries belonging to the same session are co-located.
-* Session operations within a request only ever use a single
-batch/transaction. This results in fewer RPCs per request.
-* Support for write-through cache stores, as well as passivation-only
-cache stores.
+* Introduction of a proper session manager SPI, and an Infinispan implementation of it, decoupled from the web subsystem implementation
+* Sessions are implemented as a facade over one or more cache entries, which means that the container's session manager itself does not retain a separate reference to each HttpSession
+* Pessimistic locking of cache entries effectively ensures that only a single client on a single node ever accesses a given session at any given time
+* Usage of cache entry grouping, instead of atomic maps, to ensure that multiple cache entries belonging to the same session are co-located.
+* Session operations within a request only ever use a single batch/transaction. This results in fewer RPCs per request.
+* Support for write-through cache stores, as well as passivation-only cache stores.
 
-With respect to applications, the new web session clustering
-implementation deprecates/reinterprets much of the related
-configuration, which is included in JBoss's proprietary web application
-XML descriptor, *jboss-web.xml*:
+With respect to applications, the new web session clustering implementation deprecates/reinterprets much of the related configuration, which is included in JBoss's proprietary web application
+XML descriptor, `jboss-web.xml`:
 
-* *<max-active-sessions/>* +
-Previously, session creation would fail if an additional session would
-cause the number of active sessions to exceed the value specified by <
-*max-active-sessions/>*. +
-In the new implementation, *<max-active-sessions/>* is used to enable
-session passivation. If session creation would cause the number of
-active sessions to exceed *<max-active-sessions/>*, then the oldest
-session known to the session manager will passivate to make room for the
-new session.
+* `<max-active-sessions/>`
++
+Previously, session creation would fail if an additional session would cause the number of active sessions to exceed the value specified by `<max-active-sessions/>`.
++
+In the new implementation, `<max-active-sessions/>` is used to enable session passivation. If session creation would cause the number of active sessions to exceed `<max-active-sessions/>`, then the oldest session known to the session manager will passivate to make room for the new session.
 
-* *<passivation-config/>* +
-This configuration element and its sub-elements are no longer used in
-WildFly.
+* `<passivation-config/>`
++
+This configuration element and its sub-elements are no longer used in {ProductName}.
 
-* *<use-session-passivation/>* +
-Previously, passivation was enabled via this attribute, yet in the new
-implementation, passivation is enabled by specifying a non-negative
-value for *<max-active-sessions/>*.
+* `<use-session-passivation/>`
++
+Previously, passivation was enabled via this attribute, yet in the new implementation, passivation is enabled by specifying a non-negative value for `<max-active-sessions/>`.
 
-* *<passivation-min-idle-time/>* +
-Previously, sessions needed to be active for at least a specific amount
-of time before becoming a candidate for passivation. This could cause
-session creation to fail, even when passivation was enabled. +
-The new implementation does not support this logic and thus avoids this
-DoS vulnerability.
+* `<passivation-min-idle-time/>`
++
+Previously, sessions needed to be active for at least a specific amount of time before becoming a candidate for passivation. This could cause session creation to fail, even when passivation was enabled.
++
+The new implementation does not support this logic and thus avoids this DoS vulnerability.
 
-* *<passivation-max-idle-time/>* +
-Previously, a session would be passivated after it was idle for a
-specific amount of time. +
-The new implementation does not support eager passivation - only lazy
-passivation. Sessions are only passivated when necessary to comply with
-*<max-active-sessions/>*.
+* `<passivation-max-idle-time/>`
++
+Previously, a session would be passivated after it was idle for a specific amount of time.
++
+The new implementation does not support eager passivation - only lazy passivation. Sessions are only passivated when necessary to comply with `<max-active-sessions/>`.
 
-* *<replication-config/>* +
-The new implementation deprecates a number of sub-elements:
+* `<replication-config/>`
++
+The new implementation deprecates a number of sub-elements.
 
-* *<replication-trigger/>* +
-Previously, session attributes could be treated as either mutable or
-immutable depending on the values specified by *<replication-trigger/>*:
-** SET treated all attributes as immutable, requiring a separate
-HttpSession.setAttribute(...) to indicate that the value changed.
+* `<replication-trigger/>`
++
+Previously, session attributes could be treated as either mutable or immutable depending on the values specified by `<replication-trigger/>`:
+
+** SET treated all attributes as immutable, requiring a separate `HttpSession.setAttribute(...)` to indicate that the value changed.
 ** SET_AND_GET treated all session attributes as mutable.
-** SET_AND_NON_PRIMITIVE_GET recognised a small set of types (i.e.
-strings and boxed primitives) as immutable, and assumed that any other
-attribute was mutable. +
-The new implementation replaces this configuration option with a single,
-robust strategy. Session attributes are assumed to be mutable unless one
-of the following is true:
+** SET_AND_NON_PRIMITIVE_GET recognized a small set of types, for example strings and boxed primitives, as immutable, and assumed that any other attribute was mutable.
++
+The new implementation replaces this configuration option with a single, robust strategy. Session attributes are assumed to be mutable unless one of the following is true:
+
 ** The value is a known immutable value:
+
 *** null
-*** java.util.Collections.EMPTY_LIST, EMPTY_MAP, EMPTY_SET
+*** `java.util.Collections.EMPTY_LIST`, `EMPTY_MAP`, `EMPTY_SET`
+
 ** The value type is or implements a known immutable type:
-*** Boolean, Byte, Character, Double, Float, Integer, Long, Short
-*** java.lang.Enum, StackTraceElement, String
-*** java.io.File, java.nio.file.Path
-*** java.math.BigDecimal, BigInteger, MathContext
-*** java.net.InetAddress, InetSocketAddress, URI, URL
-*** java.security.Permission
-*** java.util.Currency, Locale, TimeZone, UUID
-** The value type is annotated with
-@org.wildfly.clustering.web.annotation.Immutable
 
-* *<use-jk/>* +
-Previously, the instance-id of the node handling a given request was
-appended to the jsessionid (for use by load balancers such as mod_jk,
-mod_proxy_balancer, mod_cluster, etc.) depending on the value specified
-for *<use-jk/>*. In the new implementation, the instance-id, if defined,
-is always appended to the jsessionid.
+*** `Boolean`, `Byte`, `Character`, `Double`, `Float`, `Integer`, `Long`, `Short`
+*** `java.lang.Enum`, `StackTraceElement`, `String`
+*** `java.io.File`, `java.nio.file.Path`
+*** `java.math.BigDecimal`, `BigInteger`, `MathContext`
+*** `java.net.InetAddress`, `InetSocketAddress`, `URI`, `URL`
+*** `java.security.Permission`
+*** `java.util.Currency`, `Locale`, `TimeZone`, `UUID`
 
-* *<max-unreplicated-interval/>* +
-Previously, this configuration option was an optimization that would
-prevent the replicate of a session's timestamp if no session attribute
-was changed. While this sounds nice, in practice it doesn't prevent any
-RPCs, since session access requires cache transaction RPCs regardless of
-whether any session attributes changed. In the new implementation, the
-timestamp of a session is replicated on every request. This prevents
-stale session meta data following failover.
+** The value type is annotated with `@org.wildfly.clustering.web.annotation.Immutable`
 
-* *<snapshot-mode/>* +
-Previously, one could configure *<snapshot-mode/>* as INSTANT or
-INTERVAL. Infinispan's replication queue renders this configuration
-option obsolete.
+* `<use-jk/>`
++
+Previously, the `instance-id` of the node handling a given request was appended to the `jsessionid`, for use by load balancers such as mod_jk, mod_proxy_balancer, mod_cluster, etc., depending on the value specified for `<use-jk/>`. In the new implementation, the `instance-id`, if defined, is always appended to the `jsessionid`.
 
-* *<snapshot-interval/>* +
-Only relevant for *<snapshot-mode>INTERVAL</snapshot-mode>*. See above.
+* `<max-unreplicated-interval/>`
++
+Previously, this configuration option was an optimization that would prevent the replicate of a session's timestamp if no session attribute was changed. While this sounds nice, in practice it doesn't prevent any RPCs, since session access requires cache transaction RPCs regardless of
+whether any session attributes changed. In the new implementation, the timestamp of a session is replicated on every request. This prevents stale session meta data following failover.
 
-* *<session-notification-policy/>* +
-Previously, the value defined by this attribute defined a policy for
-triggering session events. In the new implementation, this behaviour is
-spec-driven and not configurable.
+* `<snapshot-mode/>`
++
+Previously, one could configure `<snapshot-mode/>` as INSTANT or INTERVAL. Infinispan's replication queue renders this configuration option obsolete.
+
+* `<snapshot-interval/>`
++
+Only relevant for `<snapshot-mode>INTERVAL</snapshot-mode>`. See above.
+
+* `<session-notification-policy/>`
++
+Previously, the value defined by this attribute defined a policy for triggering session events. In the new implementation, this behavior is spec-driven and not configurable.
 
 [[other-specifications-and-frameworks]]
 === Other Specifications and Frameworks
@@ -1234,15 +943,12 @@ spec-driven and not configurable.
 [[remote-jndi-clients]]
 ==== Remote JNDI Clients
 
-WildFly 10's default JNDI Provider URL has changed, which means that
-external applications, using JNDI to lookup remote resources, for
-instance an EJB or a JMS Queue, may need to change the value for the
-JNDI *InitialContext* environment's property named
-*java.naming.provider.url*. The default URL scheme is now
-*http-remoting*, and the default URL port is now *8080*.
+{ProductName} {ProductVersion}'s default JNDI Provider URL has changed, which means that external applications, using JNDI to lookup remote resources, for instance an EJB or a JMS Queue, may need to change the value for the JNDI `InitialContext` environment's property named
+`java.naming.provider.url`. The default URL scheme is now
+`http-remoting`, and the default URL port is now `8080`.
 
-As an example, considering the application server host is *localhost*,
-then clients previously accessing JBoss AS7 would use
+As an example, considering the application server host is `localhost`,
+then clients previously accessing {ProductName} {ProductVersion} would use
 
 [source,java]
 ----
@@ -1250,7 +956,7 @@ java.naming.factory.initial=org.jboss.naming.remote.client.InitialContextFactory
 java.naming.provider.url=remote://localhost:4447
 ----
 
-while clients now accessing WildFly should use instead
+while clients now accessing {ProductName} should use instead
 
 [source, java]
 ----
@@ -1261,20 +967,11 @@ java.naming.provider.url=http-remoting://localhost:8080
 [[jsr-88]]
 ==== JSR-88
 
-The specification which aimed to standardise deployment tasks got very
-little adoption, due to much more "feature rich" proprietary solutions
-already included in every vendor application server. It was no surprise
-that JSR-88 support was dropped from Java EE 7, and WildFly followed
-that and dropped support too.
+The specification which aimed to standardize deployment tasks got very little adoption, due to much more "feature rich" proprietary solutions already included in every vendor application server. It was no surprise that JSR-88 support was dropped from Java EE 7, and {ProductName} followed that and dropped support too.
 
-A JSR-88 deployment plan is identified by a XML descriptor named
-*deployment-plan.xml*, bundled in a zip/jar archive.
+A JSR-88 deployment plan is identified by a XML descriptor named `deployment-plan.xml`, bundled in a zip/jar archive.
 
 [[module-dependencies]]
 ==== Module Dependencies
 
-Applications defining dependencies to WildFly modules, through the
-application's package MANIFEST.MF or jboss-deployment-structure.xml, may
-be referencing missing modules. When migrating an application, relying
-on such functionality, the presence of the referenced modules should be
-validated in advance.
+Applications defining dependencies to {ProductName} modules, through the application's package `MANIFEST.MF` or `jboss-deployment-structure.xml`, may be referencing missing modules. When migrating an application, relying on such functionality, the presence of the referenced modules should be validated in advance.

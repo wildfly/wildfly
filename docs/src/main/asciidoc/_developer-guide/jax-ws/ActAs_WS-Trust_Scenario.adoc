@@ -98,7 +98,7 @@ service endpoint, targetNamespace, portType, binding name, and service.
 </definitions>
 ----
 
-[[web-service-interface]]
+[[web-service-interface-actas-ws-trust]]
 === Web Service Interface
 
 The web service provider interface class, ActAsServiceIface, is a simple
@@ -122,7 +122,7 @@ public interface ActAsServiceIface
 }
 ----
 
-[[web-service-implementation]]
+[[web-service-implementation-actas-ws-trust]]
 === Web Service Implementation
 
 The web service provider implementation class, ActAsServiceImpl, is a
@@ -228,7 +228,7 @@ public class ActAsServiceImpl implements ActAsServiceIface
 }
 ----
 
-[[actascallbackhandler]]
+[[actascallbackhandler-actas-ws-trust]]
 === ActAsCallbackHandler
 
 ActAsCallbackHandler is a callback handler for the WSS4J Crypto API. It
@@ -262,7 +262,7 @@ public class ActAsCallbackHandler extends PasswordCallbackHandler {
 }
 ----
 
-[[usernametokencallbackhandler]]
+[[usernametokencallbackhandler-actas-ws-trust]]
 === UsernameTokenCallbackHandler
 
 The ActAs and OnBeholdOf sub-elements of the RequestSecurityToken are
@@ -431,7 +431,7 @@ public class UsernameTokenCallbackHandler implements CallbackHandler {
 }
 ----
 
-[[crypto-properties-and-keystore-files]]
+[[crypto-properties-and-keystore-files-actas-ws-trust]]
 === Crypto properties and keystore files
 
 The ActAs service must provide its own credentials. The requisite
@@ -446,7 +446,7 @@ org.apache.ws.security.crypto.merlin.keystore.alias=myactaskey
 org.apache.ws.security.crypto.merlin.keystore.file=actasstore.jks
 ....
 
-[[manifest.mf]]
+[[manifest-mf-actas-ws-trust-actas-ws-trust]]
 === MANIFEST.MF
 
 When deployed on WildFly this application requires access to the JBossWs
@@ -462,7 +462,7 @@ Created-By: 1.7.0_25-b15 (Oracle Corporation)
 Dependencies: org.jboss.ws.cxf.jbossws-cxf-client, org.apache.cxf.impl
 ....
 
-[[security-token-service]]
+[[security-token-service-actas-ws-trust]]
 == Security Token Service
 
 This section examines the STS elements from the basic WS-Trust scenario
@@ -472,7 +472,7 @@ components are.
 * STS's implementation class.
 * STSCallbackHandler class
 
-[[sts-implementation-class]]
+[[sts-implementation-class-actas-ws-trust]]
 === STS Implementation class
 
 The initial description of SampleSTS can be found
@@ -571,7 +571,7 @@ public class SampleSTS extends SecurityTokenServiceProvider
 }
 ----
 
-[[stscallbackhandler]]
+[[stscallbackhandler-actas-ws-trust]]
 === STSCallbackHandler
 
 The user, alice, and corresponding password was required to be added for
@@ -603,7 +603,7 @@ public class STSCallbackHandler extends PasswordCallbackHandler
 }
 ----
 
-[[web-service-requester]]
+[[web-service-requester-actas-ws-trust]]
 == Web service requester
 
 This section examines the ws-requester elements from the basic WS-Trust
@@ -612,7 +612,7 @@ example. The component is
 
 * ActAs web service requester implementation class
 
-[[web-service-requester-implementation]]
+[[web-service-requester-implementation-actas-ws-trust]]
 === Web service requester Implementation
 
 The ActAs ws-requester, the client, uses standard procedures for

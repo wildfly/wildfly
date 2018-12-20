@@ -4,7 +4,7 @@
 Support for https://microprofile.io/project/eclipse/microprofile-opentracing[Eclipse MicroProfile OpenTracing] is
 provided as a Tech Preview feature by the _microprofile-opentracing-smallrye_ subsystem.
 
-[[required-extension]]
+[[required-extension-microprofile-opentracing-smallrye]]
 == Required Extension
 
 This extension is included in the standard configurations included in the WildFly distribution.

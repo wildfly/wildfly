@@ -11,7 +11,7 @@ a.k.a. "
 https://docs.jboss.org/jbossclustering/cluster_guide/5.1/html/deployment.chapt.html#d0e1220[deploy-hasingleton]",
 feature of AS6 and earlier.
 
-[[usage]]
+[[usage-singleton-deployments]]
 == Usage
 
 A deployment indicates that it should be deployed as a singleton via a

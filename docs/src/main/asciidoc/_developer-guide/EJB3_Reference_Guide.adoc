@@ -57,7 +57,7 @@ For example:
 @RunAsPrincipal("MyBean")
 ----
 
-[[security-domain]]
+[[security-domain-ejb3-ref]]
 == Security Domain
 
 Each Enterprise Java Bean ^tm^ can be associated with a security domain.

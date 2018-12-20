@@ -1,7 +1,6 @@
 [[Migrate_Seam_2_Booking_EAR_Binaries_-_Step_by_Step]]
 = Seam 2 Booking Application - Migration of Binaries from EAP5.1 to
 WildFly
-=========================================================================
 
 This is a step-by-step how-to guide on porting the Seam Booking
 application binaries from EAP5.1 to WildFly {wildflyVersion}. Although there are better
@@ -18,47 +17,44 @@ them.
 == Step 1: Build and deploy the EAP5.1 version of the Seam Booking
 application
 
-1.  Build the EAR
+.  Build the EAR
 +
-[source, java]
+[source]
 ----
-    cd /EAP5_HOME/jboss-eap5.1/seam/examples/booking
-    ~/tools/apache-ant-1.8.2/bin/ant explode
-  
+cd /EAP5_HOME/jboss-eap5.1/seam/examples/booking
+~/tools/apache-ant-1.8.2/bin/ant explode
 ----
 
-* Copy the EAR to the JBOSS_HOME deployments directory:
+. Copy the EAR to the JBOSS_HOME deployments directory:
 +
-[source, java]
+[source]
 ----
-    cp -r EAP5_HOME/jboss-eap-5.1/seam/examples/booking/exploded-archives/jboss-seam-booking.ear AS7_HOME/standalone/deployments/
-    cp -r EAP5_HOME/jboss-eap-5.1/seam/examples/booking/exploded-archives/jboss-seam-booking.war AS7_HOME/standalone/deployments/jboss-seam.ear
-    cp -r EAP5_HOME/jboss-eap-5.1/seam/examples/booking/exploded-archives/jboss-seam-booking.jar AS7_HOME/standalone/deployments/jboss-seam.ear
-  
+cp -r EAP5_HOME/jboss-eap-5.1/seam/examples/booking/exploded-archives/jboss-seam-booking.ear AS7_HOME/standalone/deployments/
+cp -r EAP5_HOME/jboss-eap-5.1/seam/examples/booking/exploded-archives/jboss-seam-booking.war AS7_HOME/standalone/deployments/jboss-seam.ear
+cp -r EAP5_HOME/jboss-eap-5.1/seam/examples/booking/exploded-archives/jboss-seam-booking.jar AS7_HOME/standalone/deployments/jboss-seam.ear
 ----
-* Start the WildFly server and check the log. You will see:
+. Start the WildFly server and check the log. You will see:
 +
-[source, java]
+[source]
 ----
-    INFO [org.jboss.as.deployment] (DeploymentScanner-threads - 1) Found jboss-seam-booking.ear in deployment directory. To trigger deployment create a file called jboss-seam-booking.ear.dodeploy
-  
+INFO [org.jboss.as.deployment] (DeploymentScanner-threads - 1) Found jboss-seam-booking.ear in deployment directory. To trigger deployment create a file called jboss-seam-booking.ear.dodeploy
 ----
-* Create an empty file with the name `jboss-seam-booking.ear.dodeploy`
+. Create an empty file with the name `jboss-seam-booking.ear.dodeploy`
 and copy it into the deployments directory. In the log, you will now see
 the following, indicating that it is deploying:
 +
-[source, java]
+[source]
 ----
-    INFO [org.jboss.as.server.deployment] (MSC service thread 1-1) Starting deployment of "jboss-seam-booking.ear"
-    INFO [org.jboss.as.server.deployment] (MSC service thread 1-3) Starting deployment of "jboss-seam-booking.jar"
-    INFO [org.jboss.as.server.deployment] (MSC service thread 1-6) Starting deployment of "jboss-seam.jar"
-    INFO [org.jboss.as.server.deployment] (MSC service thread 1-2) Starting deployment of "jboss-seam-booking.war"
-  
+INFO [org.jboss.as.server.deployment] (MSC service thread 1-1) Starting deployment of "jboss-seam-booking.ear"
+INFO [org.jboss.as.server.deployment] (MSC service thread 1-3) Starting deployment of "jboss-seam-booking.jar"
+INFO [org.jboss.as.server.deployment] (MSC service thread 1-6) Starting deployment of "jboss-seam.jar"
+INFO [org.jboss.as.server.deployment] (MSC service thread 1-2) Starting deployment of "jboss-seam-booking.war"
 ----
-* At this point, you will first encounter your first deployment error.
+
+. At this point, you will first encounter your first deployment error.
 In the next section, we will step through each issue and how to debug
 and resolve it.
-+
+
 [[step-2-debug-and-resolve-deployment-errors-and-exceptions]]
 == Step 2: Debug and resolve deployment errors and exceptions
 
@@ -68,7 +64,7 @@ javax.faces.FacesException
 
 When you deploy the application, the log contains the following error:
 
-[source, java]
+[source]
 ----
 ERROR \[org.jboss.msc.service.fail\] (MSC service thread 1-1) MSC00001: Failed to start service jboss.deployment.subunit."jboss-seam-booking.ear"."jboss-seam-booking.war".POST_MODULE:
 org.jboss.msc.service.StartException in service jboss.deployment.subunit."jboss-seam-booking.ear"."jboss-seam-booking.war".POST_MODULE:
@@ -92,10 +88,10 @@ Find the module name for that class in the `AS7_HOME/modules` directory
 by looking for a path that matches the missing class. In this case, you
 will find 2 modules that match:
 
-[source, java]
+[source]
 ----
-    javax/faces/api/main
-    javax/faces/api/1.2
+javax/faces/api/main
+javax/faces/api/1.2
 ----
 
 Both modules have the same module name: "javax.faces.api" but one in the
@@ -107,7 +103,7 @@ main, so we need to be able to specify one and exclude the other. To do
 this, we create a `jboss-deployment-structure.xml` file in the EAR
 `META-INF/` directory that contains the following data:
 
-[source, java]
+[source, xml]
 ----
 <jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.0">
   <deployment>
@@ -125,23 +121,23 @@ this, we create a `jboss-deployment-structure.xml` file in the EAR
   </sub-deployment>
 </jboss-deployment-structure>
 ----
-+
+
 In the "deployment" section, we add the dependency for the
 `javax.faces.api` for the JSF 1.2 module. We also add the dependency for
 the JSF 1.2 module in the sub-deployment section for the WAR and exclude
 the module for JSF 2.0.
-+
+
 Redeploy the application by deleting the
 `standalone/deployments/jboss-seam-booking.ear.failed` file and creating
 a blank `jboss-seam-booking.ear.dodeploy` file in the same directory.
-+
+
 [[next-issue-java.lang.classnotfoundexception-org.apache.commons.logging.log]]
 === Next Issue: java.lang.ClassNotFoundException:
 org.apache.commons.logging.Log
 
 When you deploy the application, the log contains the following error:
 
-[source, java]
+[source]
 ----
 ERROR [org.jboss.msc.service.fail] (MSC service thread 1-8) MSC00001: Failed to start service jboss.deployment.unit."jboss-seam-booking.ear".INSTALL:
 org.jboss.msc.service.StartException in service jboss.deployment.unit."jboss-seam-booking.ear".INSTALL:
@@ -149,14 +145,14 @@ Failed to process phase INSTALL of deployment "jboss-seam-booking.ear"
     (.. additional logs removed ...)
 Caused by: java.lang.ClassNotFoundException: org.apache.commons.logging.Log from [Module "deployment.jboss-seam-booking.ear.jboss-seam-booking.war:main" from Service Module Loader]
 ----
-+
+
 [[what-it-means-1]]
 ==== What it means:
 
 The ClassNotFoundException indicates a missing dependency. In this case,
 it can not find the class `org.apache.commons.logging.Log` and you need
 to explicitly add the dependency.
-+
+
 [[how-to-resolve-it-1]]
 ==== How to resolve it:
 
@@ -169,14 +165,14 @@ case, you will find one module that matches the path
 Modify the `jboss-deployment-structure.xml` to add the module dependency
 to the deployment section of the file.
 
-[source, java]
+[source, xml]
 ----
 <module name="org.apache.commons.logging" export="true"/>
 ----
-+
+
 The `jboss-deployment-structure.xml` should now look like this:
-+
-[source, java]
+
+[source, xml]
 ----
 <jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.0">
   <deployment>
@@ -195,30 +191,30 @@ The `jboss-deployment-structure.xml` should now look like this:
   </sub-deployment>
 </jboss-deployment-structure>
 ----
-+
+
 Redeploy the application by deleting the
 `standalone/deployments/jboss-seam-booking.ear.failed` file and creating
 a blank `jboss-seam-booking.ear.dodeploy file` in the same directory.
-+
+
 [[next-issue-java.lang.classnotfoundexception-org.dom4j.documentexception]]
 === Next Issue: java.lang.ClassNotFoundException:
 org.dom4j.DocumentException
 
 When you deploy the application, the log contains the following error:
 
-[source, java]
+[source]
 ----
 ERROR [org.apache.catalina.core.ContainerBase.[jboss.web].[default-host].[/seam-booking]] (MSC service thread 1-3) Exception sending context initialized event to listener instance of class org.jboss.seam.servlet.SeamListener: java.lang.NoClassDefFoundError: org/dom4j/DocumentException
     (... additional logs removed ...)
 Caused by: java.lang.ClassNotFoundException: org.dom4j.DocumentException from [Module "deployment.jboss-seam-booking.ear.jboss-seam.jar:main" from Service Module Loader]
 ----
-+
+
 [[what-it-means-2]]
 ==== What it means:
 
 Again, the ClassNotFoundException indicates a missing dependency. In
 this case, it can not find the class `org.dom4j.DocumentException`.
-+
+
 [[how-to-resolve-it-2]]
 ==== How to resolve it:
 
@@ -228,14 +224,14 @@ for the `org/dom4j/DocumentException`. The module name is "org.dom4j".
 Modify the `jboss-deployment-structure.xml` to add the module dependency
 to the deployment section of the file.
 
-[source, java]
+[source, xml]
 ----
 <module name="org.dom4j" export="true"/>
 ----
-+
+
 The `jboss-deployment-structure.xml` file should now look like this:
-+
-[source, java]
+
+[source, xml]
 ----
 <jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.0">
   <deployment>
@@ -255,31 +251,31 @@ The `jboss-deployment-structure.xml` file should now look like this:
   </sub-deployment>
 </jboss-deployment-structure>
 ----
-+
+
 Redeploy the application by deleting the
 `standalone/deployments/jboss-seam-booking.ear.failed` file and creating
 a blank `jboss-seam-booking.ear.dodeploy file` in the same directory.
-+
+
 [[next-issue-java.lang.classnotfoundexception-org.hibernate.validator.invalidvalue]]
 === Next Issue: java.lang.ClassNotFoundException:
 org.hibernate.validator.InvalidValue
 
 When you deploy the application, the log contains the following error:
 
-[source, java]
+[source]
 ----
 ERROR [org.apache.catalina.core.ContainerBase.[jboss.web].[default-host].[/seam-booking]] (MSC service thread 1-6) Exception sending context initialized event to listener instance of class org.jboss.seam.servlet.SeamListener: java.lang.RuntimeException: Could not create Component: org.jboss.seam.international.statusMessages
     (... additional logs removed ...)
 Caused by: java.lang.ClassNotFoundException: org.hibernate.validator.InvalidValue from [Module "deployment.jboss-seam-booking.ear.jboss-seam.jar:main" from Service Module Loader]
 ----
-+
+
 [[what-it-means-3]]
 ==== What it means:
 
 Again, the ClassNotFoundException indicates a missing dependency. In
 this case, it can not find the class
 `org.hibernate.validator.InvalidValue`.
-+
+
 [[how-to-resolve-it-3]]
 ==== How to resolve it:
 
@@ -292,7 +288,7 @@ deployment. We will look for the JAR that contains the missing class in
 the `EAP5_HOME/jboss-eap-5.1/seam/lib/` directory. To do this, open a
 console and type the following:
 
-[source, java]
+[source]
 ----
 cd EAP5_HOME/jboss-eap-5.1/seam/lib
 grep 'org.hibernate.validator.InvalidValue' `find . -name '*.jar'`
@@ -305,26 +301,26 @@ The result shows:
 Binary file ./hibernate-validator.jar matches
 Binary file ./test/hibernate-all.jar matches
 ----
-+
+
 In this case, we need to copy the `hibernate-validator.jar` to the
 `jboss-seam-booking.ear/lib/` directory:
-+
-[source, java]
+
+[source]
 ----
 cp EAP5_HOME/jboss-eap-5.1/seam/lib/hibernate-validator.jar jboss-seam-booking.ear/lib
 ----
-+
+
 Redeploy the application by deleting the
 `standalone/deployments/jboss-seam-booking.ear.failed` file and creating
 a blank `jboss-seam-booking.ear.dodeploy file` in the same directory.
-+
+
 [[next-issue-java.lang.instantiationexception-org.jboss.seam.jsf.seamapplicationfactory]]
 === Next Issue: java.lang.InstantiationException:
 org.jboss.seam.jsf.SeamApplicationFactory
 
 When you deploy the application, the log contains the following error:
 
-[source, java]
+[source]
 ----
 INFO  [javax.enterprise.resource.webcontainer.jsf.config] (MSC service thread 1-7) Unsanitized stacktrace from failed start...: com.sun.faces.config.ConfigurationException: Factory 'javax.faces.application.ApplicationFactory' was not configured properly.
  at com.sun.faces.config.processor.FactoryConfigProcessor.verifyFactoriesExist(FactoryConfigProcessor.java:296) [jsf-impl-2.0.4-b09-jbossorg-4.jar:2.0.4-b09-jbossorg-4]
@@ -340,14 +336,14 @@ Caused by: java.lang.InstantiationException: org.jboss.seam.jsf.SeamApplicationF
  at javax.faces.FactoryFinder.getImplGivenPreviousImpl(FactoryFinder.java:604) [jsf-api-1.2_13.jar:1.2_13-b01-FCS]
  ... 16 more
 ----
-+
+
 [[what-it-means-4]]
 ==== What it means:
 
 The com.sun.faces.config.ConfigurationException and
 java.lang.InstantiationException indicate a dependency issue. In this
 case, it is not as obvious.
-+
+
 [[how-to-resolve-it-4]]
 ==== How to resolve it:
 
@@ -364,7 +360,7 @@ to the deployment section of the file. We also need to add it to the WAR
 subdeployment and exclude the JSF 2.0 module. The file should now look
 like this:
 
-[source, java]
+[source, xml]
 ----
 <jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.0">
   <deployment>
@@ -387,31 +383,31 @@ like this:
   </sub-deployment>
 </jboss-deployment-structure>
 ----
-+
+
 Redeploy the application by deleting the
 `standalone/deployments/jboss-seam-booking.ear.failed` file and creating
 a blank `jboss-seam-booking.ear.dodeploy file` in the same directory.
-+
+
 [[next-issue-java.lang.classnotfoundexception-org.apache.commons.collections.arraystack]]
 === Next Issue: java.lang.ClassNotFoundException:
 org.apache.commons.collections.ArrayStack
 
 When you deploy the application, the log contains the following error:
 
-[source, java]
+[source]
 ----
 ERROR [org.apache.catalina.core.ContainerBase.[jboss.web].[default-host].[/seam-booking]] (MSC service thread 1-1) Exception sending context initialized event to listener instance of class com.sun.faces.config.ConfigureListener: java.lang.RuntimeException: com.sun.faces.config.ConfigurationException: CONFIGURATION FAILED! org.apache.commons.collections.ArrayStack from [Module "deployment.jboss-seam-booking.ear:main" from Service Module Loader]
     (... additional logs removed ...)
-Caused by: java.lang.ClassNotFoundException: org.apache.commons.collections.ArrayStack from [Module "deployment.jboss-seam-booking.ear:main" from Service Module Loader] 
+Caused by: java.lang.ClassNotFoundException: org.apache.commons.collections.ArrayStack from [Module "deployment.jboss-seam-booking.ear:main" from Service Module Loader]
 ----
-+
+
 [[what-it-means-5]]
 ==== What it means:
 
 Again, the ClassNotFoundException indicates a missing dependency. In
 this case, it can not find the class
 `org.apache.commons.collections.ArrayStack`.
-+
+
 [[how-to-resolve-it-5]]
 ==== How to resolve it:
 
@@ -422,14 +418,14 @@ for the `org/apache/commons/collections` path. The module name is
 Modify the `jboss-deployment-structure.xml` to add the module dependency
 to the deployment section of the file.
 
-[source, java]
+[source, xml]
 ----
 <module name="org.apache.commons.collections" export="true"/>
 ----
-+
+
 The `jboss-deployment-structure.xml` file should now look like this:
-+
-[source, java]
+
+[source, xml]
 ----
 <jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.0">
   <deployment>
@@ -453,23 +449,23 @@ The `jboss-deployment-structure.xml` file should now look like this:
   </sub-deployment>
 </jboss-deployment-structure>
 ----
-+
+
 Redeploy the application by deleting the
 `standalone/deployments/jboss-seam-booking.ear.failed` file and creating
 a blank `jboss-seam-booking.ear.dodeploy file` in the same directory.
-+
+
 [[next-issue-services-with-missingunavailable-dependencies]]
 === Next Issue: Services with missing/unavailable dependencies
 
 When you deploy the application, the log contains the following error:
 
-[source, java]
+[source]
 ----
 ERROR [org.jboss.as.deployment] (DeploymentScanner-threads - 2) {"Composite operation failed and was rolled back. Steps that failed:" => {"Operation step-2" => {"Services with missing/unavailable dependencies" => ["jboss.deployment.subunit.\"jboss-seam-booking.ear\".\"jboss-seam-booking.jar\".component.AuthenticatorAction.START missing [ jboss.naming.context.java.comp.jboss-seam-booking.\"jboss-seam-booking.jar\".AuthenticatorAction.\"env/org.jboss.seam.example.booking.AuthenticatorAction/em\" ]","jboss.deployment.subunit.\"jboss-seam-booking.ear\".\"jboss-seam-booking.jar\".component.HotelSearchingAction.START missing [ jboss.naming.context.java.comp.jboss-seam-booking.\"jboss-seam-booking.jar\".HotelSearchingAction.\"env/org.jboss.seam.example.booking.HotelSearchingAction/em\" ]","
 <... additional logs removed ...>
 "jboss.deployment.subunit.\"jboss-seam-booking.ear\".\"jboss-seam-booking.jar\".component.BookingListAction.START missing [ jboss.naming.context.java.comp.jboss-seam-booking.\"jboss-seam-booking.jar\".BookingListAction.\"env/org.jboss.seam.example.booking.BookingListAction/em\" ]","jboss.persistenceunit.\"jboss-seam-booking.ear/jboss-seam-booking.jar#bookingDatabase\" missing [ jboss.naming.context.java.bookingDatasource ]"]}}}
 ----
-+
+
 [[what-it-means-6]]
 ==== What it means:
 
@@ -478,13 +474,13 @@ look that the text within the brackets after "missing".
 
 In this case you see:
 
-[source, java]
+[source]
 ----
 missing [ jboss.naming.context.java.comp.jboss-seam-booking.\"jboss-seam-booking.jar\".AuthenticatorAction.\"env/org.jboss.seam.example.booking.AuthenticatorAction/em\" ]
 ----
-+
+
 The "/em" indicates an Entity Manager and datasource issue.
-+
+
 [[how-to-resolve-it-6]]
 ==== How to resolve it:
 
@@ -499,23 +495,23 @@ that the jndi-name for the example database is
 Modify the `jboss-seam-booking.jar/META-INF/persistence.xml` file to
 comment the existing jta-data-source element and replace it as follows:
 
-[source, java]
+[source, xml]
 ----
 <!-- <jta-data-source>java:/bookingDatasource</jta-data-source> -->
 <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>
 ----
-+
+
 Redeploy the application by deleting the
 `standalone/deployments/jboss-seam-booking.ear.failed` file and creating
 a blank `jboss-seam-booking.ear.dodeploy file` in the same directory.
-+
+
 [[next-issue-java.lang.classnotfoundexception-org.hibernate.cache.hashtablecacheprovider]]
 === Next Issue: java.lang.ClassNotFoundException:
 org.hibernate.cache.HashtableCacheProvider
 
 When you deploy the application, the log contains the following error:
 
-[source, java]
+[source]
 ----
 ERROR [org.jboss.msc.service.fail] (MSC service thread 1-4) MSC00001: Failed to start service jboss.persistenceunit."jboss-seam-booking.ear/jboss-seam-booking.jar#bookingDatabase": org.jboss.msc.service.StartException in service jboss.persistenceunit."jboss-seam-booking.ear/jboss-seam-booking.jar#bookingDatabase": Failed to start service
  at org.jboss.msc.service.ServiceControllerImpl$StartTask.run(ServiceControllerImpl.java:1786)
@@ -536,13 +532,13 @@ Caused by: java.lang.ClassNotFoundException: org.hibernate.cache.HashtableCacheP
  at org.jboss.modules.ModuleClassLoader.findClass(ModuleClassLoader.java:191)
  (... log messages removed ...)
 ----
-+
+
 [[what-it-means-7]]
 ==== What it means:
 
 The ClassNotFoundException indicates a missing dependency. In this case,
 it can not find the class org.hibernate.cache.HashtableCacheProvider.
-+
+
 [[how-to-resolve-it-7]]
 ==== How to resolve it:
 
@@ -553,39 +549,39 @@ for the JAR that contains the missing class in the
 
 To do this, open a console and type the following:
 
-[source, java]
+[source]
 ----
 cd EAP5_HOME/jboss-eap-5.1/seam/lib
 grep 'org.hibernate.validator.InvalidValue' `find . -name '*.jar'`
 ----
-+
+
 The result shows:
-+
-[source, java]
+
+[source]
 ----
 Binary file ./hibernate-core.jar matches
 Binary file ./test/hibernate-all.jar matches
 ----
-+
+
 In this case, we need to copy the `hibernate-core.jar` to the
 `jboss-seam-booking.ear/lib/` directory:
-+
-[source, java]
+
+[source]
 ----
 cp EAP5_HOME/jboss-eap-5.1/seam/lib/hibernate-core.jar jboss-seam-booking.ear/lib
 ----
-+
+
 Redeploy the application by deleting the
 `standalone/deployments/jboss-seam-booking.ear.failed` file and creating
 a blank `jboss-seam-booking.ear.dodeploy file` in the same directory.
-+
+
 [[next-issue-java.lang.classcastexception-org.hibernate.cache.hashtablecacheprovider]]
 === Next Issue: java.lang.ClassCastException:
 org.hibernate.cache.HashtableCacheProvider
 
 When you deploy the application, the log contains the following error:
 
-[source, java]
+[source]
 ----
 ERROR [org.jboss.msc.service.fail] (MSC service thread 1-2) MSC00001: Failed to start service jboss.persistenceunit."jboss-seam-booking.ear/jboss-seam-booking.jar#bookingDatabase": org.jboss.msc.service.StartException in service jboss.persistenceunit."jboss-seam-booking.ear/jboss-seam-booking.jar#bookingDatabase": Failed to start service
  at org.jboss.msc.service.ServiceControllerImpl$StartTask.run(ServiceControllerImpl.java:1786)
@@ -606,7 +602,7 @@ Caused by: java.lang.ClassCastException: org.hibernate.cache.HashtableCacheProvi
  at org.hibernate.cache.internal.bridge.RegionFactoryCacheProviderBridge.<init>(RegionFactoryCacheProviderBridge.java:65)
  ... 20 more
 ----
-+
+
 [[what-it-means-8]]
 ==== What it means:
 
@@ -630,7 +626,7 @@ from the persistence.xml file, it will force the Seam application to
 bundle the old Hibernate libraries, resulting in ClassCastExceptions, In
 WildFly, you should move away from using HashtableCacheProvider and use
 Infinispan instead.
-+
+
 [[how-to-resolve-it-8]]
 ==== How to resolve it:
 
@@ -638,15 +634,15 @@ In WildFly, you need to comment out the hibernate.cache.provider_class
 property in the `jboss-seam-booking.jar/META-INF persistence.xml` file
 as follows:
 
-[source, java]
+[source, xml]
 ----
 <!-- <property name="hibernate.cache.provider_class" value="org.hibernate.cache.HashtableCacheProvider"/> -->
 ----
-+
+
 Redeploy the application by deleting the
 `standalone/deployments/jboss-seam-booking.ear.failed` file and creating
 a blank `jboss-seam-booking.ear.dodeploy file` in the same directory.
-+
+
 [[no-more-issues-deployment-errors-should-be-resolved]]
 === No more issues: Deployment errors should be resolved
 
@@ -655,7 +651,7 @@ you access the URL " http://localhost:8080/seam-booking/" in a browser
 and attempt "Account Login", you will get a runtime error "The page
 isn't redirecting properly". In the next section, we will step through
 each runtime issue and how to debug and resolve it.
-+
+
 [[step-3-debug-and-resolve-runtime-errors-and-exceptions]]
 == Step 3: Debug and resolve runtime errors and exceptions
 
@@ -667,7 +663,7 @@ The application deploys successfully, but when you access the URL "
 http://localhost:8080/seam-booking/" in a browser, you get "The page
 isn't redirecting properly" and the log contains the following error:
 
-[source, java]
+[source]
 ----
 SEVERE [org.jboss.seam.jsf.SeamPhaseListener] (http--127.0.0.1-8080-1) swallowing exception: java.lang.IllegalStateException: Could not start transaction
  at org.jboss.seam.jsf.SeamPhaseListener.begin(SeamPhaseListener.java:598) [jboss-seam.jar:]
@@ -693,7 +689,7 @@ follow the new rules.
 To debug this, look earlier in the server log trace to what JNDI binding
 were used. Looking at the server log we see this:
 
-[source, java]
+[source]
 ----
 15:01:16,138 INFO  [org.jboss.as.ejb3.deployment.processors.EjbJndiBindingsDeploymentUnitProcessor] (MSC service thread 1-1) JNDI bindings for session bean named RegisterAction in deployment unit subdeployment "jboss-seam-booking.jar" of deployment "jboss-seam-booking.ear" are as follows:
  
@@ -774,12 +770,12 @@ bindings. In the log, note the EJB JNDI bindings all start with
 
 Replace the <core:init> element as follows:
 
-[source, java]
+[source, xml]
 ----
 <!--     <core:init jndi-pattern="jboss-seam-booking/#{ejbName}/local" debug="true" distributable="false"/> -->
 <core:init jndi-pattern="java:app/jboss-seam-booking.jar/#{ejbName}" debug="true" distributable="false"/>
 ----
-+
+
 Next, we need to add the EjbSynchronizations and TimerServiceDispatcher
 JNDI bindings. Add the following component elements to the file:
 +
@@ -788,10 +784,10 @@ JNDI bindings. Add the following component elements to the file:
 <component class="org.jboss.seam.transaction.EjbSynchronizations" jndi-name="java:app/jboss-seam/EjbSynchronizations"/>
 <component class="org.jboss.seam.async.TimerServiceDispatcher" jndi-name="java:app/jboss-seam/TimerServiceDispatcher"/>
 ----
-+
+
 The components.xml file should now look like this:
-+
-[source, java]
+
+[source, xml]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 <components xmlns="http://jboss.com/products/seam/components"
@@ -822,22 +818,22 @@ The components.xml file should now look like this:
             jndi-name="java:app/jboss-seam/TimerServiceDispatcher"/>
 </components>
 ----
-+
+
 Redeploy the application by deleting the
 `standalone/deployments/jboss-seam-booking.ear.failed` file and creating
 a blank `jboss-seam-booking.ear.dodeploy` file in the same directory.
-+
+
 At this point, the application should deploy and run without error. When
 you access the URL " http://localhost:8080/seam-booking/" in a browser,
 you will be able to login successfully.
-+
+
 [[step-4-access-the-application]]
 == Step 4: Access the application
 
 Access the URL " http://localhost:8080/seam-booking/" in a browser and
 login with demo/demo. You should the Booking welcome page.
 +
-[[summary-of-changes]]
+[[summary-of-changes-migrate-seam2-application]]
 == Summary of Changes
 
 Although it would be much more efficient to determine dependencies in
@@ -848,11 +844,11 @@ how to debug and resolve them.
 The following is a summary of changes made to the application when
 migrating it to WildFly:
 
-1.  We created a `jboss-deployment-structure.xml` file in the EAR's
+.  We created a `jboss-deployment-structure.xml` file in the EAR's
 `META-INF/` directory. We added "dependencies" and "exclusions" to
 resolve ClassNotFoundExceptions. This file contains the following data:
 +
-[source, java]
+[source, xml]
 ----
 <jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.0">
   <deployment>
@@ -876,49 +872,51 @@ resolve ClassNotFoundExceptions. This file contains the following data:
   </sub-deployment>
 </jboss-deployment-structure>
 ----
-* We copied the following JARs from the
+
+. We copied the following JARs from the
 `EAP5_HOME/jboss-eap-5.1/seam/lib/` directory to the
 `jboss-seam-booking.ear/lib/` directory to resolve
 ClassNotFoundExceptions:
 +
-[source, java]
+[source]
 ----
 hibernate-core.jar
 hibernate-validator.jar
 ----
-* We modified the \{\{jboss-seam-booking.jar/META-INF/persistence.xml}
+
+. We modified the \{\{jboss-seam-booking.jar/META-INF/persistence.xml}
 file as follows.
-1.  First, we changed the jta-data-source element to use the Example
+..  First, we changed the jta-data-source element to use the Example
 database that ships with AS7:
 +
-[source, java]
+[source, xml]
 ----
 <!-- <jta-data-source>java:/bookingDatasource</jta-data-source> -->
 <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>
 ----
-2.  Next, we commented out the hibernate.cache.provider_class property:
+..  Next, we commented out the hibernate.cache.provider_class property:
 +
-[source, java]
+[source, xml]
 ----
 <!-- <property name="hibernate.cache.provider_class" value="org.hibernate.cache.HashtableCacheProvider"/> -->
 ----
-* We modified the WAR's lib/components.xml file to use the new JNDI
+. We modified the WAR's lib/components.xml file to use the new JNDI
 bindings
-1.  We replaced the <core:init> existing element as follows:
+..  We replaced the <core:init> existing element as follows:
 +
-[source, java]
+[source, xml]
 ----
 <!-- <core:init jndi-pattern="jboss-seam-booking/#{ejbName}/local" debug="true" distributable="false"/> -->
 <core:init jndi-pattern="java:app/jboss-seam-booking.jar/#{ejbName}" debug="true" distributable="false"/>
 ----
-2.  We added component elements for the "EjbSynchronizations" and
+..  We added component elements for the "EjbSynchronizations" and
 "TimerServiceDispatcher" JNDI bindings
 +
-[source, java]
+[source, xml]
 ----
- <component class="org.jboss.seam.transaction.EjbSynchronizations" jndi-name="java:app/jboss-seam/EjbSynchronizations"/>
- <component class="org.jboss.seam.async.TimerServiceDispatcher" jndi-name="java:app/jboss-seam/TimerServiceDispatcher"/>
+<component class="org.jboss.seam.transaction.EjbSynchronizations" jndi-name="java:app/jboss-seam/EjbSynchronizations"/>
+<component class="org.jboss.seam.async.TimerServiceDispatcher" jndi-name="java:app/jboss-seam/TimerServiceDispatcher"/>
 ----
-* The unmodified EAR from EAP 5.1 (jboss-seam-booking-eap51.ear.tar.gz)
+. The unmodified EAR from EAP 5.1 (jboss-seam-booking-eap51.ear.tar.gz)
 and the EAR as modified to run on AS7
 (jboss-seam-booking-as7.ear.tar.gz) are attached to this document.

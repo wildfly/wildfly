@@ -62,13 +62,13 @@ Similarly, on client side users do not need to manually specify the
 able to properly process the WS-Addressing policy in the consumed WSDL
 and turn on addressing as requested.
 
-[[example]]
+[[example-ws-addressing]]
 == Example
 
 Here is an example showing how to simply enable WS-Addressing through
 WS-Policy.
 
-[[endpoint]]
+[[endpoint-ws-addressing]]
 === Endpoint
 
 A simple JAX-WS endpoint is prepared using a java-first approach;
@@ -139,7 +139,7 @@ like this:
 </wsdl:definitions>
 ----
 
-[[client]]
+[[client-addressing]]
 === Client
 
 Since the WS-Policy engine is on by default, the client side code is

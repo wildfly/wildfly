@@ -239,7 +239,7 @@ security settings are provided in the comments in the listing below.
 </definitions>
 ----
 
-[[ssl-configuration]]
+[[ssl-configuration-saml-holder]]
 === SSL configuration
 
 https://docs.jboss.org/author/display/JBWS/WS-Trust+and+STS#WS-TrustandSTS-SSLconfiguration
@@ -268,7 +268,7 @@ Here is an example of an SSL connector declaration.
 ...
 ----
 
-[[web-service-interface]]
+[[web-service-interface-saml-holder]]
 === Web service Interface
 
 The web service provider interface class, HolderOfKeyIface, is a simple
@@ -291,7 +291,7 @@ public interface HolderOfKeyIface {
 }
 ----
 
-[[web-service-implementation]]
+[[web-service-implementation-saml-holder]]
 === Web service Implementation
 
 The web service provider implementation class, HolderOfKeyImpl, is a
@@ -352,7 +352,7 @@ public class HolderOfKeyImpl implements HolderOfKeyIface
 }
 ----
 
-[[crypto-properties-and-keystore-files]]
+[[crypto-properties-and-keystore-files-saml-holder]]
 === Crypto properties and keystore files
 
 WSS4J's Crypto implementation is loaded and configured via a Java
@@ -374,7 +374,7 @@ org.apache.ws.security.crypto.merlin.keystore.alias=myservicekey
 org.apache.ws.security.crypto.merlin.keystore.file=servicestore.jks
 ....
 
-[[manifest.mf]]
+[[manifest-mf-saml-holder]]
 === MANIFEST.MF
 
 https://docs.jboss.org/author/display/JBWS/WS-Trust+and+STS#WS-TrustandSTS-MANIFEST.MF
@@ -390,7 +390,7 @@ Created-By:1.7.0_25-b15 (Oracle Corporation)
 Dependencies: org.jboss.ws.cxf.jbossws-cxf-client
 ....
 
-[[security-token-service]]
+[[security-token-service-saml-holder]]
 == Security Token Service
 
 This section examines the crucial elements in providing the Security
@@ -404,7 +404,7 @@ The components that will be discussed are.
 * Crypto properties and keystore files
 * MANIFEST.MF
 
-[[security-domain]]
+[[security-domain-saml-holder]]
 === Security Domain
 
 The STS requires a JBoss security domain be configured. The
@@ -469,7 +469,7 @@ jbossws-roles.properties
 alice=friend
 ....
 
-[[stss-wsdl]]
+[[stss-wsdl-saml-holder]]
 === STS's WSDL
 
 [source,xml]
@@ -809,7 +809,7 @@ alice=friend
 </wsdl:definitions>
 ----
 
-[[stss-implementation-class]]
+[[stss-implementation-class-saml-holder]]
 === STS's implementation class
 
 The Apache CXF's STS, SecurityTokenServiceProvider, is a web service
@@ -937,7 +937,7 @@ public class SampleSTSHolderOfKey extends SecurityTokenServiceProvider
 }
 ----
 
-[[holderofkeycallbackhandler]]
+[[holderofkeycallbackhandler-saml-holder]]
 === HolderOfKeyCallbackHandler
 
 STSHolderOfKeyCallbackHandler is a callback handler for the WSS4J Crypto
@@ -975,7 +975,7 @@ public class STSHolderOfKeyCallbackHandler extends PasswordCallbackHandler
 }
 ----
 
-[[crypto-properties-and-keystore-files-1]]
+[[crypto-properties-and-keystore-files-saml-holder-1]]
 === Crypto properties and keystore files
 
 WSS4J's Crypto implementation is loaded and configured via a Java
@@ -996,7 +996,7 @@ org.apache.ws.security.crypto.merlin.keystore.password=stsspass
 org.apache.ws.security.crypto.merlin.keystore.file=stsstore.jks
 ....
 
-[[manifest.mf-1]]
+[[manifest-mf-saml-holder-1]]
 === MANIFEST.MF
 
 When deployed on WildFly, this application requires access to the
@@ -1013,7 +1013,7 @@ Created-By:1.7.0_25-b15 (Oracle Corporation)
 Dependencies: org.jboss.ws.cxf.jbossws-cxf-client,org.apache.cxf.impl
 ....
 
-[[web-service-requester]]
+[[web-service-requester-saml-holder]]
 == Web service requester
 
 This section examines the crucial elements in calling a web service that
@@ -1024,7 +1024,7 @@ scenario. The components that will be discussed are.
 * ClientCallbackHandler
 * Crypto properties and keystore files
 
-[[web-service-requester-implementation]]
+[[web-service-requester-implementation-saml-holder]]
 === Web service requester Implementation
 
 The ws-requester, the client, uses standard procedures for creating a
@@ -1084,7 +1084,7 @@ ctx.put(SecurityConstants.STS_TOKEN_USE_CERT_FOR_KEYINFO + ".it", "true");
 proxy.sayHello();
 ----
 
-[[clientcallbackhandler]]
+[[clientcallbackhandler-saml-holder]]
 === ClientCallbackHandler
 
 ClientCallbackHandler is a callback handler for the WSS4J Crypto API. It
@@ -1131,7 +1131,7 @@ public class ClientCallbackHandler implements CallbackHandler {
 }
 ----
 
-[[crypto-properties-and-keystore-files-2]]
+[[crypto-properties-and-keystore-files-saml-holder-2]]
 === Crypto properties and keystore files
 
 WSS4J's Crypto implementation is loaded and configured via a Java

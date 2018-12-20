@@ -6,7 +6,7 @@ subsystem. In this chapter we are going outline the frequently used
 configuration options. For a more detailed explanation please consult
 the Artemis user guide (See "Component Reference").
 
-[[required-extension]]
+[[required-extension-messaging]]
 == Required Extension
 
 The configuration options discussed in this section assume that the the

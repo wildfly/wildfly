@@ -24,7 +24,7 @@ The Group service provides the following capabilities:
 WildFly creates a Group instance for every defined channel defined in the JGroups subsystem, as well as a local implementation.
 The local Group implementation is effectively a singleton membership containing only the current node.
 e.g.
-[code,java]
+[source,java]
 ----
 @Resource(lookup = "java:jboss/clustering/group/ee") // A Group representing the cluster of the "ee" channel
 private Group group;
@@ -40,7 +40,7 @@ Most users should use the "default" alias, which references either:
 * A non-clustered Group, if the JGroups subsystem is not present
 
 e.g.
-[code,java]
+[source,java]
 ----
 @Resource(lookup = "java:jboss/clustering/group/default")
 private Group group;
@@ -54,7 +54,7 @@ Additionally, WildFly creates a Group alias for every Infinispan cache-container
 This is useful when using a Group within the context of an Infinispan cache.
 
 e.g.
-[code,java]
+[source,java]
 ----
 @Resource(lookup = "java:jboss/clustering/group/server") // Backed by the transport of the "server" cache-container
 private Group group;
@@ -97,7 +97,7 @@ isSingleton():: Indicates whether the groups membership is non-clustered, i.e. w
 
 A distributed "Hello world" example that prints joiners and leavers of a group membership:
 
-[code,java]
+[source,java]
 ----
 public class MyGroupListener implements GroupListener {
     @Resource(lookup = "java:jboss/clustering/group/default") // <1>
@@ -142,7 +142,7 @@ A command dispatcher is a mechanism for dispatching commands to be executed on m
 
 A command dispatcher is created from a CommandDispatcherFactory, an instance of which is created for every defined channel defined in the JGroups subsystem, as well as a local implementation.
 e.g.
-[code,java]
+[source,java]
 ----
 @Resource(lookup = "java:jboss/clustering/dispatcher/ee") // A command dispatcher factory backed by the "ee" channel
 private CommandDispatcherFactory factory;
@@ -158,7 +158,7 @@ Most users should use the "default" alias, which references either:
 * A non-clustered CommandDispatcherFactory, if the JGroups subsystem is not present
 
 e.g.
-[code,java]
+[source,java]
 ----
 @Resource(lookup = "java:jboss/clustering/dispatcher/default")
 private CommandDispatcherFactory factory;
@@ -172,7 +172,7 @@ Additionally, WildFly creates a CommandDispatcherFactory alias for every Infinis
 This is useful in the case where a CommandDispatcher is used to communicate with members on which a given cache is deployed.
 
 e.g.
-[code,java]
+[source,java]
 ----
 @Resource(lookup = "java:jboss/clustering/dispatcher/server") // Backed by the transport of the "server" cache-container
 private CommandDispatcherFactory factory;
@@ -214,7 +214,7 @@ To demonstrate how to use a CommandDispatcher, let's create a distributed "hello
 
 First, let's create a simple HelloWorld interface which enables the caller to send a specific message to the entire group:
 
-[code,java]
+[source,java]
 ----
 public interface HelloWorld {
     void send(String message);
@@ -225,7 +225,7 @@ Next, we need to define a local command execution context.
 This should encapsulate any local information we need to make available to the execution of any command received by our CommandDispatcher.
 For demonstration purposes, let's make this a separate interface:
 
-[code,java]
+[source,java]
 ----
 public interface LocalContext {
     Node getLocalMember();
@@ -234,7 +234,7 @@ public interface LocalContext {
 
 Next we create a "hello world" Command that contains a message from the sender, and responds with a message of its own.
 
-[code,java]
+[source,java]
 ----
 public class HelloWorldCommand implements Command<String, LocalContext> {
     private final String message;
@@ -253,7 +253,7 @@ public class HelloWorldCommand implements Command<String, LocalContext> {
 
 Finally, we create a @Singleton EJB that implements our HelloWorld interface:
 
-[code,java]
+[source,java]
 ----
 @Singleton
 @Startup

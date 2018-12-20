@@ -7,7 +7,7 @@ Coming Soon
 
 This guide is still under development, check back soon!
 
-[[content]]
+[[content-java-servlet-technology]]
 == Content
 
 [[asynchronous-support]]

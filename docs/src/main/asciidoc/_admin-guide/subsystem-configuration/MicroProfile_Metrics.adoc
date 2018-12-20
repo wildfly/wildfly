@@ -4,7 +4,7 @@
 Support for https://microprofile.io/project/eclipse/microprofile-metrics[Eclipse MicroProfile Metrics] is provided by
  the _microprofile-metrics-smallrye_ subsystem.
 
-[[required-extension]]
+[[required-extension-microprofile-metrics-smallrye]]
 == Required Extension
 
 This extension is included in all the standalone configurations included in the
