@@ -53,11 +53,10 @@ public class PassivationStoreWriteHandler extends AbstractWriteAttributeHandler<
     @Override
     protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode newValue, ModelNode currentValue, HandbackHolder<Void> handbackHolder) throws OperationFailedException {
         ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
-        this.applyModelToRuntime(context, operation, attributeName, model);
-        return false;
+        return this.applyModelToRuntime(context, operation, attributeName, model);
     }
 
-    private void applyModelToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode model) throws OperationFailedException {
+    private boolean applyModelToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode model) throws OperationFailedException {
         String name = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
         ServiceName serviceName = new DistributableCacheFactoryBuilderServiceNameProvider(name).getServiceName();
         DistributableCacheFactoryBuilder<?, ?> builder = new PassiveServiceSupplier<DistributableCacheFactoryBuilder<?, ?>>(context.getServiceRegistry(true), serviceName).get();
@@ -65,8 +64,10 @@ public class PassivationStoreWriteHandler extends AbstractWriteAttributeHandler<
             if (this.maxSizeAttribute.getName().equals(attributeName)) {
                 int maxSize = this.maxSizeAttribute.resolveModelAttribute(context, model).asInt();
                 builder.getConfiguration().setMaxSize(maxSize);
+                return false;
             }
         }
+        return true;
     }
 
     @Override
