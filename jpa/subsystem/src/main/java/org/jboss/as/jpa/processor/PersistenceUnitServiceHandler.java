@@ -826,10 +826,10 @@ public class PersistenceUnitServiceHandler {
                 // the noop adaptor is returned (can be used against any provider but the integration classes
                 // are handled externally via properties or code in the persistence provider).
                 if (adaptorModule != null) { // legacy way of loading adapter module
-                    adaptor = PersistenceProviderAdaptorLoader.loadPersistenceAdapterModule(adaptorModule, platform, JtaManagerImpl.getInstance());
+                    adaptor = PersistenceProviderAdaptorLoader.loadPersistenceAdapterModule(adaptorModule, platform, createManager(deploymentUnit));
                 }
                 else {
-                    adaptor = PersistenceProviderAdaptorLoader.loadPersistenceAdapter(provider, platform, JtaManagerImpl.getInstance());
+                    adaptor = PersistenceProviderAdaptorLoader.loadPersistenceAdapter(provider, platform, createManager(deploymentUnit));
                 }
             } catch (ModuleLoadException e) {
                 throw JpaLogger.ROOT_LOGGER.persistenceProviderAdaptorModuleLoadError(e, adaptorModule);
@@ -841,6 +841,10 @@ public class PersistenceUnitServiceHandler {
             throw JpaLogger.ROOT_LOGGER.failedToGetAdapter(pu.getPersistenceProviderClassName());
         }
         return adaptor;
+    }
+
+    private static JtaManagerImpl createManager(DeploymentUnit deploymentUnit) {
+        return new JtaManagerImpl(deploymentUnit.getAttachment(JpaAttachments.TRANSACTION_SYNCHRONIZATION_REGISTRY));
     }
 
     /**
