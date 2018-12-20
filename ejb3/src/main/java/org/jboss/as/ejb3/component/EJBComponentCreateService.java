@@ -22,11 +22,6 @@
 
 package org.jboss.as.ejb3.component;
 
-import javax.ejb.TimerService;
-import javax.ejb.TransactionAttributeType;
-import javax.ejb.TransactionManagementType;
-import javax.transaction.UserTransaction;
-
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Collections;
@@ -38,6 +33,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
+
+import javax.ejb.TimerService;
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagementType;
+import javax.transaction.TransactionSynchronizationRegistry;
+import javax.transaction.UserTransaction;
 
 import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.ee.component.BasicComponentCreateService;
@@ -97,6 +98,7 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
     private final String distinctName;
     private final String policyContextID;
 
+    private final InjectedValue<TransactionSynchronizationRegistry> transactionSynchronizationRegistryValue = new InjectedValue<TransactionSynchronizationRegistry>();
     private final InjectedValue<ServerSecurityManager> serverSecurityManagerInjectedValue = new InjectedValue<>();
     private final InjectedValue<ControlPoint> controlPoint = new InjectedValue<>();
     private final InjectedValue<AtomicBoolean> exceptionLoggingEnabled = new InjectedValue<>();
@@ -325,6 +327,14 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
     UserTransaction getUserTransaction() {
         return LocalUserTransaction.getInstance();
+    }
+
+    Injector<TransactionSynchronizationRegistry> getTransactionSynchronizationRegistryInjector() {
+        return transactionSynchronizationRegistryValue;
+    }
+
+    TransactionSynchronizationRegistry getTransactionSynchronizationRegistry() {
+        return transactionSynchronizationRegistryValue.getValue();
     }
 
     public Injector<EJBSuspendHandlerService> getEJBSuspendHandlerInjector() {
