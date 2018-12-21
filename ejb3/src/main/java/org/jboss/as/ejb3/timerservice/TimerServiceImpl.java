@@ -49,6 +49,7 @@ import javax.transaction.Status;
 import javax.transaction.Synchronization;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
+import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
@@ -71,7 +72,6 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.requestcontroller.ControlPoint;
 import org.wildfly.transaction.client.ContextTransactionManager;
-import org.wildfly.transaction.client.ContextTransactionSynchronizationRegistry;
 import org.xnio.IoUtils;
 
 import static org.jboss.as.ejb3.logging.EjbLogger.EJB3_TIMER_LOGGER;
@@ -129,6 +129,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
      */
     private final Object waitingOnTxCompletionKey = new Object();
 
+    private TransactionSynchronizationRegistry tsr;
     private final TimerServiceRegistry timerServiceRegistry;
 
     /**
@@ -181,6 +182,8 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         if (EJB3_TIMER_LOGGER.isDebugEnabled()) {
             EJB3_TIMER_LOGGER.debug("Starting timerservice for timedObjectId: " + getInvoker().getTimedObjectId());
         }
+        final EJBComponent component = ejbComponentInjectedValue.getValue();
+        this.tsr = component.getTransactionSynchronizationRegistry();
         final TimedObjectInvoker invoker = timedObjectInvoker.getValue();
         if (invoker == null) {
             throw EJB3_TIMER_LOGGER.invokerIsNull();
@@ -937,15 +940,15 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     private Map<String, TimerImpl> getWaitingOnTxCompletionTimers() {
         Map<String, TimerImpl> timers = null;
         if (getTransaction() != null) {
-            timers = (Map<String, TimerImpl>) ContextTransactionSynchronizationRegistry.getInstance().getResource(waitingOnTxCompletionKey);
+            timers = (Map<String, TimerImpl>) tsr.getResource(waitingOnTxCompletionKey);
         }
         return timers == null ? Collections.<String, TimerImpl>emptyMap() : timers;
     }
 
     private void addWaitingOnTxCompletionTimer(final TimerImpl timer) {
-        Map<String, TimerImpl> timers = (Map<String, TimerImpl>) ContextTransactionSynchronizationRegistry.getInstance().getResource(waitingOnTxCompletionKey);
+        Map<String, TimerImpl> timers = (Map<String, TimerImpl>) tsr.getResource(waitingOnTxCompletionKey);
         if (timers == null) {
-            ContextTransactionSynchronizationRegistry.getInstance().putResource(waitingOnTxCompletionKey, timers = new HashMap<String, TimerImpl>());
+            tsr.putResource(waitingOnTxCompletionKey, timers = new HashMap<String, TimerImpl>());
         }
         timers.put(timer.getId(), timer);
     }

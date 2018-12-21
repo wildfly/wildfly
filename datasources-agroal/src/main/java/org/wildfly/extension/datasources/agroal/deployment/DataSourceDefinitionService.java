@@ -36,11 +36,11 @@ import org.jboss.msc.service.StopContext;
 import org.wildfly.extension.datasources.agroal.logging.AgroalLogger;
 import org.wildfly.extension.datasources.agroal.logging.LoggingDataSourceListener;
 import org.wildfly.transaction.client.ContextTransactionManager;
-import org.wildfly.transaction.client.ContextTransactionSynchronizationRegistry;
 
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 import java.sql.SQLException;
+import java.util.function.Supplier;
 
 /**
  * Defines an extension to provide DataSources based on the Agroal project
@@ -53,12 +53,15 @@ public class DataSourceDefinitionService implements Service<ManagedReferenceFact
     private final String jndiBinding;
     private final boolean transactional;
     private final AgroalDataSourceConfigurationSupplier dataSourceConfiguration;
+    private final Supplier<TransactionSynchronizationRegistry> tsrSupplier;
     private AgroalDataSource agroalDataSource;
 
-    public DataSourceDefinitionService(ContextNames.BindInfo bindInfo, boolean transactional, AgroalDataSourceConfigurationSupplier dataSourceConfiguration) {
+    public DataSourceDefinitionService(ContextNames.BindInfo bindInfo, boolean transactional, AgroalDataSourceConfigurationSupplier dataSourceConfiguration,
+                                       Supplier<TransactionSynchronizationRegistry> tsrSupplier) {
         this.dataSourceName = bindInfo.getParentContextServiceName().getSimpleName() + "." + bindInfo.getBindName().replace('/', '.');
         this.jndiBinding = bindInfo.getBindName();
         this.transactional = transactional;
+        this.tsrSupplier = tsrSupplier;
         this.dataSourceConfiguration = dataSourceConfiguration;
     }
 
@@ -76,7 +79,7 @@ public class DataSourceDefinitionService implements Service<ManagedReferenceFact
     public void start(StartContext context) throws StartException {
         if (transactional) {
             TransactionManager transactionManager = ContextTransactionManager.getInstance();
-            TransactionSynchronizationRegistry transactionSynchronizationRegistry = ContextTransactionSynchronizationRegistry.getInstance();
+            TransactionSynchronizationRegistry transactionSynchronizationRegistry = tsrSupplier != null ? tsrSupplier.get() : null;
 
             if (transactionManager == null || transactionSynchronizationRegistry == null) {
                 throw AgroalLogger.SERVICE_LOGGER.missingTransactionManager();
