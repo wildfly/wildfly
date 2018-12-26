@@ -49,7 +49,6 @@ import org.wildfly.security.credential.PasswordCredential;
 import org.wildfly.security.credential.source.CredentialSource;
 import org.wildfly.security.password.interfaces.ClearPassword;
 import org.wildfly.transaction.client.ContextTransactionManager;
-import org.wildfly.transaction.client.ContextTransactionSynchronizationRegistry;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.NameCallback;
@@ -88,6 +87,7 @@ public class DataSourceService implements Service<AgroalDataSource>, Supplier<Ag
     private InjectedValue<Class> driverInjector = new InjectedValue<>();
     private InjectedValue<AuthenticationContext> authenticationContextInjector = new InjectedValue<>();
     private InjectedValue<ExceptionSupplier<CredentialSource, Exception>> credentialSourceSupplierInjector = new InjectedValue<>();
+    private InjectedValue<TransactionSynchronizationRegistry> transactionSynchronizationRegistryInjector = new InjectedValue<>();
 
     public DataSourceService(String dataSourceName, String jndiName, boolean jta, boolean connectable, boolean xa, AgroalDataSourceConfigurationSupplier dataSourceConfiguration) {
         this.dataSourceName = dataSourceName;
@@ -115,7 +115,7 @@ public class DataSourceService implements Service<AgroalDataSource>, Supplier<Ag
 
         if (jta || xa) {
             TransactionManager transactionManager = ContextTransactionManager.getInstance();
-            TransactionSynchronizationRegistry transactionSynchronizationRegistry = ContextTransactionSynchronizationRegistry.getInstance();
+            TransactionSynchronizationRegistry transactionSynchronizationRegistry = transactionSynchronizationRegistryInjector.getValue();
 
             if (transactionManager == null || transactionSynchronizationRegistry == null) {
                 throw AgroalLogger.SERVICE_LOGGER.missingTransactionManager();
@@ -230,5 +230,9 @@ public class DataSourceService implements Service<AgroalDataSource>, Supplier<Ag
 
     public InjectedValue<ExceptionSupplier<CredentialSource, Exception>> getCredentialSourceSupplierInjector() {
         return credentialSourceSupplierInjector;
+    }
+
+     InjectedValue<TransactionSynchronizationRegistry> getTransactionSynchronizationRegistryInjector() {
+        return transactionSynchronizationRegistryInjector;
     }
 }

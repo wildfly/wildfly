@@ -36,6 +36,7 @@ import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.jpa.container.PersistenceUnitSearch;
 import org.jboss.as.jpa.container.TransactionScopedEntityManager;
+import org.jboss.as.jpa.processor.JpaAttachments;
 import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.weld.logging.WeldLogger;
@@ -48,7 +49,6 @@ import org.jboss.weld.injection.spi.ResourceReferenceFactory;
 import org.jboss.weld.injection.spi.helpers.SimpleResourceReference;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 import org.wildfly.transaction.client.ContextTransactionManager;
-import org.wildfly.transaction.client.ContextTransactionSynchronizationRegistry;
 
 public class WeldJpaInjectionServices implements JpaInjectionServices {
 
@@ -82,7 +82,7 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
         //now we have the service controller, as this method is only called at runtime the service should
         //always be up
         final PersistenceUnitServiceImpl persistenceUnitService = (PersistenceUnitServiceImpl) serviceController.getValue();
-        return new EntityManagerResourceReferenceFactory(scopedPuName, persistenceUnitService.getEntityManagerFactory(), context, ContextTransactionSynchronizationRegistry.getInstance(), ContextTransactionManager.getInstance());
+        return new EntityManagerResourceReferenceFactory(scopedPuName, persistenceUnitService.getEntityManagerFactory(), context, deploymentUnit.getAttachment(JpaAttachments.TRANSACTION_SYNCHRONIZATION_REGISTRY), ContextTransactionManager.getInstance());
     }
 
     @Override

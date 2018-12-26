@@ -43,6 +43,7 @@ import javax.ejb.EJBLocalObject;
 import javax.ejb.TimerService;
 import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagementType;
+import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.core.security.ServerSecurityManager;
@@ -568,7 +569,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                         // add dependency on the local transaction provider
                         serviceBuilder.requires(support.getCapabilityServiceName("org.wildfly.transactions.global-default-local-provider"));
                         // add dependency on TransactionSynchronizationRegistry
-                        serviceBuilder.requires(support.getCapabilityServiceName("org.wildfly.transactions.transaction-synchronization-registry"));
+                        serviceBuilder.addDependency(support.getCapabilityServiceName("org.wildfly.transactions.transaction-synchronization-registry"), TransactionSynchronizationRegistry.class, ejbComponentCreateService.getTransactionSynchronizationRegistryInjector());
                     }
                 });
 
