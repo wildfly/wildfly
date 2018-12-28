@@ -202,10 +202,10 @@ public class JcaExtension implements Extension {
 
                     for (Property prop : workManager.asPropertyList()) {
                         if (WORKMANAGER_LONG_RUNNING.equals(prop.getName()) && prop.getValue().isDefined() && prop.getValue().asPropertyList().size() != 0) {
-                            ThreadsParser.getInstance().writeBoundedQueueThreadPool(writer, prop.getValue().asProperty(), Element.LONG_RUNNING_THREADS.getLocalName(), false);
+                            ThreadsParser.getInstance().writeBoundedQueueThreadPool(writer, prop.getValue().asProperty(), Element.LONG_RUNNING_THREADS.getLocalName(), false, true);
                         }
                         if (WORKMANAGER_SHORT_RUNNING.equals(prop.getName()) && prop.getValue().isDefined() && prop.getValue().asPropertyList().size() != 0) {
-                            ThreadsParser.getInstance().writeBoundedQueueThreadPool(writer, prop.getValue().asProperty(), Element.SHORT_RUNNING_THREADS.getLocalName(), false);
+                            ThreadsParser.getInstance().writeBoundedQueueThreadPool(writer, prop.getValue().asProperty(), Element.SHORT_RUNNING_THREADS.getLocalName(), false, true);
                         }
 
                         if ((JcaDistributedWorkManagerDefinition.DWmParameters.POLICY.getAttribute().getName().equals(prop.getName()) && prop.getValue().isDefined()) ||
@@ -268,10 +268,10 @@ public class JcaExtension implements Extension {
                     JcaWorkManagerDefinition.WmParameters.ELYTRON_ENABLED.getAttribute().marshallAsElement(workManager, writer);
 
                     if (workManager.hasDefined(WORKMANAGER_SHORT_RUNNING))  {
-                        ThreadsParser.getInstance().writeBoundedQueueThreadPool(writer, workManager.get(WORKMANAGER_SHORT_RUNNING).asProperty(), Element.SHORT_RUNNING_THREADS.getLocalName(), false);
+                        ThreadsParser.getInstance().writeBoundedQueueThreadPool(writer, workManager.get(WORKMANAGER_SHORT_RUNNING).asProperty(), Element.SHORT_RUNNING_THREADS.getLocalName(), false, true);
                     }
                     if (workManager.hasDefined(WORKMANAGER_LONG_RUNNING)) {
-                        ThreadsParser.getInstance().writeBoundedQueueThreadPool(writer, workManager.get(WORKMANAGER_LONG_RUNNING).asProperty(), Element.LONG_RUNNING_THREADS.getLocalName(), false);
+                        ThreadsParser.getInstance().writeBoundedQueueThreadPool(writer, workManager.get(WORKMANAGER_LONG_RUNNING).asProperty(), Element.LONG_RUNNING_THREADS.getLocalName(), false, true);
                     }
                     writer.writeEndElement();
                 }

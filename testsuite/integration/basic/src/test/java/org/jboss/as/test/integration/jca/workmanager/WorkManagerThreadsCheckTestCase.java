@@ -26,6 +26,7 @@ import static org.hamcrest.core.AllOf.allOf;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
 
 import java.io.IOException;
 
@@ -117,6 +118,29 @@ public class WorkManagerThreadsCheckTestCase extends JcaMgmtBase {
                     containsString("short-running-threads"),
                     containsString("default")
             ));
+        }
+    }
+
+    @Test
+    public void testBlockingThreadPool() throws IOException {
+        Assert.assertTrue(isBlockingThreadPool("short-running-threads"));
+        Assert.assertTrue(isBlockingThreadPool("long-running-threads"));
+    }
+
+    protected boolean isBlockingThreadPool(String pool) throws IOException {
+        ModelNode address = new ModelNode();
+        address.add("subsystem", "jca");
+        address.add("workmanager", "default");
+        address.add(pool, "default");
+
+        ModelNode operation = new ModelNode();
+        operation.get(OP_ADDR).set(address);
+        operation.get(OP).set(READ_RESOURCE_DESCRIPTION_OPERATION);
+        try {
+            ModelNode result = executeOperation(operation);
+            return result.asString().contains("A thread pool executor with a bounded queue where threads submittings tasks may block");
+        } catch (MgmtOperationException e) {
+            return false;
         }
     }
 }
