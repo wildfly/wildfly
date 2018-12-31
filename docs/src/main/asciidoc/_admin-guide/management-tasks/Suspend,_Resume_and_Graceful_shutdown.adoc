@@ -141,7 +141,7 @@ the node when it suspends, regardless of active transactions.
 Suspend/Resume can be controlled via the following CLI operations 
 and commands in standalone mode:
 
-`:suspend(timeout=z)`
+`:suspend(suspend-timeout=x)`
 
 Suspends the server. If the timeout is specified it will wait in the 
 SUSPENDING phase up to the specified number of seconds for all requests
@@ -157,7 +157,7 @@ begin serving requests immediately.
 
 Returns the current suspend state of the server.
 
-`shutdown --timeout=x`
+`shutdown --suspend-timeout=x`
 
 If a timeout parameter is passed to the shutdown command then a graceful
 shutdown will be performed. The server will be suspended, and will wait
@@ -169,38 +169,49 @@ it will wait indefinitely.
 == Domain Mode
 
 Domain mode has similar operations as standalone mode, however they can be
-applied at both the global and server group levels:
+applied at global, server group, server and host levels:
 
 *Whole Domain*
 
-`:suspend-servers(timeout=x)`
+`:suspend-servers(suspend-timeout=x)`
 
 `:resume-servers`
 
-`:stop-servers(timeout=x)`
+`:stop-servers(suspend-timeout=x)`
 
 *Server Group*
 
-`/server-group=main-server-group:suspend-servers(timeout=x)`
+`/server-group=main-server-group:suspend-servers(suspend-timeout=x)`
 
 `/server-group=main-server-group:resume-servers`
 
-`/server-group=main-server-group:stop-servers(timeout=x)`
+`/server-group=main-server-group:stop-servers(suspend-timeout=x)`
 
 *Server*
 
-`/host=master/server-config=server-one:suspend(timeout=x)`
+`/host=master/server-config=server-one:suspend(suspend-timeout=x)`
 
 `/host=master/server-config=server-one:resume`
 
-`/host=master/server-config=server-one:stop(timeout=x)`
+`/host=master/server-config=server-one:stop(suspend-timeout=x)`
+
+*Host level*
+
+`/host=master:suspend-servers(suspend-timeout=x)`
+
+`/host=master:resume-servers`
+
+`/host=master:shutdown(suspend-timeout=x)`
+
+Note that even though the host controller itself is being shut down, the suspend-timeout attribute for the shutdown operation at host level is applied to the servers only and not to the host controller itself.
+
 
 [[graceful-shutdown-from-an-os-signal]]
 == Graceful Shutdown via an OS Signal
 
 If you use an OS signal like `TERM` to shut down your WildFly standalone server
 process, e.g. via `kill -15 <pid>`, the WildFly server will shut down gracefully.
-By default, the behavior will be analogous to a CLI `shutdown --timeout=0` command;
+By default, the behavior will be analogous to a CLI `shutdown --suspend-timeout=0` command;
 that is the process will not wait in SUSPENDING state for in-flight requests to
 complete before proceeding to SUSPENDED state and then shutting down. A different
 timeout can be configured by setting the `org.wildfly.sigterm.suspend.timeout` 
