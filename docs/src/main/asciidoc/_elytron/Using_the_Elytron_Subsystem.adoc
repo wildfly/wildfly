@@ -689,6 +689,14 @@ Example _web.xml_ with _BASIC_ Authentication
 </web-app>
 ----
 
+_BASIC_ Authentication can be configured to be silent
+[source, xml]
+----
+<auth-method>BASIC?silent=true</auth-method>
+----
+Basic authentication in silent mode will send challenge to authenticate only if the request
+contained authorization header, otherwise it is assumed another method will send the challenge.
+
 [[configure-your-application-to-use-a-security-domain.]]
 ==== Configure your application to use a security domain.
 
