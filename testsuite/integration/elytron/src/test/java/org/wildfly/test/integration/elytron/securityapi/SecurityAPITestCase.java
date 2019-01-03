@@ -25,6 +25,7 @@ import static org.wildfly.test.integration.elytron.securityapi.TestAuthenticatio
 import static org.wildfly.test.integration.elytron.securityapi.TestAuthenticationMechanism.USERNAME_HEADER;
 import static org.wildfly.test.integration.elytron.securityapi.TestIdentityStore.PASSWORD;
 import static org.wildfly.test.integration.elytron.securityapi.TestIdentityStore.USERNAME;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 import java.net.URI;
 import java.net.URL;
@@ -50,6 +51,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.security.permission.ElytronPermission;
 import org.wildfly.test.security.common.AbstractElytronSetupTask;
 import org.wildfly.test.security.common.elytron.ConfigurableElement;
 import org.wildfly.test.undertow.common.UndertowApplicationSecurityDomain;
@@ -77,7 +79,8 @@ public class SecurityAPITestCase {
                 .addClasses(WhoAmI.class, WhoAmIBean.class)
                 .addAsWebInfResource(Utils.getJBossWebXmlAsset("SecurityAPI"), "jboss-web.xml")
                 .addAsWebInfResource(testPackage, "jboss-ejb3.xml", "jboss-ejb3.xml")
-                .addAsWebInfResource(testPackage, "beans.xml", "beans.xml");
+                .addAsWebInfResource(testPackage, "beans.xml", "beans.xml")
+                .addAsManifestResource(createPermissionsXmlAsset(new ElytronPermission("getSecurityDomain")), "permissions.xml");
     }
 
     @Test
