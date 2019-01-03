@@ -182,7 +182,7 @@ public class SecurityBootstrapService implements Service<Void> {
         handlerKeys.remove(SecurityConstants.SUBJECT_CONTEXT_KEY);
 
         // Install the policy provider that existed on startup
-        if (jaccPolicy != null)
+        if (initializeJacc && jaccPolicy != null)
             Policy.setPolicy(oldPolicy);
     }
 
