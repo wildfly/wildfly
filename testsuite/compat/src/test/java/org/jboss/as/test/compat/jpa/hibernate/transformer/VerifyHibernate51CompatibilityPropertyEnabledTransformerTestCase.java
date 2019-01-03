@@ -29,12 +29,14 @@ import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 
 /**
@@ -62,6 +64,11 @@ public class VerifyHibernate51CompatibilityPropertyEnabledTransformerTestCase
                 + " </deployment>"
                 + "</jboss-deployment-structure>"), "jboss-deployment-structure.xml");
         return ear;
+    }
+
+    @BeforeClass
+    public static void skipSecurityManager() {
+        AssumeTestGroupUtil.assumeSecurityManagerDisabled();
     }
 
     public static class EnableHibernateBytecodeTransformerSetupTask implements ServerSetupTask {
