@@ -62,10 +62,13 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.test.shared.TimeoutUtil.adjust;
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
-import org.junit.BeforeClass;
+import java.io.File;
+import java.io.FilePermission;
+import java.net.SocketPermission;
+import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
+import org.jboss.remoting3.security.RemotingPermission;
+
 
 /**
  * Test for issue https://issues.jboss.org/browse/WFLY-10531 (based on reproducer created by Gunter Zeilinger <gunterze@gmail.com>.
@@ -99,18 +102,17 @@ public class NotClosingInjectedContextTestCase {
     public static WebArchive createTestArchive() {
         WebArchive archive = ShrinkWrap.create(WebArchive.class, "NotClosingInjectedContextTestCase.war")
                 .addPackage(StartUp.class.getPackage())
+                .addClass(TimeoutUtil.class)
+                .addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
+                        new FilePermission(System.getProperty("jboss.inst") + File.separatorChar + "standalone" + File.separatorChar + "tmp" + File.separatorChar + "auth" + File.separatorChar + "*", "read"),
+                        RemotingPermission.CREATE_ENDPOINT,
+                        RemotingPermission.CONNECT,
+                        new SocketPermission("localhost", "resolve"),
+                        new PropertyPermission("ts.timeout.factor", "read")), "jboss-permissions.xml")
                 .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml")
                 .addClass(TimeoutUtil.class)
-                .addAsResource(createPermissionsXmlAsset(new PropertyPermission("ts.timeout.factor", "read")), "META-INF/jboss-permissions.xml")
-                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller\n"), "MANIFEST.MF");
-
+                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller,org.jboss.remoting3\n"), "MANIFEST.MF");
         return archive;
-    }
-
-    @BeforeClass
-    public static void skipSecurityManager() {
-        /* https://issues.jboss.org/browse/WFLY-11561 is tracking this */
-        AssumeTestGroupUtil.assumeSecurityManagerDisabled();
     }
 
     @After
