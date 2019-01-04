@@ -25,10 +25,15 @@ package org.wildfly.test.integration.microprofile.config.smallrye.app;
 import static org.wildfly.test.integration.microprofile.config.smallrye.AssertUtils.assertTextContainsProperty;
 
 import java.net.URL;
+import java.security.Permission;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Locale;
 import java.util.Optional;
+import java.util.PropertyPermission;
 import java.util.Set;
 
 import org.apache.http.HttpResponse;
@@ -41,6 +46,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -65,7 +71,59 @@ public class MicroProfileConfigTestCase {
                 .addClasses(TestApplication.class)
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
                 .addAsManifestResource(MicroProfileConfigTestCase.class.getPackage(),
-                        "microprofile-config.properties", "microprofile-config.properties");
+                        "microprofile-config.properties", "microprofile-config.properties")
+                .addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(createEnvPermission(
+                        "my.prop",
+                        "my.other.prop",
+                        SubsystemConfigSourceTask.MY_PROP_FROM_SUBSYSTEM_PROP_NAME,
+                        "optional.injected.prop.that.is.not.configured",
+                        "my.prop.from.meta",
+                        "node0",
+                        "MPCONFIG_TEST_ENV_VAR",
+                        "boolTrue",
+                        "bool1",
+                        "boolYes",
+                        "boolY",
+                        "boolOn",
+                        "boolDefault",
+                        SubsystemConfigSourceTask.BOOL_OVERRIDDEN_PROP_NAME,
+                        "booleanDefault",
+                        SubsystemConfigSourceTask.BOOLEAN_OVERRIDDEN_PROP_NAME,
+                        "intDefault",
+                        SubsystemConfigSourceTask.INT_OVERRIDDEN_PROP_NAME,
+                        "integerDefault",
+                        SubsystemConfigSourceTask.INTEGER_OVERRIDDEN_PROP_NAME,
+                        "intBadValue",
+                        "integerBadValue",
+                        "longDefault",
+                        SubsystemConfigSourceTask.LONG_OVERRIDDEN_PROP_NAME,
+                        "longClassDefault",
+                        SubsystemConfigSourceTask.LONG_CLASS_OVERRIDDEN_PROP_NAME,
+                        "longBadValue",
+                        "longClassBadValue",
+                        "floatDefault",
+                        SubsystemConfigSourceTask.FLOAT_OVERRIDDEN_PROP_NAME,
+                        "floatClassDefault",
+                        SubsystemConfigSourceTask.FLOAT_CLASS_OVERRIDDEN_PROP_NAME,
+                        "floatBadValue",
+                        "floatClassBadValue",
+                        "doubleDefault",
+                        SubsystemConfigSourceTask.DOUBLE_OVERRIDDEN_PROP_NAME,
+                        "doubleClassDefault",
+                        SubsystemConfigSourceTask.DOUBLE_CLASS_OVERRIDDEN_PROP_NAME,
+                        "doubleBadValue",
+                        "doubleClassBadValue",
+                        SubsystemConfigSourceTask.PROPERTIES_PROP_NAME0,
+                        SubsystemConfigSourceTask.PROPERTIES_PROP_NAME1,
+                        SubsystemConfigSourceTask.PROPERTIES_PROP_NAME2,
+                        SubsystemConfigSourceTask.PROPERTIES_PROP_NAME3,
+                        SubsystemConfigSourceTask.PROPERTIES_PROP_NAME4,
+                        SubsystemConfigSourceTask.PROPERTIES_PROP_NAME5,
+                        "myPets",
+                        "my.prop.never.defined",
+                        "my_prop_never_defined",
+                        "myPetsOverridden"
+                )), "permissions.xml");
 
         return war;
     }
@@ -307,5 +365,17 @@ public class MicroProfileConfigTestCase {
             // not defined anywhere...
             assertTextContainsProperty(text, SubsystemConfigSourceTask.PROPERTIES_PROP_NAME5, "Custom file property not defined!");
         }
+    }
+
+    private static Permission[] createEnvPermission(final String... names) {
+        final Collection<Permission> permissions = new ArrayList<>(names.length * 2);
+        for (String name : names) {
+            permissions.add(new PropertyPermission(name, "read"));
+            permissions.add(new RuntimePermission("getenv." + name));
+            permissions.add(new RuntimePermission("getenv." + name.replace('.', '_')));
+            permissions.add(new RuntimePermission("getenv." + name.toUpperCase(Locale.ROOT)));
+            permissions.add(new RuntimePermission("getenv." + name.replace('.', '_').toUpperCase(Locale.ROOT)));
+        }
+        return permissions.toArray(new Permission[0]);
     }
 }

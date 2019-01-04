@@ -452,7 +452,10 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
                             <runOrder>alphabetical</runOrder>
-
+                            <environmentVariables>
+                                <!-- dummy env property for MicroProfile Config testing -->
+                                <MPCONFIG_TEST_ENV_VAR>integ-basicmpconfig-test-env-var-value</MPCONFIG_TEST_ENV_VAR>
+                            </environmentVariables>
                             <systemPropertyVariables combine.children="append">
                                 <!-- Narayana transaction data storage for transaction started at client side -->
                                 <ObjectStoreEnvironmentBean.objectStoreDir>target/NarayanaObjectStore</ObjectStoreEnvironmentBean.objectStoreDir>
@@ -572,8 +575,6 @@
 
                                     <environmentVariables>
                                         <JBOSS_HOME>${jboss.dist}</JBOSS_HOME>
-                                        <!-- dummy env property for MicroProfile Config testing -->
-                                        <MPCONFIG_TEST_ENV_VAR>integ-basicmpconfig-test-env-var-value</MPCONFIG_TEST_ENV_VAR>
                                     </environmentVariables>
 
                                     <!-- Parameters to test cases. -->

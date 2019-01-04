@@ -23,6 +23,14 @@ public class AssumeTestGroupUtil {
         assumeCondition("Tests failing in Elytron profile are disabled", () -> System.getProperty("elytron") == null);
     }
 
+    /**
+     * Assume for tests that fail when the security manager is enabled. This should be used sparingly and issues should
+     * be filed for failing tests so a proper fix can be done.
+     */
+    public static void assumeSecurityManagerDisabled() {
+        assumeCondition("Tests failing if the security manager is enabled.", () -> System.getSecurityManager() != null);
+    }
+
     private static void assumeCondition(final String message, final Supplier<Boolean> assumeTrueCondition) {
         AccessController.doPrivileged(new PrivilegedAction<Void>() {
             @Override
