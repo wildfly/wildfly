@@ -64,6 +64,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import static org.jboss.as.test.shared.TimeoutUtil.adjust;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
+import org.junit.BeforeClass;
+
 /**
  * Test for issue https://issues.jboss.org/browse/WFLY-10531 (based on reproducer created by Gunter Zeilinger <gunterze@gmail.com>.
  *
@@ -79,9 +82,6 @@ public class NotClosingInjectedContextTestCase {
 
     private static final PathAddress LOG_FILE_ADDRESS = PathAddress.pathAddress()
             .append(SUBSYSTEM, "logging");
-
-    private static final PathAddress SEEVER_LOG_FILE_ADDRESS = LOG_FILE_ADDRESS
-            .append("log-file", "server.log");
 
     @Resource(mappedName = "java:/JmsXA")
     private ConnectionFactory factory;
@@ -105,6 +105,12 @@ public class NotClosingInjectedContextTestCase {
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller\n"), "MANIFEST.MF");
 
         return archive;
+    }
+
+    @BeforeClass
+    public static void skipSecurityManager() {
+        /* https://issues.jboss.org/browse/WFLY-11561 is tracking this */
+        AssumeTestGroupUtil.assumeSecurityManagerDisabled();
     }
 
     @After
