@@ -42,10 +42,12 @@ import org.jboss.as.test.clustering.cluster.web.DistributableTestCase;
 import org.jboss.as.test.clustering.cluster.web.async.servlet.AsyncServlet;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -78,6 +80,12 @@ public class AsyncServletTestCase extends AbstractClusteringTestCase {
         war.setWebXML(SimpleServlet.class.getPackage(), "web.xml");
         war.addAsWebInfResource(DistributableTestCase.class.getPackage(), "jboss-web_fine.xml", "jboss-web.xml");
         return war;
+    }
+
+    @BeforeClass
+    public static void skipSecurityManager() {
+        // TODO  this should be removed when WFLY-11539 (Infinispan upgrade) is merged
+        AssumeTestGroupUtil.assumeSecurityManagerDisabled();
     }
 
     @Test

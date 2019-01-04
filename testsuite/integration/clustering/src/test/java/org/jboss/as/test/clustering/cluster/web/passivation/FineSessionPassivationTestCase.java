@@ -24,8 +24,10 @@ package org.jboss.as.test.clustering.cluster.web.passivation;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 
 @RunWith(Arquillian.class)
@@ -43,6 +45,12 @@ public class FineSessionPassivationTestCase extends SessionPassivationTestCase {
     @TargetsContainer(NODE_2)
     public static Archive<?> deployment1() {
         return getDeployment();
+    }
+
+    @BeforeClass
+    public static void skipSecurityManager() {
+        // TODO  this should be removed when WFLY-11539 (Infinispan upgrade) is merged
+        AssumeTestGroupUtil.assumeSecurityManagerDisabled();
     }
 
     static WebArchive getDeployment() {

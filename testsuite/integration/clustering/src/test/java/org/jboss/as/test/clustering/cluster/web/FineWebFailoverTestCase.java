@@ -27,9 +27,11 @@ import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.as.test.clustering.ClusterTestUtil;
 import org.jboss.as.test.clustering.single.web.Mutable;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.BeforeClass;
 
 /**
  * @author Radoslav Husar
@@ -59,6 +61,12 @@ public class FineWebFailoverTestCase extends AbstractWebFailoverTestCase {
     @TargetsContainer(NODE_3)
     public static Archive<?> deployment3() {
         return createDeployment();
+    }
+
+    @BeforeClass
+    public static void skipSecurityManager() {
+        // TODO  this should be removed when WFLY-11539 (Infinispan upgrade) is merged
+        AssumeTestGroupUtil.assumeSecurityManagerDisabled();
     }
 
     private static Archive<?> createDeployment() {
