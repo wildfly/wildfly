@@ -26,9 +26,14 @@ public class AssumeTestGroupUtil {
     /**
      * Assume for tests that fail when the security manager is enabled. This should be used sparingly and issues should
      * be filed for failing tests so a proper fix can be done.
+     * <p>
+     * Note that this checks the {@code security.manager} system property and <strong>not</strong> that the
+     * {@link System#getSecurityManager()} is {@code null}. The property is checked so that the assumption check can be
+     * done in a {@link org.junit.Before @Before} or {@link org.junit.BeforeClass @BeforeClass} method.
+     * </p>
      */
     public static void assumeSecurityManagerDisabled() {
-        assumeCondition("Tests failing if the security manager is enabled.", () -> System.getSecurityManager() != null);
+        assumeCondition("Tests failing if the security manager is enabled.", () -> System.getProperty("security.manager") == null);
     }
 
     private static void assumeCondition(final String message, final Supplier<Boolean> assumeTrueCondition) {
