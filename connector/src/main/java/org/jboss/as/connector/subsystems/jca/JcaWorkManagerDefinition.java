@@ -89,7 +89,7 @@ public class JcaWorkManagerDefinition extends SimpleResourceDefinition {
     }
 
     static void registerSubModels(ManagementResourceRegistration resourceRegistration, boolean runtimeOnly) {
-        final BoundedQueueThreadPoolAdd shortRunningThreadPoolAdd = new BoundedQueueThreadPoolAdd(false,
+        final BoundedQueueThreadPoolAdd shortRunningThreadPoolAdd = new BoundedQueueThreadPoolAdd(true,
                 ThreadsServices.STANDARD_THREAD_FACTORY_RESOLVER, ThreadsServices.STANDARD_HANDOFF_EXECUTOR_RESOLVER,
                 ThreadsServices.EXECUTOR.append(WORKMANAGER_SHORT_RUNNING)) {
             @Override
@@ -104,10 +104,10 @@ public class JcaWorkManagerDefinition extends SimpleResourceDefinition {
             }
         };
         resourceRegistration.registerSubModel(
-                new JCAThreadPoolResourceDefinition(false, runtimeOnly, WORKMANAGER_SHORT_RUNNING, ThreadsServices.EXECUTOR.append(WORKMANAGER_SHORT_RUNNING),
-                        CommonAttributes.BOUNDED_QUEUE_THREAD_POOL, shortRunningThreadPoolAdd, ReloadRequiredRemoveStepHandler.INSTANCE));
+                new JCAThreadPoolResourceDefinition(true, runtimeOnly, WORKMANAGER_SHORT_RUNNING, ThreadsServices.EXECUTOR.append(WORKMANAGER_SHORT_RUNNING),
+                        CommonAttributes.BLOCKING_BOUNDED_QUEUE_THREAD_POOL, shortRunningThreadPoolAdd, ReloadRequiredRemoveStepHandler.INSTANCE));
 
-        final BoundedQueueThreadPoolAdd longRunningThreadPoolAdd = new BoundedQueueThreadPoolAdd(false,
+        final BoundedQueueThreadPoolAdd longRunningThreadPoolAdd = new BoundedQueueThreadPoolAdd(true,
                 ThreadsServices.STANDARD_THREAD_FACTORY_RESOLVER, ThreadsServices.STANDARD_HANDOFF_EXECUTOR_RESOLVER,
                 ThreadsServices.EXECUTOR.append(WORKMANAGER_LONG_RUNNING)) {
             @Override
@@ -122,8 +122,8 @@ public class JcaWorkManagerDefinition extends SimpleResourceDefinition {
             }
         };
         resourceRegistration.registerSubModel(
-                new JCAThreadPoolResourceDefinition(false, runtimeOnly, WORKMANAGER_LONG_RUNNING, ThreadsServices.EXECUTOR.append(WORKMANAGER_LONG_RUNNING),
-                        CommonAttributes.BOUNDED_QUEUE_THREAD_POOL, longRunningThreadPoolAdd, new BoundedQueueThreadPoolRemove(longRunningThreadPoolAdd)));
+                new JCAThreadPoolResourceDefinition(true, runtimeOnly, WORKMANAGER_LONG_RUNNING, ThreadsServices.EXECUTOR.append(WORKMANAGER_LONG_RUNNING),
+                        CommonAttributes.BLOCKING_BOUNDED_QUEUE_THREAD_POOL, longRunningThreadPoolAdd, new BoundedQueueThreadPoolRemove(longRunningThreadPoolAdd)));
 
     }
 
