@@ -24,9 +24,15 @@ package org.wildfly.extension.messaging.activemq;
 import static org.wildfly.extension.messaging.activemq.MessagingServices.JBOSS_MESSAGING_ACTIVEMQ;
 
 import java.security.AccessController;
+import javax.resource.spi.work.ExecutionContext;
+import javax.resource.spi.work.Work;
+import javax.resource.spi.work.WorkException;
+import javax.resource.spi.work.WorkListener;
+import javax.resource.spi.work.WorkManager;
 
 import org.apache.activemq.artemis.api.core.BroadcastEndpointFactory;
 import org.apache.activemq.artemis.ra.ConnectionFactoryProperties;
+import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.service.ServiceContainer;
 import org.wildfly.extension.messaging.activemq.broadcast.CommandDispatcherBroadcastEndpointFactory;
@@ -78,5 +84,84 @@ public class ActiveMQResourceAdapter extends org.apache.activemq.artemis.ra.Acti
 
     private static ServiceContainer currentServiceContainer() {
         return (System.getSecurityManager() == null) ? CurrentServiceContainer.getServiceContainer() : AccessController.doPrivileged(CurrentServiceContainer.GET_ACTION);
+    }
+
+    @Override
+    public WorkManager getWorkManager() {
+        return new NamingWorkManager(super.getWorkManager());
+    }
+
+    private class NamingWorkManager implements WorkManager {
+
+        private final WorkManager delegate;
+
+        private NamingWorkManager(WorkManager delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public void doWork(Work work) throws WorkException {
+            delegate.doWork(wrapWork(work));
+        }
+
+        @Override
+        public void doWork(Work work, long startTimeout, ExecutionContext execContext, WorkListener workListener) throws WorkException {
+            delegate.doWork(wrapWork(work), startTimeout, execContext, workListener);
+        }
+
+        @Override
+        public long startWork(Work work) throws WorkException {
+            return delegate.startWork(wrapWork(work));
+        }
+
+        @Override
+        public long startWork(Work work, long startTimeout, ExecutionContext execContext, WorkListener workListener) throws WorkException {
+            return delegate.startWork(wrapWork(work), startTimeout, execContext, workListener);
+        }
+
+        @Override
+        public void scheduleWork(Work work) throws WorkException {
+            delegate.scheduleWork(wrapWork(work));
+        }
+
+        @Override
+        public void scheduleWork(Work work, long startTimeout, ExecutionContext execContext, WorkListener workListener) throws WorkException {
+            delegate.scheduleWork(wrapWork(work), startTimeout, execContext, workListener);
+        }
+
+        private Work wrapWork(Work work) {
+            return new WorkWrapper(NamespaceContextSelector.getCurrentSelector(), work);
+        }
+    }
+
+    private class WorkWrapper implements Work {
+
+        private final Work delegate;
+        private final NamespaceContextSelector selector;
+
+        private WorkWrapper(NamespaceContextSelector selector, Work work) {
+            this.selector = selector;
+            this.delegate = work;
+        }
+
+        @Override
+        public void release() {
+            NamespaceContextSelector.pushCurrentSelector(selector);
+            try {
+                delegate.release();
+            } finally {
+                NamespaceContextSelector.popCurrentSelector();
+            }
+        }
+
+        @Override
+        public void run() {
+            NamespaceContextSelector.pushCurrentSelector(selector);
+            try {
+                delegate.run();
+            } finally {
+                NamespaceContextSelector.popCurrentSelector();
+            }
+        }
     }
 }
