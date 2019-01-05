@@ -22,7 +22,6 @@
 
 package org.jboss.as.test.integration.ws.serviceref;
 
-import java.io.File;
 import java.io.FilePermission;
 import java.net.SocketPermission;
 import java.util.Hashtable;
@@ -92,7 +91,7 @@ public class ServiceRefTestCase {
                 // and CXF guys are not willing to add more privileged blocks into their code, thus deployments need to have
                 // the following permissions (note that the wsdl.properties permission is needed by wsdl4j)
                 .addAsManifestResource(createPermissionsXmlAsset(
-                        new FilePermission(System.getProperty("java.home") + File.separator + "lib" + File.separator + "wsdl.properties", "read"),
+                    new FilePermission("<<ALL FILES>>", "read"),
                         new PropertyPermission("user.dir", "read"),
                         new RuntimePermission("getClassLoader"),
                         new RuntimePermission("org.apache.cxf.permission", "resolveUri"),
