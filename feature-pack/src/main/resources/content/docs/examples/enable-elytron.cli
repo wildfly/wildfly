@@ -125,9 +125,6 @@ embed-host-controller
 /host=master/core-service=management/management-interface=http-interface:write-attribute(name=http-authentication-factory,value=management-http-authentication)
 /host=master/core-service=management/management-interface=http-interface:undefine-attribute(name=security-realm)
 
-/host=master/core-service=management/management-interface=native-interface:write-attribute(name=sasl-authentication-factory,value=management-sasl-authentication)
-/host=master/core-service=management/management-interface=native-interface:undefine-attribute(name=security-realm)
-
 /host=master/core-service=management/security-realm=ManagementRealm:remove
 /host=master/core-service=management/security-realm=ApplicationRealm/authentication=local:remove
 /host=master/core-service=management/security-realm=ApplicationRealm/authentication=properties:remove
