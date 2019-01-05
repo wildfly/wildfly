@@ -44,66 +44,67 @@ demonstrate the various ways you can deploy apps to JBoss AS 7.
 [[using-maven]]
 === Using Maven
 
-1.  Start JBoss AS 7 from the console
+. Start JBoss AS 7 from the console
 +
-[source, java]
+[source]
 ----
-$JBOSS_HOME/bin/standalone.sh
+$ JBOSS_HOME/bin/standalone.sh
 ----
 
-* Deploy the app using Maven
+. Deploy the app using Maven
 +
-[source, java]
+[source]
 ----
-mvn clean package jboss-as:deploy
+$ mvn clean package jboss-as:deploy
 ----
-
++
 [IMPORTANT]
-
+====
 The quickstarts use the jboss-as maven plugin to deploy and undeploy
 applications. This plugin uses the JBoss AS Native Java Detyped
 Management API to communicate with the server. The Detyped API is used
 by management tools to control an entire domain of servers, and exposes
 only a small number of types, allowing for backwards and forwards
 compatibility.
+====
 
-Show the app has deployed in the terminal
-
+. Show the app has deployed in the terminal.
++
 Visit http://localhost:8080/jboss-as-helloworld
 
-Undeploy the app using Maven
-
-[source, java]
+. Undeploy the app using Maven
++
+[source]
 ----
-mvn jboss-as:undeploy
+$ mvn jboss-as:undeploy
 ----
 
 [[using-the-command-line-interface-cli]]
 === Using the Command Line Interface (CLI)
 
-1.  Start JBoss AS 7 from the console (if not already running)
+.  Start JBoss AS 7 from the console (if not already running)
 +
-[source, java]
+[source]
 ----
-$JBOSS_HOME/bin/standalone.sh
-----
-
-Build the war
-
-[source, java]
-----
-mvn clean package
+$ JBOSS_HOME/bin/standalone.sh
 ----
 
-Start the CLI
-
-[source, java]
+. Build the war
++
+[source]
 ----
-$JBOSS_HOME/bin/jboss-admin.sh --connect
+$ mvn clean package
 ----
 
+. Start the CLI
++
+[source]
+----
+$ JBOSS_HOME/bin/jboss-admin.sh --connect
+----
++
 [IMPORTANT]
-
++
 The command line also uses the Deptyped Management API to communicate
 with the server. It's designed to be as "unixy" as possible, allowing
 you to "cd" into nodes, with full tab completion etc. The CLI allows you
@@ -111,109 +112,113 @@ to deploy and undeploy applications, create JMS queues, topics etc.,
 create datasources (normal and XA). It also fully supports the domain
 node.
 
-Deploy the app
+. Deploy the app
++
+[source]
+----
+$ deploy target/jboss-as-helloworld.war
+----
 
+. Show the app has deployed
++
 [source, java]
 ----
-deploy target/jboss-as-helloworld.war
-----
-
-Show the app has deployed
-
-[source, java]
-----
-undeploy jboss-as-helloworld.war
+$ undeploy jboss-as-helloworld.war
 ----
 
 [[using-the-web-management-interface]]
 === Using the web management interface
 
-1.  Start JBoss AS 7 from the console (if not already running)
+.  Start JBoss AS 7 from the console (if not already running)
 +
-[source, java]
+[source]
 ----
-$JBOSS_HOME/bin/standalone.sh
-----
-
-Build the war
-
-[source, java]
-----
-mvn clean package
+$ JBOSS_HOME/bin/standalone.sh
 ----
 
-Open up the web management interface http://localhost:9990/console
+. Build the war
++
+[source]
+----
+$ mvn clean package
+----
 
+. Open up the web management interface http://localhost:9990/console
++
 [IMPORTANT]
-
-The web maangement interface offers the same functionality as the CLI
+====
+The web management interface offers the same functionality as the CLI
 (and again uses the Detyped Management API), but does so using a pretty
 GWT interface! You can set up virtual servers, interrogate sub systems
 and more.
+====
 
-Navigate `Manage Deployments -> Add content`. Click on choose file and
+. Navigate `Manage Deployments -> Add content`. Click on choose file and
 locate `helloworld/target/jboss-as-helloworld.war`.
 
-Click `Next` and `Finish` to upload the war to the server.
+. Click `Next` and `Finish` to upload the war to the server.
 
-Now click `Enable` and `Ok` to start the application
+. Now click `Enable` and `Ok` to start the application
 
-Switch to the console to show it deployed
+. Switch to the console to show it deployed
 
-Now click `Remove`
+. Now click `Remove`
 
 [[using-the-filesystem]]
 === Using the filesystem
 
-1.  Start JBoss AS 7 from the console (if not already running)
+.  Start JBoss AS 7 from the console (if not already running)
 +
-[source, java]
+[source]
 ----
-$JBOSS_HOME/bin/standalone.sh
-----
-
-Build the war
-
-[source, java]
-----
-mvn clean package
+$ JBOSS_HOME/bin/standalone.sh
 ----
 
+. Build the war
++
+[source]
+----
+$ mvn clean package
+----
++
 [IMPORTANT]
-
+====
 Of course, you can still use the good ol' file system to deploy. Just
 copy the file to `$JBOSS_HOME/standalone/deployments`.
+====
 
-Copy the war
-
-[source, java]
+. Copy the war
++
+[source]
 ----
-cp target/jboss-as-helloworld.war $JBOSS_HOME/standalone/deployments
+$ cp target/jboss-as-helloworld.war $JBOSS_HOME/standalone/deployments
 ----
 
-Show the war deployed
-
+. Show the war deployed
++
 [IMPORTANT]
-
+====
 The filesystem deployment uses marker files to indicate the status of a
 deployment. As this deployment succeeded we get a
 `$JBOSS_HOME/standalone/deployments/jboss-as-helloworld.war.deployed`
 file. If the deployment failed, you would get a `.failed` file etc.
+====
 
-Undeploy the war
-
-[source, java]
+. Undeploy the war
++
+[source]
 ----
 rm $JBOSS_HOME/standalone/deployments/jboss-as-helloworld.war.deployed
 ----
 
-Show the deployment stopping!
+. Show the deployment stopping!
 
-Start and stop the appserver, show that the deployment really is gone!
-
+. Start and stop the app server, show that the deployment really is gone!
++
 [IMPORTANT]
-
+====
 This gives you much more precise control over deployments than before
+====
 
 [[using-eclipse]]
 === Using Eclipse
@@ -236,14 +241,14 @@ This gives you much more precise control over deployments than before
 [[digging-into-the-app]]
 === Digging into the app
 
-1.  Open up the helloworld quickstart in Eclipse, and open up
+.  Open up the helloworld quickstart in Eclipse, and open up
 `src/main/webapp`.
-2.  Point out that we don't require a `web.xml` anymore!
-3.  Show `beans.xml` and explain it's a marker file used to JBoss AS to
+.  Point out that we don't require a `web.xml` anymore!
+.  Show `beans.xml` and explain it's a marker file used to JBoss AS to
 enable CDI (open it, show that it is empty)
-4.  Show `index.html`, and explain it is just used to kick the user into
+.  Show `index.html`, and explain it is just used to kick the user into
 the app (open it, show the meta-refresh)
-5.  Open up the `pom.xm` - and emphasise that it's pretty simple.
+.  Open up the `pom.xm` - and emphasise that it's pretty simple.
 ..  There is no parent pom, everything for the build is *here*
 ..  Show that we are enabling the JBoss Maven repo - explain you can do
 this in your POM or in system wide ( `settings.xml`)
@@ -259,7 +264,7 @@ not packaging this stuff!
 ..  Show the plugin sections - nothing that exciting here, the war
 plugin is out of date and requires you to provide `web.xml` icon:smile-o[role="yellow"]
 , configure the JBoss AS Maven Plugin, set the Java version to 6.
-6.  Open up `src/main/java` and open up the `HelloWorldServlet`.
+.  Open up `src/main/java` and open up the `HelloWorldServlet`.
 ..  Point out the `@WebServlet` - explain this one annotation removes
 about 8 lines of XML - no need to separately map a path either. This is
 much more refactor safe
@@ -305,12 +310,12 @@ Emphasize the lack of them!
 
 No need to open any of them, just point them out
 
-1.  `web.xml` - don't need it!
-2.  `beans.xml` - as before, marker file
-3.  `faces-config.xml` - nice feature from AS7 - we can just put
+.  `web.xml` - don't need it!
+.  `beans.xml` - as before, marker file
+.  `faces-config.xml` - nice feature from AS7 - we can just put
 `faces-config.xml` into the WEB-INF and it enables JSF (inspiration from
 CDI)
-4.  `pom.xml` we saw this before, this time it's the same but adds in
+.  `pom.xml` we saw this before, this time it's the same but adds in
 JSF API
 
 [[views]]
@@ -376,14 +381,14 @@ how to use EJB for declarative TX control.
 [[run-the-app-1]]
 === Run the app
 
-1.  Start JBoss AS in Eclipse
-2.  Deploy it using Eclipse - just right click on the app, choose
+.  Start JBoss AS in Eclipse
+.  Deploy it using Eclipse - just right click on the app, choose
 `Run As -> Run On Server`
-3.  Select the AS 7 instance you want to use
-4.  Hit finish
-5.  Load the app at http://localhost:8080/jboss-as-login
-6.  Login as admin/admin
-7.  Create a new user
+.  Select the AS 7 instance you want to use
+.  Hit finish
+.  Load the app at http://localhost:8080/jboss-as-login
+.  Login as admin/admin
+.  Create a new user
 
 [[deployment-descriptors]]
 === Deployment Descriptors
@@ -484,15 +489,15 @@ Validation as well. We add in Arquillian for testing.
 [[run-the-app-2]]
 === Run the app
 
-1.  Start JBoss AS in Eclipse
-2.  Deploy it using Eclipse - just right click on the app, choose
+.  Start JBoss AS in Eclipse
+.  Deploy it using Eclipse - just right click on the app, choose
 `Run As -> Run On Server`
-3.  Select the AS 7 instance you want to use
-4.  Hit finish
-5.  Load the app at http://localhost:8080/jboss-as-kitchensink
-6.  Register a member - make sure to enter an invalid email and phone -
+.  Select the AS 7 instance you want to use
+.  Hit finish
+.  Load the app at http://localhost:8080/jboss-as-kitchensink
+.  Register a member - make sure to enter an invalid email and phone -
 show bean validation at work
-7.  Click on the member URL and show the output from JAX-RS
+.  Click on the member URL and show the output from JAX-RS
 
 [[bean-validation]]
 === Bean Validation
@@ -520,35 +525,36 @@ layer and in your views
 ..  `@GET` methods are auto transformed to XML using JAXB
 .  And that is it!
 
-[[arquillian]]
+[[arquillian-getting-started]]
 === Arquillian
 
-1.  Make sure JBoss AS is running
-2.  [source, bash]
+.  Make sure JBoss AS is running
++
+[source]
 ----
 mvn clean test -Parq-jbossas-remote
 ----
 
-1.  Explain the difference between managed and remote
+.  Explain the difference between managed and remote
 
-Make sure JBoss AS is stopped
-
-[source, bash]
+. Make sure JBoss AS is stopped
++
+[source]
 ----
 mvn clean test -Parq-jbossas-managed
 ----
 
-Start JBoss AS in Eclipse
+. Start JBoss AS in Eclipse
 
-Update the project to use the `arq-jbossas-remote` profile
+. Update the project to use the `arq-jbossas-remote` profile
 
-Run the test from Eclipse
-
-1.  Right click on test, `Run As -> JUnit Test`
-
+. Run the test from Eclipse
++
+Right click on test, `Run As -> JUnit Test`
++
 `MemberRegistrationTest.java`
 
-1.  Discuss micro deployments
-2.  Explain Arquilian allows you to use injection
-3.  Explain that Arquillian allows you to concentrate just on your test
+.  Discuss micro deployments
+.  Explain Arquilian allows you to use injection
+.  Explain that Arquillian allows you to concentrate just on your test
 logic

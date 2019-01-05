@@ -115,7 +115,7 @@ their formatters are defined in the global
 `/core-service=management/access=audit` section mentioned in
 <<Audit_logging,Audit logging>>.
 
-[[json-formatter]]
+[[json-formatter-jmx]]
 === JSON Formatter
 
 The same JSON Formatter is used as described in

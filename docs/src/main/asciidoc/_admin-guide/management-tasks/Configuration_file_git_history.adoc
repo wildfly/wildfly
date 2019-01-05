@@ -34,7 +34,7 @@ If a `--git-branch` parameter is added then the repository will be checked out o
 == Remote Git Repository
 
 If a remote Git repository is provided then the server will try to pull from it at boot. If this is the first time we are pulling then local files will be deleted to avoid the pull to fail because of the need to overwrite those existing files.
-The parameter for `--git-repo` can be a URL or a remote alias provided you have manually added it to the local git configuration. 
+The parameter for `--git-repo` can be a URL or a remote alias provided you have manually added it to the local git configuration.
 
 If a `--git-branch` parameter is added then the branch will be pulled, otherwise it will default to `master`.
 
@@ -69,7 +69,7 @@ Sample command line to start the server using the `standalone-full.xml` file pul
 ./standalone.sh --git-repo=https://github.com/wildfly/wildfly-config.git --git-auth=file:///home/ehsavoie/tmp/github-wildfly-config.xml -c standalone-full.xml
 ----
 
-[[snapshots]]
+[[snapshots-git-history]]
 == Snapshots
 
 In addition to the commits taken by the server as described above you

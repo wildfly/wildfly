@@ -104,7 +104,7 @@ name, and service.
 </definitions>
 ----
 
-[[web-service-interface]]
+[[web-service-interface-onbehalfo-ws-trust]]
 === Web Service Interface
 
 The web service provider interface class, OnBehalfOfServiceIface, is a
@@ -128,7 +128,7 @@ public interface OnBehalfOfServiceIface
 }
 ----
 
-[[web-service-implementation]]
+[[web-service-implementation-onbehalfo-ws-trust]]
 === Web Service Implementation
 
 The web service provider implementation class, OnBehalfOfServiceImpl, is
@@ -243,7 +243,7 @@ public class OnBehalfOfServiceImpl implements OnBehalfOfServiceIface
 }
 ----
 
-[[onbehalfofcallbackhandler]]
+[[onbehalfofcallbackhandler-onbehalfo-ws-trust]]
 === OnBehalfOfCallbackHandler
 
 OnBehalfOfCallbackHandler is a callback handler for the WSS4J Crypto
@@ -280,7 +280,7 @@ public class OnBehalfOfCallbackHandler extends PasswordCallbackHandler {
 }
 ----
 
-[[web-service-requester]]
+[[web-service-requester-onbehalfo-ws-trust]]
 == Web service requester
 
 This section examines the ws-requester elements from the basic WS-Trust
@@ -289,7 +289,7 @@ example. The component is
 
 * OnBehalfOf web service requester implementation class
 
-[[web-service-requester-implementation]]
+[[web-service-requester-implementation-onbehalfo-ws-trust]]
 === Web service requester Implementation
 
 The OnBehalfOf ws-requester, the client, uses standard procedures for

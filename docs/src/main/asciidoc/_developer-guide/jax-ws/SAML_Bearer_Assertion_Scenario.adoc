@@ -236,7 +236,7 @@ security settings are provided in the comments in the listing below.
 </definitions>
 ----
 
-[[ssl-configuration]]
+[[ssl-configuration-saml-bearer]]
 === SSL configuration
 
 This web service is using https, therefore the JBoss server must be
@@ -264,7 +264,7 @@ Here is an example of an SSL connector declaration.
   ...
 ----
 
-[[web-service-interface]]
+[[web-service-interface-saml-bearer]]
 === Web service Interface
 
 The web service provider interface class, BearerIface, is a simple
@@ -288,7 +288,7 @@ public interface BearerIface
 }
 ----
 
-[[web-service-implementation]]
+[[web-service-implementation-saml-bearer]]
 === Web service Implementation
 
 The web service provider implementation class, BearerImpl, is a simple
@@ -346,7 +346,7 @@ public class BearerImpl implements BearerIface
 }
 ----
 
-[[crypto-properties-and-keystore-files]]
+[[crypto-properties-and-keystore-files-saml-bearer]]
 === Crypto properties and keystore files
 
 WSS4J's Crypto implementation is loaded and configured via a Java
@@ -368,7 +368,7 @@ org.apache.ws.security.crypto.merlin.keystore.alias=myservicekey
 org.apache.ws.security.crypto.merlin.keystore.file=servicestore.jks
 ....
 
-[[manifest.mf]]
+[[manifest-mf-saml-bearer]]
 === MANIFEST.MF
 
 When deployed on WildFly this application requires access to the JBossWs
@@ -376,13 +376,13 @@ and CXF APIs provided in module org.jboss.ws.cxf.jbossws-cxf-client. The
 dependency statement directs the server to provide them at deployment.
 
 ....
-Manifest-Version: 1.0  
-Ant-Version: Apache Ant 1.8.2  
-Created-By: 1.7.0_25-b15 (Oracle Corporation)  
+Manifest-Version: 1.0
+Ant-Version: Apache Ant 1.8.2
+Created-By: 1.7.0_25-b15 (Oracle Corporation)
 Dependencies: org.jboss.ws.cxf.jbossws-cxf-client
 ....
 
-[[bearer-security-token-service]]
+[[bearer-security-token-service-saml-bearer]]
 == Bearer Security Token Service
 
 This section examines the crucial elements in providing the Security
@@ -396,7 +396,7 @@ components that will be discussed are.
 * Crypto properties and keystore files
 * MANIFEST.MF
 
-[[security-domain]]
+[[security-domain-saml-bearer]]
 === Security Domain
 
 The STS requires a JBoss security domain be configured. The
@@ -430,28 +430,28 @@ jboss-web.xml
 
 [source,xml]
 ----
-<?xml version="1.0" encoding="UTF-8"?>  
-<!DOCTYPE jboss-web PUBLIC "-//JBoss//DTD Web Application 2.4//EN" ">  
-<jboss-web>  
-  <security-domain>java:/jaas/JBossWS-trust-sts</security-domain>  
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE jboss-web PUBLIC "-//JBoss//DTD Web Application 2.4//EN" ">
+<jboss-web>
+  <security-domain>java:/jaas/JBossWS-trust-sts</security-domain>
 </jboss-web>
 ----
 
 jbossws-users.properties
 
 ....
-# A sample users.properties file for use with the UsersRolesLoginModule  
+# A sample users.properties file for use with the UsersRolesLoginModule
 alice=clarinet
 ....
 
 jbossws-roles.properties
 
 ....
-# A sample roles.properties file for use with the UsersRolesLoginModule  
+# A sample roles.properties file for use with the UsersRolesLoginModule
 alice=friend
 ....
 
-[[stss-wsdl]]
+[[stss-wsdl-saml-bearer]]
 === STS's WSDL
 
 [source,xml]
@@ -859,7 +859,7 @@ alice=friend
 </wsdl:definitions>
 ----
 
-[[stss-implementation-class]]
+[[stss-implementation-class-saml-bearer]]
 === STS's implementation class
 
 The Apache CXF's STS, SecurityTokenServiceProvider, is a web service
@@ -985,7 +985,7 @@ public class SampleSTSBearer extends SecurityTokenServiceProvider
 }
 ----
 
-[[stsbearercallbackhandler]]
+[[stsbearercallbackhandler-saml-bearer]]
 === STSBearerCallbackHandler
 
 STSBearerCallbackHandler is a callback handler for the WSS4J Crypto API.
@@ -1019,7 +1019,7 @@ public class STSBearerCallbackHandler extends PasswordCallbackHandler
 }
 ----
 
-[[crypto-properties-and-keystore-files-1]]
+[[crypto-properties-and-keystore-files-saml-bearer-1]]
 === Crypto properties and keystore files
 
 WSS4J's Crypto implementation is loaded and configured via a Java
@@ -1034,13 +1034,13 @@ self signed certificates for myservicekey and mystskey. _Self signed
 certificates are not appropriate for production use._
 
 ....
-org.apache.ws.security.crypto.provider=org.apache.ws.security.components.crypto.Merlin  
+org.apache.ws.security.crypto.provider=org.apache.ws.security.components.crypto.Merlin
 org.apache.ws.security.crypto.merlin.keystore.type=jks
 org.apache.ws.security.crypto.merlin.keystore.password=stsspass
 org.apache.ws.security.crypto.merlin.keystore.file=stsstore.jks
 ....
 
-[[manifest.mf-1]]
+[[manifest-mf-saml-bearer-1]]
 === MANIFEST.MF
 
 When deployed on WildFly, this application requires access to the
@@ -1051,13 +1051,13 @@ configuration in the `SampleSTS` constructor. The dependency statement
 directs the server to provide them at deployment.
 
 ....
-Manifest-Version: 1.0  
-Ant-Version: Apache Ant 1.8.2  
-Created-By: 1.7.0_25-b15 (Oracle Corporation)  
+Manifest-Version: 1.0
+Ant-Version: Apache Ant 1.8.2
+Created-By: 1.7.0_25-b15 (Oracle Corporation)
 Dependencies: org.jboss.ws.cxf.jbossws-cxf-client,org.apache.cxf.impl
 ....
 
-[[web-service-requester]]
+[[web-service-requester-saml-bearer]]
 == Web service requester
 
 This section examines the crucial elements in calling a web service that
@@ -1068,7 +1068,7 @@ The components that will be discussed are.
 * ClientCallbackHandler
 * Crypto properties and keystore files
 
-[[web-service-requester-implementation]]
+[[web-service-requester-implementation-saml-bearer]]
 === Web service requester Implementation
 
 The ws-requester, the client, uses standard procedures for creating a
@@ -1127,7 +1127,7 @@ ActAs and OnBehalfOf examples.
   proxy.sayHello();
 ----
 
-[[clientcallbackhandler]]
+[[clientcallbackhandler-saml-bearer]]
 === ClientCallbackHandler
 
 https://docs.jboss.org/author/display/JBWS/WS-Trust+and+STS#WS-TrustandSTS-ClientCallbackHandler
@@ -1176,7 +1176,7 @@ public class ClientCallbackHandler implements CallbackHandler {
 }
 ----
 
-[[crypto-properties-and-keystore-files-2]]
+[[crypto-properties-and-keystore-files-saml-bearer-2]]
 === Crypto properties and keystore files
 
 https://docs.jboss.org/author/display/JBWS/WS-Trust+and+STS#WS-TrustandSTS-RequesterCryptopropertiesandkeystorefiles

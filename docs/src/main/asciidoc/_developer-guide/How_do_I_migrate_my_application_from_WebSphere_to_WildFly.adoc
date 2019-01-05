@@ -10,10 +10,10 @@ WildFly.
 Feel free to add content in any way you prefer. You do not need to
 follow the template below. This is a work in progress.
 
-[[introduction]]
+[[introduction-websphere-migration]]
 == Introduction
 
-[[about-this-guide]]
+[[about-this-guide-websphere-migration]]
 === About this Guide
 
 The purpose of this document is to guide you through the planning

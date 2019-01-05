@@ -250,7 +250,7 @@ public class ServiceImpl implements ServiceIface {
 }
 ----
 
-[[examples]]
+[[examples-ws-security]]
 == Examples
 
 In this section some sample of WS-Security service endpoints and clients
@@ -268,7 +268,7 @@ requirements and choosing the most suitable security policy for them.
 [[signature-and-encryption]]
 === Signature and encryption
 
-[[endpoint]]
+[[endpoint-ws-security]]
 ==== Endpoint
 
 First of all you need to create the web service endpoint using JAX-WS.
@@ -579,7 +579,7 @@ Created-By: 17.0-b16 (Sun Microsystems Inc.)
 Dependencies: org.apache.ws.security
 ....
 
-[[client]]
+[[client-ws-security]]
 ==== Client
 
 You start by consuming the published WSDL contract using the _wsconsume_
@@ -672,7 +672,7 @@ So, here follows an example of WS-SecurityPolicy endpoint using Username
 Token Profile for authenticating through the application server security
 domain system.
 
-[[endpoint-1]]
+[[endpoint-ws-security-1]]
 ==== Endpoint
 
 As in the other example, we start with a wsdl contract containing the
@@ -963,7 +963,7 @@ Created-By: 17.0-b16 (Sun Microsystems Inc.)
 Dependencies: org.apache.ws.security,org.apache.cxf
 ....
 
-[[client-1]]
+[[client-ws-security-1]]
 ==== Client
 
 Here too you start by consuming the published WSDL contract using the

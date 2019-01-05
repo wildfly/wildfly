@@ -444,7 +444,7 @@ properties. Whole set is included in all server startup parameters.
 
 Example:
 
-[source, java]
+[source]
 ----
 ./integration-tests.sh clean install -Dintegration.module -DallTests \
 \"-Dsecurity.manager.other=-Djava.security.manager \
@@ -491,7 +491,7 @@ done using `jacoco:report` Ant task in `maven-ant-plugin` since JaCoCo's
 maven report goal doesn't support getting classes outside
 target/classes.
 
-[[usage]]
+[[usage-integration-testsuite]]
 ==== Usage
 
 [source, bash]
@@ -523,7 +523,7 @@ To have most stable build process, it should start with:
 
 To use , you may use these commands:
 
-[source, java]
+[source]
 ----
 mvn clean install -DskipTests -DallTests  ## ...to clean all testsuite modules.
 mvn dependency:purge-local-repository build-helper:remove-project-artifact -Dbuildhelper.removeAll

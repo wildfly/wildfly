@@ -13,6 +13,7 @@ The logging subsystem includes 4 types of handlers:
 * <<xml-formatter>>
 * <<custom-formatter>>
 
+[[json-formatter]]
 == JSON Formatter
 
 A formatter used to format log messages in JSON.
@@ -30,6 +31,7 @@ A formatter used to format log messages in JSON.
 meta-data=[@version=1])
 ----
 
+[[pattern-formatter]]
 == Pattern Formatter
 
 A formatter used to format log messages in plain text. The following table describes the format characters for the
@@ -292,6 +294,7 @@ You can also modify the format by placing the optional format modifier between t
 /subsystem=logging/pattern-formatter=DEFAULT:add(color-map="info:cyan,warn:brightyellow,error:brightred,debug:magenta", pattern="%K{level}%d{yyyy-MM-dd'T'HH:mm:ssSSSXXX} %-5p [%c] (%t) %s%e%n")
 ----
 
+[[xml-formatter]]
 == XML Formatter
 
 A formatter used to format log messages in XML.

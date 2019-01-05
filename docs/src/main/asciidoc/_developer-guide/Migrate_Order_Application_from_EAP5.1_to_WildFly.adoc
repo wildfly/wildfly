@@ -15,7 +15,7 @@ In addition to application code changes, modifications were made to the
 way the EAR was packaged. This is because WildFly removed support of
 some proprietary features that were available in EAP 5.1.
 
-[[summary-of-changes]]
+[[summary-of-changes-migrate-order-application]]
 == Summary of changes
 
 [[code-changes]]
@@ -243,7 +243,7 @@ Class-Path: OrderManagerEJB.jar
 The `Class-Path` entry tells the application to look in the
 `OrderManagerEJB.jar` file for the injected beans.
 
-[[summary]]
+[[summary-migrate-order-application]]
 === Summary
 
 Although the existing EAR structure could have worked with additional

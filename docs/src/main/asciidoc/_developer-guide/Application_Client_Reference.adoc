@@ -54,7 +54,7 @@ jboss-ejb-client.properties file rather than a host:
 ./appclient.sh --ejb-client-properties=my-jboss-ejb-client.properties myear.ear#appClient.jar arg1
 ----
 
-[[example]]
+[[example-application-client-reference]]
 == Example
 
 A simple example how to package an application client and use it with

@@ -204,7 +204,7 @@ is to add a dependency to the module containing the handler class in one
 of the modules which are already automatically set as dependencies to
 any deployment, for instance `org.jboss.ws.spi`.
 
-[[examples]]
+[[examples-predefined-endpoint]]
 ===== Examples
 
 .JBoss AS 7.2 default configurations

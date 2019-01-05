@@ -60,7 +60,7 @@ When restarting the server, any existing
 folder within the `standalone_xml_history`, and a new `current` folder
 is created. These timestamped folders are kept for 30 days.
 
-[[snapshots]]
+[[snapshots-file-history]]
 == Snapshots
 
 In addition to the backups taken by the server as described above you

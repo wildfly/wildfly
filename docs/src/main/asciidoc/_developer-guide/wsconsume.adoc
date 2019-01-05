@@ -40,7 +40,7 @@ will need to manually add the wsdlLocation to the @WebService annotation
 on your web service implementation and not the service endpoint
 interface.
 
-[[examples]]
+[[examples-wsconsume]]
 === Examples
 
 Generate artifacts in Java class form only:
@@ -73,7 +73,7 @@ Generate source and class files using multiple binding files:
 wsconsume -k -b wsdl-binding.xml -b schema1-binding.xml -b schema2-binding.xml
 ....
 
-[[maven-plugin]]
+[[maven-plugin-wsconsume]]
 == Maven Plugin
 
 The wsconsume tools is included in the
@@ -131,7 +131,7 @@ etc.Example<argLine>-Djava.endorsed.dirs=...</argLine> |none
 the underlying stack and endorsed dirs if any
 |=======================================================================
 
-[[examples-1]]
+[[examples-wsconsume-1]]
 === Examples
 
 You can use _wsconsume_ in your own project build simply referencing the
@@ -258,7 +258,7 @@ _JBossWS_ stack dependency to avoid that.
 Up to version 1.1.2.Final, the _artifactId_ of the plugin was
 *maven-jaxws-tools-plugin*.
 
-[[ant-task]]
+[[ant-task-wsconsume]]
 == Ant Task
 
 The _wsconsume_ Ant task ( _org.jboss.ws.tools.ant.WSConsumeTask_) has
@@ -323,7 +323,7 @@ Also, the following nested elements are supported:
 |jvmarg |Allows setting of custom jvm arguments | 
 |=================================================
 
-[[examples-2]]
+[[examples-wsconsume-2]]
 === Examples
 
 Generate JAX-WS source and classes in a separate JVM with separate

@@ -31,13 +31,13 @@ are available in the
 http://cxf.apache.org/docs/wsrmconfiguration.html[Apache CXF
 documentation].
 
-[[example]]
+[[example-ws-reliable-messaging]]
 == Example
 
 In this example we configure WS-Reliable Messaging endpoint and client
 through the WS-Policy support.
 
-[[endpoint]]
+[[endpoint-ws-reliable-messaging]]
 === Endpoint
 
 We go with a contract-first approach, so we start by creating a proper
@@ -174,7 +174,7 @@ web.xml the usual way and deploy to the application server. The
 webservices stack automatically detects the policies and enables
 WS-Reliable Messaging.
 
-[[client]]
+[[client-ws-reliable-messaging]]
 === Client
 
 The endpoint advertises his RM capabilities (and requirements) through

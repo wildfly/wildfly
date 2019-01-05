@@ -327,13 +327,13 @@ or
 /subsystem=datasources/data-source=ExampleDS:read-resource(include-runtime=true,recursive=true)
 ----
 
-[[deployment]]
+[[cli_deployment]]
 == Deployment
 
 [[cli-deployment-command]]
 === CLI _deployment_ command
 
-In addition to the legacy _deploy_, _undeploy_ and _deployment-info_ commands, 
+In addition to the legacy _deploy_, _undeploy_ and _deployment-info_ commands,
 that stay un-changed, the CLI offers a _deployment_ command that properly
 separates the various use cases encountered when managing deployments. This command
 offers a simpler interface and should be the way to go when managing deployments.
@@ -580,58 +580,58 @@ description of the command.
 
 * _security enable-sasl-management_: To enable SASL authentication (elytron SASL factory) for the
 management interfaces. Calling this command without any option will have the
-effect to associate the out of the box SASL factory to the http-interface. 
+effect to associate the out of the box SASL factory to the http-interface.
 Type _help security enable-sasl-management_ for a complete description of the command.
 
-This command supports a subset of SASL mechanisms such as: EXTERNAL, DIGEST-MD5, 
-JBOSS-LOCAL-USER, SCRAM-*, ... The CLI completer proposes the set of mechanisms that 
-can be properly configured using this command. Each mechanism can be associated 
+This command supports a subset of SASL mechanisms such as: EXTERNAL, DIGEST-MD5,
+JBOSS-LOCAL-USER, SCRAM-*, ... The CLI completer proposes the set of mechanisms that
+can be properly configured using this command. Each mechanism can be associated
 to a property file realm, a file-system realm or a trust-store realm according to its nature.
 
 NB: Once the command is executed, the CLI will reload the server and reconnect to it.
 
 * _security disable-sasl-management_: To disable SASL for the
-management interfaces. If a mechanism is provided, this mechanism will be removed 
-from the factory, the factory will stay associated to the interface. Without mechanism, the 
-factory is no more active on the management interface. Type _help security disable-sasl-management_ 
+management interfaces. If a mechanism is provided, this mechanism will be removed
+from the factory, the factory will stay associated to the interface. Without mechanism, the
+factory is no more active on the management interface. Type _help security disable-sasl-management_
 for a complete description of the command.
 
 * _security reorder-sasl-management_: To re-order the list of SASL mechanisms present
-in the factory. Order of mechanisms is of importance, the first in the list is sent to the client. 
+in the factory. Order of mechanisms is of importance, the first in the list is sent to the client.
 Type _help security reorder-sasl-management_ for a complete description of the command.
 
 * _security enable-http-auth-management_: To enable HTTP authentication (elytron HTTP factory) for the
 management http-interface. Calling this command without any option will have the
-effect to associate the out of the box HTTP Authentication factory to the http-interface. 
+effect to associate the out of the box HTTP Authentication factory to the http-interface.
 Type _help security enable-http-auth-management_ for a complete description of the command.
 
-This command supports a subset of HTTP mechanisms such as: BASIC, CLIENT_CERT, DIGEST, ... 
-The CLI completer proposes the set of mechanisms that can be properly configured 
-using this command. Each mechanism can be associated to a property file realm, 
+This command supports a subset of HTTP mechanisms such as: BASIC, CLIENT_CERT, DIGEST, ...
+The CLI completer proposes the set of mechanisms that can be properly configured
+using this command. Each mechanism can be associated to a property file realm,
 a file-system realm or a trust-store realm according to its nature.
 
 NB: Once the command is executed, the CLI will reload the server and reconnect to it.
 
 * _security disable-http-auth-management_: To disable HTTP Authentication for the
-http management interface. If a mechanism is provided, this mechanism will be removed 
-from the factory, the factory will stay associated to the interface. Without mechanism, the 
-factory is no more active on the management interface. Type _help security disable-http-auth-management_ 
+http management interface. If a mechanism is provided, this mechanism will be removed
+from the factory, the factory will stay associated to the interface. Without mechanism, the
+factory is no more active on the management interface. Type _help security disable-http-auth-management_
 for a complete description of the command.
 
 * _security enable-http-auth-http-server_: To enable HTTP authentication (elytron HTTP factory) for the
 given undertow security domain.
 Type _help security enable-http-auth-http-server_ for a complete description of the command.
 
-This command supports a subset of HTTP mechanisms such as: BASIC, CLIENT_CERT, DIGEST, ... 
-The CLI completer proposes the set of mechanisms that can be properly configured 
-using this command. Each mechanism can be associated to a property file realm, 
+This command supports a subset of HTTP mechanisms such as: BASIC, CLIENT_CERT, DIGEST, ...
+The CLI completer proposes the set of mechanisms that can be properly configured
+using this command. Each mechanism can be associated to a property file realm,
 a file-system realm or a trust-store realm according to its nature.
 
 NB: Once the command is executed, the CLI will reload the server and reconnect to it.
 
 * _security disable-http-auth-http-server_: To disable HTTP Authentication for the
-given undertow security domain. If a mechanism is provided, this mechanism will be removed 
-from the factory, the factory will stay associated to the security domain. Without mechanism, the 
-factory is no more active on the security-domain. Type _help security disable-http-auth-http-server_ 
+given undertow security domain. If a mechanism is provided, this mechanism will be removed
+from the factory, the factory will stay associated to the security domain. Without mechanism, the
+factory is no more active on the security-domain. Type _help security disable-http-auth-http-server_
 for a complete description of the command.
 

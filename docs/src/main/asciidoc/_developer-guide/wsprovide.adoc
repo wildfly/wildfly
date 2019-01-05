@@ -6,7 +6,7 @@ generates portable JAX-WS artifacts for a service endpoint
 implementation. It also has the option to "provide" the abstract
 contract for offline usage.
 
-[[command-line-tool]]
+[[command-line-tool-wsprovide]]
 == Command Line Tool
 
 The command line tool has the following usage:
@@ -27,7 +27,7 @@ options:
   -t, --show-traces           Show full exception stack traces
 ....
 
-[[examples]]
+[[examples-wsprovide]]
 === Examples
 
 Generating wrapper classes for portable artifacts in the "generated"
@@ -49,7 +49,7 @@ Using an endpoint that references other jars
 wsprovide -o generated -c application1.jar:application2.jar foo.Endpoint
 ....
 
-[[maven-plugin]]
+[[maven-plugin-wsprovide]]
 == Maven Plugin
 
 The _wsprovide_ tools is included in the
@@ -90,7 +90,7 @@ be added to classpath
 |endpointClass |Service Endpoint Implementation. | 
 |=======================================================================
 
-[[examples-1]]
+[[examples-wsprovide-1]]
 === Examples
 
 You can use _wsprovide_ in your own project build simply referencing the
@@ -183,7 +183,7 @@ _JBossWS_ stack dependency to avoid that.
 Up to version 1.1.2.Final, the _artifactId_ of the plugin was
 *maven-jaxws-tools-plugin*.
 
-[[ant-task]]
+[[ant-task-wsprovide]]
 == Ant Task
 
 The wsprovide ant task ( _org.jboss.ws.tools.ant.WSProvideTask_) has the
@@ -219,7 +219,7 @@ following attributes:
 implementation. |"."
 |=======================================================================
 
-[[examples-2]]
+[[examples-wsprovide-2]]
 === Examples
 
 Executing wsprovide in verbose mode with separate output directories for
