@@ -54,16 +54,21 @@ public class EarOpenTracingWithWeldProbeTestCase extends AbstractEarOpenTracingT
         + "<param-value>true</param-value>\n</context-param>\n"
         + "</web-app>";
 
+    private static String WELD_PROPERTIES = "org.jboss.weld.probe.allowRemoteAddress=" + System.getProperty("node0")
+            + "|127.0.0.1|::1|::1%.+|0:0:0:0:0:0:0:1|0:0:0:0:0:0:0:1%.";
+
     @Deployment
     public static Archive<?> deploy() {
         WebArchive serviceOne = ShrinkWrap.create(WebArchive.class, "ServiceOne.war")
             .addClass(TracerIdentityApplication.class)
             .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
-            .addAsWebInfResource(new StringAsset(DEVEL_MODE_STRING), "web.xml");
+            .addAsWebInfResource(new StringAsset(DEVEL_MODE_STRING), "web.xml")
+            .addAsResource(new StringAsset(WELD_PROPERTIES), "weld.properties");
         WebArchive serviceTwo = ShrinkWrap.create(WebArchive.class, "ServiceTwo.war")
             .addClass(TracerIdentityApplication.class)
             .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
-            .addAsWebInfResource(new StringAsset(DEVEL_MODE_STRING), "web.xml");
+            .addAsWebInfResource(new StringAsset(DEVEL_MODE_STRING), "web.xml")
+            .addAsResource(new StringAsset(WELD_PROPERTIES), "weld.properties");
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "EarOpenTracingTestCase.ear")
             .addAsModules(serviceOne, serviceTwo);
         return ear;
