@@ -35,6 +35,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRI
 import static org.jboss.shrinkwrap.api.ArchivePaths.create;
 
 import java.io.IOException;
+import java.net.SocketPermission;
 
 import javax.ejb.EJB;
 import javax.jms.JMSException;
@@ -46,6 +47,7 @@ import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.test.integration.security.common.VaultHandler;
+import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -141,6 +143,8 @@ public class JMSResourceDefinitionsTestCase {
                 .addPackage(MessagingBean.class.getPackage())
                 .addAsManifestResource(
                         MessagingBean.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml")
+                .addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
+                        new SocketPermission("localhost", "resolve")), "permissions.xml")
                 .addAsManifestResource(
                         EmptyAsset.INSTANCE,
                         create("beans.xml"));
