@@ -12,9 +12,11 @@ import org.jboss.as.test.clustering.cluster.provider.bean.ServiceProviderRetriev
 import org.jboss.as.test.clustering.cluster.provider.bean.ServiceProviderRetrieverBean;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -38,6 +40,12 @@ public class ServiceProviderRegistrationTestCase extends AbstractClusteringTestC
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
         ejbJar.addPackage(ServiceProviderRetriever.class.getPackage());
         return ejbJar;
+    }
+
+    @BeforeClass
+    public static void skipSecurityManager() {
+        // TODO  this should be removed when WFLY-11539 (Infinispan upgrade) is merged
+        AssumeTestGroupUtil.assumeSecurityManagerDisabled();
     }
 
     @Test

@@ -42,6 +42,7 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.clustering.CLIServerSetupTask;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -118,6 +119,8 @@ public class XSiteSimpleTestCase extends AbstractClusteringTestCase {
 
     @BeforeClass
     public static void beforeClass() {
+        // TODO  this should be removed when WFLY-11539 (Infinispan upgrade) is merged
+        AssumeTestGroupUtil.assumeSecurityManagerDisabled();
         AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
             Assume.assumeFalse("Disable on Windows+IPv6 until CI environment is fixed", Util.checkForWindows() && (Util.getIpStackType() == StackType.IPv6));
             return null;
