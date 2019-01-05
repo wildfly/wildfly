@@ -34,9 +34,11 @@ import org.jboss.as.test.integration.jpa.hibernate.Employee;
 import org.jboss.as.test.integration.jpa.hibernate.SFSB1;
 import org.jboss.as.test.integration.jpa.hibernate.SFSBHibernateSession;
 import org.jboss.as.test.integration.jpa.hibernate.SFSBHibernateSessionFactory;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -63,6 +65,12 @@ public class ClassFileTransformerTestCase {
         );
         jar.addAsManifestResource(ClassFileTransformerTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
         return jar;
+    }
+
+    @BeforeClass
+    public static void skipSecurityManager() {
+        // See WFLY-11359
+        AssumeTestGroupUtil.assumeSecurityManagerDisabled();
     }
 
     @ArquillianResource
