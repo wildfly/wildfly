@@ -40,9 +40,11 @@ import org.jboss.as.test.integration.security.common.config.SecurityModule;
 import org.jboss.as.test.integration.security.common.ejb3.Hello;
 import org.jboss.as.test.integration.security.common.ejb3.HelloBean;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -70,6 +72,11 @@ public class EjbXACMLAuthorizationModuleTestCase {
     @Deployment
     public static JavaArchive deploymentCustomXACMLAuthz() throws IllegalArgumentException, IOException {
         return createJar("test-custom-xacml.jar", SecurityDomain.DEFAULT_NAME);
+    }
+
+    @BeforeClass
+    public static void skipSecurityManager() {
+        AssumeTestGroupUtil.assumeSecurityManagerDisabled();
     }
 
     /**
