@@ -42,6 +42,7 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.management.ManagementOperations;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
@@ -109,6 +110,7 @@ public class RemoteLocalCallProfileTestCase {
 
     @BeforeClass
     public static void printSysProps() {
+        AssumeTestGroupUtil.assumeSecurityManagerDisabled();
         log.trace("System properties:\n" + System.getProperties());
     }
 
