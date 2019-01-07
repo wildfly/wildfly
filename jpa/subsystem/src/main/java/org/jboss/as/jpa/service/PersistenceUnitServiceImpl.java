@@ -250,18 +250,23 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                                 }
                                 try {
                                     if (entityManagerFactory != null) {
-                                        WritableServiceBasedNamingStore.pushOwner(deploymentUnitServiceName);
-                                        try {
-                                            if (entityManagerFactory.isOpen()) {
-                                                entityManagerFactory.close();
+                                        // protect against race condition reported by WFLY-11563
+                                        synchronized (this) {
+                                            if (entityManagerFactory != null) {
+                                                WritableServiceBasedNamingStore.pushOwner(deploymentUnitServiceName);
+                                                try {
+                                                    if (entityManagerFactory.isOpen()) {
+                                                        entityManagerFactory.close();
+                                                    }
+                                                } catch (Throwable t) {
+                                                    ROOT_LOGGER.failedToStopPUService(t, pu.getScopedPersistenceUnitName());
+                                                } finally {
+                                                    entityManagerFactory = null;
+                                                    pu.setTempClassLoaderFactory(null);
+                                                    WritableServiceBasedNamingStore.popOwner();
+                                                    persistenceUnitRegistry.remove(getScopedPersistenceUnitName());
+                                                }
                                             }
-                                        } catch (Throwable t) {
-                                            ROOT_LOGGER.failedToStopPUService(t, pu.getScopedPersistenceUnitName());
-                                        } finally {
-                                            entityManagerFactory = null;
-                                            pu.setTempClassLoaderFactory(null);
-                                            WritableServiceBasedNamingStore.popOwner();
-                                            persistenceUnitRegistry.remove(getScopedPersistenceUnitName());
                                         }
                                     }
                                 } finally {
@@ -271,8 +276,12 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                                     }
                                 }
                                 if (proxyBeanManager != null) {
-                                    proxyBeanManager.setDelegate(null);
-                                    proxyBeanManager = null;
+                                    synchronized (this) {
+                                        if (proxyBeanManager != null) {
+                                            proxyBeanManager.setDelegate(null);
+                                            proxyBeanManager = null;
+                                        }
+                                    }
                                 }
                                 context.complete();
                                 return null;
