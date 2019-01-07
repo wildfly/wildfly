@@ -34,6 +34,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -41,6 +42,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.test.integration.microprofile.config.smallrye.AbstractMicroProfileConfigTestCase;
 import org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.CustomConfigSource;
 import org.wildfly.test.integration.microprofile.config.smallrye.AssertUtils;
 
@@ -52,13 +54,15 @@ import org.wildfly.test.integration.microprofile.config.smallrye.AssertUtils;
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup(SetupTask.class)
-public class ConfigSourceProviderFromClassTestCase {
+public class ConfigSourceProviderFromClassTestCase extends AbstractMicroProfileConfigTestCase {
 
     @Deployment
     public static Archive<?> deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "ConfigSourceProviderFromClassTestCase.war")
-                .addClasses(TestApplication.class, TestApplication.Resource.class)
-                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+                .addClasses(TestApplication.class, TestApplication.Resource.class, AbstractMicroProfileConfigTestCase.class)
+                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
+                .addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
+                        createPermissions(CustomConfigSource.PROP_NAME)),"permissions.xml");
         return war;
     }
 

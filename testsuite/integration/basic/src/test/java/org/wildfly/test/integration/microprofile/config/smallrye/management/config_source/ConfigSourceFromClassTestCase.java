@@ -34,6 +34,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -41,6 +42,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.test.integration.microprofile.config.smallrye.AbstractMicroProfileConfigTestCase;
 import org.wildfly.test.integration.microprofile.config.smallrye.AssertUtils;
 
 /**
@@ -51,15 +53,20 @@ import org.wildfly.test.integration.microprofile.config.smallrye.AssertUtils;
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup(SetupTask.class)
-public class ConfigSourceFromClassTestCase {
+public class ConfigSourceFromClassTestCase extends AbstractMicroProfileConfigTestCase {
 
     @Deployment
     public static Archive<?> deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "ConfigSourceFromClassTestCase.war")
-                .addClasses(TestApplication.class, TestApplication.Resource.class)
+                .addClasses(TestApplication.class, TestApplication.Resource.class, AbstractMicroProfileConfigTestCase.class)
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
                 .addAsWebInfResource(ConfigSourceFromClassTestCase.class.getPackage(), "jboss-deployment-structure.xml",
-                        "jboss-deployment-structure.xml");
+                        "jboss-deployment-structure.xml")
+                .addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(createPermissions(
+                        CustomConfigSource.PROP_NAME,
+                        CustomConfigSource.PROP_NAME_OVERRIDEN_BY_SERVICE_LOADER,
+                        CustomConfigSourceServiceLoader.PROP_NAME
+                )), "permissions.xml");
         return war;
     }
 
