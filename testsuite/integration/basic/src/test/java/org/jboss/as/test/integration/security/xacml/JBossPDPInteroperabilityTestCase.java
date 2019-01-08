@@ -40,6 +40,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.text.StrSubstitutor;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.logging.Logger;
 import org.jboss.security.xacml.core.JBossPDP;
 import org.jboss.security.xacml.core.model.context.ActionType;
@@ -63,6 +64,7 @@ import org.jboss.shrinkwrap.api.ArchivePaths;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -103,6 +105,11 @@ public class JBossPDPInteroperabilityTestCase {
                 + "/med-example-request.xml");
 
         return jar;
+    }
+
+    @BeforeClass
+    public static void skipSecurityManager() {
+        AssumeTestGroupUtil.assumeSecurityManagerDisabled();
     }
 
     /**

@@ -33,6 +33,7 @@ import javax.sql.DataSource;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -81,6 +82,8 @@ public class HibernateSecondLevelCacheTestCase {
 
     @BeforeClass
     public static void beforeClass() throws NamingException {
+        // TODO This can be re-looked at once HHH-13188 is resolved. This may require further changes in Hibernate.
+        AssumeTestGroupUtil.assumeSecurityManagerDisabled();
         iniCtx = new InitialContext();
     }
 

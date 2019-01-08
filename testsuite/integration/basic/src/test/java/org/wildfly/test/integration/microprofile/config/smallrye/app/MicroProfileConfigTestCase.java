@@ -25,15 +25,10 @@ package org.wildfly.test.integration.microprofile.config.smallrye.app;
 import static org.wildfly.test.integration.microprofile.config.smallrye.AssertUtils.assertTextContainsProperty;
 
 import java.net.URL;
-import java.security.Permission;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.Locale;
 import java.util.Optional;
-import java.util.PropertyPermission;
 import java.util.Set;
 
 import org.apache.http.HttpResponse;
@@ -54,6 +49,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.test.integration.microprofile.config.smallrye.AbstractMicroProfileConfigTestCase;
 import org.wildfly.test.integration.microprofile.config.smallrye.SubsystemConfigSourceTask;
 
 /**
@@ -63,16 +59,16 @@ import org.wildfly.test.integration.microprofile.config.smallrye.SubsystemConfig
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup(SubsystemConfigSourceTask.class)
-public class MicroProfileConfigTestCase {
+public class MicroProfileConfigTestCase extends AbstractMicroProfileConfigTestCase {
 
     @Deployment
     public static Archive<?> deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "MicroProfileConfigTestCase.war")
-                .addClasses(TestApplication.class)
+                .addClasses(TestApplication.class, AbstractMicroProfileConfigTestCase.class)
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
                 .addAsManifestResource(MicroProfileConfigTestCase.class.getPackage(),
                         "microprofile-config.properties", "microprofile-config.properties")
-                .addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(createEnvPermission(
+                .addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(createPermissions(
                         "my.prop",
                         "my.other.prop",
                         SubsystemConfigSourceTask.MY_PROP_FROM_SUBSYSTEM_PROP_NAME,
@@ -365,17 +361,5 @@ public class MicroProfileConfigTestCase {
             // not defined anywhere...
             assertTextContainsProperty(text, SubsystemConfigSourceTask.PROPERTIES_PROP_NAME5, "Custom file property not defined!");
         }
-    }
-
-    private static Permission[] createEnvPermission(final String... names) {
-        final Collection<Permission> permissions = new ArrayList<>(names.length * 2);
-        for (String name : names) {
-            permissions.add(new PropertyPermission(name, "read"));
-            permissions.add(new RuntimePermission("getenv." + name));
-            permissions.add(new RuntimePermission("getenv." + name.replace('.', '_')));
-            permissions.add(new RuntimePermission("getenv." + name.toUpperCase(Locale.ROOT)));
-            permissions.add(new RuntimePermission("getenv." + name.replace('.', '_').toUpperCase(Locale.ROOT)));
-        }
-        return permissions.toArray(new Permission[0]);
     }
 }
