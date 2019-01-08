@@ -91,13 +91,15 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
 
     @Override
     public <K, V> Cache<K, V> getCache(String cacheName, boolean createIfAbsent) {
-        return this.wrap(this.cm.<K, V>getCache(cacheName, createIfAbsent));
+        Cache<K, V> cache = this.cm.<K, V>getCache(cacheName, createIfAbsent);
+        return (cache != null) ? this.wrap(cache) : null;
     }
 
     @Deprecated
     @Override
     public <K, V> Cache<K, V> getCache(String cacheName, String configurationTemplate, boolean createIfAbsent) {
-        return this.wrap(this.cm.<K, V>getCache(cacheName, configurationTemplate, createIfAbsent));
+        Cache<K, V> cache = this.cm.<K, V>getCache(cacheName, configurationTemplate, createIfAbsent);
+        return (cache != null) ? this.wrap(cache) : null;
     }
 
     private <K, V> Cache<K, V> wrap(Cache<K, V> cache) {
