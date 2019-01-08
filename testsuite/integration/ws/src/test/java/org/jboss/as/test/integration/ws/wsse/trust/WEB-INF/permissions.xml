@@ -19,6 +19,16 @@
         <actions>read</actions>
     </permission>
     <permission>
+        <class-name>java.util.PropertyPermission</class-name>
+        <name>java.net.preferIPv4Stack</name>
+        <actions>read</actions>
+    </permission>
+    <permission>
+        <class-name>java.util.PropertyPermission</class-name>
+        <name>java.net.preferIPv6Addresses</name>
+        <actions>read</actions>
+    </permission>
+    <permission>
         <class-name>java.lang.RuntimePermission</class-name>
         <name>createClassLoader</name>
     </permission>
