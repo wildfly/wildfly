@@ -101,7 +101,7 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
     }
 
     private <K, V> Cache<K, V> wrap(Cache<K, V> cache) {
-        return new DefaultCache<>(this, cache.getAdvancedCache());
+        return cache == null ? null : new DefaultCache<>(this, cache.getAdvancedCache());
     }
 
     @Override

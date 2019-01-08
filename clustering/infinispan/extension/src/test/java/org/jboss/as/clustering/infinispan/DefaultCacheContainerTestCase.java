@@ -24,6 +24,7 @@ package org.jboss.as.clustering.infinispan;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -128,6 +129,15 @@ public class DefaultCacheContainerTestCase {
         assertNotSame(cache, result);
         assertEquals(result, cache);
         assertSame(this.subject, result.getCacheManager());
+    }
+
+    @Test
+    public void getCacheNotFound() {
+        when(this.manager.getCache("dummy")).thenReturn(null);
+
+        Cache<Object, Object> result = this.subject.getCache("dummy");
+
+        assertNull(result);
     }
 
     @Test
