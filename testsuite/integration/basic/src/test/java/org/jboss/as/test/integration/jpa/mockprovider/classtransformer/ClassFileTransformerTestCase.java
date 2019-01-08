@@ -34,11 +34,13 @@ import javax.naming.InitialContext;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -95,6 +97,13 @@ public class ClassFileTransformerTestCase {
                         "   \n" +
                         "</ejb-jar>");
     }
+
+    @BeforeClass
+    public static void skipSecurityManager() {
+        // See WFLY-11359
+        AssumeTestGroupUtil.assumeSecurityManagerDisabled();
+    }
+
 
     @ArquillianResource
     private InitialContext iniCtx;
