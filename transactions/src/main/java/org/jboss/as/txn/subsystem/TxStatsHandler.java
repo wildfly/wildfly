@@ -23,6 +23,8 @@
 package org.jboss.as.txn.subsystem;
 
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.NANOSECONDS;
+import static org.jboss.as.controller.registry.AttributeAccess.Flag.COUNTER_METRIC;
+import static org.jboss.as.controller.registry.AttributeAccess.Flag.GAUGE_METRIC;
 
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -49,16 +51,16 @@ public class TxStatsHandler extends AbstractRuntimeOnlyHandler {
 
     public enum TxStat {
 
-        NUMBER_OF_TRANSACTIONS(SimpleAttributeDefinitionBuilder.create(CommonAttributes.NUMBER_OF_TRANSACTIONS, ModelType.LONG, true).build()),
-        NUMBER_OF_NESTED_TRANSACTIONS(SimpleAttributeDefinitionBuilder.create(CommonAttributes.NUMBER_OF_NESTED_TRANSACTIONS, ModelType.LONG, true).build()),
-        NUMBER_OF_HEURISTICS(SimpleAttributeDefinitionBuilder.create(CommonAttributes.NUMBER_OF_HEURISTICS, ModelType.LONG, true).build()),
-        NUMBER_OF_COMMITTED_TRANSACTIONS(SimpleAttributeDefinitionBuilder.create(CommonAttributes.NUMBER_OF_COMMITTED_TRANSACTIONS, ModelType.LONG, true).build()),
-        NUMBER_OF_ABORTED_TRANSACTIONS(SimpleAttributeDefinitionBuilder.create(CommonAttributes.NUMBER_OF_ABORTED_TRANSACTIONS, ModelType.LONG, true).build()),
-        NUMBER_OF_INFLIGHT_TRANSACTIONS(SimpleAttributeDefinitionBuilder.create(CommonAttributes.NUMBER_OF_INFLIGHT_TRANSACTIONS, ModelType.LONG, true).build()),
-        NUMBER_OF_TIMED_OUT_TRANSACTIONS(SimpleAttributeDefinitionBuilder.create(CommonAttributes.NUMBER_OF_TIMED_OUT_TRANSACTIONS, ModelType.LONG, true).build()),
-        NUMBER_OF_APPLICATION_ROLLBACKS(SimpleAttributeDefinitionBuilder.create(CommonAttributes.NUMBER_OF_APPLICATION_ROLLBACKS, ModelType.LONG, true).build()),
-        NUMBER_OF_RESOURCE_ROLLBACKS(SimpleAttributeDefinitionBuilder.create(CommonAttributes.NUMBER_OF_RESOURCE_ROLLBACKS, ModelType.LONG, true).build()),
-        NUMBER_OF_SYSTEM_ROLLBACKS(SimpleAttributeDefinitionBuilder.create(CommonAttributes.NUMBER_OF_SYSTEM_ROLLBACKS, ModelType.LONG, true).build()),
+        NUMBER_OF_TRANSACTIONS(SimpleAttributeDefinitionBuilder.create(CommonAttributes.NUMBER_OF_TRANSACTIONS, ModelType.LONG, true).setFlags(COUNTER_METRIC).build()),
+        NUMBER_OF_NESTED_TRANSACTIONS(SimpleAttributeDefinitionBuilder.create(CommonAttributes.NUMBER_OF_NESTED_TRANSACTIONS, ModelType.LONG, true).setFlags(COUNTER_METRIC).build()),
+        NUMBER_OF_HEURISTICS(SimpleAttributeDefinitionBuilder.create(CommonAttributes.NUMBER_OF_HEURISTICS, ModelType.LONG, true).setFlags(COUNTER_METRIC).build()),
+        NUMBER_OF_COMMITTED_TRANSACTIONS(SimpleAttributeDefinitionBuilder.create(CommonAttributes.NUMBER_OF_COMMITTED_TRANSACTIONS, ModelType.LONG, true).setFlags(COUNTER_METRIC).build()),
+        NUMBER_OF_ABORTED_TRANSACTIONS(SimpleAttributeDefinitionBuilder.create(CommonAttributes.NUMBER_OF_ABORTED_TRANSACTIONS, ModelType.LONG, true).setFlags(COUNTER_METRIC).build()),
+        NUMBER_OF_INFLIGHT_TRANSACTIONS(SimpleAttributeDefinitionBuilder.create(CommonAttributes.NUMBER_OF_INFLIGHT_TRANSACTIONS, ModelType.LONG, true).setFlags(GAUGE_METRIC).build()),
+        NUMBER_OF_TIMED_OUT_TRANSACTIONS(SimpleAttributeDefinitionBuilder.create(CommonAttributes.NUMBER_OF_TIMED_OUT_TRANSACTIONS, ModelType.LONG, true).setFlags(COUNTER_METRIC).build()),
+        NUMBER_OF_APPLICATION_ROLLBACKS(SimpleAttributeDefinitionBuilder.create(CommonAttributes.NUMBER_OF_APPLICATION_ROLLBACKS, ModelType.LONG, true).setFlags(COUNTER_METRIC).build()),
+        NUMBER_OF_RESOURCE_ROLLBACKS(SimpleAttributeDefinitionBuilder.create(CommonAttributes.NUMBER_OF_RESOURCE_ROLLBACKS, ModelType.LONG, true).setFlags(COUNTER_METRIC).build()),
+        NUMBER_OF_SYSTEM_ROLLBACKS(SimpleAttributeDefinitionBuilder.create(CommonAttributes.NUMBER_OF_SYSTEM_ROLLBACKS, ModelType.LONG, true).setFlags(COUNTER_METRIC).build()),
         AVERAGE_COMMIT_TIME(SimpleAttributeDefinitionBuilder.create(CommonAttributes.AVERAGE_COMMIT_TIME, ModelType.LONG, true)
                 .setMeasurementUnit(NANOSECONDS)
                 .build());
