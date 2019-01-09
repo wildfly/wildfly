@@ -25,6 +25,7 @@ package org.wildfly.extension.messaging.activemq;
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.BYTES;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECONDS;
+import static org.jboss.as.controller.registry.AttributeAccess.Flag.COUNTER_METRIC;
 import static org.jboss.as.controller.registry.AttributeAccess.Flag.RESTART_ALL_SERVICES;
 import static org.jboss.dmr.ModelType.BOOLEAN;
 import static org.jboss.dmr.ModelType.DOUBLE;
@@ -234,6 +235,7 @@ public interface CommonAttributes {
     AttributeDefinition MESSAGES_ADDED = create("messages-added", LONG)
             .setStorageRuntime()
             .setUndefinedMetricValue(new ModelNode(0))
+            .setFlags(COUNTER_METRIC)
             .build();
 
     /**
