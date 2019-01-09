@@ -199,7 +199,7 @@ public class MicroProfileMetricsApplicationTestCase {
     }
 
     private void checkRequestCount(int expectedCount, boolean deploymentMetricMustExist) throws IOException {
-        String prometheusMetricName = "wildfly_undertow_request_count";
+        String prometheusMetricName = "wildfly_undertow_request_count_total";
 
         String metrics = getPrometheusMetrics(managementClient, "", true);
         for (String line : metrics.split("\\R")) {

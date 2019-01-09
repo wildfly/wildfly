@@ -25,8 +25,9 @@ import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import io.prometheus.client.Collector;
+import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.CollectorRegistry;
+import io.prometheus.client.CounterMetricFamily;
 import io.prometheus.client.GaugeMetricFamily;
 import org.jboss.as.controller.LocalModelControllerClient;
 import org.jboss.as.controller.PathAddress;
@@ -101,10 +102,16 @@ public class MetricCollector {
             }
             PathAddress resourceAddress = resourceAddressResolver.apply(address);
             MeasurementUnit unit = attributeAccess.getAttributeDefinition().getMeasurementUnit();
-            MetricMetadata metricMetadata = new MetricMetadata(attributeName, resourceAddress, unit, globalPrefix);
+            boolean counter = attributeAccess.getFlags().contains(AttributeAccess.Flag.COUNTER_METRIC);
+            MetricMetadata metricMetadata = new MetricMetadata(attributeName, resourceAddress, unit, globalPrefix, counter);
             String attributeDescription = resourceDescription.get(ATTRIBUTES, attributeName, DESCRIPTION).asStringOrNull();
-            GaugeMetricFamily gaugeMetricFamily = new GaugeMetricFamily(metricMetadata.metricName, attributeDescription, metricMetadata.labelNames);
-            Supplier<Optional<Collector.MetricFamilySamples.Sample>> sampleSupplier = () -> {
+            final MetricFamilySamples metricFamilySamples;
+            if (counter) {
+                metricFamilySamples = new CounterMetricFamily(metricMetadata.metricName, attributeDescription, metricMetadata.labelNames);
+            } else {
+                metricFamilySamples = new GaugeMetricFamily(metricMetadata.metricName, attributeDescription, metricMetadata.labelNames);
+            }
+            Supplier<Optional<MetricFamilySamples.Sample>> sampleSupplier = () -> {
                 final ModelNode readAttributeOp = new ModelNode();
                 readAttributeOp.get(OP).set(READ_ATTRIBUTE_OPERATION);
                 readAttributeOp.get(OP_ADDR).set(resourceAddress.toModelNode());
@@ -120,14 +127,14 @@ public class MetricCollector {
                     try {
                         double initialValue = result.asDouble();
                         double scaledValue = UnitConverter.scaleToBase(initialValue, unit);
-                        return Optional.of(new Collector.MetricFamilySamples.Sample(metricMetadata.metricName, metricMetadata.labelNames, metricMetadata.labelValues, scaledValue));
+                        return Optional.of(new MetricFamilySamples.Sample(metricMetadata.metricName, metricMetadata.labelNames, metricMetadata.labelValues, scaledValue));
                     } catch (Exception e) {
                         throw LOGGER.unableToConvertAttribute(attributeName, address, e);
                     }
                 }
                 return Optional.empty();
             };
-            prometheusCollector.addMetricFamilySampleSupplier(gaugeMetricFamily, sampleSupplier);
+            prometheusCollector.addMetricFamilySampleSupplier(metricFamilySamples, sampleSupplier);
             registration.addUnregistrationTask(() -> prometheusCollector.removeMetricFamilySampleSupplier(metricMetadata.metricName, sampleSupplier));
         }
 
@@ -179,10 +186,16 @@ public class MetricCollector {
                 DescriptionProvider modelDescription = managementResourceRegistration.getModelDescription(address);
                 resourceDescription = modelDescription.getModelDescription(Locale.getDefault());
             }
-            MetricMetadata metricMetadata = new MetricMetadata(attributeName, address, attributeAccess.getAttributeDefinition().getMeasurementUnit(), globalPrefix);
+            boolean counter = attributeAccess.getFlags().contains(AttributeAccess.Flag.COUNTER_METRIC);
+            MetricMetadata metricMetadata = new MetricMetadata(attributeName, address, attributeAccess.getAttributeDefinition().getMeasurementUnit(), globalPrefix, counter);
             String attributeDescription = resourceDescription.get(ATTRIBUTES, attributeName, DESCRIPTION).asStringOrNull();
-            GaugeMetricFamily gaugeMetricFamily = new GaugeMetricFamily(metricMetadata.metricName, attributeDescription, metricMetadata.labelNames);
-            collector.addMetricFamilySamples(gaugeMetricFamily);
+            final MetricFamilySamples metricFamilySamples;
+            if (counter) {
+                metricFamilySamples = new CounterMetricFamily(metricMetadata.metricName, attributeDescription, metricMetadata.labelNames);
+            } else {
+                metricFamilySamples = new GaugeMetricFamily(metricMetadata.metricName, attributeDescription, metricMetadata.labelNames);
+            }
+            collector.addMetricFamilySamples(metricFamilySamples);
         }
 
         for (PathElement childAddress : managementResourceRegistration.getChildAddresses(address)) {
@@ -237,7 +250,7 @@ public class MetricCollector {
         private final List<String> labelNames;
         private final List<String> labelValues;
 
-        MetricMetadata(String attributeName, PathAddress address, MeasurementUnit unit, String globalPrefix) {
+        MetricMetadata(String attributeName, PathAddress address, MeasurementUnit unit, String globalPrefix, boolean counter) {
             String metricPrefix = "";
             labelNames = new ArrayList<>();
             labelValues = new ArrayList<>();
@@ -249,7 +262,7 @@ public class MetricCollector {
                     metricPrefix += value + "_";
                     continue;
                 }
-                labelNames.add(getPrometheusMetricName(key, null));
+                labelNames.add(getPrometheusMetricName(key, null, false));
                 labelValues.add(value);
             }
             // if the resource address defines a deployment (without subdeployment),
@@ -260,13 +273,14 @@ public class MetricCollector {
             if (globalPrefix != null && !globalPrefix.isEmpty()) {
                 metricPrefix = globalPrefix + "_" + metricPrefix;
             }
-            metricName = getPrometheusMetricName(metricPrefix + attributeName, unit);
+            metricName = getPrometheusMetricName(metricPrefix + attributeName, unit, counter);
         }
 
-        private static String getPrometheusMetricName(String name, MeasurementUnit unit) {
-            String out = (name + unitSuffix(unit)).replaceAll("[^\\w]+","_");
-            out = decamelize(out);
-            return out;
+        private static String getPrometheusMetricName(String name, MeasurementUnit unit, boolean counter) {
+            String prometheusName = name + unitSuffix(unit) + (counter ? "_total" : "");
+            prometheusName =prometheusName.replaceAll("[^\\w]+","_");
+            prometheusName = decamelize(prometheusName);
+            return prometheusName;
         }
 
 

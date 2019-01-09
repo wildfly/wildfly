@@ -10,7 +10,6 @@ import java.util.function.Supplier;
 
 import io.prometheus.client.Collector;
 import io.prometheus.client.Collector.MetricFamilySamples.Sample;
-import io.prometheus.client.GaugeMetricFamily;
 
 public class PrometheusCollector extends Collector implements Collector.Describable {
 
@@ -26,7 +25,7 @@ public class PrometheusCollector extends Collector implements Collector.Describa
         }
     }
 
-    void addMetricFamilySampleSupplier(GaugeMetricFamily mfs, Supplier<Optional<Sample>> sampleSupplier) {
+    void addMetricFamilySampleSupplier(MetricFamilySamples mfs, Supplier<Optional<Sample>> sampleSupplier) {
         if (!metricNames.containsKey(mfs.name)) {
             addMetricFamilySamples(mfs);
         }
