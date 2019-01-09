@@ -41,6 +41,9 @@ public class TestEntityManagerFactory implements InvocationHandler {
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 
         invocations.add(method.getName());
+        if (method.getName().equals("isOpen")) {
+            return false;
+        }
         return null;
 
     }
