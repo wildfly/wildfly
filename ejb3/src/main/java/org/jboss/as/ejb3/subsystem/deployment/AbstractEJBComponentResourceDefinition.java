@@ -58,12 +58,12 @@ public abstract class AbstractEJBComponentResourceDefinition extends SimpleResou
 
     private static final AttributeDefinition EXECUTION_TIME = new SimpleAttributeDefinitionBuilder("execution-time", ModelType.LONG)
             .setUndefinedMetricValue(new ModelNode(0))
-            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
+            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME, AttributeAccess.Flag.COUNTER_METRIC)
             .build();
 
     private static final AttributeDefinition INVOCATIONS = new SimpleAttributeDefinitionBuilder("invocations", ModelType.LONG)
             .setUndefinedMetricValue(new ModelNode(0))
-            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
+            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME, AttributeAccess.Flag.COUNTER_METRIC)
             .build();
 
     private static final AttributeDefinition PEAK_CONCURRENT_INVOCATIONS = new SimpleAttributeDefinitionBuilder("peak-concurrent-invocations", ModelType.LONG)
@@ -77,7 +77,7 @@ public abstract class AbstractEJBComponentResourceDefinition extends SimpleResou
 
     private static final AttributeDefinition WAIT_TIME = new SimpleAttributeDefinitionBuilder("wait-time", ModelType.LONG)
             .setUndefinedMetricValue(new ModelNode(0))
-            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
+            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME, AttributeAccess.Flag.COUNTER_METRIC)
             .build();
 
     private static final AttributeDefinition METHODS = ObjectTypeAttributeDefinition.Builder.of("methods", EXECUTION_TIME, INVOCATIONS, WAIT_TIME)
@@ -118,13 +118,13 @@ public abstract class AbstractEJBComponentResourceDefinition extends SimpleResou
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
             .build();
     public static final SimpleAttributeDefinition POOL_CREATE_COUNT = new SimpleAttributeDefinitionBuilder("pool-create-count", ModelType.INT, false)
-            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME).build();
+            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME, AttributeAccess.Flag.COUNTER_METRIC).build();
     public static final SimpleAttributeDefinition POOL_CURRENT_SIZE = new SimpleAttributeDefinitionBuilder("pool-current-size", ModelType.INT, false)
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME).build();
     public static final SimpleAttributeDefinition POOL_NAME = new SimpleAttributeDefinitionBuilder("pool-name", ModelType.STRING, true)
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME).build();
     public static final SimpleAttributeDefinition POOL_REMOVE_COUNT = new SimpleAttributeDefinitionBuilder("pool-remove-count", ModelType.INT, false)
-            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME).build();
+            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME, AttributeAccess.Flag.COUNTER_METRIC).build();
     public static final SimpleAttributeDefinition POOL_MAX_SIZE = new SimpleAttributeDefinitionBuilder("pool-max-size", ModelType.INT, false)
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME).build();
 
