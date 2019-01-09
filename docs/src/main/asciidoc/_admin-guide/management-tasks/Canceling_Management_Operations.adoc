@@ -13,7 +13,7 @@ it.
 
 On a standalone server:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /core-service=management/service=management-operations:cancel-non-progressing-operation
 {
@@ -28,7 +28,7 @@ that was cancelled.
 On a managed domain host controller, the equivalent resource is in the
 host=<hostname> portion of the management resource tree:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [domain@localhost:9990 /] /host=host-a/core-service=management/service=management-operations:cancel-non-progressing-operation
 {
@@ -40,7 +40,7 @@ host=<hostname> portion of the management resource tree:
 An operation can be cancelled on an individual managed domain server as
 well:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [domain@localhost:9990 /] /host=host-a/server=server-one/core-service=management/service=management-operations:cancel-non-progressing-operation
 {
@@ -59,7 +59,7 @@ will also not be cancelled.
 If there isn't any operation that is failing to proceed normally, there
 will be a failure response:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /core-service=management/service=management-operations:cancel-non-progressing-operation
 {
@@ -75,7 +75,7 @@ will be a failure response:
 To simply learn the id of an operation that isn't proceeding normally,
 but not cancel it, use the `find-non-progressing-operation` operation:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /core-service=management/service=management-operations:find-non-progressing-operation
 {
@@ -96,7 +96,7 @@ operation can be examined to learn more about its status.
 There is a management resource for any currently executing operation
 that can be queried:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /core-service=management/service=management-operations/active-operation=-1155777943:read-resource(include-runtime=true)
 {
@@ -169,7 +169,7 @@ container and is waiting for the service container to stabilize
 All currently executing operations can be viewed in one request using
 the `read-children-resources` operation:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /core-service=management/service=management-operations:read-children-resources(child-type=active-operation)
 {
@@ -211,7 +211,7 @@ administrator can examine the active-operation resources to identify any
 operation, and then directly cancel it by invoking the `cancel`
 operation on the resource for the desired operation.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /core-service=management/service=management-operations/active-operation=-1155777943:cancel
 {
@@ -239,7 +239,7 @@ operation by using the `blocking-timeout` operation header. For example,
 if a particular deployment is known to take an extremely long time to
 deploy, the default 300 second timeout could be increased:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] deploy /tmp/mega.war --headers={blocking-timeout=450}
 ----

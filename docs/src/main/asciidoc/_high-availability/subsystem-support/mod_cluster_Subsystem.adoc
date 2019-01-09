@@ -12,7 +12,7 @@ The mod_cluster integration is done via the `mod_cluster` subsystem.
 The instance-id or JVMRoute defaults to `jboss.node.name` property passed
 on server startup (e.g. via `-Djboss.node.name=XYZ`).
 
-[source]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /subsystem=undertow/:read-attribute(name=instance-id)
 {
@@ -24,7 +24,7 @@ on server startup (e.g. via `-Djboss.node.name=XYZ`).
 To configure instance-id statically, configure the corresponding
 property in Undertow subsystem:
 
-[source]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /subsystem=undertow/:write-attribute(name=instance-id,value=myroute)
 {
@@ -44,7 +44,7 @@ specify a static list of proxies, create a remote-socket-binding for
 each proxy and then reference them in the 'proxies' attribute. See the
 following example for configuration in the domain mode:
 
-[source]
+[source,options="nowrap"]
 ----
 [domain@localhost:9990 /] /socket-binding-group=ha-sockets/remote-destination-outbound-socket-binding=proxy1:add(host=10.21.152.86, port=6666)
 {
@@ -81,7 +81,7 @@ different groups of proxy servers.
 See the following example which adds another Undertow AJP listener, server and a host and adds a new mod_cluster configuration
 which registers this host using advertise mechanism.
 
-[source]
+[source,options="nowrap"]
 ----
 /socket-binding-group=standard-sockets/socket-binding=ajp-other:add(port=8010)
 /subsystem=undertow/server=other-server:add
@@ -101,7 +101,7 @@ reload
 
 The modcluster subsystem supports several operations:
 
-[source]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /subsystem=modcluster/proxy=default:read-operation-names
 {
@@ -155,7 +155,7 @@ There are 2 operations that display how Apache httpd sees the node:
 Send a DUMP message to all Apache httpd the node is connected to and
 display the message received from Apache httpd.
 
-[source]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /subsystem=modcluster/proxy=default:read-proxies-configuration
 {
@@ -189,7 +189,7 @@ context: 2 [/myapp] vhost: 1 node: 1 status: 1
 Send a INFO message to all Apache httpd the node is connected to and
 display the message received from Apache httpd.
 
-[source]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /subsystem=modcluster/proxy=default:read-proxies-info
 {
@@ -227,7 +227,7 @@ Apache httpd the node is connected to.
 Displays the httpd that are connected to the node. The httpd could be
 discovered via the Advertise protocol or via the proxy-list attribute.
 
-[source]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 subsystem=modcluster] :list-proxies
 {
@@ -245,7 +245,7 @@ discovered via the Advertise protocol or via the proxy-list attribute.
 Remove a proxy from the discovered proxies or temporarily from the
 proxy-list attribute.
 
-[source]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 subsystem=modcluster] :remove-proxy(host=jfcpc, port=6666)
 {"outcome" => "success"}
@@ -257,7 +257,7 @@ proxy-list attribute.
 Add a proxy to the discovered proxies or temporarily to the proxy-list
 attribute.
 
-[source]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 subsystem=modcluster] :add-proxy(host=jfcpc, port=6666)
 {"outcome" => "success"}
@@ -274,7 +274,7 @@ They are send automatically when deploying or undeploying webapps.
 
 Tell Apache httpd that the context is ready receive requests.
 
-[source]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /subsystem=modcluster/proxy=default:enable-context(context=/myapp, virtualhost=default-host)
 {"outcome" => "success"}
@@ -286,7 +286,7 @@ Tell Apache httpd that the context is ready receive requests.
 Tell Apache httpd that it shouldn't send new session requests to the
 context of the virtualhost.
 
-[source]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /subsystem=modcluster/proxy=default:disable-context(context=/myapp, virtualhost=default-host)
 {"outcome" => "success"}
@@ -298,7 +298,7 @@ context of the virtualhost.
 Tell Apache httpd that it shouldn't send requests to the context of the
 virtualhost.
 
-[source]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /subsystem=modcluster/proxy=default:stop-context(context=/myapp, virtualhost=default-host, waittime=50)
 {"outcome" => "success"}
@@ -330,7 +330,7 @@ There are 4 metric operations corresponding to add and remove load
 metrics to the dynamic-load-provider. Note that when nothing is defined
 a simple-load-provider is use with a fixed load factor of one.
 
-[source]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /subsystem=modcluster/proxy=default:read-resource(name=mod-cluster-config)
 {
@@ -341,7 +341,7 @@ a simple-load-provider is use with a fixed load factor of one.
 
 that corresponds to the following configuration:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:modcluster:1.0">
             <mod-cluster-config>
@@ -356,7 +356,7 @@ that corresponds to the following configuration:
 Add a metric to the dynamic-load-provider, the dynamic-load-provider in
 configuration is created if needed.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /subsystem=modcluster/proxy=default:add-metric(type=cpu)
 {"outcome" => "success"}
@@ -380,7 +380,7 @@ configuration is created if needed.
 
 Remove a metric from the dynamic-load-provider.
 
-[source]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /subsystem=modcluster/proxy=default:remove-metric(type=cpu)
 {"outcome" => "success"}
@@ -393,7 +393,7 @@ like the add-metric and remove-metric except they require a class
 parameter instead the type. Usually they needed additional properties
 which can be specified
 
-[source]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /subsystem=modcluster/proxy=default:add-custom-metric(class=myclass, property=[("pro1" => "value1"), ("pro2" => "value2")]
 {"outcome" => "success"}
@@ -401,7 +401,7 @@ which can be specified
 
 which corresponds the following in the xml configuration file:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:modcluster:1.0">
     <mod-cluster-config>

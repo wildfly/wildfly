@@ -9,7 +9,7 @@ Combined with `bind_port` / `port_range`, the protocol will then send a discover
 To reconfigure an existing server profile with `KUBE_PING` use the following CLI batch replacing the namespace,
 labels and stack name (`tcp`) with the target stack:
 
-[source]
+[source,options="nowrap"]
 ----
 batch
 /subsystem=jgroups/stack=tcp/protocol=MPING:remove()

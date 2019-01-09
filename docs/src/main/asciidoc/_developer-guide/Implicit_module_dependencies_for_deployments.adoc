@@ -40,7 +40,7 @@ which has the following class:
 
 .MySuperDuperBean.java
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 @Stateless
 public class MySuperDuperBean {

@@ -120,7 +120,7 @@ belongs to a different module (for instance referring that in the
 in place. Without that, your endpoints would simply be ignored as they
 won't appear as annotated classes to the webservices subsystem.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 Dependencies: org.foo annotations
 ----

@@ -15,7 +15,7 @@ within WildFly's distribution, is `docs/schema/jboss-as-naming_2_0.xsd`.
 Subsystem XML configuration example with all elements and attributes
 specified:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:naming:2.0">
     <bindings>

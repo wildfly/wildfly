@@ -23,7 +23,7 @@ containing the resource adapter. For example `jms-ra.rar`.
 
 For example:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 @MessageDriven(messageListenerInterface = PostmanPat.class)
 @ResourceAdapter("ejb3-rar.rar")
@@ -51,7 +51,7 @@ error.
 
 For example:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 @RunAs("admin")
 @RunAsPrincipal("MyBean")
@@ -75,7 +75,7 @@ used.
 
 For example:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 @SecurityDomain("other")
 ----
@@ -138,7 +138,7 @@ to EJB 3.1 FR 13.3.7.2.1.
 
 jboss-ejb3.xml
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <jboss:ejb-jar xmlns:jboss="http://www.jboss.com/xml/ns/javaee"
                xmlns="http://java.sun.com/xml/ns/javaee"
@@ -214,7 +214,7 @@ expiration possible, i.e. If you set a specific year.
 
 For example:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 @Schedule( ... dayOfMonth="1", month="1", year="2012") +
 // start once at 01-01-2012 00:00:00

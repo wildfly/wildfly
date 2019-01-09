@@ -19,7 +19,7 @@ application
 
 .  Build the EAR
 +
-[source]
+[source,options="nowrap"]
 ----
 cd /EAP5_HOME/jboss-eap5.1/seam/examples/booking
 ~/tools/apache-ant-1.8.2/bin/ant explode
@@ -27,7 +27,7 @@ cd /EAP5_HOME/jboss-eap5.1/seam/examples/booking
 
 . Copy the EAR to the JBOSS_HOME deployments directory:
 +
-[source]
+[source,options="nowrap"]
 ----
 cp -r EAP5_HOME/jboss-eap-5.1/seam/examples/booking/exploded-archives/jboss-seam-booking.ear AS7_HOME/standalone/deployments/
 cp -r EAP5_HOME/jboss-eap-5.1/seam/examples/booking/exploded-archives/jboss-seam-booking.war AS7_HOME/standalone/deployments/jboss-seam.ear
@@ -35,7 +35,7 @@ cp -r EAP5_HOME/jboss-eap-5.1/seam/examples/booking/exploded-archives/jboss-seam
 ----
 . Start the WildFly server and check the log. You will see:
 +
-[source]
+[source,options="nowrap"]
 ----
 INFO [org.jboss.as.deployment] (DeploymentScanner-threads - 1) Found jboss-seam-booking.ear in deployment directory. To trigger deployment create a file called jboss-seam-booking.ear.dodeploy
 ----
@@ -43,7 +43,7 @@ INFO [org.jboss.as.deployment] (DeploymentScanner-threads - 1) Found jboss-seam-
 and copy it into the deployments directory. In the log, you will now see
 the following, indicating that it is deploying:
 +
-[source]
+[source,options="nowrap"]
 ----
 INFO [org.jboss.as.server.deployment] (MSC service thread 1-1) Starting deployment of "jboss-seam-booking.ear"
 INFO [org.jboss.as.server.deployment] (MSC service thread 1-3) Starting deployment of "jboss-seam-booking.jar"
@@ -64,7 +64,7 @@ javax.faces.FacesException
 
 When you deploy the application, the log contains the following error:
 
-[source]
+[source,options="nowrap"]
 ----
 ERROR \[org.jboss.msc.service.fail\] (MSC service thread 1-1) MSC00001: Failed to start service jboss.deployment.subunit."jboss-seam-booking.ear"."jboss-seam-booking.war".POST_MODULE:
 org.jboss.msc.service.StartException in service jboss.deployment.subunit."jboss-seam-booking.ear"."jboss-seam-booking.war".POST_MODULE:
@@ -88,7 +88,7 @@ Find the module name for that class in the `AS7_HOME/modules` directory
 by looking for a path that matches the missing class. In this case, you
 will find 2 modules that match:
 
-[source]
+[source,options="nowrap"]
 ----
 javax/faces/api/main
 javax/faces/api/1.2
@@ -103,7 +103,7 @@ main, so we need to be able to specify one and exclude the other. To do
 this, we create a `jboss-deployment-structure.xml` file in the EAR
 `META-INF/` directory that contains the following data:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.0">
   <deployment>
@@ -137,7 +137,7 @@ org.apache.commons.logging.Log
 
 When you deploy the application, the log contains the following error:
 
-[source]
+[source,options="nowrap"]
 ----
 ERROR [org.jboss.msc.service.fail] (MSC service thread 1-8) MSC00001: Failed to start service jboss.deployment.unit."jboss-seam-booking.ear".INSTALL:
 org.jboss.msc.service.StartException in service jboss.deployment.unit."jboss-seam-booking.ear".INSTALL:
@@ -165,14 +165,14 @@ case, you will find one module that matches the path
 Modify the `jboss-deployment-structure.xml` to add the module dependency
 to the deployment section of the file.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <module name="org.apache.commons.logging" export="true"/>
 ----
 
 The `jboss-deployment-structure.xml` should now look like this:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.0">
   <deployment>
@@ -202,7 +202,7 @@ org.dom4j.DocumentException
 
 When you deploy the application, the log contains the following error:
 
-[source]
+[source,options="nowrap"]
 ----
 ERROR [org.apache.catalina.core.ContainerBase.[jboss.web].[default-host].[/seam-booking]] (MSC service thread 1-3) Exception sending context initialized event to listener instance of class org.jboss.seam.servlet.SeamListener: java.lang.NoClassDefFoundError: org/dom4j/DocumentException
     (... additional logs removed ...)
@@ -224,14 +224,14 @@ for the `org/dom4j/DocumentException`. The module name is "org.dom4j".
 Modify the `jboss-deployment-structure.xml` to add the module dependency
 to the deployment section of the file.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <module name="org.dom4j" export="true"/>
 ----
 
 The `jboss-deployment-structure.xml` file should now look like this:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.0">
   <deployment>
@@ -262,7 +262,7 @@ org.hibernate.validator.InvalidValue
 
 When you deploy the application, the log contains the following error:
 
-[source]
+[source,options="nowrap"]
 ----
 ERROR [org.apache.catalina.core.ContainerBase.[jboss.web].[default-host].[/seam-booking]] (MSC service thread 1-6) Exception sending context initialized event to listener instance of class org.jboss.seam.servlet.SeamListener: java.lang.RuntimeException: Could not create Component: org.jboss.seam.international.statusMessages
     (... additional logs removed ...)
@@ -288,7 +288,7 @@ deployment. We will look for the JAR that contains the missing class in
 the `EAP5_HOME/jboss-eap-5.1/seam/lib/` directory. To do this, open a
 console and type the following:
 
-[source]
+[source,options="nowrap"]
 ----
 cd EAP5_HOME/jboss-eap-5.1/seam/lib
 grep 'org.hibernate.validator.InvalidValue' `find . -name '*.jar'`
@@ -296,7 +296,7 @@ grep 'org.hibernate.validator.InvalidValue' `find . -name '*.jar'`
 +
 The result shows:
 +
-[source, java]
+[source,java,options="nowrap"]
 ----
 Binary file ./hibernate-validator.jar matches
 Binary file ./test/hibernate-all.jar matches
@@ -305,7 +305,7 @@ Binary file ./test/hibernate-all.jar matches
 In this case, we need to copy the `hibernate-validator.jar` to the
 `jboss-seam-booking.ear/lib/` directory:
 
-[source]
+[source,options="nowrap"]
 ----
 cp EAP5_HOME/jboss-eap-5.1/seam/lib/hibernate-validator.jar jboss-seam-booking.ear/lib
 ----
@@ -320,7 +320,7 @@ org.jboss.seam.jsf.SeamApplicationFactory
 
 When you deploy the application, the log contains the following error:
 
-[source]
+[source,options="nowrap"]
 ----
 INFO  [javax.enterprise.resource.webcontainer.jsf.config] (MSC service thread 1-7) Unsanitized stacktrace from failed start...: com.sun.faces.config.ConfigurationException: Factory 'javax.faces.application.ApplicationFactory' was not configured properly.
  at com.sun.faces.config.processor.FactoryConfigProcessor.verifyFactoriesExist(FactoryConfigProcessor.java:296) [jsf-impl-2.0.4-b09-jbossorg-4.jar:2.0.4-b09-jbossorg-4]
@@ -360,7 +360,7 @@ to the deployment section of the file. We also need to add it to the WAR
 subdeployment and exclude the JSF 2.0 module. The file should now look
 like this:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.0">
   <deployment>
@@ -394,7 +394,7 @@ org.apache.commons.collections.ArrayStack
 
 When you deploy the application, the log contains the following error:
 
-[source]
+[source,options="nowrap"]
 ----
 ERROR [org.apache.catalina.core.ContainerBase.[jboss.web].[default-host].[/seam-booking]] (MSC service thread 1-1) Exception sending context initialized event to listener instance of class com.sun.faces.config.ConfigureListener: java.lang.RuntimeException: com.sun.faces.config.ConfigurationException: CONFIGURATION FAILED! org.apache.commons.collections.ArrayStack from [Module "deployment.jboss-seam-booking.ear:main" from Service Module Loader]
     (... additional logs removed ...)
@@ -418,14 +418,14 @@ for the `org/apache/commons/collections` path. The module name is
 Modify the `jboss-deployment-structure.xml` to add the module dependency
 to the deployment section of the file.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <module name="org.apache.commons.collections" export="true"/>
 ----
 
 The `jboss-deployment-structure.xml` file should now look like this:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.0">
   <deployment>
@@ -459,7 +459,7 @@ a blank `jboss-seam-booking.ear.dodeploy file` in the same directory.
 
 When you deploy the application, the log contains the following error:
 
-[source]
+[source,options="nowrap"]
 ----
 ERROR [org.jboss.as.deployment] (DeploymentScanner-threads - 2) {"Composite operation failed and was rolled back. Steps that failed:" => {"Operation step-2" => {"Services with missing/unavailable dependencies" => ["jboss.deployment.subunit.\"jboss-seam-booking.ear\".\"jboss-seam-booking.jar\".component.AuthenticatorAction.START missing [ jboss.naming.context.java.comp.jboss-seam-booking.\"jboss-seam-booking.jar\".AuthenticatorAction.\"env/org.jboss.seam.example.booking.AuthenticatorAction/em\" ]","jboss.deployment.subunit.\"jboss-seam-booking.ear\".\"jboss-seam-booking.jar\".component.HotelSearchingAction.START missing [ jboss.naming.context.java.comp.jboss-seam-booking.\"jboss-seam-booking.jar\".HotelSearchingAction.\"env/org.jboss.seam.example.booking.HotelSearchingAction/em\" ]","
 <... additional logs removed ...>
@@ -474,7 +474,7 @@ look that the text within the brackets after "missing".
 
 In this case you see:
 
-[source]
+[source,options="nowrap"]
 ----
 missing [ jboss.naming.context.java.comp.jboss-seam-booking.\"jboss-seam-booking.jar\".AuthenticatorAction.\"env/org.jboss.seam.example.booking.AuthenticatorAction/em\" ]
 ----
@@ -495,7 +495,7 @@ that the jndi-name for the example database is
 Modify the `jboss-seam-booking.jar/META-INF/persistence.xml` file to
 comment the existing jta-data-source element and replace it as follows:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <!-- <jta-data-source>java:/bookingDatasource</jta-data-source> -->
 <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>
@@ -511,7 +511,7 @@ org.hibernate.cache.HashtableCacheProvider
 
 When you deploy the application, the log contains the following error:
 
-[source]
+[source,options="nowrap"]
 ----
 ERROR [org.jboss.msc.service.fail] (MSC service thread 1-4) MSC00001: Failed to start service jboss.persistenceunit."jboss-seam-booking.ear/jboss-seam-booking.jar#bookingDatabase": org.jboss.msc.service.StartException in service jboss.persistenceunit."jboss-seam-booking.ear/jboss-seam-booking.jar#bookingDatabase": Failed to start service
  at org.jboss.msc.service.ServiceControllerImpl$StartTask.run(ServiceControllerImpl.java:1786)
@@ -549,7 +549,7 @@ for the JAR that contains the missing class in the
 
 To do this, open a console and type the following:
 
-[source]
+[source,options="nowrap"]
 ----
 cd EAP5_HOME/jboss-eap-5.1/seam/lib
 grep 'org.hibernate.validator.InvalidValue' `find . -name '*.jar'`
@@ -557,7 +557,7 @@ grep 'org.hibernate.validator.InvalidValue' `find . -name '*.jar'`
 
 The result shows:
 
-[source]
+[source,options="nowrap"]
 ----
 Binary file ./hibernate-core.jar matches
 Binary file ./test/hibernate-all.jar matches
@@ -566,7 +566,7 @@ Binary file ./test/hibernate-all.jar matches
 In this case, we need to copy the `hibernate-core.jar` to the
 `jboss-seam-booking.ear/lib/` directory:
 
-[source]
+[source,options="nowrap"]
 ----
 cp EAP5_HOME/jboss-eap-5.1/seam/lib/hibernate-core.jar jboss-seam-booking.ear/lib
 ----
@@ -581,7 +581,7 @@ org.hibernate.cache.HashtableCacheProvider
 
 When you deploy the application, the log contains the following error:
 
-[source]
+[source,options="nowrap"]
 ----
 ERROR [org.jboss.msc.service.fail] (MSC service thread 1-2) MSC00001: Failed to start service jboss.persistenceunit."jboss-seam-booking.ear/jboss-seam-booking.jar#bookingDatabase": org.jboss.msc.service.StartException in service jboss.persistenceunit."jboss-seam-booking.ear/jboss-seam-booking.jar#bookingDatabase": Failed to start service
  at org.jboss.msc.service.ServiceControllerImpl$StartTask.run(ServiceControllerImpl.java:1786)
@@ -634,7 +634,7 @@ In WildFly, you need to comment out the hibernate.cache.provider_class
 property in the `jboss-seam-booking.jar/META-INF persistence.xml` file
 as follows:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <!-- <property name="hibernate.cache.provider_class" value="org.hibernate.cache.HashtableCacheProvider"/> -->
 ----
@@ -663,7 +663,7 @@ The application deploys successfully, but when you access the URL "
 http://localhost:8080/seam-booking/" in a browser, you get "The page
 isn't redirecting properly" and the log contains the following error:
 
-[source]
+[source,options="nowrap"]
 ----
 SEVERE [org.jboss.seam.jsf.SeamPhaseListener] (http--127.0.0.1-8080-1) swallowing exception: java.lang.IllegalStateException: Could not start transaction
  at org.jboss.seam.jsf.SeamPhaseListener.begin(SeamPhaseListener.java:598) [jboss-seam.jar:]
@@ -689,7 +689,7 @@ follow the new rules.
 To debug this, look earlier in the server log trace to what JNDI binding
 were used. Looking at the server log we see this:
 
-[source]
+[source,options="nowrap"]
 ----
 15:01:16,138 INFO  [org.jboss.as.ejb3.deployment.processors.EjbJndiBindingsDeploymentUnitProcessor] (MSC service thread 1-1) JNDI bindings for session bean named RegisterAction in deployment unit subdeployment "jboss-seam-booking.jar" of deployment "jboss-seam-booking.ear" are as follows:
  
@@ -770,7 +770,7 @@ bindings. In the log, note the EJB JNDI bindings all start with
 
 Replace the <core:init> element as follows:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <!--     <core:init jndi-pattern="jboss-seam-booking/#{ejbName}/local" debug="true" distributable="false"/> -->
 <core:init jndi-pattern="java:app/jboss-seam-booking.jar/#{ejbName}" debug="true" distributable="false"/>
@@ -779,7 +779,7 @@ Replace the <core:init> element as follows:
 Next, we need to add the EjbSynchronizations and TimerServiceDispatcher
 JNDI bindings. Add the following component elements to the file:
 +
-[source, java]
+[source,java,options="nowrap"]
 ----
 <component class="org.jboss.seam.transaction.EjbSynchronizations" jndi-name="java:app/jboss-seam/EjbSynchronizations"/>
 <component class="org.jboss.seam.async.TimerServiceDispatcher" jndi-name="java:app/jboss-seam/TimerServiceDispatcher"/>
@@ -787,7 +787,7 @@ JNDI bindings. Add the following component elements to the file:
 
 The components.xml file should now look like this:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 <components xmlns="http://jboss.com/products/seam/components"
@@ -848,7 +848,7 @@ migrating it to WildFly:
 `META-INF/` directory. We added "dependencies" and "exclusions" to
 resolve ClassNotFoundExceptions. This file contains the following data:
 +
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.0">
   <deployment>
@@ -878,7 +878,7 @@ resolve ClassNotFoundExceptions. This file contains the following data:
 `jboss-seam-booking.ear/lib/` directory to resolve
 ClassNotFoundExceptions:
 +
-[source]
+[source,options="nowrap"]
 ----
 hibernate-core.jar
 hibernate-validator.jar
@@ -889,14 +889,14 @@ file as follows.
 ..  First, we changed the jta-data-source element to use the Example
 database that ships with AS7:
 +
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <!-- <jta-data-source>java:/bookingDatasource</jta-data-source> -->
 <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>
 ----
 ..  Next, we commented out the hibernate.cache.provider_class property:
 +
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <!-- <property name="hibernate.cache.provider_class" value="org.hibernate.cache.HashtableCacheProvider"/> -->
 ----
@@ -904,7 +904,7 @@ database that ships with AS7:
 bindings
 ..  We replaced the <core:init> existing element as follows:
 +
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <!-- <core:init jndi-pattern="jboss-seam-booking/#{ejbName}/local" debug="true" distributable="false"/> -->
 <core:init jndi-pattern="java:app/jboss-seam-booking.jar/#{ejbName}" debug="true" distributable="false"/>
@@ -912,7 +912,7 @@ bindings
 ..  We added component elements for the "EjbSynchronizations" and
 "TimerServiceDispatcher" JNDI bindings
 +
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <component class="org.jboss.seam.transaction.EjbSynchronizations" jndi-name="java:app/jboss-seam/EjbSynchronizations"/>
 <component class="org.jboss.seam.async.TimerServiceDispatcher" jndi-name="java:app/jboss-seam/TimerServiceDispatcher"/>

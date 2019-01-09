@@ -16,7 +16,7 @@ files.
 A security domain can be defined in the legacy security subsystem using
 the following management operations: -
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 ./subsystem=security/security-domain=application-security:add
 ./subsystem=security/security-domain=application-security/authentication=classic:add(login-modules=[{code=UsersRoles, flag=Required, module-options={usersProperties=file://${jboss.server.config.dir}/example-users.properties, rolesProperties=file://${jboss.server.config.dir}/example-roles.properties}}])
@@ -24,7 +24,7 @@ the following management operations: -
 
 This would result in a security domain definition: -
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
   <security-domain name="application-security">
     <authentication>
@@ -52,14 +52,14 @@ These steps assume the original configuration is already in place.
 The first step is to add a mapping to an Elytron security realm within
 the legacy security subsystem.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 ./subsystem=security/elytron-realm=application-security:add(legacy-jaas-config=application-security)
 ----
 
 This results in the following configuration.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
   <subsystem xmlns="urn:jboss:domain:security:2.0">
     ...
@@ -76,7 +76,7 @@ Within the Elytron subsystem a security domain can be defined which
 references the exported security realm and also a http authentication
 factory which supports FORM based authentication.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 ./subsystem=elytron/security-domain=application-security:add(realms=[{realm=application-security}], default-realm=application-security, permission-mapper=default-permission-mapper)
 ./subsystem=elytron/http-authentication-factory=application-security-http:add(http-server-mechanism-factory=global, security-domain=application-security, mechanism-configurations=[{mechanism-name=FORM}])
@@ -84,7 +84,7 @@ factory which supports FORM based authentication.
 
 And the resulting configuration: -
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
   <subsystem xmlns="urn:wildfly:elytron:1.0" final-providers="combined-providers" disallowed-providers="OracleUcrypto">
     ...
@@ -112,14 +112,14 @@ Finally configuration needs to be added to the Undertow subsystem to map
 the security domain referenced by the deployment to the newly defined
 http authentication factory.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 ./subsystem=undertow/application-security-domain=application-security:add(http-authentication-factory=application-security-http)
 ----
 
 Which results in: -
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
   <subsystem xmlns="urn:jboss:domain:undertow:4.0">
     ...
@@ -137,7 +137,7 @@ the application security domain mapping to take effect._
 The following command can then be used to verify the mapping was applied
 to the deployment.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] ./subsystem=undertow/application-security-domain=application-security:read-resource(include-runtime=true)
 {
@@ -171,7 +171,7 @@ the legacy security subsystem that will remain completely independent.
 First a new security realm can be defined within the Elytron subsystem
 referencing the files referenced previously: -
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 ./subsystem=elytron/properties-realm=application-properties:add(users-properties={path=example-users.properties, relative-to=jboss.server.config.dir, plain-text=true, digest-realm-name="Application Security"}, groups-properties={path=example-roles.properties, relative-to=jboss.server.config.dir}, groups-attribute=Roles)
 ----
@@ -179,7 +179,7 @@ referencing the files referenced previously: -
 As before a security domain and http authentication factory can be
 defined.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 ./subsystem=elytron/security-domain=application-security:add(realms=[{realm=application-properties}], default-realm=application-properties, permission-mapper=default-permission-mapper)
 ./subsystem=elytron/http-authentication-factory=application-security-http:add(http-server-mechanism-factory=global, security-domain=application-security, mechanism-configurations=[{mechanism-name=FORM}])
@@ -187,7 +187,7 @@ defined.
 
 This results in the following overall configuration.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
   <subsystem xmlns="urn:wildfly:elytron:1.0" final-providers="combined-providers" disallowed-providers="OracleUcrypto">
     ...
@@ -222,14 +222,14 @@ As before the application-security-domain mapping should be added to the
 Undertow subsystem and the server reloaded or the deployment redeployed
 as required.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 ./subsystem=undertow/application-security-domain=application-security:add(http-authentication-factory=application-security-http)
 ----
 
 Which results in: -
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
   <subsystem xmlns="urn:jboss:domain:undertow:4.0">
     ...
@@ -252,7 +252,7 @@ configuration however now Elytron components are used exclusively.
 A legacy security realm can be defined using the following commands to
 load users passwords and group information from properties files.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 ./core-service=management/security-realm=ApplicationSecurity:add
 ./core-service=management/security-realm=ApplicationSecurity/authentication=properties:add(relative-to=jboss.server.config.dir, path=example-users.properties, plain-text=true)
@@ -261,7 +261,7 @@ load users passwords and group information from properties files.
 
 This results in the following realm definition.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
   <security-realm name="ApplicationSecurity">
     <authentication>
@@ -288,12 +288,12 @@ up until the http-authentication-factory is defined.
 A legacy security realm can also be used for SASL based authentication
 so a sasl-authentication-factory should also be defined.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 ./subsystem=elytron/sasl-authentication-factory=application-security-sasl:add(sasl-server-factory=elytron, security-domain=application-security, mechanism-configurations=[{mechanism-name=PLAIN}])
 ----
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
   <subsystem xmlns="urn:wildfly:elytron:1.0" final-providers="combined-providers" disallowed-providers="OracleUcrypto">
     ...
@@ -312,13 +312,13 @@ so a sasl-authentication-factory should also be defined.
 This can be associated with a Remoting connector to use for
 authentication and the existing security realm reference cleared.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 ./subsystem=remoting/http-connector=http-remoting-connector:write-attribute(name=sasl-authentication-factory, value=application-security-sasl)
 ./subsystem=remoting/http-connector=http-remoting-connector:undefine-attribute(name=security-realm)
 ----
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
   <subsystem xmlns="urn:jboss:domain:remoting:4.0">
     ...
@@ -331,14 +331,14 @@ interfaces more suitable names should be chosen but the following
 commands illustrate how to set the two authentication factories and
 clear the existing security realm reference.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 ./core-service=management/management-interface=http-interface:write-attribute(name=http-authentication-factory, value=application-security-http)
 ./core-service=management/management-interface=http-interface:write-attribute(name=http-upgrade.sasl-authentication-factory, value=application-security-sasl)
 ./core-service=management/management-interface=http-interface:undefine-attribute(name=security-realm)
 ----
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
   <management-interfaces>
     <http-interface http-authentication-factory="application-security-http">

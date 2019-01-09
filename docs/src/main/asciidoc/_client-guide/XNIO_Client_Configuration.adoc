@@ -5,7 +5,7 @@
 
 You can use the `worker` element, which is in the `urn:xnio:3.5` namespace, to configure a default XNIO worker using the `wildfly-config.xml` file. This section describes how to do this.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 
@@ -49,7 +49,7 @@ This element defines the name of the worker.  The worker name will appear in thr
 [cols=",",options="header"]
 |===
 | Attribute Name | Attribute Description
-| `value` | The worker's name (required). 
+| `value` | The worker's name (required).
 |===
 
 This element has no content.
@@ -61,7 +61,7 @@ This optional element defines the size parameters of the worker's task thread po
 [cols=",",options="header"]
 |===
 | Attribute Name | Attribute Description
-| `max-threads` | A positive integer which specifies the maximum number of threads that should be created (required). 
+| `max-threads` | A positive integer which specifies the maximum number of threads that should be created (required).
 |===
 
 === <task-keepalive />
@@ -71,7 +71,7 @@ This optional element establishes the keep-alive time of task threads before the
 [cols=",",options="header"]
 |===
 | Attribute Name | Attribute Description
-| `value` | A positive integer which represents the minimum number of seconds to keep idle threads alive (required). 
+| `value` | A positive integer which represents the minimum number of seconds to keep idle threads alive (required).
 |===
 
 === <io-threads />
@@ -91,7 +91,7 @@ This optional element establishes the desired minimum thread stack size for work
 [cols=",",options="header"]
 |===
 | Attribute Name | Attribute Description
-| `value` | A positive integer value which indicates the requested stack size, in bytes (required). 
+| `value` | A positive integer value which indicates the requested stack size, in bytes (required).
 |===
 
 === <outbound-bind-addresses />
@@ -107,5 +107,5 @@ This element defines an individual bind address mapping.
 | Attribute Name | Attribute Description
 | `match` | The IP address block in CIDR notation to match (required).
 | `bind-address` | The IP address to bind to if the address block matches (required).
-| `bind-port` | A specific port number to bind to if the address block matches (optional, defaults to 0 meaning "any port"). 
+| `bind-port` | A specific port number to bind to if the address block matches (optional, defaults to 0 meaning "any port").
 |===

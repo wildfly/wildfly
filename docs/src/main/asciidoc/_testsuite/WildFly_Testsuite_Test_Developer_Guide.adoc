@@ -20,7 +20,7 @@ https://docs.jboss.org/author/display/ARQ/JBoss+AS+7.1%2C+JBoss+EAP+6.0+-+Manage
 [[managementclient-and-modelnode-usage-example]]
 == ManagementClient and ModelNode usage example
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 final ModelNode operation = new ModelNode();
 operation.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.READ_RESOURCE_OPERATION);
@@ -40,7 +40,7 @@ ManagementClient can be obtained as described below.
 
 TBD
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 @ContainerResource private ManagementClient managementClient;
 final ModelNode result = managementClient.getControllerClient().execute(operation);
@@ -48,13 +48,13 @@ final ModelNode result = managementClient.getControllerClient().execute(operatio
 
 TBD
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 @ArquillianResource private ManagementClient managementClient;
 ModelControllerClient client = managementClient.getControllerClient();
 ----
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 @ArquillianResource ContainerController cc;
  
@@ -65,32 +65,32 @@ public void test() {
 }
 ----
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <arquillian>
     <container qualifier="test" mode="manual" />
 </arquillian>
 ----
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 // Targeted containers HTTP context.
 @ArquillianResource URL url;
 ----
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 // Targeted containers HTTP context where servlet is located.
 @ArquillianResource(SomeServlet.class) URL url;
 ----
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 // Targeted containers initial context.
 @ArquillianResource InitialContext|Context context;
 ----
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 // The manual deployer.
 @ArquillianResource Deployer deployer;
@@ -169,7 +169,7 @@ https://issues.jboss.org/browse/WFLY-673[WFLY-673].
 
 optionally you might be able to catch it using the manual deployer
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 @Deployment(name = "X", managed = false) ...
  
@@ -191,7 +191,7 @@ You need to deploy the same thing twice, so two deployment methods that
 just return the same thing. +
 And then you have tests that run against each.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 @Deployment(name = "deplA", testable = false)
     @TargetsContainer("serverB")

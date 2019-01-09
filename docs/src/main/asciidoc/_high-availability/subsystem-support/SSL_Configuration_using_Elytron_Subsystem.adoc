@@ -32,7 +32,7 @@ balancer's certificate
 To define a trust store in Elytron you can execute the following CLI
 command:
 
-[source]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /subsystem=elytron/key-store=default-trust-store:add(type=JKS, relative-to=jboss.server.config.dir, path=application.truststore, credential-reference={clear-text=password})
 ----
@@ -56,7 +56,7 @@ ROOT and Intermediary CAs.
 To define a trust manager in Elytron you can execute the following CLI
 command:
 
-[source]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /subsystem=elytron/trust-managers=default-trust-manager:add(algorithm=PKIX, key-store=default-trust-store)
 ----
@@ -71,7 +71,7 @@ Finally, you can create the Client SSL Context that is going to be used
 by the mod_cluster subsystem when connecting to the load balancer using
 SSL/TLS:
 
-[source]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /subsystem=elytron/client-ssl-context=modcluster-client-ssl-context:add(trust-managers=default-trust-manager)
 ----
@@ -79,14 +79,14 @@ SSL/TLS:
 Now that the Client `ssl-context` is defined you can configure
 mod_cluster subsystem as follows:
 
-[source]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /subsystem=modcluster/mod-cluster-config=configuration:write-attribute(name=ssl-context, value=modcluster-client-ssl-context)
 ----
 
 Once you execute the last command above, reload the server:
 
-[source]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] reload
 ----
@@ -98,7 +98,7 @@ In case you want to validate the load balancer certificate against a
 Certificate Revocation List (CRL), you can configure the `trust-manager`
 in Elytron subsystem as follows:
 
-[source]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /subsystem=elytron/trust-managers=default-trust-manager:write-attribute(name=certificate-revocation-list.path, value=intermediate.crl.pem)
 ----
@@ -111,7 +111,7 @@ A different way to configure a CRL is using the _Distribution Points_
 embedded in your certificates. For that, you need to configure a
 `certificate-revocation-list` as follows:
 
-[source]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/trust-managers=default-trust-manager:write-attribute(name=certificate-revocation-list)
 ----

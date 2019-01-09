@@ -24,7 +24,7 @@ of a standalone server's standalone.xml, or in a new "management"
 section in a managed domain's domain.xml. The access control policy is
 centrally configured in a managed domain.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <management>
     . . .
@@ -185,7 +185,7 @@ resource tree. Update the `provider` attribute to change between the
 "simple" and "rbac" providers. Any update requires a reload or restart
 to take effect.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] cd core-service=management/access=authorization
 [standalone@localhost:9990 access=authorization] :write-attribute(name=provider,value=rbac)
@@ -203,7 +203,7 @@ In a managed domain, the access control configuration is part of the
 domain wide configuration, so the resource address is the same as above,
 but the CLI is connected to the master Domain Controller:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [domain@localhost:9990 /] cd core-service=management/access=authorization
 [domain@localhost:9990 access=authorization] :write-attribute(name=provider,value=rbac)
@@ -265,7 +265,7 @@ First, if one does not exist, create the parent resource for all
 mappings for a role. Here we create the resource for the `Administrator`
 role.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [domain@localhost:9990 /] /core-service=management/access=authorization/role-mapping=Administrator:add
 {
@@ -280,7 +280,7 @@ role.
 
 Once this is done, map a user to the role:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [domain@localhost:9990 /] /core-service=management/access=authorization/role-mapping=Administrator/include=user-jsmith:add(name=jsmith,type=USER)
 {
@@ -302,7 +302,7 @@ To restrict the mapping to a particular security realm, change the
 realms are associated with different management interfaces, and the goal
 is to limit a user to a particular interface.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [domain@localhost:9990 /] /core-service=management/access=authorization/role-mapping=Administrator/include=user-mjones:add(name=mjones,type=USER,realm=ManagementRealm)
 {
@@ -348,7 +348,7 @@ The CLI can also be used to map groups to roles. The only difference to
 individual user mapping is the value of the `type` attribute should be
 `GROUP` instead of `USER`.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [domain@localhost:9990 /] /core-service=management/access=authorization/role-mapping=Administrator/include=group-SeniorAdmins:add(name=SeniorAdmins,type=GROUP)
 {
@@ -364,7 +364,7 @@ individual user mapping is the value of the `type` attribute should be
 As with individual user mappings, the mapping can be restricted to users
 authenticating via a particular security realm:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [domain@localhost:9990 /] /core-service=management/access=authorization/role-mapping=Administrator/include=group-PowerAdmins:add(name=PowerAdmins,type=GROUP,realm=ManagementRealm)
 {
@@ -398,7 +398,7 @@ image:images/includeall.png[images/includeall.png,width=450]
 
 The same change can be made using the CLI:
 
-[source, java]
+[source,options="nowrap"]
 ----
 [domain@localhost:9990 /] /core-service=management/access=authorization/role-mapping=Monitor:write-attribute(name=include-all,value=true)
 {
@@ -427,7 +427,7 @@ In the CLI, excludes are identical to includes, except the resource
 address has `exclude` instead of `include` as the key for the last
 address element:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [domain@localhost:9990 /] /core-service=management/access=authorization/role-mapping=Monitor/exclude=group-Temps:add(name=Temps,type=GROUP)
 {
@@ -449,7 +449,7 @@ permissions of the two roles. This behavior can be changed *on a global
 basis* to instead respond to the user request with an error if this
 situation is detected:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] cd core-service=management/access=authorization
 [standalone@localhost:9990 access=authorization] :write-attribute(name=permission-combination-policy,value=rejecting)
@@ -460,7 +460,7 @@ Note that no reload is required; the change takes immediate effect.
 
 To restore the default behavior, set the value to "permissive":
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] cd core-service=management/access=authorization
 [standalone@localhost:9990 access=authorization] :write-attribute(name=permission-combination-policy,value=permissive)
@@ -519,7 +519,7 @@ The easiest way to create a server-group scoped role is to
 <<using-the-admin-console-to-create-scoped-roles,use the admin console>>.
 But you can also use the CLI to create a server-group scoped role.
 
-[source, java]
+[source,options="nowrap"]
 ----
 [domain@localhost:9990 /] /core-service=management/access=authorization/server-group-scoped-role=MainGroupAdmins:add(base-role=Administrator,server-groups=[main-server-group])
 {
@@ -565,7 +565,7 @@ The easiest way to create a host-scoped role is to
 <<using-the-admin-console-to-create-scoped-roles,use the admin console>>.
 But you can also use the CLI to create a host scoped role.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [domain@localhost:9990 /] /core-service=management/access=authorization/host-scoped-role=MasterOperators:add(base-role=Operator,hosts=[master]}
 {
@@ -644,7 +644,7 @@ For example, there is a core classification called "socket-config" that
 is applied to elements throughout the model that relate to configuring
 sockets:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [domain@localhost:9990 /] cd core-service=management/access=authorization/constraint=sensitivity-classification/type=core/classification=socket-config
 [domain@localhost:9990 classification=socket-config] ls -l
@@ -675,7 +675,7 @@ example, if your organization doesn't regard modifying socket
 configuration settings to be security sensitive, you can change that
 setting:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [domain@localhost:9990 classification=socket-config] :write-attribute(name=configured-requires-write,value=false)
 {
@@ -692,7 +692,7 @@ Administrators can also read the management model to see to which
 resources, attributes and operations a particular sensitivity
 classification applies:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [domain@localhost:9990 classification=socket-config] :read-children-resources(child-type=applies-to)
 {
@@ -839,7 +839,7 @@ the action as sensitive.
 This setting can be *globally* changed via the CLI. There is a resource
 for this configuration:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [domain@localhost:9990 /] cd core-service=management/access=authorization/constraint=vault-expression
 [domain@localhost:9990 constraint=vault-expression] ls -l
@@ -862,7 +862,7 @@ the default settings with settings appropriate for your organization.
 For example, if your organization doesn't regard reading vault
 expressions to be security sensitive, you can change that setting:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [domain@localhost:9990 constraint=vault-expression] :write-attribute(name=configured-requires-read,value=false)
 {
@@ -908,7 +908,7 @@ resources will be annotated with an "application classification".
 
 For example, the mail subsystem provides such a classification:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [domain@localhost:9990 /] cd /core-service=management/access=authorization/constraint=application-classification/type=mail/classification=mail-session
 [domain@localhost:9990 classification=mail-session] ls -l
@@ -923,7 +923,7 @@ applies-to n/a        n/a
 Use `read-resource` or `read-children-resources` to see what resources
 have this classification applied:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [domain@localhost:9990 classification=mail-session] :read-children-resources(child-type=applies-to)
 {
@@ -943,7 +943,7 @@ applies to mail subsystem mail-session resources.
 To make resources with this classification writeable by users in the
 Deployer role, set the `configured-application` attribute to true.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [domain@localhost:9990 classification=mail-session] :write-attribute(name=configured-application,value=true)
 {
@@ -1010,7 +1010,7 @@ more likely that users who attempt to do things for which they lack
 necessary permissions will receive failure messages. For example, a user
 in the Monitor role cannot read passwords:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [domain@localhost:9990 /] /profile=default/subsystem=datasources/data-source=ExampleDS:read-attribute(name=password)
 {
@@ -1030,7 +1030,7 @@ If the user isn't even allowed to
 response would be as if the resource doesn't exist, even though it
 actually does:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [domain@localhost:9990 /] /profile=default/subsystem=security/security-domain=other:read-resource
 {
@@ -1054,7 +1054,7 @@ and a response header will be included advising on what was not
 included. Here we show the effect of a Monitor trying to recursively
 read the security subsystem configuration:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [domain@localhost:9990 /] /profile=default/subsystem=security:read-resource(recursive=true)
 {
@@ -1096,7 +1096,7 @@ constraints relevant to the resource, This is done by using the
 permissions. For example, a user who maps to the Monitor role could ask
 for information about a resource in the mail subsystem:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [domain@localhost:9990 /] cd /profile=default/subsystem=mail/mail-session=default/server=smtp
 [domain@localhost:9990 server=smtp] :read-resource-description(access-control=trim-descriptions)
@@ -1176,7 +1176,7 @@ image:images/callersroles.png[images/callersroles.png,width=450]
 CLI users should use the `whoami` operation with the `verbose` attribute
 set:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [domain@localhost:9990 /] :whoami(verbose=true)
 {
@@ -1214,7 +1214,7 @@ names.
 
 Example with a low level operation:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] :whoami(verbose=true){roles=[Operator,Auditor]}
 {
@@ -1234,7 +1234,7 @@ Example with a low level operation:
 
 Example with a CLI command:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] deploy /tmp/helloworld.war --headers={roles=Monitor}
 {"WFLYCTL0062: Composite operation failed and was rolled back. Steps that failed:" => {"Operation step-1" => "WFLYCTL0313: Unauthorized to execute operation 'add' for resource '[(\"deployment\" => \"helloworld.war\")]' -- \"WFLYCTL0332: Permission denied\""}}

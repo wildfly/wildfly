@@ -20,7 +20,7 @@ within WildFly's distribution, is `docs/schema/jboss-as-ee_2_0.xsd`.
 Subsystem XML configuration example with all elements and attributes
 specified:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:ee:2.0" >
     <global-modules>

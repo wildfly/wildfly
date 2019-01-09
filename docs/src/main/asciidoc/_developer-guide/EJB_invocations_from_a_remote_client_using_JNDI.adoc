@@ -37,7 +37,7 @@ which exposes a RemoteCalculator remote business interface. We'll also
 have a simple stateful CounterBean which exposes a RemoteCounter remote
 business interface. Here's the code:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 package org.jboss.as.quickstarts.ejb.remote.stateless;
  
@@ -52,7 +52,7 @@ public interface RemoteCalculator {
 }
 ----
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 package org.jboss.as.quickstarts.ejb.remote.stateless;
  
@@ -78,7 +78,7 @@ public class CalculatorBean implements RemoteCalculator {
 }
 ----
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 package org.jboss.as.quickstarts.ejb.remote.stateful;
  
@@ -95,7 +95,7 @@ public interface RemoteCounter {
 }
 ----
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 package org.jboss.as.quickstarts.ejb.remote.stateful;
  
@@ -148,7 +148,7 @@ So let's take a look at what the client code looks like for looking up
 the JNDI proxy and invoking on it. Here's the entire client code which
 invokes on a stateless bean:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 package org.jboss.as.quickstarts.ejb.remote.client;
  
@@ -313,14 +313,14 @@ the following syntax:
 
 *For stateless beans:*
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 ejb:<app-name>/<module-name>/<distinct-name>/<bean-name>!<fully-qualified-classname-of-the-remote-interface>
 ----
 
 *For stateful beans:*
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 ejb:<app-name>/<module-name>/<distinct-name>/<bean-name>!<fully-qualified-classname-of-the-remote-interface>?stateful
 ----
@@ -406,7 +406,7 @@ code uses.
 Now that we know of the JNDI name, let's take a look at the following
 piece of code in the lookupRemoteStatelessCalculator():
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 final Hashtable jndiProperties = new Hashtable();
 jndiProperties.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
@@ -424,7 +424,7 @@ pass these properties to the constructor of the InitialContext class or
 have a jndi.properites file in the classpath of the client application,
 which (atleast) contains the following property:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 java.naming.factory.url.pkgs=org.jboss.ejb.client.naming
 ----
@@ -440,7 +440,7 @@ not connect to the server unless an invocation on those proxies is done.
 
 Now let's get to the point where we invoke on this returned proxy:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 // Let's lookup the remote stateless calculator
         final RemoteCalculator statelessRemoteCalculator = lookupRemoteStatelessCalculator();

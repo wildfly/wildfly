@@ -58,7 +58,7 @@ deployment descriptor.
 
 .Example Named Job Repository and Thread Pool
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <jboss xmlns="urn:jboss:1.0">
     <batch xmlns="urn:jboss:batch-jberet:1.0">
@@ -72,7 +72,7 @@ deployment descriptor.
 
 .Example new Job Repository
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <jboss xmlns="urn:jboss:1.0">
     <batch xmlns="urn:jboss:batch-jberet:1.0">
@@ -93,7 +93,7 @@ the job XML name. Executions are registered using the execution id.
 
 .Batch application in a standalone server
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /deployment=batch-jdbc-chunk.war/subsystem=batch-jberet:read-resource(recursive=true,include-runtime=true)
 {
@@ -128,7 +128,7 @@ resource also has a `stop-job` and `restart-job` operation.
 
 .Example start-job
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /deployment=batch-chunk.war/subsystem=batch-jberet:start-job(job-xml-name=simple, properties={writer.sleep=5000})
 {
@@ -139,14 +139,14 @@ resource also has a `stop-job` and `restart-job` operation.
 
 .Example stop-job
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /deployment=batch-chunk.war/subsystem=batch-jberet:stop-job(execution-id=2)
 ----
 
 .Example restart-job
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /deployment=batch-chunk.war/subsystem=batch-jberet:restart-job(execution-id=2)
 {
@@ -157,7 +157,7 @@ resource also has a `stop-job` and `restart-job` operation.
 
 .Result of resource after the 3 executions
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /deployment=batch-chunk.war/subsystem=batch-jberet:read-resource(recursive=true, include-runtime=true)
 {
@@ -207,7 +207,7 @@ You can filter jobs by an attribute on the execution resource with the
 
 .View all stopped jobs
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /deployment=batch-chunk.war/subsystem=batch-jberet/job=*/execution=*:query(where=["batch-status", "STOPPED"])
 ----
@@ -224,7 +224,7 @@ and attributes (arguments) on operations.
 
 .Example start-job operation description
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /deployment=batch-chunk.war/subsystem=batch-jberet:read-operation-description(name=start-job)
 {

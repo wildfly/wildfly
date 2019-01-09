@@ -145,7 +145,7 @@ create a `ResourceDefinition` for the root resource type for each
 subsystem, and register it with the `ExtensionContext` passed in to
 their `Extension` implementation's `initialize` method:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     public void initialize(ExtensionContext context) {
         SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_VERSION);
@@ -186,7 +186,7 @@ superclasses.
 
 For example, to add a writable attribute:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
@@ -200,7 +200,7 @@ For example, to add a writable attribute:
 
 To register a custom operation:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     @Override
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
@@ -214,7 +214,7 @@ To register a custom operation:
 
 To register a child resource type:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
@@ -304,7 +304,7 @@ types respectively.
 Here's an example of creating a simple attribute definition with extra
 validation of the range of allowed values:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 static final AttributeDefinition QUEUE_LENGTH = new SimpleAttributeDefinitionBuilder("queue-length", ModelType.INT)
                 .setRequired(true)
@@ -327,7 +327,7 @@ metadata based on the type of the attribute.
 Use `EnumValidator` to restrict a STRING attribute's values to a set of
 legal values:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     static final SimpleAttributeDefinition TIME_UNIT = new SimpleAttributeDefinitionBuilder("unit", ModelType.STRING)
             .setRequired(true)
@@ -371,7 +371,7 @@ Here we have your extension's implementation of
 for your subsystem and add `ModelNode` operations to the list that will
 be used to boot the server.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     @Override
     public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> operationList) throws XMLStreamException {
@@ -411,7 +411,7 @@ Here we illustrate code in an `OperationStepHandler` that extracts a
 value from a user-provided `operation` and stores it in the internal
 model:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
@@ -455,7 +455,7 @@ handler adds a step to do further work once operation execution proceeds
 to RUNTIME state (see Operation Execution and the `OperationContext` for
 more on what this means):
 
-[source, java]
+[source,java,options="nowrap"]
 ----
         context.addStep(new OperationStepHandler() {
             @Override
@@ -494,7 +494,7 @@ we do in the example above with the call to `asInt()`. If FOO_AD was
 configured such that it's possible that the attribute won't have a
 defined value, you need to guard against that, e.g.:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     ModelNode node = FOO_AD.resolveModelAttribute(context, model);
     Integer foo = node.isDefined() ? node.asInt() : null;
@@ -509,7 +509,7 @@ is used to marshal the subsystem's configuration to XML. If you don't
 use `PersistentResourceXMLParser` for this you'll need to write your own
 marshaling code, and `AttributeDefinition` will be used.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     @Override
     public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
@@ -1112,7 +1112,7 @@ Usage of `AbstractBoottimeAddStepHandler` is the same as for
 A typical thing to do in `performBoottime` is to add a special step that
 registers one or more `DeploymentUnitProcessor` s.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     @Override
     public void performBoottime(OperationContext context, ModelNode operation, final Resource resource)

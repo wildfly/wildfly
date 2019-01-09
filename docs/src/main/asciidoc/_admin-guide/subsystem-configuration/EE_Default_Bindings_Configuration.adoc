@@ -15,7 +15,7 @@ The EE subsystem looks up the default instances from JNDI, using the
 names in the default bindings configuration, before placing those in the
 standard JNDI names, such as `java:comp/DefaultManagedExecutorService`:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
   <default-bindings
  context-service="java:jboss/ee/concurrency/context/default"

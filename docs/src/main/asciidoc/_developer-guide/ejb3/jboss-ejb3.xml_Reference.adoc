@@ -14,7 +14,7 @@ The contents of `jboss-ejb3.xml` are merged with the contents of
 
 A simple example is shown below:
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <?xml version="1.1" encoding="UTF-8"?>
 <jboss:ejb-jar xmlns:jboss="http://www.jboss.com/xml/ns/javaee"
@@ -72,7 +72,7 @@ or to all beans in the deployment by using `*` as the `ejb-name`.
 This allows you to set the security domain and the run-as principal for
 an EJB.
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <s:security>
   <ejb-name>*</ejb-name>
@@ -86,7 +86,7 @@ an EJB.
 
 This allows you to set the resource adaptor for an MDB.
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <r:resource-adapter-binding>
   <ejb-name>*</ejb-name>
@@ -108,7 +108,7 @@ This allows you to select the pool that is used by the SLSB or MDB.
 Pools are defined in the server configuration (i.e. `standalone.xml` or
 `domain.xml`)
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <p:pool>
   <ejb-name>*</ejb-name>
@@ -123,7 +123,7 @@ This allows you to select the cache that is used by the SFSB. Caches are
 defined in the server configuration (i.e. `standalone.xml` or
 `domain.xml`)
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <c:cache>
   <ejb-name>*</ejb-name>

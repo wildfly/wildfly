@@ -21,7 +21,7 @@ A typical EJB invocation looks like this:
 
 Client application
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 MyBeanInterface bean = lookupBean();
  
@@ -84,7 +84,7 @@ container interceptor(s) can be configured in jboss-ejb3.xml:
 
 .jboss-ejb3.xml
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <jboss xmlns="http://www.jboss.com/xml/ns/javaee"
        xmlns:jee="http://java.sun.com/xml/ns/javaee"
@@ -150,7 +150,7 @@ the interceptor:
 
 .Example of container interceptor
 
-[source, java]
+[source,java,options="nowrap"
 ----
 public class ClassLevelContainerInterceptor {
     @AroundInvoke

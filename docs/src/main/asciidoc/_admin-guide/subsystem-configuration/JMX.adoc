@@ -13,7 +13,7 @@ WildFly instance to be monitored.
 To use the connector you can access it in the standard way using a
 `service:jmx` URL:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 import javax.management.MBeanServerConnection;
 import javax.management.remote.JMXConnector;
@@ -44,7 +44,7 @@ You also need to set your classpath when running the above example. The
 following script covers Linux. If your environment is much different,
 paste your script when you have it working.
 
-[source, bash]
+[source,options="nowrap"]
 ----
 
 !/bin/bash
@@ -123,7 +123,7 @@ The same JSON Formatter is used as described in
 Server invocations have slightly different fields from those logged for
 the core management layer.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 2013-08-29 18:26:29 - {
     "type" : "jmx",

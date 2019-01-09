@@ -35,7 +35,7 @@ the missing file. You can do this from your command shell by:
 line - the fully-qualified class name of the JDBC driver.
 5.  Use the `jar` command-line tool to update the JAR like this:
 
-[source]
+[source,options="nowrap"]
 ----
 jar \-uf jdbc-driver.jar META-INF/services/java.sql.Driver
 ----
@@ -48,7 +48,7 @@ please refer to the chapter " link:#application-deployment[Application Deploymen
 
 The datasource itself is defined within the subsystem _datasources_:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:datasources:4.0">
     <datasources>
@@ -94,7 +94,7 @@ As you can see the datasource references a driver by it's logical name.
 
 You can easily query the same information through the CLI:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /subsystem=datasources:read-resource(recursive=true)
 {
@@ -164,7 +164,7 @@ JDBC drivers and the creation of datasources.
 
 The CLI offers a set of commands to create and modify datasources:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] data-source --help
  

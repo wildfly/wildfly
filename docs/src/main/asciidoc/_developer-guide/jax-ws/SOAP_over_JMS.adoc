@@ -31,7 +31,7 @@ The minimum configuration implies:
 the queues [2]
 * setting the transport binding [3]
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <wsdl:definitions name="HelloWorldService" targetNamespace="http://org.jboss.ws/jaxws/cxf/jms"
   xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
@@ -85,7 +85,7 @@ and deploy it as part of a jar archive.
 The endpoint is created using wsconsume tool from a WSDL contract such
 as:
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <?xml version='1.0' encoding='UTF-8'?>
 <wsdl:definitions name="HelloWorldService" targetNamespace="http://org.jboss.ws/jaxws/cxf/jms"
@@ -180,7 +180,7 @@ configured connection factory JNDI locations.
 The endpoint implementation is a basic JAX-WS POJO using @WebService
 annotation to refer to the consumed contract:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.cxf.jms;
  
@@ -247,7 +247,7 @@ Dependencies: org.hornetq
 
 A JAX-WS client can interact with the JMS endpoint the usual way:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 URL wsdlUrl = ...
 //start another bus to avoid affecting the one that could already be assigned to the current thread - optional but highly suggested
@@ -277,7 +277,7 @@ in order for performing the remote invocation (which internally goes
 through remote JNDI lookup of the connection factory), the calling user
 credentials need to be set into the Apache CXF JMSConduit:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 private void setupProxy(HelloWorld proxy) {
    JMSConduit conduit = (JMSConduit)ClientProxy.getClient(proxy).getConduit();
@@ -302,7 +302,7 @@ client can also be used to send messages to the webservice endpoint. You
 can have a look at the SOAP over JMS spec details and code the client
 similarly to
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 Properties env = new Properties();
 env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
@@ -342,7 +342,7 @@ serves over both HTTP and JMS transports.
 We from a WSDL contract such as below (please note we've two `binding` /
 `portType` for the same `service`):
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <?xml version='1.0' encoding='UTF-8'?>
 <wsdl:definitions name="HelloWorldService" targetNamespace="http://org.jboss.ws/jaxws/cxf/jms"
@@ -435,7 +435,7 @@ common implementation class that's extended by the JMS and HTTP ones, or
 keep the two implementation classes independent and just have them
 implement the same service endpoint interface:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.cxf.jms_http;
  
@@ -459,7 +459,7 @@ public class HelloWorldImpl implements HelloWorld
 }
 ----
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.cxf.jms_http;
  
@@ -510,7 +510,7 @@ alessio@inuyasha /dati/jbossws/stack/cxf/trunk $ jar -tvf ./modules/testsuite/cx
 A trivial web.xml descriptor is also included to trigger the HTTP
 endpoint publish:
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app xmlns="http://java.sun.com/xml/ns/j2ee"
@@ -536,7 +536,7 @@ module when deploying to WildFly.
 Finally, the JAX-WS client can ineract with both JMS and HTTP endpoints
 as usual:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 //start another bus to avoid affecting the one that could already be assigned to current thread - optional but highly suggested
 Bus bus = BusFactory.newInstance().createBus();
@@ -568,7 +568,7 @@ starting them directly using the JAX-WS `Endpoint.publish(..)` API.
 
 That's as easy as doing:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 Object implementor = new HelloWorldImpl();
 Endpoint ep = Endpoint.publish("jms:queue:testQueue", implementor);

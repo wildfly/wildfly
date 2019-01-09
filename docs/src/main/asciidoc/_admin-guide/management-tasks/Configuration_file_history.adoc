@@ -39,7 +39,7 @@ write.
 should be empty. Now if we execute a management operation that modifies
 the model, for example adding a new system property using the CLI:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /system-property=test:add(value="test123")
 {"outcome" => "success"}
@@ -72,7 +72,7 @@ managed by the administrator.
 
 You may also take your own snapshots using the CLI:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] :take-snapshot
 {
@@ -83,7 +83,7 @@ You may also take your own snapshots using the CLI:
 
 You can also use the CLI to list all the snapshots
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] :list-snapshots
 {
@@ -104,7 +104,7 @@ You can also use the CLI to list all the snapshots
 
 To delete a particular snapshot:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] :delete-snapshot(name="20110630-165714239standalone.xml")
 {"outcome" => "success"}
@@ -112,7 +112,7 @@ To delete a particular snapshot:
 
 and to delete all snapshots:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] :delete-snapshot(name="all")
 {"outcome" => "success"}
@@ -122,7 +122,7 @@ In domain mode executing the snapshot operations against the root node
 will work against the domain model. To do this for a host model you need
 to navigate to the host in question:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [domain@localhost:9990 /] /host=master:list-snapshots
 {

@@ -8,7 +8,7 @@ information is output as JSON records.
 The default configuration of audit logging in standalone.xml looks as
 follows:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
     <management>
         <security-realms>
@@ -32,7 +32,7 @@ follows:
 
 Looking at this via the CLI it looks like
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /core-service=management/access=audit:read-resource(recursive=true)
 {
@@ -65,7 +65,7 @@ Looking at this via the CLI it looks like
 
 To enable it via CLI you need just
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /core-service=management/access=audit/logger=audit-log:write-attribute(name=enabled,value=true)
 {"outcome" => "success"}
@@ -92,7 +92,7 @@ formatters, for use with different handlers. A log record has the
 following format, and it is the formatter's job to format the data
 presented:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 2013-08-12 11:01:12 - {
     "type" : "core",
@@ -419,7 +419,7 @@ In domain mode audit logging is configured for each host in its
 configuration of the audit logging is under the host's entry, e.g. here
 is the default configuration:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [domain@localhost:9990 /] /host=master/core-service=management/access=audit:read-resource(recursive=true)
 {

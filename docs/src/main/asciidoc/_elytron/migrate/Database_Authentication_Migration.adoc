@@ -35,7 +35,7 @@ The following commands can create a PicketBox security domain configured
 to use database accessible via JDBC datasource to verify a username and
 password and to assign roles.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 ./subsystem=security/security-domain=application-security/:add
 ./subsystem=security/security-domain=application-security/authentication=classic:add(login-modules=[{code=Database, flag=Required, module-options={ \
@@ -49,7 +49,7 @@ password and to assign roles.
 
 This results in the following configuration.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
         <subsystem xmlns="urn:jboss:domain:security:2.0">
             <security-domains>
@@ -75,7 +75,7 @@ This results in the following configuration.
 Within the Elytron subsystem to use database accesible via JDBC you need
 to define `jdbc-realm`:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 ./subsystem=elytron/jdbc-realm=jdbc-realm:add(principal-query=[{ \
     data-source=ExampleDS, \
@@ -87,7 +87,7 @@ to define `jdbc-realm`:
 
 This results in the following overall configuration:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
         <subsystem xmlns="urn:wildfly:elytron:1.0" final-providers="combined-providers" disallowed-providers="OracleUcrypto">
             ...
@@ -144,7 +144,7 @@ FOREIGN KEY (roleid) references Role(id)
 
 Here you need two configure two principal queries:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <jdbc-realm name="jdbc-realm">
     <principal-query sql="SELECT PASSWORD FROM USER WHERE USERNAME = ?" data-source="ExampleDS">
@@ -159,7 +159,7 @@ Here you need two configure two principal queries:
 ----
 
 The second query needs an attribute mapping to decode the selected rolename column (index 1):
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <mappers>
 ...
@@ -169,7 +169,7 @@ The second query needs an attribute mapping to decode the selected rolename colu
 ----
 
 The role decoder is referenced by the security domain:
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <security-domain name="MyDomain" default-realm="jdbc-realm" permission-mapper="default-permission-mapper">
 <realm name="MyDbRealm" role-decoder="from-roles-attribute"/>

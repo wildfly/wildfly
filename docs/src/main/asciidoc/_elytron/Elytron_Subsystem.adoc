@@ -479,7 +479,7 @@ and openssl provider loaders.
 
 *Default WildFly Configuration*
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 /subsystem=elytron:read-resource(recursive=true)
 {
@@ -760,7 +760,7 @@ domain.
 === Update WildFly to Use the Default Elytron Components for Application
 Authentication
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 /subsystem=undertow/application-security-domain=exampleApplicationDomain:add(http-authentication-factory=example-http-auth)
 ----
@@ -771,7 +771,7 @@ For more information on configuring an http-authentication-factory, see <<config
 
 The http-authentication-factory can be configured to use the _ApplicationDomain_
 security domain.
-[source,ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/security-domain=ApplicationDomain:read-resource()
 {
@@ -795,7 +795,7 @@ security domain.
 The _ApplicationDomain_ security domain is backed by the
 _ApplicationRealm_ Elytron security realm, which is a properties-based
 realm.
-[source,ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/properties-realm=ApplicationRealm:read-resource()
 {
@@ -823,7 +823,7 @@ core management authentication.
 
 *Default Configuration*
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 /core-service=management/management-interface=http-interface:read-resource()
 {
@@ -855,7 +855,7 @@ Authentication
 ==== Set http-authentication-factory to use
 management-http-authentication
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 /core-service=management/management-interface=http-interface:write-attribute( \
   name=http-authentication-factory, \
@@ -867,7 +867,7 @@ management-http-authentication
 ==== Set sasl-authentication-factory to use
 management-sasl-authentication
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 /core-service=management/management-interface=http-interface:write-attribute( \
   name=http-upgrade.sasl-authentication-factory, \
@@ -878,7 +878,7 @@ management-sasl-authentication
 [[undefine-security-realm]]
 ==== Undefine security-realm
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 /core-service=management/management-interface=http-interface:undefine-attribute(name=security-realm)
 ----
@@ -886,7 +886,7 @@ management-sasl-authentication
 [[reload-wildfly-for-the-changes-to-take-affect.]]
 ==== Reload WildFly for the changes to take affect.
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 reload
 ----
@@ -901,7 +901,7 @@ When you access the management interface over HTTP, for example when
 using the web-based management console, WildFly will use the
 _management-http-authentication_ http-authentication-factory.
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/http-authentication-factory=management-http-authentication:read-resource()
 {
@@ -920,7 +920,7 @@ _management-http-authentication_ http-authentication-factory.
 The _management-http-authentication_ http-authentication-factory, is
 configured to use the _ManagementDomain_ security domain.
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/security-domain=ManagementDomain:read-resource()
 {
@@ -955,7 +955,7 @@ The _ManagementDomain_ security domain is backed by the
 _ManagementRealm_ Elytron security realm, which is a properties-based
 realm.
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/properties-realm=ManagementRealm:read-resource()
 {
@@ -984,7 +984,7 @@ connect over _remote+http_.
 
 *Default jboss-cli.xml*
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <jboss-cli xmlns="urn:jboss:cli:3.3">
  
@@ -1005,7 +1005,7 @@ _http-interface_ using a _sasl-authentication-factory_.
 
 *Example Configuration with Default Components*
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 /core-service=management/management-interface=http-interface:read-resource()
 {
@@ -1032,7 +1032,7 @@ _http-interface_ using a _sasl-authentication-factory_.
 The default sasl-authentication-factory is
 _management-sasl-authentication_.
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/sasl-authentication-factory=management-sasl-authentication:read-resource()
 {
@@ -1059,7 +1059,7 @@ specifies _JBOSS-LOCAL-USER_ and _DIGEST-MD5_ mechanisms.
 
 *JBOSS-LOCAL-USER Realm*
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/identity-realm=local:read-resource()
 {

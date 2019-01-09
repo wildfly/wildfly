@@ -48,7 +48,7 @@ possible future use.
 
 For example:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 {
      "description => "A manageable resource",
@@ -182,7 +182,7 @@ Descriptors>> section.
 
 Some examples:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 "foo" => {
      "description" => "The foo",
@@ -191,7 +191,7 @@ Some examples:
 }
 ----
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 "bar" => {
      "description" => "The bar",
@@ -342,7 +342,7 @@ reference to a provisioning feature via a capability.
 
 Some examples:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 {
      "operation-name" => "incrementFoo",
@@ -360,7 +360,7 @@ Some examples:
 }
 ----
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 {
      "operation-name" => "start",
@@ -382,7 +382,7 @@ defines the cardinality of the relationship. The description of the
 parent node includes a children element that describes these
 relationships:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 {
      ....
@@ -412,7 +412,7 @@ description did not include the "recursive" param set to true.
 
 Example with if the recursive flag was set to true:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 {
      "description" => "The connectors used to handle client connections",
@@ -436,7 +436,7 @@ Example with if the recursive flag was set to true:
 
 If the recursive flag was false:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 {
      "description" => "The connectors used to handle client connections",

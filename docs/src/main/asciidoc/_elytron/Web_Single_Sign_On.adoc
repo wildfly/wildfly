@@ -34,7 +34,7 @@ First, you need a _security-domain_ which we'll use to authenticate users. Pleas
 ----
 
 Now you can create a _http-authentication-factory_ that you'll use to actually protect your web applications using Undertow:
-[source]
+[source,options="nowrap"]
 ----
 # Create a Http Authentication Factory
 /subsystem=elytron/http-authentication-factory=example-http-authentication:add(security-domain=example-domain, http-server-mechanism-factory=global, mechanism-configurations=[{mechanism-name=FORM}]
@@ -56,14 +56,14 @@ By default, if your application does not define any specific _security-domain_ i
 === Create a Key Store
 
 In order to create a _key-store_ in Elytron subsystem, first create a Java Key Store as follows:
-[source, bash]
+[source,options="nowrap"]
 ----
 keytool -genkeypair -alias localhost -keyalg RSA -keysize 1024 -validity 365 -keystore keystore.jks -dname "CN=localhost" -keypass secret -storepass secret
 ----
 
 Once the _keystore.jks_ file is created, execute the following CLI commands to create a _key-store_ definition in Elytron:
 
-[source]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/key-store=example-keystore:add(path=keystore.jks, relative-to=jboss.server.config.dir, credential-reference={clear-text=secret}, type=JKS)
 ----
@@ -75,7 +75,7 @@ Single Sign-On is enabled to a specific _application-security-domain_ definition
 
 To enable single-sign on, just change an existing application-security-domain in Undertow subsystem as follows:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=undertow/application-security-domain=other/setting=single-sign-on:add(key-store=example-keystore, key-alias=localhost, domain=localhost, credential-reference={clear-text=secret})
 ----
@@ -85,7 +85,7 @@ After restarting the servers, users should be able to log in once and have acces
 == Create Two Server Instances
 
 All configuration you did so far should be reflect in _$JBOSS_HOME_/_standalone/standalone-ha.xml._ You can now create two distinct server configuration directories_:\_
-[source, bash]
+[source,options="nowrap"]
 ----
 cp -r standalone standalone-a
 cp -r standalone standalone-b
@@ -103,7 +103,7 @@ $JBOSS_HOME/bin/standalone.sh -c standalone-ha.xml -Djboss.node.name=node-b -Djb
 For the sake of simplicity, these are the minimum files you need in your application:
 
 .WEB-INF/web.xml
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <web-app version="3.1" xmlns="http://xmlns.jcp.org/xml/ns/javaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"

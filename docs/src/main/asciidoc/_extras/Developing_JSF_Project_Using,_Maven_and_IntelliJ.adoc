@@ -37,7 +37,7 @@ the latest version is 7.1.1.Final.
 Please make sure you have maven installed on your machine. Here is my
 environment:
 
-[source, bash]
+[source,options="nowrap"]
 ----
 weli@power:~$ mvn -version
 Apache Maven 3.0.3 (r1075438; 2011-03-01 01:31:09+0800)
@@ -63,7 +63,7 @@ After all of these prepared, we can dive into the real work:
 
 Use the following maven command to create a web project:
 
-[source, bash]
+[source,options="nowrap"]
 ----
 mvn archetype:create -DarchetypeGroupId=org.apache.maven.archetypes \
 -DarchetypeArtifactId=maven-archetype-webapp \
@@ -85,7 +85,7 @@ The contents of the project is shown as above.
 The JSF library is now included in maven repo, so we can let maven to
 manage the download for us. First is to add repository into our pom.xml:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 <repository>
   <id>jvnet-nexus-releases</id>
@@ -96,7 +96,7 @@ manage the download for us. First is to add repository into our pom.xml:
 
 Then we add JSF dependency into pom.xml:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <dependency>
     <groupId>javax.faces</groupId>
@@ -133,7 +133,7 @@ use it in our project.
 
 We should put AS7's repository into pom.xml:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <repository>
     <id>jboss-public-repository-group</id>
@@ -153,7 +153,7 @@ We should put AS7's repository into pom.xml:
 
 And also the plugin repository:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 <pluginRepository>
     <id>jboss-public-repository-group</id>
@@ -170,7 +170,7 @@ And also the plugin repository:
 
 And put jboss deploy plugin into 'build' section:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 <plugin>
     <groupId>org.jboss.as.plugins</groupId>
@@ -199,7 +199,7 @@ Now we have finished the setup work for maven.
 To deploy the project to JBoss AS7, we should start AS7 firstly. In
 JBoss AS7 directory, run following command:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 bin/standalone.sh
 ----
@@ -207,7 +207,7 @@ bin/standalone.sh
 AS7 should start in a short time. Then let's go back to our project
 directory and run maven command:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 mvn -q jboss-as:deploy
 ----
@@ -326,7 +326,7 @@ dive into the details now:
 First we need to enable JPDA config inside AS7, open
 'bin/standalone.conf' and find following lines:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 # Sample JPDA settings for remote socket debugging
 #JAVA_OPTS="$JAVA_OPTS -Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=n"
@@ -334,7 +334,7 @@ First we need to enable JPDA config inside AS7, open
 
 Enable the above config by removing the leading hash sign:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 # Sample JPDA settings for remote socket debugging
 JAVA_OPTS="$JAVA_OPTS -Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=n"
@@ -344,7 +344,7 @@ JAVA_OPTS="$JAVA_OPTS -Xrunjdwp:transport=dt_socket,address=8787,server=y,suspen
 
 With WildFly you can directly start the server in debug mode:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 bin/standalone.sh --debug --server-config=standalone.xml
 ----

@@ -10,7 +10,7 @@ Schema location: [https://github.com/wildfly/jboss-ejb-client/blob/4.0.2.Final/s
 Example configuration:
 
 .wildfly-config.xml
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <configuration>
 ...
@@ -34,7 +34,7 @@ Schema location:[https://github.com/wildfly/wildfly-http-client/blob/1.0.2.Final
 Example configuration:
 
 .wildfly-config.xml
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <configuration>
 ...
@@ -56,7 +56,7 @@ Schema location:[https://github.com/jboss-remoting/jboss-remoting/blob/5.0.1.Fin
 Example configuration:
 
 .wildfly-config.xml
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <configuration>
 ...
@@ -76,7 +76,7 @@ Schema location:[https://github.com/xnio/xnio/blob/3.5.1.Final/api/src/main/reso
 Example configuration:
 
 *wildfly-config.xml*
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <configuration>
 ...

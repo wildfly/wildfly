@@ -4,7 +4,7 @@
 
 The _<jboss-ejb-client />_ element in a wildfly-config.xml file can be used to specify EJB Client configuration. This element is from the “urn:jboss:wildfly-client-ejb:3.0” namespace, e.g.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 

@@ -99,7 +99,7 @@ After starting the server, the following CLI command can be used to
 verify that your new JSF implementation has been installed successfully.
 The new JSF implementation should appear in the output of this command.
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /subsystem=jsf:list-active-jsf-impls()
 ----
@@ -110,7 +110,7 @@ The new JSF implementation should appear in the output of this command.
 The following CLI command can be used to make a newly installed JSF
 implementation the default JSF implementation used by WildFly:
 
-[source,xml]
+[source,options="nowrap"]
 ----
 /subsystem=jsf/:write-attribute(name=default-jsf-impl-slot,value=<JSF_IMPL_NAME>-<JSF_VERSION>)
 ----
@@ -127,7 +127,7 @@ that's not the default implementation by adding a
 MyFaces 2.2.12 (assuming MyFaces 2.2.12 has been installed on the
 server), the following context parameter would need to be added:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <context-param>
   <param-name>org.jboss.jbossfaces.JSF_CONFIG_NAME</param-name>
@@ -144,7 +144,7 @@ implementation will be used for that app.
 The following CLI commands can be used to disallow DOCTYPE declarations
 in JSF deployments:
 
-[source, xml]
+[source,options="nowrap"]
 ----
 /subsystem=jsf:write-attribute(name=disallow-doctype-decl, value=true)
 reload
@@ -154,7 +154,7 @@ This setting can be overridden for a particular JSF deployment by
 adding the `com.sun.faces.disallowDoctypeDecl` context parameter
 to the deployment's `web.xml` file:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <context-param>
   <param-name>com.sun.faces.disallowDoctypeDecl</param-name>

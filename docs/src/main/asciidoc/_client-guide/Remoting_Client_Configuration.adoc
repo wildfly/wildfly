@@ -5,7 +5,7 @@
 
 You can use the `endpoint` element, which is in the `urn:jboss-remoting:5.0` namespace, to configure a JBoss Remoting client endpoint using the `wildfly-config.xml` file. This section describes how to configure a JBoss Remoting client using this element.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 
@@ -75,7 +75,7 @@ This element defines a connection for the remote endpoint. It has the following 
 
 === Example Remoting Client Configuration in the wildfly-config.xml File
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <configuration>
 ...

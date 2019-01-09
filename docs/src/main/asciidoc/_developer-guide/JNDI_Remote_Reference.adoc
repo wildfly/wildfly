@@ -12,7 +12,7 @@ local JNDI. To use it, you must have the appropriate jars on the class
 path, if you are maven user can be done simply by adding the following
 to your `pom.xml` dependencies:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <dependency>
   <groupId>org.wildfly</groupId>
@@ -26,7 +26,7 @@ If you are not using maven a shaded jar that contains all required
 classes +
 can be found in the `bin/client` directory of WildFly's distribution.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 final Properties env = new Properties();
 env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
@@ -54,7 +54,7 @@ module name, ejb name and interface type. To use it, you must have the
 appropriate jars on the class path, if you are maven user can be done
 simply by adding the following to your `pom.xml` dependencies:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <dependency>
   <groupId>org.wildfly</groupId>
@@ -80,7 +80,7 @@ actually used. The exception to this is stateful session beans, which
 need to connect to a server when they are created in order to create the
 session bean instance on the server.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 final Properties env = new Properties();
 env.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");

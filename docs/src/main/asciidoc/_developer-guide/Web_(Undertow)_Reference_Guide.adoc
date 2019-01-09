@@ -10,7 +10,7 @@ In order to enable this you must include a `shared-session-config`
 element in the `jboss-all.xml` file in the META-INF directory of the
 ear:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <jboss xmlns="urn:jboss:1.0">
     <shared-session-config xmlns="urn:jboss:shared-session-config:1.0">

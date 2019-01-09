@@ -11,7 +11,7 @@ Please note that this is a real Git repository so using a native Git client you 
 Now if we execute a management operation that modifies
 the model, for example adding a new system property using the CLI:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /system-property=test:add(value="test123")
 {"outcome" => "success"}
@@ -39,7 +39,8 @@ The parameter for `--git-repo` can be a URL or a remote alias provided you have 
 If a `--git-branch` parameter is added then the branch will be pulled, otherwise it will default to `master`.
 
 For example this is an elytron configuration file that you could use to connect to Github via the `--git-auth` parameter:
-[source, xml]
+
+[source,xml,options="nowrap"]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
@@ -64,7 +65,7 @@ For example this is an elytron configuration file that you could use to connect 
 
 Sample command line to start the server using the `standalone-full.xml` file pulled from Github and being authenticated via the Elytron configuration file `github-wildfly-config.xml`:
 
-[source,bash]
+[source,options="nowrap"]
 ----
 ./standalone.sh --git-repo=https://github.com/wildfly/wildfly-config.git --git-auth=file:///home/ehsavoie/tmp/github-wildfly-config.xml -c standalone-full.xml
 ----
@@ -78,7 +79,7 @@ You can choose the tag name and the commit message attached to this tag.
 
 You may also take your own snapshots using the CLI:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] :take-snapshot(name="snapshot", comment="1st snapshot")
 {
@@ -89,7 +90,7 @@ You may also take your own snapshots using the CLI:
 
 You can also use the CLI to list all the snapshots
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] :list-snapshots
 {
@@ -108,7 +109,7 @@ You can also use the CLI to list all the snapshots
 
 To delete a particular snapshot:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] :delete-snapshot(name="snapshot2")
 {"outcome" => "success"}
@@ -118,7 +119,7 @@ To delete a particular snapshot:
 == Remote push
 
 You may need to push your repository changes to a remote repository so you can share them.
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] :publish-configuration(location="origin")
 {"outcome" => "success"}

@@ -101,7 +101,7 @@ Standard-Endpoint-Config is the default configuration.
 Recording-Endpoint-Config is an example of custom endpoint configuration
 and includes a recording handler.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9999 /] /subsystem=webservices:read-resource
 {
@@ -131,7 +131,7 @@ Endpoint configs are defined using `the endpoint-config` element. Each
 endpoint configuration may include properties and handlers set to the
 endpoints associated to the configuration.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9999 /] /subsystem=webservices/endpoint-config=Recording-Endpoint-Config:read-resource
 {
@@ -146,7 +146,7 @@ endpoints associated to the configuration.
 
 A new endpoint configuration can be added as follows:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9999 /] /subsystem=webservices/endpoint-config=My-Endpoint-Config:add
 {
@@ -182,7 +182,7 @@ Endpoint --> PRE HANDLER --> ENDPOINT HANDLERS --> POST HANDLERS --> ... --> Cli
 The protocol-binding attribute must be used to set the protocols for
 which the chain will be triggered.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9999 /] /subsystem=webservices/endpoint-config=Recording-Endpoint-Config/pre-handler-chain=recording-handlers:read-resource
 {
@@ -197,7 +197,7 @@ which the chain will be triggered.
 
 A new handler chain can be added as follows:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9999 /] /subsystem=webservices/endpoint-config=My-Endpoint-Config/post-handler-chain=my-handlers:add(protocol-bindings="##SOAP11_HTTP")
 {
@@ -223,7 +223,7 @@ A new handler chain can be added as follows:
 
 JAXWS handler can be added in handler chains:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9999 /] /subsystem=webservices/endpoint-config=Recording-Endpoint-Config/pre-handler-chain=recording-handlers/handler=RecordingHandler:read-resource
 {
@@ -259,7 +259,7 @@ deployment resource. For further information please consult the chapter
 "Application Deployment". Each web service endpoint specifies a web
 context and a WSDL Url:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9999 /] /deployment="*"/subsystem=webservices/endpoint="*":read-resource
 {

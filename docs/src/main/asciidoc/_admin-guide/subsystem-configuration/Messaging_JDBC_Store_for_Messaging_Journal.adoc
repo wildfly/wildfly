@@ -15,7 +15,7 @@ For example, if the datasources subsystem defines an `ExampleDS` data
 source at `/subsystem=datasources/data-source=ExampleDS`, the Artemis
 server can use it for its JDBC store with the operation:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=messaging-activemq/server=default:write-attribute(name=journal-datasource, value=ExampleDS)
 ----

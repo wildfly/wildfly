@@ -26,7 +26,7 @@ more server groups.
 
 You can do this in one sweep with the CLI:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [domain@localhost:9990 /] deploy ~/Desktop/test-application.war
 Either --all-server-groups or --server-groups must be specified.
@@ -38,7 +38,7 @@ Either --all-server-groups or --server-groups must be specified.
 The deployment will be available to the domain controller, assigned to a
 server group, and deployed on all running servers in that group:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [domain@localhost:9990 /] :read-children-names(child-type=deployment)
 {
@@ -65,7 +65,7 @@ If you only want the deployment deployed on servers in some server
 groups, but not all, use the `--server-groups` parameter instead of
 `-all-server-groups`:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [domain@localhost:9990 /] deploy ~/Desktop/test-application.war --server-groups=main-server-group,another-group
 'test-application.war' deployed successfully.
@@ -74,7 +74,7 @@ groups, but not all, use the `--server-groups` parameter instead of
 If you have a new version of the deployment that you want to deploy
 replacing an existing one, use the `--force` parameter:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [domain@localhost:9990 /] deploy ~/Desktop/test-application.war --all-server-groups --force
 'test-application.war' deployed successfully.
@@ -82,7 +82,7 @@ replacing an existing one, use the `--force` parameter:
 
 You can remove binaries from server groups with the `undeploy` command:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [domain@localhost:9990 /] undeploy test-application.war --all-relevant-server-groups
 Successfully undeployed test-application.war.
@@ -101,7 +101,7 @@ the `-` `server-groups` parameter instead of
 The CLI `deploy` command supports a number of other parameters that can
 control behavior. Use the `--help` parameter to learn more:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [domain@localhost:9990 /] deploy --help
 [...]
@@ -174,7 +174,7 @@ content) from the CLI by pointing it to a local file.
 Now you can list the content of an exploded deployment, or just some
 part of it.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [domain@localhost:9990 /] /deployment=kitchensink.ear:browse-content(archive=false, path=wildfly-kitchensink-ear-web.war)
 {
@@ -349,7 +349,7 @@ part of it.
 You also have a *read-content* operation but since it returns a binary
 stream, this is not displayable from the CLI.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [domain@localhost:9990 /] /deployment=kitchensink.ear:read-content(path=META-INF/MANIFEST.MF)
 {
@@ -365,7 +365,7 @@ stream, this is not displayable from the CLI.
 The management CLI however provides high level commands to display or
 save binary stream attachments:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [domain@localhost:9990 /] attachment display --operation=/deployment=kitchensink.ear:read-content(path=META-INF/MANIFEST.MF)
 ATTACHMENT d052340a-abb7-4a66-aa24-4eeeb6b256be:
@@ -389,7 +389,7 @@ to the `domain.xml` configuration file, one showing global information
 about the deployment, and another for each relevant server group showing
 how it is used by that server group:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 [...]
 <deployments>
@@ -424,7 +424,7 @@ associations.
 The same CLI commands used for managed domains work for standalone
 servers when deploying and removing an application:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] deploy ~/Desktop/test-application.war
 'test-application.war' deployed successfully.
@@ -485,7 +485,7 @@ for zipped deployment content and exploded deployment content. This is
 done via the "auto-deploy" attribute on the deployment-scanner element
 in the standalone.xml configuration file:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <deployment-scanner scan-interval="5000" relative-to="jboss.server.base.dir"
    path="deployments" auto-deploy-zipped="true" auto-deploy-exploded="false"/>
@@ -666,7 +666,7 @@ content repository. The repository is located in the
 `standalone/data/content` for a standalone server. Actual binaries are
 stored in a subdirectory:
 
-[source,bash]
+[source,options="nowrap"]
 ----
 ls domain/data/content/
   |---/47
@@ -685,7 +685,7 @@ The description of a managed deployment in the domain or standalone
 configuration file includes an attribute recording the SHA1 hash of the
 deployment content:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <deployments>
    <deployment name="test-application.war"
@@ -719,7 +719,7 @@ Initially deploying an unmanaged deployment is much like deploying a
 managed one, except you tell WildFly that you do not want the deployment
 to be managed:
 
-[source]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] deploy ~/Desktop/test-application.war --unmanaged
 'test-application.war' deployed successfully.
@@ -735,7 +735,7 @@ runtime.
 
 You can also use unmanaged deployments in a domain:
 
-[source]
+[source,options="nowrap"]
 ----
 [domain@localhost:9990 /] deploy /home/example/Desktop/test-application.war --server-group=main-server-group --unmanaged
 'test-application.war' deployed successfully.
@@ -748,7 +748,7 @@ the file for you.
 
 Undeploy is no different from a managed undeploy:
 
-[source]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] undeploy test-application.war
 Successfully undeployed test-application.war.

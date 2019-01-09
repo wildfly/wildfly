@@ -8,7 +8,7 @@ The example here makes use of a properties file for authentication and then sear
 
 == PicketBox Based Configuration
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 ./subsystem=security/security-domain=application-security:add
 ./subsystem=security/security-domain=application-security/authentication=classic:add(login-modules=[ \
@@ -33,7 +33,7 @@ roleAttributeID="uid" \
 
 This results in the following domain definition
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <security-domain name="application-security">
   <authentication>
@@ -61,7 +61,7 @@ This results in the following domain definition
 
 During an authentication attempt the 'UsersRoles' login module will first be called to perform authentication based on the supplied credential, then the 'LdapExtLoginModule' will be called which will proceed to query LDAP to load the roles for the identity.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 ./core-service=management/ldap-connection=MyLdapConnection:add(url="ldap://localhost:10389", search-dn="uid=admin,ou=system", search-credential="secret")
 
@@ -77,7 +77,7 @@ run-batch
 
 This results in the following realm definition:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <security-realm name="ApplicationSecurity">
   <authentication>
@@ -108,7 +108,7 @@ As with the PicketBox example, authentication is first performed using the prope
 
 The equivalent WildFly Elytron configuration can be defined with the following commands:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 ./subsystem=elytron/dir-context=ldap-connection:add(url=ldap://localhost:10389, principal="uid=admin,ou=system", credential-reference={clear-text=secret})
 
@@ -128,7 +128,7 @@ attribute-mapping=[{filter-base-dn="ou=groups,dc=group-to-principal,dc=wildfly,d
 
 This results in the following realm definition:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:wildfly:elytron:1.1" final-providers="combined-providers" disallowed-providers="OracleUcrypto">
   ...

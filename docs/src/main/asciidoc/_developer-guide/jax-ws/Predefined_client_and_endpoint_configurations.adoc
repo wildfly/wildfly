@@ -89,7 +89,7 @@ configuration name can't be referred to by endpoint/client
 implementations outside the application. Here is an example of a
 descriptor, containing two endpoint configurations:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 <jaxws-config xmlns="urn:jboss:jbossws-jaxws-config:4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:javaee="http://java.sun.com/xml/ns/javaee"
@@ -130,7 +130,7 @@ xsi:schemaLocation="urn:jboss:jbossws-jaxws-config:4.0 schema/jbossws-jaxws-conf
 Similarly, client configurations can be specified in descriptors (still
 implementing the schema mentioned above):
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 <jaxws-config xmlns="urn:jboss:jbossws-jaxws-config:4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:javaee="http://java.sun.com/xml/ns/javaee"
@@ -209,7 +209,7 @@ any deployment, for instance `org.jboss.ws.spi`.
 
 .JBoss AS 7.2 default configurations
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:webservices:2.0">
 <!-- ... -->
@@ -226,7 +226,7 @@ any deployment, for instance `org.jboss.ws.spi`.
 .A configuration file for a deployment specific ws-security endpoint
 setup
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <jaxws-config xmlns="urn:jboss:jbossws-jaxws-config:4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xmlns:javaee="http://java.sun.com/xml/ns/javaee" xsi:schemaLocation="urn:jboss:jbossws-jaxws-config:4.0 schema/jbossws-jaxws-config_4_0.xsd">
@@ -259,7 +259,7 @@ xmlns:javaee="http://java.sun.com/xml/ns/javaee" xsi:schemaLocation="urn:jboss:j
 .JBoss AS 7.2 default configurations modified to default to SOAP
 messages schema-validation on
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:webservices:2.0">
 <!-- ... -->
@@ -284,7 +284,7 @@ subsystem only the configuration name is specified. When assigning a
 configuration that is defined in the application, the relative path to
 the deployment descriptor and the configuration name must be specified.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 @EndpointConfig(configFile = "WEB-INF/my-endpoint-config.xml", configName = "Custom WS-Security Endpoint")
 public class ServiceImpl implements ServiceIface
@@ -303,7 +303,7 @@ The most practical way of setting a configuration is using
 `org.jboss.ws.api.configuration.ClientConfigFeature`, a JAXWS `Feature`
 extension provided by JBossWS:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 import org.jboss.ws.api.configuration.ClientConfigFeature;
  
@@ -337,7 +337,7 @@ Alternatively, JBossWS API comes with facility classes that can be used
 for assigning configurations when building a client. JAXWS handlers read
 from client configurations as follows:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 import org.jboss.ws.api.configuration.ClientConfigUtil;
 import org.jboss.ws.api.configuration.ClientConfigurer;
@@ -371,7 +371,7 @@ port.echo("Kermit");
 ... similarly, properties are read from client configurations as
 follows:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 import org.jboss.ws.api.configuration.ClientConfigUtil;
 import org.jboss.ws.api.configuration.ClientConfigurer;

@@ -10,7 +10,7 @@ The Agroal subsystem is provided by the https://agroal.github.io/[Agroal] projec
 
 If the WildFly configuration does not have Agroal subsystem enabled by default, it can be enabled in the following ways.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <extensions>
     <extension module="org.wildfly.extension.datasources-agroal"/>
@@ -21,7 +21,7 @@ If the WildFly configuration does not have Agroal subsystem enabled by default, 
 </subsystem>
 ----
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990  /] /extension=org.wildfly.extension.datasources-agroal:add
 {"outcome" => "success"}
@@ -46,7 +46,7 @@ Agroal will try to load an java.sql.Driver from the specified module if the _cla
 [TIP]
 Any installed _driver_ provides an operation called _class-info_ that lists all the properties available for that particular class, that can be set in the _connection-factory_.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:agroal:1.0">
     [...]
@@ -56,7 +56,7 @@ Any installed _driver_ provides an operation called _class-info_ that lists all 
 </subsystem>
 ----
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990  /] /subsystem=datasources-agroal/driver=h2:read-resource
 {
@@ -83,7 +83,7 @@ Attributes _username_ and _password_ are provided for basic authentication with 
 
 Other features provided by the _connection-factory_ definition include the possibility of executing a SQL statement right after the connection has been created and to specify the isolation level of transactions in the database.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:agroal:1.0">
      <datasource [...]>
@@ -99,7 +99,7 @@ Other features provided by the _connection-factory_ definition include the possi
 </subsystem>
 ----
 
-[source, ruby]
+[source,options="nowrap"]
 ---
 [standalone@localhost:9990  /] /subsystem=datasources-agroal/datasource=sample:read-resource
 {
@@ -134,7 +134,7 @@ The _connection pool_ provides other convenient features like background validat
 [NOTE]
 There is a set of flush operations that perform many of these features on-demand. These are _flush-all_ to close all connections immediately, _flush-graceful_ to close all connections under normal operation, _flush-invalid_ to remove any invalid connections from the pool and _flush-idle_ to remove any connections not being used.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:agroal:1.0">
      <datasource [...]>
@@ -145,7 +145,7 @@ There is a set of flush operations that perform many of these features on-demand
 </subsystem>
 ----
 
-[source, ruby]
+[source,options="nowrap"]
 ---
 [standalone@localhost:9990  /] /subsystem=datasources-agroal/datasource=sample:read-resource
 {
@@ -175,7 +175,7 @@ The attribute _statistics-enabled_ allow the collection of metrics regarding the
 [NOTE]
 There is also a _reset-statistics_ operation provided.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:agroal:1.0">
     <xa-datasource name="sample-xa" jndi-name="java:jboss/datasources/ExampleXADS" statistics-enabled="true">
@@ -185,12 +185,12 @@ There is also a _reset-statistics_ operation provided.
 </subsystem>
 ----
 
-[source, ruby]
+[source,options="nowrap"]
 ---
 [standalone@localhost:9990  /] /subsystem=datasources-agroal/datasource=sample-xa:read-resource
 {
     "outcome" => "success",
-    "result" => {   
+    "result" => {
         "jndi-name" => "java:jboss/datasources/ExampleXADS",
         "statistics-enabled" => true
         [...]
@@ -200,7 +200,7 @@ There is also a _reset-statistics_ operation provided.
 
 The available statistics include the number of created / destroyed connections and the number of connections in use / available in the pool. There are also statistics for the time it takes to create a connection and for how long have threads been blocked waiting for a connection.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990  /] /subsystem=datasources-agroal/datasource=sample:read-resource(include-runtime)
 {
@@ -240,7 +240,7 @@ Deferred enlistment is not supported, meaning that if JTA is enabled a connectio
 [TIP]
 The _connectable_ attribute allows a non-XA datasource to take part in an XA transaction ('Last Resource Commit Optimization (LRCO)' / 'Commit Markable Resource')
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:agroal:1.0">
     <datasource name="sample" jndi-name="java:jboss/datasources/ExampleDS" jta="false" connectable="false" statistics-enabled="true">
@@ -250,7 +250,7 @@ The _connectable_ attribute allows a non-XA datasource to take part in an XA tra
 </subsystem>
 ----
 
-[source, ruby]
+[source,options="nowrap"]
 ---
 [standalone@localhost:9990  /] /subsystem=datasources-agroal/datasource=sample-xa:read-resource
 {

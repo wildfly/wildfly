@@ -80,7 +80,7 @@ _jboss-webservices.xml_ descriptor:
 Here is an example of partial overriding of the default configuration
 for a specific deployment:
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <?xml version="1.1" encoding="UTF-8"?>
 <webservices version="1.2"
@@ -107,7 +107,7 @@ instance including multiple WS-Policy declarations in the contract and
 selecting the policy to use depending on a server wide system property;
 here is an example:
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <wsdl:definitions ...>
   ...

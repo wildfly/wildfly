@@ -81,7 +81,7 @@ describe each address that exists in the DC's model, and contain the
 attributes set for the resource at that address. This serialized form
 looks like this:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [{
     "domain-resource-address" => [],
@@ -149,7 +149,7 @@ are then propagated to the slave HCs, which then in turn propagate the
 changes to any servers running in a server group affected by the changes
 made. In this example:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 [disconnected /] connect
 [domain@localhost:9990 /] /profile=full/subsystem=datasources/data-source=ExampleDS:write-attribute(name=enabled,value=false)
@@ -218,7 +218,7 @@ To help with being able to know what is compatible we have versions
 within the subsystems, this is stored in the subsystem's extension. When
 registering the subsystem you will typically see something like:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 public class SomeExtension implements Extension {
  
@@ -277,7 +277,7 @@ of WildFly and JBoss AS 7.
 You can find the `ModelVersion` of a subsystem by querying its
 extension:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 domain@localhost:9990 /] /extension=org.jboss.as.clustering.infinispan:read-resource(recursive=true)
 {
@@ -340,7 +340,7 @@ different times. Let us use the `weld` subsystem, which is relatively
 simple, as an example. In JBoss AS 7.2.0 and lower it had a ModelVersion
 of 1.0.0, and its resource description was as follows:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
                 {
                     "description" => "The configuration of the weld subsystem.",
@@ -366,7 +366,7 @@ of 1.0.0, and its resource description was as follows:
 In WildFly {wildflyVersion}, it has a ModelVersion of 2.0.0 and has added two
 attributes, `require-bean-descriptor` and `non-portable` mode:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 {
         "description" => "The configuration of the weld subsystem.",
@@ -462,7 +462,7 @@ Another, more concrete example from the logging subsystem is that it
 allows a ' `%K{...`}' in the pattern formatter which makes the formatter
 use color:
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
             <pattern-formatter pattern="%K{level}%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
 ----
@@ -511,7 +511,7 @@ servers. The same considerations as in
 transformers>> are true, although operation transformers give you quicker
 'feedback' if something is not valid. If you try to execute:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 /profile=full/subsystem=weld:write-attribute(name=require-bean-descriptor, value=false)
 ----
@@ -551,7 +551,7 @@ similar to if they are set to `true`.
 The above discussion implies that to use the weld subsystem on a legacy
 slave HC, the `domain.xml` configuration for it must look like:
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:weld:2.0"
       require-bean-descriptor="true"
@@ -572,7 +572,7 @@ WildFly {wildflyVersion} slave HCs in our domain, and they are missing out on th
 features introduced by the attributes introduced in ModelVersion 2.0.0.
 If we do
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:weld:2.0"
       require-bean-descriptor="false"
@@ -582,7 +582,7 @@ If we do
 then it will fail when doing transformation for the legacy controller.
 The solution is to put these in two different profiles in `domain.xml`
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <domain>
 ....
@@ -636,7 +636,7 @@ running.
 To ignore the profile we cannot understand we do the following in the
 legacy slave HC's `host.xml`
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <host xmlns="urn:jboss:domain:1.3" name="slave">
 ...
@@ -715,7 +715,7 @@ different?:
 Here is some example output, as a subsystem developer you can ignore
 everything down to `======= Comparing subsystem models ======`:
 
-[source, bash]
+[source,options="nowrap"]
 ----
 Enter legacy AS version: 7.2.0.Final
 Using target model: 7.2.0.Final
@@ -801,7 +801,7 @@ It is, however, a pretty complex thing to do, so we recommend the other
 approach. For completeness here is the entry point to handling
 transformation in this way.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 public class SomeExtension implements Extension {
  
@@ -857,7 +857,7 @@ covered in the current version of this guide. The entry point for using
 the builder API here is taken from the WeldExtension (in current WildFly
 this has ModelVersion 2.0.0).
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     private void registerTransformers(SubsystemRegistration subsystem) {
         ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
@@ -901,7 +901,7 @@ and `non-portable-mode` attributes on the `weld` subsystem resource if
 they are undefined, and reject them if they are defined. So that means
 that if the weld subsystem looks like
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     {
         "non-portable-mode" => false,
@@ -911,7 +911,7 @@ that if the weld subsystem looks like
 
 or
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     {
         "non-portable-mode" => undefined,
@@ -925,7 +925,7 @@ legacy HC.
 
 If the resource has true for these attributes:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     {
         "non-portable-mode" => true,
@@ -947,7 +947,7 @@ The `ResourceTransformationDescriptionBuilder` contains transformations
 for a resource type. The initial one is for the subsystem, obtained by
 the following call:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
         ResourceTransformationDescriptionBuilder subsystemBuilder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 ----
@@ -963,7 +963,7 @@ discussed in
 When we have finished with our builder, we register it with the
 `SubsystemRegistration` against the target ModelVersion.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
         TransformationDescription.Tools.register(subsystemBuilder.build(), subsystem, ModelVersion.create(1, 0, 0));
 ----
@@ -982,7 +982,7 @@ To make the `ResourceTransformationDescriptionBuilder` do something, we
 need to call some of its methods. For example, if we want to silently
 discard a child resource, we can do
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     subsystemBuilder.discardChildResource(PathElement.pathElement("child", "discarded"));
 ----
@@ -1015,7 +1015,7 @@ slave HCs.
 If we want to reject transformation if a child resource exists, we can
 do
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     subsystemBuilder.rejectChildResource(PathElement.pathElement("child", "reject"));
 ----
@@ -1042,7 +1042,7 @@ note that these also return a builder for the child resource (since we
 are not rejecting or discarding it), we can do this for all children of
 a given type:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     ResourceTransformationDescriptionBuilder childBuilder =
        subsystemBuilder.addChildRedirection(PathElement.pathElement("newChild"), PathElement.pathElement("oldChild");
@@ -1057,7 +1057,7 @@ ModelVersion 1.1.0 of the subsystem.
 
 We can also rename a specific named child:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     ResourceTransformationDescriptionBuilder childBuilder =
        subsystemBuilder.addChildRedirection(PathElement.pathElement("newChild", "newName"), PathElement.pathElement("oldChild", "oldName");
@@ -1078,7 +1078,7 @@ to transform something in one of its child resources. Again, since we
 are not discarding or rejecting, we get a reference to the builder for
 the child resource.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     ResourceTransformationDescriptionBuilder childBuilder =
        subsystemBuilder.addChildResource(PathElement.pathElement("some-child"));
@@ -1100,14 +1100,14 @@ returns you a `AttributeTransformationDescriptionBuilder` which is used
 to define transformation for the resource's attributes. For example this
 gets the attribute builder for the subsystem resource:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     AttributeTransformationDescriptionBuilder attributeBuilder = subSystemBuilder.getAttributeBuilder();
 ----
 
 or we could get it for one of the child resources:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     ResourceTransformationDescriptionBuilder childBuilder =
        subsystemBuilder.addChildResource(PathElement.pathElement("some-child"));
@@ -1122,7 +1122,7 @@ you have defined the `example` attribute of
 value is `true`, the inital domain transfer will reject if it is `true`,
 also the transformation of the following operations will reject:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
     /subsystem=my-subsystem/some-child=test:add(example=true)
     /subsystem=my-subsystem:write-attribute(name=example, value=true)
@@ -1132,7 +1132,7 @@ also the transformation of the following operations will reject:
 The following operations will pass in this example, since the `example`
 attribute is not getting set to `true`
 
-[source,ruby]
+[source,options="nowrap"]
 ----
     /subsystem=my-subsystem/some-child=test:add(example=false)
     /subsystem=my-subsystem/some-child=test:add()             //Here it 'example' is simply left undefined
@@ -1199,7 +1199,7 @@ To discard an attribute we need an instance of
 and call the following method on the
 `AttributeTransformationDescriptionBuilder`:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
      DiscardAttributeChecker discardCheckerA = ....;
      attributeBuilder.setDiscard(discardCheckerA, "attr1", "attr2");
@@ -1210,7 +1210,7 @@ attributes at once, in the above example both `attr1` and `attr2` get
 checked for if they should be discarded. You can also register different
 `DiscardAttributeChecker` instances for different attributes:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
      DiscardAttributeChecker discardCheckerA = ....;
      DiscardAttributeChecker discardCheckerB = ....;
@@ -1222,7 +1222,7 @@ Note that you can only have one `DiscardAttributeChecker` per attribute,
 so the following would cause an error (if running with assertions
 enabled, otherwise `discardCheckerB` will overwrite `discardCheckerA`):
 
-[source, java]
+[source,java,options="nowrap"]
 ----
      DiscardAttributeChecker discardCheckerA = ....;
      DiscardAttributeChecker discardCheckerB = ....;
@@ -1239,7 +1239,7 @@ implementations. The implementations of this interface get called for
 each attribute they are registered against. The interface itself is
 quite simple:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 public interface DiscardAttributeChecker {
  
@@ -1256,7 +1256,7 @@ it is an expression, and this method returns `true`, the
 `isOperationParameterDiscardable` and `isResourceAttributeDiscardable`
 methods will not get called.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     /**
      * Returns {@code true} if the attribute should be discarded if it is undefined
@@ -1271,7 +1271,7 @@ is `undefined`, and this method returns `true`, the
 `isDiscardExpressions`, `isOperationParameterDiscardable` and
 `isResourceAttributeDiscardable` methods will not get called.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     /**
      * Gets whether the given operation parameter can be discarded
@@ -1296,7 +1296,7 @@ operation is working on before any transformation happened, which is
 useful if you want to check other values in the resource if this is, say
 a `write-attribute` operation. Return `true` to discard the operation.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     /**
      * Gets whether the given attribute can be discarded
@@ -1316,7 +1316,7 @@ attribute in the resource. We have access to the address of the
 resource, the name and value of the attribute, and the
 `TransformationContext`. Return `true` to discard the operation.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 }
 ----
@@ -1336,7 +1336,7 @@ an operation or a resource is being transformed, so it makes both the
 `isResourceAttributeDiscardable()` and
 `isOperationParameterDiscardable()` methods call the following method.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 protected abstract boolean isValueDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context);
 ----
@@ -1354,7 +1354,7 @@ This is another convenience class, which allows you to discard an
 attribute if it has one or more values. Here is a real-world example
 from the `jpa` subsystem:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     private void initializeTransformers_1_1_0(SubsystemRegistration subsystemRegistration) {
         ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
@@ -1399,7 +1399,7 @@ for by using a `DiscardAttributeChecker.DiscardAttributeValueChecker`.
 One valid use for `DiscardAttributeChecker.ALWAYS` can be found in the
 `ejb3` subsystem:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     private static void registerTransformers_1_1_0(SubsystemRegistration subsystemRegistration) {
         ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance()
@@ -1436,7 +1436,7 @@ To reject an attribute we need an instance of
 and call the following method on the
 `AttributeTransformationDescriptionBuilder`:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
      RejectAttributeChecker rejectCheckerA = ....;
      attributeBuilder.addRejectCheck(rejectCheckerA, "attr1", "attr2");
@@ -1447,7 +1447,7 @@ attributes at once, in the above example both `attr1` and `attr2` get
 checked for if they should be discarded. You can also register different
 `RejectAttributeChecker` instances for different attributes:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
      RejectAttributeChecker rejectCheckerA = ....;
      RejectAttributeChecker rejectCheckerB = ....;
@@ -1458,7 +1458,7 @@ checked for if they should be discarded. You can also register different
 You can also register several `RejectAttributeChecker` instances per
 attribute
 
-[source, java]
+[source,java,options="nowrap"]
 ----
      RejectAttributeChecker rejectCheckerA = ....;
      RejectAttributeChecker rejectCheckerB = ....;
@@ -1485,7 +1485,7 @@ each attribute they are registered against. The interface itself is
 quite simple, and its main methods are similar to
 `DiscardAttributeChecker`:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 public interface RejectAttributeChecker {
     /**
@@ -1511,7 +1511,7 @@ operation is working on before any transformation happened, which is
 useful if you want to check other values in the resource if this is, say
 a `write-attribute` operation. Return `true` to reject the operation.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     /**
      * Gets whether the given resource attribute value is not understandable by the target process and needs
@@ -1531,7 +1531,7 @@ attribute in the resource. We have access to the address of the
 resource, the name and value of the attribute, and the
 `TransformationContext`. Return `true` to discard the operation.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     /**
      * Returns the log message id used by this checker. This is used to group it so that all attributes failing a type of rejection
@@ -1547,7 +1547,7 @@ Here we need a unique id for the log message from the
 their log message. A typical implementation will contain \{\{return
 getRejectionLogMessage(Collections.<String, ModelNode>emptyMap());}
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     /**
      * Gets the log message if the attribute failed rejection
@@ -1562,7 +1562,7 @@ Here we return a message saying why the attributes were rejected, with
 the possibility to format the message to include the names of all the
 rejected attributes and the values they had.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 }
 ----
@@ -1583,7 +1583,7 @@ an operation or a resource is being transformed, so it makes both the
 `rejectOperationParameter()` and `rejectResourceAttribute()` methods
 call the following method.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 protected abstract boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context);
 ----
@@ -1600,7 +1600,7 @@ exist on the target legacy slave HC. A typical use case for these is for
 the _implied behavior_ example we looked at in the `jpa` subsystem in
 <<discardattributechecker.discardattributevaluechecker,#DiscardAttributeChecker.DiscardAttributeValueChecker>>
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     private void initializeTransformers_1_1_0(SubsystemRegistration subsystemRegistration) {
         ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
@@ -1643,7 +1643,7 @@ The
 which allows you to define a checker for the elements of a list, when
 the type of an attribute is `ModelType.LIST`.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     attributeBuilder
             .addRejectCheck(new ListRejectAttributeChecker(RejectAttributeChecker.EXPRESSIONS), "attr1");
@@ -1662,7 +1662,7 @@ For attributes where the type is `ModelType.OBJECT` we have
 you to register different reject checkers for the different fields of
 the registered object.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     Map<String, RejectAttributeChecker> fieldRejectCheckers = new HashMap<String, RejectAttributeChecker>();
     fieldRejectCheckers.put("time", RejectAttributeChecker.SIMPLE_EXPRESSIONS);
@@ -1683,7 +1683,7 @@ To convert an attribute you register an
 `org.jboss.as.controller.transform.description.AttributeConverter`
 instance against the attributes you want to convert:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     AttributeConverter converterA = ...;
     AttributeConverter converterB = ...;
@@ -1702,7 +1702,7 @@ Now if `attr1` and `attr2` get converted with `converterA`, while
 The `AttributeConverter` interface gets called for each attribute for
 which the `AttributeConverter` has been registered
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 public interface AttributeConverter {
  
@@ -1728,7 +1728,7 @@ transformation happened, which is useful if you want to check other
 values in the resource if this is, say a write-attribute operation. To
 change the attribute value, you modify the `attributeValue`.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     /**
      * Converts a resource attribute
@@ -1747,7 +1747,7 @@ resource, the name and value of the attribute, and the
 `TransformationContext`. To change the attribute value, you modify the
 `attributeValue`.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 }
 ----
@@ -1758,7 +1758,7 @@ specified to be milliseconds, however in the current model it has been
 changed to be seconds, hence we need to convert the value when sending
 it to slave HCs using the legacy model:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
      AttributeConverter secondsToMs = new AttributeConverter.DefaultAttributeConverter() {
                   @Override
@@ -1780,7 +1780,7 @@ We need to be a bit careful here. If the `timeout` attribute is an
 expression our nice conversion will not work, so we need to add a reject
 check to make sure it is not an expression as well:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
      attributeBuilder.
           .addRejectCheck(SIMPLE_EXPRESSIONS, "timeout")
@@ -1795,7 +1795,7 @@ an operation or a resource is being transformed, so it makes both the
 convertOperationParameter() and convertResourceAttribute() methods call
 the following method.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 protected abstract void convertAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context);
 ----
@@ -1815,7 +1815,7 @@ version this attribute has been made optional with a default value of
 slave HC using the old version we will need to introduce this attribute
 if the new model does not contain it:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
      attributeBuilder.
          setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode(1234) true), "port");
@@ -1833,7 +1833,7 @@ not.
 
 To rename an attribute, you simply do
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     attributeBuilder.addRename("my-name", "legacy-name");
 ----
@@ -1842,7 +1842,7 @@ Now, in the initial domain transfer to the legacy slave HC, we rename
 `/subsystem=my-subsystem`'s `my-name` attribute to `legacy-name`. Also,
 the operations involving this attribute are affected, so
 
-[source,ruby]
+[source,options="nowrap"]
 ----
     /subsystem=my-subsystem/:add(my-name=true)  ->
          /subsystem=my-subsystem/:add(legacy-name=true)
@@ -1861,7 +1861,7 @@ on their parameters as set up by the
 want to change this, so you can use the
 `OperationTransformationOverrideBuilder`, which is got from:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 OperationTransformationOverrideBuilder operationBuilder = subSystemBuilder.addOperationTransformationOverride("some-operation");
 ----
@@ -1873,7 +1873,7 @@ turned off. In other cases you might want to include them by calling
 (the `OperationTransformationBuilder` interface has all the methods
 found in `AttributeTransformationBuilder`:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     OperationTransformationOverrideBuilder operationBuilder = subSystemBuilder.addOperationTransformationOverride("some-operation");
     operationBuilder.inheritResourceAttributeDefinitions();
@@ -1884,7 +1884,7 @@ You can also rename operations, in this case the operation
 `some-operation` gets renamed to `legacy-operation` before getting sent
 to the legacy slave HC.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     OperationTransformationOverrideBuilder operationBuilder = subSystemBuilder.addOperationTransformationOverride("some-operation");
     operationBuilder.rename("legacy-operation");
@@ -1898,7 +1898,7 @@ Say you have a subsystem with ModelVersions 1.0.0 and 1.1.0. There will
 transformations. Let's say that the transformers registration looks
 like:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 public class SomeExtension implements Extension {
  
@@ -1937,7 +1937,7 @@ Now say we want to do a new version of the model. This new version
 contains a new attribute called 'new-attr' which cannot be defined when
 transforming to 1.1.0, we bump the model version to 2.0.0:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 public class SomeExtension implements Extension {
  
@@ -1975,7 +1975,7 @@ transformers>>
 Now we need some new transformers from the current ModelVersion to 1.1.0
 where we reject any defined occurrances of our new attribute `new-attr`:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     private void registerTransformers(final SubsystemRegistration subsystem) {
         registerTransformers_1_0_0(subsystem);
@@ -2000,7 +2000,7 @@ need to extend our transformer for 1.0.0 to reject it there as well. As
 you can see 1.0.0 also rejects a defined 'attr1' in addition to the
 'new-attr'(which is rejected in both versions).
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     /**
      * Registers transformers from the current version to ModelVersion 1.0.0
@@ -2028,7 +2028,7 @@ point to the `ResourceTransformationDescriptionBuilder` we have seen
 earlier. Each `ResourceTransformationDescriptionBuilder` deals with
 transformation across one version delta.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     private void registerTransformers(SubsystemRegistration subsystem) {
         ModelVersion version1_1_0 = ModelVersion.create(1, 1, 0);
@@ -2113,7 +2113,7 @@ following example is from the threads subsystem, and I have only
 included the tests against 7.1.2 - there are more! First we need to set
 up our test:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 public class ThreadsSubsystemTestCase extends AbstractSubsystemBaseTest {
     public ThreadsSubsystemTestCase() {
@@ -2138,7 +2138,7 @@ relevant to transformers here.
 
 To test a configuration xxx
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     @Test
     public void testTransformerAS712() throws Exception {
@@ -2228,7 +2228,7 @@ at runtime. To generate the .dmr file, you need to generate it by adding
 a temporary test (make sure that you adjust `controllerVersion` and
 `modelVersion` to what you want to generate):
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     @Test
     public void deleteMeWhenDone() throws Exception {
@@ -2257,7 +2257,7 @@ expression values in the version that came with JBoss AS 7.1.2.Final. So
 we have a test that attempts to use expressions, and then fixes each
 resource and attribute where expressions were not allowed.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     @Test
     public void testRejectExpressionsAS712() throws Exception {
@@ -2301,7 +2301,7 @@ operation no longer is rejected. The configuration for this is the
 `FailedOperationTransformationConfig` returned by the `getConfig()`
 method:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     private FailedOperationTransformationConfig getConfig() {
         PathAddress subsystemAddress = PathAddress.pathAddress(ThreadsExtension.SUBSYSTEM_PATH);
@@ -2347,7 +2347,7 @@ Looking at the model comparison between WildFly and JBoss AS 7.2.0,
 there is a change to the `remoting` subsystem. The relevant part of the
 output is:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 ======= Resource root address: ["subsystem" => "remoting"] - Current version: 2.0.0; legacy version: 1.2.0 =======
 --- Problems for relative address to root []:
@@ -2361,7 +2361,7 @@ legacy slave running version 1.2.0. So we add the following to
 `RemotingExtension` to reject all instances of that child type against
 ModelVersion 1.2.0.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     @Override
     public void initialize(ExtensionContext context) {
@@ -2400,7 +2400,7 @@ there is now an attribute under
 `/subsystem=remoting/remote-outbound-connection=*` called `protocol`
 which did not exist in the older version:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 ======= Resource root address: ["subsystem" => "remoting"] - Current version: 2.0.0; legacy version: 1.2.0 =======
 --- Problems for relative address to root []:
@@ -2422,7 +2422,7 @@ reject it if it has a value different from `remote`. So what we need to
 do when registering transformers against ModelVersion 1.2.0 to handle
 this attribute:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     private void registerTransformers_1_2(SubsystemRegistration registration) {
         TransformationDescription.Tools.register(get1_2_0_1_3_0Description(), registration, VERSION_1_2);
@@ -2455,7 +2455,7 @@ work in pairs.
 
 An alternative way to write the `protocolTransform()` method would be:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
      private static AttributeTransformationDescriptionBuilder protocolTransform(AttributeTransformationDescriptionBuilder builder) {
         builder.setDiscard(new DiscardAttributeChecker.DefaultDiscardAttributeChecker() {
@@ -2499,7 +2499,7 @@ transformer must reject anything that is not `true` for these
 attributes. Let us look at the transformer registered by the
 WeldExtension:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     private void registerTransformers(SubsystemRegistration subsystem) {
         ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
@@ -2610,7 +2610,7 @@ convert this to `2`, but `2.5` cannot be converted. The way this is
 solved in the ModClusterExtension is to register the following some
 other attributes are registered here, but hopefully it is clear anyway:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
         dynamicLoadProvider.addChildResource(LOAD_METRIC_PATH)
                     .getAttributeBuilder()
@@ -2630,7 +2630,7 @@ the `CapacityCheckerAndConverter` for `capacity`.
 and `RejectAttributeChecker` in previous examples. Since we now need to
 convert a value we need an instance of `AttributeConverter`.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     static class CapacityCheckerAndConverter extends DefaultCheckersAndConverter {
  
@@ -2640,7 +2640,7 @@ convert a value we need an instance of `AttributeConverter`.
 We should not discard so `isValueDiscardable()` from
 `DiscardAttributeChecker` always returns `false`:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
         @Override
         protected boolean isValueDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
@@ -2660,7 +2660,7 @@ its value will resolve to on the target host, so we need to reject it.
 Then we try to change it into an `int`, and reject if that was not
 possible:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
         @Override
         protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
@@ -2675,7 +2675,7 @@ possible:
 
 And then finally we do the conversion:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
         @Override
         protected void convertAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {

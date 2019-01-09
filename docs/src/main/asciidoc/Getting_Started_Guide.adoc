@@ -320,7 +320,7 @@ provide.
 To start WildFly {wildflyVersion} using the default web profile configuration in "
 _standalone_" mode, change directory to $JBOSS_HOME/bin.
 
-[source]
+[source,options="nowrap"]
 ----
 ./standalone.sh
 ----
@@ -328,7 +328,7 @@ _standalone_" mode, change directory to $JBOSS_HOME/bin.
 To start the default web profile configuration using domain management
 capabilities,
 
-[source]
+[source,options="nowrap"]
 ----
 ./domain.sh
 ----
@@ -343,14 +343,14 @@ argument with the server-config file to be used.
 To use the full profile with clustering capabilities, use the following
 syntax from $JBOSS_HOME/bin:
 
-[source, bash]
+[source,options="nowrap"]
 ----
 ./standalone.sh --server-config=standalone-full-ha.xml
 ----
 
 Similarly to start an alternate configuration in _domain_ mode:
 
-[source, bash]
+[source,options="nowrap"]
 ----
 ./domain.sh --domain-config=my-domain-configuration.xml
 ----
@@ -364,7 +364,7 @@ subsystems you want to add, remove, or modify.
 After executing one of the above commands, you should see output similar
 to what's shown below.
 
-[source, bash]
+[source,options="nowrap"]
 ----
 =========================================================================
  
@@ -419,7 +419,7 @@ in the bin folder.
 After starting the script you will be guided through the process to add
 a new user: -
 
-[source, java]
+[source,options="nowrap"]
 ----
 ./add-user.sh
 What type of user do you wish to add?
@@ -434,7 +434,7 @@ servers so select option a.
 You will then be prompted to enter the details of the new user being
 added: -
 
-[source, bash]
+[source,options="nowrap"]
 ----
 Enter the details of the new user to add.
 Realm (ManagementRealm) :
@@ -468,7 +468,7 @@ point your browser at:
 
 NOTE: port 9990 is the default port configured.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <management-interfaces>
    <native-interface security-realm="ManagementRealm">
@@ -498,7 +498,7 @@ the _jboss-cli.sh_ script provides the same capabilities available via
 the web-based UI. This script is accessed from $JBOSS_HOME/bin
 directory; e.g.,
 
-[source, bash]
+[source,options="nowrap"]
 ----
 $JBOSS_HOME/bin/jboss-cli.sh --connect
 Connected to standalone controller at localhost:9990
@@ -533,7 +533,7 @@ In the provided configurations, H2 is configured as a module. The module
 is located in the $JBOSS_HOME/modules/com/h2database/h2 directory. The
 H2 datasource configuration is shown below.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:datasources:1.0">
     <datasources>
@@ -591,7 +591,7 @@ Configuration] page.
 
 Turn on debugging for a specific category with CLI:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=logging/logger=org.jboss.as:add(level=DEBUG)
 ----

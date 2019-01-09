@@ -23,7 +23,7 @@ for both inbound and outbound SSL connections.
 [[ssl]]
 === <ssl />
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <server-identities>
   <ssl protocol="...">
@@ -60,7 +60,7 @@ even an `alias` as well to ensure only one key is loaded.
 
 === <secret />
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <server-identities>
   <secret value="..." />
@@ -84,7 +84,7 @@ is one exception and that is if a trust store is defined - on
 negotiating an outbound SSL connection the trust store will be used to
 verify the remote server.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <authentication>
   <truststore />
@@ -107,7 +107,7 @@ store can be defined.
 [[truststore]]
 === <truststore />
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <authentication>
   <truststore path="..." relative-to="..." keystore-password="..."/>
@@ -135,7 +135,7 @@ being opened is still a key store.
 [[local]]
 === <local />
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <authentication>
   <local default-user="..." allowed-users="..." />
@@ -158,7 +158,7 @@ to be specified.
 [[jaas]]
 === <jaas />
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <authentication>
   <jaas name="..." />
@@ -183,7 +183,7 @@ without SSL enabled will reveal the users password.
 [[ldap]]
 === <ldap />
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <authentication>
   <ldap connection="..." base-dn="..." recursive="..." user-dn="...">
@@ -246,7 +246,7 @@ supplied by the user authenticating.
 [[security-realms-properties]]
 === <properties />
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <authentication>
   <properties path="..." relative-to="..." plain-text="..." />
@@ -273,7 +273,7 @@ password))
 [[users]]
 === <users />
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <authentication>
   <users>
@@ -303,7 +303,7 @@ being accessed. At the moment only a properties file approach or a
 custom plug-in are supported - support for loading roles from LDAP or
 from a database are planned for a subsequent release.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <authorization>
   <properties />
@@ -313,7 +313,7 @@ from a database are planned for a subsequent release.
 
 === <properties />
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <authorization>
   <properties path="..." relative-to="..." />
@@ -335,7 +335,7 @@ Strictly speaking these are not a part of the security realm definition,
 however at the moment they are only used by security realms so the
 definition of outbound connection is described here.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <management>
   <security-realms />
@@ -349,7 +349,7 @@ definition of outbound connection is described here.
 
 We only support outbound connections to ldap servers for the authentication process.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <outbound-connections>
   <ldap name="..." url="..." search-dn="..." search-credential="..." security-realm="..." initial-context-factory="..."

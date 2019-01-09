@@ -41,7 +41,7 @@ example the following `web.xml` binds the string `"Hello World"` to
 `java:comp/env/hello` (any non absolute JNDI name is relative to
 `java:comp/env` context).
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 <web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -74,7 +74,7 @@ with Java SE, to bind entries in the global namespaces (the standard
 `java:comp`, `java:module` and `java:app` namespaces are read-only, as
 mandated by the Java EE Platform Specification).
 
-[source, java]
+[source,java,options="nowrap"]
 ----
   InitialContext initialContext = new InitialContext();
   initialContext.bind("java:global/a", 100);
@@ -95,7 +95,7 @@ result in a UnsupportedOperationException if the target namespace uses a
 WritableServiceBasedNamingStore. To work around that, the bind()
 invocation needs to be wrapped using WildFly proprietary APIs:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
   InitialContext initialContext = new InitialContext();
   WritableServiceBasedNamingStore.pushOwner(serviceTarget);
@@ -134,7 +134,7 @@ up it will lookup the target and return the result.
 
 An example standalone.xml might look like:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:naming:2.0" >
   <bindings>
@@ -157,7 +157,7 @@ An example standalone.xml might look like:
 
 The CLI may also be used to bind an entry. As an example:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 /subsystem=naming/binding=java\:global\/mybinding:add(binding-type=simple, type=long, value=1000)
 ----
@@ -176,7 +176,7 @@ the Naming subsystem configuration.
 For Java EE applications the recommended way to lookup a JNDI entry is
 to use `@Resource` injection:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
   @Resource(lookup = "java:global/mystring")
   private String myString;
@@ -224,14 +224,14 @@ Concurrency Utilities 1.0 Specification (JSR 236).
 Java EE applications may use, without any additional configuration
 needed, the standard JNDI API to lookup an entry from JNDI:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
   String myString = (String) new InitialContext().lookup("java:global/mystring");
 ----
 
 or simply
 
-[source, java]
+[source,java,options="nowrap"]
 ----
   String myString = InitialContext.doLookup("java:global/mystring");
 ----

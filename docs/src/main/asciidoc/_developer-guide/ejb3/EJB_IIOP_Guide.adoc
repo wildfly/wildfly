@@ -22,7 +22,7 @@ subsystem configuration.
 It is also necessary to enable the JacORB transactions interceptor as
 shown below.
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:jacorb:1.1">
   <orb>

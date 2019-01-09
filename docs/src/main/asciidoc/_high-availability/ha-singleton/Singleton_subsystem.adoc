@@ -14,7 +14,7 @@ https://github.com/wildfly/wildfly/blob/10.0.0.Final/clustering/singleton/extens
 subsystem configuration] from WildFly's ha and full-ha profile looks
 like:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:singleton:1.0">
     <singleton-policies default="default">
@@ -35,7 +35,7 @@ A singleton policy defines:
 One can add a new singleton policy via the following management
 operation:
 
-[source]
+[source,options="nowrap"]
 ----
 /subsystem=singleton/singleton-policy=foo:add(cache-container=server)
 ----
@@ -62,7 +62,7 @@ node, 1 is second oldest, etc. ; while position=-1 refers to the
 youngest node, -2 to the second youngest, etc. +
 e.g.
 +
-[source]
+[source,options="nowrap"]
 ----
 /subsystem=singleton/singleton-policy=foo/election-policy=simple:add(position=-1)
 ----
@@ -71,7 +71,7 @@ e.g.
 Elects a random member to be the provider of a singleton service +
 e.g.
 +
-[source]
+[source,options="nowrap"]
 ----
 /subsystem=singleton/singleton-policy=foo/election-policy=random:add()
 ----
@@ -85,7 +85,7 @@ via node name or via outbound socket binding name. Node preferences
 always take precedent over the results of an election policy. +
 e.g.
 
-[source]
+[source,options="nowrap"]
 ----
 /subsystem=singleton/singleton-policy=foo/election-policy=simple:list-add(name=name-preferences, value=nodeA)
 /subsystem=singleton/singleton-policy=bar/election-policy=random:list-add(name=socket-binding-preferences, value=nodeA)
@@ -104,7 +104,7 @@ cluster size. This value can be updated at runtime, and will immediately
 affect any active singleton services. +
 e.g.
 
-[source]
+[source,options="nowrap"]
 ----
 /subsystem=singleton/singleton-policy=foo:write-attribute(name=quorum, value=3)
 ----

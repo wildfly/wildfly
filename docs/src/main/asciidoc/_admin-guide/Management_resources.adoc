@@ -73,7 +73,7 @@ operation. For example, to learn the names of the operations exposed by
 the root resource for a standalone server, and then learn the full
 details of one of them, via the CLI one would:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] :read-operation-names
 {
@@ -149,7 +149,7 @@ The `read-attribute` operation takes a single parameter "name" whose
 value is a the name of the attribute. For example, to read the "port"
 attribute of a socket-binding resource via the CLI:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /socket-binding-group=standard-sockets/socket-binding=https:read-attribute(name=port)
 {
@@ -167,7 +167,7 @@ mutate its state. The operation takes two parameters:
 For example, to read the "port" attribute of a socket-binding resource
 via the CLI:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /socket-binding-group=standard-sockets/socket-binding=https:write-attribute(name=port,value=8444)
 {"outcome" => "success"}
@@ -187,7 +187,7 @@ The values of all of the attributes a resource exposes can be obtained
 via the `read-resource` operation, with the "include-runtime" parameter
 set to "true". For example, from the CLI:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /subsystem=undertow/server=default-server/http-listener=default:read-resource(include-runtime=true)
 {
@@ -239,7 +239,7 @@ Omit the "include-runtime" parameter (or set it to "false") to limit
 output to those attributes whose values are stored in the persistent
 configuration:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /subsystem=undertow/server=default-server/http-listener=default:read-resource(include-runtime=false
 {

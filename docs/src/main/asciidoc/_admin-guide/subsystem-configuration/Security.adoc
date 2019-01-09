@@ -166,7 +166,7 @@ The authentication element is used to hold the list of login modules
 that will be used for authentication when this domain is used, the
 structure of the login-module element is:
 
-[source, java]
+[source,xml,options="nowrap"]
 ----
 <login-module code="..." flag="..." module="...">
   <module-option name="..." value="..."/>
@@ -253,7 +253,7 @@ not both. We set up JASPI by configuring one or more login modules
 inside the login-module-stack element and setting up an authentication
 module. Here is the structure of the authentication-jaspi element:
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <login-module-stack name="...">
   <login-module code="..." flag="..." module="...">
@@ -281,7 +281,7 @@ authorization can be checked with JACC (Java Authorization Contract for
 Containers) or XACML (eXtensible Access Control Markup Language). The
 structure of the authorization element is:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <policy-module code="..." flag="..." module="...">
   <module-option name="..." value="..."/>
@@ -332,7 +332,7 @@ The mapping element defines additional mapping of principals,
 credentials, roles and attributes for the subject. The structure of the
 mapping element is:
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <mapping-module type="..."code="..." module="...">
   <module-option name="..." value="..."/>
@@ -384,7 +384,7 @@ default implementation used is
 `org.jboss.security.audit.providers.LogAuditProvider`. The structure of
 the audit element is:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <provider-module code="..." module="...">
   <module-option name="..." value="..."/>
@@ -475,7 +475,7 @@ SSLContext
 The optional additional-properties element can be used to include other
 options. The structure of the jsse element is:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <jsse keystore-url="..." keystore-password="..." keystore-type="..." keystore-provider="..." keystore-provider-argument="..." key-manager-factory-algorithm="..." key-manager-factory-provider="..." truststore-url="..." truststore-password="..." truststore-type="..." truststore-provider="..." truststore-provider-argument="..." trust-manager-factory-algorithm="..." trust-manager-factory-provider="..." client-alias="..." server-alias="..." service-auth-token="..." client-auth="..." cipher-suites="..." protocols="...">
   <additional-properties>x=y
@@ -490,7 +490,7 @@ options. The structure of the jsse element is:
 This element is used to specify additional properties as required by the
 security subsystem, properties are specified in the following format:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <security-properties>
   <property name="..." value="..."/>

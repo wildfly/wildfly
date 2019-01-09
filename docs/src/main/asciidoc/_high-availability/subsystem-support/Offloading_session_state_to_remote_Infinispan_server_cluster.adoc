@@ -23,7 +23,7 @@ To configure `remote-cache-container` ensure you have a list of available Infini
 The following example CLI script first adds socket bindings to two known Infinispan Server nodes,
 followed by configuration of the cluster.
 
-[source]
+[source,options="nowrap"]
 ----
 batch
 /socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=infinispan-server-1:add(host=server1.example.com,port=11622)
@@ -36,7 +36,7 @@ run-batch
 Upon reload, this will register necessary services for the client.
 A HotRod client can be injected directly into Java EE applications using the `@Resource` annotation.
 
-[source,java]
+[source,java,options="nowrap"]
 ----
 @Resource(lookup = "java:jboss/infinispan/remote-container/web-sessions")
 private org.infinispan.client.hotrod.RemoteCacheContainer client;
@@ -54,7 +54,7 @@ When using Infinispan Server version prior to 9.2, the caches need to be configu
 Once `remote-cache-container` is configured a `hotrod` store can be configured replacing any existing store.
 The following CLI script demonstrates a typical use case for offloading sessions is in conjunction with the `invalidation-cache`:
 
-[source]
+[source,options="nowrap"]
 ----
 batch
 /subsystem=infinispan/cache-container=web/invalidation-cache=hotrod-persistence:add()
@@ -77,7 +77,7 @@ and http://infinispan.org/documentation/[Infinispan documentation] on how to sec
 
 Once the SSL Context is configured, use the following CLI script to configure `remote-cache-container`:
 
-[source]
+[source,options="nowrap"]
 ----
 /subsystem=infinispan/remote-cache-container=web-sessions/component=security:write-attribute(name=ssl-context,value=hotrod-ssl-context)
 ----

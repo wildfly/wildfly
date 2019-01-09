@@ -87,7 +87,7 @@ A server booted in `--admin-only` mode will discard messages rather than send th
 ====
 
 .CLI Example
-[source]
+[source,options="nowrap"]
 ----
 # Add the socket binding
 /socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=log-server:add(host=localhost, port=4560)
@@ -100,13 +100,13 @@ A server booted in `--admin-only` mode will discard messages rather than send th
 ----
 
 .Add a UDP Example
-[source]
+[source,options="nowrap"]
 ----
 /subsystem=logging/socket-handler=log-server-handler:add(named-formatter=json, level=INFO, outbound-socket-binding-ref=log-server, protocol=UDP)
 ----
 
 .Add SSL Example
-[source]
+[source,options="nowrap"]
 ----
 # Add the socket binding
 /socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=log-server:add(host=localhost, port=4560)

@@ -139,7 +139,7 @@ the SOAP request and response messages are declared. A detailed
 explanation of the security settings are provided in the comments in the
 listing below.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
  <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <definitions targetNamespace="http://www.jboss.org/jbossws/ws-extensions/wssecuritypolicy" name="SecurityService"
@@ -381,7 +381,7 @@ listing below.
 The web service provider interface class, ServiceIface, is a simple
 straight forward web service definition.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.service;
  
@@ -433,7 +433,7 @@ handling. The last EndpointProperty statement declares the
 ServerCallbackHandler implementation class. It is used to obtain the
 user's password for the certificates in the keystore file.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.service;
  
@@ -476,7 +476,7 @@ creator of the certificate must record the password he assigns and
 provide it when requested through the CallbackHandler. In this scenario
 skpass is the password for user myservicekey.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
  package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.service;
  
@@ -565,7 +565,7 @@ keys in the SOAP request and response messages are declared. A detailed
 explanation of the security settings are provided in the comments in the
 listing below.
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
  <?xml version="1.0" encoding="UTF-8"?>
 <wsdl:definitions
@@ -1014,7 +1014,7 @@ writing our own.
 Learn more about the SAMLTokenProvider
 http://coheigea.blogspot.it/2011/10/apache-cxf-sts-documentation-part-iv.html[here].
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.samples.wsse.policy.trust;
 
@@ -1093,7 +1093,7 @@ used to obtain the password for the private key in the keystore. This
 class enables CXF to retrieve the password of the user name to use for
 the message signature.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.sts;
  
@@ -1173,7 +1173,7 @@ following XML must be added to the JBoss security subsystem in the
 server configuration file. Replace " *SOME_PATH*" with appropriate
 information.
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
  <security-domain name="JBossWS-trust-sts">
   <authentication>
@@ -1188,7 +1188,7 @@ information.
 
 jboss-web.xml
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE jboss-web PUBLIC "-//JBoss//DTD Web Application 2.4//EN" ">
@@ -1272,7 +1272,7 @@ OnBehalfOf examples. When providing the STSClient in this way, the user
 must provide a org.apache.cxf.Bus for it and the configuration keys must
 not have the ".it" suffix.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 QName serviceName = new QName("http://www.jboss.org/jbossws/ws-extensions/wssecuritypolicy", "SecurityService");
 URL wsdlURL = new URL(serviceURL + "?wsdl");
@@ -1328,7 +1328,7 @@ provided here. This information is not in the (JKS) keystore but
 provided in the WildFly security domain. It was declared in file
 jbossws-users.properties.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.shared;
 
@@ -1390,7 +1390,7 @@ implementation.
 Similarly to the previous implementation, the STS is served through a
 WebServiceProvider annotated POJO:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
  package org.jboss.test.ws.jaxws.samples.wsse.policy.trust;
  
@@ -1429,7 +1429,7 @@ The `@WebServiceProvider` annotation references the following WS-Policy
 enabled wsdl contract; please note the wsdl operations, messages and
 such must match the `PicketLinkSTS` implementation:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <?xml version="1.0"?>
 <wsdl:definitions name="PicketLinkSTS" targetNamespace="urn:picketlink:identity-federation:sts"
@@ -1635,7 +1635,7 @@ PicketLink based STS gets its configuration from a picketlink-sts.xml
 descriptor which must be added in WEB-INF into the deployment; please
 refer to the PicketLink documentation for further information:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <PicketLinkSTS xmlns="urn:picketlink:identity-federation:config:1.0"
     STSName="PicketLinkSTS" TokenTimeout="7200" EncryptToken="false">
@@ -1671,7 +1671,7 @@ Dependencies: org.apache.ws.security,org.apache.cxf,org.picketlink
 
 Here is how the PicketLink STS endpoint is packaged:
 
-[source, bash]
+[source,options="nowrap"]
 ----
 alessio@inuyasha /dati/jbossws/stack/cxf/trunk $ jar -tvf ./modules/testsuite/cxf-tests/target/test-libs/jaxws-samples-wsse-policy-trustPicketLink-sts.war
      0 Mon Sep 03 17:38:38 CEST 2012 META-INF/

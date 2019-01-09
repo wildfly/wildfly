@@ -15,7 +15,7 @@ Cache containers returned by the Infinispan subsystem are auto-configured with t
 * Marshaller configured with additional Externalizers loadable from the configured module attribute.
 
 e.g. To create a new cache container that loads marshallers from the "org.bar" module:
-[source]
+[source,options="nowrap"]
 ----
 /subsystem=infinispan/cache-container=foo:add(module=org.foo)
 ----
@@ -23,7 +23,7 @@ e.g. To create a new cache container that loads marshallers from the "org.bar" m
 A cache container may designate a specific cache as its default cache, i.e. the cache returned via http://docs.jboss.org/infinispan/9.2/apidocs/org/infinispan/manager/CacheContainer.html#getCache--[CacheContainer.getCache()]:
 
 e.g. To set "bar" as the default cache of the "foo" container:
-[source]
+[source,options="nowrap"]
 ----
 /subsystem=infinispan/cache-container=foo:write-attribute(name=default-cache, value=bar)
 ----
@@ -36,14 +36,14 @@ It is only necessary to define a transport if the cache container contains clust
 
 To create a JGroups transport using the default channel of the server:
 
-[source]
+[source,options="nowrap"]
 ----
 /subsystem=infinispan/cache-container=foo/transport=jgroups:add()
 ----
 
 To create a JGroups transport using a distinct "alpha" channel, that uses the "tcp" stack:
 
-[source]
+[source,options="nowrap"]
 ----
 /subsystem=jgroups/channel=alpha:add(stack=tcp)
 /subsystem=infinispan/cache-container=foo/transport=jgroups:add(channel=alpha)
@@ -53,14 +53,14 @@ For a complete list of transport attributes, refer to the https://wildscribe.git
 
 To remove an existing JGroups transport, you can either use the standard remove resource operation:
 
-[source]
+[source,options="nowrap"]
 ----
 /subsystem=infinispan/cache-container=foo/transport=jgroups:remove()
 ----
 
 {empty}... or by adding the "none" transport (which will auto-remove any existing transport):
 
-[source]
+[source,options="nowrap"]
 ----
 /subsystem=infinispan/cache-container=foo/transport=none:add(){allow-resource-service-restart=true}
 ----
@@ -78,7 +78,7 @@ For more information about this cache type, refer to the http://infinispan.org/d
 
 To create a local cache:
 
-[source]
+[source,options="nowrap"]
 ----
 /subsystem=infinispan/cache-container=foo/local-cache=bar:add()
 ----
@@ -94,7 +94,7 @@ For more information about this cache type, refer to the http://infinispan.org/d
 
 To create a replicated cache:
 
-[source]
+[source,options="nowrap"]
 ----
 /subsystem=infinispan/cache-container=foo/replicated-cache=bar:add()
 ----
@@ -110,7 +110,7 @@ For more information about this cache type, refer to the http://infinispan.org/d
 
 To create a distributed cache where a given entry is stored on 3 nodes:
 
-[source]
+[source,options="nowrap"]
 ----
 /subsystem=infinispan/cache-container=foo/distributed-cache=bar:add(owners=3)
 ----
@@ -131,7 +131,7 @@ For more information about this cache type, refer to the http://infinispan.org/d
 
 To create a scattered cache:
 
-[source]
+[source,options="nowrap"]
 ----
 /subsystem=infinispan/cache-container=foo/scattered-cache=bar:add()
 ----
@@ -147,7 +147,7 @@ For more information about this cache type, refer to the http://infinispan.org/d
 
 To create an invalidation cache:
 
-[source]
+[source,options="nowrap"]
 ----
 /subsystem=infinispan/cache-container=foo/invalidation-cache=bar:add()
 ----
@@ -162,14 +162,14 @@ Any undefined components are auto-created using their defaults.
 
 e.g. The following cache add operation:
 
-[source]
+[source,options="nowrap"]
 ----
 /subsystem=infinispan/cache-container=foo/local-cache=bar:add()
 ----
 
 {empty}... is actually equivalent to the following sequence of operations:
 
-[source]
+[source,options="nowrap"]
 ----
 batch
 /subsystem=infinispan/cache-container=foo/local-cache=bar:add()
@@ -184,14 +184,14 @@ run-batch
 Similarly, you can reset all the attributes of a component by simply removing the component.
 e.g.
 
-[source]
+[source,options="nowrap"]
 ----
 /subsystem=infinispan/cache-container=foo/local-cache=bar:component=expiration:remove(){allow-resource-service-restart=true}
 ----
 
 {empty}... is equivalent to:
 
-[source]
+[source,options="nowrap"]
 ----
 /subsystem=infinispan/cache-container=foo/local-cache=bar:component=expiration:remove(){allow-resource-service-restart=true}
 /subsystem=infinispan/cache-container=foo/local-cache=bar:component=expiration:add(){allow-resource-service-restart=true}
@@ -204,7 +204,7 @@ The type of storage used has semantic implications for the user of the cache.
 When using object storage, the cache has store-as-reference semantics, whereas when using binary storage the cache has call-by-value semantics.
 Consider the following logic:
 
-[source,java]
+[source,java,options="nowrap"]
 ----
 List<String> list = new ArrayList<>();
 cache.startBatch();
@@ -230,7 +230,7 @@ When the number of entries in the cache exceeds this threshold, the least recent
 
 e.g. To store a maximum of 100 objects in the Java heap:
 
-[source]
+[source,options="nowrap"]
 ----
 /subsystem=infinispan/cache-container=foo/local-cache=bar/memory=object:add(size=100)
 ----
@@ -246,7 +246,7 @@ When the number of entries in the cache exceeds this threshold, the least recent
 
 e.g. To store a maximum of 1 MB of binary data in the Java heap:
 
-[source]
+[source,options="nowrap"]
 ----
 /subsystem=infinispan/cache-container=foo/local-cache=bar/memory=binary:add(size=1048576, eviction-type=MEMORY)
 ----
@@ -261,7 +261,7 @@ When the number of entries in the cache exceeds this threshold, the least recent
 
 e.g. To store a maximum of 1 GB of binary data in native memory outside of the Java heap:
 
-[source]
+[source,options="nowrap"]
 ----
 /subsystem=infinispan/cache-container=foo/local-cache=bar/memory=off-heap:add(size=1073741824)
 ----
@@ -291,7 +291,7 @@ Locks may be acquired either pessimistically (the default), i.e. before invoking
 
 e.g. To configure a transactional cache using local Infinispan transactions with OPTIMISTIC locking:
 
-[source]
+[source,options="nowrap"]
 ----
 /subsystem=infinispan/cache-container=foo/local-cache=bar/component=transaction(mode=BATCH, locking=OPTIMISTIC)
 ----
@@ -313,7 +313,7 @@ IMPORTANT: Cache reads are always lock-free unless invoked using Flag.FORCE_WRIT
 
 e.g. To configure a cache using REPEATABLE_READ isolation:
 
-[source]
+[source,options="nowrap"]
 ----
 /subsystem=infinispan/cache-container=foo/local-cache=bar/component=locking(isolation=REPEATABLE_READ)
 ----
@@ -327,7 +327,7 @@ Cache entries may be configured to expire after some duration since creation (i.
 
 e.g. To configure expiration of entries older than 1 day, or that have not been accessed within the past hour:
 
-[source]
+[source,options="nowrap"]
 ----
 /subsystem=infinispan/cache-container=foo/local-cache=bar/component=expiration(lifespan=86400000, max-idle=3600000)
 ----
@@ -362,14 +362,14 @@ shared::
 
 To remove an existing cache store, you can either use the standard resource remove operation:
 
-[source]
+[source,options="nowrap"]
 ----
 /subsystem=infinispan/cache-container=foo/local-cache=bar/store=file:remove()
 ----
 
 {empty}... or by adding the "none" store (which auto-removes any existing store):
 
-[source]
+[source,options="nowrap"]
 ----
 /subsystem=infinispan/cache-container=foo/local-cache=bar/store=none:add(){allow-resource-service-restart=true}
 ----
@@ -381,7 +381,7 @@ By default, files are stored in a file named "_cache-name_.dat" within a subdire
 
 e.g. To persist cache entries to $HOME/foo/bar.dat:
 
-[source]
+[source,options="nowrap"]
 ----
 /subsystem=infinispan/cache-container=foo/local-cache=bar/store=file:add(path=foo, relative-to=user.home)
 ----
@@ -392,7 +392,7 @@ A JDBC store persists cache entries to a database.
 
 e.g. To persist cache entries to an H2 database via the ExampleDS data-source:
 
-[source]
+[source,options="nowrap"]
 ----
 /subsystem=infinispan/cache-container=foo/local-cache=bar/store=jdbc:add(data-source=ExampleDS, dialect=H2)
 ----
@@ -401,7 +401,7 @@ e.g. To persist cache entries to an H2 database via the ExampleDS data-source:
 
 A remote store persists cache entries to a set of remote Infinispan server instances via the HotRod protocol.
 
-[source]
+[source,options="nowrap"]
 ----
 /socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=node1:add(host=server1, port=1000)
 /socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=node2:add(host=server2, port=1000)
@@ -417,7 +417,7 @@ If state transfer does not complete within the configured timeout, the cache wil
 
 e.g. To configure a state-transfer timeout of 1 minute:
 
-[source]
+[source,options="nowrap"]
 ----
 /subsystem=infinispan/cache-container=foo/local-cache=bar/component=state-transfer:add(timeout=60000)
 ----
@@ -427,7 +427,7 @@ While this prevents timeouts due to large state transfers, cache operations on t
 
 e.g. To configure a non-blocking state transfer:
 
-[source]
+[source,options="nowrap"]
 ----
 /subsystem=infinispan/cache-container=foo/local-cache=bar/component=state-transfer:add(timeout=0)
 ----

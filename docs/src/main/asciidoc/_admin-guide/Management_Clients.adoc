@@ -26,7 +26,7 @@ capabilities for a wide range of other clients too.
 The HTTP API endpoint is co-located with either the domain controller or
 a standalone server. By default, it runs on port 9990:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <management-interfaces>
  [...]
@@ -166,7 +166,7 @@ aka the Domain Controller, but it also launches a couple of servers.
 Which host-specific configuration should be used can be controlled via
 the _ _--host-config__ command line argument:
 
-[source,bash]
+[source,options="nowrap"]
 ----
 $ bin/domain.sh --host-config=host-master.xml
 ----
@@ -186,7 +186,7 @@ deployments should be deployed.
 Which domain-wide configuration should be used can be controlled via the
 _ _--domain-config__ command line argument:
 
-[source,bash]
+[source,options="nowrap"]
 ----
 $ bin/domain.sh --domain-config=domain-production.xml
 ----

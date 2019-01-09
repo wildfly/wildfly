@@ -4,7 +4,7 @@
 [[how-do-i-add-a-log-category]]
 == How do I add a log category?
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=logging/logger=com.your.category:add
 ----
@@ -14,14 +14,14 @@
 
 To change a handlers log level:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=logging/console-handler=CONSOLE:write-attribute(name=level,value=DEBUG)
 ----
 
 Changing the level on a log category is the same:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=logging/logger=com.your.category:write-attribute(name=level,value=ALL)
 ----
@@ -34,13 +34,13 @@ to choose from; `file-handler`, `periodic-rotating-file-handler` and
 `size-rotating-file-handler`. In this example we'll just use a simple
 `file-handler`.
 +
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=logging/file-handler=fh:add(level=INFO, file={"relative-to"=>"jboss.server.log.dir", "path"=>"fh.log"}, append=false, autoflush=true)
 ----
 2.  Now create the log category.
 +
-[source,ruby]
+[source,options="nowrap"]
 ----
 /subsystem=logging/logger=org.your.company:add(use-parent-handlers=false,handlers=["fh"])
 ----

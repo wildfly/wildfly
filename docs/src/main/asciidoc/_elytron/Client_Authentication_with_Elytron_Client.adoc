@@ -60,7 +60,7 @@ authentication configuration, authentication context, and match rules.
 
 *custom-config.xml*
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <configuration>
     <authentication-client xmlns="urn:elytron:1.0">
@@ -100,7 +100,7 @@ authentication configuration, authentication context, and match rules.
 You can then reference that file in your client's code by setting a
 system property when running your client.
 
-[source,bash]
+[source,options="nowrap"]
 ----
 $ java -Dwildfly.config.url=/path/to/the.xml .....
 ----
@@ -159,7 +159,7 @@ to match against.
 The programatic approach configures all the Elytron Client configuration
 in the client's code:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 //create your authentication configuration
 AuthenticationConfiguration adminConfig =
@@ -196,7 +196,7 @@ _AuthenticationContext_, each method call returns a new instance of that
 object. For example, if you wanted separate configurations when
 connecting over different hostnames, you could do the following:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 //create your authentication configuration
 AuthenticationConfiguration commonConfig =
@@ -261,7 +261,7 @@ Also, instead of starting with an empty authentication configuration,
 you can start with the current configured one by using
 _captureCurrent()_.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 //create your authentication configuration
 AuthenticationConfiguration commonConfig = AuthenticationConfiguration.captureCurrent();
@@ -302,7 +302,7 @@ configuration will appear after the ones in the current context.
 The default configuration approach relies completely on the
 configuration provided by Elytron Client:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 //create your runnable for establishing a connection
 Runnable runnable =
@@ -335,7 +335,7 @@ _$WILDFLY_HOME/bin/client/jboss-client.jar_.
 
 *default wildfly-config.xml*
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <configuration>
   <authentication-client xmlns="urn:elytron:1.0">

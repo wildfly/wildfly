@@ -14,7 +14,7 @@ from.)
 
 Here is an example of a simple command handler and its integration.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 package org.jboss.as.test.cli.extensions;public class ExtCommandHandler extends org.jboss.as.cli.handlers.CommandHandlerWithHelp {     
  
@@ -41,7 +41,7 @@ public class ExtCommandHandler extends org.jboss.as.cli.handlers.CommandHandlerW
 The command will simply print a message to the terminal. The next step
 is to implement the CLI CommandHandlerProvider interface.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 package org.jboss.as.test.cli.extensions;
 public class ExtCommandHandlerProvider implements org.jboss.as.cli.CommandHandlerProvider {

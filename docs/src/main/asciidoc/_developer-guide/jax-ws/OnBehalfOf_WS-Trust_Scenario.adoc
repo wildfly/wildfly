@@ -49,7 +49,7 @@ ws-provider's WSDL. The wsp:Policy section is the same. There are
 changes to the service endpoint, targetNamespace, portType, binding
 name, and service.
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <definitions targetNamespace="http://www.jboss.org/jbossws/ws-extensions/onbehalfofwssecuritypolicy" name="OnBehalfOfService"
@@ -110,7 +110,7 @@ name, and service.
 The web service provider interface class, OnBehalfOfServiceIface, is a
 simple web service definition.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.onbehalfof;
  
@@ -141,7 +141,7 @@ Crypto Merlin implementation.
 OnBehalfOfServiceImpl is calling the ServiceImpl acting on behalf of the
 user. Method setupService performs the requisite configuration setup.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.onbehalfof;
  
@@ -253,7 +253,7 @@ name to use for the message signature. This class has been revised to
 return the passwords for this service, myactaskey and the "OnBehalfOf"
 user, alice.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
  package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.onbehalfof;
  
@@ -308,7 +308,7 @@ Basic Scenario client]. The use of OnBehalfOf is configured by the
 method call stsClient.setOnBehalfOf. The alternative is to use the key
 SecurityConstants.STS_TOKEN_ON_BEHALF_OF and a value in the props map.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 final QName serviceName = new QName("http://www.jboss.org/jbossws/ws-extensions/onbehalfofwssecuritypolicy", "OnBehalfOfService");
 final URL wsdlURL = new URL(serviceURL + "?wsdl");

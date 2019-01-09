@@ -100,7 +100,7 @@ file.
 The following example makes the plugin provide the wsdl file and
 artifact sources for the specified endpoint class:
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <build>
   <plugins>
@@ -128,7 +128,7 @@ artifact sources for the specified endpoint class:
 The following example does the same, but is meant for use in your own
 testsuite:
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <build>
   <plugins>
@@ -160,7 +160,7 @@ user is expected to set a dependency in his own `pom.xml` to the desired
 _JBossWS_ stack version. The plugin will rely on the that for using the
 proper tooling.
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <dependencies>
   <dependency>
@@ -225,7 +225,7 @@ implementation. |"."
 Executing wsprovide in verbose mode with separate output directories for
 source, resources, and classes:
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <target name="test-wsproivde" depends="init">
   <taskdef name="wsprovide" classname="org.jboss.ws.tools.ant.WSProvideTask">

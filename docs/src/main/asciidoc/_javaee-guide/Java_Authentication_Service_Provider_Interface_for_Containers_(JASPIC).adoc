@@ -11,7 +11,7 @@ security domain in the `jboss-web.xml` deployment descriptor. This file
 should be located under the `WEB-INF` directory. An example
 `jboss-web.xml` enabling the default JASPI domain:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 <?xml version="1.0"?>
 <jboss-web xmlns="http://www.jboss.com/xml/ns/javaee"
@@ -25,7 +25,7 @@ should be located under the `WEB-INF` directory. An example
 For EAR deployments, a `jboss-app.xml` like the following should be used
 instead, placed under the root META-INF directory:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 <jboss-app xmlns="http://www.jboss.com/xml/ns/javaee"

@@ -13,7 +13,7 @@ outbound connections being established by the server.
 
 The general structure of a management realm definition is: -
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <security-realm name="ManagementRealm">
    <plug-ins></plug-ins>
@@ -74,7 +74,7 @@ Either within the `standalone.xml` or `host.xml` configurations the
 security realms can be associated with the management interface as
 follows:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <http-interface security-realm="ManagementRealm">...</http-interface>
 ----
@@ -97,7 +97,7 @@ The Remoting subsystem exposes a connector to allow for inbound
 comunications with JNDI and the EJB subsystem by default we associate
 the `ApplicationRealm` with this connection.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:remoting:3.0">
   <endpoint worker="default"/>
@@ -122,7 +122,7 @@ Even if the referenced realm contains username and password
 authentication configuration the client side of the connection will NOT
 use this to verify the remote server.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <remote-outbound-connection name="remote-ejb-connection"
                             outbound-socket-binding-ref="binding-remote-ejb-connection"
@@ -142,7 +142,7 @@ When running in domain mode slave host controllers need to establish a
 connection to the native interface of the master domain controller so
 these also need a realm for the identity of the slave.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <domain-controller>
   <remote host="${jboss.domain.master.address}" port="${jboss.domain.master.port:9999}" security-realm="ManagementRealm"/>
@@ -265,7 +265,7 @@ servers running on that host controller.
 [[management-realm]]
 === Management Realm
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <security-realm name="ManagementRealm">
   <authentication>
@@ -320,7 +320,7 @@ password pair.
 
 === Application Realm
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <security-realm name="ApplicationRealm">
   <authentication>
@@ -385,7 +385,7 @@ roles to be loaded.
 [[other-security-domain]]
 ==== other security domain
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <security-domain name="other" cache-type="default">
   <authentication>
@@ -443,7 +443,7 @@ When configuring the security realms remote access to the server's
 MBeanServer needs a special mention. When running in standalone mode the
 following is the default configuration:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:jmx:1.3">
   ...
@@ -462,14 +462,14 @@ is exposed by the host controller process however each application
 server is running in it's own process so by default remote access to JMX
 is disabled.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:remoting:3.0">
   <http-connector name="http-remoting-connector" connector-ref="default" security-realm="ApplicationRealm"/>
 </subsystem>
 ----
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:jmx:1.3">
   ...

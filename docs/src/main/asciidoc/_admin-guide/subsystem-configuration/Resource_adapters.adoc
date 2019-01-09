@@ -12,7 +12,7 @@ adapter entry in the subsystem.
 The resource adapter itself is defined within the subsystem
 _resource-adapters_:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:resource-adapters:1.0">
     <resource-adapters>

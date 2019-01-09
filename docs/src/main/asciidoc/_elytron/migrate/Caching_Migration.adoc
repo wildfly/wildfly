@@ -9,7 +9,7 @@ The purpose of this chapter is to highlight the migration of a configuration wit
 
 A PicketBox based security domain can be defined with the following commands.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 ./subsystem=security/security-domain=application-security:add(cache-type=default)
 ./subsystem=security/security-domain=application-security/authentication=classic:add(login-modules=[{code=LdapExtended, flag=Required, module-options={ \
@@ -28,7 +28,7 @@ roleAttributeID="uid" \
 
 Resulting in the following security domain definition:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:security:2.0">
   <security-domains>
@@ -56,7 +56,7 @@ Resulting in the following security domain definition:
 == Migrated Example
 When using WildFly Elytron where caching is required the individual security realm is wrapped using a cache, a migrated configuration can be defined with the following commands:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 ./subsystem=elytron/dir-context=ldap-connection:add(url=ldap://localhost:10389, principal="uid=admin,ou=system", credential-reference={clear-text=secret})
 ./subsystem=elytron/ldap-realm=ldap-realm:add(dir-context=ldap-connection, \
@@ -69,7 +69,7 @@ attribute-mapping=[{filter-base-dn="ou=groups,dc=group-to-principal,dc=wildfly,d
 
 These can then be used in a security domain and subsequently an authentication factory.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 ./subsystem=elytron/security-domain=application-security:add(realms=[{realm=cached-ldap}], default-realm=cached-ldap, permission-mapper=default-permission-mapper)
 ./subsystem=elytron/http-authentication-factory=application-security-http:add(http-server-mechanism-factory=global, security-domain=application-security, mechanism-configurations=[{mechanism-name=BASIC}])
@@ -79,7 +79,7 @@ In this final step it is very important that the caching-realm is referenced rat
 
 This results in the following definitions:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:wildfly:elytron:1.1" final-providers="combined-providers" disallowed-providers="OracleUcrypto">
   ...

@@ -72,7 +72,7 @@ We'll start by launching a beanshell interpreter, with the jboss-dmr
 library available on the classpath. Then we'll tell beanshell to import
 all the jboss-dmr classes so they are available for use:
 
-[source, java]
+[source,options="nowrap"]
 ----
 $ java -cp bsh-2.0b4.jar:jboss-dmr-1.0.0.Final.jar bsh.Interpreter
 BeanShell 2.0b4 - by Pat Niemeyer (pat@pat.net)
@@ -83,7 +83,7 @@ bsh %
 Next, create a `ModelNode` and use the beanshell `print` function to
 output what type it is:
 
-[source, java]
+[source,options="nowrap"]
 ----
 bsh % ModelNode node = new ModelNode();
 bsh % print(node.getType());
@@ -96,7 +96,7 @@ A new `ModelNode` has no value stored, so its type is
 Use one of the overloaded `set` method variants to assign a node's
 value:
 
-[source, java]
+[source,options="nowrap"]
 ----
 bsh % node.set(1);
 bsh % print(node.getType());
@@ -111,7 +111,7 @@ STRING
 
 Use one of the `asXXX()` methods to retrieve the value:
 
-[source, java]
+[source,options="nowrap"]
 ----
 bsh % node.set(2);
 bsh % print(node.asInt());
@@ -124,7 +124,7 @@ A string
 `ModelNode` will attempt to perform type conversions when you invoke the
 `asXXX` methods:
 
-[source, java]
+[source,options="nowrap"]
 ----
 bsh % node.set(1);
 bsh % print(node.asString());
@@ -141,7 +141,7 @@ true
 
 Not all type conversions are possible:
 
-[source, java]
+[source,options="nowrap"]
 ----
 bsh % node.set("A string");
 bsh % print(node.asInt());
@@ -165,7 +165,7 @@ One `set` variant takes another `ModelNode` as its argument. The value
 of the passed in node is copied, so there is no shared state between the
 two model nodes:
 
-[source, java]
+[source,options="nowrap"]
 ----
 bsh % node.set("A string");
 bsh % ModelNode another = new ModelNode();
@@ -182,7 +182,7 @@ A string
 A `ModelNode` can be cloned. Again, there is no shared state between the
 original node and its clone:
 
-[source, java]
+[source,options="nowrap"]
 ----
 bsh % ModelNode clone = another.clone();
 bsh % print(clone.asString());
@@ -196,7 +196,7 @@ A string
 
 Use the `protect()` method to make a `ModelNode` immutable:
 
-[source, java]
+[source,options="nowrap"]
 ----
 bsh % clone.protect();
 bsh % clone.set("A different string");
@@ -222,7 +222,7 @@ structures. The first more complex type is `ModelType.LIST`.
 Use the `add` methods to initialize a node's value as a list and add to
 the list:
 
-[source, java]
+[source,options="nowrap"]
 ----
 bsh % ModelNode list = new ModelNode();
 bsh % list.add(5);
@@ -233,7 +233,7 @@ LIST
 
 Use `asInt()` to find the size of the list:
 
-[source, java]
+[source,options="nowrap"]
 ----
 bsh % print(list.asInt());
 2
@@ -242,7 +242,7 @@ bsh % print(list.asInt());
 Use the overloaded `get` method variant that takes an int param to
 retrieve an item. The item is returned as a `ModelNode`:
 
-[source, java]
+[source,options="nowrap"]
 ----
 bsh % ModelNode child = list.get(1);
 bsh % print(child.asInt());
@@ -251,7 +251,7 @@ bsh % print(child.asInt());
 
 Elements in a list need not all be of the same type:
 
-[source, java]
+[source,options="nowrap"]
 ----
 bsh % list.add("A string");
 bsh % print(list.get(1).getType());
@@ -266,7 +266,7 @@ calling `get` with an index that does not exist yet in the list will
 actually create a child of type `ModelType.UNDEFINED` at that index (and
 will create UNDEFINED children for any intervening indices.)
 
-[source, java]
+[source,options="nowrap"]
 ----
 bsh % ModelNode four = list.get(4);
 bsh % print(four.getType());
@@ -278,7 +278,7 @@ bsh % print(list.asInt());
 Since the `get` call always returns a `ModelNode` and never `null` it is
 safe to manipulate the return value:
 
-[source, java]
+[source,options="nowrap"]
 ----
 bsh % list.get(5).set(30);
 bsh % print(list.get(5).asInt());
@@ -292,7 +292,7 @@ code.
 
 Use the `asList()` method to get a `List<ModelNode>` of the children:
 
-[source, java]
+[source,options="nowrap"]
 ----
 bsh % for (ModelNode element : list.asList()) {
 print(element.getType());
@@ -308,7 +308,7 @@ INT
 The `asString()` and `toString()` methods provide slightly differently
 formatted text representations of a `ModelType.LIST` node:
 
-[source, java]
+[source,options="nowrap"]
 ----
 bsh % print(list.asString());
 [5,10,"A string",undefined,undefined,30]
@@ -326,7 +326,7 @@ bsh % print(list.toString());
 Finally, if you've previously used `set` to assign a node's value to
 some non-list type, you cannot use the `add` method:
 
-[source, java]
+[source,options="nowrap"]
 ----
 bsh % node.add(5);
 // Error: // Uncaught Exception: Method Invocation node.add : at Line: 18 : in file: <unknown file> : node .add ( 5 )
@@ -343,7 +343,7 @@ java.lang.IllegalArgumentException
 You can, however, use the `setEmptyList()` method to change the node's
 type, and then use `add`:
 
-[source, java]
+[source,options="nowrap"]
 ----
 bsh % node.setEmptyList();
 bsh % node.add(5);
@@ -357,7 +357,7 @@ bsh % print(node.toString());
 The third public class in the jboss-dmr library is
 `org.jboss.dmr.Property`. A `Property` is a `String => ModelNode` tuple.
 
-[source, java]
+[source,options="nowrap"]
 ----
 bsh % Property prop = new Property("stuff", list);
 bsh % print(prop.toString());
@@ -377,7 +377,7 @@ bsh % print(prop.getValue());
 
 The property can be passed to `ModelNode.set`:
 
-[source, java]
+[source,options="nowrap"]
 ----
 bsh % node.set(prop);
 bsh % print(node.getType());
@@ -386,7 +386,7 @@ PROPERTY
 
 The text format for a node of `ModelType.PROPERTY` is:
 
-[source, java]
+[source,options="nowrap"]
 ----
 bsh % print(node.toString());
 ("stuff" => [
@@ -404,7 +404,7 @@ More typically one of the two argument `ModelNode.add` or
 `ModelNode.set` variants is used. The first argument is the property
 name:
 
-[source, java]
+[source,options="nowrap"]
 ----
 bsh % ModelNode simpleProp = new ModelNode();
 bsh % simpleProp.set("enabled", true);
@@ -429,7 +429,7 @@ PROPERTY
 The `asPropertyList()` method provides easy access to a
 `List<Property>`:
 
-[source, java]
+[source,options="nowrap"]
 ----
 bsh % for (Property prop : propList.asPropertyList()) {
 print(prop.getName() + " = " + prop.getValue());
@@ -450,7 +450,7 @@ entry to the map. If no entry exists under the given name, a new entry
 is added with a the value being a `ModelType.UNDEFINED` node. The node
 is returned:
 
-[source, java]
+[source,options="nowrap"]
 ----
 bsh % ModelNode range = new ModelNode();
 bsh % ModelNode min = range.get("min");
@@ -468,7 +468,7 @@ operation._
 Since `get` will never return `null`, a common pattern is to use method
 chaining to create the key/value pair:
 
-[source, java]
+[source,options="nowrap"]
 ----
 bsh % range.get("max").set(10);
 bsh % print(range.toString());
@@ -482,7 +482,7 @@ A call to `get` passing an already existing key will of course return
 the same model node as was returned the first time `get` was called with
 that key:
 
-[source, java]
+[source,options="nowrap"]
 ----
 bsh % print(min == range.get("min"));
 true
@@ -495,7 +495,7 @@ tree if nodes do not exist. This next example uses a workaround to get
 beanshell to handle the overloaded `get` method that takes a variable
 number of arguments:
 
-[source, java]
+[source,options="nowrap"]
 ----
 bsh % String[] varargs = { "US", "Missouri", "St. Louis" };
 bsh % salesTerritories.get(varargs).set("Brian");
@@ -511,7 +511,7 @@ salesTerritories.get("US", "Missouri", "St. Louis").set("Brian");
 
 The key/value pairs in the map can be accessed as a `List<Property`:
 
-[source, java]
+[source,options="nowrap"]
 ----
 bsh % for (Property prop : range.asPropertyList()) {
 print(prop.getName() + " = " + prop.getValue());
@@ -529,7 +529,7 @@ Since the `get` method will actually mutate the state of a node if the
 given key does not exist, `ModelNode` provides a couple methods to let
 you check whether the entry is there. The `has` method simply does that:
 
-[source, java]
+[source,options="nowrap"]
 ----
 bsh % print(range.has("unit"));
 false
@@ -543,7 +543,7 @@ exists, but whether the value is defined (i.e. not
 whether a field in a Java class has a null value. The `hasDefined` lets
 you do this:
 
-[source, java]
+[source,options="nowrap"]
 ----
 bsh % print(range.hasDefined("unit"));
 false
@@ -570,7 +570,7 @@ later be _resolved_ to different value. The string has a special syntax
 that should be familiar to those who have used the system property
 substitution feature in previous JBoss AS releases.
 
-[source, java]
+[source,options="nowrap"]
 ----
 [<prefix>][${<system-property-name>[:<default-value>]}][<suffix>]*
 ----
@@ -585,7 +585,7 @@ http://${host:localhost}:${port:8080}/index.html
 
 Use the `setExpression` method to set a node's value to type expression:
 
-[source, java]
+[source,options="nowrap"]
 ----
 bsh % ModelNode expression = new ModelNode();
 bsh % expression.setExpression("${queue.length}");
@@ -595,7 +595,7 @@ EXPRESSION
 
 Calling `asString()` returns the same string that was input:
 
-[source, java]
+[source,options="nowrap"]
 ----
 bsh % print(expression.asString());
 ${queue.length}
@@ -604,7 +604,7 @@ ${queue.length}
 However, calling `toString()` tells you that this node's value is not of
 `ModelType.STRING`:
 
-[source, java]
+[source,options="nowrap"]
 ----
 bsh % print(expression.toString());
 expression "${queue.length}"
@@ -615,7 +615,7 @@ embedded system properties are resolved against the JVM's current system
 property values. A new `ModelNode` is returned whose value is the
 resolved string:
 
-[source, java]
+[source,options="nowrap"]
 ----
 bsh % System.setProperty("queue.length", "10");
 bsh % ModelNode resolved = expression.resolve();
@@ -626,7 +626,7 @@ bsh % print(resolved.asInt());
 Note that the type of the `ModelNode` returned by `resolve()` is
 `ModelType.STRING`:
 
-[source, java]
+[source,options="nowrap"]
 ----
 bsh % print(resolved.getType());
 STRING
@@ -638,7 +638,7 @@ the string "10" happens to be convertible into the int 10.
 Calling `resolve()` has no effect on the value of the node on which the
 method is invoked:
 
-[source, java]
+[source,options="nowrap"]
 ----
 bsh % resolved = expression.resolve();
 bsh % print(resolved.toString());
@@ -651,7 +651,7 @@ If an expression cannot be resolved, `resolve` just uses the original
 string. The string can include more than one system property
 substitution:
 
-[source, java]
+[source,options="nowrap"]
 ----
 bsh % expression.setExpression("http://${host}:${port}/index.html");
 bsh % resolved = expression.resolve();
@@ -662,7 +662,7 @@ http://${host}:${port}/index.html
 The expression can optionally include a default value, separated from
 the name of the system property by a colon:
 
-[source, java]
+[source,options="nowrap"]
 ----
 bsh % expression.setExpression("http://${host:localhost}:${port:8080}/index.html");
 bsh % resolved = expression.resolve();
@@ -673,7 +673,7 @@ http://localhost:8080/index.html
 Actually including a system property substitution in the expression is
 not required:
 
-[source, java]
+[source,options="nowrap"]
 ----
 bsh % expression.setExpression("no system property");
 bsh % resolved = expression.resolve();
@@ -686,7 +686,7 @@ expression "no system property"
 The `resolve` method works on nodes of other types as well; it returns a
 copy without attempting any real resolution:
 
-[source, java]
+[source,options="nowrap"]
 ----
 bsh % ModelNode basic = new ModelNode();
 bsh % basic.set(10);
@@ -705,7 +705,7 @@ bsh % print(basic.asInt());
 
 You can also pass one of the values of the `ModelType` enum to `set`:
 
-[source, java]
+[source,options="nowrap"]
 ----
 bsh % ModelNode type = new ModelNode();
 bsh % type.set(ModelType.LIST);
