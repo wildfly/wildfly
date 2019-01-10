@@ -254,6 +254,11 @@ public class WebMigrateTestCase extends AbstractSubsystemTest {
         assertEquals("${prop.max-post-size:2097153}", connector.get(Constants.MAX_POST_SIZE).asString());
         assertEquals("https", connector.get(Constants.REDIRECT_SOCKET).asString());
 
+        //http-proxy connector
+        ModelNode httpProxyConnector = newServer.get(Constants.HTTP_LISTENER, "http-proxy");
+        assertTrue(connector.isDefined());
+        assertEquals("http", httpProxyConnector.get(Constants.SOCKET_BINDING).asString());
+
         //https connector
         ModelNode httpsConnector = newServer.get(Constants.HTTPS_LISTENER, "https");
         String realmName = httpsConnector.get(Constants.SECURITY_REALM).asString();
