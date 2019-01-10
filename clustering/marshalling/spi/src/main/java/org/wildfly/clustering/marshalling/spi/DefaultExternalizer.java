@@ -44,7 +44,6 @@ import java.util.Currency;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.Locale;
@@ -80,8 +79,9 @@ import org.wildfly.clustering.marshalling.spi.util.CalendarExternalizer;
 import org.wildfly.clustering.marshalling.spi.util.CollectionExternalizer;
 import org.wildfly.clustering.marshalling.spi.util.CopyOnWriteCollectionExternalizer;
 import org.wildfly.clustering.marshalling.spi.util.DateExternalizer;
+import org.wildfly.clustering.marshalling.spi.util.HashMapExternalizer;
+import org.wildfly.clustering.marshalling.spi.util.LinkedHashMapExternalizer;
 import org.wildfly.clustering.marshalling.spi.util.MapEntryExternalizer;
-import org.wildfly.clustering.marshalling.spi.util.MapExternalizer;
 import org.wildfly.clustering.marshalling.spi.util.SingletonCollectionExternalizer;
 import org.wildfly.clustering.marshalling.spi.util.SingletonMapExternalizer;
 import org.wildfly.clustering.marshalling.spi.util.SortedMapExternalizer;
@@ -122,7 +122,7 @@ public enum DefaultExternalizer implements Externalizer<Object> {
     ATOMIC_LONG(new LongExternalizer<>(AtomicLong.class, AtomicLong::new, AtomicLong::get)),
     ATOMIC_REFERENCE(new ObjectExternalizer<>(AtomicReference.class, AtomicReference::new, AtomicReference::get)),
     CALENDAR(new CalendarExternalizer()),
-    CONCURRENT_HASH_MAP(new MapExternalizer<>(ConcurrentHashMap.class, ConcurrentHashMap::new)),
+    CONCURRENT_HASH_MAP(new HashMapExternalizer<>(ConcurrentHashMap.class, ConcurrentHashMap::new)),
     CONCURRENT_HASH_SET(new CollectionExternalizer<>(ConcurrentHashMap.KeySetView.class, ConcurrentHashMap::newKeySet)),
     CONCURRENT_LINKED_DEQUE(new CollectionExternalizer<>(ConcurrentLinkedDeque.class, size -> new ConcurrentLinkedDeque<>())),
     CONCURRENT_LINKED_QUEUE(new CollectionExternalizer<>(ConcurrentLinkedQueue.class, size -> new ConcurrentLinkedQueue<>())),
@@ -142,9 +142,9 @@ public enum DefaultExternalizer implements Externalizer<Object> {
     EMPTY_SET(new ValueExternalizer<>(Collections.emptySet())),
     EMPTY_SORTED_MAP(new ValueExternalizer<>(Collections.emptySortedMap())),
     EMPTY_SORTED_SET(new ValueExternalizer<>(Collections.emptySortedSet())),
-    HASH_MAP(new MapExternalizer<>(HashMap.class, HashMap::new)),
+    HASH_MAP(new HashMapExternalizer<>(HashMap.class, HashMap::new)),
     HASH_SET(new CollectionExternalizer<>(HashSet.class, HashSet::new)),
-    LINKED_HASH_MAP(new MapExternalizer<>(LinkedHashMap.class, LinkedHashMap::new)),
+    LINKED_HASH_MAP(new LinkedHashMapExternalizer()),
     LINKED_HASH_SET(new CollectionExternalizer<>(LinkedHashSet.class, LinkedHashSet::new)),
     LINKED_LIST(new CollectionExternalizer<>(LinkedList.class, size -> new LinkedList<>())),
     LOCALE(new StringExternalizer<>(Locale.class, Locale::forLanguageTag, Locale::toLanguageTag)),
