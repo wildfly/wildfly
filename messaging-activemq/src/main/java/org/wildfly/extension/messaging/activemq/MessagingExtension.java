@@ -227,8 +227,8 @@ public class MessagingExtension implements Extension {
         subsystem.registerSubModel(new HTTPConnectorDefinition(registerRuntimeOnly));
         subsystem.registerSubModel(new ExternalConnectionFactoryDefinition(registerRuntimeOnly));
         subsystem.registerSubModel(PooledConnectionFactoryDefinition.INSTANCE);
-        subsystem.registerSubModel(ExternalJMSQueueDefinition.INSTANCE);
-        subsystem.registerSubModel(ExternalJMSTopicDefinition.INSTANCE);
+        subsystem.registerSubModel(new ExternalJMSQueueDefinition(registerRuntimeOnly));
+        subsystem.registerSubModel(new ExternalJMSTopicDefinition(registerRuntimeOnly));
 
         // ActiveMQ Servers
         final ManagementResourceRegistration server = subsystem.registerSubModel(new ServerDefinition(registerRuntimeOnly));
@@ -248,6 +248,8 @@ public class MessagingExtension implements Extension {
         if (registerRuntimeOnly) {
             final ManagementResourceRegistration deployment = subsystemRegistration.registerDeploymentModel(new SimpleResourceDefinition(
                     new Parameters(SUBSYSTEM_PATH, getResourceDescriptionResolver("deployed")).setFeature(false)));
+            deployment.registerSubModel(new ExternalJMSQueueDefinition(registerRuntimeOnly));
+            deployment.registerSubModel(new ExternalJMSTopicDefinition(registerRuntimeOnly));
             final ManagementResourceRegistration deployedServer = deployment.registerSubModel(new SimpleResourceDefinition(
                     new Parameters(SERVER_PATH, getResourceDescriptionResolver(SERVER)).setFeature(false)));
             deployedServer.registerSubModel(new JMSQueueDefinition(true, registerRuntimeOnly));
