@@ -48,7 +48,7 @@ public class DynamicClassTable extends SimpleClassTable {
             knownClasses.addAll(contributor.getKnownClasses());
         }
 
-        List<Class<?>> classes = new ArrayList<>(knownClasses.size() + 30);
+        List<Class<?>> classes = new ArrayList<>(knownClasses.size() + 36);
         classes.add(Serializable.class);
         classes.add(Externalizable.class);
 
@@ -57,9 +57,13 @@ public class DynamicClassTable extends SimpleClassTable {
         classes.add(TimeZone.getDefault().getClass());
         classes.add(ZoneId.systemDefault().getClass());
 
+        List<Void> randomAccessList = Collections.emptyList();
+        List<Void> nonRandomAccessList = new LinkedList<>();
         // Add collection wrapper types
-        classes.add(Collections.checkedCollection(Collections.emptyList(), Void.class).getClass());
-        classes.add(Collections.checkedList(Collections.emptyList(), Void.class).getClass());
+        classes.add(Collections.checkedCollection(randomAccessList, Void.class).getClass());
+        classes.add(Collections.checkedCollection(nonRandomAccessList, Void.class).getClass());
+        classes.add(Collections.checkedList(randomAccessList, Void.class).getClass());
+        classes.add(Collections.checkedList(nonRandomAccessList, Void.class).getClass());
         classes.add(Collections.checkedMap(Collections.emptyMap(), Void.class, Void.class).getClass());
         classes.add(Collections.checkedNavigableMap(Collections.emptyNavigableMap(), Void.class, Void.class).getClass());
         classes.add(Collections.checkedNavigableSet(Collections.emptyNavigableSet(), Void.class).getClass());
@@ -68,8 +72,10 @@ public class DynamicClassTable extends SimpleClassTable {
         classes.add(Collections.checkedSortedMap(Collections.emptySortedMap(), Void.class, Void.class).getClass());
         classes.add(Collections.checkedSortedSet(Collections.emptySortedSet(), Void.class).getClass());
 
-        classes.add(Collections.synchronizedCollection(Collections.emptyList()).getClass());
-        classes.add(Collections.synchronizedList(Collections.emptyList()).getClass());
+        classes.add(Collections.synchronizedCollection(randomAccessList).getClass());
+        classes.add(Collections.synchronizedCollection(nonRandomAccessList).getClass());
+        classes.add(Collections.synchronizedList(randomAccessList).getClass());
+        classes.add(Collections.synchronizedList(nonRandomAccessList).getClass());
         classes.add(Collections.synchronizedMap(Collections.emptyMap()).getClass());
         classes.add(Collections.synchronizedNavigableMap(Collections.emptyNavigableMap()).getClass());
         classes.add(Collections.synchronizedNavigableSet(Collections.emptyNavigableSet()).getClass());
@@ -77,8 +83,10 @@ public class DynamicClassTable extends SimpleClassTable {
         classes.add(Collections.synchronizedSortedMap(Collections.emptySortedMap()).getClass());
         classes.add(Collections.synchronizedSortedSet(Collections.emptySortedSet()).getClass());
 
-        classes.add(Collections.unmodifiableCollection(Collections.emptyList()).getClass());
-        classes.add(Collections.unmodifiableList(Collections.emptyList()).getClass());
+        classes.add(Collections.unmodifiableCollection(randomAccessList).getClass());
+        classes.add(Collections.unmodifiableCollection(nonRandomAccessList).getClass());
+        classes.add(Collections.unmodifiableList(randomAccessList).getClass());
+        classes.add(Collections.unmodifiableList(nonRandomAccessList).getClass());
         classes.add(Collections.unmodifiableMap(Collections.emptyMap()).getClass());
         classes.add(Collections.unmodifiableNavigableMap(Collections.emptyNavigableMap()).getClass());
         classes.add(Collections.unmodifiableNavigableSet(Collections.emptyNavigableSet()).getClass());
