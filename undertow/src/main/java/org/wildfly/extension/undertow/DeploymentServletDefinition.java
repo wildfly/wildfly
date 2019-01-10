@@ -23,6 +23,7 @@
 package org.wildfly.extension.undertow;
 
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECONDS;
+import static org.jboss.as.controller.registry.AttributeAccess.Flag.COUNTER_METRIC;
 
 import io.undertow.server.handlers.MetricsHandler;
 import io.undertow.servlet.api.DeploymentInfo;
@@ -67,10 +68,12 @@ public class DeploymentServletDefinition extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition TOTAL_REQUEST_TIME = new SimpleAttributeDefinitionBuilder("total-request-time", ModelType.LONG)
             .setUndefinedMetricValue(new ModelNode(0))
             .setMeasurementUnit(MILLISECONDS)
+            .setFlags(COUNTER_METRIC)
             .setStorageRuntime()
             .build();
     static final SimpleAttributeDefinition REQUEST_COUNT = new SimpleAttributeDefinitionBuilder("request-count", ModelType.LONG)
             .setUndefinedMetricValue(new ModelNode(0))
+            .setFlags(COUNTER_METRIC)
             .setStorageRuntime()
             .build();
     static final SimpleListAttributeDefinition SERVLET_MAPPINGS = new SimpleListAttributeDefinition.Builder("mappings", new SimpleAttributeDefinitionBuilder("mapping", ModelType.STRING).setRequired(false).build())
