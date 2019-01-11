@@ -25,6 +25,7 @@ package org.wildfly.clustering.marshalling.spi.util;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -52,7 +53,10 @@ public class MapExternalizerTestCase {
         Map<Object, Object> basis = Stream.of(1, 2, 3, 4, 5).collect(Collectors.<Integer, Object, Object>toMap(i -> i, i -> Integer.toString(i)));
         new ExternalizerTester<>(DefaultExternalizer.CONCURRENT_HASH_MAP.cast(ConcurrentHashMap.class), MapExternalizerTestCase::assertMapEquals).test(new ConcurrentHashMap<>(basis));
         new ExternalizerTester<>(DefaultExternalizer.HASH_MAP.cast(HashMap.class), MapExternalizerTestCase::assertMapEquals).test(new HashMap<>(basis));
-        new ExternalizerTester<>(DefaultExternalizer.LINKED_HASH_MAP.cast(LinkedHashMap.class), MapExternalizerTestCase::assertMapEquals).test(new LinkedHashMap<>(basis));
+        new ExternalizerTester<>(DefaultExternalizer.LINKED_HASH_MAP.cast(LinkedHashMap.class), MapExternalizerTestCase::assertLinkedMapEquals).test(new LinkedHashMap<>(basis));
+        LinkedHashMap<Object, Object> accessOrderMap = new LinkedHashMap<>(5, 1, true);
+        accessOrderMap.putAll(basis);
+        new ExternalizerTester<>(DefaultExternalizer.LINKED_HASH_MAP.cast(LinkedHashMap.class), MapExternalizerTestCase::assertLinkedMapEquals).test(accessOrderMap);
 
         new ExternalizerTester<>(DefaultExternalizer.EMPTY_MAP.cast(Map.class), Assert::assertSame).test(Collections.emptyMap());
         new ExternalizerTester<>(DefaultExternalizer.EMPTY_NAVIGABLE_MAP.cast(NavigableMap.class), Assert::assertSame).test(Collections.emptyNavigableMap());
@@ -69,6 +73,21 @@ public class MapExternalizerTestCase {
         Assert.assertTrue(expected.keySet().containsAll(actual.keySet()));
         for (Map.Entry<Object, Object> entry : expected.entrySet()) {
             Assert.assertEquals(entry.getValue(), actual.get(entry.getKey()));
+        }
+    }
+
+    static <T extends Map<Object, Object>> void assertLinkedMapEquals(T expected, T actual) {
+        Assert.assertEquals(expected.size(), actual.size());
+        // Change access order
+        expected.get(expected.keySet().iterator().next());
+        actual.get(actual.keySet().iterator().next());
+        Iterator<Map.Entry<Object, Object>> expectedEntries = expected.entrySet().iterator();
+        Iterator<Map.Entry<Object, Object>> actualEntries = actual.entrySet().iterator();
+        while (expectedEntries.hasNext() && actualEntries.hasNext()) {
+            Map.Entry<Object, Object> expectedEntry = expectedEntries.next();
+            Map.Entry<Object, Object> actualEntry = actualEntries.next();
+            Assert.assertEquals(expectedEntry.getKey(), actualEntry.getKey());
+            Assert.assertEquals(expectedEntry.getValue(), actualEntry.getValue());
         }
     }
 }

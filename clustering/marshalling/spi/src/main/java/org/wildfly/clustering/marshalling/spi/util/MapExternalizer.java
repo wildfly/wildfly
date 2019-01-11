@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Map;
-import java.util.function.IntFunction;
+import java.util.function.Function;
 
 import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.spi.IndexSerializer;
@@ -35,23 +35,20 @@ import org.wildfly.clustering.marshalling.spi.IndexSerializer;
  * Externalizers for implementations of {@link Map}.
  * @author Paul Ferraro
  */
-public class MapExternalizer<T extends Map<Object, Object>> implements Externalizer<T> {
+public abstract class MapExternalizer<T extends Map<Object, Object>, C> implements Externalizer<T> {
 
     private final Class<T> targetClass;
-    private final IntFunction<T> factory;
+    private final Function<C, T> factory;
 
     @SuppressWarnings("unchecked")
-    public MapExternalizer(Class<?> targetClass, IntFunction<T> factory) {
+    protected MapExternalizer(Class<?> targetClass, Function<C, T> factory) {
         this.targetClass = (Class<T>) targetClass;
         this.factory = factory;
     }
 
     @Override
     public void writeObject(ObjectOutput output, T map) throws IOException {
-        writeMap(output, map);
-    }
-
-    static <T extends Map<Object, Object>> void writeMap(ObjectOutput output, T map) throws IOException {
+        this.writeContext(output, map);
         IndexSerializer.VARIABLE.writeInt(output, map.size());
         for (Map.Entry<Object, Object> entry : map.entrySet()) {
             output.writeObject(entry.getKey());
@@ -61,11 +58,9 @@ public class MapExternalizer<T extends Map<Object, Object>> implements Externali
 
     @Override
     public T readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+        C context = this.readContext(input);
+        T map = this.factory.apply(context);
         int size = IndexSerializer.VARIABLE.readInt(input);
-        return readMap(input, this.factory.apply(size), size);
-    }
-
-    static <T extends Map<Object, Object>> T readMap(ObjectInput input, T map, int size) throws IOException, ClassNotFoundException {
         for (int i = 0; i < size; ++i) {
             map.put(input.readObject(), input.readObject());
         }
@@ -76,4 +71,21 @@ public class MapExternalizer<T extends Map<Object, Object>> implements Externali
     public Class<T> getTargetClass() {
         return this.targetClass;
     }
+
+    /**
+     * Writes the context of the specified map to the specified output stream.
+     * @param output an output stream
+     * @param map the target map
+     * @throws IOException if the constructor context cannot be written to the stream
+     */
+    protected abstract void writeContext(ObjectOutput output, T map) throws IOException;
+
+    /**
+     * Reads the map context from the specified input stream.
+     * @param input an input stream
+     * @return the map constructor context
+     * @throws IOException if the constructor context cannot be read from the stream
+     * @throws ClassNotFoundException if a class could not be found
+     */
+    protected abstract C readContext(ObjectInput input) throws IOException, ClassNotFoundException;
 }

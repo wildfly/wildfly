@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,32 +22,32 @@
 
 package org.wildfly.clustering.marshalling.spi.util;
 
-import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.Comparator;
-import java.util.SortedMap;
+import java.util.Map;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
- * Externalizers for implementations of {@link SortedMap}.
- * Requires additional serialization of the comparator.
  * @author Paul Ferraro
  */
-public class SortedMapExternalizer<T extends SortedMap<Object, Object>> extends MapExternalizer<T, Comparator<Object>> {
+public class HashMapExternalizer<T extends Map<Object, Object>> extends MapExternalizer<T, Void> {
 
-    public SortedMapExternalizer(Class<?> targetClass, Function<Comparator<Object>, T> factory) {
-        super(targetClass, factory);
+    public HashMapExternalizer(Class<?> targetClass, Supplier<T> factory) {
+        super(targetClass, new Function<Void, T>() {
+            @Override
+            public T apply(Void context) {
+                return factory.get();
+            }
+        });
     }
 
     @Override
-    protected void writeContext(ObjectOutput output, T map) throws IOException {
-        output.writeObject(map.comparator());
+    protected void writeContext(ObjectOutput output, T map) {
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    protected Comparator<Object> readContext(ObjectInput input) throws IOException, ClassNotFoundException {
-        return (Comparator<Object>) input.readObject();
+    protected Void readContext(ObjectInput input) {
+        return null;
     }
 }

@@ -69,10 +69,11 @@ public class SimpleMarshallingContext implements MarshallingContext {
     @Override
     public Marshaller createMarshaller(int version) throws IOException {
         MarshallingConfiguration marshallingConfiguration = this.getMarshallingConfiguration(version);
+        MarshallerFactory factory = this.factory;
         try {
             return WildFlySecurityManager.doUnchecked(new PrivilegedExceptionAction<Marshaller>() {
                 @Override
-                public Marshaller run() throws Exception {
+                public Marshaller run() throws IOException {
                     return factory.createMarshaller(marshallingConfiguration);
                 }
             });
