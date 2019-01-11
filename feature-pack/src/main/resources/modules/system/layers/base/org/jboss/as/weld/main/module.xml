@@ -58,11 +58,11 @@
         <module name="org.jboss.jandex"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.as.controller"/>
+        <!-- Only needed if capability 'org.wildfly.legacy-security.server-security-manager' is present -->
+        <module name="org.jboss.as.core-security" optional="true" />
         <module name="org.jboss.as.ee"/>
         <module name="org.jboss.as.naming"/>
         <module name="org.wildfly.security.elytron-private"/>
-        <!-- Only needed if capability 'org.wildfly.legacy-security' is present -->
-        <module name="org.jboss.as.security" optional="true" />
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.as.web-common"/>
         <module name="org.jboss.invocation"/>
