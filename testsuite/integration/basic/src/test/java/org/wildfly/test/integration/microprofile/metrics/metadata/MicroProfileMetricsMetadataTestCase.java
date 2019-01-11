@@ -24,6 +24,7 @@ package org.wildfly.test.integration.microprofile.metrics.metadata;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpOptions;
+import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
@@ -50,17 +51,27 @@ public class MicroProfileMetricsMetadataTestCase {
     ManagementClient managementClient;
 
     @Test
+    public void testJsonHeader() throws Exception {
+        final String endpointURL = "http://" + managementClient.getMgmtAddress() + ":" + managementClient.getMgmtPort() + "/metrics";
+        try (CloseableHttpClient client = HttpClients.createDefault()) {
+            HttpOptions request = new HttpOptions(endpointURL);
+            request.setHeader("Accept", String.valueOf(ContentType.APPLICATION_JSON));
+            CloseableHttpResponse resp = client.execute(request);
+            assertEquals(200, resp.getStatusLine().getStatusCode());
+        }
+    }
+
+    @Test
     public void testNoJsonHeader() throws Exception {
         final String endpointURL = "http://" + managementClient.getMgmtAddress() + ":" + managementClient.getMgmtPort() + "/metrics";
         try (CloseableHttpClient client = HttpClients.createDefault()) {
 
             CloseableHttpResponse resp = client.execute(new HttpOptions(endpointURL));
-
             assertEquals(406, resp.getStatusLine().getStatusCode());
             String content = EntityUtils.toString(resp.getEntity());
             resp.close();
-            assertTrue("'No exporter found for method OPTIONS and media type' message is expected, but was: " + content,
-                    content.contains("No exporter found for method OPTIONS and media type"));
+            assertTrue("'OPTIONS method is only allowed with application/json media type.' message is expected, but was: " + content,
+                    content.contains("OPTIONS method is only allowed with application/json media type."));
         }
     }
 
