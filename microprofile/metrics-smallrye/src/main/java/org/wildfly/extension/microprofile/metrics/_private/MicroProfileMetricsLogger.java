@@ -25,7 +25,9 @@ package org.wildfly.extension.microprofile.metrics._private;
 import static org.jboss.logging.Logger.Level.INFO;
 
 import java.io.IOException;
+import java.util.List;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
@@ -66,4 +68,8 @@ public interface MicroProfileMetricsLogger extends BasicLogger {
 
     @Message(id = 5, value = "Metric attribute %s on %s is undefined and will not be exposed.")
     IllegalStateException undefinedMetric(String attributeName, PathAddress address);
+
+    @Message(id = 6, value = "Exposed subsystems: '%s' for microprofile-metrics-smallrye are unknown.")
+    OperationFailedException unknownSubsystems(List<String> subsystems);
+
 }

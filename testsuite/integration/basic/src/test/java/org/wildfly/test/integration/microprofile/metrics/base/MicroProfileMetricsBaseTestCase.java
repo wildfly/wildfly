@@ -31,9 +31,14 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.client.helpers.Operations;
+import org.jboss.as.test.integration.management.ManagementOperations;
+import org.jboss.as.test.integration.management.util.MgmtOperationException;
+import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -75,5 +80,19 @@ public class MicroProfileMetricsBaseTestCase {
         assertTrue( uptime2 > uptime1);
         assertTrue((uptime2 - uptime1) >= sleep);
         assertTrue((uptime2 - uptime1) <= interval);
+    }
+
+    @Test
+    public void testUnknownExposedSubsystem() throws Exception {
+        final ModelNode address = Operations.createAddress("subsystem", "microprofile-metrics-smallrye");
+        final ModelNode op = Operations.createWriteAttributeOperation(address, "exposed-subsystems", new ModelNode().add("bad").add("unknown"));
+        try {
+            ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
+            Assert.fail("update exposed subsystems to unknown ones should fail");
+        } catch (MgmtOperationException e) {
+            ModelNode result = e.getResult();
+            assertTrue(result.get("failure-description").asString().contains("WFLYMETRICS0006"));
+        }
+
     }
 }

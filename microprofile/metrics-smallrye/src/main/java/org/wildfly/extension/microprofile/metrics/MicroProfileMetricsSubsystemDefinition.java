@@ -22,19 +22,29 @@
 
 package org.wildfly.extension.microprofile.metrics;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PersistentResourceDefinition;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.extension.microprofile.metrics._private.MicroProfileMetricsLogger;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2018 Red Hat inc.
@@ -80,7 +90,42 @@ public class MicroProfileMetricsSubsystemDefinition extends PersistentResourceDe
     }
 
     @Override
+    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
+            super.registerAttributes(resourceRegistration);
+            resourceRegistration.registerReadWriteAttribute(EXPOSED_SUBSYSTEMS, null, new ExposedSubsystemWriterHandler());
+    }
+
+    @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return Arrays.asList(ATTRIBUTES);
+        return Arrays.asList(SECURITY_ENABLED);
+    }
+
+    private class ExposedSubsystemWriterHandler extends ReloadRequiredWriteAttributeHandler {
+            private ExposedSubsystemWriterHandler() {
+                super(EXPOSED_SUBSYSTEMS);
+            }
+
+            @Override
+            protected void validateUpdatedModel(OperationContext context, Resource model) throws OperationFailedException {
+                super.validateUpdatedModel(context, model);
+                validExposedSubsystems(context, model.getModel());
+            }
+    }
+
+    static void validExposedSubsystems(OperationContext context, ModelNode model) throws OperationFailedException {
+        List<String> exposedSubsystems = MicroProfileMetricsSubsystemDefinition.EXPOSED_SUBSYSTEMS
+                        .unwrap(context, model);
+        List<String> unkownSubsystems = new ArrayList<>();
+        Set<String> subsystems = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS)
+                        .getChildrenNames("subsystem");
+        for (String esub : exposedSubsystems) {
+                if (!"*".equals(esub) && !subsystems.contains(esub)) {
+                        // not valid exposed subsystem specified
+                        unkownSubsystems.add(esub);
+                }
+        }
+        if (!unkownSubsystems.isEmpty()) {
+                throw MicroProfileMetricsLogger.LOGGER.unknownSubsystems(unkownSubsystems);
+        }
     }
 }
