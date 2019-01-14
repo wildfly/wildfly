@@ -20,31 +20,14 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.test.integration.microprofile.metrics.application;
+package org.wildfly.test.integration.microprofile.metrics.application.resource;
 
 import javax.ws.rs.ApplicationPath;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
 import javax.ws.rs.core.Application;
-import javax.ws.rs.core.Response;
-
-import org.eclipse.microprofile.metrics.annotation.Counted;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2017 Red Hat inc.
  */
 @ApplicationPath("/microprofile-metrics-app")
 public class TestApplication extends Application {
-
-    @Path("/hello")
-    public static class ResourceSimple {
-
-        @GET
-        @Produces("text/plain")
-        @Counted(description = "counter of the Hello call", absolute = true, monotonic = true)
-        public Response hello() {
-            return Response.ok("Hello From WildFly!").build();
-        }
-    }
 }

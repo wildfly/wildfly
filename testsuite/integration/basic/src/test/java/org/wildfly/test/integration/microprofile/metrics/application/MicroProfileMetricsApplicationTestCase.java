@@ -60,6 +60,8 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.test.integration.microprofile.metrics.application.resource.ResourceSimple;
+import org.wildfly.test.integration.microprofile.metrics.application.resource.TestApplication;
 
 /**
  * Test application metrics that are provided by a deployment.
@@ -95,6 +97,7 @@ public class MicroProfileMetricsApplicationTestCase {
     public static Archive<?> deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "MicroProfileMetricsApplicationTestCase.war")
                 .addClasses(TestApplication.class)
+                .addClass(ResourceSimple.class)
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
         return war;
     }
@@ -200,7 +203,6 @@ public class MicroProfileMetricsApplicationTestCase {
 
     private void checkRequestCount(int expectedCount, boolean deploymentMetricMustExist) throws IOException {
         String prometheusMetricName = "wildfly_undertow_request_count_total";
-
         String metrics = getPrometheusMetrics(managementClient, "", true);
         for (String line : metrics.split("\\R")) {
             if (line.startsWith(prometheusMetricName)) {

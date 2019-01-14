@@ -82,4 +82,17 @@ public class MetricsHelper {
             return count.doubleValue();
         }
     }
+
+    /**
+     * Get json subvalue of some value.
+     */
+    public static double getMetricSubValueFromJSONOutput(String jsonContent, String value, String counterName) {
+        try (
+                JsonReader jsonReader = Json.createReader(new StringReader(jsonContent))
+        ) {
+            JsonObject payload = (JsonObject) jsonReader.readObject().get(value);
+            JsonNumber count = payload.getJsonNumber(counterName);
+            return count.doubleValue();
+        }
+    }
 }
