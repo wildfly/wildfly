@@ -73,12 +73,14 @@ public class ExternalConnectionFactoryAdd extends AbstractAddStepHandler {
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         final String name = context.getCurrentAddressValue();
-        final ServiceName serviceName = MessagingServices.getActiveMQServiceName(name);
+        final ServiceName serviceName = ExternalConnectionFactoryDefinition.CAPABILITY.getCapabilityServiceName(context.getCurrentAddress());
         boolean ha = HA.resolveModelAttribute(context, model).asBoolean();
         final ModelNode discoveryGroupName = Common.DISCOVERY_GROUP.resolveModelAttribute(context, model);
         JMSFactoryType jmsFactoryType = ConnectionFactoryType.valueOf(ConnectionFactoryAttributes.Regular.FACTORY_TYPE.resolveModelAttribute(context, model).asString()).getType();
         List<String> connectorNames = Common.CONNECTORS.unwrap(context, model);
-        ServiceBuilder<?> builder = context.getServiceTarget().addService(serviceName);
+        ServiceBuilder<?> builder = context.getServiceTarget()
+                .addService(serviceName)
+                .addAliases(MessagingServices.getActiveMQServiceName(name));
         ExternalConnectionFactoryService service;
         if (discoveryGroupName.isDefined()) {
             // mapping between the {discovery}-groups and the cluster names they use

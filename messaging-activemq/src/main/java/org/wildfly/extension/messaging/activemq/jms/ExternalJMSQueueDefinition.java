@@ -35,13 +35,14 @@ public class ExternalJMSQueueDefinition extends PersistentResourceDefinition {
 
     public static final AttributeDefinition[] ATTRIBUTES = {CommonAttributes.DESTINATION_ENTRIES};
 
-    public static final ExternalJMSQueueDefinition INSTANCE = new ExternalJMSQueueDefinition();
+    private final boolean registerRuntimeOnly;
 
-    private ExternalJMSQueueDefinition() {
+    public ExternalJMSQueueDefinition(final boolean registerRuntimeOnly) {
         super(MessagingExtension.EXTERNAL_JMS_QUEUE_PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.EXTERNAL_JMS_QUEUE),
                 ExternalJMSQueueAdd.INSTANCE,
                 ExternalJMSQueueRemove.INSTANCE);
+        this.registerRuntimeOnly = registerRuntimeOnly;
     }
 
     @Override
@@ -51,7 +52,11 @@ public class ExternalJMSQueueDefinition extends PersistentResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration registry) {
-        registry.registerReadWriteAttribute(CommonAttributes.DESTINATION_ENTRIES, null, new ReloadRequiredWriteAttributeHandler(CommonAttributes.DESTINATION_ENTRIES));
+        if (registerRuntimeOnly) {
+            registry.registerReadOnlyAttribute(CommonAttributes.DESTINATION_ENTRIES, null);
+        } else {
+            registry.registerReadWriteAttribute(CommonAttributes.DESTINATION_ENTRIES, null, new ReloadRequiredWriteAttributeHandler(CommonAttributes.DESTINATION_ENTRIES));
+        }
     }
 
     @Override

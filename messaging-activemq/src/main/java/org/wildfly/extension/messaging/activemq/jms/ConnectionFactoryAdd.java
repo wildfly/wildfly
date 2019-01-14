@@ -37,8 +37,6 @@ import org.apache.activemq.artemis.jms.server.config.impl.ConnectionFactoryConfi
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController.Mode;
@@ -66,12 +64,15 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         final String name = context.getCurrentAddressValue();
-        final ServiceName activeMQServiceName = MessagingServices.getActiveMQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
+        final ServiceName activeMQServiceName = MessagingServices.getActiveMQServiceName(context.getCurrentAddress());
 
         final ConnectionFactoryConfiguration configuration = createConfiguration(context, name, model);
         final ConnectionFactoryService service = new ConnectionFactoryService(configuration);
-        final ServiceName serviceName = JMSServices.getConnectionFactoryBaseServiceName(activeMQServiceName).append(name);
-        ServiceBuilder<?> serviceBuilder = context.getServiceTarget().addService(serviceName, service);
+        final ServiceName aliasServiceName = JMSServices.getConnectionFactoryBaseServiceName(activeMQServiceName).append(name);
+        final ServiceName serviceName = ConnectionFactoryDefinition.CAPABILITY.getCapabilityServiceName(context.getCurrentAddress());
+        ServiceBuilder<?> serviceBuilder = context.getServiceTarget()
+                .addService(serviceName, service)
+                .addAliases(aliasServiceName);
         serviceBuilder.requires(ActiveMQActivationService.getServiceName(activeMQServiceName));
         serviceBuilder.addDependency(JMSServices.getJmsManagerBaseServiceName(activeMQServiceName), JMSServerManager.class, service.getJmsServer());
         serviceBuilder.setInitialMode(Mode.PASSIVE);
