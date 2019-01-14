@@ -22,10 +22,14 @@
 
 package org.jboss.as.test.smoke.jms;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
 import java.util.UUID;
 
 import javax.annotation.Resource;
@@ -42,9 +46,13 @@ import javax.jms.TextMessage;
 import org.apache.activemq.artemis.api.jms.ActiveMQJMSConstants;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.jms.auxiliary.CreateQueueSetupTask;
+import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ArchivePaths;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -75,6 +83,9 @@ public class JMSBridgeTest {
 
     @Resource(mappedName = "/myAwesomeCF")
     private ConnectionFactory factory;
+
+    @ContainerResource
+    private ManagementClient managementClient;
 
     @Deployment
     public static JavaArchive createTestArchive() {
@@ -124,6 +135,7 @@ public class JMSBridgeTest {
             assertTrue(receivedMessage instanceof TextMessage);
             assertEquals(text, ((TextMessage) receivedMessage).getText());
             assertNotNull("did not get header set by the JMS bridge", receivedMessage.getStringProperty(ActiveMQJMSConstants.AMQ_MESSAGING_BRIDGE_MESSAGE_ID_LIST));
+            assertEquals("bridge metrics are not correct", 5000L,readMetrics());
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -135,6 +147,15 @@ public class JMSBridgeTest {
                 connection.close();
             }
         }
+    }
 
+    private long readMetrics() throws IOException {
+        ModelNode address = new ModelNode();
+        address.add("subsystem", "messaging-activemq");
+        address.add("jms-bridge", CreateJMSBridgeSetupTask.JMS_BRIDGE_NAME);
+        ModelNode operation = Operations.createReadAttributeOperation(address, "message-count");
+        ModelNode result = managementClient.getControllerClient().execute(operation);
+        assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        return result.get(RESULT).asLong();
     }
 }

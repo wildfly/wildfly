@@ -47,12 +47,11 @@ import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.SimpleOperationDefinition;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.dmr.ModelNode;
@@ -197,7 +196,11 @@ public class JMSBridgeDefinition extends PersistentResourceDefinition {
             .setAllowExpression(true)
             .build();
     public static final SimpleAttributeDefinition STARTED = create(CommonAttributes.STARTED, BOOLEAN)
-            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
+            .setStorageRuntime()
+            .build();
+
+     public static final SimpleAttributeDefinition ABORTED_MESSAGE_COUNT = create("aborted-message-count", LONG)
+            .setStorageRuntime()
             .build();
 
     public static final AttributeDefinition[] ATTRIBUTES = {
@@ -225,6 +228,10 @@ public class JMSBridgeDefinition extends PersistentResourceDefinition {
 
     public static final AttributeDefinition[] READONLY_ATTRIBUTES = {
             STARTED, CommonAttributes.PAUSED
+    };
+
+    public static final AttributeDefinition[] METRICS = {
+            CommonAttributes.MESSAGE_COUNT, ABORTED_MESSAGE_COUNT
     };
 
     public static final String[] OPERATIONS = {
@@ -255,13 +262,16 @@ public class JMSBridgeDefinition extends PersistentResourceDefinition {
         for (AttributeDefinition attr : READONLY_ATTRIBUTES) {
             registry.registerReadOnlyAttribute(attr, JMSBridgeHandler.INSTANCE);
         }
+        for (AttributeDefinition attr : METRICS) {
+            registry.registerMetric(attr, JMSBridgeHandler.READ_ONLY_INSTANCE);
+        }
     }
 
     @Override
     public void registerOperations(ManagementResourceRegistration registry) {
         super.registerOperations(registry);
         for (final String operationName : OPERATIONS) {
-            registry.registerOperationHandler(new SimpleOperationDefinition(operationName, getResourceDescriptionResolver()), JMSBridgeHandler.INSTANCE);
+            registry.registerOperationHandler(SimpleOperationDefinitionBuilder.of(operationName, getResourceDescriptionResolver()).build(), JMSBridgeHandler.INSTANCE);
         }
     }
 

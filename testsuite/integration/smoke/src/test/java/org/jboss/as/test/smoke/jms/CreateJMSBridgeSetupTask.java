@@ -42,14 +42,11 @@ public class CreateJMSBridgeSetupTask extends CreateQueueSetupTask {
 
     private static final Logger logger = Logger.getLogger(CreateJMSBridgeSetupTask.class);
 
-    private ManagementClient managementClient;
-
     private JMSOperations jmsOperations;
 
     @Override
     public void setup(ManagementClient managementClient, String containerId) throws Exception {
         super.setup(managementClient, containerId);
-        this.managementClient = managementClient;
         jmsOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
 
         ModelNode connectionFactoryAttributes = new ModelNode();
