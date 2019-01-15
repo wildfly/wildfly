@@ -38,6 +38,7 @@ import org.wildfly.clustering.spi.NodeFactory;
  * @author Paul Ferraro
  */
 public interface InfinispanBeanManagerFactoryConfiguration {
+    String getName();
     BeanContext getBeanContext();
     <K, V> Cache<K, V> getCache();
     KeyAffinityServiceFactory getKeyAffinityServiceFactory();

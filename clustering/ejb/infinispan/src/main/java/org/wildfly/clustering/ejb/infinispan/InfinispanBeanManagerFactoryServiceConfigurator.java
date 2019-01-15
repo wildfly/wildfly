@@ -104,6 +104,11 @@ public class InfinispanBeanManagerFactoryServiceConfigurator<I, T> extends Simpl
     }
 
     @Override
+    public String getName() {
+        return this.name;
+    }
+
+    @Override
     public BeanContext getBeanContext() {
         return this.context;
     }

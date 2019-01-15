@@ -129,6 +129,11 @@ public class InfinispanBeanGroupFactory<I, T> implements BeanGroupFactory<I, T> 
         return new InfinispanBeanGroup<>(id, entry, this.context, mutator, this);
     }
 
+    @Override
+    public void evict(I id) {
+        this.cache.evict(new InfinispanBeanGroupKey<>(id));
+    }
+
     @CacheEntryPassivated
     public void passivated(CacheEntryPassivatedEvent<BeanGroupKey<I>, BeanGroupEntry<I, T>> event) {
         if (event.isPre()) {
