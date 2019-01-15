@@ -121,4 +121,5 @@
         </feature>
     </feature-group>
     <feature-group name="health"/>
+    <feature-group name="metrics" />
 </feature-group-spec>
