@@ -88,7 +88,7 @@ public class MetricsHelper {
      */
     public static double getMetricSubValueFromJSONOutput(String jsonContent, String value, String counterName) {
         try (
-                JsonReader jsonReader = Json.createReader(new StringReader(jsonContent))
+            JsonReader jsonReader = Json.createReader(new StringReader(jsonContent))
         ) {
             JsonObject payload = (JsonObject) jsonReader.readObject().get(value);
             JsonNumber count = payload.getJsonNumber(counterName);

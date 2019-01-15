@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.test.integration.microprofile.metrics.application.resource;
+package org.wildfly.test.integration.microprofile.metrics;
 
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
