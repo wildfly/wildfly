@@ -48,6 +48,7 @@ import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
@@ -224,8 +225,8 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
     }
 
     public ListenerResourceDefinition(PathElement pathElement) {
-        super(new PersistentResourceDefinition.Parameters(pathElement, UndertowExtension.getResolver(Constants.LISTENER))
-                .setCapabilities(LISTENER_CAPABILITY));
+        super(new SimpleResourceDefinition.Parameters(pathElement, UndertowExtension.getResolver(Constants.LISTENER))
+                .addCapabilities(LISTENER_CAPABILITY));
     }
 
     public Collection<AttributeDefinition> getAttributes() {
@@ -314,11 +315,6 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
             return null;
         }
         return listenerSC.getValue();
-    }
-
-    @Override
-    public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerCapability(LISTENER_CAPABILITY);
     }
 
     private static class EnabledAttributeHandler extends AbstractWriteAttributeHandler<Boolean> {

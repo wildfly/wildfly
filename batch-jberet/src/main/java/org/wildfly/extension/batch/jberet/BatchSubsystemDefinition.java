@@ -112,8 +112,10 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
     private final boolean registerRuntimeOnly;
 
     BatchSubsystemDefinition(final boolean registerRuntimeOnly) {
-        super(SUBSYSTEM_PATH, BatchResourceDescriptionResolver.getResourceDescriptionResolver(), BatchSubsystemAdd.INSTANCE,
-                ReloadRequiredRemoveStepHandler.INSTANCE);
+        super(new SimpleResourceDefinition.Parameters(SUBSYSTEM_PATH, BatchResourceDescriptionResolver.getResourceDescriptionResolver())
+                .setAddHandler(BatchSubsystemAdd.INSTANCE)
+                .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
+                .addCapabilities(Capabilities.BATCH_CONFIGURATION_CAPABILITY));
         this.registerRuntimeOnly = registerRuntimeOnly;
     }
 
@@ -161,11 +163,6 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
                 service.setRestartOnResume(value.asBoolean());
             }
         });
-    }
-
-    @Override
-    public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerCapability(Capabilities.BATCH_CONFIGURATION_CAPABILITY);
     }
 
     /**

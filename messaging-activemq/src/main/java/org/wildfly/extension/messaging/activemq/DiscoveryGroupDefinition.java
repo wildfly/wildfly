@@ -35,6 +35,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.capability.DynamicNameMappers;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -96,9 +97,10 @@ public class DiscoveryGroupDefinition extends PersistentResourceDefinition {
     private final boolean registerRuntimeOnly;
 
     protected DiscoveryGroupDefinition(final boolean registerRuntimeOnly, final boolean subsystemResource) {
-        super(new Parameters(PATH, MessagingExtension.getResourceDescriptionResolver(CommonAttributes.DISCOVERY_GROUP))
+        super(new SimpleResourceDefinition.Parameters(PATH, MessagingExtension.getResourceDescriptionResolver(CommonAttributes.DISCOVERY_GROUP))
                 .setAddHandler(DiscoveryGroupAdd.INSTANCE)
-                .setRemoveHandler(DiscoveryGroupRemove.INSTANCE));
+                .setRemoveHandler(DiscoveryGroupRemove.INSTANCE)
+                .addCapabilities(CAPABILITY));
         this.registerRuntimeOnly = registerRuntimeOnly;
     }
 
@@ -115,10 +117,5 @@ public class DiscoveryGroupDefinition extends PersistentResourceDefinition {
                 registry.registerReadWriteAttribute(attr, null, reloadRequiredWriteAttributeHandler);
             }
         }
-    }
-
-    @Override
-    public void registerCapabilities(ManagementResourceRegistration registration) {
-        registration.registerCapability(CAPABILITY);
     }
 }

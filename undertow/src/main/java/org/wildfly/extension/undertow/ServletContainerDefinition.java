@@ -34,12 +34,12 @@ import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -228,10 +228,10 @@ class ServletContainerDefinition extends PersistentResourceDefinition {
     }
 
     private ServletContainerDefinition() {
-        super(UndertowExtension.PATH_SERVLET_CONTAINER,
-                UndertowExtension.getResolver(Constants.SERVLET_CONTAINER),
-                ServletContainerAdd.INSTANCE,
-                ReloadRequiredRemoveStepHandler.INSTANCE);
+        super(new SimpleResourceDefinition.Parameters(UndertowExtension.PATH_SERVLET_CONTAINER, UndertowExtension.getResolver(Constants.SERVLET_CONTAINER))
+                .setAddHandler(ServletContainerAdd.INSTANCE)
+                .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
+                .addCapabilities(SERVLET_CONTAINER_CAPABILITY));
     }
 
     @Override
@@ -242,10 +242,5 @@ class ServletContainerDefinition extends PersistentResourceDefinition {
     @Override
     public List<? extends PersistentResourceDefinition> getChildren() {
         return CHILDREN;
-    }
-
-    @Override
-    public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerCapability(SERVLET_CONTAINER_CAPABILITY);
     }
 }

@@ -32,10 +32,10 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.capability.DynamicNameMappers;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.undertow.filters.FilterRefDefinition;
@@ -60,17 +60,15 @@ class LocationDefinition extends PersistentResourceDefinition {
 
 
     private LocationDefinition() {
-        super(UndertowExtension.PATH_LOCATION,
-                UndertowExtension.getResolver(Constants.HOST, Constants.LOCATION),
-                LocationAdd.INSTANCE,
-                new ServiceRemoveStepHandler(LocationAdd.INSTANCE) {
-
+        super(new SimpleResourceDefinition.Parameters(UndertowExtension.PATH_LOCATION, UndertowExtension.getResolver(Constants.HOST, Constants.LOCATION))
+                .setAddHandler(LocationAdd.INSTANCE)
+                .setRemoveHandler( new ServiceRemoveStepHandler(LocationAdd.INSTANCE) {
                     @Override
                     protected ServiceName serviceName(String name, PathAddress address) {
                         return LOCATION_CAPABILITY.getCapabilityServiceName(address);
                     }
-                }
-        );
+                })
+                .addCapabilities(LOCATION_CAPABILITY));
     }
 
     @Override
@@ -81,10 +79,5 @@ class LocationDefinition extends PersistentResourceDefinition {
     @Override
     public List<? extends PersistentResourceDefinition> getChildren() {
         return CHILDREN;
-    }
-
-    @Override
-    public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerCapability(LOCATION_CAPABILITY);
     }
 }

@@ -68,8 +68,10 @@ public class BatchThreadPoolResourceDefinition extends SimpleResourceDefinition 
     private final boolean registerRuntimeOnly;
 
     public BatchThreadPoolResourceDefinition(final boolean registerRuntimeOnly) {
-        super(PATH, BatchThreadPoolDescriptionResolver.INSTANCE,
-                BatchThreadPoolAdd.INSTANCE, BatchThreadPoolRemove.INSTANCE);
+        super(new SimpleResourceDefinition.Parameters(PATH, BatchThreadPoolDescriptionResolver.INSTANCE)
+                .setAddHandler(BatchThreadPoolAdd.INSTANCE)
+                .setRemoveHandler(BatchThreadPoolRemove.INSTANCE)
+                .addCapabilities(Capabilities.THREAD_POOL_CAPABILITY));
         this.registerRuntimeOnly = registerRuntimeOnly;
     }
 
@@ -80,11 +82,6 @@ public class BatchThreadPoolResourceDefinition extends SimpleResourceDefinition 
         if (registerRuntimeOnly) {
             new UnboundedQueueThreadPoolMetricsHandler(BatchServiceNames.BASE_BATCH_THREAD_POOL_NAME).registerAttributes(resourceRegistration);
         }
-    }
-
-    @Override
-    public void registerCapabilities(final ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerCapability(Capabilities.THREAD_POOL_CAPABILITY);
     }
 
     static class BatchThreadPoolAdd extends UnboundedQueueThreadPoolAdd {

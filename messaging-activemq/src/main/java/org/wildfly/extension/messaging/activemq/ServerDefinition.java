@@ -40,8 +40,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import org.apache.activemq.artemis.api.config.ActiveMQDefaultConfiguration;
 
+import org.apache.activemq.artemis.api.config.ActiveMQDefaultConfiguration;
 import org.apache.activemq.artemis.api.core.SimpleString;
 import org.apache.activemq.artemis.core.config.impl.ConfigurationImpl;
 import org.apache.activemq.artemis.core.server.JournalType;
@@ -49,6 +49,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -787,10 +788,10 @@ public class ServerDefinition extends PersistentResourceDefinition {
     private final boolean registerRuntimeOnly;
 
     ServerDefinition(boolean registerRuntimeOnly) {
-        super(MessagingExtension.SERVER_PATH,
-                MessagingExtension.getResourceDescriptionResolver(CommonAttributes.SERVER),
-                ServerAdd.INSTANCE,
-                ServerRemove.INSTANCE);
+        super(new SimpleResourceDefinition.Parameters(MessagingExtension.SERVER_PATH, MessagingExtension.getResourceDescriptionResolver(CommonAttributes.SERVER))
+                .setAddHandler(ServerAdd.INSTANCE)
+                .setRemoveHandler(ServerRemove.INSTANCE)
+                .addCapabilities(Capabilities.ACTIVEMQ_SERVER_CAPABILITY));
         this.registerRuntimeOnly = registerRuntimeOnly;
     }
 
@@ -815,11 +816,6 @@ public class ServerDefinition extends PersistentResourceDefinition {
         if (registerRuntimeOnly) {
             ActiveMQServerControlHandler.INSTANCE.registerAttributes(resourceRegistration);
         }
-    }
-
-    @Override
-    public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerCapability(Capabilities.ACTIVEMQ_SERVER_CAPABILITY);
     }
 
     @Override

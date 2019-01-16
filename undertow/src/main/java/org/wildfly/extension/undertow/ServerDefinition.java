@@ -31,8 +31,8 @@ import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.web.host.CommonWebServer;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -66,7 +66,10 @@ class ServerDefinition extends PersistentResourceDefinition {
     static final ServerDefinition INSTANCE = new ServerDefinition();
 
     private ServerDefinition() {
-        super(UndertowExtension.SERVER_PATH, UndertowExtension.getResolver(Constants.SERVER), new ServerAdd(), ReloadRequiredRemoveStepHandler.INSTANCE);
+        super(new SimpleResourceDefinition.Parameters(UndertowExtension.SERVER_PATH, UndertowExtension.getResolver(Constants.SERVER))
+                .setAddHandler(new ServerAdd())
+                .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
+                .addCapabilities(SERVER_CAPABILITY, CommonWebServer.CAPABILITY));
     }
 
     @Override
@@ -78,12 +81,5 @@ class ServerDefinition extends PersistentResourceDefinition {
     @Override
     protected List<? extends PersistentResourceDefinition> getChildren() {
         return CHILDREN;
-    }
-
-    @Override
-    public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
-        super.registerCapabilities(resourceRegistration);
-        resourceRegistration.registerCapability(SERVER_CAPABILITY);
-        resourceRegistration.registerCapability(CommonWebServer.CAPABILITY);
     }
 }

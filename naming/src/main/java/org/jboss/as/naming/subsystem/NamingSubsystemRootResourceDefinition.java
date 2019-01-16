@@ -73,6 +73,8 @@ public class NamingSubsystemRootResourceDefinition extends SimpleResourceDefinit
 
     @Override
     public void registerCapabilities(ManagementResourceRegistration registration) {
+        super.registerCapabilities(registration);
+
         for (Capability capability : EnumSet.allOf(Capability.class)) {
             RuntimeCapability<?> definition = capability.getDefinition();
             registration.registerCapability(definition);

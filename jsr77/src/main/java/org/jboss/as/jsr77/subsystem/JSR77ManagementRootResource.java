@@ -60,6 +60,7 @@ public class JSR77ManagementRootResource extends PersistentResourceDefinition {
 
     @Override
     public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
+        super.registerCapabilities(resourceRegistration);
         if (appclient) {
             resourceRegistration.registerCapability(JSR77_APPCLIENT_CAPABILITY);
         } else {

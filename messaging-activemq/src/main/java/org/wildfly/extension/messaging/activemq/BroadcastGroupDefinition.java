@@ -48,6 +48,7 @@ import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.capability.DynamicNameMappers;
 import org.jboss.as.controller.capability.RuntimeCapability;
@@ -106,10 +107,10 @@ public class BroadcastGroupDefinition extends PersistentResourceDefinition {
     private final boolean registerRuntimeOnly;
 
     BroadcastGroupDefinition(boolean registerRuntimeOnly) {
-        super(MessagingExtension.BROADCAST_GROUP_PATH,
-                MessagingExtension.getResourceDescriptionResolver(CommonAttributes.BROADCAST_GROUP),
-                BroadcastGroupAdd.INSTANCE,
-                BroadcastGroupRemove.INSTANCE);
+        super(new SimpleResourceDefinition.Parameters(MessagingExtension.BROADCAST_GROUP_PATH, MessagingExtension.getResourceDescriptionResolver(CommonAttributes.BROADCAST_GROUP))
+                .setAddHandler(BroadcastGroupAdd.INSTANCE)
+                .setRemoveHandler(BroadcastGroupRemove.INSTANCE)
+                .addCapabilities(CAPABILITY));
         this.registerRuntimeOnly = registerRuntimeOnly;
     }
 
@@ -174,10 +175,5 @@ public class BroadcastGroupDefinition extends PersistentResourceDefinition {
         availableConnectors.addAll(activeMQServerResource.getChildrenNames(CommonAttributes.REMOTE_CONNECTOR));
         availableConnectors.addAll(activeMQServerResource.getChildrenNames(CommonAttributes.CONNECTOR));
         return availableConnectors;
-    }
-
-    @Override
-    public void registerCapabilities(ManagementResourceRegistration registration) {
-        registration.registerCapability(CAPABILITY);
     }
 }
