@@ -39,11 +39,10 @@ import org.wildfly.clustering.infinispan.spi.distribution.Locality;
  *
  * @author Paul Ferraro
  *
- * @param <G> the group identifier type
  * @param <I> the bean identifier type
  * @param <T> the bean type
  */
-public class BeanExpirationScheduler<G, I, T> implements Scheduler<I> {
+public class BeanExpirationScheduler<I, T> implements Scheduler<I> {
     final Map<I, Future<?>> expirationFutures = new ConcurrentHashMap<>();
     final Batcher<TransactionBatch> batcher;
     final BeanRemover<I, T> remover;
