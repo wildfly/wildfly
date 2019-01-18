@@ -25,14 +25,14 @@ package org.wildfly.extension.microprofile.config.smallrye;
 import io.smallrye.config.SmallRyeConfigProviderResolver;
 import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.msc.Service;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2017 Red Hat inc.
  */
-class ConfigProviderService implements Service {
+class ConfigProviderService implements Service<ConfigProviderResolver> {
 
     private ConfigProviderService() {
 
@@ -52,6 +52,10 @@ class ConfigProviderService implements Service {
     @Override
     public void stop(StopContext context) {
         ConfigProviderResolver.setInstance(null);
+    }
 
+    @Override
+    public ConfigProviderResolver getValue() throws IllegalStateException, IllegalArgumentException {
+        return SmallRyeConfigProviderResolver.INSTANCE;
     }
 }

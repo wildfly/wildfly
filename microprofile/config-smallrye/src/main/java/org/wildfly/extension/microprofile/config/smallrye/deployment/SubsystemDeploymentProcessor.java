@@ -60,11 +60,9 @@ public class SubsystemDeploymentProcessor implements DeploymentUnitProcessor {
                 .addDiscoveredConverters();
         addConfigSourcesFromServices(builder, phaseContext.getServiceRegistry(), module.getClassLoader());
         Config config = builder.build();
-
-        ConfigProviderResolver configProviderResolver = ConfigProviderResolver.instance();
         deploymentUnit.putAttachment(CONFIG, config);
-        deploymentUnit.putAttachment(CONFIG_PROVIDER_RESOLVER, configProviderResolver);
 
+        ConfigProviderResolver configProviderResolver = deploymentUnit.getAttachment(CONFIG_PROVIDER_RESOLVER);
         configProviderResolver.registerConfig(config, module.getClassLoader());
     }
 
