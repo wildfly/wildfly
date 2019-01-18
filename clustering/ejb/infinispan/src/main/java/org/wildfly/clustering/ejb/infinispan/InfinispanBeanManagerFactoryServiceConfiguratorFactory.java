@@ -74,11 +74,14 @@ public class InfinispanBeanManagerFactoryServiceConfiguratorFactory<I> implement
         });
     }
 
-    static String getCacheName(ServiceName deploymentUnitServiceName) {
+    static String getCacheName(ServiceName deploymentUnitServiceName, String beanManagerFactoryName) {
+        List<String> parts = new ArrayList<>(3);
         if (Services.JBOSS_DEPLOYMENT_SUB_UNIT.isParentOf(deploymentUnitServiceName)) {
-            return deploymentUnitServiceName.getParent().getSimpleName() + "/" + deploymentUnitServiceName.getSimpleName();
+            parts.add(deploymentUnitServiceName.getParent().getSimpleName());
         }
-        return deploymentUnitServiceName.getSimpleName();
+        parts.add(deploymentUnitServiceName.getSimpleName());
+        parts.add(beanManagerFactoryName);
+        return String.join("/", parts);
     }
 
     private final CapabilityServiceSupport support;
@@ -93,7 +96,7 @@ public class InfinispanBeanManagerFactoryServiceConfiguratorFactory<I> implement
 
     @Override
     public Collection<CapabilityServiceConfigurator> getDeploymentServiceConfigurators(final ServiceName name) {
-        String cacheName = getCacheName(name);
+        String cacheName = getCacheName(name, this.name);
         String containerName = this.config.getContainerName();
         String templateCacheName = this.config.getCacheName();
 
