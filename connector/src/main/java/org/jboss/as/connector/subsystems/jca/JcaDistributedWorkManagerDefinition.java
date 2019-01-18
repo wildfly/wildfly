@@ -85,6 +85,7 @@ public class JcaDistributedWorkManagerDefinition extends SimpleResourceDefinitio
 
     @Override
     public void registerCapabilities(ManagementResourceRegistration registration) {
+        super.registerCapabilities(registration);
         for (DWmCapabilities capability : EnumSet.allOf(DWmCapabilities.class)) {
             registration.registerCapability(capability.getRuntimeCapability());
         }

@@ -47,7 +47,6 @@ import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfigura
  */
 public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
 
-    public static final EJB3RemoteResourceDefinition INSTANCE = new EJB3RemoteResourceDefinition();
     public static final String EJB_REMOTE_CAPABILITY_NAME = "org.wildfly.ejb.remote";
 
     static final RuntimeCapability<Void> EJB_REMOTE_CAPABILITY = RuntimeCapability.Builder.of(EJB_REMOTE_CAPABILITY_NAME).setServiceType(Void.class).build();
@@ -90,13 +89,15 @@ public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
         ATTRIBUTES = Collections.unmodifiableMap(map);
     }
 
+    public static final EJB3RemoteResourceDefinition INSTANCE = new EJB3RemoteResourceDefinition();
 
     private EJB3RemoteResourceDefinition() {
         super(new Parameters(EJB3SubsystemModel.REMOTE_SERVICE_PATH, EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.REMOTE))
                 .setAddHandler(EJB3RemoteServiceAdd.INSTANCE)
                 .setAddRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES)
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
-                .setRemoveRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES));
+                .setRemoveRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES)
+                .addCapabilities(EJB_REMOTE_CAPABILITY));
     }
 
     @Override
@@ -112,10 +113,5 @@ public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
         super.registerChildren(resourceRegistration);
         // register channel-creation-options as sub model for EJB remote service
         resourceRegistration.registerSubModel(new RemoteConnectorChannelCreationOptionResource());
-    }
-
-    @Override
-    public void registerCapabilities(ManagementResourceRegistration registration) {
-        registration.registerCapability(EJB_REMOTE_CAPABILITY);
     }
 }

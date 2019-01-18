@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import io.undertow.connector.ByteBufferPool;
+import io.undertow.server.DefaultByteBufferPool;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -12,9 +14,9 @@ import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.Service;
@@ -22,9 +24,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-
-import io.undertow.connector.ByteBufferPool;
-import io.undertow.server.DefaultByteBufferPool;
 
 public class ByteBufferPoolDefinition extends PersistentResourceDefinition {
 
@@ -97,16 +96,11 @@ public class ByteBufferPoolDefinition extends PersistentResourceDefinition {
     public static final ByteBufferPoolDefinition INSTANCE = new ByteBufferPoolDefinition();
 
     private ByteBufferPoolDefinition() {
-        super(UndertowExtension.BYTE_BUFFER_POOL_PATH,
-                UndertowExtension.getResolver(Constants.BYTE_BUFFER_POOL),
-                new BufferPoolAdd(),
-                new ReloadRequiredRemoveStepHandler()
-        );
-    }
-
-    @Override
-    public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerCapability(UNDERTOW_BUFFER_POOL_RUNTIME_CAPABILITY);
+        super(new SimpleResourceDefinition.Parameters(UndertowExtension.BYTE_BUFFER_POOL_PATH,
+                UndertowExtension.getResolver(Constants.BYTE_BUFFER_POOL))
+                .setAddHandler(new BufferPoolAdd())
+                .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
+                .addCapabilities(UNDERTOW_BUFFER_POOL_RUNTIME_CAPABILITY));
     }
 
     @Override

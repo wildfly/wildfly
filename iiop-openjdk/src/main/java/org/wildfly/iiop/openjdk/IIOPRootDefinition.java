@@ -32,6 +32,7 @@ import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
@@ -40,7 +41,6 @@ import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -433,19 +433,15 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
     public static final IIOPRootDefinition INSTANCE = new IIOPRootDefinition();
 
     private IIOPRootDefinition() {
-        super(IIOPExtension.PATH_SUBSYSTEM, IIOPExtension.getResourceDescriptionResolver(), new IIOPSubsystemAdd(ALL_ATTRIBUTES),
-                ReloadRequiredRemoveStepHandler.INSTANCE);
+        super(new SimpleResourceDefinition.Parameters(IIOPExtension.PATH_SUBSYSTEM, IIOPExtension.getResourceDescriptionResolver())
+                .setAddHandler(new IIOPSubsystemAdd(ALL_ATTRIBUTES))
+                .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
+                .addCapabilities(IIOP_CAPABILITY));
     }
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
         return ALL_ATTRIBUTES;
-    }
-
-    @Override
-    public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
-        super.registerCapabilities(resourceRegistration);
-        resourceRegistration.registerCapability(IIOP_CAPABILITY);
     }
 
     private enum AuthMethodValues {

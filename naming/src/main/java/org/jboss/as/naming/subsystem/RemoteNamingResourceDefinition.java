@@ -24,7 +24,6 @@ package org.jboss.as.naming.subsystem;
 
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
 /**
  * A {@link org.jboss.as.controller.ResourceDefinition} for JNDI bindings
@@ -37,14 +36,9 @@ public class RemoteNamingResourceDefinition extends SimpleResourceDefinition {
     public static final RemoteNamingResourceDefinition INSTANCE = new RemoteNamingResourceDefinition();
 
     private RemoteNamingResourceDefinition() {
-        super(NamingSubsystemModel.REMOTE_NAMING_PATH,
-                NamingExtension.getResourceDescriptionResolver(NamingSubsystemModel.REMOTE_NAMING),
-                RemoteNamingAdd.INSTANCE, RemoteNamingRemove.INSTANCE);
+        super(new Parameters(NamingSubsystemModel.REMOTE_NAMING_PATH, NamingExtension.getResourceDescriptionResolver(NamingSubsystemModel.REMOTE_NAMING))
+                .setAddHandler(RemoteNamingAdd.INSTANCE)
+                .setRemoveHandler(RemoteNamingRemove.INSTANCE)
+                .addCapabilities(REMOTE_NAMING_CAPABILITY));
     }
-
-    @Override
-    public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerCapability(REMOTE_NAMING_CAPABILITY);
-    }
-
 }

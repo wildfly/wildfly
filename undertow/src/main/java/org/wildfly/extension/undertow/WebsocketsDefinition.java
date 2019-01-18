@@ -39,10 +39,10 @@ import org.jboss.as.controller.RestartParentResourceAddHandler;
 import org.jboss.as.controller.RestartParentResourceRemoveHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceName;
@@ -108,15 +108,10 @@ class WebsocketsDefinition extends PersistentResourceDefinition {
 
 
     private WebsocketsDefinition() {
-        super(UndertowExtension.PATH_WEBSOCKETS,
-                UndertowExtension.getResolver(UndertowExtension.PATH_WEBSOCKETS.getKeyValuePair()),
-                new WebsocketsAdd(),
-                new WebsocketsRemove());
-    }
-
-    @Override
-    public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerCapability(WEBSOCKET_CAPABILITY);
+        super(new SimpleResourceDefinition.Parameters(UndertowExtension.PATH_WEBSOCKETS, UndertowExtension.getResolver(UndertowExtension.PATH_WEBSOCKETS.getKeyValuePair()))
+                .setAddHandler(new WebsocketsAdd())
+                .setRemoveHandler(new WebsocketsRemove())
+                .addCapabilities(WEBSOCKET_CAPABILITY));
     }
 
     @Override

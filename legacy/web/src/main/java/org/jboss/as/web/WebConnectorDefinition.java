@@ -230,6 +230,8 @@ public class WebConnectorDefinition extends ModelOnlyResourceDefinition {
 
     @Override
     public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
+        super.registerCapabilities(resourceRegistration);
+
         resourceRegistration.registerCapability(FAKE_UNDERTOW_LISTENER_CAPABILITY);
     }
 }

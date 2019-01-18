@@ -38,6 +38,7 @@ import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -117,10 +118,10 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
     public static final UndertowRootDefinition INSTANCE = new UndertowRootDefinition();
 
     private UndertowRootDefinition() {
-        super(UndertowExtension.SUBSYSTEM_PATH,
-                UndertowExtension.getResolver(),
-                new UndertowSubsystemAdd(APPLICATION_SECURITY_DOMAIN.getKnownSecurityDomainPredicate()),
-                ReloadRequiredRemoveStepHandler.INSTANCE);
+        super(new SimpleResourceDefinition.Parameters(UndertowExtension.SUBSYSTEM_PATH, UndertowExtension.getResolver())
+                .setAddHandler(new UndertowSubsystemAdd(APPLICATION_SECURITY_DOMAIN.getKnownSecurityDomainPredicate()))
+                .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
+                .addCapabilities(UNDERTOW_CAPABILITY, HTTP_INVOKER_RUNTIME_CAPABILITY));
     }
 
     @Override
@@ -131,13 +132,6 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
     @Override
     public List<? extends PersistentResourceDefinition> getChildren() {
         return Arrays.asList(CHILDREN);
-    }
-
-    @Override
-    public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
-        super.registerCapabilities(resourceRegistration);
-        resourceRegistration.registerCapability(UNDERTOW_CAPABILITY);
-        resourceRegistration.registerCapability(HTTP_INVOKER_RUNTIME_CAPABILITY);
     }
 
     @Override

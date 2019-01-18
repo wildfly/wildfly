@@ -33,13 +33,13 @@ import org.jboss.as.controller.AttributeParser;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.capability.DynamicNameMappers;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.web.host.WebHost;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -99,9 +99,11 @@ class HostDefinition extends PersistentResourceDefinition {
     ));
 
     private HostDefinition() {
-        super(UndertowExtension.HOST_PATH, UndertowExtension.getResolver(Constants.HOST),
-                HostAdd.INSTANCE,
-                new HostRemove());
+        super(new SimpleResourceDefinition.Parameters(UndertowExtension.HOST_PATH, UndertowExtension.getResolver(Constants.HOST))
+                .setAddHandler(HostAdd.INSTANCE)
+                .setRemoveHandler(new HostRemove())
+                .addCapabilities(HOST_CAPABILITY,
+                        WebHost.CAPABILITY));
     }
 
     @Override
@@ -114,9 +116,4 @@ class HostDefinition extends PersistentResourceDefinition {
         return CHILDREN;
     }
 
-    @Override
-    public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerCapability(HOST_CAPABILITY);
-        resourceRegistration.registerCapability(WebHost.CAPABILITY);
-    }
 }
