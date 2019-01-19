@@ -11,6 +11,8 @@
                      file-size="102400"
                      min-files="2"/>
 
+            <statistics enabled="${wildfly.messaging-activemq.statistics-enabled:${wildfly.statistics-enabled:false}}" />
+
             <shared-store-master />
 
             <security-setting name="#">
