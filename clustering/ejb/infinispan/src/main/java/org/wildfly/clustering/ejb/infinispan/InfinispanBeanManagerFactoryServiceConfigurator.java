@@ -76,7 +76,7 @@ public class InfinispanBeanManagerFactoryServiceConfigurator<I, T> extends Simpl
         this.configuration = configuration;
         ServiceName deploymentUnitServiceName = context.getDeploymentUnitServiceName();
         String containerName = configuration.getContainerName();
-        this.cache = new ServiceSupplierDependency<>(InfinispanCacheRequirement.CACHE.getServiceName(support, containerName, InfinispanBeanManagerFactoryServiceConfiguratorFactory.getCacheName(deploymentUnitServiceName)));
+        this.cache = new ServiceSupplierDependency<>(InfinispanCacheRequirement.CACHE.getServiceName(support, containerName, InfinispanBeanManagerFactoryServiceConfiguratorFactory.getCacheName(deploymentUnitServiceName, name)));
         this.affinityFactory = new ServiceSupplierDependency<>(InfinispanRequirement.KEY_AFFINITY_FACTORY.getServiceName(support, containerName));
         this.repository = new ServiceSupplierDependency<>(deploymentUnitServiceName.append("marshalling"));
         this.scheduler = new ServiceSupplierDependency<>(deploymentUnitServiceName.append(name, "expiration"));
