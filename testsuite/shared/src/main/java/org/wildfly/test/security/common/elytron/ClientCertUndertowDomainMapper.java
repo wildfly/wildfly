@@ -33,7 +33,7 @@ import org.jboss.as.test.integration.management.util.CLIWrapper;
  *
  * @author Ondrej Kotek
  */
-public class ClientCertUndertowDomainMapper extends AbstractConfigurableElement implements SecurityDomainMapper {
+public class ClientCertUndertowDomainMapper extends AbstractConfigurableElement {
 
     private final String securityDomain;
 

@@ -40,8 +40,10 @@ import org.jboss.as.test.integration.management.util.CLIWrapper;
  * </p>
  *
  * @author Josef Cacek
+ * @deprecated Configures more than one resource, use {@code UndertowApplicationSecurityDomain}
  */
-public class UndertowDomainMapper  extends AbstractConfigurableElement implements SecurityDomainMapper {
+@Deprecated
+public class UndertowDomainMapper  extends AbstractConfigurableElement {
 
     private final Set<String> applicationDomains;
 

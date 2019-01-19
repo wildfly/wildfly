@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.test.integration.elytron.jaspi;
+package org.wildfly.test.undertow.common;
 
 import static org.wildfly.test.security.common.ModelNodeUtil.setIfNotNull;
 
@@ -38,12 +38,7 @@ import org.wildfly.test.security.common.elytron.ConfigurableElement;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
- class UndertowApplicationSecurityDomain extends AbstractConfigurableElement {
-
-     /*
-      * Reduced visibility until we decide to make this accessible for use elsewhere which would also mean moving this class into
-      * common.
-      */
+ public class UndertowApplicationSecurityDomain extends AbstractConfigurableElement {
 
      private final PathAddress address;
      private final String securityDomain;

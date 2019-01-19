@@ -1,0 +1,46 @@
+[[Elytron_and_Java_EE_Security]]
+= Elytron and Java EE Security
+
+[abstract]
+== Introduction
+
+Starting from WildFly 15 an implementation of the Servlet Profile from Java Authentication SPI for Containers (JSR-196 / JASPI) specification has been included in the application server, in addition to making JASPI available for deployments using WildFly Elytron it also makes it possible to make use of EE Security with WildFly Elytron.
+
+== Activation
+ 
+EE Security with WildFly Elytron is available out of the box with just a couple of small steps required.
+
+=== Define JACC Policy
+
+The `SecurityContext` API makes use of JACC to access the current authenticated identity, if deployments are going to make use of this API then a JACC policy needs to be activated in the WildFly Elytron subsystem.  If this API is not being used then the activation can be skipped.
+
+[source, ruby]
+----
+/subsystem=security:write-attribute(name=initialize-jacc, value=false)
+/subsystem=elytron/policy=jacc:add(jacc-policy={})
+:reload
+----
+
+As is shown in the example no specific configuration is required other than the presence of a default JACC policy, additionally after making these changes the server needs to be reloaded to ensure the new policy activates correctly.
+
+=== Add `application-security-domain` mapping
+
+As with all deployments a mapping is required from the security domain defined for the deployment to either a WildFly Elytron security domain or http authentication factory to activate security backed by WildFly Elytron. 
+
+All web applications deployed to WildFly have a security domain which will be resolved in the following order: -
+
+. From the deployment descriptors / annotations of the deployment being deployed.
+. The value defined on the `default-security-domain` attribute on the Undertow subsystem.
+. Default to 'other'.
+ 
+An `application-security-domain` resource then needs to be added to map from the deployment's security domain.
+
+The simplest approach is to add a mapping for `other`, then no further configuration will be required and provided the deployment does not define it's own security domain and provided no alternative default is specified all deployments will match this mapping.
+
+[source, ruby]
+----
+/subsystem=undertow/application-security-domain=other:add(security-domain=ApplicationDomain, integrated-jaspi=false)
+----
+
+The EE Security API is built on JASPI.  Within JASPI we support two different modes of operation 'integrated', and 'non-integrated'.  In integrated mode any identity being established during authentication is expected to exist in the associated security domain.  With the EE Security APIs however it is quite likely an alternative store will be in use so configuration the mapping to use 'non-integrated' JASPI allows for identities to be dynamically created as required.
+ 
