@@ -23,6 +23,4 @@ package org.wildfly.clustering.ejb;
 
 public interface BeanPassivationConfiguration {
     int getMaxSize();
-
-    void setMaxSize(int size);
 }

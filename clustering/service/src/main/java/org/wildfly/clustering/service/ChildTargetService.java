@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,30 +20,33 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ejb3.cache;
+package org.wildfly.clustering.service;
 
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceName;
+import java.util.function.Consumer;
+
+import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StopContext;
 
-public class DelegateCacheFactoryBuilderService<K, V extends Identifiable<K>> extends CacheFactoryBuilderService<K, V> {
-    @SuppressWarnings("rawtypes")
-    private final InjectedValue<CacheFactoryBuilder> builder = new InjectedValue<>();
-    private final ServiceName delegateName;
+/**
+ * Service that performs service installation into the child target on start.
+ * @author Paul Ferraro
+ */
+public class ChildTargetService implements Service {
+    private final Consumer<ServiceTarget> installer;
 
-    public DelegateCacheFactoryBuilderService(String name, ServiceName delegateName) {
-        super(name);
-        this.delegateName = delegateName;
+    public ChildTargetService(Consumer<ServiceTarget> installer) {
+        this.installer = installer;
     }
 
     @Override
-    public ServiceBuilder<CacheFactoryBuilder<K, V>> build(ServiceTarget target) {
-        return super.build(target).addDependency(this.delegateName, CacheFactoryBuilder.class, this.builder);
+    public void start(StartContext context) {
+        this.installer.accept(context.getChildTarget());
     }
 
     @Override
-    public CacheFactoryBuilder<K, V> getValue() {
-        return this.builder.getValue();
+    public void stop(StopContext context) {
+        // Services installed into child target are auto-removed after this service stops.
     }
 }

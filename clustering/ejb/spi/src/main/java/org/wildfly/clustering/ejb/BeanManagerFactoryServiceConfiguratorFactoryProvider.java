@@ -21,11 +21,9 @@
  */
 package org.wildfly.clustering.ejb;
 
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
-
 /**
  * @author Paul Ferraro
  */
 public interface BeanManagerFactoryServiceConfiguratorFactoryProvider {
-    BeanManagerFactoryServiceConfiguratorFactory getBeanManagerFactoryBuilder(CapabilityServiceSupport support, String name, BeanManagerFactoryServiceConfiguratorConfiguration config);
+    BeanManagerFactoryServiceConfiguratorFactory getBeanManagerFactoryBuilder(String name, BeanManagerFactoryServiceConfiguratorConfiguration config);
 }

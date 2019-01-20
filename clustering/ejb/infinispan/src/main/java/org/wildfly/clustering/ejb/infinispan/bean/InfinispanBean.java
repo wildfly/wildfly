@@ -21,15 +21,14 @@
  */
 package org.wildfly.clustering.ejb.infinispan.bean;
 
+import java.time.Duration;
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.wildfly.clustering.ee.Mutator;
 import org.wildfly.clustering.ejb.Bean;
 import org.wildfly.clustering.ejb.PassivationListener;
 import org.wildfly.clustering.ejb.RemoveListener;
-import org.wildfly.clustering.ejb.Time;
 import org.wildfly.clustering.ejb.infinispan.BeanEntry;
 import org.wildfly.clustering.ejb.infinispan.BeanGroup;
 import org.wildfly.clustering.ejb.infinispan.BeanRemover;
@@ -51,11 +50,11 @@ public class InfinispanBean<I, T> implements Bean<I, T> {
     private final BeanGroup<I, T> group;
     private final Mutator mutator;
     private final BeanRemover<I, T> remover;
-    private final Time timeout;
+    private final Duration timeout;
     private final PassivationListener<T> listener;
     private final AtomicBoolean valid = new AtomicBoolean(true);
 
-    public InfinispanBean(I id, BeanEntry<I> entry, BeanGroup<I, T> group, Mutator mutator, BeanRemover<I, T> remover, Time timeout, PassivationListener<T> listener) {
+    public InfinispanBean(I id, BeanEntry<I> entry, BeanGroup<I, T> group, Mutator mutator, BeanRemover<I, T> remover, Duration timeout, PassivationListener<T> listener) {
         this.id = id;
         this.entry = entry;
         this.group = group;
@@ -79,7 +78,7 @@ public class InfinispanBean<I, T> implements Bean<I, T> {
     public boolean isExpired() {
         if (this.timeout == null) return false;
         Date lastAccessedTime = this.entry.getLastAccessedTime();
-        long timeout = this.timeout.convert(TimeUnit.MILLISECONDS);
+        long timeout = this.timeout.toMillis();
         return (lastAccessedTime != null) && (timeout > 0) ? ((System.currentTimeMillis() - lastAccessedTime.getTime()) >= timeout) : false;
     }
 

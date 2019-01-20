@@ -30,6 +30,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
@@ -78,6 +79,7 @@ public class StatefulUnitTestCase {
             ModelNode result = managementClient.getControllerClient().execute(operation);
             log.trace("modelnode operation write-attribute max-size=0: " + result);
             Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+            ServerReload.reloadIfRequired(managementClient);
         }
 
         @Override
@@ -89,6 +91,7 @@ public class StatefulUnitTestCase {
             operation.get("name").set("max-size");
             ModelNode result = managementClient.getControllerClient().execute(operation);
             Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+            ServerReload.reloadIfRequired(managementClient);
         }
 
         private static ModelNode getAddress() {

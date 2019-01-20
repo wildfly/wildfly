@@ -29,6 +29,7 @@ import org.jboss.as.controller.DeprecationData;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -76,19 +77,18 @@ public abstract class LegacyPassivationStoreResourceDefinition extends SimpleRes
             .setFlags(AttributeAccess.Flag.RESTART_NONE)
     ;
 
-    private final PassivationStoreWriteHandler writeHandler;
     private final AttributeDefinition[] attributes;
 
-    LegacyPassivationStoreResourceDefinition(String element, OperationStepHandler addHandler, OperationStepHandler removeHandler, OperationEntry.Flag addRestartLevel, OperationEntry.Flag removeRestartLevel, PassivationStoreWriteHandler writeHandler, AttributeDefinition... attributes) {
+    LegacyPassivationStoreResourceDefinition(String element, OperationStepHandler addHandler, OperationStepHandler removeHandler, OperationEntry.Flag addRestartLevel, OperationEntry.Flag removeRestartLevel, AttributeDefinition... attributes) {
         super(PathElement.pathElement(element), EJB3Extension.getResourceDescriptionResolver(element), addHandler, removeHandler, addRestartLevel, removeRestartLevel, new DeprecationData(DEPRECATED_VERSION));
-        this.writeHandler = new PassivationStoreWriteHandler(attributes);
         this.attributes = attributes;
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
+        OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(this.attributes);
         for (AttributeDefinition definition: this.attributes) {
-            resourceRegistration.registerReadWriteAttribute(definition, null, this.writeHandler);
+            resourceRegistration.registerReadWriteAttribute(definition, null, writeHandler);
         }
     }
 

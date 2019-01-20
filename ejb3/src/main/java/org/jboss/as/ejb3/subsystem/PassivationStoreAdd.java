@@ -26,9 +26,7 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.ejb3.cache.distributable.DistributableCacheFactoryBuilderService;
+import org.jboss.as.ejb3.cache.distributable.DistributableCacheFactoryBuilderServiceConfigurator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
@@ -60,11 +58,9 @@ public class PassivationStoreAdd extends AbstractAddStepHandler {
         this.install(context, operation, initialMaxSize, containerName, cacheName);
     }
 
-    protected void install(OperationContext context, ModelNode operation, final int initialMaxSize, final String containerName, final String cacheName) {
-        final String name = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
+    protected void install(OperationContext context, ModelNode operation, final int maxSize, final String containerName, final String cacheName) {
+        final String name = context.getCurrentAddressValue();
         BeanManagerFactoryServiceConfiguratorConfiguration config = new BeanManagerFactoryServiceConfiguratorConfiguration() {
-            private volatile int maxSize = initialMaxSize;
-
             @Override
             public String getContainerName() {
                 return containerName;
@@ -77,15 +73,10 @@ public class PassivationStoreAdd extends AbstractAddStepHandler {
 
             @Override
             public int getMaxSize() {
-                return this.maxSize;
-            }
-
-            @Override
-            public void setMaxSize(int size) {
-                this.maxSize = size;
+                return maxSize;
             }
         };
-        new DistributableCacheFactoryBuilderService<>(context.getCapabilityServiceSupport(), name, config).build(context.getServiceTarget())
+        new DistributableCacheFactoryBuilderServiceConfigurator<>(name, config).build(context.getServiceTarget())
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install();
     }

@@ -5,11 +5,11 @@
 package org.jboss.as.ejb3.cache.distributable;
 
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import javax.transaction.TransactionSynchronizationRegistry;
 
-import org.jboss.as.controller.ServiceNameFactory;
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ejb3.cache.Cache;
 import org.jboss.as.ejb3.cache.CacheFactory;
 import org.jboss.as.ejb3.cache.Contextual;
@@ -24,8 +24,11 @@ import org.wildfly.clustering.ejb.BeanManager;
 import org.wildfly.clustering.ejb.BeanManagerFactory;
 import org.wildfly.clustering.ejb.IdentifierFactory;
 import org.wildfly.clustering.ejb.PassivationListener;
+import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.ServiceConfigurator;
+import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SimpleServiceNameProvider;
+import org.wildfly.clustering.service.SupplierDependency;
 
 /**
  * Service that provides a distributable {@link CacheFactory}.
@@ -34,29 +37,32 @@ import org.wildfly.clustering.service.SimpleServiceNameProvider;
  * @param <K> the cache key type
  * @param <V> the cache value type
  */
-public class DistributableCacheFactoryService<K, V extends Identifiable<K> & Contextual<Batch>> extends SimpleServiceNameProvider implements ServiceConfigurator, CacheFactory<K, V> {
+public class DistributableCacheFactoryServiceConfigurator<K, V extends Identifiable<K> & Contextual<Batch>> extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, CacheFactory<K, V> {
 
-    private final ServiceConfigurator configurator;
-    private volatile Supplier<BeanManagerFactory<K, V, Batch>> factory;
-    private volatile Supplier<TransactionSynchronizationRegistry> tsr;
+    private final CapabilityServiceConfigurator configurator;
+    private final SupplierDependency<BeanManagerFactory<K, V, Batch>> factory;
 
-    public DistributableCacheFactoryService(ServiceName name, ServiceConfigurator configurator) {
+    private volatile SupplierDependency<TransactionSynchronizationRegistry> tsr;
+
+    public DistributableCacheFactoryServiceConfigurator(ServiceName name, CapabilityServiceConfigurator configurator) {
         super(name);
         this.configurator = configurator;
+        this.factory = new ServiceSupplierDependency<>(configurator);
+    }
+
+    @Override
+    public ServiceConfigurator configure(CapabilityServiceSupport support) {
+        this.configurator.configure(support);
+        this.tsr = new ServiceSupplierDependency<>(support.getCapabilityServiceName("org.wildfly.transactions.transaction-synchronization-registry"));
+        return this;
     }
 
     @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
         this.configurator.build(target).install();
-        ServiceBuilder<?> builder = target.addService(this.getServiceName());
-        this.factory = builder.requires(this.configurator.getServiceName());
-        // Ensure the local transaction synchronization registry is started before the cache
-        // This parsing isn't 100% ideal as it's somewhat 'internal' knowledge of the relationship between
-        // capability names and service names. But at this point that relationship really needs to become
-        // a contract anyway
-        ServiceName tsrServiceName = ServiceNameFactory.parseServiceName("org.wildfly.transactions.transaction-synchronization-registry");
-        this.tsr = builder.requires(tsrServiceName);
-        Consumer<CacheFactory<K, V>> factory = builder.provides(this.getServiceName());
+        ServiceName name = this.getServiceName();
+        ServiceBuilder<?> builder = target.addService(name);
+        Consumer<CacheFactory<K, V>> factory = new CompositeDependency(this.factory, this.tsr).register(builder).provides(name);
         Service service = Service.newInstance(factory, this);
         return builder.setInstance(service);
     }

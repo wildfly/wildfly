@@ -5,7 +5,9 @@
 package org.jboss.as.ejb3.subsystem;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -27,7 +29,7 @@ public class PassivationStoreResourceDefinition extends SimpleResourceDefinition
             .setDefaultValue(new ModelNode(10000))
             .setAllowExpression(true)
             .setValidator(new LongRangeValidator(0, Integer.MAX_VALUE, true, true))
-            .setFlags(AttributeAccess.Flag.RESTART_NONE)
+            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .build()
     ;
     static final SimpleAttributeDefinition CACHE_CONTAINER = new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.CACHE_CONTAINER, ModelType.STRING, true)
@@ -45,27 +47,23 @@ public class PassivationStoreResourceDefinition extends SimpleResourceDefinition
     ;
 
     static final AttributeDefinition[] ATTRIBUTES = { MAX_SIZE, CACHE_CONTAINER, BEAN_CACHE };
-    static final AttributeDefinition[] READ_ONLY_ATTRIBUTES = { CACHE_CONTAINER, BEAN_CACHE };
-    static final AttributeDefinition[] READ_WRITE_ATTRIBUTES = { MAX_SIZE };
 
     static final PassivationStoreAdd ADD_HANDLER = new PassivationStoreAdd(ATTRIBUTES);
-    static final PassivationStoreRemove REMOVE_HANDLER = new PassivationStoreRemove(ADD_HANDLER);
-    private static final PassivationStoreWriteHandler WRITE_HANDLER = new PassivationStoreWriteHandler(READ_WRITE_ATTRIBUTES);
 
     static final PassivationStoreResourceDefinition INSTANCE = new PassivationStoreResourceDefinition(EJB3SubsystemModel.PASSIVATION_STORE);
 
-    private PassivationStoreResourceDefinition(String element) {
-        super(PathElement.pathElement(element), EJB3Extension.getResourceDescriptionResolver(element), ADD_HANDLER, REMOVE_HANDLER, OperationEntry.Flag.RESTART_NONE, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
+    private PassivationStoreResourceDefinition(String element, AttributeDefinition... attributes) {
+        super(new Parameters(PathElement.pathElement(element), EJB3Extension.getResourceDescriptionResolver(element))
+                .setAddHandler(ADD_HANDLER)
+                .setRemoveHandler(new PassivationStoreRemove(ADD_HANDLER))
+                .setRemoveRestartLevel(OperationEntry.Flag.RESTART_RESOURCE_SERVICES));
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        for (AttributeDefinition definition: READ_ONLY_ATTRIBUTES) {
-            resourceRegistration.registerReadOnlyAttribute(definition, null);
-        }
-        for (AttributeDefinition definition: READ_WRITE_ATTRIBUTES) {
-            resourceRegistration.registerReadWriteAttribute(definition, null, WRITE_HANDLER);
+        OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
+        for (AttributeDefinition definition: ATTRIBUTES) {
+            resourceRegistration.registerReadWriteAttribute(definition, null, writeHandler);
         }
     }
-
 }

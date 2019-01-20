@@ -80,13 +80,11 @@ public class ClusterPassivationStoreResourceDefinition extends LegacyPassivation
 
     private static final ClusterPassivationStoreAdd ADD_HANDLER = new ClusterPassivationStoreAdd(ATTRIBUTES);
     private static final PassivationStoreRemove REMOVE_HANDLER = new PassivationStoreRemove(ADD_HANDLER);
-    private static final PassivationStoreWriteHandler WRITE_HANDLER = new PassivationStoreWriteHandler(ATTRIBUTES);
 
     @Deprecated
     static final ClusterPassivationStoreResourceDefinition INSTANCE = new ClusterPassivationStoreResourceDefinition();
 
     private ClusterPassivationStoreResourceDefinition() {
-        super(EJB3SubsystemModel.CLUSTER_PASSIVATION_STORE, ADD_HANDLER, REMOVE_HANDLER, OperationEntry.Flag.RESTART_NONE, OperationEntry.Flag.RESTART_RESOURCE_SERVICES, WRITE_HANDLER, ATTRIBUTES);
+        super(EJB3SubsystemModel.CLUSTER_PASSIVATION_STORE, ADD_HANDLER, REMOVE_HANDLER, OperationEntry.Flag.RESTART_NONE, OperationEntry.Flag.RESTART_RESOURCE_SERVICES, ATTRIBUTES);
     }
-
 }

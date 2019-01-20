@@ -27,6 +27,7 @@ import java.util.function.Consumer;
 
 import org.infinispan.Cache;
 import org.infinispan.remoting.transport.Address;
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -56,33 +57,41 @@ import org.wildfly.clustering.spi.NodeFactory;
 /**
  * @author Paul Ferraro
  */
-public class InfinispanBeanManagerFactoryServiceConfigurator<I, T> extends SimpleServiceNameProvider implements ServiceConfigurator, InfinispanBeanManagerFactoryConfiguration {
+public class InfinispanBeanManagerFactoryServiceConfigurator<I, T> extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, InfinispanBeanManagerFactoryConfiguration {
 
+    private final String name;
     private final BeanContext context;
     private final BeanManagerFactoryServiceConfiguratorConfiguration configuration;
 
-    @SuppressWarnings("rawtypes")
-    private final SupplierDependency<Cache> cache;
-    private final SupplierDependency<KeyAffinityServiceFactory> affinityFactory;
     private final SupplierDependency<MarshallingConfigurationRepository> repository;
     private final SupplierDependency<ScheduledExecutorService> scheduler;
-    private final SupplierDependency<NodeFactory<Address>> group;
-    private final SupplierDependency<Registry<String, ?>> registry;
-    private final SupplierDependency<CommandDispatcherFactory> dispatcherFactory;
 
-    public InfinispanBeanManagerFactoryServiceConfigurator(CapabilityServiceSupport support, String name, BeanContext context, BeanManagerFactoryServiceConfiguratorConfiguration configuration) {
+    private volatile SupplierDependency<Cache<?, ?>> cache;
+    private volatile SupplierDependency<KeyAffinityServiceFactory> affinityFactory;
+    private volatile SupplierDependency<NodeFactory<Address>> group;
+    private volatile SupplierDependency<Registry<String, ?>> registry;
+    private volatile SupplierDependency<CommandDispatcherFactory> dispatcherFactory;
+
+    public InfinispanBeanManagerFactoryServiceConfigurator(String name, BeanContext context, BeanManagerFactoryServiceConfiguratorConfiguration configuration) {
         super(context.getDeploymentUnitServiceName().append(context.getBeanName()).append("bean-manager"));
+        this.name = name;
         this.context = context;
         this.configuration = configuration;
         ServiceName deploymentUnitServiceName = context.getDeploymentUnitServiceName();
-        String containerName = configuration.getContainerName();
-        this.cache = new ServiceSupplierDependency<>(InfinispanCacheRequirement.CACHE.getServiceName(support, containerName, InfinispanBeanManagerFactoryServiceConfiguratorFactory.getCacheName(deploymentUnitServiceName, name)));
-        this.affinityFactory = new ServiceSupplierDependency<>(InfinispanRequirement.KEY_AFFINITY_FACTORY.getServiceName(support, containerName));
         this.repository = new ServiceSupplierDependency<>(deploymentUnitServiceName.append("marshalling"));
         this.scheduler = new ServiceSupplierDependency<>(deploymentUnitServiceName.append(name, "expiration"));
+    }
+
+    @Override
+    public ServiceConfigurator configure(CapabilityServiceSupport support) {
+        String containerName = this.configuration.getContainerName();
+        ServiceName deploymentUnitServiceName = this.context.getDeploymentUnitServiceName();
+        this.cache = new ServiceSupplierDependency<>(InfinispanCacheRequirement.CACHE.getServiceName(support, containerName, InfinispanBeanManagerFactoryServiceConfiguratorFactory.getCacheName(deploymentUnitServiceName, this.name)));
+        this.affinityFactory = new ServiceSupplierDependency<>(InfinispanRequirement.KEY_AFFINITY_FACTORY.getServiceName(support, containerName));
         this.dispatcherFactory = new ServiceSupplierDependency<>(ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(support, containerName));
         this.registry = new ServiceSupplierDependency<>(ClusteringCacheRequirement.REGISTRY.getServiceName(support, containerName, BeanManagerFactoryServiceConfiguratorConfiguration.CLIENT_MAPPINGS_CACHE_NAME));
         this.group = new ServiceSupplierDependency<>(ClusteringCacheRequirement.GROUP.getServiceName(support, containerName, BeanManagerFactoryServiceConfiguratorConfiguration.CLIENT_MAPPINGS_CACHE_NAME));
+        return this;
     }
 
     @Override
@@ -99,9 +108,10 @@ public class InfinispanBeanManagerFactoryServiceConfigurator<I, T> extends Simpl
         return this.context;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public <K, V> Cache<K, V> getCache() {
-        return this.cache.get();
+        return (Cache<K, V>) this.cache.get();
     }
 
     @Override

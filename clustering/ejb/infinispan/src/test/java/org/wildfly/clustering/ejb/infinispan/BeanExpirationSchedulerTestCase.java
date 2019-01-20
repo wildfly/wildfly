@@ -26,14 +26,13 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.Duration;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.ejb.RemoveListener;
-import org.wildfly.clustering.ejb.Time;
 
 public class BeanExpirationSchedulerTestCase {
     @Test
@@ -47,7 +46,7 @@ public class BeanExpirationSchedulerTestCase {
         when(config.getExecutor()).thenReturn(Executors.newSingleThreadScheduledExecutor());
 
         // Fun fact: the EJB specification allows a timeout value of 0, so only negative timeouts are treated as immortal
-        when(config.getTimeout()).thenReturn(new Time(-1, TimeUnit.SECONDS));
+        when(config.getTimeout()).thenReturn(Duration.ofMinutes(-1L));
         when(config.getRemoveListener()).thenReturn(listener);
 
         try (Scheduler<String> scheduler = new BeanExpirationScheduler<>(batcher, remover, config)) {
@@ -72,7 +71,7 @@ public class BeanExpirationSchedulerTestCase {
         when(config.getExecutor()).thenReturn(Executors.newSingleThreadScheduledExecutor());
         when(batcher.createBatch()).thenReturn(batch);
 
-        when(config.getTimeout()).thenReturn(new Time(1, TimeUnit.MILLISECONDS));
+        when(config.getTimeout()).thenReturn(Duration.ofMillis(1L));
         when(config.getRemoveListener()).thenReturn(listener);
 
         try (Scheduler<String> scheduler = new BeanExpirationScheduler<>(batcher, remover, config)) {
@@ -95,7 +94,7 @@ public class BeanExpirationSchedulerTestCase {
 
         when(config.getExecutor()).thenReturn(Executors.newSingleThreadScheduledExecutor());
 
-        when(config.getTimeout()).thenReturn(new Time(1, TimeUnit.MINUTES));
+        when(config.getTimeout()).thenReturn(Duration.ofMinutes(1L));
         when(config.getRemoveListener()).thenReturn(listener);
 
         try (Scheduler<String> scheduler = new BeanExpirationScheduler<>(batcher, remover, config)) {
