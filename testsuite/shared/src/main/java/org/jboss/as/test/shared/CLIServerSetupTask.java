@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.clustering;
+package org.jboss.as.test.shared;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -33,7 +33,6 @@ import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.batch.Batch;
 import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.test.integration.management.util.CLITestUtil;
-import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 
