@@ -103,7 +103,7 @@ public class CalendarTimerTask extends TimerTask<CalendarTimer> {
                 if (calendarTimer.getNextExpiration() == null) {
                     timerService.expireTimer(calendarTimer);
                 } else {
-                    calendarTimer.setTimerState(TimerState.ACTIVE);
+                    calendarTimer.setTimerState(TimerState.ACTIVE, null);
                     // persist changes
                     timerService.persistTimer(calendarTimer, false);
                 }
