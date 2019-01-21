@@ -156,6 +156,10 @@
             </exclusions>
         </dependency>
         <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-client-properties</artifactId>
+        </dependency>
+        <dependency>
             <groupId>javax.jws</groupId>
             <artifactId>jsr181-api</artifactId>
             <scope>test</scope>
