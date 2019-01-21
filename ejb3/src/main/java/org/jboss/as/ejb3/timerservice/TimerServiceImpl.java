@@ -645,7 +645,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                 // cancel any scheduled Future for this timer
                 this.cancelTimeout(timer);
                 this.unregisterTimerResource(timer.getId());
-                this.timers.remove(timer.getId());
+                removeTimerFromInternalCache(timer);
             }
             // persist changes
             persistTimer(timer, false);
@@ -660,7 +660,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         this.cancelTimeout(timer);
         timer.setTimerState(TimerState.EXPIRED, null);
         this.unregisterTimerResource(timer.getId());
-        this.timers.remove(timer.getId());
+        removeTimerFromInternalCache(timer);
     }
 
     /**
@@ -923,6 +923,11 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                 timerTask.cancel();
             }
         }
+    }
+
+    private void removeTimerFromInternalCache(final TimerImpl timer) {
+        timers.remove(timer.getId());
+        EJB3_TIMER_LOGGER.debugv("Removed timer {0} from internal cache", timer);
     }
 
     public boolean isScheduled(final String tid){
@@ -1205,7 +1210,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                 if (status == Status.STATUS_COMMITTED) {
                     cancelTimeout(timer);
                     unregisterTimerResource(timer.getId());
-                    timers.remove(timer.getId());
+                    removeTimerFromInternalCache(timer);
                 } else {
                     timer.setTimerState(TimerState.ACTIVE, null);
                 }
@@ -1322,6 +1327,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             TimerImpl timer = TimerServiceImpl.this.getTimer(timerId);
             if(timer != null) {
                 TimerServiceImpl.this.cancelTimeout(timer);
+                TimerServiceImpl.this.removeTimerFromInternalCache(timer);
             }
         }
 
