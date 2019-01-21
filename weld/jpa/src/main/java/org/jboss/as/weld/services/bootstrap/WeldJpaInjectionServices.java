@@ -59,16 +59,6 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
     }
 
     @Override
-    public EntityManager resolvePersistenceContext(InjectionPoint injectionPoint) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public EntityManagerFactory resolvePersistenceUnit(InjectionPoint injectionPoint) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public ResourceReferenceFactory<EntityManager> registerPersistenceContextInjectionPoint(final InjectionPoint injectionPoint) {
         //TODO: cache this stuff
         final PersistenceContext context = getResourceAnnotated(injectionPoint).getAnnotation(PersistenceContext.class);

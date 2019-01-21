@@ -87,11 +87,6 @@ public class WeldEjbInjectionServices extends AbstractResourceInjectionServices 
     }
 
     @Override
-    public Object resolveEjb(InjectionPoint injectionPoint) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public ResourceReferenceFactory<Object> registerEjbInjectionPoint(final InjectionPoint injectionPoint) {
         EJB ejb = ResourceInjectionUtilities.getResourceAnnotated(injectionPoint).getAnnotation(EJB.class);
         if (ejb == null) {
