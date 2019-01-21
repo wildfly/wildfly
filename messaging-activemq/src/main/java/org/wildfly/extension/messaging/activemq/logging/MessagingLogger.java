@@ -864,4 +864,8 @@ public interface MessagingLogger extends BasicLogger {
 
     @Message(id = 100, value = "Deleting the remote destination %s failed with error %s")
     RuntimeException remoteDestinationDeletionFailed(String destinationName, String error);
+
+    @LogMessage(level = WARN)
+    @Message(id = 101, value = "Invalid value %s for %s, legal values are %s, default value is applied.")
+    void invalidTransactionNameValue(String value, String name, Collection<?> validValues);
 }

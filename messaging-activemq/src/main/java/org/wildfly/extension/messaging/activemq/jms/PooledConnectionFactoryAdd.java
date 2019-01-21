@@ -128,16 +128,14 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
 
     static String getTxSupport(final ModelNode resolvedModel) {
         String txType = resolvedModel.get(ConnectionFactoryAttributes.Pooled.TRANSACTION.getName()).asStringOrNull();
-        if(txType == null) {
-            return XA_TX;
+        switch (txType) {
+            case LOCAL:
+                return LOCAL_TX;
+            case NONE:
+                return NO_TX;
+            default:
+                return XA_TX;
         }
-        if (LOCAL.equals(txType)) {
-            return LOCAL_TX;
-        }
-        if (NONE.equals(txType)) {
-            return NO_TX;
-        }
-        return XA_TX;
     }
 
     static String getDiscoveryGroup(final ModelNode model) {
