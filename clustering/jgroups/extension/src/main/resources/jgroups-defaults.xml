@@ -58,9 +58,6 @@
         timeout_check_interval="5000"/>
     <FD_SOCK/>
     <VERIFY_SUSPECT timeout="5000"/>
-    <ASYM_ENCRYPT
-        asym_keylength="2048"
-    />
     <pbcast.NAKACK2
         xmit_interval="100"
         xmit_table_num_rows="50"
