@@ -31,12 +31,10 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -48,12 +46,6 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 public class CDIBuiltinInjectionTestCase {
-
-    @BeforeClass
-    public static void skipSecurityManager() {
-        // TODO https://issues.jboss.org/browse/WFLY-11616
-        AssumeTestGroupUtil.assumeSecurityManagerDisabled();
-    }
 
     @Deployment(testable = false)
     public static Archive<?> deploy() {

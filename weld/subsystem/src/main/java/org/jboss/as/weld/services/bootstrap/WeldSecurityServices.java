@@ -81,7 +81,11 @@ public class WeldSecurityServices implements Service, SecurityServices {
         final Object securityManager = securityManagerSupplier != null ? securityManagerSupplier.get() : null;
         if (securityManager == null)
             throw WeldLogger.ROOT_LOGGER.securityNotEnabled();
-        return ((ServerSecurityManager) securityManager).getCallerPrincipal();
+        if (WildFlySecurityManager.isChecking()) {
+            return AccessController.doPrivileged((PrivilegedAction<Principal>) ((ServerSecurityManager) securityManager)::getCallerPrincipal);
+        } else {
+            return ((ServerSecurityManager)securityManager).getCallerPrincipal();
+        }
     }
 
     @Override
