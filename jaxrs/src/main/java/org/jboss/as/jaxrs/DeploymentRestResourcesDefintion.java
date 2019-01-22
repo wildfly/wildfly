@@ -184,7 +184,9 @@ public class DeploymentRestResourcesDefintion extends SimpleResourceDefinition {
                     UndertowService.deploymentServiceName(server, host, contextPath));
             final UndertowDeploymentService deploymentService = (UndertowDeploymentService) controller.getService();
             try {
-
+                if(deploymentService.getDeployment() == null) {
+                    return;
+                }
                 deploymentService.getDeployment().createThreadSetupAction(new ThreadSetupHandler.Action<Object, Object>() {
                     @Override
                     public Object call(HttpServerExchange exchange, Object ctxObject) throws Exception {
