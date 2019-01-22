@@ -25,6 +25,8 @@ import java.nio.CharBuffer;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Map;
 
+import org.wildfly.security.manager.WildFlySecurityManager;
+
 /**
  * Implements logic for parsing/appending routing information from/to a session identifier.
  *
@@ -32,7 +34,7 @@ import java.util.Map;
  */
 public class SimpleRoutingSupport implements RoutingSupport {
 
-    private static final String DELIMITER = ".";
+    private static final String DELIMITER = WildFlySecurityManager.getPropertyPrivileged("jboss.session.route.delimiter", ".");
 
     @Override
     public Map.Entry<CharSequence, CharSequence> parse(CharSequence id) {
