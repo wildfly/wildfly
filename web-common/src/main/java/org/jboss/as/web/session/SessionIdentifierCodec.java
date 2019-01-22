@@ -19,7 +19,7 @@ package org.jboss.as.web.session;
 
 /**
  * Encapsulates logic to encode/decode additional information in/from a session identifier.
- * Both the {@link #encode(String)} and {@link #decode(String)} methods should be idempotent.
+ * Both the {@link #encode(CharSequence)} and {@link #decode(CharSequence)} methods should be idempotent.
  * The codec methods should also be symmetrical.  i.e. the result of
  * <code>decode(encode(x))</code> should yield <code>x</code>, just as the result of
  * <code>encode(decode(y))</code> should yield <code>y</code>.
@@ -31,12 +31,12 @@ public interface SessionIdentifierCodec {
      * @param sessionId a session identifier
      * @return an encoded session identifier
      */
-    String encode(String sessionId);
+    CharSequence encode(CharSequence sessionId);
 
     /**
-     * Decodes the specified session identifier encoded via {@link #encode(String)}.
+     * Decodes the specified session identifier encoded via {@link #encode(CharSequence)}.
      * @param encodedSessionId an encoded session identifier
      * @return the decoded session identifier
      */
-    String decode(String encodedSessionId);
+    CharSequence decode(CharSequence encodedSessionId);
 }

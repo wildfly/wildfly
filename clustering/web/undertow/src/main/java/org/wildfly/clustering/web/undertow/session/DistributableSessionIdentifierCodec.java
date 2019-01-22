@@ -40,20 +40,14 @@ public class DistributableSessionIdentifierCodec implements SessionIdentifierCod
         this.routing = routing;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public String encode(String sessionId) {
-        String route = this.locator.locate(sessionId);
+    public CharSequence encode(CharSequence sessionId) {
+        String route = this.locator.locate(sessionId.toString());
         return (route != null) ? this.routing.format(sessionId, route) : sessionId;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public String decode(String encodedSessionId) {
+    public CharSequence decode(CharSequence encodedSessionId) {
         return this.routing.parse(encodedSessionId).getKey();
     }
 }
