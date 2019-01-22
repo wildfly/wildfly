@@ -212,7 +212,9 @@ public class DeploymentRestResourcesDefintion extends SimpleResourceDefinition {
             }
             final ResourceMeta resourceMeta = resMeta;
             try {
-
+                if(deploymentService.getDeployment() == null) {
+                    return;
+                }
                 deploymentService.getDeployment().createThreadSetupAction(new ThreadSetupHandler.Action<Object, Object>() {
                     @Override
                     public Object call(HttpServerExchange exchange, Object ctxObject) throws Exception {

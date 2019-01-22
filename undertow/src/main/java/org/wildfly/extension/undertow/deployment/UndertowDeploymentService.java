@@ -163,7 +163,11 @@ public class UndertowDeploymentService implements Service<UndertowDeploymentServ
     }
 
     public Deployment getDeployment(){
-        return deploymentManager.getDeployment();
+        if(this.deploymentManager != null) {
+            return deploymentManager.getDeployment();
+        } else {
+            return null;
+        }
     }
 
     Injector<ExecutorService> getServerExecutorInjector() {
