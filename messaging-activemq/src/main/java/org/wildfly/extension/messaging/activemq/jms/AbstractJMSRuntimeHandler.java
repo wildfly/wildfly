@@ -23,15 +23,18 @@
 package org.wildfly.extension.messaging.activemq.jms;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_DEFAULTS;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.SERVER;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
@@ -78,8 +81,13 @@ public abstract class AbstractJMSRuntimeHandler<T> extends AbstractRuntimeOnlyHa
     private T getResourceConfig(final PathAddress operationAddress) throws OperationFailedException {
 
         final String name = operationAddress.getLastElement().getValue();
-        final String server = operationAddress.getElement(operationAddress.size() - 2).getValue();
-
+        PathElement serverElt = operationAddress.getParent().getLastElement();
+        final String server;
+        if(serverElt != null && SERVER.equals(serverElt.getKey())) {
+            server = serverElt.getValue();
+        } else {
+            server = "";
+        }
         T config = resources.get(new ResourceConfig(server, name));
 
         if (config == null) {
@@ -95,28 +103,41 @@ public abstract class AbstractJMSRuntimeHandler<T> extends AbstractRuntimeOnlyHa
 
         private ResourceConfig(final String server, final String name) {
             this.name = name;
-            this.server = server;
-        }
-
-        @Override
-        public boolean equals(final Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            final ResourceConfig that = (ResourceConfig) o;
-
-            if (!name.equals(that.name)) return false;
-            if (!server.equals(that.server)) return false;
-
-            return true;
+            if (server == null) {
+                this.server = "";
+            } else {
+                this.server = server;
+            }
         }
 
         @Override
         public int hashCode() {
-            int result = server.hashCode();
-            result = 31 * result + name.hashCode();
+            int result = Objects.hashCode(this.server);
+            result = 31 * result + Objects.hashCode(this.name);
             return result;
         }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final ResourceConfig other = (ResourceConfig) obj;
+            if (!Objects.equals(this.server, other.server)) {
+                return false;
+            }
+            if (!Objects.equals(this.name, other.name)) {
+                return false;
+            }
+            return true;
+        }
+
     }
 
 }

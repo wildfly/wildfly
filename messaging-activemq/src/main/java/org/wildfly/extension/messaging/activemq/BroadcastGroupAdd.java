@@ -37,7 +37,6 @@ import java.util.Set;
 import org.apache.activemq.artemis.api.core.BroadcastEndpointFactory;
 import org.apache.activemq.artemis.api.core.BroadcastGroupConfiguration;
 import org.apache.activemq.artemis.api.core.UDPBroadcastEndpointFactory;
-import org.apache.activemq.artemis.core.config.Configuration;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -140,19 +139,15 @@ public class BroadcastGroupAdd extends AbstractAddStepHandler {
         }
     }
 
-    static void addBroadcastGroupConfigs(final OperationContext context, final Configuration configuration, final ModelNode model)  throws OperationFailedException {
+    static void addBroadcastGroupConfigs(final OperationContext context, final List<BroadcastGroupConfiguration> configs, final Set<String> connectors, final ModelNode model)  throws OperationFailedException {
         if (model.hasDefined(CommonAttributes.BROADCAST_GROUP)) {
-            final List<BroadcastGroupConfiguration> configs = configuration.getBroadcastGroupConfigurations();
-            final Set<String> connectors = configuration.getConnectorConfigurations().keySet();
             for (Property prop : model.get(CommonAttributes.BROADCAST_GROUP).asPropertyList()) {
                 configs.add(createBroadcastGroupConfiguration(context, connectors, prop.getName(), prop.getValue()));
-
             }
         }
     }
 
     static BroadcastGroupConfiguration createBroadcastGroupConfiguration(final OperationContext context, final Set<String> connectors, final String name, final ModelNode model) throws OperationFailedException {
-
         final long broadcastPeriod = BroadcastGroupDefinition.BROADCAST_PERIOD.resolveModelAttribute(context, model).asLong();
         final List<String> connectorRefs = new ArrayList<String>();
         if (model.hasDefined(CommonAttributes.CONNECTORS)) {

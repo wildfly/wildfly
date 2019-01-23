@@ -27,9 +27,6 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.HA_POLIC
 
 import java.util.Collection;
 
-import org.apache.activemq.artemis.core.config.HAPolicyConfiguration;
-import org.apache.activemq.artemis.core.config.ScaleDownConfiguration;
-import org.apache.activemq.artemis.core.config.ha.LiveOnlyPolicyConfiguration;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -85,8 +82,4 @@ public class LiveOnlyDefinition extends PersistentResourceDefinition {
         return ATTRIBUTES;
     }
 
-    static HAPolicyConfiguration buildConfiguration(OperationContext context, ModelNode model) throws OperationFailedException {
-        ScaleDownConfiguration scaleDownConfiguration = ScaleDownAttributes.addScaleDownConfiguration(context, model);
-        return new LiveOnlyPolicyConfiguration(scaleDownConfiguration);
-    }
 }

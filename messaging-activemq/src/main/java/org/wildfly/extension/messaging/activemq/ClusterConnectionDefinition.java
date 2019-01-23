@@ -37,7 +37,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import org.apache.activemq.artemis.api.config.ActiveMQDefaultConfiguration;
 
-import org.apache.activemq.artemis.core.server.cluster.impl.MessageLoadBalancingType;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.AttributeParser;
@@ -134,7 +133,7 @@ public class ClusterConnectionDefinition extends PersistentResourceDefinition {
      */
     // FIXME WFLY-4587 forward-when-no-consumers == true ? STRICT : ON_DEMAND
     public static final SimpleAttributeDefinition MESSAGE_LOAD_BALANCING_TYPE = create("message-load-balancing-type", STRING)
-            .setDefaultValue(new ModelNode("ON_DEMAND"))
+            .setDefaultValue(new ModelNode(MessageLoadBalancingType.ON_DEMAND.toString()))
             .setValidator(new EnumValidator<>(MessageLoadBalancingType.class, true, true))
             .setRequired(false)
             .setAllowExpression(true)
@@ -330,4 +329,9 @@ public class ClusterConnectionDefinition extends PersistentResourceDefinition {
             registry.registerOperationHandler(getNodesDef, ClusterConnectionControlHandler.INSTANCE);
         }
     }
+
+    private enum MessageLoadBalancingType {
+        OFF, STRICT, ON_DEMAND;
+    }
+
 }

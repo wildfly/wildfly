@@ -426,7 +426,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
             // to distinguish CFs with same name in different application (or module).
             final ContextNames.BindInfo bindInfo = getBindInfo(jndi);
 
-            final ConnectionFactoryReferenceFactoryService referenceFactoryService = new ConnectionFactoryReferenceFactoryService();
+            final ConnectionFactoryReferenceFactoryService referenceFactoryService = new ConnectionFactoryReferenceFactoryService(deployment);
             final ServiceName referenceFactoryServiceName = ConnectionFactoryReferenceFactoryService.SERVICE_NAME_BASE
                     .append(bindInfo.getBinderServiceName());
             serviceTarget.addService(referenceFactoryServiceName, referenceFactoryService)

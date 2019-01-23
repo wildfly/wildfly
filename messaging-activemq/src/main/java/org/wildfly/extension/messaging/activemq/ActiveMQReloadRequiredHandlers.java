@@ -32,6 +32,8 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * Requires a reload only if the {@link ActiveMQServerService} service is up and running.
@@ -53,7 +55,7 @@ public interface ActiveMQReloadRequiredHandlers {
 
         @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-            if (ActiveMQServerService.isServiceInstalled(context)) {
+            if (isServiceInstalled(context)) {
                 context.reloadRequired();
                 reloadRequired = true;
             }
@@ -61,7 +63,7 @@ public interface ActiveMQReloadRequiredHandlers {
 
         @Override
         protected void rollbackRuntime(OperationContext context, ModelNode operation, Resource resource) {
-            if (reloadRequired && ActiveMQServerService.isServiceInstalled(context)) {
+            if (reloadRequired && isServiceInstalled(context)) {
                 context.revertReloadRequired();
             }
         }
@@ -73,7 +75,7 @@ public interface ActiveMQReloadRequiredHandlers {
 
         @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-            if (ActiveMQServerService.isServiceInstalled(context)) {
+            if (isServiceInstalled(context)) {
                 context.reloadRequired();
                 reloadRequired = true;
             }
@@ -81,7 +83,7 @@ public interface ActiveMQReloadRequiredHandlers {
 
         @Override
         protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-            if (reloadRequired && ActiveMQServerService.isServiceInstalled(context)) {
+            if (reloadRequired && isServiceInstalled(context)) {
                 context.revertReloadRequired();
             }
         }
@@ -102,15 +104,33 @@ public interface ActiveMQReloadRequiredHandlers {
                 ModelNode resolvedValue, ModelNode currentValue,
                 org.jboss.as.controller.AbstractWriteAttributeHandler.HandbackHolder<Void> handbackHolder)
                 throws OperationFailedException {
-            return ActiveMQServerService.isServiceInstalled(context);
+            return isServiceInstalled(context);
         }
 
         @Override
         protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
                 ModelNode valueToRestore, ModelNode valueToRevert, Void handback) throws OperationFailedException {
-            if (ActiveMQServerService.isServiceInstalled(context)) {
+            if (isServiceInstalled(context)) {
                 context.revertReloadRequired();
             }
         }
+    }
+
+    /**
+     * Returns true if a {@link ServiceController} for this service has been {@link org.jboss.msc.service.ServiceBuilder#install() installed}
+     * in MSC under the
+     * {@link MessagingServices#getActiveMQServiceName(org.jboss.as.controller.PathAddress) service name appropriate to the given operation}.
+     *
+     * @param context the operation context
+     * @return {@code true} if a {@link ServiceController} is installed
+     */
+    static boolean isServiceInstalled(final OperationContext context) {
+        if (context.isNormalServer()) {
+            final ServiceName serviceName = MessagingServices.getActiveMQServiceName(context.getCurrentAddress());
+            if (serviceName != null) {
+                return context.getServiceRegistry(false).getService(serviceName) != null;
+            }
+        }
+        return false;
     }
 }

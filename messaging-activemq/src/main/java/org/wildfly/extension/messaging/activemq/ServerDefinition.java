@@ -42,9 +42,6 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.activemq.artemis.api.config.ActiveMQDefaultConfiguration;
-import org.apache.activemq.artemis.api.core.SimpleString;
-import org.apache.activemq.artemis.core.config.impl.ConfigurationImpl;
-import org.apache.activemq.artemis.core.server.JournalType;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
@@ -424,11 +421,11 @@ public class ServerDefinition extends PersistentResourceDefinition {
     public static final SimpleAttributeDefinition JOURNAL_TYPE = create("journal-type", ModelType.STRING)
             .setAttributeGroup("journal")
             .setXmlName("type")
-            .setDefaultValue(new ModelNode(ConfigurationImpl.DEFAULT_JOURNAL_TYPE.toString()))
+            .setDefaultValue(new ModelNode(JournalType.ASYNCIO.toString()))
             .setRequired(false)
             .setAllowExpression(true)
             // list allowed values explicitly to exclude MAPPED
-            .setValidator(new EnumValidator<>(JournalType.class, true, true, JournalType.ASYNCIO, JournalType.NIO))
+            .setValidator(new EnumValidator<>(JournalType.class, true, true))
             .setRestartAllServices()
             .build();
     /**
@@ -641,7 +638,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
     public static final SimpleAttributeDefinition MANAGEMENT_ADDRESS = create("management-address", ModelType.STRING)
             .setAttributeGroup("management")
             .setXmlName("address")
-            .setDefaultValue(new ModelNode(new SimpleString("activemq.management").toString()))
+            .setDefaultValue(new ModelNode("activemq.management"))
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -886,5 +883,19 @@ public class ServerDefinition extends PersistentResourceDefinition {
         }
     }
 
+    enum JournalType {
+        NIO, ASYNCIO;
+        public static final String validValues = Arrays.toString(JournalType.values());
 
+        public static JournalType getType(String type) {
+            switch (type) {
+                case "NIO":
+                    return NIO;
+                case "ASYNCIO":
+                    return ASYNCIO;
+                default:
+                    throw new IllegalStateException("Invalid JournalType:" + type + " valid Types: " + validValues);
+            }
+        }
+    }
 }

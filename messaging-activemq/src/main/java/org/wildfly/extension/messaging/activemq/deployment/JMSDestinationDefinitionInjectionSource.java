@@ -24,12 +24,17 @@ package org.wildfly.extension.messaging.activemq.deployment;
 
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.DURABLE;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.ENTRIES;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.EXTERNAL_JMS_QUEUE;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.EXTERNAL_JMS_TOPIC;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JMS_QUEUE;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JMS_TOPIC;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.NAME;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.SELECTOR;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.SERVER;
+import static org.wildfly.extension.messaging.activemq.ServerDefinition.MANAGEMENT_ADDRESS;
 import static org.wildfly.extension.messaging.activemq.deployment.JMSConnectionFactoryDefinitionInjectionSource.getActiveMQServerName;
+import static org.wildfly.extension.messaging.activemq.deployment.JMSConnectionFactoryDefinitionInjectionSource.getDefaulResourceAdapter;
+import static org.wildfly.extension.messaging.activemq.deployment.JMSConnectionFactoryDefinitionInjectionSource.targetsExternalPooledConnectionFactory;
 import static org.wildfly.extension.messaging.activemq.deployment.JMSConnectionFactoryDefinitionInjectionSource.targetsPooledConnectionFactory;
 import static org.wildfly.extension.messaging.activemq.logging.MessagingLogger.ROOT_LOGGER;
 
@@ -62,15 +67,19 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.extension.messaging.activemq.MessagingExtension;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
+import org.wildfly.extension.messaging.activemq.jms.DestinationConfiguration;
+import org.wildfly.extension.messaging.activemq.jms.ExternalJMSQueueService;
+import org.wildfly.extension.messaging.activemq.jms.ExternalJMSTopicService;
 import org.wildfly.extension.messaging.activemq.jms.JMSQueueConfigurationRuntimeHandler;
 import org.wildfly.extension.messaging.activemq.jms.JMSQueueService;
+import org.wildfly.extension.messaging.activemq.jms.JMSServices;
 import org.wildfly.extension.messaging.activemq.jms.JMSTopicConfigurationRuntimeHandler;
 import org.wildfly.extension.messaging.activemq.jms.JMSTopicService;
 import org.wildfly.extension.messaging.activemq.jms.WildFlyBindingRegistry;
 
 /**
  * A binding description for JMS Destination definitions.
- * <p/>
+ *
  * The referenced JMS definition must be directly visible to the
  * component declaring the annotation.
 
@@ -78,7 +87,6 @@ import org.wildfly.extension.messaging.activemq.jms.WildFlyBindingRegistry;
  * @author Eduardo Martins
  */
 public class JMSDestinationDefinitionInjectionSource extends ResourceDefinitionInjectionSource {
-
     private final String interfaceName;
 
     // optional attributes
@@ -114,18 +122,23 @@ public class JMSDestinationDefinitionInjectionSource extends ResourceDefinitionI
         }
 
         StringBuilder uniqueName = new StringBuilder();
-        uniqueName.append(context.getApplicationName() + "_");
-        uniqueName.append(context.getModuleName() + "_");
+        uniqueName.append(context.getApplicationName()).append("_");
+        uniqueName.append(context.getModuleName()).append("_");
         if (context.getComponentName() != null) {
-            uniqueName.append(context.getComponentName() + "_");
+            uniqueName.append(context.getComponentName()).append("_");
         }
         uniqueName.append(jndiName);
         return uniqueName.toString();
     }
 
+    @Override
     public void getResourceValue(final InjectionSource.ResolutionContext context, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
-        if (targetsPooledConnectionFactory(getActiveMQServerName(properties), resourceAdapter, phaseContext.getServiceRegistry())) {
-            startActiveMQDestination(context, serviceBuilder, phaseContext, injector);
+        if(resourceAdapter == null || resourceAdapter.isEmpty()) {
+            resourceAdapter = getDefaulResourceAdapter(phaseContext.getDeploymentUnit());
+        }
+        boolean external = targetsExternalPooledConnectionFactory(resourceAdapter, phaseContext.getServiceRegistry());
+        if (external || targetsPooledConnectionFactory(getActiveMQServerName(properties), resourceAdapter, phaseContext.getServiceRegistry())) {
+            startActiveMQDestination(context, serviceBuilder, phaseContext, injector, external);
         } else {
             // delegate to the resource-adapter subsystem to create a generic JCA admin object.
             AdministeredObjectDefinitionInjectionSource aodis = new AdministeredObjectDefinitionInjectionSource(jndiName, className, resourceAdapter);
@@ -136,20 +149,23 @@ public class JMSDestinationDefinitionInjectionSource extends ResourceDefinitionI
                 aodis.addProperty(property.getKey(), property.getValue());
             }
             aodis.getResourceValue(context, serviceBuilder, phaseContext, injector);
-
         }
     }
 
-    private void startActiveMQDestination(ResolutionContext context, ServiceBuilder<?> serviceBuilder, DeploymentPhaseContext phaseContext, Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
+    private void startActiveMQDestination(ResolutionContext context, ServiceBuilder<?> serviceBuilder, DeploymentPhaseContext phaseContext, Injector<ManagedReferenceFactory> injector, boolean external) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final String uniqueName = uniqueName(context);
         try {
-            ServiceName serviceName = MessagingServices.getActiveMQServiceName(getActiveMQServerName(properties));
-
-            if (interfaceName.equals(Queue.class.getName())) {
-                startQueue(uniqueName, phaseContext.getServiceTarget(), serviceName, serviceBuilder, deploymentUnit, injector);
+            ServiceName serviceName;
+            if(external) {
+                serviceName = MessagingServices.getActiveMQServiceName("");
             } else {
-                startTopic(uniqueName, phaseContext.getServiceTarget(), serviceName, serviceBuilder, deploymentUnit, injector);
+                serviceName = MessagingServices.getActiveMQServiceName(getActiveMQServerName(properties));
+            }
+            if (interfaceName.equals(Queue.class.getName())) {
+                startQueue(uniqueName, phaseContext.getServiceTarget(), serviceName, serviceBuilder, deploymentUnit, injector, external);
+            } else {
+                startTopic(uniqueName, phaseContext.getServiceTarget(), serviceName, serviceBuilder, deploymentUnit, injector, external);
             }
         } catch (Exception e) {
             throw new DeploymentUnitProcessingException(e);
@@ -166,10 +182,14 @@ public class JMSDestinationDefinitionInjectionSource extends ResourceDefinitionI
                             final ServiceName serverServiceName,
                             final ServiceBuilder<?> serviceBuilder,
                             final DeploymentUnit deploymentUnit,
-                            final Injector<ManagedReferenceFactory>  injector) {
+                            final Injector<ManagedReferenceFactory> injector,
+                            final boolean external) {
 
         final String selector = properties.containsKey(SELECTOR.getName()) ? properties.get(SELECTOR.getName()) : null;
         final boolean durable = properties.containsKey(DURABLE.getName()) ? Boolean.valueOf(properties.get(DURABLE.getName())) : DURABLE.getDefaultValue().asBoolean();
+        final String managementAddress =  properties.containsKey(MANAGEMENT_ADDRESS.getName()) ? properties.get(MANAGEMENT_ADDRESS.getName()) : MANAGEMENT_ADDRESS.getDefaultValue().asString();
+        final String user =  properties.containsKey("management-user") ? properties.get("management-user") : null;
+        final String password =  properties.containsKey("management-password") ? properties.get("\"management-password") : null;
 
         ModelNode destination = new ModelNode();
         destination.get(NAME).set(queueName);
@@ -178,17 +198,45 @@ public class JMSDestinationDefinitionInjectionSource extends ResourceDefinitionI
             destination.get(SELECTOR.getName()).set(selector);
         }
         destination.get(ENTRIES).add(jndiName);
+        Service<Queue> queueService;
+        if(external) {
+            ServiceName pcfName= JMSServices.getPooledConnectionFactoryBaseServiceName(serverServiceName).append(resourceAdapter);
+            final ServiceName jmsQueueServiceName = JMSServices.getJmsQueueBaseServiceName(serverServiceName).append(queueName);
+            queueService = ExternalJMSQueueService.installRuntimeQueueService(
+                    DestinationConfiguration.Builder.getInstance()
+                            .setResourceAdapter(resourceAdapter)
+                            .setName(queueName)
+                            .setManagementQueueAddress(managementAddress)
+                            .setDestinationServiceName(jmsQueueServiceName)
+                            .setDurable(durable)
+                            .setSelector(selector)
+                            .setManagementUsername(user)
+                            .setManagementPassword(password)
+                            .build(),
+                    serviceTarget,
+                    pcfName);
+        } else {
+           queueService = JMSQueueService.installService(queueName, serviceTarget, serverServiceName, selector, durable);
+        }
 
-        Service<Queue> queueService = JMSQueueService.installService(queueName, serviceTarget, serverServiceName, selector, durable);
+
         inject(serviceBuilder, injector, queueService);
 
         //create the management registration
-        String serverName = getActiveMQServerName(properties);
-        final PathElement serverElement = PathElement.pathElement(SERVER, serverName);
-        final PathElement dest = PathElement.pathElement(JMS_QUEUE, queueName);
+        String serverName = null;
         final DeploymentResourceSupport deploymentResourceSupport = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_RESOURCE_SUPPORT);
-        deploymentResourceSupport.getDeploymentSubModel(MessagingExtension.SUBSYSTEM_NAME, serverElement);
-        PathAddress registration = PathAddress.pathAddress(serverElement, dest);
+        PathAddress registration;
+        if (external) {
+            final PathElement dest = PathElement.pathElement(EXTERNAL_JMS_QUEUE, queueName);
+            deploymentResourceSupport.getDeploymentSubsystemModel(MessagingExtension.SUBSYSTEM_NAME);
+            registration = PathAddress.pathAddress(dest);
+        } else {
+            serverName = getActiveMQServerName(properties);
+            final PathElement dest = PathElement.pathElement(JMS_QUEUE, queueName);
+            final PathElement serverElement = PathElement.pathElement(SERVER, serverName);
+            deploymentResourceSupport.getDeploymentSubModel(MessagingExtension.SUBSYSTEM_NAME, serverElement);
+            registration = PathAddress.pathAddress(serverElement, dest);
+        }
         MessagingXmlInstallDeploymentUnitProcessor.createDeploymentSubModel(registration, deploymentUnit);
         JMSQueueConfigurationRuntimeHandler.INSTANCE.registerResource(serverName, queueName, destination);
     }
@@ -198,21 +246,50 @@ public class JMSDestinationDefinitionInjectionSource extends ResourceDefinitionI
                             ServiceName serverServiceName,
                             ServiceBuilder<?> serviceBuilder,
                             DeploymentUnit deploymentUnit,
-                            Injector<ManagedReferenceFactory> injector) {
+                            Injector<ManagedReferenceFactory> injector,
+                            final boolean external) {
+        final String managementAddress =  properties.containsKey(MANAGEMENT_ADDRESS.getName()) ? properties.get(MANAGEMENT_ADDRESS.getName()) : MANAGEMENT_ADDRESS.getDefaultValue().asString();
+        final String user =  properties.containsKey("management-user") ? properties.get("management-user") : null;
+        final String password =  properties.containsKey("management-password") ? properties.get("\"management-password") : null;
         ModelNode destination = new ModelNode();
         destination.get(NAME).set(topicName);
         destination.get(ENTRIES).add(jndiName);
 
-        Service<Topic> topicService = JMSTopicService.installService(topicName, serverServiceName, serviceTarget);
+        Service<Topic> topicService;
+        if(external) {
+            ServiceName pcfName = JMSServices.getPooledConnectionFactoryBaseServiceName(serverServiceName).append(resourceAdapter);
+            final ServiceName jmsTopicServiceName = JMSServices.getJmsTopicBaseServiceName(serverServiceName).append(topicName);
+            topicService = ExternalJMSTopicService.installRuntimeTopicService(
+                    DestinationConfiguration.Builder.getInstance()
+                            .setResourceAdapter(resourceAdapter)
+                            .setName(topicName)
+                            .setManagementQueueAddress(managementAddress)
+                            .setManagementUsername(user)
+                            .setManagementPassword(password)
+                            .setDestinationServiceName(jmsTopicServiceName)
+                            .build(),
+                    serviceTarget,
+                    pcfName);
+        } else {
+            topicService = JMSTopicService.installService(topicName, serverServiceName, serviceTarget);
+        }
         inject(serviceBuilder, injector, topicService);
 
         //create the management registration
-        String serverName = getActiveMQServerName(properties);
-        final PathElement serverElement = PathElement.pathElement(SERVER, serverName);
-        final PathElement dest = PathElement.pathElement(JMS_TOPIC, topicName);
+        String serverName = null;
         final DeploymentResourceSupport deploymentResourceSupport = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_RESOURCE_SUPPORT);
-        deploymentResourceSupport.getDeploymentSubModel(MessagingExtension.SUBSYSTEM_NAME, serverElement);
-        PathAddress registration = PathAddress.pathAddress(serverElement, dest);
+        PathAddress registration;
+        if (external) {
+            final PathElement dest = PathElement.pathElement(EXTERNAL_JMS_TOPIC, topicName);
+            deploymentResourceSupport.getDeploymentSubsystemModel(MessagingExtension.SUBSYSTEM_NAME);
+            registration = PathAddress.pathAddress(dest);
+        } else {
+            serverName = getActiveMQServerName(properties);
+            final PathElement dest = PathElement.pathElement(JMS_TOPIC, topicName);
+            final PathElement serverElement = PathElement.pathElement(SERVER, serverName);
+            deploymentResourceSupport.getDeploymentSubModel(MessagingExtension.SUBSYSTEM_NAME, serverElement);
+            registration = PathAddress.pathAddress(serverElement, dest);
+        }
         MessagingXmlInstallDeploymentUnitProcessor.createDeploymentSubModel(registration, deploymentUnit);
         JMSTopicConfigurationRuntimeHandler.INSTANCE.registerResource(serverName, topicName, destination);
     }

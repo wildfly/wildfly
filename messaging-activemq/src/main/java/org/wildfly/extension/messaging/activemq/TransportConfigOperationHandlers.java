@@ -350,7 +350,7 @@ public class TransportConfigOperationHandlers {
      * @param bindings      the referenced socket bindings
      * @throws OperationFailedException
      */
-    static void processConnectors(final OperationContext context, final Configuration configuration, final ModelNode params, final Set<String> bindings) throws OperationFailedException {
+    static Map<String, TransportConfiguration> processConnectors(final OperationContext context, final String configServerName, final ModelNode params, final Set<String> bindings) throws OperationFailedException {
         final Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
         if (params.hasDefined(CONNECTOR)) {
             for (final Property property : params.get(CONNECTOR).asPropertyList()) {
@@ -407,13 +407,13 @@ public class TransportConfigOperationHandlers {
                 parameters.put(HTTPConnectorDefinition.SOCKET_BINDING.getName(), binding);
                 ModelNode serverNameModelNode = HTTPConnectorDefinition.SERVER_NAME.resolveModelAttribute(context, config);
                 // use the name of this server if the server-name attribute is undefined
-                String serverName = serverNameModelNode.isDefined() ? serverNameModelNode.asString() : configuration.getName();
+                String serverName = serverNameModelNode.isDefined() ? serverNameModelNode.asString() : configServerName;
                 parameters.put(ACTIVEMQ_SERVER_NAME, serverName);
 
                 connectors.put(connectorName, new TransportConfiguration(NettyConnectorFactory.class.getName(), parameters, connectorName, extraParameters));
             }
         }
-        configuration.setConnectorConfigurations(connectors);
+        return connectors;
     }
 
     public static TransportConfiguration[] processConnectors(final OperationContext context, final Collection<String> names, Set<String> bindings) throws OperationFailedException {
