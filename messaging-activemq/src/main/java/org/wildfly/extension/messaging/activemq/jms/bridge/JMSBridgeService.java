@@ -25,6 +25,7 @@ package org.wildfly.extension.messaging.activemq.jms.bridge;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.apache.activemq.artemis.jms.bridge.JMSBridge;
 import org.jboss.modules.Module;
@@ -33,7 +34,6 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 import org.wildfly.common.function.ExceptionSupplier;
 import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 import org.wildfly.security.credential.PasswordCredential;
@@ -51,17 +51,23 @@ class JMSBridgeService implements Service<JMSBridge> {
     private final JMSBridge bridge;
     private final String bridgeName;
     private final String moduleName;
-    private final InjectedValue<ExecutorService> executorInjector = new InjectedValue<>();
-    private final InjectedValue<ExceptionSupplier<CredentialSource, Exception>> sourceCredentialSourceSupplierInjector = new InjectedValue<>();
-    private final InjectedValue<ExceptionSupplier<CredentialSource, Exception>> targetCredentialSourceSupplierInjector = new InjectedValue<>();
+    private final Supplier<ExecutorService> executorSupplier;
+    private final ExceptionSupplier<CredentialSource, Exception> sourceCredentialSourceSupplier;
+    private final ExceptionSupplier<CredentialSource, Exception> targetCredentialSourceSupplier;
 
-    public JMSBridgeService(final String moduleName, final String bridgeName, final JMSBridge bridge) {
+    public JMSBridgeService(final String moduleName, final String bridgeName, final JMSBridge bridge,
+            Supplier<ExecutorService> executorSupplier,
+            ExceptionSupplier<CredentialSource, Exception> sourceCredentialSourceSupplier,
+            ExceptionSupplier<CredentialSource, Exception> targetCredentialSourceSupplier) {
         if(bridge == null) {
             throw MessagingLogger.ROOT_LOGGER.nullVar("bridge");
         }
         this.moduleName = moduleName;
         this.bridgeName = bridgeName;
         this.bridge = bridge;
+        this.executorSupplier = executorSupplier;
+        this.sourceCredentialSourceSupplier = sourceCredentialSourceSupplier;
+        this.targetCredentialSourceSupplier = targetCredentialSourceSupplier;
     }
 
     @Override
@@ -80,7 +86,7 @@ class JMSBridgeService implements Service<JMSBridge> {
             }
         };
         try {
-            executorInjector.getValue().execute(task);
+            executorSupplier.get().execute(task);
         } catch (RejectedExecutionException e) {
             task.run();
         } finally {
@@ -124,7 +130,7 @@ class JMSBridgeService implements Service<JMSBridge> {
             }
         };
         try {
-            executorInjector.getValue().execute(task);
+            executorSupplier.get().execute(task);
         } catch (RejectedExecutionException e) {
             task.run();
         } finally {
@@ -137,21 +143,10 @@ class JMSBridgeService implements Service<JMSBridge> {
         return bridge;
     }
 
-    public InjectedValue<ExecutorService> getExecutorInjector() {
-        return executorInjector;
-    }
-
-    public InjectedValue<ExceptionSupplier<CredentialSource, Exception>> getSourceCredentialSourceSupplierInjector() {
-        return sourceCredentialSourceSupplierInjector;
-    }
-
-    public InjectedValue<ExceptionSupplier<CredentialSource, Exception>> getTargetCredentialSourceSupplierInjector() {
-        return targetCredentialSourceSupplierInjector;
-    }
 
     private void setJMSBridgePasswordsFromCredentialSource() {
-        setNewJMSBridgePassword(sourceCredentialSourceSupplierInjector.getOptionalValue(), bridge::setSourcePassword);
-        setNewJMSBridgePassword(targetCredentialSourceSupplierInjector.getOptionalValue(), bridge::setTargetPassword);
+        setNewJMSBridgePassword(sourceCredentialSourceSupplier, bridge::setSourcePassword);
+        setNewJMSBridgePassword(targetCredentialSourceSupplier, bridge::setTargetPassword);
     }
 
     private void setNewJMSBridgePassword(ExceptionSupplier<CredentialSource, Exception> credentialSourceSupplier, Consumer<String> passwordConsumer) {

@@ -669,4 +669,21 @@
             <target-credential-reference alias="bob" store="jms-bridge-store" />
         </target>
     </jms-bridge>
+
+    <jms-bridge name="default-bridge"
+                module="org.default.mq.broker"
+                selector="${selector:color='red'}"
+                subscription-name="${subscription.name:mySubscription}"
+                client-id="${client.id:myClientID}">
+        <source connection-factory="/cf/sourceCF"
+                destination="/topic/sourceTopic"
+                user="myUser"
+                password="myPassword">
+        </source>
+        <target connection-factory="anotherAS7/jms/cf/targetCF"
+                destination="anotherAS7/jms/queue/targetQueue"
+                user="${userInExpression:user}"
+                password="${passwordInExpression:password}">
+        </target>
+    </jms-bridge>
 </subsystem>

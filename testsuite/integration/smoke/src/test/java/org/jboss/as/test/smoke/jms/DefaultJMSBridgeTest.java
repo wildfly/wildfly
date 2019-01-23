@@ -60,10 +60,10 @@ import org.junit.runner.RunWith;
  * @author Jeff Mesnil (c) 2012 Red Hat Inc.
  */
 @RunWith(Arquillian.class)
-@ServerSetup(CreateJMSBridgeSetupTask.class)
-public class JMSBridgeTest {
+@ServerSetup(DefaultCreateJMSBridgeSetupTask.class)
+public class DefaultJMSBridgeTest {
 
-    private static final Logger logger = Logger.getLogger(JMSBridgeTest.class);
+    private static final Logger logger = Logger.getLogger(DefaultJMSBridgeTest.class);
 
     private static final String MESSAGE_TEXT = "Hello world!";
 
@@ -80,7 +80,7 @@ public class JMSBridgeTest {
     public static JavaArchive createTestArchive() {
         return ShrinkWrap.create(JavaArchive.class, "test.jar")
                 .addPackage(JMSOperations.class.getPackage())
-                .addClass(CreateJMSBridgeSetupTask.class)
+                .addClass(DefaultCreateJMSBridgeSetupTask.class)
                 .addClass(AbstractCreateJMSBridgeSetupTask.class)
                 .addClass(CreateQueueSetupTask.class)
                 .addAsManifestResource(
@@ -124,7 +124,7 @@ public class JMSBridgeTest {
             assertNotNull("did not receive expected message", receivedMessage);
             assertTrue(receivedMessage instanceof TextMessage);
             assertEquals(text, ((TextMessage) receivedMessage).getText());
-            assertNotNull("did not get header set by the JMS bridge", receivedMessage.getStringProperty(ActiveMQJMSConstants.AMQ_MESSAGING_BRIDGE_MESSAGE_ID_LIST));
+            assertTrue("got header set by the JMS bridge", receivedMessage.getStringProperty(ActiveMQJMSConstants.AMQ_MESSAGING_BRIDGE_MESSAGE_ID_LIST) == null);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
