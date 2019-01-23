@@ -8,7 +8,7 @@
 
 For standalone mode:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 $ ./bin/jboss-cli.sh --connect controller=IP_ADDRESS
 [standalone@IP_ADDRESS:9990 /] /system-property=foo:add(value=bar)
@@ -25,7 +25,7 @@ For domain mode the same commands are used, you can add/read/remove
 system properties for: +
 All hosts and server instances in domain
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [domain@IP_ADDRESS:9990 /] /system-property=foo:add(value=bar)
 [domain@IP_ADDRESS:9990 /] /system-property=foo:read-resource
@@ -34,7 +34,7 @@ All hosts and server instances in domain
 
 Host and its server instances
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [domain@IP_ADDRESS:9990 /] /host=master/system-property=foo:add(value=bar)
 [domain@IP_ADDRESS:9990 /] /host=master/system-property=foo:read-resource
@@ -43,7 +43,7 @@ Host and its server instances
 
 Just one server instance
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [domain@IP_ADDRESS:9990 /] /host=master/server-config=server-one/system-property=foo:add(value=bar)
 [domain@IP_ADDRESS:9990 /] /host=master/server-config=server-one/system-property=foo:read-resource
@@ -59,14 +59,14 @@ properties and properties specified on command line using -D, -P or
 
 Standalone
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@IP_ADDRESS:9990 /] /core-service=platform-mbean/type=runtime:read-attribute(name=system-properties)
 ----
 
 Domain
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [domain@IP_ADDRESS:9990 /] /host=master/core-service=platform-mbean/type=runtime:read-attribute(name=system-properties)
 [domain@IP_ADDRESS:9990 /] /host=master/server=server-one/core-service=platform-mbean/type=runtime:read-attribute(name=system-properties)
@@ -77,7 +77,7 @@ Domain
 [[list-subsystems]]
 === List Subsystems
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /:read-children-names(child-type=subsystem)
 {
@@ -120,7 +120,7 @@ Descriptions, possible attribute type and values, permission and whether
 expressions ( _$\{ ... }_ ) are allowed from the underlying model are
 shown by the read-resource-description command.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=datasources/data-source=ExampleDS:read-resource-description
 {
@@ -180,14 +180,14 @@ shown by the read-resource-description command.
 
 Assume you have a host that is called master
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [domain@localhost:9990 /] /host=master:read-config-as-xml
 ----
 
 Just for the domain or standalone
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [domain@localhost:9990 /] :read-config-as-xml
 ----
@@ -195,7 +195,7 @@ Just for the domain or standalone
 [[take-a-snapshot-of-what-the-current-domain-is]]
 === Take a snapshot of what the current domain is
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [domain@localhost:9990 /] :take-snapshot()
 {
@@ -212,7 +212,7 @@ Just for the domain or standalone
 
 Assume you have a host that is called master
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [domain@localhost:9990 /]  /host=master:take-snapshot
 {
@@ -231,7 +231,7 @@ The attribute for interface is named "resolved-address". It's a runtime
 attribute so it does not show up in :read-resource by default. You have
 to add the "include-runtime" parameter.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 ./jboss-cli.sh --connect
 Connected to standalone controller at localhost:9990
@@ -272,7 +272,7 @@ Connected to standalone controller at localhost:9990
 
 It's similar for domain, just specify path to server instance:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [domain@localhost:9990 /] /host=master/server=server-one/interface=public:read-attribute(name=resolved-address)
 {
@@ -287,7 +287,7 @@ It's similar for domain, just specify path to server instance:
 [[get-all-configuration-and-runtime-details-from-cli]]
 === Get all configuration and runtime details from CLI
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 ./bin/jboss-cli.sh -c command=":read-resource(include-runtime=true, recursive=true, recursive-depth=10)"
 ----
@@ -314,7 +314,7 @@ invoking scripts from WildFly.
 [[read-statistics-of-active-datasources]]
 === Read statistics of active datasources
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=datasources/data-source=ExampleDS/statistics=pool:read-resource(include-runtime=true)
 /subsystem=datasources/data-source=ExampleDS/statistics=jdbc:read-resource(include-runtime=true)
@@ -322,7 +322,7 @@ invoking scripts from WildFly.
 
 or
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=datasources/data-source=ExampleDS:read-resource(include-runtime=true,recursive=true)
 ----
@@ -388,13 +388,13 @@ Steps to create an empty deployment and add an index html file.
 
 1.  Create an empty deployment named my app:
 +
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /deployment=myapp:add(content=[{empty=true}])
 ----
 2.  Add an index.html to my app:
 +
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /deployment=myapp:add-content(content=[{input-stream-index=<press TAB>
 ----
@@ -403,27 +403,27 @@ Then use completion to navigate to your index.html file.
 3.  Provide a target name for index.html inside the deployment and
 execute the operation:
 +
-[source,ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /deployment=myapp:add-content(content=[{input-stream-index=./index.html, target-path=index.xhtml}]
 ----
 4.  Your content has been added, you can browse the content of a
 deployment using the browse-content operation:
 +
-[source,ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /deployment=myapp:browse-content(path=./)
 ----
 5.  You can display (or save) the content of a deployed file using the
 _attachement_ command:
 +
-[source,ruby]
+[source,options="nowrap"]
 ----
 attachment display --operation=/deployment=myapp:read-content(path=index.xhtml)
 ----
 6.  You can remove content from a deployment:
 +
-[source,ruby]
+[source,options="nowrap"]
 ----
 /deployment=myapp:remove-content(paths=[./index.xhtml])
 ----
@@ -475,19 +475,19 @@ allows to display or save the content of the attached streams.
 
 * Displaying the content of server.log file:
 +
-[source, ruby]
+[source,options="nowrap"]
 ----
 attachment display --operation=/subsystem=logging/log-file=server.log:read-resource(include-runtime)
 ----
 * Saving locally the server.log file:
 +
-[source, ruby]
+[source,options="nowrap"]
 ----
 attachment save --operation=/subsystem=logging/log-file=server.log:read-resource(include-runtime) --file=./server.log
 ----
 * Displaying the content of a deployed file:
 +
-[source,ruby]
+[source,options="nowrap"]
 ----
 attachment display --operation=/deployment=myapp:read-content(path=index.xhtml)
 ----
@@ -505,7 +505,7 @@ The command _for_ allows to iterate the content of an operation result. As an
 example, this command can be used to display the content of the Manifest files
 present in all deployed applications. For example:
 
-[source, java]
+[source,options="nowrap"]
 ----
 for deployed in :read-children-names(child-type=deployment)
  echo $deployed Manifest content
@@ -537,7 +537,7 @@ Among other ways to configure SSL, this command offers an interactive wizard to
 help you configure SSL by generating a self-signed certificate.
 Example of wizard usage:
 
-[source,java]
+[source,options="nowrap"]
 ----
 security enable-ssl-management --interactive
 Please provide required pieces of information to enable SSL:

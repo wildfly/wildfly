@@ -51,7 +51,7 @@ the rest of this section only the short names will be shown._
 To implement an `AuthenticationPlugIn` the following interface needs to
 be implemened: -
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 public interface AuthenticationPlugIn<T extends Credential> {
     Identity<T> loadIdentity(final String userName, final String realm) throws IOException;
@@ -67,7 +67,7 @@ the remote user.
 
 The Identity interface is also an interface you will implement: -
 
-[source,xml]
+[source,java,options="nowrap"]
 ----
 public interface Identity<T extends Credential> {
     String getUserName();
@@ -82,7 +82,7 @@ be one of the following: -
 
 === PasswordCredential
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 public final class PasswordCredential implements Credential {
     public PasswordCredential(final char[] password);
@@ -99,7 +99,7 @@ for authentication.
 [[digestcredential]]
 === DigestCredential
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 public final class DigestCredential implements Credential {
     public DigestCredential(final String hash);
@@ -114,7 +114,7 @@ username, realm and password.
 
 === ValidatePasswordCredential
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 public interface ValidatePasswordCredential extends Credential {
     boolean validatePassword(final char[] password);
@@ -139,7 +139,7 @@ to Plain as described in the configuration section below.
 If you are implementing a custom mechanism to load a users roles you
 need to implement the `AuthorizationPlugIn`
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 public interface AuthorizationPlugIn {
     String[] loadRoles(final String userName, final String realm) throws IOException;
@@ -160,7 +160,7 @@ instance that can be used to share state between the plug-in instance
 used for the authentication step of the call and the plug-in instance
 used for the authorization step.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 public interface PlugInConfigurationSupport {
     void init(final Map<String, String> configuration, final Map<String, Object> sharedState) throws IOException;
@@ -178,7 +178,7 @@ shown to illustrate this.
 The following is an example security realm definition which will be used
 to illustrate this: -
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <security-realm name="PlugInRealm">
    <plug-ins>
@@ -206,7 +206,7 @@ runtime to handle the requests.
 [[pluginprovider]]
 === PlugInProvider
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 public interface PlugInProvider {
     AuthenticationPlugIn<Credential> loadAuthenticationPlugIn(final String name);
@@ -234,7 +234,7 @@ package style names to avoid conflicts.
 
 For the example the implementation is as follows: -
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 public class SamplePluginProvider implements PlugInProvider {
  
@@ -280,7 +280,7 @@ as a module and added to the modules already shipped with WildFly {wildflyVersio
 
 To add as a module we first need a `module.xml`: -
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
  
@@ -310,7 +310,7 @@ folder.
 Looking back at the sample configuration at the top of the realm
 definition the following element was added: -
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
    <plug-ins>
       <plug-in module="org.jboss.as.sample.plugin"/>
@@ -327,7 +327,7 @@ or to a module that does not contain a plug-in to report an error.
 
 The example `AuthenticationPlugIn` is implemented as: -
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 public class SampleAuthenticationPlugIn extends AbstractPlugIn {
  
@@ -392,7 +392,7 @@ for this sample the plug-in adds itself to the shared state map.
 The example implementation of the authentication plug in is as follows:
 -
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 public class DelegateAuthorizationPlugIn extends AbstractPlugIn {
  
@@ -428,7 +428,7 @@ needs to be forced from Digest authentication to plain text
 authentication, this can be achieved by adding a mechanism attribute to
 the plug-in definition within the authentication element i.e.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
   <authentication>
     <plug-in name="Sample" mechanism="PLAIN">

@@ -15,7 +15,7 @@ folder. The user indicates that they want a particular extension to be
 available by including an `<extension/>` element naming its module in
 the `domain.xml` or `standalone.xml` file.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <extensions>
     [...]
@@ -63,7 +63,7 @@ the logging subsystem configuration includes a reference to the "
 `jboss.server.log.dir`" path that points to the server's " `log`"
 directory.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <file relative-to="jboss.server.log.dir" path="server.log"/>
 ----
@@ -94,7 +94,7 @@ domain mode only)
 Users can add their own paths or override all except the first 5 of the
 above by adding a `<path/>` element to their configuration file.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <path name="example" path="example" relative-to="jboss.server.data.dir"/>
 ----
@@ -112,7 +112,7 @@ A `<path/>` element in a `domain.xml` need not include anything more
 than the `name` attribute; i.e. it need not include any information
 indicating what the actual filesystem path is:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <path name="x"/>
 ----
@@ -124,7 +124,7 @@ specified in each machine's `host.xml` file." If this approach is used,
 there must be a path element in each machine's `host.xml` that specifies
 what the actual filesystem path is:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <path name="x" path="/var/x" />
 ----
@@ -150,7 +150,7 @@ An `<interface/>` element in a `domain.xml` need not include anything
 more than the `name` attribute; i.e. it need not include any information
 indicating what the actual IP address associated with the name is:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <interface name="internal"/>
 ----
@@ -163,7 +163,7 @@ this approach is used, there must be an interface element in each
 machine's `host.xml` that specifies the criteria for determining the IP
 address:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <interface name="internal">
    <nic name="eth1"/>

@@ -31,7 +31,7 @@ Configuring a host to act as the Domain Controller is done through the
 `domain-controller` declaration in `host.xml`. If it includes the
 `<local/>` element, then this host will become the domain controller:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <domain-controller>
    <local/>
@@ -45,7 +45,7 @@ interface on an address accessible to the other hosts in the domain.
 Exposing an HTTP(S) management interface is not required, but is
 recommended as it allows the Administration Console to work:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <management-interfaces>
   <native-interface security-realm="ManagementRealm">
@@ -61,7 +61,7 @@ The interface attributes above refer to a named interface declaration
 later in the host.xml file. This interface declaration will be used to
 resolve a corresponding network interface.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <interfaces>
    <interface name="management">
@@ -113,7 +113,7 @@ requires three steps:
 Provide a distinct, logical name for the host. In the following example
 we simply name it "slave":
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <host xmlns="urn:jboss:domain:3.0"
      name="slave">
@@ -134,7 +134,7 @@ A security realm needs to be defined to hold the identity of the slave.
 Since it is performing a specific purpose I would suggest a new realm is
 defined although it is possible to combine this with an existing realm.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <security-realm name="SlaveRealm">
   <server-identities>
@@ -150,7 +150,7 @@ needs to be the password encoded using Base64.
 Tell it how to find the domain controller so it can register itself with
 the domain:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <domain-controller>
    <remote protocol="remote" host="192.168.0.101" port="9999" username="slave" security-realm="SlaveRealm"/>
@@ -160,7 +160,7 @@ the domain:
 Since we have also exposed the HTTP management interface we could also
 use :
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <domain-controller>
    <remote protocol="http-remoting" host="192.168.0.101" port="9990" username="slave" security-realm="SlaveRealm"/>
@@ -277,7 +277,7 @@ resources, even if `--backup` is used, or to not ignore unused
 resources, by updating the domain-controller element in the `host-xml`
 file and setting the `ignore-unused-configuration` attribute:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <domain-controller>
     <remote security-realm="ManagementRealm" ignore-unused-configuration="false">
@@ -295,7 +295,7 @@ will be ignored. Here's an example of such a configuration, one where
 the slave cannot use the "org.example.foo" extension that has been
 installed on the Domain Controller and on some slaves, but not this one:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <domain-controller>
     <remote security-realm="ManagementRealm" ignore-unused-configuration="true">
@@ -315,7 +315,7 @@ installed on the Domain Controller and on some slaves, but not this one:
 The domain controller defines one or more server groups and associates
 each of these with a profile and a socket binding group, and also :
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <server-groups>
     <server-group name="main-server-group" profile="default">
@@ -340,7 +340,7 @@ The domain controller also defines the socket binding groups and the
 profiles. The socket binding groups define the default socket bindings
 that are used:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <socket-binding-groups>
     <socket-binding-group name="standard-sockets" default-interface="public">
@@ -361,7 +361,7 @@ extra socket binding of its own.
 A profile is a collection of subsystems, and these subsystems are what
 implement the functionality people expect of an application server.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <profiles>
     <profile name="default">
@@ -398,7 +398,7 @@ socket binding.
 
 The host controller defines one or more servers:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <servers>
     <server name="server-one" group="main-server-group">
@@ -445,7 +445,7 @@ group.
 
 The host controller contains the main `jvm` definitions with arguments:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <jvms>
     <jvm name="default">

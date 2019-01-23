@@ -5,7 +5,7 @@ A standalone WildFly process, or a managed domain Domain Controller or
 slave Host Controller process can be configured to listen for remote
 management requests using its "native management interface":
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <native-interface interface="management" port="9999" security-realm="ManagementRealm"/>
 ----
@@ -101,7 +101,7 @@ a GUI-based client.) Access to these credentials is provided by passing
 in an implementation of the
 `javax.security.auth.callback.CallbackHandler` interface. For example:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 static ModelControllerClient createClient(final InetAddress host, final int port,
                   final String username, final char[] password, final String securityRealmName) {
@@ -146,7 +146,7 @@ be used to
 link:Global_operations.html#src-557234_Globaloperations-read-resource-description[read
 the resource description] for the web subsystem's HTTP connector:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 ModelNode op = new ModelNode();
 op.get("operation").set("read-resource-description");
@@ -189,7 +189,7 @@ The example above produces an operation request ModelNode equivalent to
 what the CLI produces internally when it parses and executes the
 following low-level CLI command:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 [localhost:9999 /] /subsystem=web/connector=http:read-resource-description(recursive=true,operations=true)
 ----
@@ -201,7 +201,7 @@ The `execute` method sends the operation request ModelNode to the
 process being managed and returns a ModelNode the contains the process'
 response:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 ModelNode returnVal = client.execute(op);
 System.out.println(returnVal.get("result").toString());
@@ -216,7 +216,7 @@ the response is received from the process being managed.
 `ModelControllerClient` also exposes and API allowing asynchronous
 invocation:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 Future<ModelNode> future = client.executeAsync(op);
 . . .  // do other stuff
@@ -233,7 +233,7 @@ However, when the `ModelControllerClient` is no longer needed, it should
 always be explicitly closed, allowing it to close down any connections
 to the process it was managing and release other resources:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 client.close();
 ----
@@ -244,7 +244,7 @@ client.close();
 The basic method a user of the WildFly {wildflyVersion} programmatic management API
 would use is very simple:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 ModelNode execute(ModelNode operation) throws IOException;
 ----
@@ -264,7 +264,7 @@ response.
 
 A text representation of simple operation would look like this:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 {
     "operation" => "write-attribute",
@@ -280,7 +280,7 @@ A text representation of simple operation would look like this:
 
 Java code to produce that output would be:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 ModelNode op = new ModelNode();
 op.get("operation").set("write-attribute");
@@ -320,7 +320,7 @@ operation requests can also include special "header" values that help
 control how the operation executes. These headers are created under the
 special reserved word `operation-headers`:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 ModelNode op = new ModelNode();
 op.get("operation").set("write-attribute");
@@ -337,7 +337,7 @@ System.out.println(op);
 
 This produces:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 {
     "operation" => "write-attribute",
@@ -407,7 +407,7 @@ The structure of the request for the " `composite`" operation has the
 same fundamental structure as a simple operation (i.e. operation name,
 address, params as key value pairs).
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 {
     "operation" => "composite",
@@ -470,7 +470,7 @@ be reverted if it fails to execute successfully on some servers.
 
 If the operation includes a rollout plan, the structure is as follows:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 {
     "operation" => "write-attribute",
@@ -625,7 +625,7 @@ rollout-plan add --name=simple --content={"rollout-plan" => {"in-series" => [{"s
 This will create a rollout plan called `simple` in the content
 repository.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [domain@192.168.1.20:9999 /] /management-client-content=rollout-plans/rollout-plan=simple:read-resource
 {
@@ -666,7 +666,7 @@ deploy /quickstart/ejb-in-war/target/wildfly-ejb-in-war.war --all-server-groups 
 As noted previously, the basic method a user of the WildFly {wildflyVersion}
 programmatic management API would use is very simple:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 ModelNode execute(ModelNode operation) throws IOException;
 ----
@@ -709,7 +709,7 @@ was successful.
 
 The response for a failed operation:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 {
     "outcome" => "failed",
@@ -724,7 +724,7 @@ those that return null
 
 A non-void result:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 {
     "outcome" => "success",
@@ -737,7 +737,7 @@ A non-void result:
 
 A void result:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 {
     "outcome" => "success",
@@ -747,7 +747,7 @@ A void result:
 
 The response for a cancelled operation has no other fields:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 {
     "outcome" => "cancelled"
@@ -763,7 +763,7 @@ that provide more information about the affect of the operation or about
 the overall state of the server. The headers will be child element under
 a field named `response-headers`. For example:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 {
     "outcome" => "success",
@@ -858,7 +858,7 @@ even attempted.
 If an individual operation was not even attempted (because the overall
 operation was cancelled or, more likely, a prior operation failed):
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 {
     "outcome" => "cancelled"
@@ -867,7 +867,7 @@ operation was cancelled or, more likely, a prior operation failed):
 
 An individual operation that failed and was rolled back:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 {
     "outcome" => "failed",
@@ -879,7 +879,7 @@ An individual operation that failed and was rolled back:
 An individual operation that itself succeeded but was rolled back due to
 failure of another operation:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 {
     "outcome" => "failed",
@@ -893,7 +893,7 @@ failure of another operation:
 
 An operation that failed and was rolled back:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 {
     "outcome" => "failed",
@@ -905,7 +905,7 @@ An operation that failed and was rolled back:
 Here's an example of the response for a successful 2 step composite
 operation:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 {
     "outcome" => "success",
@@ -929,7 +929,7 @@ And for a failed 3 step composite operation, where the first step
 succeeded and the second failed, triggering cancellation of the 3rd and
 rollback of the others:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 {
     "outcome" => "failed",
@@ -971,7 +971,7 @@ configuration model maintained by the Domain Controller (for
 configuration). If there is a failure at this stage, the operation is
 automatically rolled back, with a response like this:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 {
     "outcome" => "failed",
@@ -988,7 +988,7 @@ so, the Domain Controller will tell all Host Controllers to revert the
 change, and it will revert the change locally as well. The response to
 the client will look like this:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 {
     "outcome" => "failed",
@@ -1006,7 +1006,7 @@ affected servers. If the operation is successful on all servers, the
 response will look like this (this example operation has a void
 response, hence the result for each server is undefined):
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 {
     "outcome" => "success",
@@ -1054,7 +1054,7 @@ on at least one server without the rollback policies in the rollout plan
 triggering a rollback on that server. An example response in such a
 situation would look like this:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 {
     "outcome" => "success",
@@ -1109,7 +1109,7 @@ situation would look like this:
 Finally, if the operation fails or is rolled back on all servers, an
 example response would look like this:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 {
     "outcome" => "failed",

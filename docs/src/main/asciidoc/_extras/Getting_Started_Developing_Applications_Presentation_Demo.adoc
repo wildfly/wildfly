@@ -46,14 +46,14 @@ demonstrate the various ways you can deploy apps to JBoss AS 7.
 
 . Start JBoss AS 7 from the console
 +
-[source]
+[source,options="nowrap"]
 ----
 $ JBOSS_HOME/bin/standalone.sh
 ----
 
 . Deploy the app using Maven
 +
-[source]
+[source,options="nowrap"]
 ----
 $ mvn clean package jboss-as:deploy
 ----
@@ -74,7 +74,7 @@ Visit http://localhost:8080/jboss-as-helloworld
 
 . Undeploy the app using Maven
 +
-[source]
+[source,options="nowrap"]
 ----
 $ mvn jboss-as:undeploy
 ----
@@ -84,21 +84,21 @@ $ mvn jboss-as:undeploy
 
 .  Start JBoss AS 7 from the console (if not already running)
 +
-[source]
+[source,options="nowrap"]
 ----
 $ JBOSS_HOME/bin/standalone.sh
 ----
 
 . Build the war
 +
-[source]
+[source,options="nowrap"]
 ----
 $ mvn clean package
 ----
 
 . Start the CLI
 +
-[source]
+[source,options="nowrap"]
 ----
 $ JBOSS_HOME/bin/jboss-admin.sh --connect
 ----
@@ -114,14 +114,14 @@ node.
 
 . Deploy the app
 +
-[source]
+[source,options="nowrap"]
 ----
 $ deploy target/jboss-as-helloworld.war
 ----
 
 . Show the app has deployed
 +
-[source, java]
+[source,java,options="nowrap"]
 ----
 $ undeploy jboss-as-helloworld.war
 ----
@@ -131,14 +131,14 @@ $ undeploy jboss-as-helloworld.war
 
 .  Start JBoss AS 7 from the console (if not already running)
 +
-[source]
+[source,options="nowrap"]
 ----
 $ JBOSS_HOME/bin/standalone.sh
 ----
 
 . Build the war
 +
-[source]
+[source,options="nowrap"]
 ----
 $ mvn clean package
 ----
@@ -169,14 +169,14 @@ locate `helloworld/target/jboss-as-helloworld.war`.
 
 .  Start JBoss AS 7 from the console (if not already running)
 +
-[source]
+[source,options="nowrap"]
 ----
 $ JBOSS_HOME/bin/standalone.sh
 ----
 
 . Build the war
 +
-[source]
+[source,options="nowrap"]
 ----
 $ mvn clean package
 ----
@@ -189,7 +189,7 @@ copy the file to `$JBOSS_HOME/standalone/deployments`.
 
 . Copy the war
 +
-[source]
+[source,options="nowrap"]
 ----
 $ cp target/jboss-as-helloworld.war $JBOSS_HOME/standalone/deployments
 ----
@@ -206,7 +206,7 @@ file. If the deployment failed, you would get a `.failed` file etc.
 
 . Undeploy the war
 +
-[source]
+[source,options="nowrap"]
 ----
 rm $JBOSS_HOME/standalone/deployments/jboss-as-helloworld.war.deployed
 ----
@@ -530,7 +530,7 @@ layer and in your views
 
 .  Make sure JBoss AS is running
 +
-[source]
+[source,options="nowrap"]
 ----
 mvn clean test -Parq-jbossas-remote
 ----
@@ -539,7 +539,7 @@ mvn clean test -Parq-jbossas-remote
 
 . Make sure JBoss AS is stopped
 +
-[source]
+[source,options="nowrap"]
 ----
 mvn clean test -Parq-jbossas-managed
 ----

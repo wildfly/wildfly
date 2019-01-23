@@ -75,7 +75,7 @@ A simple JAX-WS endpoint is prepared using a java-first approach;
 WS-Addressing is enforced through `@Addressing` annotation and no
 `wsdlLocation` is provided in `@WebService`:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.samples.wsa;
  
@@ -105,7 +105,7 @@ public class ServiceImpl implements ServiceIface
 The WSDL contract that's generated at deploy time and published looks
 like this:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <wsdl:definitions ....>
 ...
@@ -145,7 +145,7 @@ like this:
 Since the WS-Policy engine is on by default, the client side code is
 basically a pure JAX-WS client app:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 QName serviceName = new QName("http://www.jboss.org/jbossws/ws-extensions/wsaddressing", "AddressingService");
 URL wsdlURL = new URL("http://localhost:8080/jaxws-samples-wsa?wsdl");

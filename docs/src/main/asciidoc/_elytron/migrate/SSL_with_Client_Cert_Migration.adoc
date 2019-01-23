@@ -6,7 +6,7 @@ This section will cover how to create the various resources required to achieve 
 
 This suppose you have configured legacy Client-Cert SSL authentication using `truststore` in legacy `security-realm`, for example by link:Admin_Guide.html#add-client-cert-to-ssl[Admin Guide#Add Client-Cert to SSL], and your configuration looks like:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <security-realm name="ManagementRealm">
   <server-identities>
@@ -24,7 +24,7 @@ This suppose you have configured legacy Client-Cert SSL authentication using `tr
 
 This also suppose you have already followed <<Simple_SSL_Migration,Simple SSL Migration>> section, so your partialy migrated configuration looks like:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:wildfly:elytron:1.0" ...>
     ...
@@ -62,7 +62,7 @@ However following steps are needed to be user identity provided to your applicat
 
 We use users stored in standard properties files, so we can predefined Elytron security domain `ManagementDomain` and realm `ManagementRealm`:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
     <security-domains>
         <security-domain name="ManagementDomain" default-realm="ManagementRealm" permission-mapper="default-permission-mapper">
@@ -94,7 +94,7 @@ In this case we will use first CN attribute in certificate subject:
 ----
 
 Resulting in: -
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:wildfly:elytron:1.1" final-providers="combined-providers" disallowed-providers="OracleUcrypto">
   ...
@@ -170,7 +170,7 @@ However, as EXTERNAL SASL mechanism does not do any certificate verification, th
 
 This results in: -
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:wildfly:elytron:1.1" final-providers="combined-providers" disallowed-providers="OracleUcrypto">
   ...
@@ -203,7 +203,7 @@ The SSL context was already defined, but we need to modify it to not fail on cli
 
 Resulting in: -
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:wildfly:elytron:1.1" final-providers="combined-providers" disallowed-providers="OracleUcrypto">
   ...
@@ -233,7 +233,7 @@ At this point the management interfaces can be updated to use the newly defined 
 
 The management interface configuration then becomes: -
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <management>
   ...
@@ -257,7 +257,7 @@ For certificate based authentication certificates signed by your CA, whose subje
 
 This suppose you have used following configuration in `bin/jboss-cli.xml`:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <ssl>
   <alias>adminalias</alias>
@@ -272,7 +272,7 @@ You can stay using this configuration, but since the integration of WildFly Elyt
 
 In such case, following wildfly-config.xml can be created in the location the JBoss CLI is being started from: -
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 

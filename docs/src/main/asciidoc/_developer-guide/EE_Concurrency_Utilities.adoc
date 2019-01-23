@@ -43,7 +43,7 @@ the original object.
 
 Usage example:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 public void onGet(...) {
   Runnable task = ...;
@@ -55,7 +55,7 @@ public void onGet(...) {
 WildFly default configurations creates a single default instance of a
 Context Service, which may be retrieved through `@Resource` injection:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 @Resource
 private ContextService contextService;
@@ -71,7 +71,7 @@ default instance, no matter what's the `name` attribute value, if the
 
 Applications may alternatively use instead the standard JNDI API:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 ContextService contextService = InitialContext.doLookup("java:comp/DefaultContextService");
 ----
@@ -105,7 +105,7 @@ application to learn about termination status.
 
 Usage example:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 public void onGet(...) {
   Runnable task = ...;
@@ -119,7 +119,7 @@ WildFly default configurations creates a single default instance of a
 Managed Thread Factory, which may be retrieved through `@Resource`
 injection:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 @Resource
 private ManagedThreadFactory managedThreadFactory;
@@ -135,7 +135,7 @@ the `lookup` attribute is not defined.
 
 Applications may alternatively use instead the standard JNDI API:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 ManagedThreadFactory managedThreadFactory = InitialContext.doLookup("java:comp/DefaultManagedThreadFactory");
 ----
@@ -166,7 +166,7 @@ task execution.
 
 Usage example:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 public void onGet(...) {
     Runnable task = ...;
@@ -179,7 +179,7 @@ WildFly default configurations creates a single default instance of a
 Managed Executor Service, which may be retrieved through `@Resource`
 injection:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 @Resource
 private ManagedExecutorService managedExecutorService;
@@ -195,7 +195,7 @@ the `lookup` attribute is not defined.
 
 Applications may alternatively use instead the standard JNDI API:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 ManagedExecutorService managedExecutorService = InitialContext.doLookup("java:comp/DefaultManagedExecutorService");
 ----
@@ -227,7 +227,7 @@ the task execution.
 
 Usage example:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 public void onGet(...) {
     Runnable task = ...;
@@ -240,7 +240,7 @@ WildFly default configurations creates a single default instance of a
 Managed Scheduled Executor Service, which may be retrieved through
 `@Resource` injection:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 @Resource
 private ManagedScheduledExecutorService managedScheduledExecutorService;
@@ -256,7 +256,7 @@ value, in case the `lookup` attribute is not defined.
 
 Applications may alternatively use instead the standard JNDI API:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 ManagedScheduledExecutorService managedScheduledExecutorService = InitialContext.doLookup("java:comp/DefaultManagedScheduledExecutorService");
 ----

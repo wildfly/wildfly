@@ -75,14 +75,14 @@ As a web application is deployed the name of the security domain required by tha
 
 As an example in it's simplest form a mapping can be added as: -
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=undertow/application-security-domain=MyAppSecurity:add(security-domain=ApplicationDomain)
 ----
 
 Which results in: -
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:undertow:7.0" ... default-security-domain="other">
 ...
@@ -103,14 +103,14 @@ This simple form is suitable where a deployment is using the standard HTTP mecha
 
 An advanced form of the mapping can be added as: -
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=undertow/application-security-domain=MyAppSecurity:add(http-authentication-factory=application-http-authentication)
 ----
 
 Which results in: -
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:undertow:7.0" ... default-security-domain="other">
 ...
@@ -158,14 +158,14 @@ In this output the `referencing-deployments` attribute shows that the deployment
 Configuration can be added to the EJB subsystem to map a security domain
 name referenced in a deployment to an Elytron security domain:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=ejb3/application-security-domain=MyAppSecurity:add(security-domain=ApplicationDomain)
 ----
 
 Which results in:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:ejb3:5.0">
 ...
@@ -201,7 +201,7 @@ When Elytron security is enabled, JAAS subject or principal can be pushed
 to jbossws-cxf endpoint’s SecurityContext to propagate authenticated
 identity to EJB container. Here is a CXF interceptor example to
 propagate authenticated information to EJB container :
-[source, java]
+[source,java,options="nowrap"]
 ----
 public class PropagateSecurityInterceptor extends WSS4JInInterceptor {
 

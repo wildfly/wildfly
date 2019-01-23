@@ -26,14 +26,14 @@ We assume that this security domain is a reference to a PicketBox security domai
 
 e.g.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=undertow/application-security-domain=MyAppSecurity:add(security-domain=ApplicationDomain)
 ----
 
 or
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=undertow/application-security-domain=MyAppSecurity:add(http-authentication-factory=application-http-authentication)
 ----
@@ -61,7 +61,7 @@ One way to register a configuration which will result in an `AuthConfigProvider`
 
 The following command demonstrates how to add a configuration containing two `ServerAuthModule` definitions: -
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 ./subsystem=elytron/jaspi-configuration=simple-configuration:add(layer=HttpServlet, application-context="default-host /webctx", \
         description="Elytron Test Configuration", \
@@ -71,7 +71,7 @@ The following command demonstrates how to add a configuration containing two `Se
 
 This results in the following configuration being persisted: -
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <jaspi>
     <jaspi-configuration name="simple-configuration" layer="HttpServlet" application-context="default-host /webctx" description="Elytron Test Configuration">
@@ -108,7 +108,7 @@ The APIs defined within the JASPI specification allow for applications to dynami
 
 The following piece of code illustrates how this API can be used to register a similar configuration to the one illustrated in the subsystem.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 String registraionId = JaspiConfigurationBuilder.builder("HttpServlet", servletContext.getVirtualServerName() + " " + servletContext.getContextPath())
     .addAuthModuleFactory(SimpleServerAuthModule::new, Flag.OPTIONAL, Collections.singletonMap("a", "b"))

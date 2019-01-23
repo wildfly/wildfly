@@ -257,7 +257,7 @@ capability is usually registered by a resource, so the usual way to use
 one is to store it in constant in the resource's `ResourceDefinition`.
 Use a `RuntimeCapability.Builder` to create one.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 class MyResourceDefinition extends SimpleResourceDefinition {
     
@@ -272,7 +272,7 @@ That creates a statically named capability named `com.example.foo`.
 If the capability is dynamically named, add the `dynamic` parameter to
 state this:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     static final RuntimeCapability<Void> FOO_CAPABILITY = 
             RuntimeCapability.Builder.of("com.example.foo", true).build();
@@ -284,7 +284,7 @@ service's _value type_ (the type of the object returned by
 `org.jboss.msc.Service.getValue()`). For example, if FOO_CAPABILITY
 provides a `Service<javax.sql.DataSource>`:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     static final RuntimeCapability<Void> FOO_CAPABILITY = 
             RuntimeCapability.Builder.of("com.example.foo", DataSource.class).build();
@@ -292,7 +292,7 @@ provides a `Service<javax.sql.DataSource>`:
 
 For a dynamic capability:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     static final RuntimeCapability<Void> FOO_CAPABILITY = 
            RuntimeCapability.Builder.of("com.example.foo", true, DataSource.class).build();
@@ -301,7 +301,7 @@ For a dynamic capability:
 If the capability provides a custom integration API, you need to
 instantiate an instance of that API:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 public class JTSCapability {
  
@@ -325,7 +325,7 @@ public class JTSCapability {
 
 and provide it to the builder:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     static final RuntimeCapability<JTSCapability> FOO_CAPABILITY = 
             RuntimeCapability.Builder.of("com.example.foo", JTSCapability.INSTANCE).build();
@@ -333,7 +333,7 @@ and provide it to the builder:
 
 For a dynamic capability:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     static final RuntimeCapability<JTSCapability> FOO_CAPABILITY = RuntimeCapability.Builder.of("com.example.foo", true, JTSCapability.INSTANCE).build();
 ----
@@ -341,7 +341,7 @@ For a dynamic capability:
 A capability can provide both a custom integration API and install a
 service:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     static final RuntimeCapability<JTSCapability> FOO_CAPABILITY = 
             RuntimeCapability.Builder.of("com.example.foo", JTSCapability.INSTANCE)
@@ -363,7 +363,7 @@ builder-style API for setting up all the data needed by your definition.
 This includes a `setCapabilities` method that can be used to declare the
 capabilities provided by resources of this type.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 class MyResourceDefinition extends SimpleResourceDefinition {
     
@@ -383,7 +383,7 @@ Your add handler needs to extend the standard
 `org.jboss.as.controller.AbstractAddStepHandler` class or one of its
 subclasses:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 class MyAddHandler extends AbstractAddStepHandler() {
 ----
@@ -395,7 +395,7 @@ Your remove handler must also extend of the standard
 `org.jboss.as.controller.AbstractRemoveStepHandler` or one of its
 subclasses.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 class MyRemoveHandler extends AbstractRemoveStepHandler() {
 ----
@@ -419,7 +419,7 @@ If your capability installs a service, you should use the
 example in the `Stage.RUNTIME` handling of your "add" step handler.
 Here's an example for a statically named capability:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 class MyAddHandler extends AbstractAddStepHandler() {
  
@@ -439,7 +439,7 @@ class MyAddHandler extends AbstractAddStepHandler() {
 If the capability is dynamically named, get the dynamic part of the name
 from the `OperationContext` and use that when getting the service name:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 class MyAddHandler extends AbstractAddStepHandler() {
  
@@ -488,7 +488,7 @@ capability, simply declare that to the builder for your
 `RuntimeCapability`. For example, WildFly's JTS capability requires both
 a basic transaction support capability and IIOP capabilities:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     static final RuntimeCapability<JTSCapability> JTS_CAPABILITY =
             RuntimeCapability.Builder.of("org.wildfly.transactions.jts", new JTSCapability())
@@ -513,7 +513,7 @@ For example, the WildFly "remoting" subsystem's
 "org.wildfly.remoting.connector" capability has a requirement for a
 dynamically named socket-binding capability:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 public class ConnectorResource extends SimpleResourceDefinition {
  
@@ -550,7 +550,7 @@ For example, the "add" handler for a remoting connector uses the
 `OperationContext` to find the name of the needed \{\{SocketBinding}
 service:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
         final String socketName = ConnectorResource.SOCKET_BINDING.resolveModelAttribute(context, fullModel).asString();
         final ServiceName socketBindingName = context.getCapabilityServiceName(ConnectorResource.SOCKET_CAPABILITY_NAME, socketName, SocketBinding.class);
@@ -564,7 +564,7 @@ If the required capability isn't dynamically named, `OperationContext`
 exposes an overloaded `getCapabilityServiceName` variant. For example,
 if a capability requires a remoting Endpoint:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
         ServiceName endpointService = context.getCapabilityServiceName("org.wildfly.remoting.endpoint", Endpoint.class);
 ----
@@ -576,7 +576,7 @@ In your `Stage.RUNTIME` handler, use
 `OperationContext.getCapabilityRuntimeAPI` to get a reference to the
 required capability's custom integration API. Then use it as necessary.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
         List<String> orbInitializers = new ArrayList<String>();
         . . . 
@@ -596,7 +596,7 @@ the other capability; you'll just use it if it's there.
 In this case, use `OperationContext.hasOptionalCapability` in your
 `Stage.RUNTIME` handler to check if the capability is present:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
  
@@ -642,7 +642,7 @@ associated with a different capability, you will need to use the
 associated with the deployment unit. This can be found as an attachment
 to the `DeploymentPhaseContext`:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 class MyDUP implements DeploymentUntiProcessor {
  
@@ -655,7 +655,7 @@ class MyDUP implements DeploymentUntiProcessor {
 Once you have the `CapabilityServiceSupport` you can use it to look up
 service names:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
         ServiceName barSvcName = capSvcSupport.getCapabilityServiceName("com.example.bar");
         // Determine what 'baz' the user specified in the deployment descriptor
@@ -682,7 +682,7 @@ automatically start the deployment services.
 You can also use the `CapabilityServiceSupport` to obtain a reference to
 the capability's custom integration API:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
         // We need custom integration with the baz capability beyond service injection
         BazIntegrator bazIntegrator;

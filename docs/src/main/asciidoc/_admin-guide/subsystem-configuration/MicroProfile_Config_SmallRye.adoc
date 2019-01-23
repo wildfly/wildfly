@@ -14,7 +14,7 @@ You can also add the extension to a configuration without it either by adding
 an `<extension module="org.wildfly.extension.microprofile.config-smallrye"/>`
 element to the xml or by using the following CLI operation:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /]/extension=org.wildfly.extension.microprofile.config-smallrye:add
 ----
@@ -30,14 +30,14 @@ In addition to the default `ConfigSources` specified by the MicroProfile Config 
 You can store properties directly in a `config-source` in the subsystem by using the `properties`
 attribute when you add the `config-source`:
 
-[source]
+[source,options="nowrap"]
 ----
 /subsystem=microprofile-config-smallrye/config-source=props:add(properties={"prop1" = "foo", "prop2" = "bar"})
 ----
 
 This results in the XML configuration:
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:wildfly:microprofile-config-smallrye:1.0">
     <config-source name="props">
@@ -59,14 +59,14 @@ For example, let's imagine that the directory `/etc/config/numbers-app/` contain
 
 We can create a config-source` to access these properties by using the operation:
 
-[source]
+[source,options="nowrap"]
 ----
 /subsystem=microprofile-config-smallrye/config-source=file-props:add(dir={path=/etc/config/numbers-app})
 ----
 
 This results in the XML configuration:
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:wildfly:microprofile-config-smallrye:1.0">
     <config-source name="file-props">
@@ -78,7 +78,7 @@ This results in the XML configuration:
 With that configuration, any application deployed in WildFly can use the `num.size` and
 `num.max` properties that are stored in the directory:
 
-[source,java]
+[source,java,options="nowrap"]
 ----
 @Inject
 @ConfigProperty(name = "num.size")
@@ -109,7 +109,7 @@ that is named `org.example.MyConfigSource` and provided by a JBoss module named 
 
 This results in the XML configuration:
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:wildfly:microprofile-config-smallrye:1.0">
     <config-source name="my-config-source">
@@ -134,7 +134,7 @@ that is named `org.example.MyConfigSourceProvider` and provided by a JBoss modul
 
 This results in the XML configuration:
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:wildfly:microprofile-config-smallrye:1.0">
     <config-source-provider name="my-config-source-provider">

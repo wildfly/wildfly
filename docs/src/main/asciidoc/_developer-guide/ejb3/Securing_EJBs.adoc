@@ -19,7 +19,7 @@ such configurations, the way they wish. In WildFly {wildflyVersion}, the use of
 developer to configure the security domain for a bean. Here's an
 example:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 import org.jboss.ejb3.annotation.SecurityDomain;
  
@@ -27,10 +27,10 @@ import javax.ejb.Stateless;
  
 @Stateless
 @SecurityDomain("other")
-﻿public class MyBean ... 
+﻿public class MyBean ...
 {
- 
-...
+   ...
+}
 ----
 
 The use of @SecurityDomain annotation lets the developer to point the
@@ -43,7 +43,7 @@ An alternate way of configuring a security domain, instead of using
 annotation, is to use jboss-ejb3.xml deployment descriptor. Here's an
 example of how the configuration will look like:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 <jboss:jboss
@@ -52,7 +52,7 @@ example of how the configuration will look like:
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xmlns:s="urn:security:1.1"
          xsi:schemaLocation="http://www.jboss.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-ejb3-2_0.xsd http://java.sun.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-ejb3-spec-2_0.xsd"
-         version="3.1" impl-version="2.0"> 
+         version="3.1" impl-version="2.0">
  
     <assembly-descriptor>
         <s:security>
@@ -79,7 +79,7 @@ security metadata
 
 Let's consider the following example bean:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 @Stateless
 public class FooBean {
@@ -114,7 +114,7 @@ bean
 
 Consider this example bean:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 @Stateless
 public class FooBean {
@@ -128,7 +128,7 @@ public class FooBean {
  public void helloWorld() {
   ...
     }
-} 
+}
 ----
 
 As you can see the `doSomething` method is marked for access for only
@@ -143,7 +143,7 @@ access to the `helloWorld` method. This behaviour can be controlled via
 the jboss-ejb3.xml deployment descriptor at a per bean level or a per
 deployment level as follows:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 <jboss:jboss
@@ -175,7 +175,7 @@ similar to `@PermitAll`.
 This behaviour can also be configured at the EJB3 subsystem level so
 that it applies to all EJB3 deployments on the server, as follows:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:ejb3:1.4">
 ...

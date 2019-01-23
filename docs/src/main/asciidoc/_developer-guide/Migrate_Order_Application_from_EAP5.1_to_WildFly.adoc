@@ -36,7 +36,7 @@ The JNDI lookup code changed as follows:
 
 Example of code in the EAP 5.1 version:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 try {
     context = new InitialContext();
@@ -59,7 +59,7 @@ try {
 
 Example of how this is now coded in WildFly:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 @EJB(lookup="java:app/OrderManagerEJB/DistributionCenterManagerBean!services.ejb.DistributionCenterManager")
 private DistributionCenterManager distributionCenterManager;
@@ -74,14 +74,14 @@ private ProductManager productManager;
 In addition to the change to injection, which was supported in EAP
 5.1.0, the lookup name changed from:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 OrderManagerApp/DistributionCenterManagerBean/local
 ----
 
 to:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 java:app/OrderManagerEJB/DistributionCenterManagerBean!services.ejb.DistributionCenterManager
 ----
@@ -103,21 +103,21 @@ illustrates:
 
 Old JBoss Commons Logging/Log4J:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 private static Log log = LogFactory.getLog(CustomerManagerBean.class);
 ----
 
 New WildFly Logging
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 private static Logger logger = Logger.getLogger(CustomerManagerBean.class.toString());
 ----
 
 Old JBoss Commons Logging/Log4J:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 if(log.isTraceEnabled()) {
     log.trace("Just flushed " + batchSize + " rows to the database.");
@@ -127,7 +127,7 @@ if(log.isTraceEnabled()) {
 
 New WildFly Logging:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 if(logger.isLoggable(Level.TRACE)) {
     logger.log(Level.TRACE, "Just flushed " + batchSize + " rows to the database.");
@@ -139,7 +139,7 @@ In addition to the code changes made to use the new AS7 JBoss log
 manager module, you must add this dependency to the `MANIFEST.MF` file
 as follows:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 Manifest-Version: 1.0
 Dependencies: org.jboss.logmanager
@@ -153,7 +153,7 @@ requires modification of the `persistence.xml` file.
 
 This is what the file looked like in EAP 5.1:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 <properties>
 <property name="hibernate.cache.region.factory_class" value="org.hibernate.cache.jbc2.JndiMultiplexedJBossCacheRegionFactory"/>
@@ -169,7 +169,7 @@ This is what the file looked like in EAP 5.1:
 This is how it was modified to use Infinispan for the same
 configuration:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 <properties>
 <property name="hibernate.cache.use_second_level_cache" value="true"/>
@@ -194,7 +194,7 @@ failed to deploy successfully in WildFly.
 
 The old structure of the EAR was as follows:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 $ jar tf OrderManagerApp.ear
 META-INF/MANIFEST.MF
@@ -217,7 +217,7 @@ couple of ways to resolve this issue:
 The second approach was selected because it simplified the EAR
 structure:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 $ jar tf OrderManagerApp.ear
 META-INF/application.xml
@@ -233,7 +233,7 @@ An entry was added to the `MANIFEST.MF` file in the
 `OrderManagerWeb.war` to resolve another class loading issue resulting
 from the modification to use EJB reference injection in the servlets.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 Manifest-Version: 1.0
 Dependencies: org.jboss.logmanager

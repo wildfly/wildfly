@@ -40,7 +40,7 @@ are used to protect the SOAP body of messages that pass back and forth
 between ws-requester and ws-provider. A detailed explanation of the
 security settings are provided in the comments in the listing below.
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <definitions targetNamespace="http://www.jboss.org/jbossws/ws-extensions/bearerwssecuritypolicy"
@@ -254,7 +254,7 @@ Guide].
 
 Here is an example of an SSL connector declaration.
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:web:1.4" default-virtual-server="default-host" native="false">
   .....
@@ -270,7 +270,7 @@ Here is an example of an SSL connector declaration.
 The web service provider interface class, BearerIface, is a simple
 straight forward web service definition.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.bearer;
  
@@ -317,7 +317,7 @@ in prior examples, however in order to verify the message signature, the
 Java properties file that contains the (Merlin) crypto configuration
 information is still required.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.bearer;
  
@@ -413,7 +413,7 @@ following XML must be added to the JBoss security subsystem in the
 server configuration file. Replace " *SOME_PATH*" with appropriate
 information.
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <security-domain name="JBossWS-trust-sts">
   <authentication>
@@ -428,7 +428,7 @@ information.
 
 jboss-web.xml
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE jboss-web PUBLIC "-//JBoss//DTD Web Application 2.4//EN" ">
@@ -454,7 +454,7 @@ alice=friend
 [[stss-wsdl-saml-bearer]]
 === STS's WSDL
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 <wsdl:definitions
@@ -924,7 +924,7 @@ a SAMLTokenProvider which we are using rather than writing our own.
 Learn more about the SAMLTokenProvider
 http://coheigea.blogspot.it/2011/10/apache-cxf-sts-documentation-part-iv.html[here].
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.stsbearer;
  
@@ -993,7 +993,7 @@ It is used to obtain the password for the private key in the keystore.
 This class enables CXF to retrieve the password of the user name to use
 for the message signature.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.stsbearer;
  
@@ -1088,7 +1088,7 @@ way, the user must provide a org.apache.cxf.Bus for it and the
 configuration keys must not have the ".it" suffix. This is used in the
 ActAs and OnBehalfOf examples.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
   String serviceURL = "https://" + getServerHost() + ":8443/jaxws-samples-wsse-policy-trust-bearer/BearerService";
  
@@ -1140,7 +1140,7 @@ provided here. This information is not in the (JKS) keystore but
 provided in the WildFly security domain. It was declared in file
 jbossws-users.properties.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.shared;
  

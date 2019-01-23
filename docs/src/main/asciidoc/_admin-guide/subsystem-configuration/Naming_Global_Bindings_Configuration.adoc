@@ -24,7 +24,7 @@ Four different types of bindings are supported:
 In the subsystem's XML configuration, global bindings are configured
 through the `<bindings />` XML element, as an example:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <bindings>
     <simple name="java:global/a" value="100" type="int" />
@@ -48,7 +48,7 @@ through the `<bindings />` XML element, as an example:
 A simple binding is a primitive or java.net.URL entry, and it is defined
 through the `simple` XML element. An example of its XML configuration:
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <simple name="java:global/a" value="100" type="int" />
 ----
@@ -67,7 +67,7 @@ Management clients, such as the WildFly CLI, may be used to configure
 simple bindings. An example to `add` and `remove` the one in the XML
 example above:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 /subsystem=naming/binding=java\:global\/a:add(binding-type=simple, type=int, value=100)
 /subsystem=naming/binding=java\:global\/a:remove
@@ -80,7 +80,7 @@ The Naming subsystem configuration allows the binding of
 `javax.naming.spi.ObjectFactory` entries, through the `object-factory`
 XML element, for instance:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <object-factory name="java:global/foo/bar/factory" module="org.foo.bar" class="org.foo.bar.ObjectFactory">
     <environment>
@@ -106,7 +106,7 @@ Management clients, such as the WildFly CLI, may be used to configure
 object factory bindings. An example to `add` and `remove` the one in the
 XML example above:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=naming/binding=java\:global\/foo\/bar\/factory:add(binding-type=object-factory, module=org.foo.bar, class=org.foo.bar.ObjectFactory, environment=[p1=v1, p2=v2])
 /subsystem=naming/binding=java\:global\/foo\/bar\/factory:remove
@@ -120,7 +120,7 @@ achieved by adding External Context bindings to the global bindings
 configuration, through the `external-context` XML element. An example of
 its XML configuration:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <external-context name="java:global/federation/ldap/example" class="javax.naming.directory.InitialDirContext" cache="true">
     <environment>
@@ -153,7 +153,7 @@ Management clients, such as the WildFly CLI, may be used to configure
 external context bindings. An example to `add` and `remove` the one in
 the XML example above:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=naming/binding=java\:global\/federation\/ldap\/example:add(binding-type=external-context, cache=true, class=javax.naming.directory.InitialDirContext, environment=[java.naming.factory.initial=com.sun.jndi.ldap.LdapCtxFactory, java.naming.provider.url=ldap\:\/\/ldap.example.com\:389, java.naming.security.authentication=simple, java.naming.security.principal=uid\=admin\,ou\=system, java.naming.security.credentials= secret])
  
@@ -178,7 +178,7 @@ To work around their shortcomings, the
 external-context's environment to use instead the lookup(String) method
 (with a performance degradation):
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <property name="org.jboss.as.naming.lookup.by.string" value="true"/>
 ----
@@ -190,7 +190,7 @@ entries into additional names, i.e. aliases. Binding aliases are
 specified through the `lookup` XML element. An example of its XML
 configuration:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <lookup name="java:global/c" lookup="java:global/b" />
 ----
@@ -208,7 +208,7 @@ Management clients, such as the WildFly CLI, may be used to configure
 binding aliases. An example to `add` and `remove` the one in the XML
 example above:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=naming/binding=java\:global\/c:add(binding-type=lookup, lookup=java\:global\/b)
 /subsystem=naming/binding=java\:global\/c:remove

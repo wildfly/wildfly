@@ -13,7 +13,7 @@ Simply include a subclass of `javax.ws.rs.core.Application` in your
 application, and annotate it with the path that you want your JAX-RS
 classes to be available. For example:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 @ApplicationPath("/mypath")
 public class MyApplication extends Application {
@@ -33,13 +33,13 @@ Note that that the path is `/mypath` not `/mypath/*`
 If you do not wish to use `@ApplicationPath` but still need to subclass
 `Application` you can set up the JAX-RS mapping in web.xml:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 public class MyApplication extends Application {
 }
 ----
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <servlet-mapping>
    <servlet-name>com.acme.MyApplication</servlet-name>
@@ -61,7 +61,7 @@ the `@ApplicationPath` annotation.
 If you don't wan't to subclass `Application` you can set the JAX-RS
 mapping in web.xml as follows:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <servlet-mapping>
    <servlet-name>javax.ws.rs.core.Application</servlet-name>

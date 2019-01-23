@@ -26,12 +26,12 @@ To create a deployment overlay the CLI provides a high level command to
 do all the steps specified above in one go. An example command is given
 below for both standalone and domain mode:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 deployment-overlay add --name=myOverlay --content=/WEB-INF/web.xml=/myFiles/myWeb.xml,/WEB-INF/ejb-jar.xml=/myFiles/myEjbJar.xml --deployments=test.war,*-admin.war --redeploy-affected
 ----
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 deployment-overlay add --name=myOverlay --content=/WEB-INF/web.xml=/myFiles/myWeb.xml,/WEB-INF/ejb-jar.xml=/myFiles/myEjbJar.xml --deployments=test.war,*-admin.war --server-groups=main-server-group --redeploy-affected
 ----

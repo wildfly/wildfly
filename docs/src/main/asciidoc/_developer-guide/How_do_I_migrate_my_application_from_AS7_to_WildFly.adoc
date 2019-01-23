@@ -51,7 +51,7 @@ The extension's module `org.jboss.as.jacorb` is replaced by module `org.wildfly.
 
 The XML configuration of the new subsystem accepts only a subset of the legacy elements and attributes. Consider the following example of the JacORB subsystem configuration, containing all valid elements and attributes:
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:jacorb:1.3">
    <orb name="JBoss" print-version="off" use-imr="off" use-bom="off"  cache-typecodes="off"
@@ -88,14 +88,14 @@ On-off properties: have to either be removed or in off mode:
 
 In case the legacy subsystem configuration is available, such configuration may be migrated to the new subsystem by invoking its `migrate` operation, using the management CLI:
 
-[source]
+[source,options="nowrap"]
 ----
 /subsystem=jacorb:migrate
 ----
 
 There is also a `describe-migration` operation that returns a list of all the management operations that are performed to migrate from the legacy subsystem to the new one:
 
-[source]
+[source,options="nowrap"]
 ----
 /subsystem=jacorb:describe-migration
 ----
@@ -124,7 +124,7 @@ The extension's module `org.jboss.as.web` is replaced by module `org.wildfly.ext
 
 The XML configuration of the new subsystem is relatively different. Consider the following example of the JBoss Web subsystem configuration, containing all valid elements and attributes:
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 <subsystem xmlns="urn:jboss:domain:web:2.2" default-virtual-server="default-host" native="true" default-session-timeout="30" instance-id="foo">
@@ -248,14 +248,14 @@ The XML configuration of the new subsystem is relatively different. Consider the
 
 It is possible to do a migration of the legacy subsystem configuration and related persisted data by invoking the legacy subsystem's `migrate` operation, using the management CLI:
 
-[source]
+[source,options="nowrap"]
 ----
 /subsystem=web:migrate
 ----
 
 There is also a `describe-migration` operation that returns a list of all the management operations that are performed to migrate from the legacy subsystem to the new one:
 
-[source]
+[source,options="nowrap"]
 ----
 /subsystem=web:describe-migration
 ----
@@ -349,7 +349,7 @@ The migration can be done manually though :
 .  Create a datasource pointing to the database where the log entries are going to be stored
 .  Add an `expression-filter` definition with the following expression: "jdbc-access-log(datasource='datasource-jndi-name")
 +
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <valve name="jdbc" module="org.jboss.as.web" class-name="org.apache.catalina.valves.JDBCAccessLogValve">
     <param param-name="driverName" param-value="com.mysql.jdbc.Driver" />
@@ -362,7 +362,7 @@ The migration can be done manually though :
 +
 should become:
 +
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:datasources:1.2">
     <datasources>
@@ -414,7 +414,7 @@ Also the authentication related valves are to be replaced by Undertow authentica
 
 In {PrevProductName} {PrevProductVersion}, to use WebSockets, you had to configure the 'http' `connector` in the `web` subsystem of the server configuration file to use the NIO2 protocol. The following is an example of the management CLI command to configure WebSockets in the previous releases.
 
-[source]
+[source,options="nowrap"]
 ----
 /subsystem=web/connector=http/:write-attribute(name=protocol,value=org.apache.coyote.http11.Http11NioProtocol)
 ----
@@ -453,14 +453,14 @@ The management operations invoked on the new messaging-subsystem starts with `/s
 
 In case the legacy subsystem configuration is available, such configuration may be migrated to the new subsystem by invoking its `migrate` operation, using the management CLI:
 
-[source]
+[source,options="nowrap"]
 ----
 /subsystem=messaging:migrate
 ----
 
 There is also a `describe-migration` operation that returns a list of all the management operations that are performed to migrate from the legacy subsystem to the new one:
 
-[source]
+[source,options="nowrap"]
 ----
 /subsystem=messaging:describe-migration
 ----
@@ -471,7 +471,7 @@ Both `migrate` and `describe-migration` will also display a list of migration-wa
 +
 The `migrate` operation requires starting the server in admin-only mode, which is done by adding parameter `--admin-only` to the server start command, e.g.
 +
-[source]
+[source,options="nowrap"]
 ----
 ./standalone.sh --admin-only
 ----
@@ -537,7 +537,7 @@ Messaging Interceptors are significantly different in {ProductName} {ProductVers
 
 With respect to the server XML configuration, the user must now specify the module to load its interceptors in the new `messaging-activemq` subsystem XML config, e.g:
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:messaging-activemq:1.0">
     <server name="default">
@@ -559,7 +559,7 @@ With respect to the server XML configuration, the user must now specify the modu
 
 In previous releases, JMS destination queues were configured in the `<jms-destinations>` element under the hornetq-server section of the `messaging` subsystem.
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <jms-destinations>
     <jms-queue name="testQueue">
@@ -571,7 +571,7 @@ In previous releases, JMS destination queues were configured in the `<jms-destin
 
 In {ProductName}, the JMS destination queue is configured in the default server of the `messaging-activemq` subsystem.
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <jms-queue name="testQueue" entries="queue/test java:jboss/exported/jms/queue/test"/>
 ----
@@ -593,7 +593,7 @@ The location of the messaging data has been changed in the new `messaging-active
 
 To migrate legacy messaging data, you will have to export the directories used by the legacy `messaging` subsystem and import them into the new subsystem's server by using its `import-journal` operation:
 
-[source]
+[source,options="nowrap"]
 ----
 /subsystem=messaging-activemq/server=default:import-journal(file=<path to XML dump>)
 ----
@@ -615,7 +615,7 @@ Container-Managed Persistence entity beans support is optional in Java EE 7, and
 
 CMP entity beans are defined in the `ejb-jar.xml` descriptor, in concrete an entity bean is CMP only if the `<entity/>` child element named `persistence-type` is included and has a value of `Container`. An example:
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <?xml version="1.1" encoding="UTF-8"?>
 <ejb-jar xmlns="http://java.sun.com/xml/ns/javaee"
@@ -648,7 +648,7 @@ The default remote connection port has changed from `4447` to `8080`.
 
 In {PrevProductName} {PrevProductVersion}, the `jboss-ejb-client.properties` file looked similar to
 the following:
-[source]
+[source,options="nowrap"]
 ----
 remote.connectionprovider.create.options.org.xnio.Options.SSL_ENABLED=false
 remote.connections=default
@@ -658,7 +658,7 @@ remote.connection.default.connect.options.org.xnio.Options.SASL_POLICY_NOANONYMO
 ----
 
 In {ProductName}, the properties file looks like this:
-[source]
+[source,options="nowrap"]
 ----
 remote.connectionprovider.create.options.org.xnio.Options.SSL_ENABLED=false
 remote.connections=default
@@ -676,7 +676,7 @@ In {ProductName}, the default connector has changed from `remoting` to `http-rem
 
 * A client application that uses the EJB client library from {ProductName} {ProductVersion} and wants to connect to a {PrevProductName} {PrevProductVersion} server must be aware that the server instance does not use the http-remoting connector and instead uses a remoting connector. This is achieved by defining a new client-side connection property.
 +
-[source]
+[source,options="nowrap"]
 ----
 remote.connection.default.protocol=remote
 ----
@@ -739,7 +739,7 @@ List of valves that were provided with JBoss Web, together with a corresponding 
 
 JBoss Web Valves are specified in the proprietary `jboss-web.xml` descriptor, through `<valve />` element(s). These can be replaced using the `<http-handler />` element(s). For example:
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <jboss-web>
     <valve>
@@ -751,7 +751,7 @@ JBoss Web Valves are specified in the proprietary `jboss-web.xml` descriptor, th
 
 can be replaced by
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <jboss-web>
     <http-handler>
@@ -778,7 +778,7 @@ JAX-RPC is an API for building Web services and clients that used remote procedu
 
 JAX-RPC Web Services may be identified by the presence of the XML descriptor named `webservices.xml`, containing a `<webservice-description/>` element that includes a child element named `<jaxrpc-mapping-file/>`. An example:
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <webservices xmlns="http://java.sun.com/xml/ns/j2ee"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -810,7 +810,7 @@ Some changes to the `MessageBodyWriter` interface may represent a backward incom
 
 Be sure to define an `@Produces` or `@Consumes` for your endpoints. Failure to do so may result in an error similar to the following.
 
-[source]
+[source,options="nowrap"]
 ----
 org.jboss.resteasy.core.NoMessageBodyWriterFoundFailure: Could not find MessageBodyWriter for response object of type: <OBJECT> of media type: <CONTENT_TYPE>
 ----
@@ -950,7 +950,7 @@ Previously, the value defined by this attribute defined a policy for triggering 
 As an example, considering the application server host is `localhost`,
 then clients previously accessing {ProductName} {ProductVersion} would use
 
-[source,java]
+[source,java,options="nowrap"]
 ----
 java.naming.factory.initial=org.jboss.naming.remote.client.InitialContextFactory
 java.naming.provider.url=remote://localhost:4447
@@ -958,7 +958,7 @@ java.naming.provider.url=remote://localhost:4447
 
 while clients now accessing {ProductName} should use instead
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 java.naming.factory.initial=org.jboss.naming.remote.client.InitialContextFactory
 java.naming.provider.url=http-remoting://localhost:8080

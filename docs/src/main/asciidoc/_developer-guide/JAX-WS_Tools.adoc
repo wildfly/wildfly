@@ -60,7 +60,7 @@ defaults, so only the @WebService annotation is required.
 
 This can be as simple as creating a single class:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 package echo;
  
@@ -102,7 +102,7 @@ echo/jaxws/EchoResponse.class
 
 Inspecting the WSDL reveals a service called _EchoService_:
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <service name='EchoService'>
  <port binding='tns:EchoBinding' name='EchoPort'>
@@ -113,7 +113,7 @@ Inspecting the WSDL reveals a service called _EchoService_:
 
 As expected, this service defines one operation, " _echo_":
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <portType name='Echo'>
  <operation name='echo' parameterOrder='echo'>
@@ -132,7 +132,7 @@ abstract contract for your service.
 Let's create a POJO endpoint for deployment on WildFly. A simple
 _web.xml_ needs to be created:
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <web-app xmlns="http://java.sun.com/xml/ns/j2ee"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -225,7 +225,7 @@ Examining the Service Endpoint Interface reveals annotations that are
 more explicit than in the class written by hand in the bottom-up
 example, however, these evaluate to the same contract:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 @WebService(name = "Echo", targetNamespace = "http://echo/")
 public interface Echo {
@@ -243,7 +243,7 @@ public interface Echo {
 The only missing piece (besides for packaging) is the implementation
 class, which can now be written, using the above interface.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 package echo;
  
@@ -285,7 +285,7 @@ file yourself, although you need to ensure that the path is correct.
 
 Offline version:
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <service name='EchoService'>
   <port binding='tns:EchoBinding' name='EchoPort'>
@@ -296,7 +296,7 @@ Offline version:
 
 Online version:
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <service name="EchoService">
   <port binding="tns:EchoBinding" name="EchoPort">
@@ -327,7 +327,7 @@ The one class that was not examined in the top-down section, was
 `EchoService.java`. Notice how it stores the location the WSDL was
 obtained from.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 @WebServiceClient(name = "EchoService", targetNamespace = "http://echo/", wsdlLocation = "http://localhost:8080/echo/Echo?wsdl")
 public class EchoService extends Service
@@ -382,7 +382,7 @@ URL version of the constructor to provide a new WSDL location.
 
 All that is left to do, is write and compile the client:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 import echo.*;
  
@@ -406,7 +406,7 @@ public class EchoClient
 It is easy to change the endpoint address of your operation at runtime,
 setting the _ENDPOINT_ADDRESS_PROPERTY_ as shown below:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 EchoService service = new EchoService();
       Echo echo = service.getEchoPort();

@@ -28,7 +28,7 @@ library directly.
 To launch the application client use the `appclient.sh` or
 `appclient.bat` script in the bin directory. For example:
 
-[source,bash]
+[source,options="nowrap"]
 ----
 ./appclient.sh --host=10.0.0.1 myear.ear#appClient.jar arg1
 ----
@@ -49,7 +49,7 @@ If you want to connect to more than one host or make use of the
 clustering functionality then you need to specify a
 jboss-ejb-client.properties file rather than a host:
 
-[source,bash]
+[source,options="nowrap"]
 ----
 ./appclient.sh --ejb-client-properties=my-jboss-ejb-client.properties myear.ear#appClient.jar arg1
 ----

@@ -22,7 +22,7 @@ deployment type, e.g. JAR, WAR, EAR, etc., with the exception of a
 subdeployment within an EAR. +
 e.g.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <singleton-deployment xmlns="urn:jboss:singleton-deployment:1.0" policy="foo"/>
 ----
@@ -36,7 +36,7 @@ Using a standalone descriptor is often preferable, since it may be
 overlaid onto an existing deployment archive. +
 e.g.
 
-[source]
+[source,options="nowrap"]
 ----
 deployment-overlay add --name=singleton-policy-foo --content=/META-INF/singleton-deployment.xml=/path/to/singleton-deployment.xml --deployments=my-app.jar --redeploy-affected
 ----

@@ -11,7 +11,7 @@ WildFly's default full-ha profile uses this mechanism for broadcast/discovery us
 
 To add this support to a profile that does not include it by default, use the following:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /subsystem=messaging-activemq/server=default/broadcast-group=bg-group1:add(jgroups-cluster=activemq-cluster,connectors=http-connector)
 [standalone@localhost:9990 /]/subsystem=messaging-activemq/server=default/broadcast-group=dg-group1:add(jgroups-cluster=activemq-cluster)
@@ -19,7 +19,7 @@ To add this support to a profile that does not include it by default, use the fo
 
 To segregate Artemis servers use a distinct membership, configure broadcast/discovery using a separate channel.  To do this, first create the channel resource:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /subsystem=jgroups/channel=messaging:add(stack=tcp)
 ----
@@ -27,7 +27,7 @@ To segregate Artemis servers use a distinct membership, configure broadcast/disc
 This creates a new JGroups channel resource based on the "tcp" protocol stack.
 Now create your broadcast/discovery groups using this channel:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /subsystem=messaging-activemq/server=default/broadcast-group=bg-group2:add(jgroups-channel=messaging, jgroups-cluster=activemq-cluster, connectors=http-connector)
 [standalone@localhost:9990 /] /subsystem=messaging-activemq/server=default/broadcast-group=dg-group2:add(jgroups-channel=messaging, jgroups-cluster=activemq-cluster)
@@ -39,7 +39,7 @@ Now create your broadcast/discovery groups using this channel:
 To broadcast identity to standalone messaging clients, you can additionally configure broadcast/discovery using multicast sockets.
 
 e.g.
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /socket-binding-group=standard-sockets/socket-binding=messaging(interface=private, multicast-address=230.0.0.4, multicast-port=45689)
 

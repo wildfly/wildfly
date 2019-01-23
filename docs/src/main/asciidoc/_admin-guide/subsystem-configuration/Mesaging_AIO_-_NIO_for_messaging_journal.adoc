@@ -55,7 +55,7 @@ that means that AIO isn't working properly on your system.
 
 To use NIO instead execute the following commnd using jboss-cli :
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=messaging-activemq/server=default:write-attribute(name=journal-type, value=NIO)
 ----
@@ -79,7 +79,7 @@ that means that AIO isn't working properly on your system.
 
 To use NIO instead execute the following commnd using jboss-cli :
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 /subsystem=messaging/hornetq-server=default:write-attribute(name=journal-type,value=NIO)
 ----

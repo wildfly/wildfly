@@ -5,7 +5,7 @@ The AJP listeners are child resources of the subsystem undertow. They
 are used with mod_jk, mod_proxy and mod_cluster of the Apache httpd
 front-end. Each listener does reference a particular socket binding:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9999 /] /subsystem=undertow/server=default-server:read-children-names(child-type=ajp-listener)
 {
@@ -29,7 +29,7 @@ front-end. Each listener does reference a particular socket binding:
 Creating a new `ajp-listener` requires you to declare a new
 `socket binding` first:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9999 /] /socket-binding-group=standard-sockets/socket-binding=ajp:add(port=8009)
 ----
@@ -37,7 +37,7 @@ Creating a new `ajp-listener` requires you to declare a new
 The newly created, unused socket binding can then be used to create a
 new connector configuration:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9999 /] /subsystem=undertow/server=default-server/ajp-listener=myListener:add(socket-binding=ajp, scheme=http, enabled=true)
 ----

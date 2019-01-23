@@ -3,7 +3,7 @@
 
 The _<authentication-client/>_ element can be added to the wildfly-config.xml configuration to define configuration in relation to authentication configuration for outbound connections and SSL configuration for outbound connections e.g.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 
@@ -31,7 +31,7 @@ The _<authentication-client />_ configuration can contain the following sections
 
 The <credential-stores />  element can be used to define individual named credential stores that can subsequently be used elsewhere in the configuration to reference stored credentials as an alternative to the credentials being embedded in the configuration.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 
@@ -60,7 +60,7 @@ The following child elements can also be added to configure the credential store
 
 e.g.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <attributes>
     <attribute name="..." value="..." />
@@ -74,7 +74,7 @@ The <attribute/> element can be repeated as many times as is required for the co
 
 The <protection-paramter-credentials /> element can contain one more more child elements, which of these are actually supported will depend on the credential store implementation: -
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <protection-parameter-credentials>
     <key-store-reference>...</key-store-reference>
@@ -94,7 +94,7 @@ The potential child elements of <protection-parameter-credentials /> are: -
 
 The overall structure of this element is: -
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <key-store-reference key-store-name="..." alias="...">
    <key-store-clear-password password="..." />
@@ -121,7 +121,7 @@ This structure is identical to the structure use in [<key-store-credential />|#k
 
 The full structure of this element is: -
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <oauth2-bearer-token token-endpoint-uri="...">
     <client-credentials client-id="..." client-secret="..." />
@@ -134,7 +134,7 @@ The full structure of this element is: -
 
 The <key-stores /> element can be used to define individual key-store definitions that can subsequently be referenced from alternative locations within the configuration.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 
@@ -170,7 +170,7 @@ Exactly one of the following elements must also be present to specify the protec
 [[key-store-credential]]
 The structure of the <key-store-credential /> element is:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <key-store-credential key-store-name="..." alias="...">
    <key-store-clear-password password="..." />
@@ -199,7 +199,7 @@ When either an authentication-configuration or an ssl-context is required the UR
 
 The rules to match <authentication-configuration /> instances are defined within the <authentication-rules /> element.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 
@@ -217,7 +217,7 @@ The rules to match <authentication-configuration /> instances are defined within
 
 The rules to match against the <ssl-context /> definitions are contains within the <ssl-context-rules /> element.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 
@@ -239,7 +239,7 @@ The rules applied so first match wins and not most specific match wins, to achie
 
 For both the <authentication-rules />  and the <ssl-context-rules /> the structure of the rules is identical other than one references an authentication configuration and the other references an SSLContext.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <rule use-configuration|use-ssl-context="...">
     <!-- At most one of the following two can be defined. -->
@@ -274,7 +274,7 @@ The individual match elements are: -
 
 The <authentication-configurations /> element contains named configurations that can then be matched from the <authentication-rules />
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 
@@ -329,7 +329,7 @@ The next two are mutually exclusive and can be used to set the name for authenti
 
 The content of this element is the same as documented for [<protection-parameter-credentials />|#client-credentials-type]
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <credentials>
     <key-store-reference>...</key-store-reference>
@@ -362,7 +362,7 @@ There are some limitations within this integration as the JDK will cache the aut
 
 The <ssl-contexts /> element holds individual names SSLContext definitions that can subsequently be matched by the  [<ssl-context-rules />|#Rules].
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 
@@ -392,7 +392,7 @@ The element <ssl-context /> is used to define a named configured SSLContext, eac
 
 The overall structure of this element is: -
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <key-store-ssl-certificate key-store-name="..." alias="..." provider-name="..." algorithm="...">
    <key-store-clear-password password="..." />
@@ -412,7 +412,7 @@ This structure is identical to the structure use in [<key-store-credential />|#k
 
 The following would be a cipher suite selector performing the default filtering.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <cipher-suite selector="DEFAULT" />
 ----
@@ -431,7 +431,7 @@ The following would be a cipher suite selector performing the default filtering.
 The _<providers />_ element is used to define how [java.security.Provider|https://docs.oracle.com/javase/8/docs/api/java/security/Provider.html] instances are located when required.  The other configuration sections of _<authentication-client />_ are independent of each other, the _<providers />_ configuration however applies to the current element and it's children unless overridden, this configuration can be specified in the following locations.
 
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 
@@ -467,7 +467,7 @@ If an individual <credential-store />, <authentication-configuration />, or <ssl
 
 The <providers /> element can be defined as: -
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <providers>
     <global />
@@ -482,7 +482,7 @@ Both the child elements are optional, can appear in any order and can be repeate
 
 Where no <provider /> configuration exists the default behaviour is the equivalent of: -
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <providers>
     <use-service-loader />

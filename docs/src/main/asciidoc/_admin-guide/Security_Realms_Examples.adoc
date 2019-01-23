@@ -18,7 +18,7 @@ realm you create for yourselves.
 The following example demonstrates an example configuration making use
 of Active Directory to verify the users username and password.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <management>
   <security-realms>
@@ -61,7 +61,7 @@ Open a terminal window in the folder \{
 
 `keytool -genkey -alias server -keyalg RSA -keystore server.keystore -validity 365`
 
-[source, java]
+[source,options="nowrap"]
 ----
 Enter keystore password:
 Re-enter new password:
@@ -86,7 +86,7 @@ purpose of this example I set the key password to ' `key_password`'.
 The following example shows how this newly created keystore will be
 referenced to enable SSL.
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <security-realm name="ManagementRealm">
   <server-identities>
@@ -111,7 +111,7 @@ To enable Client-Cert style authentication we just now need to add a
 `<truststore />` element to the `<authentication />` element referencing
 a trust store that has had the certificates or trusted clients imported.
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <security-realm name="ManagementRealm">
   <server-identities>

@@ -18,7 +18,7 @@ Guide]".
 The first thing to do after the CLI has started is to connect to a
 managed WildFly instance. This is done using the command _connect_, e.g.
 
-[source, java]
+[source,options="nowrap"]
 ----
 ./bin/jboss-cli.sh
 You are disconnected at the moment. Type 'connect' to connect to the server
@@ -38,7 +38,7 @@ WildFly CLI client.
 The host and the port of the server can be provided as an optional
 parameter, if the server is not listening on localhost:9990.
 
-[source, java]
+[source,options="nowrap"]
 ----
 ./bin/jboss-cli.sh
 You are disconnected at the moment. Type 'connect' to connect to the server
@@ -66,7 +66,7 @@ use the option _--commands_ (NB: the following examples are not displaying an
 exhaustive set of CLI commands, more and/or different commands could be available
 in your running CLI instance):
 
-[source, java]
+[source,options="nowrap"]
 ----
 [domain@localhost:9990 /] help --commands
 Commands available in the current context:
@@ -86,7 +86,7 @@ The help documentation of each command makes it clear if this two levels are ava
 
 Use Tab-completion to discover the set of commands and operations:
 
-[source, java]
+[source,options="nowrap"]
 ----
 help <TAB>
 ----
@@ -96,14 +96,14 @@ Examples
 
 * Display the help of the _patch_ command:
 
-[source, java]
+[source,options="nowrap"]
 ----
 help patch
 ----
 
 * Display the help of the _apply_ action of the _patch_ command:
 
-[source, java]
+[source,options="nowrap"]
 ----
 help patch apply
 ----
@@ -111,7 +111,7 @@ help patch apply
 * Display the description of the _elytron_ _key-store_ resource _add_ operation
 formatted as a command help content:
 
-[source, java]
+[source,options="nowrap"]
 ----
 help /subsystem=elytron/key-store=?:add
 ----
@@ -122,7 +122,7 @@ help /subsystem=elytron/key-store=?:add
 In order to efficiently edit commands, the CLI allows you to navigate the words
  and characters of a command using the keyboard.
 
-NB: Part of this navigation is platform dependent. 
+NB: Part of this navigation is platform dependent.
 
 === Go left (back) one word
 
@@ -167,7 +167,7 @@ CLI commands to be provided from a text file.
 For example the following command can be used to list all the current
 deployments
 
-[source,bash]
+[source,options="nowrap"]
 ----
 $ ./bin/jboss-cli.sh --connect --commands=ls\ deployment
 sample.war
@@ -177,7 +177,7 @@ business.jar
 The output can be combined with other shell commands for further
 processing, for example to find out what .war files are deployed:
 
-[source,bash]
+[source,options="nowrap"]
 ----
 $ ./bin/jboss-cli.sh --connect --commands=ls\ deployment | grep war
 sample.war
@@ -230,7 +230,7 @@ get, set and reset the command timeout.
 The command _command-timeout get_ displays the current timeout in
 seconds. A timeout of 0 means no timeout.
 
-[source, java]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] command-timeout get
 0
@@ -243,7 +243,7 @@ The command _command-timeout set_ update the timeout value to a number
 of seconds. If a timeout has been set via configuration (XML file or
 option), it is overridden by the _set_ action.
 
-[source, java]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] command-timeout set 10
 ----
@@ -256,7 +256,7 @@ timeout to its configuration value (XML file or option) or default value
 (0 second). If no configuration value is set, resetting to the
 configuration value sets the timeout to its default value (0 seconds).
 
-[source, java]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] command-timeout reset config
 [standalone@localhost:9990 /] command-timeout reset default
@@ -300,7 +300,7 @@ The formal specification for an operation request is:
 
 For example:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 /subsystem=logging/root-logger=ROOT:change-root-log-level(level=WARN)
 ----
@@ -316,14 +316,14 @@ construct a valid operation. Furthermore, Tab-completion does not propose
 parameters that are alternatives of parameters already present in the operation.
 
 For example:
-[source,java]
+[source,options="nowrap"]
 ----
 /deployment=myapp:add(<TAB>
 !  content*  enabled  runtime-name
 ----
 The parameter _content_ is required and completion advertises it with a '*' character.
 
-[source,java]
+[source,options="nowrap"]
 ----
 /deployment=myapp:add-content(content=[{<TAB>
 bytes*  hash*  input-stream-index*  target-path*  url*
@@ -332,7 +332,7 @@ _bytes_, _hash_, _input-stream-index_ and _url_ are required but also alternativ
 (only one of them can be set). As soon as one of these parameter has been set, the
 others are no longer proposed by completion.
 
-[source,java]
+[source,options="nowrap"]
 ----
 /deployment=myapp:add-content(content=[{url=myurl,<TAB>
 /deployment=myapp:add-content(content=[{url=myurl,target-path
@@ -354,7 +354,7 @@ not significant.
 Operation requests might not always have the address part or the
 parameters. E.g.
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 :read-resource
 ----
@@ -366,7 +366,7 @@ operations require one of the following prefixes:
 
 To execute an operation against the current node, e.g.
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 cd subsystem=logging
 :read-resource(recursive="true")
@@ -374,7 +374,7 @@ cd subsystem=logging
 
 To execute an operation against a child node of the current node, e.g.
 
-[source,bash]
+[source,options="nowrap"]
 ----
 cd subsystem=logging
 ./root-logger=ROOT:change-root-log-level(level=WARN)
@@ -382,7 +382,7 @@ cd subsystem=logging
 
 To execute an operation against the root node, e.g.
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 /:read-resource
 ----
@@ -412,7 +412,7 @@ logging subsystem) you can always query the model itself. For example,
 to read the operations supported by the logging subsystem resource on a
 standalone server:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 [[standalone@localhost:9990 /] /subsystem=logging:read-operation-names
 {
@@ -445,7 +445,7 @@ _set-root-logger_ and _remove-root-logger_.
 Further documentation about a resource or operation can be retrieved
 through the description:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /subsystem=logging:read-operation-description(name=change-root-log-level)
 {
@@ -521,7 +521,7 @@ The _<color-output>_ block is  used to configure the  colors of the six basic el
 - The color of the default prompt;
 - The color of the prompt when using `batch` and any of the workflow commands, `if`, `for` and `try`.
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <color-output>
     <enabled>true</enabled>
@@ -615,7 +615,7 @@ The batch mode is entered by executing command _batch_.
 
 You can execute a batch using the _run-batch_ command:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 / #] run-batch
 The batch executed successfully.
@@ -623,7 +623,7 @@ The batch executed successfully.
 
 Exit the batch edit mode without losing your changes:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 / #] holdback-batch
 [standalone@localhost:9990 /]
@@ -631,7 +631,7 @@ Exit the batch edit mode without losing your changes:
 
 Then activate it later on again:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] batch
 Re-activated batch
@@ -653,19 +653,19 @@ name=mytopic_)
 CLI has some operators that are similar to shell operators:
 
 * _>_ To redirect the output of a command/operation to a file:
-[source,java]
+[source,options="nowrap"]
 ----
 :read-resource > my-file.txt
 ----
 
 * _>>_ To redirect the output of a command/operation and append it at the end of a file:
-[source,java]
+[source,options="nowrap"]
 ----
 :read-resource >> my-file.txt
 ----
 
 * _|_ To redirect the output of a command/operation to the _grep_ command:
-[source,java]
+[source,options="nowrap"]
 ----
 :read-resource | grep undefined
 ----

@@ -84,7 +84,7 @@ them access to classes in `EAR/lib`, however they do not always have an
 automatic dependency on each other. This behaviour is controlled via the
 `ear-subdeployments-isolated` setting in the ee subsystem configuration:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:ee:1.0" >            
   <ear-subdeployments-isolated>false</ear-subdeployments-isolated>
@@ -199,7 +199,7 @@ your pom.xml:
 
 .pom.xml
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <build>
    ...
@@ -246,7 +246,7 @@ following XML:
 
 .standalone.xml/domain.xml
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:ee:1.0" >            
   <global-modules>
@@ -276,7 +276,7 @@ ear deployment is as follows:
 
 .jboss-deployment-structure.xml
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <jboss-deployment-structure>
   <!-- Make sub deployments isolated by default, so they cannot see each others classes without a Class-Path entry -->
@@ -360,7 +360,7 @@ them using jboss-deployment-structure.xml with system dependencies:
 
 .Using jboss-deployment-structure.xml to access JDK classes
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.2">
     <deployment>
@@ -390,7 +390,7 @@ module's module.xml file can tell you:
 
 .Example declaration of the jboss.api property
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <module xmlns="urn:jboss:module:1.5" name="com.google.guava">
     <properties>

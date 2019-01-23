@@ -105,7 +105,7 @@ Entities read outside of a transaction will be detached when the entity
 manager invocation completes. Example transaction-scoped persistence
 context is below.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 @Stateful  // will use container managed transactions
 public class CustomerManager {
@@ -131,7 +131,7 @@ multiple transactions and allows data modifications to be queued up
 during completion of next JTA transaction. The Container-managed extended persistence
 context can only be injected into a stateful session bean.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 @PersistenceContext(type = PersistenceContextType.EXTENDED, unitName = "inventoryPU")
 EntityManager em;
@@ -210,7 +210,7 @@ _______________________________________________________________________________
 JPA allows use of your (pojo) plain old Java class to represent a
 database table row.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 @PersistenceContext EntityManager em;
 Integer bomPk = getIndexKeyValue();
@@ -295,7 +295,7 @@ xmlns="urn:jboss:domain:logging:1.0">* and add the *org.jboss.as.jpa*
 category. You need to change the console-handler level from *INFO* to
 *TRACE*.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:logging:1.0">
      <console-handler name="CONSOLE">
@@ -321,7 +321,7 @@ category. You need to change the console-handler level from *INFO* to
 To see what is going on at the JDBC level, enable *jboss.jdbc.spy* TRACE
 and add spy="true" to the datasource.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 <datasource jndi-name="java:jboss/datasources/..." pool-name="..." enabled="true" spy="true">
 <logger category="jboss.jdbc.spy">
@@ -333,7 +333,7 @@ To troubleshoot issues with the Hibernate second level cache, try
 enabling trace for *org.hibernate.SQL + org.hibernate.cache.infinispan +
 org.infinispan:*
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:logging:1.0">
      <console-handler name="CONSOLE">
@@ -379,7 +379,7 @@ anything in addition. The Infinispan version that is included in
 WildFly is expected to work with the Hibernate version that is included
 with WildFly. Example persistence.xml settings:
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <?xml version="1.0" encoding="UTF-8"?><persistence xmlns="http://java.sun.com/xml/ns/persistence" version="1.0">
 <persistence-unit name="2lc_example_pu">
@@ -393,7 +393,7 @@ with WildFly. Example persistence.xml settings:
 Here is an example of enabling the second level cache for a Hibernate
 native API hibernate.cfg.xml file:
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <property name="hibernate.cache.region.factory_class" value="org.infinispan.hibernate.cache.v53.InfinispanRegionFactory"/>
 <property name="hibernate.cache.infinispan.shared" value="false"/>
@@ -420,7 +420,7 @@ second level cache.
 Here is an example of what the Hibernate cache settings may currently be
 in your standalone.xml:
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
  <cache-container name="hibernate" module="org.infinispan.hibernate-cache">
      <local-cache name="entity">
@@ -440,7 +440,7 @@ Below is an example of customizing the "entity", "immutable-entity",
 "local-query", "pending-puts", "timestamps" cache configuration may look
 like:
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
  <cache-container name="hibernate" module="org.infinispan.hibernate-cache" default-cache="immutable-entity">
     <local-cache name="entity">
@@ -471,7 +471,7 @@ like:
 
 Persistence.xml to use the above custom settings:
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <properties>
     <property name="hibernate.cache.use_second_level_cache" value="true"/>
@@ -497,7 +497,7 @@ the application. The JPA deployer will detect the presence of a
 persistence provider in the application and
 *jboss.as.jpa.providerModule* needs to be set to *application*.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <?xml version="1.0" encoding="UTF-8"?> +
 <persistence xmlns="http://java.sun.com/xml/ns/persistence"
@@ -521,7 +521,7 @@ modules/org/apache/openjpa/main/module.xml to include the same jar file
 names that you copied in. This will help you get your application that
 depends on OpenJPA, to deploy on WildFly.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
  <module xmlns="urn:jboss:module:1.1" name="org.apache.openjpa">
     <resources>
@@ -564,7 +564,7 @@ you happen to leave the EclipseLink version number in the jar name, the
 module.xml should reflect that. This will help you get your application
 that depends on EclipseLink, to deploy on WildFly.
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
  <module xmlns="urn:jboss:module:1.1" name="org.eclipse.persistence">
     <resources>
@@ -597,7 +597,7 @@ that depends on EclipseLink, to deploy on WildFly.
 You should then be able to deploy applications with persistence.xml that
 include;
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
 ----
@@ -633,7 +633,7 @@ You can inject a org.hibernate.Session and org.hibernate.SessionFactory
 directly, just as you can do with EntityManagers and
 EntityManagerFactorys.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -658,7 +658,7 @@ For details on the Hibernate 5.3 native API changes, review the https://github.c
 The Hibernate ORM 5.1 transformer is already deprecated, meaning it could be removed in the next release.
 For this reason, we made it easy to enable the transformer via either a system property or jboss-deployment-structure change.
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <jboss-deployment-structure>
     <deployment>
@@ -950,7 +950,7 @@ your application by setting the `jboss.entity.manager.factory.jndi.name`
 
 persistence.xml
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 <persistence version="2.0"
@@ -971,7 +971,7 @@ persistence.xml
 </persistence>
 ----
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 @Stateful
 public class ExampleSFSB {

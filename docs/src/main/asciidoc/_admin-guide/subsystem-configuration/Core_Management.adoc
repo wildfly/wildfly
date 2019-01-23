@@ -21,7 +21,7 @@ configure and deploy it using the core management subsystem.
 
 For example let's create a simple listener :
 
-[source, java]
+[source,java,options="nowrap"]
 ----
  public class SimpleListener implements ProcessStateListener {
  
@@ -99,7 +99,7 @@ For example to track the last 5 configuration changes let's active this
 
 Now we can list the last configuration changes :
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=core-management/service=configuration-changes:list-changes()
 {

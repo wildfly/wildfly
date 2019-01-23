@@ -39,7 +39,7 @@ looks like.
 [[client-code-relying-on-jndi.properties-in-classpath]]
 === Client code relying on jndi.properties in classpath
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 void doLookup() {
   // Create an InitialContext using the javax.naming.* API
@@ -61,7 +61,7 @@ the details of this lookup string in a while.
 Let's now see what the jndi.properties in our client classpath looks
 like:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 java.naming.factory.initial=org.jboss.naming.remote.client.InitialContextFactory
 java.naming.provider.url=http-remoting://localhost:8080
@@ -100,7 +100,7 @@ The JNDI API also allows you to pass these properties to the constructor
 of the InitialContext class (please check the javadoc of that class for
 more details). Let's quickly see what the code would look like:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 void doLookup() {
   Properties jndiProps = new Properties();
@@ -161,7 +161,7 @@ Note: The server side configurations for the remoting connector to allow
 documentation. The WildFly {wildflyVersion} documentation already has chapters on how
 to set that up.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 void doLookup() {
   Properties jndiProps = new Properties();
@@ -326,7 +326,7 @@ exposes the remote views of a EJB under the `java:jboss/exported/`
 namespace (although it isn't logged in the server logs). So assuming
 your server side application has the following stateless bean:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 package org.myapp.ejb;
  
@@ -388,7 +388,7 @@ application. The answer is _yes_! Let's quickly see the client code for
 invoking our `FooBean`. Again, let's just use " `peter`" and " `lois`"
 as username/pass for connecting to the remoting connector.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 void doBeanLookup() {
   ...
@@ -510,7 +510,7 @@ marshalling/unmarshalling etc... The easiest place where this
 optimization can be applied, is to the EJB lookup. Consider the
 following code (let's ignore how the context is created):
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 ctx.lookup("foo/bar");
 ----
@@ -534,7 +534,7 @@ passing the " `org.jboss.ejb.client.naming`" value for the
 
 Example:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 final Properties jndiProperties = new Properties();
 jndiProperties.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
@@ -581,7 +581,7 @@ That's exactly why the EJB client API project expects the JNDI name
 lookup string for stateful beans to include the " `?stateful`" string at
 the end of the JNDI name:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 context.lookup("ejb:myapp/myejbmodule//StatefulBean!org.myapp.ejb.Counter?stateful");
 ----

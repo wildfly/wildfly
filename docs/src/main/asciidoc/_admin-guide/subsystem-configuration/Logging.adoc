@@ -9,7 +9,7 @@ subsystem. It consists of four notable parts: `handler` configurations,
 logging profiles. Each logger does reference a handler (or set of
 handlers). Each handler declares the log format and output:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:logging:3.0">
    <console-handler name="CONSOLE" autoflush="true">
@@ -236,7 +236,7 @@ resource and off each `logging-profile` resource to list each log file.
 
 .CLI command and output
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /subsystem=logging:read-children-names(child-type=log-file)
 {
@@ -272,7 +272,7 @@ down.
 
 .CLI command and output
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /subsystem=logging/log-file=server.log:read-log-file
 {

@@ -9,7 +9,7 @@ WildFly uses named interface references throughout the configuration. A
 network interface is declared by specifying a logical name and a
 selection criteria for the physical interface:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] :read-children-names(child-type=interface)
 {
@@ -42,7 +42,7 @@ more characteristics that an interface or address must have in order to
 be a valid match. The selection criteria in this example are specific IP
 addresses for each interface:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <interfaces>
   <interface name="management">
@@ -56,7 +56,7 @@ addresses for each interface:
 
 Some other examples:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <interface name="global">
    <!-- Use the wildcard address -->
@@ -97,7 +97,7 @@ particular socket binding group when configuring server groups in a
 managed domain. Socket binding groups reference an interface by its
 logical name:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <socket-binding-group name="standard-sockets" default-interface="public">
   <socket-binding name="management-http" interface="management" port="${jboss.management.http.port:9990}"/>
@@ -181,7 +181,7 @@ valid IPv6 addresses are being used as interface values. For example, to
 change the default configuration in which the loopback interface is used
 as the primary interface, change from the IPv4 loopback address:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <interfaces>
   <interface name="management">
@@ -195,7 +195,7 @@ as the primary interface, change from the IPv4 loopback address:
 
 to the IPv6 loopback address:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <interfaces>
   <interface name="management">

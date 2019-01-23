@@ -26,7 +26,7 @@ _WS-Discovery_ is disabled on the application server. Below is an
 example of _jboss-webservices.xml_ descriptor to be used for enabling
 _WS-Discovery_:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <webservices xmlns="http://www.jboss.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   version="1.2" xsi:schemaLocation="http://www.jboss.com/xml/ns/javaee">

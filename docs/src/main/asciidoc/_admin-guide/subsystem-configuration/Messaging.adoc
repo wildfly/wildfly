@@ -20,7 +20,7 @@ You can add the extension to a configuration without it either by adding
 an `<extension module="org.wildfly.extension.messaging-activemq"/>`
 element to the xml or by using the following CLI operation:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /]/extension=org.wildfly.extension.messaging-activemq:add
 ----
@@ -148,7 +148,7 @@ on this `pooled-connection-factory` will be take into account by any EE
 application looking the default JMS provider under the JNDI name
 `java:comp/DefaultJMSConnectionFactory.`
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:messaging-activemq:1.0">
     <server name="default">
@@ -200,7 +200,7 @@ a remote client would look-up this \{\{kms-queue} using
 "java:jboss/exported/jms/queue/test", "java:jms/queue/test", or more
 simply "jms/queue/test":
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:messaging-activemq:1.0">
     <server name="default">
@@ -216,12 +216,12 @@ simply "jms/queue/test":
 
 JMS endpoints can easily be created through the CLI:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] jms-queue add --queue-address=myQueue --entries=queues/myQueue
 ----
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /subsystem=messaging-activemq/server=default/jms-queue=myQueue:read-resource
 {
@@ -237,7 +237,7 @@ JMS endpoints can easily be created through the CLI:
 A number of additional commands to maintain the JMS subsystem are
 available as well:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] jms-queue --help --commands
 add
@@ -253,7 +253,7 @@ Some of the settings are applied against an address wild card instead of
 a specific messaging destination. The dead letter queue and redelivery
 settings belong into this group:
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:messaging-activemq:1.0">
    <server name="default">
@@ -272,7 +272,7 @@ settings belong into this group:
 Security constraints are matched against an address wildcard, similar to
 the DLQ and redelivery settings.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:messaging-activemq:1.0">
    <server name="default">
@@ -296,7 +296,7 @@ then they are authorized to perform specific functions based on their
 role(s) and the `security-settings` described above. This domain can be
 changed by using the `security-domain`, e.g.:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:messaging-activemq:1.0">
    <server name="default">
@@ -314,13 +314,13 @@ To use an Elytron security domain:
 
 . Undefine the legacy security domain.
 +
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=messaging-activemq/server=default:undefine-attribute(name=security-domain)
 ----
 . Set an Elytron security domain.
 +
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=messaging-activemq/server=default:write-attribute(name=elytron-domain, value=myElytronSecurityDomain)
 ----
@@ -342,7 +342,7 @@ Artemis nodes in the cluster.
 If you do not change the default value of <cluster-password>, Artemis
 will fail to authenticate with the error:
 
-[source]
+[source,options="nowrap"]
 ----
 HQ224018: Failed to create session: HornetQExceptionerrorType=CLUSTER_SECURITY_EXCEPTION message=HQ119099: Unable to authenticate cluster user: HORNETQ.CLUSTER.ADMIN.USER
 ----
@@ -362,7 +362,7 @@ the command line.
 Starting with WildFly {wildflyVersion}, you have the ability to deploy a -jms.xml file
 defining JMS destinations, e.g.:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 <messaging-deployment xmlns="urn:jboss:messaging-activemq-deployment:1.0">
@@ -420,7 +420,7 @@ module:
 
 in JBOSS_HOME/modules, we create the layout:
 
-[source]
+[source,options="nowrap"]
 ----
 modules/
 `-- org
@@ -433,7 +433,7 @@ modules/
 
 We define the module in `module.xml`:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 <module xmlns="urn:jboss:module:1.1" name="org.acmemq">
@@ -469,7 +469,7 @@ We define the module in `module.xml`:
 A JMS bridge is defined inside a `jms-bridge` section of the
 `messaging-activemq` subsystem in the XML configuration files.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:messaging-activemq:1.0">
    <jms-bridge name="myBridge" module="org.acmemq">
@@ -515,7 +515,7 @@ above).
 A JMS Bridge can also be managed using the WildFly command line
 interface:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /subsystem=messaging/jms-bridge=myBridge/:add(module="org.acmemq",
       source-destination="sourceQ",
@@ -538,7 +538,7 @@ interface:
 You can also see the complete JMS Bridge resource description from the
 CLI:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /subsystem=messaging/jms-bridge=*/:read-resource-description
 {
@@ -576,7 +576,7 @@ http://activemq.apache.org/artemis/docs.html
 
 You can configure the disk space usage of the journal by using the `global-max-disk-usage` attribute, thus blocking the paging and processing of new messages until some disk space is available.
 This is done from the CLI:
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /subsystem=messaging-activemq/server=default:write-attribute(name=global-max-disk-usage, value=70)
 {
@@ -591,7 +591,7 @@ You can define at which frequency the disk usage is checked using the `disk-scan
 
 In the same way configure the maximal memory affected to processing messages by using the `global-max-memory-size` attribute, thus blocking the processing of new messages until some memory space is available.
 This is done from the CLI:
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /subsystem=messaging-activemq/server=default:write-attribute(name=global-max-memory-size, value=960000000)
 {

@@ -7,7 +7,7 @@ subsystem.
 A complete example of the config is shown below, with a full explanation
 of each
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:ejb3:1.2">
   <session-bean>
@@ -212,7 +212,7 @@ configuration in the jboss-ejb-client.xml as shown below.
 To configure a caller/client use pass by reference, you configure your
 top level deployment with a META-INF/jboss-ejb-client.xml containing:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <jboss-ejb-client xmlns="urn:jboss:ejb-client:1.0">
     <client-context>

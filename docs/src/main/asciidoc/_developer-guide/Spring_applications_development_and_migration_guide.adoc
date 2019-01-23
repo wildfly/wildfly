@@ -68,7 +68,7 @@ In order to use the server-deployed persistence units from within
 Spring, either the persistence context or the persistence unit need to
 be registered in JNDI via web.xml as follows:
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <persistence-context-ref>
     <persistence-context-ref-name>persistence/petclinic-em</persistence-unit-ref-name>
@@ -78,7 +78,7 @@ be registered in JNDI via web.xml as follows:
 
 or, respectively:
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <persistence-unit-ref>
     <persistence-unit-ref-name>persistence/petclinic-emf</persistence-unit-ref-name>
@@ -89,7 +89,7 @@ or, respectively:
 When doing so, the persistence context or persistence unit are available
 to be looked up in JNDI, as follows:
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <jee:jndi-lookup id="entityManager" jndi-name="java:comp/env/persistence/petclinic-em" 
             expected-type="javax.persistence.EntityManager"/>
@@ -97,7 +97,7 @@ to be looked up in JNDI, as follows:
 
 or
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <jee:jndi-lookup id="entityManagerFactory" jndi-name="java:comp/env/persistence/petclinic-emf" 
             expected-type="javax.persistence.EntityManagerFactory"/>
@@ -140,7 +140,7 @@ bean class.
 Assuming that the persistence unit is in the
 META-INF/jpa-persistence.xml, the corresponding definition can be:
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean"> 
        <property name="persistenceXmlLocation" value="classpath*:META-INF/jpa-persistence.xml"/> 
@@ -164,7 +164,7 @@ the deployment's list of dependencies. In order to do so, include a
 META-INF/jboss-deployment-structure.xml or, for web applications,
 WEB-INF/jboss-deployment-structure.xml with the following content:
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.0">
   <deployment>

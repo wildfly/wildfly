@@ -24,7 +24,7 @@ In order to use clustered timers it is necessary to add a database
 backed timer store. This can be done from the CLI with the following
 command:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 /subsystem=ejb3/service=timer-service/database-data-store=my-clustered-store:add(allow-execution=true, datasource-jndi-name='java:/MyDatasource', refresh-interval=60000, database='postgresql', partition='mypartition')
 ----
@@ -79,7 +79,7 @@ database).
 It is possible to use the data store as default for all applications by
 changing the default-data-store within the ejb3 subsystem:
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
     <timer-service thread-pool-name="timer" default-data-store="clustered-store">
         <data-stores>
@@ -92,7 +92,7 @@ Another option is to use a separate data store for specific
 applications, all that is required is to set the timer data store name
 in jboss-ejb3.xml:
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <?xml version="1.1" encoding="UTF-8"?>
 <jboss:ejb-jar xmlns:jboss="http://www.jboss.com/xml/ns/javaee"
@@ -120,7 +120,7 @@ timeout for every timer is knows about. When this timeout expires then
 this node attempts to 'lock' the timer, by updating its state to
 running. The query this executes looks like:
 
-[source,xml]
+[source,options="nowrap"]
 ----
 UPDATE JBOSS_EJB_TIMER SET TIMER_STATE=? WHERE ID=? AND TIMER_STATE<>? AND NEXT_DATE=?;
 ----

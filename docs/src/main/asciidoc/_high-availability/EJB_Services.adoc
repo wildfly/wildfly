@@ -101,7 +101,7 @@ the clustered nodes.
 Note that you have to configure the _ejb_ cluster in the
 jboss-ejb-client.properties configuration file, like so:
 
-[source]
+[source,options="nowrap"]
 ----
 remote.clusters=ejb
 remote.cluster.ejb.connect.options.org.xnio.Options.SASL_POLICY_NOANONYMOUS=false

@@ -18,7 +18,7 @@ policy you want to install to the application server) you must first
 disable JACC in legacy security subsystem. For that, please execute the
 following CLI command:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=security:write-attribute(name=initialize-jacc, value=false)
 ----
@@ -34,7 +34,7 @@ Elytron subsystem provides a built-in policy provider based on JACC
 specification. To create the policy provider you can execute a CLI
 command as follows:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /subsystem=elytron/policy=jacc:add(jacc-policy={})
 ----
@@ -42,7 +42,7 @@ command as follows:
 After executing the command above, please reload the server
 configuration as follows:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] reload
 ----
@@ -53,7 +53,7 @@ configuration as follows:
 Once JACC Policy Provider is defined you can enable JACC to web
 deployments by executing the following command:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /subsystem=undertow/application-security-domain=other:add(http-authentication-factory=application-http-authentication,enable-jacc=true)
 ----
@@ -63,7 +63,7 @@ none is provided in *jboss-web.xml.* In case you already have a
 *application-security-domain* defined and just want to enable JACC you
 can execute a command as follows:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /subsystem=undertow/application-security-domain=my-security-domain:write-attribute(name=enable-jacc,value=true)
 ----
@@ -74,7 +74,7 @@ can execute a command as follows:
 Once JACC Policy Provider is defined you can enable JACC to EJB
 deployments by executing the following command:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /subsystem=ejb3/application-security-domain=other:add(security-domain=ApplicationDomain,enable-jacc=true)
 ----
@@ -83,7 +83,7 @@ The command above defines a default security domain for EJBs. In case
 you already have a *application-security-domain *defined and just want
 to enable JACC you can execute a command as follows:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /subsystem=ejb3/application-security-domain=my-security-domain:write-attribute(name=enable-jacc,value=true)
 ----

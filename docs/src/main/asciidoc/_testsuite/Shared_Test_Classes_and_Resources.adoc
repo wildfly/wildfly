@@ -24,7 +24,7 @@ To share component's test classes with some module in testsuite, you
 don't need to split to submodules. 
 You can create a jar with classifier using this:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <plugin> 
     <groupId>org.apache.maven.plugins</groupId>
@@ -42,7 +42,7 @@ You can create a jar with classifier using this:
 This creates a jar with classifier "tests", so you can add it as
 dependency to a testsuite module:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
     <dependency>
         <groupId>org.wildfly</groupId>

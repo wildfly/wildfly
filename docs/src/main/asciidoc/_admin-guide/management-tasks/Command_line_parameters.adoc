@@ -13,7 +13,7 @@ calling script.
 To set a system property, pass its new value using the standard jvm
 `-Dkey=value` options:
 
-[source,bash]
+[source,options="nowrap"]
 ----
 $JBOSS_HOME/bin/standalone.sh -Djboss.home.dir=some/location/wildFly \
     -Djboss.server.config.dir=some/location/wildFly/custom-standalone
@@ -27,7 +27,7 @@ Instead of passing the parameters directly, you can put them into a
 properties file, and pass the properties file to the script, as in the
 two examples below.
 
-[source,bash]
+[source,options="nowrap"]
 ----
 $JBOSS_HOME/bin/domain.sh --properties=/some/location/jboss.properties
 $JBOSS_HOME/bin/domain.sh -P=/some/location/jboss.properties
@@ -46,7 +46,7 @@ or the Microsoft Windows scripts `domain.bat` or `standalone.bat`.
 The properties file is a standard Java property file containing
 `key=value` pairs:
 
-[source,bash]
+[source,options="nowrap"]
 ----
 jboss.home.dir=/some/location/wildFly
 jboss.domain.config.dir=/some/location/wildFly/custom-domain
@@ -143,7 +143,7 @@ launch scripts is
 
 For example:
 
-[source,bash]
+[source,options="nowrap"]
 ----
 $JBOSS_HOME/bin/standalone.sh --server-config=standalone-ha.xml
 ----
@@ -157,7 +157,7 @@ If the parameter name is a single character, it is prefixed by a single
 
 For example:
 
-[source,bash]
+[source,options="nowrap"]
 ----
 $JBOSS_HOME/bin/standalone.sh -P=/some/location/jboss.properties
 ----
@@ -316,7 +316,7 @@ Bindings] for further information on these elements.) The standard
 configurations that ship with WildFly includes two interface
 configurations:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <interfaces>
     <interface name="management">
@@ -345,7 +345,7 @@ _If your interface configurations match those shown above_, using this
 as your launch command causes all sockets associated with interface
 named "public" to be bound to `192.168.100.10`.
 
-[source,bash]
+[source,options="nowrap"]
 ----
 $JBOSS_HOME/bin/standalone.sh -b=192.168.100.10
 ----
@@ -393,7 +393,7 @@ launch command will have no effect.
 For example, this perfectly valid setting for the "public" interface
 causes `-b` to have no effect on the "public" interface:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <interface name="public">
    <nic name="eth0"/>
@@ -419,7 +419,7 @@ Bindings] for further information on these elements.) The standard HA
 configurations that ship with WildFly include two socket binding
 configurations that use a default multicast address:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <socket-binding name="jgroups-mping" port="0" multicast-address="${jboss.default.multicast.address:230.0.0.4}" multicast-port="45700"/>
 <socket-binding name="jgroups-udp" port="55200" multicast-address="${jboss.default.multicast.address:230.0.0.4}" multicast-port="45688"/>

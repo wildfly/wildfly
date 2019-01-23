@@ -42,7 +42,7 @@ The ActAs web service provider's WSDL is a clone of the ws-provider's
 WSDL. The wsp:Policy section is the same. There are changes to the
 service endpoint, targetNamespace, portType, binding name, and service.
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <definitions targetNamespace="http://www.jboss.org/jbossws/ws-extensions/actaswssecuritypolicy" name="ActAsService"
@@ -104,7 +104,7 @@ service endpoint, targetNamespace, portType, binding name, and service.
 The web service provider interface class, ActAsServiceIface, is a simple
 web service definition.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.actas;
  
@@ -135,7 +135,7 @@ Crypto Merlin implementation.
 ActAsServiceImpl is calling ServiceImpl acting on behalf of the user.
 Method setupService performs the requisite configuration setup.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.actas;
  
@@ -237,7 +237,7 @@ class enables CXF to retrieve the password of the user name to use for
 the message signature. This class has been revised to return the
 passwords for this service, myactaskey and the "actas" user, alice.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.actas;
  
@@ -269,7 +269,7 @@ The ActAs and OnBeholdOf sub-elements of the RequestSecurityToken are
 required to be defined as WSSE Username Tokens. This utility generates
 the properly formated element.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.shared;
  
@@ -487,9 +487,9 @@ provided in order to validate the contents of the OnBehalfOf claims and
 class, UsernameTokenDelegationHandler to be provided in order to process
 the token delegation request of the ActAs on OnBehalfOf user.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
- package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.sts;
+package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.sts;
  
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -577,7 +577,7 @@ public class SampleSTS extends SecurityTokenServiceProvider
 The user, alice, and corresponding password was required to be added for
 the ActAs example.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.samples.wsse.policy.trust.sts;
  
@@ -630,9 +630,9 @@ Basic Scenario client]. The use of ActAs is configured through the props
 map using the SecurityConstants.STS_TOKEN_ACT_AS key. The alternative is
 to use the STSClient.setActAs method.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
- final QName serviceName = new QName("http://www.jboss.org/jbossws/ws-extensions/actaswssecuritypolicy", "ActAsService");
+final QName serviceName = new QName("http://www.jboss.org/jbossws/ws-extensions/actaswssecuritypolicy", "ActAsService");
 final URL wsdlURL = new URL(serviceURL + "?wsdl");
 Service service = Service.create(wsdlURL, serviceName);
 ActAsServiceIface proxy = (ActAsServiceIface) service.getPort(ActAsServiceIface.class);

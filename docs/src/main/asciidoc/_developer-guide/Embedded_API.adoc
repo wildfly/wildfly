@@ -26,7 +26,7 @@ can be configured in admin-only mode or fully started and applications can be de
 === Examples
 
 .Simple Example
-[source,java]
+[source,java,options="nowrap"]
 ----
 final StandaloneServer server = EmbeddedProcessFactory.createStandaloneServer(Configuration.Builder.of(jbossHome).build());
 server.start();
@@ -48,7 +48,7 @@ try {
 ----
 
 .Server in admin-only Example
-[source,java]
+[source,java,options="nowrap"]
 ----
 final StandaloneServer server = EmbeddedProcessFactory.createStandaloneServer(
     Configuration.Builder.of(jbossHome)
@@ -73,7 +73,7 @@ try {
 ----
 
 .log4j2 Hint
-[source,java]
+[source,java,options="nowrap"]
 ----
 final StandaloneServer server = EmbeddedProcessFactory.createStandaloneServer(Configuration.Builder.of(jbossHome)
         .setLoggerHint(Configuration.LoggerHint.LOG4J2)
@@ -106,7 +106,7 @@ management operations.
 === Example
 
 .Simple Example
-[source,java]
+[source,java,options="nowrap"]
 ----
 final HostController server = EmbeddedProcessFactory.createHostController(Configuration.Builder.of(jbossHome).build());
 server.start();

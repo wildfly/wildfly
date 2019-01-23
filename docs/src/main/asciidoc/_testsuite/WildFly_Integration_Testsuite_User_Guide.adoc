@@ -113,7 +113,7 @@ run the specified module _only_.
 [[output-to-console]]
 === Output to console
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 -DtestLogToFile
 ----
@@ -138,7 +138,7 @@ and run testsuite, use `-DskipTests -Dts.skipTests=false`.
 Unfortunatelly, no math can be done in Maven, so instead of applying a
 timeout ratio, you need to specify timeout manually for Surefire.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 -Dsurefire.forked.process.timeout=900
 ----
@@ -153,7 +153,7 @@ Currently we have five different ratios. Later, it could be replaced
 with just one generic, one for database and one for deployment
 operations.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 -Dtimeout.ratio.fsio=100
 -Dtimeout.ratio.netio=100
@@ -205,7 +205,7 @@ AS into submodules to run the tests against.
 For example, you might want to run the testsuite against AS located in
 `/opt/wildfly-8` :
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 ./integration-tests.sh -DallTests -Djboss.dist=/opt/wildfly-8
 ----
@@ -247,7 +247,7 @@ The build (unlike running testsuite) may be done offline. +
 The recommended way of configuring is to use special settings.xml, not
 your local one (typically in .m2/settings.xml).
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
    <mirror>
       <id>eap6-mirror-setting</id>
@@ -263,7 +263,7 @@ your local one (typically in .m2/settings.xml).
 \2) Build EAP. You won't use the resulting EAP build, though. The
 purpose is to get the artifacts which the testsuite depends on.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 mvn clean install -s settings.xml -Dmaven.repo.local=local-repo-eap
 ----
@@ -271,7 +271,7 @@ mvn clean install -s settings.xml -Dmaven.repo.local=local-repo-eap
 \3) Run the testsuite. Assuming that EAP is located in `/opt/eap6`, you
 would run:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 ./integration-tests.sh -DallTests -Djboss.dist=/opt/eap6
 ----
@@ -304,7 +304,7 @@ only).
 [[examples-1]]
 ==== Examples
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 ./integration-tests.sh install -DdebugClient -Ddebug.port.surefire=4040
  
@@ -316,7 +316,7 @@ only).
 Listening for transport dt_socket at address: 4040
 ----
 
-[source, bash]
+[source,options="nowrap"]
 ----
 ./integration-tests.sh install -DdebugClient -Ddebug.port.surefire
  
@@ -328,12 +328,12 @@ Listening for transport dt_socket at address: 4040
 Listening for transport dt_socket at address: 5050
 ----
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 ./integration-tests.sh install -Ddebug
 ----
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 ./integration-tests.sh install -Ddebug -Das.debug.port=5005
 ----
@@ -357,7 +357,7 @@ started. In that case, you need to attach the debugger multiple times.
 To run with different database, specify the `-Dds` and use these
 properties (with the following defaults):
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 -Dds.jdbc.driver=
 -Dds.jdbc.driver.version=
@@ -395,7 +395,7 @@ jar._
 For WildFly continuous integration, there are some predefined values for
 some of databases, which can be set using:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 -Dds.db=<database-identifier>
 ----
@@ -444,7 +444,7 @@ properties. Whole set is included in all server startup parameters.
 
 Example:
 
-[source]
+[source,options="nowrap"]
 ----
 ./integration-tests.sh clean install -Dintegration.module -DallTests \
 \"-Dsecurity.manager.other=-Djava.security.manager \
@@ -464,7 +464,7 @@ simply run the testsuite, which will create Surefire XML files.
 Creation of the reports is bound to the `site` Maven phase, so it must
 be run separatedly afterwards. Use one of these:
 
-[source, bash]
+[source,options="nowrap"]
 ----
 ./integration-tests.sh site
 cd testsuite; mvn site
@@ -494,7 +494,7 @@ target/classes.
 [[usage-integration-testsuite]]
 ==== Usage
 
-[source, bash]
+[source,options="nowrap"]
 ----
 ./build.sh clean install -DskipTests
 ./integration-tests.sh clean install -DallTests -Dcoverage
@@ -503,7 +503,7 @@ target/classes.
 
 Alternative:
 
-[source, bash]
+[source,options="nowrap"]
 ----
 mvn clean install -DskipTests
 mvn -rf testsuite clean install -DallTests -Dcoverage
@@ -523,7 +523,7 @@ To have most stable build process, it should start with:
 
 To use , you may use these commands:
 
-[source]
+[source,options="nowrap"]
 ----
 mvn clean install -DskipTests -DallTests  ## ...to clean all testsuite modules.
 mvn dependency:purge-local-repository build-helper:remove-project-artifact -Dbuildhelper.removeAll
@@ -532,7 +532,7 @@ mvn dependency:purge-local-repository build-helper:remove-project-artifact -Dbui
 In case the build happens in a shared environment (e.g. network disk),
 it's recommended to use local repository:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 cp /home/hudson/.m2/settings.xml .
 sed "s|<settings>|<settings><localRepository>/home/ozizka/hudson-repos/$JOBNAME</localRepository>|" -i settings.xml
@@ -540,7 +540,7 @@ sed "s|<settings>|<settings><localRepository>/home/ozizka/hudson-repos/$JOBNAME<
 
 Or:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 mvn clean install ... -Dmaven.repo.local=localrepo
 ----

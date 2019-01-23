@@ -18,7 +18,7 @@ every layer.
 
 Let's take a look at the JVM declaration for a server group:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <server-groups>
        <server-group name="main-server-group" profile="default">
@@ -43,7 +43,7 @@ size of `64m` and a maximum heap size of `512m`. Any server that belongs
 to this group will inherit these settings. You can change these settings
 for the group as a whole, or a specific server or host:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <servers>
        <server name="server-one" group="main-server-group" auto-start="true">
@@ -67,7 +67,7 @@ In this case, _server-two_, belongs to the _main-server-group_ and
 inherits the JVM settings named _default_, but declares a lower maximum
 heap size.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [domain@localhost:9999 /] /host=local/server-config=server-two/jvm=default:read-resource
 {

@@ -73,7 +73,7 @@ First we should download WildFly from the http://wildfly.org/downloads/[WildFly 
 
 Then I unzipped the package to master and try to make a test run:
 
-[source, bash, subs="verbatim,attributes"]
+[source,subs="verbatim,attributes"]
 ----
 unzip wildfly-{wildflyVersion}.0.0.Final.zip
 cd wildfly-{wildflyVersion}.0.0.Final/bin
@@ -83,7 +83,7 @@ cd wildfly-{wildflyVersion}.0.0.Final/bin
 If everything ok we should see WildFly successfully startup in domain
 mode:
 
-[source, bash, subs="verbatim,attributes"]
+[source,subs="verbatim,attributes"]
 ----
 wildfly-{wildflyVersion}.0.0.Final/bin$ ./domain.sh
 =========================================================================
@@ -117,14 +117,14 @@ domain mode. And we will configure master to be the domain controller.
 
 First open the host.xml in master for editing:
 
-[source, bash]
+[source,options="nowrap"]
 ----
 vi domain/configuration/host.xml
 ----
 
 The default settings for interface in this file is like:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <interfaces>
     <interface name="management">
@@ -145,7 +145,7 @@ accessed by non-local HTTP, and the unsecured interface allows remote
 RMI access. My master's ip address is 10.211.55.7, so I change the
 config to:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <interfaces>
     <interface name="management"
@@ -166,7 +166,7 @@ config to:
 Now we will setup interfaces on slave. Let's edit host.xml. Similar to
 the steps on master, open host.xml first:
 
-[source, bash]
+[source,options="nowrap"]
 ----
 vi domain/configuration/host.xml
 ----
@@ -175,14 +175,14 @@ The configuration we'll use on slave is a little bit different, because
 we need to let slave connect to master. First we need to set the
 hostname. We change the name property from:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <host name="master" xmlns="urn:jboss:domain:3.0">
 ----
 
 to:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <host name="slave" xmlns="urn:jboss:domain:3.0">
 ----
@@ -190,7 +190,7 @@ to:
 Then we need to modify domain-controller section so slave can connect to
 master's management port:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <domain-controller>
    <remote protocol="remote" host="10.211.55.7" port="9999" />
@@ -201,12 +201,12 @@ As we know, 10.211.55.7 is the ip address of master.
 You may use discovery options to define multiple mechanisms to connect
 to the remote domain controller :
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <domain-controller>
  <remote security-realm="ManagementRealm" >
    <discovery-options>
-     <static-discovery name="master-native" protocol="remote"  host="10.211.55.7" port=9999" />
+     <static-discovery name="master-native" protocol="remote"  host="10.211.55.7" port="9999" />
      <static-discovery name="master-https" protocol="https-remoting" host="10.211.55.7" port="9993" security-realm="ManagementRealm"/>
      <static-discovery name="master-http" protocol="http-remoting" host="10.211.55.7" port="9990" />
    </discovery-options>
@@ -217,7 +217,7 @@ to the remote domain controller :
 Finally, we also need to configure interfaces section and expose the
 management ports to public address:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <interfaces>
     <interface name="management">
@@ -248,7 +248,7 @@ you need to enable the firewall and allow access to the following ports:
 If you start WildFly on both master and slave now, you will see the
 slave cannot be started with following error:
 
-[source]
+[source,options="nowrap"]
 ----
 [Host Controller] 20:31:24,575 ERROR [org.jboss.remoting.remote] (Remoting "endpoint" read-1) JBREM000200: Remote connection failed: javax.security.sasl.SaslException: Authentication failed: all available authentication mechanisms failed
 [Host Controller] 20:31:24,579 WARN  [org.jboss.as.host.controller] (Controller Boot Thread) JBAS010900: Could not connect to remote domain controller 10.211.55.7:9999
@@ -265,7 +265,7 @@ In bin directory there is a script called add-user.sh, we'll use it to
 add new users to the properties file used for domain management
 authentication:
 
-[source, bash, subs="verbatim,attributes"]
+[source,subs="verbatim,attributes"]
 ----
 ./add-user.sh
  
@@ -289,7 +289,7 @@ Added user 'admin' to file '/home/weli/projs/wildfly-{wildflyVersion}.0.0.Final/
 As shown above, we have created a user named 'admin' and its password is
 'passw0rd!'. Then we add another user called 'slave':
 
-[source, bash, subs="verbatim,attributes"]
+[source,subs="verbatim,attributes"]
 ----
 ./add-user.sh
  
@@ -325,7 +325,7 @@ choose 'Management User' type for both 'admin' and 'slave' account.
 In slave we need to configure host.xml for authentication. We should
 change the security-realms section as following:
 
-[source, java]
+[source,xml,options="nowrap"]
 ----
 <security-realms>
    <security-realm name="ManagementRealm">
@@ -352,7 +352,7 @@ such as the one at http://www.webutils.pl/index.php?idx=base64.
 Then in domain controller section we also need to add security-realm
 property:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <domain-controller>
    <remote protocol="remote" host="10.211.55.7" port="9999" username="slave" security-realm="ManagementRealm"  />
@@ -369,7 +369,7 @@ Now everything is set for the two hosts to run in domain mode. Let's
 start them by running domain.sh on both hosts. If everything goes fine,
 we could see from the log on master:
 
-[source, java]
+[source,options="nowrap"]
 ----
 [Host Controller] 21:30:52,042 INFO  [org.jboss.as.domain] (management-handler-threads - 1) JBAS010918: Registered remote slave host slave
 ----
@@ -383,14 +383,14 @@ domain mode now as expected. Hurrah!
 Now we can deploy a demo project into the domain. I have created a
 simple project located at:
 
-[source, java]
+[source,options="nowrap"]
 ----
 https://github.com/liweinan/cluster-demo
 ----
 
 We can use git command to fetch a copy of the demo:
 
-[source, java]
+[source,options="nowrap"]
 ----
 git clone git://github.com/liweinan/cluster-demo.git
 ----
@@ -398,7 +398,7 @@ git clone git://github.com/liweinan/cluster-demo.git
 In this demo project we have a very simple web application. In web.xml
 we've enabled session replication by adding following entry:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <distributable/>
 ----
@@ -406,7 +406,7 @@ we've enabled session replication by adding following entry:
 And it contains a jsp page called put.jsp which will put current time to
 a session entry called 'current.time':
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 <%
     session.setAttribute("current.time", new java.util.Date());
@@ -415,7 +415,7 @@ a session entry called 'current.time':
 
 Then we could fetch this value from get.jsp:
 
-[source, java]
+[source,options="nowrap"]
 ----
 The time is <%= session.getAttribute("current.time") %>
 ----
@@ -430,7 +430,7 @@ one later.
 Let's go back to this demo project. Now we need to create a war from it.
 In the project directory, run the following command to get the war:
 
-[source]
+[source,options="nowrap"]
 ----
 mvn package
 ----
@@ -439,7 +439,7 @@ It will generate cluster-demo.war. Then we need to deploy the war into
 domain. First we should access the http management console on
 master(Because master is acting as domain controller):
 
-[source]
+[source,options="nowrap"]
 ----
 http://10.211.55.7:9990
 ----
@@ -462,7 +462,7 @@ belongs to other-server-group.
 All these servers and server groups are set in domain.xml on master as7.
 What we are interested in is the 'other-server-group' in domain.xml:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <server-group name="other-server-group" profile="ha">
    <jvm name="default">
@@ -482,14 +482,14 @@ to 'other-server-group', so 'server-three' is our choice.
 
 In newer version of WildFly, the profile 'ha' changes to 'full-ha':
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <server-group name="other-server-group" profile="full-ha">
 ----
 
 Let's go back to domain controller's management console:
 
-[source]
+[source,options="nowrap"]
 ----
 http://10.211.55.7:9990
 ----
@@ -538,14 +538,14 @@ power of domain management.
 Now let's verify this, trying to access cluster-demo from both master
 and slave, and they should all work now:
 
-[source]
+[source,options="nowrap"]
 ----
 http://10.211.55.7:8330/cluster-demo/
 ----
 
 image:clustering/http---10.211.55.7-8330-cluster-demo-.png[images/clustering/http---10.211.55.7-8330-cluster-demo-.png]
 
-[source]
+[source,options="nowrap"]
 ----
 http://10.211.55.2:8330/cluster-demo/
 ----
@@ -561,7 +561,7 @@ establish a cluster icon:smile-o[role="yellow"]
 Why is the port number 8330 instead of 8080? Please check the settings
 in host.xml on both master and slave:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <server name="server-three" group="other-server-group" auto-start="false">
     <!-- server-three avoids port conflicts by incrementing the ports in
@@ -576,7 +576,7 @@ Now we quit the WildFly process on both master and slave. We have some
 work left on host.xml configurations. Open the host.xml of master, and
 do some modifications the servers section from:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <server name="server-three" group="other-server-group" auto-start="false">
     <!-- server-three avoids port conflicts by incrementing the ports in
@@ -587,7 +587,7 @@ do some modifications the servers section from:
 
 to:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <server name="server-three" group="other-server-group" auto-start="true">
     <!-- server-three avoids port conflicts by incrementing the ports in
@@ -600,7 +600,7 @@ We've set auto-start to true so we don't need to enable it in management
 console each time WildFly restart. Now open slave's host.xml, and modify
 the server-three section:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <server name="server-three-slave" group="other-server-group" auto-start="true">
     <!-- server-three avoids port conflicts by incrementing the ports in
@@ -632,7 +632,7 @@ convenience.
 
 First we need to ensure that httpd is installed:
 
-[source, bash]
+[source,options="nowrap"]
 ----
 sudo yum install httpd
 ----
@@ -640,14 +640,14 @@ sudo yum install httpd
 And then we need to download newer version of mod_cluster from its
 website:
 
-[source]
+[source,options="nowrap"]
 ----
 http://www.jboss.org/mod_cluster/downloads
 ----
 
 The version I downloaded is:
 
-[source]
+[source,options="nowrap"]
 ----
 http://downloads.jboss.org/mod_cluster/1.1.3.Final/mod_cluster-1.1.3.Final-linux2-x86-so.tar.gz
 ----
@@ -662,21 +662,21 @@ VirtualHost.
 
 Then we extract it into:
 
-[source]
+[source,options="nowrap"]
 ----
 /etc/httpd/modules
 ----
 
 Then we edit httpd.conf:
 
-[source, bash]
+[source,options="nowrap"]
 ----
 sudo vi /etc/httpd/conf/httpd.conf
 ----
 
 We should add the modules:
 
-[source]
+[source,options="nowrap"]
 ----
 LoadModule slotmem_module modules/mod_slotmem.so
 LoadModule manager_module modules/mod_manager.so
@@ -686,7 +686,7 @@ LoadModule advertise_module modules/mod_advertise.so
 
 Please note we should comment out:
 
-[source, java]
+[source,options="nowrap"]
 ----
 #LoadModule proxy_balancer_module modules/mod_proxy_balancer.so
 ----
@@ -695,14 +695,14 @@ This is conflicted with cluster module. And then we need to make httpd
 to listen to public address so we could do the testing. Because we
 installed httpd on master host so we know the ip address of it:
 
-[source]
+[source,options="nowrap"]
 ----
 Listen 10.211.55.7:80
 ----
 
 Then we do the necessary configuration at the bottom of httpd.conf:
 
-[source]
+[source,options="nowrap"]
 ----
 # This Listen port is for the mod_cluster-manager, where you can see the status of mod_cluster.
 # Port 10001 is not a reserved port, so this prevents problems with SELinux.
@@ -741,7 +741,7 @@ MemManagerFile /var/cache/httpd
 
 For more details on mod_cluster configurations please see this document:
 
-[source, java]
+[source,options="nowrap"]
 ----
 http://docs.jboss.org/mod_cluster/1.1.0/html/Quick_Start_Guide.html
 ----
@@ -751,14 +751,14 @@ http://docs.jboss.org/mod_cluster/1.1.0/html/Quick_Start_Guide.html
 
 If everything goes fine we can start httpd service now:
 
-[source, bash]
+[source,options="nowrap"]
 ----
 service httpd start
 ----
 
 Now we access the cluster:
 
-[source]
+[source,options="nowrap"]
 ----
 http://10.211.55.7/cluster-demo/put.jsp
 ----
@@ -768,7 +768,7 @@ image:clustering/http---10.211.55.7-cluster-demo-put.jsp.png[images/clustering/h
 We should see the request is distributed to one of the hosts(master or
 slave) from the WildFly log. For me the request is sent to master:
 
-[source]
+[source,options="nowrap"]
 ----
 [Server:server-three] 16:06:22,256 INFO  [stdout] (http-10.211.55.7-10.211.55.7-8330-4) Putting date now
 ----
@@ -784,7 +784,7 @@ the Host-Controller restart the instance immediately!
 
 Then wait for a few seconds and access cluster:
 
-[source]
+[source,options="nowrap"]
 ----
 http://10.211.55.7/cluster-demo/get.jsp
 ----
@@ -794,7 +794,7 @@ image:clustering/http---10.211.55.7-cluster-demo-get.jsp.png[images/clustering/h
 Now the request should be served by slave and we should see the log from
 slave:
 
-[source, bash]
+[source,options="nowrap"]
 ----
 [Server:server-three-slave] 16:08:29,860 INFO  [stdout] (http-10.211.55.2-10.211.55.2-8330-1) Getting date now
 ----

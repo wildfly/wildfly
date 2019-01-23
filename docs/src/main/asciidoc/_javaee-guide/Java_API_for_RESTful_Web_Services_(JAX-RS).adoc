@@ -92,7 +92,7 @@ are two classes in this application:
 The Book is a plain old Java object (POJO) with two attributes. This is
 a simple Java representation of a RESTful entity.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 public class Book {
  
@@ -110,7 +110,7 @@ JAX-RS annotations to define
 * The wire representation of the data (MIME type)
 * The Http methods and corresponding paths
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 @Path("/library")
 @Consumes({ "application/json" })
@@ -192,7 +192,7 @@ Review
 https://issues.jboss.org/browse/AS7-1674[AS7-1674] Remove or explain why
 web.xml is needed for RESTful endpoints
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 <web-app version="2.4" xmlns="http://java.sun.com/xml/ns/j2ee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -206,7 +206,7 @@ web.xml is needed for RESTful endpoints
 
 The root context is defined in jboss-web.xml
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 <jboss-web>
   <context-root>jaxrs-sample</context-root>
@@ -226,7 +226,7 @@ however also possible to startup the server instance manually before you
 run the tests. The latter allows you to look at the console and see what
 log output the deployment phase and JAX-RS endpoint invocations produce.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 $ git clone git://github.com/tdiesler/javaee-tutorial.git
 Cloning into javaee-tutorial...
@@ -264,7 +264,7 @@ continue by creating the OpenShift application. This step sets up your
 JBossAS 7 instance in the cloud. Additionally a http://git-scm.com[Git]
 repository is configured that gives access to your deployed application.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 $ rhc-create-app -a tutorial -t jbossas-7.0
 Password:
@@ -284,7 +284,7 @@ The remote repository is located here:
 
 Next, we can clone the remote Git repository to our local workspace
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 $ git clone ssh://79dcb9db5e134cccb9d1ba33e6089667@tutorial-tdiesler.rhcloud.com/~/git/tutorial.git
 Cloning into tutorial...
@@ -304,7 +304,7 @@ Because we want to deploy an already existing web application, which
 we'll build in the next step, we can safely remove the source artefacts
 from the repository.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 $ rm -rf tutorial/src tutorial/pom.xml
 ----
@@ -312,7 +312,7 @@ $ rm -rf tutorial/src tutorial/pom.xml
 Now we copy the JAX-RS endpoint webapp that we build above to the
 'deployments' folder and commit the changes.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 $ cp javaee-tutorial/jaxrs/server/target/javaee-tutorial-jaxrs-server-1.0.0-SNAPSHOT.war tutorial/deployments
 $ cd tutorial; git commit -a -m "Initial jaxrs endpoint deployment"
@@ -338,7 +338,7 @@ You can now use curl or your browser to see the JAX-RS endpoint in
 action. The following URL lists the books that are currently registered
 in the library.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 $ curl http://tutorial-tdiesler.rhcloud.com/jaxrs-sample/library/books
 [
@@ -434,7 +434,7 @@ Android robot in the lower right corner. This will display the LogCat
 view, which should display log output from that Android system as well
 as from this client app
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 08-30 09:05:46.180: INFO/JaxrsSample(269): removeBook: Book [isbn=1234, title=1234]
 08-30 09:05:46.210: INFO/JaxrsSample(269): requestURI: http://tutorial-tdiesler.rhcloud.com:80/jaxrs-sample/library
@@ -457,7 +457,7 @@ approach.
 
 The JAX-RS client application uses an annotated library client interface
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 @Consumes({ "application/json" })
 @Produces({ "application/json" })
@@ -495,7 +495,7 @@ code is much more involved, but there would be no need to add external
 libraries (i.e. resteasy, jackson, etc). The effect is that the total
 size of the application is considerably smaller in size (i.e. 40k)
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     @Override
     public List<Book> getBooks() {
@@ -538,7 +538,7 @@ interact with the JAX-RS endpoint. The details of Http connectivity and
 JSON data binding is transparently handled by RESTEasy. The total size
 of the application is considerably bigger in size (i.e. 400k)
 
-[source, java]
+[source,java,options="nowrap"]
 ----
     @Override
     public List<Book> getBooks() {

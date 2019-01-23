@@ -16,7 +16,7 @@ An `InitialContext` backed by the
 created by specifying properties that contain the URL of the naming
 provider to connect to along with appropriate user credentials:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 Properties properties = new Properties();
 properties.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
@@ -46,7 +46,7 @@ the client application's `META-INF` directory:
 
 *wildfly-config.xml*
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <configuration>
     <authentication-client xmlns="urn:elytron:1.0">
@@ -69,7 +69,7 @@ the client application's `META-INF` directory:
 
 An `InitialContext` can then be created as follows:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 Properties properties = new Properties();
 properties.put(Context.INITIAL_CONTEXT_FACTORY, "org.wildfly.naming.client.WildFlyInitialContextFactory");
@@ -85,7 +85,7 @@ Bar bar = (Bar) context.lookup("foo/bar");
 The user credentials to use when establishing a connection to the naming
 provider can be specified directly in the client application's code:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 // create your authentication configuration
 AuthenticationConfiguration namingConfig = AuthenticationConfiguration.empty().useName("bob").usePassword("secret");
@@ -136,7 +136,7 @@ remote.connection.default.password=secret
 An EJB can then be looked up and a method can be invoked on it as
 follows:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 // create an InitialContext
 Properties properties = new Properties();
@@ -165,7 +165,7 @@ connect to the remote server can be added to the client application's
 
 *wildfly-config.xml*
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <configuration>
     <authentication-client xmlns="urn:elytron:1.0">
@@ -194,7 +194,7 @@ connect to the remote server can be added to the client application's
 An EJB can then be looked up and a method can be invoked on it as
 follows:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 // create an InitialContext
 Properties properties = new Properties();
@@ -213,7 +213,7 @@ int sum = statelessRemoteCalculator.add(101, 202);
 The information needed to connect to the remote server can be specified
 directly in the client application's code:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 // create your authentication configuration
 AuthenticationConfiguration ejbConfig = AuthenticationConfiguration.empty().useName("bob").usePassword("secret");

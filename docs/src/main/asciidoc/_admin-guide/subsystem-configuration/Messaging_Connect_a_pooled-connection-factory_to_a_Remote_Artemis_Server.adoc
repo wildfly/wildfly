@@ -8,32 +8,30 @@ WildFly connect to a remote Artemis server.
 The configuration of such a `pooled-connection-factory` is done in 3
 steps:
 
-\1. create an outbound-socket-binding pointing to the remote messaging
+. create an outbound-socket-binding pointing to the remote messaging
 server:
-
-[source, ruby]
++
+[source,options="nowrap"]
 ----
-   /socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=remote-artemis:add(host=<server host>, port=61616)
-
+/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=remote-artemis:add(host=<server host>, port=61616)
 ----
 
-\2. create a remote-connector referencing the outbound-socket-binding
+. create a remote-connector referencing the outbound-socket-binding
 created at step (1).
-
-[source, ruby]
++
+[source,options="nowrap"]
 ----
-  /subsystem=messaging-activemq/remote-connector=remote-artemis:add(socket-binding=remote-artemis)
-
+/subsystem=messaging-activemq/remote-connector=remote-artemis:add(socket-binding=remote-artemis)
 ----
 
-\3. create a pooled-connection-factory referencing the remote-connector
+. create a pooled-connection-factory referencing the remote-connector
 created at step (2).
++
+[source,options="nowrap"]
+----
+/subsystem=messaging-activemq/pooled-connection-factory=remote-artemis:add(connectors=[remote-artemis], entries=[java:/jms/remoteCF])
+----
 
-[source,ruby]
-----
-  /subsystem=messaging-activemq/pooled-connection-factory=remote-artemis:add(connectors=[remote-artemis], entries=[java:/jms/remoteCF])
-   
-----
 [[configuration-of-a-mdb-using-a-pooled-connection-factory]]
 == JMS Queues and Topics on a remote Artemis Server
 
@@ -72,7 +70,7 @@ them consume messages from this remote server.
 The MDB must be annotated with the `@ResourceAdapter` annotation using
 the *name* of the `pooled-connection-factory resource`
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 import org.jboss.ejb3.annotation.ResourceAdapter;
  
@@ -91,7 +89,7 @@ If the MDB needs to produce messages to the remote server, it must
 inject the `pooled-connection-factory` by looking it up in JNDI using
 one of its `entries`.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 @Inject
 @JMSConnectionFactory("java:/jms/remoteCF")
@@ -119,7 +117,7 @@ set the `useJNDI` activation config property to false to let the Artemis
 Resource Adapter create automatically the JMS destination without
 requiring any JNDI lookup.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 @ResourceAdapter("remote-artemis")
 @MessageDriven(name = "MyMDB", activationConfig = {

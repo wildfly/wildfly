@@ -36,7 +36,7 @@ user2=Guest
 [[configure-a-properties-realm-in-wildfly]]
 ==== Configure a properties-realm in WildFly:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/properties-realm=examplePropRealm:add(groups-attribute=groups,groups-properties={path=example-roles.properties,relative-to=jboss.server.config.dir},users-properties={path=example-users.properties,relative-to=jboss.server.config.dir,plain-text=true})
 ----
@@ -50,7 +50,7 @@ appropriately.
 [[configure-a-security-domain]]
 ==== Configure a security-domain:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/security-domain=exampleSD:add(realms=[{realm=examplePropRealm,role-decoder=groups-to-roles}],default-realm=examplePropRealm,permission-mapper=default-permission-mapper)
 ----
@@ -58,7 +58,7 @@ appropriately.
 [[configure-an-http-authentication-factory]]
 ==== Configure an http-authentication-factory:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/http-authentication-factory=example-http-auth:add(http-server-mechanism-factory=global,security-domain=exampleSD,mechanism-configurations=[{mechanism-name=BASIC,mechanism-realm-configurations=[{realm-name=exampleApplicationDomain}]}])
 ----
@@ -70,7 +70,7 @@ as _FORM_.
 [[configure-an-application-security-domain-in-the-undertow-subsystem]]
 ==== Configure an application-security-domain in the Undertow subsystem:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=undertow/application-security-domain=exampleApplicationDomain:add(http-authentication-factory=example-http-auth)
 ----
@@ -98,7 +98,7 @@ _jboss.server.config.dir_.
 [[configure-a-filesystem-realm-in-wildfly]]
 ==== Configure a filesystem-realm in WildFly:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/filesystem-realm=exampleFsRealm:add(path=fs-realm-users,relative-to=jboss.server.config.dir)
 ----
@@ -112,7 +112,7 @@ you need to change the _path_ and _relative-to_ values appropriately.
 When using the _filesystem-realm_, you can add users using the
 management CLI.
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/filesystem-realm=exampleFsRealm:add-identity(identity=user1)
 /subsystem=elytron/filesystem-realm=exampleFsRealm:set-password(clear={password="password123"}, identity=user1)
@@ -122,7 +122,7 @@ management CLI.
 [[add-a-simple-role-decoder]]
 ==== Add a simple-role-decoder:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/simple-role-decoder=from-roles-attribute:add(attribute=Roles)
 ----
@@ -134,7 +134,7 @@ attribute.
 [[configure-a-security-domain-1]]
 ==== Configure a security-domain:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/security-domain=exampleFsSD:add(realms=[{realm=exampleFsRealm,role-decoder=from-roles-attribute}],default-realm=exampleFsRealm,permission-mapper=default-permission-mapper)
 ----
@@ -142,7 +142,7 @@ attribute.
 [[configure-an-http-authentication-factory-1]]
 ==== Configure an http-authentication-factory:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/http-authentication-factory=example-fs-http-auth:add(http-server-mechanism-factory=global,security-domain=exampleFsSD,mechanism-configurations=[{mechanism-name=BASIC,mechanism-realm-configurations=[{realm-name=exampleApplicationDomain}]}])
 ----
@@ -154,7 +154,7 @@ as _FORM_.
 [[configure-an-application-security-domain-in-the-undertow-subsystem-1]]
 ==== Configure an application-security-domain in the Undertow subsystem:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=undertow/application-security-domain=exampleApplicationDomain:add(http-authentication-factory=example-fs-http-auth)
 ----
@@ -198,7 +198,7 @@ database driver deployed as well as a datasource configured. This
 example shows deploying the driver for postgres and configuring a
 datasource in WildFly:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 deploy /path/to/postgresql-9.4.1210.jar
  
@@ -208,7 +208,7 @@ data-source add --name=examplePostgresDS --jndi-name=java:jboss/examplePostgresD
 [[configure-a-jdbc-realm-in-wildfly]]
 ==== Configure a jdbc-realm in WildFly:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/jdbc-realm=exampleDbRealm:add(principal-query=[{sql="SELECT password,roles FROM wildfly_users WHERE username=?",data-source=examplePostgresDS,clear-password-mapper={password-index=1},attribute-mapping=[{index=2,to=groups}]}])
 ----
@@ -222,7 +222,7 @@ authorization information.
 [[configure-a-security-domain-2]]
 ==== Configure a security-domain:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/security-domain=exampleDbSD:add(realms=[{realm=exampleDbRealm,role-decoder=groups-to-roles}],default-realm=exampleDbRealm,permission-mapper=default-permission-mapper)
 ----
@@ -230,7 +230,7 @@ authorization information.
 [[configure-an-http-authentication-factory-2]]
 ==== Configure an http-authentication-factory:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/http-authentication-factory=example-db-http-auth:add(http-server-mechanism-factory=global,security-domain=exampleDbSD,mechanism-configurations=[{mechanism-name=BASIC,mechanism-realm-configurations=[{realm-name=exampleDbSD}]}])
 ----
@@ -242,7 +242,7 @@ as _FORM_.
 [[configure-an-application-security-domain-in-the-undertow-subsystem-2]]
 ==== Configure an application-security-domain in the Undertow subsystem:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 /subsystem=undertow/application-security-domain=exampleApplicationDomain:add(http-authentication-factory=example-db-http-auth)
 ----
@@ -267,7 +267,7 @@ To set up authentication using an LDAP server for an identity store, you
 need to determine how your usernames, passwords, and roles are stored.
 In this example, we are using the following structure:
 
-[source,java]
+[source,java,options="nowrap"]
 ----
 dn: dc=wildfly,dc=org
 dc: wildfly
@@ -307,7 +307,7 @@ To connect to the LDAP server from WildFly, you need to configure a
 _dir-context_ that provides the URL as well as the principal used to
 connect to the server.
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/dir-context=exampleDC:add(url="ldap://127.0.0.1:10389",principal="uid=admin,ou=system",credential-reference={clear-text="secret"})
 ----
@@ -315,7 +315,7 @@ connect to the server.
 [[configure-an-ldap-realm-in-wildfly]]
 ==== Configure an ldap-realm in WildFly:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/ldap-realm=exampleLR:add(dir-context=exampleDC,identity-mapping={search-base-dn="ou=Users,dc=wildfly,dc=org",rdn-identifier="uid",user-password-mapper={from="userPassword"},attribute-mapping=[{filter-base-dn="ou=Roles,dc=wildfly,dc=org",filter="(&(objectClass=groupOfNames)(member={1}))",from="cn",to="Roles"}]})
 ----
@@ -323,7 +323,7 @@ connect to the server.
 [[add-a-simple-role-decoder-1]]
 ==== Add a simple-role-decoder:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/simple-role-decoder=from-roles-attribute:add(attribute=Roles)
 ----
@@ -331,7 +331,7 @@ connect to the server.
 [[configure-a-security-domain-3]]
 ==== Configure a security-domain:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/security-domain=exampleLdapSD:add(realms=[{realm=exampleLR,role-decoder=from-roles-attribute}],default-realm=exampleLR,permission-mapper=default-permission-mapper)
 ----
@@ -339,7 +339,7 @@ connect to the server.
 [[configure-an-http-authentication-factory-3]]
 ==== Configure an http-authentication-factory:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/http-authentication-factory=example-ldap-http-auth:add(http-server-mechanism-factory=global,security-domain=exampleLdapSD,mechanism-configurations=[{mechanism-name=BASIC,mechanism-realm-configurations=[{realm-name=exampleApplicationDomain}]}])
 ----
@@ -351,7 +351,7 @@ as _FORM_.
 [[configure-an-application-security-domain-in-the-undertow-subsystem-3]]
 ==== Configure an application-security-domain in the Undertow subsystem:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 /subsystem=undertow/application-security-domain=exampleApplicationDomain:add(http-authentication-factory=example-ldap-http-auth)
 ----
@@ -383,7 +383,7 @@ must have two-way SSL configured.
 [[configure-a-key-store-realm.]]
 ==== Configure a key-store-realm.
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/key-store-realm=ksRealm:add(key-store=twoWayTS)
 ----
@@ -399,7 +399,7 @@ You need to create a _x500-attribute-principal-decoder_ to decode the
 principal you get from your certificate. The below example will decode
 the principal based on the first _CN_ value.
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/x500-attribute-principal-decoder=CNDecoder:add(oid="2.5.4.3",maximum-segments=1)
 ----
@@ -419,7 +419,7 @@ you set in your server's truststore for the client's certificate.
 This is example uses a _constant-role-mapper_ to assign roles to a
 principal from _ksRealm_ but other approaches may also be used.
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/constant-role-mapper=constantClientCertRole:add(roles=[Admin,Guest])
 ----
@@ -427,7 +427,7 @@ principal from _ksRealm_ but other approaches may also be used.
 [[configure-a-security-domain.]]
 ==== Configure a security-domain.
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/security-domain=exampleCertSD:add(realms=[{realm=ksRealm}],default-realm=ksRealm,permission-mapper=default-permission-mapper,principal-decoder=CNDecoder,role-mapper=constantClientCertRole)
 ----
@@ -435,7 +435,7 @@ principal from _ksRealm_ but other approaches may also be used.
 [[configure-an-http-authentication-factory.]]
 ==== Configure an http-authentication-factory.
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/http-authentication-factory=exampleCertHttpAuth:add(http-server-mechanism-factory=global,security-domain=exampleCertSD,mechanism-configurations=[{mechanism-name=CLIENT_CERT,mechanism-realm-configurations=[{realm-name=exampleApplicationDomain}]}])
 ----
@@ -443,7 +443,7 @@ principal from _ksRealm_ but other approaches may also be used.
 [[configure-an-application-security-domain-in-the-undertow-subsystem.]]
 ==== Configure an application-security-domain in the Undertow subsystem.
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 /subsystem=undertow/application-security-domain=exampleApplicationDomain:add(http-authentication-factory=exampleCertHttpAuth)
 ----
@@ -451,7 +451,7 @@ principal from _ksRealm_ but other approaches may also be used.
 [[update-server-ssl-context.]]
 ==== Update server-ssl-context.
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/server-ssl-context=twoWaySSC:write-attribute(name=security-domain,value=exampleCertSD)
 /subsystem=elytron/server-ssl-context=twoWaySSC:write-attribute(name=authentication-optional, value=true)
@@ -470,7 +470,7 @@ section.
 In addition, you need to update your _web.xml_ to use _CLIENT-CERT_ as
 its authentication method.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <login-config>
   <auth-method>CLIENT-CERT</auth-method>
@@ -487,7 +487,7 @@ Kerberos domain as well as your client browsers configured.
 [[configure-a-kerberos-security-factory.]]
 ==== Configure a kerberos-security-factory.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/kerberos-security-factory=krbSF:add(principal="HTTP/host@REALM",path="/path/to/http.keytab",mechanism-oids=[1.2.840.113554.1.2.2,1.3.6.1.5.5.2])
 ----
@@ -509,7 +509,7 @@ some of the system properties below.
 
 To configure a system property in WildFly:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 /system-property=java.security.krb5.conf:add(value="/path/to/krb5.conf")
 ----
@@ -523,7 +523,7 @@ several ways to accomplish this, but this example creates a
 _filesystem-realm_, adds a user to the realm that matches the principal
 from the Kerberos token, and assigns roles to that user.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/filesystem-realm=exampleFsRealm:add(path=fs-realm-users,relative-to=jboss.server.config.dir)
 /subsystem=elytron/filesystem-realm=exampleFsRealm/identity=user1@REALM:add()
@@ -533,7 +533,7 @@ from the Kerberos token, and assigns roles to that user.
 [[add-a-simple-role-decoder.]]
 ==== Add a simple-role-decoder.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/simple-role-decoder=from-roles-attribute:add(attribute=Roles)
 ----
@@ -545,7 +545,7 @@ attribute.
 [[configure-a-security-domain.-1]]
 ==== Configure a security-domain.
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/security-domain=exampleFsSD:add(realms=[{realm=exampleFsRealm,role-decoder=from-roles-attribute}],default-realm=exampleFsRealm,permission-mapper=default-permission-mapper)
 ----
@@ -554,7 +554,7 @@ attribute.
 ==== Configure an http-authentication-factory that uses the
 kerberos-security-factory.
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/http-authentication-factory=example-krb-http-auth:add(http-server-mechanism-factory=global,security-domain=exampleFsSD,mechanism-configurations=[{mechanism-name=SPNEGO,mechanism-realm-configurations=[{realm-name=exampleFsSD}],credential-security-factory=krbSF}])
 ----
@@ -562,7 +562,7 @@ kerberos-security-factory.
 [[configure-an-application-security-domain-in-the-undertow-subsystem-4]]
 ==== Configure an application-security-domain in the Undertow subsystem:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 /subsystem=undertow/application-security-domain=exampleApplicationDomain:add(http-authentication-factory=example-krb-http-auth)
 ----
@@ -581,7 +581,7 @@ section.
 In addition, you need to update your _web.xml_ to use _SPNEGO_ as its
 authentication method.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <login-config>
   <auth-method>SPNEGO</auth-method>
@@ -606,7 +606,7 @@ You can use the existing _http-authentication-factory_ you configured
 for kerberos-based authentication and and an additional mechanism for
 _FORM_ authentication.
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/http-authentication-factory=example-krb-http-auth:list-add(name=mechanism-configurations, value={mechanism-name=FORM})
 ----
@@ -621,7 +621,7 @@ users for fallback authentication to that realm. For example if you used
 a _filesystem-realm_, you can simply create a new user with the
 appropriate roles:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/filesystem-realm=exampleFsRealm/identity=fallbackUser1:add()
 /subsystem=elytron/filesystem-realm=exampleFsRealm/identity=fallbackUser1:set-password(clear={password="password123"})
@@ -636,7 +636,7 @@ _auth-method_, which will use _FORM_ as a fallback authentication method
 if _SPNEGO_ fails. You also need to specify the location of your login
 and error pages.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <login-config>
   <auth-method>SPNEGO,FORM</auth-method>
@@ -666,7 +666,7 @@ authentication you want to configure.
 
 Example _web.xml_ with _BASIC_ Authentication
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <web-app>
   <security-constraint>
@@ -700,7 +700,7 @@ subsystem, this is the name of the legacy security domain.
 
 Example _jboss-web.xml_
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <jboss-web>
   <security-domain>exampleApplicationDomain</security-domain>
@@ -713,7 +713,7 @@ security domain for all applications using the _undertow_ subsystem.
 This allows you to omit using _jboss-web.xml_ to configure a security
 domain for an individual application.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=undertow:write-attribute(name=default-security-domain, value="exampleApplicationDomain")
 ----
@@ -745,7 +745,7 @@ one configured in WildFly. To do this, use the
 _override-deployment-configuration_ property in the
 _application-security-domain_ section of the _undertow_ subsystem:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 /subsystem=undertow/application-security-domain=exampleApplicationDomain:write-attribute(name=override-deployment-config,value=true)
 ----
@@ -755,7 +755,7 @@ with the _exampleApplicationDomain_ in its _jboss-web.xml_.
 
 _Example jboss-web.xml_
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <login-config>
   <auth-method>FORM</auth-method>
@@ -769,7 +769,7 @@ mechanism such as _BASIC_.
 
 _Example http-authentication-factory_
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/http-authentication-factory=exampleHttpAuth:read-resource()
 {
@@ -795,7 +795,7 @@ _BASIC_ instead of _FORM_.
 [[create-credential-store.]]
 ==== Create credential store.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/credential-store=exampleCS:add(relative-to=jboss.server.data.dir, location=example.jceks,create=true,credential-reference={clear-text=cs-secret})
 ----
@@ -803,7 +803,7 @@ _BASIC_ instead of _FORM_.
 [[add-a-credential-to-a-credential-store.]]
 ==== Add a credential to a credential store.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/credential-store=exampleCS:add-alias(alias=keystorepw,secret-value=secret)
 ----
@@ -811,7 +811,7 @@ _BASIC_ instead of _FORM_.
 [[list-all-credentials-in-a-credential-store.]]
 ==== List all credentials in a credential store.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/credential-store=exampleCS:read-aliases()
 {
@@ -823,7 +823,7 @@ _BASIC_ instead of _FORM_.
 [[remove-a-credential-from-a-credential-store.]]
 ==== Remove a credential from a credential store.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/credential-store=exampleCS:remove-alias(alias=keystorepw)
 ----
@@ -831,7 +831,7 @@ _BASIC_ instead of _FORM_.
 [[use-a-credential-store.]]
 ==== Use a credential store.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/key-store=twoWayKS:write-attribute(name=credential-reference,value={store=exampleCS,alias=keystorepw})
 ----
@@ -858,14 +858,14 @@ sasl-authentication-factory.
 
 Example _http-authentication-factory_
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/http-authentication-factory=example-http-auth:add(http-server-mechanism-factory=global,security-domain=exampleSD,mechanism-configurations=[{mechanism-name=DIGEST,mechanism-realm-configurations=[{realm-name=exampleManagementRealm}]}])
 ----
 
 Example _sasl-authentication-factory_
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/sasl-authentication-factory=example-sasl-auth:add(sasl-server-factory=configured,security-domain=exampleSD,mechanism-configurations=[{mechanism-name=DIGEST-MD5,mechanism-realm-configurations=[{realm-name=exampleManagementRealm}]}])
 ----
@@ -876,7 +876,7 @@ http-authentication-factory or sasl-authentication-factory.
 
 Example update _http-authentication-factory_
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /core-service=management/management-interface=http-interface:write-attribute(name=http-authentication-factory, value=example-http-auth)
 {
@@ -892,7 +892,7 @@ reload
 
 Example update _sasl-authentication-factory_
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /core-service=management/management-interface=http-interface:write-attribute(name=http-upgrade.sasl-authentication-factory, value=example-sasl-auth)
 {
@@ -924,7 +924,7 @@ WildFly provides the _local_ identity realm that provides this user.
 ==== Add silent authentication to an existing
 sasl-authentication-factory.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/sasl-authentication-factory=example-sasl-auth:list-add(name=mechanism-configurations, value={mechanism-name=JBOSS-LOCAL-USER, realm-mapper=local})
  
@@ -934,7 +934,7 @@ reload
 [[create-a-new-sasl-server-factory-with-silent-authentication.]]
 ==== Create a new sasl-server-factory with silent authentication.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/sasl-authentication-factory=example-sasl-auth:add(sasl-server-factory=configured,security-domain=exampleSD,mechanism-configurations=[{mechanism-name=DIGEST-MD5,mechanism-realm-configurations=[{realm-name=exampleManagementRealm}]},{mechanism-name=JBOSS-LOCAL-USER, realm-mapper=local}])
  
@@ -944,7 +944,7 @@ reload
 [[remove-silent-authentication-from-an-existing-sasl-server-factory]]
 ==== Remove silent authentication from an existing sasl-server-factory:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/sasl-authentication-factory=managenet-sasl-authentication:read-resource
 {
@@ -995,7 +995,7 @@ There are a couple ways to enable one-way SSL/TLS for deployed applications.
 The _security enable-ssl-http-server_ command can be used to enable one-way
 SSL/TLS for deployed applications. Example of wizard usage:
 
-[source,java]
+[source,java,options="nowrap"]
 ----
 security enable-ssl-http-server --interactive
 Please provide required pieces of information to enable SSL:
@@ -1035,7 +1035,7 @@ enable HTTPS for deployed applications.
 [[configure-a-key-store-in-wildfly]]
 ===== Configure a key-store in WildFly:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/key-store=httpsKS:add(path=/path/to/keystore.jks,credential-reference={clear-text=secret},type=JKS)
 ----
@@ -1044,7 +1044,7 @@ The previous command uses an absolute path to the keystore.
 Alternatively you can use the _relative-to_ attribute to specify the
 base directory variable and _path_ specify a relative path.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/key-store=httpsKS:add(path=keystore.jks,relative-to=jboss.server.config.dir,credential-reference={clear-text=secret},type=JKS)
 ----
@@ -1052,7 +1052,7 @@ base directory variable and _path_ specify a relative path.
 If the keystore file does not exist yet, the following commands can be used to
 generate an example key pair:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/key-store=httpsKS:generate-key-pair(alias=localhost,algorithm=RSA,key-size=1024,validity=365,credential-reference={clear-text=secret},distinguished-name="CN=localhost")
 /subsystem=elytron/key-store=httpsKS:store()
@@ -1061,7 +1061,7 @@ generate an example key pair:
 [[configure-a-key-manager-in-that-references-your-key-store]]
 ===== Configure a key-manager that references your key-store:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/key-manager=httpsKM:add(key-store=httpsKS,credential-reference={clear-text=secret})
 ----
@@ -1069,7 +1069,7 @@ generate an example key pair:
 [[configure-a-server-ssl-context-in-that-references-your-key-manager]]
 ===== Configure a server-ssl-context that references your key-manager:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/server-ssl-context=httpsSSC:add(key-manager=httpsKM,protocols=["TLSv1.2"])
 ----
@@ -1080,7 +1080,7 @@ support. The example commands above uses _TLSv1.2_.
 [[check-and-see-if-the-https-listener-is-configured-to-use-a-legacy-security-realm-for-its-ssl-configuration]]
 ===== Check and see if the https-listener is configured to use a legacy security realm for its SSL configuration:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=undertow/server=default-server/https-listener=https:read-attribute(name=security-realm)
 {
@@ -1100,7 +1100,7 @@ between those, you have to use batch operation:
 *Remove the reference to the legacy security realm and update the*
 *_https-listener_* *to use the* *_ssl-context_* *from Elytron* *:*
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 batch
 /subsystem=undertow/server=default-server/https-listener=https:undefine-attribute(name=security-realm)
@@ -1111,7 +1111,7 @@ run-batch
 [[reload-the-server]]
 ===== Reload the server:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 reload
 ----
@@ -1123,14 +1123,14 @@ HTTPS is now enabled for applications.
 
 First, obtain or generate your client keystore.
 
-[source, bash]
+[source,options="nowrap"]
 ----
 $ keytool -genkeypair -alias client -keyalg RSA -keysize 1024 -validity 365 -keystore client.keystore.jks -dname "CN=client" -keypass secret -storepass secret
 ----
 
 Export the client certificate:
 
-[source, bash]
+[source,options="nowrap"]
 ----
 $ keytool -exportcert  -keystore client.keystore.jks -alias client -keypass secret -storepass secret -file /path/to/client.cer
 ----
@@ -1143,7 +1143,7 @@ There are a couple ways to enable two-way SSL/TLS for deployed applications.
 The _security enable-ssl-http-server_ command can be used to enable two-way
 SSL/TLS for the deployed applications. Example of wizard usage:
 
-[source,java]
+[source,java,options="nowrap"]
 ----
 security enable-ssl-http-server --interactive
 Please provide required pieces of information to enable SSL:
@@ -1199,7 +1199,7 @@ trust store, use the following commands.
 
 Create a server key-store:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/key-store=twoWayKS:add(path=/path/to/server.keystore.jks,credential-reference={clear-text=secret},type=JKS)
 /subsystem=elytron/key-store=twoWayKS:generate-key-pair(alias=localhost,algorithm=RSA,key-size=1024,validity=365,credential-reference={clear-text=secret},distinguished-name="CN=localhost")
@@ -1211,14 +1211,14 @@ The first command above uses an absolute path to the keystore.
 Alternatively you can use the _relative-to_ attribute to specify the
 base directory variable and _path_ specify a relative path.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/key-store=twoWayKS:add(path=server.keystore.jks,relative-to=jboss.server.config.dir,credential-reference={clear-text=secret},type=JKS)
 ----
 
 Export the server certificate:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/key-store=twoWayKS:export-certificate(alias=localhost,path=/path/to/server.cer,pem=true)
 ----
@@ -1227,7 +1227,7 @@ Export the server certificate:
 Create a key-store for the server truststore and import the client certificate
 into the server truststore:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/key-store=twoWayTS:add(path=/path/to/server.truststore.jks,credential-reference={clear-text=secret},type=JKS)
 /subsystem=elytron/key-store=twoWayTS:import-certificate(alias=client,path=/path/to/client.cer,credential-reference={clear-text=secret},trust-cacerts=true)
@@ -1237,7 +1237,7 @@ into the server truststore:
 [[configure-a-key-manager-in-that-references-your-key-store-key-store]]
 ===== Configure a key-manager that references your key store key-store:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/key-manager=twoWayKM:add(key-store=twoWayKS,credential-reference={clear-text=secret})
 ----
@@ -1245,7 +1245,7 @@ into the server truststore:
 [[configure-a-trust-manager-in-that-references-your-truststore-key-store]]
 ===== Configure a trust-manager that references your truststore key-store:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/trust-manager=twoWayTM:add(key-store=twoWayTS)
 ----
@@ -1253,7 +1253,7 @@ into the server truststore:
 [[configure-a-server-ssl-context-in-that-references-your-key-manager-trust-manager-and-enables-client-authentication]]
 ===== Configure a server-ssl-context that references your key-manager, trust-manager, and enables client authentication:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/server-ssl-context=twoWaySSC:add(key-manager=twoWayKM,protocols=["TLSv1.2"],trust-manager=twoWayTM,need-client-auth=true)
 ----
@@ -1265,7 +1265,7 @@ example commands above uses _TLSv1.2_.
 [[check-and-see-if-the-https-listener-is-configured-to-use-a-legacy-security-realm-for-its-ssl-configuration-1]]
 ===== Check and see if the https-listener is configured to use a legacy security realm for its SSL configuration:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=undertow/server=default-server/https-listener=https:read-attribute(name=security-realm)
 {
@@ -1286,7 +1286,7 @@ between those, you have to use batch operation:
 ===== Remove the reference to the legacy security realm and update the
 https-listener to use the ssl-context from Elytron:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 batch
 /subsystem=undertow/server=default-server/https-listener=https:undefine-attribute(name=security-realm)
@@ -1297,7 +1297,7 @@ run-batch
 [[reload-the-server-1]]
 ===== Reload the server
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 reload
 ----
@@ -1311,7 +1311,7 @@ to present the client certificate.
 [[import-server-certificate-into-client-truststore-applications]]
 ==== Import the server certificate into the client truststore
 
-[source, bash]
+[source,options="nowrap"]
 ----
 $ keytool -importcert -keystore client.truststore.jks -storepass secret -alias localhost -trustcacerts -file /path/to/server.cer
 ----
@@ -1337,7 +1337,7 @@ There are a couple ways to enable one-way SSL/TLS for the management interfaces.
 The _security enable-ssl-management_ command can be used to enable one-way
 SSL/TLS for the management interfaces. Example of wizard usage:
 
-[source,java]
+[source,java,options="nowrap"]
 ----
 security enable-ssl-management --interactive
 Please provide required pieces of information to enable SSL:
@@ -1377,7 +1377,7 @@ management interfaces.
 [[configure-key-store]]
 ===== Configure a key-store:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/key-store=httpsKS:add(path=keystore.jks,relative-to=jboss.server.config.dir,credential-reference={clear-text=secret},type=JKS)
 ----
@@ -1389,7 +1389,7 @@ the keystore in _path_ and omit _relative-to_.
 If the keystore file does not exist yet, the following commands can be used to
 generate an example key pair:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/key-store=httpsKS:generate-key-pair(alias=localhost,algorithm=RSA,key-size=1024,validity=365,credential-reference={clear-text=secret},distinguished-name="CN=localhost")
 /subsystem=elytron/key-store=httpsKS:store()
@@ -1398,7 +1398,7 @@ generate an example key pair:
 [[create-a-key-manager-and-server-ssl-context]]
 ===== Create a key-manager and server-ssl-context.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/key-manager=httpsKM:add(key-store=httpsKS,credential-reference={clear-text=secret})
  
@@ -1411,7 +1411,7 @@ support. The example commands above uses _TLSv1.2_.
 [[enable-https-on-the-management-interface.]]
 ===== Enable HTTPS on the management interface.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /core-service=management/management-interface=http-interface:write-attribute(name=ssl-context, value=httpsSSC)
  
@@ -1421,7 +1421,7 @@ support. The example commands above uses _TLSv1.2_.
 [[reload-the-wildfly-instance.]]
 ===== Reload the WildFly instance.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 reload
 ----
@@ -1433,14 +1433,14 @@ HTTPS is now enabled for the management interfaces.
 
 First, obtain or generate your client keystore.
 
-[source, bash]
+[source,options="nowrap"]
 ----
 $ keytool -genkeypair -alias client -keyalg RSA -keysize 1024 -validity 365 -keystore client.keystore.jks -dname "CN=client" -keypass secret -storepass secret
 ----
 
 Export your client certificate.
 
-[source, bash]
+[source,options="nowrap"]
 ----
 $ keytool -exportcert  -keystore client.keystore.jks -alias client -keypass secret -storepass secret -file /path/to/client.cer
 ----
@@ -1453,7 +1453,7 @@ There are a couple ways to enable two-way SSL/TLS for the management interfaces.
 The _security enable-ssl-management_ command can be used to enable two-way
 SSL/TLS for the management interfaces. Example of wizard usage:
 
-[source,java]
+[source,java,options="nowrap"]
 ----
 security enable-ssl-management --interactive
 Please provide required pieces of information to enable SSL:
@@ -1509,7 +1509,7 @@ store and trust store, use the following commands.
 
 Configure a key-store.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/key-store=twoWayKS:add(path=server.keystore.jks,relative-to=jboss.server.config.dir,credential-reference={clear-text=secret},type=JKS)
 
@@ -1524,7 +1524,7 @@ the keystore in _path_ and omit _relative-to_.
 
 Export your server certificate.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/key-store=twoWayKS:export-certificate(alias=localhost,path=/path/to/server.cer,pem=true)
 ----
@@ -1533,7 +1533,7 @@ Export your server certificate.
 Create a key-store for the server trust store and import the client certificate
 into the server trust store.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/key-store=twoWayTS:add(path=server.truststore.jks,relative-to=jboss.server.config.dir,credential-reference={clear-text=secret},type=JKS)
 
@@ -1545,7 +1545,7 @@ into the server trust store.
 [[configure-a-key-manager-trust-manager-and-server-ssl-context-for-the-server-key-store-and-trust-store]]
 ===== Configure a key-manager, trust-manager, and server-ssl-context for the server key store and trust store.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/key-manager=twoWayKM:add(key-store=twoWayKS,credential-reference={clear-text=secret})
  
@@ -1560,7 +1560,7 @@ support. The example commands above uses _TLSv1.2_.
 [[enable-https-on-the-management-interface.-1]]
 ===== Enable HTTPS on the management interface.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /core-service=management/management-interface=http-interface:write-attribute(name=ssl-context, value=twoWaySSC)
  
@@ -1570,7 +1570,7 @@ support. The example commands above uses _TLSv1.2_.
 [[reload-the-wildfly-instance.-1]]
 ===== Reload the WildFly instance.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 reload
 ----
@@ -1584,7 +1584,7 @@ to present the client certificate.
 [[import-server-certificate-into-client-truststore-management]]
 ==== Import the server certificate into the client truststore.
 
-[source, bash]
+[source,options="nowrap"]
 ----
 $ keytool -importcert -keystore client.truststore.jks -storepass secret -alias localhost -trustcacerts -file /path/to/server.cer
 ----
@@ -1612,7 +1612,7 @@ The _generate-key-pair_ command generates a key pair and wraps the resulting
 public key in a self-signed X.509 certificate. The generated private key and
 self-signed certificate will be added to the KeyStore.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/key-store=httpsKS:generate-key-pair(alias=example,algorithm=RSA,key-size=1024,validity=365,credential-reference={clear-text=secret},distinguished-name="CN=www.example.com")
 ----
@@ -1623,7 +1623,7 @@ The _generate-certificate-signing-request_ command generates a PKCS #10
 certificate signing request using a PrivateKeyEntry from the KeyStore. The
 generated certificate signing request will be output to a file.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/key-store=httpsKS:generate-certificate-signing-request(alias=example,path=server.csr,relative-to=jboss.server.config.dir,distinguished-name="CN=www.example.com",extensions=[{critical=false,name=KeyUsage,value=digitalSignature}],credential-reference={clear-text=secret})
 ----
@@ -1633,7 +1633,7 @@ generated certificate signing request will be output to a file.
 The _import-certificate_ command imports a certificate or certificate chain
 from a file into an entry in the KeyStore.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/key-store=httpsKS:import-certificate(alias=example,path=/path/to/certificate_or_chain/file,relative-to=jboss.server.config.dir,credential-reference={clear-text=secret},trust-cacerts=true)
 ----
@@ -1643,7 +1643,7 @@ from a file into an entry in the KeyStore.
 The _export-certificate_ command exports a certificate from an entry in the
 KeyStore to a file.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/key-store=httpsKS:export-certificate(alias=example,path=serverCert.cer,relative-to=jboss.server.config.dir,pem=true)
 ----
@@ -1652,7 +1652,7 @@ KeyStore to a file.
 ==== Change an alias
 The _change-alias_ command moves an existing KeyStore entry to a new alias.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/key-store=httpsKS:change-alias(alias=example,new-alias=newExample,credential-reference={clear-text=secret})
 ----
@@ -1662,7 +1662,7 @@ The _change-alias_ command moves an existing KeyStore entry to a new alias.
 The _store_ command persists any changes that have been made to the file that
 backs the KeyStore.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/key-store=httpsKS:store()
 ----
@@ -1675,7 +1675,7 @@ a Let's Encrypt account using the following commands.
 [[create-le-account-key-store]]
 ===== Create a key-store to hold your Let's Encrypt account key.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/key-store=accountsKS:add(path=accounts.keystore.jks,relative-to=jboss.server.config.dir,credential-reference={clear-text=secret},type=JKS)
 ----
@@ -1683,7 +1683,7 @@ a Let's Encrypt account using the following commands.
 [[configure-le-account]]
 ===== Configure a Let's Encrypt account
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/certificate-authority-account=myLEAccount:add(alias=example,key-store=accountsKS,contact-urls=[mailto:admin@example.org])
 ----
@@ -1694,7 +1694,7 @@ a Let's Encrypt account using the following commands.
 The _obtain-certificate_ command creates an account with Let's Encrypt, if such an account does not already exist,
 obtains a signed certificate from Let's Encrypt, and stores it in the KeyStore.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/key-store=httpsKS:obtain-certificate(alias=server,domain-names=[www.example.org],certificate-authority-account=myLEAccount,agree-to-terms-of-service=true,algorithm=RSA,key-size=1024,credential-reference={clear-text=secret})
 ----
@@ -1704,7 +1704,7 @@ obtains a signed certificate from Let's Encrypt, and stores it in the KeyStore.
 
 The _revoke-certificate_ command revokes a certificate that was issued by Let's Encrypt.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/key-store=httpsKS:revoke-certificate(alias=server,reason=keyCompromise,certificate-authority-account=myLEAccount)
 ----
@@ -1714,7 +1714,7 @@ The _revoke-certificate_ command revokes a certificate that was issued by Let's 
 
 The _should-renew-certificate_ command checks if a certificate is due for renewal. In particular, it will return true if the certificate expires in less than the given number of days and false otherwise.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/key-store=httpsKS:should-renew-certificate(alias=server,expiration=7)
 ----
@@ -1730,7 +1730,7 @@ resource using the management CLI.
 
 The _create-account_ command creates an account with the certificate authority if one does not already exist.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/certificate-authority-account=myLEAccount:create-account(agree-to-terms-of-service=true)
 ----
@@ -1740,7 +1740,7 @@ The _create-account_ command creates an account with the certificate authority i
 
 The _update-account_ command updates an account with the certificate authority.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/certificate-authority-account=myLEAccount:update-account(agree-to-terms-of-service=true)
 ----
@@ -1750,7 +1750,7 @@ The _update-account_ command updates an account with the certificate authority.
 
 The _change-account-key_ command changes the key associated with the certificate authority account.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/certificate-authority-account=myLEAccount:change-account-key()
 ----
@@ -1760,7 +1760,7 @@ The _change-account-key_ command changes the key associated with the certificate
 
 The _deactivate-account_ command deactivates the certificate authority account.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/certificate-authority-account=myLEAccount:deactivate-account()
 ----
@@ -1771,7 +1771,7 @@ The _deactivate-account_ command deactivates the certificate authority account.
 The _get-metadata_ command retrieves the metadata (e.g., terms of service URL, website URL, CAA identities,
 and whether or not an external account is required), if any, associated with the certificate authority.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/certificate-authority-account=myLEAccount:get-metadata()
 ----
@@ -1794,7 +1794,7 @@ connect to the server.
 
 *Example dir-context*
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/dir-context=exampleDC:add( \
   url="ldap://127.0.0.1:10389", \
@@ -1813,7 +1813,7 @@ requires you specify a _search-path_.
 
 *Example ldap-key-store*
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/ldap-key-store=ldapKS:add( \
   dir-context=exampleDC, \
@@ -1843,7 +1843,7 @@ To create a _filtering-key-store_:
 [[configure-a-key-store.]]
 ==== Configure a key-store.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/key-store=myKS:add( \
   path=keystore.jks, \
@@ -1871,7 +1871,7 @@ except the ones listed.
 
 This example uses a comma-delimted list to expose _alias1_ and _alias3_.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/filtering-key-store=filterKS:add( \
   key-store=myKS, \
@@ -1896,7 +1896,7 @@ referenced by a keystore.
 
 To reload a keystore.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/key-store=httpsKS:load
 ----
@@ -1910,14 +1910,14 @@ resource and you want to apply this change to new SSL connections without restar
 
 If the key-store is file based then it must be loaded first.
 
-[source, bash]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/key-store=httpsKS:load()
 ----
 
 To reinitialize a key-manager.
 
-[source, bash]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/key-manager=httpsKM:init()
 ----
@@ -1931,14 +1931,14 @@ resource and you want to apply this change to new SSL connections without restar
 
 If the key-store is file based then it must be loaded first.
 
-[source, bash]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/key-store=httpsKS:load()
 ----
 
 To reinitialize a trust-manager.
 
-[source, bash]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/trust-manager=httpsTM:init()
 ----
@@ -1952,7 +1952,7 @@ element and reading its attributes.
 
 For example:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/key-store=httpsKS/alias=localhost:read-attribute(name=certificate-chain)
 {
@@ -2003,7 +2003,7 @@ present the appropriate capabilities and requirements.
 
 Many libraries that can be used within deployments may require SSL configuration for any connections they establish, these libraries tend to be configurable by the caller or if no configuration is provided fall back to using the default `SSLContext` for the process available from: -
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 javax.net.ssl.SSLContext.getDefault();
 ----
@@ -2012,21 +2012,21 @@ By default this `SSLContext` is configured using system properties, however with
 
 To make use of this feature configure your `SSLContext` as normal, the following command can then be used to specify which `SSLContext` should be used as the default.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron:write-attribute(name=default-ssl-context, value=client-context)
 ----
 
 As existing services and deployments could have cached the default `SSLContext` prior to this being set a reload is required to ensure the default gets set before the deployments are activated.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 :reload
 ----
 
 *Note:* If the `default-ssl-context` attribute is subsequently 'undefined' the standard APIs do not provide us with a mechanism to revert the default so in this situation the Java process would need be restarted.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron:undefine-attribute(name=default-ssl-context)
 {
@@ -2044,7 +2044,7 @@ Using the WildFly Elytron subsystem it is possible to configure an SSL context w
 
 The following command demonstrates how an SNI aware SSLContext can be added: - 
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] ./subsystem=elytron/server-ssl-sni-context=test-sni:add(default-ssl-context=jboss,host-context-map={localhost=localhost, wildfly.org=wildfly})
 {"outcome" => "success"}
@@ -2056,7 +2056,7 @@ During negotiation of the SSLSession if the SNI host name received is `localhost
 
 The resulting resource looks like: -
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] ./subsystem=elytron/server-ssl-sni-context=test-sni:read-resource
 {
@@ -2082,7 +2082,7 @@ Within the `host-context-map` it is also possible to define wildcard mappings su
 [[to-add-the-elytron-extension-required-for-the-elytron-subsystem]]
 ==== To add the elytron extension required for the elytron subsystem:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /extension=org.wildfly.extension.elytron:add()
 ----
@@ -2090,7 +2090,7 @@ Within the `host-context-map` it is also possible to define wildcard mappings su
 [[to-enable-the-elytron-subsystem-in-wildfly]]
 ==== To enable the Elytron subsystem in WildFly:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron:add
  
@@ -2100,7 +2100,7 @@ reload
 [[to-disable-the-elytron-subsystem-in-wildfly]]
 ==== To disable the Elytron subsystem in WildFly:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron:remove
  
@@ -2117,7 +2117,7 @@ disabling it, you will see errors when starting WildFly.
 [[to-disable-the-security-subsystem-in-wildfly]]
 ==== To disable the security subsystem in WildFly:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=security:remove
  
@@ -2131,7 +2131,7 @@ disabling it, you will see errors when starting WildFly.
 [[to-enable-the-security-subsystem-in-wildfly]]
 ==== To enable the security subsystem in WildFly:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=security:add
  
@@ -2146,7 +2146,7 @@ if both are enabled. For authentication in applications, you can use the
 _application-security-domain_ property in the _undertow_ subsystem to
 configure a security domain in the _elytron_ subsystem.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=undertow/application-security-domain=exampleApplicationDomain:add(http-authentication-factory=example-http-auth)
 ----
@@ -2162,7 +2162,7 @@ For enabling HTTPS using a legacy security realm, you can use the
 _security-realm_ attribute in the _https-listener_ section of the
 _undertow_ subsystem:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=undertow/server=default-server/https-listener=https:read-attribute(name=security-realm)
 {
@@ -2176,7 +2176,7 @@ _security-realm_ attribute and set the _ssl-context_ attribute. As there
 has to be always configured either _ssl-context_ or _security-realm_ you
 have to use batch operation when changing between those:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 batch
 /subsystem=undertow/server=default-server/https-listener=https:undefine-attribute(name=security-realm)
@@ -2198,7 +2198,7 @@ _jdbc-realm_, _filesystem-realm_, _properties-realm_, etc.
 
 Adding a security realm takes the general form:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/type-of-realm=realmName:add(....)
 ----
@@ -2217,7 +2217,7 @@ _simple-role-decoder_, and _custom-role-decoder_.
 
 Adding a role decoder takes the general form:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/ROLE-DECODER-TYPE=roleDeoderName:add(....)
 ----
@@ -2229,7 +2229,7 @@ Permission sets can be used to assign permissions to an identity.
 
 Adding a permission set takes the general form:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/permission-set=PermissionSetName:add(permissions=[{class-name="...", module="...", target-name="...", action="..."}...])
 ----
@@ -2255,7 +2255,7 @@ _simple-permission-mapper_, and _custom-permission-mapper_.
 
 Adding a permission mapper takes the general form:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/simple-permission-mapper=PermissionMapperName:add(...)
 ----
@@ -2272,7 +2272,7 @@ _constant-role-mapper_.
 
 Adding a role mapper takes the general form:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/ROLEM-MAPPER-TYPE=roleMapperName:add(...)
 ----
@@ -2286,7 +2286,7 @@ as for authentication with applications.
 
 Adding a security domain takes the general form:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/security-domain=domainName:add(realms=[{realm=realmName,role-decoder=roleDecoderName}],default-realm=realmName,permission-mapper=permissionMapperName,role-mapper=roleMapperName,...)
 ----
@@ -2302,7 +2302,7 @@ _sasl-authentication-factory_ and _kerberos-security-factory_.
 
 Adding an authentication factory takes the general form:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/AUTH-FACTORY-TYPE=authFactoryName:add(....)
 ----
@@ -2315,7 +2315,7 @@ used to configure a default ruby Policy provider. The subsystem allows
 you to define multiple policy providers but select a single one as the
 default:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=elytron/policy=policy-provider-a:add(custom-policy=\[{name=policy-provider-a, class-name=MyPolicyProviderA, module=x.y.z}\])
 ----

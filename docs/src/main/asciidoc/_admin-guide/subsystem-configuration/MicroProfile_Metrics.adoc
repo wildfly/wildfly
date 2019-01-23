@@ -14,7 +14,7 @@ You can also add the extension to a configuration without it either by adding
 an `<extension module="org.wildfly.extension.microprofile.metrics-smallrye"/>`
 element to the xml or by using the following CLI operation:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /]/extension=org.wildfly.extension.microprofile.metrics-smallrye:add
 ----

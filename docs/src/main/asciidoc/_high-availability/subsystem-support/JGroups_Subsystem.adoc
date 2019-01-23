@@ -46,7 +46,7 @@ The schema for the subsystem, describing all valid elements and
 attributes, can be found in the WildFly distribution, in the `docs/schema`
 directory.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:jgroups:6.0">
     <channels default="ee">
@@ -222,7 +222,7 @@ available in the JGroups subsystem interface used in these examples.
 [[add-a-stack]]
 === Add a stack
 
-[source]
+[source,options="nowrap"]
 ----
 /subsystem=jgroups/stack=mystack:add(transport={}, protocols={})
 ----
@@ -230,12 +230,12 @@ available in the JGroups subsystem interface used in these examples.
 [[add-a-protocol-to-a-stack]]
 === Add a protocol to a stack
 
-[source]
+[source,options="nowrap"]
 ----
 /subsystem=jgroups/stack=mystack/transport=TRANSPORT:add(type=<type>, socket-binding=<socketbinding>)
 ----
 
-[source]
+[source,options="nowrap"]
 ----
 /subsystem=jgroups/stack=mystack:add-protocol(type=<type>, socket-binding=<socketbinding>)
 ----
@@ -243,7 +243,7 @@ available in the JGroups subsystem interface used in these examples.
 [[add-a-property-to-a-protocol]]
 === Add a property to a protocol
 
-[source]
+[source,options="nowrap"]
 ----
 /subsystem=jgroups/stack=mystack/transport=TRANSPORT/property=<property>:add(value=<value>)
 ----

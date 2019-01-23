@@ -142,7 +142,7 @@ The following example makes the plugin consume the test.wsdl file and
 generate SEI and wrappers' java sources. The generated sources are then
 compiled together with the other project classes.
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <build>
   <plugins>
@@ -170,7 +170,7 @@ compiled together with the other project classes.
 You can also specify multiple wsdl files, as well as force the target
 package, enable SOAP 1.2 binding and turn the tool's verbose mode on:
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <build>
   <plugins>
@@ -203,7 +203,7 @@ Finally, if the wsconsume invocation is required for consuming a wsdl to
 be used in your testsuite only, you might want to use the
 _wsconsume-test_ goal as follows:
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <build>
   <plugins>
@@ -235,7 +235,7 @@ user is expected to set a dependency in his own `pom.xml` to the desired
 _JBossWS_ stack version. The plugin will rely on the that for using the
 proper tooling.
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <dependencies>
   <dependency>
@@ -330,7 +330,7 @@ Generate JAX-WS source and classes in a separate JVM with separate
 directories, a custom wsdl location attribute, and a list of binding
 files from foo.wsdl:
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <wsconsume
   fork="true"

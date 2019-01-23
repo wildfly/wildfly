@@ -4,7 +4,7 @@
 The following subsystems currently have no configuration beyond its root
 element in the configuration
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:jaxrs:1.0"/>
 <subsystem xmlns="urn:jboss:domain:jdr:1.0"/>

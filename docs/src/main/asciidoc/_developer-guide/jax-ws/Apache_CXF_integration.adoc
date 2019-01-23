@@ -118,7 +118,7 @@ handler business code.
 New Bus instances are produced by the currently configured
 `org.apache.cxf.BusFactory` implementation the following way:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 Bus bus = BusFactory.newInstance().createBus();
 ----
@@ -138,7 +138,7 @@ JBossWS users willing to explicitly use functionalities of
 `org.apache.cxf.bus.CXFBusFactory` _,_ get the same API with JBossWS
 additions through `JBossWSBusFactory`:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 Map<Class, Object> myExtensions = new HashMap<Class, Object>();
 myExtensions.put(...);
@@ -153,7 +153,7 @@ to a thread default bus for each thread. That is performed through
 static members in `org.apache.cxf.BusFactory` _,_ which also comes with
 the following methods in the public API:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 public static synchronized Bus getDefaultBus()
 public static synchronized Bus getDefaultBus(boolean createIfNeeded)
@@ -237,17 +237,17 @@ When relying on this strategy, the safest approach to be sure of
 cleaning up the link is to surround the JAXWS client with a
 `try/finally` block as below:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 try {
-Service service = Service.create(wsdlURL, serviceQName);
-MyEndpoint port = service.getPort(MyEndpoint.class);
-//...
+  Service service = Service.create(wsdlURL, serviceQName);
+  MyEndpoint port = service.getPort(MyEndpoint.class);
+  //...
 } finally {
-BusFactory.setThreadDefaultBus(null);
-// OR (if you don't need the bus and the client anymore)
- Bus bus = BusFactory.getThreadDefaultBus(false);
-bus.shutdown(true);
+  BusFactory.setThreadDefaultBus(null);
+  // OR (if you don't need the bus and the client anymore)
+   Bus bus = BusFactory.getThreadDefaultBus(false);
+  bus.shutdown(true);
 }
 ----
 
@@ -307,7 +307,7 @@ client being built by specifying one of the following JBossWS features
 
 The feature is specified as follows:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 Service service = Service.create(wsdlURL, serviceQName, new UseThreadBusFeature());
 ----
@@ -340,7 +340,7 @@ customizations.
 The `jboss-webservices.xml` descriptor can be used to
 <<JAX_WS_Advanced_User_Guide,provide property values>>.
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <webservices xmlns="http://www.jboss.com/xml/ns/javaee" version="1.2">
   ...
@@ -406,17 +406,17 @@ used to control installation of CXF response time interceptors, which
 are added by default when enabling MBean management, but might not be
 desired in some cases. Here is an example:
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <webservices xmlns="http://www.jboss.com/xml/ns/javaee" version="1.2">
-<property>
-<name>cxf.management.enabled</name>
-<value>true</value>
-</property>
-<property>
-<name>cxf.management.installResponseTimeInterceptors</name>
-<value>false</value>
-</property>
+  <property>
+    <name>cxf.management.enabled</name>
+    <value>true</value>
+  </property>
+  <property>
+    <name>cxf.management.installResponseTimeInterceptors</name>
+    <value>false</value>
+  </property>
 </webservices>
 ----
 
@@ -435,7 +435,7 @@ The `jboss-webservices.xml` descriptor also allows specifying the
 allows declaring interceptors to be attached to the Bus instance that's
 created for serving the deployment.
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <?xml version="1.1" encoding="UTF-8"?>
 <webservices
@@ -463,7 +463,7 @@ The `jboss-webservices.xml` descriptor also allows specifying the
 to any endpoint belonging to the Bus instance that's created for serving
 the deployment.
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <?xml version="1.1" encoding="UTF-8"?>
 <webservices
@@ -505,7 +505,7 @@ interceptors within <<Predefined_client_and_endpoint_configurations,predefined c
 configurations>> by specifying a list of interceptor class names for the
 `cxf.interceptors.in` and `cxf.interceptors.out` properties.
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 <jaxws-config xmlns="urn:jboss:jbossws-jaxws-config:4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:javaee="http://java.sun.com/xml/ns/javaee"
@@ -547,7 +547,7 @@ features within <<Predefined_client_and_endpoint_configurations,predefined clien
 configurations>> by specifying a list of feature class names for the
 `cxf.features` property.
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 <jaxws-config xmlns="urn:jboss:jbossws-jaxws-config:4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:javaee="http://java.sun.com/xml/ns/javaee"
@@ -599,7 +599,7 @@ following properties:
 would result into the stack installing two feature instances, the same
 that would have been created by
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 import org.Bar;
 import org.Foo;
@@ -626,7 +626,7 @@ http://cxf.apache.org/docs/client-http-transport-including-ssl-support.html[conf
 When running on top of the JBossWS integration, conduits can be
 programmatically modified using the Apache CXF API as follows:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 import org.apache.cxf.frontend.ClientProxy;
 import org.apache.cxf.transport.http.HTTPConduit;

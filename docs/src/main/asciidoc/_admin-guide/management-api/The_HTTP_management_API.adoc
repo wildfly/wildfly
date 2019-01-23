@@ -80,7 +80,7 @@ http://localhost:9990/management?operation=attribute&name=server-state&json.pret
 ....
 ** Using POST
 +
-[source,ruby]
+[source,options="nowrap"]
 ----
 $ curl --digest -L -D - http://localhost:9990/management --header "Content-Type: application/json" -d '{"operation":"read-attribute","name":"server-state","json.pretty":1}' -u admin
 Enter host password for user 'admin':
@@ -108,7 +108,7 @@ Date: Fri, 01 Aug 2014 11:49:50 GMT
 and passed parameters. This is same as if you would run
 */host=master/server=server-01:read-attribute(name=server-state)*
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 $ curl --digest -L -D - http://localhost:9990/management --header "Content-Type: application/json" -d '{"operation":"read-attribute","address":[{"host":"master"},{"server":"server-01"}],"name":"server-state","json.pretty":1}'
 HTTP/1.1 200 OK
@@ -129,7 +129,7 @@ This is the same as running
 in CLI
 ** Using GET
 +
-[source, ruby]
+[source,options="nowrap"]
 ----
 http://localhost:9990/management/subsystem/undertow/server/default-server?operation=resource&recursive=true&json.pretty=1
  
@@ -183,7 +183,7 @@ http://localhost:9990/management/subsystem/undertow/server/default-server?operat
 ----
 ** Using POST
 +
-[source,ruby]
+[source,options="nowrap"]
 ----
 $ curl --digest -D - http://localhost:9990/management --header "Content-Type: application/json" -d '{"operation":"read-resource", "include-runtime":"true" , "recursive":"true", "address":["subsystem","undertow","server","default-server"], "json.pretty":1}' -u admin:admin
 HTTP/1.1 401 Unauthorized
@@ -255,7 +255,7 @@ Date: Fri, 01 Aug 2014 13:25:45 GMT
 * You may also used some encoded DMR but the result won't be human
 readable
 +
-[source,bash]
+[source,options="nowrap"]
 ----
 curl --digest -u admin:admin --header "Content-Type: application/dmr-encoded" -d bwAAAAMACW9wZXJhdGlvbnMADXJlYWQtcmVzb3VyY2UAB2FkZHJlc3NsAAAAAAAHcmVjdXJzZVoB  http://localhost:9990/management
 ----
@@ -264,14 +264,14 @@ curl --digest -u admin:admin --header "Content-Type: application/dmr-encoded" -d
 ** First upload the file which will create a managed content. You will
 have to use http://localhost:9990/management/*add-content*
 +
-[source,ruby]
+[source,options="nowrap"]
 ----
 curl --digest -u admin:admin --form file=@tiny-webapp.war  http://localhost:9990/management/add-content
 {"outcome" : "success", "result" : { "BYTES_VALUE" : "+QJlHTDrogO9pm/57GkT/vxWNz0=" }}
 ----
 ** Now let's deploy the application
 +
-[source,ruby]
+[source,options="nowrap"]
 ----
 curl --digest -u admin:admin -L --header "Content-Type: application/json" -d '{"content":[{"hash": {"BYTES_VALUE" : "+QJlHTDrogO9pm/57GkT/vxWNz0="}}], "address": [{"deployment":"tiny-webapp.war"}], "operation":"add", "enabled":"true"}' http://localhost:9990/management
 {"outcome" : "success"}
@@ -280,7 +280,7 @@ curl --digest -u admin:admin -L --header "Content-Type: application/json" -d '{"
 [[using-some-jax-rs-code]]
 == Using some JAX-RS code
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 HttpAuthenticationFeature feature = HttpAuthenticationFeature.digest("admin", "admin");
 Client client = ClientBuilder.newClient();

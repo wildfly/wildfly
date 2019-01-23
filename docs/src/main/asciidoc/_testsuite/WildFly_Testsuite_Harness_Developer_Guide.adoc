@@ -44,7 +44,7 @@ TBD: https://issues.jboss.org/browse/ARQ-647
 
 **-arquillian.xml*
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <container qualifier="jboss" default="true">
     <configuration>
@@ -54,7 +54,7 @@ TBD: https://issues.jboss.org/browse/ARQ-647
 [[server-jvm-arguments]]
 === Server JVM arguments
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <surefire.memory.args>-Xmx512m -XX:MaxPermSize=256m</surefire.memory.args>
     <surefire.jpda.args></surefire.jpda.args>
@@ -83,7 +83,7 @@ TBD: https://issues.jboss.org/browse/ARQ-647
 
 == Debug parameters propagation
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <surefire.jpda.args></surefire.jpda.args>       - default
 

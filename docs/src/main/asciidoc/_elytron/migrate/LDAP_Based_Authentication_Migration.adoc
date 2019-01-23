@@ -49,7 +49,7 @@ For authentication purposes the username will be matched against the
 A connection to the LDAP server and related security realm can be
 created with the following commands: -
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 batch
 ./core-service=management/ldap-connection=MyLdapConnection:add(url="ldap://localhost:10389", search-dn="uid=admin,ou=system", search-credential="secret")
@@ -66,7 +66,7 @@ run-batch
 
 This results in the following configuration.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
   <management>
     <security-realms>
@@ -104,7 +104,7 @@ This results in the following configuration.
 The following commands can create a PicketBox security domain configured
 to use the LdapExtLoginModule to verify a username and password.
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 ./subsystem=security/security-domain=application-security:add
 ./subsystem=security/security-domain=application-security/authentication=classic:add(login-modules=[{code=LdapExtended, flag=Required, module-options={ \
@@ -123,7 +123,7 @@ roleAttributeID="uid" \
 
 This results in the following configuration.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
   <subsystem xmlns="urn:jboss:domain:security:2.0">
     ...
@@ -155,7 +155,7 @@ This results in the following configuration.
 Within the Elytron subsystem a directory context can be defined for the
 connection to LDAP: -
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 ./subsystem=elytron/dir-context=ldap-connection:add(url=ldap://localhost:10389, principal="uid=admin,ou=system", credential-reference={clear-text=secret})
 ----
@@ -163,7 +163,7 @@ connection to LDAP: -
 Then a security realm can be created to search LDAP and verify the
 supplied password: -
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 ./subsystem=elytron/ldap-realm=ldap-realm:add(dir-context=ldap-connection, \
 direct-verification=true, \
@@ -185,7 +185,7 @@ identity attribute " `Roles`" is mapped to the identity roles.
 
 This leads to the following configuration.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
   <subsystem xmlns="urn:wildfly:elytron:1.0" final-providers="combined-providers" disallowed-providers="OracleUcrypto">
     ...

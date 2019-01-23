@@ -5,7 +5,7 @@ The deployment scanner is only used in standalone mode. Its job is to
 monitor a directory for new files and to deploy those files. It can be
 found in `standalone.xml`:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:deployment-scanner:2.0">
    <deployment-scanner scan-interval="5000"
@@ -19,7 +19,7 @@ from more locations. The configuration showed will scan the
 runtime model is shown below, and uses default values for attributes not
 specified in the xml:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9999 /] /subsystem=deployment-scanner:read-resource(recursive=true)
 {
@@ -83,7 +83,7 @@ Deployment scanners can be added by modifying `standalone.xml` before
 starting up the server or they can be added and removed at runtime using
 the CLI
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /subsystem=deployment-scanner/scanner=new:add(scan-interval=10000,relative-to="jboss.server.base.dir",path="other-deployments")
 {"outcome" => "success"}
@@ -94,7 +94,7 @@ the CLI
 You can also change the attributes at runtime, so for example to turn
 off scanning you can do
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /subsystem=deployment-scanner/scanner=default:write-attribute(name="scan-enabled",value=false)
 {"outcome" => "success"}

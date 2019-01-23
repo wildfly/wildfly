@@ -44,7 +44,7 @@ We go with a contract-first approach, so we start by creating a proper
 WSDL contract, containing the WS-Reliable Messaging and WS-Addressing
 policies (the latter is a requirement of the former):
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 <wsdl:definitions name="SimpleService" targetNamespace="http://www.jboss.org/jbossws/ws-extensions/wsrm"
@@ -136,7 +136,7 @@ and endpoint.
 We provide a basic JAX-WS implementation for the endpoint, nothing
 special in it:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.samples.wsrm.service;
  
@@ -184,7 +184,7 @@ successfully exchanging messages with the server.
 So a regular JAX WS client is enough if the user does not need to tune
 any specific detail of the RM subsystem.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 QName serviceName = new QName("http://www.jboss.org/jbossws/ws-extensions/wsrm", "SimpleService");
 URL wsdlURL = new URL("http://localhost:8080/jaxws-samples-wsrm-api?wsdl");
@@ -200,7 +200,7 @@ Fine-grained tuning of WS-Reliable Messaging engine requires setting up
 proper RM features and attach them for instance to the client proxy.
 Here is an example:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.samples.wsrm.client;
  
@@ -237,7 +237,7 @@ The same can of course be achieved by factoring the feature into a
 custom pojo extending `org.apache.cxf.ws.rm.feature.RMFeature` and
 setting the obtained property in a client configuration:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.samples.wsrm.client;
  
@@ -270,7 +270,7 @@ public class CustomRMFeature extends RMFeature
 
 ... this is how the `jaxws-client-config.xml` descriptor would look:
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
  
@@ -290,7 +290,7 @@ xsi:schemaLocation="urn:jboss:jbossws-jaxws-config:4.0 schema/jbossws-jaxws-conf
 
 ... and this is how the client would set the configuration:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 import org.jboss.ws.api.configuration.ClientConfigUtil;
 import org.jboss.ws.api.configuration.ClientConfigurer;

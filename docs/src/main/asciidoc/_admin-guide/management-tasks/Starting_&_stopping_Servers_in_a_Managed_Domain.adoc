@@ -8,7 +8,7 @@ domain controller and need to be started through the management layer:
 First of all, get to know which `servers` are configured on a particular
 `host`:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [domain@localhost:9990 /] :read-children-names(child-type=host)
 {
@@ -31,7 +31,7 @@ First of all, get to know which `servers` are configured on a particular
 Now that we know, that there are two `servers` configured on `host` "
 _local_", we can go ahead and check their status:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [domain@localhost:9990 /] /host=local/server-config=server-one:read-resource(include-runtime=true)
 {
@@ -54,7 +54,7 @@ _local_", we can go ahead and check their status:
 You can change the server state through the " _start_" and " _stop_"
 operations
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 [domain@localhost:9990 /] /host=local/server-config=server-one:stop
 {

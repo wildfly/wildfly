@@ -90,14 +90,14 @@ using the AJP protocol.
 The first step is to add a reverse proxy handler to the Undertow
 subsystem:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=undertow/configuration=handler/reverse-proxy=my-handler:add()
 ----
 
 Then we need to define outbound socket bindings for remote hosts
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=remote-host1/:add(host=sv1.foo.com, port=8009)
 /socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=remote-host2/:add(host=sv2.foo.com, port=8009)
@@ -105,7 +105,7 @@ Then we need to define outbound socket bindings for remote hosts
 
 and than we add them as hosts to reverse proxy handler
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=undertow/configuration=handler/reverse-proxy=my-handler/host=host1:add(outbound-socket-binding=remote-host1, scheme=ajp, instance-id=myroute, path=/test)
 /subsystem=undertow/configuration=handler/reverse-proxy=my-handler/host=host2:add(outbound-socket-binding=remote-host2, scheme=ajp, instance-id=myroute, path=/test)
@@ -114,7 +114,7 @@ and than we add them as hosts to reverse proxy handler
 Now we need to actually add the reverse proxy to a location. I am going
 to assume we are serving the path `/app`:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=undertow/server=default-server/host=default-host/location=\/app:add(handler=my-handler)
 ----

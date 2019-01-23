@@ -69,7 +69,7 @@ type anymore.
 At the lowest level a JNDI entry is bound by installing a BinderService
 to a ServiceTarget:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
  
    /**
@@ -111,7 +111,7 @@ as alias names, may be used.
 
 Using the new high level API, it's as simple as:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 // bind an immediate value
 ContextNames.bindInfoFor("java:comp/ORB").bind(serviceTarget, this.orb);
@@ -129,7 +129,7 @@ If there is the need to access the binder's service builder, perhaps to
 add a service verification handler or simply not install the binder
 service right away:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 ContextNames.bindInfoFor("java:comp/ORB").builder(serviceTarget, verificationHandler, ServiceController.Mode.ON_DEMAND).installService(this.orb);
 ----
@@ -144,7 +144,7 @@ BindingConfiguration, to the EeModuleDescription or
 ComponentDescription, depending if the bind is specific to a component
 or not. An example of a deployment processor adding a binding:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 public class ModuleNameBindingProcessor implements DeploymentUnitProcessor {
  
@@ -193,7 +193,7 @@ java:comp/DefaultDatasource
 A deployment processor may now also add a binding configuration to all
 components in a module:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
      
 moduleDescription.getBindingConfigurations().addPlatformBindingToAllComponents(bindingConfiguration);
@@ -226,7 +226,7 @@ One particular use case is the parsing of EE Resource Definitions, and
 the reworked implementation provides high level abstract deployment
 processors for both XML descriptor and annotations, an example for each:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 /**
  * Deployment processor responsible for processing administered-object deployment descriptor elements
@@ -263,7 +263,7 @@ public class AdministeredObjectDefinitionDescriptorProcessor extends ResourceDef
 
 and
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 /**
  * Deployment processor responsible for processing {@link javax.resource.AdministeredObjectDefinition} and {@link javax.resource.AdministeredObjectDefinitions}.

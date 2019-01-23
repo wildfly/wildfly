@@ -27,7 +27,7 @@ In the jboss-ejb3 xml file, configure the value of active as false to
 mark that the MDB will not be receiving messages as soon as it is
 deployed:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <?xml version="1.1" encoding="UTF-8"?>
 <jboss:ejb-jar xmlns:jboss="http://www.jboss.com/xml/ns/javaee"
@@ -53,7 +53,7 @@ that active value to all MDBs in your application.
 Alternatively, you can use the org.jboss.ejb3.annotation.DeliveryActive
 annotation, as in the example below:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 @MessageDriven(name = "HelloWorldMDB", activationConfig = {
  
@@ -80,7 +80,7 @@ attribute, enabling or disabling delivery for the MDB. at runtime To use
 them, connect to the Wildfly instance you want to manage, then enter the
 path of the MDB you want to manage delivery for:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] cd deployment=jboss-helloworld-mdb.war/subsystem=ejb3/message-driven-bean=HelloWorldMDB
  
@@ -107,7 +107,7 @@ you can add as many delivery groups as you need to a Wildfly instance.
 * the ejb3 subsystem xml (located in your configuration xml, such as
 standalone.xml)
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:ejb3:4.0">
     ...
@@ -133,7 +133,7 @@ until the group becomes active.
 
 You can add a mdb-delivery-group using the add command as below:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] ./subsystem=ejb3/mdb-delivery-group=mdb-group-name:add
 {"outcome" => "success"}
@@ -145,7 +145,7 @@ You can add a mdb-delivery-group using the add command as below:
 You can check whether delivery is active for a group by reading the
 active attribute, which defaults to true:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] ./subsystem=ejb3/mdb-delivery-group=mdb-group-name:read-attribute(name=active)
 { "outcome" => "success", "result" => true }
@@ -154,7 +154,7 @@ active attribute, which defaults to true:
 To make the the delivery-group inactive, just write the active attribute
 with a false value:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] ./subsystem=ejb3/mdb-delivery-group=mdb-group-name:write-attribute(name=active,value=false)
 {"outcome" => "success"}
@@ -165,7 +165,7 @@ with a false value:
 
 To make it active again, write the attribute with a true value:
 
-[source,ruby]
+[source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] ./subsystem=ejb3/mdb-delivery-group=mdb-group-name:write-attribute(name=active,value=true)
 {"outcome" => "success"}
@@ -180,7 +180,7 @@ To make it active again, write the attribute with a true value:
 To mark that an MDB belongs to a delivery-group, declare so in the
 jboss-ejb3.xml file:
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <?xml version="1.1" encoding="UTF-8"?>
  
@@ -205,7 +205,7 @@ belong to a delivery-group. In the following example, we add all MDBs in
 the application to group1, except for HelloWorldMDB, that is added to
 group2:
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <?xml version="1.1" encoding="UTF-8"?>
 <jboss:ejb-jar xmlns:jboss="http://www.jboss.com/xml/ns/javaee"
@@ -231,7 +231,7 @@ group2:
 Another option is to use org.jboss.ejb3.annotation.DeliveryGroup
 annotation on each MDB class belonging to a group:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 @MessageDriven(name = "HelloWorldQueueMDB", activationConfig = {
  @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
@@ -273,7 +273,7 @@ or the @ClusteredSingleton annotation:
 
 * jboss-ejb3.xml:
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <?xml version="1.1" encoding="UTF-8"?>
 <jboss:ejb-jar xmlns:jboss="http://www.jboss.com/xml/ns/javaee"
@@ -301,7 +301,7 @@ are singleton clustered.
 You can use the org.jboss.ejb3.annotation.ClusteredSingleton annotation
 to mark an MDB as clustered singleton:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 @MessageDriven(name = "HelloWorldQueueMDB", activationConfig = {
  @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),

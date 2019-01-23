@@ -3,7 +3,7 @@
 
 Lets suppose security properties "a" and "c" defined in legacy security:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
         <subsystem xmlns="urn:jboss:domain:security:2.0">
             ...
@@ -17,7 +17,7 @@ Lets suppose security properties "a" and "c" defined in legacy security:
 To define security properties in Elytron subsystem you need to set
 attribute `security-properties` of the subsystem:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 ./subsystem=elytron:write-attribute(name=security-properties, value={ \
     a = "b", \
@@ -28,7 +28,7 @@ attribute `security-properties` of the subsystem:
 You can also add or change one another property without modification of
 others using map operations. Following command will set property "e":
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 ./subsystem=elytron:map-put(name=security-properties, key=e, value=f)
 ----
@@ -36,14 +36,14 @@ others using map operations. Following command will set property "e":
 By the same way you can also remove one of properties - in example newly
 created property "e":
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 ./subsystem=elytron:map-remove(name=security-properties, key=e)
 ----
 
 Output XML configuration will be:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
         <subsystem xmlns="urn:wildfly:elytron:1.0" final-providers="combined-providers" disallowed-providers="OracleUcrypto">
             <security-properties>

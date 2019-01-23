@@ -111,7 +111,7 @@ configurable timeout value with a default if not set.
 == Provide messages in assert*() and fail() calls
 Definitely, it's better to see "File x/y/z.xml not found" instead of:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 junit.framework.AssertionFailedError
      at junit.framework.Assert.fail(Assert.java:48) [arquillian-service:]
@@ -124,7 +124,7 @@ junit.framework.AssertionFailedError
 If your test uses some configuration property and it fails possibly due
 to misconfiguration, note the property and it's value in the exception:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 File jdbcJar = new File( System.getProperty("jbossas.ts.dir", "."),
        "integration/src/test/resources/mysql-connector-java-5.1.15.jar");

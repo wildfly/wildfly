@@ -14,7 +14,7 @@ Currently, the default configuration does not include the JMS subsystem.
 To enable JMS in the standalone server you need to add these
 configuration items to standalone.xml or simply use standalone-full.xml.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 <extension module="org.jboss.as.messaging"/>
  
@@ -116,7 +116,7 @@ configuration items to standalone.xml or simply use standalone-full.xml.
 
 Alternatively run the server using the preview configuration
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 $ bin/standalone.sh --server-config=standalone-preview.xml
 ----
@@ -132,7 +132,7 @@ For this tutorial we use two message destinations
 You can either add the message destinations by using the Command Line
 Interface (CLI)
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 $ bin/jboss-admin.sh --connect
 Connected to standalone controller at localhost:9999

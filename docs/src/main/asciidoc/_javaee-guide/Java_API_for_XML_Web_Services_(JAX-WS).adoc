@@ -56,7 +56,7 @@ on the `@WebService` annotation for now.
 [[implementing-the-service]]
 ==== Implementing the service
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.samples.retail.profile;
  
@@ -98,7 +98,7 @@ the more important ones here.
 
 Take a look at the request parameter:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 package org.jboss.test.ws.jaxws.samples.retail.profile;
  
@@ -268,7 +268,7 @@ case the service endpoint interface acts as the business interface.
 JAX-WS does use a service factory class to construct this as particular
 service stub:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 import javax.xml.ws.Service;
 [...]
@@ -293,7 +293,7 @@ stub
 [[sample-wsdl-contract]]
 ==== Sample wsdl contract
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 <definitions
     name='ProfileMgmtService'

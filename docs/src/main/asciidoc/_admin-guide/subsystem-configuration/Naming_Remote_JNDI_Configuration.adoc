@@ -13,7 +13,7 @@ over remote JNDI.
 In the subsystem's XML configuration, remote JNDI access bindings are
 configured through the `<remote-naming />` XML element:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <remote-naming />
 ----
@@ -22,7 +22,7 @@ Management clients, such as the WildFly CLI, may be used to add/remove
 the remote JNDI interface. An example to `add` and `remove` the one in
 the XML example above:
 
-[source, ruby]
+[source,options="nowrap"]
 ----
 /subsystem=naming/service=remote-naming:add
 /subsystem=naming/service=remote-naming:remove

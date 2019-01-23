@@ -36,7 +36,7 @@ Users should hence develop endpoints using the _contract-first_
 approach, that is explicitly providing the contract for their services.
 Here is a excerpt taken from a wsdl including a WS-Addressing policy:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <wsdl:definitions name="Foo" targetNamespace="http://ws.jboss.org/foo"
 ...
@@ -67,7 +67,7 @@ attaching policy fragments to the wsdl generated at deploy time.
 Here is an example of a code-first endpoint including @Policy
 annotation:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 import javax.jws.WebService;
 import org.apache.cxf.annotations.Policy;
@@ -89,7 +89,7 @@ include the policy to be attached; the attachment position in the
 contracts is defined through the `placement` attribute. Here is a
 descriptor example:
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <?xml version="1.0" encoding="UTF-8" ?>
 <wsp:Policy wsu:Id="MyPolicy" xmlns:wsp="http://www.w3.org/ns/ws-policy"
@@ -128,7 +128,7 @@ assertions for that set attached to the annotated endpoint. Multiple
 labels can also be specified. Here is an example of the @PolicySets
 annotation on a service endpoint interface:
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 import javax.jws.WebService;
 import org.jboss.ws.api.annotation.PolicySets;

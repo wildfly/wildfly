@@ -19,7 +19,7 @@ You can reference the default singleton policy of the server via the name:
 "org.wildfly.clustering.singleton.default-policy"
 e.g.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 public class MyServiceActivator implements ServiceActivator {
     @Override
@@ -49,7 +49,7 @@ You can reference a 'SingletonServiceConfiguratorFactory' using the default cach
 
 e.g.
 
-[source, java]
+[source,java,options="nowrap"]
 ----
 public class MyServiceActivator implements ServiceActivator {
     @Override

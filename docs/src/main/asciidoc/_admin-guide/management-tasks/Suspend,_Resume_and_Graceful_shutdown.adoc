@@ -20,18 +20,18 @@ the startup process is 100% complete.
 Suspend/Resume has no effect on management operations; management
 operations can still be performed while a server is suspended. If you
 wish to perform a management operation that will affect the operation of
-the server you can suspend the server, perform the operation, and then 
-resume the server. This allows all requests to finish, and makes sure 
-that no requests are running while the management changes are taking 
+the server you can suspend the server, perform the operation, and then
+resume the server. This allows all requests to finish, and makes sure
+that no requests are running while the management changes are taking
 place.
 
 [NOTE]
 ====
 If you perform a management operation while the server is suspended,
-and the response to that operation includes the 
-`operation-requires-reload` or `operation-requires-restart` response 
-headers, then the operation will not take full effect until that 
-reload or restart is done. Simply resuming the server will not be 
+and the response to that operation includes the
+`operation-requires-reload` or `operation-requires-restart` response
+headers, then the operation will not take full effect until that
+reload or restart is done. Simply resuming the server will not be
 sufficient to cause the change to take effect.
 ====
 
@@ -119,11 +119,13 @@ started at the suspending server.
 === Transactions and EJBs
 When you work with EJBs you have to enable the graceful shutdown
 functionality by setting the attribute `enable-graceful-txn-shutdown` to
-`true`. For example, in the ejb3 subsystem section of `standalone.xml`: 
-[source,xml]
+`true`. For example, in the ejb3 subsystem section of `standalone.xml`:
+
+[source,xml,options="nowrap"]
 ----
 <enable-graceful-txn-shutdown value="false"/>
 ----
+
 By *default* graceful shutdown is *disabled* for the ejb subsystem.
 The reason for this is that the behavior might be unwelcome in cluster
 environments, as the server notifies remote clients that the node is no
@@ -138,14 +140,14 @@ the node when it suspends, regardless of active transactions.
 [[standalone-mode]]
 == Standalone Mode
 
-Suspend/Resume can be controlled via the following CLI operations 
+Suspend/Resume can be controlled via the following CLI operations
 and commands in standalone mode:
 
 `:suspend(timeout=z)`
 
-Suspends the server. If the timeout is specified it will wait in the 
+Suspends the server. If the timeout is specified it will wait in the
 SUSPENDING phase up to the specified number of seconds for all requests
-to finish. If there is no timeout specified or the value is less than 
+to finish. If there is no timeout specified or the value is less than
 zero it will wait indefinitely.
 
 `:resume`
@@ -161,8 +163,8 @@ Returns the current suspend state of the server.
 
 If a timeout parameter is passed to the shutdown command then a graceful
 shutdown will be performed. The server will be suspended, and will wait
-in SUSPENDING state up to the specified number of seconds for all requests 
-to finish before shutting down. A timeout value of less than zero means 
+in SUSPENDING state up to the specified number of seconds for all requests
+to finish before shutting down. A timeout value of less than zero means
 it will wait indefinitely.
 
 [[domain-mode]]
@@ -203,9 +205,9 @@ process, e.g. via `kill -15 <pid>`, the WildFly server will shut down gracefully
 By default, the behavior will be analogous to a CLI `shutdown --timeout=0` command;
 that is the process will not wait in SUSPENDING state for in-flight requests to
 complete before proceeding to SUSPENDED state and then shutting down. A different
-timeout can be configured by setting the `org.wildfly.sigterm.suspend.timeout` 
-system property. The value of the property should be an integer indicating the maximum 
-number of seconds to wait for in-flight requests to complete. A value of `-1` means 
+timeout can be configured by setting the `org.wildfly.sigterm.suspend.timeout`
+system property. The value of the property should be an integer indicating the maximum
+number of seconds to wait for in-flight requests to complete. A value of `-1` means
 the server should wait indefinitely.
 
 Graceful shutdown via an OS signal will not work if the server JVM is configured

@@ -15,14 +15,14 @@ for most use cases and provides reasonable performance settings.
 
 *Required extension:*
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <extension module="org.wildfly.extension.undertow" />
 ----
 
 *Basic subsystem configuration example:*
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:undertow:1.0">
         <buffer-caches>
@@ -63,7 +63,7 @@ The total amount of space used can be calculated by multiplying the
 buffer size by the number of buffers per region by the maximum number of
 regions.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
   <buffer-caches>
     <buffer-cache name="default" buffer-size="1024" buffers-per-region="1024" max-regions="10"/>
@@ -89,7 +89,7 @@ amount of memory that can be used for caching
 A server represents an instance of Undertow. Basically this consists of
 a set of connectors and some configured handlers.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <server name="default-server" default-host="default-host" servlet-container="default" >
 ----
@@ -174,7 +174,7 @@ allowed. HTTP TRACE is disabled by default.
 [[http-connector]]
 ==== HTTP Connector
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <http-listener name="default" socket-binding="http"  />
 ----
@@ -205,7 +205,7 @@ real address of the client, rather than the address of the proxy.
 Https listener provides secure access to the server. The most important
 configuration option is security realm which defines SSL secure context.
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <https-listener name="default" socket-binding="https" security-realm="ssl-realm" />
 ----
@@ -226,7 +226,7 @@ client cert auth is in use this should be either REQUESTED or REQUIRED.
 [[ajp-listener]]
 ==== AJP listener
 
-[source,xml]
+[source,xml,options="nowrap"]
 ----
 <ajp-listener name="default" socket-binding="ajp" />
 ----

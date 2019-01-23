@@ -141,7 +141,7 @@ group.
 
 An example server group definition is as follows:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <server-group name="main-server-group" profile="default">
     <socket-binding-group ref="standard-sockets"/>

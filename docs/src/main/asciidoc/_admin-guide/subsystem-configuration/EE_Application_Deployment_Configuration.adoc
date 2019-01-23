@@ -15,7 +15,7 @@ the global modules.
 Each global module is defined through the `module` resource, an example
 of its XML configuration:
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
   <global-modules>
     <module name="org.jboss.logging" slot="main"/>
@@ -47,7 +47,7 @@ access classes belonging to another subdeployment within the same
 `.ear`. The default value is `false`, which allows the subdeployments to
 see classes belonging to other subdeployments within the `.ear`.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
   <ear-subdeployments-isolated>true</ear-subdeployments-isolated>
 ----
@@ -101,7 +101,7 @@ standard Java EE XML descriptors. If not configured this defaults to
 `true`, however it is set to `false` in the standard configuration files
 shipped with WildFly.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
   <spec-descriptor-property-replacement>false</spec-descriptor-property-replacement>
 ----
@@ -113,7 +113,7 @@ Flag indicating whether system property replacement will be performed on
 WildFly proprietary XML descriptors, such as `jboss-app.xml`. This
 defaults to `true`.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
   <jboss-descriptor-property-replacement>false</jboss-descriptor-property-replacement>
 ----
@@ -124,7 +124,7 @@ defaults to `true`.
 Flag indicating whether system property replacement will be performed on
 Java annotations. The default value is `false`.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
   <annotation-property-replacement>false</annotation-property-replacement>
 ----

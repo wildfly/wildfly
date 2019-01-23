@@ -23,7 +23,7 @@ resources.
 `messaging-activemq`'s `server` and can be used to store in JNDI a
 HornetQ-based JMS ConnectionFactory.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:messaging-activemq:1.0"> 
     <server name="default">
@@ -39,7 +39,7 @@ HornetQ-based JMS ConnectionFactory.
 providing a `legacy-entries` attribute to the `jms-queue` and
 `jms-topic` resource.
 
-[source, xml]
+[source,xml,options="nowrap"]
 ----
     <jms-queue name="myQueue"
                entries="java:jboss/exported/jms/myQueue-new"
@@ -92,7 +92,7 @@ For example, if a WidFly 10 JMS clients wants to communicate with a
 legacy server using a JMS queue named `myQueue`, it must use the
 following properties to configure its JNDI `InitialContext`:
 
-[source]
+[source,options="nowrap"]
 ----
 java.naming.factory.initial=org.apache.activemq.artemis.jndi.ActiveMQInitialContextFactory
 connectionFactory.jms/ConnectionFactory=tcp://<legacy server address>:5445? \
