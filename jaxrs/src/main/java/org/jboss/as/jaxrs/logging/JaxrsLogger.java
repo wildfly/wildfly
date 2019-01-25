@@ -181,4 +181,21 @@ public interface JaxrsLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 18, value = "Explicit usage of Jackson annotation in a JAX-RS deployment; the system will disable JSON-B processing for the current deployment. Consider setting the '%s' property to 'false' to restore JSON-B.")
     void jacksonAnnotationDetected(String property);
+
+    @LogMessage(level = WARN)
+    @Message(id = 19, value = "Error converting default value %s for parameter %s in method %s using param converter %s. Exception: %s : %s")
+    void paramConverterFailed(String defaultValue, String param, String method,
+                                String paramConverter, String exceptionClass,
+                                String exceptionMsg);
+
+    @LogMessage(level = WARN)
+    @Message(id = 20, value = "\"Error converting default value %s for parameter %s in method %s using method %s. Exception: %s : %s\"")
+    void baseTypeMethodFailed(String defaultValue, String param, String method,
+                              String converterMethod, String exceptionClass,
+                              String exceptionMsg);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 21, value = "%s %s")
+    void classIntrospectionFailure(String clazz, String msg);
+
 }
