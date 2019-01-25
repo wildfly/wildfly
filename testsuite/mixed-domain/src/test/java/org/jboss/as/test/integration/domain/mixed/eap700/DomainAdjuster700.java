@@ -25,6 +25,7 @@ package org.jboss.as.test.integration.domain.mixed.eap700;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.operations.common.Util.createRemoveOperation;
+import static org.jboss.as.controller.operations.common.Util.getWriteAttributeOperation;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -48,6 +49,7 @@ public class DomainAdjuster700 extends DomainAdjuster710 {
 
         list.addAll(removeCoreManagement(profileAddress.append(SUBSYSTEM, "core-management")));
         list.addAll(removeElytron(profileAddress.append(SUBSYSTEM, "elytron")));
+        list.addAll(adjustWS(profileAddress.append(SUBSYSTEM, "webservices")));
         return list;
     }
 
@@ -65,6 +67,13 @@ public class DomainAdjuster700 extends DomainAdjuster710 {
         //core-management subsystem and extension don't exist
         list.add(createRemoveOperation(subsystem));
         list.add(createRemoveOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.core-management")));
+        return list;
+    }
+
+    private Collection<? extends ModelNode> adjustWS(PathAddress webservices) {
+        final List<ModelNode> list = new ArrayList<>();
+        //expressions are not enabled for statistics-enabled attribute
+        list.add(getWriteAttributeOperation(webservices, "statistics-enabled", false));
         return list;
     }
 }

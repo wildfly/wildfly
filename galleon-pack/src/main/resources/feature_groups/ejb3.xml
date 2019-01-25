@@ -9,6 +9,7 @@
         <param name="default-singleton-bean-access-timeout" value="5000"/>
         <param name="default-missing-method-permissions-deny-access" value="true"/>
         <param name="log-system-exceptions" value="true"/>
+        <param name="statistics-enabled" value="${wildfly.ejb3.statistics-enabled:${wildfly.statistics-enabled:false}}"/>
         <feature spec="subsystem.ejb3.cache">
             <param name="cache" value="simple"/>
         </feature>

@@ -2,7 +2,7 @@
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
 <config>
    <extension-module>org.jboss.as.webservices</extension-module>
-   <subsystem xmlns="urn:jboss:domain:webservices:2.0">
+   <subsystem xmlns="urn:jboss:domain:webservices:2.0" statistics-enabled="${wildfly.webservices.statistics-enabled:${wildfly.statistics-enabled:false}}">
        <wsdl-host>${jboss.bind.address:127.0.0.1}</wsdl-host>
        <endpoint-config name="Standard-Endpoint-Config"/>
        <endpoint-config name="Recording-Endpoint-Config">
