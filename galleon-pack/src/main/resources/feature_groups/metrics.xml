@@ -3,5 +3,6 @@
     <feature spec="subsystem.microprofile-metrics-smallrye">
       <param name="security-enabled" value="false"/>
       <param name="exposed-subsystems" value="[*]" />
+      <param name="prefix" value="${wildfly.metrics.prefix:wildfly}" />
     </feature>
 </feature-group-spec>

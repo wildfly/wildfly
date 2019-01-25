@@ -24,20 +24,18 @@ package org.wildfly.extension.microprofile.metrics;
 
 import static org.wildfly.extension.microprofile.metrics.MicroProfileMetricsSubsystemDefinition.HTTP_CONTEXT_SERVICE;
 
-import java.util.Iterator;
+import java.io.StringWriter;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import io.smallrye.metrics.MetricRegistries;
+import io.prometheus.client.CollectorRegistry;
+import io.prometheus.client.exporter.common.TextFormat;
 import io.smallrye.metrics.MetricsRequestHandler;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HeaderValues;
 import io.undertow.util.Headers;
 import io.undertow.util.HttpString;
-import org.eclipse.microprofile.metrics.Gauge;
-import org.eclipse.microprofile.metrics.Metric;
-import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.server.mgmt.domain.ExtensibleHttpManagement;
 import org.jboss.msc.Service;
@@ -50,7 +48,7 @@ import org.jboss.msc.service.StopContext;
  */
 public class MetricsContextService implements Service {
 
-    private static final String CONTEXT_NAME = "metrics";
+    private static final String CONTEXT_NAME = "/metrics";
 
     private final Supplier<ExtensibleHttpManagement> extensibleHttpManagement;
     private final boolean securityEnabled;
@@ -77,52 +75,36 @@ public class MetricsContextService implements Service {
     public void start(StartContext context) {
         extensibleHttpManagement.get().addManagementHandler(CONTEXT_NAME, securityEnabled,
                 new HttpHandler() {
-                    boolean checkMetrics = true;
 
                     @Override
                     public void handleRequest(HttpServerExchange exchange) throws Exception {
-
-                        if (checkMetrics) {
-                          checkMetrics();
-                          checkMetrics = false;
-                        }
-
                         String requestPath = exchange.getRequestPath();
                         String method = exchange.getRequestMethod().toString();
+                        StringBuffer buffer = new StringBuffer();
                         HeaderValues acceptHeaders = exchange.getRequestHeaders().get(Headers.ACCEPT);
                         metricsRequestHandler.handleRequest(requestPath, method, acceptHeaders == null ? null : acceptHeaders.stream(), (status, message, headers) -> {
                             exchange.setStatusCode(status);
                             for (Map.Entry<String, String> entry : headers.entrySet()) {
                                 exchange.getResponseHeaders().put(new HttpString(entry.getKey()), entry.getValue());
                             }
-                            exchange.getResponseSender().send(message);
+                            buffer.append(message);
                         });
+
+                        if (exchange.getRequestPath().equals(CONTEXT_NAME) ||
+                                exchange.getRequestPath().equals(CONTEXT_NAME + '/')) {
+                            String acceptHeader = exchange.getRequestHeaders().getFirst(Headers.ACCEPT);
+                            boolean jsonOutput = acceptHeader != null && acceptHeader.startsWith("application/json");
+                            if (!jsonOutput) {
+                                try (StringWriter sw = new StringWriter()) {
+                                    CollectorRegistry registry = CollectorRegistry.defaultRegistry;
+                                    TextFormat.write004(sw, registry.metricFamilySamples());
+                                    buffer.append(sw.toString());
+                                }
+                            }
+                        }
+                        exchange.getResponseSender().send(buffer.toString());
                     }
                 });
-    }
-
-    /**
-     * Check that the gauge metric registered in the vendor scope are actually returning a value.
-     *
-     * Some metrics from WildFly could return "undefined" values (when the corresponding statistics-enabled flag is false).
-     * We check them when the 1st HTTP request is served so that smallrye-metrics will only have "correct" metric
-     * (with numeric values) in the Vendor registry.
-     */
-    private synchronized void checkMetrics() {
-        MetricRegistry vendorRegistry = MetricRegistries.get(MetricRegistry.Type.VENDOR);
-        Iterator<Map.Entry<String, Metric>> iterator = vendorRegistry.getMetrics().entrySet().iterator();
-        while (iterator.hasNext()) {
-            Map.Entry<String, Metric> entry = iterator.next();
-            Metric metric = entry.getValue();
-            if (metric instanceof Gauge) {
-                Gauge gauge = (Gauge) metric;
-                try {
-                    gauge.getValue();
-                } catch (Exception e) {
-                    iterator.remove();
-                }
-            }
-        }
     }
 
     @Override

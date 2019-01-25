@@ -65,8 +65,9 @@ class MicroProfileMetricsSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         final boolean securityEnabled = MicroProfileMetricsSubsystemDefinition.SECURITY_ENABLED.resolveModelAttribute(context, model).asBoolean();
         List<String> exposedSubsystems = MicroProfileMetricsSubsystemDefinition.EXPOSED_SUBSYSTEMS.unwrap(context, model);
+        String prefix = MicroProfileMetricsSubsystemDefinition.PREFIX.resolveModelAttribute(context, model).asStringOrNull();
 
-        MetricsRegistrationService.install(context, exposedSubsystems);
+        MetricsRegistrationService.install(context, exposedSubsystems, prefix);
         MetricsContextService.install(context, securityEnabled);
 
         MicroProfileMetricsLogger.LOGGER.activatingSubsystem();

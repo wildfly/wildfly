@@ -69,7 +69,13 @@ public class MicroProfileMetricsSubsystemDefinition extends PersistentResourceDe
             .setRestartAllServices()
             .build();
 
-    static final AttributeDefinition[] ATTRIBUTES = { SECURITY_ENABLED, EXPOSED_SUBSYSTEMS };
+    static final AttributeDefinition PREFIX = SimpleAttributeDefinitionBuilder.create("prefix", ModelType.STRING)
+            .setRequired(false)
+            .setRestartAllServices()
+            .setAllowExpression(true)
+            .build();
+
+    static final AttributeDefinition[] ATTRIBUTES = { SECURITY_ENABLED, EXPOSED_SUBSYSTEMS, PREFIX };
 
     protected MicroProfileMetricsSubsystemDefinition() {
         super(new SimpleResourceDefinition.Parameters(MicroProfileMetricsExtension.SUBSYSTEM_PATH,

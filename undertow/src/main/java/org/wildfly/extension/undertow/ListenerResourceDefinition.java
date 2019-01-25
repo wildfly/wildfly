@@ -23,6 +23,7 @@
 package org.wildfly.extension.undertow;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.registry.AttributeAccess.Flag.COUNTER_METRIC;
 import static org.wildfly.extension.undertow.Capabilities.REF_IO_WORKER;
 import static org.wildfly.extension.undertow.Capabilities.REF_SOCKET_BINDING;
 
@@ -167,18 +168,32 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
 
     public enum ConnectorStat {
         REQUEST_COUNT(new SimpleAttributeDefinitionBuilder("request-count", ModelType.LONG)
-                .setUndefinedMetricValue(new ModelNode(0)).setStorageRuntime().build()),
+                .setUndefinedMetricValue(new ModelNode(0))
+                .setFlags(COUNTER_METRIC)
+                .setStorageRuntime()
+                .build()),
         BYTES_SENT(new SimpleAttributeDefinitionBuilder("bytes-sent", ModelType.LONG)
+                .setUndefinedMetricValue(new ModelNode(0))
                 .setMeasurementUnit(MeasurementUnit.BYTES)
-                .setUndefinedMetricValue(new ModelNode(0)).setStorageRuntime().build()),
+                .setFlags(COUNTER_METRIC)
+                .setStorageRuntime()
+                .build()),
         BYTES_RECEIVED(new SimpleAttributeDefinitionBuilder("bytes-received", ModelType.LONG)
+                .setUndefinedMetricValue(new ModelNode(0))
                 .setMeasurementUnit(MeasurementUnit.BYTES)
-                .setUndefinedMetricValue(new ModelNode(0)).setStorageRuntime().build()),
+                .setFlags(COUNTER_METRIC)
+                .setStorageRuntime()
+                .build()),
         ERROR_COUNT(new SimpleAttributeDefinitionBuilder("error-count", ModelType.LONG)
-                .setUndefinedMetricValue(new ModelNode(0)).setStorageRuntime().build()),
+                .setUndefinedMetricValue(new ModelNode(0))
+                .setFlags(COUNTER_METRIC)
+                .setStorageRuntime().build()),
         PROCESSING_TIME(new SimpleAttributeDefinitionBuilder("processing-time", ModelType.LONG)
+                .setUndefinedMetricValue(new ModelNode(0))
                 .setMeasurementUnit(MeasurementUnit.NANOSECONDS)
-                .setUndefinedMetricValue(new ModelNode(0)).setStorageRuntime().build()),
+                .setFlags(COUNTER_METRIC)
+                .setStorageRuntime()
+                .build()),
         MAX_PROCESSING_TIME(new SimpleAttributeDefinitionBuilder("max-processing-time", ModelType.LONG)
                 .setMeasurementUnit(MeasurementUnit.NANOSECONDS)
                 .setUndefinedMetricValue(new ModelNode(0)).setStorageRuntime().build());
