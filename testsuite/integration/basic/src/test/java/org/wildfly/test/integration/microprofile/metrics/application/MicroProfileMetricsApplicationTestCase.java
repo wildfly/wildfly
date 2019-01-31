@@ -216,7 +216,7 @@ public class MicroProfileMetricsApplicationTestCase {
 
                         assertTrue(labels.contains("deployment=\"MicroProfileMetricsApplicationTestCase.war\""));
                         assertTrue(labels.contains("subdeployment=\"MicroProfileMetricsApplicationTestCase.war\""));
-                        assertTrue(labels.contains("servlet=\"org.wildfly.test.integration.microprofile.metrics.application.TestApplication\""));
+                        assertTrue(labels.contains("servlet=\"org.wildfly.test.integration.microprofile.metrics.TestApplication\""));
                         assertEquals(Integer.valueOf(expectedCount).doubleValue(), value, 0);
 
                         return;
