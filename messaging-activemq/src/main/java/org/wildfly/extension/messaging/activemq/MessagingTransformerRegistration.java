@@ -85,6 +85,8 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
                 ServerDefinition.GLOBAL_MAX_DISK_USAGE,
                 ServerDefinition.DISK_SCAN_PERIOD,
                 ServerDefinition.GLOBAL_MAX_MEMORY_SIZE);
+        ResourceTransformationDescriptionBuilder queue = server.addChildResource(MessagingExtension.QUEUE_PATH);
+        rejectDefinedAttributeWithDefaultValue(queue, QueueDefinition.ROUTING_TYPE);
     }
 
     private static void registerTransformers_EAP_7_2_0(ResourceTransformationDescriptionBuilder subsystem) {

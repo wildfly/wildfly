@@ -380,10 +380,10 @@ public class MessagingSubsystemParser_6_0 extends PersistentResourceXMLParser {
                                                         PathDefinition.RELATIVE_TO))
                                 .addChild(
                                         builder(MessagingExtension.QUEUE_PATH)
-                                                .addAttributes(
-                                                        QueueDefinition.ADDRESS,
+                                                .addAttributes(QueueDefinition.ADDRESS,
                                                         CommonAttributes.DURABLE,
-                                                        CommonAttributes.FILTER))
+                                                        CommonAttributes.FILTER,
+                                                        QueueDefinition.ROUTING_TYPE))
                                 .addChild(
                                         builder(SecuritySettingDefinition.INSTANCE.getPathElement())
                                                 .addChild(

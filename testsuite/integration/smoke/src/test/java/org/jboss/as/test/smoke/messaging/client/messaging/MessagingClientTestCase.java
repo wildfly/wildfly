@@ -159,7 +159,7 @@ public class MessagingClientTestCase {
         createSocketBinding(managementClient.getControllerClient(), messagingSocketBindingName, messagingPort);
         JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
         jmsOperations.createRemoteAcceptor(remoteAcceptorName, messagingSocketBindingName, null);
-        jmsOperations.addCoreQueue(queueName, queueName, true);
+        jmsOperations.addCoreQueue(queueName, queueName, true, "ANYCAST");
 
         ServerReload.reloadIfRequired(managementClient.getControllerClient());
     }

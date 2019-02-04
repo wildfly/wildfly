@@ -30,6 +30,7 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.FILTER;
 
 import java.util.List;
 import java.util.function.Supplier;
+import org.apache.activemq.artemis.api.core.RoutingType;
 
 import org.apache.activemq.artemis.core.config.Configuration;
 import org.apache.activemq.artemis.core.config.CoreQueueConfiguration;
@@ -45,6 +46,8 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
+
+import static org.wildfly.extension.messaging.activemq.QueueDefinition.ROUTING_TYPE;
 
 /**
  * Core queue add update.
@@ -99,15 +102,16 @@ public class QueueAdd extends AbstractAddStepHandler {
 
     private static CoreQueueConfiguration createCoreQueueConfiguration(final OperationContext context, String name, ModelNode model) throws OperationFailedException {
         final String queueAddress = QueueDefinition.ADDRESS.resolveModelAttribute(context, model).asString();
-        final ModelNode filterNode =  FILTER.resolveModelAttribute(context, model);
-        final String filter = filterNode.isDefined() ? filterNode.asString() : null;
+        final String filter = FILTER.resolveModelAttribute(context, model).asStringOrNull();
+        final String routing = ROUTING_TYPE.resolveModelAttribute(context, model).asString();
         final boolean durable = DURABLE.resolveModelAttribute(context, model).asBoolean();
 
         return new CoreQueueConfiguration()
                 .setAddress(queueAddress)
                 .setName(name)
                 .setFilterString(filter)
-                .setDurable(durable);
+                .setDurable(durable)
+                .setRoutingType(RoutingType.valueOf(routing));
     }
 
 }

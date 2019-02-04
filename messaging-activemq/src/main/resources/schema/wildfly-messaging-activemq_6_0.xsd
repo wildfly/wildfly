@@ -296,6 +296,14 @@
                     <xs:attribute name="address" type="xs:string" use="optional" />
                     <xs:attribute name="filter" type="xs:string" use="optional" />
                     <xs:attribute name="durable" type="xs:boolean" use="optional" />
+                    <xs:attribute name="routing-type" use="optional">
+                        <xs:simpleType>
+                            <xs:restriction base="xs:string">
+                                <xs:enumeration value="MULTICAST"/>
+                                <xs:enumeration value="ANYCAST"/>
+                            </xs:restriction>
+                        </xs:simpleType>
+                    </xs:attribute>
                 </xs:complexType>
             </xs:element>
 
