@@ -885,17 +885,5 @@ public class ServerDefinition extends PersistentResourceDefinition {
 
     enum JournalType {
         NIO, ASYNCIO;
-        public static final String validValues = Arrays.toString(JournalType.values());
-
-        public static JournalType getType(String type) {
-            switch (type) {
-                case "NIO":
-                    return NIO;
-                case "ASYNCIO":
-                    return ASYNCIO;
-                default:
-                    throw new IllegalStateException("Invalid JournalType:" + type + " valid Types: " + validValues);
-            }
-        }
     }
 }

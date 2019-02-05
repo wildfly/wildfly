@@ -173,12 +173,13 @@ public class ActiveMQProviderJMSOperations implements JMSOperations {
     }
 
     @Override
-    public void addCoreQueue(String queueName, String queueAddress, boolean durable) {
+    public void addCoreQueue(String queueName, String queueAddress, boolean durable, String routing) {
         ModelNode address = getServerAddress()
                 .add("queue", queueName);
         ModelNode attributes = new ModelNode();
         attributes.get("queue-address").set(queueAddress);
         attributes.get("durable").set(durable);
+        attributes.get("routing-type").set(routing);
         executeOperation(address, ADD, attributes);
     }
 

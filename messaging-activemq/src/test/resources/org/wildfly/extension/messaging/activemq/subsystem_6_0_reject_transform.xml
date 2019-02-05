@@ -71,6 +71,11 @@
         <replication-colocated>
             <master />
         </replication-colocated>
+        <queue name="coreQueueA"
+               address="${address:addressA}"
+               filter="${filter:afilter}"
+               durable="${durable:true}"/>
+        <queue name="coreQueueB" address="addressB" routing-type="ANYCAST" />
 
         <address-setting name="#"
                          auto-create-queues="true"

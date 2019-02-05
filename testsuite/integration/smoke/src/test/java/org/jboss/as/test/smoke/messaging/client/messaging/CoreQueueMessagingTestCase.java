@@ -52,13 +52,13 @@ public class CoreQueueMessagingTestCase {
     @Test
     public void testMessagingClientUsingMessagingPort() throws Exception {
         JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
-        jmsOperations.addCoreQueue(queueName, queueName, true);
+        jmsOperations.addCoreQueue(queueName, queueName, true, "ANYCAST");
         ServerReload.executeReloadAndWaitForCompletion(managementClient);
         jmsOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
         jmsOperations.removeCoreQueue(queueName);
         ServerReload.executeReloadAndWaitForCompletion(managementClient);
         jmsOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
-        jmsOperations.addCoreQueue(queueName, queueName, true);
+        jmsOperations.addCoreQueue(queueName, queueName, true, "MULTICAST");
     }
 
 

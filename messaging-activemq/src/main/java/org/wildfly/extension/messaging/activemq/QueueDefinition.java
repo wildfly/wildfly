@@ -32,6 +32,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.CaseParameterCorrector;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
@@ -40,6 +41,7 @@ import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
@@ -59,7 +61,15 @@ public class QueueDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .build();
 
-    static final SimpleAttributeDefinition[] ATTRIBUTES = { ADDRESS, CommonAttributes.FILTER, CommonAttributes.DURABLE };
+    static final SimpleAttributeDefinition ROUTING_TYPE = create("routing-type", ModelType.STRING)
+            .setDefaultValue(new ModelNode(RoutingType.MULTICAST.toString()))
+            .setRequired(false)
+            .setAllowExpression(true)
+            .setCorrector(CaseParameterCorrector.TO_UPPER)
+            .setValidator(EnumValidator.create(RoutingType.class, RoutingType.values()))
+            .build();
+
+    static final SimpleAttributeDefinition[] ATTRIBUTES = { ADDRESS, CommonAttributes.FILTER, CommonAttributes.DURABLE, ROUTING_TYPE};
 
     public static final SimpleAttributeDefinition EXPIRY_ADDRESS = create(CommonAttributes.EXPIRY_ADDRESS)
             .setStorageRuntime()
@@ -173,5 +183,9 @@ public class QueueDefinition extends PersistentResourceDefinition {
             context.addStep(forwardOperation, handler, OperationContext.Stage.RUNTIME, true);
             return true;
         }
+    }
+
+   private enum RoutingType {
+        MULTICAST, ANYCAST;
     }
 }

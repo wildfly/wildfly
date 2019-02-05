@@ -63,8 +63,8 @@ public class AddressControlManagementTestCase {
 
         count++;
 
-        jmsOperations.addCoreQueue(getQueueName(), getAddress(), false);
-        jmsOperations.addCoreQueue(getOtherQueueName(), getAddress(), false);
+        jmsOperations.addCoreQueue(getQueueName(), getAddress(), false, "anycast");
+        jmsOperations.addCoreQueue(getOtherQueueName(), getAddress(), false, "anycast");
     }
 
     @After
