@@ -207,7 +207,7 @@ public class RunAsWithElytronEJBContextPropagationTestCase extends AbstractCliTe
                     .setup("/subsystem=ejb3/application-security-domain=ejbtest-domain:add(security-domain=ApplicationDomain)")
                     .setup("/subsystem=elytron/authentication-configuration=ejb-outbound-configuration:add(authentication-name=user2,security-domain=ApplicationDomain,realm=ApplicationRealm,forwarding-mode=authorization,credential-reference={clear-text=password2})")
                     .setup("/subsystem=elytron/authentication-context=ejb-outbound-context:add(match-rules=[{authentication-configuration=ejb-outbound-configuration,match-no-user=true}])")
-                    .setup("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=ejb-outbound:add(host=localhost,port=8080)")
+                    .setup(String.format("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=ejb-outbound:add(host=\"%s\",port=8080)", TestSuiteEnvironment.getServerAddress()))
                     .setup("/subsystem=remoting/remote-outbound-connection=ejb-outbound-connection:add(outbound-socket-binding-ref=ejb-outbound,authentication-context=ejb-outbound-context)")
                     .setup("/subsystem=elytron/sasl-authentication-factory=application-sasl-authentication:write-attribute(name=mechanism-configurations,value=[{mechanism-name=PLAIN},{mechanism-name=JBOSS-LOCAL-USER,realm-mapper=local},{mechanism-name=DIGEST-MD5,mechanism-realm-configurations=[{realm-name=ApplicationRealm}]}])")
                     .setup(String.format(
