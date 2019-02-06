@@ -45,13 +45,6 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.as.test.integration.security.common.Utils;
-import org.jboss.as.test.integration.security.common.servlets.SimpleServlet;
-import org.jboss.as.test.integration.web.sso.LogoutServlet;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 
 /**
@@ -61,20 +54,9 @@ import org.junit.Test;
  */
 abstract class FormMechTestCase extends AbstractMechTestBase {
 
-    private static final String NAME = FormMechTestCase.class.getSimpleName();
-    private static final String LOGIN_PAGE_CONTENT = "LOGINPAGE";
-    private static final String ERROR_PAGE_CONTENT = "ERRORPAGE";
-
-    @Deployment(testable = false)
-    public static WebArchive createDeployment() {
-        return ShrinkWrap.create(WebArchive.class, NAME + ".war")
-                .addClasses(SimpleServlet.class)
-                .addClasses(LogoutServlet.class)
-                .addAsWebInfResource(Utils.getJBossWebXmlAsset(APP_DOMAIN), "jboss-web.xml")
-                .addAsWebResource(new StringAsset(LOGIN_PAGE_CONTENT), "login.html")
-                .addAsWebResource(new StringAsset(ERROR_PAGE_CONTENT), "error.html")
-                .addAsWebInfResource(FormMechTestCase.class.getPackage(), NAME + "-web.xml", "web.xml");
-    }
+    protected static final String NAME = FormMechTestCase.class.getSimpleName();
+    protected static final String LOGIN_PAGE_CONTENT = "LOGINPAGE";
+    protected static final String ERROR_PAGE_CONTENT = "ERRORPAGE";
 
     @Test
     @Override
