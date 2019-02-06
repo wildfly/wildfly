@@ -21,14 +21,6 @@
  */
 package org.jboss.as.weld.discovery;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Modifier;
-import java.util.List;
-import java.util.Set;
-
-import javax.enterprise.inject.Vetoed;
-import javax.inject.Inject;
-
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.as.weld.util.Reflections;
@@ -38,8 +30,15 @@ import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.weld.resources.spi.ClassFileInfo;
-import org.jboss.weld.resources.spi.ClassFileInfo.NestingType;
 import org.jboss.weld.util.cache.ComputingCache;
+
+import javax.enterprise.inject.Vetoed;
+import javax.inject.Inject;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.List;
+import java.util.Set;
 
 /**
  *
@@ -318,7 +317,40 @@ public class WeldClassFileInfo implements ClassFileInfo {
                 return true;
             }
         }
+        // Also check default methods on interfaces
+        for (DotName interfaceName : classInfo.interfaceNames()) {
+            final ClassInfo interfaceInfo = index.getClassByName(interfaceName);
+            if (interfaceInfo == null) {
+                // we are accessing a class that is outside of the jandex index
+                // fallback to using reflection
+                Class<?> interfaceClass = loadClass(interfaceName.toString());
+                for (Method method : interfaceClass.getDeclaredMethods()) {
+                    if (method.isDefault() && Reflections.containsAnnotations(method.getAnnotations(), requiredAnnotation)) {
+                        return true;
+                    }
+                }
+                continue;
+            }
+            for (MethodInfo method : interfaceInfo.methods()) {
+                // Default methods are public non-abstract instance methods declared in an interface
+                if (isNonAbstractPublicInstanceMethod(method)) {
+                    if (method.hasAnnotation(requiredAnnotationName)) {
+                        return true;
+                    }
+                    // Meta-annotations
+                    for (AnnotationInstance annotation : method.annotations()) {
+                        if (annotationClassAnnotationsCache.getValue(annotation.name()).contains(requiredAnnotationName.toString())) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
         return false;
+    }
+
+    private boolean isNonAbstractPublicInstanceMethod(MethodInfo method) {
+        return (method.flags() & (Modifier.ABSTRACT | Modifier.PUBLIC | Modifier.STATIC)) == Modifier.PUBLIC;
     }
 
     private Class<?> loadClass(String className) {
