@@ -70,7 +70,6 @@
                     <expiration max-idle="100000"/>
                 </local-cache>
                 <invalidation-cache name="entity">
-                    <transaction mode="NON_XA"/>
                     <object-memory size="10000"/>
                     <expiration max-idle="100000"/>
                 </invalidation-cache>

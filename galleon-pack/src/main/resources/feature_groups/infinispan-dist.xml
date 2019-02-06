@@ -84,9 +84,6 @@
             </feature>
             <feature spec="subsystem.infinispan.cache-container.invalidation-cache">
                 <param name="invalidation-cache" value="entity"/>
-                <feature spec="subsystem.infinispan.cache-container.invalidation-cache.component.transaction">
-                    <param name="mode" value="NON_XA"/>
-                </feature>
                 <feature spec="subsystem.infinispan.cache-container.invalidation-cache.component.expiration">
                     <param name="max-idle" value="100000"/>
                 </feature>

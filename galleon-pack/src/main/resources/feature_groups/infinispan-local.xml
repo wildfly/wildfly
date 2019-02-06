@@ -60,9 +60,6 @@
             <param name="module" value="org.infinispan.hibernate-cache"/>
             <feature spec="subsystem.infinispan.cache-container.local-cache">
                 <param name="local-cache" value="entity"/>
-                <feature spec="subsystem.infinispan.cache-container.local-cache.component.transaction">
-                    <param name="mode" value="NON_XA"/>
-                </feature>
                 <feature spec="subsystem.infinispan.cache-container.local-cache.component.expiration">
                     <param name="max-idle" value="100000"/>
                 </feature>
