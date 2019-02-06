@@ -229,8 +229,8 @@
                filter="${filter:afilter}"
                durable="${durable:true}"/>
 
-        <queue name="coreQueueB"
-               address="addressB"/>
+        <queue name="coreQueueB" address="addressB"
+               routing-type="ANYCAST" />
 
         <security-setting name="#">
             <role name="guest"

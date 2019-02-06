@@ -74,7 +74,9 @@
         <queue name="coreQueueA"
                address="${address:addressA}"
                filter="${filter:afilter}"
-               durable="${durable:true}"/>
+               durable="${durable:true}"
+               routing-type="ANYCAST" />
+
         <queue name="coreQueueB" address="addressB" routing-type="ANYCAST" />
 
         <address-setting name="#"
