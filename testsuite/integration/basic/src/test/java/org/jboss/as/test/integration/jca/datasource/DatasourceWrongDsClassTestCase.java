@@ -59,9 +59,38 @@ public class DatasourceWrongDsClassTestCase extends JcaMgmtBase {
     @Deployment(name = DEPLOYMENT)
     public static JavaArchive jdbcArchive() throws Exception {
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class, DEPLOYMENT + ".jar");
-        ja.addClasses(DummyDataSource.class, DummyXADataSource.class, TestDriver.class);
-        ja.addAsServiceProviderAndClasses(Driver.class, TestDriver.class);
+        ja.addClasses(DummyDataSource.class, DummyXADataSource.class, TestDriver.class, TestDriver2.class);
+        ja.addAsServiceProviderAndClasses(Driver.class, TestDriver.class, TestDriver2.class);
         return ja;
+    }
+
+    @Test
+    public void testJdbcDrivers() throws Exception {
+        String driverName = DEPLOYMENT + ".jar";
+        ModelNode address = new ModelNode().add(SUBSYSTEM, "datasources");
+        ModelNode operation = new ModelNode();
+        operation.get(OP).set("get-installed-driver");
+        operation.get(OP_ADDR).set(address);
+        operation.get("driver-name").set(driverName);
+
+        ModelNode result = executeOperation(operation).asList().get(0);
+        Assert.assertEquals(driverName, result.get("driver-name").asString());
+        Assert.assertEquals(driverName, result.get("deployment-name").asString());
+        Assert.assertEquals(TestDriver.class.getName(), result.get("driver-class-name").asString());
+        Assert.assertEquals(1, result.get("driver-major-version").asInt());
+        Assert.assertEquals(0, result.get("driver-minor-version").asInt());
+        Assert.assertFalse(result.get("jdbc-compliant").asBoolean());
+
+        String driver2 = driverName + "_" + TestDriver2.class.getName() + "_1_1";
+        operation.get("driver-name").set(driver2);
+        result = executeOperation(operation).asList().get(0);
+        Assert.assertEquals(driver2, result.get("driver-name").asString());
+        Assert.assertEquals(driver2, result.get("deployment-name").asString());
+        Assert.assertEquals(TestDriver2.class.getName(), result.get("driver-class-name").asString());
+        Assert.assertEquals(1, result.get("driver-major-version").asInt());
+        Assert.assertEquals(1, result.get("driver-minor-version").asInt());
+        Assert.assertTrue(result.get("jdbc-compliant").asBoolean());
+
     }
 
     @Test
