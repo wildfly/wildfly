@@ -79,9 +79,8 @@ public class ClassLoaderContextHandleFactory implements ContextHandleFactory {
 
         @Override
         public ResetContextHandle setup() throws IllegalStateException {
-            final ClassLoaderResetContextHandle resetContextHandle = new ClassLoaderResetContextHandle(WildFlySecurityManager.getCurrentContextClassLoaderPrivileged());
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
-            return resetContextHandle;
+            return ClassLoaderResetContextHandle.INSTANCE;
         }
 
         @Override
@@ -101,16 +100,11 @@ public class ClassLoaderContextHandleFactory implements ContextHandleFactory {
     }
 
     private static class ClassLoaderResetContextHandle implements ResetContextHandle {
-
-        private final ClassLoader previous;
-
-        private ClassLoaderResetContextHandle(ClassLoader previous) {
-            this.previous = previous;
-        }
+        static final ClassLoaderResetContextHandle INSTANCE = new ClassLoaderResetContextHandle();
 
         @Override
         public void reset() {
-            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(previous);
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged((ClassLoader) null);
         }
 
         @Override
