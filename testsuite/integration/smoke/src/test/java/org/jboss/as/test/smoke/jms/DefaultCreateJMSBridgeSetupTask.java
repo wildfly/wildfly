@@ -25,19 +25,12 @@ package org.jboss.as.test.smoke.jms;
 import org.jboss.dmr.ModelNode;
 
 /**
- * Setup task to create/remove a JMS bridge.
- *
- * @author Jeff Mesnil (c) 2012 Red Hat Inc.
+ * Setup task to create/remove a minimal JMS bridge.
+ * @author Emmanuel Hugonnet (c) 2019 Red Hat, Inc.
  */
-public class CreateJMSBridgeSetupTask extends AbstractCreateJMSBridgeSetupTask {
+public class DefaultCreateJMSBridgeSetupTask extends AbstractCreateJMSBridgeSetupTask {
 
     @Override
     protected void configureBridge(ModelNode jmsBridgeAttributes) {
-        jmsBridgeAttributes.get("quality-of-service").set("ONCE_AND_ONLY_ONCE");
-        jmsBridgeAttributes.get("failure-retry-interval").set(500);
-        jmsBridgeAttributes.get("max-retries").set(2);
-        jmsBridgeAttributes.get("max-batch-size").set(1024);
-        jmsBridgeAttributes.get("max-batch-time").set(100);
-        jmsBridgeAttributes.get("add-messageID-in-header").set("true");
     }
 }

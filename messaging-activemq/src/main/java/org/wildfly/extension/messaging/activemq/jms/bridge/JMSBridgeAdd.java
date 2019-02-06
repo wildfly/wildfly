@@ -23,9 +23,11 @@
 package org.wildfly.extension.messaging.activemq.jms.bridge;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.server.Services.addServerExecutorDependency;
+import static org.jboss.as.server.Services.requireServerExecutor;
 
 import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+import java.util.function.Supplier;
 
 import org.apache.activemq.artemis.jms.bridge.ConnectionFactoryFactory;
 import org.apache.activemq.artemis.jms.bridge.DestinationFactory;
@@ -53,7 +55,6 @@ import org.jboss.modules.ModuleNotFoundException;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.value.InjectedValue;
 import org.wildfly.common.function.ExceptionSupplier;
 import org.wildfly.extension.messaging.activemq.CommonAttributes;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
@@ -86,13 +87,12 @@ public class JMSBridgeAdd extends AbstractAddStepHandler {
                 final JMSBridge bridge = createJMSBridge(context, model);
 
                 final String bridgeName = address.getLastElement().getValue();
-                final JMSBridgeService bridgeService = new JMSBridgeService(moduleName, bridgeName, bridge);
                 final ServiceName bridgeServiceName = MessagingServices.getJMSBridgeServiceName(bridgeName);
 
-                final ServiceBuilder<JMSBridge> jmsBridgeServiceBuilder = context.getServiceTarget().addService(bridgeServiceName, bridgeService);
+                final ServiceBuilder jmsBridgeServiceBuilder = context.getServiceTarget().addService(bridgeServiceName);
                 jmsBridgeServiceBuilder.requires(context.getCapabilityServiceName(MessagingServices.LOCAL_TRANSACTION_PROVIDER_CAPABILITY, null));
                 jmsBridgeServiceBuilder.setInitialMode(Mode.ACTIVE);
-                addServerExecutorDependency(jmsBridgeServiceBuilder, bridgeService.getExecutorInjector());
+                Supplier<ExecutorService> executorSupplier = requireServerExecutor(jmsBridgeServiceBuilder);
                 if (dependsOnLocalResources(context, model, JMSBridgeDefinition.SOURCE_CONTEXT)) {
                     addDependencyForJNDIResource(jmsBridgeServiceBuilder, model, context, JMSBridgeDefinition.SOURCE_CONNECTION_FACTORY);
                     addDependencyForJNDIResource(jmsBridgeServiceBuilder, model, context, JMSBridgeDefinition.SOURCE_DESTINATION);
@@ -105,9 +105,10 @@ public class JMSBridgeAdd extends AbstractAddStepHandler {
                 // corresponds to a local Artemis server, the pool will be cleaned up after the JMS bridge is stopped.
                 jmsBridgeServiceBuilder.requires(MessagingServices.ACTIVEMQ_CLIENT_THREAD_POOL);
                 // adding credential source supplier which will later resolve password from CredentialStore using credential-reference
-                addCredentialStoreReference(bridgeService.getSourceCredentialSourceSupplierInjector(), JMSBridgeDefinition.SOURCE_CREDENTIAL_REFERENCE, context, model, jmsBridgeServiceBuilder);
-                addCredentialStoreReference(bridgeService.getTargetCredentialSourceSupplierInjector(), JMSBridgeDefinition.TARGET_CREDENTIAL_REFERENCE, context, model, jmsBridgeServiceBuilder);
-
+                final JMSBridgeService bridgeService = new JMSBridgeService(moduleName, bridgeName, bridge, executorSupplier,
+                        getCredentialStoreReference(JMSBridgeDefinition.SOURCE_CREDENTIAL_REFERENCE, context, model, jmsBridgeServiceBuilder),
+                        getCredentialStoreReference(JMSBridgeDefinition.TARGET_CREDENTIAL_REFERENCE, context, model, jmsBridgeServiceBuilder));
+                jmsBridgeServiceBuilder.setInstance(bridgeService);
                 jmsBridgeServiceBuilder.install();
 
                 context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
@@ -119,11 +120,10 @@ public class JMSBridgeAdd extends AbstractAddStepHandler {
     private boolean dependsOnLocalResources(OperationContext context, ModelNode model, AttributeDefinition attr) throws OperationFailedException {
         // if either the source or target context attribute is resolved to a null or empty Properties, this means that the JMS resources will be
         // looked up from the local ActiveMQ server.
-        Properties properties = resolveContextProperties(attr, context, model);
-        return properties == null || properties.size() == 0;
+        return resolveContextProperties(attr, context, model).isEmpty();
     }
 
-    private void addDependencyForJNDIResource(final ServiceBuilder<JMSBridge> builder, final ModelNode model, final OperationContext context,
+    private void addDependencyForJNDIResource(final ServiceBuilder builder, final ModelNode model, final OperationContext context,
             final AttributeDefinition attribute) throws OperationFailedException {
         String jndiName = attribute.resolveModelAttribute(context, model).asString();
         builder.requires(ContextNames.bindInfoFor(jndiName).getBinderServiceName());
@@ -164,8 +164,7 @@ public class JMSBridgeAdd extends AbstractAddStepHandler {
             // if a module is specified, use it to instantiate the JMSBridge to ensure its ExecutorService
             // will use the correct class loader to execute its threads
             if (moduleName != null) {
-                ModuleIdentifier moduleID = ModuleIdentifier.fromString(moduleName);
-                Module module = Module.getCallerModuleLoader().loadModule(moduleID);
+                Module module = Module.getCallerModuleLoader().loadModule(ModuleIdentifier.fromString(moduleName));
                 WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(module.getClassLoader());
             }
             return new JMSBridgeImpl(sourceCff,
@@ -196,13 +195,11 @@ public class JMSBridgeAdd extends AbstractAddStepHandler {
 
     private Properties resolveContextProperties(AttributeDefinition attribute, OperationContext context, ModelNode model) throws OperationFailedException {
         final ModelNode contextModel = attribute.resolveModelAttribute(context, model);
-        if (!contextModel.isDefined()) {
-            return null;
-        }
-
         final Properties contextProperties = new Properties();
-        for (Property property : contextModel.asPropertyList()) {
-            contextProperties.put(property.getName(), property.getValue().asString());
+        if (contextModel.isDefined()) {
+            for (Property property : contextModel.asPropertyList()) {
+                contextProperties.put(property.getName(), property.getValue().asString());
+            }
         }
         return contextProperties;
     }
@@ -215,22 +212,23 @@ public class JMSBridgeAdd extends AbstractAddStepHandler {
         return node.isDefined() ? node.asString() : null;
     }
 
-    private static void addCredentialStoreReference(InjectedValue<ExceptionSupplier<CredentialSource, Exception>> credentialSourceSupplierInjector, ObjectTypeAttributeDefinition credentialReferenceAttributeDefinition, OperationContext context, ModelNode model, ServiceBuilder<?> serviceBuilder, String... modelFilter) throws OperationFailedException {
+    private static ExceptionSupplier<CredentialSource, Exception> getCredentialStoreReference(ObjectTypeAttributeDefinition credentialReferenceAttributeDefinition, OperationContext context, ModelNode model, ServiceBuilder<?> serviceBuilder, String... modelFilter) throws OperationFailedException {
         if (model.hasDefined(credentialReferenceAttributeDefinition.getName())) {
             ModelNode filteredModelNode = model;
             if (modelFilter != null && modelFilter.length > 0) {
                 for (String path : modelFilter) {
-                    if (filteredModelNode.get(path).isDefined())
+                    if (filteredModelNode.get(path).isDefined()) {
                         filteredModelNode = filteredModelNode.get(path);
-                    else
+                    } else {
                         break;
+                    }
                 }
             }
             ModelNode value = credentialReferenceAttributeDefinition.resolveModelAttribute(context, filteredModelNode);
             if (value.isDefined()) {
-                credentialSourceSupplierInjector.inject(
-                        CredentialReference.getCredentialSourceSupplier(context, credentialReferenceAttributeDefinition, filteredModelNode, serviceBuilder));
+               return CredentialReference.getCredentialSourceSupplier(context, credentialReferenceAttributeDefinition, filteredModelNode, serviceBuilder);
             }
         }
+        return null;
     }
 }

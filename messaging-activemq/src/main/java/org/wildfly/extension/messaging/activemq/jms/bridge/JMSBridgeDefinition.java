@@ -37,6 +37,7 @@ import static org.wildfly.extension.messaging.activemq.MessagingExtension.MESSAG
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.EnumSet;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshallers;
@@ -46,7 +47,7 @@ import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.SimpleOperationDefinition;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.EnumValidator;
@@ -69,8 +70,7 @@ public class JMSBridgeDefinition extends PersistentResourceDefinition {
     private static final String SOURCE_CREDENTIAL_REFERENCE_NAME = "source-" + CredentialReference.CREDENTIAL_REFERENCE;
     private static final String TARGET_CREDENTIAL_REFERENCE_NAME = "target-" + CredentialReference.CREDENTIAL_REFERENCE;
 
-    public static final SimpleAttributeDefinition MODULE = create("module", STRING)
-            .setRequired(false)
+    public static final SimpleAttributeDefinition MODULE = create("module", STRING, false)
             .build();
 
     public static final SimpleAttributeDefinition SOURCE_CONNECTION_FACTORY = create("source-connection-factory", STRING)
@@ -159,28 +159,34 @@ public class JMSBridgeDefinition extends PersistentResourceDefinition {
             .setAllowExpression(true)
             .build();
 
-    public static final SimpleAttributeDefinition QUALITY_OF_SERVICE = create("quality-of-service", STRING)
-            .setValidator(new EnumValidator<>(QualityOfServiceMode.class, false, false))
+    public static final SimpleAttributeDefinition QUALITY_OF_SERVICE = create("quality-of-service", STRING, true)
+            .setValidator(new EnumValidator<>(QualityOfServiceMode.class, EnumSet.allOf(QualityOfServiceMode.class)))
             .setAllowExpression(true)
+            .setDefaultValue(new ModelNode(QualityOfServiceMode.AT_MOST_ONCE.name()))
             .build();
-    public static final SimpleAttributeDefinition FAILURE_RETRY_INTERVAL = create("failure-retry-interval", LONG)
+    public static final SimpleAttributeDefinition FAILURE_RETRY_INTERVAL = create("failure-retry-interval", LONG, true)
             .setMeasurementUnit(MILLISECONDS)
             .setValidator(InfiniteOrPositiveValidators.LONG_INSTANCE)
             .setAllowExpression(true)
+            .setDefaultValue(new ModelNode(5000L))
             .build();
-    public static final SimpleAttributeDefinition MAX_RETRIES = create("max-retries", INT)
+    public static final SimpleAttributeDefinition MAX_RETRIES = create("max-retries", INT, true)
             .setCorrector(InfiniteOrPositiveValidators.NEGATIVE_VALUE_CORRECTOR)
             .setValidator(InfiniteOrPositiveValidators.INT_INSTANCE)
+            .setDefaultValue(new ModelNode(-1))
             .setAllowExpression(true)
             .build();
-    public static final SimpleAttributeDefinition MAX_BATCH_SIZE = create("max-batch-size", INT)
+    public static final SimpleAttributeDefinition MAX_BATCH_SIZE = create("max-batch-size", INT, true)
             .setValidator(new IntRangeValidator(0, Integer.MAX_VALUE, false, false))
             .setAllowExpression(true)
+            .setDefaultValue(new ModelNode(1))
             .build();
-    public static final SimpleAttributeDefinition MAX_BATCH_TIME = create("max-batch-time", LONG)
+    public static final SimpleAttributeDefinition MAX_BATCH_TIME = create("max-batch-time", LONG, true)
             .setMeasurementUnit(MILLISECONDS)
+            .setCorrector(InfiniteOrPositiveValidators.NEGATIVE_VALUE_CORRECTOR)
             .setValidator(InfiniteOrPositiveValidators.LONG_INSTANCE)
             .setAllowExpression(true)
+            .setDefaultValue(new ModelNode(-1L))
             .build();
     public static final SimpleAttributeDefinition SUBSCRIPTION_NAME = create("subscription-name", STRING)
             .setRequired(false)
@@ -192,7 +198,7 @@ public class JMSBridgeDefinition extends PersistentResourceDefinition {
             .build();
     public static final SimpleAttributeDefinition ADD_MESSAGE_ID_IN_HEADER = create("add-messageID-in-header", BOOLEAN)
             .setRequired(false)
-            .setDefaultValue(new ModelNode().set(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setAllowExpression(true)
             .build();
     public static final SimpleAttributeDefinition STARTED = create(CommonAttributes.STARTED, BOOLEAN)
@@ -260,7 +266,7 @@ public class JMSBridgeDefinition extends PersistentResourceDefinition {
     public void registerOperations(ManagementResourceRegistration registry) {
         super.registerOperations(registry);
         for (final String operationName : OPERATIONS) {
-            registry.registerOperationHandler(new SimpleOperationDefinition(operationName, getResourceDescriptionResolver()), JMSBridgeHandler.INSTANCE);
+            registry.registerOperationHandler(SimpleOperationDefinitionBuilder.of(operationName, getResourceDescriptionResolver()).build(), JMSBridgeHandler.INSTANCE);
         }
     }
 

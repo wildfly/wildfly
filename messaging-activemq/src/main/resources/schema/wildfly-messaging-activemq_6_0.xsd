@@ -940,7 +940,7 @@
         <xs:attribute name="name" type="xs:string" use="required" />
         <xs:attribute name="module" type="xs:string" use="required" />
 
-        <xs:attribute name="quality-of-service" use="required">
+        <xs:attribute name="quality-of-service" use="optional" default="AT_MOST_ONCE">
             <xs:simpleType>
                 <xs:restriction base="xs:string">
                     <xs:enumeration value="AT_MOST_ONCE"/>
@@ -949,14 +949,14 @@
                 </xs:restriction>
             </xs:simpleType>
         </xs:attribute>
-        <xs:attribute name="failure-retry-interval" type="xs:long" use="required" />
-        <xs:attribute name="max-retries" type="xs:int" use="required" />
-        <xs:attribute name="max-batch-size" type="xs:int" use="required" />
-        <xs:attribute name="max-batch-time" type="xs:long" use="required" />
+        <xs:attribute name="failure-retry-interval" type="xs:long" use="optional" default="5000" />
+        <xs:attribute name="max-retries" type="xs:int" use="optional" default="-1"/>
+        <xs:attribute name="max-batch-size" type="xs:int" use="optional" default="1"/>
+        <xs:attribute name="max-batch-time" type="xs:long" use="optional" default="-1"/>
         <xs:attribute name="selector" type="xs:string" use="optional" />
         <xs:attribute name="subscription-name" type="xs:string" use="optional" />
         <xs:attribute name="client-id" type="xs:string" use="optional" />
-        <xs:attribute name="add-messageID-in-header" type="xs:boolean" use="optional" />
+        <xs:attribute name="add-messageID-in-header" type="xs:boolean" use="optional" default="false"/>
     </xs:complexType>
 
     <xs:complexType name="contextType">

@@ -87,6 +87,13 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
                 ServerDefinition.GLOBAL_MAX_MEMORY_SIZE);
         ResourceTransformationDescriptionBuilder queue = server.addChildResource(MessagingExtension.QUEUE_PATH);
         rejectDefinedAttributeWithDefaultValue(queue, QueueDefinition.ROUTING_TYPE);
+
+        ResourceTransformationDescriptionBuilder jmsBridge = subsystem.addChildResource(MessagingExtension.JMS_BRIDGE_PATH);
+        defaultValueAttributeConverter(jmsBridge, JMSBridgeDefinition.QUALITY_OF_SERVICE);
+        defaultValueAttributeConverter(jmsBridge, JMSBridgeDefinition.FAILURE_RETRY_INTERVAL);
+        defaultValueAttributeConverter(jmsBridge, JMSBridgeDefinition.MAX_RETRIES);
+        defaultValueAttributeConverter(jmsBridge, JMSBridgeDefinition.MAX_BATCH_SIZE);
+        defaultValueAttributeConverter(jmsBridge, JMSBridgeDefinition.MAX_BATCH_TIME);
     }
 
     private static void registerTransformers_EAP_7_2_0(ResourceTransformationDescriptionBuilder subsystem) {
