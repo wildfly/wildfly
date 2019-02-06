@@ -49,7 +49,7 @@ public class DistributableSessionIdentifierCodecTestCase {
 
         when(this.locator.locate(sessionId)).thenReturn(null);
 
-        String result = this.codec.encode(sessionId);
+        CharSequence result = this.codec.encode(sessionId);
 
         assertSame(sessionId, result);
 
@@ -72,7 +72,7 @@ public class DistributableSessionIdentifierCodecTestCase {
 
         when(this.routing.parse(encodedSessionId)).thenReturn(new SimpleImmutableEntry<>(sessionId, route));
 
-        String result = this.codec.decode(encodedSessionId);
+        CharSequence result = this.codec.decode(encodedSessionId);
 
         assertSame(sessionId, result);
     }

@@ -33,7 +33,7 @@ public interface RoutingSupport {
      * @param requestedSessionId the requested session identifier.
      * @return a map entry containing the session ID and routing information as the key and value, respectively.
      */
-    Map.Entry<String, String> parse(String requestedSessionId);
+    Map.Entry<CharSequence, CharSequence> parse(CharSequence requestedSessionId);
 
     /**
      * Formats the specified session identifier and route identifier into a single identifier.
@@ -41,5 +41,5 @@ public interface RoutingSupport {
      * @param route a route identifier.
      * @return a single identifier containing the specified session identifier and routing identifier.
      */
-    String format(String sessionId, String route);
+    CharSequence format(CharSequence sessionId, CharSequence route);
 }

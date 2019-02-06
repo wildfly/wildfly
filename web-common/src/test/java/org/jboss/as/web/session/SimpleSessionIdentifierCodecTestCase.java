@@ -40,7 +40,7 @@ public class SimpleSessionIdentifierCodecTestCase {
         SessionIdentifierCodec codec = new SimpleSessionIdentifierCodec(routing, null);
         String sessionId = "session";
 
-        String result = codec.encode(sessionId);
+        CharSequence result = codec.encode(sessionId);
 
         assertNull(sessionId, null);
 
@@ -66,13 +66,13 @@ public class SimpleSessionIdentifierCodecTestCase {
         String route = "route";
         SessionIdentifierCodec codec = new SimpleSessionIdentifierCodec(routing, route);
 
-        String result = codec.decode(null);
+        CharSequence result = codec.decode(null);
 
         assertNull(result);
 
         String sessionId = "session";
 
-        when(routing.parse(sessionId)).thenReturn(new SimpleImmutableEntry<String, String>(sessionId, null));
+        when(routing.parse(sessionId)).thenReturn(new SimpleImmutableEntry<>(sessionId, null));
 
         result = codec.decode(sessionId);
 

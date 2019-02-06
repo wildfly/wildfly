@@ -88,7 +88,7 @@ class HttpInvokerHostService implements Service<HttpInvokerHostService> {
             exchange.addResponseCommitListener(ex -> {
                 Cookie cookie = ex.getResponseCookies().get(JSESSIONID);
                 if(cookie != null ) {
-                    cookie.setValue(codec.encode(cookie.getValue()));
+                    cookie.setValue(codec.encode(cookie.getValue()).toString());
                 }
             });
             handler.handleRequest(exchange);

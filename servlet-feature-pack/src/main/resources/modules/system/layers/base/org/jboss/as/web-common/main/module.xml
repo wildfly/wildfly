@@ -44,5 +44,6 @@
         <module name="org.jboss.metadata.web"/>
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
+        <module name="org.wildfly.security.elytron-private"/>
     </dependencies>
 </module>

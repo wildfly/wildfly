@@ -21,8 +21,11 @@
  */
 package org.jboss.as.web.session;
 
+import java.nio.CharBuffer;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Map;
+
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Implements logic for parsing/appending routing information from/to a session identifier.
@@ -31,34 +34,27 @@ import java.util.Map;
  */
 public class SimpleRoutingSupport implements RoutingSupport {
 
-    public static final String DEFAULT_DELIMITER = ".";
-
-    private final String delimiter;
-
-    public SimpleRoutingSupport() {
-        this(DEFAULT_DELIMITER);
-    }
-
-    public SimpleRoutingSupport(String delimiter) {
-        this.delimiter = delimiter;
-    }
+    private static final String DELIMITER = WildFlySecurityManager.getPropertyPrivileged("jboss.session.route.delimiter", ".");
 
     @Override
-    public Map.Entry<String, String> parse(String id) {
-        int index = (id != null) ? id.indexOf(this.delimiter) : -1;
-        return (index < 0) ? new SimpleImmutableEntry<String, String>(id, null) : new SimpleImmutableEntry<>(id.substring(0, index), id.substring(index + this.delimiter.length()));
-    }
-
-    @Override
-    public String format(String sessionId, String routeId) {
-        if ((routeId != null) && !routeId.isEmpty()) {
-            StringBuilder sb = new StringBuilder(sessionId.length() + delimiter.length() + routeId.length());
-            sb.append(sessionId);
-            sb.append(this.delimiter);
-            sb.append(routeId);
-            return sb.toString();
-        } else {
-            return sessionId;
+    public Map.Entry<CharSequence, CharSequence> parse(CharSequence id) {
+        if (id != null) {
+            int length = id.length();
+            int delimiterLength = DELIMITER.length();
+            for (int i = 0; i <= length - delimiterLength; ++i) {
+                int routeStart = i + delimiterLength;
+                if (DELIMITER.contentEquals(id.subSequence(i, routeStart))) {
+                    return new SimpleImmutableEntry<>(CharBuffer.wrap(id, 0, i), CharBuffer.wrap(id, routeStart, length));
+                }
+            }
         }
+        return new SimpleImmutableEntry<>(id, null);
+    }
+
+    @Override
+    public CharSequence format(CharSequence sessionId, CharSequence routeId) {
+        if ((routeId == null) || (routeId.length() == 0)) return sessionId;
+
+        return new CompositeCharSequence(sessionId, DELIMITER, routeId);
     }
 }

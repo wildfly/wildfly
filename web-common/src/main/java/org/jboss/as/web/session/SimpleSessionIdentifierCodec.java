@@ -36,12 +36,12 @@ public class SimpleSessionIdentifierCodec implements SessionIdentifierCodec {
     }
 
     @Override
-    public String encode(String sessionId) {
+    public CharSequence encode(CharSequence sessionId) {
         return (this.route != null) ? this.routing.format(sessionId, this.route) : sessionId;
     }
 
     @Override
-    public String decode(String encodedSessionId) {
+    public CharSequence decode(CharSequence encodedSessionId) {
         return (encodedSessionId != null) ? this.routing.parse(encodedSessionId).getKey() : null;
     }
 }

@@ -33,10 +33,10 @@ import io.undertow.util.AttachmentKey;
  * @author Paul Ferraro
  */
 public class CodecSessionConfig implements SessionConfig {
+    private static final AttachmentKey<Boolean> SESSION_ID_SET = AttachmentKey.create(Boolean.class);
 
     private final SessionConfig config;
     private final SessionIdentifierCodec codec;
-    private static final AttachmentKey<Boolean> SESSION_ID_SET = AttachmentKey.create(Boolean.class);
 
     public CodecSessionConfig(SessionConfig config, SessionIdentifierCodec codec) {
         this.config = config;
@@ -46,25 +46,25 @@ public class CodecSessionConfig implements SessionConfig {
     @Override
     public void setSessionId(HttpServerExchange exchange, String sessionId) {
         exchange.putAttachment(SESSION_ID_SET, Boolean.TRUE);
-        this.config.setSessionId(exchange, this.codec.encode(sessionId));
+        this.config.setSessionId(exchange, this.codec.encode(sessionId).toString());
     }
 
     @Override
     public void clearSession(HttpServerExchange exchange, String sessionId) {
-        this.config.clearSession(exchange, this.codec.encode(sessionId));
+        this.config.clearSession(exchange, this.codec.encode(sessionId).toString());
     }
 
     @Override
     public String findSessionId(HttpServerExchange exchange) {
         String encodedSessionId = this.config.findSessionId(exchange);
         if (encodedSessionId == null) return null;
-        String sessionId = this.codec.decode(encodedSessionId);
+        CharSequence sessionId = this.codec.decode(encodedSessionId);
         // Check if the encoding for this session has changed
-        String reencodedSessionId = this.codec.encode(sessionId);
-        if (!reencodedSessionId.equals(encodedSessionId) && exchange.getAttachment(SESSION_ID_SET) == null) {
-            this.config.setSessionId(exchange, reencodedSessionId);
+        CharSequence reencodedSessionId = this.codec.encode(sessionId);
+        if ((exchange.getAttachment(SESSION_ID_SET) == null) && !encodedSessionId.contentEquals(reencodedSessionId)) {
+            this.config.setSessionId(exchange, reencodedSessionId.toString());
         }
-        return sessionId;
+        return sessionId.toString();
     }
 
     @Override
@@ -74,6 +74,6 @@ public class CodecSessionConfig implements SessionConfig {
 
     @Override
     public String rewriteUrl(String originalUrl, String sessionId) {
-        return this.config.rewriteUrl(originalUrl, this.codec.encode(sessionId));
+        return this.config.rewriteUrl(originalUrl, this.codec.encode(sessionId).toString());
     }
 }
