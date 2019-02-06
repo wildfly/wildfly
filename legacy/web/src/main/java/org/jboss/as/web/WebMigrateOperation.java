@@ -292,13 +292,7 @@ public class WebMigrateOperation implements OperationStepHandler {
      * @param migrationOperations
      * @return
      */
-    private SSLInformation createSecurityRealm(OperationContext context, Map<PathAddress, ModelNode> migrationOperations, ModelNode legacyModelAddOps, String connector, List<String> warnings, boolean domainMode) {
-        ModelNode legacyAddOp = findResource(pathAddress(WebExtension.SUBSYSTEM_PATH, pathElement(WebExtension.CONNECTOR_PATH.getKey(), connector), pathElement("configuration", "ssl")), legacyModelAddOps);
-        if (legacyAddOp == null) {
-            return null;
-        }
-        //we have SSL
-
+    private SSLInformation createSecurityRealm(OperationContext context, Map<PathAddress, ModelNode> migrationOperations, ModelNode legacyModelAddOps, String connector, ModelNode legacyAddOp, List<String> warnings, boolean domainMode) {
 
         //read all the info from the SSL definition
         ModelNode keyAlias = legacyAddOp.get(WebSSLDefinition.KEY_ALIAS.getName());
@@ -387,9 +381,11 @@ public class WebMigrateOperation implements OperationStepHandler {
 
         }
 
-
-
         return new SSLInformation(realmName, verifyClient, sessionCacheSize, sessionTimeout, protocol, cipherSuite);
+    }
+
+    private ModelNode findSSLLegacyConfiguration(ModelNode legacyModelAddOps, String connector) {
+        return findResource(pathAddress(WebExtension.SUBSYSTEM_PATH, pathElement(WebExtension.CONNECTOR_PATH.getKey(), connector), pathElement("configuration", "ssl")), legacyModelAddOps);
     }
 
     private String createHostSSLConfig(String realmName, Map<PathAddress, ModelNode> migrationOperations, ModelNode keyAlias, ModelNode password, ModelNode certificateKeyFile, ModelNode protocol, ModelNode caCertificateFile, ModelNode caCertificatePassword, ModelNode trustStoreType, ModelNode keystoreType, PathAddress managementCoreService) {
@@ -986,13 +982,18 @@ public class WebMigrateOperation implements OperationStepHandler {
                     newAddress = pathAddress(UndertowExtension.SUBSYSTEM_PATH, DEFAULT_SERVER_PATH, pathElement(Constants.HTTP_LISTENER, address.getLastElement().getValue()));
                     addConnector = createAddOperation(newAddress);
                 } else if (scheme.equals("https")) {
-                    newAddress = pathAddress(UndertowExtension.SUBSYSTEM_PATH, DEFAULT_SERVER_PATH, pathElement(Constants.HTTPS_LISTENER, address.getLastElement().getValue()));
-                    addConnector = createAddOperation(newAddress);
-
-                    SSLInformation sslInfo = createSecurityRealm(context, newAddOperations, legacyModelAddOps, newAddress.getLastElement().getValue(), warnings, domainMode);
-                    if (sslInfo == null) {
-                        throw WebLogger.ROOT_LOGGER.noSslConfig();
+                    final ModelNode legacyAddOp = findSSLLegacyConfiguration(legacyModelAddOps, address.getLastElement().getValue());
+                    if(legacyAddOp == null) {
+                        //migrate https scheme to be passed to proxy
+                        newAddress = pathAddress(UndertowExtension.SUBSYSTEM_PATH, DEFAULT_SERVER_PATH, pathElement(Constants.HTTP_LISTENER, address.getLastElement().getValue()));
+                        addConnector = createAddOperation(newAddress);
+                        warnings.add(WebLogger.ROOT_LOGGER.noSslConfig(address.getLastElement().getValue()));
                     } else {
+                        newAddress = pathAddress(UndertowExtension.SUBSYSTEM_PATH, DEFAULT_SERVER_PATH, pathElement(Constants.HTTPS_LISTENER, address.getLastElement().getValue()));
+                        addConnector = createAddOperation(newAddress);
+
+                        SSLInformation sslInfo = createSecurityRealm(context, newAddOperations, legacyModelAddOps, newAddress.getLastElement().getValue(), legacyAddOp, warnings, domainMode);
+
                         addConnector.get(Constants.SECURITY_REALM).set(sslInfo.realmName);
                         ModelNode verify = sslInfo.verifyClient;
                         if(verify.isDefined()) {

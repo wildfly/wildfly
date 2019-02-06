@@ -51,6 +51,20 @@
                        secure="false"
                        executor="some-executor"
                     />
+            <connector name="http-proxy" scheme="https"
+                       protocol="HTTP/1.1"
+                       socket-binding="http"
+                       enabled="${prop.enabled:true}"
+                       enable-lookups="${prop.enable-lookups:false}"
+                       proxy-name="proxy.com"
+                       proxy-port="11433"
+                       max-post-size="${prop.max-post-size:2097153}"
+                       max-save-post-size="${prop.max-save-post-size:512}"
+                       redirect-binding="https"
+                       max-connections="${prop.max-connections:300}"
+                       secure="false"
+                       executor="some-executor"
+                    />
             <connector name="https" scheme="https" protocol="HTTP/1.1" secure="true" socket-binding="https">
                 <ssl certificate-key-file="${file-base}/server.keystore"
                         ca-certificate-file="${file-base}/jsse.keystore"
