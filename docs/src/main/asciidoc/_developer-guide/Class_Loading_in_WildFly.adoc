@@ -376,8 +376,7 @@ them using jboss-deployment-structure.xml with system dependencies:
 ----
 
 [[the-jboss.api-property-and-application-use-of-modules-shipped-with-wildfly]]
-== The "jboss.api" property and application use of modules shipped with
-WildFly
+== The "jboss.api" property and application use of modules shipped with WildFly
 
 The WildFly distribution includes a large number of modules, a great
 many of which are included for use by WildFly internals, with no testing
@@ -450,3 +449,103 @@ relevant category to ERROR or higher.
 Other than the WARN messages noted above, declaring a direct dependency
 on a non-public module has no impact on how WildFly processes the
 deployment.
+
+
+[[how-to-list-the-module-dependencies-of-a-deployed-application]]
+== How to list the module dependencies of a deployed application
+
+In Wildfly it is possible to list the module dependencies added by the container to your deployed application. This task can be achieved via the command line interface, where specific operations are available to list the module dependencies for deployments and ear-subdeployments.
+
+You can list the module dependencies of a deployment using the _list-modules_ operation as below:
+
+[source,options="nowrap"]
+----
+[standalone@localhost:9990 /] /deployment=test-application.war:list-modules
+----
+
+In case of ear-subdeployments, the _list-modules_ operation is also available under the subdeployment resource:
+
+[source,options="nowrap"]
+----
+[standalone@localhost:9990 /] /deployment=test-application.ear/subdeployment=test-application.war:list-modules
+----
+
+If you are running Wildfly in domain mode, this operation is available via the server resource at the host level:
+
+[source,options="nowrap"]
+----
+[domain@localhost:9990 /] /host=master/server=server-one/deployment=test-application.war:list-modules
+----
+
+[source,options="nowrap"]
+----
+[domain@localhost:9990 /] /host=master/server=server-one/deployment=test-application.ear/subdeployment=test-application.war:list-modules
+----
+
+By default, the _list-modules_ operation shows the list of dependencies in a compact view, including only the module name. You can control this output using the attribute _verbose=[false*|true]_ to enable/disable a detailed response.
+
+The following output shows an example of a detailed view:
+
+[source,options="nowrap"]
+----
+[standalone@localhost:9990 /] /deployment=test-application.ear:list-modules(verbose=true)
+  {
+      "outcome" => "success",
+      "result" => {
+          "system-dependencies" => [
+              {
+                  "name" => "com.fasterxml.jackson.datatype.jackson-datatype-jdk8",
+                  "optional" => true,
+                  "export" => false,
+                  "import-services" => true
+              },
+              {
+                  "name" => "com.fasterxml.jackson.datatype.jackson-datatype-jsr310",
+                  "optional" => true,
+                  "export" => false,
+                  "import-services" => true
+              },
+              ...
+          ],
+          "local-dependencies" => [
+              {
+                "name" => "deployment.test-application.ear.test-application-ejb.jar",
+                "optional" => false,
+                "export" => false,
+                "import-services" => true
+              },
+              ...
+          ],
+          "user-dependencies" => [
+              {
+                  "name" => "com.fasterxml.jackson.datatype.jackson-datatype-jdk8",
+                  "optional" => false,
+                  "export" => false,
+                  "import-services" => false
+              },
+              {
+                  "name" => "org.hibernate:4.1",
+                  "optional" => false,
+                  "export" => false,
+                  "import-services" => false
+              },
+              ...
+          ]
+      }
+  }
+----
+
+
+The _list_modules_ operation shows information in three different categories:
+
+* system-dependencies: These are the dependencies added implicitly by the server container.
+* local-dependencies: These are dependencies on other parts of the deployment.
+* user-dependencies: These are the dependencies defined by the user via a manifest file or deployment-structure.xml.
+
+
+For each module, the following information is shown:
+
+* name: The module name and, if the slot name is not the default "main" slot, the slot name is concatenated after a ":" character separator.
+* optional: If the dependency was added as an optional dependency.
+* export: If the dependency is being exported to other modules.
+* import-services: If the module for the deployment or subdeployment is allowed to import services from the dependency.
