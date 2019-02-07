@@ -45,6 +45,8 @@ include::_developer-guide/EJB3_Reference_Guide.adoc[]
 
 include::_developer-guide/JPA_Reference_Guide.adoc[]
 
+include::_developer-guide/JTA_Reference.adoc[]
+
 include::_developer-guide/JNDI_Reference.adoc[]
 
 include::_developer-guide/JAX-RS_Reference_Guide.adoc[]
@@ -70,4 +72,3 @@ include::_developer-guide/How_do_I_migrate_my_application_from_AS7_to_WildFly.ad
 include::_developer-guide/How_do_I_migrate_my_application_from_WebLogic_to_WildFly.adoc[]
 
 include::_developer-guide/How_do_I_migrate_my_application_from_WebSphere_to_WildFly.adoc[]
-
