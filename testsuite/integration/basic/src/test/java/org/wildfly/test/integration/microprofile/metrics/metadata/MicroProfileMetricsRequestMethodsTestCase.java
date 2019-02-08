@@ -33,6 +33,7 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpTrace;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
@@ -41,12 +42,15 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(Arquillian.class)
 @RunAsClient
 public class MicroProfileMetricsRequestMethodsTestCase {
     @ContainerResource
     ManagementClient managementClient;
+
+    private static final String EXPECTED_RESPONSE_MESSAGE = "Only GET and OPTIONS methods are accepted.";
 
     @Test
     public void checkOptions() throws Exception {
@@ -74,7 +78,7 @@ public class MicroProfileMetricsRequestMethodsTestCase {
 
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             CloseableHttpResponse resp = client.execute(new HttpHead(endpointURL));
-            assertEquals(406, resp.getStatusLine().getStatusCode());
+            assertEquals(405, resp.getStatusLine().getStatusCode());
         }
     }
     @Test
@@ -83,7 +87,11 @@ public class MicroProfileMetricsRequestMethodsTestCase {
 
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             CloseableHttpResponse resp = client.execute(new HttpPost(endpointURL));
-            assertEquals(406, resp.getStatusLine().getStatusCode());
+            assertEquals(405, resp.getStatusLine().getStatusCode());
+            String content = EntityUtils.toString(resp.getEntity());
+            resp.close();
+            assertTrue("'"+ EXPECTED_RESPONSE_MESSAGE + "' message is expected, but was: " + content,
+                  content.contains(EXPECTED_RESPONSE_MESSAGE));
         }
     }
     @Test
@@ -92,7 +100,11 @@ public class MicroProfileMetricsRequestMethodsTestCase {
 
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             CloseableHttpResponse resp = client.execute(new HttpPut(endpointURL));
-            assertEquals(406, resp.getStatusLine().getStatusCode());
+            assertEquals(405, resp.getStatusLine().getStatusCode());
+            String content = EntityUtils.toString(resp.getEntity());
+            resp.close();
+            assertTrue("'"+ EXPECTED_RESPONSE_MESSAGE + "' message is expected, but was: " + content,
+                  content.contains(EXPECTED_RESPONSE_MESSAGE));
         }
     }
     @Test
@@ -101,7 +113,11 @@ public class MicroProfileMetricsRequestMethodsTestCase {
 
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             CloseableHttpResponse resp = client.execute(new HttpDelete(endpointURL));
-            assertEquals(406, resp.getStatusLine().getStatusCode());
+            assertEquals(405, resp.getStatusLine().getStatusCode());
+            String content = EntityUtils.toString(resp.getEntity());
+            resp.close();
+            assertTrue("'"+ EXPECTED_RESPONSE_MESSAGE + "' message is expected, but was: " + content,
+                  content.contains(EXPECTED_RESPONSE_MESSAGE));
         }
     }
     @Test
@@ -110,7 +126,11 @@ public class MicroProfileMetricsRequestMethodsTestCase {
 
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             CloseableHttpResponse resp = client.execute(new HttpTrace(endpointURL));
-            assertEquals(406, resp.getStatusLine().getStatusCode());
+            assertEquals(405, resp.getStatusLine().getStatusCode());
+            String content = EntityUtils.toString(resp.getEntity());
+            resp.close();
+            assertTrue("'"+ EXPECTED_RESPONSE_MESSAGE + "' message is expected, but was: " + content,
+                  content.contains(EXPECTED_RESPONSE_MESSAGE));
         }
     }
     @Test
@@ -119,7 +139,11 @@ public class MicroProfileMetricsRequestMethodsTestCase {
 
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             CloseableHttpResponse resp = client.execute(new HttpPatch(endpointURL));
-            assertEquals(406, resp.getStatusLine().getStatusCode());
+            assertEquals(405, resp.getStatusLine().getStatusCode());
+            String content = EntityUtils.toString(resp.getEntity());
+            resp.close();
+            assertTrue("'"+ EXPECTED_RESPONSE_MESSAGE + "' message is expected, but was: " + content,
+                  content.contains(EXPECTED_RESPONSE_MESSAGE));
         }
     }
 
