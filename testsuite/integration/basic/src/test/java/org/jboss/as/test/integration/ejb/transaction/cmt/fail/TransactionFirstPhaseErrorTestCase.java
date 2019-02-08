@@ -38,6 +38,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.transactions.TransactionCheckerSingleton;
 import org.jboss.as.test.integration.transactions.TransactionTestLookupUtil;
 import org.jboss.as.test.integration.transactions.TxTestUtil;
+import org.jboss.as.test.integration.transactions.spi.TestLastResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -64,6 +65,7 @@ public class TransactionFirstPhaseErrorTestCase {
     public static Archive<?> createDeployment() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "test-txn-one-phase.jar")
         .addPackage(TxTestUtil.class.getPackage())
+        .addPackage(TestLastResource.class.getPackage())
         .addClasses(InnerBean.class, OuterBean.class)
         .addAsManifestResource(new StringAsset("Dependencies: org.jboss.jboss-transaction-spi \n"), "MANIFEST.MF")
         // grant necessary permissions for -Dsecurity.manager

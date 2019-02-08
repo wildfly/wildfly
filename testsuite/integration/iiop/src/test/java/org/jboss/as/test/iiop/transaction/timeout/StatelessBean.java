@@ -70,6 +70,8 @@ public class StatelessBean {
         Transaction txn;
         txn = tm.getTransaction();
 
+        TxTestUtil.addSynchronization(txn, checker);
+
         TxTestUtil.enlistTestXAResource(txn, checker);
         TxTestUtil.enlistTestXAResource(txn, checker);
     }
@@ -80,7 +82,8 @@ public class StatelessBean {
         Transaction txn;
         txn = tm.getTransaction();
 
-        TxTestUtil.enlistTestXAResource(txn, checker);
+        TxTestUtil.addSynchronization(txn, checker);
+
         TxTestUtil.enlistTestXAResource(txn, checker);
 
         try {
@@ -89,6 +92,8 @@ public class StatelessBean {
             Thread.currentThread().interrupt();
             throw new RemoteException("Interupted during waiting for transaction timeout", ie);
         }
+
+        TxTestUtil.enlistTestXAResource(txn, checker);
     }
 
     public void touch() {

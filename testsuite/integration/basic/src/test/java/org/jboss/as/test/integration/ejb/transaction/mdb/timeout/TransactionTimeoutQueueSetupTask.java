@@ -22,10 +22,14 @@
 
 package org.jboss.as.test.integration.ejb.transaction.mdb.timeout;
 
+import java.io.IOException;
+
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
+import org.jboss.dmr.ModelNode;
 
 public class TransactionTimeoutQueueSetupTask implements ServerSetupTask {
 
@@ -41,6 +45,8 @@ public class TransactionTimeoutQueueSetupTask implements ServerSetupTask {
     public static final String REPLY_QUEUE_NAME = "replyQueue";
     public static final String REPLY_QUEUE_JNDI_NAME = "queue/" + REPLY_QUEUE_NAME;
 
+    ModelNode amqServerDefaultAdress = new ModelNode().add(ClientConstants.SUBSYSTEM, "messaging-activemq")
+            .add("server", "default");
 
     private JMSOperations adminOperations;
 
@@ -52,6 +58,9 @@ public class TransactionTimeoutQueueSetupTask implements ServerSetupTask {
         adminOperations.createJmsQueue(ANNOTATION_TIMEOUT_QUEUE_NAME, ANNOTATION_TIMEOUT_JNDI_NAME);
         adminOperations.createJmsQueue(PROPERTY_TIMEOUT_QUEUE_NAME, PROPERTY_TIMEOUT_JNDI_NAME);
         adminOperations.createJmsQueue(REPLY_QUEUE_NAME, REPLY_QUEUE_JNDI_NAME);
+
+        setMaxDeliveryAttempts(PROPERTY_TIMEOUT_QUEUE_NAME);
+        setMaxDeliveryAttempts(DEFAULT_TIMEOUT_QUEUE_NAME);
     }
 
     @Override
@@ -63,10 +72,32 @@ public class TransactionTimeoutQueueSetupTask implements ServerSetupTask {
                 adminOperations.removeJmsQueue(ANNOTATION_TIMEOUT_QUEUE_NAME);
                 adminOperations.removeJmsQueue(PROPERTY_TIMEOUT_QUEUE_NAME);
                 adminOperations.removeJmsQueue(REPLY_QUEUE_NAME);
+
+                removeAddressSettings(DEFAULT_TIMEOUT_QUEUE_NAME);
+                removeAddressSettings(PROPERTY_TIMEOUT_QUEUE_NAME);
             } finally {
                 adminOperations.close();
             }
         }
     }
 
+    // /subsystem=messaging-activemq/server=default/address-setting=queue.propertyTimeoutQueue:add(max-delivery-attempts=1)
+    private void setMaxDeliveryAttempts(String queueName) throws IOException {
+        ModelNode address = amqServerDefaultAdress.add("address-setting", "queue." + queueName);
+
+        ModelNode operation = new ModelNode()
+            .get(ClientConstants.OP_ADDR).set(address)
+            .get(ClientConstants.OP).set(ClientConstants.ADD)
+            .get("max-delivery-attempts").set(1);
+        adminOperations.getControllerClient().execute(operation);
+    }
+
+    private void removeAddressSettings(String queueName) throws IOException {
+        ModelNode address = amqServerDefaultAdress.add("address-setting", "queue." + queueName);
+
+        ModelNode operation = new ModelNode()
+            .get(ClientConstants.OP_ADDR).set(address)
+            .get(ClientConstants.OP).set(ClientConstants.REMOVE_OPERATION);
+        adminOperations.getControllerClient().execute(operation);
+    }
 }

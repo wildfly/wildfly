@@ -32,7 +32,7 @@ import javax.inject.Inject;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 
-import org.jboss.as.test.integration.transactions.TestLastResource;
+import org.jboss.as.test.integration.transactions.spi.TestLastResource;
 import org.jboss.as.test.integration.transactions.TestXAResource;
 import org.jboss.as.test.integration.transactions.TransactionCheckerSingleton;
 import org.jboss.as.test.integration.transactions.TxTestUtil;

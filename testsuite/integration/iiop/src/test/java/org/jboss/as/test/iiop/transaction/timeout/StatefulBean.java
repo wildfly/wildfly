@@ -82,8 +82,7 @@ public class StatefulBean implements SessionSynchronization {
     @TransactionTimeout(value = 1)
     public void testTimeout() throws SystemException, RemoteException {
         log.trace("Method stateful #testTimeout called");
-        Transaction txn;
-        txn = tm.getTransaction();
+        Transaction txn = tm.getTransaction();
 
         TxTestUtil.enlistTestXAResource(txn, checker);
         TxTestUtil.enlistTestXAResource(txn, checker);
