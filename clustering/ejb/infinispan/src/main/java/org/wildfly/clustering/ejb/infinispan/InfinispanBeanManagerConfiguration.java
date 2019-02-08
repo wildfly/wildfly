@@ -37,6 +37,7 @@ import org.wildfly.clustering.spi.NodeFactory;
  * @param <T>
  */
 public interface InfinispanBeanManagerConfiguration<I, T> {
+    String getName();
     Predicate<Map.Entry<? super BeanKey<I>, ? super BeanEntry<I>>> getBeanFilter();
     KeyAffinityServiceFactory getAffinityFactory();
     Registry<String, ?> getRegistry();

@@ -112,7 +112,13 @@ public class InfinispanBeanManagerFactory<I, T> implements BeanManagerFactory<I,
                 return scheduler;
             }
         };
+        String name = this.configuration.getName();
         InfinispanBeanManagerConfiguration<I, T> configuration = new InfinispanBeanManagerConfiguration<I, T>() {
+            @Override
+            public String getName() {
+                return name;
+            }
+
             @Override
             public Predicate<Map.Entry<? super BeanKey<I>, ? super BeanEntry<I>>> getBeanFilter() {
                 return beanFilter;

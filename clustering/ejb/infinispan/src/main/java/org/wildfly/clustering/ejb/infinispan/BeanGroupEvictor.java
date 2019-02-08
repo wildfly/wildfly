@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -21,31 +21,14 @@
  */
 package org.wildfly.clustering.ejb.infinispan;
 
-import org.wildfly.clustering.ee.Creator;
-import org.wildfly.clustering.ee.Locator;
-import org.wildfly.clustering.ee.Remover;
-
 /**
- * A factory for creating a {@link BeanGroup}.
- *
+ * Evicts a stateful bean.
  * @author Paul Ferraro
- *
- * @param <G> the group identifier type
- * @param <I> the bean identifier type
- * @param <T> the bean type
  */
-public interface BeanGroupFactory<I, T> extends Creator<I, BeanGroupEntry<I, T>, Void>, Locator<I, BeanGroupEntry<I, T>>, Remover<I>, BeanGroupEvictor<I> {
+public interface BeanGroupEvictor<I> {
     /**
-     * Create a new bean group using the specified identifier and entry.
-     * @param id a group identifier
-     * @param entry the cache entry for the group
-     * @return a bean group
+     * Evicts the bean group identified by the specified identifier.
+     * @param id a bean group identifier.
      */
-    BeanGroup<I, T> createGroup(I id, BeanGroupEntry<I, T> entry);
-
-    BeanGroupKey<I> createKey(I id);
-
-    int getPassiveCount();
-
-    void close();
+    void evict(I id);
 }

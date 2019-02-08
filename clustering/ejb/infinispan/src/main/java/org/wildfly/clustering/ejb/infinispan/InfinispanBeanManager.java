@@ -92,6 +92,9 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 @Listener(primaryOnly = true)
 public class InfinispanBeanManager<I, T> implements BeanManager<I, T, TransactionBatch> {
 
+    private static final String GLOBAL_IDLE_TIMEOUT = WildFlySecurityManager.getPropertyPrivileged("jboss.ejb.stateful.idle-timeout", null);
+    private static final String IDLE_TIMEOUT_PROPERTY = "jboss.ejb.stateful.%s.idle-timeout";
+
     private static ThreadFactory createThreadFactory() {
         PrivilegedAction<ThreadFactory> action = () -> new JBossThreadFactory(new ThreadGroup(InfinispanBeanManager.class.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null);
         return WildFlySecurityManager.doUnchecked(action);
@@ -99,6 +102,7 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
 
     private static final Invoker INVOKER = new RetryingInvoker(Duration.ZERO, Duration.ofMillis(10), Duration.ofMillis(100));
 
+    private final String name;
     private final Cache<BeanKey<I>, BeanEntry<I>> cache;
     private final CacheProperties properties;
     private final BeanFactory<I, T> beanFactory;
@@ -119,6 +123,7 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
     private volatile CommandDispatcher<Scheduler<I>> dispatcher;
 
     public InfinispanBeanManager(InfinispanBeanManagerConfiguration<I, T> configuration, IdentifierFactory<I> identifierFactory, Configuration<BeanKey<I>, BeanEntry<I>, BeanFactory<I, T>> beanConfiguration, Configuration<BeanGroupKey<I>, BeanGroupEntry<I, T>, BeanGroupFactory<I, T>> groupConfiguration) {
+        this.name = configuration.getName();
         this.filter = configuration.getBeanFilter();
         this.groupFactory = groupConfiguration.getFactory();
         this.beanFactory = beanConfiguration.getFactory();
@@ -142,13 +147,25 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
         this.executor = Executors.newSingleThreadExecutor(createThreadFactory());
         this.affinity.start();
 
-        List<Scheduler<I>> schedulers = new ArrayList<>(1);
+        List<Scheduler<I>> schedulers = new ArrayList<>(2);
         Duration timeout = this.expiration.getTimeout();
         if ((timeout != null) && !timeout.isNegative()) {
             schedulers.add(new BeanExpirationScheduler<>(this.batcher, new ExpiredBeanRemover<>(this.beanFactory), this.expiration));
         }
+
+        String dispatcherName = String.join("/", this.cache.getName(), this.filter.toString());
+
+        String idleTimeout = WildFlySecurityManager.getPropertyPrivileged(String.format(IDLE_TIMEOUT_PROPERTY, this.name), GLOBAL_IDLE_TIMEOUT);
+        if (idleTimeout != null) {
+            Duration idleDuration = Duration.parse(idleTimeout);
+            if (!idleDuration.isNegative()) {
+                schedulers.add(new EagerEvictionScheduler<>(this.beanFactory, this.groupFactory, this.expiration.getExecutor(), idleDuration, this.dispatcherFactory, dispatcherName + "/eager-passivation"));
+            }
+        }
+
         this.scheduler = new CompositeScheduler<>(schedulers);
-        this.dispatcher = !schedulers.isEmpty() ? this.dispatcherFactory.createCommandDispatcher(String.join("/", this.cache.getName(), this.filter.toString()), this.scheduler) : null;
+        this.dispatcher = !schedulers.isEmpty() ? this.dispatcherFactory.createCommandDispatcher(dispatcherName, this.scheduler) : null;
+
         this.cache.addListener(this, new PredicateCacheEventFilter<>(this.filter), null);
         this.schedule(new SimpleLocality(false), new CacheLocality(this.cache));
     }
