@@ -46,9 +46,7 @@ public @interface Version {
         EAP_6_4_0(EAP, 6, 4, 0),
         EAP_7_0_0(EAP, 7, 0, 0),
         EAP_7_1_0(EAP, 7, 1, 0),
-        // TODO https://issues.jboss.org/browse/WFLY-10971 Remove EAP_7_2_0_TEMP and enable EAP_7_2_0
-        EAP_7_2_0_TEMP(WILDFLY, 14, 0, 0),
-        //EAP_7_2_0(EAP, 7, 2, 0),
+        EAP_7_2_0(EAP, 7, 2, 0),
         ;
 
 

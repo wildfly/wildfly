@@ -34,7 +34,7 @@ import org.junit.runners.Suite;
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses(value= {RBACConfig720TestCase.class, WildcardReads720TestCase.class})
-@Version(Version.AsVersion.EAP_7_2_0_TEMP)
+@Version(Version.AsVersion.EAP_7_2_0)
 public class KernelBehavior720TestSuite extends KernelBehaviorTestSuite {
 
     @BeforeClass

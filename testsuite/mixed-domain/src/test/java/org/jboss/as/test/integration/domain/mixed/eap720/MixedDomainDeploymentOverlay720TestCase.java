@@ -30,7 +30,7 @@ import org.junit.BeforeClass;
 /**
  * @author Emmanuel Hugonnet (c) 2017 Red Hat, inc.
  */
-@Version(AsVersion.EAP_7_2_0_TEMP)
+@Version(AsVersion.EAP_7_2_0)
 public class MixedDomainDeploymentOverlay720TestCase extends MixedDeploymentOverlayTestCase {
     @BeforeClass
     public static void beforeClass() {
