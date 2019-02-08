@@ -64,7 +64,7 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
                 return ModClusterModel.VERSION_4_0_0;
             case EAP_7_1_0:
                 return ModClusterModel.VERSION_5_0_0;
-            case EAP_7_2_0_TEMP:
+            case EAP_7_2_0:
                 return ModClusterModel.VERSION_6_0_0;
         }
         throw new IllegalArgumentException();
@@ -83,11 +83,11 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
                         "org.jboss.mod_cluster:mod_cluster-core:1.3.7.Final-redhat-1",
                         formatArtifact("org.jboss.eap:wildfly-clustering-common:%s", version),
                 };
-            case EAP_7_2_0_TEMP:
+            case EAP_7_2_0:
                 return new String[] {
-                        formatArtifact("org.wildfly:wildfly-mod_cluster-extension:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-mod_cluster-extension:%s", version),
                         "org.jboss.mod_cluster:mod_cluster-core:1.4.0.Final",
-                        formatArtifact("org.wildfly:wildfly-clustering-common:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-common:%s", version),
                 };
         }
         throw new IllegalArgumentException();
@@ -110,7 +110,7 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
 
     @Test
     public void testTransformerEAP_7_2_0() throws Exception {
-        this.testTransformation(ModelTestControllerVersion.EAP_7_2_0_TEMP);
+        this.testTransformation(ModelTestControllerVersion.EAP_7_2_0);
     }
 
     private void testTransformation(ModelTestControllerVersion controllerVersion) throws Exception {
@@ -159,7 +159,7 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
 
     @Test
     public void testRejectionsEAP_7_2_0() throws Exception {
-        this.testRejections(ModelTestControllerVersion.EAP_7_2_0_TEMP);
+        this.testRejections(ModelTestControllerVersion.EAP_7_2_0);
     }
 
     private void testRejections(ModelTestControllerVersion controllerVersion) throws Exception {
