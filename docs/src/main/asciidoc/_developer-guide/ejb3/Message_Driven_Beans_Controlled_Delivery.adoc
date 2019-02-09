@@ -33,7 +33,7 @@ deployed:
 <jboss:ejb-jar xmlns:jboss="http://www.jboss.com/xml/ns/javaee"
                xmlns="http://java.sun.com/xml/ns/javaee"
                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-               xmlns:d="urn:delivery-active:1.1"
+               xmlns:d="urn:delivery-active:1.2"
                xsi:schemaLocation="http://www.jboss.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-ejb3-2_0.xsd http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd"                version="3.1"
                impl-version="2.0">
     <assembly-descriptor>
@@ -96,7 +96,7 @@ path of the MDB you want to manage delivery for:
 
 Delivery groups provide a straightforward way to manage delivery for a
 group of MDBs. Every MDB belonging to a delivery group has delivery
-active if and only if that group is active, and has delivery inactive
+active if that group is active, and has delivery inactive
 whenever the group is not active.
 
 You can add a delivery group to the ejb3 subsystem using either the
@@ -187,7 +187,7 @@ jboss-ejb3.xml file:
 <jboss:ejb-jar xmlns:jboss="http://www.jboss.com/xml/ns/javaee"
                xmlns="http://java.sun.com/xml/ns/javaee"
                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-               xmlns:d="urn:delivery-active:1.1"
+               xmlns:d="urn:delivery-active:1.2"
                xsi:schemaLocation="http://www.jboss.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-ejb3-2_0.xsd http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd"
                version="3.1"
                impl-version="2.0">
@@ -211,7 +211,7 @@ group2:
 <jboss:ejb-jar xmlns:jboss="http://www.jboss.com/xml/ns/javaee"
                xmlns="http://java.sun.com/xml/ns/javaee"
                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-               xmlns:d="urn:delivery-active:1.1"
+               xmlns:d="urn:delivery-active:1.2"
                xsi:schemaLocation="http://www.jboss.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-ejb3-2_0.xsd http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd"
                version="3.1"
                impl-version="2.0">
@@ -245,9 +245,61 @@ public class HelloWorldMDB implements MessageListener {
 }
 ----
 
-A MDB cannot belong to more than one delivery group. Also, all the
-delivery-groups used by an application must be installed in the Wildfly
-server upon deployment, or the deployment will fail with a message
+A MDB can belong to more than one delivery group. See the following example:
+[source,xml]
+----
+<?xml version="1.1" encoding="UTF-8"?>
+ 
+<jboss:ejb-jar xmlns:jboss="http://www.jboss.com/xml/ns/javaee"
+               xmlns="http://java.sun.com/xml/ns/javaee"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xmlns:d="urn:delivery-active:1.2"
+               xsi:schemaLocation="http://www.jboss.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-ejb3-2_0.xsd http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd"
+               version="3.1"
+               impl-version="2.0">
+    <assembly-descriptor>
+        <d:delivery>
+            <ejb-name>*</ejb-name>
+            <d:group>mdb-delivery-group1</d:group>
+        </d:delivery>
+        <d:delivery>
+            <ejb-name>HelloWorldMDB</ejb-name>
+            <d:group>mdb-delivery-group2</d:group>
+            <d:group>mdb-delivery-group3</d:group>
+        </d:delivery>
+    </assembly-descriptor>
+</jboss:ejb-jar>
+----
+
+In the example above, we use the wildcard to specify that every MDB in the
+ejb-jar will belong to mdb-delivery-group1.
+That means that, in order for delivery of messages to be active for those MDBs,
+mdb-delivery-group1 must be active.
+
+In addition, the configuration above specifies that HelloWorldMDB belongs also
+to mdb-delivery-group2 and mdb-delivery-group3. So, delivery of messages to
+ HelloWorldMDB will only be active when mdb-delivery-group1,
+ mdb-delivery-group2, and mdb-delivery-group3 are all active.
+
+The same could be specified using the @DeliveryGroup annotation:
+
+[source, java]
+----
+@MessageDriven(name = "HelloWorldQueueMDB", activationConfig = {
+ @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+ @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/HELLOWORLDMDBQueue"),
+ @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge") })
+ 
+@DeliveryGroup("mdb-delivery-group2")
+@DeliveryGroup("mdb-delivery-group3")
+ 
+public class HelloWorldMDB implements MessageListener {
+    ...
+}
+----
+
+Notice that all the delivery-groups used by an application must be installed in
+the Wildfly server upon deployment, or the deployment will fail with a message
 stating that the delivery-group is missing.
 
 [[clustered-singleton-delivery]]
@@ -316,21 +368,21 @@ public class HelloWorldMDB implements MessageListener { ... }
 [[using-multiple-mdb-delivery-control-mechanisms]]
 == Using Multiple MDB Delivery Control Mechanisms
 
-The previous d eliver y control mechanisms can be used together in a
+The previous delivery control mechanisms can be used together in a
 single MDB. In this case, they work as a set of restrictions for
 delivery to be active in a MDB.
 
-For example, if an MDB belongs to a delivery group and is also a
+For example, if an MDB belongs to one or more delivery groups and is also a
 clustered singleton MDB, the delivery will be active for that MDB only
-if the delivery group is active in the cluster node that was elected as
+if the delivery groups are active in the cluster node that was elected as
 the singleton master.
 
-Also, if you use jboss-cli to stopDelivery on a MDB that belongs to a
-delivery group, the MDB will stop receiving messages in case that group
-was active. If that group was not active, the MDB will continue in the
-same, inactive state. But, once that group is active, the MDB will not
-receive messages, unless a startDelivery operation is executed to revert
-the previously exectued stopDelivery operation.
+Also, if you use jboss-cli to stopDelivery on a MDB that belongs to one or more
+delivery groups, the MDB will stop receiving messages in case all groups
+were active. If one or more of the groups associated with the MDB was not active,
+the MDB will continue in the same, inactive state. But, once all groups become active,
+the MDB will still be prevented from receiving messages, unless a startDelivery
+operation is executed to revert the previously executed stopDelivery operation.
 
 Invoking stopDelivery on an MDB that is marked as clustered singleton
 will work in a similar way: no visible effect if the current node is not
@@ -344,16 +396,28 @@ In other words, when more than one delivery control mechanism is used in
 conjunction, they act as a set of restrictions that need all to be true
 in order for the MDB to receive messages:
 
-* *delivery-group + stop-delivery*: the delivery group needs to be
-active and the delivery needs to be started in order for that MDB to
-start receiving messages;
+* * MDB belongs to one delivery-group + stop-delivery was invoked*: the delivery group
+needs to be active and the delivery needs to be restarted (via start-delivery) in order
+for that MDB to start receiving messages;
 
-* *delivery-group + clustered singleton*: the delivery group needs to be
-active and the current node needs to be the clustered singleton master
+* * MDB belongs to one delivery-group + MDB is clustered singleton*: the delivery group
+needs to be active and the current node needs to be the clustered singleton master
 node in order for that MDB to start receiving messages;
 
-* *delivery-group + clustered singleton + stop-delivery*: as above,
-delivery-group active, current node equals the clustered singleton
-master node, plus, start-delivery needs to be invoked on that MDB, only
-with these three factors being true the MDB will start receiving
-messages.
+* * MDB belongs to one delivery-group + MDB is clustered singleton + stop-delivery was invoked*:
+as above, the delivery-group has to be active, the current cluster node must be the
+clustered singleton master node, plus, start-delivery needs to be invoked on that MDB,
+only with these three factors being true the MDB will start receiving messages.
+
+* * MDB belongs to multiple delivery-groups + stop-delivery was invoked*: all the delivery
+groups need to be active and the delivery needs to be restarted (via start-delivery) in
+order for that MDB to start receiving messages;
+
+* * MDB belongs to multiple delivery-groups + MDB is clustered singleton*: all the delivery
+groups need to be active and the current node needs to be the clustered singleton
+master node in order for that MDB to start receiving messages;
+
+* * MDB belongs to multiple delivery-groups + MDB is clustered singleton + stop-delivery was
+invoked*: as above, all delivery-groups must be active, and current cluster node has to be the
+clustered singleton master node, plus, start-delivery needs to be invoked on that MDB, only
+with these three factors being true the MDB will start receiving messages.
