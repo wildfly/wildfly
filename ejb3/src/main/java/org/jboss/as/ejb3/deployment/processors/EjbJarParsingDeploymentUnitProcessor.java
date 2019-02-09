@@ -45,6 +45,7 @@ import org.jboss.as.ejb3.clustering.ClusteringSchema;
 import org.jboss.as.ejb3.clustering.EJBBoundClusteringMetaDataParser;
 import org.jboss.as.ejb3.deliveryactive.parser.EJBBoundMdbDeliveryMetaDataParser;
 import org.jboss.as.ejb3.deliveryactive.parser.EJBBoundMdbDeliveryMetaDataParser11;
+import org.jboss.as.ejb3.deliveryactive.parser.EJBBoundMdbDeliveryMetaDataParser12;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.interceptor.ContainerInterceptorsParser;
@@ -327,6 +328,7 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
         parsers.put(EJBBoundResourceAdapterBindingMetaDataParser.NAMESPACE_URI, EJBBoundResourceAdapterBindingMetaDataParser.INSTANCE);
         parsers.put(EJBBoundMdbDeliveryMetaDataParser.NAMESPACE_URI_1_0, EJBBoundMdbDeliveryMetaDataParser.INSTANCE);
         parsers.put(EJBBoundMdbDeliveryMetaDataParser11.NAMESPACE_URI_1_1, EJBBoundMdbDeliveryMetaDataParser11.INSTANCE);
+        parsers.put(EJBBoundMdbDeliveryMetaDataParser12.NAMESPACE_URI_1_2, EJBBoundMdbDeliveryMetaDataParser12.INSTANCE);
         parsers.put("urn:iiop", new IIOPMetaDataParser());
         parsers.put("urn:iiop:1.0", new IIOPMetaDataParser());
         parsers.put("urn:trans-timeout", new TransactionTimeoutMetaDataParser());
