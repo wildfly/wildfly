@@ -97,6 +97,8 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
                 return InfinispanModel.VERSION_4_0_0;
             case EAP_7_1_0:
                 return InfinispanModel.VERSION_5_0_0;
+            case EAP_7_2_0:
+                return InfinispanModel.VERSION_8_0_0;
             default:
                 throw new IllegalArgumentException();
         }
@@ -112,36 +114,23 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
                         "org.infinispan:infinispan-cachestore-jdbc:5.2.11.Final-redhat-2",
                 };
             case EAP_7_0_0:
-                return new String[] {
-                        formatEAP7SubsystemArtifact(version),
-                        "org.infinispan:infinispan-core:8.1.2.Final-redhat-1",
-                        "org.infinispan:infinispan-cachestore-jdbc:8.1.2.Final-redhat-1",
-                        formatArtifact("org.jboss.eap:wildfly-clustering-common:%s", version),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-service:%s", version),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-jgroups-spi:%s", version),
-                        // Following are needed for InfinispanSubsystemInitialization
-                        formatArtifact("org.jboss.eap:wildfly-clustering-jgroups-extension:%s", version),
-                        formatArtifact("org.jboss.eap:wildfly-connector:%s", version),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-infinispan-spi:%s", version),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-spi:%s", version),
-                };
             case EAP_7_1_0:
+            case EAP_7_2_0:
                 return new String[] {
                         formatEAP7SubsystemArtifact(version),
-                        "org.infinispan:infinispan-core:8.2.8.Final-redhat-1",
-                        "org.infinispan:infinispan-cachestore-jdbc:8.2.8.Final-redhat-1",
-                        formatArtifact("org.jboss.eap:wildfly-clustering-common:%s", version),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-service:%s", version),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-jgroups-spi:%s", version),
                         // Following are needed for InfinispanSubsystemInitialization
-                        formatArtifact("org.jboss.eap:wildfly-clustering-jgroups-extension:%s", version),
-                        formatArtifact("org.jboss.eap:wildfly-connector:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-common:%s", version),
                         formatArtifact("org.jboss.eap:wildfly-clustering-infinispan-spi:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-jgroups-extension:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-jgroups-spi:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-service:%s", version),
                         formatArtifact("org.jboss.eap:wildfly-clustering-singleton-api:%s", version),
                         formatArtifact("org.jboss.eap:wildfly-clustering-spi:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-connector:%s", version),
                 };
-            default:
+            default: {
                 throw new IllegalArgumentException();
+            }
         }
     }
 

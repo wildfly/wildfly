@@ -79,6 +79,8 @@ public class JGroupsTransformersTestCase extends OperationTestCaseBase {
                 return JGroupsModel.VERSION_4_0_0;
             case EAP_7_1_0:
                 return JGroupsModel.VERSION_5_0_0;
+            case EAP_7_2_0:
+                return JGroupsModel.VERSION_6_0_0;
             default:
                 throw new IllegalArgumentException();
         }
@@ -92,18 +94,13 @@ public class JGroupsTransformersTestCase extends OperationTestCaseBase {
                         formatEAP6SubsystemArtifact(version),
                 };
             case EAP_7_0_0:
-                return new String[] {
-                        formatEAP7SubsystemArtifact(version),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-common:%s", version),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-service:%s", version),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-jgroups-spi:%s", version),
-                };
             case EAP_7_1_0:
+            case EAP_7_2_0:
                 return new String[] {
                         formatEAP7SubsystemArtifact(version),
                         formatArtifact("org.jboss.eap:wildfly-clustering-common:%s", version),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-service:%s", version),
                         formatArtifact("org.jboss.eap:wildfly-clustering-jgroups-spi:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-service:%s", version),
                         formatArtifact("org.jboss.eap:wildfly-clustering-spi:%s", version),
                 };
             default:
