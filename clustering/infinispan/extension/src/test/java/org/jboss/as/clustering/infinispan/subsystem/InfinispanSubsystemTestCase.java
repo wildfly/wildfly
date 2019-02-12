@@ -24,6 +24,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import java.util.EnumSet;
 import java.util.Properties;
 
+import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemResourceDefinition;
 import org.jboss.as.clustering.subsystem.ClusteringSubsystemTest;
@@ -70,7 +71,7 @@ public class InfinispanSubsystemTestCase extends ClusteringSubsystemTest<Infinis
                 .require(JGroupsRequirement.CHANNEL, "maximal-channel")
                 .require(JGroupsRequirement.CHANNEL_FACTORY, "ee-maximal", "maximal-channel", "maximal-cluster")
                 .require(JGroupsDefaultRequirement.CHANNEL_FACTORY)
-                .require(TransactionResourceDefinition.TransactionRequirement.LOCAL_TRANSACTION_PROVIDER)
+                .require(CommonRequirement.LOCAL_TRANSACTION_PROVIDER)
                 .require(TransactionResourceDefinition.TransactionRequirement.XA_RESOURCE_RECOVERY_REGISTRY)
                 ;
     }

@@ -34,6 +34,7 @@ import org.jboss.as.clustering.infinispan.subsystem.remote.HotRodStoreResourceDe
 import org.jboss.as.clustering.infinispan.subsystem.remote.InvalidationNearCacheResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteClusterResourceDefinition;
+import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteTransactionResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.SecurityResourceDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
@@ -175,7 +176,7 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                     writeThreadPoolElements(XMLElement.ASYNC_THREAD_POOL, ThreadPoolResourceDefinition.CLIENT, writer, remoteContainer);
 
                     ModelNode connectionPool = remoteContainer.get(ConnectionPoolResourceDefinition.PATH.getKeyValuePair());
-                    EnumSet<ConnectionPoolResourceDefinition.Attribute> attributes = EnumSet.allOf(ConnectionPoolResourceDefinition.Attribute.class);
+                    Set<ConnectionPoolResourceDefinition.Attribute> attributes = EnumSet.allOf(ConnectionPoolResourceDefinition.Attribute.class);
                     if (hasDefined(connectionPool, attributes)) {
                         writer.writeStartElement(XMLElement.CONNECTION_POOL.getLocalName());
                         writeAttributes(writer, connectionPool, attributes);
@@ -205,10 +206,18 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                     writer.writeEndElement(); // </remote-clusters>
 
                     ModelNode securityModel = remoteContainer.get(SecurityResourceDefinition.PATH.getKeyValuePair());
-                    EnumSet<SecurityResourceDefinition.Attribute> securityAttributes = EnumSet.allOf(SecurityResourceDefinition.Attribute.class);
+                    Set<SecurityResourceDefinition.Attribute> securityAttributes = EnumSet.allOf(SecurityResourceDefinition.Attribute.class);
                     if (hasDefined(securityModel, securityAttributes)) {
                         writer.writeStartElement(XMLElement.SECURITY.getLocalName());
                         writeAttributes(writer, securityModel, securityAttributes);
+                        writer.writeEndElement();
+                    }
+
+                    ModelNode transactionModel = remoteContainer.get(RemoteTransactionResourceDefinition.PATH.getKeyValuePair());
+                    Set<RemoteTransactionResourceDefinition.Attribute> transactionAttributes = EnumSet.allOf(RemoteTransactionResourceDefinition.Attribute.class);
+                    if (hasDefined(transactionModel, transactionAttributes)) {
+                        writer.writeStartElement(XMLElement.TRANSACTION.getLocalName());
+                        writeAttributes(writer, transactionModel, transactionAttributes);
                         writer.writeEndElement();
                     }
 

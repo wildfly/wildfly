@@ -143,7 +143,7 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
                 .require(CommonUnaryRequirement.DATA_SOURCE, "ExampleDS")
                 .require(JGroupsRequirement.CHANNEL_FACTORY, "maximal-channel")
                 .require(JGroupsDefaultRequirement.CHANNEL_FACTORY)
-                .require(TransactionResourceDefinition.TransactionRequirement.LOCAL_TRANSACTION_PROVIDER)
+                .require(CommonRequirement.LOCAL_TRANSACTION_PROVIDER)
                 .require(TransactionResourceDefinition.TransactionRequirement.XA_RESOURCE_RECOVERY_REGISTRY)
                 ;
     }
@@ -161,6 +161,11 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
     @Test
     public void testTransformerEAP710() throws Exception {
         testTransformation(ModelTestControllerVersion.EAP_7_1_0);
+    }
+
+    @Test
+    public void testTransformerEAP720() throws Exception {
+        testTransformation(ModelTestControllerVersion.EAP_7_2_0);
     }
 
     private KernelServices buildKernelServices(ModelTestControllerVersion controllerVersion, ModelVersion version, String... mavenResourceURLs) throws Exception {
@@ -363,6 +368,11 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
     @Test
     public void testRejectionsEAP710() throws Exception {
         testRejections(ModelTestControllerVersion.EAP_7_1_0);
+    }
+
+    @Test
+    public void testRejectionsEAP720() throws Exception {
+        testRejections(ModelTestControllerVersion.EAP_7_2_0);
     }
 
     private void testRejections(final ModelTestControllerVersion controller) throws Exception {

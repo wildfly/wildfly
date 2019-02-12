@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.UnaryOperator;
 
 import javax.transaction.TransactionSynchronizationRegistry;
@@ -36,10 +35,10 @@ import org.infinispan.transaction.LockingMode;
 import org.jboss.as.clustering.controller.BinaryCapabilityNameResolver;
 import org.jboss.as.clustering.controller.BinaryRequirementCapability;
 import org.jboss.as.clustering.controller.Capability;
+import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.Operations;
-import org.jboss.as.clustering.controller.ResourceCapabilityReference;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
@@ -51,10 +50,8 @@ import org.jboss.as.clustering.controller.transform.OperationTransformer;
 import org.jboss.as.clustering.controller.transform.RequiredChildResourceDiscardPolicy;
 import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
-import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -126,7 +123,6 @@ public class TransactionResourceDefinition extends ComponentResourceDefinition {
     }
 
     enum TransactionRequirement implements Requirement {
-        LOCAL_TRANSACTION_PROVIDER("org.wildfly.transactions.global-default-local-provider", Void.class),
         TRANSACTION_SYNCHRONIZATION_REGISTRY("org.wildfly.transactions.transaction-synchronization-registry", TransactionSynchronizationRegistry.class),
         XA_RESOURCE_RECOVERY_REGISTRY("org.wildfly.transactions.xa-resource-recovery-registry", XAResourceRecoveryRegistry.class);
 
@@ -285,11 +281,11 @@ public class TransactionResourceDefinition extends ComponentResourceDefinition {
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
                 // Add a requirement on the tm capability to the parent cache capability
-                .addResourceCapabilityReference(new TransactionResourceCapabilityReference(dependentCapability, TransactionRequirement.LOCAL_TRANSACTION_PROVIDER, EnumSet.of(TransactionMode.NONE, TransactionMode.BATCH)))
+                .addResourceCapabilityReference(new TransactionResourceCapabilityReference(dependentCapability, CommonRequirement.LOCAL_TRANSACTION_PROVIDER, Attribute.MODE, EnumSet.of(TransactionMode.NONE, TransactionMode.BATCH)))
                 // Add a requirement on the XAResourceRecoveryRegistry capability to the parent cache capability
-                .addResourceCapabilityReference(new TransactionResourceCapabilityReference(dependentCapability, TransactionRequirement.TRANSACTION_SYNCHRONIZATION_REGISTRY, EnumSet.complementOf(EnumSet.of(TransactionMode.NON_XA))))
+                .addResourceCapabilityReference(new TransactionResourceCapabilityReference(dependentCapability, TransactionRequirement.TRANSACTION_SYNCHRONIZATION_REGISTRY, Attribute.MODE, EnumSet.complementOf(EnumSet.of(TransactionMode.NON_XA))))
                 // Add a requirement on the XAResourceRecoveryRegistry capability to the parent cache capability
-                .addResourceCapabilityReference(new TransactionResourceCapabilityReference(dependentCapability, TransactionRequirement.XA_RESOURCE_RECOVERY_REGISTRY, EnumSet.complementOf(EnumSet.of(TransactionMode.FULL_XA))));
+                .addResourceCapabilityReference(new TransactionResourceCapabilityReference(dependentCapability, TransactionRequirement.XA_RESOURCE_RECOVERY_REGISTRY, Attribute.MODE, EnumSet.complementOf(EnumSet.of(TransactionMode.FULL_XA))));
         ResourceServiceHandler handler = new SimpleResourceServiceHandler(TransactionServiceConfigurator::new);
         new SimpleResourceRegistration(descriptor, handler).register(registration);
 
@@ -298,43 +294,5 @@ public class TransactionResourceDefinition extends ComponentResourceDefinition {
         }
 
         return registration;
-    }
-
-    /** ResourceCapabilityReference that only records tx requirements if the TransactionMode indicates they are necessary. */
-    private static class TransactionResourceCapabilityReference extends ResourceCapabilityReference {
-
-        private final Set<TransactionMode> excludedModes;
-
-        TransactionResourceCapabilityReference(Capability capability, Requirement requirement, Set<TransactionMode> excludedModes) {
-            super(capability, requirement);
-            this.excludedModes = excludedModes;
-        }
-
-        @Override
-        public void addCapabilityRequirements(OperationContext context, Resource resource, String attributeName, String... values) {
-            if (isTransactionalSupportRequired(context, resource, this.excludedModes)) {
-                super.addCapabilityRequirements(context, resource, attributeName, values);
-            }
-        }
-
-        @Override
-        public void removeCapabilityRequirements(OperationContext context, Resource resource, String attributeName, String... values) {
-            if (isTransactionalSupportRequired(context, resource, this.excludedModes)) {
-                super.removeCapabilityRequirements(context, resource, attributeName, values);
-            }
-        }
-
-        private static boolean isTransactionalSupportRequired(OperationContext context, Resource resource, Set<TransactionMode> excludedModes) {
-            try {
-                TransactionMode mode = ModelNodes.asEnum(Attribute.MODE.resolveModelAttribute(context, resource.getModel()), TransactionMode.class);
-                return !excludedModes.contains(mode);
-            } catch (OperationFailedException | RuntimeException e) {
-                // OFE would be due to an expression that can't be resolved right now (OperationContext.Stage.MODEL).
-                // Very unlikely an expression is used and that it uses a resolution source not available in MODEL.
-                // In any case we add the requirement. Downside is they are forced to configure the tx subsystem when
-                // they otherwise wouldn't, but that "otherwise wouldn't" also is a less likely scenario.
-                return true;
-            }
-        }
     }
 }
