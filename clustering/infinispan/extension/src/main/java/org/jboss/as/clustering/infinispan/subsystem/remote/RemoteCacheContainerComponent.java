@@ -24,6 +24,7 @@ package org.jboss.as.clustering.infinispan.subsystem.remote;
 
 import org.jboss.as.clustering.controller.ResourceServiceNameFactory;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -33,13 +34,18 @@ import org.jboss.msc.service.ServiceName;
  */
 public enum RemoteCacheContainerComponent implements ResourceServiceNameFactory {
 
-    CONNECTION_POOL(ConnectionPoolResourceDefinition.PATH.getValue()),
+    CONNECTION_POOL(ConnectionPoolResourceDefinition.PATH),
     MODULE("module"),
-    NEAR_CACHE(NearCacheResourceDefinition.WILDCARD_PATH.getKey()),
-    SECURITY(SecurityResourceDefinition.PATH.getValue()),
+    NEAR_CACHE(NearCacheResourceDefinition.WILDCARD_PATH),
+    SECURITY(SecurityResourceDefinition.PATH),
+    TRANSACTION(RemoteTransactionResourceDefinition.PATH),
     ;
 
     private final String[] components;
+
+    RemoteCacheContainerComponent(PathElement path) {
+        this(path.isWildcard() ? path.getKey() : path.getValue());
+    }
 
     RemoteCacheContainerComponent(String... components) {
         this.components = components;
