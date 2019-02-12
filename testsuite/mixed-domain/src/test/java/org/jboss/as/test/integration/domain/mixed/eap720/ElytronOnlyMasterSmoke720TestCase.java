@@ -29,7 +29,7 @@ import org.junit.BeforeClass;
 /**
  * @author Martin Simka
  */
-@Version(Version.AsVersion.EAP_7_2_0_TEMP)
+@Version(Version.AsVersion.EAP_7_2_0)
 public class ElytronOnlyMasterSmoke720TestCase extends ElytronOnlyMasterSmokeTestCase {
 
     @BeforeClass

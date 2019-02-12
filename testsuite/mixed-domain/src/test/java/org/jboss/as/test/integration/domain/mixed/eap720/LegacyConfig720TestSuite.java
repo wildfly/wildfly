@@ -35,11 +35,11 @@ import org.junit.runners.Suite;
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses(value= {LegacyConfig720TestCase.class, DomainHostExcludes720TestCase.class})
-@Version(Version.AsVersion.EAP_7_2_0_TEMP)
+@Version(Version.AsVersion.EAP_7_2_0)
 public class LegacyConfig720TestSuite extends MixedDomainTestSuite {
 
     @BeforeClass
     public static void initializeDomain() {
-        MixedDomainTestSuite.getSupportForLegacyConfig(LegacyConfig720TestSuite.class, Version.AsVersion.EAP_7_2_0_TEMP);
+        MixedDomainTestSuite.getSupportForLegacyConfig(LegacyConfig720TestSuite.class, Version.AsVersion.EAP_7_2_0);
     }
 }

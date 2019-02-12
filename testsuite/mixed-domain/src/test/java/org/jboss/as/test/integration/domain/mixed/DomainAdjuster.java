@@ -99,7 +99,7 @@ public class DomainAdjuster {
             case EAP_7_1_0:
                 adjuster = new DomainAdjuster710();
                 break;
-            case EAP_7_2_0_TEMP:
+            case EAP_7_2_0:
                 adjuster = new DomainAdjuster720();
                 break;
             default:

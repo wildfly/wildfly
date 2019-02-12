@@ -35,7 +35,7 @@ import org.junit.runners.Suite.SuiteClasses;
  */
 @RunWith(Suite.class)
 @SuiteClasses(value= {MixedDomainDeploymentOverlay720TestCase.class})
-@Version(AsVersion.EAP_7_2_0_TEMP)
+@Version(AsVersion.EAP_7_2_0)
 public class MixedDomainOverlay720TestSuite extends MixedDomainTestSuite {
 
     @BeforeClass

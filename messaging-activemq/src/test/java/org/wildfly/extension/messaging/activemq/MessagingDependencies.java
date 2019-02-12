@@ -37,6 +37,15 @@ public class MessagingDependencies {
     static {
         Map<ModelTestControllerVersion, String[]> map = new HashMap<ModelTestControllerVersion, String[]>();
 
+        map.put(ModelTestControllerVersion.EAP_7_2_0, new String[] {
+                "org.apache.activemq:artemis-commons:2.6.3.redhat-00014",
+                "org.apache.activemq:artemis-journal:2.6.3.redhat-00014",
+                "org.apache.activemq:artemis-server:2.6.3.redhat-00014",
+                "org.apache.activemq:artemis-jms-server:2.6.3.redhat-00014",
+                "org.apache.activemq:artemis-core-client:2.6.3.redhat-00014",
+                "org.apache.activemq:artemis-jms-client:2.6.3.redhat-00014",
+                "org.apache.activemq:artemis-ra:2.6.3.redhat-00014",
+        });
         map.put(ModelTestControllerVersion.EAP_7_1_0, new String[] {
                 "org.apache.activemq:artemis-commons:1.5.5.008-redhat-1",
                 "org.apache.activemq:artemis-journal:1.5.5.008-redhat-1",
@@ -65,16 +74,26 @@ public class MessagingDependencies {
     }
 
     static String getMessagingActiveMQGAV(ModelTestControllerVersion version) {
-        return "org.jboss.eap:wildfly-messaging-activemq:" + version.getMavenGavVersion();
+        if (version.isEap()) {
+            return "org.jboss.eap:wildfly-messaging-activemq:" + version.getMavenGavVersion();
+        }
+        return "org.wildfly:wildfly-messaging-activemq:" + version.getMavenGavVersion();
     }
 
     static String[] getJGroupsDependencies(ModelTestControllerVersion version) {
-        return new String[] {
+        if (version.isEap()) {
+            return new String[]{
                 String.format("org.jboss.eap:wildfly-clustering-common:%s", version.getMavenGavVersion()),
                 String.format("org.jboss.eap:wildfly-clustering-jgroups-api:%s", version.getMavenGavVersion()),
                 String.format("org.jboss.eap:wildfly-clustering-jgroups-extension:%s", version.getMavenGavVersion()),
                 String.format("org.jboss.eap:wildfly-clustering-jgroups-spi:%s", version.getMavenGavVersion()),
-                "org.jgroups:jgroups:3.6.12.Final-redhat-1",
-        };
+                "org.jgroups:jgroups:3.6.12.Final-redhat-1",};
+        }
+        return new String[]{
+            String.format("org.wildfly:wildfly-clustering-common:%s", version.getMavenGavVersion()),
+            String.format("org.wildfly:wildfly-clustering-jgroups-api:%s", version.getMavenGavVersion()),
+            String.format("org.wildfly:wildfly-clustering-jgroups-extension:%s", version.getMavenGavVersion()),
+            String.format("org.wildfly:wildfly-clustering-jgroups-spi:%s", version.getMavenGavVersion()),
+            "org.jgroups:jgroups:3.6.12.Final-redhat-1",};
     }
 }

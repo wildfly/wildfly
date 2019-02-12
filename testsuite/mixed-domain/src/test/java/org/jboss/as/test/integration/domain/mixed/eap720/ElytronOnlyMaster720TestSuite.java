@@ -34,7 +34,7 @@ import org.junit.runners.Suite;
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses(value= {ElytronOnlyMasterSmoke720TestCase.class})
-@Version(Version.AsVersion.EAP_7_2_0_TEMP)
+@Version(Version.AsVersion.EAP_7_2_0)
 @Ignore("Ignore until WFCORE-2882 is integrated")
 public class ElytronOnlyMaster720TestSuite extends ElytronOnlyMasterTestSuite {
 

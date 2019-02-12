@@ -31,7 +31,7 @@ import org.junit.BeforeClass;
  *
  * @author Brian Stansberry
  */
-@Version(Version.AsVersion.EAP_7_2_0_TEMP)
+@Version(Version.AsVersion.EAP_7_2_0)
 public class LegacyConfig720TestCase extends LegacyConfigTest {
 
     @BeforeClass
