@@ -25,6 +25,7 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
+import java.security.ProtectionDomain;
 import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -32,14 +33,18 @@ import java.util.concurrent.ConcurrentMap;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.as.weld.util.Reflections;
+import org.jboss.modules.ClassDefiner;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.weld.interceptor.proxy.LifecycleMixin;
 import org.jboss.weld.logging.BeanLogger;
+import org.jboss.weld.proxy.WeldConstruct;
 import org.jboss.weld.serialization.spi.BeanIdentifier;
 import org.jboss.weld.serialization.spi.ProxyServices;
 import org.wildfly.security.manager.WildFlySecurityManager;
+
+import static java.security.AccessController.doPrivileged;
 
 /**
  * {@link ProxyServices} implementation that delegates to the module class loader if the bean class loader cannot be determined
@@ -50,22 +55,26 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class ProxyServicesImpl implements ProxyServices {
 
-    private static String[] REQUIRED_WELD_DEPENDENCIES = new String[] {
-        "org.jboss.weld.core",
-        "org.jboss.weld.spi"
+    private static String[] REQUIRED_WELD_DEPENDENCIES = new String[]{
+            "org.jboss.weld.core",
+            "org.jboss.weld.spi",
+            "org.jboss.weld.api"
     };
 
     // these are used to check whether a classloader is capable of loading Weld proxies
-    private static String[] WELD_CLASSES = new String[] {
-        BeanIdentifier.class.getName(),
-        LifecycleMixin.class.getName()
+    private static String[] WELD_CLASSES = new String[]{
+            BeanIdentifier.class.getName(), // Weld SPI
+            LifecycleMixin.class.getName(), // Weld core
+            WeldConstruct.class.getName() // Weld API
     };
 
     private final Module module;
     private final ConcurrentMap<ModuleIdentifier, Boolean> processedStaticModules = new ConcurrentHashMap<>();
+    private final ClassDefiner classDefiner;
 
     public ProxyServicesImpl(Module module) {
         this.module = module;
+        this.classDefiner = ClassDefiner.getInstance();
     }
 
     public ClassLoader getClassLoader(final Class<?> proxiedBeanType) {
@@ -83,21 +92,21 @@ public class ProxyServicesImpl implements ProxyServices {
     private ClassLoader _getClassLoader(Class<?> proxiedBeanType) {
         if (proxiedBeanType.getName().startsWith("java")) {
             return module.getClassLoader();
-        } else if(proxiedBeanType.getClassLoader() instanceof ModuleClassLoader) {
-            final ModuleClassLoader loader = (ModuleClassLoader)proxiedBeanType.getClassLoader();
+        } else if (proxiedBeanType.getClassLoader() instanceof ModuleClassLoader) {
+            final ModuleClassLoader loader = (ModuleClassLoader) proxiedBeanType.getClassLoader();
             //even though this is not strictly spec compliant if a class from the app server is
             //being proxied we use the deployment CL to prevent a memory leak
             //in theory this means that package private methods will not work correctly
             //however the application does not have access to package private methods anyway
             //as it is in a different class loader
-            if(loader.getModule().getModuleLoader() instanceof ServiceModuleLoader) {
+            if (loader.getModule().getModuleLoader() instanceof ServiceModuleLoader) {
                 //this is a dynamic module
                 //we can use it to load the proxy
                 return proxiedBeanType.getClassLoader();
             } else {
                 // this class comes from a static module
                 // first, check if we can use its classloader to load proxy classes
-                final Module  definingModule = loader.getModule();
+                final Module definingModule = loader.getModule();
                 Boolean hasWeldDependencies = processedStaticModules.get(definingModule.getIdentifier());
                 boolean logWarning = false; // only log for the first class in the module
 
@@ -122,6 +131,41 @@ public class ProxyServicesImpl implements ProxyServices {
             }
         } else {
             return proxiedBeanType.getClassLoader();
+        }
+    }
+
+    /**
+     * This method corresponds to the original {@code _getClassLoader()} method and returns
+     * {@link Module} based on original class. This module is then used when defining proxy classes.
+     *
+     * Most likely we want to return a {@link Module} into which the originalClass belongs but in case such a module
+     * doesn't know Weld dependencies, we need to return different module, one that was used by the deployment.
+     */
+    private Module getModule(Class<?> originalClass) {
+        if (originalClass.getName().startsWith("java")) {
+            return module;
+        } else {
+            Module definingModule = Module.forClass(originalClass);
+            Boolean hasWeldDependencies = processedStaticModules.get(definingModule.getIdentifier());
+            boolean logWarning = false; // only log for the first class in the module
+            if (hasWeldDependencies == null) {
+                hasWeldDependencies = canLoadWeldProxies(definingModule); // may be run multiple times but that does not matter
+                logWarning = processedStaticModules.putIfAbsent(definingModule.getIdentifier(), hasWeldDependencies) == null;
+            }
+            if (hasWeldDependencies) {
+                // this module declares Weld dependencies - we can use module's classloader to load the proxy class
+                // pros: package-private members will work fine
+                // cons: proxy classes will remain loaded by the module's classloader after undeployment (nothing else leaks)
+                return definingModule;
+            } else {
+                // no weld dependencies - we use deployment's classloader to load the proxy class
+                // pros: proxy classes unloaded with undeployment
+                // cons: package-private methods and constructors will yield IllegalAccessException
+                if (logWarning) {
+                    WeldLogger.ROOT_LOGGER.loadingProxiesUsingDeploymentClassLoader(definingModule.getIdentifier(), Arrays.toString(REQUIRED_WELD_DEPENDENCIES));
+                }
+                return this.module;
+            }
         }
     }
 
@@ -150,4 +194,38 @@ public class ProxyServicesImpl implements ProxyServices {
         }
     }
 
+    @Override
+    public Class<?> defineClass(Class<?> originalClass, String s, byte[] bytes, int i, int i1) throws ClassFormatError {
+        return defineClass(originalClass, s, bytes, i, i1, getProtectionDomain(originalClass));
+    }
+
+    @Override
+    public Class<?> defineClass(Class<?> originalClass, String s, byte[] bytes, int i, int i1, ProtectionDomain protectionDomain) throws ClassFormatError {
+        return classDefiner.defineClass(getModule(originalClass), s, protectionDomain, bytes, i, i1);
+    }
+
+    @Override
+    public Class<?> loadClass(Class<?> originalClass, String classBinaryName) throws ClassNotFoundException {
+        Module module = getModule(originalClass);
+        if (module == null) {
+            throw new IllegalArgumentException("Original " + originalClass + " does not have a module");
+        }
+        return module.getClassLoader().loadClass(classBinaryName);
+    }
+
+    @Override
+    public boolean supportsClassDefining() {
+        return true;
+    }
+
+    // copied over from ClassDefiner as it's missing a method that would allow to define class based on module but
+    // without ProtectionDomain
+    private ProtectionDomain getProtectionDomain(final Class<?> clazz) {
+        final SecurityManager sm = System.getSecurityManager();
+        if (sm != null) {
+            return doPrivileged((PrivilegedAction<ProtectionDomain>) clazz::getProtectionDomain);
+        } else {
+            return clazz.getProtectionDomain();
+        }
+    }
 }

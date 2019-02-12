@@ -210,7 +210,6 @@ public class WeldResourceInjectionServices extends AbstractResourceInjectionServ
                 moduleDescription.getModuleName(), !warModule, result);
     }
 
-    @Override
     public Object resolveResource(InjectionPoint injectionPoint) {
         final Member member = injectionPoint.getMember();
         AnnotatedMember<?> annotatedMember;
@@ -240,7 +239,6 @@ public class WeldResourceInjectionServices extends AbstractResourceInjectionServ
         }
     }
 
-    @Override
     public Object resolveResource(String jndiName, String mappedName) {
         String name = ResourceInjectionUtilities.getResourceName(jndiName, mappedName);
         try {
