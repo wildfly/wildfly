@@ -78,6 +78,10 @@ public class DefaultTimeoutMDB implements MessageListener {
                     + " and bean does not know where to reply to");
             }
 
+            // should timeout txn - this timeout waiting has to be greater than 1 s
+            // (see transaction timeout default setup task)
+            TxTestUtil.waitForTimeout(tm);
+
             TxTestUtil.enlistTestXAResource(tm.getTransaction(), checker);
 
             try (JMSContext context = factory.createContext()) {
@@ -85,9 +89,6 @@ public class DefaultTimeoutMDB implements MessageListener {
                     .setJMSCorrelationID(message.getJMSMessageID())
                     .send(replyTo, REPLY_PREFIX + ((TextMessage) message).getText());
             }
-
-            // waiting up to 2.5 sec - expecting transaction timeout to happen
-            TxTestUtil.waitForTimeout(tm);
         } catch (Exception e) {
             throw new RuntimeException("onMessage method execution failed", e);
         }

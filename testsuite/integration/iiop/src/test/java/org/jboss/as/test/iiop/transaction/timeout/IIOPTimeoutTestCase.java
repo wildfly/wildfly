@@ -44,7 +44,9 @@ import org.junit.runner.RunWith;
 
 import javax.naming.NamingException;
 import javax.transaction.TransactionRolledbackException;
+
 import java.rmi.RemoteException;
+import java.rmi.ServerException;
 import java.util.PropertyPermission;
 
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
@@ -95,9 +97,6 @@ public class IIOPTimeoutTestCase {
         bean.testTransaction();
 
         // synchronization is not called as we use stateless bean
-        Assert.assertFalse("Synchronization after begin should not be called", checker.isSynchronizedBegin());
-        Assert.assertFalse("Synchronization before completion should not be called", checker.isSynchronizedBefore());
-        Assert.assertFalse("Synchronization after completion should not be called", checker.isSynchronizedAfter());
         Assert.assertEquals("Expecting two XA resources for each commit happened", 2, checker.getCommitted());
         Assert.assertEquals("Expecting no rollback happened", 0, checker.getRolledback());
     }
@@ -118,13 +117,15 @@ public class IIOPTimeoutTestCase {
             bean.testTimeout();
             Assert.fail("Excpected rollback exception being thrown");
         } catch (Exception e) {
-            // should be here rather javax.ejb.EJBException?
-            Assert.assertEquals("Expecting rollback happened and transaction rollback exception being thrown",
-                    javax.transaction.TransactionRolledbackException.class, e.getClass());
+            // expected: enlistment of the resource to a timed out transaction should fail
+            // the SystemException from wildfly transaction client is transfered to ServerException
+            Assert.assertTrue("Timeout failure expects one of the exception "
+                    + ServerException.class.getName() + " or " + TransactionRolledbackException.class.getName(),
+                    ServerException.class.equals(e.getClass()) || TransactionRolledbackException.class.equals(e.getClass()));
         }
 
         Assert.assertEquals("Expecting no commit happened on any XA resource", 0, checker.getCommitted());
-        Assert.assertEquals("Expecting two rollback happened on XA resources", 2, checker.getRolledback());
+        Assert.assertEquals("Expecting transaction after synchronization finished with rollback", 1, checker.countSynchronizedAfterRolledBack());
 
         // for stateless bean this should be ok
         bean.touch();
@@ -134,7 +135,7 @@ public class IIOPTimeoutTestCase {
         bean.testTransaction();
 
         Assert.assertEquals("Expecting two commits happened on XA resources", 2, checker.getCommitted());
-        Assert.assertEquals("Expecting two rollback happened last time when timeouted", 2, checker.getRolledback());
+        Assert.assertEquals("Expecting transaction after synchronization finished with commit", 1, checker.countSynchronizedAfterCommitted());
     }
 
     /**
@@ -165,16 +166,16 @@ public class IIOPTimeoutTestCase {
             bean.testTimeout();
             Assert.fail("Excpected rollback exception being thrown");
         } catch (Exception e) {
-            // the exception is wrong, there should be javax.ejb.EJBException (or TransactionRolledbackException) here
-            Assert.assertEquals("Expecting rollback happened and transaction rollback exception being thrown",
-                    TransactionRolledbackException.class, e.getClass());
+            Assert.assertTrue("Timeout failure expects one of the exception "
+                    + ServerException.class.getName() + " or " + TransactionRolledbackException.class.getName(),
+                    ServerException.class.equals(e.getClass()) || TransactionRolledbackException.class.equals(e.getClass()));
         }
 
         Assert.assertEquals("Synchronization after begin should be called", 1, checker.countSynchronizedBegin());
         Assert.assertEquals("Synchronization before completion should not be called", 0, checker.countSynchronizedBefore());
         Assert.assertEquals("Synchronization after completion should be called", 1, checker.countSynchronizedAfter());
         Assert.assertEquals("Expecting no commit happened on any XA resource", 0, checker.getCommitted());
-        Assert.assertEquals("Expecting two rollback happened on XA resources", 2, checker.getRolledback());
+        Assert.assertEquals("Expecting transaction after synchronization finished with rollback", 1, checker.countSynchronizedAfterRolledBack());
 
         // the second call on the same stateful bean
         bean.testTransaction();
@@ -183,7 +184,7 @@ public class IIOPTimeoutTestCase {
         Assert.assertEquals("Synchronization before completion should be called", 1, checker.countSynchronizedBefore());
         Assert.assertEquals("Synchronization after completion should be called again", 2, checker.countSynchronizedAfter());
         Assert.assertEquals("Expecting two commits happened on XA resources", 2, checker.getCommitted());
-        Assert.assertEquals("Expecting two rollback happened last time when timeouted", 2, checker.getRolledback());
+        Assert.assertEquals("Expecting transaction after synchronization finished with commit", 1, checker.countSynchronizedAfterCommitted());
     }
 
     private TestBeanRemote lookupStateless() throws NamingException, RemoteException {

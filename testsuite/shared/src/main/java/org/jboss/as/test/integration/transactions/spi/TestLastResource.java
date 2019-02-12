@@ -20,8 +20,10 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.transactions;
+package org.jboss.as.test.integration.transactions.spi;
 
+import org.jboss.as.test.integration.transactions.TestXAResource;
+import org.jboss.as.test.integration.transactions.TransactionCheckerSingleton;
 import org.jboss.tm.LastResource;
 
 /**

@@ -40,7 +40,7 @@ import org.junit.Assert;
  * @author Ondra Chaloupka <ochaloup@redhat.com>
  */
 public final class TxTestUtil {
-    private static final int timeoutWaitTime_ms = 2500;
+    public static final int timeoutWaitTime_ms = 2500;
 
     private TxTestUtil() {
         // no instance here

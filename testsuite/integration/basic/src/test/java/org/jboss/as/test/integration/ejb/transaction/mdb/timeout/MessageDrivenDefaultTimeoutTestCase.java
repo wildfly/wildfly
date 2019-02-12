@@ -88,9 +88,8 @@ public class MessageDrivenDefaultTimeoutTestCase {
     public void defaultTimeout() throws Exception {
         String text = "default timeout";
         Queue q = MessageDrivenTimeoutTestCase.sendMessage(text, TransactionTimeoutQueueSetupTask.DEFAULT_TIMEOUT_JNDI_NAME, initCtx);
-        Assert.assertNull("No message should be received as mdb timeouted", MessageDrivenTimeoutTestCase.receiveMessage(q, initCtx));
+        Assert.assertNull("No message should be received as mdb timeouted", MessageDrivenTimeoutTestCase.receiveMessage(q, initCtx, false));
 
         Assert.assertEquals("Expecting no commmit happened as default timeout was hit", 0, checker.getCommitted());
-        Assert.assertTrue("Expecting a rollback happened as default timeout was hit", checker.getRolledback() > 0);
     }
 }

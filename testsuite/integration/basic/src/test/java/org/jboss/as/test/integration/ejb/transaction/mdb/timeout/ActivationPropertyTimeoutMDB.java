@@ -72,6 +72,10 @@ public class ActivationPropertyTimeoutMDB implements MessageListener {
                     + " and bean does not know where to reply to");
             }
 
+            // should timeout txn - this timeout waiting has to be greater than 1 s
+            // (see transactionTimeout activation config property)
+            TxTestUtil.waitForTimeout(tm);
+
             TxTestUtil.enlistTestXAResource(tm.getTransaction(), checker);
 
             try (
@@ -82,9 +86,6 @@ public class ActivationPropertyTimeoutMDB implements MessageListener {
                     .send(replyTo, REPLY_PREFIX + ((TextMessage) message).getText());
             }
 
-            // would timeout txn - this timeout waiting has to be greater than 1 s
-            // (see transactionTimeout activation config property)
-            TxTestUtil.waitForTimeout(tm);
         } catch (Exception e) {
             throw new RuntimeException("onMessage method execution failed", e);
         }
