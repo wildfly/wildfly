@@ -42,15 +42,18 @@ import org.jboss.msc.service.StabilityMonitor;
  */
 public class ServiceSupplier<T> implements Supplier<T> {
 
-    private final ServiceRegistry registry;
-    private final ServiceName name;
+    private final Supplier<ServiceController<?>> factory;
     private final ServiceController.Mode mode;
 
     private volatile Duration duration = null;
 
     ServiceSupplier(ServiceRegistry registry, ServiceName name, ServiceController.Mode mode) {
-        this.registry = registry;
-        this.name = name;
+        this.factory = new PrivilegedActionSupplier<ServiceController<?>>() {
+            @Override
+            public ServiceController<?> run() {
+                return registry.getRequiredService(name);
+            }
+        };
         this.mode = mode;
     }
 
@@ -61,12 +64,14 @@ public class ServiceSupplier<T> implements Supplier<T> {
 
     @Override
     public T get() {
-        ServiceTarget target = this.registry.getRequiredService(this.name).getServiceContainer();
+        ServiceController<?> sourceController = this.factory.get();
+        ServiceName sourceName = sourceController.getName();
+        ServiceTarget target = sourceController.getServiceContainer();
         // Create one-time service name
-        ServiceName name = this.name.append(UUID.randomUUID().toString());
+        ServiceName name = sourceName.append(UUID.randomUUID().toString());
 
         ServiceBuilder<?> builder = target.addService(name);
-        Supplier<T> supplier = builder.requires(this.name);
+        Supplier<T> supplier = builder.requires(sourceName);
         ServiceController<?> controller = builder.setInitialMode(this.mode).install();
 
         StabilityMonitor monitor = new StabilityMonitor();

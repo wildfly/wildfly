@@ -23,7 +23,6 @@ package org.jboss.as.test.clustering.cluster.singleton;
 
 import static org.jboss.as.test.clustering.ClusterTestUtil.execute;
 
-import java.security.Permission;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.stream.Collectors;
@@ -34,10 +33,8 @@ import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.server.security.ServerPermission;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.singleton.service.NodeServicePolicyActivator;
-import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.shrinkwrap.api.Archive;
@@ -68,9 +65,6 @@ public class SingletonPolicyServiceTestCase extends AbstractClusteringTestCase {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
         jar.addClass(NodeServicePolicyActivator.class);
         jar.addAsServiceProvider(ServiceActivator.class, NodeServicePolicyActivator.class);
-        Permission classLoaderPermission = new RuntimePermission("getClassLoader"); // See org.jboss.as.server.deployment.service.ServiceActivatorProcessor#deploy()
-        Permission serviceRegistryPermission = new ServerPermission("useServiceRegistry"); // See org.jboss.as.server.deployment.service.SecuredServiceRegistry
-        jar.addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(classLoaderPermission, serviceRegistryPermission), "permissions.xml");
         return jar;
     }
 
