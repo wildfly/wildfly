@@ -193,6 +193,12 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
         PathAddress configurationAddress = subsystemAddress.append(ProxyConfigurationResourceDefinition.pathElement("default"));
         PathAddress dynamicLoadProviderAddress = configurationAddress.append(DynamicLoadProviderResourceDefinition.PATH);
 
+        if (ModClusterModel.VERSION_7_0_0.requiresTransformation(version)) {
+            config.addFailedAttribute(dynamicLoadProviderAddress, FailedOperationTransformationConfig.ChainedConfig.createBuilder(DynamicLoadProviderResourceDefinition.Attribute.INITIAL_LOAD.getName())
+                    .addConfig(new InitialLoadFailedAttributeConfig())
+                    .build());
+        }
+
         if (ModClusterModel.VERSION_6_0_0.requiresTransformation(version)) {
 //            config.addFailedAttribute(subsystemAddress.append(ProxyConfigurationResourceDefinition.pathElement("other")), FailedOperationTransformationConfig.REJECTED_RESOURCE);
 
@@ -272,6 +278,26 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
         @Override
         protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
             return CustomLoadMetricResourceDefinition.Attribute.MODULE.getDefinition().getDefaultValue();
+        }
+    }
+
+    static class InitialLoadFailedAttributeConfig extends FailedOperationTransformationConfig.AttributesPathAddressConfig {
+        InitialLoadFailedAttributeConfig() {
+            super(DynamicLoadProviderResourceDefinition.Attribute.INITIAL_LOAD.getName());
+        }
+
+        @Override
+        protected boolean isAttributeWritable(String attributeName) {
+            return true;
+        }
+
+        protected boolean checkValue(String attrName, ModelNode attribute, boolean isGeneratedWriteAttribute) {
+            return !attribute.equals(new ModelNode(-1));
+        }
+
+        @Override
+        protected ModelNode correctValue(ModelNode toResolve, boolean isGeneratedWriteAttribute) {
+            return new ModelNode(-1);
         }
     }
 }

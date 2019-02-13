@@ -1,0 +1,518 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2018, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="urn:jboss:domain:modcluster:5.0"
+           xmlns="urn:jboss:domain:modcluster:5.0"
+           elementFormDefault="qualified"
+           version="5.0">
+
+    <xs:element name="subsystem" type="subsystem"/>
+
+    <xs:complexType name="subsystem">
+        <xs:sequence>
+            <xs:element name="proxy" type="proxy" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>
+                        Proxy resource coupled with single Undertow listener (and server) specifying load balancer discovery,
+                        its configuration and load balance factor provider. Multiple proxy configuration can be specified.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="proxy">
+        <xs:sequence>
+            <xs:choice minOccurs="0">
+                <xs:element name="simple-load-provider" type="simple-load-provider">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Simple load provider returns constant pre-configured load balancing factor.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="dynamic-load-provider" type="dynamic-load-provider">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Dynamic load provider computes the load balance factor of a node from a defined set of load metrics.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+            </xs:choice>
+            <xs:element name="ssl" type="ssl" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>
+                        Deprecated. Use 'ssl-context' attribute instead.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    Uniquely identifies this proxy configuration.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="advertise" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    Whether to enable multicast-based advertise mechanism.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="advertise-security-key" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    If specified, reverse proxy advertisements checksums will be verified using this value as a salt.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="advertise-socket" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    Name of socket binding to use for the advertise socket.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="auto-enable-contexts" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    If false, the contexts are registered with the reverse proxy as disabled; they need to be enabled manually
+                    by 'enable-context' operation or via mod_cluster_manager console (if available).
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="balancer" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    The name of the balancer on the reverse proxy to register with.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="excluded-contexts" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    List of contexts to exclude from registration with the reverse proxies.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="flush-packets" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    Whether to enable packet flushing on the reverse proxy.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="flush-wait" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    Time to wait before flushing packets on the reverse proxy.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="listener" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The name of Undertow listener that will be registered with the reverse proxy.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="load-balancing-group" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    Name of the load balancing group this node belongs to.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="max-attempts" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    Maximum number of failover attempts by reverse proxy when sending the request to the backend server.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="node-timeout" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    Timeout (in seconds) for proxy connections to a node. That is the time mod_cluster will wait for the
+                    back-end response before returning an error.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="ping" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    Number of seconds for which to wait for a pong answer to a ping.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="proxies">
+            <xs:annotation>
+                <xs:documentation>
+                    List of reverse proxies for mod_cluster to register with defined by 'outbound-socket-binding' in
+                    'socket-binding-group'.
+                </xs:documentation>
+            </xs:annotation>
+            <xs:simpleType>
+                <xs:list itemType="xs:string"/>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="proxy-list" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    Deprecated in favor of proxies (list of references to outbound-socket-binding). List of reverse proxies to
+                    register with. Format (hostname:port) separated with commas.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="proxy-url" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    Base URL for MCMP requests.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="session-draining-strategy" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    Session draining strategy used during undeployment of a web application.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="smax" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    Soft maximum idle connection count for reverse proxy.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="socket-timeout" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    Timeout to wait for the reverse proxy to answer a MCMP message.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="ssl-context" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    Reference to the SSLContext to be used by mod_cluster.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="status-interval" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    Number of seconds a STATUS message is sent from the application server to the proxy.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="sticky-session" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    Indicates whether subsequent requests for a given session should be routed to the same node, if possible.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="sticky-session-force" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    Indicates whether the reverse proxy should run an error in the event that the balancer is unable to route a
+                    request to the node to which it is stuck. Ignored if sticky sessions are disabled.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="sticky-session-remove" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    Indicates whether the reverse proxy should remove session stickiness in the event that the balancer is
+                    unable to route a request to the node to which it is stuck. Ignored if sticky sessions are disabled.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="stop-context-timeout" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    Maximum time to wait for context to process pending requests.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="ttl" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    Time to live (in seconds) for idle connections above smax.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="worker-timeout" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    Number of seconds to wait for a worker to become available to handle a request.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="simple-load-provider">
+        <xs:attribute name="factor" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    Constant pre-configured load balancing factor.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="dynamic-load-provider">
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="load-metric" type="load-metric">
+                <xs:annotation>
+                    <xs:documentation>
+                        Built-in load metric contributing a value to the overall load factor of a node. The load factors from
+                        each metric are aggregated according to their weights.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="custom-load-metric" type="custom-load-metric">
+                <xs:annotation>
+                    <xs:documentation>
+                        Custom load metric loaded from a specified Java class contributing a value to the overall load factor of
+                        a node. The load factors from each metric are aggregated according to their weights.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:choice>
+        <xs:attribute name="history" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    The number of historic (previous) load values to consider in the load balance factor computation.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="decay" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    The factor by which a historic load values should degrade in significance.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="initial-load" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    Initial load within the range [0..100] with which to prepopulate historical values. Used to gradually drive
+                    load to the node. Value of 0 prepopulates with full load and value of -1 disables this behavior.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="common-load-metric" abstract="true">
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="property" type="property">
+                <xs:annotation>
+                    <xs:documentation>
+                        Properties to apply on a loaded metric instance.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:choice>
+        <xs:attribute name="weight" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    Number indicating the significance of a metric with respect to the other metrics. For example, a metric of
+                    weight 2 will have twice the impact on the overall load factor than a metric of weight 1.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="capacity" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    Maximum capacity of the metric used to normalize the load values from a metric which require explicit
+                    capacity.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="load-metric">
+        <xs:complexContent>
+            <xs:extension base="common-load-metric">
+                <xs:attribute name="type" type="load-metric-enumeration" use="required">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Type of a built-in load metric from the enumerated values.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="custom-load-metric">
+        <xs:complexContent>
+            <xs:extension base="common-load-metric">
+                <xs:attribute name="class" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Class name to use to construct a load metric from.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="module" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Module name from which to load the load metric class.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:simpleType name="load-metric-enumeration">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="cpu">
+                <xs:annotation>
+                    <xs:documentation>
+                        Returns CPU load as percentage.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="mem">
+                <xs:annotation>
+                    <xs:documentation>
+                        Deprecated. Will be ignored at runtime if specified.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="heap">
+                <xs:annotation>
+                    <xs:documentation>
+                        Returns the heap memory usage as a percentage of max heap size.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="sessions">
+                <xs:annotation>
+                    <xs:documentation>
+                        Returns number of active sessions consulting the session manager. Requires an explicit capacity.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="requests">
+                <xs:annotation>
+                    <xs:documentation>
+                        Returns the number of requests per second. Requires an explicit capacity.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="send-traffic">
+                <xs:annotation>
+                    <xs:documentation>
+                        Returns the outgoing request traffic in KB per second. Requires an explicit capacity.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="receive-traffic">
+                <xs:annotation>
+                    <xs:documentation>
+                        Returns the incoming request POST traffic in KB per second (the application needs to read POST data).
+                        Requires an explicit capacity.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="busyness">
+                <xs:annotation>
+                    <xs:documentation>
+                        Returns the number of currently busy listener threads servicing requests. Requires an explicit capacity.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="property">
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="value" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="ssl">
+        <xs:annotation>
+            <xs:documentation>
+                Deprecated. The SSL configuration to client MCMP logic.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="ca-certificate-file" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    Location of the file containing the trust store.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="ca-revocation-url" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    Certificate authority revocation list.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="certificate-key-file" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    Key file for the certificate.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="key-alias" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    The alias of the key holding the client certificates in the key store.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="password" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    Password granting access to the key store and trust store.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="cipher-suite" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    Comma separated list of encryption ciphers the configuration is allowed to use.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="protocol" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    The SSL protocols that are enabled.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+</xs:schema>

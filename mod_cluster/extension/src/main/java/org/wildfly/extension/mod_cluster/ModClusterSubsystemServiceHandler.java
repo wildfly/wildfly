@@ -119,6 +119,8 @@ class ModClusterSubsystemServiceHandler implements ResourceServiceHandler {
             ModelNode node = model.get(DynamicLoadProviderResourceDefinition.PATH.getKeyValuePair());
             int decayFactor = DynamicLoadProviderResourceDefinition.Attribute.DECAY.resolveModelAttribute(context, node).asInt();
             int history = DynamicLoadProviderResourceDefinition.Attribute.HISTORY.resolveModelAttribute(context, node).asInt();
+            int initialLoad = DynamicLoadProviderResourceDefinition.Attribute.INITIAL_LOAD.resolveModelAttribute(context, node).asInt();
+
             if (node.hasDefined(LoadMetricResourceDefinition.WILDCARD_PATH.getKey())) {
                 this.addLoadMetrics(metrics, node.get(LoadMetricResourceDefinition.WILDCARD_PATH.getKey()), context);
             }
@@ -126,10 +128,10 @@ class ModClusterSubsystemServiceHandler implements ResourceServiceHandler {
                 this.addLoadMetrics(metrics, node.get(CustomLoadMetricResourceDefinition.WILDCARD_PATH.getKey()), context);
             }
             if (!metrics.isEmpty()) {
-                DynamicLoadBalanceFactorProvider loader = new DynamicLoadBalanceFactorProvider(metrics);
-                loader.setDecayFactor(decayFactor);
-                loader.setHistory(history);
-                load = loader;
+                DynamicLoadBalanceFactorProvider loadBalanceFactorProvider = new DynamicLoadBalanceFactorProvider(metrics, initialLoad);
+                loadBalanceFactorProvider.setDecayFactor(decayFactor);
+                loadBalanceFactorProvider.setHistory(history);
+                load = loadBalanceFactorProvider;
             }
         }
         if (load == null) {

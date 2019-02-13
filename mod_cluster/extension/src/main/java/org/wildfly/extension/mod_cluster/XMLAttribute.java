@@ -71,9 +71,10 @@ enum XMLAttribute {
     WORKER_TIMEOUT(ProxyConfigurationResourceDefinition.Attribute.WORKER_TIMEOUT),
 
     // Load provider
-    FACTOR(SimpleLoadProviderResourceDefinition.Attribute.FACTOR),
     DECAY(DynamicLoadProviderResourceDefinition.Attribute.DECAY),
+    FACTOR(SimpleLoadProviderResourceDefinition.Attribute.FACTOR),
     HISTORY(DynamicLoadProviderResourceDefinition.Attribute.HISTORY),
+    INITIAL_LOAD(DynamicLoadProviderResourceDefinition.Attribute.INITIAL_LOAD),
 
     // Load metrics
     CAPACITY(LoadMetricResourceDefinition.SharedAttribute.CAPACITY),
