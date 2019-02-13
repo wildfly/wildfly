@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="transactions-all" xmlns="urn:jboss:galleon:feature-group:1.0">
+    <feature spec="socket-binding-group">
+        <param name="socket-binding-group" value="standard-sockets" />
+        <feature-group name="transactions-sockets"/>
+    </feature>
+    <feature-group name="transactions"/>
+    <feature spec="subsystem.ee">
+        <feature spec="subsystem.ee.context-service">
+            <param name="context-service" value="default"/>
+            <param name="use-transaction-setup-provider" value="true"/>
+        </feature>
+    </feature>
+</feature-group-spec>

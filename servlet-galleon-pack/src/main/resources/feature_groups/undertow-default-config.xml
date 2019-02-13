@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="undertow-default-config" xmlns="urn:jboss:galleon:feature-group:1.0">
+    <!-- configuration specific to default config -->
+    <feature spec="subsystem.undertow">
+        <param name="default-security-domain" value="other"/>
+        <feature spec="subsystem.undertow.configuration.handler">
+            <feature spec="subsystem.undertow.configuration.handler.file">
+                <param name="file" value="welcome-content"/>
+                <param name="path" value="${jboss.home.dir}/welcome-content"/>
+            </feature>
+        </feature>
+        <feature spec="subsystem.undertow.server">
+            <param name="server" value="default-server" />
+            <feature spec="subsystem.undertow.server.host">
+                <param name="host" value="default-host" />
+                <param name="alias" value="[localhost]"/>
+                <!--
+                <feature spec="subsystem.undertow.server.host.filter-ref">
+                    <param name="filter-ref" value="server-header"/>
+                </feature>
+                <feature spec="subsystem.undertow.server.host.filter-ref">
+                    <param name="filter-ref" value="x-powered-by-header"/>
+                </feature>
+                -->
+                <feature spec="subsystem.undertow.server.host.location">
+                    <param name="location" value="/"/>
+                    <param name="handler" value="welcome-content"/>
+                </feature>
+            </feature>
+        </feature>
+    </feature>
+
+    <packages>
+        <!-- only used for default config undertow handler -->
+        <package name="welcome-content"/>
+    </packages>
+</feature-group-spec>

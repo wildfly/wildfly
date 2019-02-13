@@ -42,6 +42,10 @@
         <package name="modules.all"/>
         <package name="docs"/>
         <package name="docs.licenses.merge"/>
+        <!-- appclient is not referenced from standalone nor 
+        domain configuration models.-->
+        <package name="appclient"/>
+        <package name="bin"/>
     </default-packages>
     <package-schemas>
         <group name="org.jboss.as"/>

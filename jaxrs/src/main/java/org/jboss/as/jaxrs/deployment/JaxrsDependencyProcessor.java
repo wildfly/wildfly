@@ -33,6 +33,24 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.ee.weld.WeldDeploymentMarker;
+import static org.jboss.as.jaxrs.JaxrsSubsystemDefinition.JACKSON_CORE_ASL;
+import static org.jboss.as.jaxrs.JaxrsSubsystemDefinition.JACKSON_DATATYPE_JDK8;
+import static org.jboss.as.jaxrs.JaxrsSubsystemDefinition.JACKSON_DATATYPE_JSR310;
+import static org.jboss.as.jaxrs.JaxrsSubsystemDefinition.JAXB_API;
+import static org.jboss.as.jaxrs.JaxrsSubsystemDefinition.JAXRS_API;
+import static org.jboss.as.jaxrs.JaxrsSubsystemDefinition.JSON_API;
+import static org.jboss.as.jaxrs.JaxrsSubsystemDefinition.RESTEASY_ATOM;
+import static org.jboss.as.jaxrs.JaxrsSubsystemDefinition.RESTEASY_CDI;
+import static org.jboss.as.jaxrs.JaxrsSubsystemDefinition.RESTEASY_CRYPTO;
+import static org.jboss.as.jaxrs.JaxrsSubsystemDefinition.RESTEASY_JACKSON2;
+import static org.jboss.as.jaxrs.JaxrsSubsystemDefinition.RESTEASY_JAXB;
+import static org.jboss.as.jaxrs.JaxrsSubsystemDefinition.RESTEASY_JAXRS;
+import static org.jboss.as.jaxrs.JaxrsSubsystemDefinition.RESTEASY_JSAPI;
+import static org.jboss.as.jaxrs.JaxrsSubsystemDefinition.RESTEASY_JSON_B_PROVIDER;
+import static org.jboss.as.jaxrs.JaxrsSubsystemDefinition.RESTEASY_JSON_P_PROVIDER;
+import static org.jboss.as.jaxrs.JaxrsSubsystemDefinition.RESTEASY_MULTIPART;
+import static org.jboss.as.jaxrs.JaxrsSubsystemDefinition.RESTEASY_VALIDATOR_11;
+import static org.jboss.as.jaxrs.JaxrsSubsystemDefinition.RESTEASY_YAML;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
@@ -47,33 +65,6 @@ import org.jboss.vfs.VirtualFile;
  */
 public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
 
-    public static final ModuleIdentifier RESTEASY_ATOM = ModuleIdentifier.create("org.jboss.resteasy.resteasy-atom-provider");
-    public static final ModuleIdentifier RESTEASY_CDI = ModuleIdentifier.create("org.jboss.resteasy.resteasy-cdi");
-    public static final ModuleIdentifier RESTEASY_CRYPTO = ModuleIdentifier.create("org.jboss.resteasy.resteasy-crypto");
-    public static final ModuleIdentifier RESTEASY_VALIDATOR_11 = ModuleIdentifier.create("org.jboss.resteasy.resteasy-validator-provider-11");
-    public static final ModuleIdentifier RESTEASY_JAXRS = ModuleIdentifier.create("org.jboss.resteasy.resteasy-jaxrs");
-    public static final ModuleIdentifier RESTEASY_JAXB = ModuleIdentifier.create("org.jboss.resteasy.resteasy-jaxb-provider");
-    public static final ModuleIdentifier RESTEASY_JACKSON2 = ModuleIdentifier.create("org.jboss.resteasy.resteasy-jackson2-provider");
-    public static final ModuleIdentifier RESTEASY_JSON_P_PROVIDER = ModuleIdentifier.create("org.jboss.resteasy.resteasy-json-p-provider");
-    public static final ModuleIdentifier RESTEASY_JSON_B_PROVIDER = ModuleIdentifier.create("org.jboss.resteasy.resteasy-json-binding-provider");
-    public static final ModuleIdentifier RESTEASY_JSAPI = ModuleIdentifier.create("org.jboss.resteasy.resteasy-jsapi");
-    public static final ModuleIdentifier RESTEASY_MULTIPART = ModuleIdentifier.create("org.jboss.resteasy.resteasy-multipart-provider");
-    public static final ModuleIdentifier RESTEASY_YAML = ModuleIdentifier.create("org.jboss.resteasy.resteasy-yaml-provider");
-
-
-    public static final ModuleIdentifier JACKSON_DATATYPE_JDK8 = ModuleIdentifier.create("com.fasterxml.jackson.datatype.jackson-datatype-jdk8");
-    public static final ModuleIdentifier JACKSON_DATATYPE_JSR310 = ModuleIdentifier.create("com.fasterxml.jackson.datatype.jackson-datatype-jsr310");
-
-    public static final ModuleIdentifier JAXB_API = ModuleIdentifier.create("javax.xml.bind.api");
-    public static final ModuleIdentifier JSON_API = ModuleIdentifier.create("javax.json.api");
-    public static final ModuleIdentifier JAXRS_API = ModuleIdentifier.create("javax.ws.rs.api");
-
-    /**
-     * We include this so that jackson annotations will be available, otherwise they will be ignored which leads
-     * to confusing behaviour.
-     *
-     */
-    public static final ModuleIdentifier JACKSON_CORE_ASL = ModuleIdentifier.create("org.codehaus.jackson.jackson-core-asl");
     private static final String CLIENT_BUILDER = "META-INF/services/javax.ws.rs.client.ClientBuilder";
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();

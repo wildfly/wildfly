@@ -27,6 +27,7 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.RuntimePackageDependency;
 import org.jboss.as.ee.component.deployers.DefaultEarSubDeploymentsIsolationProcessor;
 import org.jboss.as.ee.structure.AnnotationPropertyReplacementProcessor;
 import org.jboss.as.ee.structure.Attachments;
@@ -41,6 +42,13 @@ import org.jboss.dmr.ModelType;
  * @author Stuart Douglas
  */
 public class EeSubsystemRootResource extends SimpleResourceDefinition {
+
+    public static final String WILDFLY_NAMING = "org.wildfly.naming";
+    public static final String JBOSS_INVOCATION = "org.jboss.invocation";
+    public static final String JSON_API = "javax.json.api";
+    public static final String JSON_BIND_API = "javax.json.bind.api";
+    public static final String ECLIPSE_YASSON = "org.eclipse.yasson";
+    public static final String GLASSFISH_EL = "org.glassfish.javax.el";
 
     public static final SimpleAttributeDefinition EAR_SUBDEPLOYMENTS_ISOLATED =
             new SimpleAttributeDefinitionBuilder(EESubsystemModel.EAR_SUBDEPLOYMENTS_ISOLATED, ModelType.BOOLEAN, true)
@@ -100,5 +108,15 @@ public class EeSubsystemRootResource extends SimpleResourceDefinition {
 
     protected static EeSubsystemRootResource create(){
         return new EeSubsystemRootResource();
+    }
+
+    @Override
+    public void registerAdditionalRuntimePackages(ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerAdditionalRuntimePackages(RuntimePackageDependency.required(WILDFLY_NAMING),
+             RuntimePackageDependency.required(JBOSS_INVOCATION),
+             RuntimePackageDependency.optional(JSON_API),
+             RuntimePackageDependency.optional(JSON_BIND_API),
+             RuntimePackageDependency.optional(ECLIPSE_YASSON),
+             RuntimePackageDependency.optional(GLASSFISH_EL));
     }
 }

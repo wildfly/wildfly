@@ -1,0 +1,10 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="undertow">
+    <dependencies>
+        <layer name="base-server"/>
+    </dependencies>
+    <packages>
+       <!-- evolve undertow optional module injected in DU located in full FP -->
+       <package name="io.undertow.js"/>
+    </packages>
+</layer-spec>

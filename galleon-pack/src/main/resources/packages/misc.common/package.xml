@@ -5,7 +5,5 @@
         <origin name="org.wildfly:wildfly-servlet-galleon-pack">
             <package name="misc.common"/>
         </origin>
-        <package name="appclient" optional="true"/>
-        <package name="bin"/>
     </dependencies>
 </package-spec>

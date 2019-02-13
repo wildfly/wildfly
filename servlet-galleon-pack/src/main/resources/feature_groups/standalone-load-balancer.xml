@@ -16,10 +16,7 @@
     <feature-group name="management-audit"/>
 
     <feature-group name="interfaces"/>
-    <feature spec="interface">
-        <param name="interface" value="private"/>
-        <param name="inet-address" value="${jboss.bind.address.private:127.0.0.1}"/>
-    </feature>
+    <feature-group name="private-interface"/>
 
     <feature-group name="management-interfaces"/>
     <feature-group name="access-control"/>
