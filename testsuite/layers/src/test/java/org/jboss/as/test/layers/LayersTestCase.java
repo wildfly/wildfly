@@ -85,9 +85,10 @@ public class LayersTestCase {
 
     @Test
     public void test() throws Exception {
-        // TODO, no more testing than provisioning of layers for now.
-        // Deleting the provisioned layers
+        // TODO, no more testing than provisioning and execution of layers for now.
         String root = System.getProperty("layers.install.root");
+        LayersTest.testExecution(root);
+        // Deleting the provisioned layers
         File[] installations = new File(root).listFiles(File::isDirectory);
         Boolean delete = Boolean.getBoolean("layers.delete.installations");
         if (delete) {
