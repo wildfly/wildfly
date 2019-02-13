@@ -45,6 +45,7 @@
        <?IIOP?>
        <default-security-domain value="other"/>
        <default-missing-method-permissions-deny-access value="true" />
+       <statistics enabled="${wildfly.ejb3.statistics-enabled:${wildfly.statistics-enabled:false}}"/>
        <log-system-exceptions value="true" />
    </subsystem>
    <supplement name="default">

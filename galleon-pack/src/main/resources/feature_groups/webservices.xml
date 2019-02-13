@@ -2,6 +2,7 @@
 <feature-group-spec name="webservices" xmlns="urn:jboss:galleon:feature-group:1.0">
     <feature spec="subsystem.webservices">
         <param name="wsdl-host" value="${jboss.bind.address:127.0.0.1}"/>
+        <param name="statistics-enabled" value="${wildfly.webservices.statistics-enabled:${wildfly.statistics-enabled:false}}"/>
         <feature spec="subsystem.webservices.client-config">
             <param name="client-config" value="Standard-Client-Config"/>
         </feature>

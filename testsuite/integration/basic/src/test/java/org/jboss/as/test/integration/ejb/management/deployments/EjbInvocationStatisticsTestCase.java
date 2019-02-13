@@ -106,7 +106,7 @@ public class EjbInvocationStatisticsTestCase {
     private static Boolean getEnableStatistics(final ManagementClient managementClient) throws IOException {
         final ModelNode address = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME)).toModelNode();
         address.protect();
-        final ModelNode value = readAttribute(managementClient, address, "enable-statistics");
+        final ModelNode value = readAttribute(managementClient, address, "statistics-enabled");
         if (value.isDefined())
             return value.asBoolean();
         return null;
@@ -117,6 +117,7 @@ public class EjbInvocationStatisticsTestCase {
         op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION);
         op.get(ModelDescriptionConstants.OP_ADDR).set(address);
         op.get(ModelDescriptionConstants.NAME).set(attributeName);
+        op.get(ModelDescriptionConstants.RESOLVE_EXPRESSIONS).set(true);
         return execute(managementClient, op);
     }
 
