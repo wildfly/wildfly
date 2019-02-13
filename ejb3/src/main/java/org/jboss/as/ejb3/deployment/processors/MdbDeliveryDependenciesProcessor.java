@@ -75,14 +75,17 @@ public class MdbDeliveryDependenciesProcessor implements DeploymentUnitProcessor
                     if (mdbDescription.isClusteredSingleton()) {
                         clusteredSingletonFound = true;
                         builder.requires(CLUSTERED_SINGLETON_CAPABILITY.getCapabilityServiceName());
+                        builder.addDependency(CLUSTERED_SINGLETON_CAPABILITY.getCapabilityServiceName()/*.append("primary")*/);
                     }
-                    if (mdbDescription.getDeliveryGroup() != null) {
-                        final ServiceName deliveryGroupServiceName = MdbDeliveryGroupResourceDefinition.getDeliveryGroupServiceName(
-                                mdbDescription.getDeliveryGroup());
-                        if (phaseContext.getServiceRegistry().getService(deliveryGroupServiceName) == null) {
-                            throw EjbLogger.DEPLOYMENT_LOGGER.missingMdbDeliveryGroup(mdbDescription.getDeliveryGroup());
+                    if (mdbDescription.getDeliveryGroups() != null) {
+                        for (String deliveryGroup : mdbDescription.getDeliveryGroups()) {
+                            final ServiceName deliveyGroupServiceName = MdbDeliveryGroupResourceDefinition
+                                    .getDeliveryGroupServiceName(deliveryGroup);
+                            if (phaseContext.getServiceRegistry().getService(deliveyGroupServiceName) == null) {
+                                throw EjbLogger.DEPLOYMENT_LOGGER.missingMdbDeliveryGroup(deliveryGroup);
+                            }
+                            builder.addDependency(deliveyGroupServiceName);
                         }
-                        builder.requires(deliveryGroupServiceName);
                     }
                     builder.install();
                 }
@@ -108,7 +111,7 @@ public class MdbDeliveryDependenciesProcessor implements DeploymentUnitProcessor
             if (description instanceof MessageDrivenComponentDescription) {
                 MessageDrivenComponentDescription mdbDescription = (MessageDrivenComponentDescription) description;
                 clusteredSingletonFound = clusteredSingletonFound || mdbDescription.isClusteredSingleton();
-                if (mdbDescription.isClusteredSingleton() || mdbDescription.getDeliveryGroup() != null) {
+                if (mdbDescription.isDeliveryControlled()) {
                     serviceRegistry.getRequiredService(mdbDescription.getDeliveryControllerName()).setMode(Mode.REMOVE);
                 }
             }

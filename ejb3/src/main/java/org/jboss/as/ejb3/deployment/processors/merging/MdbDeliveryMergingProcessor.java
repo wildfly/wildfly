@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.deployment.processors.merging;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.ee.component.EEApplicationClasses;
@@ -70,8 +72,9 @@ public class MdbDeliveryMergingProcessor extends AbstractMergingProcessor<Messag
         final ClassAnnotationInformation<DeliveryGroup, String> deliveryGroup = clazz.getAnnotationInformation(DeliveryGroup.class);
 
         if (deliveryGroup != null) {
-            if (!deliveryGroup.getClassLevelAnnotations().isEmpty()) {
-                componentConfiguration.setDeliveryGroup(deliveryGroup.getClassLevelAnnotations().get(0));
+            List<String> deliveryGroups = deliveryGroup.getClassLevelAnnotations();
+            if (!deliveryGroups.isEmpty()) {
+                componentConfiguration.setDeliveryGroup(deliveryGroups.toArray(new String[deliveryGroups.size()]));
             }
         }
     }
@@ -88,25 +91,39 @@ public class MdbDeliveryMergingProcessor extends AbstractMergingProcessor<Messag
             return;
         }
         Boolean deliveryActive = null;
-        String deliveryGroup = null;
+        String[] deliveryGroups = null;
         final List<EJBBoundMdbDeliveryMetaData> deliveryMetaDataList = assemblyDescriptor.getAny(EJBBoundMdbDeliveryMetaData.class);
         if (deliveryMetaDataList != null) {
             for (EJBBoundMdbDeliveryMetaData deliveryMetaData : deliveryMetaDataList) {
-                if ("*".equals(deliveryMetaData.getEjbName()) && deliveryActive == null && deliveryGroup == null) {
-                    deliveryActive = deliveryMetaData.isDeliveryActive();
-                    deliveryGroup = deliveryMetaData.getDeliveryGroup();
+                if ("*".equals(deliveryMetaData.getEjbName())) {
+                    // do not overwrite if deliveryActive is not null
+                    if (deliveryActive == null)
+                        deliveryActive = deliveryMetaData.isDeliveryActive();
+                    deliveryGroups = mergeDeliveryGroups(deliveryGroups, deliveryMetaData.getDeliveryGroups());
+
                 } else if (ejbName.equals(deliveryMetaData.getEjbName())) {
                     deliveryActive = deliveryMetaData.isDeliveryActive();
-                    deliveryGroup = deliveryMetaData.getDeliveryGroup();
+                    deliveryGroups = mergeDeliveryGroups(deliveryGroups, deliveryMetaData.getDeliveryGroups());
                 }
             }
         }
         // delivery group configuration has precedence over deliveryActive
-        if (deliveryGroup != null) {
-            componentConfiguration.setDeliveryGroup(deliveryGroup);
+        if (deliveryGroups != null && deliveryGroups.length > 0) {
+            componentConfiguration.setDeliveryGroup(deliveryGroups);
         }
         else if (deliveryActive != null) {
             componentConfiguration.setDeliveryActive(deliveryActive);
         }
+    }
+
+    private final String[] mergeDeliveryGroups(String[] deliveryGroups1, String[] deliveryGroups2) {
+        if (deliveryGroups1 == null)
+            return deliveryGroups2;
+        if (deliveryGroups2 == null)
+            return deliveryGroups1;
+        final List<String> deliveryGroupList = new ArrayList(deliveryGroups1.length + deliveryGroups2.length);
+        Collections.addAll(deliveryGroupList, deliveryGroups1);
+        Collections.addAll(deliveryGroupList, deliveryGroups2);
+        return deliveryGroupList.toArray(new String[deliveryGroupList.size()]);
     }
 }

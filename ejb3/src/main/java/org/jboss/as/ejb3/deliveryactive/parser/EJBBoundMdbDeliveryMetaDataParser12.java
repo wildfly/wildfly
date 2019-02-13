@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,6 +22,10 @@
 
 package org.jboss.as.ejb3.deliveryactive.parser;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
@@ -30,21 +34,21 @@ import org.jboss.metadata.ejb.parser.jboss.ejb3.AbstractEJBBoundMetaDataParser;
 import org.jboss.metadata.property.PropertyReplacer;
 
 /**
- * Parser for EJBBoundMdbDeliveryMetaData components, namespace delivery-active:1.1
+ * Parser for EJBBoundMdbDeliveryMetaData components, namespace delivery-active:1.2
  *
  * @author Flavia Rainone
  */
-public class EJBBoundMdbDeliveryMetaDataParser11 extends AbstractEJBBoundMetaDataParser<EJBBoundMdbDeliveryMetaData> {
+public class EJBBoundMdbDeliveryMetaDataParser12 extends AbstractEJBBoundMetaDataParser<EJBBoundMdbDeliveryMetaData> {
 
-    public static final String NAMESPACE_URI_1_1 = "urn:delivery-active:1.1";
+    public static final String NAMESPACE_URI_1_2 = "urn:delivery-active:1.2";
 
     private static final String ROOT_ELEMENT_DELIVERY = "delivery";
     private static final String ACTIVE = "active";
     private static final String GROUP = "group";
 
-    public static final EJBBoundMdbDeliveryMetaDataParser11 INSTANCE = new EJBBoundMdbDeliveryMetaDataParser11();
+    public static final EJBBoundMdbDeliveryMetaDataParser12 INSTANCE = new EJBBoundMdbDeliveryMetaDataParser12();
 
-    private EJBBoundMdbDeliveryMetaDataParser11() {}
+    private EJBBoundMdbDeliveryMetaDataParser12() {}
 
     @Override
     public EJBBoundMdbDeliveryMetaData parse(XMLStreamReader reader, final PropertyReplacer propertyReplacer) throws XMLStreamException {
@@ -61,14 +65,22 @@ public class EJBBoundMdbDeliveryMetaDataParser11 extends AbstractEJBBoundMetaDat
     protected void processElement(EJBBoundMdbDeliveryMetaData metaData, XMLStreamReader reader,  final PropertyReplacer propertyReplacer) throws XMLStreamException {
         final String namespaceURI = reader.getNamespaceURI();
         final String localName = reader.getLocalName();
-        if (NAMESPACE_URI_1_1.equals(namespaceURI)) {
+        if (NAMESPACE_URI_1_2.equals(namespaceURI)) {
             switch (localName) {
                 case ACTIVE:
                     final String val = getElementText(reader, propertyReplacer);
                     metaData.setDeliveryActive(Boolean.parseBoolean(val.trim()));
                     break;
                 case GROUP:
-                    metaData.setDeliveryGroups(getElementText(reader, propertyReplacer).trim());
+                    final String deliveryGroup = getElementText(reader, propertyReplacer).trim();
+                    if (metaData.getDeliveryGroups() == null)
+                        metaData.setDeliveryGroups(deliveryGroup);
+                    else {
+                        final List<String> deliveryGroups = new ArrayList<String>(metaData.getDeliveryGroups().length + 1);
+                        Collections.addAll(deliveryGroups, metaData.getDeliveryGroups());
+                        deliveryGroups.add(deliveryGroup);
+                        metaData.setDeliveryGroups(deliveryGroups.toArray(new String[deliveryGroups.size()]));
+                    }
                     break;
                 default:
                     throw unexpectedElement(reader);
