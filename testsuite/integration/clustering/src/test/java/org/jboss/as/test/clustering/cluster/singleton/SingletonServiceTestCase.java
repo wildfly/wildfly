@@ -21,8 +21,6 @@
  */
 package org.jboss.as.test.clustering.cluster.singleton;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
-
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -43,6 +41,7 @@ import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.singleton.service.NodeServiceActivator;
 import org.jboss.as.test.clustering.cluster.singleton.service.NodeServiceServlet;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
+import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -72,12 +71,8 @@ public class SingletonServiceTestCase extends AbstractClusteringTestCase {
         WebArchive war = ShrinkWrap.create(WebArchive.class, MODULE_NAME + ".war");
         war.addPackage(NodeServiceServlet.class.getPackage());
         war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.as.server\n"));
-        war.addAsManifestResource(createPermissionsXmlAsset(
-                new RuntimePermission("getClassLoader"), // See org.jboss.as.server.deployment.service.ServiceActivatorProcessor#deploy()
-                new ServerPermission("useServiceRegistry"), // See org.jboss.as.server.deployment.service.SecuredServiceRegistry
-                new ServerPermission("getCurrentServiceContainer")
-        ), "permissions.xml");
         war.addAsServiceProvider(org.jboss.msc.service.ServiceActivator.class, NodeServiceActivator.class);
+        war.addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(new ServerPermission("getCurrentServiceContainer")), "permissions.xml");
         return war;
     }
 

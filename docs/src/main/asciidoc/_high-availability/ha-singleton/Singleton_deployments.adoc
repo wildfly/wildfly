@@ -40,3 +40,19 @@ e.g.
 ----
 deployment-overlay add --name=singleton-policy-foo --content=/META-INF/singleton-deployment.xml=/path/to/singleton-deployment.xml --deployments=my-app.jar --redeploy-affected
 ----
+
+
+[[singleton-deployment-metrics]]
+== Singleton Deployment metrics ==
+
+The singleton subsystem registers a set of runtime metrics for each singleton deployment installed on the server.
+
+is-primary:: Indicates whether the node on which the operation was performed is the primary provider of the given singleton deployment
+primary-provider:: Identifies the node currently operating as the primary provider for the given singleton deployment
+providers:: Identifies the set of nodes on which the given singleton deployment is installed.
+
+e.g.
+
+----
+/subsystem=singleton/singleton-policy=foo/deployment=bar.ear:read-attribute(name=primary-provider)
+----

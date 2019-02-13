@@ -22,16 +22,17 @@
 package org.jboss.as.test.clustering;
 
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.server.security.ServerPermission;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.integration.management.util.CLITestUtil;
-import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.container.ClassContainer;
 import org.jboss.shrinkwrap.api.container.ManifestContainer;
+import org.junit.Assert;
 
 /**
  * Utility class for clustering tests.
@@ -62,13 +63,11 @@ public class ClusterTestUtil {
 
     // Model management convenience methods
 
-    public static void executeOnNodesAndReload(String cli, ManagementClient... clients) throws Exception {
-        ModelNode request = CLITestUtil.getCommandContext().buildRequest(cli);
-
-        for (ManagementClient client : clients) {
-            client.getControllerClient().execute(request);
-            ServerReload.executeReloadAndWaitForCompletion(client.getControllerClient(), ServerReload.TIMEOUT, false, client.getMgmtAddress(), client.getMgmtPort());
-        }
+    public static ModelNode execute(ManagementClient client, String request) throws Exception {
+        ModelNode operation = CLITestUtil.getCommandContext().buildRequest(request);
+        ModelNode result = client.getControllerClient().execute(operation);
+        Assert.assertEquals(result.toString(), ModelDescriptionConstants.SUCCESS, result.get(ModelDescriptionConstants.OUTCOME).asStringOrNull());
+        return result.get(ModelDescriptionConstants.RESULT);
     }
 
     private ClusterTestUtil() {

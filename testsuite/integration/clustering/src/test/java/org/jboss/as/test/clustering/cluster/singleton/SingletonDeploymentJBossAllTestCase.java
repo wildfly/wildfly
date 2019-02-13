@@ -35,9 +35,10 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 public class SingletonDeploymentJBossAllTestCase extends SingletonDeploymentTestCase {
 
     private static final String MODULE_NAME = SingletonDeploymentJBossAllTestCase.class.getSimpleName();
+    private static final String DEPLOYMENT_NAME = MODULE_NAME + ".war";
 
     public SingletonDeploymentJBossAllTestCase() {
-        super(MODULE_NAME);
+        super(MODULE_NAME, DEPLOYMENT_NAME);
     }
 
     @Deployment(name = DEPLOYMENT_HELPER_1, managed = false, testable = false)
@@ -53,7 +54,7 @@ public class SingletonDeploymentJBossAllTestCase extends SingletonDeploymentTest
     }
 
     private static Archive<?> createDeployment() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, MODULE_NAME + ".war");
+        WebArchive war = ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME);
         war.addPackage(TraceServlet.class.getPackage());
         war.addAsManifestResource(SingletonDeploymentJBossAllTestCase.class.getPackage(), "jboss-all.xml", "jboss-all.xml");
         return war;

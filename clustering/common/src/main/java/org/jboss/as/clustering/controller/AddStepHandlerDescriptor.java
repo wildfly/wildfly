@@ -30,6 +30,7 @@ import java.util.function.UnaryOperator;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.registry.Resource;
 
 /**
  * Describes the common properties of a remove operation handler.
@@ -68,4 +69,10 @@ public interface AddStepHandlerDescriptor extends WriteAttributeStepHandlerDescr
      * @return an operation handler transformer.
      */
     UnaryOperator<OperationStepHandler> getAddOperationTransformation();
+
+    /**
+     * Returns a transformation for a newly created resource.
+     * @return a resource transformation
+     */
+    UnaryOperator<Resource> getResourceTransformation();
 }

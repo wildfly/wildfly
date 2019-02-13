@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,15 +19,17 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.clustering.server.singleton;
 
-import java.util.Optional;
+import java.util.function.Supplier;
+
+import org.wildfly.clustering.group.Group;
 
 /**
- * Context for singleton commands.
+ * Context for local singleton services.
  * @author Paul Ferraro
  */
-public interface LegacySingletonContext<T> extends SingletonContext {
-
-    Optional<T> getLocalValue();
+public interface LocalSingletonServiceContext {
+    Supplier<Group> getGroup();
 }

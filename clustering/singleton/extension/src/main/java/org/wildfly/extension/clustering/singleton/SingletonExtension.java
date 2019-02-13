@@ -24,6 +24,7 @@ package org.wildfly.extension.clustering.singleton;
 
 import java.util.EnumSet;
 
+import org.jboss.as.clustering.controller.ContextualSubsystemRegistration;
 import org.jboss.as.clustering.controller.descriptions.SubsystemResourceDescriptionResolver;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
@@ -46,7 +47,7 @@ public class SingletonExtension implements Extension {
     public void initialize(ExtensionContext context) {
         SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, SingletonModel.CURRENT.getVersion());
 
-        new SingletonResourceDefinition().register(registration);
+        new SingletonResourceDefinition().register(new ContextualSubsystemRegistration(registration, context));
         registration.registerXMLElementWriter(new SingletonXMLWriter());
     }
 

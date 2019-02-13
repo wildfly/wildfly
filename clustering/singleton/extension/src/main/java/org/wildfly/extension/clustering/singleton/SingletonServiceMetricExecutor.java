@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,15 +19,18 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.server.singleton;
 
-import java.util.Optional;
+package org.wildfly.extension.clustering.singleton;
+
+import org.jboss.msc.service.ServiceName;
 
 /**
- * Context for singleton commands.
+ * Executor for singleton service metrics.
  * @author Paul Ferraro
  */
-public interface LegacySingletonContext<T> extends SingletonContext {
+public class SingletonServiceMetricExecutor extends SingletonMetricExecutor {
 
-    Optional<T> getLocalValue();
+    public SingletonServiceMetricExecutor() {
+        super(ServiceName::parse);
+    }
 }

@@ -54,7 +54,7 @@ public class DistributedSingletonServiceBuilder<T> extends SimpleServiceNameProv
     private volatile SingletonElectionPolicy electionPolicy = new SimpleSingletonElectionPolicy();
     private volatile int quorum = 1;
 
-    public DistributedSingletonServiceBuilder(DistributedSingletonServiceConfiguratorContext context, ServiceName serviceName, Service<T> primaryService, Service<T> backupService) {
+    public DistributedSingletonServiceBuilder(ServiceName serviceName, Service<T> primaryService, Service<T> backupService, DistributedSingletonServiceConfiguratorContext context) {
         super(serviceName);
         this.registry = context.getServiceProviderRegistryDependency();
         this.dispatcherFactory = context.getCommandDispatcherFactoryDependency();

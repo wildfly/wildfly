@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,15 +19,21 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.server.singleton;
 
-import java.util.Optional;
+package org.wildfly.clustering.service;
+
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.function.Supplier;
 
 /**
- * Context for singleton commands.
+ * Privileged action exposed as a supplier.
  * @author Paul Ferraro
+ * @param <T> the return type
  */
-public interface LegacySingletonContext<T> extends SingletonContext {
-
-    Optional<T> getLocalValue();
+public interface PrivilegedActionSupplier<T> extends PrivilegedAction<T>, Supplier<T> {
+    @Override
+    default T get() {
+        return (System.getSecurityManager() != null) ? AccessController.doPrivileged(this) : this.run();
+    }
 }
