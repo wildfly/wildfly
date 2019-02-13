@@ -16,7 +16,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.wildfly.extension.microprofile.metrics.MetricCollector;
-import org.wildfly.extension.microprofile.metrics.MetricsRegistrationService;
 import org.wildfly.extension.microprofile.metrics.MicroProfileMetricsSubsystemDefinition;
 
 public class DeploymentMetricService implements Service {
@@ -25,34 +24,34 @@ public class DeploymentMetricService implements Service {
     private final Resource rootResource;
     private final ManagementResourceRegistration managementResourceRegistration;
     private PathAddress deploymentAddress;
-    private final Supplier<MetricsRegistrationService> registrationService;
+    private final Supplier<MetricCollector> metricCollector;
     private MetricCollector.MetricRegistration registration;
 
     public static void install(ServiceTarget serviceTarget, DeploymentUnit deploymentUnit, Resource rootResource, ManagementResourceRegistration managementResourceRegistration) {
         PathAddress deploymentAddress = createDeploymentAddressPrefix(deploymentUnit);
 
         ServiceBuilder<?> sb = serviceTarget.addService(deploymentUnit.getServiceName().append("metrics"));
-        Supplier<MetricsRegistrationService> registrationService = sb.requires(MicroProfileMetricsSubsystemDefinition.WILDFLY_REGISTRATION_SERVICE);
+        Supplier<MetricCollector> metricCollector = sb.requires(MicroProfileMetricsSubsystemDefinition.WILDFLY_COLLECTOR_SERVICE);
 
         /*
          * The deployment metric service depends on the deployment complete service name to ensure that the metrics from
          * the deployment are collected and registered once the deployment services have all be properly installed.
          */
         sb.requires(DeploymentCompleteServiceProcessor.serviceName(deploymentUnit.getServiceName()));
-        sb.setInstance(new DeploymentMetricService(rootResource, managementResourceRegistration, deploymentAddress, registrationService))
+        sb.setInstance(new DeploymentMetricService(rootResource, managementResourceRegistration, deploymentAddress, metricCollector))
                 .install();
     }
 
-    private DeploymentMetricService(Resource rootResource, ManagementResourceRegistration managementResourceRegistration, PathAddress deploymentAddress, Supplier<MetricsRegistrationService> registrationService) {
+    private DeploymentMetricService(Resource rootResource, ManagementResourceRegistration managementResourceRegistration, PathAddress deploymentAddress, Supplier<MetricCollector> metricCollector) {
         this.rootResource = rootResource;
         this.managementResourceRegistration = managementResourceRegistration;
         this.deploymentAddress = deploymentAddress;
-        this.registrationService = registrationService;
+        this.metricCollector = metricCollector;
     }
 
     @Override
     public void start(StartContext startContext) {
-        registration = registrationService.get().registerMetrics(rootResource,
+        registration = metricCollector.get().collectResourceMetrics(rootResource,
                 managementResourceRegistration,
                 // prepend the deployment address to the subsystem resource address
                 address -> deploymentAddress.append(address));

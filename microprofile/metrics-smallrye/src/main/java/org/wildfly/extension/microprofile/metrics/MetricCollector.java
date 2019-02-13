@@ -1,3 +1,24 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2019, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.wildfly.extension.microprofile.metrics;
 
 import static org.jboss.as.controller.PathAddress.EMPTY_ADDRESS;
@@ -50,13 +71,12 @@ public class MetricCollector {
     private final List<String> exposedSubsystems;
     private final LocalModelControllerClient modelControllerClient;
 
-    public MetricCollector(LocalModelControllerClient modelControllerClient, ImmutableManagementResourceRegistration managementResourceRegistration, List<String> exposedSubsystems, String globalPrefix) {
+    public MetricCollector(LocalModelControllerClient modelControllerClient, List<String> exposedSubsystems, String globalPrefix) {
         this.modelControllerClient = modelControllerClient;
         this.exposedSubsystems = exposedSubsystems;
         this.exposeAnySubsystem = exposedSubsystems.remove("*");
         this.globalPrefix = globalPrefix;
         this.prometheusCollector = new PrometheusCollector();
-        collectMetricFamilies(managementResourceRegistration, EMPTY_ADDRESS, prometheusCollector);
         this.prometheusCollector.register(CollectorRegistry.defaultRegistry);
     }
 
@@ -65,7 +85,7 @@ public class MetricCollector {
     }
 
     // collect metrics from the resources
-    MetricRegistration collectResourceMetrics(final Resource resource,
+    public MetricRegistration collectResourceMetrics(final Resource resource,
                                               ImmutableManagementResourceRegistration managementResourceRegistration,
                                               Function<PathAddress, PathAddress> resourceAddressResolver) {
         MetricRegistration registration = new MetricRegistration();
@@ -165,9 +185,8 @@ public class MetricCollector {
         return false;
     }
 
-    private void collectMetricFamilies(ImmutableManagementResourceRegistration managementResourceRegistration,
-                                       final PathAddress address,
-                                       PrometheusCollector collector) {
+    void collectMetricFamilies(ImmutableManagementResourceRegistration managementResourceRegistration,
+                                       final PathAddress address) {
         if (!isExposingMetrics(address)) {
             return;
         }
@@ -195,11 +214,11 @@ public class MetricCollector {
             } else {
                 metricFamilySamples = new GaugeMetricFamily(metricMetadata.metricName, attributeDescription, metricMetadata.labelNames);
             }
-            collector.addMetricFamilySamples(metricFamilySamples);
+            prometheusCollector.addMetricFamilySamples(metricFamilySamples);
         }
 
         for (PathElement childAddress : managementResourceRegistration.getChildAddresses(address)) {
-            collectMetricFamilies(managementResourceRegistration, address.append(childAddress), collector);
+            collectMetricFamilies(managementResourceRegistration, address.append(childAddress));
         }
     }
 

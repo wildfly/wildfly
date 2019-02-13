@@ -41,15 +41,15 @@ import org.jboss.msc.service.ServiceName;
  */
 public class MicroProfileMetricsSubsystemDefinition extends PersistentResourceDefinition {
 
-    static final String METRICS_REGISTRATION_CAPABILITY = "org.wildlfy.extension.microprofile.metrics.wildfly-registrar";
+    static final String METRICS_COLLECTOR_CAPABILITY = "org.wildlfy.extension.microprofile.metrics.wildfly-collector";
 
     static final String CLIENT_FACTORY_CAPABILITY ="org.wildfly.management.model-controller-client-factory";
     static final String MANAGEMENT_EXECUTOR ="org.wildfly.management.executor";
-    static final RuntimeCapability<Void> METRICS_REGISTRATION_RUNTIME_CAPABILITY = RuntimeCapability.Builder.of(METRICS_REGISTRATION_CAPABILITY, MetricsRegistrationService.class)
+    static final RuntimeCapability<Void> METRICS_COLLECTOR_RUNTIME_CAPABILITY = RuntimeCapability.Builder.of(METRICS_COLLECTOR_CAPABILITY, MetricsCollectorService.class)
             .addRequirements(CLIENT_FACTORY_CAPABILITY, MANAGEMENT_EXECUTOR)
             .build();
 
-    public static final ServiceName WILDFLY_REGISTRATION_SERVICE = METRICS_REGISTRATION_RUNTIME_CAPABILITY.getCapabilityServiceName();
+    public static final ServiceName WILDFLY_COLLECTOR_SERVICE = METRICS_COLLECTOR_RUNTIME_CAPABILITY.getCapabilityServiceName();
 
     static final String HTTP_EXTENSIBILITY_CAPABILITY = "org.wildfly.management.http.extensible";
     static final RuntimeCapability<Void> HTTP_CONTEXT_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.extension.microprofile.metrics.http-context", MetricsContextService.class)
@@ -82,7 +82,7 @@ public class MicroProfileMetricsSubsystemDefinition extends PersistentResourceDe
                 MicroProfileMetricsExtension.getResourceDescriptionResolver(MicroProfileMetricsExtension.SUBSYSTEM_NAME))
                 .setAddHandler(MicroProfileMetricsSubsystemAdd.INSTANCE)
                 .setRemoveHandler(new ServiceRemoveStepHandler(MicroProfileMetricsSubsystemAdd.INSTANCE))
-                .setCapabilities(METRICS_REGISTRATION_RUNTIME_CAPABILITY, HTTP_CONTEXT_CAPABILITY));
+                .setCapabilities(METRICS_COLLECTOR_RUNTIME_CAPABILITY, HTTP_CONTEXT_CAPABILITY));
     }
 
     @Override

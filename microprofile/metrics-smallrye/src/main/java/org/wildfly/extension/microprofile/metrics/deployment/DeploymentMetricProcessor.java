@@ -29,11 +29,11 @@ import org.jboss.as.server.deployment.DeploymentModelUtils;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.wildfly.extension.microprofile.metrics.MetricsRegistrationService;
+import org.wildfly.extension.microprofile.metrics.MetricCollector;
 
 public class DeploymentMetricProcessor implements DeploymentUnitProcessor {
 
-    static final AttachmentKey<MetricsRegistrationService> METRICS_REGISTRATION = AttachmentKey.create(MetricsRegistrationService.class);
+    static final AttachmentKey<MetricCollector> METRICS_COLLECTOR = AttachmentKey.create(MetricCollector.class);
 
     private Resource rootResource;
     private ManagementResourceRegistration managementResourceRegistration;

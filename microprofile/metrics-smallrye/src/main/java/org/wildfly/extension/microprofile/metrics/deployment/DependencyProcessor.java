@@ -43,7 +43,7 @@ public class DependencyProcessor implements DeploymentUnitProcessor {
 
         addModuleDependencies(deploymentUnit);
 
-        phaseContext.addDeploymentDependency(MicroProfileMetricsSubsystemDefinition.WILDFLY_REGISTRATION_SERVICE, DeploymentMetricProcessor.METRICS_REGISTRATION);
+        phaseContext.addDeploymentDependency(MicroProfileMetricsSubsystemDefinition.WILDFLY_COLLECTOR_SERVICE, DeploymentMetricProcessor.METRICS_COLLECTOR);
     }
 
     @Override
