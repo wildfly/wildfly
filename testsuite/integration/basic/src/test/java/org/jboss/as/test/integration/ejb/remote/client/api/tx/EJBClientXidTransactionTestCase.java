@@ -54,7 +54,6 @@ import org.jboss.tm.XAResourceRecoveryRegistry;
 
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.transaction.client.ContextTransactionManager;
@@ -287,7 +286,6 @@ public class EJBClientXidTransactionTestCase {
      *
      * @throws Exception
      */
-    @Ignore("WFLY-11670")
     @Test
     public void testServerSuspension() throws Exception {
         final StatelessEJBLocator<org.jboss.as.test.integration.ejb.remote.client.api.tx.CMTRemote> cmtRemoteBeanLocator = new StatelessEJBLocator<org.jboss.as.test.integration.ejb.remote.client.api.tx.CMTRemote>(
