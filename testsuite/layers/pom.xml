@@ -54,7 +54,7 @@
                                     <version>${version.org.wildfly.core}</version>
                                 </feature-pack>
                                 <feature-pack>
-                                    <groupId>org.wildfly</groupId>
+                                    <groupId>${project.groupId}</groupId>
                                     <artifactId>wildfly-servlet-galleon-pack</artifactId>
                                     <version>${project.version}</version>
                                     <inherit-configs>false</inherit-configs>
@@ -88,7 +88,7 @@
                                     <version>${version.org.wildfly.core}</version>
                                 </feature-pack>
                                 <feature-pack>
-                                    <groupId>org.wildfly</groupId>
+                                    <groupId>${project.groupId}</groupId>
                                     <artifactId>wildfly-servlet-galleon-pack</artifactId>
                                     <version>${project.version}</version>
                                     <inherit-configs>false</inherit-configs>
@@ -126,7 +126,7 @@
                                     <version>${version.org.wildfly.core}</version>
                                 </feature-pack>
                                 <feature-pack>
-                                    <groupId>org.wildfly</groupId>
+                                    <groupId>${project.groupId}</groupId>
                                     <artifactId>wildfly-servlet-galleon-pack</artifactId>
                                     <version>${project.version}</version>
                                     <inherit-configs>false</inherit-configs>
@@ -164,7 +164,7 @@
                                     <version>${version.org.wildfly.core}</version>
                                 </feature-pack>
                                 <feature-pack>
-                                    <groupId>org.wildfly</groupId>
+                                    <groupId>${project.groupId}</groupId>
                                     <artifactId>wildfly-servlet-galleon-pack</artifactId>
                                     <version>${project.version}</version>
                                     <inherit-configs>false</inherit-configs>
@@ -202,7 +202,7 @@
                                     <version>${version.org.wildfly.core}</version>
                                 </feature-pack>
                                 <feature-pack>
-                                    <groupId>org.wildfly</groupId>
+                                    <groupId>${project.groupId}</groupId>
                                     <artifactId>wildfly-servlet-galleon-pack</artifactId>
                                     <version>${project.version}</version>
                                     <inherit-configs>false</inherit-configs>
@@ -240,7 +240,7 @@
                                     <version>${version.org.wildfly.core}</version>
                                 </feature-pack>
                                 <feature-pack>
-                                    <groupId>org.wildfly</groupId>
+                                    <groupId>${project.groupId}</groupId>
                                     <artifactId>wildfly-servlet-galleon-pack</artifactId>
                                     <version>${project.version}</version>
                                     <inherit-configs>false</inherit-configs>
@@ -278,7 +278,7 @@
                                     <version>${version.org.wildfly.core}</version>
                                 </feature-pack>
                                 <feature-pack>
-                                    <groupId>org.wildfly</groupId>
+                                    <groupId>${project.groupId}</groupId>
                                     <artifactId>wildfly-servlet-galleon-pack</artifactId>
                                     <version>${project.version}</version>
                                     <inherit-configs>false</inherit-configs>
@@ -316,7 +316,7 @@
                                     <version>${version.org.wildfly.core}</version>
                                 </feature-pack>
                                 <feature-pack>
-                                    <groupId>org.wildfly</groupId>
+                                    <groupId>${project.groupId}</groupId>
                                     <artifactId>wildfly-servlet-galleon-pack</artifactId>
                                     <version>${project.version}</version>
                                     <inherit-configs>false</inherit-configs>
@@ -354,7 +354,7 @@
                                     <version>${version.org.wildfly.core}</version>
                                 </feature-pack>
                                 <feature-pack>
-                                    <groupId>org.wildfly</groupId>
+                                    <groupId>${project.groupId}</groupId>
                                     <artifactId>wildfly-servlet-galleon-pack</artifactId>
                                     <version>${project.version}</version>
                                     <inherit-configs>false</inherit-configs>
@@ -409,7 +409,7 @@
                                     <version>${project.version}</version>
                                 </feature-pack>
                                 <feature-pack>
-                                    <groupId>org.wildfly</groupId>
+                                    <groupId>${project.groupId}</groupId>
                                     <artifactId>wildfly-galleon-pack</artifactId>
                                     <version>${project.version}</version>
                                     <inherit-configs>false</inherit-configs>
@@ -453,7 +453,7 @@
                                     <version>${project.version}</version>
                                 </feature-pack>
                                 <feature-pack>
-                                    <groupId>org.wildfly</groupId>
+                                    <groupId>${project.groupId}</groupId>
                                     <artifactId>wildfly-galleon-pack</artifactId>
                                     <version>${project.version}</version>
                                     <inherit-configs>false</inherit-configs>
@@ -497,7 +497,7 @@
                                     <version>${project.version}</version>
                                 </feature-pack>
                                 <feature-pack>
-                                    <groupId>org.wildfly</groupId>
+                                    <groupId>${project.groupId}</groupId>
                                     <artifactId>wildfly-galleon-pack</artifactId>
                                     <version>${project.version}</version>
                                     <inherit-configs>false</inherit-configs>
@@ -541,7 +541,7 @@
                                     <version>${project.version}</version>
                                 </feature-pack>
                                 <feature-pack>
-                                    <groupId>org.wildfly</groupId>
+                                    <groupId>${project.groupId}</groupId>
                                     <artifactId>wildfly-galleon-pack</artifactId>
                                     <version>${project.version}</version>
                                     <inherit-configs>false</inherit-configs>
@@ -585,7 +585,7 @@
                                     <version>${project.version}</version>
                                 </feature-pack>
                                 <feature-pack>
-                                    <groupId>org.wildfly</groupId>
+                                    <groupId>${project.groupId}</groupId>
                                     <artifactId>wildfly-galleon-pack</artifactId>
                                     <version>${project.version}</version>
                                     <inherit-configs>false</inherit-configs>
@@ -629,7 +629,7 @@
                                     <version>${project.version}</version>
                                 </feature-pack>
                                 <feature-pack>
-                                    <groupId>org.wildfly</groupId>
+                                    <groupId>${project.groupId}</groupId>
                                     <artifactId>wildfly-galleon-pack</artifactId>
                                     <version>${project.version}</version>
                                     <inherit-configs>false</inherit-configs>
@@ -673,7 +673,7 @@
                                     <version>${project.version}</version>
                                 </feature-pack>
                                 <feature-pack>
-                                    <groupId>org.wildfly</groupId>
+                                    <groupId>${project.groupId}</groupId>
                                     <artifactId>wildfly-galleon-pack</artifactId>
                                     <version>${project.version}</version>
                                     <inherit-configs>false</inherit-configs>
@@ -717,7 +717,7 @@
                                     <version>${project.version}</version>
                                 </feature-pack>
                                 <feature-pack>
-                                    <groupId>org.wildfly</groupId>
+                                    <groupId>${project.groupId}</groupId>
                                     <artifactId>wildfly-galleon-pack</artifactId>
                                     <version>${project.version}</version>
                                     <inherit-configs>false</inherit-configs>
@@ -761,7 +761,7 @@
                                     <version>${project.version}</version>
                                 </feature-pack>
                                 <feature-pack>
-                                    <groupId>org.wildfly</groupId>
+                                    <groupId>${project.groupId}</groupId>
                                     <artifactId>wildfly-galleon-pack</artifactId>
                                     <version>${project.version}</version>
                                     <inherit-configs>false</inherit-configs>
@@ -805,7 +805,7 @@
                                     <version>${project.version}</version>
                                 </feature-pack>
                                 <feature-pack>
-                                    <groupId>org.wildfly</groupId>
+                                    <groupId>${project.groupId}</groupId>
                                     <artifactId>wildfly-galleon-pack</artifactId>
                                     <version>${project.version}</version>
                                     <inherit-configs>false</inherit-configs>
@@ -843,14 +843,14 @@
                                     <version>${version.org.wildfly.core}</version>
                                 </feature-pack>
                                 <feature-pack>
-                                    <groupId>org.wildfly</groupId>
+                                    <groupId>${project.groupId}</groupId>
                                     <artifactId>wildfly-servlet-galleon-pack</artifactId>
                                     <version>${project.version}</version>
                                     <inherit-configs>false</inherit-configs>
                                     <inherit-packages>false</inherit-packages>
                                 </feature-pack>
                                 <feature-pack>
-                                    <groupId>org.wildfly</groupId>
+                                    <groupId>${project.groupId}</groupId>
                                     <artifactId>wildfly-galleon-pack</artifactId>
                                     <version>${project.version}</version>
                                     <inherit-configs>false</inherit-configs>
