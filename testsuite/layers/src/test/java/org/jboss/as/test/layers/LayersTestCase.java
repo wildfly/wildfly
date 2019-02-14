@@ -20,12 +20,15 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
 import static org.jboss.as.test.layers.LayersTest.recursiveDelete;
+
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
  *
  * @author jdenise@redhat.com
  */
+@Ignore("WFLY-11715")
 public class LayersTestCase {
     // Packages that are provisioned but not used (not injected nor referenced).
     // This is the expected set of not provisioned modules when all layers are provisioned.
