@@ -34,6 +34,7 @@ import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.microprofile.metrics.TestApplication;
@@ -53,6 +54,7 @@ import static org.wildfly.test.integration.microprofile.metrics.MetricsHelper.ge
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@Ignore("WFLY-11718")
 public class MicroProfileMetricsHistogramMultipleInvocationsTestCase {
 
 
