@@ -965,6 +965,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <systemPropertyVariables>
+                        <!-- maven.local.repo is set in parent pom.xml, system property surefire.system.args -->
                         <servlet.layers.install.root>${servlet.layers.install.dir}</servlet.layers.install.root>
                         <layers.install.root>${layers.install.dir}</layers.install.root>
                         <jbossas.version>${project.parent.version}</jbossas.version>
