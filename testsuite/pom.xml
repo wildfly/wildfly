@@ -429,6 +429,17 @@
             <modules><module>domain</module></modules>
         </profile>
 
+        <profile>
+            <id>layers.module.profile</id>
+            <activation><property><name>layers.module</name></property></activation>
+            <modules><module>layers</module></modules>
+        </profile>
+        <profile>
+            <id>layers_.module.profile</id>
+            <activation><property><name>ts.layers</name></property></activation>
+            <modules><module>layers</module></modules>
+        </profile>
+
 
         <!--
           Debugging profiles.
