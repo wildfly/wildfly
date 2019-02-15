@@ -231,7 +231,7 @@
         <version.commons-codec>1.10</version.commons-codec>
         <version.commons-collections>3.2.2</version.commons-collections>
         <version.commons-digester>1.8.1</version.commons-digester>
-        <version.commons-lang3>3.6</version.commons-lang3>
+        <version.commons-lang3>3.8</version.commons-lang3>
         <version.dom4j>2.1.1</version.dom4j>
         <version.gnu.getopt>1.0.13</version.gnu.getopt>
         <version.groovy-all>2.4.7</version.groovy-all>
@@ -268,10 +268,10 @@
         <version.net.shibboleth.utilities.java-support>7.1.1</version.net.shibboleth.utilities.java-support>
         <version.org.apache.activemq.artemis>2.6.3.jbossorg-00014</version.org.apache.activemq.artemis>
         <version.org.apache.avro>1.7.6</version.org.apache.avro>
-        <version.org.apache.cxf>3.2.5-jbossorg-1</version.org.apache.cxf>
-        <version.org.apache.cxf.xjcplugins>3.2.2</version.org.apache.cxf.xjcplugins>
+        <version.org.apache.cxf>3.2.7</version.org.apache.cxf>
+        <version.org.apache.cxf.xjcplugins>3.2.3</version.org.apache.cxf.xjcplugins>
         <version.org.apache.ds>2.0.0-M24</version.org.apache.ds>
-        <version.org.apache.httpcomponents.httpasyncclient>4.1.3</version.org.apache.httpcomponents.httpasyncclient>
+        <version.org.apache.httpcomponents.httpasyncclient>4.1.4</version.org.apache.httpcomponents.httpasyncclient>
         <version.org.apache.james.apache-mime4j>0.6</version.org.apache.james.apache-mime4j>
         <version.org.apache.jstl>1.2.6-RC1</version.org.apache.jstl>
         <version.org.apache.lucene>5.5.5</version.org.apache.lucene>
