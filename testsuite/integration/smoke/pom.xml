@@ -181,6 +181,8 @@
                         <phase>generate-resources</phase>
                         <configuration>
                             <install-dir>${project.build.directory}/wildfly</install-dir>
+                            <record-state>false</record-state>
+                            <log-time>${galleon.log.time}</log-time>
                             <feature-packs>
                                 <feature-pack>
                                     <transitive>true</transitive>

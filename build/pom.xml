@@ -77,6 +77,8 @@
                         <phase>prepare-package</phase>
                         <configuration>
                             <install-dir>${project.build.directory}/${project.build.finalName}</install-dir>
+                            <record-state>false</record-state>
+                            <log-time>${galleon.log.time}</log-time>
                             <feature-packs>
                                 <feature-pack>
                                     <transitive>true</transitive>

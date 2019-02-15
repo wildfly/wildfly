@@ -150,6 +150,8 @@
                         <phase>generate-test-resources</phase>
                         <configuration>
                             <install-dir>${project.build.directory}/${wildfly.instance.name}</install-dir>
+                            <record-state>false</record-state>
+                            <log-time>${galleon.log.time}</log-time>
                             <feature-packs>
                                 <feature-pack>
                                     <transitive>true</transitive>
