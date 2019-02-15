@@ -37,6 +37,8 @@ import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttr
 import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttribute.create;
 import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryDefinition.CAPABILITY_NAME;
 
+import java.util.Arrays;
+
 import org.apache.activemq.artemis.api.config.ActiveMQDefaultConfiguration;
 import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
 import org.apache.activemq.artemis.api.core.client.loadbalance.RoundRobinConnectionLoadBalancingPolicy;
@@ -44,17 +46,22 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.AttributeParser;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.ParameterCorrector;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.validation.StringAllowedValuesValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.wildfly.extension.messaging.activemq.AbstractTransportDefinition;
 import org.wildfly.extension.messaging.activemq.CommonAttributes;
 import org.wildfly.extension.messaging.activemq.InfiniteOrPositiveValidators;
+import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 
 public interface ConnectionFactoryAttributes {
 
@@ -573,7 +580,27 @@ public interface ConnectionFactoryAttributes {
                 .build();
 
         SimpleAttributeDefinition TRANSACTION = SimpleAttributeDefinitionBuilder.create("transaction", STRING)
-                .setDefaultValue(new ModelNode().set("transaction"))
+                .setDefaultValue(new ModelNode().set(CommonAttributes.XA))
+                .setCorrector(new ParameterCorrector() {
+                    @Override
+                    public ModelNode correct(ModelNode newValue, ModelNode currentValue) {
+                        if (newValue.isDefined() && newValue.getType() != ModelType.EXPRESSION) {
+                            switch (newValue.asString()) {
+                                case CommonAttributes.LOCAL:
+                                    return new ModelNode(CommonAttributes.LOCAL);
+                                case CommonAttributes.NONE:
+                                    return new ModelNode(CommonAttributes.NONE);
+                                default:
+                                    if (newValue.asString() != CommonAttributes.XA) {
+                                        MessagingLogger.ROOT_LOGGER.invalidTransactionNameValue(newValue.asString(), "transaction", Arrays.asList(CommonAttributes.LOCAL, CommonAttributes.NONE, CommonAttributes.XA));
+                                    }
+                                    return new ModelNode(CommonAttributes.XA);
+                            }
+                        }
+                        return newValue;
+                    }
+                })
+                .setValidator(new TransactionNameAllowedValuesValidator(CommonAttributes.LOCAL, CommonAttributes.NONE, CommonAttributes.XA))
                 .setRequired(false)
                 .setAllowExpression(true)
                 .setRestartAllServices()
@@ -639,5 +666,20 @@ public interface ConnectionFactoryAttributes {
                 create(USE_AUTO_RECOVERY, "useAutoRecovery", true),
                 create(INITIAL_CONNECT_ATTEMPTS, "initialConnectAttempts", true),
         };
+    }
+
+    static class TransactionNameAllowedValuesValidator extends StringAllowedValuesValidator {
+        public TransactionNameAllowedValuesValidator(String... values) {
+            super(values);
+        }
+
+        @Override
+        public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
+            if (value.isDefined()) {
+                if (!getAllowedValues().contains(value)) {
+                    MessagingLogger.ROOT_LOGGER.invalidTransactionNameValue(value.asString(), parameterName, getAllowedValues());
+                }
+            }
+        }
     }
 }
