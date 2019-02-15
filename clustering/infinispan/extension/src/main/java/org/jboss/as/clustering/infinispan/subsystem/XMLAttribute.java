@@ -91,7 +91,7 @@ public enum XMLAttribute {
     MAX_IDLE(ExpirationResourceDefinition.Attribute.MAX_IDLE),
     MAX_THREADS(ThreadPoolResourceDefinition.values()[0].getMaxThreads()),
     MIN_THREADS(ThreadPoolResourceDefinition.values()[0].getMinThreads()),
-    @Deprecated MODE(ClusteredCacheResourceDefinition.DeprecatedAttribute.MODE),
+    MODE(TransactionResourceDefinition.Attribute.MODE),
     MODIFICATION_QUEUE_SIZE(StoreWriteBehindResourceDefinition.Attribute.MODIFICATION_QUEUE_SIZE),
     MODULE(CacheContainerResourceDefinition.Attribute.MODULE),
     NAME(ModelDescriptionConstants.NAME),
