@@ -61,6 +61,7 @@ public class SingletonTransformersTestCase extends AbstractSubsystemTest {
             case EAP_7_0_0:
                 return SingletonModel.VERSION_1_0_0;
             case EAP_7_1_0:
+            case EAP_7_2_0:
                 return SingletonModel.VERSION_2_0_0;
             default:
                 throw new IllegalArgumentException();
@@ -71,9 +72,12 @@ public class SingletonTransformersTestCase extends AbstractSubsystemTest {
         switch (version) {
             case EAP_7_0_0:
             case EAP_7_1_0:
+            case EAP_7_2_0:
                 return new String[] {
                         formatEAP7SubsystemArtifact(version),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-service:%s", version),
                         formatArtifact("org.jboss.eap:wildfly-clustering-singleton-api:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-spi:%s", version),
                         formatArtifact("org.jboss.eap:wildfly-clustering-common:%s", version),
                 };
             default:
@@ -102,6 +106,11 @@ public class SingletonTransformersTestCase extends AbstractSubsystemTest {
         this.testTransformation(ModelTestControllerVersion.EAP_7_1_0);
     }
 
+    @Test
+    public void testTransformerEAP720() throws Exception {
+        this.testTransformation(ModelTestControllerVersion.EAP_7_2_0);
+    }
+
     private void testTransformation(final ModelTestControllerVersion controller) throws Exception {
         final ModelVersion version = getModelVersion(controller).getVersion();
         final String[] dependencies = getDependencies(controller);
@@ -119,6 +128,11 @@ public class SingletonTransformersTestCase extends AbstractSubsystemTest {
     @Test
     public void testRejectionsEAP710() throws Exception {
         this.testRejections(ModelTestControllerVersion.EAP_7_1_0);
+    }
+
+    @Test
+    public void testRejectionsEAP720() throws Exception {
+        this.testRejections(ModelTestControllerVersion.EAP_7_2_0);
     }
 
     private void testRejections(final ModelTestControllerVersion controller) throws Exception {
