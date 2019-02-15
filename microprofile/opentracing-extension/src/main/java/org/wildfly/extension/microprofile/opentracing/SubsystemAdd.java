@@ -44,13 +44,13 @@ class SubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(
                         SubsystemExtension.SUBSYSTEM_NAME,
                         Phase.DEPENDENCIES,
-                        Phase.DEPENDENCIES_MODULE,
+                        Phase.DEPENDENCIES_MICROPROFILE_OPENTRACING,
                         new TracingDependencyProcessor()
                 );
 
                 processorTarget.addDeploymentProcessor(SubsystemExtension.SUBSYSTEM_NAME,
                         Phase.POST_MODULE,
-                        Phase.POST_MODULE_WELD_PORTABLE_EXTENSIONS + 11,
+                        Phase.POST_MODULE_MICROPROFILE_OPENTRACING,
                         new TracingDeploymentProcessor()
                 );
             }
