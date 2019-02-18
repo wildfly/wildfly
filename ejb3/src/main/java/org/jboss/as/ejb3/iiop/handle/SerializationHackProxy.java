@@ -25,6 +25,7 @@ package org.jboss.as.ejb3.iiop.handle;
 import java.io.ObjectInputStream;
 import java.lang.reflect.Modifier;
 
+import org.jboss.as.ejb3.iiop.WildFlyClassFactory;
 import org.jboss.classfilewriter.ClassFile;
 import org.jboss.classfilewriter.ClassMethod;
 import org.jboss.classfilewriter.code.CodeAttribute;
@@ -52,7 +53,7 @@ public abstract class SerializationHackProxy {
             clazz = loader.loadClass(NAME);
         } catch (ClassNotFoundException e) {
             try {
-                final ClassFile file = new ClassFile(NAME, SerializationHackProxy.class.getName());
+                final ClassFile file = new ClassFile(NAME, SerializationHackProxy.class.getName(), null, WildFlyClassFactory.INSTANCE);
 
                 final ClassMethod method = file.addMethod(Modifier.PUBLIC, "read", "Ljava/lang/Object;", "Ljava/io/ObjectInputStream;");
                 final CodeAttribute codeAttribute = method.getCodeAttribute();

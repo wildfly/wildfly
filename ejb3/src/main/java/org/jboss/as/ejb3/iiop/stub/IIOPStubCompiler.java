@@ -28,6 +28,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.rmi.RemoteException;
 
+import org.jboss.as.ejb3.iiop.WildFlyClassFactory;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.classfilewriter.ClassFile;
 import org.jboss.classfilewriter.ClassMethod;
@@ -249,9 +250,7 @@ public class IIOPStubCompiler {
     private static ClassFile generateCode(InterfaceAnalysis interfaceAnalysis,
                                        Class<?> superclass, String stubClassName) {
         final ClassFile asm =
-                new ClassFile(stubClassName,
-                        superclass.getName(),
-                        interfaceAnalysis.getCls().getName());
+                new ClassFile(stubClassName, superclass.getName(), null, WildFlyClassFactory.INSTANCE, interfaceAnalysis.getCls().getName());
 
         int methodIndex = 0;
 
