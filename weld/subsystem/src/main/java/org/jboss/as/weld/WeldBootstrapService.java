@@ -124,7 +124,7 @@ public class WeldBootstrapService implements Service {
         // set up injected services
         addWeldService(SecurityServices.class, securityServicesSupplier.get());
 
-        TransactionServices transactionServices = weldTransactionServicesSupplier.get();
+        TransactionServices transactionServices = weldTransactionServicesSupplier != null ? weldTransactionServicesSupplier.get() : null;
         if (transactionServices != null) {
             addWeldService(TransactionServices.class, transactionServices);
         }
