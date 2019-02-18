@@ -25,6 +25,7 @@ package org.jboss.as.ejb3.iiop.handle;
 import java.io.ObjectInputStream;
 import java.lang.reflect.Modifier;
 
+import org.jboss.as.server.deployment.ModuleClassFactory;
 import org.jboss.classfilewriter.ClassFile;
 import org.jboss.classfilewriter.ClassMethod;
 import org.jboss.classfilewriter.code.CodeAttribute;
@@ -36,6 +37,7 @@ import org.jboss.classfilewriter.code.CodeAttribute;
  * in the deployment class loader, that simply calls readObject.
  *
  * @author Stuart Douglas
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public abstract class SerializationHackProxy {
 
@@ -52,7 +54,7 @@ public abstract class SerializationHackProxy {
             clazz = loader.loadClass(NAME);
         } catch (ClassNotFoundException e) {
             try {
-                final ClassFile file = new ClassFile(NAME, SerializationHackProxy.class.getName());
+                final ClassFile file = new ClassFile(NAME, SerializationHackProxy.class.getName(), null, ModuleClassFactory.INSTANCE);
 
                 final ClassMethod method = file.addMethod(Modifier.PUBLIC, "read", "Ljava/lang/Object;", "Ljava/io/ObjectInputStream;");
                 final CodeAttribute codeAttribute = method.getCodeAttribute();

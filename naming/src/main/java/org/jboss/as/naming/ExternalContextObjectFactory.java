@@ -18,6 +18,7 @@ import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.spi.ObjectFactory;
 
+import org.jboss.as.server.deployment.ModuleClassFactory;
 import org.jboss.invocation.proxy.ProxyConfiguration;
 import org.jboss.invocation.proxy.ProxyFactory;
 import org.jboss.modules.Module;
@@ -27,6 +28,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * An ObjectFactory that binds an arbitrary InitialContext into JNDI.
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class ExternalContextObjectFactory implements ObjectFactory {
 
@@ -118,6 +120,7 @@ public class ExternalContextObjectFactory implements ObjectFactory {
         ProxyConfiguration config = new ProxyConfiguration();
         config.setClassLoader(loader);
         config.setSuperClass(initialContextClass);
+        config.setClassFactory(ModuleClassFactory.INSTANCE);
         config.setProxyName(initialContextClassName + "$$$$Proxy" + PROXY_ID.incrementAndGet());
         config.setProtectionDomain(context.getClass().getProtectionDomain());
         ProxyFactory<?> factory = new ProxyFactory<Object>(config);

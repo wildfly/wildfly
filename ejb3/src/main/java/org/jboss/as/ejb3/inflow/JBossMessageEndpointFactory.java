@@ -30,6 +30,7 @@ import javax.resource.spi.endpoint.MessageEndpoint;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
 import javax.transaction.xa.XAResource;
 
+import org.jboss.as.server.deployment.ModuleClassFactory;
 import org.jboss.invocation.proxy.ProxyConfiguration;
 import org.jboss.invocation.proxy.ProxyFactory;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -39,6 +40,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class JBossMessageEndpointFactory implements MessageEndpointFactory {
     private static final AtomicInteger PROXY_ID = new AtomicInteger(0);
@@ -53,6 +55,7 @@ public class JBossMessageEndpointFactory implements MessageEndpointFactory {
                 .setClassLoader(classLoader)
                 .setProxyName(ejbClass.getName() + "$$$endpoint" + PROXY_ID.incrementAndGet())
                 .setSuperClass(ejbClass)
+                .setClassFactory(ModuleClassFactory.INSTANCE)
                 .setProtectionDomain(ejbClass.getProtectionDomain())
                 .addAdditionalInterface(MessageEndpoint.class)
                 .addAdditionalInterface(messageListenerInterface);

@@ -30,6 +30,7 @@ import org.jboss.as.ee.component.serialization.WriteReplaceInterface;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.ModuleClassFactory;
 import org.jboss.as.server.deployment.reflect.ProxyMetadataSource;
 import org.jboss.invocation.proxy.ProxyConfiguration;
 import org.jboss.invocation.proxy.ProxyFactory;
@@ -67,6 +68,7 @@ class DefaultComponentViewConfigurator extends AbstractComponentConfigurator imp
                 proxyConfiguration.setProxyName(viewClass.getName() + "$$$view" + PROXY_ID.incrementAndGet());
             }
             proxyConfiguration.setClassLoader(module.getClassLoader());
+            proxyConfiguration.setClassFactory(ModuleClassFactory.INSTANCE);
             proxyConfiguration.setProtectionDomain(viewClass.getProtectionDomain());
             proxyConfiguration.setMetadataSource(proxyReflectionIndex);
             if (view.isSerializable()) {
