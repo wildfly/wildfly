@@ -28,6 +28,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRI
 import static org.jboss.as.model.test.ModelTestControllerVersion.EAP_7_0_0;
 import static org.jboss.as.model.test.ModelTestControllerVersion.EAP_7_1_0;
 import static org.junit.Assert.assertTrue;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.DEFAULT;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.SERVER;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.SUBSYSTEM;
 import static org.wildfly.extension.messaging.activemq.MessagingDependencies.getActiveMQDependencies;
 import static org.wildfly.extension.messaging.activemq.MessagingDependencies.getJGroupsDependencies;
 import static org.wildfly.extension.messaging.activemq.MessagingDependencies.getMessagingActiveMQGAV;
@@ -59,6 +62,7 @@ import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
 import org.junit.Test;
 import org.wildfly.clustering.jgroups.spi.JGroupsDefaultRequirement;
 import org.wildfly.clustering.spi.ClusteringDefaultRequirement;
@@ -107,6 +111,20 @@ public class MessagingActiveMQSubsystem_6_0_TestCase extends AbstractSubsystemBa
         super.testSchemaOfSubsystemTemplates();
     }
 
+    @Test
+    public void testJournalAttributes() throws Exception {
+        KernelServices kernelServices = standardSubsystemTest(null, false);
+        ModelNode rootModel = kernelServices.readWholeModel();
+        ModelNode serverModel = rootModel.require(SUBSYSTEM).require(MessagingExtension.SUBSYSTEM_NAME).require(SERVER)
+                .require(DEFAULT);
+
+        Assert.assertEquals(1357, serverModel.get(ServerDefinition.JOURNAL_BUFFER_TIMEOUT.getName()).resolve().asInt());
+        Assert.assertEquals(102400, serverModel.get(ServerDefinition.JOURNAL_FILE_SIZE.getName()).resolve().asInt());
+        Assert.assertEquals(2, serverModel.get(ServerDefinition.JOURNAL_MIN_FILES.getName()).resolve().asInt());
+        Assert.assertEquals(5, serverModel.get(ServerDefinition.JOURNAL_POOL_FILES.getName()).resolve().asInt());
+        Assert.assertEquals(7, serverModel.get(ServerDefinition.JOURNAL_FILE_OPEN_TIMEOUT.getName()).resolve().asInt());
+    }
+
     /////////////////////////////////////////
     //  Tests for HA Policy Configuration  //
     /////////////////////////////////////////
@@ -119,7 +137,7 @@ public class MessagingActiveMQSubsystem_6_0_TestCase extends AbstractSubsystemBa
     ///////////////////////
     // Transformers test //
     ///////////////////////
- @Test
+    @Test
     public void testTransformersEAP_7_2_0() throws Exception {
         testTransformers(ModelTestControllerVersion.EAP_7_2_0, MessagingExtension.VERSION_4_0_0);
     }
@@ -205,6 +223,7 @@ public class MessagingActiveMQSubsystem_6_0_TestCase extends AbstractSubsystemBa
                                 ServerDefinition.JOURNAL_JDBC_LOCK_EXPIRATION,
                                 ServerDefinition.JOURNAL_JDBC_LOCK_RENEW_PERIOD,
                                 ServerDefinition.JOURNAL_NODE_MANAGER_STORE_TABLE,
+                                ServerDefinition.JOURNAL_FILE_OPEN_TIMEOUT,
                                 ServerDefinition.GLOBAL_MAX_DISK_USAGE,
                                 ServerDefinition.DISK_SCAN_PERIOD,
                                 ServerDefinition.GLOBAL_MAX_MEMORY_SIZE
@@ -253,6 +272,7 @@ public class MessagingActiveMQSubsystem_6_0_TestCase extends AbstractSubsystemBa
                         new FailedOperationTransformationConfig.NewAttributesConfig(ServerDefinition.JOURNAL_JDBC_LOCK_EXPIRATION,
                                 ServerDefinition.JOURNAL_JDBC_LOCK_RENEW_PERIOD,
                                 ServerDefinition.JOURNAL_NODE_MANAGER_STORE_TABLE,
+                                ServerDefinition.JOURNAL_FILE_OPEN_TIMEOUT,
                                 ServerDefinition.GLOBAL_MAX_DISK_USAGE,
                                 ServerDefinition.DISK_SCAN_PERIOD,
                                 ServerDefinition.GLOBAL_MAX_MEMORY_SIZE
@@ -260,13 +280,17 @@ public class MessagingActiveMQSubsystem_6_0_TestCase extends AbstractSubsystemBa
                 .addFailedAttribute(subsystemAddress.append(SERVER_PATH, CONNECTION_FACTORY_PATH),
                         new FailedOperationTransformationConfig.NewAttributesConfig(
                                 ConnectionFactoryAttributes.Common.INITIAL_MESSAGE_PACKET_SIZE));
-        } else if(messagingVersion.compareTo(MessagingExtension.VERSION_5_0_0) > 0 ){
+        } else if (messagingVersion.compareTo(MessagingExtension.VERSION_5_0_0) > 0 ) {
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH),
                     new FailedOperationTransformationConfig.NewAttributesConfig(
                             ServerDefinition.GLOBAL_MAX_DISK_USAGE,
                             ServerDefinition.DISK_SCAN_PERIOD,
-                            ServerDefinition.GLOBAL_MAX_MEMORY_SIZE));
+                            ServerDefinition.GLOBAL_MAX_MEMORY_SIZE,
+                            ServerDefinition.JOURNAL_FILE_OPEN_TIMEOUT));
+        } else if (messagingVersion.compareTo(MessagingExtension.VERSION_6_0_0) > 0 ) {
+            config.addFailedAttribute(subsystemAddress.append(SERVER_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(ServerDefinition.JOURNAL_FILE_OPEN_TIMEOUT));
         }
+
         if (messagingVersion.compareTo(MessagingExtension.VERSION_4_0_0) > 0) {
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, MessagingExtension.BROADCAST_GROUP_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(BroadcastGroupDefinition.JGROUPS_CHANNEL));
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, DiscoveryGroupDefinition.PATH), new FailedOperationTransformationConfig.NewAttributesConfig(DiscoveryGroupDefinition.JGROUPS_CHANNEL));
