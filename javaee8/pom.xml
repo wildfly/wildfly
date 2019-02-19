@@ -52,7 +52,7 @@
         <version.org.jboss.spec.jboss.javaee8>1.0.2.Final</version.org.jboss.spec.jboss.javaee8>
 
         <!-- Version of server -->
-        <version.server>16.0.0.Beta1-SNAPSHOT</version.server>
+        <version.server>16.0.0.Beta1</version.server>
 
         <!-- Versions on server's core -->
         <version.junit>4.12</version.junit>
@@ -61,19 +61,19 @@
         <version.org.wildfly.client.config>1.0.1.Final</version.org.wildfly.client.config>
         <version.org.wildfly.common>1.4.0.Final</version.org.wildfly.common>
         <version.org.wildfly.discovery>1.1.1.Final</version.org.wildfly.discovery>
-        <version.org.wildfly.security.elytron>1.7.0.Final</version.org.wildfly.security.elytron>
+        <version.org.wildfly.security.elytron>1.8.0.CR2</version.org.wildfly.security.elytron>
 
         <!-- Versions on server -->
         <version.org.hibernate>5.3.7.Final</version.org.hibernate>
         <version.org.hibernate.commons.annotations>5.0.4.Final</version.org.hibernate.commons.annotations>
         <version.org.hibernate.search>5.10.3.Final</version.org.hibernate.search>
-        <version.org.hibernate.validator>6.0.13.Final</version.org.hibernate.validator>
-        <version.org.infinispan>9.4.3.Final</version.org.infinispan>
+        <version.org.hibernate.validator>6.0.14.Final</version.org.hibernate.validator>
+        <version.org.infinispan>9.4.6.Final</version.org.infinispan>
         <version.org.jboss.arquillian.core>1.1.13.Final</version.org.jboss.arquillian.core>
-        <version.org.jboss.ejb3.ext-api>2.2.0.Final</version.org.jboss.ejb3.ext-api>
-        <version.org.jboss.narayana>5.9.0.Final</version.org.jboss.narayana>
+        <version.org.jboss.ejb3.ext-api>2.3.0.Final</version.org.jboss.ejb3.ext-api>
+        <version.org.jboss.narayana>5.9.1.Final</version.org.jboss.narayana>
         <version.org.jboss.resteasy>3.6.2.Final</version.org.jboss.resteasy>
-        <version.org.jboss.security.jboss-negotiation>3.0.4.Final</version.org.jboss.security.jboss-negotiation>
+        <version.org.jboss.security.jboss-negotiation>3.0.5.Final</version.org.jboss.security.jboss-negotiation>
         <version.org.jboss.security.jbossxacml>2.0.8.Final</version.org.jboss.security.jbossxacml>
         <version.org.picketbox.picketbox-commons>1.0.0.final</version.org.picketbox.picketbox-commons>
         <version.org.picketlink>2.5.5.SP12</version.org.picketlink>
