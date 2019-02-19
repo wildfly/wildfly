@@ -33,8 +33,4 @@
         <param name="host-release" value="WildFly14.0"/>
         <param name="excluded-extensions" value="[&quot;org.wildfly.extension.microprofile.metrics-smallrye&quot;]"/>
     </feature>
-    <feature spec="domain.host-exclude">
-        <param name="host-exclude" value="WildFly14.0"/>
-        <param name="host-release" value="WildFly14.0"/>
-    </feature>
 </feature-group-spec>

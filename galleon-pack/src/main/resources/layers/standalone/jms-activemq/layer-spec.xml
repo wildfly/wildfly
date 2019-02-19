@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="jms-activemq">
+    <dependencies>
+        <layer name="web-server"/>
+        <!-- required by transactions to add permissions -->
+        <layer name="elytron"/>
+    </dependencies>
+    <feature-group name="transactions-all"/>
+    <feature-group name="jca"/>
+    <feature spec="subsystem.messaging-activemq"/>
+</layer-spec>

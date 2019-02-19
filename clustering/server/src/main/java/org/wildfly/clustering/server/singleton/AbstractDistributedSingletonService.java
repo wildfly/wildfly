@@ -23,7 +23,9 @@
 package org.wildfly.clustering.server.singleton;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletionStage;
@@ -52,7 +54,7 @@ import org.wildfly.clustering.singleton.service.SingletonService;
  * Logic common to current and legacy {@link SingletonService} implementations.
  * @author Paul Ferraro
  */
-public abstract class AbstractDistributedSingletonService<C extends Lifecycle> implements SingletonService, Lifecycle, Listener, Supplier<C> {
+public abstract class AbstractDistributedSingletonService<C extends SingletonContext> implements SingletonService, SingletonContext, Listener, Supplier<C> {
 
     private final ServiceName name;
     private final Supplier<ServiceProviderRegistry<ServiceName>> registry;
@@ -168,6 +170,35 @@ public abstract class AbstractDistributedSingletonService<C extends Lifecycle> i
     @Override
     public boolean isPrimary() {
         return this.primary.get();
+    }
+
+    @Override
+    public Node getPrimaryProvider() {
+        if (this.isPrimary()) return this.registry.get().getGroup().getLocalMember();
+
+        List<Node> primaryMembers = new LinkedList<>();
+        try {
+            for (Map.Entry<Node, CompletionStage<Boolean>> entry : this.dispatcher.executeOnGroup(new PrimaryProviderCommand()).entrySet()) {
+                try {
+                    if (entry.getValue().toCompletableFuture().join().booleanValue()) {
+                        primaryMembers.add(entry.getKey());
+                    }
+                } catch (CancellationException e) {
+                    // Ignore
+                }
+            }
+            if (primaryMembers.size() > 1) {
+                throw ClusteringServerLogger.ROOT_LOGGER.multiplePrimaryProvidersDetected(this.name.getCanonicalName(), primaryMembers);
+            }
+            return !primaryMembers.isEmpty() ? primaryMembers.get(0) : null;
+        } catch (CommandDispatcherException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    @Override
+    public Set<Node> getProviders() {
+        return this.registration.getProviders();
     }
 
     int getQuorum() {

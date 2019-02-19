@@ -68,7 +68,7 @@ public class EJBBoundMdbDeliveryMetaDataParser11 extends AbstractEJBBoundMetaDat
                     metaData.setDeliveryActive(Boolean.parseBoolean(val.trim()));
                     break;
                 case GROUP:
-                    metaData.setDeliveryGroup(getElementText(reader, propertyReplacer).trim());
+                    metaData.setDeliveryGroups(getElementText(reader, propertyReplacer).trim());
                     break;
                 default:
                     throw unexpectedElement(reader);

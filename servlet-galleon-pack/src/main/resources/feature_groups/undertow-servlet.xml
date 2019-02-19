@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="undertow-servlet" xmlns="urn:jboss:galleon:feature-group:1.0">
+    <!-- ejb over http and servlet-container -->
+    <feature spec="subsystem.undertow">
+        <feature spec="subsystem.undertow.server">
+            <param name="server" value="default-server" />
+            <feature spec="subsystem.undertow.server.host">
+                <param name="host" value="default-host" />
+                <param name="alias" value="[localhost]"/>
+                <feature spec="subsystem.undertow.server.host.setting.http-invoker"/>
+            </feature>
+        </feature>
+        <feature spec="subsystem.undertow.servlet-container">
+            <param name="servlet-container" value="default" />
+            <feature spec="subsystem.undertow.servlet-container.setting.jsp"/>
+            <feature spec="subsystem.undertow.servlet-container.setting.websockets">
+                <unset param="buffer-pool" />
+                <unset param="worker" />
+            </feature>
+        </feature>
+    </feature>
+</feature-group-spec>

@@ -243,6 +243,110 @@ Which results in: -
 At this stage the authentication is the equivalent of the original
 configuration however now Elytron components are used exclusively.
 
+[[FileSystemRealm_Based_Authentication_Migration]]
+== Migrating to FileSystemRealm Based Authentication
+
+An alternative to using a legacy properties-realm in Elytron is to use
+the new filesystem-realm. An Elytron filesystem-realm will use file-backed
+authentication methods to secure the server. It is now easy to migrate from a
+legacy properties-realm to an Elytron filesystem-realm by using the
+Elytron Tool. The new Elytron Tool command, FileSystemRealmCommand, will convert
+the given properties files and create an Elytron FileSystemRealm, along with a script
+with the WildFly CLI commands for registering the FileSystemRealm and Security Domain
+on the WildFly server. After using the tool, it will still be necessary to configure
+an authentication-factory and an application-security-domain, as in the steps
+above.
+
+[[filesystem-realm-single-conversion]]
+=== Single User-Roles Conversion
+
+To convert a single user-roles properties files combination, the parameters
+can be passed directly into the command:
+
+[source, bash]
+----
+./bin/elytron-tool.sh filesystem-realm --users-file users.properties --roles-file roles.properties --output-location filesystem_realm_dir
+----
+
+This will then configure a filesystem-realm in filesystem_realm_dir and
+will create a script converted-properties-filesystem-realm.sh in
+filesystem_realm_dir with the WildFly CLI commands to register the filesystem-realm
+and the security-domain, with the security-domain named
+converted-properties-security-domain. To customize the filesystem-realm name
+and the security-domain name, the --filesystem-realm-name and
+--security-domain-name parameters can be used.
+
+Use elytron-tool.sh filesystem-realm --help to get description of all parameters.
+
+[[filesystem_realm_single_notes]]
+==== Notes:
+
+- The short form options, as shown in the --help option, can be used, such as
+-u in place of --users-file.
+- When the --summary parameter is specified, an output of operations performed
+during conversion, including warnings and errors, will be shown once the
+command finishes conversion.
+- When the --silent parameter is specified, Elytron Tool will not give no
+information output, as compared to normal operation where warnings are shown.
+The --silent command will not override --summary, resulting in the ability to
+hide output until the command finishes conversion.
+- Elytron Tool will not configure the filesystem-realm and security-domain
+within WildFly itself, it will just provide the necessary commands in the
+output script file.
+
+[[filesystem-realm-bulk-conversion]]
+=== Bulk User-Roles Conversion
+
+It is possible to convert multiple users-roles files combinations at once
+by using --bulk-convert parameter with a descriptor file.
+
+An example descriptor-file from our tests is:
+
+[source, text]
+----
+users-file:/home/jucook/Documents/WildFly/Git_Projects/WildFly-Elytron/wildfly-elytron-tool/target/test-classes/filesystem-realm/users/users-5.properties
+roles-file:/home/jucook/Documents/WildFly/Git_Projects/WildFly-Elytron/wildfly-elytron-tool/target/test-classes/filesystem-realm/roles/roles-5.properties
+output-location:./target/test-classes/filesystem-realm/output-5-bulk
+filesystem-realm-name:nameOfFileSystemRealm5
+security-domain-name:nameOfSecurityDomain5
+
+users-file:/home/jucook/Documents/WildFly/Git_Projects/WildFly-Elytron/wildfly-elytron-tool/target/test-classes/filesystem-realm/users/users-6.properties
+roles-file:/home/jucook/Documents/WildFly/Git_Projects/WildFly-Elytron/wildfly-elytron-tool/target/test-classes/filesystem-realm/roles/roles-6.properties
+output-location:/home/jucook/Documents/WildFly/Git_Projects/WildFly-Elytron/wildfly-elytron-tool/target/test-classes/filesystem-realm/output-6-bulk
+filesystem-realm-name:nameOfFileSystemRealm6
+security-domain-name:nameOfSecurityDomain6
+----
+
+Each blank line starts a new conversion operation. As with a single conversion,
+the users-file, roles-file, and output-location are required parameters while
+the filesystem-realm-name and security-domain-name are optional parameters.
+
+Execute the following command to convert with the descriptor file:
+
+[source, bash]
+----
+./bin/elytron-tool.sh filesystem-realm --bulk-convert descriptor-file
+----
+
+[[filesystem_realm_bulk_notes]]
+==== Notes:
+
+- For bulk conversion, only the long form option can be used, unlike the CLI
+mode where both long and short form options can be used.
+- The --summary and --silent parameters can be used here too. However, they
+must be specified while executing the command and apply to all conversions
+specified in the descriptor file.
+- If the --summary parameter is used, then a summary will be provided
+after each execution as opposed to after the command finishes all conversions.
+- As with the single conversion, absolute or relative paths can be used for
+users-file, roles-file, and output-location.
+- Each execution of the command will produce a separate script in the given
+output-location directory.
+- Repeated output-location paths can result in an error
+- If there is an error in one users-roles files combination then Elytron Tool
+will report the issue, such as a missing required parameter, and continue
+with the conversion of all remaining combinations.
+
 [[legacy-security-realm]]
 == Legacy Security Realm
 

@@ -33,7 +33,7 @@ import org.jboss.metadata.ejb.parser.jboss.ejb3.AbstractEJBBoundMetaData;
 public class EJBBoundMdbDeliveryMetaData extends AbstractEJBBoundMetaData {
 
     private boolean deliveryActive;
-    private String deliveryGroup;
+    private String[] deliveryGroups;
 
     public boolean isDeliveryActive() {
         return deliveryActive;
@@ -43,11 +43,11 @@ public class EJBBoundMdbDeliveryMetaData extends AbstractEJBBoundMetaData {
         this.deliveryActive = deliveryActive;
     }
 
-    public String getDeliveryGroup() {
-        return deliveryGroup;
+    public String[] getDeliveryGroups() {
+        return deliveryGroups;
     }
 
-    public void setDeliveryGroup(String deliveryGroup) {
-        this.deliveryGroup = deliveryGroup;
+    public void setDeliveryGroups(String... deliveryGroups) {
+        this.deliveryGroups = deliveryGroups;
     }
 }

@@ -76,7 +76,7 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
     private final Properties activationProps;
     private String resourceAdapterName;
     private boolean deliveryActive;
-    private String deliveryGroup;
+    private String[] deliveryGroups;
     private boolean clusteredSingleton;
     private String mdbPoolConfigName;
     private final String messageListenerInterfaceName;
@@ -189,12 +189,12 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
         this.deliveryActive = deliveryActive;
     }
 
-    public String getDeliveryGroup() {
-        return deliveryGroup;
+    public String[] getDeliveryGroups() {
+        return deliveryGroups;
     }
 
-    public void setDeliveryGroup(String groupName) {
-        this.deliveryGroup = groupName;
+    public void setDeliveryGroup(String[] groupNames) {
+        this.deliveryGroups = groupNames;
     }
 
     public boolean isClusteredSingleton() {
@@ -206,7 +206,7 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
     }
 
     public boolean isDeliveryControlled() {
-        return deliveryGroup != null || clusteredSingleton;
+        return deliveryGroups != null && deliveryGroups.length > 0 && deliveryGroups[0] != null || clusteredSingleton;
     }
 
     public ServiceName getDeliveryControllerName() {

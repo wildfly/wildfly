@@ -34,8 +34,8 @@ public class LocalLegacySingletonService<T> extends LocalSingletonService implem
 
     private final Service<T> service;
 
-    public LocalLegacySingletonService(Service<T> service) {
-        super(service);
+    public LocalLegacySingletonService(Service<T> service, LocalSingletonServiceContext context) {
+        super(service, context);
         this.service = service;
     }
 

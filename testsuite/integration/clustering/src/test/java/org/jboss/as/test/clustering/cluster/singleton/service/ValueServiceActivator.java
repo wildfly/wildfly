@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.clustering.cluster.singleton.service;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -29,6 +31,7 @@ import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.ImmediateValue;
 import org.wildfly.clustering.singleton.SingletonDefaultRequirement;
@@ -44,7 +47,15 @@ public class ValueServiceActivator implements ServiceActivator {
 
     @Override
     public void activate(ServiceActivatorContext context) {
-        ServiceController<?> controller = context.getServiceRegistry().getRequiredService(ServiceName.parse(SingletonDefaultRequirement.SINGLETON_POLICY.getName()));
+        ServiceRegistry registry = context.getServiceRegistry();
+        ServiceName name = ServiceName.parse(SingletonDefaultRequirement.SINGLETON_POLICY.getName());
+        PrivilegedAction<ServiceController<?>> action = new PrivilegedAction<ServiceController<?>>() {
+            @Override
+            public ServiceController<?> run() {
+                return registry.getRequiredService(name);
+            }
+        };
+        ServiceController<?> controller = AccessController.doPrivileged(action);
         try {
             SingletonPolicy policy = (SingletonPolicy) controller.awaitValue(30, TimeUnit.SECONDS);
             policy.createSingletonServiceBuilder(SERVICE_NAME, new ValueService<>(new ImmediateValue<>(Boolean.TRUE)), new ValueService<>(new ImmediateValue<>(Boolean.FALSE))).build(context.getServiceTarget()).install();

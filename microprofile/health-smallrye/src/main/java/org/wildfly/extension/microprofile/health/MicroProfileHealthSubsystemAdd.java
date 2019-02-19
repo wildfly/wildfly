@@ -24,7 +24,9 @@ package org.wildfly.extension.microprofile.health;
 
 import static org.jboss.as.controller.OperationContext.Stage.RUNTIME;
 import static org.jboss.as.server.deployment.Phase.DEPENDENCIES;
+import static org.jboss.as.server.deployment.Phase.DEPENDENCIES_MICROPROFILE_HEALTH;
 import static org.jboss.as.server.deployment.Phase.POST_MODULE;
+import static org.jboss.as.server.deployment.Phase.POST_MODULE_MICROPROFILE_HEALTH;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -41,8 +43,6 @@ import org.wildfly.extension.microprofile.health.deployment.DeploymentProcessor;
  */
 class MicroProfileHealthSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
-    public static final int PRIORITY = 0x4000;
-
     static MicroProfileHealthSubsystemAdd INSTANCE = new MicroProfileHealthSubsystemAdd();
 
     private MicroProfileHealthSubsystemAdd() {
@@ -55,8 +55,8 @@ class MicroProfileHealthSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         context.addStep(new AbstractDeploymentChainStep() {
             public void execute(DeploymentProcessorTarget processorTarget) {
-                processorTarget.addDeploymentProcessor(MicroProfileHealthExtension.SUBSYSTEM_NAME, DEPENDENCIES, PRIORITY, new DependencyProcessor());
-                processorTarget.addDeploymentProcessor(MicroProfileHealthExtension.SUBSYSTEM_NAME, POST_MODULE, PRIORITY, new DeploymentProcessor());
+                processorTarget.addDeploymentProcessor(MicroProfileHealthExtension.SUBSYSTEM_NAME, DEPENDENCIES, DEPENDENCIES_MICROPROFILE_HEALTH, new DependencyProcessor());
+                processorTarget.addDeploymentProcessor(MicroProfileHealthExtension.SUBSYSTEM_NAME, POST_MODULE, POST_MODULE_MICROPROFILE_HEALTH, new DeploymentProcessor());
             }
         }, RUNTIME);
 

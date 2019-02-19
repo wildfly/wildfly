@@ -21,8 +21,6 @@
  */
 package org.jboss.as.test.clustering.cluster.singleton;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -41,7 +39,6 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.server.security.ServerPermission;
 import org.jboss.as.test.clustering.ClusterHttpClientUtil;
 import org.jboss.as.test.clustering.ClusterTestUtil;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
@@ -98,10 +95,6 @@ public class SingletonPartitionTestCase extends AbstractClusteringTestCase {
         war.addAsServiceProvider(ServiceActivator.class, SingletonServiceActivator.class);
         ClusterTestUtil.addTopologyListenerDependencies(war);
         war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.as.clustering.common, org.jboss.as.controller, org.jboss.as.server, org.jgroups, org.infinispan, org.wildfly.clustering.infinispan.spi\n"));
-        war.addAsManifestResource(createPermissionsXmlAsset(
-                new ServerPermission("useServiceRegistry"),
-                new ServerPermission("getCurrentServiceContainer")
-        ), "permissions.xml");
         return war;
     }
 

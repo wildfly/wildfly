@@ -1051,6 +1051,8 @@ enable HTTPS for deployed applications.
 The previous command uses an absolute path to the keystore.
 Alternatively you can use the _relative-to_ attribute to specify the
 base directory variable and _path_ specify a relative path.
+Also, in case of file-based keystore the _type_ attribute can be omitted and
+the keystore type will be automatically detected.
 
 [source,options="nowrap"]
 ----

@@ -1,5 +1,27 @@
 <?xml version="1.0" ?>
 
 <config xmlns="urn:jboss:galleon:config:1.0" name="standalone.xml" model="standalone">
-    <feature-group name="standalone"/>
+    <layers>
+        <include name="management"/>
+        <include name="elytron"/> 
+        <include name="jmx-remoting"/> 
+        <include name="logging"/>
+        <include name="core-management"/>
+        <include name="request-controller"/>
+        <include name="security-manager"/>
+        <include name="web-server"/>
+        <include name="legacy-security"/>
+        <include name="core-tools"/>
+    </layers>
+    <!-- dependencies on legacy-security-realms -->
+    <feature-group name="standalone-security-realms"/>
+    <feature-group name="management-legacy-security"/>
+    <feature-group name="undertow-legacy-security"/>
+    <feature-group name="undertow-default-config"/>
+    <!-- package included in case configuration is provisioned without inheriting all modules -->
+    <packages>
+        <origin name="org.wildfly.core:wildfly-core-galleon-pack">
+            <package name="org.jboss.as.patching.cli"/>
+        </origin>
+    </packages>
 </config>

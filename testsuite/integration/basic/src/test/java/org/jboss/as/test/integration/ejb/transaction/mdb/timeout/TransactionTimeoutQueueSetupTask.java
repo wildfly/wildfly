@@ -45,7 +45,7 @@ public class TransactionTimeoutQueueSetupTask implements ServerSetupTask {
     public static final String REPLY_QUEUE_NAME = "replyQueue";
     public static final String REPLY_QUEUE_JNDI_NAME = "queue/" + REPLY_QUEUE_NAME;
 
-    ModelNode amqServerDefaultAdress = new ModelNode().add(ClientConstants.SUBSYSTEM, "messaging-activemq")
+    private ModelNode amqServerDefaultAdress = new ModelNode().add(ClientConstants.SUBSYSTEM, "messaging-activemq")
             .add("server", "default");
 
     private JMSOperations adminOperations;
@@ -81,23 +81,23 @@ public class TransactionTimeoutQueueSetupTask implements ServerSetupTask {
         }
     }
 
-    // /subsystem=messaging-activemq/server=default/address-setting=queue.propertyTimeoutQueue:add(max-delivery-attempts=1)
+    // /subsystem=messaging-activemq/server=default/address-setting=jms.queue.propertyTimeoutQueue:add(max-delivery-attempts=1)
     private void setMaxDeliveryAttempts(String queueName) throws IOException {
-        ModelNode address = amqServerDefaultAdress.add("address-setting", "queue." + queueName);
+        ModelNode address = amqServerDefaultAdress.clone().add("address-setting", "jms.queue." + queueName);
 
-        ModelNode operation = new ModelNode()
-            .get(ClientConstants.OP_ADDR).set(address)
-            .get(ClientConstants.OP).set(ClientConstants.ADD)
-            .get("max-delivery-attempts").set(1);
+        ModelNode operation = new ModelNode();
+        operation.get(ClientConstants.OP).set(ClientConstants.ADD);
+        operation.get(ClientConstants.OP_ADDR).set(address);
+        operation.get("max-delivery-attempts").set(1);
         adminOperations.getControllerClient().execute(operation);
     }
 
     private void removeAddressSettings(String queueName) throws IOException {
-        ModelNode address = amqServerDefaultAdress.add("address-setting", "queue." + queueName);
+        ModelNode address = amqServerDefaultAdress.clone().add("address-setting", "jms.queue." + queueName);
 
-        ModelNode operation = new ModelNode()
-            .get(ClientConstants.OP_ADDR).set(address)
-            .get(ClientConstants.OP).set(ClientConstants.REMOVE_OPERATION);
+        ModelNode operation = new ModelNode();
+        operation.get(ClientConstants.OP).set(ClientConstants.REMOVE_OPERATION);
+        operation.get(ClientConstants.OP_ADDR).set(address);
         adminOperations.getControllerClient().execute(operation);
     }
 }

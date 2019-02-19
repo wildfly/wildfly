@@ -51,6 +51,7 @@ import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.jgroups.conf.ClassConfigurator;
 import org.junit.Assert;
 import org.junit.Test;
 import org.wildfly.clustering.jgroups.spi.JGroupsDefaultRequirement;
@@ -143,7 +144,7 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
                 .require(CommonUnaryRequirement.DATA_SOURCE, "ExampleDS")
                 .require(JGroupsRequirement.CHANNEL_FACTORY, "maximal-channel")
                 .require(JGroupsDefaultRequirement.CHANNEL_FACTORY)
-                .require(TransactionResourceDefinition.TransactionRequirement.LOCAL_TRANSACTION_PROVIDER)
+                .require(CommonRequirement.LOCAL_TRANSACTION_PROVIDER)
                 .require(TransactionResourceDefinition.TransactionRequirement.XA_RESOURCE_RECOVERY_REGISTRY)
                 ;
     }
@@ -163,6 +164,11 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
         testTransformation(ModelTestControllerVersion.EAP_7_1_0);
     }
 
+    @Test
+    public void testTransformerEAP720() throws Exception {
+        testTransformation(ModelTestControllerVersion.EAP_7_2_0);
+    }
+
     private KernelServices buildKernelServices(ModelTestControllerVersion controllerVersion, ModelVersion version, String... mavenResourceURLs) throws Exception {
         return this.buildKernelServices(this.getSubsystemXml(), controllerVersion, version, mavenResourceURLs);
     }
@@ -175,6 +181,7 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
                 .addSingleChildFirstClass(InfinispanSubsystemInitialization.class)
                 .addSingleChildFirstClass(JGroupsSubsystemInitialization.class)
                 .addSingleChildFirstClass(org.jboss.as.clustering.subsystem.AdditionalInitialization.class)
+                .addSingleChildFirstClass(ClassConfigurator.class)
                 .skipReverseControllerCheck()
                 .dontPersistXml();
 
@@ -365,6 +372,11 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
         testRejections(ModelTestControllerVersion.EAP_7_1_0);
     }
 
+    @Test
+    public void testRejectionsEAP720() throws Exception {
+        testRejections(ModelTestControllerVersion.EAP_7_2_0);
+    }
+
     private void testRejections(final ModelTestControllerVersion controller) throws Exception {
         final ModelVersion version = getModelVersion(controller).getVersion();
         final String[] dependencies = getDependencies(controller);
@@ -377,6 +389,7 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
                 .addSingleChildFirstClass(InfinispanSubsystemInitialization.class)
                 .addSingleChildFirstClass(JGroupsSubsystemInitialization.class)
                 .addSingleChildFirstClass(org.jboss.as.clustering.subsystem.AdditionalInitialization.class)
+                .addSingleChildFirstClass(ClassConfigurator.class)
                 .addMavenResourceURL(dependencies)
                 //TODO storing the model triggers the weirdness mentioned in SubsystemTestDelegate.LegacyKernelServiceInitializerImpl.install()
                 //which is strange since it should be loading it all from the current jboss modules

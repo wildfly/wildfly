@@ -46,6 +46,7 @@ import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
+import org.jgroups.conf.ClassConfigurator;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -129,21 +130,29 @@ public class JGroupsTransformersTestCase extends OperationTestCaseBase {
         testTransformation(ModelTestControllerVersion.EAP_7_1_0);
     }
 
+    @Test
+    public void testTransformerEAP720() throws Exception {
+        testTransformation(ModelTestControllerVersion.EAP_7_2_0);
+    }
+
     /**
      * Tests transformation of model from current version into specified version.
      */
     private void testTransformation(final ModelTestControllerVersion controller) throws Exception {
         final ModelVersion version = getModelVersion(controller).getVersion();
         final String[] dependencies = getDependencies(controller);
+        final String subsystemXmlResource = String.format("subsystem-jgroups-transform-%d_%d_%d.xml", version.getMajor(), version.getMinor(), version.getMicro());
 
         // create builder for current subsystem version
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
-                .setSubsystemXmlResource("subsystem-jgroups-transform.xml");
+                .setSubsystemXmlResource(subsystemXmlResource);
 
         // initialize the legacy services and add required jars
         builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controller, version)
                 .addMavenResourceURL(dependencies)
                 .addSingleChildFirstClass(AdditionalInitialization.class)
+                // workaround IllegalArgumentException: key 1100 (org.jboss.as.clustering.jgroups.auth.BinaryAuthToken) is already in magic map; make sure that all keys are unique
+                .addSingleChildFirstClass(ClassConfigurator.class)
                 .skipReverseControllerCheck()
                 .dontPersistXml();
 
@@ -325,6 +334,11 @@ public class JGroupsTransformersTestCase extends OperationTestCaseBase {
         testRejections(ModelTestControllerVersion.EAP_7_1_0);
     }
 
+    @Test
+    public void testRejectionsEAP720() throws Exception {
+        testRejections(ModelTestControllerVersion.EAP_7_2_0);
+    }
+
     private void testRejections(final ModelTestControllerVersion controller) throws Exception {
         final ModelVersion version = getModelVersion(controller).getVersion();
         final String[] dependencies = getDependencies(controller);
@@ -336,6 +350,8 @@ public class JGroupsTransformersTestCase extends OperationTestCaseBase {
         builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controller, version)
                 .addSingleChildFirstClass(AdditionalInitialization.class)
                 .addMavenResourceURL(dependencies)
+                // workaround IllegalArgumentException: key 1100 (org.jboss.as.clustering.jgroups.auth.BinaryAuthToken) is already in magic map; make sure that all keys are unique
+                .addSingleChildFirstClass(ClassConfigurator.class)
                 .dontPersistXml();
 
         KernelServices services = builder.build();

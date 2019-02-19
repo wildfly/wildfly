@@ -31,10 +31,11 @@ import org.jboss.as.controller.ModelVersion;
  */
 public enum SingletonModel implements Model {
 
-    VERSION_1_0_0(1, 0, 0),
-    VERSION_2_0_0(2, 0, 0),
+    VERSION_1_0_0(1, 0, 0), // WildFly 10
+    VERSION_2_0_0(2, 0, 0), // WildFly 11-14
+    VERSION_3_0_0(3, 0, 0), // WildFly 15
     ;
-    static final SingletonModel CURRENT = VERSION_2_0_0;
+    static final SingletonModel CURRENT = VERSION_3_0_0;
 
     private final ModelVersion version;
 

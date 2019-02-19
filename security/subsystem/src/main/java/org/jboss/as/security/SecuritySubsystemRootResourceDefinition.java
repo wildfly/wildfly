@@ -38,6 +38,7 @@ import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.RuntimePackageDependency;
 import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -230,5 +231,10 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
                 }
             }, OperationContext.Stage.RUNTIME);
         }
+    }
+
+    @Override
+    public void registerAdditionalRuntimePackages(ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerAdditionalRuntimePackages(RuntimePackageDependency.required("javax.security.auth.message.api"));
     }
 }

@@ -22,6 +22,11 @@
 
 package org.jboss.as.ee.managedbean.processors;
 
+import static org.jboss.as.ee.subsystem.EeSubsystemRootResource.ECLIPSE_YASSON;
+import static org.jboss.as.ee.subsystem.EeSubsystemRootResource.GLASSFISH_EL;
+import static org.jboss.as.ee.subsystem.EeSubsystemRootResource.JSON_API;
+import static org.jboss.as.ee.subsystem.EeSubsystemRootResource.JSON_BIND_API;
+import static org.jboss.as.ee.subsystem.EeSubsystemRootResource.WILDFLY_NAMING;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -51,15 +56,15 @@ public class JavaEEDependencyProcessor implements DeploymentUnitProcessor {
             ModuleIdentifier.create("javax.annotation.api"),
             ModuleIdentifier.create("javax.enterprise.concurrent.api"),
             ModuleIdentifier.create("javax.interceptor.api"),
-            ModuleIdentifier.create("javax.json.api"),
-            ModuleIdentifier.create("javax.json.bind.api"),
+            ModuleIdentifier.create(JSON_API),
+            ModuleIdentifier.create(JSON_BIND_API),
             ModuleIdentifier.create("javax.resource.api"),
             ModuleIdentifier.create("javax.rmi.api"),
             ModuleIdentifier.create("javax.xml.bind.api"),
             ModuleIdentifier.create("javax.api"),
             // javax.json.bind.api (JSON-B) implementation
-            ModuleIdentifier.create("org.eclipse.yasson"),
-            ModuleIdentifier.create("org.glassfish.javax.el"),
+            ModuleIdentifier.create(ECLIPSE_YASSON),
+            ModuleIdentifier.create(GLASSFISH_EL),
             ModuleIdentifier.create("org.glassfish.javax.enterprise.concurrent")
     };
 
@@ -91,7 +96,7 @@ public class JavaEEDependencyProcessor implements DeploymentUnitProcessor {
         moduleSpecification.addSystemDependency(ee);
 
         // add dep for naming permission
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, ModuleIdentifier.create("org.wildfly.naming"), false, false, false, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, ModuleIdentifier.create(WILDFLY_NAMING), false, false, false, false));
 
         //we always add all Java EE API modules, as the platform spec requires them to always be available
         //we do not just add the javaee.api module, as this breaks excludes

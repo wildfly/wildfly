@@ -27,6 +27,7 @@ import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.RuntimePackageDependency;
 
 /**
  *
@@ -50,5 +51,10 @@ public class ResourceAdaptersRootResourceDefinition extends SimpleResourceDefini
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerSubModel(new ResourceAdapterResourceDefinition(false, runtimeOnlyRegistrationValid));
+    }
+
+    @Override
+    public void registerAdditionalRuntimePackages(final ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerAdditionalRuntimePackages(RuntimePackageDependency.required("javax.jms.api"));
     }
 }

@@ -59,7 +59,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>16.0.0.Beta1-SNAPSHOT</version>
+        <version>16.0.0.CR1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-testsuite</artifactId>
@@ -351,6 +351,7 @@
                 <module>integration</module>
                 <module>compat</module>
                 <module>domain</module>
+                <module>layers</module>
             </modules>
         </profile>
 
@@ -426,6 +427,17 @@
             <id>domain_.module.profile</id>
             <activation><property><name>ts.domain</name></property></activation>
             <modules><module>domain</module></modules>
+        </profile>
+
+        <profile>
+            <id>layers.module.profile</id>
+            <activation><property><name>layers.module</name></property></activation>
+            <modules><module>layers</module></modules>
+        </profile>
+        <profile>
+            <id>layers_.module.profile</id>
+            <activation><property><name>ts.layers</name></property></activation>
+            <modules><module>layers</module></modules>
         </profile>
 
 

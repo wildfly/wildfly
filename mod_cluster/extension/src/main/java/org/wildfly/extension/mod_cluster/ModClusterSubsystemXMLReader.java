@@ -356,13 +356,19 @@ final class ModClusterSubsystemXMLReader implements XMLElementReader<List<ModelN
             requireNoNamespaceAttribute(reader, i);
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
+                case DECAY: {
+                    readAttribute(reader, i, operation, DynamicLoadProviderResourceDefinition.Attribute.DECAY);
+                    break;
+                }
                 case HISTORY: {
                     readAttribute(reader, i, operation, DynamicLoadProviderResourceDefinition.Attribute.HISTORY);
                     break;
                 }
-                case DECAY: {
-                    readAttribute(reader, i, operation, DynamicLoadProviderResourceDefinition.Attribute.DECAY);
-                    break;
+                case INITIAL_LOAD: {
+                    if (schema.since(ModClusterSchema.MODCLUSTER_5_0)) {
+                        readAttribute(reader, i, operation, DynamicLoadProviderResourceDefinition.Attribute.INITIAL_LOAD);
+                        break;
+                    }
                 }
                 default: {
                     throw unexpectedAttribute(reader, i);

@@ -44,6 +44,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -72,6 +73,7 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
     private final Set<CapabilityReferenceRecorder> resourceCapabilityReferences = new HashSet<>();
     private volatile UnaryOperator<OperationStepHandler> addOperationTransformer = UnaryOperator.identity();
     private volatile UnaryOperator<OperationStepHandler> operationTransformer = UnaryOperator.identity();
+    private volatile UnaryOperator<Resource> resourceTransformer = UnaryOperator.identity();
 
     public ResourceDescriptor(ResourceDescriptionResolver resolver) {
         this.resolver = resolver;
@@ -249,6 +251,16 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
 
     public ResourceDescriptor setOperationTransformation(UnaryOperator<OperationStepHandler> transformation) {
         this.operationTransformer = transformation;
+        return this;
+    }
+
+    @Override
+    public UnaryOperator<Resource> getResourceTransformation() {
+        return this.resourceTransformer;
+    }
+
+    public ResourceDescriptor setResourceTransformation(UnaryOperator<Resource> transformation) {
+        this.resourceTransformer = transformation;
         return this;
     }
 }

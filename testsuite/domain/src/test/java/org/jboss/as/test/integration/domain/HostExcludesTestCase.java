@@ -204,6 +204,13 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
                 "org.wildfly.extension.core-management",
                 "org.wildfly.extension.discovery",
                 "org.wildfly.extension.elytron"
+        )),
+        EAP72("EAP72", EAP71, Arrays.asList(
+                "org.wildfly.extension.datasources-agroal",
+                "org.wildfly.extension.microprofile.opentracing-smallrye",
+                "org.wildfly.extension.microprofile.health-smallrye",
+                "org.wildfly.extension.microprofile.config-smallrye",
+                "org.wildfly.extension.ee-security"
         ));
 
         private final String name;

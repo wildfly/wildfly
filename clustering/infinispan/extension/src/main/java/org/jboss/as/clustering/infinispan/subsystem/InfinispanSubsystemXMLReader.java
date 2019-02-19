@@ -41,6 +41,7 @@ import org.jboss.as.clustering.infinispan.subsystem.remote.HotRodStoreResourceDe
 import org.jboss.as.clustering.infinispan.subsystem.remote.InvalidationNearCacheResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteClusterResourceDefinition;
+import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteTransactionResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.SecurityResourceDefinition;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelResourceDefinition;
 import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemResourceDefinition;
@@ -1890,6 +1891,12 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     this.parseRemoteCacheContainerSecurity(reader, address, operations);
                     break;
                 }
+                case TRANSACTION: {
+                    if (this.schema.since(InfinispanSchema.VERSION_8_0)) {
+                        this.parseRemoteTransaction(reader, address, operations);
+                        break;
+                    }
+                }
                 default: {
                     throw ParseUtils.unexpectedElement(reader);
                 }
@@ -1995,8 +2002,8 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
         ParseUtils.requireNoContent(reader);
     }
 
-    private void parseRemoteCacheContainerSecurity(XMLExtendedStreamReader reader, PathAddress cacheAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
-        PathAddress address = cacheAddress.append(SecurityResourceDefinition.PATH);
+    private void parseRemoteCacheContainerSecurity(XMLExtendedStreamReader reader, PathAddress containerAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
+        PathAddress address = containerAddress.append(SecurityResourceDefinition.PATH);
         ModelNode operation = Util.createAddOperation(address);
         operations.put(address, operation);
 
@@ -2005,6 +2012,30 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
             switch (attribute) {
                 case SSL_CONTEXT: {
                     readAttribute(reader, i, operation, SecurityResourceDefinition.Attribute.SSL_CONTEXT);
+                    break;
+                }
+                default: {
+                    throw ParseUtils.unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        ParseUtils.requireNoContent(reader);
+    }
+
+    private void parseRemoteTransaction(XMLExtendedStreamReader reader, PathAddress containerAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
+        PathAddress address = containerAddress.append(RemoteTransactionResourceDefinition.PATH);
+        ModelNode operation = Util.createAddOperation(address);
+        operations.put(address, operation);
+
+        for (int i = 0; i < reader.getAttributeCount(); i++) {
+            XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case MODE: {
+                    readAttribute(reader, i, operation, RemoteTransactionResourceDefinition.Attribute.MODE);
+                    break;
+                }
+                case TIMEOUT: {
+                    readAttribute(reader, i, operation, RemoteTransactionResourceDefinition.Attribute.TIMEOUT);
                     break;
                 }
                 default: {
