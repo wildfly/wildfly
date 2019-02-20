@@ -339,6 +339,8 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         subsystemRegistration.registerSubModel(APPLICATION_SECURITY_DOMAIN);
 
         subsystemRegistration.registerSubModel(IDENTITY);
+
+        subsystemRegistration.registerSubModel(ServerInterceptorDefinition.INSTANCE);
     }
 
     private static class EJB3ThreadFactoryResolver extends ThreadFactoryResolver.SimpleResolver {

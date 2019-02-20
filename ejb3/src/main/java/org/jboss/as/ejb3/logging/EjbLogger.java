@@ -3188,5 +3188,12 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 510, value = "@RunAs annotation is required when using @RunAsPrincipal on class %s")
     void missingRunAsAnnotation(String className);
 
+    @Message(id = 511, value = "Cannot build reflection index for server interceptor class %s")
+    RuntimeException cannotBuildIndexForServerInterceptor(String interceptorClass, @Cause Exception e);
 
+    @Message(id = 512, value = "Server interceptor class %s has not got no parameter constructor")
+    RuntimeException serverInterceptorNoEmptyConstructor(String interceptorClass, @Cause Exception e);
+
+    @Message(id = 513, value = "Method %s in server interceptor %s annotated with %s has invalid signature")
+    RuntimeException serverInterceptorInvalidMethod(String methodName, String interceptorClass, String annotationClass, @Cause Exception e);
 }

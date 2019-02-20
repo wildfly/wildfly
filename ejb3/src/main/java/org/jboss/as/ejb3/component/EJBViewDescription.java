@@ -68,6 +68,8 @@ public class EJBViewDescription extends ViewDescription {
         });
         // add a view configurator for setting up application specific container interceptors for the EJB view
         getConfigurators().add(EJBContainerInterceptorsViewConfigurator.INSTANCE);
+        // add server interceptors configurator
+        getConfigurators().add(ServerInterceptorsViewConfigurator.INSTANCE);
     }
 
     public MethodIntf getMethodIntf() {
