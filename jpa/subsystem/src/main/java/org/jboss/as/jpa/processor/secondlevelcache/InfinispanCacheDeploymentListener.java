@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.jpa.processor.secondLevelCache;
+package org.jboss.as.jpa.processor.secondlevelcache;
 
 import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
 

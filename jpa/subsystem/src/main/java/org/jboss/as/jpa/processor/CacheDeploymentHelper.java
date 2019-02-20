@@ -22,7 +22,7 @@
 
 package org.jboss.as.jpa.processor;
 
-import org.jboss.as.jpa.processor.secondLevelCache.CacheDeploymentListener;
+import org.jboss.as.jpa.processor.secondlevelcache.CacheDeploymentListener;
 import org.jipijapa.event.impl.EventListenerRegistration;
 
 /**
