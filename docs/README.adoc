@@ -1,0 +1,83 @@
+= Building WildFly Documentation
+:toc:
+:toclevels: 2
+:icons: font
+:source-highlighter: coderay
+
+== Overview
+
+The `docs` module is not in the module listing of the parent POM by default. Therefore to build you must either activate
+the docs profile or be in the `docs` directory to build the documentation. This documentation assumes you're in the
+`docs` directory.
+
+You can activate the docs profile from the root directory with either `-Pdocs` or `-Ddocs=true`.
+
+
+== Configuring the POM
+
+In the POM there are currently 4 main properties:
+
+1. `appservername`
+2. `javaee_version`
+3. `oracle-javadoc`
+4. `wildflyversion`
+
+Currently the only property that may need to be changed is the `wildflyversion` property. This defaults to the property
+`product.docs.server.version` which can be found in the parent POM. It already should be set to the current major
+version, but should likely be checked.
+
+
+== Building the documentation
+
+Building the documentation can be done with the following command:
+
+.Generate Only
+```
+mvn clean package
+```
+
+.Generate and Copy
+```
+mvn clean package -Pcopy-site
+```
+
+The `asciidoctor-maven-plugin` will execute and generate html5 files. The files are generated in the
+`target/generated-docs` directory. You can optionally activate the `copy-site` profile to copy the generated site. See
+<<copy-site-profile,copy site option 2>> for more details
+
+
+== Adding the documentation to docs.wildfly.org
+
+=== Clone `wildfly.github.io` Repository
+
+The first thing required here is a clone of the https://github.com/wildfly/wildfly.github.io repository. Once cloned
+it's likely best to checkout a new branch for to update the documentation.
+
+=== Copy Site
+
+Copying the site can be done one of two ways:
+
+1. You can manually copy the `target/generated-site` from the `docs` directory of WildFly over to the
+   `wildfly.github.io` repository. This should be copied into a version directory. For example `16` for WildFly 16.
+
+2. [[copy-site-profile]]You can run the build with `mvn clean package -Pcopy-site` which by default attempts to copy the site to
+   `../../wildfly.github.io/${product.docs.server.version}`. This can be overridden with the `wildfly.github.io.dir`
+   property.
+
+=== Add Copied Content
+
+Once copied you'll need to add the directory to the git repository; `git add ./16` for example.
+
+=== Edit and Build Index
+
+Next in the `wildfly.github.io` repository you'll need to edit the `index.adoc` and add the newly created directory. We
+try to keep the listings in release order with the new release on top.
+
+Once you edit the `index.adoc` you'll need to regenerate the `index.html` file. This can be done with the `asciidoctor`
+command.
+
+```
+asciidoctor index.adoc
+```
+
+After all that is complete you can commit your changes and submit a PR.
