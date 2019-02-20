@@ -263,6 +263,8 @@ public abstract class EJBComponentDescription extends ComponentDescription {
      */
     private Set<InterceptorDescription> allContainerInterceptors;
 
+    private Set<InterceptorDescription> serverInterceptors = new HashSet<>();
+
     /**
      * missing-method-permissions-deny-access that's used for secured EJBs
      */
@@ -1115,6 +1117,10 @@ public abstract class EJBComponentDescription extends ComponentDescription {
             }
         }
         return this.allContainerInterceptors;
+    }
+
+    public Set<InterceptorDescription> getServerInterceptors(){
+        return serverInterceptors;
     }
 
     public String getPolicyContextID() {

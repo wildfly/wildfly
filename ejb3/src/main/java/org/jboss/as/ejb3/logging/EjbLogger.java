@@ -3184,4 +3184,12 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 509, value = "Clustered EJBs in Node: %s are bound to INADDR_ANY(%s). Either use a non-wildcard server bind address or add client-mapping entries to the relevant socket-binding for the Remoting connector")
     void clusteredEJBsBoundToINADDRANY(String nodeName, String ip);
 
+    @Message(id = 510, value = "Cannot build reflection index for server interceptor class %s")
+    RuntimeException cannotBuildIndexForServerInterceptor(String interceptorClass, @Cause Exception e);
+
+    @Message(id = 511, value = "Server interceptor class %s has not got no parameter constructor")
+    RuntimeException serverInterceptorNoEmptyConstructor(String interceptorClass, @Cause Exception e);
+
+    @Message(id = 512, value = "Method %s in server interceptor %s annotated with %s has invalid signature")
+    RuntimeException serverInterceptorInvalidMethod(String methodName, String interceptorClass, String annotationClass, @Cause Exception e);
 }
