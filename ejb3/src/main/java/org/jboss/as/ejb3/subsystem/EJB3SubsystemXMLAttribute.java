@@ -109,7 +109,13 @@ public enum EJB3SubsystemXMLAttribute {
     URI("uri"),
     APP_NAME("app-name"),
     MODULE_NAME("module-name"),
-    DISTINCT_NAME("distinct-name")
+    DISTINCT_NAME("distinct-name"),
+
+
+    // server interceptors
+    MODULE("module"),
+    CLASS("class"),
+    BINDING("binding")
     ;
 
     private final String name;
