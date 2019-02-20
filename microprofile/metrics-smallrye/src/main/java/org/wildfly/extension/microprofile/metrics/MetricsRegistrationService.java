@@ -100,6 +100,8 @@ public class MetricsRegistrationService implements Service<MetricsRegistrationSe
                     doStart(context);
                 } catch (StartException e) {
                     context.failed(e);
+                } finally {
+                    context.complete();
                 }
             }
         };
@@ -107,8 +109,6 @@ public class MetricsRegistrationService implements Service<MetricsRegistrationSe
             executorService.get().submit(task);
         } catch (RejectedExecutionException e) {
             task.run();
-        } finally {
-            context.complete();
         }
 
     }
