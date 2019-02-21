@@ -30,8 +30,6 @@ import static org.wildfly.extension.microprofile.metrics._private.MicroProfileMe
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.RejectedExecutionException;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -44,10 +42,8 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.server.Services;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -58,7 +54,6 @@ public class MetricsRegistrationService implements Service<MetricsRegistrationSe
     private final Resource rootResource;
     private final Supplier<ModelControllerClientFactory> modelControllerClientFactory;
     private final Supplier<Executor> managementExecutor;
-    private Supplier<ExecutorService> executorService;
     private List<String> exposedSubsystems;
     private String globalPrefix;
     private MetricCollector metricCollector;
@@ -75,50 +70,22 @@ public class MetricsRegistrationService implements Service<MetricsRegistrationSe
         Supplier<ModelControllerClientFactory> modelControllerClientFactory = serviceBuilder.requires(context.getCapabilityServiceName(CLIENT_FACTORY_CAPABILITY, ModelControllerClientFactory.class));
         Supplier<Executor> managementExecutor = serviceBuilder.requires(context.getCapabilityServiceName(MANAGEMENT_EXECUTOR, Executor.class));
         serviceBuilder.requires(CONFIG_PROVIDER);
-        Supplier<ExecutorService> executorService = Services.requireServerExecutor(serviceBuilder);
-        MetricsRegistrationService service = new MetricsRegistrationService(rootResourceRegistration, rootResource, modelControllerClientFactory, managementExecutor, executorService, exposedSubsystems, prefix);
+        MetricsRegistrationService service = new MetricsRegistrationService(rootResourceRegistration, rootResource, modelControllerClientFactory, managementExecutor, exposedSubsystems, prefix);
         serviceBuilder.setInstance(service)
                 .install();
     }
 
-    public MetricsRegistrationService(ImmutableManagementResourceRegistration rootResourceRegistration, Resource rootResource, Supplier<ModelControllerClientFactory> modelControllerClientFactory, Supplier<Executor> managementExecutor, Supplier<ExecutorService> executorService, List<String> exposedSubsystems, String globalPrefix) {
+    public MetricsRegistrationService(ImmutableManagementResourceRegistration rootResourceRegistration, Resource rootResource, Supplier<ModelControllerClientFactory> modelControllerClientFactory, Supplier<Executor> managementExecutor, List<String> exposedSubsystems, String globalPrefix) {
         this.rootResourceRegistration = rootResourceRegistration;
         this.rootResource = rootResource;
         this.modelControllerClientFactory = modelControllerClientFactory;
         this.managementExecutor = managementExecutor;
-        this.executorService = executorService;
         this.exposedSubsystems = exposedSubsystems;
         this.globalPrefix = globalPrefix;
     }
 
     @Override
     public void start(StartContext context) throws StartException {
-        final Runnable task = new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    doStart(context);
-                } catch (StartException e) {
-                    context.failed(e);
-                }
-            }
-        };
-        try {
-            executorService.get().submit(task);
-        } catch (RejectedExecutionException e) {
-            task.run();
-        } finally {
-            context.complete();
-        }
-
-    }
-
-    private void doStart(StartContext context) throws StartException {
-        final ServiceContainer serviceContainer = context.getController().getServiceContainer();
-        try {
-            serviceContainer.awaitStability();
-        } catch (InterruptedException e) {
-        }
         jmxRegistrar = new JmxRegistrar();
         try {
             jmxRegistrar.init();
