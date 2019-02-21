@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.ws.anonymousPojos;
+package org.jboss.as.test.integration.ws.anonymouspojos;
 
 import java.net.URL;
 import org.jboss.logging.Logger;
@@ -62,7 +62,7 @@ public class Usecase2TestCase {
 
     @Test
     public void testAnonymousEndpoint() throws Exception {
-        final QName serviceName = new QName("org.jboss.as.test.integration.ws.anonymousPojos", "AnonymousPOJOService");
+        final QName serviceName = new QName("org.jboss.as.test.integration.ws.anonymouspojos", "AnonymousPOJOService");
         final URL wsdlURL = new URL(baseUrl, "/anonymous-pojo-usecase2/AnonymousPOJOService?wsdl");
         final Service service = Service.create(wsdlURL, serviceName);
         final POJOIface port = service.getPort(POJOIface.class);

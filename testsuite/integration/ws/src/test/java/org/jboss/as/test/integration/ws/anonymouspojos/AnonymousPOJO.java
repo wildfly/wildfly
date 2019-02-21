@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.ws.anonymousPojos;
+package org.jboss.as.test.integration.ws.anonymouspojos;
 
 import javax.jws.WebService;
 
@@ -28,14 +28,14 @@ import javax.jws.WebService;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 @WebService(
-        endpointInterface = "org.jboss.as.test.integration.ws.anonymousPojos.POJOIface",
-        targetNamespace = "org.jboss.as.test.integration.ws.anonymousPojos",
-        serviceName = "POJOImplService"
+        endpointInterface = "org.jboss.as.test.integration.ws.anonymouspojos.POJOIface",
+        targetNamespace = "org.jboss.as.test.integration.ws.anonymouspojos",
+        serviceName = "AnonymousPOJOService"
 )
-public class POJOImpl {
+public class AnonymousPOJO {
 
     public String echo(final String s) {
-        return s + " from POJO";
+        return s + " from anonymous POJO";
     }
 
 }

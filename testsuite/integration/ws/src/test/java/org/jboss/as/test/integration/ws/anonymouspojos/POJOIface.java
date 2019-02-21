@@ -20,22 +20,18 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.ws.anonymousPojos;
+package org.jboss.as.test.integration.ws.anonymouspojos;
 
 import javax.jws.WebService;
+import javax.jws.soap.SOAPBinding;
 
 /**
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-@WebService(
-        endpointInterface = "org.jboss.as.test.integration.ws.anonymousPojos.POJOIface",
-        targetNamespace = "org.jboss.as.test.integration.ws.anonymousPojos",
-        serviceName = "AnonymousPOJOService"
-)
-public class AnonymousPOJO {
+@WebService
+@SOAPBinding
+public interface POJOIface {
 
-    public String echo(final String s) {
-        return s + " from anonymous POJO";
-    }
+    String echo(String s);
 
 }

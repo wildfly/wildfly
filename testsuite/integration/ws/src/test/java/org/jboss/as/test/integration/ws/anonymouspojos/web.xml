@@ -6,7 +6,7 @@
          metadata-complete="false">
     <servlet>
         <servlet-name>POJOImpl</servlet-name>
-        <servlet-class>org.jboss.as.test.integration.ws.anonymousPojos.POJOImpl</servlet-class>
+        <servlet-class>org.jboss.as.test.integration.ws.anonymouspojos.POJOImpl</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>POJOImpl</servlet-name>
