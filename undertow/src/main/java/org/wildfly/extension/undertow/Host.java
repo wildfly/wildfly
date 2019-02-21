@@ -37,6 +37,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.regex.Pattern;
 
 import io.undertow.Handlers;
 import io.undertow.security.api.AuthenticationMechanism;
@@ -388,7 +389,8 @@ public class Host implements Service<Host>, FilterLocation {
     }
 
     private static final class AcmeResourceHandler extends ResourceHandler {
-        private static final String ACME_CHALLENGE_REGEX = "/\\.well-known/acme-challenge/[A-Za-z0-9_-]+";
+        private static final String ACME_CHALLENGE_CONTEXT = "/.well-known/acme-challenge/";
+        private static final Pattern ACME_CHALLENGE_PATTERN = Pattern.compile("/\\.well-known/acme-challenge/[A-Za-z0-9_-]+");
 
         private final HttpHandler next;
 
@@ -399,7 +401,9 @@ public class Host implements Service<Host>, FilterLocation {
 
         @Override
         public void handleRequest(HttpServerExchange exchange) throws Exception {
-            if (exchange.getRequestMethod().equals(Methods.GET) && exchange.getRelativePath().matches(ACME_CHALLENGE_REGEX)) {
+            if (exchange.getRequestMethod().equals(Methods.GET)
+                    && exchange.getRelativePath().startsWith(ACME_CHALLENGE_CONTEXT, 0)
+                    && ACME_CHALLENGE_PATTERN.matcher(exchange.getRelativePath()).matches()) {
                 super.handleRequest(exchange);
             } else {
                 next.handleRequest(exchange);
