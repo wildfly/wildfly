@@ -41,65 +41,82 @@
 
     <name>WildFly: Documentation</name>
 
+    <properties>
+        <wildfly.github.io.dir>
+            ..${file.separator}..${file.separator}wildfly.github.io${file.separator}${product.docs.server.version}
+        </wildfly.github.io.dir>
+    </properties>
+
     <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.asciidoctor</groupId>
-                    <artifactId>asciidoctor-maven-plugin</artifactId>
-                    <configuration>
+        <plugins>
+            <plugin>
+                <groupId>org.asciidoctor</groupId>
+                <artifactId>asciidoctor-maven-plugin</artifactId>
+                <configuration>
+                    <attributes>
                         <!-- Attributes to use in the asciidoc source files. Please leave in alphabetical order -->
-                        <attributes>
-                            <appservername>WildFly</appservername>
-                            <javaee_version>8</javaee_version>
-                            <oracle-javadoc>https://docs.oracle.com/javase/8/docs/api</oracle-javadoc>
-                            <wildflyversion>${product.docs.server.version}</wildflyversion>
-                        </attributes>
-                        <resources>
-                            <resource>
-                                <directory>src/main/asciidoc/images</directory>
-                                <targetPath>images</targetPath>
-                            </resource>
-                            <resource>
-                                <directory>src/main/asciidoc/downloads</directory>
-                                <targetPath>downloads</targetPath>
-                            </resource>
-                        </resources>
-                    </configuration>
-                </plugin>
-            </plugins>
-        </pluginManagement>
+                        <appservername>WildFly</appservername>
+                        <javaee_version>8</javaee_version>
+                        <oracle-javadoc>https://docs.oracle.com/javase/8/docs/api</oracle-javadoc>
+                        <wildflyversion>${product.docs.server.version}</wildflyversion>
+
+                        <!-- Default asciidoc setting attributes -->
+                        <linkcss>false</linkcss>
+                        <toc>left</toc>
+                    </attributes>
+                    <backend>html5</backend>
+                    <resources>
+                        <resource>
+                            <directory>src/main/asciidoc/images</directory>
+                            <targetPath>images</targetPath>
+                        </resource>
+                        <resource>
+                            <directory>src/main/asciidoc/downloads</directory>
+                            <targetPath>downloads</targetPath>
+                        </resource>
+                    </resources>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>output-html</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>process-asciidoc</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
     </build>
+
     <profiles>
         <profile>
-            <id>html</id>
+            <id>copy-site</id>
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.asciidoctor</groupId>
-                        <artifactId>asciidoctor-maven-plugin</artifactId>
+                        <artifactId>maven-resources-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>output-html</id>
+                                <id>copy-site</id>
                                 <phase>package</phase>
                                 <goals>
-                                    <goal>process-asciidoc</goal>
+                                    <goal>copy-resources</goal>
                                 </goals>
                                 <configuration>
-                                    <backend>html5</backend>
-                                    <attributes>
-                                        <toc>left</toc>
-                                        <linkcss>false</linkcss>
-                                    </attributes>
+                                    <outputDirectory>${wildfly.github.io.dir}</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>${project.build.directory}${file.separator}generated-docs</directory>
+                                            <filtering>false</filtering>
+                                        </resource>
+                                    </resources>
                                 </configuration>
                             </execution>
                         </executions>
                     </plugin>
                 </plugins>
             </build>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
         </profile>
     </profiles>
 </project>
