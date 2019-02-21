@@ -92,25 +92,24 @@ public class MetricsRegistrationService implements Service<MetricsRegistrationSe
     }
 
     @Override
-    public void start(StartContext context) throws StartException {
+    public void start(final StartContext context) {
         final Runnable task = new Runnable() {
             @Override
             public void run() {
                 try {
                     doStart(context);
+                    context.complete();
                 } catch (StartException e) {
                     context.failed(e);
                 }
             }
         };
         try {
+            context.asynchronous();
             executorService.get().submit(task);
-        } catch (RejectedExecutionException e) {
+        } catch (final RejectedExecutionException e) {
             task.run();
-        } finally {
-            context.complete();
         }
-
     }
 
     private void doStart(StartContext context) throws StartException {
@@ -134,20 +133,17 @@ public class MetricsRegistrationService implements Service<MetricsRegistrationSe
     }
 
     @Override
-    public void stop(StopContext context) {
-        for (MetricRegistry registry : new MetricRegistry[]{
+    public void stop(final StopContext context) {
+        for (MetricRegistry registry : new MetricRegistry[] {
                 MetricRegistries.get(MetricRegistry.Type.BASE),
                 MetricRegistries.get(MetricRegistry.Type.VENDOR)}) {
             for (String name : registry.getNames()) {
                 registry.remove(name);
             }
         }
-
         registration.unregister();
         metricCollector.close();
-
         modelControllerClient.close();
-
         jmxRegistrar = null;
     }
 
