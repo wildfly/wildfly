@@ -303,8 +303,8 @@
         <version.org.glassfish.javax.enterprise.concurrent>1.0</version.org.glassfish.javax.enterprise.concurrent>
         <version.org.glassfish.soteria>1.0</version.org.glassfish.soteria>
         <version.org.hibernate>5.3.8.Final</version.org.hibernate>
-        <version.org.hibernate.commons.annotations>5.0.4.Final</version.org.hibernate.commons.annotations>
-        <version.org.hibernate.search>5.10.3.Final</version.org.hibernate.search>
+        <version.org.hibernate.commons.annotations>5.0.5.Final</version.org.hibernate.commons.annotations>
+        <version.org.hibernate.search>5.10.5.Final</version.org.hibernate.search>
         <version.org.hibernate.validator>6.0.15.Final</version.org.hibernate.validator>
         <version.org.hornetq>2.4.7.Final</version.org.hornetq>
         <version.org.infinispan>9.4.7.Final</version.org.infinispan>
