@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 
-<package-spec xmlns="urn:jboss:galleon:package:1.0" name="wstools">
+<package-spec xmlns="urn:jboss:galleon:package:2.0" name="wstools">
     <dependencies>
         <package name="bin.wstools"/>
         <package name="org.jboss.ws.tools.wsconsume"/>

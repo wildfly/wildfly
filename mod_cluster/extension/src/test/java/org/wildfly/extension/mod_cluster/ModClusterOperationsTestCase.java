@@ -234,7 +234,7 @@ public class ModClusterOperationsTestCase extends AbstractSubsystemTest {
     // Setup
 
     private String getSubsystemXml() throws IOException {
-        return readResource("subsystem-transform.xml");
+        return readResource("subsystem-transform-1_5_0.xml");
     }
 
     private KernelServices buildKernelServices() throws Exception {

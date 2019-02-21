@@ -22,6 +22,9 @@
 
 package org.wildfly.extension.mod_cluster;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
@@ -114,13 +117,21 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
     }
 
     private void testTransformation(ModelTestControllerVersion controllerVersion) throws Exception {
-        String[] resources = { "subsystem-transform-simple.xml", "subsystem-transform.xml" };
+        ModClusterModel model = getModelVersion(controllerVersion);
+        ModelVersion modelVersion = model.getVersion();
+        String[] dependencies = getDependencies(controllerVersion);
+
+
+        Set<String> resources = new HashSet<>();
+        resources.add(String.format("subsystem-transform-%d_%d_%d.xml", modelVersion.getMajor(), modelVersion.getMinor(), modelVersion.getMicro()));
+        if (modelVersion.getMajor() < 6) {
+            // Also test simple-load-provider for legacy slaves which only allow for one mod_cluster proxy configuration
+            // which we can now tests within scope of multiple proxy configurations
+            resources.add("subsystem-transform-simple.xml");
+        }
 
         for (String resource : resources) {
-            String[] dependencies = getDependencies(controllerVersion);
             String subsystemXml = readResource(resource);
-            ModClusterModel model = getModelVersion(controllerVersion);
-            ModelVersion modelVersion = model.getVersion();
             String extensionClassName = (model.getVersion().getMajor() == 1) ? "org.jboss.as.modcluster.ModClusterExtension" : "org.wildfly.extension.mod_cluster.ModClusterExtension";
 
             KernelServicesBuilder builder = createKernelServicesBuilder(new ModClusterAdditionalInitialization())
