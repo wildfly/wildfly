@@ -85,13 +85,15 @@ public class ServletContainerService implements Service<ServletContainerService>
     private final int fileCacheMaxFileSize;
     private final Integer fileCacheTimeToLive;
     private final int defaultCookieVersion;
+    private boolean preservePathOnForward;
 
     public ServletContainerService(boolean allowNonStandardWrappers, ServletStackTraces stackTraces, SessionCookieConfig sessionCookieConfig, JSPConfig jspConfig,
                                    String defaultEncoding, boolean useListenerEncoding, boolean ignoreFlush, boolean eagerFilterInit, int defaultSessionTimeout,
                                    boolean disableCachingForSecuredPages, boolean websocketsEnabled, boolean dispatchWebsocketInvocationToWorker, boolean perMessageDeflate,
                                    int deflaterLevel, Map<String, String> mimeMappings, List<String> welcomeFiles, Boolean directoryListingEnabled, boolean proactiveAuth,
                                    int sessionIdLength, Map<String, AuthenticationMechanismFactory> authenticationMechanisms, Integer maxSessions,
-                                   CrawlerSessionManagerConfig crawlerSessionManagerConfig, boolean disableFileWatchService, boolean disableSessionIdReuse, int fileCacheMetadataSize, int fileCacheMaxFileSize, Integer fileCacheTimeToLive, int defaultCookieVersion) {
+                                   CrawlerSessionManagerConfig crawlerSessionManagerConfig, boolean disableFileWatchService, boolean disableSessionIdReuse, int fileCacheMetadataSize, int fileCacheMaxFileSize, Integer fileCacheTimeToLive, int defaultCookieVersion,
+                                   boolean preservePathOnForward) {
 
         this.allowNonStandardWrappers = allowNonStandardWrappers;
         this.stackTraces = stackTraces;
@@ -121,6 +123,7 @@ public class ServletContainerService implements Service<ServletContainerService>
         this.fileCacheMaxFileSize = fileCacheMaxFileSize;
         this.fileCacheTimeToLive = fileCacheTimeToLive;
         this.defaultCookieVersion = defaultCookieVersion;
+        this.preservePathOnForward = preservePathOnForward;
     }
 
     @Override
@@ -277,5 +280,9 @@ public class ServletContainerService implements Service<ServletContainerService>
 
     public int getDefaultCookieVersion() {
         return defaultCookieVersion;
+    }
+
+    public boolean isPreservePathOnForward() {
+        return preservePathOnForward;
     }
 }
