@@ -131,7 +131,9 @@ public class UndertowTransformersTestCase extends AbstractSubsystemTest {
                                 ServletContainerDefinition.FILE_CACHE_METADATA_SIZE,
                                 ServletContainerDefinition.FILE_CACHE_TIME_TO_LIVE,
                                 ServletContainerDefinition.DISABLE_FILE_WATCH_SERVICE,
-                                ServletContainerDefinition.DISABLE_SESSION_ID_REUSE))
+                                ServletContainerDefinition.DISABLE_SESSION_ID_REUSE,
+                                ServletContainerDefinition.PRESERVE_PATH_ON_FORWARD
+                                ))
                 .addFailedAttribute(ajpAddress,
                         new FailedOperationTransformationConfig.NewAttributesConfig(
                                 ALLOW_UNESCAPED_CHARACTERS_IN_URL, RFC6265_COOKIE_VALIDATION))
@@ -169,7 +171,10 @@ public class UndertowTransformersTestCase extends AbstractSubsystemTest {
                                 ServletContainerDefinition.DEFAULT_COOKIE_VERSION,
                                 ServletContainerDefinition.FILE_CACHE_MAX_FILE_SIZE,
                                 ServletContainerDefinition.FILE_CACHE_METADATA_SIZE,
-                                ServletContainerDefinition.FILE_CACHE_TIME_TO_LIVE))
+                                ServletContainerDefinition.FILE_CACHE_TIME_TO_LIVE,
+                                ServletContainerDefinition.PRESERVE_PATH_ON_FORWARD
+                        )
+                )
                 .addFailedAttribute(ajpAddress,
                         new FailedOperationTransformationConfig.NewAttributesConfig(
                                 ALLOW_UNESCAPED_CHARACTERS_IN_URL))
@@ -182,8 +187,16 @@ public class UndertowTransformersTestCase extends AbstractSubsystemTest {
         final PathAddress subsystemAddress = PathAddress.pathAddress(UndertowExtension.SUBSYSTEM_PATH);
         final PathAddress serverAddress = subsystemAddress.append(UndertowExtension.SERVER_PATH);
         final PathAddress hostAddress = serverAddress.append(UndertowExtension.HOST_PATH);
+
+
+        PathAddress servletContainer = subsystemAddress.append(UndertowExtension.PATH_SERVLET_CONTAINER);
+
         doRejectTest(ModelTestControllerVersion.EAP_7_2_0, EAP7_2_0, new FailedOperationTransformationConfig()
                 .addFailedAttribute(hostAddress.append(PathElement.pathElement(Constants.SETTING, "console-access-log")), FailedOperationTransformationConfig.REJECTED_RESOURCE)
+                 .addFailedAttribute(servletContainer,
+                         new FailedOperationTransformationConfig.NewAttributesConfig(
+                                 ServletContainerDefinition.PRESERVE_PATH_ON_FORWARD
+                         ))
         );
     }
 
@@ -289,6 +302,12 @@ public class UndertowTransformersTestCase extends AbstractSubsystemTest {
             // Prevent service loader loading of io.undertow.predicate.PredicateBuilder or io.undertow.attribute.ExchangeAttributeBuilder
             // from the parent as the parent includes classes not available in the child
             init.excludeResourceFromParent("META-INF/services/io.undertow.*");
+        }
+        if (controllerVersion == ModelTestControllerVersion.EAP_7_2_0) {
+            init.addMavenResourceURL(controllerVersion.getMavenGroupId() + ":wildfly-clustering-common:" + controllerVersion.getMavenGavVersion());
+            init.addMavenResourceURL(controllerVersion.getMavenGroupId() + ":wildfly-web-common:" + controllerVersion.getMavenGavVersion());
+            init.addMavenResourceURL("io.undertow:undertow-servlet:2.0.19.Final");
+            init.addMavenResourceURL("io.undertow:undertow-core:2.0.19.Final");
         }
     }
 

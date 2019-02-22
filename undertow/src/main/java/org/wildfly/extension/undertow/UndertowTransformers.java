@@ -43,6 +43,7 @@ import static org.wildfly.extension.undertow.ServletContainerDefinition.DISABLE_
 import static org.wildfly.extension.undertow.ServletContainerDefinition.FILE_CACHE_MAX_FILE_SIZE;
 import static org.wildfly.extension.undertow.ServletContainerDefinition.FILE_CACHE_METADATA_SIZE;
 import static org.wildfly.extension.undertow.ServletContainerDefinition.FILE_CACHE_TIME_TO_LIVE;
+import static org.wildfly.extension.undertow.ServletContainerDefinition.PRESERVE_PATH_ON_FORWARD;
 import static org.wildfly.extension.undertow.WebsocketsDefinition.DEFLATER_LEVEL;
 import static org.wildfly.extension.undertow.WebsocketsDefinition.PER_MESSAGE_DEFLATE;
 import static org.wildfly.extension.undertow.filters.ModClusterDefinition.FAILOVER_STRATEGY;
@@ -122,6 +123,13 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
         builder.rejectChildResource(NoAffinityResourceDefinition.PATH);
         builder.discardChildResource(SingleAffinityResourceDefinition.PATH);
         builder.rejectChildResource(RankedAffinityResourceDefinition.PATH);
+
+        subsystemBuilder
+                .addChildResource(UndertowExtension.PATH_SERVLET_CONTAINER)
+                .getAttributeBuilder()
+                    .setDiscard(new DiscardAttributeValueChecker(new ModelNode(false)), PRESERVE_PATH_ON_FORWARD)
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, PRESERVE_PATH_ON_FORWARD)
+                .end();
     }
 
     private static void registerTransformers_EAP_7_1_0(ResourceTransformationDescriptionBuilder subsystemBuilder) {
