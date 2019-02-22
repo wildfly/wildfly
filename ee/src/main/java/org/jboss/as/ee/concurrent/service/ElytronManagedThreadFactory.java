@@ -41,6 +41,8 @@ import java.security.PrivilegedAction;
  */
 public class ElytronManagedThreadFactory extends ManagedThreadFactoryImpl {
 
+    private static final ClassLoader CLASSLOADER = ElytronManagedThreadFactory.class.getClassLoader();
+
     public ElytronManagedThreadFactory(String name, ContextServiceImpl contextService, int priority) {
         super(name, contextService, priority);
     }
@@ -51,13 +53,18 @@ public class ElytronManagedThreadFactory extends ManagedThreadFactoryImpl {
                 AccessController.doPrivileged((PrivilegedAction<SecurityDomain>) SecurityDomain::getCurrent) :
                 SecurityDomain.getCurrent();
         SecurityIdentity identity = domain == null ? null : domain.getCurrentSecurityIdentity();
-
-        if (checking) {
-            return AccessController.doPrivileged((PrivilegedAction<ElytronManagedThread>)
-                    () -> new ElytronManagedThread(r, contextHandleForSetup, identity)
-            );
-        } else {
-            return new ElytronManagedThread(r, contextHandleForSetup, identity);
+        final ClassLoader tccl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+        try {
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(CLASSLOADER);
+            if (checking) {
+                return AccessController.doPrivileged((PrivilegedAction<ElytronManagedThread>)
+                        () -> new ElytronManagedThread(r, contextHandleForSetup, identity)
+                );
+            } else {
+                return new ElytronManagedThread(r, contextHandleForSetup, identity);
+            }
+        } finally {
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(tccl);
         }
     }
 
