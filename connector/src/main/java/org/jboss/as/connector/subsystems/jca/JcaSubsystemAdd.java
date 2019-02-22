@@ -25,6 +25,7 @@ package org.jboss.as.connector.subsystems.jca;
 
 import static org.jboss.as.connector.subsystems.jca.JcaSubsystemRootDefinition.TRANSACTION_INTEGRATION_CAPABILITY;
 import static org.jboss.as.connector.util.ConnectorServices.LOCAL_TRANSACTION_PROVIDER_CAPABILITY;
+import static org.jboss.as.connector.util.ConnectorServices.TRANSACTION_INTEGRATION_CAPABILITY_NAME;
 import static org.jboss.as.connector.util.ConnectorServices.TRANSACTION_SYNCHRONIZATION_REGISTRY_CAPABILITY;
 import static org.jboss.as.connector.util.ConnectorServices.TRANSACTION_XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY;
 
@@ -38,6 +39,8 @@ import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.CapabilityServiceTarget;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ProcessType;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.txn.integration.JBossContextXATerminator;
@@ -87,6 +90,12 @@ class JcaSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .addAliases(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE)
                 .install();
+
+        // Cache the some capability service names for use by our runtime services
+        final CapabilityServiceSupport support = context.getCapabilityServiceSupport();
+        ConnectorServices.registerCapabilityServiceName(LOCAL_TRANSACTION_PROVIDER_CAPABILITY, support.getCapabilityServiceName(LOCAL_TRANSACTION_PROVIDER_CAPABILITY));
+        ConnectorServices.registerCapabilityServiceName(NamingService.CAPABILITY_NAME, support.getCapabilityServiceName(NamingService.CAPABILITY_NAME));
+        ConnectorServices.registerCapabilityServiceName(TRANSACTION_INTEGRATION_CAPABILITY_NAME, support.getCapabilityServiceName(TRANSACTION_INTEGRATION_CAPABILITY_NAME));
 
         final JcaSubsystemConfiguration config = new JcaSubsystemConfiguration();
 

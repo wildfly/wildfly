@@ -132,7 +132,7 @@ public class CachedConnectionManagerAdd extends AbstractBoottimeAddStepHandler {
         CachedConnectionManagerService ccmService = new CachedConnectionManagerService(debug, error, ignoreUnknownConnections);
         serviceTarget
                 .addService(ConnectorServices.CCM_SERVICE, ccmService)
-                .addDependency(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE, TransactionIntegration.class,
+                .addDependency(context.getCapabilityServiceSupport().getCapabilityServiceName(ConnectorServices.TRANSACTION_INTEGRATION_CAPABILITY_NAME), TransactionIntegration.class,
                         ccmService.getTransactionIntegrationInjector())
                 .install();
 

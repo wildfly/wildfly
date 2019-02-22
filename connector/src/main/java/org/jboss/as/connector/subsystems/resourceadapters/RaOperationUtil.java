@@ -117,6 +117,7 @@ import org.jboss.as.connector.util.RaServicesFactory;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.UninterruptibleCountDownLatch;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.annotation.ResourceRootIndexer;
@@ -376,6 +377,7 @@ public class RaOperationUtil {
     public static void activate(OperationContext context, String raName, String archiveName) throws OperationFailedException {
         ServiceRegistry registry = context.getServiceRegistry(true);
         ServiceController<?> inactiveRaController = registry.getService(ConnectorServices.INACTIVE_RESOURCE_ADAPTER_SERVICE.append(archiveName));
+        final CapabilityServiceSupport support = context.getCapabilityServiceSupport();
 
         if (inactiveRaController == null) {
 
@@ -390,7 +392,7 @@ public class RaOperationUtil {
         final ServiceController<?> RaxmlController = registry.getService(ServiceName.of(ConnectorServices.RA_SERVICE, raName));
         Activation raxml = (Activation) RaxmlController.getValue();
         RaServicesFactory.createDeploymentService(inactive.getRegistration(), inactive.getConnectorXmlDescriptor(), inactive.getModule(), inactive.getServiceTarget(),
-                archiveName, inactive.getDeploymentUnitServiceName(), inactive.getDeployment(), raxml, inactive.getResource(), registry);
+                archiveName, inactive.getDeploymentUnitServiceName(), inactive.getDeployment(), raxml, inactive.getResource(), registry, support);
     }
 
     public static ServiceName installRaServices(OperationContext context, String name, ModifiableResourceAdapter resourceAdapter, final List<ServiceController<?>> newControllers) {
@@ -464,6 +466,7 @@ public class RaOperationUtil {
         final boolean resolveProperties = true;
         final ServiceTarget serviceTarget = context.getServiceTarget();
         final String moduleName;
+        final CapabilityServiceSupport support = context.getCapabilityServiceSupport();
 
 
         //load module
@@ -519,7 +522,7 @@ public class RaOperationUtil {
                 final ServiceName deployerServiceName = ConnectorServices.RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX.append(connectorXmlDescriptor.getDeploymentName());
                 final ServiceController<?> deployerService = context.getServiceRegistry(true).getService(deployerServiceName);
                 if (deployerService == null) {
-                    ServiceBuilder builder = ParsedRaDeploymentProcessor.process(connectorXmlDescriptor, ironJacamarXmlDescriptor, module.getClassLoader(), serviceTarget, annotationIndexes, RAR_MODULE.append(name), null, null);
+                    ServiceBuilder builder = ParsedRaDeploymentProcessor.process(connectorXmlDescriptor, ironJacamarXmlDescriptor, module.getClassLoader(), serviceTarget, annotationIndexes, RAR_MODULE.append(name), null, null, support);
                     builder.requires(raServiceName);
                     newControllers.add(builder.setInitialMode(ServiceController.Mode.ACTIVE).install());
                 }

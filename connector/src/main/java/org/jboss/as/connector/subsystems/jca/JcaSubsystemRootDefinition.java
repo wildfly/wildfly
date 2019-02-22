@@ -22,7 +22,10 @@
 
 package org.jboss.as.connector.subsystems.jca;
 
+import static org.jboss.as.connector._private.Capabilities.JCA_NAMING_CAPABILITY;
+import static org.jboss.as.connector.util.ConnectorServices.TRANSACTION_INTEGRATION_CAPABILITY_NAME;
 import static org.jboss.as.connector.util.ConnectorServices.LOCAL_TRANSACTION_PROVIDER_CAPABILITY;
+import static org.jboss.as.connector.util.ConnectorServices.TRANSACTION_SYNCHRONIZATION_REGISTRY_CAPABILITY;
 import static org.jboss.as.connector.util.ConnectorServices.TRANSACTION_XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
@@ -39,8 +42,10 @@ import org.jboss.jca.core.spi.transaction.TransactionIntegration;
 public class JcaSubsystemRootDefinition extends SimpleResourceDefinition {
     protected static final PathElement PATH_SUBSYSTEM = PathElement.pathElement(SUBSYSTEM, JcaExtension.SUBSYSTEM_NAME);
 
-    static final RuntimeCapability<Void> TRANSACTION_INTEGRATION_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.jca.transaction-integration", TransactionIntegration.class)
-            .addRequirements(LOCAL_TRANSACTION_PROVIDER_CAPABILITY, TRANSACTION_XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY)
+    static final RuntimeCapability<Void> TRANSACTION_INTEGRATION_CAPABILITY = RuntimeCapability.Builder.of(TRANSACTION_INTEGRATION_CAPABILITY_NAME, TransactionIntegration.class)
+            .addRequirements(LOCAL_TRANSACTION_PROVIDER_CAPABILITY,
+                    TRANSACTION_XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY,
+                    TRANSACTION_SYNCHRONIZATION_REGISTRY_CAPABILITY)
             .build();
 
     private final boolean registerRuntimeOnly;
@@ -50,6 +55,7 @@ public class JcaSubsystemRootDefinition extends SimpleResourceDefinition {
         super(new Parameters(PATH_SUBSYSTEM, JcaExtension.getResourceDescriptionResolver())
                 .setAddHandler(JcaSubsystemAdd.INSTANCE)
                 .setRemoveHandler(JcaSubSystemRemove.INSTANCE)
+                .setCapabilities(JCA_NAMING_CAPABILITY)
                 .setCapabilities(TRANSACTION_INTEGRATION_CAPABILITY)
         );
         this.registerRuntimeOnly = registerRuntimeOnly;

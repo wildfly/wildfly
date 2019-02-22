@@ -31,6 +31,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import java.util.LinkedList;
 import java.util.List;
 
+import org.jboss.as.connector._private.Capabilities;
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.OperationContext;
@@ -80,6 +81,7 @@ public class RaRemove implements OperationStepHandler {
 
 
         context.removeResource(PathAddress.EMPTY_ADDRESS);
+        context.deregisterCapability(Capabilities.RESOURCE_ADAPTER_CAPABILITY.getDynamicName(context.getCurrentAddress()));
 
         if (context.isDefaultRequiresRuntime()) {
             context.addStep(new OperationStepHandler() {

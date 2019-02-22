@@ -34,6 +34,7 @@ import java.util.List;
 
 import org.jboss.as.connector._private.Capabilities;
 import org.jboss.as.connector.logging.ConnectorLogger;
+import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.security.CredentialReference;
@@ -42,6 +43,7 @@ import org.jboss.as.model.test.FailedOperationTransformationConfig.AttributesPat
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.model.test.SingleClassFilter;
+import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
@@ -104,10 +106,12 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
     protected AdditionalInitialization createAdditionalInitialization() {
         // Create a AdditionalInitialization.MANAGEMENT variant that has all the external
         // capabilities used by the various configs used in this test class
-        return AdditionalInitialization.withCapabilities(
+        return AdditionalInitialization.MANAGEMENT.withCapabilities(
                 Capabilities.AUTHENTICATION_CONTEXT_CAPABILITY + ".DsAuthCtxt",
                 Capabilities.AUTHENTICATION_CONTEXT_CAPABILITY + ".CredentialAuthCtxt",
-                CredentialReference.CREDENTIAL_STORE_CAPABILITY + ".test-store"
+                CredentialReference.CREDENTIAL_STORE_CAPABILITY + ".test-store",
+                NamingService.CAPABILITY_NAME,
+                ConnectorServices.TRANSACTION_INTEGRATION_CAPABILITY_NAME
         );
     }
 
@@ -183,7 +187,7 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
      */
     private void testTransformer(String subsystemXml, ModelTestControllerVersion controllerVersion, final ModelVersion modelVersion) throws Exception {
         //Use the non-runtime version of the extension which will happen on the HC
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
         KernelServices mainServices = initialKernelServices(builder, controllerVersion, modelVersion);
         List<ModelNode> ops = builder.parseXmlResource(subsystemXml);
         PathAddress subsystemAddress = PathAddress.pathAddress(DataSourcesSubsystemRootDefinition.PATH_SUBSYSTEM);
@@ -239,7 +243,7 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
     private void testTransformerEAP7FullConfiguration(String subsystemXml) throws Exception {
         ModelTestControllerVersion eap7ControllerVersion = ModelTestControllerVersion.EAP_7_0_0;
         ModelVersion eap7ModelVersion = ModelVersion.create(4, 0, 0);
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
         KernelServices mainServices = initialKernelServices(builder, eap7ControllerVersion, eap7ModelVersion);
         List<ModelNode> ops = builder.parseXmlResource(subsystemXml);
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, eap7ModelVersion, ops, FailedOperationTransformationConfig.NO_FAILURES);
@@ -254,7 +258,7 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
         //Use the non-runtime version of the extension which will happen on the HC
         ModelTestControllerVersion eap7ControllerVersion = ModelTestControllerVersion.EAP_7_0_0;
         ModelVersion eap7ModelVersion = ModelVersion.create(4, 0, 0);
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
         KernelServices mainServices = initialKernelServices(builder, eap7ControllerVersion, eap7ModelVersion);
         List<ModelNode> ops = builder.parseXmlResource(subsystemXml);
         PathAddress subsystemAddress = PathAddress.pathAddress(DataSourcesSubsystemRootDefinition.PATH_SUBSYSTEM);

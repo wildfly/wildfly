@@ -244,10 +244,10 @@ public class DirectConnectionFactoryActivatorService implements org.jboss.msc.se
                             JcaSubsystemConfiguration.class, activator.getConfigInjector())
                     .addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class,
                             activator.getCcmInjector())
-                    .addDependency(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE, TransactionIntegration.class,
+                    .addDependency(ConnectorServices.getCachedCapabilityServiceName(ConnectorServices.TRANSACTION_INTEGRATION_CAPABILITY_NAME), TransactionIntegration.class,
                             activator.getTxIntegrationInjector());
-            connectionFactoryServiceBuilder.requires(NamingService.SERVICE_NAME);
-            connectionFactoryServiceBuilder.requires(ConnectorServices.getLocalTransactionProviderServiceName());
+            connectionFactoryServiceBuilder.requires(ConnectorServices.getCachedCapabilityServiceName(NamingService.CAPABILITY_NAME));
+            connectionFactoryServiceBuilder.requires(ConnectorServices.getCachedCapabilityServiceName(ConnectorServices.LOCAL_TRANSACTION_PROVIDER_CAPABILITY));
             connectionFactoryServiceBuilder.requires(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append("default"));
 
             if (ActivationSecurityUtil.isLegacySecurityRequired(security)) {

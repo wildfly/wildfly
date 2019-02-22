@@ -57,6 +57,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.security.CredentialReference;
@@ -147,6 +148,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
         // expression in the model can be resolved to a correct value.
         @SuppressWarnings("unused")
         final boolean statsEnabled = STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean();
+        final CapabilityServiceSupport support = context.getCapabilityServiceSupport();
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
@@ -182,9 +184,10 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
          dataSourceServiceBuilder.requires(ConnectorServices.IDLE_REMOVER_SERVICE);
          dataSourceServiceBuilder.requires(ConnectorServices.CONNECTION_VALIDATOR_SERVICE);
          dataSourceServiceBuilder.addDependency(ConnectorServices.IRONJACAMAR_MDR, MetadataRepository.class, dataSourceService.getMdrInjector());
-         dataSourceServiceBuilder.requires(NamingService.SERVICE_NAME);
+         dataSourceServiceBuilder.requires(support.getCapabilityServiceName(NamingService.CAPABILITY_NAME));
+
         if (jta) {
-            dataSourceServiceBuilder.addDependency(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE, TransactionIntegration.class, dataSourceService.getTransactionIntegrationInjector());
+            dataSourceServiceBuilder.addDependency(support.getCapabilityServiceName(ConnectorServices.TRANSACTION_INTEGRATION_CAPABILITY_NAME), TransactionIntegration.class, dataSourceService.getTransactionIntegrationInjector());
             dataSourceServiceBuilder.addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class, dataSourceService.getCcmInjector());
             dataSourceServiceBuilder.requires(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append(DEFAULT_NAME));
             dataSourceServiceBuilder.addDependency(ConnectorServices.RA_REPOSITORY_SERVICE, ResourceAdapterRepository.class, dataSourceService.getRaRepositoryInjector());

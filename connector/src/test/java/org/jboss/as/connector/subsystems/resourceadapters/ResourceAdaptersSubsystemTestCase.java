@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
+import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -52,6 +53,7 @@ import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.model.test.SingleClassFilter;
+import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
@@ -289,7 +291,7 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
      */
     private void testRejectingTransformer7ElytronEnabled(String subsystemXml, ModelTestControllerVersion controllerVersion, ModelVersion modelVersion) throws Exception {
         //Use the non-runtime version of the extension which will happen on the HC
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
         //.setSubsystemXmlResource(subsystemXml);
         String artifactId = ":wildfly-connector:";
         String ironJacamarVersion = "1.3.3.Final-redhat-1";
@@ -412,7 +414,9 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
 
 
     protected AdditionalInitialization createAdditionalInitialization() {
-        return AdditionalInitialization.MANAGEMENT;
+        return AdditionalInitialization.MANAGEMENT
+                .withCapabilities(ConnectorServices.TRANSACTION_INTEGRATION_CAPABILITY_NAME,
+                        NamingService.CAPABILITY_NAME);
     }
 
     //TODO: remove this special method as soon as RA will have a unique name in DMR marshalled in xml
