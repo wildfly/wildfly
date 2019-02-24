@@ -31,6 +31,7 @@ import org.jboss.as.jaxrs.deployment.JaxrsCdiIntegrationProcessor;
 import org.jboss.as.jaxrs.deployment.JaxrsComponentDeployer;
 import org.jboss.as.jaxrs.deployment.JaxrsDependencyProcessor;
 import org.jboss.as.jaxrs.deployment.JaxrsIntegrationProcessor;
+import org.jboss.as.jaxrs.deployment.JaxrsMethodParameterProcessor;
 import org.jboss.as.jaxrs.deployment.JaxrsScanningProcessor;
 import org.jboss.as.jaxrs.deployment.JaxrsSpringProcessor;
 import org.jboss.as.jaxrs.logging.JaxrsLogger;
@@ -66,6 +67,7 @@ class JaxrsSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(JaxrsExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_JAXRS_SCANNING, new JaxrsScanningProcessor());
                 processorTarget.addDeploymentProcessor(JaxrsExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_JAXRS_COMPONENT, new JaxrsComponentDeployer());
                 processorTarget.addDeploymentProcessor(JaxrsExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_JAXRS_CDI_INTEGRATION, new JaxrsCdiIntegrationProcessor());
+                processorTarget.addDeploymentProcessor(JaxrsExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_JAXRS_METHOD_PARAMETER, new JaxrsMethodParameterProcessor());
                 processorTarget.addDeploymentProcessor(JaxrsExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_JAXRS_DEPLOYMENT, new JaxrsIntegrationProcessor());
             }
         }, OperationContext.Stage.RUNTIME);
