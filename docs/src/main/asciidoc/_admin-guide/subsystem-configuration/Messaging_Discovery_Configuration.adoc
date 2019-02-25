@@ -14,7 +14,7 @@ To add this support to a profile that does not include it by default, use the fo
 [source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /subsystem=messaging-activemq/server=default/broadcast-group=bg-group1:add(jgroups-cluster=activemq-cluster,connectors=http-connector)
-[standalone@localhost:9990 /]/subsystem=messaging-activemq/server=default/broadcast-group=dg-group1:add(jgroups-cluster=activemq-cluster)
+[standalone@localhost:9990 /] /subsystem=messaging-activemq/server=default/discovery-group=dg-group1:add(jgroups-cluster=activemq-cluster)
 ----
 
 To segregate Artemis servers use a distinct membership, configure broadcast/discovery using a separate channel.  To do this, first create the channel resource:
@@ -30,7 +30,7 @@ Now create your broadcast/discovery groups using this channel:
 [source,options="nowrap"]
 ----
 [standalone@localhost:9990 /] /subsystem=messaging-activemq/server=default/broadcast-group=bg-group2:add(jgroups-channel=messaging, jgroups-cluster=activemq-cluster, connectors=http-connector)
-[standalone@localhost:9990 /] /subsystem=messaging-activemq/server=default/broadcast-group=dg-group2:add(jgroups-channel=messaging, jgroups-cluster=activemq-cluster)
+[standalone@localhost:9990 /] /subsystem=messaging-activemq/server=default/discovery-group=dg-group2:add(jgroups-channel=messaging, jgroups-cluster=activemq-cluster)
 ----
 
 
@@ -44,5 +44,5 @@ e.g.
 [standalone@localhost:9990 /] /socket-binding-group=standard-sockets/socket-binding=messaging(interface=private, multicast-address=230.0.0.4, multicast-port=45689)
 
 [standalone@localhost:9990 /] /subsystem=messaging-activemq/server=default/broadcast-group=bg-group3:add(socket-binding=messaging, connectors=http-connector)
-[standalone@localhost:9990 /] /subsystem=messaging-activemq/server=default/broadcast-group=dg-group3:add(socket-binding=messaging)
+[standalone@localhost:9990 /] /subsystem=messaging-activemq/server=default/discovery-group=dg-group3:add(socket-binding=messaging)
 ----
