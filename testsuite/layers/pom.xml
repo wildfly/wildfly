@@ -693,13 +693,13 @@
                         </configuration>
                     </execution>
                      <execution>
-                        <id>microprofile-provisioning</id>
+                        <id>observability-provisioning</id>
                         <goals>
                             <goal>provision</goal>
                         </goals>
                         <phase>compile</phase>
                         <configuration>
-                            <install-dir>${layers.install.dir}/microprofile</install-dir>
+                            <install-dir>${layers.install.dir}/observability</install-dir>
                             <record-state>false</record-state>
                             <log-time>${galleon.log.time}</log-time>
                             <plugin-options>
@@ -733,7 +733,7 @@
                                     <model>standalone</model>
                                     <name>standalone.xml</name>
                                     <layers>
-                                        <layer>microprofile</layer>
+                                        <layer>observability</layer>
                                     </layers>
                                 </config>
                             </configurations>
@@ -928,7 +928,7 @@
                                         <layer>jaxrs</layer>
                                         <layer>jms-activemq</layer>
                                         <layer>jpa</layer>
-                                        <layer>microprofile</layer>
+                                        <layer>observability</layer>
                                         <layer>resource-adapters</layer>
                                         <layer>undertow</layer>
                                         <layer>vault</layer>
