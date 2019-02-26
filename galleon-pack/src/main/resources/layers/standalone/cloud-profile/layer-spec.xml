@@ -5,7 +5,7 @@
         <layer name="jaxrs" optional="true"/>
         <layer name="jms-activemq" optional="true"/>
         <layer name="jpa" optional="true"/>
-        <layer name="microprofile" optional="true"/>
+        <layer name="observability" optional="true"/>
         <layer name="resource-adapters" optional="true"/>
     </dependencies>
 </layer-spec>
