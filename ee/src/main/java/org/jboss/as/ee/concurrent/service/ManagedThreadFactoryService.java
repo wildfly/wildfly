@@ -22,47 +22,47 @@
 
 package org.jboss.as.ee.concurrent.service;
 
+import java.util.function.Supplier;
+
 import org.glassfish.enterprise.concurrent.ContextServiceImpl;
 import org.glassfish.enterprise.concurrent.ManagedThreadFactoryImpl;
 import org.jboss.as.ee.logging.EeLogger;
-import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 
 /**
  * @author Eduardo Martins
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class ManagedThreadFactoryService extends EEConcurrentAbstractService<ManagedThreadFactoryImpl> {
 
-    private volatile ManagedThreadFactoryImpl managedThreadFactory;
-
     private final String name;
-    private final InjectedValue<ContextServiceImpl> contextService;
+    private final Supplier<ContextServiceImpl> contextServiceSupplier;
     private final int priority;
+    private volatile ManagedThreadFactoryImpl managedThreadFactory;
 
     /**
      * @param name
      * @param jndiName
      * @param priority
+     * @param contextServiceSupplier
      * @see ManagedThreadFactoryImpl#ManagedThreadFactoryImpl(String, org.glassfish.enterprise.concurrent.ContextServiceImpl, int)
      */
-    public ManagedThreadFactoryService(String name, String jndiName, int priority) {
+    public ManagedThreadFactoryService(final String name, final String jndiName, final int priority, final Supplier<ContextServiceImpl> contextServiceSupplier) {
         super(jndiName);
         this.name = name;
-        this.contextService = new InjectedValue<>();
         this.priority = priority;
+        this.contextServiceSupplier = contextServiceSupplier;
     }
 
     @Override
-    void startValue(StartContext context) throws StartException {
+    void startValue(final StartContext context) {
         final String threadFactoryName = "EE-ManagedThreadFactory-"+name;
-        managedThreadFactory = new ElytronManagedThreadFactory(threadFactoryName, contextService.getOptionalValue(), priority);
+        managedThreadFactory = new ElytronManagedThreadFactory(threadFactoryName, contextServiceSupplier != null ? contextServiceSupplier.get() : null, priority);
     }
 
     @Override
-    void stopValue(StopContext context) {
+    void stopValue(final StopContext context) {
         managedThreadFactory.stop();
         managedThreadFactory = null;
     }
@@ -72,10 +72,6 @@ public class ManagedThreadFactoryService extends EEConcurrentAbstractService<Man
             throw EeLogger.ROOT_LOGGER.concurrentServiceValueUninitialized();
         }
         return managedThreadFactory;
-    }
-
-    public Injector<ContextServiceImpl> getContextServiceInjector() {
-        return contextService;
     }
 
 }

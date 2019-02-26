@@ -25,10 +25,10 @@ package org.jboss.as.ee.component.deployers;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.component.Attachments;
-import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.BasicComponentCreateService;
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.ClassDescriptionTraversal;
@@ -37,7 +37,6 @@ import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentNamingMode;
 import org.jboss.as.ee.component.ComponentRegistry;
 import org.jboss.as.ee.component.ComponentStartService;
-import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.DependencyConfigurator;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleClassDescription;
@@ -76,6 +75,7 @@ import static org.jboss.as.server.deployment.Attachments.MODULE;
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Eduardo Martins
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public final class ComponentInstallProcessor implements DeploymentUnitProcessor {
 
@@ -150,12 +150,11 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         }
 
         // START depends on CREATE
-        startBuilder.addDependency(createServiceName, BasicComponent.class, startService.getComponentInjector());
-        Services.addServerExecutorDependency(startBuilder, startService.getExecutorInjector());
+        startService.setComponentSupplier(startBuilder.requires(createServiceName));
+        startService.setExecutorSupplier(Services.requireServerExecutor(startBuilder));
 
         //don't start components until all bindings are up
         startBuilder.requires(bindingDependencyService);
-        final ServiceName contextServiceName;
         //set up the naming context if necessary
         if (configuration.getComponentDescription().getNamingMode() == ComponentNamingMode.CREATE) {
             final NamingStoreService contextService = new NamingStoreService(true);
@@ -172,13 +171,13 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         // Iterate through each view, creating the services for each
         for (ViewConfiguration viewConfiguration : configuration.getViews()) {
             final ServiceName serviceName = viewConfiguration.getViewServiceName();
-            final ViewService viewService = new ViewService(viewConfiguration);
-            final ServiceBuilder<ComponentView> componentViewServiceBuilder = serviceTarget.addService(serviceName, viewService);
-            componentViewServiceBuilder
-                    .addDependency(createServiceName, Component.class, viewService.getComponentInjector());
+            final ServiceBuilder<?> componentViewServiceBuilder = serviceTarget.addService(serviceName);
+            final Supplier<Component> componentSupplier = componentViewServiceBuilder.requires(createServiceName);
+            final ViewService viewService = new ViewService(viewConfiguration, componentSupplier);
             for(final DependencyConfigurator<ViewService> depConfig : viewConfiguration.getDependencies()) {
                 depConfig.configureDependency(componentViewServiceBuilder, viewService);
             }
+            componentViewServiceBuilder.setInstance(viewService);
             componentViewServiceBuilder.install();
             startBuilder.requires(serviceName);
             // The bindings for the view

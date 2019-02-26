@@ -41,41 +41,41 @@ import org.jboss.as.server.deployment.Services;
 import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.Service;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 
 import javax.naming.NamingException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 
 /**
  * @author John Bailey
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public class EEJndiViewExtension implements JndiViewExtension, Service<Void> {
+public class EEJndiViewExtension implements JndiViewExtension, Service {
     static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("jndi-view", "extension", "ee");
 
-    private final InjectedValue<JndiViewExtensionRegistry> registry = new InjectedValue<JndiViewExtensionRegistry>();
+    private final Supplier<JndiViewExtensionRegistry> registrySupplier;
+
+    EEJndiViewExtension(final Supplier<JndiViewExtensionRegistry> registrySupplier) {
+        this.registrySupplier = registrySupplier;
+    }
 
     public synchronized void start(StartContext startContext) throws StartException {
-        registry.getValue().addExtension(this);
+        registrySupplier.get().addExtension(this);
     }
 
     public synchronized void stop(StopContext stopContext) {
-        registry.getValue().removeExtension(this);
-    }
-
-    public Void getValue() throws IllegalStateException, IllegalArgumentException {
-        return null;
+        registrySupplier.get().removeExtension(this);
     }
 
     public void execute(final JndiViewExtensionContext context) throws OperationFailedException {
@@ -174,7 +174,4 @@ public class EEJndiViewExtension implements JndiViewExtension, Service<Void> {
         return cleaned;
     }
 
-    public Injector<JndiViewExtensionRegistry> getRegistryInjector() {
-        return registry;
-    }
 }

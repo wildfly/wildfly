@@ -28,7 +28,8 @@ import org.jboss.as.ee.concurrent.ContextServiceImpl;
 import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
+
+import java.util.function.Supplier;
 
 /**
  * Service responsible for managing a context service impl's lifecycle.
@@ -40,23 +41,19 @@ public final class ContextServiceService extends EEConcurrentAbstractService<Con
 
     private final String name;
     private final ContextSetupProvider contextSetupProvider;
-    private final InjectedValue<TransactionSetupProvider> transactionSetupProvider;
+    private final Supplier<TransactionSetupProvider> transactionSetupProviderSupplier;
     private volatile ContextServiceImpl contextService;
 
-    public ContextServiceService(final String name, final String jndiName, final ContextSetupProvider contextSetupProvider) {
+    public ContextServiceService(final String name, final String jndiName, final ContextSetupProvider contextSetupProvider, final Supplier<TransactionSetupProvider> transactionSetupProviderSupplier) {
         super(jndiName);
         this.name = name;
         this.contextSetupProvider = contextSetupProvider;
-        this.transactionSetupProvider = new InjectedValue<>();
-    }
-
-    public InjectedValue<TransactionSetupProvider> getTransactionSetupProvider() {
-        return transactionSetupProvider;
+        this.transactionSetupProviderSupplier = transactionSetupProviderSupplier;
     }
 
     @Override
     void startValue(final StartContext context) {
-        contextService = new ContextServiceImpl(name, contextSetupProvider, transactionSetupProvider.getOptionalValue());
+        contextService = new ContextServiceImpl(name, contextSetupProvider, transactionSetupProviderSupplier != null ? transactionSetupProviderSupplier.get() : null);
     }
 
     @Override

@@ -23,7 +23,6 @@ package org.jboss.as.ee.subsystem;
 
 import org.glassfish.enterprise.concurrent.AbstractManagedExecutorService;
 import org.glassfish.enterprise.concurrent.ContextServiceImpl;
-import org.glassfish.enterprise.concurrent.ManagedExecutorServiceAdapter;
 import org.glassfish.enterprise.concurrent.ManagedThreadFactoryImpl;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -43,10 +42,12 @@ import org.wildfly.extension.requestcontroller.RequestController;
 import org.wildfly.extension.requestcontroller.RequestControllerExtension;
 
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 /**
  * @author Eduardo Martins
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class ManagedExecutorServiceAdd extends AbstractAddStepHandler {
 
@@ -66,7 +67,6 @@ public class ManagedExecutorServiceAdd extends AbstractAddStepHandler {
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         final String name = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
-
         final String jndiName = ManagedExecutorServiceResourceDefinition.JNDI_NAME_AD.resolveModelAttribute(context, model).asString();
         final long hungTaskThreshold = ManagedExecutorServiceResourceDefinition.HUNG_TASK_THRESHOLD_AD.resolveModelAttribute(context, model).asLong();
         final boolean longRunningTasks = ManagedExecutorServiceResourceDefinition.LONG_RUNNING_TASKS_AD.resolveModelAttribute(context, model).asBoolean();
@@ -106,27 +106,34 @@ public class ManagedExecutorServiceAdd extends AbstractAddStepHandler {
 
         final AbstractManagedExecutorService.RejectPolicy rejectPolicy = AbstractManagedExecutorService.RejectPolicy.valueOf(ManagedExecutorServiceResourceDefinition.REJECT_POLICY_AD.resolveModelAttribute(context, model).asString());
 
-        final ManagedExecutorServiceService service = new ManagedExecutorServiceService(name, jndiName, hungTaskThreshold, longRunningTasks, coreThreads, maxThreads, keepAliveTime, keepAliveTimeUnit, threadLifeTime, queueLength, rejectPolicy);
-        final ServiceBuilder<ManagedExecutorServiceAdapter> serviceBuilder = context.getServiceTarget().addService(ConcurrentServiceNames.getManagedExecutorServiceServiceName(name), service);
+        final ServiceBuilder<?> serviceBuilder = context.getServiceTarget().addService(ConcurrentServiceNames.getManagedExecutorServiceServiceName(name));
 
-        boolean rcPresent = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, false).hasChild(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, RequestControllerExtension.SUBSYSTEM_NAME));
         String contextService = null;
         if(model.hasDefined(ManagedExecutorServiceResourceDefinition.CONTEXT_SERVICE)) {
             contextService = ManagedExecutorServiceResourceDefinition.CONTEXT_SERVICE_AD.resolveModelAttribute(context, model).asString();
         }
+        Supplier<ContextServiceImpl> csiSupplier = null;
         if (contextService != null) {
-            serviceBuilder.addDependency(ConcurrentServiceNames.getContextServiceServiceName(contextService), ContextServiceImpl.class, service.getContextServiceInjector());
+            csiSupplier = serviceBuilder.requires(ConcurrentServiceNames.getContextServiceServiceName(contextService));
         }
         String threadFactory = null;
         if(model.hasDefined(ManagedExecutorServiceResourceDefinition.THREAD_FACTORY)) {
             threadFactory = ManagedExecutorServiceResourceDefinition.THREAD_FACTORY_AD.resolveModelAttribute(context, model).asString();
         }
+        Supplier<ManagedThreadFactoryImpl> mtfiSupplier = null;
         if (threadFactory != null) {
-            serviceBuilder.addDependency(ConcurrentServiceNames.getManagedThreadFactoryServiceName(threadFactory), ManagedThreadFactoryImpl.class, service.getManagedThreadFactoryInjector());
+            mtfiSupplier = serviceBuilder.requires(ConcurrentServiceNames.getManagedThreadFactoryServiceName(threadFactory));
         }
-        if(rcPresent) {
-            serviceBuilder.addDependency(RequestController.SERVICE_NAME, RequestController.class, service.getRequestController());
+        boolean rcPresent = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, false).hasChild(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, RequestControllerExtension.SUBSYSTEM_NAME));
+        Supplier<RequestController> rcSupplier = null;
+        if (rcPresent) {
+            rcSupplier = serviceBuilder.requires(RequestController.SERVICE_NAME);
         }
+        serviceBuilder.setInstance(new ManagedExecutorServiceService(
+                name, jndiName, hungTaskThreshold, longRunningTasks, coreThreads,
+                maxThreads, keepAliveTime, keepAliveTimeUnit, threadLifeTime, queueLength, rejectPolicy,
+                csiSupplier, mtfiSupplier, rcSupplier));
         serviceBuilder.install();
     }
+
 }

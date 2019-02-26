@@ -84,6 +84,9 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.jbossallxml.JBossAllXmlParserRegisteringProcessor;
 import org.jboss.dmr.ModelNode;
 import org.jboss.metadata.ear.jboss.JBossAppMetaData;
+import org.jboss.msc.service.ServiceBuilder;
+
+import java.util.function.Supplier;
 
 import static org.jboss.as.ee.logging.EeLogger.ROOT_LOGGER;
 
@@ -92,6 +95,7 @@ import static org.jboss.as.ee.logging.EeLogger.ROOT_LOGGER;
  *
  * @author Weston M. Price
  * @author Emanuel Muckenhuber
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
@@ -102,7 +106,7 @@ public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
     private final AnnotationPropertyReplacementProcessor ejbAnnotationPropertyReplacementProcessor;
 
 
-    public EeSubsystemAdd(final DefaultEarSubDeploymentsIsolationProcessor isolationProcessor,
+    EeSubsystemAdd(final DefaultEarSubDeploymentsIsolationProcessor isolationProcessor,
                           final GlobalModuleDependencyProcessor moduleDependencyProcessor,
                           final DescriptorPropertyReplacementProcessor specDescriptorPropertyReplacementProcessor,
                           final DescriptorPropertyReplacementProcessor jbossDescriptorPropertyReplacementProcessor,
@@ -123,10 +127,10 @@ public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     protected void performBoottime(final OperationContext context, final ModelNode operation, final Resource resource) throws OperationFailedException {
         ModelNode model = resource.getModel();
-        final EEJndiViewExtension extension = new EEJndiViewExtension();
-        context.getServiceTarget().addService(EEJndiViewExtension.SERVICE_NAME, extension)
-                .addDependency(JndiViewExtensionRegistry.SERVICE_NAME, JndiViewExtensionRegistry.class, extension.getRegistryInjector())
-                .install();
+        final ServiceBuilder<?> sb = context.getServiceTarget().addService(EEJndiViewExtension.SERVICE_NAME);
+        final Supplier<JndiViewExtensionRegistry> registrySupplier = sb.requires(JndiViewExtensionRegistry.SERVICE_NAME);
+        sb.setInstance(new EEJndiViewExtension(registrySupplier));
+        sb.install();
 
         final boolean appclient = context.getProcessType() == ProcessType.APPLICATION_CLIENT;
 

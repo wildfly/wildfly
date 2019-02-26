@@ -28,15 +28,17 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.ee.concurrent.ContextServiceImpl;
 import org.jboss.as.ee.concurrent.DefaultContextSetupProviderImpl;
 import org.jboss.as.ee.concurrent.service.ConcurrentServiceNames;
 import org.jboss.as.ee.concurrent.service.ContextServiceService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 
+import java.util.function.Supplier;
+
 /**
  * @author Eduardo Martins
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class ContextServiceAdd extends AbstractAddStepHandler {
 
@@ -55,12 +57,14 @@ public class ContextServiceAdd extends AbstractAddStepHandler {
         final boolean useTransactionSetupProvider = ContextServiceResourceDefinition.USE_TRANSACTION_SETUP_PROVIDER_AD.resolveModelAttribute(context, model).asBoolean();
 
         // install the service which manages the default context service
-        final ContextServiceService contextServiceService = new ContextServiceService(name, jndiName, new DefaultContextSetupProviderImpl());
-        final ServiceBuilder<ContextServiceImpl> serviceBuilder = context.getServiceTarget().addService(ConcurrentServiceNames.getContextServiceServiceName(name), contextServiceService);
+        final ServiceBuilder<?> serviceBuilder = context.getServiceTarget().addService(ConcurrentServiceNames.getContextServiceServiceName(name));
+        Supplier<TransactionSetupProvider> tspSupplier = null;
         if (useTransactionSetupProvider) {
             // add it to deps of context service's service, for injection of its value
-            serviceBuilder.addDependency(ConcurrentServiceNames.TRANSACTION_SETUP_PROVIDER_SERVICE_NAME,TransactionSetupProvider.class,contextServiceService.getTransactionSetupProvider());
+            tspSupplier = serviceBuilder.requires(ConcurrentServiceNames.TRANSACTION_SETUP_PROVIDER_SERVICE_NAME);
         }
+        serviceBuilder.setInstance(new ContextServiceService(name, jndiName, new DefaultContextSetupProviderImpl(), tspSupplier));
         serviceBuilder.install();
     }
+
 }

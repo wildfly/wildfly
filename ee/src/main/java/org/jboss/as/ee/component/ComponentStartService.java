@@ -24,28 +24,25 @@ package org.jboss.as.ee.component;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.function.Supplier;
 
-import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 
 /**
  * Service wrapper for a {@link Component} which starts and stops the component instance.
  *
  * @author John Bailey
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public final class ComponentStartService implements Service<Component> {
 
-    private final InjectedValue<BasicComponent> component = new InjectedValue<BasicComponent>();
-    private final InjectedValue<ExecutorService> executor = new InjectedValue<ExecutorService>();
+    private volatile Supplier<BasicComponent> component;
+    private volatile Supplier<ExecutorService> executor;
 
-    /**
-     * {@inheritDoc}
-     */
     public void start(final StartContext context) throws StartException {
         final Runnable task = new Runnable() {
             @Override
@@ -59,7 +56,7 @@ public final class ComponentStartService implements Service<Component> {
             }
         };
         try {
-            executor.getValue().submit(task);
+            executor.get().submit(task);
         } catch (RejectedExecutionException e) {
             task.run();
         } finally {
@@ -67,9 +64,6 @@ public final class ComponentStartService implements Service<Component> {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public void stop(final StopContext context) {
         final Runnable task = new Runnable() {
             @Override
@@ -82,7 +76,7 @@ public final class ComponentStartService implements Service<Component> {
             }
         };
         try {
-            executor.getValue().submit(task);
+            executor.get().submit(task);
         } catch (RejectedExecutionException e) {
             task.run();
         } finally {
@@ -90,23 +84,16 @@ public final class ComponentStartService implements Service<Component> {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public BasicComponent getValue() throws IllegalStateException, IllegalArgumentException {
-        return component.getValue();
+        return component.get();
     }
 
-    /**
-     * Get the component injector.
-     *
-     * @return the component injector
-     */
-    public Injector<BasicComponent> getComponentInjector() {
-        return component;
+    public void setComponentSupplier(final Supplier<BasicComponent> component) {
+        this.component = component;
     }
 
-    public InjectedValue<ExecutorService> getExecutorInjector() {
-        return executor;
+    public void setExecutorSupplier(final Supplier<ExecutorService> executor) {
+        this.executor = executor;
     }
+
 }

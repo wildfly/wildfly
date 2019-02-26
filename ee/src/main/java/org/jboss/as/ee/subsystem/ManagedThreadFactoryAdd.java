@@ -22,7 +22,6 @@
 package org.jboss.as.ee.subsystem;
 
 import org.glassfish.enterprise.concurrent.ContextServiceImpl;
-import org.glassfish.enterprise.concurrent.ManagedThreadFactoryImpl;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -33,8 +32,11 @@ import org.jboss.as.ee.concurrent.service.ManagedThreadFactoryService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 
+import java.util.function.Supplier;
+
 /**
  * @author Eduardo Martins
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class ManagedThreadFactoryAdd extends AbstractAddStepHandler {
 
@@ -51,16 +53,16 @@ public class ManagedThreadFactoryAdd extends AbstractAddStepHandler {
         final String jndiName = ManagedExecutorServiceResourceDefinition.JNDI_NAME_AD.resolveModelAttribute(context, model).asString();
         final int priority = ManagedThreadFactoryResourceDefinition.PRIORITY_AD.resolveModelAttribute(context, model).asInt();
 
-        final ManagedThreadFactoryService service = new ManagedThreadFactoryService(name, jndiName, priority);
-        final ServiceBuilder<ManagedThreadFactoryImpl> serviceBuilder = context.getServiceTarget().addService(ConcurrentServiceNames.getManagedThreadFactoryServiceName(name), service);
+        final ServiceBuilder<?> serviceBuilder = context.getServiceTarget().addService(ConcurrentServiceNames.getManagedThreadFactoryServiceName(name));
         String contextService = null;
         if(model.hasDefined(ManagedThreadFactoryResourceDefinition.CONTEXT_SERVICE)) {
             contextService = ManagedThreadFactoryResourceDefinition.CONTEXT_SERVICE_AD.resolveModelAttribute(context, model).asString();
         }
+        Supplier<ContextServiceImpl> csSupplier = null;
         if (contextService != null) {
-            serviceBuilder.addDependency(ConcurrentServiceNames.getContextServiceServiceName(contextService), ContextServiceImpl.class, service.getContextServiceInjector());
+            csSupplier = serviceBuilder.requires(ConcurrentServiceNames.getContextServiceServiceName(contextService));
         }
-
+        serviceBuilder.setInstance(new ManagedThreadFactoryService(name, jndiName, priority, csSupplier));
         serviceBuilder.install();
     }
 }

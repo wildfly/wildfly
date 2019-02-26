@@ -29,6 +29,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.utils.DescriptorUtils;
@@ -39,22 +40,21 @@ import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.Interceptors;
 import org.jboss.invocation.SimpleInterceptorFactoryContext;
 import org.jboss.invocation.proxy.ProxyFactory;
-import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 import static org.jboss.as.ee.logging.EeLogger.ROOT_LOGGER;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public final class ViewService implements Service<ComponentView> {
 
-    private final InjectedValue<Component> componentInjector = new InjectedValue<Component>();
+    private final Supplier<Component> componentSupplier;
     private final Map<Method, InterceptorFactory> viewInterceptorFactories;
     private final Map<Method, InterceptorFactory> clientInterceptorFactories;
     private final InterceptorFactory clientPostConstruct;
@@ -71,7 +71,7 @@ public final class ViewService implements Service<ComponentView> {
     private volatile Map<Method, Interceptor> clientInterceptors;
 
 
-    public ViewService(final ViewConfiguration viewConfiguration) {
+    public ViewService(final ViewConfiguration viewConfiguration, final Supplier<Component> componentSupplier) {
         viewClass = viewConfiguration.getViewClass();
         final ProxyFactory<?> proxyFactory = viewConfiguration.getProxyFactory();
         this.proxyFactory = proxyFactory;
@@ -102,6 +102,7 @@ public final class ViewService implements Service<ComponentView> {
         } else {
             privateData = viewConfiguration.getPrivateData();
         }
+        this.componentSupplier = componentSupplier;
     }
 
     public void start(final StartContext context) throws StartException {
@@ -131,9 +132,6 @@ public final class ViewService implements Service<ComponentView> {
         view = null;
     }
 
-    public Injector<Component> getComponentInjector() {
-        return componentInjector;
-    }
 
     public ComponentView getValue() throws IllegalStateException, IllegalArgumentException {
         return view;
@@ -148,7 +146,7 @@ public final class ViewService implements Service<ComponentView> {
 
         View(final Map<Class<?>, Object> privateData) {
             this.privateData = privateData;
-            component = componentInjector.getValue();
+            component = componentSupplier.get();
             //we need to build the view interceptor chain
             this.viewInterceptors = new IdentityHashMap<Method, Interceptor>();
             this.methods = new HashMap<MethodDescription, Method>();
