@@ -1,0 +1,217 @@
+[[Galleon_Provisioning]]
+= Provisioning WildFly with Galleon
+
+With the WildFly server being internally built using the https://github.com/wildfly/galleon[Galleon project], WildFly benefits +
+from Galleon's provisioning capabilities. One of the main features that Galleon brings to WildFly is the ability
+to install a complete or customized WildFly server using Galleon tooling.
+
+More information on Galleon features and tooling can be found in the Galleon https://docs.wildfly.org/galleon/[docs].
+
+== WildFly Galleon feature-packs
+
+WildFly provides a Galleon feature-pack maven artifact (a zipped file that contains installation content). 
+This feature-pack, as well as the feature-packs on which its depends (core and servlet feature-packs),
+are deployed in public maven repositories. 
+
+When Galleon is used to install WildFly, WildFly feature-packs are retrieved and 
+their content is assembled to create an installation.
+
+== Installing WildFly using Galleon
+
+The Galleon maven plugin or Galleon CLI are used to install WildFly. The latest CLI and documentation can be downloaded 
+from the Galleon releases https://github.com/wildfly/galleon/releases[page].
+
+To install the latest final version of WildFly into the directory _my-wildfly-server_ call:
+
+[source,options="nowrap"]
+----
+galleon.sh install wildfly:current --dir=my-wildfly-server
+----
+
+Once installed, the directory _my-wildfly-server_ contains all that is expected to run a complete WildFly server. 
+By default, all standalone and domain configurations are installed.
+
+[NOTE]
+====
+
+Append the release version to install an identified release, for example:
+[source,options="nowrap"]
+----
+galleon.sh install wildfly:current#16.0.0.Final --dir=my-wildfly-server
+----
+Use _wildfly-core:current_ to only install a core server, for example:
+----
+galleon.sh install wildfly-core:current --dir=my-core-server
+----
+Use _wildfly-servlet:current_ to only install a servlet server, for example:
+----
+galleon.sh install wildfly-servlet:current --dir=my-servlet-server
+----
+====
+
+== Selecting the configurations to install
+
+Galleon allows you to specify only a subset of the default configurations to be installed.
+
+To only install the standalone.xml configuration call:
+
+[source,options="nowrap"]
+----
+galleon.sh install wildfly:current --dir=my-wildfly-server --default-configs=standalone/standalone.xml
+----
+
+To install multiple configurations, a comma separated list of default configurations can be provided, 
+for example:
+[source,options="nowrap"]
+----
+galleon.sh install wildfly:current --dir=my-wildfly-server --default-configs=standalone/standalone.xml,domain/domain.xml
+----
+
+[NOTE]
+====
+
+A default configuration is identified by _<configuration model>_/_<configuration name>_. WildFly defines _standalone_ and _domain_ models. 
+The _configuration name_ is the XML configuration file name (e.g.: _standalone.xml_, _domain.xml_, _standalone-ha.xml_).
+====
+
+== WildFly Galleon layers
+
+WildFly Galleon feature-packs expose some link:++https://docs.wildfly.org/galleon/#_layers++[Galleon layers]. 
+A layer identifies one or more server functionalities that can be installed on its own or 
+in combination with other layers. For example, if your application (e.g.: microservice) 
+is only making use of _jaxrs_ and _cdi_ server functionalities, you can choose to only install 
+the _jaxrs_ and _cdi_ layers. The _standalone.xml_ configuration would then only contain the 
+required subsystems and their dependencies.
+
+The benefit to installing WildFly using Galleon layers, in addition to configuration 
+trim down, is that Galleon only installs the needed content (JBOSS Modules modules, scripts, etc.).
+
+To install a server only configured with jaxrs and cdi functionalities call:
+
+[source,options="nowrap"]
+----
+galleon.sh install wildfly:current --dir=my-wildfly-server --layers=cdi,jaxrs
+----
+
+Once installed, the directory _my-wildfly-server_ contains all that is expected to deploy an application
+that depends on _jaxrs_ and _cdi_. 
+
+[NOTE]
+====
+
+* Tools (jboss-cli, add-user, ...) are not installed when installing WildFly using layers. 
+Only server launcher scripts are installed into the _bin_ directory. To include these tools include the _core-tools_ layer.
+====
+
+=== Defined Galleon layers
+
+==== Note on layers and feature-pack dependencies
+
+When installing a feature-pack, its own defined layers as well as the layers present in its dependencies 
+can be combined to build a custom configuration. This means that core and servlet defined layers can be combined with 
+WildFly defined layers to assemble a custom configuration. <<galleon-cli-recipes>> contains examples of such combination of layers.
+
+==== WildFly layers
+
+Basic layers:
+
+* _cdi_: Support for cdi.
+* _jaxrs_: Support for jaxrs.
+* _jms-activemq_: Support for connections to a remote jms broker. 
+* _jpa_: Support for jpa (latest WildFly supported hibernate release).
+* _observability_: Support for microprofile monitoring and configuration features (config, health, metrics, open-tracing).
+* _resource-adapters_: Support for deployment of JCA adapters.
+* _h2-database_: Support for h2 database.
+
+Aggregation layers:
+
+* _cloud-profile_, an aggregation of the basic layers (except _h2-database_).
+
+[NOTE]
+====
+These layers depend at least on the _web-server_ layer defined in the WildFly servlet 
+feature-pack (on which WildFly feature-pack depends). This means that when creating an 
+installation with these layers, the installed WildFly server is also configured to be a servlet container. 
+====
+
+==== WildFly servlet layers
+
+Basic layers:
+
+* _ee_: Support for common functionality in the Java EE platform.
+* _legacy-security_: Support for legacy web security. 
+* _naming_: Support for JNDI.
+* _undertow_: Support for the Undertow HTTP server.
+* _undertow-load-balancer_: Support for Undertow configured as a load balancer.
+* _vault_: Support Picketbox security vaults.
+
+Servlet support layer:
+
+* _web-server_: A servlet container composed of _ee_, _naming_, _deployment-scanner_ 
+(from WildFly core feature-pack) and _undertow_ configured as a servlet container.
+
+==== WildFly core layers
+
+Basic layers:
+
+* _base-server_: Empty runnable server.
+* _core-management_: Support for server management services.
+* _deployment-scanner_: Support for deployment directory scanning.
+* _discovery_: Support for discovery.
+* _elytron_: Support for Elytron security.
+* _io_: Support for XNIO workers and buffer pools.
+* _jmx_: Support for registration of Management Model MBeans.
+* _jmx-remoting_: Support for registration of Management Model MBeans and a JMX remoting connector.
+* _logging_: Support for logging subsystem.
+* _management_: Support for remote access to management interfaces.
+* _remoting_: Support for inbound and outbound JBOSS Remoting connections.
+* _request-controller_: Support for request management.
+* _secure-management_: Support for remote access secured thanks to Elytron to management interfaces.
+* _security-management_: Support for security manager.
+
+Aggregation layers:
+
+* _core-server_: Aggregation of layers that compose a typical core server: _secure-management_, 
+_jmx-remoting_, _logging_, _core-management_, _request-controller_ and _security-manager_.
+
+Tools layers:
+
+* _core-tools_: Support for _jboss-cli_, _add-user_, _elytron-tool_ launch scripts and configuration files.
+
+[[galleon-cli-recipes]]
+=== Galleon CLI recipes
+
+==== Installation of a cloud-profile with main core functionalities and management tools
+
+[source,options="nowrap"]
+----
+galleon.sh install wildfly:current --dir=my-wildfly-server --layers=cloud-profile,core-server,core-tools
+----
+
+==== Installation of jaxrs, cdi, elytron and logging
+
+[source,options="nowrap"]
+----
+galleon.sh install wildfly:current --dir=my-wildfly-server --layers=jaxrs,cdi,elytron,logging
+----
+
+==== Installation of a servlet container with main core functionalities
+
+[source,options="nowrap"]
+----
+galleon.sh install wildfly:current --dir=my-wildfly-server --layers=web-server,core-server
+----
+
+==== Installation of an Undertow http server with logging
+
+[source,options="nowrap"]
+----
+galleon.sh install wildfly:current --dir=my-wildfly-server --layers=undertow,logging
+----
+
+==== Installation of a core server
+
+[source,options="nowrap"]
+----
+galleon.sh install wildfly:current --dir=my-wildfly-server --layers=core-server
+----
