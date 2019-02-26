@@ -45,14 +45,10 @@ import static org.jboss.as.ee.structure.DeploymentType.WAR;
 public class DefaultDataSourceBindingProcessor implements DeploymentUnitProcessor {
 
     public static final String COMP_DEFAULT_DATASOURCE_JNDI_NAME = "java:comp/DefaultDataSource";
-    public static final String MODULE_DEFAULT_DATASOURCE_JNDI_NAME = "java:module/DefaultDataSource";
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        if (DeploymentTypeMarker.isType(EAR, deploymentUnit)) {
-            return;
-        }
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
         if(moduleDescription == null) {
             return;
@@ -62,12 +58,9 @@ public class DefaultDataSourceBindingProcessor implements DeploymentUnitProcesso
             return;
         }
         final LookupInjectionSource injectionSource = new LookupInjectionSource(defaultDataSource);
-        if (DeploymentTypeMarker.isType(WAR, deploymentUnit)) {
-            moduleDescription.getBindingConfigurations().add(new BindingConfiguration(MODULE_DEFAULT_DATASOURCE_JNDI_NAME, injectionSource));
+        if (DeploymentTypeMarker.isType(WAR, deploymentUnit) || DeploymentTypeMarker.isType(EAR, deploymentUnit) || DeploymentTypeMarker.isType(APPLICATION_CLIENT, deploymentUnit)) {
+            moduleDescription.getBindingConfigurations().add(new BindingConfiguration(COMP_DEFAULT_DATASOURCE_JNDI_NAME, injectionSource));
         } else {
-            if (DeploymentTypeMarker.isType(APPLICATION_CLIENT, deploymentUnit)) {
-                moduleDescription.getBindingConfigurations().add(new BindingConfiguration(COMP_DEFAULT_DATASOURCE_JNDI_NAME, injectionSource));
-            }
             for(ComponentDescription componentDescription : moduleDescription.getComponentDescriptions()) {
                 if(componentDescription.getNamingMode() == ComponentNamingMode.CREATE) {
                     componentDescription.getBindingConfigurations().add(new BindingConfiguration(COMP_DEFAULT_DATASOURCE_JNDI_NAME, injectionSource));

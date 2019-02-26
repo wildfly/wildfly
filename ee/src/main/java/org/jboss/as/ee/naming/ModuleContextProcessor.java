@@ -22,12 +22,7 @@
 
 package org.jboss.as.ee.naming;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.jboss.as.ee.component.EEModuleDescription;
-import org.jboss.as.ee.structure.DeploymentType;
-import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
@@ -62,9 +57,6 @@ public class ModuleContextProcessor implements DeploymentUnitProcessor {
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        if (DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
-            return;
-        }
         EEModuleDescription moduleDescription = deploymentUnit.getAttachment(EE_MODULE_DESCRIPTION);
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
 
@@ -90,14 +82,7 @@ public class ModuleContextProcessor implements DeploymentUnitProcessor {
         phaseContext.addDependency(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, NamingStore.class, selector.getJbossContextInjector());
         phaseContext.addDependency(ContextNames.EXPORTED_CONTEXT_SERVICE_NAME, NamingStore.class, selector.getExportedContextInjector());
         phaseContext.addDependency(ContextNames.GLOBAL_CONTEXT_SERVICE_NAME, NamingStore.class, selector.getGlobalContextInjector());
-
         moduleDescription.setNamespaceContextSelector(selector);
-
-        final Set<ServiceName> serviceNames = new HashSet<ServiceName>();
-        serviceNames.add(appContextServiceName);
-        serviceNames.add(moduleContextServiceName);
-        serviceNames.add(ContextNames.JBOSS_CONTEXT_SERVICE_NAME);
-        serviceNames.add(ContextNames.GLOBAL_CONTEXT_SERVICE_NAME);
 
         // add the arquillian setup action, so the module namespace is available in arquillian tests
         final JavaNamespaceSetup setupAction = new JavaNamespaceSetup(selector, deploymentUnit.getServiceName());

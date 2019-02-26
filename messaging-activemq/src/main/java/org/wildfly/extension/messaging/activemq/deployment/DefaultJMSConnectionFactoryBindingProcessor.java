@@ -46,29 +46,22 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 public class DefaultJMSConnectionFactoryBindingProcessor implements DeploymentUnitProcessor {
 
     public static final String COMP_DEFAULT_JMS_CONNECTION_FACTORY = "java:comp/DefaultJMSConnectionFactory";
-    public static final String MODULE_DEFAULT_JMS_CONNECTION_FACTORY = "java:module/DefaultJMSConnectionFactory";
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        if (DeploymentTypeMarker.isType(EAR, deploymentUnit)) {
-            return;
-        }
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
-        if(moduleDescription == null) {
+        if (moduleDescription == null) {
             return;
         }
         final String defaultJMSConnectionFactory = moduleDescription.getDefaultResourceJndiNames().getJmsConnectionFactory();
-        if(defaultJMSConnectionFactory == null) {
+        if (defaultJMSConnectionFactory == null) {
             return;
         }
         final LookupInjectionSource injectionSource = new LookupInjectionSource(defaultJMSConnectionFactory);
-        if (DeploymentTypeMarker.isType(WAR, deploymentUnit)) {
-            moduleDescription.getBindingConfigurations().add(new BindingConfiguration(MODULE_DEFAULT_JMS_CONNECTION_FACTORY, injectionSource));
+        if (DeploymentTypeMarker.isType(WAR, deploymentUnit) || DeploymentTypeMarker.isType(EAR, deploymentUnit) || DeploymentTypeMarker.isType(APPLICATION_CLIENT, deploymentUnit)) {
+            moduleDescription.getBindingConfigurations().add(new BindingConfiguration(COMP_DEFAULT_JMS_CONNECTION_FACTORY, injectionSource));
         } else {
-            if (DeploymentTypeMarker.isType(APPLICATION_CLIENT, deploymentUnit)) {
-                moduleDescription.getBindingConfigurations().add(new BindingConfiguration(COMP_DEFAULT_JMS_CONNECTION_FACTORY, injectionSource));
-            }
             for(ComponentDescription componentDescription : moduleDescription.getComponentDescriptions()) {
                 if(componentDescription.getNamingMode() == ComponentNamingMode.CREATE) {
                     componentDescription.getBindingConfigurations().add(new BindingConfiguration(COMP_DEFAULT_JMS_CONNECTION_FACTORY,injectionSource));
