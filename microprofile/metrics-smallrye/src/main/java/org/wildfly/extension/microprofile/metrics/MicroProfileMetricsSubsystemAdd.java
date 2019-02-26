@@ -23,19 +23,27 @@
 package org.wildfly.extension.microprofile.metrics;
 
 import static org.jboss.as.controller.OperationContext.Stage.RUNTIME;
+import static org.jboss.as.controller.OperationContext.Stage.VERIFY;
+import static org.jboss.as.controller.PathAddress.EMPTY_ADDRESS;
 import static org.jboss.as.server.deployment.Phase.DEPENDENCIES;
 import static org.jboss.as.server.deployment.Phase.DEPENDENCIES_MICROPROFILE_METRICS;
 import static org.jboss.as.server.deployment.Phase.INSTALL;
 import static org.jboss.as.server.deployment.Phase.POST_MODULE_MICROPROFILE_METRICS;
+import static org.wildfly.extension.microprofile.metrics.MicroProfileMetricsSubsystemDefinition.WILDFLY_COLLECTOR_SERVICE;
 
 import java.util.List;
+import java.util.function.Function;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
 import org.wildfly.extension.microprofile.metrics._private.MicroProfileMetricsLogger;
 import org.wildfly.extension.microprofile.metrics.deployment.DependencyProcessor;
 import org.wildfly.extension.microprofile.metrics.deployment.DeploymentMetricProcessor;
@@ -67,8 +75,23 @@ class MicroProfileMetricsSubsystemAdd extends AbstractBoottimeAddStepHandler {
         List<String> exposedSubsystems = MicroProfileMetricsSubsystemDefinition.EXPOSED_SUBSYSTEMS.unwrap(context, model);
         String prefix = MicroProfileMetricsSubsystemDefinition.PREFIX.resolveModelAttribute(context, model).asStringOrNull();
 
-        MetricsRegistrationService.install(context, exposedSubsystems, prefix);
         MetricsContextService.install(context, securityEnabled);
+        MetricsCollectorService.install(context, exposedSubsystems, prefix);
+        // delay the registration of the metrics in the VERIFY stage so that all resources
+        // created during the RUNTIME phase will have been registered in the MRR.
+        context.addStep(new OperationStepHandler() {
+            @Override
+            public void execute(OperationContext operationContext, ModelNode modelNode) {
+                ServiceController<?> serviceController = context.getServiceRegistry(false).getService(WILDFLY_COLLECTOR_SERVICE);
+                MetricCollector metricCollector = MetricCollector.class.cast(serviceController.getValue());
+
+                ImmutableManagementResourceRegistration rootResourceRegistration = context.getRootResourceRegistration();
+                Resource rootResource = context.readResourceFromRoot(EMPTY_ADDRESS);
+                metricCollector.collectResourceMetrics(rootResource, rootResourceRegistration, Function.identity());
+            }
+        }, VERIFY);
+
+
 
         MicroProfileMetricsLogger.LOGGER.activatingSubsystem();
     }

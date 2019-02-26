@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2018, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -24,13 +24,12 @@ package org.wildfly.extension.microprofile.metrics;
 import static org.wildfly.extension.microprofile.config.smallrye.ServiceNames.CONFIG_PROVIDER;
 import static org.wildfly.extension.microprofile.metrics.MicroProfileMetricsSubsystemDefinition.CLIENT_FACTORY_CAPABILITY;
 import static org.wildfly.extension.microprofile.metrics.MicroProfileMetricsSubsystemDefinition.MANAGEMENT_EXECUTOR;
-import static org.wildfly.extension.microprofile.metrics.MicroProfileMetricsSubsystemDefinition.WILDFLY_REGISTRATION_SERVICE;
+import static org.wildfly.extension.microprofile.metrics.MicroProfileMetricsSubsystemDefinition.WILDFLY_COLLECTOR_SERVICE;
 import static org.wildfly.extension.microprofile.metrics._private.MicroProfileMetricsLogger.LOGGER;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Executor;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 import io.smallrye.metrics.MetricRegistries;
@@ -39,45 +38,37 @@ import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.jboss.as.controller.LocalModelControllerClient;
 import org.jboss.as.controller.ModelControllerClientFactory;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
-public class MetricsRegistrationService implements Service<MetricsRegistrationService> {
+/**
+ * Service to create a metric collector
+ */
+public class MetricsCollectorService implements Service<MetricCollector> {
 
-    private final ImmutableManagementResourceRegistration rootResourceRegistration;
-    private final Resource rootResource;
     private final Supplier<ModelControllerClientFactory> modelControllerClientFactory;
     private final Supplier<Executor> managementExecutor;
-    private List<String> exposedSubsystems;
-    private String globalPrefix;
+    private final List<String> exposedSubsystems;
+    private final String globalPrefix;
+
     private MetricCollector metricCollector;
     private JmxRegistrar jmxRegistrar;
     private LocalModelControllerClient modelControllerClient;
 
-    private MetricCollector.MetricRegistration registration;
-
     static void install(OperationContext context, List<String> exposedSubsystems, String prefix) {
-        ImmutableManagementResourceRegistration rootResourceRegistration = context.getRootResourceRegistration();
-        Resource rootResource = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS);
-
-        ServiceBuilder<?> serviceBuilder = context.getServiceTarget().addService(WILDFLY_REGISTRATION_SERVICE);
+        ServiceBuilder<?> serviceBuilder = context.getServiceTarget().addService(WILDFLY_COLLECTOR_SERVICE);
         Supplier<ModelControllerClientFactory> modelControllerClientFactory = serviceBuilder.requires(context.getCapabilityServiceName(CLIENT_FACTORY_CAPABILITY, ModelControllerClientFactory.class));
         Supplier<Executor> managementExecutor = serviceBuilder.requires(context.getCapabilityServiceName(MANAGEMENT_EXECUTOR, Executor.class));
         serviceBuilder.requires(CONFIG_PROVIDER);
-        MetricsRegistrationService service = new MetricsRegistrationService(rootResourceRegistration, rootResource, modelControllerClientFactory, managementExecutor, exposedSubsystems, prefix);
+        MetricsCollectorService service = new MetricsCollectorService(modelControllerClientFactory, managementExecutor, exposedSubsystems, prefix);
         serviceBuilder.setInstance(service)
                 .install();
     }
 
-    public MetricsRegistrationService(ImmutableManagementResourceRegistration rootResourceRegistration, Resource rootResource, Supplier<ModelControllerClientFactory> modelControllerClientFactory, Supplier<Executor> managementExecutor, List<String> exposedSubsystems, String globalPrefix) {
-        this.rootResourceRegistration = rootResourceRegistration;
-        this.rootResource = rootResource;
+    MetricsCollectorService(Supplier<ModelControllerClientFactory> modelControllerClientFactory, Supplier<Executor> managementExecutor, List<String> exposedSubsystems, String globalPrefix) {
         this.modelControllerClientFactory = modelControllerClientFactory;
         this.managementExecutor = managementExecutor;
         this.exposedSubsystems = exposedSubsystems;
@@ -95,9 +86,7 @@ public class MetricsRegistrationService implements Service<MetricsRegistrationSe
 
         modelControllerClient = modelControllerClientFactory.get().createClient(managementExecutor.get());
 
-        metricCollector = new MetricCollector(modelControllerClient, rootResourceRegistration, exposedSubsystems, globalPrefix);
-
-        registration = metricCollector.collectResourceMetrics(rootResource, rootResourceRegistration, Function.identity());
+        this.metricCollector = new MetricCollector(modelControllerClient, exposedSubsystems, globalPrefix);
     }
 
     @Override
@@ -110,7 +99,6 @@ public class MetricsRegistrationService implements Service<MetricsRegistrationSe
             }
         }
 
-        registration.unregister();
         metricCollector.close();
 
         modelControllerClient.close();
@@ -119,13 +107,7 @@ public class MetricsRegistrationService implements Service<MetricsRegistrationSe
     }
 
     @Override
-    public MetricsRegistrationService getValue() {
-        return this;
-    }
-
-    public MetricCollector.MetricRegistration registerMetrics(Resource rootResource,
-                                                              ImmutableManagementResourceRegistration managementResourceRegistration,
-                                                              Function<PathAddress, PathAddress> resourceAddressResolver) {
-        return metricCollector.collectResourceMetrics(rootResource, managementResourceRegistration, resourceAddressResolver);
+    public MetricCollector getValue() throws IllegalStateException, IllegalArgumentException {
+        return metricCollector;
     }
 }
