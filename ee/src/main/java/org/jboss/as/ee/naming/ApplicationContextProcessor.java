@@ -23,6 +23,9 @@
 package org.jboss.as.ee.naming;
 
 import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ee.structure.DeploymentType;
+import org.jboss.as.ee.structure.DeploymentTypeMarker;
+import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -35,6 +38,8 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.Values;
+
+import static org.jboss.as.server.deployment.Attachments.SETUP_ACTIONS;
 
 /**
  * Deployment processor that deploys a naming context for the current application.
@@ -68,9 +73,27 @@ public class ApplicationContextProcessor implements DeploymentUnitProcessor {
                 .install();
         deploymentUnit.addToAttachmentList(org.jboss.as.server.deployment.Attachments.JNDI_DEPENDENCIES, appNameServiceName);
         deploymentUnit.putAttachment(Attachments.APPLICATION_CONTEXT_CONFIG, applicationContextServiceName);
+
+        if (DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
+            final InjectedEENamespaceContextSelector selector = new InjectedEENamespaceContextSelector();
+            phaseContext.addDependency(applicationContextServiceName, NamingStore.class, selector.getAppContextInjector());
+            phaseContext.addDependency(applicationContextServiceName, NamingStore.class, selector.getModuleContextInjector());
+            phaseContext.addDependency(applicationContextServiceName, NamingStore.class, selector.getCompContextInjector());
+            phaseContext.addDependency(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, NamingStore.class, selector.getJbossContextInjector());
+            phaseContext.addDependency(ContextNames.EXPORTED_CONTEXT_SERVICE_NAME, NamingStore.class, selector.getExportedContextInjector());
+            phaseContext.addDependency(ContextNames.GLOBAL_CONTEXT_SERVICE_NAME, NamingStore.class, selector.getGlobalContextInjector());
+            moduleDescription.setNamespaceContextSelector(selector);
+            final JavaNamespaceSetup setupAction = new JavaNamespaceSetup(selector, deploymentUnit.getServiceName());
+            deploymentUnit.addToAttachmentList(SETUP_ACTIONS, setupAction);
+            deploymentUnit.putAttachment(Attachments.JAVA_NAMESPACE_SETUP_ACTION, setupAction);
+        }
     }
 
     public void undeploy(DeploymentUnit deploymentUnit) {
+        if (DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
+            deploymentUnit.removeAttachment(Attachments.JAVA_NAMESPACE_SETUP_ACTION);
+            deploymentUnit.getAttachmentList(SETUP_ACTIONS).removeIf(setupAction -> setupAction instanceof JavaNamespaceSetup);
+        }
         deploymentUnit.removeAttachment(Attachments.APPLICATION_CONTEXT_CONFIG);
     }
 }

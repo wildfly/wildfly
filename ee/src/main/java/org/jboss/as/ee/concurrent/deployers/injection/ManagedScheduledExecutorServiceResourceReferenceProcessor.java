@@ -35,7 +35,7 @@ import javax.enterprise.concurrent.ManagedScheduledExecutorService;
 public class ManagedScheduledExecutorServiceResourceReferenceProcessor implements EEResourceReferenceProcessor {
 
     private static final String TYPE = ManagedScheduledExecutorService.class.getName();
-    private static final LookupInjectionSource injectionSource = new LookupInjectionSource(EEConcurrentDefaultBindingProcessor.COMP_DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE_JNDI_NAME);
+    private static final LookupInjectionSource injectionSource = new LookupInjectionSource("java:comp/" + EEConcurrentDefaultBindingProcessor.DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE_JNDI_NAME);
 
     public static final ManagedScheduledExecutorServiceResourceReferenceProcessor INSTANCE = new ManagedScheduledExecutorServiceResourceReferenceProcessor();
 

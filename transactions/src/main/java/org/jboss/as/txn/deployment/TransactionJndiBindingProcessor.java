@@ -64,16 +64,17 @@ public class TransactionJndiBindingProcessor implements DeploymentUnitProcessor 
         }
 
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
-        //if this is a war we need to bind to the modules comp namespace
-        if(DeploymentTypeMarker.isType(DeploymentType.WAR,deploymentUnit)) {
-            final ServiceName moduleContextServiceName = ContextNames.contextServiceNameOfModule(moduleDescription.getApplicationName(),moduleDescription.getModuleName());
+        if (DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
+            bindServices(deploymentUnit, serviceTarget, ContextNames.contextServiceNameOfApplication(moduleDescription.getApplicationName()));
+        } else if (DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
+            final ServiceName moduleContextServiceName = ContextNames.contextServiceNameOfModule(moduleDescription.getApplicationName(), moduleDescription.getModuleName());
             bindServices(deploymentUnit, serviceTarget, moduleContextServiceName);
-        }
-
-        for(ComponentDescription component : moduleDescription.getComponentDescriptions()) {
-            if(component.getNamingMode() == ComponentNamingMode.CREATE) {
-                final ServiceName compContextServiceName = ContextNames.contextServiceNameOfComponent(moduleDescription.getApplicationName(),moduleDescription.getModuleName(),component.getComponentName());
-                bindServices(deploymentUnit, serviceTarget, compContextServiceName);
+        } else {
+            for (ComponentDescription component : moduleDescription.getComponentDescriptions()) {
+                if(component.getNamingMode() == ComponentNamingMode.CREATE) {
+                    final ServiceName compContextServiceName = ContextNames.contextServiceNameOfComponent(moduleDescription.getApplicationName(), moduleDescription.getModuleName(), component.getComponentName());
+                    bindServices(deploymentUnit, serviceTarget, compContextServiceName);
+                }
             }
         }
 

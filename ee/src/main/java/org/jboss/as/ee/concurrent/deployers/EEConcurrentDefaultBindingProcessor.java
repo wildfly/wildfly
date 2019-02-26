@@ -44,54 +44,52 @@ import static org.jboss.as.ee.structure.DeploymentType.WAR;
  */
 public class EEConcurrentDefaultBindingProcessor implements DeploymentUnitProcessor {
 
-    public static final String COMP_DEFAULT_CONTEXT_SERVICE_JNDI_NAME = "java:comp/DefaultContextService";
-    public static final String MODULE_DEFAULT_CONTEXT_SERVICE_JNDI_NAME = "java:module/DefaultContextService";
-    public static final String COMP_DEFAULT_MANAGED_EXECUTOR_SERVICE_JNDI_NAME = "java:comp/DefaultManagedExecutorService";
-    public static final String MODULE_DEFAULT_MANAGED_EXECUTOR_SERVICE_JNDI_NAME = "java:module/DefaultManagedExecutorService";
-    public static final String COMP_DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE_JNDI_NAME = "java:comp/DefaultManagedScheduledExecutorService";
-    public static final String MODULE_DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE_JNDI_NAME = "java:module/DefaultManagedScheduledExecutorService";
-    public static final String COMP_DEFAULT_MANAGED_THREAD_FACTORY_JNDI_NAME = "java:comp/DefaultManagedThreadFactory";
-    public static final String MODULE_DEFAULT_MANAGED_THREAD_FACTORY_JNDI_NAME = "java:module/DefaultManagedThreadFactory";
+    public static final String DEFAULT_CONTEXT_SERVICE_JNDI_NAME = "DefaultContextService";
+    public static final String DEFAULT_MANAGED_EXECUTOR_SERVICE_JNDI_NAME = "DefaultManagedExecutorService";
+    public static final String DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE_JNDI_NAME = "DefaultManagedScheduledExecutorService";
+    public static final String DEFAULT_MANAGED_THREAD_FACTORY_JNDI_NAME = "DefaultManagedThreadFactory";
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        if (DeploymentTypeMarker.isType(EAR, deploymentUnit)) {
-            return;
-        }
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
         if(moduleDescription == null) {
             return;
         }
         final String contextService = moduleDescription.getDefaultResourceJndiNames().getContextService();
         if(contextService != null) {
-            addBinding(contextService, COMP_DEFAULT_CONTEXT_SERVICE_JNDI_NAME, MODULE_DEFAULT_CONTEXT_SERVICE_JNDI_NAME, moduleDescription, deploymentUnit);
+            addBinding(contextService, DEFAULT_CONTEXT_SERVICE_JNDI_NAME, moduleDescription, deploymentUnit);
         }
         final String managedExecutorService = moduleDescription.getDefaultResourceJndiNames().getManagedExecutorService();
         if(managedExecutorService != null) {
-            addBinding(managedExecutorService, COMP_DEFAULT_MANAGED_EXECUTOR_SERVICE_JNDI_NAME, MODULE_DEFAULT_MANAGED_EXECUTOR_SERVICE_JNDI_NAME, moduleDescription, deploymentUnit);
+            addBinding(managedExecutorService, DEFAULT_MANAGED_EXECUTOR_SERVICE_JNDI_NAME, moduleDescription, deploymentUnit);
         }
         final String managedScheduledExecutorService = moduleDescription.getDefaultResourceJndiNames().getManagedScheduledExecutorService();
         if(managedScheduledExecutorService != null) {
-            addBinding(managedScheduledExecutorService, COMP_DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE_JNDI_NAME, MODULE_DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE_JNDI_NAME, moduleDescription, deploymentUnit);
+            addBinding(managedScheduledExecutorService, DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE_JNDI_NAME, moduleDescription, deploymentUnit);
         }
         final String managedThreadFactory = moduleDescription.getDefaultResourceJndiNames().getManagedThreadFactory();
         if(managedThreadFactory != null) {
-            addBinding(managedThreadFactory, COMP_DEFAULT_MANAGED_THREAD_FACTORY_JNDI_NAME, MODULE_DEFAULT_MANAGED_THREAD_FACTORY_JNDI_NAME, moduleDescription, deploymentUnit);
+            addBinding(managedThreadFactory, DEFAULT_MANAGED_THREAD_FACTORY_JNDI_NAME, moduleDescription, deploymentUnit);
         }
     }
 
-    private void addBinding(String source, String compTarget, String moduleTarget, EEModuleDescription moduleDescription, DeploymentUnit deploymentUnit) {
+    private void addBinding(String source, String bindingName, EEModuleDescription moduleDescription, DeploymentUnit deploymentUnit) {
         final LookupInjectionSource injectionSource = new LookupInjectionSource(source);
-        if (DeploymentTypeMarker.isType(WAR, deploymentUnit)) {
-            moduleDescription.getBindingConfigurations().add(new BindingConfiguration(moduleTarget, injectionSource));
+        if (DeploymentTypeMarker.isType(EAR, deploymentUnit)) {
+            moduleDescription.getBindingConfigurations().add(new BindingConfiguration("java:app/"+bindingName, injectionSource));
         } else {
-            if (DeploymentTypeMarker.isType(APPLICATION_CLIENT, deploymentUnit)) {
-                moduleDescription.getBindingConfigurations().add(new BindingConfiguration(compTarget, injectionSource));
-            }
-            for(ComponentDescription componentDescription : moduleDescription.getComponentDescriptions()) {
-                if(componentDescription.getNamingMode() == ComponentNamingMode.CREATE) {
-                    componentDescription.getBindingConfigurations().add(new BindingConfiguration(compTarget, injectionSource));
+            if (DeploymentTypeMarker.isType(WAR, deploymentUnit)) {
+                moduleDescription.getBindingConfigurations().add(new BindingConfiguration("java:module/"+bindingName, injectionSource));
+            } else {
+                if (DeploymentTypeMarker.isType(APPLICATION_CLIENT, deploymentUnit)) {
+                    moduleDescription.getBindingConfigurations().add(new BindingConfiguration("java:comp/"+bindingName, injectionSource));
+                } else {
+                    for(ComponentDescription componentDescription : moduleDescription.getComponentDescriptions()) {
+                        if(componentDescription.getNamingMode() == ComponentNamingMode.CREATE) {
+                            componentDescription.getBindingConfigurations().add(new BindingConfiguration("java:comp/"+bindingName, injectionSource));
+                        }
+                    }
                 }
             }
         }

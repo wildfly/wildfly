@@ -66,12 +66,14 @@ public class ConcurrentServiceNames {
     }
 
     public static ServiceName getConcurrentContextServiceName(String app, String module, String component) {
-        final ServiceName moduleServiceName = CONCURRENT_CONTEXT_BASE_SERVICE_NAME.append(app).append(module);
-        if(component == null) {
-            return moduleServiceName;
+        if (module == null) {
+            return CONCURRENT_CONTEXT_BASE_SERVICE_NAME.append("app").append(app);
         } else {
-            return moduleServiceName.append(component);
+            if (component == null) {
+                return CONCURRENT_CONTEXT_BASE_SERVICE_NAME.append("module").append(app).append(module);
+            } else {
+                return CONCURRENT_CONTEXT_BASE_SERVICE_NAME.append("comp").append(app).append(module).append(component);
+            }
         }
     }
-
 }
