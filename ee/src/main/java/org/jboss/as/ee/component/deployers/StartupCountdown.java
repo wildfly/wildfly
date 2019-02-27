@@ -14,46 +14,22 @@ public final class StartupCountdown {
   private static final ThreadLocal<Frame> frames = new ThreadLocal<>();
 
   private volatile int count;
-  private volatile boolean startupFailed = false;
-  private Queue<StartupCallback> callbacks = new LinkedList<>();
+  private final Queue<Runnable> callbacks = new LinkedList<Runnable>();
 
   public StartupCountdown(int count) {
     this.count = count;
   }
 
-  public void startupFailure() {
-    synchronized (this) {
-      startupFailed = true;
-      try {
-        while (!callbacks.isEmpty()) {
-          callbacks.poll().onFailure();
-        }
-      } finally {
-        notifyAll();
-      }
-    }
-  }
-
-  public void startupSuccessful() {
+  public void countDown() {
     synchronized (this) {
       if (-- count == 0) {
         try {
-          while (!callbacks.isEmpty()) {
-            callbacks.poll().onSuccess();
-          }
+          while (!callbacks.isEmpty()) callbacks.poll().run();
         } finally {
           notifyAll();
         }
       }
     }
-  }
-
-  /*
-   * use {@code startupSuccessful}/{@code startupFailure} instead
-   */
-  @Deprecated
-  public void countDown() {
-    startupSuccessful();
   }
 
   public void countUp(final int count) {
@@ -77,30 +53,10 @@ public final class StartupCountdown {
    * If StartupCountdown is at zero already, passed callback will be executed immediately by the caller thread.
    * @param callback to execute. Should not be null.
    */
-  @Deprecated
   public void addCallback(final Runnable callback) {
-    addCallback(new StartupCallback() {
-      @Override
-      public void onSuccess() {
-        callback.run();
-      }
-
-      @Override
-      public void onFailure() {
-        // do nothing by default
-      }
-    });
-  }
-
-  public void addCallback(final StartupCallback callback) {
     synchronized (this) {
-      if (count == 0) {
-        callback.onSuccess();
-      } else if (startupFailed) {
-        callback.onFailure();
-      } else {
-        callbacks.add(callback);
-      }
+      if (count != 0) callbacks.add(callback);
+      else callback.run();
     }
   }
 
@@ -135,11 +91,5 @@ public final class StartupCountdown {
     boolean contains(StartupCountdown countdown) {
       return countdown == this.countdown || prev != null && prev.contains(countdown);
     }
-  }
-
-  public interface StartupCallback {
-    void onSuccess();
-
-    void onFailure();
   }
 }

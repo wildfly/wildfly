@@ -20,11 +20,9 @@ import io.undertow.server.Connectors;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.ResponseCodeHandler;
-import io.undertow.util.SameThreadExecutor;
 import org.jboss.as.ee.component.deployers.StartupCountdown;
 
-import java.util.Queue;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Queue up requests until all startup components are initialized successfully. If any of the components failed to
@@ -37,107 +35,22 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class ComponentStartupCountdownHandler implements HttpHandler {
 
     private final HttpHandler wrappedHandler;
-    private final SuspendedRequestQueue suspendedRequests;
+
+    private final AtomicBoolean started = new AtomicBoolean(false);
+    private volatile HttpHandler startupFailedHandler = ResponseCodeHandler.HANDLE_500;
 
     public ComponentStartupCountdownHandler(final HttpHandler handler, StartupCountdown countdown) {
         this.wrappedHandler = handler;
-        this.suspendedRequests = new SuspendedRequestQueue();
 
-        countdown.addCallback(suspendedRequests);
+        countdown.addCallback(()->started.set(true));
     }
 
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
-        this.suspendedRequests.handleRequest(exchange, wrappedHandler);
-    }
-
-    static class SuspendedRequestQueue implements StartupCountdown.StartupCallback {
-
-        private enum State {
-            STARTING,
-            STARTED,
-            FAILED
-        }
-
-        private volatile State state = State.STARTING;
-
-        private volatile HttpHandler startupFailedHandler = ResponseCodeHandler.HANDLE_500;
-        private volatile HttpHandler tooManySuspendedRequestsHandler = new ResponseCodeHandler(503);
-
-        private final Queue<SuspendedRequest> queue;
-
-        public SuspendedRequestQueue() {
-            this(-1);
-        }
-
-        public SuspendedRequestQueue(int queueSize) {
-            this.queue = new LinkedBlockingQueue<>(queueSize <= 0 ? Integer.MAX_VALUE : queueSize);
-        }
-
-        public void handleRequest(final HttpServerExchange exchange, final HttpHandler next) throws Exception {
-            switch (state) {
-                case STARTED:
-                    next.handleRequest(exchange);
-                    break;
-                case FAILED:
-                    Connectors.executeRootHandler(startupFailedHandler, exchange);
-                    break;
-                case STARTING:
-                    exchange.dispatch(SameThreadExecutor.INSTANCE, () -> suspendRequest(exchange, next));
-                    break;
-            }
-        }
-
-        private void suspendRequest(final HttpServerExchange exchange, final HttpHandler next) {
-            //we have to try again in the sync block
-            //we need to have already dispatched for thread safety reasons
-            synchronized (SuspendedRequestQueue.this) {
-                switch (state) {
-                    case STARTED:
-                        exchange.dispatch(next);
-                        break;
-                    case FAILED:
-                        Connectors.executeRootHandler(startupFailedHandler, exchange);
-                        break;
-                    case STARTING:
-                        if (!queue.offer(new SuspendedRequest(exchange, next))) {
-                            Connectors.executeRootHandler(tooManySuspendedRequestsHandler, exchange);
-                        }
-                        break;
-                }
-            }
-        }
-
-        @Override
-        public void onSuccess() {
-            synchronized (SuspendedRequestQueue.this) {
-                state = State.STARTED;
-                while (!queue.isEmpty()) {
-                    final SuspendedRequest task = queue.poll();
-                    task.exchange.dispatch(task.next);
-                }
-            }
-        }
-
-        @Override
-        public void onFailure() {
-            synchronized (SuspendedRequestQueue.this) {
-                state = State.FAILED;
-                while (!queue.isEmpty()) {
-                    Connectors.executeRootHandler(startupFailedHandler, queue.poll().exchange);
-                }
-            }
-        }
-
-    }
-
-    static class SuspendedRequest {
-        final HttpServerExchange exchange;
-        final HttpHandler next;
-
-        private SuspendedRequest(HttpServerExchange exchange, HttpHandler next) {
-            this.exchange = exchange;
-            this.next = next;
+        if (started.get()) {
+            wrappedHandler.handleRequest(exchange);
+        } else {
+            Connectors.executeRootHandler(startupFailedHandler, exchange);
         }
     }
 }

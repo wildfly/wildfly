@@ -96,18 +96,14 @@ public class ModuleDeployment implements Service<ModuleDeployment> {
 
         @Override
         public void start(StartContext startContext) throws StartException {
-            if (countdown == null) deploymentRepository.getValue().startDeployment(identifier);
-            else countdown.addCallback(new StartupCountdown.StartupCallback() {
+            Runnable action = new Runnable() {
                 @Override
-                public void onSuccess() {
+                public void run() {
                     deploymentRepository.getValue().startDeployment(identifier);
                 }
-
-                @Override
-                public void onFailure() {
-                    // keep the deployment not started - it will be unavailable to outside user
-                }
-            });
+            };
+            if (countdown == null) action.run();
+            else countdown.addCallback(action);
         }
 
         @Override
