@@ -32,6 +32,8 @@ import org.junit.runner.RunWith;
 
 import javax.naming.InitialContext;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+
 /**
  *
  * Test which ensures RMI Context is available in JNDI.
@@ -47,7 +49,8 @@ public class RmiContextLookupTestCase {
     @Deployment
     public static WebArchive getDeployment() {
         return ShrinkWrap.create(WebArchive.class, RmiContextLookupTestCase.class.getSimpleName() + ".war")
-                .addClasses(RmiContextLookupTestCase.class, RmiContextLookupBean.class);
+            .addClasses(RmiContextLookupTestCase.class, RmiContextLookupBean.class)
+            .addAsManifestResource(createPermissionsXmlAsset(new RuntimePermission("accessClassInPackage.com.sun.jndi.url.rmi")), "permissions.xml");
     }
 
     @Test
