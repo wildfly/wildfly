@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:messaging-activemq:6.0">
+<subsystem xmlns="urn:jboss:domain:messaging-activemq:7.0">
     <global-client thread-pool-max-size="${global.client.thread-pool-max-size:32}"
                    scheduled-thread-pool-max-size="${global.client.scheduled.thread-pool-max-size:54}" />
 
@@ -183,6 +183,7 @@
                 min-files="${journal.min.files:2}"
                 pool-files="${journal.pool.files:5}"
                 compact-percentage="${journal.compact.percentage:83}"
+                file-open-timeout="${journal.file.open.timeout:7}"
                 compact-min-files="${journal.compact.min.files:2}"
                 max-io="${journal.max.io:50}"
                 create-bindings-dir="${create.bindings.dir:false}"

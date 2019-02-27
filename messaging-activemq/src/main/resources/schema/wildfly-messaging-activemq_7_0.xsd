@@ -23,11 +23,11 @@
   -->
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           xmlns="urn:jboss:domain:messaging-activemq:6.0"
-           targetNamespace="urn:jboss:domain:messaging-activemq:6.0"
+           xmlns="urn:jboss:domain:messaging-activemq:7.0"
+           targetNamespace="urn:jboss:domain:messaging-activemq:7.0"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
-           version="6.0">
+           version="7.0">
 
     <xs:element name="subsystem">
         <xs:complexType>
@@ -194,6 +194,7 @@
                     <xs:attribute name="file-size" type="xs:long" />
                     <xs:attribute name="min-files" type="xs:int" />
                     <xs:attribute name="pool-files" type="xs:int" />
+                    <xs:attribute name="file-open-timeout" type="xs:int" />
                     <xs:attribute name="compact-percentage" type="xs:int" />
                     <xs:attribute name="compact-min-files" type="xs:int" />
                     <xs:attribute name="max-io" type="xs:int" />
