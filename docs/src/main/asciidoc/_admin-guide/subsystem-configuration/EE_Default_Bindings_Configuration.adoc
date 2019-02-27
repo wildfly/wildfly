@@ -26,8 +26,21 @@ standard JNDI names, such as `java:comp/DefaultManagedExecutorService`:
  managed-thread-factory="java:jboss/ee/concurrency/factory/default" />
 ----
 
+Above bindings become application dependencies upon deployment. However in some cases 
+they might not be required or covered by non-default resources. In such case default binding could be:
+[.result]
+====
+* rewriten - to point to user configured resource( :write-attribute(name=...,value=...) )
+* undefined - if there is no need for runtime dependency( :undefine-attribute(name=...) )
+====
+
 [NOTE]
 
 The default bindings are optional, if the jndi name for a default
 binding is not configured then the related resource will not be
 available to Java EE applications.
+
+[NOTE]
+
+If default EE resources are not required and bindings do not point at them,
+it is safe to remove or turn off default services.
