@@ -40,7 +40,6 @@ import java.net.SocketPermission;
 import java.rmi.registry.LocateRegistry;
 import java.util.Properties;
 
-
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 /**
@@ -89,7 +88,10 @@ public class JMXConnectorTestCase {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, CB_DEPLOYMENT_NAME);
         archive.addClass(ConnectedBean.class);
         archive.addClass(ConnectedBeanInterface.class);
-        archive.addAsManifestResource(createPermissionsXmlAsset(new SocketPermission("*:*", "connect,resolve")), "permissions.xml");
+        archive.addAsManifestResource(createPermissionsXmlAsset(
+            new RuntimePermission("accessClassInPackage.com.sun.jndi.url.rmi"),
+            new SocketPermission("*:*", "connect,resolve")
+        ), "permissions.xml");
         return archive;
     }
 
