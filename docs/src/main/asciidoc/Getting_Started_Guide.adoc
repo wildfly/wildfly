@@ -108,11 +108,11 @@ Profile |WildFly {wildflyVersion} Full Profile |WildFly {wildflyVersion} Web Pro
 |JSR-375: Java EE Security API 1.0 |X |X |X |X
 |=======================================================================
 
-Missing HornetQ and JMS?
+Missing ActiveMQ Artemis and JMS?
 
 [WARNING]
 
-The WildFly Web Profile doesn't include JMS (provided by HornetQ) by
+The WildFly Web Profile doesn't include JMS (provided by ActiveMQ Artemis) by
 default. If you want to use messaging, make sure you start the server
 using the "Full Profile" configuration.
 
@@ -136,8 +136,8 @@ formats.
 [[requirements]]
 === Requirements
 
-* Java SE 8 or later (we recommend that you use the latest update
-available)
+* Java SE 8 or later. We recommend that you use the latest available update
+of the current long-term support Java release.
 
 [[installation]]
 === Installation
