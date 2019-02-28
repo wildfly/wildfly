@@ -10,7 +10,7 @@ http://wildfly.org
 And of course Java EE!
 
 Building
--------------------
+------------------
 
 Prerequisites:
 
