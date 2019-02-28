@@ -214,6 +214,16 @@
             </modules>
         </profile>
 
+        <!-- -Dts.layers -->
+        <profile>
+            <id>ts.integ.group.layers</id>
+            <activation><property><name>ts.layers</name></property></activation>
+            <modules>
+                <module>basic</module>
+                <module>microprofile-tck</module>
+            </modules>
+        </profile>
+
         <!-- -Dts.legacy -->
         <profile>
             <id>ts.integ.group.legacy</id>
