@@ -409,6 +409,17 @@ public interface ConnectionFactoryAttributes {
                 .setRestartAllServices()
                 .build();
 
+
+        /**
+         * @see ActiveMQClient.DEFAULT_USE_TOPOLOGY_FOR_LOADBALANCING
+         */
+        AttributeDefinition USE_TOPOLOGY = create("use-topology-for-load-balancing", BOOLEAN)
+                .setDefaultValue(ModelNode.TRUE)
+                .setRequired(false)
+                .setAllowExpression(true)
+                .setRestartAllServices()
+                .build();
+
         /**
          * Attributes are defined in the <em>same order than in the XSD schema</em>
          */
@@ -452,7 +463,8 @@ public interface ConnectionFactoryAttributes {
                 create(GROUP_ID, "groupID", true),
                 create(DESERIALIZATION_BLACKLIST, "deserializationBlackList", true),
                 create(DESERIALIZATION_WHITELIST, "deserializationWhiteList", true),
-                create(INITIAL_MESSAGE_PACKET_SIZE, "initialMessagePacketSize", true)
+                create(INITIAL_MESSAGE_PACKET_SIZE, "initialMessagePacketSize", true),
+                create(USE_TOPOLOGY, "useTopologyForLoadBalancing", true)
         };
     }
 

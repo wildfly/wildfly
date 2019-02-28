@@ -298,7 +298,8 @@
                             use-global-pools="${use.global.pools:true}"
                             scheduled-thread-pool-max-size="${scheduled.thread.pool.max.size:24}"
                             thread-pool-max-size="${thread.pool.max.size:48}"
-                            group-id="${group.id:myGroup}" />
+                            group-id="${group.id:myGroup}"
+                            use-topology-for-load-balancing="true" />
         <legacy-connection-factory name="legacyConnectionFactory-discovery"
                                    entries="legacy/RemoteConnectionFactory java:/global/jms/legacy/RemoteConnectionFactory"
                                    discovery-group="groupT"
@@ -396,7 +397,8 @@
                                    scheduled-thread-pool-max-size="${scheduled.thread.pool.max.size:24}"
                                    thread-pool-max-size="${thread.pool.max.size:48}"
                                    group-id="${group.id:myGroup}"
-                                   statistics-enabled="false">
+                                   statistics-enabled="false"
+                                   use-topology-for-load-balancing="true">
             <inbound-config
                     use-jndi="${use.jndi:false}"
                     jndi-params="${jndi.params:whatever}"

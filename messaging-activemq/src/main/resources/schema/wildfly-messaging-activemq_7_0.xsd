@@ -52,6 +52,7 @@
                         <xs:attribute name="connectors" type="xs:string" use="optional"/>
                         <xs:attribute name="entries" type="stringList" use="required" />
                         <xs:attribute name="enable-amq1-prefix" type="xs:boolean" use="optional" />
+                        <xs:attribute name="use-topology-for-load-balancing" type="xs:boolean" use="optional" />
                     </xs:complexType>
                 </xs:element>
                 <xs:element name="pooled-connection-factory" minOccurs="0" maxOccurs="unbounded">
@@ -838,6 +839,7 @@
         <xs:attribute name="deserialization-white-list" type="stringList" use="optional" />
         <xs:attribute name="deserialization-black-list" type="stringList" use="optional" />
         <xs:attribute name="initial-message-packet-size" type="xs:int" use="optional" />
+        <xs:attribute name="use-topology-for-load-balancing" type="xs:boolean" use="optional" />
     </xs:attributeGroup>
 
     <xs:simpleType name="connectionFactoryType">

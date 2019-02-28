@@ -36,7 +36,8 @@
     <connection-factory name="InVmConnectionFactory"
                         connectors="in-vm client"
                         entries="${connection-factory.entries.entry:java:/ClientConnectionFactory}"
-                        enable-amq1-prefix="true"/>
+                        enable-amq1-prefix="true"
+                        use-topology-for-load-balancing="true" />
 
     <connection-factory name="RemoteClientConnectionFactory"
                         factory-type="XA_QUEUE"
@@ -46,7 +47,8 @@
     <connection-factory name="otherClientConnectionFactory"
                         discovery-group="client-discovery-group-1"
                         ha="${ha:true}"
-                        entries="otherClientConnectionFactory" />
+                        entries="otherClientConnectionFactory"
+                        use-topology-for-load-balancing="false" />
 
     <pooled-connection-factory name="hornetq-ra-local"
                                transaction="local"
@@ -55,14 +57,16 @@
                                use-auto-recovery="${use.auto.recovery:true}"
                                connectors="in-vm-client"
                                entries="java:/JmsLocal"
-                               enable-amq1-prefix="true"/>
+                               enable-amq1-prefix="true"
+                               use-topology-for-load-balancing="true" />
 
     <pooled-connection-factory name="activemq-ra-none"
                                transaction="none"
                                user="alice"
                                password="alicepassword"
                                connectors="in-vm-client"
-                               entries="java:/JmsNone"/>
+                               entries="java:/JmsNone"
+                               use-topology-for-load-balancing="false" />
 
     <pooled-connection-factory name="activemq-ra"
                                transaction="${transaction:xa}"
@@ -432,12 +436,14 @@
 
         <connection-factory name="InVmConnectionFactory"
                             connectors="in-vm netty"
-                            entries="${connection-factory.entries.entry:java:/ConnectionFactory}" />
+                            entries="${connection-factory.entries.entry:java:/ConnectionFactory}"
+                            use-topology-for-load-balancing="true" />
         <connection-factory name="RemoteConnectionFactory"
                             factory-type="XA_QUEUE"
                             client-id="testClient"
                             connectors="http netty"
-                            entries="RemoteConnectionFactory java:/global/jms/RemoteConnectionFactory" />
+                            entries="RemoteConnectionFactory java:/global/jms/RemoteConnectionFactory"
+                            use-topology-for-load-balancing="false" />
         <connection-factory name="otherConnectionFactory"
                             discovery-group="groupC"
                             entries="otherConnectionFactory"
@@ -522,13 +528,15 @@
                                    password="alicepassword"
                                    use-auto-recovery="${use.auto.recovery:true}"
                                    connectors="in-vm"
-                                   entries="java:/JmsLocal"/>
+                                   entries="java:/JmsLocal"
+                                   use-topology-for-load-balancing="true" />
         <pooled-connection-factory name="activemq-ra-none"
                                    transaction="none"
                                    user="alice"
                                    password="alicepassword"
                                    connectors="in-vm"
-                                   entries="java:/JmsNone"/>
+                                   entries="java:/JmsNone"
+                                   use-topology-for-load-balancing="false" />
         <pooled-connection-factory name="activemq-ra"
                                    transaction="${transaction:xa}"
                                    user="${user:alice}"

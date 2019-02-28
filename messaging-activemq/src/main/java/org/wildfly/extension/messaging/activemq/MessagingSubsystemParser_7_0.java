@@ -110,7 +110,8 @@ public class MessagingSubsystemParser_7_0 extends PersistentResourceXMLParser {
                                 ConnectionFactoryAttributes.Common.DISCOVERY_GROUP,
                                 ConnectionFactoryAttributes.Common.CONNECTORS,
                                 ConnectionFactoryAttributes.Common.ENTRIES,
-                                ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX
+                                ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX,
+                                ConnectionFactoryAttributes.Common.USE_TOPOLOGY
                         ))
                 .addChild(createPooledConnectionFactory(true))
                 .addChild(builder(MessagingExtension.EXTERNAL_JMS_QUEUE_PATH)
@@ -521,8 +522,8 @@ public class MessagingSubsystemParser_7_0 extends PersistentResourceXMLParser {
                                                         ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST,
                                                         ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST,
                                                         ConnectionFactoryAttributes.Common.INITIAL_MESSAGE_PACKET_SIZE,
-                                                        // regular
-                                                        ConnectionFactoryAttributes.Regular.FACTORY_TYPE))
+                                                        ConnectionFactoryAttributes.Regular.FACTORY_TYPE,
+                                                        ConnectionFactoryAttributes.Common.USE_TOPOLOGY))
                                 .addChild(
                                         builder(LegacyConnectionFactoryDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(
@@ -633,6 +634,7 @@ public class MessagingSubsystemParser_7_0 extends PersistentResourceXMLParser {
                         ConnectionFactoryAttributes.Common.GROUP_ID,
                         ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST,
                         ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST,
+                        ConnectionFactoryAttributes.Common.USE_TOPOLOGY,
                         // pooled
                         // inbound config
                         ConnectionFactoryAttributes.Pooled.USE_JNDI,
