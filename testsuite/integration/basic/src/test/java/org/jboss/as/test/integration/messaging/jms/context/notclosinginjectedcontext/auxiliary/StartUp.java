@@ -25,10 +25,8 @@ package org.jboss.as.test.integration.messaging.jms.context.notclosinginjectedco
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import javax.annotation.Resource;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
-import javax.enterprise.concurrent.ManagedScheduledExecutorService;
 import javax.inject.Inject;
 import java.util.concurrent.ScheduledFuture;
 
@@ -47,9 +45,6 @@ public class StartUp {
     @Inject
     private Ejb ejb;
 
-    @Resource
-    private ManagedScheduledExecutorService scheduledExecutor;
-
     @PostConstruct
     public void init() {
         ejb.send("msg");
@@ -57,7 +52,8 @@ public class StartUp {
 
     @PreDestroy
     public void destroy() {
-        if (running != null)
+        if (running != null) {
             running.cancel(true);
+        }
     }
 }

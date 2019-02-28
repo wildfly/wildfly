@@ -30,6 +30,7 @@ import javax.jms.JMSContext;
 import javax.jms.Queue;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import org.jboss.as.test.shared.TimeoutUtil;
 
 /**
  * Ejb sends messages via two injected jmsContexts.
@@ -41,6 +42,8 @@ import javax.naming.NamingException;
 public class Ejb {
     private static final Logger LOGGER = Logger.getLogger(Ejb.class);
 
+    private static final long TIMEOUT = TimeoutUtil.adjust(60000);
+    private static final long PAUSE = TimeoutUtil.adjust(200);
     @Inject
     private JMSContext jmsCtx1;
 
@@ -55,11 +58,20 @@ public class Ejb {
     private void send(String text, JMSContext jmsContext) {
         try {
             LOGGER.info("Sending: " + text);
-            jmsContext.createProducer().send(lookup(Mdb.JNDI_NAME), text);
+            long start = System.currentTimeMillis();
+            Queue queue = lookup(Mdb.JNDI_NAME);
+            while(queue == null && (System.currentTimeMillis() - start < TIMEOUT)) {
+                queue = lookup(Mdb.JNDI_NAME);
+                Thread.sleep(PAUSE);
+            }
+            jmsContext.createProducer().send(queue, text);
             LOGGER.info("Sent:" + text);
         } catch (RuntimeException e) {
             LOGGER.error("FAILED to send:" + text);
             throw e;
+        } catch (InterruptedException ex) {
+            LOGGER.error("FAILED to send:" + text);
+            throw new RuntimeException(ex);
         }
     }
 
