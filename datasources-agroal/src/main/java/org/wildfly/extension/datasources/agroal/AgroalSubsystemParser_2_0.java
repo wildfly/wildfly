@@ -33,14 +33,14 @@ import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
  *
  * @author <a href="lbarreiro@redhat.com">Luis Barreiro</a>
  */
-class AgroalSubsystemParser_1_0 extends PersistentResourceXMLParser {
+class AgroalSubsystemParser_2_0 extends PersistentResourceXMLParser {
 
-    static final AgroalSubsystemParser_1_0 INSTANCE = new AgroalSubsystemParser_1_0();
+    static final AgroalSubsystemParser_2_0 INSTANCE = new AgroalSubsystemParser_2_0();
 
     private static final PersistentResourceXMLDescription XML_DESCRIPTION;
 
     static {
-        PersistentResourceXMLBuilder subsystemXMLBuilder = builder(AgroalSubsystemDefinition.INSTANCE.getPathElement(), AgroalNamespace.AGROAL_1_0.getUriString());
+        PersistentResourceXMLBuilder subsystemXMLBuilder = builder(AgroalSubsystemDefinition.INSTANCE.getPathElement(), AgroalNamespace.AGROAL_2_0.getUriString());
 
         PersistentResourceXMLBuilder datasourceXMLBuilder = builder(DataSourceDefinition.INSTANCE.getPathElement());
         for (AttributeDefinition attributeDefinition : DataSourceDefinition.ATTRIBUTES) {
@@ -49,7 +49,7 @@ class AgroalSubsystemParser_1_0 extends PersistentResourceXMLParser {
         subsystemXMLBuilder.addChild(datasourceXMLBuilder);
 
         PersistentResourceXMLBuilder xaDatasourceXMLBuilder = builder(XADataSourceDefinition.INSTANCE.getPathElement());
-        for (AttributeDefinition attributeDefinition : XADataSourceDefinition.ATTRIBUTES_1_0) {
+        for (AttributeDefinition attributeDefinition : XADataSourceDefinition.ATTRIBUTES_2_0) {
             xaDatasourceXMLBuilder.addAttribute(attributeDefinition);
         }
         subsystemXMLBuilder.addChild(xaDatasourceXMLBuilder);
@@ -64,7 +64,7 @@ class AgroalSubsystemParser_1_0 extends PersistentResourceXMLParser {
         XML_DESCRIPTION = subsystemXMLBuilder.build();
     }
 
-    private AgroalSubsystemParser_1_0() {
+    private AgroalSubsystemParser_2_0() {
     }
 
     @Override

@@ -87,7 +87,11 @@ class XADataSourceDefinition extends AbstractDataSourceDefinition {
                                                                                                   .addAlternatives(RECOVERY_PASSWORD_ATTRIBUTE.getName())
                                                                                                   .build();
 
-    static final Collection<AttributeDefinition> ATTRIBUTES = unmodifiableList(asList(JNDI_NAME_ATTRIBUTE, STATISTICS_ENABLED_ATTRIBUTE, CONNECTION_FACTORY_ATTRIBUTE, CONNECTION_POOL_ATTRIBUTE, RECOVERY, RECOVERY_USERNAME_ATTRIBUTE, RECOVERY_PASSWORD_ATTRIBUTE, RECOVERY_AUTHENTICATION_CONTEXT, RECOVERY_CREDENTIAL_REFERENCE));
+    static final Collection<AttributeDefinition> ATTRIBUTES_1_0 = unmodifiableList(asList(JNDI_NAME_ATTRIBUTE, STATISTICS_ENABLED_ATTRIBUTE, CONNECTION_FACTORY_ATTRIBUTE, CONNECTION_POOL_ATTRIBUTE));
+
+    static final Collection<AttributeDefinition> ATTRIBUTES_2_0 = unmodifiableList(asList(JNDI_NAME_ATTRIBUTE, STATISTICS_ENABLED_ATTRIBUTE, CONNECTION_FACTORY_ATTRIBUTE, CONNECTION_POOL_ATTRIBUTE, RECOVERY, RECOVERY_USERNAME_ATTRIBUTE, RECOVERY_PASSWORD_ATTRIBUTE, RECOVERY_AUTHENTICATION_CONTEXT, RECOVERY_CREDENTIAL_REFERENCE));
+
+    static final Collection<AttributeDefinition> ATTRIBUTES = ATTRIBUTES_2_0;
 
     static final XADataSourceDefinition INSTANCE = new XADataSourceDefinition();
 

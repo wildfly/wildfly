@@ -16,7 +16,7 @@ If the WildFly configuration does not have Agroal subsystem enabled by default, 
     <extension module="org.wildfly.extension.datasources-agroal"/>
     [...]
 </extensions>
-<subsystem xmlns="urn:jboss:domain:datasources-agroal:1.0">
+<subsystem xmlns="urn:jboss:domain:datasources-agroal:2.0">
     [...]
 </subsystem>
 ----
@@ -48,7 +48,7 @@ Any installed _driver_ provides an operation called _class-info_ that lists all 
 
 [source,xml,options="nowrap"]
 ----
-<subsystem xmlns="urn:jboss:domain:datasources-agroal:1.0">
+<subsystem xmlns="urn:jboss:domain:datasources-agroal:2.0">
     [...]
     <drivers>
         <driver name="h2" module="com.h2database.h2" class="org.h2.Driver"/>
@@ -85,7 +85,7 @@ Other features provided by the _connection-factory_ definition include the possi
 
 [source,xml,options="nowrap"]
 ----
-<subsystem xmlns="urn:jboss:domain:datasources-agroal:1.0">
+<subsystem xmlns="urn:jboss:domain:datasources-agroal:2.0">
      <datasource [...]>
         [...]
         <connection-factory driver="h2" url="jdbc:h2:tcp://localhost:1701" transaction-isolation="SERIALIZABLE" new-connection-sql="SELECT 1" username="sa" password="sa">
@@ -136,7 +136,7 @@ There is a set of flush operations that perform many of these features on-demand
 
 [source,xml,options="nowrap"]
 ----
-<subsystem xmlns="urn:jboss:domain:datasources-agroal:1.0">
+<subsystem xmlns="urn:jboss:domain:datasources-agroal:2.0">
      <datasource [...]>
         [...]
         <connection-pool max-size="30" min-size="10" initial-size="20" blocking-timeout="1000" background-validation="6000" leak-detection="5000" idle-removal="5"/>
@@ -177,7 +177,7 @@ There is also a _reset-statistics_ operation provided.
 
 [source,xml,options="nowrap"]
 ----
-<subsystem xmlns="urn:jboss:domain:datasources-agroal:1.0">
+<subsystem xmlns="urn:jboss:domain:datasources-agroal:2.0">
     <xa-datasource name="sample-xa" jndi-name="java:jboss/datasources/ExampleXADS" statistics-enabled="true">
         [...]
     </xa-datasource>
@@ -242,7 +242,7 @@ The _connectable_ attribute allows a non-XA datasource to take part in an XA tra
 
 [source,xml,options="nowrap"]
 ----
-<subsystem xmlns="urn:jboss:domain:datasources-agroal:1.0">
+<subsystem xmlns="urn:jboss:domain:datasources-agroal:2.0">
     <datasource name="sample" jndi-name="java:jboss/datasources/ExampleDS" jta="false" connectable="false" statistics-enabled="true">
         [...]
     </datasource>
