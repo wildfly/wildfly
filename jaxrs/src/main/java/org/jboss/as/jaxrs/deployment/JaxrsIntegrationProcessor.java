@@ -26,6 +26,7 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -35,10 +36,12 @@ import java.util.Set;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
 
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentResourceSupport;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
@@ -61,6 +64,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 
 import static org.jboss.as.jaxrs.logging.JaxrsLogger.JAXRS_LOGGER;
 
+import org.jboss.as.jaxrs.DeploymentRestResourcesDefintion;
 import org.jboss.as.jaxrs.Jackson2Annotations;
 import org.jboss.as.jaxrs.JacksonAnnotations;
 import org.jboss.as.jaxrs.JaxrsExtension;
@@ -189,6 +193,12 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
             }
         }
 
+        boolean managementAdded = false;
+        if (resteasy.getScannedApplicationClasses().size() > 0 || resteasy.hasBootClasses() || resteasy.isDispatcherCreated()) {
+            addManagement(deploymentUnit, resteasy);
+            managementAdded = true;
+        }
+
         if (resteasy.hasBootClasses() || resteasy.isDispatcherCreated())
             return;
 
@@ -256,9 +266,39 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
             }
         }
 
+        if (!managementAdded && webdata.getServletMappings() != null) {
+            for (ServletMappingMetaData servletMapMeta: webdata.getServletMappings()) {
+                if (JAX_RS_SERVLET_NAME.equals(servletMapMeta.getServletName())) {
+                    addManagement(deploymentUnit, resteasy);
+                    break;
+                }
+            }
+        }
+
         // suppress warning for EAR deployments, as we can't easily tell here the app is properly declared
         if (deploymentUnit.getParent() == null && (webdata.getServletMappings() == null || webdata.getServletMappings().isEmpty())) {
             JAXRS_LOGGER.noServletDeclaration(deploymentUnit.getName());
+        }
+    }
+
+
+    private void addManagement(DeploymentUnit deploymentUnit, ResteasyDeploymentData resteasy) {
+        Set<String> classes = resteasy.getScannedResourceClasses();
+        for (String jndiComp : resteasy.getScannedJndiComponentResources()) {
+            String[] jndiCompArray = jndiComp.split(";");
+            classes.add(jndiCompArray[1]); // REST as EJB is added into jndiComponents
+        }
+        List<String> rootRestClasses = new ArrayList<>(classes);
+        Collections.sort(rootRestClasses);
+        for (String componentClass : rootRestClasses) {
+            try {
+                final DeploymentResourceSupport deploymentResourceSupport = deploymentUnit
+                        .getAttachment(org.jboss.as.server.deployment.Attachments.DEPLOYMENT_RESOURCE_SUPPORT);
+                deploymentResourceSupport.getDeploymentSubModel(JaxrsExtension.SUBSYSTEM_NAME,
+                        PathElement.pathElement(DeploymentRestResourcesDefintion.REST_RESOURCE_NAME, componentClass));
+            } catch (Exception e) {
+                JAXRS_LOGGER.failedToRegisterManagementViewForRESTResources(componentClass, e);
+            }
         }
     }
 

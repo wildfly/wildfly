@@ -33,14 +33,10 @@ import java.util.Set;
 
 import javax.ws.rs.core.Application;
 
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.jaxrs.DeploymentRestResourcesDefintion;
 import org.jboss.as.jaxrs.JaxrsAnnotations;
-import org.jboss.as.jaxrs.JaxrsExtension;
 import org.jboss.as.jaxrs.logging.JaxrsLogger;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
-import org.jboss.as.server.deployment.DeploymentResourceSupport;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
@@ -118,22 +114,8 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
                 }
             }
             deploymentUnit.putAttachment(JaxrsAttachments.RESTEASY_DEPLOYMENT_DATA, resteasyDeploymentData);
-            List<String> rootRestClasses = new ArrayList<>(resteasyDeploymentData.getScannedResourceClasses());
-            Collections.sort(rootRestClasses);
-            for(String cls: rootRestClasses) {
-                addManagement(deploymentUnit, cls);
-            }
         } catch (ModuleLoadException e) {
             throw new DeploymentUnitProcessingException(e);
-        }
-    }
-
-    private void addManagement(DeploymentUnit deploymentUnit, String componentClass) {
-        try {
-            final DeploymentResourceSupport deploymentResourceSupport = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.DEPLOYMENT_RESOURCE_SUPPORT);
-            deploymentResourceSupport.getDeploymentSubModel(JaxrsExtension.SUBSYSTEM_NAME, PathElement.pathElement(DeploymentRestResourcesDefintion.REST_RESOURCE_NAME, componentClass));
-        } catch (Exception e) {
-            JaxrsLogger.JAXRS_LOGGER.failedToRegisterManagementViewForRESTResources(componentClass, e);
         }
     }
 
