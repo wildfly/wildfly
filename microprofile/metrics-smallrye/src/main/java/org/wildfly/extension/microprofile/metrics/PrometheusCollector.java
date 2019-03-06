@@ -18,21 +18,21 @@ public class PrometheusCollector extends Collector implements Collector.Describa
     // each MetricFamilySamples has list of Sample's supplier (that can be optional) if the underlying metric value is undefined.
     private Map<String, List<Supplier<Optional<Sample>>>> metricFamilyMap = new HashMap();
 
-    public void addMetricFamilySamples(MetricFamilySamples mfs) {
+    synchronized void addMetricFamilySamples(MetricFamilySamples mfs) {
         if (!metricNames.containsKey(mfs.name)) {
             metricNames.put(mfs.name, mfs);
             metricFamilyMap.put(mfs.name, new ArrayList<>());
         }
     }
 
-    void addMetricFamilySampleSupplier(MetricFamilySamples mfs, Supplier<Optional<Sample>> sampleSupplier) {
+    synchronized void addMetricFamilySampleSupplier(MetricFamilySamples mfs, Supplier<Optional<Sample>> sampleSupplier) {
         if (!metricNames.containsKey(mfs.name)) {
             addMetricFamilySamples(mfs);
         }
         metricFamilyMap.get(mfs.name).add(sampleSupplier);
     }
 
-    void removeMetricFamilySampleSupplier(String metricName, Supplier<Optional<Sample>> sampleSupplier) {
+    synchronized void removeMetricFamilySampleSupplier(String metricName, Supplier<Optional<Sample>> sampleSupplier) {
         List<Supplier<Optional<Sample>>> suppliers = metricFamilyMap.get(metricName);
         if (suppliers != null) {
             suppliers.remove(sampleSupplier);
