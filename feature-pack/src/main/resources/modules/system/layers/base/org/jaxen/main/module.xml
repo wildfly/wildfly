@@ -28,9 +28,6 @@
     <dependencies>
         <module name="nu.xom"/>
         <module name="org.dom4j"/>
-        <!-- jaxen's uses of jdom are not actually used in WildFly
-              See WFLY-11325 / WFLY-11326 -->
-        <module name="org.jdom" optional="true"/>
         <module name="javax.api"/>
     </dependencies>
 
