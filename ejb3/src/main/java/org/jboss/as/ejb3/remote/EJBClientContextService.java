@@ -57,6 +57,7 @@ import org.wildfly.security.auth.client.AuthenticationContext;
  * @author Stuart Douglas
  * @author <a href=mailto:tadamski@redhat.com>Tomasz Adamski</a>
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author <a href="mailto:jbaesner@redhat.com">Joerg Baesner</a>
  */
 public final class EJBClientContextService implements Service<EJBClientContextService> {
 
@@ -126,9 +127,18 @@ public final class EJBClientContextService implements Service<EJBClientContextSe
             for (EJBClientCluster clientCluster : clientClusters) {
                 builder.addClientCluster(clientCluster);
                 ClusterNodeSelector selector = clientCluster.getClusterNodeSelector();
-                if (firstSelector && selector != null) {
-                    builder.setClusterNodeSelector(selector);
-                    // Currently only one selector is supported per client context
+                // Currently only one selector is supported per client context
+                if (firstSelector) {
+                    if(selector != null) {
+                        builder.setClusterNodeSelector(selector);
+                    }
+
+                    // TODO: There's a type missmatch in the 'jboss-ejb-client' component.
+                    //       The EJBClientContext class and his Builder uses 'int' whereas the
+                    //       EJBClientCluster class and his Builder uses 'long'
+                    int maximumConnectedClusterNodes = Long.valueOf(clientCluster.getMaximumConnectedNodes()).intValue();
+                    builder.setMaximumConnectedClusterNodes(maximumConnectedClusterNodes);
+
                     firstSelector = false;
                 }
             }
