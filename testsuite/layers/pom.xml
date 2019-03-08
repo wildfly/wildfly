@@ -45,6 +45,7 @@
                             <install-dir>${servlet.layers.install.dir}/test-standalone-reference</install-dir>
                             <record-state>false</record-state>
                             <log-time>${galleon.log.time}</log-time>
+                            <offline>true</offline>
                             <plugin-options>
                                 <jboss-maven-dist/>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
@@ -81,6 +82,7 @@
                             <install-dir>${servlet.layers.install.dir}/ee</install-dir>
                             <record-state>false</record-state>
                             <log-time>${galleon.log.time}</log-time>
+                            <offline>true</offline>
                             <plugin-options>
                                 <jboss-maven-dist/>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
@@ -122,6 +124,7 @@
                             <install-dir>${servlet.layers.install.dir}/undertow-load-balancer</install-dir>
                             <record-state>false</record-state>
                             <log-time>${galleon.log.time}</log-time>
+                            <offline>true</offline>
                             <plugin-options>
                                 <jboss-maven-dist/>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
@@ -163,6 +166,7 @@
                             <install-dir>${servlet.layers.install.dir}/naming</install-dir>
                             <record-state>false</record-state>
                             <log-time>${galleon.log.time}</log-time>
+                            <offline>true</offline>
                             <plugin-options>
                                 <jboss-maven-dist/>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
@@ -204,6 +208,7 @@
                             <install-dir>${servlet.layers.install.dir}/vault</install-dir>
                             <record-state>false</record-state>
                             <log-time>${galleon.log.time}</log-time>
+                            <offline>true</offline>
                             <plugin-options>
                                 <jboss-maven-dist/>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
@@ -245,6 +250,7 @@
                             <install-dir>${servlet.layers.install.dir}/legacy-security</install-dir>
                             <record-state>false</record-state>
                             <log-time>${galleon.log.time}</log-time>
+                            <offline>true</offline>
                             <plugin-options>
                                 <jboss-maven-dist/>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
@@ -286,6 +292,7 @@
                             <install-dir>${servlet.layers.install.dir}/undertow</install-dir>
                             <record-state>false</record-state>
                             <log-time>${galleon.log.time}</log-time>
+                            <offline>true</offline>
                             <plugin-options>
                                 <jboss-maven-dist/>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
@@ -327,6 +334,7 @@
                             <install-dir>${servlet.layers.install.dir}/web-server</install-dir>
                             <record-state>false</record-state>
                             <log-time>${galleon.log.time}</log-time>
+                            <offline>true</offline>
                             <plugin-options>
                                 <jboss-maven-dist/>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
@@ -368,6 +376,7 @@
                             <install-dir>${servlet.layers.install.dir}/test-all-layers</install-dir>
                             <record-state>false</record-state>
                             <log-time>${galleon.log.time}</log-time>
+                            <offline>true</offline>
                             <plugin-options>
                                 <jboss-maven-dist/>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
@@ -420,6 +429,7 @@
                             <install-dir>${layers.install.dir}/cdi</install-dir>
                             <record-state>false</record-state>
                             <log-time>${galleon.log.time}</log-time>
+                            <offline>true</offline>
                             <plugin-options>
                                 <jboss-maven-dist/>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
@@ -467,6 +477,7 @@
                             <install-dir>${layers.install.dir}/cloud-profile</install-dir>
                             <record-state>false</record-state>
                             <log-time>${galleon.log.time}</log-time>
+                            <offline>true</offline>
                             <plugin-options>
                                 <jboss-maven-dist/>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
@@ -514,6 +525,7 @@
                             <install-dir>${layers.install.dir}/ee</install-dir>
                             <record-state>false</record-state>
                             <log-time>${galleon.log.time}</log-time>
+                            <offline>true</offline>
                             <plugin-options>
                                 <jboss-maven-dist/>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
@@ -561,6 +573,7 @@
                             <install-dir>${layers.install.dir}/jaxrs</install-dir>
                             <record-state>false</record-state>
                             <log-time>${galleon.log.time}</log-time>
+                            <offline>true</offline>
                             <plugin-options>
                                 <jboss-maven-dist/>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
@@ -608,6 +621,7 @@
                             <install-dir>${layers.install.dir}/jms-activemq</install-dir>
                             <record-state>false</record-state>
                             <log-time>${galleon.log.time}</log-time>
+                            <offline>true</offline>
                             <plugin-options>
                                 <jboss-maven-dist/>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
@@ -655,6 +669,7 @@
                             <install-dir>${layers.install.dir}/jpa</install-dir>
                             <record-state>false</record-state>
                             <log-time>${galleon.log.time}</log-time>
+                            <offline>true</offline>
                             <plugin-options>
                                 <jboss-maven-dist/>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
@@ -702,6 +717,7 @@
                             <install-dir>${layers.install.dir}/observability</install-dir>
                             <record-state>false</record-state>
                             <log-time>${galleon.log.time}</log-time>
+                            <offline>true</offline>
                             <plugin-options>
                                 <jboss-maven-dist/>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
@@ -749,6 +765,7 @@
                             <install-dir>${layers.install.dir}/resource-adapters</install-dir>
                             <record-state>false</record-state>
                             <log-time>${galleon.log.time}</log-time>
+                            <offline>true</offline>
                             <plugin-options>
                                 <jboss-maven-dist/>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
@@ -796,6 +813,7 @@
                             <install-dir>${layers.install.dir}/undertow</install-dir>
                             <record-state>false</record-state>
                             <log-time>${galleon.log.time}</log-time>
+                            <offline>true</offline>
                             <plugin-options>
                                 <jboss-maven-dist/>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
@@ -843,6 +861,7 @@
                             <install-dir>${layers.install.dir}/vault</install-dir>
                             <record-state>false</record-state>
                             <log-time>${galleon.log.time}</log-time>
+                            <offline>true</offline>
                             <plugin-options>
                                 <jboss-maven-dist/>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
@@ -890,6 +909,7 @@
                             <install-dir>${layers.install.dir}/test-all-layers</install-dir>
                             <record-state>false</record-state>
                             <log-time>${galleon.log.time}</log-time>
+                            <offline>true</offline>
                             <plugin-options>
                                 <jboss-maven-dist/>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
