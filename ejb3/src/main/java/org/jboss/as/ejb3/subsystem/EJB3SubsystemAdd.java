@@ -33,8 +33,6 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SLSB_INSTAN
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.CLUSTERED_SINGLETON_CAPABILITY;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.DEFAULT_CLUSTERED_SFSB_CACHE;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.EJB_CAPABILITY;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.EJB_CLIENT_CONFIGURATOR;
 
 import java.net.URI;
 import java.util.function.Supplier;
@@ -166,15 +164,6 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
     EJB3SubsystemAdd(final EJBDefaultSecurityDomainProcessor defaultSecurityDomainDeploymentProcessor, final MissingMethodPermissionsDenyAccessMergingProcessor missingMethodPermissionsDenyAccessMergingProcessor) {
         this.defaultSecurityDomainDeploymentProcessor = defaultSecurityDomainDeploymentProcessor;
         this.missingMethodPermissionsDenyAccessMergingProcessor = missingMethodPermissionsDenyAccessMergingProcessor;
-    }
-
-    @Override
-    protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
-        super.recordCapabilitiesAndRequirements(context, operation, resource);
-        // TODO: delete these once optional requirements no longer require the existence of a capability
-        context.registerCapability(CLUSTERED_SINGLETON_CAPABILITY);
-        context.registerCapability(EJB_CLIENT_CONFIGURATOR);
-        context.registerCapability(EJB_CAPABILITY);
     }
 
     @Override
