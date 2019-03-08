@@ -174,15 +174,23 @@ public class MetricCollector {
         if (address.size() == 0) {
             return true;
         }
-        if (address.getElement(0).getKey().equals(DEPLOYMENT)) {
-            return true;
-        }
-        if (address.getElement(0).getKey().equals(SUBSYSTEM)) {
-            String subsystemName = address.getElement(0).getValue();
+        String subsystemName = getSubsystemName(address);
+        if (subsystemName != null) {
             return exposeAnySubsystem || exposedSubsystems.contains(subsystemName);
         }
         // do not expose metrics for resources outside the subsystems and deployments.
         return false;
+    }
+
+    private String getSubsystemName(PathAddress address) {
+        if (address.size() == 0) {
+            return null;
+        }
+        if (address.getElement(0).getKey().equals(SUBSYSTEM)) {
+            return address.getElement(0).getValue();
+        } else {
+            return getSubsystemName(address.subAddress(1));
+        }
     }
 
     void collectMetricFamilies(ImmutableManagementResourceRegistration managementResourceRegistration,
