@@ -28,9 +28,12 @@ import static org.jboss.as.clustering.jgroups.subsystem.TransportResourceDefinit
 import static org.jboss.as.clustering.jgroups.subsystem.TransportResourceDefinition.Attribute.SITE;
 import static org.jboss.as.clustering.jgroups.subsystem.TransportResourceDefinition.Attribute.SOCKET_BINDING;
 
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
@@ -39,6 +42,7 @@ import org.jboss.as.clustering.jgroups.JChannelFactory;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.network.ClientMapping;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
@@ -131,9 +135,22 @@ public class TransportConfigurationServiceConfigurator<T extends TP> extends Abs
 
     @Override
     public void accept(T protocol) {
-        InetSocketAddress socketAddress = this.getSocketBinding().getSocketAddress();
+        SocketBinding binding = this.getSocketBinding();
+        InetSocketAddress socketAddress = binding.getSocketAddress();
         protocol.setBindAddress(socketAddress.getAddress());
         protocol.setBindPort(socketAddress.getPort());
+
+        List<ClientMapping> clientMappings = binding.getClientMappings();
+        if (!clientMappings.isEmpty()) {
+            // JGroups cannot select a client mapping based on the source address, so just use the first one
+            ClientMapping mapping = clientMappings.get(0);
+            try {
+                protocol.setValue("external_addr", InetAddress.getByName(mapping.getDestinationAddress()));
+                protocol.setValue("external_port", mapping.getDestinationPort());
+            } catch (UnknownHostException e) {
+                throw new IllegalArgumentException(e);
+            }
+        }
 
         protocol.setThreadFactory(new ClassLoaderThreadFactory(new DefaultThreadFactory("jgroups", false, true), JChannelFactory.class.getClassLoader()));
         protocol.setThreadPool(this.threadPoolFactory.get().apply(protocol.getThreadFactory()));
