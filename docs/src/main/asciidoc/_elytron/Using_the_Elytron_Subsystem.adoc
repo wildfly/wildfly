@@ -515,7 +515,7 @@ To configure a system property in WildFly:
 ----
 
 [[configure-an-eltyron-security-realm-for-assigning-roles.]]
-==== Configure an Eltyron security realm for assigning roles.
+==== Configure an Elytron security realm for assigning roles.
 
 The the client's Kerberos token will provide the principal, but you need
 a way to map that principal to a role for your application. There are
@@ -526,8 +526,8 @@ from the Kerberos token, and assigns roles to that user.
 [source,options="nowrap"]
 ----
 /subsystem=elytron/filesystem-realm=exampleFsRealm:add(path=fs-realm-users,relative-to=jboss.server.config.dir)
-/subsystem=elytron/filesystem-realm=exampleFsRealm/identity=user1@REALM:add()
-/subsystem=elytron/filesystem-realm=exampleFsRealm/identity=user1@REALM:add-attribute(name=Roles, value=["Admin","Guest"])
+/subsystem=elytron/filesystem-realm=exampleFsRealm:add-identity(identity=user1@REALM)
+/subsystem=elytron/filesystem-realm=exampleFsRealm:add-identity-attribute(identity=user1@REALM,name=Roles,value=["Admin","Guest"])
 ----
 
 [[add-a-simple-role-decoder.]]
@@ -623,9 +623,9 @@ appropriate roles:
 
 [source,options="nowrap"]
 ----
-/subsystem=elytron/filesystem-realm=exampleFsRealm/identity=fallbackUser1:add()
-/subsystem=elytron/filesystem-realm=exampleFsRealm/identity=fallbackUser1:set-password(clear={password="password123"})
-/subsystem=elytron/filesystem-realm=exampleFsRealm/identity=fallbackUser1:add-attribute(name=Roles, value=["Admin","Guest"])
+/subsystem=elytron/filesystem-realm=exampleFsRealm:add-identity(identity=fallbackUser1)
+/subsystem=elytron/filesystem-realm=exampleFsRealm:set-password(identity=fallbackUser1,clear={password="password123"})
+/subsystem=elytron/filesystem-realm=exampleFsRealm:add-identity-attribute(identity=fallbackUser1,name=Roles,value=["Admin","Guest"])
 ----
 
 [[update-the-web.xml-for-form-fallback.]]
