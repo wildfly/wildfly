@@ -44,6 +44,7 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.transform.description.AttributeConverter.DefaultValueAttributeConverter;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -135,6 +136,10 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
             parent.rejectChildResource(RemoteCacheContainerResourceDefinition.WILDCARD_PATH);
         } else {
             ResourceTransformationDescriptionBuilder builder = parent.addChildResource(RemoteCacheContainerResourceDefinition.WILDCARD_PATH);
+
+            if (InfinispanModel.VERSION_9_0_0.requiresTransformation(version)) {
+                builder.getAttributeBuilder().setValueConverter(new DefaultValueAttributeConverter(Attribute.PROTOCOL_VERSION.getDefinition()), Attribute.PROTOCOL_VERSION.getDefinition());
+            }
 
             ConnectionPoolResourceDefinition.buildTransformation(version, builder);
             SecurityResourceDefinition.buildTransformation(version, builder);
