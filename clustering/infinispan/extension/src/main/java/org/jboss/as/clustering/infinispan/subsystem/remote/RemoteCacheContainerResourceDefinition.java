@@ -96,7 +96,7 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
                 return builder.setValidator(new ModuleIdentifierValidatorBuilder().configure(builder).build());
             }
         },
-        PROTOCOL_VERSION("protocol-version", ModelType.STRING, new ModelNode(ProtocolVersion.DEFAULT_PROTOCOL_VERSION.toString())) {
+        PROTOCOL_VERSION("protocol-version", ModelType.STRING, new ModelNode(ProtocolVersion.PROTOCOL_VERSION_29.toString())) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setValidator(new EnumValidator<>(ProtocolVersion.class));
