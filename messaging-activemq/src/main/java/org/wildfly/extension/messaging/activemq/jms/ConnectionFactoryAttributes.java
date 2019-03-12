@@ -590,10 +590,10 @@ public interface ConnectionFactoryAttributes {
                                     return new ModelNode(CommonAttributes.LOCAL);
                                 case CommonAttributes.NONE:
                                     return new ModelNode(CommonAttributes.NONE);
+                                case CommonAttributes.XA:
+                                    return new ModelNode(CommonAttributes.XA);
                                 default:
-                                    if (newValue.asString() != CommonAttributes.XA) {
-                                        MessagingLogger.ROOT_LOGGER.invalidTransactionNameValue(newValue.asString(), "transaction", Arrays.asList(CommonAttributes.LOCAL, CommonAttributes.NONE, CommonAttributes.XA));
-                                    }
+                                    MessagingLogger.ROOT_LOGGER.invalidTransactionNameValue(newValue.asString(), "transaction", Arrays.asList(CommonAttributes.LOCAL, CommonAttributes.NONE, CommonAttributes.XA));
                                     return new ModelNode(CommonAttributes.XA);
                             }
                         }
