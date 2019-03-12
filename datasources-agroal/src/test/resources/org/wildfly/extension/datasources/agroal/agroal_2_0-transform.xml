@@ -1,0 +1,9 @@
+<subsystem xmlns="urn:jboss:domain:datasources-agroal:2.0">
+    <xa-datasource name="xa" jndi-name="java:jboss/datasources/ExampleXADS" recovery="${recovery:false}" recovery-username="${recovery-username:abc}" recovery-password="${recovery-password:def}">
+        <connection-factory driver="xa" username="sa" password="sa"/>
+        <connection-pool max-size="10"/>
+    </xa-datasource>
+    <drivers>
+        <driver name="xa" module="com.h2database.h2" class="org.h2.jdbcx.JdbcDataSource"/>
+    </drivers>
+</subsystem>
