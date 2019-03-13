@@ -52,7 +52,6 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 public class Hibernate51CompatibilityTransformer implements ClassFileTransformer {
 
     private static final Hibernate51CompatibilityTransformer instance = new Hibernate51CompatibilityTransformer();
-    // TODO: replace useASMExperimental and use of Opcodes.ASM7_EXPERIMENTAL with Opcodes.ASM7 when ASM JDK 11 support is available.
     private static final File showTransformedClassFolder;
     public static final BasicLogger logger = Logger.getLogger("org.jboss.as.hibernate.transformer");
 
@@ -65,7 +64,7 @@ public class Hibernate51CompatibilityTransformer implements ClassFileTransformer
         }
     }
 
-    private static final boolean useASMExperimental = getMajorJavaVersion() >= 11;
+    private static final boolean useASM7 = getMajorJavaVersion() >= 11;
 
     private static final String markerAlreadyTransformed = "$_org_jboss_as_hibernate_Hibernate51CompatibilityTransformer_transformed_$";
 
@@ -95,7 +94,7 @@ public class Hibernate51CompatibilityTransformer implements ClassFileTransformer
 
         }
         try {
-            classReader.accept(new ClassVisitor(useASMExperimental ? Opcodes.ASM7_EXPERIMENTAL : Opcodes.ASM6, traceClassVisitor) {
+            classReader.accept(new ClassVisitor(useASM7 ? Opcodes.ASM7 : Opcodes.ASM6, traceClassVisitor) {
 
                 // clear transformed state at start of each class visit
                 @Override
@@ -368,7 +367,7 @@ public class Hibernate51CompatibilityTransformer implements ClassFileTransformer
 
         try (InputStream is = classLoader.getResourceAsStream(className.replace('.', '/') + ".class")) {
             ClassReader classReader = new ClassReader(is);
-            classReader.accept(new ClassVisitor(useASMExperimental ? Opcodes.ASM7_EXPERIMENTAL : Opcodes.ASM6) {
+            classReader.accept(new ClassVisitor(useASM7 ? Opcodes.ASM7 : Opcodes.ASM6) {
 
                 @Override
                 public void visit(int version, int access, String name, String signature,
