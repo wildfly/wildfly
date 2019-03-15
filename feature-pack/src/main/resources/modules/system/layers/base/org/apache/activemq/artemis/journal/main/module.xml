@@ -27,7 +27,7 @@
         <resource-root path="lib"/>
         <artifact name="${org.apache.activemq:artemis-commons}"/>
         <artifact name="${org.apache.activemq:artemis-journal}"/>
-        <artifact name="${org.apache.activemq:artemis-native}"/>
+        <artifact name="${org.apache.activemq:activemq-artemis-native}"/>
     </resources>
 
     <dependencies>
