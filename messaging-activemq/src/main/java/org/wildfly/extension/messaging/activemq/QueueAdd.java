@@ -27,6 +27,7 @@ package org.wildfly.extension.messaging.activemq;
 
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.DURABLE;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.FILTER;
+import static org.wildfly.extension.messaging.activemq.QueueDefinition.DEFAULT_ROUTING_TYPE;
 
 import java.util.List;
 import java.util.function.Supplier;
@@ -48,6 +49,8 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 
 import static org.wildfly.extension.messaging.activemq.QueueDefinition.ROUTING_TYPE;
+
+import java.util.Locale;
 
 /**
  * Core queue add update.
@@ -103,7 +106,12 @@ public class QueueAdd extends AbstractAddStepHandler {
     private static CoreQueueConfiguration createCoreQueueConfiguration(final OperationContext context, String name, ModelNode model) throws OperationFailedException {
         final String queueAddress = QueueDefinition.ADDRESS.resolveModelAttribute(context, model).asString();
         final String filter = FILTER.resolveModelAttribute(context, model).asStringOrNull();
-        final String routing = ROUTING_TYPE.resolveModelAttribute(context, model).asString();
+        final String routing;
+        if(DEFAULT_ROUTING_TYPE != null && ! model.hasDefined(ROUTING_TYPE.getName())) {
+            routing = RoutingType.valueOf(DEFAULT_ROUTING_TYPE.toUpperCase(Locale.ENGLISH)).toString();
+        } else {
+            routing = ROUTING_TYPE.resolveModelAttribute(context, model).asString();
+        }
         final boolean durable = DURABLE.resolveModelAttribute(context, model).asBoolean();
 
         return new CoreQueueConfiguration()
