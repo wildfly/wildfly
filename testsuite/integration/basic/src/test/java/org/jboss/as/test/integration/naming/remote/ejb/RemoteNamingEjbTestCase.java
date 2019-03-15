@@ -240,4 +240,28 @@ public class RemoteNamingEjbTestCase {
             Thread.currentThread().setContextClassLoader(current);
         }
     }
+
+    @Test
+    public void testSystemPropertyConfig() throws Exception {
+        System.setProperty("java.naming.factory.initial","org.wildfly.naming.client.WildFlyInitialContextFactory");
+
+        final Properties env = new Properties();
+        env.put(Context.PROVIDER_URL, managementClient.getRemoteEjbURL().toString());
+        env.put("jboss.naming.client.ejb.context", true);
+        env.put("jboss.naming.client.connect.options.org.xnio.Options.SASL_POLICY_NOPLAINTEXT", "false");
+
+        final InitialContext ctx = new InitialContext(env);
+        final ClassLoader current = Thread.currentThread().getContextClassLoader();
+
+        try {
+            Thread.currentThread().setContextClassLoader(Remote.class.getClassLoader());
+
+            Remote remote = (Remote) ctx.lookup(ARCHIVE_NAME + "/" + Bean.class.getSimpleName() + "!" + Remote.class.getName());
+            assertNotNull(remote);
+            assertEquals("Echo: test", remote.echo("test"));
+        } finally {
+            ctx.close();
+            Thread.currentThread().setContextClassLoader(current);
+        }
+    }
 }
