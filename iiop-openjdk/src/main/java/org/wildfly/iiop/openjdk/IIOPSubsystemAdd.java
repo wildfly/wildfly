@@ -59,6 +59,7 @@ import org.omg.PortableServer.LifespanPolicyValue;
 import org.omg.PortableServer.POA;
 import org.wildfly.iiop.openjdk.csiv2.CSIV2IORToSocketInfo;
 import org.wildfly.iiop.openjdk.csiv2.ElytronSASClientInterceptor;
+import org.wildfly.iiop.openjdk.deployment.IIOPClearCachesProcessor;
 import org.wildfly.iiop.openjdk.deployment.IIOPDependencyProcessor;
 import org.wildfly.iiop.openjdk.deployment.IIOPMarkerProcessor;
 import org.wildfly.iiop.openjdk.logging.IIOPLogger;
@@ -149,6 +150,8 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
                         Phase.DEPENDENCIES_IIOP_OPENJDK, new IIOPDependencyProcessor());
                 processorTarget.addDeploymentProcessor(IIOPExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_IIOP_OPENJDK,
                         new IIOPMarkerProcessor());
+                processorTarget.addDeploymentProcessor(IIOPExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_IIOP_CLEAR_CACHES,
+                        new IIOPClearCachesProcessor());
             }
         }, OperationContext.Stage.RUNTIME);
 
