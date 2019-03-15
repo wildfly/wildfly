@@ -26,6 +26,7 @@ import java.time.Duration;
 import java.time.Instant;
 
 import org.wildfly.clustering.dispatcher.Command;
+import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 
 /**
@@ -54,16 +55,16 @@ public class ScheduleSchedulerCommand implements Command<Void, Scheduler> {
         Duration maxInactiveInterval = this.metaData.getMaxInactiveInterval();
         Duration lastAccessedDuration = Duration.between(creationTime, this.metaData.getLastAccessedTime());
         out.defaultWriteObject();
-        out.writeObject(creationTime);
-        out.writeObject(maxInactiveInterval);
-        out.writeObject(lastAccessedDuration);
+        DefaultExternalizer.INSTANT.writeObject(out, creationTime);
+        DefaultExternalizer.DURATION.writeObject(out, maxInactiveInterval);
+        DefaultExternalizer.DURATION.writeObject(out, lastAccessedDuration);
     }
 
     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
-        Instant creationTime = (Instant) in.readObject();
-        Duration maxInactiveInterval = (Duration) in.readObject();
-        Duration lastAccessedDuration = (Duration) in.readObject();
+        Instant creationTime = DefaultExternalizer.INSTANT.cast(Instant.class).readObject(in);
+        Duration maxInactiveInterval = DefaultExternalizer.DURATION.cast(Duration.class).readObject(in);
+        Duration lastAccessedDuration = DefaultExternalizer.DURATION.cast(Duration.class).readObject(in);
         SessionCreationMetaData creationMetaData = new SimpleSessionCreationMetaData(creationTime);
         creationMetaData.setMaxInactiveInterval(maxInactiveInterval);
         SessionAccessMetaData accessMetaData = new SimpleSessionAccessMetaData();
