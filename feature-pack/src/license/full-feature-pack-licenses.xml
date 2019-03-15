@@ -872,7 +872,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.activemq</groupId>
-      <artifactId>artemis-native</artifactId>
+      <artifactId>activemq-artemis-native</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
