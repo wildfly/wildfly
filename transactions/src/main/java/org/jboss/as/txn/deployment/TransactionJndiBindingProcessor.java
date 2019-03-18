@@ -62,26 +62,26 @@ public class TransactionJndiBindingProcessor implements DeploymentUnitProcessor 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        if(DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
+            return;
+        }
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
-
         if(moduleDescription == null) {
             return;
         }
-
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
-        //if this is a war we need to bind to the modules comp namespace
-        if(DeploymentTypeMarker.isType(DeploymentType.WAR,deploymentUnit)) {
-            final ServiceName moduleContextServiceName = ContextNames.contextServiceNameOfModule(moduleDescription.getApplicationName(),moduleDescription.getModuleName());
-            bindServices(deploymentUnit, serviceTarget, moduleContextServiceName);
-        }
-
-        for(ComponentDescription component : moduleDescription.getComponentDescriptions()) {
-            if(component.getNamingMode() == ComponentNamingMode.CREATE) {
-                final ServiceName compContextServiceName = ContextNames.contextServiceNameOfComponent(moduleDescription.getApplicationName(),moduleDescription.getModuleName(),component.getComponentName());
-                bindServices(deploymentUnit, serviceTarget, compContextServiceName);
+        // bind to module
+        final ServiceName moduleContextServiceName = ContextNames.contextServiceNameOfModule(moduleDescription.getApplicationName(),moduleDescription.getModuleName());
+        bindServices(deploymentUnit, serviceTarget, moduleContextServiceName);
+        if (!DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
+            // bind to each component
+            for (ComponentDescription component : moduleDescription.getComponentDescriptions()) {
+                if (component.getNamingMode() == ComponentNamingMode.CREATE) {
+                    final ServiceName compContextServiceName = ContextNames.contextServiceNameOfComponent(moduleDescription.getApplicationName(), moduleDescription.getModuleName(), component.getComponentName());
+                    bindServices(deploymentUnit, serviceTarget, compContextServiceName);
+                }
             }
         }
-
     }
 
     /**

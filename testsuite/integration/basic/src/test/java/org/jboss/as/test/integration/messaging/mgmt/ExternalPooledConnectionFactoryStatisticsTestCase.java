@@ -67,6 +67,7 @@ public class ExternalPooledConnectionFactoryStatisticsTestCase {
 
         @Override
         public void doSetup(org.jboss.as.arquillian.container.ManagementClient managementClient, String s) throws Exception {
+            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient(), true);
             JMSOperations ops = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
             ops.addExternalHttpConnector("http-test-connector", "http", "http-acceptor");
             ModelNode attr = new ModelNode();

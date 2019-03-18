@@ -83,6 +83,7 @@ public class ExternalMessagingDeploymentRemoteTestCase {
 
         @Override
         public void doSetup(org.jboss.as.arquillian.container.ManagementClient managementClient, String s) throws Exception {
+            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient(), true);
             JMSOperations ops = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
             ops.createJmsQueue(QUEUE_NAME, "/queue/" + QUEUE_NAME);
             ops.createJmsTopic(TOPIC_NAME, "/topic/" + TOPIC_NAME);
