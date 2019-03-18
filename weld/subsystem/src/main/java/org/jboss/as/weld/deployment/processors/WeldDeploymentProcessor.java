@@ -39,6 +39,7 @@ import java.util.function.Supplier;
 import javax.enterprise.inject.spi.Extension;
 
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import org.jboss.as.ee.concurrent.ConcurrentContextSetupAction;
 import org.jboss.as.ee.naming.JavaNamespaceSetup;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.deployment.JndiNamingDependencyProcessor;
@@ -329,6 +330,10 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         JavaNamespaceSetup naming = deploymentUnit.getAttachment(org.jboss.as.ee.naming.Attachments.JAVA_NAMESPACE_SETUP_ACTION);
         if (naming != null) {
             setupActions.add(naming);
+        }
+        final ConcurrentContextSetupAction concurrentContext = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.CONCURRENT_CONTEXT_SETUP_ACTION);
+        if (concurrentContext != null) {
+            setupActions.add(concurrentContext);
         }
         return setupActions;
     }

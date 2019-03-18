@@ -100,6 +100,7 @@ public class DiscoveryGroupExternalMessagingDeploymentTestCase {
                 logger.info("[WFCI-32] Disable on Windows+IPv6 until CI environment is fixed");
                 return;
             }
+            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient(), true);
             JMSOperations ops = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
             ops.createJmsQueue(QUEUE_NAME, "/queue/" + QUEUE_NAME);
             ops.createJmsTopic(TOPIC_NAME, "/topic/" + TOPIC_NAME);
