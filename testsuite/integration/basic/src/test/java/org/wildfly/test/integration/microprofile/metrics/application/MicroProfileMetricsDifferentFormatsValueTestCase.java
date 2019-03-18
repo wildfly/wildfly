@@ -56,6 +56,7 @@ import org.wildfly.test.integration.microprofile.metrics.TestApplication;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@org.junit.Ignore("https://issues.jboss.org/browse/WFLY-11855")
 public class MicroProfileMetricsDifferentFormatsValueTestCase {
 
     /**
