@@ -24,6 +24,7 @@ package org.jboss.as.ee.concurrent.service;
 
 import org.glassfish.enterprise.concurrent.ContextServiceImpl;
 import org.glassfish.enterprise.concurrent.ManagedThreadFactoryImpl;
+import org.jboss.as.ee.concurrent.ElytronManagedThreadFactory;
 import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.StartContext;

@@ -102,6 +102,8 @@ public class JPADefinition extends SimpleResourceDefinition {
         resourceRegistration.registerAdditionalRuntimePackages(
                 // Only if annotation is in use.
                 RuntimePackageDependency.optional("org.hibernate.search.orm"),
-                RuntimePackageDependency.required("org.hibernate"));
+                RuntimePackageDependency.required("org.hibernate"),
+                // An alias to org.hibernate module.
+                RuntimePackageDependency.optional("org.hibernate.envers"));
     }
 }

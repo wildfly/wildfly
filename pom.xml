@@ -320,7 +320,7 @@
         <version.org.jboss.genericjms>2.0.1.Final</version.org.jboss.genericjms>
         <version.org.jboss.hal.console>3.1.2.Final</version.org.jboss.hal.console>
         <version.org.jboss.iiop-client>1.0.1.Final</version.org.jboss.iiop-client>
-        <version.org.jboss.ironjacamar>1.4.12.Final</version.org.jboss.ironjacamar>
+        <version.org.jboss.ironjacamar>1.4.15.Final</version.org.jboss.ironjacamar>
         <version.org.jboss.jboss-transaction-spi>7.6.0.Final</version.org.jboss.jboss-transaction-spi>
         <!-- Only used for testing -->
         <version.org.jboss.logmanager.commons-logging-jboss-logmanager>1.0.3.Final</version.org.jboss.logmanager.commons-logging-jboss-logmanager>
@@ -364,7 +364,7 @@
         <version.org.jboss.ws.jaxws-undertow-httpspi>1.0.1.Final</version.org.jboss.ws.jaxws-undertow-httpspi>
         <version.org.jboss.ws.spi>3.2.3.Final</version.org.jboss.ws.spi>
         <version.org.jboss.xnio.netty.netty-xnio-transport>0.1.6.Final</version.org.jboss.xnio.netty.netty-xnio-transport>
-        <version.org.jgroups>4.0.18.Final</version.org.jgroups>
+        <version.org.jgroups>4.0.19.Final</version.org.jgroups>
         <version.org.jgroups.azure>1.2.0.Final</version.org.jgroups.azure>
         <version.org.jgroups.kubernetes>1.0.6.Final</version.org.jgroups.kubernetes>
         <version.org.jipijapa>1.0.1.Final</version.org.jipijapa>
@@ -2865,6 +2865,10 @@
                 <artifactId>cxf-tools-common</artifactId>
                 <version>${version.org.apache.cxf}</version>
                 <exclusions>
+                    <exclusion>
+                        <groupId>com.sun.xml.bind</groupId>
+                        <artifactId>jaxb-core</artifactId>
+                    </exclusion>
                     <exclusion>
                         <groupId>com.sun.xml.bind</groupId>
                         <artifactId>jaxb-impl</artifactId>

@@ -67,7 +67,7 @@ class QueueService implements Service<Void> {
                 final SimpleString address = new SimpleString(queueConfiguration.getAddress());
                 final SimpleString filterString = SimpleString.toSimpleString(queueConfiguration.getFilterString());
                 server.createQueue(address,
-                        server.getAddressSettingsRepository().getMatch(address == null ? resourceName.toString() : address.toString()).getDefaultQueueRoutingType(),
+                        queueConfiguration.getRoutingType(),
                         resourceName,
                         filterString,
                         queueConfiguration.isDurable(),
