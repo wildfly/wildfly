@@ -521,6 +521,8 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             throws OperationFailedException {
             int timeout = resolvedValue.asInt();
 
+            // TxControl allow timeout to be set to 0 with meaning of no timeout at all
+            arjPropertyManager.getCoordinatorEnvironmentBean().setDefaultTimeout(timeout);
             TxControl.setDefaultTimeout(timeout);
             if (timeout == 0) {
                 ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
@@ -536,6 +538,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
                                              final String attributeName, final ModelNode valueToRestore,
                                              final ModelNode valueToRevert, final Void handback)
             throws OperationFailedException {
+            arjPropertyManager.getCoordinatorEnvironmentBean().setDefaultTimeout(valueToRestore.asInt());
             TxControl.setDefaultTimeout(valueToRestore.asInt());
             ContextTransactionManager.setGlobalDefaultTransactionTimeout(valueToRestore.asInt());
         }

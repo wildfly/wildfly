@@ -24,6 +24,7 @@ package org.jboss.as.txn.service;
 
 import com.arjuna.ats.arjuna.common.CoordinatorEnvironmentBean;
 import com.arjuna.ats.arjuna.common.arjPropertyManager;
+import com.arjuna.ats.arjuna.coordinator.TxControl;
 import com.arjuna.ats.arjuna.tools.osb.mbean.ObjStoreBrowser;
 import com.arjuna.ats.jta.common.JTAEnvironmentBean;
 import com.arjuna.orbportability.internal.utils.PostInitLoader;
@@ -86,6 +87,8 @@ public final class ArjunaTransactionManagerService implements Service<com.arjuna
         coordinatorEnvironmentBean.setEnableStatistics(coordinatorEnableStatistics);
         coordinatorEnvironmentBean.setDefaultTimeout(coordinatorDefaultTimeout);
         coordinatorEnvironmentBean.setTransactionStatusManagerEnable(transactionStatusManagerEnable);
+
+        TxControl.setDefaultTimeout(coordinatorDefaultTimeout);
 
         // Object Store Browser bean
         Map<String, String> objStoreBrowserTypes = new HashMap<String, String>();
