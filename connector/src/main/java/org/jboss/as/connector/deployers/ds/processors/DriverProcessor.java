@@ -58,7 +58,6 @@ public final class DriverProcessor implements DeploymentUnitProcessor {
         if (module != null && servicesAttachment != null) {
             final ModuleClassLoader classLoader = module.getClassLoader();
             final List<String> driverNames = servicesAttachment.getServiceImplementations(Driver.class.getName());
-            int idx = 0;
             for (String driverClassName : driverNames) {
                 try {
                     final Class<? extends Driver> driverClass = classLoader.loadClass(driverClassName).asSubclass(Driver.class);
@@ -75,10 +74,9 @@ public final class DriverProcessor implements DeploymentUnitProcessor {
                                 Integer.valueOf(minorVersion));
                     }
                     String driverName = deploymentUnit.getName();
-                    if ((driverName.contains(".") && ! driverName.endsWith(".jar")) || idx != 0) {
+                    if ((driverName.contains(".") && ! driverName.endsWith(".jar")) || driverNames.size() != 1) {
                         driverName += "_" + driverClassName + "_" + majorVersion + "_" + minorVersion;
                     }
-                    idx ++;
                     InstalledDriver driverMetadata = new InstalledDriver(driverName, driverClass.getName(), null, null, majorVersion,
                             minorVersion, compliant);
                     DriverService driverService = new DriverService(driverMetadata, driver);
