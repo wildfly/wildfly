@@ -95,8 +95,14 @@ public class FineSessionAttributes<V> implements SessionAttributes {
             attributeId = this.names.get(name);
         }
 
-        Object result = this.read(name, this.attributeCache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).put(this.createKey(attributeId), value));
-        this.mutations.remove(name);
+        SessionAttributeKey key = this.createKey(attributeId);
+        Object result = this.read(name, this.attributeCache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).put(key, value));
+        if (this.properties.isTransactional()) {
+            // Add a passive mutation to prevent any subsequent mutable getAttribute(...) from triggering a redundant mutation on close.
+            this.mutations.put(name, Mutator.PASSIVE);
+        } else {
+            this.mutations.remove(name);
+        }
         return result;
     }
 
@@ -109,13 +115,9 @@ public class FineSessionAttributes<V> implements SessionAttributes {
         V value = this.attributeCache.get(key);
         Object attribute = this.read(name, value);
         if (attribute != null) {
-            // If the object is mutable, we need to indicate that the attribute should be replicated
+            // If the object is mutable, we need to trigger a mutation on close
             if (!SessionAttributeImmutability.INSTANCE.test(attribute)) {
-                Mutator mutator = this.mutations.computeIfAbsent(name, k -> new CacheEntryMutator<>(this.attributeCache, key, value));
-                // If cache is not transactional, mutate on close instead.
-                if (this.properties.isTransactional()) {
-                    mutator.mutate();
-                }
+                this.mutations.putIfAbsent(name, new CacheEntryMutator<>(this.attributeCache, key, value));
             }
         }
         return attribute;
@@ -128,10 +130,8 @@ public class FineSessionAttributes<V> implements SessionAttributes {
 
     @Override
     public void close() {
-        if (!this.properties.isTransactional()) {
-            for (Mutator mutator : this.mutations.values()) {
-                mutator.mutate();
-            }
+        for (Mutator mutator : this.mutations.values()) {
+            mutator.mutate();
         }
         this.mutations.clear();
     }
