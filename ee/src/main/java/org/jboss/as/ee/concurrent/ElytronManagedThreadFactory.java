@@ -30,6 +30,7 @@ import org.wildfly.security.auth.server.SecurityIdentity;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 import javax.enterprise.concurrent.ManagedThreadFactory;
+import java.security.AccessControlContext;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
@@ -40,8 +41,14 @@ import java.security.PrivilegedAction;
  */
 public class ElytronManagedThreadFactory extends ManagedThreadFactoryImpl {
 
+    /**
+     * the factory's ACC
+     */
+    private final AccessControlContext accessControlContext;
+
     public ElytronManagedThreadFactory(String name, ContextServiceImpl contextService, int priority) {
         super(name, contextService, priority);
+        this.accessControlContext = AccessController.getContext();
     }
 
     protected AbstractManagedThread createThread(Runnable r, final ContextHandle contextHandleForSetup) {
@@ -49,7 +56,8 @@ public class ElytronManagedThreadFactory extends ManagedThreadFactoryImpl {
             // app thread, do identity wrap
             r = SecurityIdentityUtils.doIdentityWrap(r);
         }
-        final AbstractManagedThread t = super.createThread(r, contextHandleForSetup);
+        // use the factory's acc as privileged, otherwise the new thread inherits current thread's acc
+        final AbstractManagedThread t = AccessController.doPrivileged(new CreateThreadAction(r, contextHandleForSetup), accessControlContext);
         // reset thread classloader to prevent leaks
         if (!WildFlySecurityManager.isChecking()) {
             t.setContextClassLoader(null);
@@ -60,5 +68,20 @@ public class ElytronManagedThreadFactory extends ManagedThreadFactoryImpl {
             });
         }
         return t;
+    }
+
+    private final class CreateThreadAction implements PrivilegedAction<AbstractManagedThread> {
+        private final Runnable r;
+        private final ContextHandle contextHandleForSetup;
+
+        private CreateThreadAction(Runnable r, ContextHandle contextHandleForSetup) {
+            this.r = r;
+            this.contextHandleForSetup = contextHandleForSetup;
+        }
+
+        @Override
+        public AbstractManagedThread run() {
+            return ElytronManagedThreadFactory.super.createThread(r, contextHandleForSetup);
+        }
     }
 }
