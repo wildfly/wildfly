@@ -28,15 +28,17 @@ import org.jboss.as.controller.transform.description.AttributeTransformationDesc
 import org.jboss.as.controller.transform.description.ChainedTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 
+import static org.jboss.as.controller.PathElement.pathElement;
 import static org.wildfly.extension.datasources.agroal.AgroalExtension.VERSION_1_0_0;
 import static org.wildfly.extension.datasources.agroal.AgroalExtension.VERSION_2_0_0;
 import static org.wildfly.extension.datasources.agroal.XADataSourceDefinition.*;
 
 /**
- * Defines an extension to provide DataSources based on the Agroal project
+ * Defines transformers between versions of the model
  *
  * @author <a href="lbarreiro@redhat.com">Luis Barreiro</a>
  */
@@ -56,12 +58,13 @@ public class AgroalTransformers implements ExtensionTransformerRegistration {
         builder.buildAndRegister(subsystemRegistration, new ModelVersion[] { VERSION_1_0_0, VERSION_2_0_0 });
     }
 
-    private void transformers_2_0_0(ChainedTransformationDescriptionBuilder parentBuilder) {
-        AttributeTransformationDescriptionBuilder attributeBuilder = parentBuilder.createBuilder(VERSION_2_0_0, VERSION_1_0_0).getAttributeBuilder();
+    private static void transformers_2_0_0(ChainedTransformationDescriptionBuilder parentBuilder) {
+        ResourceTransformationDescriptionBuilder resourceTransformation = parentBuilder.createBuilder(VERSION_2_0_0, VERSION_1_0_0);
 
-        attributeBuilder.setDiscard(DiscardAttributeChecker.UNDEFINED, RECOVERY_USERNAME_ATTRIBUTE, RECOVERY_PASSWORD_ATTRIBUTE, RECOVERY_AUTHENTICATION_CONTEXT, RECOVERY_CREDENTIAL_REFERENCE);
-        attributeBuilder.addRejectCheck(RejectAttributeChecker.DEFINED, RECOVERY_USERNAME_ATTRIBUTE, RECOVERY_PASSWORD_ATTRIBUTE, RECOVERY_AUTHENTICATION_CONTEXT, RECOVERY_CREDENTIAL_REFERENCE);
-        attributeBuilder.addRejectCheck(new RejectAttributeChecker.SimpleAcceptAttributeChecker(ModelNode.FALSE), RECOVERY);
+        AttributeTransformationDescriptionBuilder xaAttributeBuilder = resourceTransformation.addChildResource(pathElement("xa-datasource")).getAttributeBuilder();
+        xaAttributeBuilder.setDiscard(DiscardAttributeChecker.ALWAYS, RECOVERY_USERNAME_ATTRIBUTE, RECOVERY_PASSWORD_ATTRIBUTE, RECOVERY_AUTHENTICATION_CONTEXT, RECOVERY_CREDENTIAL_REFERENCE);
+        xaAttributeBuilder.setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(ModelNode.FALSE), RECOVERY );
+        xaAttributeBuilder.addRejectCheck(RejectAttributeChecker.ALL, RECOVERY);
     }
 
 }

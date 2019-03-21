@@ -101,22 +101,33 @@ public class AgroalTransformersTestCase extends AbstractSubsystemBaseTest {
         PathAddress subsystemAddress = PathAddress.pathAddress(SUBSYSTEM, AgroalExtension.SUBSYSTEM_NAME);
 
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, agroalVersion, ops, new FailedOperationTransformationConfig()
-                .addFailedAttribute(subsystemAddress, new FailedOperationTransformationConfig.NewAttributesConfig(
+                .addFailedAttribute(subsystemAddress.append("xa-datasource"), new DiscardedAttribute(
                         XADataSourceDefinition.RECOVERY_USERNAME_ATTRIBUTE,
                         XADataSourceDefinition.RECOVERY_PASSWORD_ATTRIBUTE,
                         XADataSourceDefinition.RECOVERY_AUTHENTICATION_CONTEXT,
                         XADataSourceDefinition.RECOVERY_CREDENTIAL_REFERENCE))
-                .addFailedAttribute(subsystemAddress, new CorrectToFalse(
+                .addFailedAttribute(subsystemAddress.append("xa-datasource"), new CorrectToFalse(
                         XADataSourceDefinition.RECOVERY))
         );
     }
 
     // --- //
 
+    private static class DiscardedAttribute extends FailedOperationTransformationConfig.NewAttributesConfig {
+
+        private DiscardedAttribute(AttributeDefinition... attributeDefinitions) {
+            super(convert(attributeDefinitions));
+        }
+
+        @Override public boolean expectDiscarded(ModelNode operation) {
+            return true;
+        }
+    }
+
     private static class CorrectToFalse extends FailedOperationTransformationConfig.NewAttributesConfig {
 
-        public CorrectToFalse(AttributeDefinition... defs) {
-            super(convert(defs));
+        private CorrectToFalse(AttributeDefinition... attributeDefinitions) {
+            super(convert(attributeDefinitions));
         }
 
         @Override
