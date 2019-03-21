@@ -10,6 +10,10 @@
             <property name="hibernate.cache.use_second_level_cache" value="true"/>
             <property name="hibernate.cache.use_query_cache" value="true"/>
             <property name="hibernate.generate_statistics" value="true"/>
+            <property name="hibernate.enhancer.enableDirtyTracking" value="true"/>
+            <property name="hibernate.enhancer.enableLazyInitialization" value="true"/>
+            <property name="hibernate.enhancer.enableAssociationManagement" value="true"/>
+
             <!-- Hibernate 5.2+ (see https://hibernate.atlassian.net/browse/HHH-10877 +
                  https://hibernate.atlassian.net/browse/HHH-12665) no longer defaults
                  to allowing a DML operation outside of a started transaction.
@@ -28,6 +32,10 @@
             <property name="hibernate.cache.use_second_level_cache" value="true"/>
             <property name="hibernate.cache.use_query_cache" value="true"/>
             <property name="hibernate.generate_statistics" value="true"/>
+            <property name="hibernate.enhancer.enableDirtyTracking" value="true"/>
+            <property name="hibernate.enhancer.enableLazyInitialization" value="true"/>
+            <property name="hibernate.enhancer.enableAssociationManagement" value="true"/>
+
             <!-- Hibernate 5.2+ (see https://hibernate.atlassian.net/browse/HHH-10877 +
                  https://hibernate.atlassian.net/browse/HHH-12665) no longer defaults
                  to allowing a DML operation outside of a started transaction.
@@ -46,6 +54,10 @@
             <property name="hibernate.cache.use_second_level_cache" value="false"/>
             <property name="hibernate.cache.use_query_cache" value="false"/>
             <property name="hibernate.generate_statistics" value="true"/>
+            <property name="hibernate.enhancer.enableDirtyTracking" value="true"/>
+            <property name="hibernate.enhancer.enableLazyInitialization" value="true"/>
+            <property name="hibernate.enhancer.enableAssociationManagement" value="true"/>
+
             <!-- Hibernate 5.2+ (see https://hibernate.atlassian.net/browse/HHH-10877 +
                  https://hibernate.atlassian.net/browse/HHH-12665) no longer defaults
                  to allowing a DML operation outside of a started transaction.
