@@ -48,11 +48,15 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-web-api</artifactId>
+            <artifactId>wildfly-clustering-web-container</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-web-spi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-web-common</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>

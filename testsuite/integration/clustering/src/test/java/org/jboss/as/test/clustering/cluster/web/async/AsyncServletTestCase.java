@@ -37,11 +37,12 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
-import org.jboss.as.test.clustering.cluster.web.DistributableTestCase;
 import org.jboss.as.test.clustering.cluster.web.async.servlet.AsyncServlet;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
+import org.jboss.as.test.shared.CLIServerSetupTask;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -54,6 +55,7 @@ import org.junit.runner.RunWith;
  * @author Paul Ferraro
  */
 @RunWith(Arquillian.class)
+@ServerSetup(AsyncServletTestCase.ServerSetupTask.class)
 public class AsyncServletTestCase extends AbstractClusteringTestCase {
 
     private static final String MODULE_NAME = AsyncServletTestCase.class.getSimpleName();
@@ -76,7 +78,7 @@ public class AsyncServletTestCase extends AbstractClusteringTestCase {
         war.addPackage(AsyncServlet.class.getPackage());
         // Take web.xml from the managed test.
         war.setWebXML(SimpleServlet.class.getPackage(), "web.xml");
-        war.addAsWebInfResource(DistributableTestCase.class.getPackage(), "jboss-web_fine.xml", "jboss-web.xml");
+        war.addAsWebInfResource(AsyncServletTestCase.class.getPackage(), "jboss-all.xml", "jboss-all.xml");
         return war;
     }
 
@@ -112,6 +114,15 @@ public class AsyncServletTestCase extends AbstractClusteringTestCase {
             Assert.assertEquals(value, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
         } finally {
             HttpClientUtils.closeQuietly(response);
+        }
+    }
+
+    public static class ServerSetupTask extends CLIServerSetupTask {
+        public ServerSetupTask() {
+            this.builder.node(AbstractClusteringTestCase.THREE_NODES)
+                    .setup("/subsystem=distributable-web/infinispan-session-management=attribute:add(cache-container=web, granularity=ATTRIBUTE)")
+                    .teardown("/subsystem=distributable-web/infinispan-session-management=attribute:remove()")
+            ;
         }
     }
 }

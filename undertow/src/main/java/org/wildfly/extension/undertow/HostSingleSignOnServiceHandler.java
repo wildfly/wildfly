@@ -28,8 +28,10 @@ import static org.wildfly.extension.undertow.SingleSignOnDefinition.Attribute.HT
 import static org.wildfly.extension.undertow.SingleSignOnDefinition.Attribute.PATH;
 import static org.wildfly.extension.undertow.SingleSignOnDefinition.Attribute.SECURE;
 
+import java.util.Iterator;
+import java.util.ServiceLoader;
+
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.SimpleCapabilityServiceConfigurator;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.CapabilityServiceTarget;
 import org.jboss.as.controller.OperationContext;
@@ -38,9 +40,10 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.extension.undertow.security.sso.DistributableHostSingleSignOnManagerServiceConfiguratorProvider;
+import org.wildfly.clustering.web.container.HostSingleSignOnManagementConfiguration;
+import org.wildfly.clustering.web.container.HostSingleSignOnManagementProvider;
+import org.wildfly.extension.undertow.sso.NonDistributableSingleSignOnManagementProvider;
 
-import io.undertow.security.impl.InMemorySingleSignOnManager;
 import io.undertow.security.impl.SingleSignOnManager;
 
 /**
@@ -48,6 +51,13 @@ import io.undertow.security.impl.SingleSignOnManager;
  * @author Paul Ferraro
  */
 class HostSingleSignOnServiceHandler implements ResourceServiceHandler {
+
+    private final HostSingleSignOnManagementProvider provider;
+
+    HostSingleSignOnServiceHandler() {
+        Iterator<HostSingleSignOnManagementProvider> providers = ServiceLoader.load(HostSingleSignOnManagementProvider.class, HostSingleSignOnManagementProvider.class.getClassLoader()).iterator();
+        this.provider = providers.hasNext() ? providers.next() : NonDistributableSingleSignOnManagementProvider.INSTANCE;
+    }
 
     @Override
     public void installServices(OperationContext context, ModelNode model) throws OperationFailedException {
@@ -69,9 +79,18 @@ class HostSingleSignOnServiceHandler implements ResourceServiceHandler {
         CapabilityServiceTarget target = context.getCapabilityServiceTarget();
 
         ServiceName managerServiceName = serviceName.append("manager");
-        DistributableHostSingleSignOnManagerServiceConfiguratorProvider.INSTANCE.map(provider -> provider.getServiceConfigurator(managerServiceName, serverName, hostName))
-                .orElse(new SimpleCapabilityServiceConfigurator<>(managerServiceName, new InMemorySingleSignOnManager()))
-                .configure(context).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        HostSingleSignOnManagementConfiguration configuration = new HostSingleSignOnManagementConfiguration() {
+            @Override
+            public String getServerName() {
+                return serverName;
+            }
+
+            @Override
+            public String getHostName() {
+                return hostName;
+            }
+        };
+        this.provider.getServiceConfigurator(managerServiceName, configuration).configure(context).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 
         SingleSignOnService service = new SingleSignOnService(domain, path, httpOnly, secure, cookieName);
         target.addCapability(HostSingleSignOnDefinition.HOST_SSO_CAPABILITY, service)
@@ -94,5 +113,4 @@ class HostSingleSignOnServiceHandler implements ResourceServiceHandler {
         context.removeService(serviceName.append("manager"));
         context.removeService(HostSingleSignOnDefinition.HOST_SSO_CAPABILITY.getCapabilityServiceName(address));
     }
-
 }

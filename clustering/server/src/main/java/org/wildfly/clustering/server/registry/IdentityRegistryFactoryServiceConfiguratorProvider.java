@@ -30,9 +30,9 @@ import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.clustering.controller.IdentityCapabilityServiceConfigurator;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.server.IdentityCacheRequirementServiceConfiguratorProvider;
+import org.wildfly.clustering.service.ServiceNameRegistry;
 import org.wildfly.clustering.spi.IdentityCacheServiceConfiguratorProvider;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
-import org.wildfly.clustering.spi.ServiceNameRegistry;
 
 /**
  * @author Paul Ferraro

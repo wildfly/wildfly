@@ -38,6 +38,18 @@
                     <unset param="relative-to"/>
                 </feature>
             </feature>
+            <feature spec="subsystem.infinispan.cache-container.replicated-cache">
+                <param name="replicated-cache" value="sso"/>
+                <feature spec="subsystem.infinispan.cache-container.replicated-cache.component.locking">
+                    <param name="isolation" value="REPEATABLE_READ"/>
+                </feature>
+                <feature spec="subsystem.infinispan.cache-container.replicated-cache.component.transaction">
+                    <param name="mode" value="BATCH"/>
+                </feature>
+            </feature>
+            <feature spec="subsystem.infinispan.cache-container.distributed-cache">
+                <param name="distributed-cache" value="routing"/>
+            </feature>
         </feature>
 
         <feature spec="subsystem.infinispan.cache-container">

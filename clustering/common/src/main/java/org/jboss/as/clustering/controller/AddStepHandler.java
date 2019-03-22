@@ -191,6 +191,11 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
         // Auto-create required child resources as necessary
         addRequiredChildren(context, this.descriptor.getRequiredChildren(), (Resource parent, PathElement path) -> parent.hasChild(path));
         addRequiredChildren(context, this.descriptor.getRequiredSingletonChildren(), (Resource parent, PathElement path) -> parent.hasChildren(path.getKey()));
+
+        // Don't leave model undefined
+        if (!model.isDefined()) {
+            model.setEmptyObject();
+        }
     }
 
     private static void addRequiredChildren(OperationContext context, Collection<PathElement> paths, BiPredicate<Resource, PathElement> present) {

@@ -23,30 +23,38 @@
 package org.wildfly.clustering.web.undertow.sso.elytron;
 
 import java.net.URI;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.ee.Batch;
+import org.wildfly.clustering.service.ChildTargetService;
 import org.wildfly.clustering.service.FunctionalService;
 import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SimpleServiceNameProvider;
 import org.wildfly.clustering.service.SimpleSupplierDependency;
 import org.wildfly.clustering.service.SupplierDependency;
+import org.wildfly.clustering.web.WebDefaultProviderRequirement;
+import org.wildfly.clustering.web.WebProviderRequirement;
+import org.wildfly.clustering.web.container.SecurityDomainSingleSignOnManagementConfiguration;
+import org.wildfly.clustering.web.sso.DistributableSSOManagementProvider;
+import org.wildfly.clustering.web.sso.LegacySSOManagementProviderFactory;
 import org.wildfly.clustering.web.sso.SSOManager;
 import org.wildfly.clustering.web.sso.SSOManagerFactory;
-import org.wildfly.clustering.web.sso.SSOManagerFactoryServiceConfiguratorProvider;
+import org.wildfly.clustering.web.undertow.logging.UndertowClusteringLogger;
 import org.wildfly.clustering.web.undertow.sso.SSOManagerServiceConfigurator;
+import org.wildfly.extension.undertow.Capabilities;
 import org.wildfly.security.http.util.sso.SingleSignOnManager;
 
 import io.undertow.server.session.SessionIdGenerator;
@@ -56,22 +64,17 @@ import io.undertow.server.session.SessionIdGenerator;
  */
 public class DistributableSingleSignOnManagerServiceConfigurator extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, Function<SSOManager<ElytronAuthentication, String, Map.Entry<String, URI>, LocalSSOContext, Batch>, SingleSignOnManager> {
 
-    private final SupplierDependency<SSOManager<ElytronAuthentication, String, Map.Entry<String, URI>, LocalSSOContext, Batch>> manager;
+    private final SecurityDomainSingleSignOnManagementConfiguration configuration;
+    private final LegacySSOManagementProviderFactory legacyProviderFactory;
 
-    private final Collection<CapabilityServiceConfigurator> configurators;
+    private volatile SupplierDependency<DistributableSSOManagementProvider> provider;
+    private volatile SupplierDependency<SSOManager<ElytronAuthentication, String, Map.Entry<String, URI>, LocalSSOContext, Batch>> manager;
+    private volatile Consumer<ServiceTarget> installer;
 
-    public DistributableSingleSignOnManagerServiceConfigurator(ServiceName name, String securityDomainName, SessionIdGenerator generator, SSOManagerFactoryServiceConfiguratorProvider provider) {
+    public DistributableSingleSignOnManagerServiceConfigurator(ServiceName name, SecurityDomainSingleSignOnManagementConfiguration configuration, LegacySSOManagementProviderFactory legacyProviderFactory) {
         super(name);
-
-        CapabilityServiceConfigurator factoryConfigurator = provider.getServiceConfigurator(securityDomainName);
-        SupplierDependency<SSOManagerFactory<ElytronAuthentication, String, Map.Entry<String, URI>, Batch>> factoryDependency = new ServiceSupplierDependency<>(factoryConfigurator);
-        SupplierDependency<SessionIdGenerator> generatorDependency = new SimpleSupplierDependency<>(generator);
-        ServiceName managerServiceName = this.getServiceName().append("manager");
-        CapabilityServiceConfigurator managerConfigurator = new SSOManagerServiceConfigurator<>(managerServiceName, factoryDependency, generatorDependency, new LocalSSOContextFactory());
-
-        this.manager = new ServiceSupplierDependency<>(managerServiceName);
-
-        this.configurators = Arrays.asList(factoryConfigurator, managerConfigurator);
+        this.configuration = configuration;
+        this.legacyProviderFactory = legacyProviderFactory;
     }
 
     @Override
@@ -80,21 +83,47 @@ public class DistributableSingleSignOnManagerServiceConfigurator extends SimpleS
     }
 
     @Override
-    public ServiceConfigurator configure(CapabilityServiceSupport support) {
-        for (CapabilityServiceConfigurator configurator : this.configurators) {
-            configurator.configure(support);
-        }
+    public ServiceConfigurator configure(OperationContext context) {
+        String securityDomainName = this.configuration.getSecurityDomainName();
+        Supplier<String> generator = this.configuration.getIdentifierGenerator();
+        CapabilityServiceSupport support = context.getCapabilityServiceSupport();
+        SupplierDependency<DistributableSSOManagementProvider> provider = getProvider(context, securityDomainName);
+        ServiceName managerServiceName = this.getServiceName().append("manager");
+        this.manager = new ServiceSupplierDependency<>(managerServiceName);
+        this.provider = provider;
+        this.installer = new Consumer<ServiceTarget>() {
+            @Override
+            public void accept(ServiceTarget target) {
+                ServiceConfigurator factoryConfigurator = provider.get().getServiceConfigurator(securityDomainName).configure(support);
+                factoryConfigurator.build(target).install();
+
+                SupplierDependency<SSOManagerFactory<ElytronAuthentication, String, Map.Entry<String, URI>, Batch>> factoryDependency = new ServiceSupplierDependency<>(factoryConfigurator);
+                SupplierDependency<SessionIdGenerator> generatorDependency = new SimpleSupplierDependency<>(new SessionIdGeneratorAdapter(generator));
+                new SSOManagerServiceConfigurator<>(managerServiceName, factoryDependency, generatorDependency, new LocalSSOContextFactory()).configure(support).build(target).install();
+            }
+        };
         return this;
     }
 
     @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
-        for (CapabilityServiceConfigurator configurator : this.configurators) {
-            configurator.build(target).install();
-        }
-        ServiceBuilder<?> builder = target.addService(this.getServiceName());
-        Consumer<SingleSignOnManager> manager = this.manager.register(builder).provides(this.getServiceName());
+        ServiceName name = this.getServiceName();
+        this.provider.register(target.addService(name.append("installer"))).setInstance(new ChildTargetService(this.installer)).install();
+
+        ServiceBuilder<?> builder = target.addService(name);
+        Consumer<SingleSignOnManager> manager = this.manager.register(builder).provides(name);
         Service service = new FunctionalService<>(manager, this, this.manager);
         return builder.setInstance(service);
+    }
+
+    private SupplierDependency<DistributableSSOManagementProvider> getProvider(OperationContext context, String securityDomainName) {
+        String securityDomainCapabilityName = RuntimeCapability.buildDynamicCapabilityName(Capabilities.CAPABILITY_APPLICATION_SECURITY_DOMAIN, securityDomainName);
+        if (context.hasOptionalCapability(WebProviderRequirement.SSO_MANAGEMENT_PROVIDER.resolve(securityDomainName), securityDomainCapabilityName, null)) {
+            return new ServiceSupplierDependency<>(WebProviderRequirement.SSO_MANAGEMENT_PROVIDER.getServiceName(context, securityDomainName));
+        } else if (context.hasOptionalCapability(WebDefaultProviderRequirement.SSO_MANAGEMENT_PROVIDER.getName(), securityDomainCapabilityName, null)) {
+            return new ServiceSupplierDependency<>(WebDefaultProviderRequirement.SSO_MANAGEMENT_PROVIDER.getServiceName(context));
+        }
+        UndertowClusteringLogger.ROOT_LOGGER.legacySingleSignOnProviderInUse(securityDomainName);
+        return new SimpleSupplierDependency<>(this.legacyProviderFactory.createSSOManagementProvider());
     }
 }

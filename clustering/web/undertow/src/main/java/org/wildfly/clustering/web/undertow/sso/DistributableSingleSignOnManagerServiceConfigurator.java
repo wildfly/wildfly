@@ -22,28 +22,35 @@
 
 package org.wildfly.clustering.web.undertow.sso;
 
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.ee.Batch;
+import org.wildfly.clustering.service.ChildTargetService;
 import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.FunctionalService;
 import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SimpleServiceNameProvider;
+import org.wildfly.clustering.service.SimpleSupplierDependency;
 import org.wildfly.clustering.service.SupplierDependency;
+import org.wildfly.clustering.web.WebDefaultProviderRequirement;
+import org.wildfly.clustering.web.WebProviderRequirement;
+import org.wildfly.clustering.web.container.HostSingleSignOnManagementConfiguration;
+import org.wildfly.clustering.web.sso.DistributableSSOManagementProvider;
+import org.wildfly.clustering.web.sso.LegacySSOManagementProviderFactory;
 import org.wildfly.clustering.web.sso.SSOManager;
 import org.wildfly.clustering.web.sso.SSOManagerFactory;
-import org.wildfly.clustering.web.sso.SSOManagerFactoryServiceConfiguratorProvider;
+import org.wildfly.clustering.web.undertow.UndertowBinaryRequirement;
+import org.wildfly.clustering.web.undertow.logging.UndertowClusteringLogger;
 
 import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession;
 import io.undertow.security.impl.SingleSignOnManager;
@@ -57,35 +64,19 @@ import io.undertow.server.session.SessionListener;
  */
 public class DistributableSingleSignOnManagerServiceConfigurator extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, Supplier<SingleSignOnManager> {
 
-    private final SupplierDependency<SSOManager<AuthenticatedSession, String, String, Void, Batch>> manager;
-    private final SupplierDependency<SessionManagerRegistry> registry;
+    private final HostSingleSignOnManagementConfiguration configuration;
+    private final LegacySSOManagementProviderFactory legacyProviderFactory;
 
-    private final Collection<CapabilityServiceConfigurator> configurators;
+    private volatile SupplierDependency<SSOManager<AuthenticatedSession, String, String, Void, Batch>> manager;
+    private volatile SupplierDependency<SessionManagerRegistry> registry;
 
-    public DistributableSingleSignOnManagerServiceConfigurator(ServiceName name, String serverName, String hostName, SSOManagerFactoryServiceConfiguratorProvider provider) {
+    private volatile SupplierDependency<DistributableSSOManagementProvider> provider;
+    private volatile Consumer<ServiceTarget> installer;
+
+    public DistributableSingleSignOnManagerServiceConfigurator(ServiceName name, HostSingleSignOnManagementConfiguration configuration, LegacySSOManagementProviderFactory legacyProviderFactory) {
         super(name);
-
-        CapabilityServiceConfigurator factoryConfigurator = provider.getServiceConfigurator(hostName);
-        ServiceName generatorServiceName = name.append("generator");
-        CapabilityServiceConfigurator generatorConfigurator = new SessionIdGeneratorServiceConfigurator(generatorServiceName, serverName);
-
-        SupplierDependency<SSOManagerFactory<AuthenticatedSession, String, String, Batch>> factoryDependency = new ServiceSupplierDependency<>(factoryConfigurator);
-        SupplierDependency<SessionIdGenerator> generatorDependency = new ServiceSupplierDependency<>(generatorServiceName);
-        ServiceName managerServiceName = name.append("manager");
-        CapabilityServiceConfigurator managerConfigurator = new SSOManagerServiceConfigurator<>(managerServiceName, factoryDependency, generatorDependency, () -> null);
-
-        SupplierDependency<SSOManager<AuthenticatedSession, String, String, Void, Batch>> managerDependency = new ServiceSupplierDependency<>(managerServiceName);
-        ServiceName listenerServiceName = name.append("listener");
-        CapabilityServiceConfigurator listenerConfigurator = new SessionListenerServiceConfigurator(listenerServiceName, managerDependency);
-
-        SupplierDependency<SessionListener> listenerDependency = new ServiceSupplierDependency<>(listenerServiceName);
-        ServiceName registryServiceName = name.append("registry");
-        CapabilityServiceConfigurator registryConfigurator = new SessionManagerRegistryServiceConfigurator(registryServiceName, serverName, hostName, listenerDependency);
-
-        this.manager = new ServiceSupplierDependency<>(managerConfigurator);
-        this.registry = new ServiceSupplierDependency<>(registryConfigurator);
-
-        this.configurators = Arrays.asList(factoryConfigurator, generatorConfigurator, managerConfigurator, listenerConfigurator, registryConfigurator);
+        this.configuration = configuration;
+        this.legacyProviderFactory = legacyProviderFactory;
     }
 
     @Override
@@ -94,21 +85,60 @@ public class DistributableSingleSignOnManagerServiceConfigurator extends SimpleS
     }
 
     @Override
-    public ServiceConfigurator configure(CapabilityServiceSupport support) {
-        for (CapabilityServiceConfigurator configurator : this.configurators) {
-            configurator.configure(support);
-        }
+    public ServiceConfigurator configure(OperationContext context) {
+        String serverName = this.configuration.getServerName();
+        String hostName = this.configuration.getHostName();
+        CapabilityServiceSupport support = context.getCapabilityServiceSupport();
+        SupplierDependency<DistributableSSOManagementProvider> provider = getProvider(context, serverName, hostName);
+        ServiceName serviceName = this.getServiceName();
+        ServiceName generatorServiceName = serviceName.append("generator");
+        ServiceName managerServiceName = serviceName.append("manager");
+        ServiceName listenerServiceName = serviceName.append("listener");
+        ServiceName registryServiceName = serviceName.append("registry");
+        this.manager = new ServiceSupplierDependency<>(managerServiceName);
+        this.registry = new ServiceSupplierDependency<>(registryServiceName);
+        this.provider = provider;
+        this.installer = new Consumer<ServiceTarget>() {
+            @Override
+            public void accept(ServiceTarget target) {
+                ServiceConfigurator factoryConfigurator = provider.get().getServiceConfigurator(hostName).configure(support);
+                factoryConfigurator.build(target).install();
+
+                new SessionIdGeneratorServiceConfigurator(generatorServiceName, serverName).configure(support).build(target).install();
+
+                SupplierDependency<SSOManagerFactory<AuthenticatedSession, String, String, Batch>> factoryDependency = new ServiceSupplierDependency<>(factoryConfigurator);
+                SupplierDependency<SessionIdGenerator> generatorDependency = new ServiceSupplierDependency<>(generatorServiceName);
+                new SSOManagerServiceConfigurator<>(managerServiceName, factoryDependency, generatorDependency, () -> null).configure(support).build(target).install();
+
+                SupplierDependency<SSOManager<AuthenticatedSession, String, String, Void, Batch>> managerDependency = new ServiceSupplierDependency<>(managerServiceName);
+                new SessionListenerServiceConfigurator(listenerServiceName, managerDependency).configure(support).build(target).install();
+
+                SupplierDependency<SessionListener> listenerDependency = new ServiceSupplierDependency<>(listenerServiceName);
+                new SessionManagerRegistryServiceConfigurator(registryServiceName, serverName, hostName, listenerDependency).configure(support).build(target).install();
+            }
+        };
         return this;
     }
 
     @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
-        for (CapabilityServiceConfigurator configurator : this.configurators) {
-            configurator.build(target).install();
-        }
-        ServiceBuilder<?> builder = target.addService(this.getServiceName());
-        Consumer<SingleSignOnManager> manager = new CompositeDependency(this.manager, this.registry).register(builder).provides(this.getServiceName());
+        ServiceName name = this.getServiceName();
+        this.provider.register(target.addService(name.append("installer"))).setInstance(new ChildTargetService(this.installer)).install();
+
+        ServiceBuilder<?> builder = target.addService(name);
+        Consumer<SingleSignOnManager> manager = new CompositeDependency(this.manager, this.registry).register(builder).provides(name);
         Service service = new FunctionalService<>(manager, Function.identity(), this);
         return builder.setInstance(service);
+    }
+
+    private SupplierDependency<DistributableSSOManagementProvider> getProvider(OperationContext context, String serverName, String hostName) {
+        String hostCapabilityName = UndertowBinaryRequirement.HOST.resolve(serverName, hostName);
+        if (context.hasOptionalCapability(WebProviderRequirement.SSO_MANAGEMENT_PROVIDER.resolve(hostName), hostCapabilityName, null)) {
+            return new ServiceSupplierDependency<>(WebProviderRequirement.SSO_MANAGEMENT_PROVIDER.getServiceName(context, hostName));
+        } else if (context.hasOptionalCapability(WebDefaultProviderRequirement.SSO_MANAGEMENT_PROVIDER.getName(), hostCapabilityName, null)) {
+            return new ServiceSupplierDependency<>(WebDefaultProviderRequirement.SSO_MANAGEMENT_PROVIDER.getServiceName(context));
+        }
+        UndertowClusteringLogger.ROOT_LOGGER.legacySingleSignOnProviderInUse(hostName);
+        return new SimpleSupplierDependency<>(this.legacyProviderFactory.createSSOManagementProvider());
     }
 }

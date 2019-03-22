@@ -24,23 +24,15 @@ package org.wildfly.clustering.web.session;
 import org.wildfly.clustering.marshalling.spi.Marshallability;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
 import org.wildfly.clustering.web.LocalContextFactory;
+import org.wildfly.clustering.web.WebDeploymentConfiguration;
 
 /**
  * Encapsulates the configuration of a session manager.
  * @author Paul Ferraro
  */
-public interface SessionManagerFactoryConfiguration<C extends Marshallability, L> {
-    enum SessionAttributePersistenceStrategy { COARSE, FINE }
+public interface SessionManagerFactoryConfiguration<C extends Marshallability, L> extends WebDeploymentConfiguration {
 
-    int getMaxActiveSessions();
-
-    SessionAttributePersistenceStrategy getAttributePersistenceStrategy();
-
-    String getServerName();
-
-    String getDeploymentName();
-
-    String getCacheName();
+    Integer getMaxActiveSessions();
 
     MarshalledValueFactory<C> getMarshalledValueFactory();
 
