@@ -45,6 +45,7 @@ import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.singleton.partition.PartitionServlet;
 import org.jboss.as.test.clustering.cluster.singleton.partition.SingletonServiceActivator;
 import org.jboss.as.test.clustering.cluster.singleton.service.NodeServiceServlet;
+import org.jboss.as.test.clustering.cluster.singleton.service.SingletonElectionListenerService;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.msc.service.ServiceActivator;
@@ -91,7 +92,7 @@ public class SingletonPartitionTestCase extends AbstractClusteringTestCase {
     private static Archive<?> createDeployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, SingletonPartitionTestCase.class.getSimpleName() + ".war");
         war.addPackage(SingletonServiceActivator.class.getPackage());
-        war.addClass(NodeServiceServlet.class);
+        war.addClasses(NodeServiceServlet.class, SingletonElectionListenerService.class);
         war.addAsServiceProvider(ServiceActivator.class, SingletonServiceActivator.class);
         ClusterTestUtil.addTopologyListenerDependencies(war);
         war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.as.clustering.common, org.jboss.as.controller, org.jboss.as.server, org.jgroups, org.infinispan, org.wildfly.clustering.infinispan.spi\n"));
@@ -123,11 +124,11 @@ public class SingletonPartitionTestCase extends AbstractClusteringTestCase {
 
 
         // check service A
-        checkSingletonNode(baseURL1, SingletonServiceActivator.SERVICE_A_NAME, null);
+        checkSingletonNode(baseURL1, SingletonServiceActivator.SERVICE_A_NAME, SingletonServiceActivator.SERVICE_A_PREFERRED_NODE);
         checkSingletonNode(baseURL2, SingletonServiceActivator.SERVICE_A_NAME, SingletonServiceActivator.SERVICE_A_PREFERRED_NODE);
         // check service B
         checkSingletonNode(baseURL1, SingletonServiceActivator.SERVICE_B_NAME, SingletonServiceActivator.SERVICE_B_PREFERRED_NODE);
-        checkSingletonNode(baseURL2, SingletonServiceActivator.SERVICE_B_NAME, null);
+        checkSingletonNode(baseURL2, SingletonServiceActivator.SERVICE_B_NAME, SingletonServiceActivator.SERVICE_B_PREFERRED_NODE);
 
 
         // 2. Simulate network partition; each having it's own provider
@@ -153,11 +154,11 @@ public class SingletonPartitionTestCase extends AbstractClusteringTestCase {
         Thread.sleep(SERVICE_TIMEOUT);
 
         // check service A
-        checkSingletonNode(baseURL1, SingletonServiceActivator.SERVICE_A_NAME, null);
+        checkSingletonNode(baseURL1, SingletonServiceActivator.SERVICE_A_NAME, SingletonServiceActivator.SERVICE_A_PREFERRED_NODE);
         checkSingletonNode(baseURL2, SingletonServiceActivator.SERVICE_A_NAME, SingletonServiceActivator.SERVICE_A_PREFERRED_NODE);
         // check service B
         checkSingletonNode(baseURL1, SingletonServiceActivator.SERVICE_B_NAME, SingletonServiceActivator.SERVICE_B_PREFERRED_NODE);
-        checkSingletonNode(baseURL2, SingletonServiceActivator.SERVICE_B_NAME, null);
+        checkSingletonNode(baseURL2, SingletonServiceActivator.SERVICE_B_NAME, SingletonServiceActivator.SERVICE_B_PREFERRED_NODE);
 
 
         // 4. Simulate network partition again, each node should start the service again. This verifies WFLY-4748.

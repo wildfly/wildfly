@@ -46,4 +46,11 @@ public interface SingletonServiceBuilder<T> extends Builder<T> {
      * @return a reference to this builder
      */
     SingletonServiceBuilder<T> electionPolicy(SingletonElectionPolicy policy);
+
+    /**
+     * Defines a listener to trigger following the election of a primary singleton provider.
+     * @param listener an election listener
+     * @return a reference to this builder
+     */
+    SingletonServiceBuilder<T> electionListener(SingletonElectionListener listener);
 }

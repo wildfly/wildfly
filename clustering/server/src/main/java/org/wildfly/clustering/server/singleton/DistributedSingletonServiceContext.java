@@ -27,13 +27,12 @@ import java.util.function.Supplier;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.provider.ServiceProviderRegistry;
-import org.wildfly.clustering.service.ServiceNameProvider;
 import org.wildfly.clustering.singleton.SingletonElectionPolicy;
 
 /**
  * @author Paul Ferraro
  */
-public interface DistributedSingletonServiceContext extends ServiceNameProvider {
+public interface DistributedSingletonServiceContext extends SingletonServiceContext {
     Supplier<ServiceProviderRegistry<ServiceName>> getServiceProviderRegistry();
     Supplier<CommandDispatcherFactory> getCommandDispatcherFactory();
     SingletonElectionPolicy getElectionPolicy();

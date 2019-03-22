@@ -25,19 +25,13 @@ package org.jboss.as.test.clustering.cluster.singleton.partition;
 import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.NODE_1;
 import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.NODE_2;
 
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-
-import org.jboss.msc.Service;
+import org.jboss.as.test.clustering.cluster.singleton.service.SingletonElectionListenerService;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.group.Group;
-import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.service.ActiveServiceSupplier;
-import org.wildfly.clustering.service.FunctionalService;
 import org.wildfly.clustering.singleton.SingletonDefaultCacheRequirement;
 import org.wildfly.clustering.singleton.election.NamePreference;
 import org.wildfly.clustering.singleton.election.PreferredSingletonElectionPolicy;
@@ -64,12 +58,14 @@ public class SingletonServiceActivator implements ServiceActivator {
     }
 
     private static void install(ServiceTarget target, SingletonServiceConfiguratorFactory factory, ServiceName name, String preferredNode) {
-        ServiceBuilder<?> builder = factory.createSingletonServiceConfigurator(name)
+        ServiceBuilder<?> builder = target.addService(name);
+        SingletonElectionListenerService listenerService = new SingletonElectionListenerService(builder.provides(name));
+        builder.setInstance(listenerService).install();
+
+        factory.createSingletonServiceConfigurator(name.append("singleton"))
                 .electionPolicy(new PreferredSingletonElectionPolicy(new SimpleSingletonElectionPolicy(), new NamePreference(preferredNode)))
-                .build(target);
-        Consumer<Node> member = builder.provides(name);
-        Supplier<Group> group = builder.requires(ServiceName.parse("org.wildfly.clustering.default-group"));
-        Service service = new FunctionalService<>(member, Group::getLocalMember, group);
-        builder.setInstance(service).install();
+                .electionListener(listenerService)
+                .build(target)
+                .install();
     }
 }

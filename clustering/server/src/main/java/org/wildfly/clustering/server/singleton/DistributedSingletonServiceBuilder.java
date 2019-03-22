@@ -29,11 +29,13 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.provider.ServiceProviderRegistry;
 import org.wildfly.clustering.server.logging.ClusteringServerLogger;
 import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.SimpleServiceNameProvider;
 import org.wildfly.clustering.service.SupplierDependency;
+import org.wildfly.clustering.singleton.SingletonElectionListener;
 import org.wildfly.clustering.singleton.SingletonElectionPolicy;
 import org.wildfly.clustering.singleton.SingletonService;
 import org.wildfly.clustering.singleton.SingletonServiceBuilder;
@@ -44,7 +46,7 @@ import org.wildfly.clustering.singleton.election.SimpleSingletonElectionPolicy;
  * @author Paul Ferraro
  */
 @Deprecated
-public class DistributedSingletonServiceBuilder<T> extends SimpleServiceNameProvider implements SingletonServiceBuilder<T>, DistributedSingletonServiceContext {
+public class DistributedSingletonServiceBuilder<T> extends SimpleServiceNameProvider implements SingletonServiceBuilder<T>, DistributedSingletonServiceContext, Supplier<Group> {
 
     private final SupplierDependency<ServiceProviderRegistry<ServiceName>> registry;
     private final SupplierDependency<CommandDispatcherFactory> dispatcherFactory;
@@ -52,6 +54,7 @@ public class DistributedSingletonServiceBuilder<T> extends SimpleServiceNameProv
     private final Service<T> backupService;
 
     private volatile SingletonElectionPolicy electionPolicy = new SimpleSingletonElectionPolicy();
+    private volatile SingletonElectionListener electionListener;
     private volatile int quorum = 1;
 
     public DistributedSingletonServiceBuilder(ServiceName serviceName, Service<T> primaryService, Service<T> backupService, DistributedSingletonServiceConfiguratorContext context) {
@@ -60,6 +63,12 @@ public class DistributedSingletonServiceBuilder<T> extends SimpleServiceNameProv
         this.dispatcherFactory = context.getCommandDispatcherFactoryDependency();
         this.primaryService = primaryService;
         this.backupService = backupService;
+        this.electionListener = new DefaultSingletonElectionListener(serviceName, this);
+    }
+
+    @Override
+    public Group get() {
+        return this.registry.get().getGroup();
     }
 
     @Override
@@ -85,6 +94,12 @@ public class DistributedSingletonServiceBuilder<T> extends SimpleServiceNameProv
     }
 
     @Override
+    public SingletonServiceBuilder<T> electionListener(SingletonElectionListener listener) {
+        this.electionListener = listener;
+        return this;
+    }
+
+    @Override
     public Supplier<ServiceProviderRegistry<ServiceName>> getServiceProviderRegistry() {
         return this.registry;
     }
@@ -97,6 +112,11 @@ public class DistributedSingletonServiceBuilder<T> extends SimpleServiceNameProv
     @Override
     public SingletonElectionPolicy getElectionPolicy() {
         return this.electionPolicy;
+    }
+
+    @Override
+    public SingletonElectionListener getElectionListener() {
+        return this.electionListener;
     }
 
     @Override

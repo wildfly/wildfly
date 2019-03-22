@@ -30,6 +30,6 @@ import org.wildfly.clustering.group.Group;
  * Context for local singleton services.
  * @author Paul Ferraro
  */
-public interface LocalSingletonServiceContext {
+public interface LocalSingletonServiceContext extends SingletonServiceContext {
     Supplier<Group> getGroup();
 }

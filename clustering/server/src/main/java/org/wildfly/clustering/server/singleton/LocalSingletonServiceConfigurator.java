@@ -33,6 +33,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.service.SimpleServiceNameProvider;
 import org.wildfly.clustering.service.SupplierDependency;
+import org.wildfly.clustering.singleton.SingletonElectionListener;
 import org.wildfly.clustering.singleton.SingletonElectionPolicy;
 import org.wildfly.clustering.singleton.service.SingletonServiceBuilder;
 import org.wildfly.clustering.singleton.service.SingletonServiceConfigurator;
@@ -44,10 +45,12 @@ import org.wildfly.clustering.singleton.service.SingletonServiceConfigurator;
 public class LocalSingletonServiceConfigurator extends SimpleServiceNameProvider implements SingletonServiceConfigurator, LocalSingletonServiceContext {
 
     private final SupplierDependency<Group> group;
+    private volatile SingletonElectionListener listener;
 
     public LocalSingletonServiceConfigurator(ServiceName name, LocalSingletonServiceConfiguratorContext context) {
         super(name);
         this.group = context.getGroupDependency();
+        this.listener = new DefaultSingletonElectionListener(name, this.group);
     }
 
     @Override
@@ -69,8 +72,19 @@ public class LocalSingletonServiceConfigurator extends SimpleServiceNameProvider
     }
 
     @Override
+    public SingletonServiceConfigurator electionListener(SingletonElectionListener listener) {
+        this.listener = listener;
+        return this;
+    }
+
+    @Override
     public Supplier<Group> getGroup() {
         return this.group;
+    }
+
+    @Override
+    public SingletonElectionListener getElectionListener() {
+        return this.listener;
     }
 
     private static class LocalSingletonServiceBuilder<T> extends DelegatingServiceBuilder<T> implements SingletonServiceBuilder<T> {

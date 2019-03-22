@@ -22,11 +22,29 @@
 
 package org.wildfly.clustering.server.singleton;
 
-import org.wildfly.clustering.singleton.Singleton;
+import java.util.List;
+
+import org.wildfly.clustering.dispatcher.Command;
+import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.singleton.SingletonElectionListener;
 
 /**
  * @author Paul Ferraro
  */
-public interface SingletonContext extends Lifecycle, Singleton, SingletonElectionListener {
+public class SingletonElectionCommand implements Command<Void, SingletonElectionListener> {
+    private static final long serialVersionUID = 8457549139382922406L;
+
+    private final List<Node> candidates;
+    private final Integer index;
+
+    public SingletonElectionCommand(List<Node> candidates, Node elected) {
+        this.candidates = candidates;
+        this.index = (elected != null) ? candidates.indexOf(elected) : null;
+    }
+
+    @Override
+    public Void execute(SingletonElectionListener context) {
+        context.elected(this.candidates, (this.index != null) ? this.candidates.get(this.index.intValue()) : null);
+        return null;
+    }
 }
