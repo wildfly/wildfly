@@ -29,7 +29,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -42,7 +41,6 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
-import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.server.ServerEnvironment;
@@ -50,7 +48,6 @@ import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 import org.jgroups.conf.ClassConfigurator;
 import org.junit.Assert;
 import org.junit.Test;
@@ -82,11 +79,6 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
 
     private static String formatArtifact(String pattern, ModelTestControllerVersion version) {
         return String.format(pattern, version.getMavenGavVersion());
-    }
-
-    @Override
-    protected String getSubsystemXml() throws IOException {
-        return readResource("infinispan-transformer.xml");
     }
 
     private static InfinispanModel getModelVersion(ModelTestControllerVersion controllerVersion) {
@@ -195,11 +187,12 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
     private void testTransformation(final ModelTestControllerVersion controller) throws Exception {
         final ModelVersion version = getModelVersion(controller).getVersion();
         final String[] dependencies = getDependencies(controller);
+        final String subsystemXmlResource = String.format("subsystem-infinispan-transform-%d_%d_%d.xml", version.getMajor(), version.getMinor(), version.getMicro());
 
-        KernelServices services = this.buildKernelServices(controller, version, dependencies);
+        KernelServices services = this.buildKernelServices(readResource(subsystemXmlResource), controller, version, dependencies);
 
         // check that both versions of the legacy model are the same and valid
-        checkSubsystemModelTransformation(services, version, createModelFixer(version), false);
+        checkSubsystemModelTransformation(services, version, null, false);
 
         ModelNode transformed = services.readTransformedModel(version);
 
@@ -216,33 +209,6 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
             // Test properties operations
             propertiesMapOperationsTest(services, version);
         }
-    }
-
-    private static ModelFixer createModelFixer(ModelVersion version) {
-        return model -> {
-            final ModelNode maximal = model.get("cache-container", "maximal");
-            maximal.asPropertyList().stream().filter(caches -> caches.getName().equals("distributed-cache") || caches.getName().equals("replicated-cache")).forEach(p -> {
-                ModelNode caches = maximal.get(p.getName());
-                final List<Property> cachesModel = caches.asPropertyList();
-                for (Property cacheName : cachesModel) {
-                    final ModelNode cache = caches.get(cacheName.getName());
-                    if (cache.hasDefined("component")) {
-                        cache.get("component", "backups").set(new ModelNode());
-                    }
-                }
-            });
-            if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
-                // Fix the legacy model to expect new default values applied in StateTransferResourceDefinition#buildTransformation
-                Arrays.asList("cache-with-string-keyed-store", "cache-with-binary-keyed-store").forEach(cacheName -> {
-                    ModelNode cache = model.get("cache-container", "maximal", "replicated-cache", cacheName);
-                    Assert.assertFalse(cache.hasDefined(StateTransferResourceDefinition.LEGACY_PATH.getKeyValuePair()));
-                    ModelNode stateTransfer = cache.get(StateTransferResourceDefinition.LEGACY_PATH.getKeyValuePair());
-                    stateTransfer.get(StateTransferResourceDefinition.Attribute.CHUNK_SIZE.getDefinition().getName()).set(StateTransferResourceDefinition.Attribute.CHUNK_SIZE.getDefinition().getDefaultValue());
-                    stateTransfer.get(StateTransferResourceDefinition.Attribute.TIMEOUT.getDefinition().getName()).set(StateTransferResourceDefinition.Attribute.TIMEOUT.getDefinition().getDefaultValue());
-                });
-            }
-            return model;
-        };
     }
 
     private static void propertiesMapOperationsTest(KernelServices services, ModelVersion version) throws Exception {
