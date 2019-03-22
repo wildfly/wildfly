@@ -20,29 +20,44 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.jpa.processor;
 
-import org.jboss.as.jpa.processor.secondlevelcache.CacheDeploymentListener;
-import org.jipijapa.event.impl.EventListenerRegistration;
+package org.jboss.as.test.integration.messaging.jms.context.notclosinginjectedcontext.auxiliary;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import javax.annotation.Resource;
+import javax.ejb.Singleton;
+import javax.ejb.Startup;
+import javax.enterprise.concurrent.ManagedScheduledExecutorService;
+import javax.inject.Inject;
+import java.util.concurrent.ScheduledFuture;
 
 /**
- * CacheDeploymentHelper
+ * Start of ejb send message after creation of this bean.
  *
- * @author Scott Marlow
+ * @author Gunter Zeilinger <gunterze@gmail.com>, Jiri Ondrusek <jondruse@redhat.com>
+ * @since Sep 2018
  */
-public class CacheDeploymentHelper {
+@Singleton
+@Startup
+public class StartUp {
 
-    private volatile CacheDeploymentListener listener;
+    private volatile ScheduledFuture<?> running;
 
-    public void register() {
-        listener = new CacheDeploymentListener();
-        EventListenerRegistration.add(listener);
+    @Inject
+    private Ejb ejb;
+
+    @Resource
+    private ManagedScheduledExecutorService scheduledExecutor;
+
+    @PostConstruct
+    public void init() {
+        ejb.send("msg");
     }
 
-    public void unregister() {
-        if (listener != null) {
-            EventListenerRegistration.remove(listener);
-            listener = null;
-        }
+    @PreDestroy
+    public void destroy() {
+        if (running != null)
+            running.cancel(true);
     }
 }

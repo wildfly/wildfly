@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,29 +20,22 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.jpa.processor;
+package org.jboss.as.test.integration.ws.anonymouspojos;
 
-import org.jboss.as.jpa.processor.secondlevelcache.CacheDeploymentListener;
-import org.jipijapa.event.impl.EventListenerRegistration;
+import javax.jws.WebService;
 
 /**
- * CacheDeploymentHelper
- *
- * @author Scott Marlow
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public class CacheDeploymentHelper {
+@WebService(
+        endpointInterface = "org.jboss.as.test.integration.ws.anonymouspojos.POJOIface",
+        targetNamespace = "org.jboss.as.test.integration.ws.anonymouspojos",
+        serviceName = "AnonymousPOJOService"
+)
+public class AnonymousPOJO {
 
-    private volatile CacheDeploymentListener listener;
-
-    public void register() {
-        listener = new CacheDeploymentListener();
-        EventListenerRegistration.add(listener);
+    public String echo(final String s) {
+        return s + " from anonymous POJO";
     }
 
-    public void unregister() {
-        if (listener != null) {
-            EventListenerRegistration.remove(listener);
-            listener = null;
-        }
-    }
 }

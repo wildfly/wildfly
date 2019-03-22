@@ -65,7 +65,7 @@ import org.jboss.as.jpa.container.TransactionScopedEntityManager;
 import org.jboss.as.jpa.interceptor.WebNonTxEmCloserAction;
 import org.jboss.as.jpa.messages.JpaLogger;
 import org.jboss.as.jpa.persistenceprovider.PersistenceProviderLoader;
-import org.jboss.as.jpa.processor.secondLevelCache.CacheDeploymentListener;
+import org.jboss.as.jpa.processor.secondlevelcache.CacheDeploymentListener;
 import org.jboss.as.jpa.service.JPAService;
 import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
 import org.jboss.as.jpa.service.PhaseOnePersistenceUnitServiceImpl;

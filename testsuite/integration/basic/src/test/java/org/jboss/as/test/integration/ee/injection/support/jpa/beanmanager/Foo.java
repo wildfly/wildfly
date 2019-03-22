@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,30 +19,23 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.test.integration.ee.injection.support.jpa.beanmanager;
 
-package org.jboss.as.jpa.processor;
+import java.util.concurrent.atomic.AtomicInteger;
+import javax.enterprise.context.ApplicationScoped;
 
-import org.jboss.as.jpa.processor.secondlevelcache.CacheDeploymentListener;
-import org.jipijapa.event.impl.EventListenerRegistration;
+@ApplicationScoped
+public class Foo {
 
-/**
- * CacheDeploymentHelper
- *
- * @author Scott Marlow
- */
-public class CacheDeploymentHelper {
-
-    private volatile CacheDeploymentListener listener;
-
-    public void register() {
-        listener = new CacheDeploymentListener();
-        EventListenerRegistration.add(listener);
+    public AtomicInteger getCounter() {
+        return counter;
     }
 
-    public void unregister() {
-        if (listener != null) {
-            EventListenerRegistration.remove(listener);
-            listener = null;
-        }
+    AtomicInteger counter = new AtomicInteger();
+
+    public void ping(){
+        counter.incrementAndGet();
     }
+
+
 }

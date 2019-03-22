@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,29 +20,41 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.jpa.processor;
+package org.jboss.as.test.integration.ee.injection.support.jpa.beanmanager;
 
-import org.jboss.as.jpa.processor.secondlevelcache.CacheDeploymentListener;
-import org.jipijapa.event.impl.EventListenerRegistration;
+import javax.ejb.LocalBean;
+import javax.ejb.Stateless;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
-/**
- * CacheDeploymentHelper
- *
- * @author Scott Marlow
- */
-public class CacheDeploymentHelper {
+@Stateless
+@LocalBean
+public class TestBean {
 
-    private volatile CacheDeploymentListener listener;
+    @PersistenceContext(unitName = "mypc")
+    EntityManager em;
 
-    public void register() {
-        listener = new CacheDeploymentListener();
-        EventListenerRegistration.add(listener);
+    public void createEmployee(String name, String address, int id) {
+        Employee emp = new Employee();
+        emp.setId(id);
+        emp.setAddress(address);
+        emp.setName(name);
+        em.joinTransaction();
+        em.persist(emp);
     }
 
-    public void unregister() {
-        if (listener != null) {
-            EventListenerRegistration.remove(listener);
-            listener = null;
-        }
+    public void updateEmployee(int id) {
+        Employee employee = em.find(Employee.class, id);
+        employee.setName("Johny");
+        em.merge(employee);
     }
+
+    public void removeEmployee(int id) {
+        Employee employee = em.find(Employee.class, id);
+        em.remove(employee);
+    }
+
+
 }
+
+

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,30 +19,25 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.test.xts.annotation.compensationscoped;
 
-package org.jboss.as.jpa.processor;
+import org.jboss.narayana.compensations.api.CompensationScoped;
 
-import org.jboss.as.jpa.processor.secondlevelcache.CacheDeploymentListener;
-import org.jipijapa.event.impl.EventListenerRegistration;
+import java.io.Serializable;
 
 /**
- * CacheDeploymentHelper
- *
- * @author Scott Marlow
+ * @author <a href="mailto:gytis@redhat.com">Gytis Trikleris</a>
  */
-public class CacheDeploymentHelper {
+@CompensationScoped
+public class CompensationScopedData implements Serializable {
 
-    private volatile CacheDeploymentListener listener;
+    private String value;
 
-    public void register() {
-        listener = new CacheDeploymentListener();
-        EventListenerRegistration.add(listener);
+    public String get() {
+        return value;
     }
 
-    public void unregister() {
-        if (listener != null) {
-            EventListenerRegistration.remove(listener);
-            listener = null;
-        }
+    public void set(final String value) {
+        this.value = value;
     }
 }
