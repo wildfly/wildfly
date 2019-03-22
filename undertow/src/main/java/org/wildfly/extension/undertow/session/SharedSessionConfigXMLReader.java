@@ -52,6 +52,11 @@ public class SharedSessionConfigXMLReader implements XMLElementReader<SharedSess
 
         ParseUtils.requireNoAttributes(reader);
 
+        if (!this.schema.since(SharedSessionConfigSchema.VERSION_2_0)) {
+            // Prior to 2.0, shared session manager was distributable by default
+            result.setDistributable(true);
+        }
+
         while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
             switch (reader.getLocalName()) {
                 case "max-active-sessions": {
@@ -71,6 +76,14 @@ public class SharedSessionConfigXMLReader implements XMLElementReader<SharedSess
                 case "session-config": {
                     result.setSessionConfig(SessionConfigMetaDataParser.parse(reader, this.replacer));
                     break;
+                }
+                case "distributable": {
+                    if (this.schema.since(SharedSessionConfigSchema.VERSION_2_0)) {
+                        ParseUtils.requireNoAttributes(reader);
+                        ParseUtils.requireNoContent(reader);
+                        result.setDistributable(true);
+                        break;
+                    }
                 }
                 default: {
                     throw ParseUtils.unexpectedElement(reader);

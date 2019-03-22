@@ -44,6 +44,7 @@ import org.jboss.metadata.web.spec.SessionConfigMetaData;
 import org.wildfly.clustering.web.container.SessionManagementProvider;
 import org.wildfly.clustering.web.container.SessionManagerFactoryConfiguration;
 import org.wildfly.extension.undertow.ServletContainerService;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.extension.undertow.session.NonDistributableSessionManagementProvider;
 import org.wildfly.extension.undertow.session.SessionManagementProviderFactory;
 
@@ -55,14 +56,14 @@ import io.undertow.servlet.api.SessionManagerFactory;
  */
 public class SharedSessionManagerDeploymentProcessor implements DeploymentUnitProcessor, Function<SessionManagerFactoryConfiguration, SessionManagerFactory> {
     private final String defaultServerName;
-    private final SessionManagementProviderFactory factory;
-    private final SessionManagementProvider nonDistributableProvider;
+    private final SessionManagementProviderFactory sessionManagementProviderFactory;
+    private final SessionManagementProvider nonDistributableSessionManagementProvider;
 
     public SharedSessionManagerDeploymentProcessor(String defaultServerName) {
         this.defaultServerName = defaultServerName;
         Iterator<SessionManagementProviderFactory> factories = ServiceLoader.load(SessionManagementProviderFactory.class, SessionManagementProviderFactory.class.getClassLoader()).iterator();
-        this.factory = factories.hasNext() ? factories.next() : null;
-        this.nonDistributableProvider = new NonDistributableSessionManagementProvider(this);
+        this.sessionManagementProviderFactory = factories.hasNext() ? factories.next() : null;
+        this.nonDistributableSessionManagementProvider = new NonDistributableSessionManagementProvider(this);
     }
 
     @Override
@@ -87,8 +88,7 @@ public class SharedSessionManagerDeploymentProcessor implements DeploymentUnitPr
         ServiceName managerServiceName = deploymentServiceName.append(SharedSessionManagerConfig.SHARED_SESSION_MANAGER_SERVICE_NAME);
         ServiceName codecServiceName = deploymentServiceName.append(SharedSessionManagerConfig.SHARED_SESSION_IDENTIFIER_CODEC_SERVICE_NAME);
 
-        @SuppressWarnings("deprecation")
-        SessionManagementProvider provider = (this.factory != null) ? this.factory.createSessionManagementProvider(deploymentUnit, sharedConfig.getReplicationConfig()) : this.nonDistributableProvider;
+        SessionManagementProvider provider = this.getDistributableWebDeploymentProvider(deploymentUnit, sharedConfig);
         SessionManagerFactoryConfiguration configuration = new SessionManagerFactoryConfiguration() {
             @Override
             public String getServerName() {
@@ -117,6 +117,18 @@ public class SharedSessionManagerDeploymentProcessor implements DeploymentUnitPr
         };
         provider.getSessionManagerFactoryServiceConfigurator(managerServiceName, configuration).configure(support).build(target).install();
         provider.getSessionIdentifierCodecServiceConfigurator(codecServiceName, configuration).configure(support).build(target).install();
+    }
+
+    @SuppressWarnings("deprecation")
+    private SessionManagementProvider getDistributableWebDeploymentProvider(DeploymentUnit unit, SharedSessionManagerConfig config) {
+        if (config.isDistributable()) {
+            if (this.sessionManagementProviderFactory != null) {
+                return this.sessionManagementProviderFactory.createSessionManagementProvider(unit, config.getReplicationConfig());
+            }
+            // Fallback to non-distributable session manager if server does not support clustering
+            UndertowLogger.ROOT_LOGGER.clusteringNotSupported();
+        }
+        return this.nonDistributableSessionManagementProvider;
     }
 
     @Override

@@ -36,9 +36,18 @@ public class SharedSessionManagerConfig {
     public static final ServiceName SHARED_SESSION_MANAGER_SERVICE_NAME = ServiceName.of("web", "shared-session-manager");
     public static final ServiceName SHARED_SESSION_IDENTIFIER_CODEC_SERVICE_NAME = SHARED_SESSION_MANAGER_SERVICE_NAME.append("codec");
 
+    private boolean distributable = false;
     private Integer maxActiveSessions;
     private ReplicationConfig replicationConfig;
     private SessionConfigMetaData sessionConfig;
+
+    public boolean isDistributable() {
+        return this.distributable;
+    }
+
+    public void setDistributable(boolean distributable) {
+        this.distributable = distributable;
+    }
 
     public Integer getMaxActiveSessions() {
         return maxActiveSessions;
