@@ -36,6 +36,7 @@ public class ElytronOnlyMaster640TestSuite extends ElytronOnlyMasterTestSuite {
 
     @BeforeClass
     public static void initializeDomain() {
+        Version.AsVersion.EAP_6_4_0.assumeMaxVM();
         ElytronOnlyMasterTestSuite.getSupport(ElytronOnlyMaster640TestSuite.class);
     }
 }

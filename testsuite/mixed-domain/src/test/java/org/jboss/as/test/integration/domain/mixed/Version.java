@@ -21,6 +21,8 @@
 */
 package org.jboss.as.test.integration.domain.mixed;
 
+import org.junit.Assume;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -41,10 +43,10 @@ public @interface Version {
     String EAP = "jboss-eap-";
 
     enum AsVersion {
-        EAP_6_4_0(EAP, 6, 4, 0),
-        EAP_7_0_0(EAP, 7, 0, 0),
-        EAP_7_1_0(EAP, 7, 1, 0),
-        EAP_7_2_0(EAP, 7, 2, 0),
+        EAP_6_4_0(EAP, 6, 4, 0, 8, 8),
+        EAP_7_0_0(EAP, 7, 0, 0, 8, 8),
+        EAP_7_1_0(EAP, 7, 1, 0, 8, 8),
+        EAP_7_2_0(EAP, 7, 2, 0, 11, 8),
         ;
 
 
@@ -53,14 +55,18 @@ public @interface Version {
         private final int major;
         private final int minor;
         private final int micro;
+        private final int maxVM;
+        private final int minVM;
         final String version;
 
-        AsVersion(String basename, int major, int minor, int micro){
+        AsVersion(String basename, int major, int minor, int micro, int maxVM, int minVM){
             this.basename = basename;
             this.major = major;
             this.minor = minor;
             this.micro = micro;
             this.version = major + "." + minor + "." + micro;
+            this.maxVM = maxVM;
+            this.minVM = minVM;
         }
 
         public String getBaseName() {
@@ -97,6 +103,34 @@ public @interface Version {
 
         public int getMicro() {
             return micro;
+        }
+
+        /**
+         * Gets the maximum Java version under which a legacy host can properly
+         * execute tests.
+         */
+        public int getMaxVMVersion() {
+            return maxVM;
+        }
+
+        /**
+         * Gets the minimum Java version under which a legacy host can properly
+         * execute tests.
+         */
+        public int getMinVMVersion() {
+            return minVM;
+        }
+
+        /**
+         * Checks whether the current VM version exceeds the maximum version under which a legacy host can properly
+         * execute tests. The check is disabled if system property "jboss.test.host.slave.jvmhome" is set.
+         */
+        public void assumeMaxVM() {
+            if (System.getProperty("jboss.test.host.slave.jvmhome") == null) {
+                String javaSpecVersion = System.getProperty("java.specification.version");
+                int vm = "1.8".equals(javaSpecVersion) ? 8 : Integer.parseInt(javaSpecVersion);
+                Assume.assumeFalse(vm > maxVM);
+            }
         }
 
         int compare(int major, int minor) {

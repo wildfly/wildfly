@@ -68,7 +68,7 @@ public class MixedDomainTestSuite {
             return getSupport(testClass, Profile.FULL_HA, false);
     }
 
-protected static MixedDomainTestSupport getSupport(Class<?> testClass,  boolean withMasterServers) {
+    protected static MixedDomainTestSupport getSupport(Class<?> testClass,  boolean withMasterServers) {
             return getSupport(testClass, Profile.FULL_HA, withMasterServers);
     }
 
@@ -79,6 +79,7 @@ protected static MixedDomainTestSupport getSupport(Class<?> testClass,  boolean 
         }
         return support;
     }
+
     /**
      * Call this from a @BeforeClass method
      *
@@ -91,6 +92,7 @@ protected static MixedDomainTestSupport getSupport(Class<?> testClass,  boolean 
     protected static MixedDomainTestSupport getSupport(Class<?> testClass, String masterConfig, boolean adjustDomain, boolean legacyConfig, boolean withMasterServers) {
         return getSupport(testClass, masterConfig, null, Profile.FULL_HA, adjustDomain, legacyConfig, withMasterServers);
     }
+
     /**
      * Call this from a @BeforeClass method
      *
@@ -147,7 +149,8 @@ protected static MixedDomainTestSupport getSupport(Class<?> testClass,  boolean 
                     testSupport = MixedDomainTestSupport.create(testClass.getSimpleName(), version);
                 }
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                MixedDomainTestSuite.version = null;
+                throw (e instanceof RuntimeException ? (RuntimeException) e : new RuntimeException(e));
             }
             try {
                 //Start the the domain with adjustments to domain.xml
