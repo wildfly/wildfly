@@ -41,8 +41,6 @@ public @interface Version {
     String EAP = "jboss-eap-";
 
     enum AsVersion {
-        EAP_6_2_0(EAP, 6, 2, 0),
-        EAP_6_3_0(EAP, 6, 3, 0),
         EAP_6_4_0(EAP, 6, 4, 0),
         EAP_7_0_0(EAP, 7, 0, 0),
         EAP_7_1_0(EAP, 7, 1, 0),
@@ -86,7 +84,7 @@ public @interface Version {
         }
 
         public boolean isEAP6Version() {
-            return (this == EAP_6_2_0 || this == EAP_6_3_0 || this == EAP_6_4_0);
+            return (this == EAP_6_4_0);
         }
 
         public int getMajor() {

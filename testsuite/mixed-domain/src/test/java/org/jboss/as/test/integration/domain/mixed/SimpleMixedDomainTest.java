@@ -116,9 +116,7 @@ public abstract class SimpleMixedDomainTest  {
 
     @Test
     public void test00002_Versioning() throws Exception {
-        if (version == Version.AsVersion.EAP_6_2_0
-                || version == Version.AsVersion.EAP_7_0_0) {
-            //6.2.0 (https://issues.jboss.org/browse/WFLY-3228) and
+        if (version == Version.AsVersion.EAP_7_0_0) {
             //7.0.0 (https://issues.jboss.org/browse/WFCORE-401)
             // have the slave report back its own version, rather than the one from the DC,
             //which is what should happen
@@ -226,10 +224,6 @@ public abstract class SimpleMixedDomainTest  {
      */
     @Test
     public void test00011_ExampleDSConnection() throws Exception{
-        if (version == Version.AsVersion.EAP_6_2_0) {
-            // see: https://issues.jboss.org/browse/WFLY-7792
-            return;
-        }
         PathAddress exampleDSAddress = PathAddress.pathAddress(PathElement.pathElement(HOST, "slave"),
                 PathElement.pathElement(RUNNING_SERVER, "server-one"), PathElement.pathElement(SUBSYSTEM, "datasources"),
                 PathElement.pathElement("data-source", "ExampleDS"));
