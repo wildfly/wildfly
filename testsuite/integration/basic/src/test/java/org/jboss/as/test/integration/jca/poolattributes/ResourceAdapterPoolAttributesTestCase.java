@@ -179,9 +179,11 @@ public class ResourceAdapterPoolAttributesTestCase extends JcaMgmtBase {
         serverState = readAttribute(new ModelNode(), "server-state");
         Assert.assertEquals("reload-required", serverState.asString());
 
-        // check that runtime was updated
-        Assert.assertEquals(4, poolConfiguration.getMinSize());
-        Assert.assertEquals(10, poolConfiguration.getMaxSize());
+        ModelNode result = readAttribute(CONNECTION_ADDRESS, Constants.MIN_POOL_SIZE.getName());
+        Assert.assertEquals(4, result.asInt());
+
+        result = readAttribute(CONNECTION_ADDRESS, Constants.MAX_POOL_SIZE.getName());
+        Assert.assertEquals(10, result.asInt());
     }
 
     static class ResourceAdapterCapacityPoliciesServerSetupTask extends JcaMgmtServerSetupTask {

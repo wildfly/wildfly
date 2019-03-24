@@ -51,6 +51,7 @@ import org.jboss.as.connector.subsystems.datasources.XaDataSourceService;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -124,6 +125,7 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
 
         final List<DataSources> dataSourcesList = deploymentUnit.getAttachmentList(DsXmlDeploymentParsingProcessor.DATA_SOURCES_ATTACHMENT_KEY);
 
@@ -150,7 +152,7 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                             // TODO why have we been ignoring a configured legacy security domain but no legacy security present?
                             boolean useLegacySecurity = legacySecurityPresent && isLegacySecurityRequired(ds.getSecurity());
                             startDataSource(lds, jndiName, ds.getDriver(), serviceTarget,
-                                    getRegistration(false, deploymentUnit), getResource(dsName, false, deploymentUnit), dsName, useLegacySecurity, ds.isJTA());
+                                    getRegistration(false, deploymentUnit), getResource(dsName, false, deploymentUnit), dsName, useLegacySecurity, ds.isJTA(), support);
                         } catch (Exception e) {
                             throw ConnectorLogger.ROOT_LOGGER.exceptionDeployingDatasource(e, ds.getJndiName());
                         }
@@ -176,7 +178,7 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                             boolean useLegacySecurity = legacySecurityPresent && (isLegacySecurityRequired(xads.getSecurity())
                                                         || isLegacySecurityRequired(credential));
                             startDataSource(xds, jndiName, xads.getDriver(), serviceTarget,
-                                    getRegistration(true, deploymentUnit), getResource(dsName, true, deploymentUnit), dsName, useLegacySecurity, true);
+                                    getRegistration(true, deploymentUnit), getResource(dsName, true, deploymentUnit), dsName, useLegacySecurity, true, support);
 
                         } catch (Exception e) {
                             throw ConnectorLogger.ROOT_LOGGER.exceptionDeployingDatasource(e, xads.getJndiName());
@@ -298,7 +300,8 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                                  final Resource resource,
                                  final String managementName,
                                  boolean requireLegacySecurity,
-                                 final boolean isTransactional) {
+                                 final boolean isTransactional,
+                                 final CapabilityServiceSupport support) {
 
         final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
 
@@ -309,7 +312,7 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                         dataSourceService.getExecutorServiceInjector())
                 .addDependency(ConnectorServices.IRONJACAMAR_MDR, MetadataRepository.class, dataSourceService.getMdrInjector())
                 .addDependency(ConnectorServices.RA_REPOSITORY_SERVICE, ResourceAdapterRepository.class, dataSourceService.getRaRepositoryInjector())
-                .addDependency(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE, TransactionIntegration.class,
+                .addDependency(support.getCapabilityServiceName(ConnectorServices.TRANSACTION_INTEGRATION_CAPABILITY_NAME), TransactionIntegration.class,
                         dataSourceService.getTransactionIntegrationInjector())
                 .addDependency(ConnectorServices.MANAGEMENT_REPOSITORY_SERVICE, ManagementRepository.class,
                         dataSourceService.getManagementRepositoryInjector())
@@ -317,7 +320,7 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                 .addDependency(ConnectorServices.JDBC_DRIVER_REGISTRY_SERVICE, DriverRegistry.class,
                         dataSourceService.getDriverRegistryInjector());
         dataSourceServiceBuilder.requires(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append(DEFAULT_NAME));
-        dataSourceServiceBuilder.requires(NamingService.SERVICE_NAME);
+        dataSourceServiceBuilder.requires(support.getCapabilityServiceName(NamingService.CAPABILITY_NAME));
 
         if (requireLegacySecurity) {
             dataSourceServiceBuilder.addDependency(SimpleSecurityManagerService.SERVICE_NAME, ServerSecurityManager.class,

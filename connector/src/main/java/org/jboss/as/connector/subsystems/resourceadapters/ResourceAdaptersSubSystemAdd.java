@@ -24,7 +24,6 @@ package org.jboss.as.connector.subsystems.resourceadapters;
 
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHIVE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTER_NAME;
-import static org.jboss.as.connector.util.ConnectorServices.LOCAL_TRANSACTION_PROVIDER_CAPABILITY;
 
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.connector.util.CopyOnWriteArrayListMultiMap;
@@ -56,9 +55,6 @@ class ResourceAdaptersSubsystemAdd extends AbstractAddStepHandler {
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-
-        // Cache the TransactionManager service name for use by our runtime services
-        ConnectorServices.registerCapabilityServiceName(LOCAL_TRANSACTION_PROVIDER_CAPABILITY, context.getCapabilityServiceName(LOCAL_TRANSACTION_PROVIDER_CAPABILITY, null));
 
         final Resource subsystemResource = context.readResourceFromRoot(PathAddress.pathAddress(ResourceAdaptersExtension.SUBSYSTEM_PATH));
         ResourceAdaptersSubsystemService service = new ResourceAdaptersSubsystemService();

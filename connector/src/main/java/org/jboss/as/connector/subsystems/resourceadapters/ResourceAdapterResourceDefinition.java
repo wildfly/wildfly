@@ -21,6 +21,7 @@
 */
 package org.jboss.as.connector.subsystems.resourceadapters;
 
+import static org.jboss.as.connector._private.Capabilities.RESOURCE_ADAPTER_CAPABILITY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTER_NAME;
 
 import java.util.List;
@@ -49,17 +50,27 @@ public class ResourceAdapterResourceDefinition extends SimpleResourceDefinition 
 
     // The ManagedConnectionPool implementation used by default by versions < 4.0.0 (WildFly 10)
 
-
     private final boolean readOnly;
     private final boolean runtimeOnlyRegistrationValid;
     private final List<AccessConstraintDefinition> accessConstraints;
 
     public ResourceAdapterResourceDefinition(boolean readOnly, boolean runtimeOnlyRegistrationValid) {
-        super(PathElement.pathElement(RESOURCEADAPTER_NAME), RESOLVER, readOnly ? null : RaAdd.INSTANCE, readOnly ? null : RaRemove.INSTANCE);
+        super(getParameters(readOnly));
         this.readOnly = readOnly;
         this.runtimeOnlyRegistrationValid = runtimeOnlyRegistrationValid;
         ApplicationTypeConfig atc = new ApplicationTypeConfig(ResourceAdaptersExtension.SUBSYSTEM_NAME, RESOURCEADAPTER_NAME);
         accessConstraints = new ApplicationTypeAccessConstraintDefinition(atc).wrapAsList();
+    }
+
+    private static Parameters getParameters(boolean readOnly) {
+        Parameters parameters = new Parameters(PathElement.pathElement(RESOURCEADAPTER_NAME), RESOLVER);
+        if (!readOnly) {
+            parameters.setAddHandler(RaAdd.INSTANCE)
+                    .setRemoveHandler(RaRemove.INSTANCE)
+                    .setCapabilities(RESOURCE_ADAPTER_CAPABILITY);
+        }
+
+        return parameters;
     }
 
     @Override

@@ -34,6 +34,7 @@ import org.jboss.as.connector.services.mdr.AS7MetadataRepository;
 import org.jboss.as.connector.services.resourceadapters.deployment.ResourceAdapterXmlDeploymentService;
 import org.jboss.as.connector.services.resourceadapters.deployment.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -56,7 +57,7 @@ public class RaServicesFactory {
 
     public static void createDeploymentService(final ManagementResourceRegistration registration, ConnectorXmlDescriptor connectorXmlDescriptor, Module module,
                                                ServiceTarget serviceTarget, final String deploymentUnitName, ServiceName deploymentUnitServiceName, String deployment,
-                                               Activation raxml, final Resource deploymentResource, final ServiceRegistry serviceRegistry) {
+                                               Activation raxml, final Resource deploymentResource, final ServiceRegistry serviceRegistry, final CapabilityServiceSupport support) {
         // Create the service
 
         ServiceName serviceName = ConnectorServices.getDeploymentServiceName(deploymentUnitName,raxml);
@@ -77,14 +78,14 @@ public class RaServicesFactory {
                         service.getManagementRepositoryInjector())
                 .addDependency(ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE,
                         ResourceAdapterDeploymentRegistry.class, service.getRegistryInjector())
-                .addDependency(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE, TransactionIntegration.class,
+                .addDependency(support.getCapabilityServiceName(ConnectorServices.TRANSACTION_INTEGRATION_CAPABILITY_NAME), TransactionIntegration.class,
                         service.getTxIntegrationInjector())
                 .addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE, JcaSubsystemConfiguration.class,
                         service.getConfigInjector())
                 .addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class, service.getCcmInjector());
         builder.requires(ConnectorServices.IDLE_REMOVER_SERVICE);
         builder.requires(ConnectorServices.CONNECTION_VALIDATOR_SERVICE);
-        builder.requires(NamingService.SERVICE_NAME);
+        builder.requires(support.getCapabilityServiceName(NamingService.CAPABILITY_NAME));
         builder.requires(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append(bootStrapCtxName));
         builder.requires(ConnectorServices.RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX.append(connectorXmlDescriptor.getDeploymentName()));
 

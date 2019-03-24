@@ -42,6 +42,7 @@ import org.jboss.as.connector.subsystems.datasources.ModifiableDataSource;
 import org.jboss.as.connector.subsystems.datasources.ModifiableXaDataSource;
 import org.jboss.as.connector.subsystems.datasources.XaDataSourceService;
 import org.jboss.as.connector.util.ConnectorServices;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.resource.definition.ResourceDefinitionInjectionSource;
@@ -135,6 +136,8 @@ public class DataSourceDefinitionInjectionSource extends ResourceDefinitionInjec
         final String poolName = uniqueName(context, jndiName);
         final ContextNames.BindInfo bindInfo = ContextNames.bindInfoForEnvEntry(context.getApplicationName(), context.getModuleName(), context.getComponentName(), !context.isCompUsesModule(), jndiName);
         final DeploymentReflectionIndex reflectionIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
+        final CapabilityServiceSupport support = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT);
+
         try {
             final Class<?> clazz = module.getClassLoader().loadClass(className);
 
@@ -157,7 +160,7 @@ public class DataSourceDefinitionInjectionSource extends ResourceDefinitionInjec
                         xaPool, null);
                 final XaDataSourceService xds = new XaDataSourceService(bindInfo.getBinderServiceName().getCanonicalName(), bindInfo, module.getClassLoader());
                 xds.getDataSourceConfigInjector().inject(dataSource);
-                startDataSource(xds, bindInfo, eeModuleDescription, context, phaseContext.getServiceTarget(), serviceBuilder, injector);
+                startDataSource(xds, bindInfo, eeModuleDescription, context, phaseContext.getServiceTarget(), serviceBuilder, injector, support);
             } else {
                 final DsPoolImpl commonPool = new DsPoolImpl(minPoolSize < 0 ? Defaults.MIN_POOL_SIZE : Integer.valueOf(minPoolSize),
                                                              initialPoolSize < 0 ? Defaults.INITIAL_POOL_SIZE : Integer.valueOf(initialPoolSize),
@@ -168,7 +171,7 @@ public class DataSourceDefinitionInjectionSource extends ResourceDefinitionInjec
                         transactional, Defaults.CONNECTABLE, Defaults.TRACKING, Defaults.MCP, Defaults.ENLISTMENT_TRACE, commonPool);
                 final LocalDataSourceService ds = new LocalDataSourceService(bindInfo.getBinderServiceName().getCanonicalName(), bindInfo, module.getClassLoader());
                 ds.getDataSourceConfigInjector().inject(dataSource);
-                startDataSource(ds, bindInfo, eeModuleDescription, context, phaseContext.getServiceTarget(), serviceBuilder, injector);
+                startDataSource(ds, bindInfo, eeModuleDescription, context, phaseContext.getServiceTarget(), serviceBuilder, injector, support);
             }
 
         } catch (Exception e) {
@@ -215,7 +218,9 @@ public class DataSourceDefinitionInjectionSource extends ResourceDefinitionInjec
                                  final EEModuleDescription moduleDescription,
                                  final ResolutionContext context,
                                  final ServiceTarget serviceTarget,
-                                 final ServiceBuilder valueSourceServiceBuilder, final Injector<ManagedReferenceFactory> injector) {
+                                 final ServiceBuilder valueSourceServiceBuilder,
+                                 final Injector<ManagedReferenceFactory> injector,
+                                 final CapabilityServiceSupport support) {
 
         final ServiceName dataSourceServiceName = AbstractDataSourceService.getServiceName(bindInfo);
         final ServiceBuilder<?> dataSourceServiceBuilder =
@@ -224,7 +229,7 @@ public class DataSourceDefinitionInjectionSource extends ResourceDefinitionInjec
                         dataSourceService.getExecutorServiceInjector())
                 .addDependency(ConnectorServices.IRONJACAMAR_MDR, MetadataRepository.class, dataSourceService.getMdrInjector())
                 .addDependency(ConnectorServices.RA_REPOSITORY_SERVICE, ResourceAdapterRepository.class, dataSourceService.getRaRepositoryInjector())
-                .addDependency(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE, TransactionIntegration.class,
+                .addDependency(support.getCapabilityServiceName(ConnectorServices.TRANSACTION_INTEGRATION_CAPABILITY_NAME), TransactionIntegration.class,
                         dataSourceService.getTransactionIntegrationInjector())
                 .addDependency(ConnectorServices.MANAGEMENT_REPOSITORY_SERVICE, ManagementRepository.class,
                         dataSourceService.getManagementRepositoryInjector())
@@ -232,7 +237,7 @@ public class DataSourceDefinitionInjectionSource extends ResourceDefinitionInjec
                 .addDependency(ConnectorServices.JDBC_DRIVER_REGISTRY_SERVICE, DriverRegistry.class,
                         dataSourceService.getDriverRegistryInjector());
         dataSourceServiceBuilder.requires(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append(DEFAULT_NAME));
-        dataSourceServiceBuilder.requires(NamingService.SERVICE_NAME);
+        dataSourceServiceBuilder.requires(support.getCapabilityServiceName(NamingService.CAPABILITY_NAME));
 
         // We don't need to inject legacy security subsystem services. They are only used with a configured legacy
         // security domain, and the annotation does not support configuring that

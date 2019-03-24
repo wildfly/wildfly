@@ -23,6 +23,7 @@
 package org.jboss.as.connector.deployers.ra.processors;
 
 import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
+import static org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT;
 
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.services.resourceadapters.deployment.InactiveResourceAdapterDeploymentService;
@@ -31,6 +32,7 @@ import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.connector.util.RaServicesFactory;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.deployment.Attachments;
@@ -72,8 +74,10 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ManagementResourceRegistration baseRegistration = deploymentUnit.getAttachment(DeploymentModelUtils.MUTABLE_REGISTRATION_ATTACHMENT);
         final ManagementResourceRegistration registration;
-        final Resource deploymentResource = phaseContext.getDeploymentUnit().getAttachment(DeploymentModelUtils.DEPLOYMENT_RESOURCE);
+        final Resource deploymentResource = deploymentUnit.getAttachment(DeploymentModelUtils.DEPLOYMENT_RESOURCE);
         final ConnectorXmlDescriptor connectorXmlDescriptor = deploymentUnit.getAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY);
+        final CapabilityServiceSupport support = deploymentUnit.getAttachment(CAPABILITY_SERVICE_SUPPORT);
+
         if (connectorXmlDescriptor == null) {
             return; // Skip non ra deployments
         }
@@ -107,7 +111,7 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
                     String rarName = raxml.getArchive();
 
                     if (deploymentUnitName.equals(rarName)) {
-                        RaServicesFactory.createDeploymentService(registration, connectorXmlDescriptor, module, serviceTarget, deploymentUnitName, deploymentUnit.getServiceName(), deploymentUnitName, raxml, deploymentResource, phaseContext.getServiceRegistry());
+                        RaServicesFactory.createDeploymentService(registration, connectorXmlDescriptor, module, serviceTarget, deploymentUnitName, deploymentUnit.getServiceName(), deploymentUnitName, raxml, deploymentResource, phaseContext.getServiceRegistry(), support);
 
                     }
                 }

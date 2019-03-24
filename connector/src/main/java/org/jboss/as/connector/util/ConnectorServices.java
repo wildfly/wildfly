@@ -277,9 +277,14 @@ public class ConnectorServices {
      */
     public static final String TRANSACTION_XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY = "org.wildfly.transactions.xa-resource-recovery-registry";
 
-    public static ServiceName getLocalTransactionProviderServiceName() {
+    public static ServiceName getCachedCapabilityServiceName(String capabilityName) {
         synchronized (capabilityServiceNames) {
-            return capabilityServiceNames.get(LOCAL_TRANSACTION_PROVIDER_CAPABILITY);
+            return capabilityServiceNames.get(capabilityName);
         }
     }
+
+    /**
+     * The capability name for the JCA transaction integration TransactionIntegration.
+     */
+    public static final String TRANSACTION_INTEGRATION_CAPABILITY_NAME = "org.wildfly.jca.transaction-integration";
 }
