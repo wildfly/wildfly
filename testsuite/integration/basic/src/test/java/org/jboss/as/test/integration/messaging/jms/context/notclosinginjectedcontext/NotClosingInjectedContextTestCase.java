@@ -217,14 +217,13 @@ public class NotClosingInjectedContextTestCase {
             address.add("cached-connection-manager", "cached-connection-manager");
 
             ModelNode operation = new ModelNode();
-            operation = new ModelNode();
             operation.get(OP_ADDR).set(address);
             operation.get(OP).set("write-attribute");
             operation.get("name").set("debug");
             operation.get("value").set("true");
             client.getControllerClient().execute(operation);
 
-            ServerReload.executeReloadAndWaitForCompletion(client.getControllerClient(), 50000);
+            ServerReload.executeReloadAndWaitForCompletion(client.getControllerClient(), TimeoutUtil.adjust(50000));
         }
     }
 }
