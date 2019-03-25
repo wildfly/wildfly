@@ -26,7 +26,6 @@ import static org.jboss.as.clustering.jgroups.subsystem.SocketDiscoveryProtocolR
 
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -43,12 +42,10 @@ import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jgroups.protocols.Discovery;
-import org.jgroups.stack.Protocol;
 import org.wildfly.clustering.service.Dependency;
 import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SupplierDependency;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author Paul Ferraro
@@ -93,8 +90,7 @@ public class SocketDiscoveryProtocolConfigurationServiceConfigurator<A, P extend
                 }
             }
             // In the absence of some common interface, we need to use reflection
-            PrivilegedAction<Protocol> action = () -> protocol.setValue("initial_hosts", initialHosts);
-            WildFlySecurityManager.doUnchecked(action);
+            this.setValue(protocol, "initial_hosts", initialHosts);
         }
     }
 }

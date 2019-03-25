@@ -145,8 +145,8 @@ public class TransportConfigurationServiceConfigurator<T extends TP> extends Abs
             // JGroups cannot select a client mapping based on the source address, so just use the first one
             ClientMapping mapping = clientMappings.get(0);
             try {
-                protocol.setValue("external_addr", InetAddress.getByName(mapping.getDestinationAddress()));
-                protocol.setValue("external_port", mapping.getDestinationPort());
+                this.setValue(protocol, "external_addr", InetAddress.getByName(mapping.getDestinationAddress()));
+                this.setValue(protocol, "external_port", mapping.getDestinationPort());
             } catch (UnknownHostException e) {
                 throw new IllegalArgumentException(e);
             }
@@ -164,11 +164,11 @@ public class TransportConfigurationServiceConfigurator<T extends TP> extends Abs
                 ;
         protocol.setInternalThreadPool(factory.apply(protocol.getInternalThreadPoolThreadFactory()));
 
-        protocol.setValue("enable_diagnostics", this.diagnosticsSocketBinding != null);
+        this.setValue(protocol, "enable_diagnostics", this.diagnosticsSocketBinding != null);
         if (this.diagnosticsSocketBinding != null) {
             InetSocketAddress address = this.diagnosticsSocketBinding.get().getSocketAddress();
-            protocol.setValue("diagnostics_addr", address.getAddress());
-            protocol.setValue("diagnostics_port", address.getPort());
+            this.setValue(protocol, "diagnostics_addr", address.getAddress());
+            this.setValue(protocol, "diagnostics_port", address.getPort());
         }
     }
 
