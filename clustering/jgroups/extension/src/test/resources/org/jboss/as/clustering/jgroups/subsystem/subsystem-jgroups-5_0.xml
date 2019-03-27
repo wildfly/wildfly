@@ -67,7 +67,7 @@
             </socket-protocol>
             <jdbc-protocol type="JDBC_PING" data-source="ExampleDS"/>
             <protocol type="MERGE3"/>
-            <protocol type="FD_SOCK" socket-binding="jgroups-tcp-fd"/>
+            <socket-protocol type="FD_SOCK" socket-binding="jgroups-tcp-fd"/>
             <protocol type="FD"/>
             <protocol type="VERIFY_SUSPECT"/>
             <encrypt-protocol type="SYM_ENCRYPT" key-store="my-key-store" key-alias="alias">

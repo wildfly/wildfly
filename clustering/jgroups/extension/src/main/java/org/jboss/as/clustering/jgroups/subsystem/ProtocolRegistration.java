@@ -84,6 +84,10 @@ public class ProtocolRegistration implements Registration<ManagementResourceRegi
         MPING;
     }
 
+    enum SocketProtocol {
+        FD_SOCK;
+    }
+
     enum LegacyProtocol {
         MERGE2(MERGE3.class, JGroupsModel.VERSION_6_0_0),
         NAKACK("pbcast.NAKACK", NAKACK2.class, JGroupsModel.VERSION_6_0_0),
@@ -106,6 +110,13 @@ public class ProtocolRegistration implements Registration<ManagementResourceRegi
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ProtocolResourceDefinition.addTransformations(version, parent.addChildResource(ProtocolResourceDefinition.WILDCARD_PATH));
+
+        for (SocketProtocol protocol : EnumSet.allOf(SocketProtocol.class)) {
+            PathElement path = ProtocolResourceDefinition.pathElement(protocol.name());
+            if (!JGroupsModel.VERSION_7_0_0.requiresTransformation(version)) {
+                OptionalSocketBindingProtocolResourceDefinition.addTransformations(version, parent.addChildResource(path));
+            }
+        }
 
         for (MulticastProtocol protocol : EnumSet.allOf(MulticastProtocol.class)) {
             PathElement path = ProtocolResourceDefinition.pathElement(protocol.name());
@@ -182,6 +193,9 @@ public class ProtocolRegistration implements Registration<ManagementResourceRegi
         new GenericProtocolResourceDefinition(this.configurator, this.parentServiceConfiguratorFactory).register(registration);
 
         // Override definitions for protocol types
+        for (SocketProtocol protocol : EnumSet.allOf(SocketProtocol.class)) {
+            new OptionalSocketBindingProtocolResourceDefinition(protocol.name(), this.configurator, SocketProtocolConfigurationServiceConfigurator::new, this.parentServiceConfiguratorFactory).register(registration);
+        }
         for (MulticastProtocol protocol : EnumSet.allOf(MulticastProtocol.class)) {
             new SocketBindingProtocolResourceDefinition(protocol.name(), this.configurator, MulticastSocketProtocolConfigurationServiceConfigurator::new, this.parentServiceConfiguratorFactory).register(registration);
         }
