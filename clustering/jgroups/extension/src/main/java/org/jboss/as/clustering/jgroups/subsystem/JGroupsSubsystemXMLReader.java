@@ -32,7 +32,6 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.clustering.controller.Attribute;
-import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeParser;
 import org.jboss.as.controller.PathAddress;
@@ -635,15 +634,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
                 break;
             }
             case SOCKET_BINDING: {
-                String protocol = Operations.getPathAddress(operation).getLastElement().getValue();
-                Attribute socketBindingAttribute = GenericProtocolResourceDefinition.DeprecatedAttribute.SOCKET_BINDING;
-                for (ProtocolRegistration.MulticastProtocol multicastProtocol : EnumSet.allOf(ProtocolRegistration.MulticastProtocol.class)) {
-                    if (protocol.equals(multicastProtocol.name())) {
-                        socketBindingAttribute = SocketBindingProtocolResourceDefinition.Attribute.SOCKET_BINDING;
-                        break;
-                    }
-                }
-                readAttribute(reader, index, operation, socketBindingAttribute);
+                readAttribute(reader, index, operation, GenericProtocolResourceDefinition.DeprecatedAttribute.SOCKET_BINDING);
                 break;
             }
             case DATA_SOURCE: {
