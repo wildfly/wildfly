@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.TreeMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Supplier;
 
 import io.prometheus.client.Collector;
@@ -18,17 +19,15 @@ public class PrometheusCollector extends Collector implements Collector.Describa
     // each MetricFamilySamples has list of Sample's supplier (that can be optional) if the underlying metric value is undefined.
     private Map<String, List<Supplier<Optional<Sample>>>> metricFamilyMap = new HashMap();
 
-    public void addMetricFamilySamples(MetricFamilySamples mfs) {
+    public synchronized void addMetricFamilySamples(MetricFamilySamples mfs) {
         if (!metricNames.containsKey(mfs.name)) {
             metricNames.put(mfs.name, mfs);
-            metricFamilyMap.put(mfs.name, new ArrayList<>());
+            metricFamilyMap.put(mfs.name, new CopyOnWriteArrayList<>());
         }
     }
 
     void addMetricFamilySampleSupplier(MetricFamilySamples mfs, Supplier<Optional<Sample>> sampleSupplier) {
-        if (!metricNames.containsKey(mfs.name)) {
-            addMetricFamilySamples(mfs);
-        }
+        addMetricFamilySamples(mfs);
         metricFamilyMap.get(mfs.name).add(sampleSupplier);
     }
 
