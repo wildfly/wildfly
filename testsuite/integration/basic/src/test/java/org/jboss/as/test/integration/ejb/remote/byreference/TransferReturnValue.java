@@ -22,19 +22,28 @@
 
 package org.jboss.as.test.integration.ejb.remote.byreference;
 
-import javax.ejb.Remote;
-import javax.ejb.Stateless;
-
 /**
- * @author Jaikiran Pai
+ * A return value class that does not implement serializable
  */
-@Stateless
-@Remote(RemoteInterface.class)
-public class StatelessRemoteBean implements RemoteInterface {
+public class TransferReturnValue {
 
+    private String value;
 
-    @Override
-    public void modifyFirstElementOfArray(String[] array, String newValue) {
-        array[0] = newValue;
+    public TransferReturnValue() {
+    }
+
+    public TransferReturnValue( String value ) {
+        this.value = value;
+    }
+
+    public String getValue() {
+        return value;
+    }
+    public void setValue ( String value ) {
+        this.value = value;
+    }
+
+    public String getString() {
+        return value;
     }
 }

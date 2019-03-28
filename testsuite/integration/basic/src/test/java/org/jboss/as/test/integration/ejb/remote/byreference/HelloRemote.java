@@ -23,18 +23,17 @@
 package org.jboss.as.test.integration.ejb.remote.byreference;
 
 import javax.ejb.Remote;
-import javax.ejb.Stateless;
 
-/**
- * @author Jaikiran Pai
- */
-@Stateless
-@Remote(RemoteInterface.class)
-public class StatelessRemoteBean implements RemoteInterface {
+@Remote
+public interface HelloRemote {
+    public TransferReturnValue hello ( TransferParameter param ) throws RemoteByReferenceException;
 
+    public SerializableObject helloSerializable ( SerializableObject param ) throws RemoteByReferenceException;
 
-    @Override
-    public void modifyFirstElementOfArray(String[] array, String newValue) {
-        array[0] = newValue;
-    }
+    public NonSerializableObject helloNonSerializable(NonSerializableObject param) throws RemoteByReferenceException;
+
+    public SerializableObject helloNonSerializableToSerializable(NonSerializableObject param) throws RemoteByReferenceException;
+
+    public NonSerializableObject helloSerializableToNonSerializable(SerializableObject param) throws RemoteByReferenceException;
 }
+

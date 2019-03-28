@@ -22,19 +22,26 @@
 
 package org.jboss.as.test.integration.ejb.remote.byreference;
 
-import javax.ejb.Remote;
-import javax.ejb.Stateless;
+public class NonSerializableObject {
 
-/**
- * @author Jaikiran Pai
- */
-@Stateless
-@Remote(RemoteInterface.class)
-public class StatelessRemoteBean implements RemoteInterface {
+    private String value;
 
+    public NonSerializableObject() {
+    }
 
-    @Override
-    public void modifyFirstElementOfArray(String[] array, String newValue) {
-        array[0] = newValue;
+    public NonSerializableObject(String value) {
+        this.value = value;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
+
+    public String toString() {
+        return value;
     }
 }
