@@ -418,6 +418,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
                 .addService(bindInfo.getBinderServiceName(), binderService)
                 .addDependency(referenceFactoryServiceName, ManagedReferenceFactory.class, binderService.getManagedObjectInjector())
                 .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector()).addListener(new LifecycleListener() {
+                    private volatile boolean bound;
                     public void handleEvent(final ServiceController<? extends Object> controller, final LifecycleEvent event) {
                         switch (event) {
                             case UP: {
@@ -426,13 +427,16 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
                                 } else {
                                     SUBSYSTEM_DATASOURCES_LOGGER.boundNonJTADataSource(jndiName);
                                 }
+                                bound = true;
                                 break;
                             }
                             case DOWN: {
-                                if (jta) {
-                                    SUBSYSTEM_DATASOURCES_LOGGER.unboundDataSource(jndiName);
-                                } else {
-                                    SUBSYSTEM_DATASOURCES_LOGGER.unBoundNonJTADataSource(jndiName);
+                                if (bound) {
+                                    if (jta) {
+                                        SUBSYSTEM_DATASOURCES_LOGGER.unboundDataSource(jndiName);
+                                    } else {
+                                        SUBSYSTEM_DATASOURCES_LOGGER.unBoundNonJTADataSource(jndiName);
+                                    }
                                 }
                                 break;
                             }
