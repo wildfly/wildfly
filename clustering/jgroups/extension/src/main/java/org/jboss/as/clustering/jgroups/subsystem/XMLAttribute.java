@@ -33,6 +33,7 @@ public enum XMLAttribute {
 
     ALGORITHM(DigestAuthTokenResourceDefinition.Attribute.ALGORITHM),
     CHANNEL(RemoteSiteResourceDefinition.Attribute.CHANNEL),
+    CLIENT_SOCKET_BINDING(SocketProtocolResourceDefinition.Attribute.CLIENT_SOCKET_BINDING),
     CLUSTER(ChannelResourceDefinition.Attribute.CLUSTER),
     DATA_SOURCE(JDBCProtocolResourceDefinition.Attribute.DATA_SOURCE),
     @Deprecated DEFAULT_EXECUTOR(TransportResourceDefinition.ThreadingAttribute.DEFAULT_EXECUTOR),
@@ -53,7 +54,7 @@ public enum XMLAttribute {
     RACK(TransportResourceDefinition.Attribute.RACK),
     @Deprecated SHARED(TransportResourceDefinition.Attribute.SHARED),
     SITE(TransportResourceDefinition.Attribute.SITE),
-    SOCKET_BINDING(SocketBindingProtocolResourceDefinition.Attribute.SOCKET_BINDING),
+    SOCKET_BINDING(MulticastProtocolResourceDefinition.Attribute.SOCKET_BINDING),
     STACK(RemoteSiteResourceDefinition.DeprecatedAttribute.STACK),
     STATISTICS_ENABLED(ChannelResourceDefinition.Attribute.STATISTICS_ENABLED),
     @Deprecated THREAD_FACTORY(TransportResourceDefinition.ThreadingAttribute.THREAD_FACTORY),

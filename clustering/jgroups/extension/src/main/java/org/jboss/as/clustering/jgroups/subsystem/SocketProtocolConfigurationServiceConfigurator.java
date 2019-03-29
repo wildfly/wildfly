@@ -22,14 +22,17 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import static org.jboss.as.clustering.jgroups.subsystem.OptionalSocketBindingProtocolResourceDefinition.Attribute.SOCKET_BINDING;
+import static org.jboss.as.clustering.jgroups.subsystem.SocketProtocolResourceDefinition.Attribute.CLIENT_SOCKET_BINDING;
+import static org.jboss.as.clustering.jgroups.subsystem.SocketProtocolResourceDefinition.Attribute.SOCKET_BINDING;
 
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.as.clustering.controller.Attribute;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -39,6 +42,7 @@ import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jgroups.protocols.FD_SOCK;
+import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SimpleSupplierDependency;
@@ -51,6 +55,7 @@ import org.wildfly.clustering.service.SupplierDependency;
 public class SocketProtocolConfigurationServiceConfigurator extends ProtocolConfigurationServiceConfigurator<FD_SOCK> {
 
     private volatile SupplierDependency<SocketBinding> binding;
+    private volatile SupplierDependency<SocketBinding> clientBinding;
 
     public SocketProtocolConfigurationServiceConfigurator(PathAddress address) {
         super(address);
@@ -58,19 +63,27 @@ public class SocketProtocolConfigurationServiceConfigurator extends ProtocolConf
 
     @Override
     public <T> ServiceBuilder<T> register(ServiceBuilder<T> builder) {
-        return super.register(this.binding.register(builder));
+        return super.register(new CompositeDependency(this.binding, this.clientBinding).register(builder));
     }
 
     @Override
     public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        String bindingName = SOCKET_BINDING.resolveModelAttribute(context, model).asString(null);
-        this.binding = (bindingName != null) ? new ServiceSupplierDependency<>(CommonUnaryRequirement.SOCKET_BINDING.getServiceName(context, bindingName)) : new SimpleSupplierDependency<>(null);
+        this.binding = createDependency(context, model, SOCKET_BINDING);
+        this.clientBinding = createDependency(context, model, CLIENT_SOCKET_BINDING);
         return super.configure(context, model);
+    }
+
+    private static SupplierDependency<SocketBinding> createDependency(OperationContext context, ModelNode model, Attribute attribute) throws OperationFailedException {
+        String bindingName = attribute.resolveModelAttribute(context, model).asStringOrNull();
+        return (bindingName != null) ? new ServiceSupplierDependency<>(CommonUnaryRequirement.SOCKET_BINDING.getServiceName(context, bindingName)) : new SimpleSupplierDependency<>(null);
     }
 
     @Override
     public Map<String, SocketBinding> getSocketBindings() {
-        return Collections.singletonMap("jgroups.fd_sock.srv_sock", this.binding.get());
+        Map<String, SocketBinding> bindings = new HashMap<>();
+        bindings.put("jgroups.fd_sock.srv_sock", this.binding.get());
+        bindings.put("jgroups.fd.ping_sock", this.clientBinding.get());
+        return bindings;
     }
 
     @Override
@@ -92,6 +105,11 @@ public class SocketProtocolConfigurationServiceConfigurator extends ProtocolConf
                     throw new IllegalArgumentException(e);
                 }
             }
+        }
+        SocketBinding clientBinding = this.clientBinding.get();
+        if (clientBinding != null) {
+            InetSocketAddress socketAddress = clientBinding.getSocketAddress();
+            protocol.setValue("client_bind_port", socketAddress.getPort());
         }
     }
 }
