@@ -30,6 +30,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.ExecutorFactoryConfiguration;
@@ -47,7 +48,7 @@ import org.wildfly.clustering.service.concurrent.ClassLoaderThreadFactory;
 /**
  * @author Radoslav Husar
  */
-public class ClientThreadPoolServiceConfigurator extends ComponentServiceConfigurator<ExecutorFactoryConfiguration> implements ThreadFactory {
+public class ClientThreadPoolServiceConfigurator extends ComponentServiceConfigurator<ExecutorFactoryConfiguration> {
 
     private final ThreadPoolDefinition definition;
 
@@ -68,9 +69,9 @@ public class ClientThreadPoolServiceConfigurator extends ComponentServiceConfigu
         this.factory = new ExecutorFactory() {
             @Override
             public ExecutorService getExecutor(Properties property) {
-                ThreadFactory clThreadFactory = new ClassLoaderThreadFactory(ClientThreadPoolServiceConfigurator.this, AccessController.doPrivileged((PrivilegedAction<ClassLoader>) ClassLoaderThreadFactory.class::getClassLoader));
+                ThreadFactory factory = new ClassLoaderThreadFactory(new DaemonThreadFactory(DefaultAsyncExecutorFactory.THREAD_NAME), AccessController.doPrivileged((PrivilegedAction<ClassLoader>) ClassLoaderThreadFactory.class::getClassLoader));
 
-                return new ThreadPoolExecutor(minThreads, maxThreads, keepAliveTime, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(queueLength), clThreadFactory);
+                return new ThreadPoolExecutor(minThreads, maxThreads, keepAliveTime, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(queueLength), factory);
             }
         };
 
@@ -82,11 +83,20 @@ public class ClientThreadPoolServiceConfigurator extends ComponentServiceConfigu
         return new ConfigurationBuilder().asyncExecutorFactory().factory(this.factory).create();
     }
 
-    @Override
-    public Thread newThread(Runnable task) {
-        Thread thread = new Thread(task, DefaultAsyncExecutorFactory.THREAD_NAME + "-" + DefaultAsyncExecutorFactory.counter.getAndIncrement());
-        thread.setDaemon(true);
-        return thread;
+    private static class DaemonThreadFactory implements ThreadFactory {
+        private final AtomicInteger index = new AtomicInteger(0);
+        private final String name;
+
+        DaemonThreadFactory(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public Thread newThread(Runnable task) {
+            Thread thread = new Thread(task, String.join("-", this.name, String.valueOf(this.index.getAndIncrement())));
+            thread.setDaemon(true);
+            return thread;
+        }
     }
 }
 
