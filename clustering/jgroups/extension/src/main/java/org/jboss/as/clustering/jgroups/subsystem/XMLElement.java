@@ -129,7 +129,7 @@ public enum XMLElement {
             @Override
             public XMLElement apply(ModelNode model) {
                 // Use socket-protocol element only if optional socket-binding was defined
-                return model.hasDefined(OptionalSocketBindingProtocolResourceDefinition.Attribute.SOCKET_BINDING.getName()) ? XMLElement.SOCKET_PROTOCOL : XMLElement.PROTOCOL;
+                return model.hasDefined(SocketProtocolResourceDefinition.Attribute.SOCKET_BINDING.getName()) ? XMLElement.SOCKET_PROTOCOL : XMLElement.PROTOCOL;
             }
         };
         for (ProtocolRegistration.SocketProtocol protocol : EnumSet.allOf(ProtocolRegistration.SocketProtocol.class)) {

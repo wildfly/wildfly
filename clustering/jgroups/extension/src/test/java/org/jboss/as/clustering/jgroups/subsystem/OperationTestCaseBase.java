@@ -84,7 +84,7 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
 
     protected static ModelNode getTransportAddOperation(String stackName, String protocol) {
         ModelNode operation = Util.createAddOperation(getTransportAddress(stackName, protocol));
-        operation.get(SocketBindingProtocolResourceDefinition.Attribute.SOCKET_BINDING.getName()).set("some-binding");
+        operation.get(MulticastProtocolResourceDefinition.Attribute.SOCKET_BINDING.getName()).set("some-binding");
         return operation;
     }
 
@@ -92,7 +92,7 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
     protected static ModelNode getLegacyTransportAddOperation(String stackName, String protocol) {
         ModelNode op = Util.createAddOperation(getLegacyTransportAddress(stackName));
         op.get(AbstractProtocolResourceDefinition.DeprecatedAttribute.TYPE.getName()).set(protocol);
-        op.get(SocketBindingProtocolResourceDefinition.Attribute.SOCKET_BINDING.getName()).set("some-binding");
+        op.get(MulticastProtocolResourceDefinition.Attribute.SOCKET_BINDING.getName()).set("some-binding");
         return op;
     }
 

@@ -41,7 +41,7 @@ import org.jboss.dmr.ModelType;
  * Resource definition override for protocols that require a socket-binding.
  * @author Paul Ferraro
  */
-public class SocketBindingProtocolResourceDefinition extends ProtocolResourceDefinition {
+public class MulticastProtocolResourceDefinition extends ProtocolResourceDefinition {
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
         SOCKET_BINDING(ModelDescriptionConstants.SOCKET_BINDING, ModelType.STRING) {
@@ -86,7 +86,7 @@ public class SocketBindingProtocolResourceDefinition extends ProtocolResourceDef
         }
     }
 
-    SocketBindingProtocolResourceDefinition(String name, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfiguratorFactory serviceConfiguratorFactory, ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory) {
-        super(pathElement(name), new ResourceDescriptorConfigurator(configurator), serviceConfiguratorFactory, parentServiceConfiguratorFactory);
+    MulticastProtocolResourceDefinition(String name, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory) {
+        super(pathElement(name), new ResourceDescriptorConfigurator(configurator), MulticastSocketProtocolConfigurationServiceConfigurator::new, parentServiceConfiguratorFactory);
     }
 }

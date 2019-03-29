@@ -405,6 +405,12 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
                         break;
                     }
                 }
+                case CLIENT_SOCKET_BINDING: {
+                    if (this.schema.since(JGroupsSchema.VERSION_7_0)) {
+                        readAttribute(reader, i, operation, SocketTransportResourceDefinition.Attribute.CLIENT_SOCKET_BINDING);
+                        break;
+                    }
+                }
                 default: {
                     this.parseProtocolAttribute(reader, i, operation);
                 }
@@ -470,10 +476,25 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
         operations.put(address, operation);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
-            this.parseSocketProtocolAttribute(reader, i, operation);
+            XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case SOCKET_BINDING: {
+                    readAttribute(reader, i, operation, SocketProtocolResourceDefinition.Attribute.SOCKET_BINDING);
+                    break;
+                }
+                case CLIENT_SOCKET_BINDING: {
+                    if (this.schema.since(JGroupsSchema.VERSION_7_0)) {
+                        readAttribute(reader, i, operation, SocketProtocolResourceDefinition.Attribute.CLIENT_SOCKET_BINDING);
+                        break;
+                    }
+                }
+                default: {
+                    parseProtocolAttribute(reader, i, operation);
+                }
+            }
         }
 
-        require(reader, operation, SocketBindingProtocolResourceDefinition.Attribute.SOCKET_BINDING);
+        require(reader, operation, SocketProtocolResourceDefinition.Attribute.SOCKET_BINDING);
 
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             this.parseProtocolElement(reader, address, operations);
@@ -488,7 +509,16 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
         operations.put(address, operation);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
-            this.parseSocketDiscoveryProtocolAttribute(reader, i, operation);
+            XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case OUTBOUND_SOCKET_BINDINGS: {
+                    readAttribute(reader, i, operation, SocketDiscoveryProtocolResourceDefinition.Attribute.OUTBOUND_SOCKET_BINDINGS);
+                    break;
+                }
+                default: {
+                    parseProtocolAttribute(reader, i, operation);
+                }
+            }
         }
 
         require(reader, operation, SocketDiscoveryProtocolResourceDefinition.Attribute.OUTBOUND_SOCKET_BINDINGS);
@@ -506,7 +536,16 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
         operations.put(address, operation);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
-            this.parseJDBCProtocolAttribute(reader, i, operation);
+            XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case DATA_SOURCE: {
+                    readAttribute(reader, i, operation, JDBCProtocolResourceDefinition.Attribute.DATA_SOURCE);
+                    break;
+                }
+                default: {
+                    parseProtocolAttribute(reader, i, operation);
+                }
+            }
         }
 
         require(reader, operation, JDBCProtocolResourceDefinition.Attribute.DATA_SOURCE);
@@ -524,7 +563,20 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
         operations.put(address, operation);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
-            this.parseEncryptProtocolAttribute(reader, i, operation);
+            XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case KEY_ALIAS: {
+                    readAttribute(reader, i, operation, EncryptProtocolResourceDefinition.Attribute.KEY_ALIAS);
+                    break;
+                }
+                case KEY_STORE: {
+                    readAttribute(reader, i, operation, EncryptProtocolResourceDefinition.Attribute.KEY_STORE);
+                    break;
+                }
+                default: {
+                    parseProtocolAttribute(reader, i, operation);
+                }
+            }
         }
 
         require(reader, operation, EncryptProtocolResourceDefinition.Attribute.KEY_ALIAS, EncryptProtocolResourceDefinition.Attribute.KEY_STORE);
@@ -567,62 +619,6 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
 
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             this.parseProtocolElement(reader, address, operations);
-        }
-    }
-
-    private void parseSocketProtocolAttribute(XMLExtendedStreamReader reader, int index, ModelNode operation) throws XMLStreamException {
-        XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(index));
-        switch (attribute) {
-            case SOCKET_BINDING: {
-                readAttribute(reader, index, operation, SocketBindingProtocolResourceDefinition.Attribute.SOCKET_BINDING);
-                break;
-            }
-            default: {
-                parseProtocolAttribute(reader, index, operation);
-            }
-        }
-    }
-
-    private void parseSocketDiscoveryProtocolAttribute(XMLExtendedStreamReader reader, int index, ModelNode operation) throws XMLStreamException {
-        XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(index));
-        switch (attribute) {
-            case OUTBOUND_SOCKET_BINDINGS: {
-                readAttribute(reader, index, operation, SocketDiscoveryProtocolResourceDefinition.Attribute.OUTBOUND_SOCKET_BINDINGS);
-                break;
-            }
-            default: {
-                parseProtocolAttribute(reader, index, operation);
-            }
-        }
-    }
-
-    private void parseJDBCProtocolAttribute(XMLExtendedStreamReader reader, int index, ModelNode operation) throws XMLStreamException {
-        XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(index));
-        switch (attribute) {
-            case DATA_SOURCE: {
-                readAttribute(reader, index, operation, JDBCProtocolResourceDefinition.Attribute.DATA_SOURCE);
-                break;
-            }
-            default: {
-                parseProtocolAttribute(reader, index, operation);
-            }
-        }
-    }
-
-    private void parseEncryptProtocolAttribute(XMLExtendedStreamReader reader, int index, ModelNode operation) throws XMLStreamException {
-        XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(index));
-        switch (attribute) {
-            case KEY_ALIAS: {
-                readAttribute(reader, index, operation, EncryptProtocolResourceDefinition.Attribute.KEY_ALIAS);
-                break;
-            }
-            case KEY_STORE: {
-                readAttribute(reader, index, operation, EncryptProtocolResourceDefinition.Attribute.KEY_STORE);
-                break;
-            }
-            default: {
-                parseProtocolAttribute(reader, index, operation);
-            }
         }
     }
 

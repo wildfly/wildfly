@@ -46,15 +46,16 @@
                        site="${test.expr:site1}">
                 <property name="enable_bundling">${test.expr:true}</property>
                 <default-thread-pool min-threads="11"
-                                     max-threads="12"
-                                     keepalive-time="13"/>
+                             max-threads="12"
+                             keepalive-time="13"/>
             </transport>
             <socket-protocol type="MPING" module="org.jgroups" socket-binding="jgroups-mping">
                 <property name="name">${test.expr:value}</property>
             </socket-protocol>
             <jdbc-protocol type="JDBC_PING" data-source="ExampleDS"/>
+            <socket-discovery-protocol type="TCPPING" socket-bindings="node1 node2"/>
             <protocol type="MERGE3"/>
-            <socket-protocol type="FD_SOCK" socket-binding="jgroups-tcp-fd"/>
+            <socket-protocol type="FD_SOCK" socket-binding="jgroups-tcp-fd" client-socket-binding="jgroups-client-fd"/>
             <protocol type="FD"/>
             <protocol type="VERIFY_SUSPECT"/>
             <encrypt-protocol type="SYM_ENCRYPT" key-store="my-key-store" key-alias="alias">
