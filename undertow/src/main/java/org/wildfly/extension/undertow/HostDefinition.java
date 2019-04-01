@@ -50,6 +50,8 @@ import org.wildfly.extension.undertow.filters.FilterRefDefinition;
  */
 class HostDefinition extends PersistentResourceDefinition {
 
+    public static final String DEFAULT_WEB_MODULE_DEFAULT = "ROOT.war";
+
     static final RuntimeCapability<Void> HOST_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_HOST, true, Host.class)
             .addRequirements(Capabilities.CAPABILITY_UNDERTOW)
             //addDynamicRequirements(Capabilities.CAPABILITY_SERVER) -- has no function so don't use it
@@ -68,7 +70,7 @@ class HostDefinition extends PersistentResourceDefinition {
     static final SimpleAttributeDefinition DEFAULT_WEB_MODULE = new SimpleAttributeDefinitionBuilder(Constants.DEFAULT_WEB_MODULE, ModelType.STRING, true)
             .setRestartAllServices()
             .setValidator(new StringLengthValidator(1, true, false))
-            .setDefaultValue(new ModelNode("ROOT.war"))
+            .setDefaultValue(new ModelNode(DEFAULT_WEB_MODULE_DEFAULT))
             .build();
 
     static final SimpleAttributeDefinition DEFAULT_RESPONSE_CODE = new SimpleAttributeDefinitionBuilder(Constants.DEFAULT_RESPONSE_CODE, ModelType.INT, true)
