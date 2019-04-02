@@ -232,7 +232,7 @@ filesystem.
 |identity-realm |A security realm definition where identities are
 represented in the management model.
 
-|jdbc-realm |A security realm definition backed by database using JDBC.
+|<<jdbc-security-realm, jdbc-realm>> |A security realm definition backed by database using JDBC.
 
 |key-store-realm |A security realm definition backed by a keystore.
 

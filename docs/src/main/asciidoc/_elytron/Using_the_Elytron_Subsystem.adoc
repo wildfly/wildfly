@@ -2330,3 +2330,8 @@ default:
 /subsystem=elytron/policy=policy-provider-a:add(custom-policy=\[{name=policy-provider-a, class-name=MyPolicyProviderA, module=x.y.z}\])
 ----
 
+:leveloffset: +1
+
+include::Subsystem_Component_Documentation.adoc[]
+
+:leveloffset: -1

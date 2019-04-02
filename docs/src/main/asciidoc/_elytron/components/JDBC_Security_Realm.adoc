@@ -1,0 +1,319 @@
+[[jdbc-security-realm]]
+= JDBC Security Realm
+
+The JDBC security realm is a security realm developed to support loading identities from a database with the option of multiple credentials and multiple attributes each with the option of containing multiple values.
+
+When defining the JDBC security realm one or more principal queries can be defined, each of these can load a credential and / or attributes for the resulting identity.  Each defined principal query is associated with it's own datasource, this means quite a complex configuration can be created loading the different aspects of an identity from multiple locations.
+
+Each of the examples documented within this section will be making use of pre-configured datasources, please refer to the datasources subsystem documentation for more information relating to how to define datasources.
+
+== Loading a Single Clear Text Password
+
+The simplest configuration is to load a clear text password for an identity.  This approach would not be recommended at all in a production set up, however it does make a suitable starting point to illustrate how the JDBC security realm can be configured.
+
+.Example Table
+[width=33%]
+|===
+|NAME |PASSWORD
+
+|test
+|myPassword
+|===
+
+A JDBC security realm can be defined as: -
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/jdbc-realm=demo-realm:add(
+    principal-query=[{data-source=Identities, 
+                      sql="select PASSWORD from IDENTITIES where NAME = ?", 
+                      clear-password-mapper={password-index=1}}])
+----
+
+This realm is defined within a single `princpal-query` against the `Identities` datasource.  For the user `test` the result of the query would be: -
+
+.Query Results
+[width=25%]
+|===
+|1
+
+|myPassword
+|===
+
+The principal query can be defined with password mappers which define which columns should be used to construct the password for the identity being loaded, in this example a `clear-password-mapper` is used: -
+
+[source,options="nowrap"]
+----
+clear-password-mapper={password-index=1}
+----
+
+WARNING: The index of the first column is 1
+
+== Alternative Password Mappers
+
+The WildFly Elytron project supports a variety of password types as described within <<Passwords, Passwords>>, some of these password types require multiple values to be loaded from the database to reconstruct the password so alternative password mappers are made available.  More than one password mapper can be defined on a single `principal-query` to support loading mutiple passwords simutaneously.
+
+NOTE: Various password mappers load encoded representations of the password and related salt from the database, in all cases it is expected that these are encoded using Base64.
+
+=== clear-password-mapper
+
+This mapper is used to load a clear text password directly from the database.
+
+The following attributes are supported for this password mapper: -
+
+ * `password-index` - The index of the column containing the clear text password. 
+
+=== bcrypt-password-mapper
+
+The `bcrypt-password-mapper` can be used for passwords to be loaded using the <<bcrypt,bcrypt>> algorithm, as an iterated salted password type the iteration count and salt are also loaded from the database query. 
+
+ * `password-index` - The index of the column containing the encoded password.
+ * `salt-index` - The index of the column containing the encoded salt.
+ * `iteration-count-index` - The index of the column containing the iteration count.
+
+=== salted-simple-digest-mapper
+
+The `salted-simple-digest-mapper` supports the password types hashed with a salt as described in <<salted-digest,Salted Digest>>, for this type of password the encoded form of the password is loaded in addition to the salt.
+
+ * `algorithm` - The algorithm of the password type, the supported values are listed at <<salted-digest, Salted Digest>>.
+ * `password-index` - The index of the column containing the encoded password.
+ * `salt-index` - The index of the column containing the encoded salt.
+
+=== simple-digest-mapper
+
+The `simple-digest-mapper` supports the loading of passwords which have been simply hashed without any salt as described in <<simple-digest,Simple Digest>>.
+
+ * `algorithm` - The algorithm of the password type, the supported values are listed at <<simple-digest,Simple Digest>>.
+ * `password-index` - The index of the column containing the encoded password.
+
+=== scram-mapper
+
+The `scram-mapper` supports the loading of SCRAM passwords which use both a salt and an interation count as described in <<scram,Scram>>.
+
+ * `algorithm` - The algorithm of the password type, the supported values are listed at <<scram,Scram>>.
+ * `password-index` - The index of the column containing the encoded password.
+ * `salt-index` - The index of the column containing the encoded salt.
+ * `iteration-count-index` - The index of the column containing the iteration count.
+
+== Using a Hashed Password Representation
+
+The same approach can be taken for all hashed password representations, for illustration purposes this section will illustrate how a <<bcrypt,bcrypt>> password can be prepared to be stored in a database and the subsequent realm configuration to make use of it.  Examples uising the APIs for the different password types can be found in the <<Passwords, Passwords>> section of this documentation.
+
+The following example takes the password `myPassword`, generates a random salt an produces a `bcrypt` representation of the password.
+
+[source,java]
+----
+static final Provider ELYTRON_PROVIDER = new WildFlyElytronProvider();
+
+static final String TEST_PASSWORD = "myPassword";
+
+public static void main(String[] args) throws Exception {
+    PasswordFactory passwordFactory = PasswordFactory.getInstance(BCryptPassword.ALGORITHM_BCRYPT, ELYTRON_PROVIDER);
+
+    int iterationCount = 10;
+
+    byte[] salt = new byte[BCryptPassword.BCRYPT_SALT_SIZE];
+    SecureRandom random = new SecureRandom();
+    random.nextBytes(salt);
+
+    IteratedSaltedPasswordAlgorithmSpec iteratedAlgorithmSpec = new IteratedSaltedPasswordAlgorithmSpec(iterationCount, salt);
+    EncryptablePasswordSpec encryptableSpec = new EncryptablePasswordSpec(TEST_PASSWORD.toCharArray(), iteratedAlgorithmSpec);
+
+    BCryptPassword original = (BCryptPassword) passwordFactory.generatePassword(encryptableSpec);
+
+    byte[] hash = original.getHash();
+
+    Encoder encoder = Base64.getEncoder();
+    System.out.println("Encoded Salt = " + encoder.encodeToString(salt));
+    System.out.println("Encoded Hash = " + encoder.encodeToString(hash));
+}
+----
+
+This produces the following output, as the salt is randomly generated the output would differ each time the above code is executed.
+
+[source,options="nowrap"]
+----
+Encoded Salt = 3bFOQwRU75to+yJ8Cv0g8w==
+Encoded Hash = x9P/0cxfNz+Pf3HCinZ3dLCbNMnBeiU=
+----
+
+This could now be stored in a database table: -
+
+.Example Table
+[width=33%]
+|===
+|NAME |PASSWORD |SALT |ITERATION_COUNT
+
+|test
+|x9P/0cxfNz+Pf3HCinZ3dLCbNMnBeiU=
+|3bFOQwRU75to+yJ8Cv0g8w==
+|10
+|===
+
+The JDBC security realm can instead be created with the following CLI command: -
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/jdbc-realm=demo-realm:add(
+    principal-query=[{data-source=Identities, 
+                      sql="select PASSWORD, SALT, ITERATION_COUNT from IDENTITIES where NAME = ?", 
+                      bcrypt-mapper={password-index=1, salt-index=2, iteration-count-index=3}}])
+----
+
+
+For the user `test` the result of the query would be: -
+
+.Query Results
+[width=25%]
+|===
+|1 |2 |3
+
+|x9P/0cxfNz+Pf3HCinZ3dLCbNMnBeiU=
+|3bFOQwRU75to+yJ8Cv0g8w==
+|10
+|===
+
+The `bcrypt-password-mapper` is defined to load the encoded password, encoded salt and iteration count from the relevent columns in the query result.
+
+[source,options="nowrap"]
+----
+bcrypt-mapper={password-index=1, salt-index=2, iteration-count-index=3}
+----
+
+== Loading Passwords from Different Queries / Datasources
+
+It is also possible to combine both of the example so far and define two separate `principal-query` instances to attempt to load both password types from different locations.
+
+Here is an example configuration loading a clear text password from one datasource / table and loading a bcrypt password from a second datasource / table.
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/jdbc-realm=demo-realm:add(
+    principal-query=[
+        {data-source=LegacyIdentities, 
+         sql="select PASSWORD from LEGACY_IDENTITIES where NAME = ?", 
+         clear-password-mapper={password-index=1}}, 
+        {data-source=NewIdentities, 
+         sql="select PASSWORD, SALT, ITERATION_COUNT from NEW_IDENTITIES where NAME = ?", 
+         bcrypt-mapper={password-index=1, salt-index=2, iteration-count-index=3}}
+                    ])
+----
+
+NOTE: It is not required that the identity is found from both of the queries, this can be useful in situations where identities are being migrated from one location to another or for aggregating two together.
+
+== Loading Attributes
+
+The examples so far have focussed on the loading of passwords from the database, the principal queries can also be used to load attributes for the resulting identities.
+
+The loading of attributes can either be defined to happen within the principal queries being used to load the passwords or attribute specific principal queries can be defined, as each `principal-query` can be defined with it's own `datasource` reference this means attributes can also be loaded from alternative locations.
+
+The loaded attributes can then be used for mapping to roles and permissions which should be granted to the identity or they can be obtained programatically within the deployment to identify information about the currently authenticated identity.
+
+=== Loading Attributes with Passwords
+
+For single valued attributes these can often be loaded using the same `principal-query` used to load an identities password, as an example if an identities e-mail address or department is to be loaded from the database these can be loaded at the same time as the password.
+
+A table for this example could look like: -
+
+.Example Table
+[width=33%]
+|===
+|NAME |PASSWORD |E_MAIL |Department
+
+|test
+|myPassword
+|test@example.com
+|Sales
+|===
+
+The realm can now be defined as: -
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/jdbc-realm=demo-realm:add(
+    principal-query=[
+        {data-source=Identities, 
+         sql="select PASSWORD, E_MAIL, DEPARTMENT from IDENTITIES where NAME = ?", 
+         clear-password-mapper={password-index=1}, 
+         attribute-mapping=[{index=2, to=email},{index=3,to=department}]
+        }])
+----
+
+For the user `test` the result of the query would be: -
+
+.Query Results
+[width=25%]
+|===
+|1 |2 |3
+
+|myPassword
+|test@example.com
+|Sales
+|===
+
+The configuration contained the following attribute mappings: -
+
+[source,options="nowrap"]
+----
+attribute-mapping=[{index=2, to=email},{index=3,to=department}]
+----
+
+This means the contents of column 2 will be mapped to the `email` attribute and the contents of column 3 will be mapped to the `department` attribute.
+
+=== Loading Attributes Separately.
+
+For multi-valued attributes such as a list of groups it can often make sense to define a separate principal query.
+
+A list of groups could be represented as follows in a table.
+
+.Example Table
+[width=33%]
+|===
+|NAME |TEAM
+
+|test
+|Users
+
+|test
+|Supervisors
+|===
+
+A realm can now be defined with a second principal query to load the groups into an attribute.
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/jdbc-realm=demo-realm:add(
+    principal-query=[
+        {data-source=Identities, 
+         sql="select PASSWORD from IDENTITIES where NAME = ?", 
+         clear-password-mapper={password-index=1}
+        },{data-source=Identities, 
+         sql="select TEAM from MEMBERSHIP where NAME = ?", 
+         attribute-mapping=[{index=1, to=groups}]
+        }])
+----
+
+Within this definition the second `principal-query` will load the attribute `groups`: -
+
+[source,options="nowrap"]
+----
+{data-source=Identities, 
+ sql="select TEAM from MEMBERSHIP where NAME = ?", 
+ attribute-mapping=[{index=1, to=groups}]
+}
+----
+
+For the user `test` the results would be: -
+
+.Query Results
+[width=25%]
+|===
+|1 
+
+|Users
+|Supervisors
+|===
+
+The end result would be that the identity contains the attribute `groups` with the values `Users`, and `Supervisors`
+
+

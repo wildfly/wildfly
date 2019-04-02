@@ -189,3 +189,9 @@ Logon are assigned before even allowing the connection to be fully
 opened, additionally the SecurityIdentity can be established at the time
 the connection is opened and used for any invocations over the
 connection.
+
+:leveloffset: +1
+
+include::Passwords.adoc[]
+
+:leveloffset: -1
