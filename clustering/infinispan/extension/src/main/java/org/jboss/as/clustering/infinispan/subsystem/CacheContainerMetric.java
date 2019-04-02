@@ -35,33 +35,33 @@ import org.jboss.dmr.ModelType;
  */
 public enum CacheContainerMetric implements Metric<EmbeddedCacheManager> {
 
-    CACHE_MANAGER_STATUS(MetricKeys.CACHE_MANAGER_STATUS, ModelType.STRING) {
+    CACHE_MANAGER_STATUS("cache-manager-status", ModelType.STRING) {
         @Override
         public ModelNode execute(EmbeddedCacheManager manager) {
             return new ModelNode(manager.getStatus().toString());
         }
     },
-    CLUSTER_NAME(MetricKeys.CLUSTER_NAME, ModelType.STRING) {
+    CLUSTER_NAME("cluster-name", ModelType.STRING) {
         @Override
         public ModelNode execute(EmbeddedCacheManager manager) {
             String clusterName = manager.getClusterName();
             return (clusterName != null) ? new ModelNode(clusterName) : null;
         }
     },
-    COORDINATOR_ADDRESS(MetricKeys.COORDINATOR_ADDRESS, ModelType.STRING) {
+    COORDINATOR_ADDRESS("coordinator-address", ModelType.STRING) {
         @Override
         public ModelNode execute(EmbeddedCacheManager manager) {
             Address address = manager.getCoordinator();
             return (address != null) ? new ModelNode(address.toString()) : null;
         }
     },
-    IS_COORDINATOR(MetricKeys.IS_COORDINATOR, ModelType.BOOLEAN) {
+    IS_COORDINATOR("is-coordinator", ModelType.BOOLEAN) {
         @Override
         public ModelNode execute(EmbeddedCacheManager manager) {
             return new ModelNode(manager.isCoordinator());
         }
     },
-    LOCAL_ADDRESS(MetricKeys.LOCAL_ADDRESS, ModelType.STRING) {
+    LOCAL_ADDRESS("local-address", ModelType.STRING) {
         @Override
         public ModelNode execute(EmbeddedCacheManager manager) {
             Address address = manager.getAddress();
