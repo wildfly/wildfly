@@ -39,111 +39,111 @@ import org.jboss.dmr.ModelType;
  */
 public enum CacheMetric implements Metric<Cache<?, ?>> {
 
-    ACTIVATIONS(MetricKeys.ACTIVATIONS, ModelType.LONG) {
+    ACTIVATIONS("activations", ModelType.LONG) {
         @Override
         public ModelNode execute(Cache<?, ?> cache) {
             ActivationManager manager = cache.getAdvancedCache().getComponentRegistry().getComponent(ActivationManager.class);
             return new ModelNode((manager != null) ? manager.getActivationCount() : 0);
         }
     },
-    AVERAGE_READ_TIME(MetricKeys.AVERAGE_READ_TIME, ModelType.LONG) {
+    AVERAGE_READ_TIME("average-read-time", ModelType.LONG) {
         @Override
         public ModelNode execute(Cache<?, ?> cache) {
             CacheMgmtInterceptor interceptor = findInterceptor(cache, CacheMgmtInterceptor.class);
             return new ModelNode((interceptor != null) ? interceptor.getAverageReadTime() : 0);
         }
     },
-    AVERAGE_WRITE_TIME(MetricKeys.AVERAGE_WRITE_TIME, ModelType.LONG) {
+    AVERAGE_WRITE_TIME("average-write-time", ModelType.LONG) {
         @Override
         public ModelNode execute(Cache<?, ?> cache) {
             CacheMgmtInterceptor interceptor = findInterceptor(cache, CacheMgmtInterceptor.class);
             return new ModelNode((interceptor != null) ? interceptor.getAverageWriteTime() : 0);
         }
     },
-    CACHE_STATUS(MetricKeys.CACHE_STATUS, ModelType.STRING) {
+    CACHE_STATUS("cache-status", ModelType.STRING) {
         @Override
         public ModelNode execute(Cache<?, ?> cache) {
             return new ModelNode(cache.getStatus().toString());
         }
     },
-    ELAPSED_TIME(MetricKeys.ELAPSED_TIME, ModelType.LONG) {
+    ELAPSED_TIME("elapsed-time", ModelType.LONG) {
         @Override
         public ModelNode execute(Cache<?, ?> cache) {
             CacheMgmtInterceptor interceptor = findInterceptor(cache, CacheMgmtInterceptor.class);
             return new ModelNode((interceptor != null) ? interceptor.getTimeSinceStart() : 0);
         }
     },
-    HIT_RATIO(MetricKeys.HIT_RATIO, ModelType.DOUBLE) {
+    HIT_RATIO("hit-ratio", ModelType.DOUBLE) {
         @Override
         public ModelNode execute(Cache<?, ?> cache) {
             CacheMgmtInterceptor interceptor = findInterceptor(cache, CacheMgmtInterceptor.class);
             return new ModelNode((interceptor != null) ? interceptor.getHitRatio() : 0);
         }
     },
-    HITS(MetricKeys.HITS, ModelType.LONG) {
+    HITS("hits", ModelType.LONG) {
         @Override
         public ModelNode execute(Cache<?, ?> cache) {
             CacheMgmtInterceptor interceptor = findInterceptor(cache, CacheMgmtInterceptor.class);
             return new ModelNode((interceptor != null) ? interceptor.getHits() : 0);
         }
     },
-    INVALIDATIONS(MetricKeys.INVALIDATIONS, ModelType.LONG) {
+    INVALIDATIONS("invalidations", ModelType.LONG) {
         @Override
         public ModelNode execute(Cache<?, ?> cache) {
             InvalidationInterceptor interceptor = findInterceptor(cache, InvalidationInterceptor.class);
             return new ModelNode((interceptor != null) ? interceptor.getInvalidations() : 0);
         }
     },
-    MISSES(MetricKeys.MISSES, ModelType.LONG) {
+    MISSES("misses", ModelType.LONG) {
         @Override
         public ModelNode execute(Cache<?, ?> cache) {
             CacheMgmtInterceptor interceptor = findInterceptor(cache, CacheMgmtInterceptor.class);
             return new ModelNode((interceptor != null) ? interceptor.getMisses() : 0);
         }
     },
-    NUMBER_OF_ENTRIES(MetricKeys.NUMBER_OF_ENTRIES, ModelType.INT) {
+    NUMBER_OF_ENTRIES("number-of-entries", ModelType.INT) {
         @Override
         public ModelNode execute(Cache<?, ?> cache) {
             CacheMgmtInterceptor interceptor = findInterceptor(cache, CacheMgmtInterceptor.class);
             return new ModelNode((interceptor != null) ? interceptor.getNumberOfEntries() : 0);
         }
     },
-    PASSIVATIONS(MetricKeys.PASSIVATIONS, ModelType.LONG) {
+    PASSIVATIONS("passivations", ModelType.LONG) {
         @Override
         public ModelNode execute(Cache<?, ?> cache) {
             PassivationManager manager = cache.getAdvancedCache().getComponentRegistry().getComponent(PassivationManager.class);
             return new ModelNode((manager != null) ? manager.getPassivations() : 0);
         }
     },
-    READ_WRITE_RATIO(MetricKeys.READ_WRITE_RATIO, ModelType.DOUBLE) {
+    READ_WRITE_RATIO("read-write-ratio", ModelType.DOUBLE) {
         @Override
         public ModelNode execute(Cache<?, ?> cache) {
             CacheMgmtInterceptor interceptor = findInterceptor(cache, CacheMgmtInterceptor.class);
             return new ModelNode((interceptor != null) ? interceptor.getReadWriteRatio() : 0);
         }
     },
-    REMOVE_HITS(MetricKeys.REMOVE_HITS, ModelType.LONG) {
+    REMOVE_HITS("remove-hits", ModelType.LONG) {
         @Override
         public ModelNode execute(Cache<?, ?> cache) {
             CacheMgmtInterceptor interceptor = findInterceptor(cache, CacheMgmtInterceptor.class);
             return new ModelNode((interceptor != null) ? interceptor.getRemoveHits() : 0);
         }
     },
-    REMOVE_MISSES(MetricKeys.REMOVE_MISSES, ModelType.LONG) {
+    REMOVE_MISSES("remove-misses", ModelType.LONG) {
         @Override
         public ModelNode execute(Cache<?, ?> cache) {
             CacheMgmtInterceptor interceptor = findInterceptor(cache, CacheMgmtInterceptor.class);
             return new ModelNode((interceptor != null) ? interceptor.getRemoveMisses() : 0);
         }
     },
-    STORES(MetricKeys.STORES, ModelType.LONG) {
+    STORES("stores", ModelType.LONG) {
         @Override
         public ModelNode execute(Cache<?, ?> cache) {
             CacheMgmtInterceptor interceptor = findInterceptor(cache, CacheMgmtInterceptor.class);
             return new ModelNode((interceptor != null) ? interceptor.getStores() : 0);
         }
     },
-    TIME_SINCE_RESET(MetricKeys.TIME_SINCE_RESET, ModelType.LONG) {
+    TIME_SINCE_RESET("time-since-reset", ModelType.LONG) {
         @Override
         public ModelNode execute(Cache<?, ?> cache) {
             CacheMgmtInterceptor interceptor = findInterceptor(cache, CacheMgmtInterceptor.class);

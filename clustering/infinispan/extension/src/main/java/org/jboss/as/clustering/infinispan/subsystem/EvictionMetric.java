@@ -32,7 +32,7 @@ import org.jboss.dmr.ModelType;
  */
 public enum EvictionMetric implements Metric<Cache<?, ?>> {
 
-    EVICTIONS(MetricKeys.EVICTIONS, ModelType.LONG) {
+    EVICTIONS("evictions", ModelType.LONG) {
         @Override
         public ModelNode execute(Cache<?, ?> cache) {
             CacheMgmtInterceptor interceptor = CacheMetric.findInterceptor(cache, CacheMgmtInterceptor.class);
