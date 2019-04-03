@@ -173,6 +173,14 @@
         <!-- Version suffix that is appended to directories. Default is the maven GAV version but this can be edited to use a short form version -->
         <server.output.dir.version>${project.version}</server.output.dir.version>
 
+        <!-- Protocol to use for communication with remote maven repositories.
+             You can set to 'http' if you are using a maven proxy and 'https' 
+             interferes with that. Use 'https' for builds that will be released
+             to non-snapshot public maven repos -->
+        <maven.repository.protocol>https</maven.repository.protocol>
+        <!-- The full remote maven repo URL; can be overridden via -D for special use cases -->
+        <maven.repository.url>${maven.repository.protocol}://repository.jboss.org/nexus/content/groups/public/</maven.repository.url>
+
         <!-- Surefire args -->
         <surefire.extra.args></surefire.extra.args>
         <surefire.jpda.args></surefire.jpda.args>
@@ -6711,7 +6719,7 @@
             </snapshots>
             <id>jboss-public-repository-group</id>
             <name>JBoss Public Repository Group</name>
-            <url>https://repository.jboss.org/nexus/content/groups/public/</url>
+            <url>${maven.repository.url}</url>
             <layout>default</layout>
         </repository>
     </repositories>
@@ -6726,7 +6734,7 @@
             </snapshots>
             <id>jboss-public-repository-group</id>
             <name>JBoss Public Repository Group</name>
-            <url>https://repository.jboss.org/nexus/content/groups/public/</url>
+            <url>${maven.repository.url}</url>
         </pluginRepository>
     </pluginRepositories>
 
