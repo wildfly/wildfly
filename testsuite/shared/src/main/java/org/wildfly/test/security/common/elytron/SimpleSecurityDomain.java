@@ -71,7 +71,9 @@ public class SimpleSecurityDomain extends AbstractConfigurableElement implements
     public void create(ModelControllerClient client, CLIWrapper cli) throws Exception {
         ModelNode op = Util
                 .createAddOperation(PathAddress.pathAddress().append("subsystem", "elytron").append("security-domain", name));
-        op.get("default-realm").set(defaultRealm);
+        if (defaultRealm != null) {
+            op.get("default-realm").set(defaultRealm);
+        }
         if (outflowAnonymous != null) {
             op.get("outflow-anonymous").set(outflowAnonymous);
         }
