@@ -29,6 +29,7 @@ import org.jboss.as.test.shared.CLIServerSetupTask;
  * @author Paul Ferraro
  */
 @ServerSetup(FineDatabasePersistenceWebFailoverTestCase.ServerSetupTask.class)
+@org.junit.Ignore("Fails intermittently due to ISPN-10029")
 public class FineDatabasePersistenceWebFailoverTestCase extends AbstractDatabasePersistenceWebFailoverTestCase {
 
     public static class ServerSetupTask extends CLIServerSetupTask {
