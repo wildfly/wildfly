@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,39 +19,28 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.jboss.as.clustering.controller.Model;
-import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.clustering.controller.MetricHandler;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
 /**
- * Enumerates the supported model versions.
  * @author Paul Ferraro
  */
-public enum InfinispanModel implements Model {
+public class TransactionRuntimeResourceDefinition extends CacheComponentRuntimeResourceDefinition {
 
-    VERSION_1_6_0(1, 6, 0), // EAP 6.4
-    VERSION_2_0_0(2, 0, 0), // WildFly 8
-    VERSION_3_0_0(3, 0, 0), // WildFly 9
-    VERSION_4_0_0(4, 0, 0), // WildFly 10, EAP 7.0
-    VERSION_4_1_0(4, 1, 0), // WildFly 10.1
-    VERSION_5_0_0(5, 0, 0), // WildFly 11, EAP 7.1
-    VERSION_6_0_0(6, 0, 0), // WildFly 12
-    VERSION_7_0_0(7, 0, 0), // WildFly 13
-    VERSION_8_0_0(8, 0, 0), // WildFly 14-15, EAP 7.2
-    VERSION_9_0_0(9, 0, 0), // WildFly 16
-    VERSION_10_0_0(10, 0, 0), // WildFly 17
-    ;
-    static final InfinispanModel CURRENT = VERSION_10_0_0;
+    static final PathElement PATH = pathElement("transaction");
 
-    private final ModelVersion version;
-
-    InfinispanModel(int major, int minor, int micro) {
-        this.version = ModelVersion.create(major, minor, micro);
+    TransactionRuntimeResourceDefinition() {
+        super(PATH);
     }
 
     @Override
-    public ModelVersion getVersion() {
-        return this.version;
+    public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
+        ManagementResourceRegistration registration = super.register(parent);
+        new MetricHandler<>(new TransactionMetricExecutor(),  TransactionMetric.class).register(registration);
+        return registration;
     }
 }
