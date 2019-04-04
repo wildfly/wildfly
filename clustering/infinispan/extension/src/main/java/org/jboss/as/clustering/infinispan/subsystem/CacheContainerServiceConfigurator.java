@@ -27,6 +27,8 @@ import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourc
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -58,6 +60,8 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.clustering.Registrar;
+import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.infinispan.spi.CacheContainer;
 import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
 import org.wildfly.clustering.service.FunctionalService;
@@ -70,9 +74,12 @@ import org.wildfly.clustering.service.SupplierDependency;
 @Listener
 public class CacheContainerServiceConfigurator extends CapabilityServiceNameProvider implements ResourceServiceConfigurator, Function<EmbeddedCacheManager, CacheContainer>, Supplier<EmbeddedCacheManager>, Consumer<EmbeddedCacheManager> {
 
+    private final Map<String, Registration> registrations = new ConcurrentHashMap<>();
     private final List<ServiceName> aliases = new LinkedList<>();
     private final String name;
     private final SupplierDependency<GlobalConfiguration> configuration;
+
+    private volatile Registrar<String> registrar;
 
     public CacheContainerServiceConfigurator(PathAddress address) {
         super(CONTAINER, address);
@@ -121,6 +128,7 @@ public class CacheContainerServiceConfigurator extends CapabilityServiceNameProv
         for (ModelNode alias : ModelNodes.optionalList(ALIASES.resolveModelAttribute(context, model)).orElse(Collections.emptyList())) {
             this.aliases.add(InfinispanRequirement.CONTAINER.getServiceName(context.getCapabilityServiceSupport(), alias.asString()));
         }
+        this.registrar = (CacheContainerResource) context.readResource(PathAddress.EMPTY_ADDRESS);
         return this;
     }
 
@@ -137,11 +145,16 @@ public class CacheContainerServiceConfigurator extends CapabilityServiceNameProv
 
     @CacheStarted
     public void cacheStarted(CacheStartedEvent event) {
-        InfinispanLogger.ROOT_LOGGER.cacheStarted(event.getCacheName(), this.name);
+        String cacheName = event.getCacheName();
+        InfinispanLogger.ROOT_LOGGER.cacheStarted(cacheName, this.name);
+        this.registrations.put(cacheName, this.registrar.register(cacheName));
     }
 
     @CacheStopped
     public void cacheStopped(CacheStoppedEvent event) {
-        InfinispanLogger.ROOT_LOGGER.cacheStopped(event.getCacheName(), this.name);
+        String cacheName = event.getCacheName();
+        try (Registration registration = this.registrations.remove(cacheName)) {
+            InfinispanLogger.ROOT_LOGGER.cacheStopped(cacheName, this.name);
+        }
     }
 }
