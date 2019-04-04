@@ -50,8 +50,10 @@ import org.wildfly.common.iteration.ByteIterator;
 import org.wildfly.security.WildFlyElytronProvider;
 import org.wildfly.security.password.PasswordFactory;
 import org.wildfly.security.password.interfaces.BCryptPassword;
+import org.wildfly.security.password.interfaces.BSDUnixDESCryptPassword;
 import org.wildfly.security.password.spec.EncryptablePasswordSpec;
 import org.wildfly.security.password.spec.IteratedSaltedPasswordAlgorithmSpec;
+import org.wildfly.security.password.util.ModularCrypt;
 import org.wildfly.security.permission.ElytronPermission;
 import org.wildfly.test.security.common.AbstractElytronSetupTask;
 import org.wildfly.test.security.common.elytron.ConfigurableElement;
@@ -136,7 +138,23 @@ public class JdbcRealmTestCase {
     @Test
     @OperateOnDeployment(DEPLOYMENT)
     public void testCombinedBCRYPTHexPassword_Success(@ArquillianResource URL webAppURL) throws Exception {
-        String result = Utils.makeCallWithBasicAuthn(convert(webAppURL, "userSix%40wildfly.org", "Pink", "Gold"), "userSix@BCRYPT_HEX", "passwordSix", SC_OK);
+        String result = Utils.makeCallWithBasicAuthn(convert(webAppURL, "userSix%40wildfly.org", "Pink", "Gold"), "userSix@Combined", "passwordSix", SC_OK);
+
+        assertEquals(JdbcTestServlet.RESPONSE_BODY, result);
+    }
+
+    @Test
+    @OperateOnDeployment(DEPLOYMENT)
+    public void testModularCryptPassword_Success(@ArquillianResource URL webAppURL) throws Exception {
+        String result = Utils.makeCallWithBasicAuthn(convert(webAppURL, "userSeven%40wildfly.org", "Grey", "Indigo"), "userSeven@MODULAR_CRYPT", "passwordSeven", SC_OK);
+
+        assertEquals(JdbcTestServlet.RESPONSE_BODY, result);
+    }
+
+    @Test
+    @OperateOnDeployment(DEPLOYMENT)
+    public void testCombinedModularCryptPassword_Success(@ArquillianResource URL webAppURL) throws Exception {
+        String result = Utils.makeCallWithBasicAuthn(convert(webAppURL, "userEight%40wildfly.org", "Lilac", "Bergundy"), "userEight@Combined", "passwordEight", SC_OK);
 
         assertEquals(JdbcTestServlet.RESPONSE_BODY, result);
     }
@@ -157,7 +175,7 @@ public class JdbcRealmTestCase {
 
         @Override
         protected ConfigurableElement[] getConfigurableElements() {
-            ConfigurableElement[] elements = new ConfigurableElement[12];
+            ConfigurableElement[] elements = new ConfigurableElement[14];
 
             // Clear Realm
             elements[0] = JdbcSecurityRealm.builder("clear_realm")
@@ -181,8 +199,10 @@ public class JdbcRealmTestCase {
                     .withAttributeMapper("favourite-colours", 1)
                     .build()
                 .build();
+            // BCRYPT Realm Mapper
+            elements[3] = ConstantRealmMapper.newInstance("bcrypt_realm_mapper", "bcrypt_realm");
             // BCRYPT Hex Realm
-            elements[3] = JdbcSecurityRealm.builder("bcrypt_hex_realm")
+            elements[4] = JdbcSecurityRealm.builder("bcrypt_hex_realm")
                     .withPrincipalQuery(DATASOURCE_NAME, "select hash, salt, iteration_count, email from bcrypt_hex_identities where name = ?")
                         .withPasswordMapper("bcrypt-mapper", null, 1, Encoding.HEX, 2, Encoding.HEX, 3)
                         .withAttributeMapper("email", 4)
@@ -192,11 +212,21 @@ public class JdbcRealmTestCase {
                         .build()
                     .build();
             // BCRYPT Hex Mapper
-            elements[4] = ConstantRealmMapper.newInstance("bcrypt_hex_realm_mapper", "bcrypt_hex_realm");
-            // BCRYPT Realm Mapper
-            elements[5] = ConstantRealmMapper.newInstance("bcrypt_realm_mapper", "bcrypt_realm");
+            elements[5] = ConstantRealmMapper.newInstance("bcrypt_hex_realm_mapper", "bcrypt_hex_realm");
+            // Modular Crypt Realm
+            elements[6] = JdbcSecurityRealm.builder("modular_crypt_realm")
+                    .withPrincipalQuery(DATASOURCE_NAME, "select password, email from modular_crypt_identities where name = ?")
+                        .withPasswordMapper("modular-crypt-mapper", null, 1, -1, -1)
+                        .withAttributeMapper("email", 2)
+                        .build()
+                    .withPrincipalQuery(DATASOURCE_NAME, "select colour from colours where name = ?")
+                        .withAttributeMapper("favourite-colours", 1)
+                        .build()
+                    .build();
+            // Modular Crypt Mapper
+            elements[7] = ConstantRealmMapper.newInstance("modular_crypt_realm_mapper", "modular_crypt_realm");
             // Combined Realm
-            elements[6] = JdbcSecurityRealm.builder("combined_realm")
+            elements[8] = JdbcSecurityRealm.builder("combined_realm")
                 .withPrincipalQuery(DATASOURCE_NAME, "select password, email from clear_identities where name = ?")
                     .withPasswordMapper("clear-password-mapper", null, 1, -1, -1)
                     .withAttributeMapper("email", 2)
@@ -209,27 +239,32 @@ public class JdbcRealmTestCase {
                     .withPasswordMapper("bcrypt-mapper", null, 1, Encoding.HEX, 2, Encoding.HEX, 3)
                     .withAttributeMapper("email", 4)
                     .build()
+                .withPrincipalQuery(DATASOURCE_NAME, "select password, email from modular_crypt_identities where name = ?")
+                    .withPasswordMapper("modular-crypt-mapper", null, 1, -1, -1)
+                    .withAttributeMapper("email", 2)
+                    .build()
                 .withPrincipalQuery(DATASOURCE_NAME, "select colour from colours where name = ?")
                     .withAttributeMapper("favourite-colours", 1)
                     .build()
                 .build();
             // Combined Realm Mapper
-            elements[7] = ConstantRealmMapper.newInstance("combined_realm_mapper", "combined_realm");
+            elements[9] = ConstantRealmMapper.newInstance("combined_realm_mapper", "combined_realm");
             // RegEx RealmMapper
-            elements[8] = MappedRegexRealmMapper.builder("regex-mapper")
+            elements[10] = MappedRegexRealmMapper.builder("regex-mapper")
                     .withPattern(".+?@(.+)") // Reluctantly match all characters up to and including the first '@', all remaining characters into a single capturing group.
                     .withRealmMapping("Clear", "clear_realm")
                     .withRealmMapping("BCRYPT", "bcrypt_realm")
                     .withRealmMapping("BCRYPT_HEX", "bcrypt_hex_realm")
+                    .withRealmMapping("MODULAR_CRYPT", "modular_crypt_realm")
                     .withRealmMapping("Combined", "combined_realm")
                     .build();
             // Name Rewriter
-            elements[9] = RegexPrincipalTransformer.builder("realm-stripper")
+            elements[11] = RegexPrincipalTransformer.builder("realm-stripper")
                     .withPattern("@.+")
                     .withReplacement("")
                     .build();
             // Security Domain
-            elements[10] = SimpleSecurityDomain.builder()
+            elements[12] = SimpleSecurityDomain.builder()
                     .withName("JdbcTestDomain")
                     .withPostRealmPrincipalTransformer("realm-stripper")
                     .withRealmMapper("regex-mapper")
@@ -237,11 +272,12 @@ public class JdbcRealmTestCase {
                     .withRealms(SimpleSecurityDomain.SecurityDomainRealm.builder().withRealm("clear_realm").build(),
                             SimpleSecurityDomain.SecurityDomainRealm.builder().withRealm("bcrypt_realm").build(),
                             SimpleSecurityDomain.SecurityDomainRealm.builder().withRealm("bcrypt_hex_realm").build(),
+                            SimpleSecurityDomain.SecurityDomainRealm.builder().withRealm("modular_crypt_realm").build(),
                             SimpleSecurityDomain.SecurityDomainRealm.builder().withRealm("combined_realm").build())
                     .build();
 
             // Undertow Application Security Domain
-            elements[11] = UndertowApplicationSecurityDomain.builder()
+            elements[13] = UndertowApplicationSecurityDomain.builder()
                     .withName(DEPLOYMENT)
                     .withSecurityDomain("JdbcTestDomain")
                     .build();
@@ -280,6 +316,7 @@ public class JdbcRealmTestCase {
             executeUpdate(conn, "create table bcrypt_identities (name VARCHAR PRIMARY KEY,  hash VARCHAR, salt VARCHAR, iteration_count INT, email VARCHAR)");
             executeUpdate(conn, "create table bcrypt_hex_identities (name VARCHAR PRIMARY KEY,  hash VARCHAR, salt VARCHAR, iteration_count INT, email VARCHAR)");
             executeUpdate(conn, "create table colours (name VARCHAR, colour VARCHAR)");
+            executeUpdate(conn, "create table modular_crypt_identities (name VARCHAR PRIMARY KEY, password VARCHAR, email VARCHAR)");
 
             addClearUser(conn, "userOne", "passwordOne", "userOne@wildfly.org", "Red", "Green");
             addBCryptUser(conn, "userTwo", "passwordTwo", "userTwo@wildfly.org", false, "Black", "Blue");
@@ -287,6 +324,8 @@ public class JdbcRealmTestCase {
             addBCryptUser(conn, "userFour", "passwordFour", "userFour@wildfly.org", false, "White", "Purple");
             addBCryptUser(conn, "userFive", "passwordFive", "userFive@wildfly.org", true, "Violet", "Amber");
             addBCryptUser(conn, "userSix", "passwordSix", "userSix@wildfly.org", true, "Pink", "Gold");
+            addModularCryptUser(conn, "userSeven", "passwordSeven", "userSeven@wildfly.org", "Grey", "Indigo");
+            addModularCryptUser(conn, "userEight", "passwordEight", "userEight@wildfly.org", "Lilac", "Bergundy");
 
             conn.close();
         }
@@ -328,6 +367,26 @@ public class JdbcRealmTestCase {
             }
 
             executeUpdate(conn, String.format("insert into %s VALUES ('%s', '%s', '%s', %d, '%s')", tableName, username, encodedHash, encodedSalt, iterationCount, eMail));
+            addFavouriteColours(conn, username, colours);
+        }
+
+        private void addModularCryptUser(final Connection conn, final String username, final String password, final String eMail, final String... colours) throws Exception {
+            PasswordFactory passwordFactory = PasswordFactory.getInstance(BSDUnixDESCryptPassword.ALGORITHM_BSD_CRYPT_DES, PROVIDER);
+
+            int iterationCount = BSDUnixDESCryptPassword.DEFAULT_ITERATION_COUNT;
+
+            byte[] salt = new byte[BSDUnixDESCryptPassword.BSD_CRYPT_DES_SALT_SIZE];
+            SecureRandom random = new SecureRandom();
+            random.nextBytes(salt);
+
+            IteratedSaltedPasswordAlgorithmSpec iteratedAlgorithmSpec = new IteratedSaltedPasswordAlgorithmSpec(iterationCount, salt);
+            EncryptablePasswordSpec encryptableSpec = new EncryptablePasswordSpec(password.toCharArray(), iteratedAlgorithmSpec);
+
+            BSDUnixDESCryptPassword original = (BSDUnixDESCryptPassword) passwordFactory.generatePassword(encryptableSpec);
+
+            String encoded = ModularCrypt.encodeAsString(original);
+
+            executeUpdate(conn, String.format("insert into modular_crypt_identities VALUES ('%s', '%s', '%s')", username, encoded, eMail));
             addFavouriteColours(conn, username, colours);
         }
 
