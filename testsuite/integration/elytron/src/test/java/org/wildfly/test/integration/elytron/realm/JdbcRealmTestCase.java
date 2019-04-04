@@ -17,6 +17,7 @@
 package org.wildfly.test.integration.elytron.realm;
 
 import static javax.servlet.http.HttpServletResponse.SC_OK;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 
 import java.net.URL;
@@ -50,6 +51,7 @@ import org.wildfly.security.password.PasswordFactory;
 import org.wildfly.security.password.interfaces.BCryptPassword;
 import org.wildfly.security.password.spec.EncryptablePasswordSpec;
 import org.wildfly.security.password.spec.IteratedSaltedPasswordAlgorithmSpec;
+import org.wildfly.security.permission.ElytronPermission;
 import org.wildfly.test.security.common.AbstractElytronSetupTask;
 import org.wildfly.test.security.common.elytron.ConfigurableElement;
 import org.wildfly.test.security.common.elytron.ConstantRealmMapper;
@@ -82,7 +84,10 @@ public class JdbcRealmTestCase {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, DEPLOYMENT + ".war");
         war.addClasses(JdbcTestServlet.class);
         war.addAsWebInfResource(JdbcRealmTestCase.class.getPackage(), "jdbc-realm-web.xml", "web.xml");
-        war.addAsWebInfResource(Utils.getJBossWebXmlAsset(DEPLOYMENT), "jboss-web.xml");
+        war.addAsWebInfResource(Utils.getJBossWebXmlAsset(DEPLOYMENT), "jboss-web.xml")
+        .addAsManifestResource(createPermissionsXmlAsset(
+                new ElytronPermission("getSecurityDomain")),
+                "permissions.xml");
         return war;
     }
 
