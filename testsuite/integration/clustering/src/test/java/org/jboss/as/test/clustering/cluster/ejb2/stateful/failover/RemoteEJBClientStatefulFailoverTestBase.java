@@ -36,9 +36,9 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.Before;
 
 /**
  * @author Ondrej Chaloupka
@@ -49,8 +49,8 @@ public abstract class RemoteEJBClientStatefulFailoverTestBase extends AbstractCl
     protected static final String MODULE_NAME = RemoteEJBClientStatefulFailoverTestBase.class.getSimpleName();
     protected static final String MODULE_NAME_SINGLE = MODULE_NAME + "-single";
 
-    protected static EJBDirectory singletonDirectory;
-    protected static EJBDirectory directory;
+    protected EJBDirectory singletonDirectory;
+    protected EJBDirectory directory;
 
     protected static Archive<?> createDeploymentSingleton() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME_SINGLE + ".jar");
@@ -69,14 +69,14 @@ public abstract class RemoteEJBClientStatefulFailoverTestBase extends AbstractCl
         undeploy(TWO_DEPLOYMENT_HELPERS);
     }
 
-    @BeforeClass
-    public static void beforeClass() throws NamingException {
+    @Before
+    public void beforeTest() throws NamingException {
         directory = new RemoteEJBDirectory(MODULE_NAME);
         singletonDirectory = new RemoteEJBDirectory(MODULE_NAME_SINGLE);
     }
 
-    @AfterClass
-    public static void destroy() throws Exception {
+    @After
+    public void afterTest() throws Exception {
         directory.close();
         singletonDirectory.close();
     }
