@@ -46,6 +46,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.common.iteration.ByteIterator;
 import org.wildfly.security.WildFlyElytronProvider;
 import org.wildfly.security.password.PasswordFactory;
 import org.wildfly.security.password.interfaces.BCryptPassword;
@@ -56,6 +57,7 @@ import org.wildfly.test.security.common.AbstractElytronSetupTask;
 import org.wildfly.test.security.common.elytron.ConfigurableElement;
 import org.wildfly.test.security.common.elytron.ConstantRealmMapper;
 import org.wildfly.test.security.common.elytron.JdbcSecurityRealm;
+import org.wildfly.test.security.common.elytron.JdbcSecurityRealm.Encoding;
 import org.wildfly.test.security.common.elytron.MappedRegexRealmMapper;
 import org.wildfly.test.security.common.elytron.RegexPrincipalTransformer;
 import org.wildfly.test.security.common.elytron.SimpleSecurityDomain;
@@ -123,6 +125,22 @@ public class JdbcRealmTestCase {
         assertEquals(JdbcTestServlet.RESPONSE_BODY, result);
     }
 
+    @Test
+    @OperateOnDeployment(DEPLOYMENT)
+    public void testBCRYPTHexPassword_Success(@ArquillianResource URL webAppURL) throws Exception {
+        String result = Utils.makeCallWithBasicAuthn(convert(webAppURL, "userFive%40wildfly.org", "Violet", "Amber"), "userFive@BCRYPT_HEX", "passwordFive", SC_OK);
+
+        assertEquals(JdbcTestServlet.RESPONSE_BODY, result);
+    }
+
+    @Test
+    @OperateOnDeployment(DEPLOYMENT)
+    public void testCombinedBCRYPTHexPassword_Success(@ArquillianResource URL webAppURL) throws Exception {
+        String result = Utils.makeCallWithBasicAuthn(convert(webAppURL, "userSix%40wildfly.org", "Pink", "Gold"), "userSix@BCRYPT_HEX", "passwordSix", SC_OK);
+
+        assertEquals(JdbcTestServlet.RESPONSE_BODY, result);
+    }
+
     private URL convert(URL original, final String email, final String... colours) throws Exception {
         StringBuilder sb = new StringBuilder(original.toExternalForm())
                 .append(JdbcTestServlet.SERVLET_PATH.substring(1))
@@ -139,7 +157,7 @@ public class JdbcRealmTestCase {
 
         @Override
         protected ConfigurableElement[] getConfigurableElements() {
-            ConfigurableElement[] elements = new ConfigurableElement[10];
+            ConfigurableElement[] elements = new ConfigurableElement[12];
 
             // Clear Realm
             elements[0] = JdbcSecurityRealm.builder("clear_realm")
@@ -163,10 +181,22 @@ public class JdbcRealmTestCase {
                     .withAttributeMapper("favourite-colours", 1)
                     .build()
                 .build();
+            // BCRYPT Hex Realm
+            elements[3] = JdbcSecurityRealm.builder("bcrypt_hex_realm")
+                    .withPrincipalQuery(DATASOURCE_NAME, "select hash, salt, iteration_count, email from bcrypt_hex_identities where name = ?")
+                        .withPasswordMapper("bcrypt-mapper", null, 1, Encoding.HEX, 2, Encoding.HEX, 3)
+                        .withAttributeMapper("email", 4)
+                        .build()
+                    .withPrincipalQuery(DATASOURCE_NAME, "select colour from colours where name = ?")
+                        .withAttributeMapper("favourite-colours", 1)
+                        .build()
+                    .build();
+            // BCRYPT Hex Mapper
+            elements[4] = ConstantRealmMapper.newInstance("bcrypt_hex_realm_mapper", "bcrypt_hex_realm");
             // BCRYPT Realm Mapper
-            elements[3] = ConstantRealmMapper.newInstance("bcrypt_realm_mapper", "bcrypt_realm");
+            elements[5] = ConstantRealmMapper.newInstance("bcrypt_realm_mapper", "bcrypt_realm");
             // Combined Realm
-            elements[4] = JdbcSecurityRealm.builder("combined_realm")
+            elements[6] = JdbcSecurityRealm.builder("combined_realm")
                 .withPrincipalQuery(DATASOURCE_NAME, "select password, email from clear_identities where name = ?")
                     .withPasswordMapper("clear-password-mapper", null, 1, -1, -1)
                     .withAttributeMapper("email", 2)
@@ -175,37 +205,43 @@ public class JdbcRealmTestCase {
                     .withPasswordMapper("bcrypt-mapper", null, 1, 2, 3)
                     .withAttributeMapper("email", 4)
                     .build()
+                .withPrincipalQuery(DATASOURCE_NAME, "select hash, salt, iteration_count, email from bcrypt_hex_identities where name = ?")
+                    .withPasswordMapper("bcrypt-mapper", null, 1, Encoding.HEX, 2, Encoding.HEX, 3)
+                    .withAttributeMapper("email", 4)
+                    .build()
                 .withPrincipalQuery(DATASOURCE_NAME, "select colour from colours where name = ?")
                     .withAttributeMapper("favourite-colours", 1)
                     .build()
                 .build();
             // Combined Realm Mapper
-            elements[5] = ConstantRealmMapper.newInstance("combined_realm_mapper", "combined_realm");
+            elements[7] = ConstantRealmMapper.newInstance("combined_realm_mapper", "combined_realm");
             // RegEx RealmMapper
-            elements[6] = MappedRegexRealmMapper.builder("regex-mapper")
+            elements[8] = MappedRegexRealmMapper.builder("regex-mapper")
                     .withPattern(".+?@(.+)") // Reluctantly match all characters up to and including the first '@', all remaining characters into a single capturing group.
                     .withRealmMapping("Clear", "clear_realm")
                     .withRealmMapping("BCRYPT", "bcrypt_realm")
+                    .withRealmMapping("BCRYPT_HEX", "bcrypt_hex_realm")
                     .withRealmMapping("Combined", "combined_realm")
                     .build();
             // Name Rewriter
-            elements[7] = RegexPrincipalTransformer.builder("realm-stripper")
+            elements[9] = RegexPrincipalTransformer.builder("realm-stripper")
                     .withPattern("@.+")
                     .withReplacement("")
                     .build();
             // Security Domain
-            elements[8] = SimpleSecurityDomain.builder()
+            elements[10] = SimpleSecurityDomain.builder()
                     .withName("JdbcTestDomain")
                     .withPostRealmPrincipalTransformer("realm-stripper")
                     .withRealmMapper("regex-mapper")
                     .withPermissionMapper("default-permission-mapper")
                     .withRealms(SimpleSecurityDomain.SecurityDomainRealm.builder().withRealm("clear_realm").build(),
                             SimpleSecurityDomain.SecurityDomainRealm.builder().withRealm("bcrypt_realm").build(),
+                            SimpleSecurityDomain.SecurityDomainRealm.builder().withRealm("bcrypt_hex_realm").build(),
                             SimpleSecurityDomain.SecurityDomainRealm.builder().withRealm("combined_realm").build())
                     .build();
 
             // Undertow Application Security Domain
-            elements[9] = UndertowApplicationSecurityDomain.builder()
+            elements[11] = UndertowApplicationSecurityDomain.builder()
                     .withName(DEPLOYMENT)
                     .withSecurityDomain("JdbcTestDomain")
                     .build();
@@ -242,12 +278,15 @@ public class JdbcRealmTestCase {
 
             executeUpdate(conn, "create table clear_identities (name VARCHAR PRIMARY KEY, password VARCHAR, email VARCHAR)");
             executeUpdate(conn, "create table bcrypt_identities (name VARCHAR PRIMARY KEY,  hash VARCHAR, salt VARCHAR, iteration_count INT, email VARCHAR)");
+            executeUpdate(conn, "create table bcrypt_hex_identities (name VARCHAR PRIMARY KEY,  hash VARCHAR, salt VARCHAR, iteration_count INT, email VARCHAR)");
             executeUpdate(conn, "create table colours (name VARCHAR, colour VARCHAR)");
 
             addClearUser(conn, "userOne", "passwordOne", "userOne@wildfly.org", "Red", "Green");
-            addBCryptUser(conn, "userTwo", "passwordTwo", "userTwo@wildfly.org", "Black", "Blue");
+            addBCryptUser(conn, "userTwo", "passwordTwo", "userTwo@wildfly.org", false, "Black", "Blue");
             addClearUser(conn, "userThree", "passwordThree", "userThree@wildfly.org", "Yellow", "Orange");
-            addBCryptUser(conn, "userFour", "passwordFour", "userFour@wildfly.org", "White", "Purple");
+            addBCryptUser(conn, "userFour", "passwordFour", "userFour@wildfly.org", false, "White", "Purple");
+            addBCryptUser(conn, "userFive", "passwordFive", "userFive@wildfly.org", true, "Violet", "Amber");
+            addBCryptUser(conn, "userSix", "passwordSix", "userSix@wildfly.org", true, "Pink", "Gold");
 
             conn.close();
         }
@@ -257,7 +296,7 @@ public class JdbcRealmTestCase {
             addFavouriteColours(conn, username, colours);
         }
 
-        private void addBCryptUser(final Connection conn, final String username, final String password, final String eMail, final String... colours) throws Exception {
+        private void addBCryptUser(final Connection conn, final String username, final String password, final String eMail, final boolean hexEncoded, final String... colours) throws Exception {
             int iterationCount = 10;
 
             byte[] salt = new byte[BCryptPassword.BCRYPT_SALT_SIZE];
@@ -273,10 +312,22 @@ public class JdbcRealmTestCase {
             byte[] hash = original.getHash();
 
             Encoder encoder = Base64.getEncoder();
-            String encodedHash = encoder.encodeToString(hash);
-            String encodedSalt = encoder.encodeToString(salt);
 
-            executeUpdate(conn, String.format("insert into bcrypt_identities VALUES ('%s', '%s', '%s', %d, '%s')", username, encodedHash, encodedSalt, iterationCount, eMail));
+            final String tableName;
+            final String encodedHash;
+            final String encodedSalt;
+
+            if (hexEncoded) {
+                tableName = "bcrypt_hex_identities";
+                encodedHash = ByteIterator.ofBytes(hash).hexEncode().drainToString();
+                encodedSalt = ByteIterator.ofBytes(salt).hexEncode().drainToString();
+            } else {
+                tableName = "bcrypt_identities";
+                encodedHash = encoder.encodeToString(hash);
+                encodedSalt = encoder.encodeToString(salt);
+            }
+
+            executeUpdate(conn, String.format("insert into %s VALUES ('%s', '%s', '%s', %d, '%s')", tableName, username, encodedHash, encodedSalt, iterationCount, eMail));
             addFavouriteColours(conn, username, colours);
         }
 
