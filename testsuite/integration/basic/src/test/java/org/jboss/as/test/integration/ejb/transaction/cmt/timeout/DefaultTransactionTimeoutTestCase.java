@@ -25,7 +25,6 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,9 +41,6 @@ public class DefaultTransactionTimeoutTestCase {
     @Deployment
     public static Archive<?> createDeployment() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "test-ejb-cmt-timeout.jar");
-        // a manifest must have a \n at the end or else it'll not be properly process
-        // here we hack one in place
-        jar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.jts \n"), "MANIFEST.MF");
         jar.addClass(BeanWithTimeoutValue.class);
         jar.addClass(TimeoutRemoteView.class);
         jar.addClass(TimeoutLocalView.class);

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright (c) 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,42 +19,27 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.management.deploy.runtime.ejb.singleton.timer;
 
-import javax.annotation.Resource;
-import javax.ejb.Singleton;
-import javax.ejb.Timeout;
-import javax.ejb.Timer;
-import javax.ejb.TimerConfig;
-import javax.ejb.TimerService;
+package org.jboss.as.test.txbridge.fromjta;
 
-/**
- * @author baranowb
- */
-@Singleton(name = "POINT")
-public class PointLessBean implements PointlessInterface {
+import javax.xml.namespace.QName;
+import javax.xml.ws.Service;
 
-    private static final TimerConfig TIMER_CONFIG = new TimerConfig("Eye Candy", true);
+import org.jboss.as.test.txbridge.fromjta.service.FirstServiceAT;
 
-    private int count = 0;
-    @Resource
-    TimerService timerService;
+import java.net.URL;
 
-    @Override
-    public void triggerTimer() throws Exception {
-        count = 0;
-        timerService.createSingleActionTimer(100, TIMER_CONFIG);
+public class FirstClient {
 
+    public static FirstServiceAT newInstance() throws Exception {
+        URL wsdlLocation = new URL("http://localhost:8080/test/FirstServiceATService/FirstServiceAT?wsdl");
+        QName serviceName = new QName("http://www.jboss.com/jbossas/test/txbridge/fromjta/first", "FirstServiceATService");
+        QName portName = new QName("http://www.jboss.com/jbossas/test/txbridge/fromjta/first", "FirstServiceAT");
+
+        Service service = Service.create(wsdlLocation, serviceName);
+        FirstServiceAT client = service.getPort(portName, FirstServiceAT.class);
+
+        return client;
     }
-
-    @Override
-    public int getTimerCount() {
-        return count;
-    }
-
-    @Timeout
-    public void timeout(Timer timer) {
-        count++;
-    }
-
 }
+

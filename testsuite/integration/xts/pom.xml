@@ -83,6 +83,12 @@
             <artifactId>jboss-jaxws-api_2.3_spec</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- ExampleDS used in tests -->
+        <dependency>
+            <groupId>javax.persistence</groupId>
+            <artifactId>javax.persistence-api</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <profiles>

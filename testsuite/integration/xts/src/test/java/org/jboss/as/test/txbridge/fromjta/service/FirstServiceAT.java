@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright (c) 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,42 +19,38 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.management.deploy.runtime.ejb.singleton.timer;
 
-import javax.annotation.Resource;
-import javax.ejb.Singleton;
-import javax.ejb.Timeout;
-import javax.ejb.Timer;
-import javax.ejb.TimerConfig;
-import javax.ejb.TimerService;
+package org.jboss.as.test.txbridge.fromjta.service;
+
+import javax.ejb.Remote;
+import javax.jws.WebMethod;
+import javax.jws.WebService;
+import javax.jws.soap.SOAPBinding;
 
 /**
- * @author baranowb
+ * Interface to a simple First. Provides simple methods to manipulate with counter.
  */
-@Singleton(name = "POINT")
-public class PointLessBean implements PointlessInterface {
+@WebService(name = "FirstServiceAT", targetNamespace = "http://www.jboss.com/jbossas/test/txbridge/fromjta/first")
+@SOAPBinding(style = SOAPBinding.Style.RPC)
+@Remote
+public interface FirstServiceAT {
 
-    private static final TimerConfig TIMER_CONFIG = new TimerConfig("Eye Candy", true);
+    /**
+     * Create a new booking
+     */
+    @WebMethod
+    public void incrementCounter(int numSeats);
 
-    private int count = 0;
-    @Resource
-    TimerService timerService;
+    /**
+     * Obtain the number of existing bookings
+     */
+    @WebMethod
+    public int getCounter();
 
-    @Override
-    public void triggerTimer() throws Exception {
-        count = 0;
-        timerService.createSingleActionTimer(100, TIMER_CONFIG);
-
-    }
-
-    @Override
-    public int getTimerCount() {
-        return count;
-    }
-
-    @Timeout
-    public void timeout(Timer timer) {
-        count++;
-    }
+    /**
+     * Reset the booking count to zero
+     */
+    @WebMethod
+    public void resetCounter();
 
 }
