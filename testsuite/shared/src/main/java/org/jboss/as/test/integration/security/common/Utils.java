@@ -553,7 +553,7 @@ public class Utils extends CoreUtils {
             assertEquals("Unexpected status code returned after the authentication.", expectedStatusCode, statusCode);
 
             if (checkFollowupAuthState) {
-                // Let's disable authentication for this client as we already have all the context neccessary to be
+                // Let's disable authentication for this client as we already have all the context necessary to be
                 // authorized (we expect that gained 'nonce' value can be re-used in our case here).
                 // By disabling authentication we simply get first server response and thus we can check whether we've
                 // got 200 OK or different response code.
