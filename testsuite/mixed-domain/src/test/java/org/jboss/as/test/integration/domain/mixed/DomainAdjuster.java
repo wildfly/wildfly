@@ -87,9 +87,6 @@ public class DomainAdjuster {
 
         final DomainAdjuster adjuster;
         switch (asVersion) {
-            case EAP_6_2_0:
-            case EAP_6_3_0:
-                throw new UnsupportedOperationException();
             case EAP_6_4_0:
                 adjuster = new DomainAdjuster640();
                 break;
