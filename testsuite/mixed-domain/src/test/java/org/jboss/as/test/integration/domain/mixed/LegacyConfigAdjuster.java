@@ -47,9 +47,6 @@ public class LegacyConfigAdjuster {
 
         final LegacyConfigAdjuster adjuster;
         switch (asVersion) {
-            case EAP_6_2_0:
-            case EAP_6_3_0:
-                throw new UnsupportedOperationException();
             case EAP_6_4_0:
                 adjuster = new LegacyConfigAdjuster640();
                 break;

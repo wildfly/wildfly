@@ -43,6 +43,7 @@ import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
+import org.junit.Assume;
 
 
 /**
@@ -52,6 +53,12 @@ public class MixedDomainTestSupport extends DomainTestSupport {
 
     public static final String STANDARD_DOMAIN_CONFIG = "copied-master-config/domain.xml";
     private static final String JBOSS_DOMAIN_SERVER_ARGS = "jboss.domain.server.args";
+    private static final int TEST_VM_VERSION;
+
+    static {
+        String spec = System.getProperty("java.specification.version");
+        TEST_VM_VERSION = "1.8".equals(spec) ? 8 : Integer.parseInt(spec);
+    }
 
     private final Version.AsVersion version;
     private final boolean adjustDomain;
@@ -69,6 +76,7 @@ public class MixedDomainTestSupport extends DomainTestSupport {
         this.legacyConfig = legacyConfig;
         this.withMasterServers = withMasterServers;
         this.profile = profile;
+        configureSlaveJavaHome();
     }
 
     private static WildFlyManagedConfiguration configWithDisabledAsserts(String jbossHome){
@@ -156,6 +164,29 @@ public class MixedDomainTestSupport extends DomainTestSupport {
         } while (System.currentTimeMillis() < expired);
 
         Assert.fail("Slave server-one did not start within " + timeout + " ms");
+    }
+
+    private void configureSlaveJavaHome() {
+        // Look for properties pointing to a java home to use for the legacy host.
+        // Look for homes for the max JVM version the host can handle, working back to the min it can handle.
+        // We could start with the oldest and work forward, but that would likely result in all versions testing
+        // against the oldest VM. Starting with the newest will increase coverage by increasing the probability
+        // of different VM versions being used across the overall set of legacy host versions.
+        String javaHome = null;
+        for (int i = Math.min(version.getMaxVMVersion(), TEST_VM_VERSION - 1); i >= version.getMinVMVersion() && javaHome == null; i--) {
+            javaHome = System.getProperty("jboss.test.legacy.host.java" + i + ".home");
+        }
+
+        if (javaHome != null) {
+            WildFlyManagedConfiguration  cfg = getDomainSlaveConfiguration();
+            cfg.setJavaHome(javaHome);
+            cfg.setControllerJavaHome(javaHome);
+            System.out.println("Set legacy host controller to use " + javaHome + " as JAVA_HOME");
+        } else {
+            // Ignore the test if the slave cannot run using the current VM version
+            Assume.assumeTrue(TEST_VM_VERSION <= version.getMaxVMVersion());
+            Assume.assumeTrue(TEST_VM_VERSION >= version.getMinVMVersion());
+        }
     }
 
     private void startAndAdjust() {

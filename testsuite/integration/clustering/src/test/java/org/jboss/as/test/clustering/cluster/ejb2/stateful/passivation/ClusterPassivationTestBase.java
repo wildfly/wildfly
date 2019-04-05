@@ -39,9 +39,9 @@ import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.logging.Logger;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.Before;
 
 /**
  * Base class for passivation tests on EJB2 beans.
@@ -52,15 +52,15 @@ public abstract class ClusterPassivationTestBase {
     private static Logger log = Logger.getLogger(ClusterPassivationTestBase.class);
     public static final String MODULE_NAME = ClusterPassivationTestBase.class.getSimpleName();
 
-    protected static EJBDirectory directory;
+    protected EJBDirectory directory;
 
-    @BeforeClass
-    public static void beforeClass() throws NamingException {
+    @Before
+    public void beforeTest() throws NamingException {
         directory = new RemoteEJBDirectory(MODULE_NAME);
     }
 
-    @AfterClass
-    public static void destroy() throws Exception {
+    @After
+    public void afterTest() throws Exception {
         directory.close();
     }
 

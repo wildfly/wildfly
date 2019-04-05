@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2019, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,21 +20,26 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.ejb.remote.byreference;
+package org.jboss.as.test.txbridge.fromjta;
 
-import javax.ejb.Remote;
-import javax.ejb.Stateless;
+import javax.xml.namespace.QName;
+import javax.xml.ws.Service;
 
-/**
- * @author Jaikiran Pai
- */
-@Stateless
-@Remote(RemoteInterface.class)
-public class StatelessRemoteBean implements RemoteInterface {
+import org.jboss.as.test.txbridge.fromjta.service.FirstServiceAT;
 
+import java.net.URL;
 
-    @Override
-    public void modifyFirstElementOfArray(String[] array, String newValue) {
-        array[0] = newValue;
+public class FirstClient {
+
+    public static FirstServiceAT newInstance() throws Exception {
+        URL wsdlLocation = new URL("http://localhost:8080/test/FirstServiceATService/FirstServiceAT?wsdl");
+        QName serviceName = new QName("http://www.jboss.com/jbossas/test/txbridge/fromjta/first", "FirstServiceATService");
+        QName portName = new QName("http://www.jboss.com/jbossas/test/txbridge/fromjta/first", "FirstServiceAT");
+
+        Service service = Service.create(wsdlLocation, serviceName);
+        FirstServiceAT client = service.getPort(portName, FirstServiceAT.class);
+
+        return client;
     }
 }
+

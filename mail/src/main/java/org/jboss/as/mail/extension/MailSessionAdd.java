@@ -140,14 +140,19 @@ class MailSessionAdd extends AbstractAddStepHandler {
         final ServiceBuilder<?> binderBuilder = serviceTarget
                 .addService(bindInfo.getBinderServiceName(), binderService)
                 .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector()).addListener(new LifecycleListener() {
+                    private volatile boolean bound;
+                    @Override
                     public void handleEvent(final ServiceController<?> controller, final LifecycleEvent event) {
                         switch (event) {
                             case UP: {
                                 MailLogger.ROOT_LOGGER.boundMailSession(jndiName);
+                                bound = true;
                                 break;
                             }
                             case DOWN: {
-                                MailLogger.ROOT_LOGGER.unboundMailSession(jndiName);
+                                if (bound) {
+                                    MailLogger.ROOT_LOGGER.unboundMailSession(jndiName);
+                                }
                                 break;
                             }
                             case REMOVED: {

@@ -17,7 +17,7 @@ mvn archetype:generate \
     -DarchetypeArtifactId=wildfly-subsystem \
     -DarchetypeGroupId=org.wildfly.archetypes \
     -DarchetypeVersion=8.0.0.Final \
-    -DarchetypeRepository=http://repository.jboss.org/nexus/content/groups/public
+    -DarchetypeRepository=https://repository.jboss.org/nexus/content/groups/public
 ----
 
 Maven will download the archetype and it's dependencies, and ask you
@@ -29,7 +29,7 @@ $ mvn archetype:generate \
     -DarchetypeArtifactId=wildfly-subsystem \
     -DarchetypeGroupId=org.wildfly.archetypes \
     -DarchetypeVersion=8.0.0.Final \
-    -DarchetypeRepository=http://repository.jboss.org/nexus/content/groups/public
+    -DarchetypeRepository=https://repository.jboss.org/nexus/content/groups/public
 [INFO] Scanning for projects...
 [INFO]
 [INFO] ------------------------------------------------------------------------

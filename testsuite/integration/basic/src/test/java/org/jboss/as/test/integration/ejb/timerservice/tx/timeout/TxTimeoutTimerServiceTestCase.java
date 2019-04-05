@@ -28,7 +28,6 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
@@ -46,7 +45,6 @@ public class TxTimeoutTimerServiceTestCase {
     public static Archive<?> deploy() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "Jar.jar");
         jar.addPackage(TxTimeoutTimerServiceTestCase.class.getPackage());
-        jar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.jts \n"), "MANIFEST.MF");
         return jar;
     }
 

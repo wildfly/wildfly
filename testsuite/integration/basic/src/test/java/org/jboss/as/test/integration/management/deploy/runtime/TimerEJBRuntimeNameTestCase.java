@@ -36,7 +36,7 @@ public class TimerEJBRuntimeNameTestCase extends AbstractRuntimeTestCase {
     private static final Logger log = Logger.getLogger(TimerEJBRuntimeNameTestCase.class);
     private static final String EJB_TYPE = EJBManagementUtil.SINGLETON;
     private static final Package BEAN_PACKAGE = PointLessBean.class.getPackage();
-    private static final Class BEAN_CLASS = PointlessInterface.class;
+    private static final Class<?> BEAN_CLASS = PointlessInterface.class;
     private static final String BEAN_NAME = "POINT";
 
     private static final String RT_MODULE_NAME = "nooma-nooma6-" + EJB_TYPE;

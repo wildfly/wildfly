@@ -22,19 +22,28 @@
 
 package org.jboss.as.test.integration.ejb.remote.byreference;
 
-import javax.ejb.Remote;
-import javax.ejb.Stateless;
+import java.io.Serializable;
 
-/**
- * @author Jaikiran Pai
- */
-@Stateless
-@Remote(RemoteInterface.class)
-public class StatelessRemoteBean implements RemoteInterface {
+public class SerializableObject implements Serializable {
 
+    private String value;
 
-    @Override
-    public void modifyFirstElementOfArray(String[] array, String newValue) {
-        array[0] = newValue;
+    public SerializableObject() {
+    }
+
+    public SerializableObject(String value) {
+        this.value = value;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
+
+    public String toString() {
+        return value;
     }
 }

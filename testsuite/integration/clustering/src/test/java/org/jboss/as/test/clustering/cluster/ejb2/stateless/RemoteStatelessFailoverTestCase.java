@@ -49,8 +49,9 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -64,8 +65,6 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class RemoteStatelessFailoverTestCase {
     private static final Logger log = Logger.getLogger(RemoteStatelessFailoverTestCase.class);
-    private static EJBDirectory directoryAnnotation;
-    private static EJBDirectory directoryDD;
 
     private static final String MODULE_NAME = RemoteStatelessFailoverTestCase.class.getSimpleName();
     private static final String MODULE_NAME_DD = MODULE_NAME + "dd";
@@ -74,11 +73,11 @@ public class RemoteStatelessFailoverTestCase {
     private static final Map<String, Boolean> started = new HashMap<String, Boolean>();
     private static final Map<String, List<String>> container2deployment = new HashMap<String, List<String>>();
 
+    private EJBDirectory directoryAnnotation;
+    private EJBDirectory directoryDD;
+
     @BeforeClass
     public static void init() throws NamingException {
-        directoryAnnotation = new RemoteEJBDirectory(MODULE_NAME);
-        directoryDD = new RemoteEJBDirectory(MODULE_NAME_DD);
-
         deployed.put(DEPLOYMENT_1, false);
         deployed.put(DEPLOYMENT_2, false);
         deployed.put(DEPLOYMENT_HELPER_1, false);
@@ -96,8 +95,15 @@ public class RemoteStatelessFailoverTestCase {
         container2deployment.put(NODE_2, deployments2);
     }
 
-    @AfterClass
-    public static void destroy() throws Exception {
+
+    @Before
+    public void beforeTest() throws Exception {
+        directoryAnnotation = new RemoteEJBDirectory(MODULE_NAME);
+        directoryDD = new RemoteEJBDirectory(MODULE_NAME_DD);
+    }
+
+    @After
+    public void afterTest() throws Exception {
         directoryAnnotation.close();
         directoryDD.close();
     }

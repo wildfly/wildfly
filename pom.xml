@@ -173,6 +173,14 @@
         <!-- Version suffix that is appended to directories. Default is the maven GAV version but this can be edited to use a short form version -->
         <server.output.dir.version>${project.version}</server.output.dir.version>
 
+        <!-- Protocol to use for communication with remote maven repositories.
+             You can set to 'http' if you are using a maven proxy and 'https' 
+             interferes with that. Use 'https' for builds that will be released
+             to non-snapshot public maven repos -->
+        <maven.repository.protocol>https</maven.repository.protocol>
+        <!-- The full remote maven repo URL; can be overridden via -D for special use cases -->
+        <maven.repository.url>${maven.repository.protocol}://repository.jboss.org/nexus/content/groups/public/</maven.repository.url>
+
         <!-- Surefire args -->
         <surefire.extra.args></surefire.extra.args>
         <surefire.jpda.args></surefire.jpda.args>
@@ -312,7 +320,7 @@
         <version.org.javassist>3.23.1-GA</version.org.javassist>
         <version.org.jberet>1.3.3.Final</version.org.jberet>
         <version.org.jboss.activemq.artemis.integration>1.0.2</version.org.jboss.activemq.artemis.integration>
-        <version.org.jboss.arquillian.core>1.1.13.Final</version.org.jboss.arquillian.core>
+        <version.org.jboss.arquillian.core>1.4.0.Final</version.org.jboss.arquillian.core>
         <version.org.jboss.common.jboss-common-beans>2.0.0.Final</version.org.jboss.common.jboss-common-beans>
         <version.org.jboss.ejb-client>4.0.16.Final</version.org.jboss.ejb-client>
         <version.org.jboss.ejb-client-legacy>3.0.3.Final</version.org.jboss.ejb-client-legacy>
@@ -326,14 +334,14 @@
         <version.org.jboss.logmanager.commons-logging-jboss-logmanager>1.0.3.Final</version.org.jboss.logmanager.commons-logging-jboss-logmanager>
         <version.org.jboss.metadata>13.0.0.Final</version.org.jboss.metadata>
         <version.org.jboss.mod_cluster>1.4.0.Final</version.org.jboss.mod_cluster>
-        <version.org.jboss.narayana>5.9.3.Final</version.org.jboss.narayana>
+        <version.org.jboss.narayana>5.9.5.Final</version.org.jboss.narayana>
         <version.org.jboss.openjdk-orb>8.1.2.Final</version.org.jboss.openjdk-orb>
         <version.org.jboss.resteasy>3.6.3.Final</version.org.jboss.resteasy>
         <version.org.jboss.seam.int>7.0.0.GA</version.org.jboss.seam.int>
         <version.org.jboss.security.jboss-negotiation>3.0.5.Final</version.org.jboss.security.jboss-negotiation>
         <version.org.jboss.security.jbossxacml>2.0.8.Final</version.org.jboss.security.jbossxacml>
         <!-- only needed here until wildfly-arquillian has this version properly synced with arquillian itslef  -->
-        <version.org.jboss.shrinkwrap.descriptors>2.0.0-alpha-10</version.org.jboss.shrinkwrap.descriptors>
+        <version.org.jboss.shrinkwrap.descriptors>2.0.0</version.org.jboss.shrinkwrap.descriptors>
         <version.org.jboss.shrinkwrap.shrinkwrap>1.2.6</version.org.jboss.shrinkwrap.shrinkwrap>
         <!-- Include the artifactId for org.jboss.spec project versions because artifactId contains the API spec version -->
         <version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.3_spec>1.0.1.Final</version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.3_spec>
@@ -375,7 +383,7 @@
         <version.org.picketlink>2.5.5.SP12</version.org.picketlink>
         <version.org.reactivestreams>1.0.2</version.org.reactivestreams>
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
-        <version.org.wildfly.arquillian>2.1.1.Final</version.org.wildfly.arquillian>
+        <version.org.wildfly.arquillian>2.2.0.Final</version.org.wildfly.arquillian>
         <version.org.wildfly.common>1.4.0.Final</version.org.wildfly.common>
         <version.org.wildfly.core>9.0.0.Beta2</version.org.wildfly.core>
         <version.org.wildfly.extras.creaper>1.6.1</version.org.wildfly.extras.creaper>
@@ -6653,6 +6661,17 @@
                 <scope>test</scope>
             </dependency>
 
+            <!-- Required for the MicroProfile health TCK that is run as part of the testsuite and the TCK brings in an
+                 older version.
+
+                 It also needs to be a runtime dependency because the shared testsuite requires it.
+             -->
+            <dependency>
+                <groupId>org.jboss.arquillian.container</groupId>
+                <artifactId>arquillian-container-test-spi</artifactId>
+                <version>${version.org.jboss.arquillian.core}</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.jboss.logmanager</groupId>
                 <artifactId>commons-logging-jboss-logmanager</artifactId>
@@ -6711,7 +6730,7 @@
             </snapshots>
             <id>jboss-public-repository-group</id>
             <name>JBoss Public Repository Group</name>
-            <url>http://repository.jboss.org/nexus/content/groups/public/</url>
+            <url>${maven.repository.url}</url>
             <layout>default</layout>
         </repository>
     </repositories>
@@ -6726,7 +6745,7 @@
             </snapshots>
             <id>jboss-public-repository-group</id>
             <name>JBoss Public Repository Group</name>
-            <url>http://repository.jboss.org/nexus/content/groups/public/</url>
+            <url>${maven.repository.url}</url>
         </pluginRepository>
     </pluginRepositories>
 

@@ -26,6 +26,7 @@ import javax.ws.rs.core.Link;
 import javax.ws.rs.core.Response;
 
 import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -86,11 +87,11 @@ public final class InboundBridgeTestCase extends AbstractTestCase {
 
         final JSONArray jsonArray = getInboundBridgeResourceInvocations();
 
-        Assert.assertEquals(4, jsonArray.length());
-        Assert.assertEquals("LoggingXAResource.start", jsonArray.get(0));
-        Assert.assertEquals("LoggingXAResource.end", jsonArray.get(1));
-        Assert.assertEquals("LoggingXAResource.prepare", jsonArray.get(2));
-        Assert.assertEquals("LoggingXAResource.commit", jsonArray.get(3));
+        assertJsonArray(jsonArray, "LoggingXAResource.start", 1);
+        assertJsonArray(jsonArray, "LoggingXAResource.end", 1);
+        assertJsonArray(jsonArray, "LoggingXAResource.prepare", 1);
+        assertJsonArray(jsonArray, "LoggingXAResource.commit", 1);
+        assertJsonArray(jsonArray, "LoggingXAResource.rollback", 0);
     }
 
     @Test
@@ -101,10 +102,11 @@ public final class InboundBridgeTestCase extends AbstractTestCase {
 
         JSONArray jsonArray = getInboundBridgeResourceInvocations();
 
-        Assert.assertEquals(3, jsonArray.length());
-        Assert.assertEquals("LoggingXAResource.start", jsonArray.get(0));
-        Assert.assertEquals("LoggingXAResource.end", jsonArray.get(1));
-        Assert.assertEquals("LoggingXAResource.rollback", jsonArray.get(2));
+        assertJsonArray(jsonArray, "LoggingXAResource.start", 1);
+        assertJsonArray(jsonArray, "LoggingXAResource.end", 1);
+        assertJsonArray(jsonArray, "LoggingXAResource.prepare", 0);
+        assertJsonArray(jsonArray, "LoggingXAResource.commit", 0);
+        assertJsonArray(jsonArray, "LoggingXAResource.rollback", 1);
     }
 
     @Test
@@ -123,12 +125,11 @@ public final class InboundBridgeTestCase extends AbstractTestCase {
         Assert.assertEquals("LoggingRestATResource.terminateParticipant(" + TxStatusMediaType.TX_COMMITTED + ")",
                 participantResourceInvocations.get(1));
 
-        Assert.assertEquals(4, xaResourceInvocations.length());
-        Assert.assertEquals("LoggingXAResource.start", xaResourceInvocations.get(0));
-        Assert.assertEquals("LoggingXAResource.end", xaResourceInvocations.get(1));
-        Assert.assertEquals("LoggingXAResource.prepare", xaResourceInvocations.get(2));
-        Assert.assertEquals("LoggingXAResource.commit", xaResourceInvocations.get(3));
-
+        assertJsonArray(xaResourceInvocations, "LoggingXAResource.start", 1);
+        assertJsonArray(xaResourceInvocations, "LoggingXAResource.end", 1);
+        assertJsonArray(xaResourceInvocations, "LoggingXAResource.prepare", 1);
+        assertJsonArray(xaResourceInvocations, "LoggingXAResource.commit", 1);
+        assertJsonArray(xaResourceInvocations, "LoggingXAResource.rollback", 0);
     }
 
     @Test
@@ -145,10 +146,11 @@ public final class InboundBridgeTestCase extends AbstractTestCase {
         Assert.assertEquals("LoggingRestATResource.terminateParticipant(" + TxStatusMediaType.TX_ROLLEDBACK + ")",
                 participantResourceInvocations.get(0));
 
-        Assert.assertEquals(3, xaResourceInvocations.length());
-        Assert.assertEquals("LoggingXAResource.start", xaResourceInvocations.get(0));
-        Assert.assertEquals("LoggingXAResource.end", xaResourceInvocations.get(1));
-        Assert.assertEquals("LoggingXAResource.rollback", xaResourceInvocations.get(2));
+        assertJsonArray(xaResourceInvocations, "LoggingXAResource.start", 1);
+        assertJsonArray(xaResourceInvocations, "LoggingXAResource.end", 1);
+        assertJsonArray(xaResourceInvocations, "LoggingXAResource.prepare", 0);
+        assertJsonArray(xaResourceInvocations, "LoggingXAResource.commit", 0);
+        assertJsonArray(xaResourceInvocations, "LoggingXAResource.rollback", 1);
     }
 
     protected String getBaseUrl() {
@@ -190,6 +192,25 @@ public final class InboundBridgeTestCase extends AbstractTestCase {
         JSONArray jsonArray = new JSONArray(response);
 
         return jsonArray;
+    }
+
+    /**
+     * Checking if the parameter <code>recordToAssert</code>
+     * is placed exactly once in the {@link JSONArray}.
+     */
+    private void assertJsonArray(JSONArray invocationsJSONArray, String recordToAssert, int expectedRecordFoundCount) throws JSONException {
+        if(recordToAssert == null) throw new NullPointerException("recordToAssert");
+        int recordFoundCount = 0;
+        for(int i = 0; i < invocationsJSONArray.length(); i++) {
+            if(recordToAssert.equals(invocationsJSONArray.get(i))) {
+                recordFoundCount++;
+            }
+        }
+        if (recordFoundCount != expectedRecordFoundCount) {
+            Assert.fail("Invocation result returned as a JSON array '" + invocationsJSONArray + "' "
+                    + "expected to contain the record '" + recordToAssert + "' " + expectedRecordFoundCount + " times "
+                    + "but the record was " + recordFoundCount + " times in the array");
+        }
     }
 
 }

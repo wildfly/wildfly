@@ -199,8 +199,28 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
                             <systemPropertyVariables>
-                                <jboss.test.host.slave.jvmhome>${java8.home}</jboss.test.host.slave.jvmhome>
-                                <jboss.test.host.slave.controller.jvmhome>${java8.home}</jboss.test.host.slave.controller.jvmhome>
+                                <jboss.test.legacy.host.java8.home>${java8.home}</jboss.test.legacy.host.java8.home>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>legacy-slave-java11-home</id>
+            <activation>
+                <jdk>[12,)</jdk>
+                <property>
+                    <name>java11.home</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <jboss.test.legacy.host.java11.home>${java11.home}</jboss.test.legacy.host.java11.home>
                             </systemPropertyVariables>
                         </configuration>
                     </plugin>

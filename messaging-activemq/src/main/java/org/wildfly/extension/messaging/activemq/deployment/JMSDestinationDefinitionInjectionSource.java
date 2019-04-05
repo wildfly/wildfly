@@ -298,14 +298,18 @@ public class JMSDestinationDefinitionInjectionSource extends ResourceDefinitionI
         final ContextListAndJndiViewManagedReferenceFactory referenceFactoryService = new MessagingJMSDestinationManagedReferenceFactory(destinationService);
         injector.inject(referenceFactoryService);
         serviceBuilder.addListener(new LifecycleListener() {
+                    private volatile boolean bound;
                     public void handleEvent(final ServiceController<?> controller, final LifecycleEvent event) {
                         switch (event) {
                             case UP: {
                                 ROOT_LOGGER.boundJndiName(jndiName);
+                                bound = true;
                                 break;
                             }
                             case DOWN: {
-                                ROOT_LOGGER.unboundJndiName(jndiName);
+                                if (bound) {
+                                    ROOT_LOGGER.unboundJndiName(jndiName);
+                                }
                                 break;
                             }
                             case REMOVED: {
