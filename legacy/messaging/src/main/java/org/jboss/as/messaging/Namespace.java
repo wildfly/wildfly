@@ -22,7 +22,6 @@
 
 package org.jboss.as.messaging;
 
-import javax.xml.namespace.QName;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -63,10 +62,6 @@ public enum Namespace {
     */
    public String getUriString() {
       return name;
-   }
-
-   public QName getQName() {
-      return new QName(name, "subsystem");
    }
 
    private static final Map<String, Namespace> MAP;

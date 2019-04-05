@@ -307,14 +307,11 @@ public class Messaging13SubsystemParser extends Messaging12SubsystemParser {
         requireNoAttributes(reader);
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
-            switch (element) {
-                case CLASS_NAME: {
-                    final String value = reader.getElementText();
-                    REMOTING_INCOMING_INTERCEPTORS.parseAndAddParameterElement(value, operation, reader);
-                    break;
-                } default: {
-                    throw ParseUtils.unexpectedElement(reader);
-                }
+            if (element == Element.CLASS_NAME) {
+                final String value = reader.getElementText();
+                REMOTING_INCOMING_INTERCEPTORS.parseAndAddParameterElement(value, operation, reader);
+            } else {
+                throw unexpectedElement(reader);
             }
         }
     }
@@ -323,14 +320,11 @@ public class Messaging13SubsystemParser extends Messaging12SubsystemParser {
         requireNoAttributes(reader);
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
-            switch (element) {
-                case CLASS_NAME: {
-                    final String value = reader.getElementText();
-                    REMOTING_OUTGOING_INTERCEPTORS.parseAndAddParameterElement(value, operation, reader);
-                    break;
-                } default: {
-                    throw ParseUtils.unexpectedElement(reader);
-                }
+            if (element == Element.CLASS_NAME) {
+                final String value = reader.getElementText();
+                REMOTING_OUTGOING_INTERCEPTORS.parseAndAddParameterElement(value, operation, reader);
+            } else {
+                throw unexpectedElement(reader);
             }
         }
     }
@@ -338,30 +332,28 @@ public class Messaging13SubsystemParser extends Messaging12SubsystemParser {
     private void processContext(XMLExtendedStreamReader reader, ModelNode context) throws XMLStreamException {
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
-            switch (element) {
-                case PROPERTY:
-                    int count = reader.getAttributeCount();
-                    String key = null;
-                    String value = null;
-                    for (int n = 0; n < count; n++) {
-                        String attrName = reader.getAttributeLocalName(n);
-                        Attribute attribute = Attribute.forName(attrName);
-                        switch (attribute) {
-                            case KEY:
-                                key = reader.getAttributeValue(n);
-                                break;
-                            case VALUE:
-                                value = reader.getAttributeValue(n);
-                                break;
-                            default:
-                                throw unexpectedAttribute(reader, n);
-                        }
+            if (element == Element.PROPERTY) {
+                int count = reader.getAttributeCount();
+                String key = null;
+                String value = null;
+                for (int n = 0; n < count; n++) {
+                    String attrName = reader.getAttributeLocalName(n);
+                    Attribute attribute = Attribute.forName(attrName);
+                    switch (attribute) {
+                        case KEY:
+                            key = reader.getAttributeValue(n);
+                            break;
+                        case VALUE:
+                            value = reader.getAttributeValue(n);
+                            break;
+                        default:
+                            throw unexpectedAttribute(reader, n);
                     }
-                    context.get(key).set(value);
-                    ParseUtils.requireNoContent(reader);
-                    break;
-                default:
-                    throw ParseUtils.unexpectedElement(reader);
+                }
+                context.get(key).set(value);
+                ParseUtils.requireNoContent(reader);
+            } else {
+                throw unexpectedElement(reader);
             }
         }
     }

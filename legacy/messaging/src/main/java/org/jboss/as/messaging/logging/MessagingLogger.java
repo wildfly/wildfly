@@ -448,17 +448,17 @@ public interface MessagingLogger extends BasicLogger {
     @Message(id = 38, value = "%s is invalid")
     String invalid(Object obj);
 
-    /**
-     * Creates an exception indicating the attribute, represented by the {@code name} parameter, has an unexpected type,
-     * represented by the {@code type} parameter.
-     *
-     * @param name the name of the attribute.
-     * @param type the type of the attribute.
-     *
-     * @return an {@link IllegalStateException} for the error.
-     */
-    @Message(id = 39, value = "Attribute %s has unexpected type %s")
-    IllegalStateException invalidAttributeType(String name, ModelType type);
+//    /**
+//     * Creates an exception indicating the attribute, represented by the {@code name} parameter, has an unexpected type,
+//     * represented by the {@code type} parameter.
+//     *
+//     * @param name the name of the attribute.
+//     * @param type the type of the attribute.
+//     *
+//     * @return an {@link IllegalStateException} for the error.
+//     */
+//    @Message(id = 39, value = "Attribute %s has unexpected type %s")
+//    IllegalStateException invalidAttributeType(String name, ModelType type);
 
     /**
      * A message indicating the operation must include the parameter represented by {@code paramName1} or the parameter

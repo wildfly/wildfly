@@ -72,6 +72,7 @@ import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled;
@@ -144,12 +145,10 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     throw ParseUtils.unexpectedElement(reader);
                 default: {
                     final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case HORNETQ_SERVER:
-                            processHornetQServer(reader, subsystemAddress, list, schemaVer);
-                            break;
-                        default:
-                            throw ParseUtils.unexpectedElement(reader);
+                    if (element == Element.HORNETQ_SERVER) {
+                        processHornetQServer(reader, subsystemAddress, list, schemaVer);
+                    } else {
+                        throw unexpectedElement(reader);
                     }
                 }
             }
@@ -160,20 +159,16 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
 
         String hqServerName = null;
         String elementName = null;
-        switch (namespace) {
-            case MESSAGING_1_0:
-                // We're parsing the 1.0 xsd's <subsystem> element
-                requireNoAttributes(reader);
-                elementName = ModelDescriptionConstants.SUBSYSTEM;
-                break;
-            default: {
-                final int count = reader.getAttributeCount();
-                if (count > 0) {
-                    requireSingleAttribute(reader, Attribute.NAME.getLocalName());
-                    hqServerName = reader.getAttributeValue(0).trim();
-                }
-                elementName = CommonAttributes.HORNETQ_SERVER;
+        if (namespace == Namespace.MESSAGING_1_0) {// We're parsing the 1.0 xsd's <subsystem> element
+            requireNoAttributes(reader);
+            elementName = ModelDescriptionConstants.SUBSYSTEM;
+        } else {
+            final int count = reader.getAttributeCount();
+            if (count > 0) {
+                requireSingleAttribute(reader, Attribute.NAME.getLocalName());
+                hqServerName = reader.getAttributeValue(0).trim();
             }
+            elementName = HORNETQ_SERVER;
         }
 
         if (hqServerName == null || hqServerName.length() == 0) {
@@ -330,14 +325,10 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         requireNoAttributes(reader);
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
-            switch (element) {
-                case CONNECTOR_SERVICE: {
-                    processConnectorService(reader, address, updates);
-                    break;
-                }
-                default: {
-                    throw ParseUtils.unexpectedElement(reader);
-                }
+            if (element == Element.CONNECTOR_SERVICE) {
+                processConnectorService(reader, address, updates);
+            } else {
+                throw unexpectedElement(reader);
             }
         }
     }
@@ -391,13 +382,10 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         requireNoAttributes(reader);
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
-            switch (element) {
-                case CLUSTER_CONNECTION: {
-                    processClusterConnection(reader, address, updates);
-                    break;
-                } default: {
-                    throw ParseUtils.unexpectedElement(reader);
-                }
+            if (element == Element.CLUSTER_CONNECTION) {
+                processClusterConnection(reader, address, updates);
+            } else {
+                throw unexpectedElement(reader);
             }
         }
     }
@@ -483,13 +471,10 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         requireNoAttributes(reader);
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
-            switch (element) {
-                case BRIDGE: {
-                    processBridge(reader, address, updates);
-                    break;
-                } default: {
-                    throw ParseUtils.unexpectedElement(reader);
-                }
+            if (element == Element.BRIDGE) {
+                processBridge(reader, address, updates);
+            } else {
+                throw unexpectedElement(reader);
             }
         }
     }
@@ -572,15 +557,11 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             int count = reader.getAttributeCount();
             for (int i = 0; i < count; i++) {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                    case ALLOW_DIRECT_CONNECTIONS_ONLY: {
-                        final String attrValue = reader.getAttributeValue(i);
-                        ClusterConnectionDefinition.ALLOW_DIRECT_CONNECTIONS_ONLY.parseAndSetParameter(attrValue, addOperation, reader);
-                        break;
-                    }
-                    default: {
-                        throw ParseUtils.unexpectedAttribute(reader, i);
-                    }
+                if (attribute == Attribute.ALLOW_DIRECT_CONNECTIONS_ONLY) {
+                    final String attrValue = reader.getAttributeValue(i);
+                    ClusterConnectionDefinition.ALLOW_DIRECT_CONNECTIONS_ONLY.parseAndSetParameter(attrValue, addOperation, reader);
+                } else {
+                    throw unexpectedAttribute(reader, i);
                 }
             }
 
@@ -592,14 +573,10 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
             required.remove(element);
-            switch (element) {
-                case CONNECTOR_REF: {
-                    handleElementText(reader, element, cluster ? "cluster-connection" : "bridge", addOperation);
-                    break;
-                }
-                default: {
-                    throw ParseUtils.unexpectedElement(reader);
-                }
+            if (element == Element.CONNECTOR_REF) {
+                handleElementText(reader, element, cluster ? "cluster-connection" : "bridge", addOperation);
+            } else {
+                throw unexpectedElement(reader);
             }
         }
 
@@ -651,14 +628,11 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         requireNoAttributes(reader);
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
-            switch (element) {
-                case CLASS_NAME: {
-                    final String value = reader.getElementText();
-                    REMOTING_INTERCEPTORS.parseAndAddParameterElement(value, operation, reader);
-                    break;
-                } default: {
-                    throw ParseUtils.unexpectedElement(reader);
-                }
+            if (element == Element.CLASS_NAME) {
+                final String value = reader.getElementText();
+                REMOTING_INTERCEPTORS.parseAndAddParameterElement(value, operation, reader);
+            } else {
+                throw unexpectedElement(reader);
             }
         }
     }
@@ -667,13 +641,10 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         requireNoAttributes(reader);
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
-            switch (element) {
-                case BROADCAST_GROUP: {
-                    parseBroadcastGroup(reader, address, updates);
-                    break;
-                } default: {
-                    throw ParseUtils.unexpectedElement(reader);
-                }
+            if (element == Element.BROADCAST_GROUP) {
+                parseBroadcastGroup(reader, address, updates);
+            } else {
+                throw unexpectedElement(reader);
             }
         }
     }
@@ -686,14 +657,10 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         for (int i = 0; i < count; i++) {
             final String attrValue = reader.getAttributeValue(i);
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-            switch (attribute) {
-                case NAME: {
-                    name = attrValue;
-                    break;
-                }
-                default: {
-                    throw ParseUtils.unexpectedAttribute(reader, i);
-                }
+            if (attribute == Attribute.NAME) {
+                name = attrValue;
+            } else {
+                throw unexpectedAttribute(reader, i);
             }
         }
         if(name == null) {
@@ -738,13 +705,10 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         requireNoAttributes(reader);
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
-            switch (element) {
-                case DISCOVERY_GROUP: {
-                    parseDiscoveryGroup(reader, address, updates);
-                    break;
-                } default: {
-                    throw ParseUtils.unexpectedElement(reader);
-                }
+            if (element == Element.DISCOVERY_GROUP) {
+                parseDiscoveryGroup(reader, address, updates);
+            } else {
+                throw unexpectedElement(reader);
             }
         }
     }
@@ -757,14 +721,10 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         for (int i = 0; i < count; i++) {
             final String attrValue = reader.getAttributeValue(i);
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-            switch (attribute) {
-                case NAME: {
-                    name = attrValue;
-                    break;
-                }
-                default: {
-                    throw ParseUtils.unexpectedAttribute(reader, i);
-                }
+            if (attribute == Attribute.NAME) {
+                name = attrValue;
+            } else {
+                throw unexpectedAttribute(reader, i);
             }
         }
         if(name == null) {
@@ -918,32 +878,25 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             for (int i = 0; i < count; i++) {
                 final String attrValue = reader.getAttributeValue(i);
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                    case NAME: {
-                        name = attrValue;
-                        break;
-                    }
-                    default: {
-                        throw ParseUtils.unexpectedAttribute(reader, i);
-                    }
+                if (attribute == Attribute.NAME) {
+                    name = attrValue;
+                } else {
+                    throw unexpectedAttribute(reader, i);
                 }
             }
             final Element element = Element.forName(reader.getLocalName());
-            switch (element) {
-                case QUEUE: {
-                    if(name == null) {
-                        throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME.getLocalName()));
-                    }
-                    final ModelNode op = org.jboss.as.controller.operations.common.Util.getEmptyOperation(ADD, address.clone().add(CommonAttributes.QUEUE, name));
-                    parseQueue(reader, op);
-                    if(! op.hasDefined(QueueDefinition.ADDRESS.getName())) {
-                        throw ParseUtils.missingRequired(reader, Collections.singleton(Element.ADDRESS.getLocalName()));
-                    }
-                    list.add(op);
-                    break;
-                } default: {
-                    throw ParseUtils.unexpectedElement(reader);
+            if (element == Element.QUEUE) {
+                if (name == null) {
+                    throw missingRequired(reader, Collections.singleton(Attribute.NAME.getLocalName()));
                 }
+                final ModelNode op = Util.getEmptyOperation(ADD, address.clone().add(CommonAttributes.QUEUE, name));
+                parseQueue(reader, op);
+                if (!op.hasDefined(QueueDefinition.ADDRESS.getName())) {
+                    throw missingRequired(reader, Collections.singleton(Element.ADDRESS.getLocalName()));
+                }
+                list.add(op);
+            } else {
+                throw unexpectedElement(reader);
             }
         }
     }
@@ -977,19 +930,17 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             localName = reader.getLocalName();
             final org.jboss.as.messaging.Element element = org.jboss.as.messaging.Element.forName(reader.getLocalName());
 
-            switch (element) {
-                case SECURITY_SETTING:
-                    final String match = reader.getAttributeValue(0);
+            if (element == Element.SECURITY_SETTING) {
+                final String match = reader.getAttributeValue(0);
 
-                    final ModelNode addr = address.clone();
-                    addr.add(SECURITY_SETTING, match);
-                    final ModelNode operation = new ModelNode();
-                    operation.get(OP).set(ADD);
-                    operation.get(OP_ADDR).set(addr);
-                    operations.add(operation);
+                final ModelNode addr = address.clone();
+                addr.add(SECURITY_SETTING, match);
+                final ModelNode operation = new ModelNode();
+                operation.get(OP).set(ADD);
+                operation.get(OP_ADDR).set(addr);
+                operations.add(operation);
 
-                    parseSecurityRoles(reader, addr, operations);
-                    break;
+                parseSecurityRoles(reader, addr, operations);
             }
         } while (reader.hasNext() && localName.equals(Element.SECURITY_SETTING.getLocalName()));
         return security;
@@ -1145,17 +1096,14 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             reader.nextTag();
             localName = reader.getLocalName();
             final Element element = Element.forName(localName);
-            switch (element) {
-                case ADDRESS_SETTING:
-                    // Add address settings
-                    final String match = reader.getAttributeValue(0);
-                    final ModelNode operation = parseAddressSettings(reader);
-                    operation.get(OP).set(ADD);
-                    operation.get(OP_ADDR).set(address);
-                    operation.get(OP_ADDR).add(CommonAttributes.ADDRESS_SETTING, match);
+            if (element == Element.ADDRESS_SETTING) {// Add address settings
+                final String match = reader.getAttributeValue(0);
+                final ModelNode operation = parseAddressSettings(reader);
+                operation.get(OP).set(ADD);
+                operation.get(OP_ADDR).set(address);
+                operation.get(OP_ADDR).add(CommonAttributes.ADDRESS_SETTING, match);
 
-                    operations.add(operation);
-                    break;
+                operations.add(operation);
             }
         } while (reader.hasNext() && localName.equals(Element.ADDRESS_SETTING.getLocalName()));
     }
@@ -1280,13 +1228,10 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         requireNoAttributes(reader);
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
-            switch (element) {
-                case DIVERT: {
-                    parseDivert(reader, address, list);
-                    break;
-                } default: {
-                    throw ParseUtils.unexpectedElement(reader);
-                }
+            if (element == Element.DIVERT) {
+                parseDivert(reader, address, list);
+            } else {
+                throw unexpectedElement(reader);
             }
         }
     }
