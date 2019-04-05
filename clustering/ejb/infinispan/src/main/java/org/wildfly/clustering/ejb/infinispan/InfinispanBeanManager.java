@@ -190,8 +190,15 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
     }
 
     @Override
-    public boolean isRemotable(Throwable throwable) {
-        return !(throwable instanceof CacheException);
+    public boolean isRemotable(final Throwable throwable) {
+        Throwable subject = throwable;
+        while (subject != null) {
+            if (subject instanceof CacheException) {
+                return false;
+            }
+            subject = subject.getCause();
+        }
+        return true;
     }
 
     @Override

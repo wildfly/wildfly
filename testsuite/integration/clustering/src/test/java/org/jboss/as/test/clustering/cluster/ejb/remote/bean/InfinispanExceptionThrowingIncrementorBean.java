@@ -25,13 +25,15 @@ package org.jboss.as.test.clustering.cluster.ejb.remote.bean;
 import javax.ejb.Remote;
 import javax.ejb.Stateful;
 
-import org.infinispan.statetransfer.OutdatedTopologyException;
+import org.infinispan.commons.CacheException;
+import org.infinispan.util.concurrent.TimeoutException;
 
 /**
- * Implementation of {@link Incrementor} which always throws a {@link RuntimeException}: an Infinispan's {@link OutdatedTopologyException}.
+ * Implementation of {@link Incrementor} which always throws a standard remotable (known to a client classloader) exception
+ * which is caused by an Infinispan {@link RuntimeException} {@link CacheException} {@link TimeoutException} which the client
+ * typically cannot load the class for.
  *
  * @author Radoslav Husar
- * @version January 2016
  */
 @Stateful
 @Remote(Incrementor.class)
@@ -39,6 +41,6 @@ public class InfinispanExceptionThrowingIncrementorBean implements Incrementor {
 
     @Override
     public Result<Integer> increment() {
-        throw new OutdatedTopologyException("Remote values are missing because of a topology change");
+        throw new IllegalStateException("standard remotable exception that is caused by non-remotable infinispan CacheException", new TimeoutException("the non-remotable infinispan cause"));
     }
 }
