@@ -47,6 +47,9 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.annotation.CompositeIndex;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.DotName;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.CircularDependencyException;
 import org.jboss.msc.service.DuplicateServiceException;
@@ -61,6 +64,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
+import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -158,8 +162,9 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
         //were only intended to be installed when running as an app client
         boolean appClient = DeploymentTypeMarker.isType(DeploymentType.APPLICATION_CLIENT, deploymentUnit) || this.appclient;
 
-
         if (!MetadataCompleteMarker.isMetadataComplete(phaseContext.getDeploymentUnit()) && !appClient) {
+            final CompositeIndex index = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.COMPOSITE_ANNOTATION_INDEX);
+
             for (EEModuleClassDescription config : eeModuleDescription.getClassDescriptions()) {
                 if (handledClasses.contains(config.getClassName())) {
                     continue;
@@ -168,6 +173,16 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
                     continue;
                 }
                 final Set<BindingConfiguration> classLevelBindings = new HashSet<>(config.getBindingConfigurations());
+                // only process concrete classes and their superclasses
+                // (An Index contains info on all classes in a jar, and the CompositeIndex in the 'index' var aggregates
+                // all the Index objects for the jars visible to the deployment unit. So it can be scanned for relationships
+                // between classes and not miss out on any.)
+                if (!classLevelBindings.isEmpty()) {
+                    ClassInfo classInfo = index.getClassByName(DotName.createSimple(config.getClassName()));
+                    if (!isConcreteClass(classInfo) && !hasConcreteSubclass(index, classInfo)) {
+                        continue;
+                    }
+                }
                 for (BindingConfiguration binding : classLevelBindings) {
                     final String bindingName = binding.getName();
                     final boolean compBinding = bindingName.startsWith("java:comp") || !bindingName.startsWith("java:");
@@ -302,6 +317,25 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
 
     public static boolean equals(Object one, Object two) {
         return one == two || (one != null && one.equals(two));
+    }
+
+    private static boolean isConcreteClass(ClassInfo classInfo) {
+        return !Modifier.isAbstract(classInfo.flags()) && !Modifier.isInterface(classInfo.flags());
+    }
+
+    private static boolean hasConcreteSubclass(CompositeIndex index, ClassInfo classInfo) {
+        final Set<ClassInfo> subclasses;
+        if (Modifier.isInterface(classInfo.flags())) {
+            subclasses = index.getAllKnownImplementors(classInfo.name());
+        } else {
+            subclasses = index.getAllKnownSubclasses(classInfo.name());
+        }
+        for (ClassInfo subclass: subclasses) {
+            if (isConcreteClass(subclass)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void undeploy(DeploymentUnit context) {
