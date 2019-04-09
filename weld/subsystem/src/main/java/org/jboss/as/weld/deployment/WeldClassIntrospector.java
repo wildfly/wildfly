@@ -30,6 +30,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.weld.bean.builtin.BeanManagerProxy;
+import org.jboss.weld.injection.producer.BasicInjectionTarget;
 import org.jboss.weld.manager.BeanManagerImpl;
 
 /**
@@ -71,7 +72,15 @@ public class WeldClassIntrospector implements EEClassIntrospector, Service {
             @Override
             public ManagedReference getReference() {
                 final CreationalContext context = beanManager.createCreationalContext(null);
-                final Object instance = injectionTarget.produce(context);
+
+                Object instance;
+                BasicInjectionTarget target = injectionTarget instanceof BasicInjectionTarget ? (BasicInjectionTarget) injectionTarget: null;
+                if(target != null && target.getBean() != null) {
+                    instance = beanManager.getReference(target.getBean(), target.getAnnotatedType().getBaseType(), context);
+                } else {
+                    instance = injectionTarget.produce(context);
+                }
+
                 injectionTarget.inject(instance, context);
                 injectionTarget.postConstruct(instance);
                 return new WeldManagedReference(injectionTarget, context, instance);
