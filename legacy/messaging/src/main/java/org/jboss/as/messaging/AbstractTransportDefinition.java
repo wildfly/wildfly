@@ -38,7 +38,6 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  */
 public abstract class AbstractTransportDefinition extends ModelOnlyResourceDefinition {
 
-    private final AttributeDefinition[] attrs;
     protected final boolean isAcceptor;
 
     protected AbstractTransportDefinition(final boolean isAcceptor, final String specificType, AttributeDefinition... attrs) {
@@ -52,7 +51,6 @@ public abstract class AbstractTransportDefinition extends ModelOnlyResourceDefin
                 },
                 attrs);
         this.isAcceptor = isAcceptor;
-        this.attrs = attrs;
         setDeprecated(MessagingExtension.DEPRECATED_SINCE);
     }
 

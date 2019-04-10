@@ -225,24 +225,20 @@ public class Messaging20SubsystemParser extends Messaging14SubsystemParser {
 
     @Override
     protected void handleUnknownAddressSetting(XMLExtendedStreamReader reader, Element element, ModelNode addressSettingsAdd) throws XMLStreamException {
-        switch (element) {
-            case EXPIRY_DELAY:
-                handleElementText(reader, element, addressSettingsAdd);
-                break;
-            default:
-                super.handleUnknownAddressSetting(reader, element, addressSettingsAdd);
+        if (element == Element.EXPIRY_DELAY) {
+            handleElementText(reader, element, addressSettingsAdd);
+        } else {
+            super.handleUnknownAddressSetting(reader, element, addressSettingsAdd);
         }
     }
 
 
     @Override
     protected void handleUnknownClusterConnectionAttribute(XMLExtendedStreamReader reader, Element element, ModelNode clusterConnectionAdd) throws XMLStreamException {
-        switch (element) {
-            case INITIAL_CONNECT_ATTEMPTS:
-                handleElementText(reader, element, "cluster", clusterConnectionAdd);
-                break;
-            default:
-                super.handleUnknownClusterConnectionAttribute(reader, element, clusterConnectionAdd);
+        if (element == Element.INITIAL_CONNECT_ATTEMPTS) {
+            handleElementText(reader, element, "cluster", clusterConnectionAdd);
+        } else {
+            super.handleUnknownClusterConnectionAttribute(reader, element, clusterConnectionAdd);
         }
     }
 }

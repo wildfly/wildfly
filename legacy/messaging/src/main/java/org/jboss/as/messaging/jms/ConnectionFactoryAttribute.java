@@ -22,7 +22,6 @@
 package org.jboss.as.messaging.jms;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.messaging.logging.MessagingLogger;
 
 /**
  * A wrapper for pooled CF attributes with additional parameters required
@@ -58,24 +57,6 @@ public class ConnectionFactoryAttribute {
         this.propertyName = propertyName;
         this.resourceAdapterProperty = resourceAdapterProperty;
         this.inboundConfig = inboundConfig;
-    }
-
-    public String getClassType() {
-        switch (attributeDefinition.getType()) {
-            case BOOLEAN:
-                return Boolean.class.getName();
-            case BIG_DECIMAL:
-                return Double.class.getName();
-            case LONG:
-                return Long.class.getName();
-            case INT:
-                return Integer.class.getName();
-            case STRING:
-                return String.class.getName();
-            default:
-                throw MessagingLogger.ROOT_LOGGER.invalidAttributeType(attributeDefinition.getName(), attributeDefinition.getType());
-
-        }
     }
 
     public String getPropertyName() {
