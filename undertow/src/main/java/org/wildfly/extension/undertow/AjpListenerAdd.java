@@ -33,6 +33,7 @@ import org.xnio.OptionMap;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 class AjpListenerAdd extends ListenerAdd {
 
@@ -53,7 +54,7 @@ class AjpListenerAdd extends ListenerAdd {
     }
 
     @Override
-    void configureAdditionalDependencies(OperationContext context, CapabilityServiceBuilder<? extends UndertowListener> serviceBuilder, ModelNode model, ListenerService service) throws OperationFailedException {
+    void configureAdditionalDependencies(OperationContext context, CapabilityServiceBuilder serviceBuilder, ModelNode model, ListenerService service) throws OperationFailedException {
         ModelNode redirectBindingRef = ListenerResourceDefinition.REDIRECT_SOCKET.resolveModelAttribute(context, model);
         if (redirectBindingRef.isDefined()) {
             serviceBuilder.addCapabilityRequirement(REF_SOCKET_BINDING, SocketBinding.class, service.getRedirectSocket(), redirectBindingRef.asString());

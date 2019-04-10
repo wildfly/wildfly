@@ -23,7 +23,6 @@ package org.wildfly.extension.datasources.agroal;
 
 import javax.transaction.TransactionSynchronizationRegistry;
 
-import io.agroal.api.AgroalDataSource;
 import io.agroal.api.configuration.supplier.AgroalConnectionFactoryConfigurationSupplier;
 import io.agroal.api.configuration.supplier.AgroalConnectionPoolConfigurationSupplier;
 import io.agroal.api.configuration.supplier.AgroalDataSourceConfigurationSupplier;
@@ -40,6 +39,7 @@ import org.jboss.msc.service.ServiceName;
  * Operations for adding and removing a datasource resource to the model
  *
  * @author <a href="lbarreiro@redhat.com">Luis Barreiro</a>
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 class DataSourceOperations {
 
@@ -82,8 +82,9 @@ class DataSourceOperations {
 
             DataSourceService dataSourceService = new DataSourceService(datasourceName, jndiName, jta, connectable, false, dataSourceConfiguration);
 
-            CapabilityServiceBuilder<AgroalDataSource> serviceBuilder = context.getCapabilityServiceTarget().addCapability(AbstractDataSourceDefinition.DATA_SOURCE_CAPABILITY.fromBaseCapability(datasourceName), dataSourceService);
-            serviceBuilder.addCapabilityRequirement(DriverDefinition.AGROAL_DRIVER_CAPABILITY.getDynamicName(driverName), Class.class, dataSourceService.getDriverInjector());
+            CapabilityServiceBuilder serviceBuilder = context.getCapabilityServiceTarget().addCapability(AbstractDataSourceDefinition.DATA_SOURCE_CAPABILITY.fromBaseCapability(datasourceName))
+                    .setInstance(dataSourceService)
+                    .addCapabilityRequirement(DriverDefinition.AGROAL_DRIVER_CAPABILITY.getDynamicName(driverName), Class.class, dataSourceService.getDriverInjector());
             if (jta) {
                 // TODO add a Stage.MODEL requirement
                 serviceBuilder.addCapabilityRequirement("org.wildfly.transactions.transaction-synchronization-registry", TransactionSynchronizationRegistry.class, dataSourceService.getTransactionSynchronizationRegistryInjector());

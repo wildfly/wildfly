@@ -34,6 +34,7 @@ import org.jboss.msc.service.ServiceName;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 class LocationAdd extends AbstractAddStepHandler {
     static LocationAdd INSTANCE = new LocationAdd();
@@ -53,7 +54,8 @@ class LocationAdd extends AbstractAddStepHandler {
         final String serverName = serverAddress.getLastElement().getValue();
         final String hostName = hostAddress.getLastElement().getValue();
         final ServiceName serviceName = UndertowService.locationServiceName(serverName, hostName, name);
-        final ServiceBuilder<LocationService> builder = context.getCapabilityServiceTarget().addCapability(LocationDefinition.LOCATION_CAPABILITY, service)
+        final ServiceBuilder builder = context.getCapabilityServiceTarget().addCapability(LocationDefinition.LOCATION_CAPABILITY)
+                .setInstance(service)
                 .addCapabilityRequirement(Capabilities.CAPABILITY_HANDLER, HttpHandler.class, service.getHttpHandler(),handler)
                 .addCapabilityRequirement(Capabilities.CAPABILITY_HOST, Host.class, service.getHost(), serverName, hostName);
 

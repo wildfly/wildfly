@@ -42,6 +42,7 @@ import java.util.ServiceLoader;
  * Handler responsible for adding a driver resource to the model
  *
  * @author <a href="lbarreiro@redhat.com">Luis Barreiro</a>
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 class DriverOperations {
 
@@ -112,7 +113,7 @@ class DriverOperations {
                 }
             });
 
-            context.getCapabilityServiceTarget().addCapability(DriverDefinition.AGROAL_DRIVER_CAPABILITY.fromBaseCapability(driverName), driverService).install();
+            context.getCapabilityServiceTarget().addCapability(DriverDefinition.AGROAL_DRIVER_CAPABILITY.fromBaseCapability(driverName)).setInstance(driverService).install();
         }
     }
 

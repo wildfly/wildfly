@@ -64,6 +64,7 @@ import java.net.InetAddress;
  * standard filter service
  *
  * @author Stuart Douglas
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class ModClusterService extends FilterService {
 
@@ -294,7 +295,8 @@ public class ModClusterService extends FilterService {
         final String mgmtSocketBindingRef = ModClusterDefinition.MANAGEMENT_SOCKET_BINDING.resolveModelAttribute(operationContext, model).asString();
         final ModelNode advertiseSocketBindingRef = ModClusterDefinition.ADVERTISE_SOCKET_BINDING.resolveModelAttribute(operationContext, model);
         final String workerRef = ModClusterDefinition.WORKER.resolveModelAttribute(operationContext, model).asString();
-        CapabilityServiceBuilder serviceBuilder = serviceTarget.addCapability(ModClusterDefinition.MOD_CLUSTER_FILTER_CAPABILITY, service);
+        CapabilityServiceBuilder serviceBuilder = serviceTarget.addCapability(ModClusterDefinition.MOD_CLUSTER_FILTER_CAPABILITY);
+        serviceBuilder.setInstance(service);
         serviceBuilder.addCapabilityRequirement(Capabilities.REF_SOCKET_BINDING, SocketBinding.class, service.managementSocketBinding, mgmtSocketBindingRef);
         if (advertiseSocketBindingRef.isDefined()) {
             serviceBuilder.addCapabilityRequirement(Capabilities.REF_SOCKET_BINDING, SocketBinding.class, service.advertiseSocketBinding, advertiseSocketBindingRef.asString());

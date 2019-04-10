@@ -51,6 +51,7 @@ import org.wildfly.security.auth.server.HttpAuthenticationFactory;
 
 /**
  * @author Stuart Douglas
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class HttpInvokerDefinition extends PersistentResourceDefinition {
 
@@ -130,8 +131,9 @@ public class HttpInvokerDefinition extends PersistentResourceDefinition {
             final String serverName = serverAddress.getLastElement().getValue();
             final String hostName = hostAddress.getLastElement().getValue();
 
-            final CapabilityServiceBuilder<HttpInvokerHostService> builder = context.getCapabilityServiceTarget()
-                    .addCapability(HTTP_INVOKER_HOST_CAPABILITY, service)
+            final CapabilityServiceBuilder<?> builder = context.getCapabilityServiceTarget()
+                    .addCapability(HTTP_INVOKER_HOST_CAPABILITY)
+                    .setInstance(service)
                     .addCapabilityRequirement(HTTP_INVOKER_RUNTIME_CAPABILITY.getName(), PathHandler.class, service.getRemoteHttpInvokerServiceInjectedValue())
                     .addCapabilityRequirement(Capabilities.CAPABILITY_HOST, Host.class, service.getHost(), serverName, hostName)
                     ;

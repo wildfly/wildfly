@@ -25,7 +25,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 
 import javax.transaction.TransactionSynchronizationRegistry;
 
-import io.agroal.api.AgroalDataSource;
 import io.agroal.api.configuration.supplier.AgroalConnectionFactoryConfigurationSupplier;
 import io.agroal.api.configuration.supplier.AgroalConnectionPoolConfigurationSupplier;
 import io.agroal.api.configuration.supplier.AgroalDataSourceConfigurationSupplier;
@@ -43,6 +42,7 @@ import org.jboss.msc.service.ServiceName;
  * Operations for adding and removing an xa-datasource resource to the model
  *
  * @author <a href="lbarreiro@redhat.com">Luis Barreiro</a>
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 class XADataSourceOperations extends AbstractAddStepHandler {
 
@@ -83,8 +83,9 @@ class XADataSourceOperations extends AbstractAddStepHandler {
 
             DataSourceService dataSourceService = new DataSourceService(datasourceName, jndiName, false, false, true, dataSourceConfiguration);
 
-            CapabilityServiceBuilder<AgroalDataSource> serviceBuilder = context.getCapabilityServiceTarget().addCapability(AbstractDataSourceDefinition.DATA_SOURCE_CAPABILITY.fromBaseCapability(datasourceName), dataSourceService);
-            serviceBuilder.addCapabilityRequirement(DriverDefinition.AGROAL_DRIVER_CAPABILITY.getDynamicName(driverName), Class.class, dataSourceService.getDriverInjector());
+            CapabilityServiceBuilder serviceBuilder = context.getCapabilityServiceTarget().addCapability(AbstractDataSourceDefinition.DATA_SOURCE_CAPABILITY.fromBaseCapability(datasourceName))
+                    .setInstance(dataSourceService)
+                    .addCapabilityRequirement(DriverDefinition.AGROAL_DRIVER_CAPABILITY.getDynamicName(driverName), Class.class, dataSourceService.getDriverInjector());
             // TODO add a Stage.MODEL requirement
             serviceBuilder.addCapabilityRequirement("org.wildfly.transactions.transaction-synchronization-registry", TransactionSynchronizationRegistry.class, dataSourceService.getTransactionSynchronizationRegistryInjector());
 

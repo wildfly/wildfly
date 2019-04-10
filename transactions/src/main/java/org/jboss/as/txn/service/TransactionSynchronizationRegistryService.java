@@ -28,7 +28,6 @@ import javax.transaction.TransactionSynchronizationRegistry;
 import org.jboss.as.controller.CapabilityServiceTarget;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.InjectedValue;
 
@@ -36,6 +35,7 @@ import org.jboss.msc.value.InjectedValue;
  * Service that exposes the TransactionSynchronizationRegistry
  *
  * @author Stuart Douglas
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class TransactionSynchronizationRegistryService extends AbstractService<TransactionSynchronizationRegistry> {
     /** @deprecated Use the "org.wildfly.transactions.transaction-synchronization-registry" capability  */
@@ -51,13 +51,14 @@ public class TransactionSynchronizationRegistryService extends AbstractService<T
     private TransactionSynchronizationRegistryService() {
     }
 
-    public static ServiceController<TransactionSynchronizationRegistry> addService(final CapabilityServiceTarget target) {
+    public static void addService(final CapabilityServiceTarget target) {
         TransactionSynchronizationRegistryService service = new TransactionSynchronizationRegistryService();
-        ServiceBuilder<TransactionSynchronizationRegistry> serviceBuilder = target.addCapability(TRANSACTION_SYNCHRONIZATION_REGISTRY_CAPABILITY, service);
+        ServiceBuilder<?> serviceBuilder = target.addCapability(TRANSACTION_SYNCHRONIZATION_REGISTRY_CAPABILITY);
+        serviceBuilder.setInstance(service);
         serviceBuilder.requires(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT);
         serviceBuilder.addDependency(ArjunaTransactionManagerService.SERVICE_NAME, com.arjuna.ats.jbossatx.jta.TransactionManagerService.class, service.injectedArjunaTM);
         serviceBuilder.addAliases(INTERNAL_SERVICE_NAME);
-        return serviceBuilder.install();
+        serviceBuilder.install();
     }
 
     @Override
