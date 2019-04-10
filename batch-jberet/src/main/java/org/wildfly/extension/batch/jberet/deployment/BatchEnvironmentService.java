@@ -225,7 +225,7 @@ public class BatchEnvironmentService implements Service<SecurityAwareBatchEnviro
             final ClassLoaderContextHandle classLoaderContextHandle = (tccl == null ? new ClassLoaderContextHandle(classLoader) : new ClassLoaderContextHandle(tccl));
             // Class loader handle must be first so the TCCL is set before the other handles execute
             return new ContextHandle.ChainedContextHandle(classLoaderContextHandle, new NamespaceContextHandle(),
-                    new SecurityContextHandle(), artifactFactory.createContextHandle());
+                    new SecurityContextHandle(), artifactFactory.createContextHandle(), new ConcurrentContextHandle());
         }
     }
 }
