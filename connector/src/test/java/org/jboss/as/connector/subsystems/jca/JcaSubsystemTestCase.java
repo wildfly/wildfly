@@ -40,6 +40,7 @@ import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.model.test.SingleClassFilter;
+import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
@@ -89,6 +90,7 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
                 ConnectorServices.LOCAL_TRANSACTION_PROVIDER_CAPABILITY,
                 ConnectorServices.TRANSACTION_XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY,
                 ConnectorServices.TRANSACTION_SYNCHRONIZATION_REGISTRY_CAPABILITY,
+                NamingService.CAPABILITY_NAME,
                 "org.wildfly.threads.thread-factory.string");
     }
 
