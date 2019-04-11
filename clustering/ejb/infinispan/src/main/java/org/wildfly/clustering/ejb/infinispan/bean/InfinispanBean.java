@@ -22,7 +22,7 @@
 package org.wildfly.clustering.ejb.infinispan.bean;
 
 import java.time.Duration;
-import java.util.Date;
+import java.time.Instant;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.wildfly.clustering.ee.Mutator;
@@ -76,10 +76,10 @@ public class InfinispanBean<I, T> implements Bean<I, T> {
 
     @Override
     public boolean isExpired() {
-        if (this.timeout == null) return false;
-        Date lastAccessedTime = this.entry.getLastAccessedTime();
-        long timeout = this.timeout.toMillis();
-        return (lastAccessedTime != null) && (timeout > 0) ? ((System.currentTimeMillis() - lastAccessedTime.getTime()) >= timeout) : false;
+        if ((this.timeout == null) || this.timeout.isNegative()) return false;
+        if (this.timeout.isZero()) return true;
+        Instant lastAccessedTime = this.entry.getLastAccessedTime();
+        return (lastAccessedTime != null) ? !lastAccessedTime.plus(this.timeout).isAfter(Instant.now()) : false;
     }
 
     @Override
@@ -110,8 +110,8 @@ public class InfinispanBean<I, T> implements Bean<I, T> {
     @Override
     public void close() {
         if (this.valid.get()) {
-            Date lastAccessedTime = this.entry.getLastAccessedTime();
-            this.entry.setLastAccessedTime(new Date());
+            Instant lastAccessedTime = this.entry.getLastAccessedTime();
+            this.entry.setLastAccessedTime(Instant.now());
             if (lastAccessedTime != null) {
                 this.mutator.mutate();
             }
