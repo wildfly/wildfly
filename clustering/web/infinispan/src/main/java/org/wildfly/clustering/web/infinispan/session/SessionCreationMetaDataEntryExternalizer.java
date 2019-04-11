@@ -30,7 +30,6 @@ import java.time.Instant;
 
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
 import org.wildfly.clustering.marshalling.spi.IndexSerializer;
 
 /**
@@ -43,13 +42,14 @@ public class SessionCreationMetaDataEntryExternalizer implements Externalizer<Se
     @Override
     public void writeObject(ObjectOutput output, SessionCreationMetaDataEntry<Object> entry) throws IOException {
         SessionCreationMetaData metaData = entry.getMetaData();
-        DefaultExternalizer.INSTANT.cast(Instant.class).writeObject(output, metaData.getCreationTime());
+        // We only need millisecond precision
+        output.writeLong(metaData.getCreationTime().toEpochMilli());
         IndexSerializer.VARIABLE.writeInt(output, (int) metaData.getMaxInactiveInterval().getSeconds());
     }
 
     @Override
     public SessionCreationMetaDataEntry<Object> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        SessionCreationMetaData metaData = new SimpleSessionCreationMetaData(DefaultExternalizer.INSTANT.cast(Instant.class).readObject(input));
+        SessionCreationMetaData metaData = new SimpleSessionCreationMetaData(Instant.ofEpochMilli(input.readLong()));
         metaData.setMaxInactiveInterval(Duration.ofSeconds(IndexSerializer.VARIABLE.readInt(input)));
         return new SessionCreationMetaDataEntry<>(metaData);
     }
