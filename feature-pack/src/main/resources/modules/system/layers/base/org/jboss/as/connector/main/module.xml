@@ -75,7 +75,7 @@
         <module name="org.wildfly.clustering.spi"/>
         <module name="org.wildfly.clustering.service"/>
         <module name="org.wildfly.common"/>
-        <module name="org.glassfish.javax.el"/>
+        <module name="org.glassfish.jakarta.el"/>
     </dependencies>
 
 </module>

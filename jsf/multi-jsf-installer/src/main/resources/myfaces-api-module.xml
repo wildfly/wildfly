@@ -29,7 +29,7 @@
         <module name="javax.servlet.jsp.api" export="true"/>
         <module name="javax.servlet.jstl.api" export="true"/>
         <module name="javax.validation.api" export="true"/>
-        <module name="org.glassfish.javax.el" export="true"/>
+        <module name="org.glassfish.jakarta.el" export="true"/>
         <module name="javax.api"/>
 
         <!-- extra dependencies for MyFaces 1.1
