@@ -58,6 +58,7 @@ public final class DriverProcessor implements DeploymentUnitProcessor {
         if (module != null && servicesAttachment != null) {
             final ModuleClassLoader classLoader = module.getClassLoader();
             final List<String> driverNames = servicesAttachment.getServiceImplementations(Driver.class.getName());
+            int idx = 0;
             for (String driverClassName : driverNames) {
                 try {
                     final Class<? extends Driver> driverClass = classLoader.loadClass(driverClassName).asSubclass(Driver.class);
@@ -86,6 +87,18 @@ public final class DriverProcessor implements DeploymentUnitProcessor {
                             .addDependency(ConnectorServices.JDBC_DRIVER_REGISTRY_SERVICE, DriverRegistry.class,
                                     driverService.getDriverRegistryServiceInjector()).setInitialMode(Mode.ACTIVE).install();
 
+                    if (idx == 0 && driverNames.size() != 1) {
+                        // create short name driver service
+                        driverName = deploymentUnit.getName(); // reset driverName to the deployment unit name
+                        driverMetadata = new InstalledDriver(driverName, driverClass.getName(), null,
+                                null, majorVersion, minorVersion, compliant);
+                        driverService = new DriverService(driverMetadata, driver);
+                        phaseContext.getServiceTarget()
+                                .addService(ServiceName.JBOSS.append("jdbc-driver", driverName.replaceAll("\\.", "_")), driverService)
+                                .addDependency(ConnectorServices.JDBC_DRIVER_REGISTRY_SERVICE, DriverRegistry.class, driverService.getDriverRegistryServiceInjector())
+                                .setInitialMode(Mode.ACTIVE).install();
+                    }
+                    idx++;
                 } catch (Throwable e) {
                     DEPLOYER_JDBC_LOGGER.cannotInstantiateDriverClass(driverClassName, e);
                 }
