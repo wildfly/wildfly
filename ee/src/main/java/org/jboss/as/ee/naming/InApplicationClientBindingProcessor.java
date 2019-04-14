@@ -21,6 +21,10 @@
  */
 package org.jboss.as.ee.naming;
 
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentNamingMode;
@@ -43,6 +47,7 @@ import org.jboss.msc.value.Values;
  * Processor responsible for binding java:comp/InAppClientContainer
  *
  * @author Stuart Douglas
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class InApplicationClientBindingProcessor implements DeploymentUnitProcessor {
 
@@ -85,7 +90,12 @@ public class InApplicationClientBindingProcessor implements DeploymentUnitProces
         serviceTarget.addService(inAppClientServiceName, inAppClientContainerService)
             .addDependency(contextServiceName, ServiceBasedNamingStore.class, inAppClientContainerService.getNamingStoreInjector())
             .install();
-        deploymentUnit.addToAttachmentList(org.jboss.as.server.deployment.Attachments.JNDI_DEPENDENCIES, inAppClientServiceName);
+        final Map<ServiceName, Set<ServiceName>> jndiComponentDependencies = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.COMPONENT_JNDI_DEPENDENCIES);
+        Set<ServiceName> jndiDependencies = jndiComponentDependencies.get(contextServiceName);
+        if (jndiDependencies == null) {
+            jndiComponentDependencies.put(contextServiceName, jndiDependencies = new HashSet<>());
+        }
+        jndiDependencies.add(inAppClientServiceName);
     }
 
 

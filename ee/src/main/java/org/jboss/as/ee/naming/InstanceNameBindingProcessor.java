@@ -21,6 +21,10 @@
  */
 package org.jboss.as.ee.naming;
 
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentNamingMode;
@@ -47,6 +51,7 @@ import org.jboss.msc.service.ServiceTarget;
  * Processor responsible for binding java:comp/InstanceName
  *
  * @author Stuart Douglas
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class InstanceNameBindingProcessor implements DeploymentUnitProcessor {
 
@@ -110,10 +115,13 @@ public class InstanceNameBindingProcessor implements DeploymentUnitProcessor {
                 }
             })
             .install();
-        deploymentUnit.addToAttachmentList(org.jboss.as.server.deployment.Attachments.JNDI_DEPENDENCIES, instanceNameServiceName);
-
+        final Map<ServiceName, Set<ServiceName>> jndiComponentDependencies = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.COMPONENT_JNDI_DEPENDENCIES);
+        Set<ServiceName> jndiDependencies = jndiComponentDependencies.get(contextServiceName);
+        if (jndiDependencies == null) {
+            jndiComponentDependencies.put(contextServiceName, jndiDependencies = new HashSet<>());
+        }
+        jndiDependencies.add(instanceNameServiceName);
     }
-
 
     @Override
     public void undeploy(DeploymentUnit context) {
