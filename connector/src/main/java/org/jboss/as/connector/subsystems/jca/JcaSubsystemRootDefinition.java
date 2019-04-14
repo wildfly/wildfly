@@ -55,8 +55,7 @@ public class JcaSubsystemRootDefinition extends SimpleResourceDefinition {
         super(new Parameters(PATH_SUBSYSTEM, JcaExtension.getResourceDescriptionResolver())
                 .setAddHandler(JcaSubsystemAdd.INSTANCE)
                 .setRemoveHandler(JcaSubSystemRemove.INSTANCE)
-                .setCapabilities(JCA_NAMING_CAPABILITY)
-                .setCapabilities(TRANSACTION_INTEGRATION_CAPABILITY)
+                .setCapabilities(JCA_NAMING_CAPABILITY, TRANSACTION_INTEGRATION_CAPABILITY)
         );
         this.registerRuntimeOnly = registerRuntimeOnly;
     }
