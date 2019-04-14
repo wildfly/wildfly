@@ -46,7 +46,8 @@ public class SessionCreationMetaDataEntryExternalizerTestCase {
     }
 
     static void assertEquals(SessionCreationMetaDataEntry<Object> entry1, SessionCreationMetaDataEntry<Object> entry2) {
-        Assert.assertEquals(entry1.getMetaData().getCreationTime(), entry2.getMetaData().getCreationTime());
+        // Compare only to millisecond precision
+        Assert.assertEquals(entry1.getMetaData().getCreationTime().toEpochMilli(), entry2.getMetaData().getCreationTime().toEpochMilli());
         Assert.assertEquals(entry1.getMetaData().getMaxInactiveInterval(), entry2.getMetaData().getMaxInactiveInterval());
     }
 }
