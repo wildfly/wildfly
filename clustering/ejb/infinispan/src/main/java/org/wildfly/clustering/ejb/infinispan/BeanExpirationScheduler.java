@@ -114,16 +114,22 @@ public class BeanExpirationScheduler<I, T> implements Scheduler<I> {
         @Override
         public void run() {
             InfinispanEjbLogger.ROOT_LOGGER.tracef("Expiring stateful session bean %s", this.id);
+            boolean removed = false;
             try (Batch batch = BeanExpirationScheduler.this.batcher.createBatch()) {
                 try {
-                    BeanExpirationScheduler.this.remover.remove(this.id, BeanExpirationScheduler.this.expiration.getRemoveListener());
+                    removed = BeanExpirationScheduler.this.remover.remove(this.id, BeanExpirationScheduler.this.expiration.getRemoveListener());
                 } catch (Throwable e) {
                     InfinispanEjbLogger.ROOT_LOGGER.failedToExpireBean(e, this.id);
                     batch.discard();
                 }
             } finally {
                 synchronized (this) {
-                    BeanExpirationScheduler.this.expirationFutures.remove(this.id);
+                    if (removed) {
+                        BeanExpirationScheduler.this.expirationFutures.remove(this.id);
+                    } else {
+                        // If bean failed to expire, likely due to a lock timeout, just reschedule it
+                        BeanExpirationScheduler.this.schedule(this.id);
+                    }
                 }
             }
         }
