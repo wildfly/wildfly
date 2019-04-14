@@ -77,7 +77,7 @@ public abstract class AbstractRemoteEJBForwardingTestCase extends AbstractCluste
 
     @BeforeClass
     public static void beforeClass() {
-        thisTestIsFailingIntermittently("WFLY-6224/JBEAP-3432, WFLY-9447/JBEAP-13511, etc.");
+        thisTestIsFailingIntermittently("https://issues.jboss.org/browse/WFLY-10607");
     }
 
     private static long FAILURE_FREE_TIME = TimeoutUtil.adjust(5000);
