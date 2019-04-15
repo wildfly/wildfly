@@ -59,7 +59,7 @@
                     <transaction mode="BATCH"/>
                     <file-store/>
                 </distributed-cache>
-                <replicated-cache name="dist">
+                <replicated-cache name="sso">
                     <locking isolation="REPEATABLE_READ"/>
                     <transaction mode="BATCH"/>
                 </replicated-cache>
