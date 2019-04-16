@@ -24,6 +24,7 @@ package org.wildfly.clustering.web.undertow.session;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.web.container.SessionManagementProvider;
 import org.wildfly.clustering.web.container.SessionManagerFactoryConfiguration;
 import org.wildfly.clustering.web.container.WebDeploymentConfiguration;
@@ -37,9 +38,11 @@ import org.wildfly.clustering.web.undertow.routing.DistributableSessionIdentifie
 public class UndertowDistributableSessionManagementProvider implements SessionManagementProvider {
 
     private final DistributableSessionManagementProvider provider;
+    private final Immutability immutability;
 
-    public UndertowDistributableSessionManagementProvider(DistributableSessionManagementProvider provider) {
+    public UndertowDistributableSessionManagementProvider(DistributableSessionManagementProvider provider, Immutability immutability) {
         this.provider = provider;
+        this.immutability = immutability;
     }
 
     @Override
@@ -49,6 +52,6 @@ public class UndertowDistributableSessionManagementProvider implements SessionMa
 
     @Override
     public CapabilityServiceConfigurator getSessionManagerFactoryServiceConfigurator(ServiceName name, SessionManagerFactoryConfiguration configuration) {
-        return new DistributableSessionManagerFactoryServiceConfigurator(name, configuration, this.provider);
+        return new DistributableSessionManagerFactoryServiceConfigurator(name, configuration, this.provider, this.immutability);
     }
 }

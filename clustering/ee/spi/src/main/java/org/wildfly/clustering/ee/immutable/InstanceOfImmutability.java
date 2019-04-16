@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,27 +19,28 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.session;
+
+package org.wildfly.clustering.ee.immutable;
 
 import org.wildfly.clustering.ee.Immutability;
-import org.wildfly.clustering.marshalling.spi.Marshallability;
-import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
-import org.wildfly.clustering.web.LocalContextFactory;
-import org.wildfly.clustering.web.WebDeploymentConfiguration;
 
 /**
- * Encapsulates the configuration of a session manager.
+ * Test for immutability using instanceof checks.
  * @author Paul Ferraro
  */
-public interface SessionManagerFactoryConfiguration<C extends Marshallability, L> extends WebDeploymentConfiguration {
+public class InstanceOfImmutability implements Immutability {
 
-    Integer getMaxActiveSessions();
+    private final Iterable<Class<?>> immutableClasses;
 
-    MarshalledValueFactory<C> getMarshalledValueFactory();
+    public InstanceOfImmutability(Iterable<Class<?>> immutableClasses) {
+        this.immutableClasses = immutableClasses;
+    }
 
-    C getMarshallingContext();
-
-    LocalContextFactory<L> getLocalContextFactory();
-
-    Immutability getImmutability();
+    @Override
+    public boolean test(Object object) {
+        for (Class<?> immutableClass : this.immutableClasses) {
+            if (immutableClass.isInstance(object)) return true;
+        }
+        return false;
+    }
 }

@@ -25,6 +25,7 @@ package org.wildfly.extension.clustering.web.deployment;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Consumer;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -56,6 +57,7 @@ public class DistributableWebDeploymentXMLReader implements XMLElementReader<Mut
     private static final String NO_AFFINITY = "no-affinity";
     private static final String LOCAL_AFFINITY = "local-affinity";
     private static final String PRIMARY_OWNER_AFFINITY = "primary-owner-affinity";
+    private static final String IMMUTABLE_CLASS = "immutable-class";
 
     @SuppressWarnings("unused")
     private final DistributableWebDeploymentSchema schema;
@@ -85,15 +87,12 @@ public class DistributableWebDeploymentXMLReader implements XMLElementReader<Mut
 
         switch (reader.getLocalName()) {
             case SESSION_MANAGEMENT: {
-                ParseUtils.requireSingleAttribute(reader, NAME);
-                String name = reader.getAttributeValue(0);
-                ParseUtils.requireNoContent(reader);
-                configuration.setSessionManagementName(name);
+                this.readSessionManagement(reader, configuration);
                 break;
             }
             case INFINISPAN_SESSION_MANAGEMENT: {
                 MutableInfinispanSessionManagementConfiguration config = new MutableInfinispanSessionManagementConfiguration(configuration);
-                RouteLocatorServiceConfiguratorFactory<InfinispanSessionManagementConfiguration> factory = this.readInfinispanSessionManagement(reader, config);
+                RouteLocatorServiceConfiguratorFactory<InfinispanSessionManagementConfiguration> factory = this.readInfinispanSessionManagement(reader, config, configuration);
                 configuration.setSessionManagement(new InfinispanSessionManagementProvider(config, factory));
                 break;
             }
@@ -105,6 +104,26 @@ public class DistributableWebDeploymentXMLReader implements XMLElementReader<Mut
         if (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             throw ParseUtils.unexpectedElement(reader);
         }
+    }
+
+    private void readSessionManagement(XMLExtendedStreamReader reader, MutableDistributableDeploymentConfiguration configuration) throws XMLStreamException {
+
+        for (int i = 0; i < reader.getAttributeCount(); ++i) {
+            String name = reader.getAttributeLocalName(i);
+            String value = reader.getAttributeValue(i);
+
+            switch (name) {
+                case NAME: {
+                    configuration.setSessionManagementName(value);
+                    break;
+                }
+                default: {
+                    throw ParseUtils.unexpectedAttribute(reader, i);
+                }
+            }
+        }
+
+        this.readImmutability(reader, configuration);
     }
 
     @SuppressWarnings("static-method")
@@ -126,7 +145,7 @@ public class DistributableWebDeploymentXMLReader implements XMLElementReader<Mut
         }
     }
 
-    private RouteLocatorServiceConfiguratorFactory<InfinispanSessionManagementConfiguration> readInfinispanSessionManagement(XMLExtendedStreamReader reader, MutableInfinispanSessionManagementConfiguration configuration) throws XMLStreamException {
+    private RouteLocatorServiceConfiguratorFactory<InfinispanSessionManagementConfiguration> readInfinispanSessionManagement(XMLExtendedStreamReader reader, MutableInfinispanSessionManagementConfiguration configuration, Consumer<String> accumulator) throws XMLStreamException {
 
         Set<String> required = new TreeSet<>(Arrays.asList(CACHE_CONTAINER, GRANULARITY));
 
@@ -154,25 +173,52 @@ public class DistributableWebDeploymentXMLReader implements XMLElementReader<Mut
             ParseUtils.requireAttributes(reader, required.toArray(new String[required.size()]));
         }
 
+        RouteLocatorServiceConfiguratorFactory<InfinispanSessionManagementConfiguration> affinityFactory = this.readInfinispanAffinity(reader);
+
+        this.readImmutability(reader, accumulator);
+
+        return affinityFactory;
+    }
+
+    @SuppressWarnings("static-method")
+    private RouteLocatorServiceConfiguratorFactory<InfinispanSessionManagementConfiguration> readInfinispanAffinity(XMLExtendedStreamReader reader) throws XMLStreamException {
         if (!reader.hasNext() || reader.nextTag() == XMLStreamConstants.END_ELEMENT) {
             throw ParseUtils.missingRequiredElement(reader, new TreeSet<>(Arrays.asList(NO_AFFINITY, LOCAL_AFFINITY, PRIMARY_OWNER_AFFINITY)));
         }
-
         switch (reader.getLocalName()) {
             case NO_AFFINITY: {
+                ParseUtils.requireNoAttributes(reader);
                 ParseUtils.requireNoContent(reader);
                 return new NullRouteLocatorServiceConfiguratorFactory<>();
             }
             case LOCAL_AFFINITY: {
+                ParseUtils.requireNoAttributes(reader);
                 ParseUtils.requireNoContent(reader);
                 return new LocalRouteLocatorServiceConfiguratorFactory<>();
             }
             case PRIMARY_OWNER_AFFINITY: {
+                ParseUtils.requireNoAttributes(reader);
                 ParseUtils.requireNoContent(reader);
                 return new PrimaryOwnerRouteLocatorServiceConfiguratorFactory();
             }
             default: {
                 throw ParseUtils.unexpectedElement(reader);
+            }
+        }
+    }
+
+    @SuppressWarnings("static-method")
+    private void readImmutability(XMLExtendedStreamReader reader, Consumer<String> accumulator) throws XMLStreamException {
+        while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
+            switch (reader.getLocalName()) {
+                case IMMUTABLE_CLASS: {
+                    ParseUtils.requireNoAttributes(reader);
+                    accumulator.accept(reader.getElementText());
+                    break;
+                }
+                default: {
+                    throw ParseUtils.unexpectedElement(reader);
+                }
             }
         }
     }
