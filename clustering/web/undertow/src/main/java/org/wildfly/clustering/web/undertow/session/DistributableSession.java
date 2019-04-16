@@ -171,7 +171,7 @@ public class DistributableSession implements io.undertow.server.session.Session 
         try (BatchContext context = this.resumeBatch()) {
             if (CachedAuthenticatedSessionHandler.ATTRIBUTE_NAME.equals(name)) {
                 AuthenticatedSession auth = (AuthenticatedSession) value;
-                return AUTO_REAUTHENTICATING_MECHANISMS.contains(auth.getMechanism()) ? this.setLocalContext(auth) : session.getAttributes().setAttribute(name, new ImmutableAuthenticatedSession(auth));
+                return AUTO_REAUTHENTICATING_MECHANISMS.contains(auth.getMechanism()) ? this.setLocalContext(auth) : session.getAttributes().setAttribute(name, auth);
             }
             Object old = session.getAttributes().setAttribute(name, value);
             if (old == null) {

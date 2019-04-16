@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,19 +22,28 @@
 
 package org.wildfly.clustering.web.undertow.session;
 
-import org.wildfly.clustering.web.annotation.Immutable;
+import java.util.Arrays;
+
+import org.wildfly.clustering.ee.Immutability;
+import org.wildfly.clustering.ee.immutable.SimpleImmutability;
 
 import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession;
+import io.undertow.servlet.util.SavedRequest;
 
 /**
- * An explicitly immutable {@link AuthenticatedSession}.
  * @author Paul Ferraro
  */
-@Immutable
-public class ImmutableAuthenticatedSession extends AuthenticatedSession {
-    private static final long serialVersionUID = -7327798938719610266L;
+public enum UndertowSessionAttributeImmutability implements Immutability {
+    CLASSES(new SimpleImmutability(Arrays.asList(AuthenticatedSession.class, SavedRequest.class))),
+    ;
+    private final Immutability immutability;
 
-    public ImmutableAuthenticatedSession(AuthenticatedSession auth) {
-        super(auth.getAccount(), auth.getMechanism());
+    UndertowSessionAttributeImmutability(Immutability immutability) {
+        this.immutability = immutability;
+    }
+
+    @Override
+    public boolean test(Object object) {
+        return this.immutability.test(object);
     }
 }
