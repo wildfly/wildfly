@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<distributable-web xmlns="urn:jboss:distributable-web:1.0">
+    <infinispan-session-management cache-container="web" cache="sso" granularity="ATTRIBUTE">
+        <local-affinity/>
+        <immutable-class>org.jboss.as.test.clustering.single.web.Mutable</immutable-class>
+    </infinispan-session-management>
+</distributable-web>
