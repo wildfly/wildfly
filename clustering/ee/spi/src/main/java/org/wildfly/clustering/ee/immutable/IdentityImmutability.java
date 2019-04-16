@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,39 +20,32 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.session;
+package org.wildfly.clustering.ee.immutable;
 
-import static org.junit.Assert.assertTrue;
-
+import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumSet;
+import java.util.IdentityHashMap;
+import java.util.Set;
 
-import org.junit.Test;
 import org.wildfly.clustering.ee.Immutability;
-import org.wildfly.clustering.ee.immutable.CompositeImmutability;
-import org.wildfly.clustering.ee.immutable.ImmutabilityTestCase;
-import org.wildfly.clustering.web.annotation.Immutable;
 
 /**
+ * Test for immutability using object identity.
  * @author Paul Ferraro
  */
-public class SessionAttributeImmutabilityTestCase extends ImmutabilityTestCase {
+public class IdentityImmutability implements Immutability {
 
-    @Override
-    @Test
-    public void test() throws Exception {
-        this.test(new CompositeImmutability(EnumSet.allOf(SessionAttributeImmutability.class)));
+    private final Set<Object> immutableObjects;
+
+    public IdentityImmutability(Collection<Object> objects) {
+        this.immutableObjects = !objects.isEmpty() ? Collections.newSetFromMap(new IdentityHashMap<>(objects.size())) : Collections.emptySet();
+        for (Object object : objects) {
+            this.immutableObjects.add(object);
+        }
     }
 
     @Override
-    protected void test(Immutability immutability) throws Exception {
-        assertTrue(immutability.test(new ImmutableObject()));
-        assertTrue(immutability.test(Collections.singleton(new ImmutableObject())));
-        assertTrue(immutability.test(Collections.singletonList(new ImmutableObject())));
-        assertTrue(immutability.test(Collections.singletonMap("1", new ImmutableObject())));
-    }
-
-    @Immutable
-    static class ImmutableObject {
+    public boolean test(Object object) {
+        return (object == null) || this.immutableObjects.contains(object);
     }
 }

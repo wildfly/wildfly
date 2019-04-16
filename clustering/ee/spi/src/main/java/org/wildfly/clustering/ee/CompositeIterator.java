@@ -22,41 +22,48 @@
 
 package org.wildfly.clustering.ee;
 
-import java.util.function.Predicate;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 /**
- * Tests for immutability.
+ * Iterator that iterates over a series of iterators.
  * @author Paul Ferraro
  */
-public interface Immutability extends Predicate<Object> {
+public class CompositeIterator<E> implements Iterator<E> {
 
-    @Override
-    default Immutability and(Predicate<? super Object> immutability) {
-        return new Immutability() {
-            @Override
-            public boolean test(Object object) {
-                return Immutability.this.test(object) && immutability.test(object);
-            }
-        };
+    private final Iterable<? extends Iterator<? extends E>> iterators;
+
+    /**
+     * Constructs a new composite iterator.
+     * @param iterables a series of iterators
+     */
+    @SafeVarargs
+    public CompositeIterator(Iterator<? extends E>... iterators) {
+        this(Arrays.asList(iterators));
+    }
+
+    /**
+     * Constructs a new composite iterator.
+     * @param iterables a series of iterators
+     */
+    public CompositeIterator(Iterable<? extends Iterator<? extends E>> iterators) {
+        this.iterators = iterators;
     }
 
     @Override
-    default Immutability negate() {
-        return new Immutability() {
-            @Override
-            public boolean test(Object object) {
-                return !Immutability.this.test(object);
-            }
-        };
+    public boolean hasNext() {
+        for (Iterator<? extends E> iterator : this.iterators) {
+            if (iterator.hasNext()) return true;
+        }
+        return false;
     }
 
     @Override
-    default Immutability or(Predicate<? super Object> immutability) {
-        return new Immutability() {
-            @Override
-            public boolean test(Object object) {
-                return Immutability.this.test(object) || immutability.test(object);
-            }
-        };
+    public E next() {
+        for (Iterator<? extends E> iterator : this.iterators) {
+            if (iterator.hasNext()) return iterator.next();
+        }
+        throw new NoSuchElementException();
     }
 }

@@ -38,6 +38,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.ee.Batch;
+import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.marshalling.jboss.ExternalizerObjectTable;
 import org.wildfly.clustering.marshalling.jboss.SimpleClassTable;
 import org.wildfly.clustering.service.FunctionalService;
@@ -81,10 +82,10 @@ public class DistributableSessionManagerFactoryServiceConfigurator extends Simpl
     private final SessionManagerFactoryConfiguration configuration;
     private final CapabilityServiceConfigurator configurator;
 
-    public DistributableSessionManagerFactoryServiceConfigurator(ServiceName name, SessionManagerFactoryConfiguration configuration, DistributableSessionManagementProvider provider) {
+    public DistributableSessionManagerFactoryServiceConfigurator(ServiceName name, SessionManagerFactoryConfiguration configuration, DistributableSessionManagementProvider provider, Immutability immutability) {
         super(name);
         this.configuration = configuration;
-        this.configurator = provider.getSessionManagerFactoryServiceConfigurator(new SessionManagerFactoryConfigurationAdapter(configuration));
+        this.configurator = provider.getSessionManagerFactoryServiceConfigurator(new SessionManagerFactoryConfigurationAdapter(configuration, immutability));
     }
 
     @Override

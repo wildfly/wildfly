@@ -33,6 +33,7 @@ import org.infinispan.context.Flag;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntriesEvicted;
 import org.infinispan.notifications.cachelistener.event.CacheEntriesEvictedEvent;
+import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.infinispan.CacheProperties;
 import org.wildfly.clustering.infinispan.spi.distribution.Key;
 import org.wildfly.clustering.marshalling.spi.InvalidSerializedFormException;
@@ -55,12 +56,14 @@ public class FineSessionAttributesFactory<V> implements SessionAttributesFactory
     private final Cache<SessionAttributeNamesKey, Map<String, UUID>> namesCache;
     private final Cache<SessionAttributeKey, V> attributeCache;
     private final Marshaller<Object, V> marshaller;
+    private final Immutability immutability;
     private final CacheProperties properties;
 
-    public FineSessionAttributesFactory(Cache<SessionAttributeNamesKey, Map<String, UUID>> namesCache, Cache<SessionAttributeKey, V> attributeCache, Marshaller<Object, V> marshaller, CacheProperties properties) {
+    public FineSessionAttributesFactory(Cache<SessionAttributeNamesKey, Map<String, UUID>> namesCache, Cache<SessionAttributeKey, V> attributeCache, Marshaller<Object, V> marshaller, Immutability immutability, CacheProperties properties) {
         this.namesCache = namesCache;
         this.attributeCache = attributeCache;
         this.marshaller = marshaller;
+        this.immutability = immutability;
         this.properties = properties;
     }
 
@@ -106,7 +109,7 @@ public class FineSessionAttributesFactory<V> implements SessionAttributesFactory
 
     @Override
     public SessionAttributes createSessionAttributes(String id, Map<String, UUID> names) {
-        return new FineSessionAttributes<>(id, names, this.namesCache, this.attributeCache, this.marshaller, this.properties);
+        return new FineSessionAttributes<>(id, names, this.namesCache, this.attributeCache, this.marshaller, this.immutability, this.properties);
     }
 
     @Override

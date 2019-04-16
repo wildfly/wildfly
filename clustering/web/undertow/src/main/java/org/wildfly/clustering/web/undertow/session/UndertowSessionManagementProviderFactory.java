@@ -23,12 +23,16 @@
 package org.wildfly.clustering.web.undertow.session;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.metadata.web.jboss.ReplicationConfig;
+import org.jboss.modules.Module;
 import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.ee.immutable.SimpleImmutability;
 import org.wildfly.clustering.web.container.SessionManagementProvider;
 import org.wildfly.clustering.web.session.DistributableSessionManagementProvider;
 import org.wildfly.clustering.web.session.LegacySessionManagementProviderFactory;
@@ -66,6 +70,8 @@ public class UndertowSessionManagementProviderFactory implements SessionManageme
             // Fabricate DistributableSessionManagementProvider from legacy ReplicationConfig
             provider = this.legacyFactory.createSessionManagerProvider(config);
         }
-        return new UndertowDistributableSessionManagementProvider(provider);
+        Module module = unit.getAttachment(Attachments.MODULE);
+        List<String> immutableClasses = unit.getAttachmentList(DistributableSessionManagementProvider.IMMUTABILITY_ATTACHMENT_KEY);
+        return new UndertowDistributableSessionManagementProvider(provider, new SimpleImmutability(module.getClassLoader(), immutableClasses));
     }
 }

@@ -42,32 +42,20 @@
     <xs:complexType name="infinispan-session-management">
         <xs:complexContent>
             <xs:extension base="tns:abstract-session-management">
-                <xs:choice>
-                    <xs:element name="no-affinity" type="tns:empty">
-                        <xs:annotation>
-                            <xs:documentation>
-                                Web requests not have an affinity for any particular server.
-                                Intended for use cases where web session state is not maintained within the application server.
-                            </xs:documentation>
-                        </xs:annotation>
-                    </xs:element>
-                    <xs:element name="local-affinity" type="tns:empty">
-                        <xs:annotation>
-                            <xs:documentation>
-                                Web requests have an affinity for the member that last handled a given session.
-                                This option corresponds to traditional sticky session behavior.
-                            </xs:documentation>
-                        </xs:annotation>
-                    </xs:element>
-                    <xs:element name="primary-owner-affinity" type="tns:empty">
-                        <xs:annotation>
-                            <xs:documentation>
-                                Web requests will have an affinity for the primary owner of a given session.
-                                Behaves the same as local-affinity if the backing cache is not distributed nor replicated.
-                            </xs:documentation>
-                        </xs:annotation>
-                    </xs:element>
-                </xs:choice>
+                <xs:sequence>
+                    <xs:choice>
+                        <xs:group ref="tns:affinity"/>
+                        <xs:element name="primary-owner-affinity" type="tns:empty">
+                            <xs:annotation>
+                                <xs:documentation>
+                                    Web requests will have an affinity for the primary owner of a given session.
+                                    Behaves the same as local-affinity if the backing cache is not distributed nor replicated.
+                                </xs:documentation>
+                            </xs:annotation>
+                        </xs:element>
+                    </xs:choice>
+                    <xs:group ref="tns:immutability"/>
+                </xs:sequence>
                 <xs:attribute name="cache-container" type="xs:string" use="required">
                     <xs:annotation>
                         <xs:documentation>References a cache-container defined by the Infinispan subsystem.</xs:documentation>
@@ -105,6 +93,39 @@
             </xs:enumeration>
         </xs:restriction>
     </xs:simpleType>
+
+    <xs:group name="affinity">
+        <xs:choice>
+            <xs:element name="no-affinity" type="tns:empty">
+                <xs:annotation>
+                    <xs:documentation>
+                        Web requests not have an affinity for any particular server.
+                        Intended for use cases where web session state is not maintained within the application server.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="local-affinity" type="tns:empty">
+                <xs:annotation>
+                    <xs:documentation>
+                        Web requests have an affinity for the member that last handled a given session.
+                        This option corresponds to traditional sticky session behavior.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:choice>
+    </xs:group>
+
+    <xs:group name="immutability">
+        <xs:sequence>
+            <xs:element name="immutable-class" type="xs:string" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>
+                        Identifies an immutable session attribute class.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:group>
 
     <xs:complexType name="empty">
         <xs:sequence/>
