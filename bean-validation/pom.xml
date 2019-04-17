@@ -60,7 +60,7 @@
             <!-- Needed for Hibernate Validator since it asserts the existence of javax.el during bootstrap in the
                   default configuration-->
             <groupId>org.glassfish</groupId>
-            <artifactId>javax.el-impl</artifactId>
+            <artifactId>jakarta.el</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>

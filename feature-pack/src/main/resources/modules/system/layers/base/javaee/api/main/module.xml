@@ -54,7 +54,7 @@
         <module name="javax.xml.bind.api" export="true"/>
         <module name="javax.xml.soap.api" export="true"/>
         <module name="javax.xml.ws.api" export="true"/>
-        <module name="org.glassfish.javax.el" export="true"/>
+        <module name="org.glassfish.jakarta.el" export="true"/>
 
         <!-- TODO WFLY-5966 validate the need for these and remove if not needed.
              Prior to WFLY-5922 they were exported by javax.ejb.api. -->

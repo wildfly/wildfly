@@ -152,7 +152,7 @@
 
         <dependency>
             <groupId>org.glassfish</groupId>
-            <artifactId>javax.el-impl</artifactId>
+            <artifactId>jakarta.el</artifactId>
         </dependency>
 
         <dependency>
