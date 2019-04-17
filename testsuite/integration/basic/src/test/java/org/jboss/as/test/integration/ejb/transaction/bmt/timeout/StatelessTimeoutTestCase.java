@@ -39,10 +39,13 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.transaction.client.ContextTransactionManager;
+
 import java.util.PropertyPermission;
 import javax.inject.Inject;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.transaction.TransactionManager;
 
 /**
  * BMT test where transaction timeout is involved.
@@ -126,4 +129,26 @@ public class StatelessTimeoutTestCase {
         bean.test();
     }
 
+    @Test
+    public void threadStoringTimeout() throws Exception {
+        StatelessBmtBean bean = TransactionTestLookupUtil.lookupModule(initCtx, StatelessBmtBean.class);
+        TransactionManager tm = (TransactionManager) new InitialContext().lookup("java:/TransactionManager");
+
+        int transactionTimeoutToSet = 42;
+        tm.setTransactionTimeout(transactionTimeoutToSet);
+        Assert.assertEquals("Expecting transaction timeout has to be the same as it was written by setter",
+                transactionTimeoutToSet, getTransactionTimeout(tm));
+
+        bean.testTransaction(0, 0);
+
+        Assert.assertEquals("The transaction timeout has to be the same as before BMT call",
+            transactionTimeoutToSet, getTransactionTimeout(tm));
+    }
+
+    private int getTransactionTimeout(TransactionManager tmTimeout) {
+        if (tmTimeout instanceof ContextTransactionManager) {
+            return ((ContextTransactionManager) tmTimeout).getTransactionTimeout();
+        }
+        throw new IllegalStateException("Cannot get transaction timeout");
+    }
 }

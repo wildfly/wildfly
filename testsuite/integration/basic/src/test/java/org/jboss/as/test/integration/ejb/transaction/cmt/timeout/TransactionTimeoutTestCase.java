@@ -22,7 +22,10 @@
 package org.jboss.as.test.integration.ejb.transaction.cmt.timeout;
 
 import static org.junit.Assert.assertEquals;
+
 import javax.naming.InitialContext;
+import javax.transaction.TransactionManager;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
@@ -31,6 +34,7 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.transaction.client.ContextTransactionManager;
 
 /**
  */
@@ -83,5 +87,29 @@ public class TransactionTimeoutTestCase {
                 .lookup("java:module/DDBeanWithTimeoutValueUsingNestedExpression!" + TimeoutLocalView.class
                         .getName());
         assertEquals(90, localView.getLocalViewTimeout());
+    }
+
+    @Test
+    public void threadStoringTimeout() throws Exception {
+        TimeoutLocalView localView = (TimeoutLocalView) (new InitialContext()
+            .lookup("java:module/BeanWithTimeoutValue!org.jboss.as.test.integration.ejb.transaction.cmt.timeout.TimeoutLocalView"));
+        TransactionManager tm = (TransactionManager) new InitialContext().lookup("java:/TransactionManager");
+
+        int transactionTimeoutToSet = 42;
+        tm.setTransactionTimeout(transactionTimeoutToSet);
+        Assert.assertEquals("Expecting transaction timeout has to be the same as it was written by setter",
+                transactionTimeoutToSet, getTransactionTimeout(tm));
+
+        localView.getLocalViewTimeout();
+
+        Assert.assertEquals("The transaction timeout has to be the same as before CMT call",
+            transactionTimeoutToSet, getTransactionTimeout(tm));
+    }
+
+    private int getTransactionTimeout(TransactionManager tmTimeout) {
+        if (tmTimeout instanceof ContextTransactionManager) {
+            return ((ContextTransactionManager) tmTimeout).getTransactionTimeout();
+        }
+        throw new IllegalStateException("Cannot get transaction timeout");
     }
 }

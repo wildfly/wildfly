@@ -24,12 +24,11 @@ package org.jboss.as.ejb3.tx;
 import javax.ejb.EJBException;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
 
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
-import org.jboss.tm.TransactionTimeoutConfiguration;
+import org.wildfly.transaction.client.ContextTransactionManager;
 
 /**
  * Suspend an incoming tx.
@@ -50,8 +49,8 @@ public abstract class BMTInterceptor implements Interceptor {
 
     @Override
     public Object processInvocation(final InterceptorContext context) throws Exception {
-        TransactionManager tm = component.getTransactionManager();
-        int oldTimeout = getCurrentTransactionTimeout(component);
+        final ContextTransactionManager tm = ContextTransactionManager.getInstance();
+        final int oldTimeout = tm.getTransactionTimeout();
         try {
             Transaction oldTx = tm.suspend();
             try {
@@ -60,7 +59,8 @@ public abstract class BMTInterceptor implements Interceptor {
                 if (oldTx != null) tm.resume(oldTx);
             }
         } finally {
-            tm.setTransactionTimeout(oldTimeout == -1 ? 0 : oldTimeout);
+            // See also https://issues.jboss.org/browse/WFTC-44
+            tm.setTransactionTimeout(oldTimeout == ContextTransactionManager.getGlobalDefaultTransactionTimeout() ? 0 : oldTimeout);
         }
     }
 
@@ -87,11 +87,7 @@ public abstract class BMTInterceptor implements Interceptor {
     }
 
     protected int getCurrentTransactionTimeout(final EJBComponent component) throws SystemException {
-        final TransactionManager tm = component.getTransactionManager();
-        if (tm instanceof TransactionTimeoutConfiguration) {
-            return ((TransactionTimeoutConfiguration) tm).getTransactionTimeout();
-        }
-        return 0;
+        return ContextTransactionManager.getInstance().getTransactionTimeout();
     }
 
     public EJBComponent getComponent() {
