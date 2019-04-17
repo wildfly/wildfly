@@ -47,8 +47,10 @@
 
     <properties>
         <wildfly.instance.name>wildfly</wildfly.instance.name>
-        <jboss.dist>${basedir}/target/${wildfly.instance.name}</jboss.dist>
-        <wildfly.dir>${jboss.dist}</wildfly.dir>
+        <jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>
+        <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
+        <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
+        <wildfly.dir>${basedir}/target/${wildfly.instance.name}</wildfly.dir>
 
         <enforcer.skip>true</enforcer.skip>
     </properties>
@@ -130,7 +132,7 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-batch-jberet</artifactId>
             <scope>test</scope>
-        </dependency>        
+        </dependency>
     </dependencies>
 
     <build>
@@ -143,93 +145,6 @@
             </testResource>
         </testResources>
         <plugins>
-            <plugin>
-                <groupId>org.jboss.galleon</groupId>
-                <artifactId>galleon-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>server-provisioning</id>
-                        <goals>
-                            <goal>provision</goal>
-                        </goals>
-                        <phase>generate-test-resources</phase>
-                        <configuration>
-                            <install-dir>${project.build.directory}/${wildfly.instance.name}</install-dir>
-                            <record-state>false</record-state>
-                            <log-time>${galleon.log.time}</log-time>
-                            <offline>true</offline>
-                            <feature-packs>
-                                <feature-pack>
-                                    <transitive>true</transitive>
-                                    <groupId>org.wildfly.core</groupId>
-                                    <artifactId>wildfly-core-galleon-pack</artifactId>
-                                    <version>${version.org.wildfly.core}</version>
-                                </feature-pack>
-                                <feature-pack>
-                                    <transitive>true</transitive>
-                                    <groupId>${project.groupId}</groupId>
-                                    <artifactId>wildfly-servlet-galleon-pack</artifactId>
-                                    <version>${project.version}</version>
-                                </feature-pack>
-                                <feature-pack>
-                                    <groupId>${project.groupId}</groupId>
-                                    <artifactId>wildfly-galleon-pack</artifactId>
-                                    <version>${project.version}</version>
-                                    <excluded-packages>
-                                        <name>product.conf</name>
-                                        <name>docs</name>
-                                        <name>docs.licenses.merge</name>
-                                    </excluded-packages>
-                                    <inherit-configs>false</inherit-configs>
-                                    <included-configs>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                        </config>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone-full.xml</name>
-                                        </config>
-                                    </included-configs>
-                                </feature-pack>
-                            </feature-packs>
-                            <plugin-options>
-                                <jboss-maven-dist/>
-                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                            </plugin-options>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-                <version>${version.resources.plugin}</version>
-                <executions combine.self="override">
-                    <execution>
-                        <id>ts.config-as.copy-mgmt-users</id>
-                        <phase>none</phase>
-                    </execution>
-                    <execution>
-                        <id>ts.copy-wildfly</id>
-                        <phase>none</phase>
-                    </execution>
-                    <execution>
-                        <id>ts.copy-elytron.config</id>
-                        <phase>process-test-resources</phase>
-                        <inherited>false</inherited>
-                        <configuration combine.self="override">
-                            <outputDirectory>${wildfly.dir}/standalone/configuration</outputDirectory>
-                            <overwrite>true</overwrite>
-                            <resources>
-                                <resource>
-                                    <directory>src/test/config</directory>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
             <!-- Use keytool plugin to create JCEKS keystore for Elytron Credential Store related testing -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -282,6 +197,7 @@
                     <systemPropertyVariables>
                         <jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
                         <jboss.inst>${wildfly.dir}</jboss.inst>
+                        <module.path>${wildfly.dir}/modules</module.path>
                         <server.jvm.args>-Dmaven.repo.local=${settings.localRepository} -Djboss.bind.address=${node0} -Djboss.bind.address.management=${node0} ${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.other} ${jvm.args.timeouts} ${extra.server.jvm.args}</server.jvm.args>
                         <node0>${node0}</node0>
                     </systemPropertyVariables>
@@ -291,6 +207,140 @@
         </plugins>
     </build>
     <profiles>
+        <profile>
+            <id>server-jboss-dist-profile</id>
+            <activation>
+                <property>
+                    <name>jboss.dist</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <executions combine.children="append">
+                            <!-- Copy the AS modules into current_submodule/target/wildfly/modules. -->
+                            <!-- JASPI tests create new modules. -->
+                            <execution>
+                                <id>copy-wildfly-modules</id>
+                                <inherited>true</inherited>
+                                <phase>generate-test-resources</phase>
+                                <goals><goal>copy-resources</goal></goals>
+                                <configuration>
+                                    <outputDirectory>${basedir}/target/wildfly/modules</outputDirectory>
+                                    <overwrite>true</overwrite>
+                                    <resources>
+                                        <resource>
+                                            <directory>${jboss.dist}/modules</directory>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>server-provisioning-profile</id>
+            <activation>
+                <property>
+                    <name>!jboss.dist</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jboss.galleon</groupId>
+                        <artifactId>galleon-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>server-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>generate-test-resources</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/${wildfly.instance.name}</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>true</offline>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <transitive>true</transitive>
+                                            <groupId>org.wildfly.core</groupId>
+                                            <artifactId>wildfly-core-galleon-pack</artifactId>
+                                            <version>${version.org.wildfly.core}</version>
+                                        </feature-pack>
+                                        <feature-pack>
+                                            <transitive>true</transitive>
+                                            <groupId>${project.groupId}</groupId>
+                                            <artifactId>wildfly-servlet-galleon-pack</artifactId>
+                                            <version>${project.version}</version>
+                                        </feature-pack>
+                                        <feature-pack>
+                                            <groupId>${project.groupId}</groupId>
+                                            <artifactId>wildfly-galleon-pack</artifactId>
+                                            <version>${project.version}</version>
+                                            <excluded-packages>
+                                                <name>product.conf</name>
+                                                <name>docs</name>
+                                                <name>docs.licenses.merge</name>
+                                            </excluded-packages>
+                                            <inherit-configs>false</inherit-configs>
+                                            <included-configs>
+                                                <config>
+                                                    <model>standalone</model>
+                                                    <name>standalone.xml</name>
+                                                </config>
+                                                <config>
+                                                    <model>standalone</model>
+                                                    <name>standalone-full.xml</name>
+                                                </config>
+                                            </included-configs>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                    </plugin-options>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <version>${version.resources.plugin}</version>
+                        <executions combine.self="override">
+                            <execution>
+                                <id>ts.config-as.copy-mgmt-users</id>
+                                <phase>none</phase>
+                            </execution>
+                            <execution>
+                                <id>ts.copy-wildfly</id>
+                                <phase>none</phase>
+                            </execution>
+                            <execution>
+                                <id>ts.copy-elytron.config</id>
+                                <phase>process-test-resources</phase>
+                                <inherited>false</inherited>
+                                <configuration combine.self="override">
+                                    <outputDirectory>${wildfly.dir}/standalone/configuration</outputDirectory>
+                                    <overwrite>true</overwrite>
+                                    <resources>
+                                        <resource>
+                                            <directory>src/test/config</directory>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
         <profile>
             <id>adjust-server-config</id>
             <activation>
