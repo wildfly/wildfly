@@ -36,7 +36,6 @@ class MethodAdapter extends MethodVisitor {
     public static final BasicLogger logger = Logger.getLogger("org.jboss.as.hibernate.transformer");
     private final boolean rewriteSessionImplementor;
     private final TransformedState transformedState;
-    private final MethodVisitor mv;
     private final String moduleName;
     private final String className;
 
@@ -44,7 +43,6 @@ class MethodAdapter extends MethodVisitor {
                   final String moduleName, final String className, TransformedState transformedState) {
         super(api, mv);
         this.rewriteSessionImplementor = rewriteSessionImplementor;
-        this.mv = mv;
         this.moduleName = moduleName;
         this.className = className;
         this.transformedState = transformedState;
@@ -58,14 +56,14 @@ class MethodAdapter extends MethodVisitor {
     public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
         if (rewriteSessionImplementor &&
                 hasSessionImplementor(desc) &&
-                (opcode == Opcodes.INVOKESPECIAL || opcode == Opcodes.INVOKEVIRTUAL)) {
+                methodCall(opcode)) {
             // if we have a user type calling a method from org.hibernate, we rewrite it to use SharedSessionContractImplementor
             logger.debugf("Deprecated Hibernate51CompatibilityTransformer transformed application classes in '%s', " +
                             "class '%s' is calling method %s.%s, which must be changed to use SharedSessionContractImplementor as parameter.",
                     moduleName, className, owner, name);
             mv.visitMethodInsn(opcode, owner, name, replaceSessionImplementor(desc), itf);
             transformedState.setClassTransformed(true);
-        } else if (opcode == Opcodes.INVOKEINTERFACE &&
+        } else if (methodCall(opcode) &&
                 (owner.equals("org/hibernate/Session") || owner.equals("org/hibernate/BasicQueryContract"))
                 && name.equals("getFlushMode") && desc.equals("()Lorg/hibernate/FlushMode;")) {
             logger.debugf("Deprecated Hibernate51CompatibilityTransformer transformed application classes in '%s', " +
@@ -74,7 +72,7 @@ class MethodAdapter extends MethodVisitor {
             name = "getHibernateFlushMode";
             mv.visitMethodInsn(opcode, owner, name, desc, itf);
             transformedState.setClassTransformed(true);
-        } else if (opcode == Opcodes.INVOKEINTERFACE &&
+        } else if (methodCall(opcode) &&
                 owner.equals("org/hibernate/Query") &&
                 name.equals("getFirstResult") &&
                 desc.equals("()Ljava/lang/Integer;")) {
@@ -86,7 +84,7 @@ class MethodAdapter extends MethodVisitor {
             name = "getHibernateFirstResult";
             mv.visitMethodInsn(opcode, owner, name, desc, itf);
             transformedState.setClassTransformed(true);
-        } else if (opcode == Opcodes.INVOKEINTERFACE &&
+        } else if (methodCall(opcode) &&
                 owner.equals("org/hibernate/Query") &&
                 name.equals("getMaxResults") &&
                 desc.equals("()Ljava/lang/Integer;")) {
@@ -98,7 +96,7 @@ class MethodAdapter extends MethodVisitor {
             name = "getHibernateMaxResults";
             mv.visitMethodInsn(opcode, owner, name, desc, itf);
             transformedState.setClassTransformed(true);
-        } else if (!disableAmbiguousChanges && opcode == Opcodes.INVOKEINTERFACE &&
+        } else if (!disableAmbiguousChanges && methodCall(opcode) &&
                 owner.equals("org/hibernate/Query") &&
                 name.equals("setFirstResult") &&
                 desc.equals("(I)Lorg/hibernate/Query;")) {
@@ -110,7 +108,7 @@ class MethodAdapter extends MethodVisitor {
             name = "setHibernateFirstResult";
             mv.visitMethodInsn(opcode, owner, name, desc, itf);
             transformedState.setClassTransformed(true);
-        } else if (!disableAmbiguousChanges && opcode == Opcodes.INVOKEINTERFACE &&
+        } else if (!disableAmbiguousChanges && methodCall(opcode) &&
                 owner.equals("org/hibernate/Query") &&
                 name.equals("setMaxResults") &&
                 desc.equals("(I)Lorg/hibernate/Query;")) {
@@ -124,7 +122,13 @@ class MethodAdapter extends MethodVisitor {
         } else {
             mv.visitMethodInsn(opcode, owner, name, desc, itf);
         }
+    }
 
+    private boolean methodCall(int opcode) {
+        return opcode == Opcodes.INVOKESPECIAL ||
+                opcode == Opcodes.INVOKEVIRTUAL ||
+                opcode == Opcodes.INVOKEINTERFACE ||
+                opcode == Opcodes.INVOKESTATIC;
     }
 
     @Override
