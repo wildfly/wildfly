@@ -20,17 +20,39 @@
  */
 package org.jboss.as.jaxrs;
 
+import io.undertow.servlet.api.ServletContainer;
+import io.undertow.servlet.core.ManagedServlet;
+import io.undertow.servlet.handlers.ServletHandler;
+import org.jboss.as.controller.AbstractWriteAttributeHandler;
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.SimpleResourceDefinition;
-
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.RuntimePackageDependency;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.modules.ModuleIdentifier;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.resteasy.plugins.server.servlet.HttpServletDispatcher;
+import org.wildfly.extension.jaxrs.Constants;
+import org.wildfly.extension.jaxrs.ResetStatisticsOperation;
+import org.wildfly.extension.undertow.Server;
+import org.wildfly.extension.undertow.UndertowService;
+
+import javax.servlet.Servlet;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Map;
+
 /**
  *
  * @author <a href="mailto:ehugonne@redhat.com">Emmanuel Hugonnet</a> (c) 2014 Red Hat, inc.
  */
-public class JaxrsSubsystemDefinition extends SimpleResourceDefinition {
+public class JaxrsSubsystemDefinition extends PersistentResourceDefinition {
     public static final ModuleIdentifier RESTEASY_ATOM = ModuleIdentifier.create("org.jboss.resteasy.resteasy-atom-provider");
     public static final ModuleIdentifier RESTEASY_CDI = ModuleIdentifier.create("org.jboss.resteasy.resteasy-cdi");
     public static final ModuleIdentifier RESTEASY_CRYPTO = ModuleIdentifier.create("org.jboss.resteasy.resteasy-crypto");
@@ -44,7 +66,6 @@ public class JaxrsSubsystemDefinition extends SimpleResourceDefinition {
     public static final ModuleIdentifier RESTEASY_JSAPI = ModuleIdentifier.create("org.jboss.resteasy.resteasy-jsapi");
     public static final ModuleIdentifier RESTEASY_MULTIPART = ModuleIdentifier.create("org.jboss.resteasy.resteasy-multipart-provider");
     public static final ModuleIdentifier RESTEASY_YAML = ModuleIdentifier.create("org.jboss.resteasy.resteasy-yaml-provider");
-
 
     public static final ModuleIdentifier JACKSON_DATATYPE_JDK8 = ModuleIdentifier.create("com.fasterxml.jackson.datatype.jackson-datatype-jdk8");
     public static final ModuleIdentifier JACKSON_DATATYPE_JSR310 = ModuleIdentifier.create("com.fasterxml.jackson.datatype.jackson-datatype-jsr310");
@@ -60,6 +81,15 @@ public class JaxrsSubsystemDefinition extends SimpleResourceDefinition {
      */
     public static final ModuleIdentifier JACKSON_CORE_ASL = ModuleIdentifier.create("org.codehaus.jackson.jackson-core-asl");
 
+    public static final SimpleAttributeDefinition STATISTICS_ENABLED =
+            new SimpleAttributeDefinitionBuilder(Constants.STATISTICS_ENABLED,
+                    ModelType.BOOLEAN, true)
+                    .setAllowExpression(true)
+                    .setDefaultValue(new ModelNode(false))
+                    .build();
+
+    static final AttributeDefinition[] ATTRIBUTES = {STATISTICS_ENABLED};
+
     public static final JaxrsSubsystemDefinition INSTANCE = new JaxrsSubsystemDefinition();
 
     private JaxrsSubsystemDefinition() {
@@ -67,6 +97,79 @@ public class JaxrsSubsystemDefinition extends SimpleResourceDefinition {
                  .setAddHandler(JaxrsSubsystemAdd.INSTANCE)
                  .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE));
     }
+
+    @Override
+    public Collection<AttributeDefinition> getAttributes() {
+        return Arrays.asList(ATTRIBUTES);
+    }
+
+
+    @Override
+    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
+        super.registerOperations(resourceRegistration);
+        resourceRegistration.registerOperationHandler(ResetStatisticsOperation.DEFINITION,
+                ResetStatisticsOperation.INSTANCE);
+    }
+
+    @Override
+    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
+
+        resourceRegistration.registerReadWriteAttribute(STATISTICS_ENABLED,
+                null,  new AbstractWriteAttributeHandler<Void>(STATISTICS_ENABLED) {
+                    @Override
+                    protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Void> handbackHolder) throws OperationFailedException {
+
+                        setValue(context, resolvedValue.asBoolean());
+                        return false;
+                    }
+
+                    @Override
+                    protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode valueToRevert, Void handback) throws OperationFailedException {
+
+                        setValue(context, valueToRestore.asBoolean());
+                    }
+
+                    private void setValue(OperationContext context, boolean value) {
+
+                        ServiceController<?> controller = context.getServiceRegistry(false)
+                                .getService(UndertowService.UNDERTOW);
+
+                        if (controller != null) {
+                            UndertowService service = (UndertowService) controller.getService();
+
+                            if (service != null) {
+
+                                for (Server server : service.getServers()) {
+                                    ServletContainer servletContainer = server.getServletContainer()
+                                            .getValue().getValue().getServletContainer();
+
+                                    for (String name : servletContainer.listDeployments()) {
+                                        for (Map.Entry<String, ServletHandler> entry : servletContainer
+                                                .getDeployment(name).getDeployment().getServlets().getServletHandlers().entrySet()) {
+
+                                            ManagedServlet managedServlet = entry.getValue().getManagedServlet();
+
+                                            if (HttpServletDispatcher.class.isAssignableFrom(
+                                                    managedServlet.getServletInfo().getServletClass())) {
+
+                                                try {
+                                                    Servlet resteasyServlet = managedServlet.getServlet().getInstance();
+                                                    ((HttpServletDispatcher) resteasyServlet).getDispatcher()
+                                                            .getProviderFactory().getStatisticsController().setEnabled(value);
+                                                } catch (Exception e) {
+                                                    // no-op
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+    }
+
+
 
     @Override
     public void registerAdditionalRuntimePackages(ManagementResourceRegistration resourceRegistration) {

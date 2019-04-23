@@ -27,6 +27,7 @@ import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.jaxrs.deployment.JaxrsAnnotationProcessor;
@@ -54,11 +55,16 @@ class JaxrsSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     static final JaxrsSubsystemAdd INSTANCE = new JaxrsSubsystemAdd();
 
-    protected void populateModel(ModelNode operation, ModelNode model) {
-        model.setEmptyObject();
+    private JaxrsSubsystemAdd() {
+        super(JaxrsSubsystemDefinition.ATTRIBUTES);
     }
 
-    protected void performBoottime(final OperationContext context, ModelNode operation, Resource resource) {
+    protected void performBoottime(final OperationContext context, ModelNode operation, Resource resource)
+            throws OperationFailedException {
+
+        final ModelNode modelNode = resource.getModel();
+        final boolean isStatisticsEnabled = JaxrsSubsystemDefinition.STATISTICS_ENABLED
+                .resolveModelAttribute(context, modelNode).asBoolean();
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
         JaxrsLogger.JAXRS_LOGGER.resteasyVersion(ResteasyDeployment.class.getPackage().getImplementationVersion());
@@ -75,9 +81,10 @@ class JaxrsSubsystemAdd extends AbstractBoottimeAddStepHandler {
                     processorTarget.addDeploymentProcessor(JaxrsExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_JAXRS_CDI_INTEGRATION, new JaxrsCdiIntegrationProcessor());
                 }
                 processorTarget.addDeploymentProcessor(JaxrsExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_JAXRS_METHOD_PARAMETER, new JaxrsMethodParameterProcessor());
-
-                processorTarget.addDeploymentProcessor(JaxrsExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_JAXRS_DEPLOYMENT, new JaxrsIntegrationProcessor());
+                processorTarget.addDeploymentProcessor(JaxrsExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_JAXRS_DEPLOYMENT, new JaxrsIntegrationProcessor(isStatisticsEnabled));
             }
         }, OperationContext.Stage.RUNTIME);
+
+        final ModelNode model = resource.getModel();
     }
 }

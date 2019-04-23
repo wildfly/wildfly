@@ -86,7 +86,7 @@ public class JaxrsDeploymentDefinition extends SimpleResourceDefinition {
 
     private static class ShowJaxrsResourcesHandler implements OperationStepHandler {
         public static final SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(SHOW_RESOURCES,
-                JaxrsExtension.getResolver("deployment"))
+                JaxrsExtension.getResolver())
                 .setReadOnly()
                 .setRuntimeOnly()
                 .setReplyType(ModelType.LIST)

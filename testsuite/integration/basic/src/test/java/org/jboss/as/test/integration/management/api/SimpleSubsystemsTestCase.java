@@ -43,11 +43,6 @@ import static org.junit.Assert.assertTrue;
 public class SimpleSubsystemsTestCase extends ContainerResourceMgmtTestBase {
 
     @Test
-    public void testJaxrs() throws Exception {
-        testSimpleSubsystem("jaxrs");
-    }
-
-    @Test
     public void testSar() throws Exception {
         testSimpleSubsystem("sar");
     }

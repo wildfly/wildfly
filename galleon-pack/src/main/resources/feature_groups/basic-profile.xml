@@ -102,7 +102,7 @@
     <feature-group name="jca"/>
     <feature-group name="jpa"/>
     <feature spec="subsystem.jsf"/>
-    <feature spec="subsystem.jaxrs"/>
+    <feature-group name="jaxrs"/>
     <feature spec="subsystem.jdr"/>
     <feature spec="subsystem.weld"/>
     <feature spec="subsystem.microprofile-config-smallrye"/>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="jaxrs" xmlns="urn:jboss:galleon:feature-group:1.0">
+   <feature spec="subsystem.jaxrs">
+      <param name="statistics-enabled" value="${wildfly.jaxrs.statistics-enabled:${wildfly.statistics-enabled:false}}"/>
+   </feature>
+</feature-group-spec>

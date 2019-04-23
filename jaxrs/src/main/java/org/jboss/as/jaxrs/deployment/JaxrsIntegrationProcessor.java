@@ -35,7 +35,6 @@ import java.util.Set;
 
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
-
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
@@ -80,6 +79,11 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
     public static final String RESTEASY_SCAN = "resteasy.scan";
     public static final String RESTEASY_SCAN_RESOURCES = "resteasy.scan.resources";
     public static final String RESTEASY_SCAN_PROVIDERS = "resteasy.scan.providers";
+    private final boolean isStatisticsEnabled;
+
+    public JaxrsIntegrationProcessor(boolean isStatisticsEnabled) {
+        this.isStatisticsEnabled = isStatisticsEnabled;
+    }
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -101,6 +105,9 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
 
         if (resteasy == null)
             return;
+
+        setContextParameter(webdata, ResteasyContextParameters.RESTEASY_STATISTICS_ENABLED,
+                    String.valueOf(isStatisticsEnabled));
 
         deploymentUnit.getDeploymentSubsystemModel(JaxrsExtension.SUBSYSTEM_NAME);
         final List<ParamValueMetaData> params = webdata.getContextParams();
@@ -457,6 +464,4 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
         }
         params.add(param);
     }
-
-
 }

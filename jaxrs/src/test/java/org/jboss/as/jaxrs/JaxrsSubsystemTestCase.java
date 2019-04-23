@@ -37,12 +37,12 @@ public class JaxrsSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return "<subsystem xmlns=\"urn:jboss:domain:jaxrs:1.0\"/>";
+        return "<subsystem xmlns=\"urn:jboss:domain:jaxrs:2.0\"/>";
     }
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/jboss-as-jaxrs_1_0.xsd";
+        return "schema/jboss-as-jaxrs_2_0.xsd";
     }
 
     @Override
