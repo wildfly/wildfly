@@ -84,7 +84,7 @@ public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
                         .setDynamicNameMapper(DynamicNameMappers.PARENT)
                         .build();
 
-    public static final SimpleAttributeDefinition OUTBOUND_SOCKET_BINDING = new SimpleAttributeDefinitionBuilder("outbound-socket-binding", ModelType.STRING, true)
+    public static final SimpleAttributeDefinition OUTBOUND_SOCKET_BINDING = new SimpleAttributeDefinitionBuilder("outbound-socket-binding", ModelType.STRING)
             .setRequired(true)
             .setValidator(new StringLengthValidator(1, false))
             .setAllowExpression(true)
