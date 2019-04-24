@@ -133,12 +133,18 @@ public class JdbcDriverAdd extends AbstractAddStepHandler {
             final ServiceLoader<Driver> serviceLoader = module.loadService(Driver.class);
             boolean driverLoaded = false;
             if (serviceLoader != null) {
+                ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+                Thread.currentThread().setContextClassLoader(module.getClassLoader());
+                try {
                 for (Driver driver : serviceLoader) {
                     startDriverServices(target, moduleId, driver, driverName, majorVersion, minorVersion, dataSourceClassName, xaDataSourceClassName);
                     driverLoaded = true;
                     //just consider first definition and create service for this. User can use different implementation only
                     // w/ explicit declaration of driver-class attribute
                     break;
+                }
+                } finally {
+                    Thread.currentThread().setContextClassLoader(tccl);
                 }
             }
             if (!driverLoaded)
@@ -147,8 +153,15 @@ public class JdbcDriverAdd extends AbstractAddStepHandler {
             try {
                 final Class<? extends Driver> driverClass = module.getClassLoader().loadClass(driverClassName)
                         .asSubclass(Driver.class);
-                final Constructor<? extends Driver> constructor = driverClass.getConstructor();
-                final Driver driver = constructor.newInstance();
+                ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+                Driver driver = null;
+                try {
+                    Thread.currentThread().setContextClassLoader(module.getClassLoader());
+                    final Constructor<? extends Driver> constructor = driverClass.getConstructor();
+                    driver = constructor.newInstance();
+                } finally {
+                    Thread.currentThread().setContextClassLoader(tccl);
+                }
                 startDriverServices(target, moduleId, driver, driverName, majorVersion, minorVersion, dataSourceClassName, xaDataSourceClassName);
             } catch (Exception e) {
                 SUBSYSTEM_DATASOURCES_LOGGER.cannotInstantiateDriverClass(driverClassName, e);
