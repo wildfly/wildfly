@@ -162,6 +162,7 @@ public interface EJB3SubsystemModel {
 
     //Server interceptors
     String SERVER_INTERCEPTOR = "server-interceptor";
+    String SERVER_INTERCEPTORS = "server-interceptors";
     String MODULE = "module";
     String CLASS = "class";
     String BINDING = "binding";
