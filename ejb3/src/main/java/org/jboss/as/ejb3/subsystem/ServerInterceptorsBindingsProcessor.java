@@ -19,47 +19,48 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.ejb3.subsystem;
 
-
-
-import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.ee.component.Attachments;
+import org.jboss.as.ee.component.ComponentDescription;
+import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ee.component.InterceptorDescription;
+import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.module.ModuleDependency;
-import org.jboss.as.server.deployment.module.ModuleSpecification;
-import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
-import org.jboss.modules.ModuleLoader;
+
+import java.util.Collection;
 
 /**
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  */
-public class ServerInterceptorDependencyDeploymentUnitProcessor implements DeploymentUnitProcessor {
+public class ServerInterceptorsBindingsProcessor implements DeploymentUnitProcessor {
 
-    final String interceptorModule;
+    private final Collection<String> interceptorClasses;
 
-    public ServerInterceptorDependencyDeploymentUnitProcessor(String interceptorModule){
-        this.interceptorModule = interceptorModule;
+    ServerInterceptorsBindingsProcessor(final Collection<String> interceptorClasses){
+        this.interceptorClasses = interceptorClasses;
     }
+
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-
-        final ModuleLoader moduleLoader = Module.getBootModuleLoader();
-        final ModuleSpecification deploymentModuleSpec = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
-        final ModuleIdentifier interceptorModuleId = ModuleIdentifier.create(interceptorModule);
-
-        deploymentModuleSpec.addSystemDependency(new ModuleDependency(moduleLoader, interceptorModuleId, false, false, true, false));
+        final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
+        for (final ComponentDescription componentDescription : eeModuleDescription.getComponentDescriptions()) {
+            if (!(componentDescription instanceof EJBComponentDescription)) {
+                continue;
+            }
+            final EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) componentDescription;
+            for(final String interceptorClass : interceptorClasses) {
+                ejbComponentDescription.getServerInterceptors().add(new InterceptorDescription(interceptorClass));
+            }
+        }
     }
 
     @Override
     public void undeploy(final DeploymentUnit context) {
-
     }
 }

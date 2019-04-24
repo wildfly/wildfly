@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -33,8 +33,10 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttri
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.APPLICATION_SECURITY_DOMAIN;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CLASS;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.IDENTITY;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SERVER_INTERCEPTOR;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.MODULE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SERVER_INTERCEPTORS;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SERVICE;
 
 import java.util.Collections;
@@ -86,7 +88,7 @@ public class EJB3Subsystem50Parser extends EJB3Subsystem40Parser {
                 break;
             }
             case SERVER_INTERCEPTORS: {
-                parseServerInterceptors(reader, operations);
+                parseServerInterceptors(reader, ejb3SubsystemAddOperation);
                 break;
             }
             default: {
@@ -337,12 +339,14 @@ public class EJB3Subsystem50Parser extends EJB3Subsystem40Parser {
         return staticDiscovery;
     }
 
-    protected void parseServerInterceptors(final XMLExtendedStreamReader reader, final List<ModelNode> operations) throws XMLStreamException {
+    protected void parseServerInterceptors(final XMLExtendedStreamReader reader, final ModelNode ejbSubsystemAddOperation) throws XMLStreamException {
+        final ModelNode interceptors = new ModelNode();
+
         requireNoAttributes(reader);
         while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
             switch (EJB3SubsystemXMLElement.forName(reader.getLocalName())) {
                 case INTERCEPTOR: {
-                    parseInterceptor(reader, operations);
+                    parseInterceptor(reader, interceptors);
                     break;
                 }
                 default: {
@@ -351,28 +355,23 @@ public class EJB3Subsystem50Parser extends EJB3Subsystem40Parser {
             }
         }
         requireNoContent(reader);
+
+        ejbSubsystemAddOperation.get(SERVER_INTERCEPTORS).set(interceptors);
     }
 
 
-    protected void parseInterceptor(final XMLExtendedStreamReader reader, final List<ModelNode> operations) throws XMLStreamException {
-
-        String name = null;
-        final ModelNode operation = Util.createAddOperation();
-
+    protected void parseInterceptor(final XMLExtendedStreamReader reader, final ModelNode interceptors) throws XMLStreamException {
+        final ModelNode interceptor = new ModelNode();
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             requireNoNamespaceAttribute(reader, i);
             final String value = reader.getAttributeValue(i);
             switch (EJB3SubsystemXMLAttribute.forName(reader.getAttributeLocalName(i))) {
-                case NAME: {
-                    name = value;
-                    break;
-                }
                 case MODULE: {
-                    ServerInterceptorDefinition.MODULE.parseAndSetParameter(value, operation, reader);
+                    interceptor.get(MODULE).set(value);
                     break;
                 }
                 case CLASS: {
-                    ServerInterceptorDefinition.CLASS.parseAndSetParameter(value, operation, reader);
+                    interceptor.get(CLASS).set(value);
                     break;
                 }
                 default: {
@@ -380,11 +379,8 @@ public class EJB3Subsystem50Parser extends EJB3Subsystem40Parser {
                 }
             }
         }
-        if (name == null) {
-            throw missingRequired(reader, Collections.singleton(EJB3SubsystemXMLAttribute.NAME.getLocalName()));
-        }
-        // create and add the operation
-        operation.get(OP_ADDR).set(SUBSYSTEM_PATH.append(SERVER_INTERCEPTOR, name).toModelNode());
-        operations.add(operation);
+        requireNoContent(reader);
+
+        interceptors.add(interceptor);
     }
 }
