@@ -22,12 +22,12 @@
 
 package org.wildfly.clustering.ee.immutable;
 
+import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.wildfly.clustering.ee.Immutability;
 
@@ -42,15 +42,17 @@ public class CollectionImmutability implements Immutability {
     private final List<Class<?>> unmodifiableCollectionClasses = Arrays.asList(
                 Collections.singleton(null).getClass(),
                 Collections.singletonList(null).getClass(),
-                Collections.singletonMap(null, null).getClass(),
                 Collections.unmodifiableCollection(Collections.emptyList()).getClass(),
                 Collections.unmodifiableList(Collections.emptyList()).getClass(),
-                Collections.unmodifiableMap(Collections.emptyMap()).getClass(),
-                Collections.unmodifiableNavigableMap(Collections.emptyNavigableMap()).getClass(),
                 Collections.unmodifiableNavigableSet(Collections.emptyNavigableSet()).getClass(),
                 Collections.unmodifiableSet(Collections.emptySet()).getClass(),
-                Collections.unmodifiableSortedMap(Collections.emptySortedMap()).getClass(),
                 Collections.unmodifiableSortedSet(Collections.emptySortedSet()).getClass());
+
+    private final List<Class<?>> unmodifiableMapClasses = Arrays.asList(
+                Collections.singletonMap(null, null).getClass(),
+                Collections.unmodifiableMap(Collections.emptyMap()).getClass(),
+                Collections.unmodifiableNavigableMap(Collections.emptyNavigableMap()).getClass(),
+                Collections.unmodifiableSortedMap(Collections.emptySortedMap()).getClass());
 
     private final Immutability elementImmutability;
 
@@ -62,17 +64,30 @@ public class CollectionImmutability implements Immutability {
     public boolean test(Object object) {
         for (Class<?> unmodifiableCollectionClass : this.unmodifiableCollectionClasses) {
             if (unmodifiableCollectionClass.isInstance(object)) {
-                // An unmodifiable set should be immutable.
-                if (object instanceof Set) return true;
                 // An unmodifiable collection is immutable if its members are immutable.
-                // An unmodifiable map should be immutable if its values are immutable.
-                Collection<?> collection = (object instanceof Map) ? ((Map<?, ?>) object).values() : (Collection<?>) object;
-                for (Object element : collection) {
+                for (Object element : (Collection<?>) object) {
                     if (!this.elementImmutability.test(element)) return false;
                 }
                 return true;
             }
         }
+        for (Class<?> unmodifiableMapClass : this.unmodifiableMapClasses) {
+            if (unmodifiableMapClass.isInstance(object)) {
+                // An unmodifiable map is immutable if its entries are immutable.
+                for (Map.Entry<?, ?> entry : ((Map<?, ?>) object).entrySet()) {
+                    if (!this.test(entry)) return false;
+                }
+                return true;
+            }
+        }
+        if (object instanceof AbstractMap.SimpleImmutableEntry) {
+            return this.test((Map.Entry<?, ?>) object);
+        }
         return false;
+    }
+
+    // An unmodifiable map entry is immutable if its key and value are immutable.
+    private boolean test(Map.Entry<?, ?> entry) {
+        return this.elementImmutability.test(entry.getKey()) && this.elementImmutability.test(entry.getValue());
     }
 }

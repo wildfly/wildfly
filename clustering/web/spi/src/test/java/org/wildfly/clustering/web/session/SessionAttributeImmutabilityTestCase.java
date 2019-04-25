@@ -24,12 +24,15 @@ package org.wildfly.clustering.web.session;
 
 import static org.junit.Assert.assertTrue;
 
+import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.EnumSet;
 
 import org.junit.Test;
+import org.wildfly.clustering.ee.CompositeIterable;
 import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.immutable.CompositeImmutability;
+import org.wildfly.clustering.ee.immutable.DefaultImmutability;
 import org.wildfly.clustering.ee.immutable.ImmutabilityTestCase;
 import org.wildfly.clustering.web.annotation.Immutable;
 
@@ -41,15 +44,18 @@ public class SessionAttributeImmutabilityTestCase extends ImmutabilityTestCase {
     @Override
     @Test
     public void test() throws Exception {
-        this.test(new CompositeImmutability(EnumSet.allOf(SessionAttributeImmutability.class)));
+        this.test(new CompositeImmutability(new CompositeIterable<>(EnumSet.allOf(DefaultImmutability.class), EnumSet.allOf(SessionAttributeImmutability.class))));
     }
 
     @Override
     protected void test(Immutability immutability) throws Exception {
+        ImmutableObject immutableObject = new ImmutableObject();
+
         assertTrue(immutability.test(new ImmutableObject()));
-        assertTrue(immutability.test(Collections.singleton(new ImmutableObject())));
-        assertTrue(immutability.test(Collections.singletonList(new ImmutableObject())));
-        assertTrue(immutability.test(Collections.singletonMap("1", new ImmutableObject())));
+        assertTrue(immutability.test(Collections.singleton(immutableObject)));
+        assertTrue(immutability.test(Collections.singletonList(immutableObject)));
+        assertTrue(immutability.test(Collections.singletonMap("1", immutableObject)));
+        assertTrue(immutability.test(new AbstractMap.SimpleImmutableEntry<>("1", immutableObject)));
     }
 
     @Immutable
