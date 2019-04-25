@@ -53,6 +53,7 @@ import java.time.temporal.WeekFields;
 import java.time.zone.ZoneOffsetTransitionRule;
 import java.time.zone.ZoneOffsetTransitionRule.TimeDefinition;
 import java.time.zone.ZoneRules;
+import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Currency;
@@ -152,6 +153,7 @@ public class ImmutabilityTestCase {
         assertTrue(immutability.test(Collections.singleton(new JCIPImmutableObject())));
         assertTrue(immutability.test(Collections.singletonList(new JCIPImmutableObject())));
         assertTrue(immutability.test(Collections.singletonMap("1", new JCIPImmutableObject())));
+        assertTrue(immutability.test(new AbstractMap.SimpleImmutableEntry<>("1", new JCIPImmutableObject())));
 
         assertTrue(immutability.test(Collections.unmodifiableCollection(Arrays.asList("1", "2"))));
         assertTrue(immutability.test(Collections.unmodifiableList(Arrays.asList("1", "2"))));
@@ -165,6 +167,7 @@ public class ImmutabilityTestCase {
         Object mutableObject = new AtomicInteger();
         assertFalse(immutability.test(Collections.singletonList(mutableObject)));
         assertFalse(immutability.test(Collections.singletonMap("1", mutableObject)));
+        assertFalse(immutability.test(new AbstractMap.SimpleImmutableEntry<>("1", mutableObject)));
     }
 
     @net.jcip.annotations.Immutable
