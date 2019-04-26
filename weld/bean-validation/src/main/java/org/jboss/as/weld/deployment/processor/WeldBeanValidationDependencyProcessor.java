@@ -21,7 +21,9 @@
  */
 package org.jboss.as.weld.deployment.processor;
 
-import org.jboss.as.ee.weld.WeldDeploymentMarker;
+import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
+
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -29,6 +31,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
+import org.jboss.as.weld.WeldCapability;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
@@ -47,10 +50,19 @@ public class WeldBeanValidationDependencyProcessor implements DeploymentUnitProc
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
+        final CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
 
-        if (!WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
+        final WeldCapability weldCapability;
+        try {
+            weldCapability = support.getCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class);
+        } catch (CapabilityServiceSupport.NoSuchCapabilityException ignored) {
+            return;
+        }
+
+        if (!weldCapability.isPartOfWeldDeployment(deploymentUnit)) {
             return; // Skip if there are no beans.xml files in the deployment
         }
+
         ModuleDependency cdiBeanValidationDep = new ModuleDependency(moduleLoader, CDI_BEAN_VALIDATION_ID, false, false, true, false);
         moduleSpecification.addSystemDependency(cdiBeanValidationDep);
     }

@@ -24,6 +24,7 @@ package org.jboss.as.jpa.processor;
 
 import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
 import static org.jboss.as.server.Services.addServerExecutorDependency;
+import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -33,8 +34,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 
-import javax.enterprise.inject.spi.BeanManager;
 import javax.persistence.SynchronizationType;
 import javax.persistence.ValidationMode;
 import javax.persistence.spi.PersistenceProvider;
@@ -54,7 +55,6 @@ import org.jboss.as.ee.beanvalidation.BeanValidationAttachments;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
-import org.jboss.as.ee.weld.WeldDeploymentMarker;
 import org.jboss.as.jpa.beanmanager.BeanManagerAfterDeploymentValidation;
 import org.jboss.as.jpa.beanmanager.ProxyBeanManager;
 import org.jboss.as.jpa.config.Configuration;
@@ -90,7 +90,7 @@ import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.deployment.JPADeploymentMarker;
 import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.as.weld.deployment.WeldPortableExtensions;
+import org.jboss.as.weld.WeldCapability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.jandex.Index;
@@ -338,7 +338,7 @@ public class PersistenceUnitServiceHandler {
                     validatorFactory = deploymentUnit.getAttachment(BeanValidationAttachments.VALIDATOR_FACTORY);
                 }
             }
-            BeanManagerAfterDeploymentValidation beanManagerAfterDeploymentValidation = registerJPAEntityListenerRegister(deploymentUnit);
+            BeanManagerAfterDeploymentValidation beanManagerAfterDeploymentValidation = registerJPAEntityListenerRegister(deploymentUnit, capabilitySupport);
 
             final PersistenceAdaptorRemoval persistenceAdaptorRemoval = new PersistenceAdaptorRemoval(pu, adaptor);
             deploymentUnit.addToAttachmentList(REMOVAL_KEY, persistenceAdaptorRemoval);
@@ -398,8 +398,10 @@ public class PersistenceUnitServiceHandler {
 
             // JPA 2.1 sections 3.5.1 + 9.1 require the CDI bean manager to be passed to the peristence provider
             // if the persistence unit is contained in a deployment that is a CDI bean archive (has beans.xml).
-            if (allowCdiBeanManagerAccess && WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
-                builder.addDependency(beanManagerServiceName(deploymentUnit), Object.class, new CastingInjector<BeanManager>(service.getBeanManagerInjector(), BeanManager.class));
+            final CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
+            if (support.hasCapability(WELD_CAPABILITY_NAME) && allowCdiBeanManagerAccess) {
+                support.getOptionalCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class).get()
+                        .addBeanManagerService(deploymentUnit, builder, service.getBeanManagerInjector());
             }
 
             try {
@@ -460,10 +462,16 @@ public class PersistenceUnitServiceHandler {
             ProxyBeanManager proxyBeanManager = null;
             // JPA 2.1 sections 3.5.1 + 9.1 require the CDI bean manager to be passed to the peristence provider
             // if the persistence unit is contained in a deployment that is a CDI bean archive (has beans.xml).
-            if (WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
+            final CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
+            boolean partOfWeldDeployment = false;
+            if (support.hasCapability(WELD_CAPABILITY_NAME)) {
+                partOfWeldDeployment = support.getOptionalCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class).get()
+                        .isPartOfWeldDeployment(deploymentUnit);
+            }
+            if (partOfWeldDeployment) {
                 proxyBeanManager = new ProxyBeanManager();
-                registerJPAEntityListenerRegister(deploymentUnit); // register CDI extension before WeldDeploymentProcessor, which is important for
-                                                                   // EAR deployments that contain a WAR that has persistence units defined.
+                registerJPAEntityListenerRegister(deploymentUnit, support); // register CDI extension before WeldDeploymentProcessor, which is important for
+                                                                            // EAR deployments that contain a WAR that has persistence units defined.
             }
 
             deploymentUnit.addToAttachmentList(REMOVAL_KEY, new PersistenceAdaptorRemoval(pu, adaptor));
@@ -571,7 +579,7 @@ public class PersistenceUnitServiceHandler {
                 // Get the CDI-enabled ValidatorFactory
                 validatorFactory = deploymentUnit.getAttachment(BeanValidationAttachments.VALIDATOR_FACTORY);
             }
-            BeanManagerAfterDeploymentValidation beanManagerAfterDeploymentValidation = registerJPAEntityListenerRegister(deploymentUnit);
+            BeanManagerAfterDeploymentValidation beanManagerAfterDeploymentValidation = registerJPAEntityListenerRegister(deploymentUnit, capabilitySupport);
             final PersistenceAdaptorRemoval persistenceAdaptorRemoval =  new PersistenceAdaptorRemoval(pu, adaptor);
             deploymentUnit.addToAttachmentList(REMOVAL_KEY, persistenceAdaptorRemoval);
 
@@ -631,10 +639,12 @@ public class PersistenceUnitServiceHandler {
                 }
             }
 
-            // JPA 2.1 sections 3.5.1 + 9.1 require the CDI bean manager to be passed to the peristence provider
+            // JPA 2.1 sections 3.5.1 + 9.1 require the CDI bean manager to be passed to the persistence provider
             // if the persistence unit is contained in a deployment that is a CDI bean archive (has beans.xml).
-            if (WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
-                builder.addDependency(beanManagerServiceName(deploymentUnit), Object.class, new CastingInjector<BeanManager>(service.getBeanManagerInjector(), BeanManager.class));
+            final CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
+            if (support.hasCapability(WELD_CAPABILITY_NAME)) {
+                support.getOptionalCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class).get()
+                        .addBeanManagerService(deploymentUnit, builder, service.getBeanManagerInjector());
             }
 
             try {
@@ -732,10 +742,6 @@ public class PersistenceUnitServiceHandler {
                     }
                 }).install();
         }
-    }
-
-    private static ServiceName beanManagerServiceName(final DeploymentUnit deploymentUnit) {
-        return deploymentUnit.getServiceName().append(BEANMANAGER_NAME);
     }
 
     /**
@@ -1142,23 +1148,25 @@ public class PersistenceUnitServiceHandler {
         return deploymentUnit.getAttachment(JpaAttachments.DEPLOYED_PERSISTENCE_PROVIDER);
     }
 
-    private static BeanManagerAfterDeploymentValidation registerJPAEntityListenerRegister(DeploymentUnit deploymentUnit) {
+    private static BeanManagerAfterDeploymentValidation registerJPAEntityListenerRegister(DeploymentUnit deploymentUnit, CapabilityServiceSupport support) {
         deploymentUnit = DeploymentUtils.getTopDeploymentUnit(deploymentUnit);
-        if (WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
-            synchronized (deploymentUnit) {
-                BeanManagerAfterDeploymentValidation beanManagerAfterDeploymentValidation = deploymentUnit.getAttachment(JpaAttachments.BEAN_MANAGER_AFTER_DEPLOYMENT_VALIDATION_ATTACHMENT_KEY);
-                if (null == beanManagerAfterDeploymentValidation) {
-                    beanManagerAfterDeploymentValidation = new BeanManagerAfterDeploymentValidation();
-                    deploymentUnit.putAttachment(JpaAttachments.BEAN_MANAGER_AFTER_DEPLOYMENT_VALIDATION_ATTACHMENT_KEY, beanManagerAfterDeploymentValidation);
-                    WeldPortableExtensions extensions = WeldPortableExtensions.getPortableExtensions(deploymentUnit);
-                    extensions.registerExtensionInstance(beanManagerAfterDeploymentValidation, deploymentUnit);
+        if (support.hasCapability(WELD_CAPABILITY_NAME)) {
+            Optional<WeldCapability> weldCapability = support.getOptionalCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class);
+
+            if (weldCapability.get().isPartOfWeldDeployment(deploymentUnit)) {
+                synchronized (deploymentUnit) {
+                    BeanManagerAfterDeploymentValidation beanManagerAfterDeploymentValidation = deploymentUnit.getAttachment(JpaAttachments.BEAN_MANAGER_AFTER_DEPLOYMENT_VALIDATION_ATTACHMENT_KEY);
+                    if (null == beanManagerAfterDeploymentValidation) {
+                        beanManagerAfterDeploymentValidation = new BeanManagerAfterDeploymentValidation();
+                        deploymentUnit.putAttachment(JpaAttachments.BEAN_MANAGER_AFTER_DEPLOYMENT_VALIDATION_ATTACHMENT_KEY, beanManagerAfterDeploymentValidation);
+                        weldCapability.get().registerExtensionInstance(beanManagerAfterDeploymentValidation, deploymentUnit);
+                    }
+                    return beanManagerAfterDeploymentValidation;
                 }
-                return beanManagerAfterDeploymentValidation;
             }
         }
-        else {
-            return new BeanManagerAfterDeploymentValidation(true);
-        }
+
+        return new BeanManagerAfterDeploymentValidation(true);
     }
 
     private static class PersistenceAdaptorRemoval {

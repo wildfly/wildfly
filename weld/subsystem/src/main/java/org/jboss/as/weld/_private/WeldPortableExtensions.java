@@ -1,4 +1,4 @@
-package org.jboss.as.weld.deployment;
+package org.jboss.as.weld._private;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -23,10 +23,7 @@ import org.jboss.weld.bootstrap.spi.helpers.MetadataImpl;
  * This container provides a mechanism for making sure that only a single PE of a given type is registered.
  *
  * @author Stuart Douglas
- *
- * @deprecated Use WeldCapability to get access to the functionality of this class.
  */
-@Deprecated
 public class WeldPortableExtensions {
 
     public static final AttachmentKey<WeldPortableExtensions> ATTACHMENT_KEY = AttachmentKey.create(WeldPortableExtensions.class);

@@ -22,9 +22,12 @@
 
 package org.jboss.as.jaxrs.deployment;
 
+import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
+
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -32,7 +35,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
-import org.jboss.as.ee.weld.WeldDeploymentMarker;
+
 import static org.jboss.as.jaxrs.JaxrsSubsystemDefinition.JACKSON_CORE_ASL;
 import static org.jboss.as.jaxrs.JaxrsSubsystemDefinition.JACKSON_DATATYPE_JDK8;
 import static org.jboss.as.jaxrs.JaxrsSubsystemDefinition.JACKSON_DATATYPE_JSR310;
@@ -52,6 +55,7 @@ import static org.jboss.as.jaxrs.JaxrsSubsystemDefinition.RESTEASY_MULTIPART;
 import static org.jboss.as.jaxrs.JaxrsSubsystemDefinition.RESTEASY_VALIDATOR_11;
 import static org.jboss.as.jaxrs.JaxrsSubsystemDefinition.RESTEASY_YAML;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.as.weld.WeldCapability;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
@@ -95,10 +99,13 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
         addDependency(moduleSpecification, moduleLoader, JACKSON_DATATYPE_JDK8, true, false);
         addDependency(moduleSpecification, moduleLoader, JACKSON_DATATYPE_JSR310, true, false);
 
-        if (WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
-            addDependency(moduleSpecification, moduleLoader, RESTEASY_CDI, true, false);
+        final CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
+        if (support.hasCapability(WELD_CAPABILITY_NAME)) {
+            final WeldCapability api = support.getOptionalCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class).get();
+            if (api.isPartOfWeldDeployment(deploymentUnit)) {
+                addDependency(moduleSpecification, moduleLoader, RESTEASY_CDI, true, false);
+            }
         }
-
     }
 
     private boolean isClientBuilderInDeployment(DeploymentUnit deploymentUnit) {

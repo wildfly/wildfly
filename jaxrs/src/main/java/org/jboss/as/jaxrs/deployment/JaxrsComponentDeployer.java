@@ -23,19 +23,21 @@
 package org.jboss.as.jaxrs.deployment;
 
 import static org.jboss.as.jaxrs.logging.JaxrsLogger.JAXRS_LOGGER;
+import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
 
 import java.util.Arrays;
 
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.managedbean.component.ManagedBeanComponentDescription;
-import org.jboss.as.ee.weld.WeldDeploymentMarker;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.weld.WeldCapability;
 import org.jboss.modules.Module;
 import org.jboss.resteasy.util.GetRestful;
 
@@ -81,6 +83,12 @@ public class JaxrsComponentDeployer implements DeploymentUnitProcessor {
 
         final ClassLoader loader = module.getClassLoader();
 
+        final CapabilityServiceSupport support = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT);
+        boolean partOfWeldDeployment = false;
+        if (support.hasCapability(WELD_CAPABILITY_NAME)) {
+            partOfWeldDeployment = support.getOptionalCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class).get()
+                    .isPartOfWeldDeployment(deploymentUnit);
+        }
         for (final ComponentDescription component : moduleDescription.getComponentDescriptions()) {
             Class<?> componentClass = null;
             try {
@@ -95,7 +103,7 @@ public class JaxrsComponentDeployer implements DeploymentUnitProcessor {
                     //using SFSB's as JAX-RS endpoints is not recommended, but if people really want to do it they can
 
                     JAXRS_LOGGER.debugf("Stateful session bean %s is being used as a JAX-RS endpoint, this is not recommended", component.getComponentName());
-                    if (WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
+                    if (partOfWeldDeployment) {
                         //if possible just let CDI handle the integration
                         continue;
                     }

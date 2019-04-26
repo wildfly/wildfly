@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ee.weld;
+package org.jboss.as.weld._private;
 
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -28,10 +28,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
  * Marker for top level deployments that contain a beans.xml file
  *
  * @author Stuart Douglas
- *
- * @deprecated Use WeldCapability to get access to the functionality of this class.
  */
-@Deprecated
 public class WeldDeploymentMarker {
 
     private static final AttachmentKey<Boolean> MARKER = AttachmentKey.create(Boolean.class);
@@ -70,3 +67,4 @@ public class WeldDeploymentMarker {
 
     }
 }
+

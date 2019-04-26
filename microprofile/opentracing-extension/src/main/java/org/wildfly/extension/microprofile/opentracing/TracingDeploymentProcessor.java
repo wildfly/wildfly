@@ -22,13 +22,18 @@
 
 package org.wildfly.extension.microprofile.opentracing;
 
+import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
+
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
-import org.jboss.as.ee.weld.WeldDeploymentMarker;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.web.common.WarMetaData;
+import org.jboss.as.weld.WeldCapability;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.ListenerMetaData;
@@ -40,15 +45,28 @@ import java.util.List;
 
 public class TracingDeploymentProcessor implements DeploymentUnitProcessor {
     @Override
-    public void deploy(DeploymentPhaseContext deploymentPhaseContext) {
+    public void deploy(DeploymentPhaseContext deploymentPhaseContext) throws DeploymentUnitProcessingException {
         TracingExtensionLogger.ROOT_LOGGER.processingDeployment();
-        DeploymentUnit deploymentUnit = deploymentPhaseContext.getDeploymentUnit();
+
+        final DeploymentUnit deploymentUnit = deploymentPhaseContext.getDeploymentUnit();
+        final CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
+
+        final WeldCapability weldCapability;
+        try {
+            weldCapability = support.getCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class);
+        } catch (CapabilityServiceSupport.NoSuchCapabilityException e) {
+            //We should not be here since the subsystem depends on weld capability. Just in case ...
+            throw new DeploymentUnitProcessingException(TracingExtensionLogger.ROOT_LOGGER.deploymentRequiresCapability(
+                    deploymentPhaseContext.getDeploymentUnit().getName(),
+                    WELD_CAPABILITY_NAME
+            ));
+        }
 
         if (DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
             return;
         }
 
-        if (!WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
+        if (!weldCapability.isPartOfWeldDeployment(deploymentUnit)) {
             // SmallRye JAX-RS requires CDI. Without CDI, there's no integration needed
             TracingExtensionLogger.ROOT_LOGGER.noCdiDeployment();
             return;

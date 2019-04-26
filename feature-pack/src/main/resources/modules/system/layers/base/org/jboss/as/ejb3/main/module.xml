@@ -59,7 +59,6 @@
         <module name="org.wildfly.extension.request-controller"/>
         <module name="org.wildfly.discovery"/>
         <module name="org.jboss.as.controller"/>
-        <module name="org.jboss.as.weld"/>
         <!-- So we can access its integration API -->
         <module name="org.jboss.as.connector"/>
         <!-- Need access to org.jboss.as.core.security.ServerSecurityManager -->

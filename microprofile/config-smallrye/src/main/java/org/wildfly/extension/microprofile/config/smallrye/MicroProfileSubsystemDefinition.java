@@ -22,24 +22,34 @@
 
 package org.wildfly.extension.microprofile.config.smallrye;
 
+import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
+
 import java.util.Collection;
 import java.util.Collections;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
+import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
 /**
  * @author <a href="mailto:tcerar@redhat.com">Tomaz Cerar</a>
  */
 class MicroProfileSubsystemDefinition extends PersistentResourceDefinition {
+    static final String CONFIG_CAPABILITY_NAME = "org.wildlfy.microprofile.config";
+
+    static final RuntimeCapability<Void> CONFIG_CAPABILITY =
+            RuntimeCapability.Builder.of(CONFIG_CAPABILITY_NAME)
+                    .addRequirements(WELD_CAPABILITY_NAME)
+                    .build();
+
     protected MicroProfileSubsystemDefinition() {
-        super(MicroProfileConfigExtension.SUBSYSTEM_PATH,
-                MicroProfileConfigExtension.getResourceDescriptionResolver(MicroProfileConfigExtension.SUBSYSTEM_NAME),
-                //We always need to add an 'add' operation
-                new MicroProfileConfigSubsystemAdd(),
-                //Every resource that is added, normally needs a remove operation
-                new MicroProfileConfigSubsystemRemove());
+        super(new SimpleResourceDefinition.Parameters(MicroProfileConfigExtension.SUBSYSTEM_PATH, MicroProfileConfigExtension.getResourceDescriptionResolver(MicroProfileConfigExtension.SUBSYSTEM_NAME))
+                .setAddHandler(new MicroProfileConfigSubsystemAdd())
+                .setRemoveHandler(new MicroProfileConfigSubsystemRemove())
+                .setCapabilities(CONFIG_CAPABILITY)
+        );
     }
 
     @Override

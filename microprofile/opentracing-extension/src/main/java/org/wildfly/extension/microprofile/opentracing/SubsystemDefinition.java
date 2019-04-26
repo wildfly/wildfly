@@ -22,9 +22,13 @@
 
 package org.wildfly.extension.microprofile.opentracing;
 
+import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -32,6 +36,12 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.RuntimePackageDependency;
 
 public class SubsystemDefinition extends PersistentResourceDefinition {
+    private static final String OPENTRACING_CAPABILITY_NAME = "org.wildfly.microprofile.opentracing";
+
+    private static final RuntimeCapability<Void> OPENTRACING_CAPABILITY = RuntimeCapability.Builder
+            .of(OPENTRACING_CAPABILITY_NAME)
+            .addRequirements(WELD_CAPABILITY_NAME)
+            .build();
 
     static final String[] MODULES = {
             "io.jaegertracing.jaeger",
@@ -46,11 +56,10 @@ public class SubsystemDefinition extends PersistentResourceDefinition {
             "org.wildfly.microprofile.opentracing-smallrye",
     };
     protected SubsystemDefinition() {
-        super(
-                SubsystemExtension.SUBSYSTEM_PATH,
-                SubsystemExtension.getResourceDescriptionResolver(SubsystemExtension.SUBSYSTEM_NAME),
-                SubsystemAdd.INSTANCE,
-                ReloadRequiredRemoveStepHandler.INSTANCE
+        super( new SimpleResourceDefinition.Parameters(SubsystemExtension.SUBSYSTEM_PATH, SubsystemExtension.getResourceDescriptionResolver(SubsystemExtension.SUBSYSTEM_NAME))
+                .setAddHandler(SubsystemAdd.INSTANCE)
+                .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
+                .setCapabilities(OPENTRACING_CAPABILITY)
         );
     }
 

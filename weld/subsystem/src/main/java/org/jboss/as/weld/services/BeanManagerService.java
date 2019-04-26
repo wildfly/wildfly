@@ -74,8 +74,18 @@ public final class BeanManagerService implements Service<BeanManager> {
         return beanManager;
     }
 
+    /**
+     * Gets the Bean Manager MSC service name relative to the Deployment Unit.
+     * <p>
+     * Modules outside of weld subsystem should use WeldCapability instead to get the name of the Bean Manager service
+     * associated to the deployment unit.
+     *
+     * @param deploymentUnit The deployment unit to be used.
+     *
+     * @return The Bean Manager service name.
+     */
     public static ServiceName serviceName(final DeploymentUnit deploymentUnit) {
-        return deploymentUnit.getServiceName().append(BeanManagerService.NAME);
+        return ServiceNames.beanManagerServiceName(deploymentUnit);
     }
 
 }

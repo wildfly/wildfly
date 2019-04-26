@@ -28,6 +28,10 @@
         <property name="jboss.api" value="private"/>
     </properties>
 
+    <exports>
+        <exclude path="org/jboss/as/weld/_private"/>
+    </exports>
+
     <resources>
         <artifact name="${org.wildfly:wildfly-weld}"/>
     </resources>
