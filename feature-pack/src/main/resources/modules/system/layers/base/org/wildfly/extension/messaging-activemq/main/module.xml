@@ -57,7 +57,8 @@
         <module name="org.wildfly.security.elytron-private"/>
         <module name="org.wildfly.common"/>
         <module name="org.jboss.as.server"/>
-        <module name="org.jboss.as.weld"/>
+        <!-- Only used if capability org.wildfly.weld is available -->
+        <module name="org.jboss.as.weld.common" optional="true"/>
         <module name="org.jboss.jandex"/>
         <module name="org.jboss.metadata.common"/>
         <module name="org.jboss.modules"/>
@@ -74,9 +75,7 @@
         <module name="org.wildfly.naming-client" services="import" />
         <module name="org.jboss.threads"/>
         <module name="org.wildfly.clustering.spi"/>
-        <module name="org.jboss.weld.api" />
         <module name="org.jboss.weld.core"/>
-        <module name="org.jboss.weld.spi" />
         <!-- org.jboss.xnio is required only if http-acceptor are used -->
         <module name="org.jboss.xnio" optional="true" />
         <!-- org.jboss.xnio.netty.netty-xnio-transport is required only if http-acceptor are used -->

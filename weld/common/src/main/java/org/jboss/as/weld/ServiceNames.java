@@ -38,6 +38,16 @@ public final class ServiceNames {
 
     public static final ServiceName WELD_START_COMPLETION_SERVICE_NAME = ServiceName.of("WeldEndInitService");
 
+    /**
+     * Gets the Bean Manager MSC service name relative to the Deployment Unit.
+     * <p>
+     * Modules outside of weld subsystem should use WeldCapability instead to get the name of the Bean Manager service
+     * associated to the deployment unit.
+     *
+     * @param deploymentUnit The deployment unit to be used.
+     *
+     * @return The Bean Manager service name.
+     */
     public static ServiceName beanManagerServiceName(final DeploymentUnit deploymentUnit) {
         return deploymentUnit.getServiceName().append(BEAN_MANAGER_SERVICE_NAME);
     }

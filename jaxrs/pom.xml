@@ -69,6 +69,11 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-weld-common</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-undertow</artifactId>
         </dependency>
 

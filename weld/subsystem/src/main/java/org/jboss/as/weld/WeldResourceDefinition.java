@@ -21,6 +21,8 @@
  */
 package org.jboss.as.weld;
 
+import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
+
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -29,6 +31,8 @@ import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.RuntimePackageDependency;
@@ -42,13 +46,16 @@ import org.jboss.dmr.ModelType;
  *
  */
 class WeldResourceDefinition extends PersistentResourceDefinition {
-
-    static final WeldResourceDefinition INSTANCE = new WeldResourceDefinition();
+    static final RuntimeCapability<WeldCapability> WELD_CAPABILITY = RuntimeCapability.Builder
+            .of(WELD_CAPABILITY_NAME, WeldCapabilityImpl.INSTANCE)
+            .build();
 
     static final String REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE_NAME = "require-bean-descriptor";
     static final String NON_PORTABLE_MODE_ATTRIBUTE_NAME = "non-portable-mode";
     static final String DEVELOPMENT_MODE_ATTRIBUTE_NAME = "development-mode";
     static final String THREAD_POOL_SIZE = "thread-pool-size";
+
+    static final WeldResourceDefinition INSTANCE = new WeldResourceDefinition();
 
     static final SimpleAttributeDefinition REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE =
             new SimpleAttributeDefinitionBuilder(REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE_NAME, ModelType.BOOLEAN, true)
@@ -79,11 +86,11 @@ class WeldResourceDefinition extends PersistentResourceDefinition {
             .build();
 
     private WeldResourceDefinition() {
-        super(
-                WeldExtension.PATH_SUBSYSTEM,
-                WeldExtension.getResourceDescriptionResolver(),
-                WeldSubsystemAdd.INSTANCE,
-                ReloadRequiredRemoveStepHandler.INSTANCE);
+        super( new SimpleResourceDefinition.Parameters(WeldExtension.PATH_SUBSYSTEM, WeldExtension.getResourceDescriptionResolver())
+                .setAddHandler(WeldSubsystemAdd.INSTANCE)
+                .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
+                .setCapabilities(WELD_CAPABILITY)
+        );
     }
 
     @Override

@@ -22,13 +22,16 @@
 
 package org.wildfly.extension.messaging.activemq.deployment.injection;
 
+import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
+
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.structure.EJBAnnotationPropertyReplacement;
-import org.jboss.as.ee.weld.WeldDeploymentMarker;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.weld.deployment.WeldPortableExtensions;
+import org.jboss.as.weld.WeldCapability;
 import org.jboss.metadata.property.PropertyReplacer;
 
 /**
@@ -42,9 +45,10 @@ public class CDIDeploymentProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit parent = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
         PropertyReplacer propertyReplacer = EJBAnnotationPropertyReplacement.propertyReplacer(deploymentUnit);
 
-        if (WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
-            WeldPortableExtensions extensions = WeldPortableExtensions.getPortableExtensions(parent);
-            extensions.registerExtensionInstance(new JMSCDIExtension(propertyReplacer), parent);
+        final CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
+        if (support.hasCapability(WELD_CAPABILITY_NAME)) {
+            support.getOptionalCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class).get()
+                    .registerExtensionInstance(new JMSCDIExtension(propertyReplacer), parent);
         }
     }
 

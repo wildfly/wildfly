@@ -45,6 +45,8 @@
         <module name="org.wildfly.security.elytron-private"/>
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.as.web-common"/>
+        <!-- Only used if capability org.wildfly.weld is available -->
+        <module name="org.jboss.as.weld.common" optional="true"/>
         <module name="org.wildfly.extension.undertow"/>
         <module name="io.undertow.core"/>
         <module name="io.undertow.servlet"/>

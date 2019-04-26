@@ -48,4 +48,7 @@ public interface MicroProfileHealthLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 1, value = "Activating Eclipse MicroProfile Health Subsystem")
     void activatingSubsystem();
+
+    @Message(id = 2, value = "Deployment %s requires use of the '%s' capability but it is not currently registered")
+    String deploymentRequiresCapability(String deploymentName, String capabilityName);
 }
