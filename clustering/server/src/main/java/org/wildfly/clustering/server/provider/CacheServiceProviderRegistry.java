@@ -81,7 +81,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * all of which share the same {@link Cache} instance.
  * @author Paul Ferraro
  */
-@org.infinispan.notifications.Listener(sync = false)
+@org.infinispan.notifications.Listener
 public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<T>, GroupListener, AutoCloseable {
 
     private static ThreadFactory createThreadFactory(Class<?> targetClass) {
