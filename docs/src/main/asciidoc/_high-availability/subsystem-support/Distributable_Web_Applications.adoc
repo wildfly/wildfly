@@ -100,8 +100,8 @@ e.g. Creating a new session management profile, using ATTRIBUTE granularity with
 
 A web application can override the default distributable session management behavior in 1 of 2 ways:
 
-1. Reference a session-management profile by name
-1. Provide deployment-specific session management configuration
+. Reference a session-management profile by name
+. Provide deployment-specific session management configuration
 
 === Referencing an existing session management profile
 
@@ -287,6 +287,19 @@ public class ImmutableClass implements Serializable {
 }
 ----
 
+Alternatively, immutable classes can be enumerated via the distributable-web deployment descriptor.
+
+e.g.
+[source,xml]
+----
+<distributable-web xmlns="urn:jboss:distributable-web:1.0">
+    <session-management>
+        <immutable-class>foo.bar.ImmutableClass</immutable-class>
+        <immutable-class>...</immutable-class>
+    </session-management>
+</distributable-web>
+----
+
 [[session_attribute_marshalling]]
 === Session attribute marshalling
 
@@ -295,8 +308,8 @@ A web application can optimize the marshalling of a given session attribute, eit
 An externalizer is an implementation of the `org.wildfly.clustering.marshalling.Externalizer` interface, which dictates how a given class should be marshalled.
 An externalizer reads/writes the state of an object directly from/to an input/output stream, but also:
 
-1. Allows an application to store an object in the session that does not implement `java.io.Serializable`
-1. Eliminates the need to serialize the class descriptor of an object along with its state
+. Allows an application to store an object in the session that does not implement `java.io.Serializable`
+. Eliminates the need to serialize the class descriptor of an object along with its state
 
 e.g.
 [source,java]

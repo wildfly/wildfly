@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,27 +19,38 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.session;
+
+package org.wildfly.clustering.ee.immutable;
+
+import java.util.Arrays;
 
 import org.wildfly.clustering.ee.Immutability;
-import org.wildfly.clustering.marshalling.spi.Marshallability;
-import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
-import org.wildfly.clustering.web.LocalContextFactory;
-import org.wildfly.clustering.web.WebDeploymentConfiguration;
 
 /**
- * Encapsulates the configuration of a session manager.
+ * Decorates a series of immutability predicates to additionally test for collection immutability.
  * @author Paul Ferraro
  */
-public interface SessionManagerFactoryConfiguration<C extends Marshallability, L> extends WebDeploymentConfiguration {
+public class CompositeImmutability implements Immutability {
 
-    Integer getMaxActiveSessions();
+    private final Iterable<? extends Immutability> immutabilities;
+    private final Immutability collectionImmutability;
 
-    MarshalledValueFactory<C> getMarshalledValueFactory();
+    public CompositeImmutability(Immutability... predicates) {
+        this(Arrays.asList(predicates));
+    }
 
-    C getMarshallingContext();
+    public CompositeImmutability(Iterable<? extends Immutability> immutabilities) {
+        this.immutabilities = immutabilities;
+        this.collectionImmutability = new CollectionImmutability(this);
+    }
 
-    LocalContextFactory<L> getLocalContextFactory();
-
-    Immutability getImmutability();
+    @Override
+    public boolean test(Object object) {
+        for (Immutability immutability : this.immutabilities) {
+            if (immutability.test(object)) {
+                return true;
+            }
+        }
+        return this.collectionImmutability.test(object);
+    }
 }

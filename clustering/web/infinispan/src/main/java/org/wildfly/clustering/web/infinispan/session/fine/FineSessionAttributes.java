@@ -30,6 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.infinispan.Cache;
 import org.infinispan.commons.marshall.NotSerializableException;
 import org.infinispan.context.Flag;
+import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.Mutator;
 import org.wildfly.clustering.ee.infinispan.CacheEntryMutator;
 import org.wildfly.clustering.ee.infinispan.CacheProperties;
@@ -41,7 +42,6 @@ import org.wildfly.clustering.marshalling.spi.InvalidSerializedFormException;
 import org.wildfly.clustering.marshalling.spi.Marshaller;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.infinispan.session.SessionAttributes;
-import org.wildfly.clustering.web.session.SessionAttributeImmutability;
 
 /**
  * Exposes session attributes for fine granularity sessions.
@@ -53,16 +53,18 @@ public class FineSessionAttributes<V> implements SessionAttributes {
     private final Cache<SessionAttributeKey, V> attributeCache;
     private final Map<String, Mutator> mutations = new ConcurrentHashMap<>();
     private final Marshaller<Object, V> marshaller;
+    private final Immutability immutability;
     private final CacheProperties properties;
 
     private volatile Map<String, UUID> names;
 
-    public FineSessionAttributes(String id, Map<String, UUID> names, Cache<SessionAttributeNamesKey, Map<String, UUID>> namesCache, Cache<SessionAttributeKey, V> attributeCache, Marshaller<Object, V> marshaller, CacheProperties properties) {
+    public FineSessionAttributes(String id, Map<String, UUID> names, Cache<SessionAttributeNamesKey, Map<String, UUID>> namesCache, Cache<SessionAttributeKey, V> attributeCache, Marshaller<Object, V> marshaller, Immutability immutability, CacheProperties properties) {
         this.id = id;
         this.setNames(names);
         this.namesCache = namesCache;
         this.attributeCache = attributeCache;
         this.marshaller = marshaller;
+        this.immutability = immutability;
         this.properties = properties;
     }
 
@@ -102,7 +104,7 @@ public class FineSessionAttributes<V> implements SessionAttributes {
             this.mutations.put(name, Mutator.PASSIVE);
         } else {
             // If the object is mutable, we need to indicate trigger a mutation on close
-            if (SessionAttributeImmutability.INSTANCE.test(attribute)) {
+            if (this.immutability.test(attribute)) {
                 this.mutations.remove(name);
             } else {
                 this.mutations.put(name, new CacheEntryMutator<>(this.attributeCache, key, value));
@@ -121,7 +123,7 @@ public class FineSessionAttributes<V> implements SessionAttributes {
         Object attribute = this.read(name, value);
         if (attribute != null) {
             // If the object is mutable, we need to trigger a mutation on close
-            if (!SessionAttributeImmutability.INSTANCE.test(attribute)) {
+            if (!this.immutability.test(attribute)) {
                 this.mutations.putIfAbsent(name, new CacheEntryMutator<>(this.attributeCache, key, value));
             }
         }

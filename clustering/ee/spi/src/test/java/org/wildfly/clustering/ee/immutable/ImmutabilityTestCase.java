@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.ee;
+package org.wildfly.clustering.ee.immutable;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -53,10 +53,12 @@ import java.time.temporal.WeekFields;
 import java.time.zone.ZoneOffsetTransitionRule;
 import java.time.zone.ZoneOffsetTransitionRule.TimeDefinition;
 import java.time.zone.ZoneRules;
+import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Currency;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.TreeMap;
@@ -65,12 +67,12 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Predicate;
 
 import org.junit.Test;
+import org.wildfly.clustering.ee.Immutability;
 
 /**
- * Unit test for {@link Immutability}
+ * Unit test for {@link DefaultImmutability}
  *
  * @author Paul Ferraro
  */
@@ -78,10 +80,10 @@ public class ImmutabilityTestCase {
 
     @Test
     public void test() throws Exception {
-        this.test(Immutability.INSTANCE);
+        this.test(new CompositeImmutability(EnumSet.allOf(DefaultImmutability.class)));
     }
 
-    protected void test(Predicate<Object> immutability) throws Exception {
+    protected void test(Immutability immutability) throws Exception {
         assertFalse(immutability.test(new Object()));
         assertFalse(immutability.test(new Date()));
         assertFalse(immutability.test(new AtomicInteger()));
@@ -151,6 +153,7 @@ public class ImmutabilityTestCase {
         assertTrue(immutability.test(Collections.singleton(new JCIPImmutableObject())));
         assertTrue(immutability.test(Collections.singletonList(new JCIPImmutableObject())));
         assertTrue(immutability.test(Collections.singletonMap("1", new JCIPImmutableObject())));
+        assertTrue(immutability.test(new AbstractMap.SimpleImmutableEntry<>("1", new JCIPImmutableObject())));
 
         assertTrue(immutability.test(Collections.unmodifiableCollection(Arrays.asList("1", "2"))));
         assertTrue(immutability.test(Collections.unmodifiableList(Arrays.asList("1", "2"))));
@@ -164,6 +167,7 @@ public class ImmutabilityTestCase {
         Object mutableObject = new AtomicInteger();
         assertFalse(immutability.test(Collections.singletonList(mutableObject)));
         assertFalse(immutability.test(Collections.singletonMap("1", mutableObject)));
+        assertFalse(immutability.test(new AbstractMap.SimpleImmutableEntry<>("1", mutableObject)));
     }
 
     @net.jcip.annotations.Immutable

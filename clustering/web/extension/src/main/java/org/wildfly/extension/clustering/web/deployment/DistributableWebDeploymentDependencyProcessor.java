@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.clustering.web.deployment;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Consumer;
 
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
@@ -66,6 +68,10 @@ public class DistributableWebDeploymentDependencyProcessor implements Deployment
 
             String name = (config != null) ? config.getSessionManagementName() : null;
             DistributableSessionManagementProvider management = (name == null) && (config != null) ? config.getSessionManagement() : null;
+            List<String> immutableClasses = (config != null) ? config.getImmutableClasses() : Collections.emptyList();
+            for (String immutableClass : immutableClasses) {
+                unit.addToAttachmentList(DistributableSessionManagementProvider.IMMUTABILITY_ATTACHMENT_KEY, immutableClass);
+            }
 
             if (management != null) {
                 LOGGER.debugf("%s will use a deployment-specific distributable session management provider", unit.getName());
@@ -93,5 +99,6 @@ public class DistributableWebDeploymentDependencyProcessor implements Deployment
 
     @Override
     public void undeploy(DeploymentUnit unit) {
+        unit.removeAttachment(DistributableSessionManagementProvider.IMMUTABILITY_ATTACHMENT_KEY);
     }
 }

@@ -47,6 +47,7 @@ import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
+import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.Recordable;
 import org.wildfly.clustering.ee.infinispan.CacheProperties;
 import org.wildfly.clustering.ee.infinispan.InfinispanBatcher;
@@ -184,13 +185,14 @@ public class InfinispanSessionManagerFactory<C extends Marshallability, L> imple
     private SessionAttributesFactory<?> createSessionAttributesFactory(InfinispanSessionManagerFactoryConfiguration<C, L> configuration) {
         MarshalledValueFactory<C> factory = configuration.getMarshalledValueFactory();
         C context = configuration.getMarshallingContext();
+        Immutability immutability = configuration.getImmutability();
 
         switch (configuration.getAttributePersistenceStrategy()) {
             case FINE: {
-                return new FineSessionAttributesFactory<>(configuration.getCache(), configuration.getCache(), new MarshalledValueMarshaller<>(factory, context), this.properties);
+                return new FineSessionAttributesFactory<>(configuration.getCache(), configuration.getCache(), new MarshalledValueMarshaller<>(factory, context), immutability, this.properties);
             }
             case COARSE: {
-                return new CoarseSessionAttributesFactory<>(configuration.getCache(), new MarshalledValueMarshaller<>(factory, context), this.properties);
+                return new CoarseSessionAttributesFactory<>(configuration.getCache(), new MarshalledValueMarshaller<>(factory, context), immutability, this.properties);
             }
             default: {
                 // Impossible

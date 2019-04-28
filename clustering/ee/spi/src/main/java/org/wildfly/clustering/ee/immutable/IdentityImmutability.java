@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,27 +19,33 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.session;
+
+package org.wildfly.clustering.ee.immutable;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.Set;
 
 import org.wildfly.clustering.ee.Immutability;
-import org.wildfly.clustering.marshalling.spi.Marshallability;
-import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
-import org.wildfly.clustering.web.LocalContextFactory;
-import org.wildfly.clustering.web.WebDeploymentConfiguration;
 
 /**
- * Encapsulates the configuration of a session manager.
+ * Test for immutability using object identity.
  * @author Paul Ferraro
  */
-public interface SessionManagerFactoryConfiguration<C extends Marshallability, L> extends WebDeploymentConfiguration {
+public class IdentityImmutability implements Immutability {
 
-    Integer getMaxActiveSessions();
+    private final Set<Object> immutableObjects;
 
-    MarshalledValueFactory<C> getMarshalledValueFactory();
+    public IdentityImmutability(Collection<Object> objects) {
+        this.immutableObjects = !objects.isEmpty() ? Collections.newSetFromMap(new IdentityHashMap<>(objects.size())) : Collections.emptySet();
+        for (Object object : objects) {
+            this.immutableObjects.add(object);
+        }
+    }
 
-    C getMarshallingContext();
-
-    LocalContextFactory<L> getLocalContextFactory();
-
-    Immutability getImmutability();
+    @Override
+    public boolean test(Object object) {
+        return (object == null) || this.immutableObjects.contains(object);
+    }
 }

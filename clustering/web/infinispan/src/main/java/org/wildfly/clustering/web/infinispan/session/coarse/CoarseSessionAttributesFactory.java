@@ -34,6 +34,7 @@ import org.infinispan.notifications.cachelistener.annotation.CacheEntriesEvicted
 import org.infinispan.notifications.cachelistener.event.CacheEntriesEvictedEvent;
 import org.wildfly.clustering.ee.infinispan.CacheProperties;
 import org.wildfly.clustering.infinispan.spi.distribution.Key;
+import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.Mutator;
 import org.wildfly.clustering.ee.infinispan.CacheEntryMutator;
 import org.wildfly.clustering.marshalling.spi.InvalidSerializedFormException;
@@ -54,10 +55,12 @@ public class CoarseSessionAttributesFactory<V> implements SessionAttributesFacto
     private final Cache<SessionAttributesKey, V> cache;
     private final Marshaller<Map<String, Object>, V> marshaller;
     private final CacheProperties properties;
+    private final Immutability immutability;
 
-    public CoarseSessionAttributesFactory(Cache<SessionAttributesKey, V> cache, Marshaller<Map<String, Object>, V> marshaller, CacheProperties properties) {
+    public CoarseSessionAttributesFactory(Cache<SessionAttributesKey, V> cache, Marshaller<Map<String, Object>, V> marshaller, Immutability immutability, CacheProperties properties) {
         this.cache = cache;
         this.marshaller = marshaller;
+        this.immutability = immutability;
         this.properties = properties;
     }
 
@@ -94,7 +97,7 @@ public class CoarseSessionAttributesFactory<V> implements SessionAttributesFacto
     public SessionAttributes createSessionAttributes(String id, Map.Entry<Map<String, Object>, V> entry) {
         SessionAttributesKey key = new SessionAttributesKey(id);
         Mutator mutator = this.properties.isTransactional() && this.cache.getAdvancedCache().getCacheEntry(key).isCreated() ? Mutator.PASSIVE : new CacheEntryMutator<>(this.cache, key, entry.getValue());
-        return new CoarseSessionAttributes(entry.getKey(), mutator, this.marshaller, this.properties);
+        return new CoarseSessionAttributes(entry.getKey(), mutator, this.marshaller, this.immutability, this.properties);
     }
 
     @Override

@@ -22,6 +22,10 @@
 
 package org.wildfly.extension.clustering.web.deployment;
 
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.ee.structure.JBossDescriptorPropertyReplacement;
@@ -32,8 +36,9 @@ import org.wildfly.clustering.web.session.DistributableSessionManagementProvider
 /**
  * @author Paul Ferraro
  */
-public class MutableDistributableDeploymentConfiguration implements DistributableWebDeploymentConfiguration, UnaryOperator<String> {
+public class MutableDistributableDeploymentConfiguration implements DistributableWebDeploymentConfiguration, UnaryOperator<String>, Consumer<String> {
 
+    private final List<String> immutableClasses = new LinkedList<>();
     private final PropertyReplacer replacer;
 
     private String managementName;
@@ -63,6 +68,16 @@ public class MutableDistributableDeploymentConfiguration implements Distributabl
 
     public void setSessionManagementName(String value) {
         this.managementName = this.apply(value);
+    }
+
+    @Override
+    public List<String> getImmutableClasses() {
+        return Collections.unmodifiableList(this.immutableClasses);
+    }
+
+    @Override
+    public void accept(String className) {
+        this.immutableClasses.add(className);
     }
 
     @Override

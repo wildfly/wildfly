@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.clustering.web.deployment;
 
+import java.util.List;
+
 import org.wildfly.clustering.web.session.DistributableSessionManagementProvider;
 
 /**
@@ -40,4 +42,10 @@ public interface DistributableWebDeploymentConfiguration {
      * @return a session management provider
      */
     DistributableSessionManagementProvider getSessionManagement();
+
+    /**
+     * Returns a list of immutable session attribute classes.
+     * @return a list of class names
+     */
+    List<String> getImmutableClasses();
 }
