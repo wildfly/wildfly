@@ -35,13 +35,13 @@ import org.jboss.dmr.ModelType;
  */
 public enum StoreMetric implements Metric<CacheLoaderInterceptor<?, ?>> {
 
-    CACHE_LOADER_LOADS(MetricKeys.CACHE_LOADER_LOADS, ModelType.LONG) {
+    CACHE_LOADER_LOADS("cache-loader-loads", ModelType.LONG) {
         @Override
         public ModelNode execute(CacheLoaderInterceptor<?, ?> interceptor) {
             return new ModelNode(interceptor.getCacheLoaderLoads());
         }
     },
-    CACHE_LOADER_MISSES(MetricKeys.CACHE_LOADER_MISSES, ModelType.LONG) {
+    CACHE_LOADER_MISSES("cache-loader-misses", ModelType.LONG) {
         @Override
         public ModelNode execute(CacheLoaderInterceptor<?, ?> interceptor) {
             return new ModelNode(interceptor.getCacheLoaderMisses());

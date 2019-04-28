@@ -35,19 +35,19 @@ import org.jboss.dmr.ModelType;
  */
 public enum TransactionMetric implements Metric<TxInterceptor<?, ?>> {
 
-    COMMITS(MetricKeys.COMMITS, ModelType.LONG) {
+    COMMITS("commits", ModelType.LONG) {
         @Override
         public ModelNode execute(TxInterceptor<?, ?> interceptor) {
             return new ModelNode(interceptor.getCommits());
         }
     },
-    PREPARES(MetricKeys.PREPARES, ModelType.LONG) {
+    PREPARES("prepares", ModelType.LONG) {
         @Override
         public ModelNode execute(TxInterceptor<?, ?> interceptor) {
             return new ModelNode(interceptor.getPrepares());
         }
     },
-    ROLLBACKS(MetricKeys.ROLLBACKS, ModelType.LONG) {
+    ROLLBACKS("rollbacks", ModelType.LONG) {
         @Override
         public ModelNode execute(TxInterceptor<?, ?> interceptor) {
             return new ModelNode(interceptor.getRollbacks());
