@@ -29,6 +29,9 @@
             <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
             <property name="hibernate.show_sql" value="false"/>
             <property name="jboss.as.jpa.deferdetach" value="true"/>
+            <property name="hibernate.enhancer.enableDirtyTracking" value="true"/>
+            <property name="hibernate.enhancer.enableLazyInitialization" value="true"/>
+            <property name="hibernate.enhancer.enableAssociationManagement" value="true"/>
         </properties>
     </persistence-unit>
     <persistence-unit name="mypc">
@@ -37,6 +40,9 @@
         <properties>
             <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
             <property name="hibernate.show_sql" value="false"/>
+            <property name="hibernate.enhancer.enableDirtyTracking" value="true"/>
+            <property name="hibernate.enhancer.enableLazyInitialization" value="true"/>
+            <property name="hibernate.enhancer.enableAssociationManagement" value="true"/>
         </properties>
     </persistence-unit>
     <persistence-unit name="unsynchronized">
@@ -45,6 +51,9 @@
         <properties>
             <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
             <property name="hibernate.show_sql" value="false"/>
+            <property name="hibernate.enhancer.enableDirtyTracking" value="true"/>
+            <property name="hibernate.enhancer.enableLazyInitialization" value="true"/>
+            <property name="hibernate.enhancer.enableAssociationManagement" value="true"/>
         </properties>
     </persistence-unit>
 </persistence>

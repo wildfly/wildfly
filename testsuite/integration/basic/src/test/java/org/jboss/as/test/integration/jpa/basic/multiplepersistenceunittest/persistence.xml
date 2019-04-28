@@ -5,6 +5,9 @@
         <properties>
             <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
             <property name="PersistenceUnitName" value="pu1"/>
+            <property name="hibernate.enhancer.enableDirtyTracking" value="true"/>
+            <property name="hibernate.enhancer.enableLazyInitialization" value="true"/>
+            <property name="hibernate.enhancer.enableAssociationManagement" value="true"/>
         </properties>
     </persistence-unit>
     <persistence-unit name="pu2">
@@ -13,6 +16,9 @@
             <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
             <property name="PersistenceUnitName" value="pu2"/>
             <property name="wildfly.jpa.default-unit" value="true"/>
+            <property name="hibernate.enhancer.enableDirtyTracking" value="true"/>
+            <property name="hibernate.enhancer.enableLazyInitialization" value="true"/>
+            <property name="hibernate.enhancer.enableAssociationManagement" value="true"/>
         </properties>
     </persistence-unit>
 </persistence>

@@ -28,6 +28,9 @@
             <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
             <property name="org.hibernate.envers.audit_strategy" value="org.hibernate.envers.strategy.ValidityAuditStrategy"/>
             <property name="org.hibernate.envers.revision_type_field_name" value="REVTYPE_CUSTOM"/>
+            <property name="hibernate.enhancer.enableDirtyTracking" value="true"/>
+            <property name="hibernate.enhancer.enableLazyInitialization" value="true"/>
+            <property name="hibernate.enhancer.enableAssociationManagement" value="true"/>
         </properties>
     </persistence-unit>
 </persistence>
