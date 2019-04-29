@@ -98,7 +98,7 @@ public abstract class AbstractDistributedSingletonService<C extends SingletonCon
     }
 
     @Override
-    public void providersChanged(Set<Node> nodes) {
+    public synchronized void providersChanged(Set<Node> nodes) {
         Group group = this.registry.get().getGroup();
         List<Node> candidates = new ArrayList<>(group.getMembership().getMembers());
         candidates.retainAll(nodes);
@@ -159,7 +159,7 @@ public abstract class AbstractDistributedSingletonService<C extends SingletonCon
     }
 
     @Override
-    public void start() {
+    public synchronized void start() {
         // If we were not already the primary node
         if (this.primary.compareAndSet(false, true)) {
             this.primaryLifecycle.start();
@@ -167,7 +167,7 @@ public abstract class AbstractDistributedSingletonService<C extends SingletonCon
     }
 
     @Override
-    public void stop() {
+    public synchronized void stop() {
         // If we were the previous the primary node
         if (this.primary.compareAndSet(true, false)) {
             this.primaryLifecycle.stop();
