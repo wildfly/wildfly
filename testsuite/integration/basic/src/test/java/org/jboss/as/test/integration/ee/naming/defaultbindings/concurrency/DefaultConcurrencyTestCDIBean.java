@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.ee.naming.defaultbindings.concurrency;
 
+import org.wildfly.security.manager.WildFlySecurityManager;
+
 import javax.annotation.Resource;
 import javax.enterprise.concurrent.ContextService;
 import javax.enterprise.concurrent.ManagedExecutorService;
@@ -62,5 +64,11 @@ public class DefaultConcurrencyTestCDIBean {
         if(managedThreadFactory == null) {
             throw new NullPointerException("managedThreadFactory");
         }
+        // WFLY-12039 regression check
+        managedExecutorService.submit((Runnable) () -> {
+            if (WildFlySecurityManager.getCurrentContextClassLoaderPrivileged() == null) {
+                throw new IllegalStateException("WFLY-12039 regression, no TCCL found in task executed by non EE component");
+            }
+        }).get();
     }
 }
