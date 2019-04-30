@@ -27,7 +27,6 @@ import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.web.sso.SSOTestBase;
-import org.jboss.as.test.shared.CLIServerSetupTask;
 import org.jboss.shrinkwrap.api.Archive;
 import org.junit.runner.RunWith;
 
@@ -35,8 +34,8 @@ import org.junit.runner.RunWith;
  * @author Paul Ferraro
  */
 @RunWith(Arquillian.class)
-@ServerSetup({ InfinispanServerSetupTask.class, RemoteSingleSignOnTestCase.ServerSetupTask.class, HostSSOServerSetupTask.class })
-public class RemoteSingleSignOnTestCase extends AbstractSingleSignOnTestCase {
+@ServerSetup({ ElytronSSOServerSetupTask.class, IdentityServerSetupTask.class })
+public class ReplicatedElytronSingleSignOnTestCase extends AbstractSingleSignOnTestCase {
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(NODE_1)
@@ -52,14 +51,5 @@ public class RemoteSingleSignOnTestCase extends AbstractSingleSignOnTestCase {
 
     private static Archive<?> createArchive() {
         return SSOTestBase.createSsoEar();
-    }
-
-    public static class ServerSetupTask extends CLIServerSetupTask {
-        public ServerSetupTask() {
-            this.builder.node(TWO_NODES)
-                    .setup("/subsystem=distributable-web/hotrod-single-sign-on-management=default-host:add(remote-cache-container=web)")
-                    .teardown("/subsystem=distributable-web/hotrod-single-sign-on-management=default-host:remove")
-            ;
-        }
     }
 }

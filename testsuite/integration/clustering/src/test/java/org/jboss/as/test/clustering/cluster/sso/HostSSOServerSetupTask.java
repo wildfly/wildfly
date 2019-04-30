@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2018, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,34 +22,17 @@
 
 package org.jboss.as.test.clustering.cluster.sso;
 
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.test.integration.web.sso.SSOTestBase;
-import org.jboss.shrinkwrap.api.Archive;
-import org.junit.runner.RunWith;
+import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
+import org.jboss.as.test.shared.CLIServerSetupTask;
 
 /**
  * @author Paul Ferraro
  */
-@RunWith(Arquillian.class)
-@ServerSetup(HostSSOServerSetupTask.class)
-public class ReplicatedSingleSignOnTestCase extends AbstractSingleSignOnTestCase {
-
-    @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
-    @TargetsContainer(NODE_1)
-    public static Archive<?> deployment1() {
-        return createArchive();
-    }
-
-    @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
-    @TargetsContainer(NODE_2)
-    public static Archive<?> deployment2() {
-        return createArchive();
-    }
-
-    private static Archive<?> createArchive() {
-        return SSOTestBase.createSsoEar();
+public class HostSSOServerSetupTask extends CLIServerSetupTask {
+    public HostSSOServerSetupTask() {
+        this.builder.node(AbstractClusteringTestCase.TWO_NODES)
+                .setup("/subsystem=undertow/server=default-server/host=default-host/setting=single-sign-on:add")
+                .teardown("/subsystem=undertow/server=default-server/host=default-host/setting=single-sign-on:remove")
+        ;
     }
 }
