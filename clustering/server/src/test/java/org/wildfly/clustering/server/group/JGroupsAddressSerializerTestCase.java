@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2018, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,23 +20,28 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.infinispan.subsystem.remote;
+package org.wildfly.clustering.server.group;
 
-import org.infinispan.commons.marshall.jboss.AbstractJBossMarshaller;
-import org.jboss.marshalling.ModularClassResolver;
-import org.jboss.modules.Module;
-import org.wildfly.clustering.marshalling.jboss.DynamicClassTable;
-import org.wildfly.clustering.marshalling.jboss.ExternalizerObjectTable;
+import java.io.IOException;
+
+import org.infinispan.remoting.transport.jgroups.JGroupsAddress;
+import org.jgroups.util.UUID;
+import org.junit.Test;
+import org.wildfly.clustering.infinispan.spi.persistence.KeyFormatTester;
+import org.wildfly.clustering.marshalling.ExternalizerTester;
+import org.wildfly.clustering.server.group.JGroupsAddressSerializer.JGroupsAddressExternalizer;
+import org.wildfly.clustering.server.group.JGroupsAddressSerializer.JGroupsAddressKeyFormat;
 
 /**
- * @author Radoslav Husar
+ * @author Paul Ferraro
  */
-public class HotRodMarshaller extends AbstractJBossMarshaller {
+public class JGroupsAddressSerializerTestCase {
 
-    public HotRodMarshaller(Module module) {
-        super();
-        super.baseCfg.setClassResolver(ModularClassResolver.getInstance(module.getModuleLoader()));
-        super.baseCfg.setClassTable(new DynamicClassTable(module.getClassLoader()));
-        super.baseCfg.setObjectTable(new ExternalizerObjectTable(module.getClassLoader()));
+    @Test
+    public void test() throws ClassNotFoundException, IOException {
+        JGroupsAddress address = new JGroupsAddress(UUID.randomUUID());
+
+        new ExternalizerTester<>(new JGroupsAddressExternalizer()).test(address);
+        new KeyFormatTester<>(new JGroupsAddressKeyFormat()).test(address);
     }
 }

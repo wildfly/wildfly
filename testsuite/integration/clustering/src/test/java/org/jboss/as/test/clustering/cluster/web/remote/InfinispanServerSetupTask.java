@@ -33,7 +33,7 @@ public class InfinispanServerSetupTask extends CLIServerSetupTask {
     public InfinispanServerSetupTask() {
         this.builder.node(AbstractClusteringTestCase.THREE_NODES)
                 .setup("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=infinispan-server:add(port=11622,host=%s)", AbstractClusteringTestCase.TESTSUITE_NODE0)
-                .setup("/subsystem=infinispan/remote-cache-container=web:add(default-remote-cluster=infinispan-server-cluster, module=org.wildfly.clustering.web.hotrod, statistics-enabled=true)")
+                .setup("/subsystem=infinispan/remote-cache-container=web:add(default-remote-cluster=infinispan-server-cluster, module=org.wildfly.clustering.web.hotrod, protocol-version=2.9, statistics-enabled=true)")
                 .setup("/subsystem=infinispan/remote-cache-container=web/remote-cluster=infinispan-server-cluster:add(socket-bindings=[infinispan-server])")
                 .teardown("/subsystem=infinispan/remote-cache-container=web:remove")
                 .teardown("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=infinispan-server:remove")

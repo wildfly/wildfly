@@ -39,6 +39,7 @@ import org.infinispan.eviction.EvictionStrategy;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.ServiceNameFactory;
 import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
+import org.wildfly.clustering.infinispan.spi.DataContainerConfigurationBuilder;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.spi.service.CacheServiceConfigurator;
 import org.wildfly.clustering.infinispan.spi.service.TemplateConfigurationServiceConfigurator;
@@ -79,7 +80,6 @@ public class ClientMappingsCacheServiceConfiguratorProvider implements CacheServ
         return this.getServiceConfigurators(registry, containerName, cacheName);
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public void accept(ConfigurationBuilder builder) {
         ClusteringConfigurationBuilder clustering = builder.clustering();
@@ -94,7 +94,7 @@ public class ClientMappingsCacheServiceConfiguratorProvider implements CacheServ
         attributes.attribute(ClusteringConfiguration.BIAS_LIFESPAN).reset();
         attributes.attribute(ClusteringConfiguration.INVALIDATION_BATCH_SIZE).reset();
         // Ensure we use the default data container
-        builder.dataContainer().dataContainer(null);
+        builder.addModule(DataContainerConfigurationBuilder.class).evictable(null);
         // Disable expiration
         builder.expiration().lifespan(-1).maxIdle(-1);
         // Disable eviction

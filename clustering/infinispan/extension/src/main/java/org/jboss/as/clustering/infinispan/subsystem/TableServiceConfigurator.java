@@ -90,6 +90,8 @@ public class TableServiceConfigurator extends ComponentServiceConfigurator<Table
                 .dataColumnType(this.columns.get(DATA).getValue())
                 .timestampColumnName(this.columns.get(TIMESTAMP).getKey())
                 .timestampColumnType(this.columns.get(TIMESTAMP).getValue())
+                .segmentColumnName("segment")
+                .segmentColumnType("BIGINT")
                 .fetchSize(this.fetchSize)
                 .tableNamePrefix(this.prefix)
                 .create();

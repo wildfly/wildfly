@@ -55,12 +55,15 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.network.OutboundSocketBinding;
+import org.jboss.as.server.Services;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
+import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.clustering.infinispan.marshalling.jboss.JBossMarshaller;
 import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.Dependency;
 import org.wildfly.clustering.service.FunctionalService;
@@ -76,6 +79,7 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
 
     private final Map<String, List<SupplierDependency<OutboundSocketBinding>>> clusters = new HashMap<>();
     private final Map<ThreadPoolResourceDefinition, SupplierDependency<ExecutorFactoryConfiguration>> threadPools = new EnumMap<>(ThreadPoolResourceDefinition.class);
+    private final SupplierDependency<ModuleLoader> loader;
     private final SupplierDependency<Module> module;
     private final SupplierDependency<ConnectionPoolConfiguration> connectionPool;
     private final SupplierDependency<NearCacheConfiguration> nearCache;
@@ -96,6 +100,7 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
 
     RemoteCacheContainerConfigurationServiceConfigurator(PathAddress address) {
         super(RemoteCacheContainerResourceDefinition.Capability.CONFIGURATION, address);
+        this.loader = new ServiceSupplierDependency<>(Services.JBOSS_SERVICE_MODULE_LOADER);
         this.threadPools.put(ThreadPoolResourceDefinition.CLIENT, new ServiceSupplierDependency<>(ThreadPoolResourceDefinition.CLIENT.getServiceName(address)));
         this.module = new ServiceSupplierDependency<>(RemoteCacheContainerComponent.MODULE.getServiceName(address));
         this.connectionPool = new ServiceSupplierDependency<>(RemoteCacheContainerComponent.CONNECTION_POOL.getServiceName(address));
@@ -139,7 +144,7 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
     @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
         ServiceBuilder<?> builder = target.addService(this.getServiceName());
-        Consumer<Configuration> configuration = new CompositeDependency(this.module, this.connectionPool, this.nearCache, this.security, this.transaction, this.server).register(builder).provides(this.getServiceName());
+        Consumer<Configuration> configuration = new CompositeDependency(this.loader, this.module, this.connectionPool, this.nearCache, this.security, this.transaction, this.server).register(builder).provides(this.getServiceName());
         for (Dependency dependency : this.threadPools.values()) {
             dependency.register(builder);
         }
@@ -156,7 +161,7 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
     public Configuration get() {
         MBeanServer server = (this.server != null) ? this.server.get() : null;
         ConfigurationBuilder builder = new ConfigurationBuilder()
-                .marshaller(new HotRodMarshaller(this.module.get()))
+                .marshaller(new JBossMarshaller(this.loader.get(), this.module.get()))
                 .connectionTimeout(this.connectionTimeout)
                 .keySizeEstimate(this.keySizeEstimate)
                 .maxRetries(this.maxRetries)

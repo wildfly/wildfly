@@ -25,10 +25,13 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import static org.jboss.as.clustering.infinispan.subsystem.JGroupsTransportResourceDefinition.Attribute.CHANNEL;
 import static org.jboss.as.clustering.infinispan.subsystem.JGroupsTransportResourceDefinition.Attribute.LOCK_TIMEOUT;
 
+import java.util.Properties;
+
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.configuration.global.TransportConfiguration;
 import org.infinispan.configuration.global.TransportConfigurationBuilder;
-import org.jboss.as.clustering.infinispan.ChannelFactoryTransport;
+import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
+import org.jboss.as.clustering.infinispan.ChannelConfigurator;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -46,6 +49,7 @@ import org.wildfly.clustering.service.SupplierDependency;
  */
 public class JGroupsTransportServiceConfigurator extends GlobalComponentServiceConfigurator<TransportConfiguration> {
 
+    private final String containerName;
     private volatile SupplierDependency<ChannelFactory> factory;
     private volatile SupplierDependency<String> cluster;
     private volatile String channel;
@@ -53,6 +57,7 @@ public class JGroupsTransportServiceConfigurator extends GlobalComponentServiceC
 
     public JGroupsTransportServiceConfigurator(PathAddress address) {
         super(CacheContainerComponent.TRANSPORT, address);
+        this.containerName = address.getParent().getLastElement().getValue();
     }
 
     @Override
@@ -72,13 +77,16 @@ public class JGroupsTransportServiceConfigurator extends GlobalComponentServiceC
     @Override
     public TransportConfiguration get() {
         ChannelFactory factory = this.factory.get();
+        Properties properties = new Properties();
+        properties.put(JGroupsTransport.CHANNEL_CONFIGURATOR, new ChannelConfigurator(factory, this.containerName));
         ProtocolStackConfiguration stack = factory.getProtocolStackConfiguration();
         org.wildfly.clustering.jgroups.spi.TransportConfiguration.Topology topology = stack.getTransport().getTopology();
         TransportConfigurationBuilder builder = new GlobalConfigurationBuilder().transport()
                 .clusterName(this.cluster.get())
                 .distributedSyncTimeout(this.lockTimeout)
-                .transport(new ChannelFactoryTransport(factory))
-        ;
+                .transport(new JGroupsTransport())
+                .withProperties(properties)
+                ;
         if (topology != null) {
             builder.siteId(topology.getSite()).rackId(topology.getRack()).machineId(topology.getMachine());
         }

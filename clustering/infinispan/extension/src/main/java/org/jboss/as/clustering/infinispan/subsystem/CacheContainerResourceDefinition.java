@@ -31,13 +31,15 @@ import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
+import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.Operations;
+import org.jboss.as.clustering.controller.PredicateCapabilityReference;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.ServiceValueExecutorRegistry;
+import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.clustering.controller.transform.OperationTransformer;
 import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
@@ -147,7 +149,9 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
         STATISTICS_ENABLED(ModelDescriptionConstants.STATISTICS_ENABLED, ModelType.BOOLEAN) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setDefaultValue(ModelNode.FALSE);
+                return builder.setDefaultValue(ModelNode.FALSE)
+                        .setCapabilityReference(new PredicateCapabilityReference(Capability.CONTAINER, CommonRequirement.MICROPROFILE_CONFIG))
+                        ;
             }
         },
         ;

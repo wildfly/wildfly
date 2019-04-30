@@ -22,7 +22,6 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.infinispan.commons.api.BasicCacheContainer;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
@@ -49,7 +48,7 @@ public class BackupForResourceDefinition extends ComponentResourceDefinition {
     static final PathElement LEGACY_PATH = PathElement.pathElement(PATH.getValue(), "BACKUP_FOR");
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        CACHE("remote-cache", ModelType.STRING, new ModelNode(BasicCacheContainer.DEFAULT_CACHE_NAME)),
+        CACHE("remote-cache", ModelType.STRING, new ModelNode("___defaultcache")),
         SITE("remote-site", ModelType.STRING, null),
         ;
         private final AttributeDefinition definition;

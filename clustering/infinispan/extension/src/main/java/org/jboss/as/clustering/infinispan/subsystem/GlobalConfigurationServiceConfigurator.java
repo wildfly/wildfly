@@ -35,9 +35,7 @@ import java.util.function.Supplier;
 
 import javax.management.MBeanServer;
 
-import org.infinispan.commons.marshall.Ids;
 import org.infinispan.configuration.global.GlobalConfiguration;
-import org.infinispan.configuration.global.SerializationConfigurationBuilder;
 import org.infinispan.configuration.global.ShutdownHookBehavior;
 import org.infinispan.configuration.global.SiteConfiguration;
 import org.infinispan.configuration.global.ThreadPoolConfiguration;
@@ -47,23 +45,19 @@ import org.infinispan.globalstate.ConfigurationStorage;
 import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
-import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.clustering.infinispan.MBeanServerProvider;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.server.Services;
 import org.jboss.dmr.ModelNode;
-import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.marshalling.infinispan.AdvancedExternalizerAdapter;
-import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
+import org.wildfly.clustering.infinispan.marshalling.jboss.JBossMarshaller;
 import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.Dependency;
 import org.wildfly.clustering.service.FunctionalService;
@@ -76,6 +70,7 @@ import org.wildfly.clustering.service.SupplierDependency;
  */
 public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNameProvider implements ResourceServiceConfigurator, Supplier<GlobalConfiguration> {
 
+    private final SupplierDependency<ModuleLoader> loader;
     private final SupplierDependency<Module> module;
     private final SupplierDependency<TransportConfiguration> transport;
     private final SupplierDependency<SiteConfiguration> site;
@@ -84,13 +79,13 @@ public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNam
     private final String name;
 
     private volatile SupplierDependency<MBeanServer> server;
-    private volatile Supplier<ModuleLoader> loader;
     private volatile String defaultCache;
     private volatile boolean statisticsEnabled;
 
     GlobalConfigurationServiceConfigurator(PathAddress address) {
         super(CONFIGURATION, address);
         this.name = address.getLastElement().getValue();
+        this.loader = new ServiceSupplierDependency<>(Services.JBOSS_SERVICE_MODULE_LOADER);
         this.module = new ServiceSupplierDependency<>(CacheContainerComponent.MODULE.getServiceName(address));
         this.transport = new ServiceSupplierDependency<>(CacheContainerComponent.TRANSPORT.getServiceName(address));
         this.site = new ServiceSupplierDependency<>(CacheContainerComponent.SITE.getServiceName(address));
@@ -113,33 +108,19 @@ public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNam
     @Override
     public GlobalConfiguration get() {
         org.infinispan.configuration.global.GlobalConfigurationBuilder builder = new org.infinispan.configuration.global.GlobalConfigurationBuilder();
+        builder.cacheManagerName(this.name)
+            .cacheContainer().statistics(this.statisticsEnabled)
+        ;
+
         if (this.defaultCache != null) {
             builder.defaultCacheName(this.defaultCache);
         }
-        TransportConfiguration transport = this.transport.get();
-        // This fails due to ISPN-4755 !!
-        // this.builder.transport().read(this.transport.getValue());
-        // Workaround this by copying relevant fields individually
-        builder.transport().transport(transport.transport())
-                .distributedSyncTimeout(transport.distributedSyncTimeout())
-                .clusterName(transport.clusterName())
-                .machineId(transport.machineId())
-                .rackId(transport.rackId())
-                .siteId(transport.siteId())
-        ;
+
+        builder.transport().read(this.transport.get());
 
         Module module = this.module.get();
-        builder.serialization().classResolver(ModularClassResolver.getInstance(this.loader.get()));
+        builder.serialization().marshaller(new JBossMarshaller(this.loader.get(), module));
         builder.classLoader(module.getClassLoader());
-        int id = Ids.MAX_ID;
-        SerializationConfigurationBuilder serialization = builder.serialization();
-        for (Externalizer<?> externalizer : EnumSet.allOf(DefaultExternalizer.class)) {
-            serialization.addAdvancedExternalizer(new AdvancedExternalizerAdapter<>(id++, externalizer));
-        }
-        for (Externalizer<?> externalizer : module.loadService(Externalizer.class)) {
-            InfinispanLogger.ROOT_LOGGER.debugf("Cache container %s will use an externalizer for %s", this.name, externalizer.getTargetClass().getName());
-            serialization.addAdvancedExternalizer(new AdvancedExternalizerAdapter<>(id++, externalizer));
-        }
 
         builder.transport().transportThreadPool().read(this.pools.get(ThreadPoolResourceDefinition.TRANSPORT).get());
         builder.transport().remoteCommandThreadPool().read(this.pools.get(ThreadPoolResourceDefinition.REMOTE_COMMAND).get());
@@ -152,9 +133,7 @@ public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNam
 
         builder.shutdown().hookBehavior(ShutdownHookBehavior.DONT_REGISTER);
         builder.globalJmxStatistics()
-                .enabled(this.statisticsEnabled)
-                .cacheManagerName(this.name)
-                .mBeanServerLookup(new MBeanServerProvider((this.server != null) ? this.server.get() : null))
+                .mBeanServerLookup(new MBeanServerProvider((this.server != null) && this.statisticsEnabled ? this.server.get() : null))
                 .jmxDomain("org.wildfly.clustering.infinispan")
                 .allowDuplicateDomains(true);
 
@@ -172,8 +151,7 @@ public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNam
     @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
         ServiceBuilder<?> builder = target.addService(this.getServiceName());
-        Consumer<GlobalConfiguration> global = new CompositeDependency(this.module, this.transport, this.site, this.server).register(builder).provides(this.getServiceName());
-        this.loader = builder.requires(Services.JBOSS_SERVICE_MODULE_LOADER);
+        Consumer<GlobalConfiguration> global = new CompositeDependency(this.loader, this.module, this.transport, this.site, this.server).register(builder).provides(this.getServiceName());
         for (Dependency dependency: this.pools.values()) {
             dependency.register(builder);
         }

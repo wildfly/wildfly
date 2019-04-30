@@ -105,7 +105,7 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
                 return builder.setValidator(new ModuleIdentifierValidatorBuilder().configure(builder).build());
             }
         },
-        PROTOCOL_VERSION("protocol-version", ModelType.STRING, new ModelNode(ProtocolVersion.PROTOCOL_VERSION_29.toString())) {
+        PROTOCOL_VERSION("protocol-version", ModelType.STRING, new ModelNode(ProtocolVersion.PROTOCOL_VERSION_30.toString())) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setValidator(new EnumValidator<>(ProtocolVersion.class));
@@ -146,14 +146,14 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
         } else {
             ResourceTransformationDescriptionBuilder builder = parent.addChildResource(RemoteCacheContainerResourceDefinition.WILDCARD_PATH);
 
+            if (InfinispanModel.VERSION_12_0_0.requiresTransformation(version)) {
+                builder.getAttributeBuilder().setValueConverter(AttributeConverter.DEFAULT_VALUE, Attribute.PROTOCOL_VERSION.getName());
+            }
             if (InfinispanModel.VERSION_11_0_0.requiresTransformation(version)) {
                 builder.getAttributeBuilder()
                         .setDiscard(new DiscardAttributeValueChecker(false, true, ModelNode.FALSE), Attribute.STATISTICS_ENABLED.getDefinition())
                         .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.STATISTICS_ENABLED.getDefinition())
                         .end();
-            }
-            if (InfinispanModel.VERSION_9_0_0.requiresTransformation(version)) {
-                builder.getAttributeBuilder().setValueConverter(AttributeConverter.DEFAULT_VALUE, Attribute.PROTOCOL_VERSION.getName());
             }
 
             RemoteCacheContainerMetric.buildTransformation(version, builder);

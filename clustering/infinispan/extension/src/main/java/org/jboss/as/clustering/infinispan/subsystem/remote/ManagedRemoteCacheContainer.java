@@ -135,4 +135,9 @@ public class ManagedRemoteCacheContainer implements RemoteCacheContainer {
     public long getRetries() {
         return this.manager.getRetries();
     }
+
+    @Override
+    public boolean isTransactional(String cacheName) {
+        return this.manager.isTransactional(cacheName);
+    }
 }
