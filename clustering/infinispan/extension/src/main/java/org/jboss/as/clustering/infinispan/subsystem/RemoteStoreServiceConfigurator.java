@@ -84,7 +84,8 @@ public class RemoteStoreServiceConfigurator extends StoreServiceConfigurator<Rem
 
     @Override
     public void accept(RemoteStoreConfigurationBuilder builder) {
-        builder.remoteCacheName(this.remoteCacheName)
+        builder.segmented(false)
+                .remoteCacheName(this.remoteCacheName)
                 .socketTimeout(this.socketTimeout)
                 .tcpNoDelay(this.tcpNoDelay)
                 ;

@@ -45,18 +45,18 @@ public class InfinispanXAResourceRecovery implements XAResourceRecovery {
 
     @Override
     public int hashCode() {
-        return this.cache.getCacheManager().getCacheManagerConfiguration().globalJmxStatistics().cacheManagerName().hashCode() ^ this.cache.getName().hashCode();
+        return this.cache.getCacheManager().getCacheManagerConfiguration().cacheManagerName().hashCode() ^ this.cache.getName().hashCode();
     }
 
     @Override
     public boolean equals(Object object) {
         if ((object == null) || !(object instanceof InfinispanXAResourceRecovery)) return false;
         InfinispanXAResourceRecovery recovery = (InfinispanXAResourceRecovery) object;
-        return this.cache.getCacheManager().getCacheManagerConfiguration().globalJmxStatistics().cacheManagerName().equals(recovery.cache.getCacheManager().getCacheManagerConfiguration().globalJmxStatistics().cacheManagerName()) && this.cache.getName().equals(recovery.cache.getName());
+        return this.cache.getCacheManager().getCacheManagerConfiguration().cacheManagerName().equals(recovery.cache.getCacheManager().getCacheManagerConfiguration().cacheManagerName()) && this.cache.getName().equals(recovery.cache.getName());
     }
 
     @Override
     public String toString() {
-        return this.cache.getCacheManager().getCacheManagerConfiguration().globalJmxStatistics().cacheManagerName() + "." + this.cache.getName();
+        return this.cache.getCacheManager().getCacheManagerConfiguration().cacheManagerName() + "." + this.cache.getName();
     }
 }

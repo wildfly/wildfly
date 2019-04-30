@@ -36,8 +36,6 @@ import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfiguration;
-import org.infinispan.factories.impl.BasicComponentRegistry;
-import org.infinispan.globalstate.GlobalConfigurationManager;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.notifications.Listener;
@@ -51,7 +49,6 @@ import org.jboss.as.clustering.controller.ServiceValueRegistry;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.infinispan.DefaultCacheContainer;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
-import org.jboss.as.clustering.infinispan.LocalGlobalConfigurationManager;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -115,11 +112,6 @@ public class CacheContainerServiceConfigurator extends CapabilityServiceNameProv
         if (defaultCacheName != null) {
             manager.undefineConfiguration(defaultCacheName);
         }
-        // Override GlobalConfigurationManager with a local implementation
-        @SuppressWarnings("deprecation")
-        BasicComponentRegistry registry = manager.getGlobalComponentRegistry().getComponent(BasicComponentRegistry.class);
-        registry.replaceComponent(GlobalConfigurationManager.class.getName(), new LocalGlobalConfigurationManager(), false);
-        registry.rewire();
 
         manager.start();
         manager.addListener(this);

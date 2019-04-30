@@ -51,8 +51,8 @@ public class ExpirationResourceDefinition extends ComponentResourceDefinition {
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         INTERVAL("interval", new ModelNode(60000L)),
-        LIFESPAN("lifespan", new ModelNode(-1L)),
-        MAX_IDLE("max-idle", new ModelNode(-1L)),
+        LIFESPAN("lifespan", null),
+        MAX_IDLE("max-idle", null),
         ;
         private final AttributeDefinition definition;
 

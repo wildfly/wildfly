@@ -31,6 +31,7 @@ import org.infinispan.configuration.cache.StateTransferConfiguration;
 import org.infinispan.configuration.cache.StateTransferConfigurationBuilder;
 import org.infinispan.eviction.EvictionStrategy;
 import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.infinispan.spi.DataContainerConfigurationBuilder;
 import org.wildfly.clustering.infinispan.spi.service.TemplateConfigurationServiceConfigurator;
 import org.wildfly.clustering.web.routing.LegacyRoutingProviderFactory;
 import org.wildfly.clustering.web.routing.RoutingProvider;
@@ -72,7 +73,7 @@ public class InfinispanLegacyRoutingProviderFactory implements LegacyRoutingProv
         attributes.attribute(ClusteringConfiguration.BIAS_LIFESPAN).reset();
         attributes.attribute(ClusteringConfiguration.INVALIDATION_BATCH_SIZE).reset();
         // Ensure we use the default data container
-        builder.dataContainer().dataContainer(null);
+        builder.addModule(DataContainerConfigurationBuilder.class).evictable(null);
         // Disable expiration
         builder.expiration().lifespan(-1).maxIdle(-1);
         // Disable eviction
