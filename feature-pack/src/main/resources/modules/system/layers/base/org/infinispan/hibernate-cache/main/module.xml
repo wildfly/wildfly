@@ -42,6 +42,7 @@
         <module name="org.hibernate.jipijapa-hibernate5-3" services="import"/>
         <module name="org.infinispan" services="import"/>
         <module name="org.infinispan.commons"/>
+        <module name="org.infinispan.component.annotations"/>
         <module name="org.jboss.as.jpa.spi"/>
         <module name="org.jboss.logging"/>
     </dependencies>

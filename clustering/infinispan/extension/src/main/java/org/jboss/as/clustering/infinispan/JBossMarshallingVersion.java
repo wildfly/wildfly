@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2018, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,23 +20,32 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.infinispan.subsystem.remote;
+package org.jboss.as.clustering.infinispan;
 
-import org.infinispan.commons.marshall.jboss.AbstractJBossMarshaller;
+import java.util.Map;
+import java.util.function.Function;
+
+import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.modules.Module;
+import org.jboss.modules.ModuleLoader;
 import org.wildfly.clustering.marshalling.jboss.DynamicClassTable;
 import org.wildfly.clustering.marshalling.jboss.ExternalizerObjectTable;
 
 /**
- * @author Radoslav Husar
+ * @author Paul Ferraro
  */
-public class HotRodMarshaller extends AbstractJBossMarshaller {
-
-    public HotRodMarshaller(Module module) {
-        super();
-        super.baseCfg.setClassResolver(ModularClassResolver.getInstance(module.getModuleLoader()));
-        super.baseCfg.setClassTable(new DynamicClassTable(module.getClassLoader()));
-        super.baseCfg.setObjectTable(new ExternalizerObjectTable(module.getClassLoader()));
-    }
+public enum JBossMarshallingVersion implements Function<Map.Entry<ModuleLoader, Module>, MarshallingConfiguration> {
+    VERSION_1() {
+        @Override
+        public MarshallingConfiguration apply(Map.Entry<ModuleLoader, Module> entry) {
+            MarshallingConfiguration config = new MarshallingConfiguration();
+            config.setClassResolver(ModularClassResolver.getInstance(entry.getKey()));
+            config.setClassTable(new DynamicClassTable(entry.getValue().getClassLoader()));
+            config.setObjectTable(new ExternalizerObjectTable(entry.getValue().getClassLoader()));
+            return config;
+        }
+    },
+    ;
+    public static final JBossMarshallingVersion CURRENT = VERSION_1;
 }

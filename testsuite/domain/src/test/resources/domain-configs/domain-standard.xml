@@ -44,6 +44,7 @@
         <extension module="org.jboss.as.webservices"/>
         <extension module="org.wildfly.extension.io"/>
         <extension module="org.wildfly.extension.messaging-activemq"/>
+        <extension module="org.wildfly.extension.microprofile.config-smallrye"/>
         <extension module="org.wildfly.extension.security.manager"/>
         <extension module="org.wildfly.extension.undertow"/>
     </extensions>
@@ -249,6 +250,7 @@
                     <smtp-server outbound-socket-binding-ref="mail-smtp"/>
                 </mail-session>
             </subsystem>
+            <subsystem xmlns="urn:wildfly:microprofile-config-smallrye:1.0"/>
             <subsystem xmlns="urn:jboss:domain:naming:1.0"/>
             <subsystem xmlns="urn:jboss:domain:security-manager:1.0">
                 <deployment-permissions>
@@ -514,6 +516,7 @@
                     <smtp-server outbound-socket-binding-ref="mail-smtp"/>
                 </mail-session>
             </subsystem>
+            <subsystem xmlns="urn:wildfly:microprofile-config-smallrye:1.0"/>
             <subsystem xmlns="urn:jboss:domain:naming:1.0"/>
             <subsystem xmlns="urn:jboss:domain:security-manager:1.0">
                 <deployment-permissions>

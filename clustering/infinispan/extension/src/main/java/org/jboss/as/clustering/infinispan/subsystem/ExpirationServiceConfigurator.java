@@ -26,6 +26,8 @@ import static org.jboss.as.clustering.infinispan.subsystem.ExpirationResourceDef
 import static org.jboss.as.clustering.infinispan.subsystem.ExpirationResourceDefinition.Attribute.LIFESPAN;
 import static org.jboss.as.clustering.infinispan.subsystem.ExpirationResourceDefinition.Attribute.MAX_IDLE;
 
+import java.util.concurrent.TimeUnit;
+
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.ExpirationConfiguration;
 import org.jboss.as.controller.OperationContext;
@@ -58,9 +60,10 @@ public class ExpirationServiceConfigurator extends ComponentServiceConfigurator<
     @Override
     public ExpirationConfiguration get() {
         return new ConfigurationBuilder().expiration()
-                .wakeUpInterval(this.interval)
-                .lifespan(this.lifespan)
-                .maxIdle(this.maxIdle)
+                .lifespan(this.lifespan, TimeUnit.MILLISECONDS)
+                .maxIdle(this.maxIdle, TimeUnit.MILLISECONDS)
+                .reaperEnabled((this.lifespan > 0) || (this.maxIdle > 0))
+                .wakeUpInterval(this.interval, TimeUnit.MILLISECONDS)
                 .create();
     }
 }

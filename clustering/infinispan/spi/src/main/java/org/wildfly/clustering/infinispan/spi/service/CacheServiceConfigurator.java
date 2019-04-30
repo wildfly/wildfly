@@ -26,9 +26,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.infinispan.Cache;
-import org.infinispan.configuration.cache.PersistenceConfiguration;
-import org.infinispan.configuration.cache.StoreConfiguration;
-import org.infinispan.eviction.PassivationManager;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.Service;
@@ -78,12 +75,6 @@ public class CacheServiceConfigurator<K, V> extends SimpleServiceNameProvider im
     @Override
     public Cache<K, V> get() {
         Cache<K, V> cache = this.container.get().getCache(this.cacheName);
-        PersistenceConfiguration persistence = cache.getCacheConfiguration().persistence();
-        // If we purge passivation stores on startup, passivating entries on stop is a waste of time
-        if (persistence.usingStores() && persistence.passivation() && persistence.stores().stream().allMatch(StoreConfiguration::purgeOnStartup)) {
-            PassivationManager passivation = cache.getAdvancedCache().getComponentRegistry().getLocalComponent(PassivationManager.class);
-            passivation.skipPassivationOnStop(true);
-        }
         cache.start();
         return cache;
     }

@@ -28,6 +28,7 @@ import org.infinispan.client.hotrod.ProtocolVersion;
 import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
+import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
@@ -47,6 +48,7 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.transform.description.AttributeConverter.DefaultValueAttributeConverter;
@@ -72,20 +74,30 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
         return PathElement.pathElement("remote-cache-container", containerName);
     }
 
-    public enum Capability implements CapabilityProvider {
-        CONTAINER(InfinispanClientRequirement.REMOTE_CONTAINER),
+    public enum Capability implements CapabilityProvider, UnaryOperator<RuntimeCapability.Builder<Void>> {
+        CONTAINER(InfinispanClientRequirement.REMOTE_CONTAINER) {
+            @Override
+            public RuntimeCapability.Builder<Void> apply(RuntimeCapability.Builder<Void> builder) {
+                return builder.addRequirements(CommonRequirement.MICROPROFILE_CONFIG.getName());
+            }
+        },
         CONFIGURATION(InfinispanClientRequirement.REMOTE_CONTAINER_CONFIGURATION),
         ;
 
         private final org.jboss.as.clustering.controller.Capability capability;
 
         Capability(UnaryRequirement requirement) {
-            this.capability = new UnaryRequirementCapability(requirement);
+            this.capability = new UnaryRequirementCapability(requirement, this);
         }
 
         @Override
         public org.jboss.as.clustering.controller.Capability getCapability() {
             return this.capability;
+        }
+
+        @Override
+        public RuntimeCapability.Builder<Void> apply(RuntimeCapability.Builder<Void> builder) {
+            return builder;
         }
     }
 

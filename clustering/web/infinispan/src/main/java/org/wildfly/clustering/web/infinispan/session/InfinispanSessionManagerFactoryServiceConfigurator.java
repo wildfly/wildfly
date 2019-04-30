@@ -43,7 +43,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
-import org.wildfly.clustering.infinispan.spi.EvictableDataContainer;
+import org.wildfly.clustering.infinispan.spi.DataContainerConfigurationBuilder;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
@@ -106,7 +106,6 @@ public class InfinispanSessionManagerFactoryServiceConfigurator<C extends Marsha
         return this;
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public void accept(ConfigurationBuilder builder) {
         // Ensure expiration is not enabled on cache
@@ -126,7 +125,7 @@ public class InfinispanSessionManagerFactoryServiceConfigurator<C extends Marsha
         if (strategy.isEnabled()) {
             // Only evict creation meta-data entries
             // We will cascade eviction to the remaining entries for a given session
-            builder.dataContainer().dataContainer(EvictableDataContainer.createDataContainer(builder, size, SessionCreationMetaDataKey.class::isInstance));
+            builder.addModule(DataContainerConfigurationBuilder.class).evictable(SessionCreationMetaDataKey.class::isInstance);
         }
     }
 

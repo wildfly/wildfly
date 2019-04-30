@@ -31,12 +31,9 @@ import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherException;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
-import org.wildfly.clustering.ee.Batch;
-import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.cache.scheduler.LocalScheduler;
 import org.wildfly.clustering.ee.cache.scheduler.LinkedScheduledEntries;
 import org.wildfly.clustering.ee.cache.scheduler.SortedScheduledEntries;
-import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.ee.infinispan.scheduler.Scheduler;
 import org.wildfly.clustering.ejb.infinispan.bean.InfinispanBeanKey;
 import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
@@ -50,16 +47,14 @@ import org.wildfly.clustering.infinispan.spi.distribution.Locality;
 public class EagerEvictionScheduler<I, T> implements Scheduler<I, ImmutableBeanEntry<I>>, Predicate<I> {
 
     private final LocalScheduler<I> scheduler;
-    private final Batcher<TransactionBatch> batcher;
     private final Map<I, I> beanGroups = new ConcurrentHashMap<>();
     private final BeanFactory<I, T> factory;
     private final Duration idleTimeout;
 
     private final CommandDispatcher<BeanGroupEvictor<I>> dispatcher;
 
-    public EagerEvictionScheduler(Group group, Batcher<TransactionBatch> batcher, BeanFactory<I, T> factory, BeanGroupEvictor<I> evictor, Duration idleTimeout, CommandDispatcherFactory dispatcherFactory, String dispatcherName) {
+    public EagerEvictionScheduler(Group group, BeanFactory<I, T> factory, BeanGroupEvictor<I> evictor, Duration idleTimeout, CommandDispatcherFactory dispatcherFactory, String dispatcherName) {
         this.scheduler = new LocalScheduler<>(group.isSingleton() ? new LinkedScheduledEntries<>() : new SortedScheduledEntries<>(), this);
-        this.batcher = batcher;
         this.factory = factory;
         this.idleTimeout = idleTimeout;
         this.dispatcher = dispatcherFactory.createCommandDispatcher(dispatcherName + "/eviction", evictor);
@@ -67,11 +62,9 @@ public class EagerEvictionScheduler<I, T> implements Scheduler<I, ImmutableBeanE
 
     @Override
     public void schedule(I id) {
-        try (Batch batch = this.batcher.createBatch()) {
-            BeanEntry<I> entry = this.factory.findValue(id);
-            if (entry != null) {
-                this.schedule(id, entry);
-            }
+        BeanEntry<I> entry = this.factory.findValue(id);
+        if (entry != null) {
+            this.schedule(id, entry);
         }
     }
 

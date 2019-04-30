@@ -147,7 +147,7 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
         if (idleTimeout != null) {
             Duration idleDuration = Duration.parse(idleTimeout);
             if (!idleDuration.isNegative()) {
-                schedulers.add(new EagerEvictionScheduler<>(this.dispatcherFactory.getGroup(), this.batcher, this.beanFactory, this.groupFactory, idleDuration, this.dispatcherFactory, dispatcherName + "/eager-passivation"));
+                schedulers.add(new EagerEvictionScheduler<>(this.dispatcherFactory.getGroup(), this.beanFactory, this.groupFactory, idleDuration, this.dispatcherFactory, dispatcherName + "/eager-passivation"));
             }
         }
 
