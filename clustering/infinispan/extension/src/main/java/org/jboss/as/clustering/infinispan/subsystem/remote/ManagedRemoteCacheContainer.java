@@ -62,6 +62,16 @@ public class ManagedRemoteCacheContainer implements RemoteCacheContainer {
     }
 
     @Override
+    public boolean isTransactional(String cacheName) {
+        return this.manager.isTransactional(cacheName);
+    }
+
+    @Override
+    public long getRetries() {
+        return this.manager.getRetries();
+    }
+
+    @Override
     public <K, V> NearCacheRegistration registerNearCacheFactory(String cacheName, Function<ClientListenerNotifier, NearCacheService<K, V>> factory) {
         return this.manager.registerNearCacheFactory(cacheName, factory);
     }

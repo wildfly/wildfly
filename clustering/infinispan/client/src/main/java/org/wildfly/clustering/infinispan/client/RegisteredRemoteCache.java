@@ -71,6 +71,11 @@ public class RegisteredRemoteCache<K, V> extends RemoteCacheSupport<K, V> implem
     }
 
     @Override
+    public boolean isTransactional() {
+        return this.cache.isTransactional();
+    }
+
+    @Override
     public boolean removeWithVersion(K key, long version) {
         return this.cache.removeWithVersion(key, version);
     }
@@ -232,18 +237,6 @@ public class RegisteredRemoteCache<K, V> extends RemoteCacheSupport<K, V> implem
         return this.manager;
     }
 
-    @Deprecated
-    @Override
-    public Map<K, V> getBulk() {
-        return this.cache.getBulk();
-    }
-
-    @Deprecated
-    @Override
-    public Map<K, V> getBulk(int size) {
-        return this.cache.getBulk(size);
-    }
-
     @Override
     public Map<K, V> getAll(Set<? extends K> keys) {
         return this.cache.getAll(keys);
@@ -269,6 +262,7 @@ public class RegisteredRemoteCache<K, V> extends RemoteCacheSupport<K, V> implem
         this.cache.removeClientListener(listener);
     }
 
+    @Deprecated
     @Override
     public Set<Object> getListeners() {
         return this.cache.getListeners();
@@ -357,6 +351,11 @@ public class RegisteredRemoteCache<K, V> extends RemoteCacheSupport<K, V> implem
     @Override
     public int size() {
         return this.cache.size();
+    }
+
+    @Override
+    public CompletableFuture<Long> sizeAsync() {
+        return this.cache.sizeAsync();
     }
 
     @Override

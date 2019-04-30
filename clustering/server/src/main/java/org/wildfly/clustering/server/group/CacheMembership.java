@@ -26,8 +26,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.infinispan.distribution.ch.ConsistentHash;
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.remoting.transport.Address;
-import org.infinispan.remoting.transport.Transport;
 import org.infinispan.topology.CacheTopology;
 import org.wildfly.clustering.group.Membership;
 import org.wildfly.clustering.group.Node;
@@ -50,8 +50,8 @@ public class CacheMembership implements Membership {
         this(localAddress, hash.getMembers(), factory);
     }
 
-    public CacheMembership(Transport transport, NodeFactory<Address> factory) {
-        this(transport.getAddress(), transport.getMembers(), factory);
+    public CacheMembership(EmbeddedCacheManager manager, NodeFactory<Address> factory) {
+        this(manager.getAddress(), manager.getMembers(), factory);
     }
 
     public CacheMembership(Address localAddress, List<Address> addresses, NodeFactory<Address> factory) {

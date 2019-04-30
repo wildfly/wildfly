@@ -71,6 +71,8 @@ public class FileStoreServiceConfigurator extends StoreServiceConfigurator<Singl
 
     @Override
     public void accept(SingleFileStoreConfigurationBuilder builder) {
-        builder.location(this.pathManager.get().resolveRelativePathEntry(this.relativePath, this.relativeTo));
+        builder.segmented(false)
+                .location(this.pathManager.get().resolveRelativePathEntry(this.relativePath, this.relativeTo))
+                ;
     }
 }

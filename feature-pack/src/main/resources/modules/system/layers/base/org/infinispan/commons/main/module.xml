@@ -33,9 +33,8 @@
         <module name="javax.api"/>
         <module name="javax.transaction.api"/>
         <module name="com.github.ben-manes.caffeine"/>
+        <module name="org.infinispan.component.annotations"/>
+        <module name="org.infinispan.protostream"/>
         <module name="org.jboss.logging"/>
-        <module name="org.jboss.marshalling"/>
-        <module name="org.jboss.marshalling.river"/>
-        <module name="sun.jdk"/>
     </dependencies>
 </module>
