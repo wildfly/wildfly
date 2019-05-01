@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2010, Red Hat Inc., and individual contributors as indicated
+ * Copyright 2019, Red Hat Inc., and individual contributors as indicated
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -45,19 +45,16 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 /**
- * Tests a JAX-RS deployment with an application bundled, that has no @ApplicationPath annotation.
- * <p/>
- * The container should register a servlet with the name that matches the application name
- * <p/>
- * It is the app providers responsibility to provide a mapping for the servlet
- * <p/>
- * JAX-RS 1.1 2.3.2 bullet point 3
+ * Use Case: one ejb module, 2 web modules, not isolated.
  *
- * @author Stuart Douglas
+ * REST Endpoints are defined in ejb module.
+ * Application class is defined in ejb module.
+ *
+ * @author Lin Gao
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class EarApplicationPathIntegrationTestCase {
+public class EarApplicationRESTInEJBTestCase {
 
     @Deployment(testable = false)
     public static Archive<?> deploy() {
@@ -65,16 +62,18 @@ public class EarApplicationPathIntegrationTestCase {
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "ejb.jar");
         jar.addPackage(HttpRequest.class.getPackage());
-        jar.addClasses(EarApplicationPathIntegrationTestCase.class, HelloWorldResource.class, HelloWorldPathApplication.class);
+        jar.addClasses(EarApplicationRESTInEJBTestCase.class, HelloWorldResource.class,
+                HelloWorldPathApplication.class);
         ear.addAsModule(jar);
 
-        JavaArchive jar2 = ShrinkWrap.create(JavaArchive.class, "ejb2.jar");
-        jar2.addClass(SimpleEjb.class);
-        ear.addAsModule(jar2);
+        WebArchive war1 = ShrinkWrap.create(WebArchive.class, "web1.war");
+        war1.addAsWebInfResource(WebXml.get(""), "web.xml");
+        ear.addAsModule(war1);
 
-        WebArchive war = ShrinkWrap.create(WebArchive.class, "jaxrsapp.war");
-        war.addAsWebInfResource(WebXml.get(""), "web.xml");
-        ear.addAsModule(war);
+        WebArchive war2 = ShrinkWrap.create(WebArchive.class, "web2.war");
+        war2.addAsWebInfResource(WebXml.get(""), "web.xml");
+        ear.addAsModule(war2);
+
         return ear;
     }
 
@@ -89,14 +88,21 @@ public class EarApplicationPathIntegrationTestCase {
     }
 
     @Test
-    public void testJaxRsWithNoApplication() throws Exception {
-        String result = performCall("hellopath/helloworld");
+    public void testJaxRs() throws Exception {
+        String result = performCall("/web1/hellopath/helloworld");
+        assertEquals("Hello World!", result);
+        result = performCall("/web2/hellopath/helloworld");
         assertEquals("Hello World!", result);
     }
 
     @Test
     public void testReadRestResources() throws Exception {
-        ModelNode addr = new ModelNode().add("deployment", "jaxrsapp.ear").add("subdeployment", "jaxrsapp.war")
+        testReadResetOnWebModule("web1");
+        testReadResetOnWebModule("web2");
+    }
+
+    private void testReadResetOnWebModule(String web) throws Exception {
+        ModelNode addr = new ModelNode().add("deployment", "jaxrsapp.ear").add("subdeployment", web + ".war")
                 .add("subsystem", "jaxrs").add("rest-resource", HelloWorldResource.class.getName());
         ModelNode operation = new ModelNode();
         operation.get(OP).set("read-resource");
@@ -109,8 +115,6 @@ public class EarApplicationPathIntegrationTestCase {
         assertEquals("helloworld", restResPath.get("resource-path").asString());
         assertEquals("java.lang.String " + HelloWorldResource.class.getName() + ".getMessage()",
                 restResPath.get("java-method").asString());
-        assertEquals("GET /jaxrsapp/hellopath/helloworld",
-                restResPath.get("resource-methods").asList().get(0).asString());
+        assertEquals("GET /" + web + "/hellopath/helloworld", restResPath.get("resource-methods").asList().get(0).asString());
     }
-
 }

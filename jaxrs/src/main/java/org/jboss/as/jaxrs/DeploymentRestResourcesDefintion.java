@@ -36,11 +36,11 @@ import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.servlet.Servlet;
 import javax.ws.rs.CookieParam;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.FormParam;
@@ -61,11 +61,16 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleListAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.OperationContext.AttachmentKey;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.jaxrs.logging.JaxrsLogger;
+import org.jboss.as.server.Services;
+import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.logmanager.Level;
+import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.resteasy.core.ResourceInvoker;
 import org.jboss.resteasy.core.ResourceLocatorInvoker;
@@ -129,6 +134,10 @@ public class DeploymentRestResourcesDefintion extends SimpleResourceDefinition {
     public static final ObjectListAttributeDefinition SUB_RESOURCE_LOCATORS = new ObjectListAttributeDefinition.Builder(
             "sub-resource-locators", SUB_RESOURCE_LOCATOR).build();
 
+    private AttachmentKey<Map<PathAddress, UndertowDeploymentService>> undertowDeployServiceKey = AttachmentKey.create(Map.class);
+    private AttachmentKey<Map<PathAddress, Module>> deploymentModuleKey = AttachmentKey.create(Map.class);
+    private AttachmentKey<Map<String, ResourceMeta>> resourceMetaKey = AttachmentKey.create(Map.class);
+
     private DeploymentRestResourcesDefintion() {
         super(PathElement.pathElement(REST_RESOURCE_NAME), JaxrsExtension.getResolver("deployment"));
     }
@@ -172,83 +181,139 @@ public class DeploymentRestResourcesDefintion extends SimpleResourceDefinition {
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             PathAddress address = context.getCurrentAddress();
             String clsName = address.getLastElement().getValue();
-            PathAddress parentAddress = address.getParent();
-            final ModelNode subModel = context.readResourceFromRoot(
-                    parentAddress.subAddress(0, parentAddress.size() - 1).append(SUBSYSTEM, UndertowExtension.SUBSYSTEM_NAME),
-                    false).getModel();
+            final PathAddress parentAddress = address.getParent();
+            final ModelNode subModel = context.readResourceFromRoot(parentAddress.subAddress(0, parentAddress.size() - 1).append(SUBSYSTEM, UndertowExtension.SUBSYSTEM_NAME), false).getModel();
             final String host = VIRTUAL_HOST.resolveModelAttribute(context, subModel).asString();
             final String contextPath = CONTEXT_ROOT.resolveModelAttribute(context, subModel).asString();
             final String server = SERVER.resolveModelAttribute(context, subModel).asString();
 
-            final ServiceController<?> controller = context.getServiceRegistry(false).getService(
-                    UndertowService.deploymentServiceName(server, host, contextPath));
-            final UndertowDeploymentService deploymentService = (UndertowDeploymentService) controller.getService();
+            Map<PathAddress, UndertowDeploymentService> deploymentServiceMap = context.getAttachment(undertowDeployServiceKey);
+            if (deploymentServiceMap == null) {
+                deploymentServiceMap = Collections.synchronizedMap(new HashMap<PathAddress, UndertowDeploymentService>());
+                context.attach(undertowDeployServiceKey, deploymentServiceMap);
+            }
+            UndertowDeploymentService undertowDeploymentService = deploymentServiceMap.get(parentAddress);
+            if (undertowDeploymentService == null) {
+                final ServiceController<?> controller = context.getServiceRegistry(false).getService(UndertowService.deploymentServiceName(server, host, contextPath));
+                undertowDeploymentService = (UndertowDeploymentService) controller.getService();
+                deploymentServiceMap.put(parentAddress, undertowDeploymentService);
+            }
+            final UndertowDeploymentService deploymentService = undertowDeploymentService;
+
+            Map<String, ResourceMeta> resourceMetaMap = context.getAttachment(resourceMetaKey);
+            if (resourceMetaMap == null) {
+                resourceMetaMap = Collections.synchronizedMap(new HashMap<String, ResourceMeta>());
+                context.attach(resourceMetaKey, resourceMetaMap);
+            }
+            ResourceMeta resMeta = resourceMetaMap.get(clsName);
+            if (resMeta == null) {
+                resMeta = new ResourceMeta();
+                resourceMetaMap.put(clsName, resMeta);
+            }
+            final ResourceMeta resourceMeta = resMeta;
             try {
 
                 deploymentService.getDeployment().createThreadSetupAction(new ThreadSetupHandler.Action<Object, Object>() {
                     @Override
                     public Object call(HttpServerExchange exchange, Object ctxObject) throws Exception {
-                        Servlet resteasyServlet = null;
-                        for (Map.Entry<String, ServletHandler> servletHandler : deploymentService.getDeployment().getServlets()
-                                .getServletHandlers().entrySet()) {
-                            if (HttpServletDispatcher.class.isAssignableFrom(servletHandler.getValue().getManagedServlet()
-                                    .getServletInfo().getServletClass())) {
-                                resteasyServlet = servletHandler.getValue().getManagedServlet().getServlet().getInstance();
-                                break;
+                        List<HttpServletDispatcher> resteasyServlets = new ArrayList<>();
+                        for (Map.Entry<String, ServletHandler> servletHandler : deploymentService.getDeployment().getServlets().getServletHandlers().entrySet()) {
+                            if (HttpServletDispatcher.class.isAssignableFrom(servletHandler.getValue().getManagedServlet().getServletInfo().getServletClass())) {
+                                resteasyServlets.add((HttpServletDispatcher) servletHandler.getValue().getManagedServlet().getServlet().getInstance());
                             }
                         }
-                        if (resteasyServlet != null) {
-                            final Collection<String> servletMappings = resteasyServlet.getServletConfig().getServletContext()
-                                    .getServletRegistration(resteasyServlet.getServletConfig().getServletName()).getMappings();
-                            final ResourceMethodRegistry registry = (ResourceMethodRegistry) ((HttpServletDispatcher) resteasyServlet)
-                                    .getDispatcher().getRegistry();
+                        if (resteasyServlets.size() > 0) {
                             context.addStep(new OperationStepHandler() {
                                 @Override
                                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                                     final ModelNode response = new ModelNode();
-                                    List<JaxrsResourceMethodDescription> resMethodInvokers = new ArrayList<>();
-                                    List<JaxrsResourceLocatorDescription> resLocatorInvokers = new ArrayList<>();
-                                    for (Map.Entry<String, List<ResourceInvoker>> resource : registry.getBounded().entrySet()) {
-                                        String mapping = resource.getKey();
-                                        List<ResourceInvoker> resouceInvokers = resource.getValue();
-                                        for (ResourceInvoker resourceInvoker : resouceInvokers) {
-                                            if (ResourceMethodInvoker.class.isAssignableFrom(resourceInvoker.getClass())) {
-                                                ResourceMethodInvoker methodInvoker = (ResourceMethodInvoker) resourceInvoker;
-                                                Class<?> resClass = methodInvoker.getResourceClass();
-                                                Class<?> resClsInModel;
-                                                try {
-                                                    resClsInModel = Class.forName(clsName, false, resClass.getClassLoader());
-                                                } catch (ClassNotFoundException e) {
-                                                    throw new OperationFailedException(e);
-                                                }
-                                                if (resClass.equals(resClsInModel)
-                                                        || (resClass.isInterface() && resClass.isAssignableFrom(resClsInModel) && !clsInResourceInvokers(registry.getBounded(), resClsInModel))) {
-                                                    JaxrsResourceMethodDescription resMethodDesc = resMethodDescription(methodInvoker, contextPath, mapping, servletMappings, clsName);
-                                                    resMethodInvokers.add(resMethodDesc);
-                                                }
-                                            } else if (ResourceLocatorInvoker.class.isAssignableFrom(resourceInvoker.getClass())) {
-                                                ResourceLocatorInvoker locatorInvoker = (ResourceLocatorInvoker) resourceInvoker;
-                                                if (clsName.equals(locatorInvoker.getMethod().getDeclaringClass().getCanonicalName())) {
-                                                    ResourceClass resClass = ResourceBuilder.locatorFromAnnotations(locatorInvoker.getMethod().getReturnType());
-                                                    JaxrsResourceLocatorDescription resLocatorDesc = resLocatorDescription(resClass, contextPath, mapping, servletMappings, new ArrayList<Class<?>>());
-                                                    resLocatorInvokers.add(resLocatorDesc);
+                                    List<JaxrsResourceMethodDescription> resMethodInvokers = resourceMeta.methodInvokers;
+                                    List<JaxrsResourceLocatorDescription> resLocatorInvokers = resourceMeta.resLocatorInvokers;
+                                    for (HttpServletDispatcher resteasyServlet: resteasyServlets) {
+                                        final Collection<String> servletMappings = resteasyServlet.getServletConfig().getServletContext().getServletRegistration(resteasyServlet.getServletConfig().getServletName()).getMappings();
+                                        if (!resourceMeta.metaComplete) {
+                                            resourceMeta.metaComplete = true;
+                                            final ResourceMethodRegistry registry = (ResourceMethodRegistry) resteasyServlet.getDispatcher().getRegistry();
+                                            for (Map.Entry<String, List<ResourceInvoker>> resource : registry.getBounded().entrySet()) {
+                                                String mapping = resource.getKey();
+                                                List<ResourceInvoker> resouceInvokers = resource.getValue();
+                                                for (ResourceInvoker resourceInvoker : resouceInvokers) {
+                                                    if (ResourceMethodInvoker.class.isAssignableFrom(resourceInvoker.getClass())) {
+                                                        ResourceMethodInvoker methodInvoker = (ResourceMethodInvoker) resourceInvoker;
+                                                        Class<?> resClass = methodInvoker.getResourceClass();
+                                                        if (resClass.getCanonicalName().equals(clsName)) {
+                                                            JaxrsResourceMethodDescription resMethodDesc = resMethodDescription(methodInvoker, contextPath, mapping, servletMappings, clsName);
+                                                            resMethodInvokers.add(resMethodDesc);
+                                                        } else if (resClass.isInterface()){
+                                                            Class<?> resClsInModel = getResourceClassInModel(clsName, context);
+                                                            if (resClass.isAssignableFrom(resClsInModel)) {
+                                                                JaxrsResourceMethodDescription resMethodDesc = resMethodDescription(methodInvoker, contextPath, mapping, servletMappings, clsName);
+                                                                resMethodInvokers.add(resMethodDesc);
+                                                            }
+                                                        }
+                                                    } else if (ResourceLocatorInvoker.class.isAssignableFrom(resourceInvoker.getClass())) {
+                                                        ResourceLocatorInvoker locatorInvoker = (ResourceLocatorInvoker) resourceInvoker;
+                                                        Class<?> resLocatorClass = locatorInvoker.getMethod().getDeclaringClass();
+                                                        if (clsName.equals(resLocatorClass.getCanonicalName())) {
+                                                            ResourceClass resClass = ResourceBuilder.locatorFromAnnotations(locatorInvoker.getMethod().getReturnType());
+                                                            JaxrsResourceLocatorDescription resLocatorDesc = resLocatorDescription(resClass, contextPath, mapping, servletMappings, new ArrayList<Class<?>>());
+                                                            resLocatorInvokers.add(resLocatorDesc);
+                                                        } else if (resLocatorClass.isInterface()) {
+                                                            Class<?> resClsInModel = getResourceClassInModel(clsName, context);
+                                                            if (resLocatorClass.isAssignableFrom(resClsInModel)) {
+                                                                ResourceClass resClass = ResourceBuilder.locatorFromAnnotations(locatorInvoker.getMethod().getReturnType());
+                                                                JaxrsResourceLocatorDescription resLocatorDesc = resLocatorDescription(resClass, contextPath, mapping, servletMappings, new ArrayList<Class<?>>());
+                                                                resLocatorInvokers.add(resLocatorDesc);
+                                                            }
+                                                        }
+                                                    }
                                                 }
                                             }
+                                            Collections.sort(resMethodInvokers);
+                                            Collections.sort(resLocatorInvokers);
                                         }
+                                        handleAttribute(clsName, resMethodInvokers, resLocatorInvokers, servletMappings, response);
                                     }
-                                    Collections.sort(resMethodInvokers);
-                                    Collections.sort(resLocatorInvokers);
-                                    handleAttribute(clsName, resMethodInvokers, resLocatorInvokers, servletMappings, response);
                                     context.getResult().set(response);
+                                }
+
+                                private Class<?> getResourceClassInModel(String clsName, OperationContext context) throws OperationFailedException{
+                                    try {
+                                        Map<PathAddress, Module> deploymentModuleMap = context.getAttachment(deploymentModuleKey);
+                                        if (deploymentModuleMap == null) {
+                                            deploymentModuleMap = Collections.synchronizedMap(new HashMap<PathAddress, Module>());
+                                            context.attach(deploymentModuleKey, deploymentModuleMap);
+                                        }
+                                        Module deployModule = deploymentModuleMap.get(parentAddress);
+                                        if (deployModule == null) {
+                                            final StringBuilder sb = new StringBuilder(ModelDescriptionConstants.DEPLOYMENT);
+                                            sb.append(".");
+                                            String deployRuntimeName = address.getElement(0).getValue();
+                                            final ModelNode deployModel = context.readResourceFromRoot(address.subAddress(0, 1)).getModel();
+                                            if (deployModel.isDefined() && deployModel.hasDefined(ModelDescriptionConstants.RUNTIME_NAME)) {
+                                                deployRuntimeName = deployModel.get(ModelDescriptionConstants.RUNTIME_NAME).asString();
+                                            }
+                                            sb.append(deployRuntimeName);
+                                            if (address.size() > 1 && address.getElement(1).getKey().equals(ModelDescriptionConstants.SUBDEPLOYMENT)) {
+                                                sb.append(".");
+                                                sb.append(address.getElement(1).getValue());
+                                            }
+                                            String moduleName = sb.toString();
+                                            ServiceModuleLoader srvModuleLoader = (ServiceModuleLoader) context.getServiceRegistry(false).getRequiredService(Services.JBOSS_SERVICE_MODULE_LOADER).getValue();
+                                            deployModule = srvModuleLoader.loadModule(moduleName);
+                                            deploymentModuleMap.put(parentAddress, deployModule);
+                                        }
+                                        return Class.forName(clsName, false, deployModule.getClassLoader());
+                                    } catch (Exception e) {
+                                        throw new OperationFailedException(e);
+                                    }
                                 }
 
                             }, OperationContext.Stage.RUNTIME);
                         }
-
                         return null;
                     }
                 }).call(null, null);
-
             } catch (Exception ex) {
                 //WFLY-10222 we don't want a failure to read the attribute to break everything
                 JaxrsLogger.JAXRS_LOGGER.failedToReadAttribute(ex, address, operation.get(NAME));
@@ -256,23 +321,18 @@ public class DeploymentRestResourcesDefintion extends SimpleResourceDefinition {
             }
         }
 
-        private boolean clsInResourceInvokers(Map<String, List<ResourceInvoker>> resources, Class<?> cls) {
-            for (Map.Entry<String, List<ResourceInvoker>> resource : resources.entrySet()) {
-                List<ResourceInvoker> resouceInvokers = resource.getValue();
-                for (ResourceInvoker resourceInvoker: resouceInvokers) {
-                    if (ResourceMethodInvoker.class.isAssignableFrom(resourceInvoker.getClass())) {
-                        ResourceMethodInvoker methodInvoker = (ResourceMethodInvoker) resourceInvoker;
-                        if (methodInvoker.getResourceClass().equals(cls)) {
-                            return true;
-                        }
-                    }
-                }
-            }
-            return false;
-        }
-
         abstract void handleAttribute(String className, List<JaxrsResourceMethodDescription> methodInvokers,
                 List<JaxrsResourceLocatorDescription> locatorIncokers, Collection<String> servletMappings, ModelNode response);
+    }
+
+    private class ResourceMeta {
+        private List<JaxrsResourceMethodDescription> methodInvokers;
+        private List<JaxrsResourceLocatorDescription> resLocatorInvokers;
+        private boolean metaComplete = false;
+        private ResourceMeta() {
+            this.methodInvokers = new ArrayList<>();
+            this.resLocatorInvokers = new ArrayList<>();
+        }
     }
 
     private JaxrsResourceLocatorDescription resLocatorDescription(ResourceClass resClass, String contextPath, String mapping,
