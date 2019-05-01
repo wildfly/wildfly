@@ -385,7 +385,7 @@
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.wildfly.arquillian>2.2.0.Final</version.org.wildfly.arquillian>
         <version.org.wildfly.common>1.4.0.Final</version.org.wildfly.common>
-        <version.org.wildfly.core>9.0.0.Beta2</version.org.wildfly.core>
+        <version.org.wildfly.core>9.0.0.Beta4</version.org.wildfly.core>
         <version.org.wildfly.extras.creaper>1.6.1</version.org.wildfly.extras.creaper>
         <version.org.wildfly.http-client>1.0.15.Final</version.org.wildfly.http-client>
         <version.org.wildfly.naming-client>1.0.10.Final</version.org.wildfly.naming-client>
