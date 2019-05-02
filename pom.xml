@@ -26,7 +26,7 @@
     <parent>
         <groupId>org.jboss</groupId>
         <artifactId>jboss-parent</artifactId>
-        <version>29</version>
+        <version>35</version>
     </parent>
 
     <groupId>org.wildfly</groupId>
@@ -187,14 +187,12 @@
         <surefire.system.args>${modular.jdk.args} ${modular.jdk.props} -ea -Duser.region=US -Duser.language=en -XX:MaxMetaspaceSize=256m ${surefire.jpda.args} ${surefire.extra.args} ${surefire.jacoco.args}</surefire.system.args>
         <version.asciidoctor.plugin>1.5.6</version.asciidoctor.plugin>
 
-        <!-- use older version of checkstyle as otherwise lots of checks fail -->
-        <version.checkstyle>8.5</version.checkstyle>
         <version.help.plugin>2.2</version.help.plugin>
         <version.jacoco.plugin>0.8.2</version.jacoco.plugin>
         <version.org.jboss.galleon>3.0.1.Final</version.org.jboss.galleon>
 
         <version.org.wildfly.build-tools>1.2.10.Final</version.org.wildfly.build-tools>
-        <version.org.wildfly.checkstyle-config>1.0.7.Final</version.org.wildfly.checkstyle-config>
+        <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
 
         <version.org.wildfly.component-matrix-plugin>1.0.2.Final</version.org.wildfly.component-matrix-plugin>
         <version.org.wildfly.galleon-plugins>3.0.1.Final</version.org.wildfly.galleon-plugins>
