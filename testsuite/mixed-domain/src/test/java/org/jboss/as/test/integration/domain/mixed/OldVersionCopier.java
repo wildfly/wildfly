@@ -21,6 +21,9 @@
 */
 package org.jboss.as.test.integration.domain.mixed;
 
+import org.jboss.logging.Logger;
+
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.FileSystem;
@@ -32,6 +35,7 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,6 +46,8 @@ import java.util.Map;
 class OldVersionCopier {
 
     private static final String OLD_VERSIONS_DIR = "jboss.test.mixed.domain.dir";
+
+    private static final Logger log = Logger.getLogger(OldVersionCopier.class.getName());
 
     private final Version.AsVersion version;
     private final Path oldVersionsBaseDir;
@@ -56,11 +62,32 @@ class OldVersionCopier {
     static Path getOldVersionDir(Version.AsVersion version) {
 
         OldVersionCopier copier = new OldVersionCopier(version, obtainOldVersionsDir());
+        copier.cleanUnneededInstances();
         Path result = copier.getExpandedPath();
         if (Files.exists(result) && Files.isDirectory(result) && Files.exists(result.resolve("jboss-modules.jar"))) { //verify expanded version is proper
             return result;
         }
         return copier.expandAsInstance(version);
+    }
+
+    private void cleanUnneededInstances() {
+        // WFLY-12021 if we're using version X assume we don't need the expanded zip
+        // for any other version any more. So delete it to reduce the peak disk footprint
+        // of a testsuite execution.
+        for (Version.AsVersion asVersion : Version.AsVersion.values()) {
+            if (asVersion != version) {
+                Path versionRoot = targetOldVersions.resolve(asVersion.getFullVersionName());
+                if (versionRoot.toFile().exists() && versionRoot.toFile().isDirectory()) {
+                    log.infof("Cleaning legacy installation at %s", versionRoot);
+                    try {
+                        //noinspection ResultOfMethodCallIgnored
+                        Files.walk(versionRoot).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
+                    } catch (IOException e) {
+                        log.errorf(e, "Failed cleaning legacy installation at %s", versionRoot);
+                    }
+                }
+            }
+        }
     }
 
     private static Path obtainOldVersionsDir() {
