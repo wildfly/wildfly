@@ -1698,6 +1698,13 @@ a Let's Encrypt account using the following commands.
 /subsystem=elytron/certificate-authority-account=myLEAccount:add(alias=example,key-store=accountsKS,contact-urls=[mailto:admin@example.org])
 ----
 
+*Note:* Let's Encrypt is the default certificate authority and therefore the `certificate-authority` attribute can be omitted when creating a `certificate-authority-account`.
+It is also possible to configure an account with different certificate authority than Let's Encrypt by adding custom `certificate-authority` resource and passing it to `certificate-authority-account`.
+[source,options="nowrap"]
+----
+/subsystem=elytron/certificate-authority=myCA:add(url="https://my.example.url/acme/directory", staging-url="https://my.example.staging.url/acme/directory")
+/subsystem=elytron/certificate-authority-account=myCAAccount:add(certificate-authority=myCA,alias=example,key-store=accountsKS,contact-urls=[mailto:admin@example.org])
+----
 [[obtain-signed-certificate]]
 ===== Obtain a signed certificate from Let's Encrypt
 
