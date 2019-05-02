@@ -30,7 +30,8 @@
 
     <connection-factory name="InVmConnectionFactory"
                         connectors="in-vm-client"
-                        entries="${connection-factory.entries.entry:java:/ClientConnectionFactory}" />
+                        entries="${connection-factory.entries.entry:java:/ClientConnectionFactory}"
+                        enable-amq1-prefix="false"/>
 
     <pooled-connection-factory name="hornetq-ra-local"
                                    transaction="local"
@@ -38,7 +39,8 @@
                                    password="alicepassword"
                                    use-auto-recovery="${use.auto.recovery:true}"
                                    connectors="in-vm-client"
-                                   entries="java:/JmsLocal"/>
+                                   entries="java:/JmsLocal"
+                                   enable-amq1-prefix="false"/>
 
     <external-jms-queue name="testQueue"
                    entries="${jms-queue.entry:queue/client-test}"/>

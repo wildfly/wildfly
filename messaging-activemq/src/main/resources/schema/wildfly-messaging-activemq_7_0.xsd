@@ -51,6 +51,7 @@
                         <xs:attribute name="discovery-group" type="xs:string" use="optional"/>
                         <xs:attribute name="connectors" type="xs:string" use="optional"/>
                         <xs:attribute name="entries" type="stringList" use="required" />
+                        <xs:attribute name="enable-amq1-prefix" type="xs:boolean" use="optional" />
                     </xs:complexType>
                 </xs:element>
                 <xs:element name="pooled-connection-factory" minOccurs="0" maxOccurs="unbounded">
@@ -101,6 +102,7 @@
                         <xs:attribute name="enlistment-trace" type="xs:boolean" use="optional" />
                         <xs:attribute name="initial-connect-attempts" type="xs:int" use="optional" />
                         <xs:attribute name="statistics-enabled" type="xs:boolean" use="optional" />
+                        <xs:attribute name="enable-amq1-prefix" type="xs:boolean" use="optional" />
                     </xs:complexType>
                 </xs:element>
                 <xs:element name="external-jms-queue" minOccurs="0" maxOccurs="unbounded">

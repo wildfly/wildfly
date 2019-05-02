@@ -19,7 +19,6 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.wildfly.extension.messaging.activemq.jms;
 
 import java.util.concurrent.ExecutorService;
@@ -27,7 +26,7 @@ import java.util.concurrent.RejectedExecutionException;
 
 import javax.jms.Topic;
 
-import org.apache.activemq.artemis.jms.client.ActiveMQTopic;
+import org.apache.activemq.artemis.jms.client.ActiveMQDestination;
 import org.apache.activemq.artemis.jms.server.JMSServerManager;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -57,7 +56,11 @@ public class JMSTopicService implements Service<Topic> {
     private Topic topic;
 
     public JMSTopicService(String name) {
-        this.name = name;
+        if (name.startsWith(JMS_TOPIC_PREFIX)) {
+            this.name = name.substring(JMS_TOPIC_PREFIX.length());
+        } else {
+            this.name = name;
+        }
     }
 
     @Override
@@ -69,7 +72,7 @@ public class JMSTopicService implements Service<Topic> {
                 try {
                     // add back the jms.topic. prefix to be consistent with ActiveMQ Artemis 1.x addressing scheme
                     jmsManager.createTopic(JMS_TOPIC_PREFIX + name, false, name);
-                    topic = new ActiveMQTopic(JMS_TOPIC_PREFIX + name, name);
+                    topic = ActiveMQDestination.createTopic(JMS_TOPIC_PREFIX + name, name);
                     context.complete();
                 } catch (Throwable e) {
                     context.failed(MessagingLogger.ROOT_LOGGER.failedToCreate(e, "JMS Topic"));

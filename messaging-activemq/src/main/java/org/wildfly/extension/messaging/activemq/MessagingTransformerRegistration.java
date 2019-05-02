@@ -84,6 +84,9 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
     private static void registerTransformers_WF_17(ResourceTransformationDescriptionBuilder subsystem) {
         ResourceTransformationDescriptionBuilder server = subsystem.addChildResource(SERVER_PATH);
         rejectDefinedAttributeWithDefaultValue(server, ServerDefinition.JOURNAL_FILE_OPEN_TIMEOUT);
+
+        rejectDefinedAttributeWithDefaultValue(subsystem.addChildResource(PathElement.pathElement(CONNECTION_FACTORY)), ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX);
+        rejectDefinedAttributeWithDefaultValue(subsystem.addChildResource(PathElement.pathElement(POOLED_CONNECTION_FACTORY)), ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX);
     }
 
     private static void registerTransformers_WF_16(ResourceTransformationDescriptionBuilder subsystem) {

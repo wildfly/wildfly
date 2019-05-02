@@ -668,6 +668,18 @@ public interface ConnectionFactoryAttributes {
         };
     }
 
+    interface External {
+        AttributeDefinition ENABLE_AMQ1_PREFIX = create("enable-amq1-prefix", BOOLEAN)
+                .setDefaultValue(new ModelNode(true))
+                .setValidator(ConnectionFactoryType.VALIDATOR)
+                .setRequired(false)
+                .setAllowExpression(true)
+                .setRestartAllServices()
+                .build();
+
+        AttributeDefinition[] ATTRIBUTES = { ENABLE_AMQ1_PREFIX } ;
+
+    }
     static class TransactionNameAllowedValuesValidator extends StringAllowedValuesValidator {
         public TransactionNameAllowedValuesValidator(String... values) {
             super(values);
