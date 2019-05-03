@@ -35,9 +35,11 @@ import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.ee.Batch;
+import org.wildfly.clustering.service.CascadeRemovalLifecycleListener;
 import org.wildfly.clustering.service.ChildTargetService;
 import org.wildfly.clustering.service.FunctionalService;
 import org.wildfly.clustering.service.ServiceConfigurator;
@@ -108,9 +110,9 @@ public class DistributableSingleSignOnManagerServiceConfigurator extends SimpleS
     @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
         ServiceName name = this.getServiceName();
-        this.provider.register(target.addService(name.append("installer"))).setInstance(new ChildTargetService(this.installer)).install();
+        ServiceController<?> installerController = this.provider.register(target.addService(name.append("installer"))).setInstance(new ChildTargetService(this.installer)).install();
 
-        ServiceBuilder<?> builder = target.addService(name);
+        ServiceBuilder<?> builder = target.addService(name).addListener(new CascadeRemovalLifecycleListener(installerController));
         Consumer<SingleSignOnManager> manager = this.manager.register(builder).provides(name);
         Service service = new FunctionalService<>(manager, this, this.manager);
         return builder.setInstance(service);
