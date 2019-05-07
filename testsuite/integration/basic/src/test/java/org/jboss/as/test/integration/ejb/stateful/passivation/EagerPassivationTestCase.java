@@ -69,22 +69,50 @@ public class EagerPassivationTestCase {
     public void testPassivation() throws Exception {
         PassivationInterceptor.reset();
 
-        try (TestPassivationRemote remote1 = (TestPassivationRemote) this.ctx.lookup("java:module/" + TestPassivationBean.class.getSimpleName())) {
-            Assert.assertEquals("Returned remote1 result was not expected", TestPassivationRemote.EXPECTED_RESULT, remote1.returnTrueString());
-            remote1.addEntity(1, "Bob");
-            remote1.setManagedBeanMessage("bar");
+        try (TestPassivationRemote remote = (TestPassivationRemote) this.ctx.lookup("java:module/" + TestPassivationBean.class.getSimpleName())) {
+            Assert.assertEquals("Returned remote1 result was not expected", TestPassivationRemote.EXPECTED_RESULT, remote.returnTrueString());
+            remote.addEntity(1, "Bob");
+            remote.setManagedBeanMessage("bar");
 
-            Assert.assertTrue(remote1.isPersistenceContextSame());
-            Assert.assertFalse("@PrePassivate called, check cache configuration and client sleep time", remote1.hasBeenPassivated());
-            Assert.assertFalse("@PostActivate called, check cache configuration and client sleep time", remote1.hasBeenActivated());
-            Assert.assertTrue(remote1.isPersistenceContextSame());
-            Assert.assertEquals("Super", remote1.getSuperEmployee().getName());
-            Assert.assertEquals("bar", remote1.getManagedBeanMessage());
+            Assert.assertTrue(remote.isPersistenceContextSame());
+            Assert.assertFalse("@PrePassivate called, check cache configuration and client sleep time", remote.hasBeenPassivated());
+            Assert.assertFalse("@PostActivate called, check cache configuration and client sleep time", remote.hasBeenActivated());
+            Assert.assertTrue(remote.isPersistenceContextSame());
+            Assert.assertEquals("Super", remote.getSuperEmployee().getName());
+            Assert.assertEquals("bar", remote.getManagedBeanMessage());
 
             // SFSB should passivate after a second
             TimeUnit.SECONDS.sleep(5);
 
             Assert.assertTrue("invalid: " + PassivationInterceptor.getPrePassivateTarget(), PassivationInterceptor.getPrePassivateTarget() instanceof TestPassivationBean);
+
+            Assert.assertTrue(remote.hasBeenPassivated());
+            Assert.assertTrue(remote.hasBeenActivated());
+        } finally {
+            PassivationInterceptor.reset();
+        }
+
+        // Verify that bean with serialization issue is not remove when eager passivation fails
+        try (TestPassivationRemote remote = (TestPassivationRemote) this.ctx.lookup("java:module/" + BeanWithSerializationIssue.class.getSimpleName())) {
+            Assert.assertEquals("Returned remote1 result was not expected", TestPassivationRemote.EXPECTED_RESULT, remote.returnTrueString());
+            remote.addEntity(2, "Bob");
+            remote.setManagedBeanMessage("bar");
+
+            Assert.assertTrue(remote.isPersistenceContextSame());
+            Assert.assertFalse("@PrePassivate called, check cache configuration and client sleep time", remote.hasBeenPassivated());
+            Assert.assertFalse("@PostActivate called, check cache configuration and client sleep time", remote.hasBeenActivated());
+            Assert.assertTrue(remote.isPersistenceContextSame());
+            Assert.assertEquals("Super", remote.getSuperEmployee().getName());
+            Assert.assertEquals("bar", remote.getManagedBeanMessage());
+
+            // SFSB should passivate after a second
+            TimeUnit.SECONDS.sleep(5);
+
+            // Activation/passivation callbacks are still triggered - even though passivation failed.
+            Assert.assertTrue("invalid: " + PassivationInterceptor.getPrePassivateTarget(), PassivationInterceptor.getPrePassivateTarget() instanceof TestPassivationBean);
+
+            Assert.assertTrue(remote.hasBeenPassivated());
+            Assert.assertTrue(remote.hasBeenActivated());
         } finally {
             PassivationInterceptor.reset();
         }

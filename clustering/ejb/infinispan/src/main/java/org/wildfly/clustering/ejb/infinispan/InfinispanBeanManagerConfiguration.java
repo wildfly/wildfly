@@ -28,6 +28,7 @@ import org.infinispan.remoting.transport.Address;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ee.infinispan.CacheProperties;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
+import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.spi.NodeFactory;
 
@@ -46,4 +47,5 @@ public interface InfinispanBeanManagerConfiguration<I, T> {
     ExpirationConfiguration<T> getExpirationConfiguration();
     PassivationConfiguration<T> getPassivationConfiguration();
     CacheProperties getProperties();
+    MarshallingContext getMarshallingContext();
 }

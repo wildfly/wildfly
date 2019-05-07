@@ -158,6 +158,11 @@ public class InfinispanBeanManagerFactory<I, T> implements BeanManagerFactory<I,
             public CacheProperties getProperties() {
                 return properties;
             }
+
+            @Override
+            public MarshallingContext getMarshallingContext() {
+                return context;
+            }
         };
         return new InfinispanBeanManager<>(configuration, identifierFactory, beanConfiguration, groupConfiguration);
     }

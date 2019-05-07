@@ -75,6 +75,7 @@ import org.wildfly.clustering.infinispan.spi.distribution.CacheLocality;
 import org.wildfly.clustering.infinispan.spi.distribution.ConsistentHashLocality;
 import org.wildfly.clustering.infinispan.spi.distribution.Locality;
 import org.wildfly.clustering.infinispan.spi.distribution.SimpleLocality;
+import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.spi.NodeFactory;
 import org.wildfly.common.function.ExceptionSupplier;
@@ -104,6 +105,7 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
 
     private final String name;
     private final Cache<BeanKey<I>, BeanEntry<I>> cache;
+    private final Cache<BeanGroupKey<I>, BeanGroupEntry<I, T>> groupCache;
     private final CacheProperties properties;
     private final BeanFactory<I, T> beanFactory;
     private final BeanGroupFactory<I, T> groupFactory;
@@ -116,6 +118,7 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
     private final PassivationConfiguration<T> passivation;
     private final Batcher<TransactionBatch> batcher;
     private final Predicate<Map.Entry<? super BeanKey<I>, ? super BeanEntry<I>>> filter;
+    private final MarshallingContext marshallingContext;
     private final AtomicReference<Future<?>> rehashFuture = new AtomicReference<>();
 
     private volatile Scheduler<I> scheduler;
@@ -140,6 +143,8 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
         this.dispatcherFactory = configuration.getCommandDispatcherFactory();
         this.expiration = configuration.getExpirationConfiguration();
         this.passivation = configuration.getPassivationConfiguration();
+        this.groupCache = groupConfiguration.getCache();
+        this.marshallingContext = configuration.getMarshallingContext();
     }
 
     @Override
@@ -159,7 +164,7 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
         if (idleTimeout != null) {
             Duration idleDuration = Duration.parse(idleTimeout);
             if (!idleDuration.isNegative()) {
-                schedulers.add(new EagerEvictionScheduler<>(this.beanFactory, this.groupFactory, this.expiration.getExecutor(), idleDuration, this.dispatcherFactory, dispatcherName + "/eager-passivation"));
+                schedulers.add(new EagerEvictionScheduler<>(this.cache, this.groupCache, this.filter, this.marshallingContext, this.passivation.getPassivationListener(), this.expiration.getExecutor(), idleDuration, this.dispatcherFactory, dispatcherName + "/eager-passivation"));
             }
         }
 

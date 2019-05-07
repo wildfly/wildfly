@@ -28,6 +28,7 @@ import java.io.Serializable;
 import javax.ejb.EJB;
 import javax.ejb.Remote;
 import javax.ejb.Stateful;
+import javax.interceptor.Interceptors;
 
 import org.jboss.ejb3.annotation.Cache;
 
@@ -37,6 +38,7 @@ import org.jboss.ejb3.annotation.Cache;
 @Stateful
 @Cache("passivating")
 @Remote(TestPassivationRemote.class)
+@Interceptors(PassivationInterceptor.class)
 public class BeanWithSerializationIssue extends TestPassivationBean {
 
     private Object object;
