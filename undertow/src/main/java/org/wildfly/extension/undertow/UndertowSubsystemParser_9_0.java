@@ -135,6 +135,16 @@ public class UndertowSubsystemParser_9_0 extends PersistentResourceXMLParser {
                                                                 AccessLogDefinition.USE_SERVER_LOG,
                                                                 AccessLogDefinition.EXTENDED,
                                                                 AccessLogDefinition.PREDICATE)
+                                        ).addChild(
+                                                builder(ConsoleAccessLogDefinition.INSTANCE.getPathElement())
+                                                    .addAttributes(
+                                                            ExchangeAttributeDefinitions.ATTRIBUTES,
+                                                            ConsoleAccessLogDefinition.INCLUDE_HOST_NAME,
+                                                            AccessLogDefinition.PATTERN,
+                                                            AccessLogDefinition.WORKER,
+                                                            ConsoleAccessLogDefinition.METADATA,
+                                                            AccessLogDefinition.PREDICATE
+                                                    )
                                         ).addChild(filterRefBuilder())
                                                 .addChild(
                                                     builder(UndertowExtension.PATH_SSO)

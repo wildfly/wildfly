@@ -169,7 +169,7 @@
                             Reference to the SSLContext that should be used by this listener.
 
                             If neither ssl-context or security-realm are set the JVM wide default SSLContext will be used instead.
-                            
+
                             If this attribute is defined, the attributes 'verify-client', 'enabled-cipher-suites', 'enabled-protocols',
                             'ssl-session-cache-size', and 'ssl-session-timeout' must not be set.
                         </xs:documentation>
@@ -298,6 +298,7 @@
         <xs:sequence>
             <xs:element name="location" type="locationType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="access-log" type="accessLogType" maxOccurs="1" minOccurs="0"/>
+            <xs:element name="console-access-log" type="consoleAccessLogType" minOccurs="0"/>
             <xs:element name="filter-ref" type="filter-refType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="single-sign-on" minOccurs="0" maxOccurs="1" type="singleSignOnType"/>
             <xs:element name="http-invoker" minOccurs="0" maxOccurs="1" type="http-invokerType"/>
@@ -420,6 +421,259 @@
         <xs:attribute name="extended" use="optional" type="xs:string" default="false" />
         <xs:attribute name="predicate" use="optional" type="xs:string" />
     </xs:complexType>
+    <xs:complexType name="consoleAccessLogType">
+        <xs:sequence minOccurs="0">
+            <xs:element name="attributes" type="attributesType" minOccurs="0"/>
+            <xs:element name="metadata" type="propertiesType" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="include-host-name" type="xs:boolean" default="true"/>
+        <xs:attribute name="worker" type="xs:string" default="default"/>
+        <xs:attribute name="predicate" type="xs:string" />
+    </xs:complexType>
+    <xs:complexType name="propertiesType">
+        <xs:annotation>
+            <xs:documentation>
+                A collection of free-form meta-data properties.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="property">
+                <xs:complexType>
+                    <xs:attribute name="name" type="xs:string" use="required"/>
+                    <xs:attribute name="value" type="xs:string" use="required"/>
+                </xs:complexType>
+            </xs:element>
+        </xs:choice>
+    </xs:complexType>
+    <xs:complexType name="attributesType">
+        <xs:annotation>
+            <xs:documentation>
+                The available attributes to be included in the structured access log output.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="authentication-type" minOccurs="0">
+                <xs:complexType>
+                    <xs:attribute name="key" type="xs:string"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="bytes-sent" minOccurs="0">
+                <xs:complexType>
+                    <xs:attribute name="key" type="xs:string"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="date-time" minOccurs="0">
+                <xs:complexType>
+                    <xs:attribute name="key" type="xs:string"/>
+                    <xs:attribute name="date-format" type="xs:string"/>
+                    <xs:attribute name="time-zone" type="xs:string"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="host-and-port" minOccurs="0">
+                <xs:complexType>
+                    <xs:attribute name="key" type="xs:string"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="local-ip" minOccurs="0">
+                <xs:complexType>
+                    <xs:attribute name="key" type="xs:string"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="local-port" minOccurs="0">
+                <xs:complexType>
+                    <xs:attribute name="key" type="xs:string"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="local-server-name" minOccurs="0">
+                <xs:complexType>
+                    <xs:attribute name="key" type="xs:string"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="path-parameter" minOccurs="0">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="name" maxOccurs="unbounded">
+                            <xs:complexType>
+                                <xs:attribute name="value" use="required"/>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                    <xs:attribute name="key-prefix"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="predicate" minOccurs="0">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="name" maxOccurs="unbounded">
+                            <xs:complexType>
+                                <xs:attribute name="value" use="required"/>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                    <xs:attribute name="key-prefix"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="query-parameter" minOccurs="0">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="name" maxOccurs="unbounded">
+                            <xs:complexType>
+                                <xs:attribute name="value" use="required"/>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                    <xs:attribute name="key-prefix"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="query-string" minOccurs="0">
+                <xs:complexType>
+                    <xs:attribute name="include-question-mark" type="xs:boolean" default="false"/>
+                    <xs:attribute name="key" type="xs:string"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="relative-path" minOccurs="0">
+                <xs:complexType>
+                    <xs:attribute name="key" type="xs:string"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="remote-host" minOccurs="0">
+                <xs:complexType>
+                    <xs:attribute name="key" type="xs:string"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="remote-ip" minOccurs="0">
+                <xs:complexType>
+                    <xs:attribute name="key" type="xs:string"/>
+                    <xs:attribute name="obfuscated" type="xs:boolean" default="false"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="remote-user" minOccurs="0">
+                <xs:complexType>
+                    <xs:attribute name="key" type="xs:string"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="request-header" minOccurs="0">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="name" maxOccurs="unbounded">
+                            <xs:complexType>
+                                <xs:attribute name="value" use="required"/>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                    <xs:attribute name="key-prefix"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="request-line" minOccurs="0">
+                <xs:complexType>
+                    <xs:attribute name="key" type="xs:string"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="request-method" minOccurs="0">
+                <xs:complexType>
+                    <xs:attribute name="key" type="xs:string"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="request-path" minOccurs="0">
+                <xs:complexType>
+                    <xs:attribute name="key" type="xs:string"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="request-protocol" minOccurs="0">
+                <xs:complexType>
+                    <xs:attribute name="key" type="xs:string"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="request-scheme" minOccurs="0">
+                <xs:complexType>
+                    <xs:attribute name="key" type="xs:string"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="request-url" minOccurs="0">
+                <xs:complexType>
+                    <xs:attribute name="key" type="xs:string"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="resolved-path" minOccurs="0">
+                <xs:complexType>
+                    <xs:attribute name="key" type="xs:string"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="response-code" minOccurs="0">
+                <xs:complexType>
+                    <xs:attribute name="key" type="xs:string"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="response-header" minOccurs="0">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="name" maxOccurs="unbounded">
+                            <xs:complexType>
+                                <xs:attribute name="value" use="required"/>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                    <xs:attribute name="key-prefix"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="response-reason-phrase" minOccurs="0">
+                <xs:complexType>
+                    <xs:attribute name="key" type="xs:string"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="response-time" minOccurs="0">
+                <xs:complexType>
+                    <xs:attribute name="key" type="xs:string"/>
+                    <xs:attribute name="time-unit" default="MILLISECONDS">
+                        <xs:simpleType>
+                            <xs:restriction base="xs:token">
+                                <xs:enumeration value="NANOSECONDS"/>
+                                <xs:enumeration value="MICROSECONDS"/>
+                                <xs:enumeration value="MILLISECONDS"/>
+                                <xs:enumeration value="SECONDS"/>
+                            </xs:restriction>
+                        </xs:simpleType>
+                    </xs:attribute>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="secure-exchange" minOccurs="0">
+                <xs:complexType>
+                    <xs:attribute name="key" type="xs:string"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="ssl-cipher" minOccurs="0">
+                <xs:complexType>
+                    <xs:attribute name="key" type="xs:string"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="ssl-client-cert" minOccurs="0">
+                <xs:complexType>
+                    <xs:attribute name="key" type="xs:string"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="ssl-session-id" minOccurs="0">
+                <xs:complexType>
+                    <xs:attribute name="key" type="xs:string"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="stored-response" minOccurs="0">
+                <xs:complexType>
+                    <xs:attribute name="key" type="xs:string"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="thread-name" minOccurs="0">
+                <xs:complexType>
+                    <xs:attribute name="key" type="xs:string"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="transport-protocol" minOccurs="0">
+                <xs:complexType>
+                    <xs:attribute name="key" type="xs:string"/>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
     <xs:complexType name="errorPageType">
         <xs:attribute name="name" use="required" type="xs:string"/>
         <xs:attribute name="code" use="required" type="xs:string"/>
@@ -708,10 +962,10 @@
         <xs:attribute name="security-domain" type="xs:string">
             <xs:annotation>
                 <xs:documentation>
-                    Reference to the security-domain that should be associated with the deployment, where a 
+                    Reference to the security-domain that should be associated with the deployment, where a
                     security-domain is referenced instead of a http-authentication-factory the authentication mechanisms
                     BASIC, DIGEST, FORM and CLIENT_CERT will be availble for the deployment to use - additionally the deployment
-                    can make use of the programatic login API. 
+                    can make use of the programatic login API.
 
                     Exactly one of http-authentication-factory or security-domain must be defined.
                 </xs:documentation>
@@ -736,8 +990,8 @@
             <xs:annotation>
                 <xs:documentation>
                     When integrated-jaspi is enabled during JASPI authentication the resulting
-                    identity will be loaded from the SecurityDomain referenced by the deployment, if 
-                    this is switched off AdHoc identities will be created instead. 
+                    identity will be loaded from the SecurityDomain referenced by the deployment, if
+                    this is switched off AdHoc identities will be created instead.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>

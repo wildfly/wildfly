@@ -76,6 +76,17 @@
         </dependency>
 
         <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-event-logger</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
             <groupId>io.undertow</groupId>
             <artifactId>undertow-servlet</artifactId>
             <exclusions>

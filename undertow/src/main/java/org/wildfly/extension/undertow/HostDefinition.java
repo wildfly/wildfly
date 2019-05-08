@@ -95,6 +95,7 @@ class HostDefinition extends PersistentResourceDefinition {
     private static final List<? extends PersistentResourceDefinition> CHILDREN = Collections.unmodifiableList(Arrays.asList(
             LocationDefinition.INSTANCE,
             AccessLogDefinition.INSTANCE,
+            ConsoleAccessLogDefinition.INSTANCE,
             FilterRefDefinition.INSTANCE,
             HttpInvokerDefinition.INSTANCE,
             new HostSingleSignOnDefinition()

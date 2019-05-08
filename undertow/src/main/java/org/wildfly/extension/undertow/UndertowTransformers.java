@@ -22,9 +22,9 @@
 
 package org.wildfly.extension.undertow;
 
-import static org.wildfly.extension.undertow.ApplicationSecurityDomainDefinition.SECURITY_DOMAIN;
 import static org.wildfly.extension.undertow.ApplicationSecurityDomainDefinition.ENABLE_JASPI;
 import static org.wildfly.extension.undertow.ApplicationSecurityDomainDefinition.INTEGRATED_JASPI;
+import static org.wildfly.extension.undertow.ApplicationSecurityDomainDefinition.SECURITY_DOMAIN;
 import static org.wildfly.extension.undertow.Constants.ENABLE_HTTP2;
 import static org.wildfly.extension.undertow.HostDefinition.QUEUE_REQUESTS_ON_START;
 import static org.wildfly.extension.undertow.HttpListenerResourceDefinition.CERTIFICATE_FORWARDING;
@@ -78,6 +78,7 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
     private static ModelVersion MODEL_VERSION_EAP7_0_0 = ModelVersion.create(3, 1, 0);
     private static ModelVersion MODEL_VERSION_EAP7_1_0 = ModelVersion.create(4, 0, 0);
     private static ModelVersion MODEL_VERSION_EAP7_2_0 = ModelVersion.create(7, 0, 0);
+    private static final ModelVersion MODEL_VERSION_WILDFLY_16 = ModelVersion.create(8, 0, 0);
 
     @Override
     public String getSubsystemName() {
@@ -89,11 +90,19 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
 
         ChainedTransformationDescriptionBuilder chainedBuilder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(subsystemRegistration.getCurrentSubsystemVersion());
 
-        registerTransformers_EAP_7_2_0(chainedBuilder.createBuilder(subsystemRegistration.getCurrentSubsystemVersion(), MODEL_VERSION_EAP7_2_0));
+        registerTransformersWildFly16(chainedBuilder.createBuilder(subsystemRegistration.getCurrentSubsystemVersion(), MODEL_VERSION_WILDFLY_16));
+        registerTransformers_EAP_7_2_0(chainedBuilder.createBuilder(MODEL_VERSION_WILDFLY_16, MODEL_VERSION_EAP7_2_0));
         registerTransformers_EAP_7_1_0(chainedBuilder.createBuilder(MODEL_VERSION_EAP7_2_0, MODEL_VERSION_EAP7_1_0));
         registerTransformers_EAP_7_0_0(chainedBuilder.createBuilder(MODEL_VERSION_EAP7_1_0, MODEL_VERSION_EAP7_0_0));
 
-        chainedBuilder.buildAndRegister(subsystemRegistration, new ModelVersion[]{MODEL_VERSION_EAP7_2_0, MODEL_VERSION_EAP7_1_0, MODEL_VERSION_EAP7_0_0});
+        chainedBuilder.buildAndRegister(subsystemRegistration, new ModelVersion[]{MODEL_VERSION_WILDFLY_16, MODEL_VERSION_EAP7_2_0, MODEL_VERSION_EAP7_1_0, MODEL_VERSION_EAP7_0_0});
+    }
+
+    private static void registerTransformersWildFly16(ResourceTransformationDescriptionBuilder subsystemBuilder) {
+        subsystemBuilder
+                .addChildResource(UndertowExtension.SERVER_PATH)
+                .addChildResource(UndertowExtension.HOST_PATH)
+                .rejectChildResource(ConsoleAccessLogDefinition.INSTANCE.getPathElement());
     }
 
     private static void registerTransformers_EAP_7_2_0(ResourceTransformationDescriptionBuilder subsystemBuilder) {

@@ -32,6 +32,7 @@ import java.util.List;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelTestControllerVersion;
@@ -73,8 +74,7 @@ public class UndertowTransformersTestCase extends AbstractSubsystemTest {
 
     @Test
     public void testTransformersEAP_7_2_0() throws Exception {
-        // TODO Enable once we can transform to 7.2
-        //testTransformers(ModelTestControllerVersion.EAP_7_1_0, "7.2", EAP7_2_0);
+        testTransformers(ModelTestControllerVersion.EAP_7_2_0, "7.2", EAP7_2_0);
     }
 
     @Test
@@ -135,6 +135,7 @@ public class UndertowTransformersTestCase extends AbstractSubsystemTest {
                 .addFailedAttribute(ajpAddress,
                         new FailedOperationTransformationConfig.NewAttributesConfig(
                                 ALLOW_UNESCAPED_CHARACTERS_IN_URL, RFC6265_COOKIE_VALIDATION))
+                .addFailedAttribute(hostAddress.append(PathElement.pathElement(Constants.SETTING, "console-access-log")), FailedOperationTransformationConfig.REJECTED_RESOURCE)
         );
     }
 
@@ -172,14 +173,18 @@ public class UndertowTransformersTestCase extends AbstractSubsystemTest {
                 .addFailedAttribute(ajpAddress,
                         new FailedOperationTransformationConfig.NewAttributesConfig(
                                 ALLOW_UNESCAPED_CHARACTERS_IN_URL))
+                .addFailedAttribute(hostAddress.append(PathElement.pathElement(Constants.SETTING, "console-access-log")), FailedOperationTransformationConfig.REJECTED_RESOURCE)
         );
     }
 
     @Test
     public void testRejectTransformersEAP_7_2_0() throws Exception {
-        // TODO Enable once we can transform to 7.2
-        //doRejectTest(ModelTestControllerVersion.EAP_7_1_0, EAP7_2_0, new FailedOperationTransformationConfig()
-        //        );
+        final PathAddress subsystemAddress = PathAddress.pathAddress(UndertowExtension.SUBSYSTEM_PATH);
+        final PathAddress serverAddress = subsystemAddress.append(UndertowExtension.SERVER_PATH);
+        final PathAddress hostAddress = serverAddress.append(UndertowExtension.HOST_PATH);
+        doRejectTest(ModelTestControllerVersion.EAP_7_2_0, EAP7_2_0, new FailedOperationTransformationConfig()
+                .addFailedAttribute(hostAddress.append(PathElement.pathElement(Constants.SETTING, "console-access-log")), FailedOperationTransformationConfig.REJECTED_RESOURCE)
+        );
     }
 
     @Test
@@ -289,11 +294,12 @@ public class UndertowTransformersTestCase extends AbstractSubsystemTest {
     }
 
     private void addExtraMavenUrls(ModelTestControllerVersion controllerVersion, LegacyKernelServicesInitializer init) throws Exception {
-        if (controllerVersion == ModelTestControllerVersion.EAP_7_1_0) {
+        if (controllerVersion == ModelTestControllerVersion.EAP_7_1_0 || controllerVersion == ModelTestControllerVersion.EAP_7_2_0) {
             init.addMavenResourceURL(controllerVersion.getMavenGroupId() + ":wildfly-clustering-common:" + controllerVersion.getMavenGavVersion());
             init.addMavenResourceURL(controllerVersion.getMavenGroupId() + ":wildfly-web-common:" + controllerVersion.getMavenGavVersion());
-            init.addMavenResourceURL("io.undertow:undertow-servlet:2.0.4.Final");
-            init.addMavenResourceURL("io.undertow:undertow-core:2.0.4.Final");
+            // The version here appears to be required to be set to the current version of undertow
+            init.addMavenResourceURL("io.undertow:undertow-servlet:2.0.20.Final");
+            init.addMavenResourceURL("io.undertow:undertow-core:2.0.20.Final");
         }
     }
 
