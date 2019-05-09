@@ -173,6 +173,7 @@
                     <!-- Parameters to test cases. -->
                     <systemPropertyVariables combine.children="append">
                         <jboss.dist>${basedir}/target/xml-validation</jboss.dist>
+                        <jboss.actual.dist>${basedir}/target/wildfly-${project.version}</jboss.actual.dist>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
@@ -190,6 +191,24 @@
             </activation>
             <build>
                 <plugins>
+                    <plugin>
+                        <groupId>org.wildfly.galleon-plugins</groupId>
+                        <artifactId>wildfly-galleon-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>wildfly-generate-all-artifacts-list</id>
+                                <goals>
+                                    <goal>generate-all-artifacts-list</goal>
+                                </goals>
+                                <phase>package</phase>
+                                <configuration>
+                                    <fpGroupId>org.wildfly</fpGroupId>
+                                    <fpArtifactId>wildfly-galleon-pack</fpArtifactId>
+                                    <fpVersion>${project.version}</fpVersion>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-assembly-plugin</artifactId>
