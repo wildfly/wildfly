@@ -22,7 +22,10 @@
 package org.wildfly.clustering.ejb.infinispan.group;
 
 import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
@@ -139,19 +142,33 @@ public class InfinispanBeanGroupFactory<I, T> implements BeanGroupFactory<I, T> 
         if (event.isPre()) {
             BeanGroupEntry<I, T> entry = event.getValue();
             try (BeanGroup<I, T> group = new InfinispanBeanGroup<>(event.getKey().getId(), entry, this.context, Mutator.PASSIVE, this)) {
-                for (I beanId : group.getBeans()) {
-                    BeanKey<I> beanKey = new InfinispanBeanKey<>(beanId);
-                    BeanEntry<I> beanEntry = this.beanCache.getAdvancedCache().withFlags(Flag.SKIP_CACHE_LOAD).get(beanKey);
-                    if ((beanEntry != null) && this.beanFilter.test(new AbstractMap.SimpleImmutableEntry<>(beanKey, beanEntry))) {
-                        InfinispanEjbLogger.ROOT_LOGGER.tracef("Passivating bean %s", beanKey);
-                        this.passiveCount.incrementAndGet();
-                        group.prePassivate(beanId, this.passivationListener);
-                        // Cascade evict to bean entry
-                        this.beanCache.evict(beanKey);
+                Set<I> beans = group.getBeans();
+                List<I> notified = new ArrayList<>(beans.size());
+                try {
+                    for (I beanId : beans) {
+                        BeanKey<I> beanKey = new InfinispanBeanKey<>(beanId);
+                        BeanEntry<I> beanEntry = this.beanCache.getAdvancedCache().withFlags(Flag.SKIP_CACHE_LOAD).get(beanKey);
+                        if ((beanEntry != null) && this.beanFilter.test(new AbstractMap.SimpleImmutableEntry<>(beanKey, beanEntry))) {
+                            InfinispanEjbLogger.ROOT_LOGGER.tracef("Passivating bean %s", beanKey);
+                            group.prePassivate(beanId, this.passivationListener);
+                            notified.add(beanId);
+                            // Cascade evict to bean entry
+                            this.beanCache.evict(beanKey);
+                        }
                     }
+                    this.passiveCount.addAndGet(notified.size());
+                } catch (RuntimeException | Error e) {
+                    // Restore state of pre-passivated beans
+                    for (I beanId : notified) {
+                        try {
+                            group.postActivate(beanId, this.passivationListener);
+                        } catch (RuntimeException | Error t) {
+                            InfinispanEjbLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
+                        }
+                    }
+                    // Abort passivation if any beans failed to pre-passivate
+                    throw e;
                 }
-            } catch (Exception e) {
-                InfinispanEjbLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
             }
         }
     }
@@ -167,11 +184,13 @@ public class InfinispanBeanGroupFactory<I, T> implements BeanGroupFactory<I, T> 
                     if ((beanEntry != null) && this.beanFilter.test(new AbstractMap.SimpleImmutableEntry<>(beanKey, beanEntry))) {
                         InfinispanEjbLogger.ROOT_LOGGER.tracef("Activating bean %s", beanKey);
                         this.passiveCount.decrementAndGet();
-                        group.postActivate(beanId, this.passivationListener);
+                        try {
+                            group.postActivate(beanId, this.passivationListener);
+                        } catch (RuntimeException | Error e) {
+                            InfinispanEjbLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
+                        }
                     }
                 }
-            } catch (Exception e) {
-                InfinispanEjbLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
             }
         }
     }
