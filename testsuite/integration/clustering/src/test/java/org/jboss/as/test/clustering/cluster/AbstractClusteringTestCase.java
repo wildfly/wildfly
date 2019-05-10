@@ -190,6 +190,10 @@ public abstract class AbstractClusteringTestCase {
         NodeUtil.stop(this.controller, containers);
     }
 
+    protected boolean isStarted(String container) {
+        return NodeUtil.isStarted(this.controller, container);
+    }
+
     protected void stop(int timeout, String... containers) {
         NodeUtil.stop(this.controller, timeout, containers);
     }

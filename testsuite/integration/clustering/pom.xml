@@ -46,6 +46,8 @@
         <test-group>org/jboss/as/test/clustering/cluster</test-group>
         <!-- Needs to kept inline with what the infinispan-server-feature-pack requires -->
         <version.org.jboss.infinispan-wildfly>14.0.1.Final</version.org.jboss.infinispan-wildfly>
+        <!-- Byteman configuration -->
+        <version.org.jboss.byteman>4.0.6</version.org.jboss.byteman>
     </properties>
 
     <dependencies>
@@ -72,6 +74,40 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <!-- ARQ extension for Byteman -->
+        <dependency>
+            <groupId>org.jboss.arquillian.extension</groupId>
+            <artifactId>arquillian-extension-byteman</artifactId>
+            <version>1.0.0</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.sun</groupId>
+                    <artifactId>tools</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.arquillian.junit</groupId>
+            <artifactId>arquillian-junit-container</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- Byteman dependencies -->
+        <dependency>
+            <groupId>org.jboss.byteman</groupId>
+            <artifactId>byteman</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.byteman</groupId>
+            <artifactId>byteman-submit</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss</groupId>
+            <artifactId>jboss-ejb-client</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -222,6 +258,10 @@
                                     <includes>
                                         <include>${test-group}/**/*TestCase.java</include>
                                     </includes>
+                                    <!-- Skip byteman tests -->
+                                    <excludes>
+                                        <exclude>${test-group}/**/byteman/*TestCase.java</exclude>
+                                    </excludes>
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
                                         <node0>${node0}</node0>
@@ -232,6 +272,7 @@
                                         <mcast1>${mcast1}</mcast1>
                                         <mcast2>${mcast2}</mcast2>
                                         <mcast3>${mcast3}</mcast3>
+                                        <arquillian.xml>arquillian.xml</arquillian.xml>
                                         <arquillian.launch>clustering-all</arquillian.launch>
                                         <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
                                         <!-- Override ${server.jvm.arg} to only include ${jvm.args.ip} but *not* include ${jvm.args.ip.server} -->
@@ -256,6 +297,46 @@
                                     <systemPropertyVariables combine.children="append">
                                         <arquillian.launch>single</arquillian.launch>
                                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
+                                    </systemPropertyVariables>
+                                </configuration>
+                            </execution>
+
+                            <!-- Multi-node clustering tests (based on Byteman) for EJB tests -->
+                            <!-- Byteman extension doesn't work with JDK 11, because tools.jar was removed: https://github.com/arquillian/arquillian-extension-byteman/issues/25 -->
+                            <execution>
+                                <id>ts.surefire.clustering.all-ejb-byteman</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <argLine>${surefire.byteman.argline}</argLine>
+                                    <!-- Needed for EJB client tests -->
+                                    <useSystemClassLoader>true</useSystemClassLoader>
+                                    <useManifestOnlyJar>true</useManifestOnlyJar>
+                                    <forkMode>once</forkMode>
+                                    <!--parallel>false</parallel-->
+                                    <environmentVariables>
+                                        <BYTEMAN_HOME/>
+                                    </environmentVariables>
+                                    <includes>
+                                        <include>${test-group}/**/byteman/*TestCase.java</include>
+                                    </includes>
+                                    <systemPropertyVariables combine.children="append">
+                                        <node0>${node0}</node0>
+                                        <node1>${node1}</node1>
+                                        <node2>${node2}</node2>
+                                        <node3>${node3}</node3>
+                                        <mcast>${mcast}</mcast>
+                                        <mcast1>${mcast1}</mcast1>
+                                        <mcast2>${mcast2}</mcast2>
+                                        <mcast3>${mcast3}</mcast3>
+                                        <arquillian.xml>arquillian-byteman.xml</arquillian.xml>
+                                        <arquillian.launch>clustering-all</arquillian.launch>
+                                        <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
+                                        <!-- Usual server JVM args plus additional Byteman args (-Djboss.modules.system.pkgs, -Xbootclasspath)-->
+                                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.other} ${jvm.args.timeouts} ${jvm.args.dirs} ${extra.server.jvm.args} ${surefire.byteman.args}</server.jvm.args>
+                                        <version.org.infinispan>${version.org.infinispan}</version.org.infinispan>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
@@ -314,6 +395,26 @@
                 </plugins>
             </build>
         </profile>
-
+        <profile>
+            <!-- Selectively disable executions for tests that only work on Java 8 -->
+            <id>ts.clustering.java8</id>
+            <activation>
+                <jdk>[1.9,)</jdk>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions combine.children="append">
+                            <execution>
+                                <id>ts.surefire.clustering.all-ejb-byteman</id>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 </project>
