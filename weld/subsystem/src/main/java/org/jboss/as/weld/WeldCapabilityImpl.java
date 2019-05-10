@@ -24,10 +24,15 @@ import javax.enterprise.inject.spi.Extension;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.weld._private.WeldDeploymentMarker;
-import org.jboss.as.weld._private.WeldPortableExtensions;
+import org.jboss.as.weld.deployment.WeldPortableExtensions;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 
+/**
+ * The implementation of WeldCapability.
+ *
+ * @author Yeray Borges
+ */
 public class WeldCapabilityImpl implements WeldCapability {
     static final WeldCapability INSTANCE = new WeldCapabilityImpl();
 
