@@ -22,6 +22,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -48,6 +49,7 @@ import java.util.concurrent.TimeUnit;
 public class WebsocketApplicationScopedTestCase {
     private static final String CLIENT_STANDALONE = "standalone";
     private static final HashMap<String, LinkedBlockingDeque<String>> queues = new HashMap<>();
+    private static final long TIMEOUT = TimeoutUtil.adjust(20000);
 
     @Deployment(testable = false, name = CLIENT_STANDALONE)
     public static WebArchive createThinDeployment() {
@@ -66,8 +68,7 @@ public class WebsocketApplicationScopedTestCase {
 
         try (Session session = ContainerProvider.getWebSocketContainer().connectToServer(Client.class, uriUser1)) {
             //Wait until the client is initialized e.q. the OnOpen is executed
-            Thread.sleep(10);
-            Assert.assertTrue(queues.size() > 0);
+            waitForClientInitialization(queues, 1);
 
             //Check if the user1 is connected
             Assert.assertEquals("CONNECT", queues.get(session.getId()).poll(10, TimeUnit.SECONDS));
@@ -77,8 +78,7 @@ public class WebsocketApplicationScopedTestCase {
 
             try (Session sessioUser2 = ContainerProvider.getWebSocketContainer().connectToServer(Client.class, uriUser2)) {
                 //Wait until the client is initialized e.q. the OnOpen is executed
-                Thread.sleep(10);
-                Assert.assertTrue(queues.size() > 1);
+                waitForClientInitialization(queues, 2);
 
                 //Assert that the sessioUser2 got the messages
                 Assert.assertEquals("CONNECT", queues.get(sessioUser2.getId()).poll(10, TimeUnit.SECONDS));
@@ -91,6 +91,17 @@ public class WebsocketApplicationScopedTestCase {
                 Assert.assertEquals(">> user2: hello world", queues.get(session.getId()).poll(10, TimeUnit.SECONDS));
             }
         }
+    }
+
+    private void waitForClientInitialization(HashMap<String, LinkedBlockingDeque<String>> queues, int expectedQueueSize) throws InterruptedException {
+        long end = System.currentTimeMillis() + TIMEOUT;
+        while (end > System.currentTimeMillis()) {
+            if (queues.size() > expectedQueueSize-1) {
+                break;
+            }
+            Thread.sleep(100);
+        }
+        Assert.assertTrue(queues.size() > expectedQueueSize-1);
     }
 
     private URI createUri(URL webapp, String path) throws URISyntaxException {
