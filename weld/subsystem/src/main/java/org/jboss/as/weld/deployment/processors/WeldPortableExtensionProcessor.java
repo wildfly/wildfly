@@ -40,7 +40,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.PrivateSubDeploymentMarker;
 import org.jboss.as.weld._private.WeldDeploymentMarker;
-import org.jboss.as.weld._private.WeldPortableExtensions;
+import org.jboss.as.weld.deployment.WeldPortableExtensions;
 import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.modules.Module;
 import org.jboss.vfs.VFSUtils;

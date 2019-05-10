@@ -64,7 +64,7 @@ import org.jboss.as.weld.deployment.BeanDeploymentModule;
 import org.jboss.as.weld.deployment.CdiAnnotationMarker;
 import org.jboss.as.weld.deployment.WeldAttachments;
 import org.jboss.as.weld.deployment.WeldDeployment;
-import org.jboss.as.weld._private.WeldPortableExtensions;
+import org.jboss.as.weld.deployment.WeldPortableExtensions;
 import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.as.weld.services.TCCLSingletonService;
 import org.jboss.as.weld.services.bootstrap.WeldExecutorServices;
