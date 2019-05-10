@@ -47,6 +47,7 @@
         <module name="org.apache.activemq.artemis.journal" export="true"/>
         <module name="org.jboss.jts"/>
         <module name="org.jboss.logging"/>
+        <module name="org.jboss.logmanager"/>
         <module name="io.netty"/>
         <module name="org.jgroups"/>
         <module name="javax.resource.api"/>

@@ -273,7 +273,8 @@
         <version.jsoup>1.8.3</version.jsoup>
         <version.net.jcip>1.0</version.net.jcip>
         <version.net.shibboleth.utilities.java-support>7.1.1</version.net.shibboleth.utilities.java-support>
-        <version.org.apache.activemq.artemis>2.6.3.jbossorg-00014</version.org.apache.activemq.artemis>
+        <version.org.apache.activemq.artemis>2.8.0</version.org.apache.activemq.artemis>
+        <version.org.apache.activemq.artemis.native>1.0.0</version.org.apache.activemq.artemis.native>
         <version.org.apache.avro>1.7.6</version.org.apache.avro>
         <version.org.apache.cxf>3.2.7</version.org.apache.cxf>
         <version.org.apache.cxf.xjcplugins>3.2.3</version.org.apache.cxf.xjcplugins>
@@ -285,7 +286,7 @@
         <version.org.apache.myfaces.core>2.3.1</version.org.apache.myfaces.core>
         <version.org.apache.neethi>3.1.1</version.org.apache.neethi>
         <version.org.apache.openjpa>2.4.2</version.org.apache.openjpa>
-        <version.org.apache.qpid.proton>0.27.3</version.org.apache.qpid.proton>
+        <version.org.apache.qpid.proton>0.32.0</version.org.apache.qpid.proton>
         <version.org.apache.santuario>2.1.2</version.org.apache.santuario>
         <version.org.apache.thrift>0.11.0</version.org.apache.thrift>
         <version.org.apache.velocity>2.0</version.org.apache.velocity>
@@ -1922,12 +1923,16 @@
 
             <dependency>
                 <groupId>org.apache.activemq</groupId>
-                <artifactId>artemis-native</artifactId>
-                <version>${version.org.apache.activemq.artemis}</version>
+                <artifactId>activemq-artemis-native</artifactId>
+                <version>${version.org.apache.activemq.artemis.native}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.jboss.logging</groupId>
                         <artifactId>jboss-logging</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.logmanager</groupId>
+                        <artifactId>jboss-logmanager</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -1991,6 +1996,10 @@
                         <groupId>org.apache.geronimo.specs</groupId>
                         <artifactId>*</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.commons</groupId>
+                        <artifactId>commons-configuration2</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -2002,6 +2011,10 @@
                     <exclusion>
                         <groupId>org.apache.geronimo.specs</groupId>
                         <artifactId>*</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
