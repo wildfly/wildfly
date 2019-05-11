@@ -65,6 +65,7 @@
             <xs:element name="statistics" type="statisticsType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="log-system-exceptions" type="log-system-exceptionsType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="allow-ejb-name-regex" type="allow-ejb-name-regexType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="server-interceptors" type="serverInterceptorsType" minOccurs="0" maxOccurs="1" />
         </xs:all>
     </xs:complexType>
 
@@ -556,6 +557,17 @@
             </xs:documentation>
         </xs:annotation>
         <xs:attribute name="value" type="xs:boolean"/>
+    </xs:complexType>
+
+    <xs:complexType name="serverInterceptorsType">
+        <xs:sequence>
+            <xs:element name="server-interceptor" type="serverInterceptorType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="serverInterceptorType">
+        <xs:attribute name="module" type="xs:string" use="required"/>
+        <xs:attribute name="class" type="xs:string" use="required"/>
     </xs:complexType>
 
     <xs:simpleType name="stringListType">
