@@ -41,6 +41,9 @@
                <keepalive-time time="100" unit="milliseconds"/>
            </thread-pool>
        </thread-pools>
+       <server-interceptors>
+           <server-interceptor module="foo:interceptors:1.0" class="org.bar.FooInterceptor"/>
+       </server-interceptors>
        <?IIOP?>
        <default-security-domain value="other"/>
        <default-missing-method-permissions-deny-access value="true" />
