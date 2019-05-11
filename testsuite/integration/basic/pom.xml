@@ -513,6 +513,7 @@
                                         <include>org/jboss/as/test/integration/transaction/inflow/TransactionInflowTestCase.java</include>
                                         <include>org/jboss/as/test/integration/transaction/MaximumTimeoutTestCase.java</include>
                                         <include>org/jboss/as/test/integration/jsr77/**/*TestCase*.java</include>
+                                        <include>org/jboss/as/test/integration/weld/context/application/lifecycle/ApplicationContextLifecycleTestCase.java</include>
                                     </includes>
 
                                     <environmentVariables>
@@ -576,6 +577,7 @@
                                         <exclude>org/jboss/as/test/integration/transaction/inflow/TransactionInflowTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/transaction/MaximumTimeoutTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/jsr77/**/*TestCase*.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/weld/context/application/lifecycle/ApplicationContextLifecycleTestCase.java</exclude>
                                     </excludes>
 
                                     <environmentVariables>

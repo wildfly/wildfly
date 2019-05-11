@@ -67,9 +67,10 @@ public class EEConcurrentContextProcessor implements DeploymentUnitProcessor {
         final ConcurrentContext concurrentContext = moduleDescription.getConcurrentContext();
         // setup context
         setupConcurrentContext(concurrentContext, moduleDescription.getApplicationName(), moduleDescription.getModuleName(), null, deploymentUnit.getAttachment(MODULE).getClassLoader(), moduleDescription.getNamespaceContextSelector(), deploymentUnit, phaseContext.getServiceTarget());
-        // add setup action for web modules
+        // attach setup action
         final ConcurrentContextSetupAction setupAction = new ConcurrentContextSetupAction(concurrentContext);
-        deploymentUnit.getAttachmentList(Attachments.WEB_SETUP_ACTIONS).add(setupAction);
+        deploymentUnit.putAttachment(Attachments.CONCURRENT_CONTEXT_SETUP_ACTION, setupAction);
+        deploymentUnit.addToAttachmentList(Attachments.WEB_SETUP_ACTIONS, setupAction);
     }
 
     private void processComponentDescription(final ComponentDescription componentDescription) {
@@ -110,7 +111,11 @@ public class EEConcurrentContextProcessor implements DeploymentUnitProcessor {
     }
 
     @Override
-    public void undeploy(DeploymentUnit context) {
-
+    public void undeploy(DeploymentUnit deploymentUnit) {
+        if (DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
+            return;
+        }
+        deploymentUnit.removeAttachment(Attachments.CONCURRENT_CONTEXT_SETUP_ACTION);
+        deploymentUnit.getAttachmentList(Attachments.WEB_SETUP_ACTIONS).removeIf(setupAction -> setupAction instanceof ConcurrentContextSetupAction);
     }
 }
