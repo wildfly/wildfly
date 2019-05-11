@@ -172,6 +172,8 @@
         <server.output.dir.prefix>wildfly</server.output.dir.prefix>
         <!-- Version suffix that is appended to directories. Default is the maven GAV version but this can be edited to use a short form version -->
         <server.output.dir.version>${project.version}</server.output.dir.version>
+        <wildfly.build.output.dir>build/target/${server.output.dir.prefix}-${server.output.dir.version}</wildfly.build.output.dir>
+        <wildfly.web.build.output.dir>servlet-dist/target/${server.output.dir.prefix}-servlet-${server.output.dir.version}</wildfly.web.build.output.dir>
 
         <!-- Protocol to use for communication with remote maven repositories.
              You can set to 'http' if you are using a maven proxy and 'https' 
@@ -185,30 +187,42 @@
         <surefire.extra.args></surefire.extra.args>
         <surefire.jpda.args></surefire.jpda.args>
         <surefire.system.args>${modular.jdk.args} ${modular.jdk.props} -ea -Duser.region=US -Duser.language=en -XX:MaxMetaspaceSize=256m ${surefire.jpda.args} ${surefire.extra.args} ${surefire.jacoco.args}</surefire.system.args>
+
+        <!--
+            *Plugin* Dependency versions. Please keep alphabetical.
+
+            Properties for dependencies that are not *solely* related to plugins go in the next section.
+
+            This is not limited to plugin versions. Other artifacts that those plugins depend upon can go here
+            if they are not otherwise used.
+
+            Each version property should be of the form "version.<groupId>".
+            For example: <version.org.jboss.as>
+
+            In cases where multiple artifacts use the same groupId but have different
+            versions, add the artifactId or other qualifier to the property name.
+         -->
         <version.asciidoctor.plugin>1.5.6</version.asciidoctor.plugin>
-
         <version.help.plugin>2.2</version.help.plugin>
-        <version.jacoco.plugin>0.8.2</version.jacoco.plugin>
+        <version.jacoco.plugin>0.8.2</version.jacoco.plugin><!-- TODO property does not follow verion.groupId format -->
         <version.org.jboss.galleon>4.0.0.Final</version.org.jboss.galleon>
-
+        <version.org.jboss.universe.producer.wildfly-producers>1.0.0.Final</version.org.jboss.universe.producer.wildfly-producers>
+        <version.org.jboss.universe.community-universe>1.0.0.Final</version.org.jboss.universe.community-universe>
         <version.org.wildfly.build-tools>1.2.10.Final</version.org.wildfly.build-tools>
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
-
+        <version.org.wildfly.common>1.5.1.Final</version.org.wildfly.common>
         <version.org.wildfly.component-matrix-plugin>1.0.2.Final</version.org.wildfly.component-matrix-plugin>
         <version.org.wildfly.galleon-plugins>4.0.1.Final</version.org.wildfly.galleon-plugins>
         <version.org.wildfly.maven.plugins>2.0.0.Final</version.org.wildfly.maven.plugins>
-        <version.org.jboss.universe.producer.wildfly-producers>1.0.0.Final</version.org.jboss.universe.producer.wildfly-producers>
-        <version.org.jboss.universe.community-universe>1.0.0.Final</version.org.jboss.universe.community-universe>
         <version.org.wildfly.plugin>1.2.1.Final</version.org.wildfly.plugin>
-        <!-- Non-default maven plugin versions and configuration -->
         <version.org.zanata.plugin>3.9.1</version.org.zanata.plugin>
         <version.verifier.plugin>1.1</version.verifier.plugin>
         <version.xml.plugin>1.0.1</version.xml.plugin>
-        <wildfly.build.output.dir>build/target/${server.output.dir.prefix}-${server.output.dir.version}</wildfly.build.output.dir>
-        <wildfly.web.build.output.dir>servlet-dist/target/${server.output.dir.prefix}-servlet-${server.output.dir.version}</wildfly.web.build.output.dir>
 
         <!--
-            Dependency versions. Please keep alphabetical.
+            *Non-plugin* Dependency versions. Please keep alphabetical.
+
+            Properties for dependencies that solely relate to maven plugins go in the section above.
 
             Each version property should be of the form "version.<groupId>".
             For example: <version.org.jboss.as>
@@ -385,7 +399,6 @@
         <version.org.reactivestreams>1.0.2</version.org.reactivestreams>
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.wildfly.arquillian>2.2.0.Final</version.org.wildfly.arquillian>
-        <version.org.wildfly.common>1.5.1.Final</version.org.wildfly.common>
         <version.org.wildfly.core>9.0.0.Beta6</version.org.wildfly.core>
         <version.org.wildfly.extras.creaper>1.6.1</version.org.wildfly.extras.creaper>
         <version.org.wildfly.http-client>1.0.15.Final</version.org.wildfly.http-client>
