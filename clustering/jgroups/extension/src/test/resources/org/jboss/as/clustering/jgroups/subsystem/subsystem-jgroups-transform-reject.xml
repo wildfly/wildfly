@@ -20,7 +20,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<subsystem xmlns="urn:jboss:domain:jgroups:6.0">
+<subsystem xmlns="urn:jboss:domain:jgroups:7.0">
     <channels default="default">
         <channel name="default" stack="minimal"/>
         <channel name="bridge" stack="default"/>
@@ -46,7 +46,7 @@
             </transport>
             <socket-protocol type="MPING" module="org.jgroups" socket-binding="jgroups-mping"/>
             <protocol type="MERGE3"/>
-            <protocol type="FD_SOCK"/>
+            <socket-protocol type="FD_SOCK" socket-binding="jgroups-tcp-fd" client-socket-binding="jgroups-client-fd"/>
             <protocol type="FD"/>
             <protocol type="VERIFY_SUSPECT"/>
             <protocol type="pbcast.NAKACK2"/>
@@ -63,7 +63,9 @@
             </relay>
         </stack>
         <stack name="minimal">
-            <transport type="UDP" socket-binding="jgroups-udp"/>
+            <transport type="TCP_NIO2"
+                       socket-binding="jgroups-tcp"
+                       client-socket-binding="client-binding"/>
         </stack>
     </stacks>
 </subsystem>

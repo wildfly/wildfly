@@ -54,6 +54,7 @@ import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.ServiceNameProvider;
 import org.wildfly.clustering.service.ServiceSupplierDependency;
+import org.wildfly.clustering.service.SimpleSupplierDependency;
 import org.wildfly.clustering.service.SupplierDependency;
 
 /**
@@ -93,7 +94,7 @@ public class TransportConfigurationServiceConfigurator<T extends TP> extends Abs
     public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.socketBinding = new ServiceSupplierDependency<>(CommonUnaryRequirement.SOCKET_BINDING.getServiceName(context, SOCKET_BINDING.resolveModelAttribute(context, model).asString()));
         String diagnosticsSocketBinding = DIAGNOSTICS_SOCKET_BINDING.resolveModelAttribute(context, model).asStringOrNull();
-        this.diagnosticsSocketBinding = (diagnosticsSocketBinding != null) ? new ServiceSupplierDependency<>(CommonUnaryRequirement.SOCKET_BINDING.getServiceName(context, diagnosticsSocketBinding)) : null;
+        this.diagnosticsSocketBinding = (diagnosticsSocketBinding != null) ? new ServiceSupplierDependency<>(CommonUnaryRequirement.SOCKET_BINDING.getServiceName(context, diagnosticsSocketBinding)) : new SimpleSupplierDependency<>(null);
 
         ModelNode machine = MACHINE.resolveModelAttribute(context, model);
         ModelNode rack = RACK.resolveModelAttribute(context, model);
@@ -127,9 +128,7 @@ public class TransportConfigurationServiceConfigurator<T extends TP> extends Abs
         for (String serviceName : Arrays.asList("jgroups.udp.mcast_sock", "jgroups.udp.sock", "jgroups.tcp.server", "jgroups.nio.server", "jgroups.tunnel.ucast_sock")) {
             bindings.put(serviceName, binding);
         }
-        if (this.diagnosticsSocketBinding != null) {
-            bindings.put("jgroups.tp.diag.mcast_sock", this.diagnosticsSocketBinding.get());
-        }
+        bindings.put("jgroups.tp.diag.mcast_sock", this.diagnosticsSocketBinding.get());
         return bindings;
     }
 
@@ -164,9 +163,10 @@ public class TransportConfigurationServiceConfigurator<T extends TP> extends Abs
                 ;
         protocol.setInternalThreadPool(factory.apply(protocol.getInternalThreadPoolThreadFactory()));
 
-        this.setValue(protocol, "enable_diagnostics", this.diagnosticsSocketBinding != null);
-        if (this.diagnosticsSocketBinding != null) {
-            InetSocketAddress address = this.diagnosticsSocketBinding.get().getSocketAddress();
+        SocketBinding diagnosticsBinging = this.diagnosticsSocketBinding.get();
+        this.setValue(protocol, "enable_diagnostics", diagnosticsBinging != null);
+        if (diagnosticsBinging != null) {
+            InetSocketAddress address = diagnosticsBinging.getSocketAddress();
             this.setValue(protocol, "diagnostics_addr", address.getAddress());
             this.setValue(protocol, "diagnostics_port", address.getPort());
         }

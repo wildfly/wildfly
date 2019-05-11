@@ -111,7 +111,7 @@ public class JGroupsTransformersTestCase extends OperationTestCaseBase {
 
     private static org.jboss.as.subsystem.test.AdditionalInitialization createAdditionalInitialization() {
         return new AdditionalInitialization()
-                .require(CommonUnaryRequirement.SOCKET_BINDING, "jgroups-tcp", "jgroups-udp", "jgroups-udp-fd", "some-binding", "jgroups-diagnostics", "jgroups-mping", "jgroups-tcp-fd", "jgroups-state-xfr")
+                .require(CommonUnaryRequirement.SOCKET_BINDING, "jgroups-tcp", "jgroups-udp", "jgroups-udp-fd", "some-binding", "client-binding", "jgroups-diagnostics", "jgroups-mping", "jgroups-tcp-fd", "jgroups-client-fd", "jgroups-state-xfr")
                 ;
     }
 
@@ -301,7 +301,7 @@ public class JGroupsTransformersTestCase extends OperationTestCaseBase {
 
         final PathAddress transportAddr = stackAddr.append("transport", "tcp");
         ModelNode addTransport = Util.createAddOperation(transportAddr);
-        addTransport.get(SocketBindingProtocolResourceDefinition.Attribute.SOCKET_BINDING.getName()).set("some-binding");
+        addTransport.get(MulticastProtocolResourceDefinition.Attribute.SOCKET_BINDING.getName()).set("some-binding");
         addTransport.get(MODULE).set("do.reject");
         TransformedOperation op = services.executeInMainAndGetTheTransformedOperation(addTransport, version);
         Assert.assertTrue(op.rejectOperation(success()));
@@ -369,11 +369,16 @@ public class JGroupsTransformersTestCase extends OperationTestCaseBase {
 
         PathAddress subsystemAddress = PathAddress.pathAddress(JGroupsSubsystemResourceDefinition.PATH);
 
+        if (JGroupsModel.VERSION_7_0_0.requiresTransformation(version)) {
+            config.addFailedAttribute(subsystemAddress.append(StackResourceDefinition.WILDCARD_PATH).append(TransportResourceDefinition.pathElement("TCP_NIO2")), FailedOperationTransformationConfig.REJECTED_RESOURCE);
+            config.addFailedAttribute(subsystemAddress.append(StackResourceDefinition.WILDCARD_PATH).append(ProtocolResourceDefinition.pathElement("FD_SOCK")), FailedOperationTransformationConfig.REJECTED_RESOURCE);
+        }
+
         if (JGroupsModel.VERSION_3_0_0.requiresTransformation(version)) {
             // Channel resource in a typical configuration would be not rejected, but since we don't have infinispan subsystem setup (because
             // that would create a cyclical dependency) it has to be rejected in this subsystem test
             config.addFailedAttribute(subsystemAddress.append(ChannelResourceDefinition.WILDCARD_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
-            config.addFailedAttribute(subsystemAddress.append(StackResourceDefinition.WILDCARD_PATH).append(TransportResourceDefinition.WILDCARD_PATH).append(ThreadPoolResourceDefinition.WILDCARD_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
+            config.addFailedAttribute(subsystemAddress.append(StackResourceDefinition.WILDCARD_PATH).append(TransportResourceDefinition.pathElement("TCP")).append(ThreadPoolResourceDefinition.WILDCARD_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
         }
 
         if (JGroupsModel.VERSION_2_0_0.requiresTransformation(version)) {

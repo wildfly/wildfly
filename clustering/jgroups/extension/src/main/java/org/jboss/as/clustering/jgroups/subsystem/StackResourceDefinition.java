@@ -22,6 +22,7 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import java.util.EnumSet;
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.CapabilityProvider;
@@ -158,6 +159,10 @@ public class StackResourceDefinition extends ChildResourceDefinition<ManagementR
                 }
             };
             builder.setCustomResourceTransformer(transformer);
+        } else {
+            for (ThreadPoolResourceDefinition pool : EnumSet.allOf(ThreadPoolResourceDefinition.class)) {
+                pool.buildTransformation(version, builder);
+            }
         }
 
         if (JGroupsModel.VERSION_2_0_0.requiresTransformation(version)) {
@@ -166,7 +171,7 @@ public class StackResourceDefinition extends ChildResourceDefinition<ManagementR
             RelayResourceDefinition.buildTransformation(version, builder);
         }
 
-        TransportResourceDefinition.buildTransformation(version, builder);
+        TransportRegistration.buildTransformation(version, builder);
         ProtocolRegistration.buildTransformation(version, builder);
     }
 
@@ -238,7 +243,7 @@ public class StackResourceDefinition extends ChildResourceDefinition<ManagementR
         new SimpleResourceRegistration(descriptor, handler).register(registration);
 
         OperationDefinition legacyAddProtocolOperation = new SimpleOperationDefinitionBuilder("add-protocol", this.getResourceDescriptionResolver())
-                .setParameters(SocketBindingProtocolResourceDefinition.Attribute.SOCKET_BINDING.getDefinition())
+                .setParameters(MulticastProtocolResourceDefinition.Attribute.SOCKET_BINDING.getDefinition())
                 .addParameter(AbstractProtocolResourceDefinition.DeprecatedAttribute.TYPE.getDefinition())
                 .addParameter(AbstractProtocolResourceDefinition.Attribute.PROPERTIES.getDefinition())
                 .setDeprecated(JGroupsModel.VERSION_3_0_0.getVersion())

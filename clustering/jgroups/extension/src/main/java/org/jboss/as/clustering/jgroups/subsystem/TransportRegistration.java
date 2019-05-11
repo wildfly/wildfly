@@ -25,10 +25,10 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import java.util.EnumSet;
 
 import org.jboss.as.clustering.controller.Registration;
-import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
-import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
  * Registers transport definitions, including any definition overrides.
@@ -38,21 +38,17 @@ public class TransportRegistration implements Registration<ManagementResourceReg
 
     enum MulticastTransport {
         UDP;
-
-        static boolean contains(String name) {
-            for (MulticastTransport protocol : EnumSet.allOf(MulticastTransport.class)) {
-                if (name.equals(protocol.name())) {
-                    return true;
-                }
-            }
-            return false;
-        }
     }
 
-    static class TransportResourceServiceConfiguratorFactory implements ResourceServiceConfiguratorFactory {
-        @Override
-        public ResourceServiceConfigurator createServiceConfigurator(PathAddress address) {
-            return MulticastTransport.contains(address.getLastElement().getValue()) ? new MulticastTransportConfigurationServiceConfigurator(address) : new TransportConfigurationServiceConfigurator<>(address);
+    enum SocketTransport {
+        TCP, TCP_NIO2;
+    }
+
+    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
+        TransportResourceDefinition.addTransformations(version, parent.addChildResource(TransportResourceDefinition.WILDCARD_PATH));
+
+        for (SocketTransport transport : EnumSet.allOf(SocketTransport.class)) {
+            SocketTransportResourceDefinition.addTransformations(version, parent.addChildResource(TransportResourceDefinition.pathElement(transport.name())));
         }
     }
 
@@ -64,6 +60,14 @@ public class TransportRegistration implements Registration<ManagementResourceReg
 
     @Override
     public void register(ManagementResourceRegistration registration) {
-        new TransportResourceDefinition(new TransportResourceServiceConfiguratorFactory(), this.parentServiceConfiguratorFactory).register(registration);
+        new TransportResourceDefinition(this.parentServiceConfiguratorFactory).register(registration);
+
+        for (MulticastTransport transport : EnumSet.allOf(MulticastTransport.class)) {
+            new TransportResourceDefinition(transport.name(), MulticastTransportConfigurationServiceConfigurator::new, this.parentServiceConfiguratorFactory).register(registration);
+        }
+
+        for (SocketTransport transport : EnumSet.allOf(SocketTransport.class)) {
+            new SocketTransportResourceDefinition(transport.name(), SocketTransportConfigurationServiceConfigurator::new, this.parentServiceConfiguratorFactory).register(registration);
+        }
     }
 }

@@ -172,16 +172,16 @@ public class OperationsTestCase extends OperationTestCaseBase {
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
 
         // read the socket binding attribute
-        result = services.executeOperation(getProtocolReadOperation("maximal", "MPING", SocketBindingProtocolResourceDefinition.Attribute.SOCKET_BINDING));
+        result = services.executeOperation(getProtocolReadOperation("maximal", "MPING", MulticastProtocolResourceDefinition.Attribute.SOCKET_BINDING));
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals("jgroups-mping", result.get(RESULT).asString());
 
         // write the attribute
-        result = services.executeOperation(getProtocolWriteOperation("maximal", "MPING", SocketBindingProtocolResourceDefinition.Attribute.SOCKET_BINDING, "new-socket-binding"));
+        result = services.executeOperation(getProtocolWriteOperation("maximal", "MPING", MulticastProtocolResourceDefinition.Attribute.SOCKET_BINDING, "new-socket-binding"));
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
 
         // re-read the attribute
-        result = services.executeOperation(getProtocolReadOperation("maximal", "MPING", SocketBindingProtocolResourceDefinition.Attribute.SOCKET_BINDING));
+        result = services.executeOperation(getProtocolReadOperation("maximal", "MPING", MulticastProtocolResourceDefinition.Attribute.SOCKET_BINDING));
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals("new-socket-binding", result.get(RESULT).asString());
     }

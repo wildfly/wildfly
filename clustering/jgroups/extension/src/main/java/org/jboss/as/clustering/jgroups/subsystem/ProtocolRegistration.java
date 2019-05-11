@@ -113,16 +113,12 @@ public class ProtocolRegistration implements Registration<ManagementResourceRegi
 
         for (SocketProtocol protocol : EnumSet.allOf(SocketProtocol.class)) {
             PathElement path = ProtocolResourceDefinition.pathElement(protocol.name());
-            if (!JGroupsModel.VERSION_7_0_0.requiresTransformation(version)) {
-                OptionalSocketBindingProtocolResourceDefinition.addTransformations(version, parent.addChildResource(path));
-            }
+            SocketProtocolResourceDefinition.addTransformations(version, parent.addChildResource(path));
         }
 
         for (MulticastProtocol protocol : EnumSet.allOf(MulticastProtocol.class)) {
             PathElement path = ProtocolResourceDefinition.pathElement(protocol.name());
-            if (!JGroupsModel.VERSION_5_0_0.requiresTransformation(version)) {
-                SocketBindingProtocolResourceDefinition.addTransformations(version, parent.addChildResource(path));
-            }
+            MulticastProtocolResourceDefinition.addTransformations(version, parent.addChildResource(path));
         }
 
         for (JdbcProtocol protocol : EnumSet.allOf(JdbcProtocol.class)) {
@@ -194,10 +190,10 @@ public class ProtocolRegistration implements Registration<ManagementResourceRegi
 
         // Override definitions for protocol types
         for (SocketProtocol protocol : EnumSet.allOf(SocketProtocol.class)) {
-            new OptionalSocketBindingProtocolResourceDefinition(protocol.name(), this.configurator, SocketProtocolConfigurationServiceConfigurator::new, this.parentServiceConfiguratorFactory).register(registration);
+            new SocketProtocolResourceDefinition(protocol.name(), this.configurator, this.parentServiceConfiguratorFactory).register(registration);
         }
         for (MulticastProtocol protocol : EnumSet.allOf(MulticastProtocol.class)) {
-            new SocketBindingProtocolResourceDefinition(protocol.name(), this.configurator, MulticastSocketProtocolConfigurationServiceConfigurator::new, this.parentServiceConfiguratorFactory).register(registration);
+            new MulticastProtocolResourceDefinition(protocol.name(), this.configurator, this.parentServiceConfiguratorFactory).register(registration);
         }
 
         for (JdbcProtocol protocol : EnumSet.allOf(JdbcProtocol.class)) {

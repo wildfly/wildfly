@@ -86,7 +86,8 @@ public class JGroupsSubsystemTestCase extends ClusteringSubsystemTest<JGroupsSch
     @Override
     protected org.jboss.as.subsystem.test.AdditionalInitialization createAdditionalInitialization() {
         return new AdditionalInitialization()
-                .require(CommonUnaryRequirement.SOCKET_BINDING, "jgroups-tcp", "jgroups-udp", "some-binding", "jgroups-diagnostics", "jgroups-mping", "jgroups-tcp-fd")
+                .require(CommonUnaryRequirement.SOCKET_BINDING, "jgroups-tcp", "jgroups-udp", "some-binding", "jgroups-diagnostics", "jgroups-mping", "jgroups-tcp-fd", "jgroups-client-fd")
+                .require(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING, "node1", "node2")
                 .require(CommonUnaryRequirement.KEY_STORE, "my-key-store")
                 .require(CommonUnaryRequirement.CREDENTIAL_STORE, "my-credential-store")
                 .require(CommonUnaryRequirement.DATA_SOURCE, "ExampleDS")
