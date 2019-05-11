@@ -131,7 +131,7 @@ public class DeploymentServletDefinition extends SimpleResourceDefinition {
                     @Override
                     public void execute(final OperationContext context, final ModelNode operation) {
                         final ServiceController<?> deploymentServiceController = context.getServiceRegistry(false).getService(UndertowService.deploymentServiceName(server, host, path));
-                        if (deploymentServiceController == null) {
+                        if (deploymentServiceController == null || deploymentServiceController.getState() != ServiceController.State.UP) {
                             return;
                         }
                         final UndertowDeploymentService deploymentService = (UndertowDeploymentService) deploymentServiceController.getService();
@@ -168,7 +168,7 @@ public class DeploymentServletDefinition extends SimpleResourceDefinition {
                 @Override
                 public void execute(final OperationContext context, final ModelNode operation) {
                     final ServiceController<?> deploymentServiceController = context.getServiceRegistry(false).getService(UndertowService.deploymentServiceName(server, host, path));
-                    if (deploymentServiceController == null) {
+                    if (deploymentServiceController == null || deploymentServiceController.getState() != ServiceController.State.UP) {
                         return;
                     }
                     final UndertowDeploymentService deploymentService = (UndertowDeploymentService) deploymentServiceController.getService();
