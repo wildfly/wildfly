@@ -40,7 +40,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
@@ -169,11 +168,6 @@ public abstract class TableResourceDefinition extends ChildResourceDefinition<Ma
         @Override
         public UnaryOperator<PathAddress> getPathAddressTransformation() {
             return PathAddress::getParent;
-        }
-
-        @Override
-        public UnaryOperator<ImmutableManagementResourceRegistration> getResourceRegistrationTransformation() {
-            return ImmutableManagementResourceRegistration::getParent;
         }
     };
 

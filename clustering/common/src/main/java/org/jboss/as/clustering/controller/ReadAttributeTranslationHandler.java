@@ -26,6 +26,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
@@ -48,8 +49,11 @@ public class ReadAttributeTranslationHandler implements OperationStepHandler {
         PathAddress targetAddress = this.translation.getPathAddressTransformation().apply(currentAddress);
         Attribute targetAttribute = this.translation.getTargetAttribute();
         ModelNode targetOperation = Operations.createReadAttributeOperation(targetAddress, targetAttribute);
-        ImmutableManagementResourceRegistration targetRegistration = this.translation.getResourceRegistrationTransformation().apply(context.getResourceRegistration());
-        OperationStepHandler readAttributeHandler = targetRegistration.getAttributeAccess(PathAddress.EMPTY_ADDRESS, targetAttribute.getName()).getReadHandler();
+        ImmutableManagementResourceRegistration registration = (currentAddress == targetAddress) ? context.getResourceRegistration() : context.getRootResourceRegistration().getSubModel(targetAddress);
+        if (registration == null) {
+            throw new OperationFailedException(ControllerLogger.MGMT_OP_LOGGER.noSuchResourceType(targetAddress));
+        }
+        OperationStepHandler readAttributeHandler = registration.getAttributeAccess(PathAddress.EMPTY_ADDRESS, targetAttribute.getName()).getReadHandler();
         OperationStepHandler readTranslatedAttributeHandler = new ReadTranslatedAttributeStepHandler(readAttributeHandler, targetAttribute, this.translation.getReadTranslator());
         // If targetOperation applies to the current resource, we can execute in the current step
         if (targetAddress == currentAddress) {
