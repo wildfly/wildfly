@@ -25,7 +25,6 @@ package org.jboss.as.clustering.controller;
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 
 /**
  * Defines an attribute translation.
@@ -36,7 +35,6 @@ public interface AttributeTranslation {
     // The translator used by an attribute alias
     AttributeValueTranslator IDENTITY_TRANSLATOR = (context, value) -> value;
     UnaryOperator<PathAddress> IDENTITY_ADDRESS_TRANSFORMATION = UnaryOperator.identity();
-    UnaryOperator<ImmutableManagementResourceRegistration> IDENTITY_RESOURCE_REGISTRATION_TRANSFORMATION = UnaryOperator.identity();
 
     Attribute getTargetAttribute();
 
@@ -50,9 +48,5 @@ public interface AttributeTranslation {
 
     default UnaryOperator<PathAddress> getPathAddressTransformation() {
         return IDENTITY_ADDRESS_TRANSFORMATION;
-    }
-
-    default UnaryOperator<ImmutableManagementResourceRegistration> getResourceRegistrationTransformation() {
-        return IDENTITY_RESOURCE_REGISTRATION_TRANSFORMATION;
     }
 }
