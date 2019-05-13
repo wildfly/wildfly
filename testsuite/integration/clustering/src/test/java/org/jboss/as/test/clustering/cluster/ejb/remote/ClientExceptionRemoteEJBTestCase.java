@@ -47,7 +47,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Test for WFLY-5788.
+ * Test for WFLY-5788 and WFLY-9951.
+ *
  * @author Radoslav Husar
  */
 @RunWith(Arquillian.class)

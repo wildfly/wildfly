@@ -29,8 +29,14 @@ import org.jboss.as.server.deployment.DeploymentUnit;
  *
  * @author Stuart Douglas
  *
+ * @deprecated Use WeldCapability to get access to the functionality of this class.
  */
+@Deprecated
 public class WeldDeploymentMarker {
+    // Once we can remove this class from this package, we should move the functionality exposed by this class to
+    // org.jboss.as.weld._private.WeldDeploymentMarker
+    // It will protect their uses outside of weld subsystem and will force external callers to use WeldCapability
+    // instead to utilize this class.
 
     private static final AttachmentKey<Boolean> MARKER = AttachmentKey.create(Boolean.class);
 

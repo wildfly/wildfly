@@ -49,7 +49,7 @@ public class DefaultContextSetupProviderImpl implements ContextSetupProvider {
             return concurrentContext.saveContext(contextService, contextObjectProperties);
         } else {
             EeLogger.ROOT_LOGGER.debug("ee concurrency context not found in invocation context");
-            return NullContextHandle.INSTANCE;
+            return new NullContextHandle();
         }
     }
 

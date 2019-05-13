@@ -22,7 +22,9 @@
 
 package org.wildfly.extension.messaging.activemq.deployment;
 
-import org.jboss.as.ee.weld.WeldDeploymentMarker;
+import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
+
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -30,6 +32,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
+import org.jboss.as.weld.WeldCapability;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
@@ -56,15 +59,18 @@ public class MessagingDependencyProcessor implements DeploymentUnitProcessor {
 
         addDependency(moduleSpecification, moduleLoader, JMS_API);
 
-        if (WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
-            addDependency(moduleSpecification, moduleLoader, AS_MESSAGING);
-            // The messaging-activemq subsystem provides support for injected JMSContext.
-            // one of the beans has a @TransactionScoped scope which requires the CDI context
-            // provided by Narayana in the org.jboss.jts module.
-            // @see CDIDeploymentProcessor
-            addDependency(moduleSpecification, moduleLoader, JTS);
+        final CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
+        if (support.hasCapability(WELD_CAPABILITY_NAME)) {
+            final WeldCapability api = support.getOptionalCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class).get();
+            if (api.isPartOfWeldDeployment(deploymentUnit)) {
+                addDependency(moduleSpecification, moduleLoader, AS_MESSAGING);
+                // The messaging-activemq subsystem provides support for injected JMSContext.
+                // one of the beans has a @TransactionScoped scope which requires the CDI context
+                // provided by Narayana in the org.jboss.jts module.
+                // @see CDIDeploymentProcessor
+                addDependency(moduleSpecification, moduleLoader, JTS);
+            }
         }
-
     }
 
     private void addDependency(ModuleSpecification moduleSpecification, ModuleLoader moduleLoader,

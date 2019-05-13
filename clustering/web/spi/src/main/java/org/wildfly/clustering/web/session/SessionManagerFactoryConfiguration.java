@@ -21,6 +21,7 @@
  */
 package org.wildfly.clustering.web.session;
 
+import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.marshalling.spi.Marshallability;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
 import org.wildfly.clustering.web.LocalContextFactory;
@@ -39,4 +40,6 @@ public interface SessionManagerFactoryConfiguration<C extends Marshallability, L
     C getMarshallingContext();
 
     LocalContextFactory<L> getLocalContextFactory();
+
+    Immutability getImmutability();
 }

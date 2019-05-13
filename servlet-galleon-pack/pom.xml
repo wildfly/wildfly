@@ -75,6 +75,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -86,6 +87,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -97,6 +99,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -108,51 +111,61 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>javax.activation</groupId>
             <artifactId>activation</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>javax.validation</groupId>
             <artifactId>validation-api</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>javax.enterprise</groupId>
             <artifactId>cdi-api</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>javax.inject</groupId>
             <artifactId>javax.inject</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>javax.json.bind</groupId>
             <artifactId>javax.json.bind-api</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.eclipse.jdt.core.compiler</groupId>
             <artifactId>ecj</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.eclipse</groupId>
             <artifactId>yasson</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>javax.enterprise.concurrent</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.glassfish</groupId>
-            <artifactId>javax.el-impl</artifactId>
+            <artifactId>jakarta.el</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -164,6 +177,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -175,6 +189,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -186,61 +201,73 @@
                     <groupId>*</groupId>
                 </exclusion>
             </exclusions>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.apache.taglibs</groupId>
             <artifactId>taglibs-standard-spec</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.apache.taglibs</groupId>
             <artifactId>taglibs-standard-impl</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.apache.taglibs</groupId>
             <artifactId>taglibs-standard-compat</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.jboss.common</groupId>
             <artifactId>jboss-common-beans</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.jboss.spec.javax.annotation</groupId>
             <artifactId>jboss-annotations-api_1.3_spec</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.jboss.spec.javax.enterprise.concurrent</groupId>
             <artifactId>jboss-concurrency-api_1.0_spec</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.jboss.spec.javax.el</groupId>
             <artifactId>jboss-el-api_3.0_spec</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.jboss.spec.javax.servlet</groupId>
             <artifactId>jboss-servlet-api_4.0_spec</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.jboss.spec.javax.servlet.jsp</groupId>
             <artifactId>jboss-jsp-api_2.3_spec</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.jboss.spec.javax.transaction</groupId>
             <artifactId>jboss-transaction-api_1.2_spec</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.jboss.spec.javax.websocket</groupId>
             <artifactId>jboss-websocket-api_1.1_spec</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -252,6 +279,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -263,6 +291,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -274,6 +303,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -285,6 +315,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -296,6 +327,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -307,6 +339,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -318,6 +351,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -329,6 +363,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -340,6 +375,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -351,6 +387,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -362,6 +399,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -373,6 +411,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -395,6 +434,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -406,6 +446,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -417,6 +458,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -428,6 +470,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -439,6 +482,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -450,16 +494,19 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>xalan</groupId>
             <artifactId>serializer</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>xalan</groupId>
             <artifactId>xalan</artifactId>
+            <scope>provided</scope>
         </dependency>
 
     </dependencies>

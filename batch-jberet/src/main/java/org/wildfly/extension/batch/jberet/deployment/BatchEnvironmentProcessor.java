@@ -23,8 +23,7 @@
 package org.wildfly.extension.batch.jberet.deployment;
 
 import static org.jboss.as.server.deployment.Attachments.DEPLOYMENT_COMPLETE_SERVICES;
-
-import javax.enterprise.inject.spi.BeanManager;
+import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
 
 import org.jberet.repository.JobRepository;
 import org.jberet.spi.ArtifactFactory;
@@ -34,7 +33,6 @@ import org.jberet.spi.JobOperatorContext;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
-import org.jboss.as.ee.weld.WeldDeploymentMarker;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -42,6 +40,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.suspend.SuspendController;
+import org.jboss.as.weld.WeldCapability;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -135,10 +134,12 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
             final ServiceBuilder<ArtifactFactory> artifactFactoryServiceBuilder = serviceTarget.addService(artifactFactoryServiceName, artifactFactoryService);
 
             // Register the bean manager if this is a CDI deployment
-            if (WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
-                BatchLogger.LOGGER.tracef("Adding BeanManager service dependency for deployment %s", deploymentUnit.getName());
-                artifactFactoryServiceBuilder.addDependency(BatchServiceNames.beanManagerServiceName(deploymentUnit), BeanManager.class,
-                        artifactFactoryService.getBeanManagerInjector());
+            if (support.hasCapability(WELD_CAPABILITY_NAME)) {
+                final WeldCapability api = support.getOptionalCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class).get();
+                if (api.isPartOfWeldDeployment(deploymentUnit)) {
+                    BatchLogger.LOGGER.tracef("Adding BeanManager service dependency for deployment %s", deploymentUnit.getName());
+                    api.addBeanManagerService(deploymentUnit, artifactFactoryServiceBuilder, artifactFactoryService.getBeanManagerInjector());
+                }
             }
             artifactFactoryServiceBuilder.install();
             serviceBuilder.addDependency(artifactFactoryServiceName, WildFlyArtifactFactory.class, service.getArtifactFactoryInjector());

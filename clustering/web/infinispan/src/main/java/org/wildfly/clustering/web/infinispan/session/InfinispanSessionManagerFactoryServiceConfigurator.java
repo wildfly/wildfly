@@ -41,6 +41,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.infinispan.spi.EvictableDataContainer;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
@@ -204,5 +205,10 @@ public class InfinispanSessionManagerFactoryServiceConfigurator<C extends Marsha
     @Override
     public LocalContextFactory<L> getLocalContextFactory() {
         return this.factoryConfiguration.getLocalContextFactory();
+    }
+
+    @Override
+    public Immutability getImmutability() {
+        return this.factoryConfiguration.getImmutability();
     }
 }

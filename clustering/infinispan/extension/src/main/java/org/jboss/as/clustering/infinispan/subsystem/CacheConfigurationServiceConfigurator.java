@@ -34,6 +34,7 @@ import org.infinispan.configuration.cache.GroupsConfigurationBuilder;
 import org.infinispan.configuration.cache.LockingConfiguration;
 import org.infinispan.configuration.cache.MemoryConfiguration;
 import org.infinispan.configuration.cache.PersistenceConfiguration;
+import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.configuration.cache.TransactionConfiguration;
 import org.infinispan.distribution.group.Grouper;
 import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
@@ -81,9 +82,11 @@ public class CacheConfigurationServiceConfigurator extends CapabilityServiceName
         String containerName = address.getParent().getLastElement().getValue();
         String cacheName = address.getLastElement().getValue();
         this.configurator = new ConfigurationServiceConfigurator(this.getServiceName(), containerName, cacheName, this.andThen(builder -> {
-            GroupsConfigurationBuilder groupsBuilder = builder.clustering().hash().groups().enabled();
-            for (Grouper<?> grouper : this.module.get().loadService(Grouper.class)) {
-                groupsBuilder.addGrouper(grouper);
+            if (builder.memory().storageType() == StorageType.OBJECT) {
+                GroupsConfigurationBuilder groupsBuilder = builder.clustering().hash().groups().enabled();
+                for (Grouper<?> grouper : this.module.get().loadService(Grouper.class)) {
+                    groupsBuilder.addGrouper(grouper);
+                }
             }
         })).require(this);
     }

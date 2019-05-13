@@ -23,8 +23,11 @@
 package org.jboss.as.jaxrs;
 
 
+import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
+
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.jaxrs.deployment.JaxrsAnnotationProcessor;
 import org.jboss.as.jaxrs.deployment.JaxrsCdiIntegrationProcessor;
@@ -66,8 +69,13 @@ class JaxrsSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(JaxrsExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_JAXRS, new JaxrsDependencyProcessor());
                 processorTarget.addDeploymentProcessor(JaxrsExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_JAXRS_SCANNING, new JaxrsScanningProcessor());
                 processorTarget.addDeploymentProcessor(JaxrsExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_JAXRS_COMPONENT, new JaxrsComponentDeployer());
-                processorTarget.addDeploymentProcessor(JaxrsExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_JAXRS_CDI_INTEGRATION, new JaxrsCdiIntegrationProcessor());
+
+                CapabilityServiceSupport capabilities = context.getCapabilityServiceSupport();
+                if (capabilities.hasCapability(WELD_CAPABILITY_NAME)) {
+                    processorTarget.addDeploymentProcessor(JaxrsExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_JAXRS_CDI_INTEGRATION, new JaxrsCdiIntegrationProcessor());
+                }
                 processorTarget.addDeploymentProcessor(JaxrsExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_JAXRS_METHOD_PARAMETER, new JaxrsMethodParameterProcessor());
+
                 processorTarget.addDeploymentProcessor(JaxrsExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_JAXRS_DEPLOYMENT, new JaxrsIntegrationProcessor());
             }
         }, OperationContext.Stage.RUNTIME);

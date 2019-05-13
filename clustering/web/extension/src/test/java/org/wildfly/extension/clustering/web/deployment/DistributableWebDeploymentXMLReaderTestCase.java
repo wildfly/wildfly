@@ -25,7 +25,10 @@ package org.wildfly.extension.clustering.web.deployment;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.Locale;
+import java.util.UUID;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -70,6 +73,9 @@ public class DistributableWebDeploymentXMLReaderTestCase {
 
             Assert.assertNull(config.getSessionManagement());
             Assert.assertEquals("foo", config.getSessionManagementName());
+
+            Assert.assertNotNull(config.getImmutableClasses());
+            Assert.assertEquals(Arrays.asList(Locale.class.getName(), UUID.class.getName()), config.getImmutableClasses());
         } finally {
             mapper.unregisterRootAttribute(this.schema.getRoot());
         }
@@ -93,6 +99,9 @@ public class DistributableWebDeploymentXMLReaderTestCase {
             Assert.assertEquals("foo", configuration.getContainerName());
             Assert.assertEquals("bar", configuration.getCacheName());
             Assert.assertSame(SessionAttributePersistenceStrategy.FINE, configuration.getAttributePersistenceStrategy());
+
+            Assert.assertNotNull(config.getImmutableClasses());
+            Assert.assertEquals(Arrays.asList(Locale.class.getName(), UUID.class.getName()), config.getImmutableClasses());
         } finally {
             mapper.unregisterRootAttribute(this.schema.getRoot());
         }

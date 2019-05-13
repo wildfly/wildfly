@@ -288,6 +288,8 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
         ReplicatedCacheResourceDefinition.buildTransformation(version, builder);
         InvalidationCacheResourceDefinition.buildTransformation(version, builder);
         LocalCacheResourceDefinition.buildTransformation(version, builder);
+
+        CacheRuntimeResourceDefinition.buildTransformation(version, builder);
     }
 
     CacheContainerResourceDefinition() {
@@ -308,6 +310,7 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
                 .addRequiredChildren(EnumSet.complementOf(EnumSet.of(ThreadPoolResourceDefinition.CLIENT)))
                 .addRequiredChildren(ScheduledThreadPoolResourceDefinition.class)
                 .addRequiredSingletonChildren(NoTransportResourceDefinition.PATH)
+                .setResourceTransformation(CacheContainerResource::new)
                 ;
         ResourceServiceHandler handler = new CacheContainerServiceHandler();
         new SimpleResourceRegistration(descriptor, handler).register(registration);
@@ -336,6 +339,7 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
 
         if (registration.isRuntimeOnlyRegistrationValid()) {
             new MetricHandler<>(new CacheContainerMetricExecutor(), CacheContainerMetric.class).register(registration);
+            new CacheRuntimeResourceDefinition().register(registration);
         }
 
         new JGroupsTransportResourceDefinition().register(registration);

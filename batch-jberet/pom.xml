@@ -80,6 +80,10 @@
             <artifactId>wildfly-weld-spi</artifactId>
         </dependency>
         <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-weld-common</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.weld</groupId>
             <artifactId>weld-core-impl</artifactId>
         </dependency>

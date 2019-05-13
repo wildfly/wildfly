@@ -24,7 +24,7 @@
 
 <module xmlns="urn:jboss:module:1.8" name="javax.enterprise.api">
     <dependencies>
-        <module name="org.glassfish.javax.el" export="true"/>
+        <module name="org.glassfish.jakarta.el" export="true"/>
         <module name="javax.inject.api" export="true"/>
         <module name="javax.interceptor.api" export="true"/>
 

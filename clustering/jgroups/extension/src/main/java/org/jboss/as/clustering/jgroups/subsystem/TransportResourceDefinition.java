@@ -180,9 +180,7 @@ public class TransportResourceDefinition extends AbstractProtocolResourceDefinit
         }
     }
 
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
-
+    static void addTransformations(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
         AbstractProtocolResourceDefinition.addTransformations(version, builder);
 
         if (JGroupsModel.VERSION_3_0_0.requiresTransformation(version)) {
@@ -223,10 +221,6 @@ public class TransportResourceDefinition extends AbstractProtocolResourceDefinit
 
             // Reject thread pool configuration, discard if undefined, support EAP 6.x slaves using deprecated attributes
             builder.addChildResource(ThreadPoolResourceDefinition.WILDCARD_PATH, RequiredChildResourceDiscardPolicy.REJECT_AND_WARN);
-        } else {
-            for (ThreadPoolResourceDefinition pool : EnumSet.allOf(ThreadPoolResourceDefinition.class)) {
-                pool.buildTransformation(version, parent);
-            }
         }
     }
 
@@ -252,9 +246,16 @@ public class TransportResourceDefinition extends AbstractProtocolResourceDefinit
     }
 
     static class ResourceDescriptorConfigurator implements UnaryOperator<ResourceDescriptor> {
+        private final UnaryOperator<ResourceDescriptor> configurator;
+
+        ResourceDescriptorConfigurator(UnaryOperator<ResourceDescriptor> configurator) {
+            this.configurator = configurator;
+        }
+
         @Override
         public ResourceDescriptor apply(ResourceDescriptor descriptor) {
-            return descriptor.addAttributes(Attribute.class)
+            return this.configurator.apply(descriptor)
+                    .addAttributes(Attribute.class)
                     .addCapabilities(Capability.class)
                     .addExtraParameters(ThreadingAttribute.class)
                     .addRequiredChildren(ThreadPoolResourceDefinition.class)
@@ -262,16 +263,20 @@ public class TransportResourceDefinition extends AbstractProtocolResourceDefinit
         }
     }
 
-    TransportResourceDefinition(ResourceServiceConfiguratorFactory serviceConfiguratorFactory, ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory) {
-        this(new Parameters(WILDCARD_PATH, JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(WILDCARD_PATH, ProtocolResourceDefinition.WILDCARD_PATH)), serviceConfiguratorFactory, parentServiceConfiguratorFactory);
+    TransportResourceDefinition(ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory) {
+        this(new Parameters(WILDCARD_PATH, JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(WILDCARD_PATH, ProtocolResourceDefinition.WILDCARD_PATH)), UnaryOperator.identity(), TransportConfigurationServiceConfigurator::new, parentServiceConfiguratorFactory);
     }
 
-    TransportResourceDefinition(PathElement path, ResourceServiceConfiguratorFactory serviceConfiguratorFactory, ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory) {
-        this(new Parameters(path, JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(path, WILDCARD_PATH, ProtocolResourceDefinition.WILDCARD_PATH)), serviceConfiguratorFactory, parentServiceConfiguratorFactory);
+    TransportResourceDefinition(String name, ResourceServiceConfiguratorFactory serviceConfiguratorFactory, ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory) {
+        this(pathElement(name), UnaryOperator.identity(), serviceConfiguratorFactory, parentServiceConfiguratorFactory);
     }
 
-    private TransportResourceDefinition(Parameters parameters, ResourceServiceConfiguratorFactory serviceConfiguratorFactory, ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory) {
-        super(parameters, new ResourceDescriptorConfigurator(), serviceConfiguratorFactory, parentServiceConfiguratorFactory);
+    TransportResourceDefinition(PathElement path, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfiguratorFactory serviceConfiguratorFactory, ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory) {
+        this(new Parameters(path, JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(path, WILDCARD_PATH, ProtocolResourceDefinition.WILDCARD_PATH)), configurator, serviceConfiguratorFactory, parentServiceConfiguratorFactory);
+    }
+
+    private TransportResourceDefinition(Parameters parameters, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfiguratorFactory serviceConfiguratorFactory, ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory) {
+        super(parameters, new ResourceDescriptorConfigurator(configurator), serviceConfiguratorFactory, parentServiceConfiguratorFactory);
     }
 
     @Override
@@ -306,9 +311,7 @@ public class TransportResourceDefinition extends AbstractProtocolResourceDefinit
             for (ThreadPoolResourceDefinition pool : EnumSet.allOf(ThreadPoolResourceDefinition.class)) {
                 pool.register(registration);
             }
-        }
 
-        if (registration.getPathAddress().getLastElement().isWildcard()) {
             parent.registerAlias(LEGACY_PATH, new AliasEntry(registration) {
                 @Override
                 public PathAddress convertToTargetAddress(PathAddress aliasAddress, AliasContext aliasContext) {

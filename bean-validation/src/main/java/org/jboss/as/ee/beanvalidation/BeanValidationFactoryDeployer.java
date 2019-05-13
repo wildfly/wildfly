@@ -21,14 +21,16 @@
  */
 package org.jboss.as.ee.beanvalidation;
 
+import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
+
 import javax.validation.ValidatorFactory;
 
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentNamingMode;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
-import org.jboss.as.ee.weld.WeldDeploymentMarker;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -38,6 +40,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.weld.WeldCapability;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -114,7 +117,14 @@ public class BeanValidationFactoryDeployer implements DeploymentUnitProcessor {
     @Override
     public void undeploy(DeploymentUnit context) {
         ValidatorFactory validatorFactory = context.getAttachment(BeanValidationAttachments.VALIDATOR_FACTORY);
-        if ((validatorFactory != null) && (!WeldDeploymentMarker.isPartOfWeldDeployment(context))) {
+        final CapabilityServiceSupport support = context.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
+
+        boolean partOfWeldDeployment = false;
+        if (support.hasCapability(WELD_CAPABILITY_NAME)) {
+            partOfWeldDeployment = support.getOptionalCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class)
+                    .get().isPartOfWeldDeployment(context);
+        }
+        if (validatorFactory != null && !partOfWeldDeployment) {
             // If the ValidatorFactory is not CDI-enabled, close it here. Otherwise, it's
             // closed via CdiValidatorFactoryService before the Weld service is stopped.
             validatorFactory.close();

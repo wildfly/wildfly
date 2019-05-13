@@ -163,12 +163,15 @@ public class DistributableSession implements io.undertow.server.session.Session 
         if (value == null) {
             return this.removeAttribute(name);
         }
+        // Workaround for WELD-2577, skip unnecessary session attribute if bean index is empty, i.e. hash value is zero.
+        if (name.equals("WELD_S_HASH") && value.equals(Integer.valueOf(0))) return null;
+
         Session<LocalSessionContext> session = this.entry.getKey();
         this.validate(session);
         try (BatchContext context = this.resumeBatch()) {
             if (CachedAuthenticatedSessionHandler.ATTRIBUTE_NAME.equals(name)) {
                 AuthenticatedSession auth = (AuthenticatedSession) value;
-                return AUTO_REAUTHENTICATING_MECHANISMS.contains(auth.getMechanism()) ? this.setLocalContext(auth) : session.getAttributes().setAttribute(name, new ImmutableAuthenticatedSession(auth));
+                return AUTO_REAUTHENTICATING_MECHANISMS.contains(auth.getMechanism()) ? this.setLocalContext(auth) : session.getAttributes().setAttribute(name, auth);
             }
             Object old = session.getAttributes().setAttribute(name, value);
             if (old == null) {

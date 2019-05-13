@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,21 +20,27 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.undertow.session;
+package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.wildfly.clustering.web.annotation.Immutable;
-
-import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession;
+import org.jboss.as.clustering.controller.MetricHandler;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
 /**
- * An explicitly immutable {@link AuthenticatedSession}.
  * @author Paul Ferraro
  */
-@Immutable
-public class ImmutableAuthenticatedSession extends AuthenticatedSession {
-    private static final long serialVersionUID = -7327798938719610266L;
+public class TransactionRuntimeResourceDefinition extends CacheComponentRuntimeResourceDefinition {
 
-    public ImmutableAuthenticatedSession(AuthenticatedSession auth) {
-        super(auth.getAccount(), auth.getMechanism());
+    static final PathElement PATH = pathElement("transaction");
+
+    TransactionRuntimeResourceDefinition() {
+        super(PATH);
+    }
+
+    @Override
+    public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
+        ManagementResourceRegistration registration = super.register(parent);
+        new MetricHandler<>(new TransactionMetricExecutor(),  TransactionMetric.class).register(registration);
+        return registration;
     }
 }

@@ -24,10 +24,13 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 import org.jboss.as.clustering.controller.Attribute;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -90,8 +93,28 @@ public enum XMLElement {
         return this.name;
     }
 
+    private enum XMLElementFunction implements Function<ModelNode, XMLElement> {
+        PROTOCOL(XMLElement.PROTOCOL),
+        SOCKET_PROTOCOL(XMLElement.SOCKET_PROTOCOL),
+        JDBC_PROTOCOL(XMLElement.JDBC_PROTOCOL),
+        ENCRYPT_PROTOCOL(XMLElement.ENCRYPT_PROTOCOL),
+        SOCKET_DISCOVERY_PROTOCOL(XMLElement.SOCKET_DISCOVERY_PROTOCOL),
+        AUTH_PROTOCOL(XMLElement.AUTH_PROTOCOL),
+        ;
+        private final XMLElement element;
+
+        XMLElementFunction(XMLElement element) {
+            this.element = element;
+        }
+
+        @Override
+        public XMLElement apply(ModelNode ignored) {
+            return this.element;
+        }
+    }
+
     private static final Map<String, XMLElement> elements = new HashMap<>();
-    private static final Map<String, XMLElement> protocols = new HashMap<>();
+    private static final Map<String, Function<ModelNode, XMLElement>> protocols = new HashMap<>();
     private static final Map<String, XMLElement> tokens = new HashMap<>();
 
     static {
@@ -102,20 +125,30 @@ public enum XMLElement {
             }
         }
 
+        Function<ModelNode, XMLElement> function = new Function<ModelNode, XMLElement>() {
+            @Override
+            public XMLElement apply(ModelNode model) {
+                // Use socket-protocol element only if optional socket-binding was defined
+                return model.hasDefined(SocketProtocolResourceDefinition.Attribute.SOCKET_BINDING.getName()) ? XMLElement.SOCKET_PROTOCOL : XMLElement.PROTOCOL;
+            }
+        };
+        for (ProtocolRegistration.SocketProtocol protocol : EnumSet.allOf(ProtocolRegistration.SocketProtocol.class)) {
+            protocols.put(protocol.name(), function);
+        }
         for (ProtocolRegistration.MulticastProtocol protocol : EnumSet.allOf(ProtocolRegistration.MulticastProtocol.class)) {
-            protocols.put(protocol.name(), XMLElement.SOCKET_PROTOCOL);
+            protocols.put(protocol.name(), XMLElementFunction.SOCKET_PROTOCOL);
         }
         for (ProtocolRegistration.JdbcProtocol protocol : EnumSet.allOf(ProtocolRegistration.JdbcProtocol.class)) {
-            protocols.put(protocol.name(), XMLElement.JDBC_PROTOCOL);
+            protocols.put(protocol.name(), XMLElementFunction.JDBC_PROTOCOL);
         }
         for (ProtocolRegistration.EncryptProtocol protocol : EnumSet.allOf(ProtocolRegistration.EncryptProtocol.class)) {
-            protocols.put(protocol.name(), XMLElement.ENCRYPT_PROTOCOL);
+            protocols.put(protocol.name(), XMLElementFunction.ENCRYPT_PROTOCOL);
         }
         for (ProtocolRegistration.InitialHostsProtocol protocol : EnumSet.allOf(ProtocolRegistration.InitialHostsProtocol.class)) {
-            protocols.put(protocol.name(), XMLElement.SOCKET_DISCOVERY_PROTOCOL);
+            protocols.put(protocol.name(), XMLElementFunction.SOCKET_DISCOVERY_PROTOCOL);
         }
         for (ProtocolRegistration.AuthProtocol protocol : EnumSet.allOf(ProtocolRegistration.AuthProtocol.class)) {
-            protocols.put(protocol.name(), XMLElement.AUTH_PROTOCOL);
+            protocols.put(protocol.name(), XMLElementFunction.AUTH_PROTOCOL);
         }
 
         tokens.put(PlainAuthTokenResourceDefinition.PATH.getValue(), XMLElement.PLAIN_TOKEN);
@@ -124,13 +157,11 @@ public enum XMLElement {
     }
 
     public static XMLElement forName(String localName) {
-        XMLElement element = elements.get(localName);
-        return (element != null) ? element : UNKNOWN;
+        return elements.getOrDefault(localName, UNKNOWN);
     }
 
-    public static XMLElement forProtocolName(String protocol) {
-        XMLElement element = protocols.get(protocol);
-        return (element != null) ? element : XMLElement.PROTOCOL;
+    public static XMLElement forProtocolName(Property protocol) {
+        return protocols.getOrDefault(protocol.getName(), XMLElementFunction.PROTOCOL).apply(protocol.getValue());
     }
 
     public static XMLElement forAuthTokenName(String token) {

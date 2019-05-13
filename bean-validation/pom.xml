@@ -60,7 +60,7 @@
             <!-- Needed for Hibernate Validator since it asserts the existence of javax.el during bootstrap in the
                   default configuration-->
             <groupId>org.glassfish</groupId>
-            <artifactId>javax.el-impl</artifactId>
+            <artifactId>jakarta.el</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
@@ -98,6 +98,10 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-naming</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-weld-common</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.security</groupId>

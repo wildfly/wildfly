@@ -37,7 +37,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.services.path.PathResourceDefinition;
-import org.jboss.as.server.ServerEnvironment;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -45,7 +44,7 @@ import org.jboss.dmr.ModelNode;
  */
 public class PathDefinition extends ModelOnlyResourceDefinition {
 
-    static final String DEFAULT_RELATIVE_TO = ServerEnvironment.SERVER_DATA_DIR;
+    static final String DEFAULT_RELATIVE_TO = "jboss.server.data.dir";
 
     // base attribute for the 4 messaging path subresources.
     // each one define a different default values. Their respective attributes are accessed through the PATHS map.

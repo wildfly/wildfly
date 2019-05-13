@@ -54,4 +54,7 @@ public interface TracingExtensionLogger extends BasicLogger {
     @LogMessage(level = DEBUG)
     @Message(id = 5, value = "Registering the TracerInitializer filter")
     void registeringTracerInitializer();
+
+    @Message(id = 6, value = "Deployment %s requires use of the '%s' capability but it is not currently registered")
+    String deploymentRequiresCapability(String deploymentName, String capabilityName);
 }

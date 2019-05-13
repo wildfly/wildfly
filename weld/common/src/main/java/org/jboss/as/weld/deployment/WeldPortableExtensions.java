@@ -23,8 +23,14 @@ import org.jboss.weld.bootstrap.spi.helpers.MetadataImpl;
  * This container provides a mechanism for making sure that only a single PE of a given type is registered.
  *
  * @author Stuart Douglas
+ *
+ * @deprecated Use WeldCapability to get access to the functionality of this class.
  */
+@Deprecated
 public class WeldPortableExtensions {
+    // Once we can remove this class from this package, we should move it under org.jboss.as.weld._private.
+    // It will protect their uses outside of weld subsystem and will force external callers to use WeldCapability
+    // instead to utilize this class.
 
     public static final AttachmentKey<WeldPortableExtensions> ATTACHMENT_KEY = AttachmentKey.create(WeldPortableExtensions.class);
 

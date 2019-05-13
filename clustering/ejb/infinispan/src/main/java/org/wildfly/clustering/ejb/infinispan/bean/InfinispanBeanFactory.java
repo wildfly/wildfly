@@ -102,7 +102,7 @@ public class InfinispanBeanFactory<I, T> implements BeanFactory<I, T> {
     }
 
     @Override
-    public void remove(I id, RemoveListener<T> listener) {
+    public boolean remove(I id, RemoveListener<T> listener) {
         BeanEntry<I> entry = this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).remove(this.createKey(id));
         if (entry != null) {
             I groupId = entry.getGroupId();
@@ -116,5 +116,6 @@ public class InfinispanBeanFactory<I, T> implements BeanFactory<I, T> {
                 }
             }
         }
+        return true;
     }
 }

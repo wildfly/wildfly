@@ -42,65 +42,54 @@
     <name>WildFly: (Legacy) Messaging Subsystem</name>
 
     <dependencies>
-        <dependency>
-            <groupId>org.jboss.msc</groupId>
-            <artifactId>jboss-msc</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-cli</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
             <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-controller</artifactId>
+	        <artifactId>wildfly-controller</artifactId>
+	        <exclusions>
+	            <exclusion>
+	                <groupId>*</groupId>
+	                <artifactId>*</artifactId>
+	            </exclusion>
+	        </exclusions>
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly.security</groupId>
-            <artifactId>wildfly-elytron</artifactId>
-        </dependency>
-
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-controller-client</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>	
+        
         <dependency>
-            <groupId>org.jboss.spec.javax.jms</groupId>
-            <artifactId>jboss-jms-api_2.0_spec</artifactId>
-        </dependency>
-
+            <groupId>org.jboss</groupId>
+            <artifactId>staxmapper</artifactId>
+        </dependency>	
+        
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-connector</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-naming</artifactId>
+            <groupId>org.jboss</groupId>
+            <artifactId>jboss-dmr</artifactId>
         </dependency>
 
 	    <dependency>
-	        <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-network</artifactId>
+	        <groupId>org.jboss.logging</groupId>
+	        <artifactId>jboss-logging</artifactId>
 	    </dependency>
-
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-transactions</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-jgroups-spi</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-web-common</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-weld</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>org.jboss.logging</groupId>
@@ -121,11 +110,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.common</groupId>
-            <artifactId>jboss-common-beans</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
@@ -134,7 +118,13 @@
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-subsystem-test</artifactId>
-						<type>pom</type>
+            <type>pom</type>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-clustering-jgroups-spi</artifactId>
             <scope>test</scope>
         </dependency>
 
@@ -143,5 +133,12 @@
             <artifactId>wildfly-messaging-activemq</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.projectodd.vdx</groupId>
+            <artifactId>vdx-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 </project>

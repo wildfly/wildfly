@@ -264,7 +264,7 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
                 this.members.keySet().removeAll(leftMembers);
             }
 
-            if (this.listeners.isEmpty()) {
+            if (!this.listeners.isEmpty()) {
                 Address localAddress = this.dispatcher.getChannel().getAddress();
                 ViewMembership oldMembership = new ViewMembership(localAddress, oldView, this);
                 ViewMembership membership = new ViewMembership(localAddress, view, this);

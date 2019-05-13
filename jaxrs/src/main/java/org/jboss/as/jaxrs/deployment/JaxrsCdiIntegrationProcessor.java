@@ -22,22 +22,24 @@
 package org.jboss.as.jaxrs.deployment;
 
 import static org.jboss.as.jaxrs.logging.JaxrsLogger.JAXRS_LOGGER;
+import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
-import org.jboss.as.ee.weld.WeldDeploymentMarker;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.web.common.WarMetaData;
+import org.jboss.as.weld.WeldCapability;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.modules.Module;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author Stuart Douglas
@@ -63,11 +65,15 @@ public class JaxrsCdiIntegrationProcessor implements DeploymentUnitProcessor {
         final JBossWebMetaData webdata = warMetaData.getMergedJBossWebMetaData();
 
         try {
-            module.getClassLoader().loadClass(CDI_INJECTOR_FACTORY_CLASS);
-            // don't set this param if CDI is not in classpath
-            if (WeldDeploymentMarker.isWeldDeployment(deploymentUnit)) {
-                JAXRS_LOGGER.debug("Found CDI, adding injector factory class");
-                setContextParameter(webdata, "resteasy.injector.factory", CDI_INJECTOR_FACTORY_CLASS);
+            final CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
+            if (support.hasCapability(WELD_CAPABILITY_NAME)) {
+                final WeldCapability api = support.getOptionalCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class).get();
+                if (api.isWeldDeployment(deploymentUnit)) {
+                    // don't set this param if CDI is not in classpath
+                    module.getClassLoader().loadClass(CDI_INJECTOR_FACTORY_CLASS);
+                    JAXRS_LOGGER.debug("Found CDI, adding injector factory class");
+                    setContextParameter(webdata, "resteasy.injector.factory", CDI_INJECTOR_FACTORY_CLASS);
+                }
             }
         } catch (ClassNotFoundException ignored) {
         }

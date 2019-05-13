@@ -104,12 +104,12 @@
     <feature spec="subsystem.jsf"/>
     <feature spec="subsystem.jaxrs"/>
     <feature spec="subsystem.jdr"/>
+    <feature spec="subsystem.weld"/>
     <feature spec="subsystem.microprofile-config-smallrye"/>
     <feature spec="subsystem.microprofile-opentracing-smallrye"/>
     <feature spec="subsystem.pojo"/>
     <feature spec="subsystem.sar"/>
     <feature-group name="mail"/>
     <feature-group name="webservices"/>
-    <feature spec="subsystem.weld"/>
     <feature-group name="security-manager"/>
 </feature-group-spec>

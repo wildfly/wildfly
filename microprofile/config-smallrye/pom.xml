@@ -56,6 +56,10 @@
             <artifactId>smallrye-config</artifactId>
         </dependency>
         <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-weld-common</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging-annotations</artifactId>
             <!-- This is a compile-time dependency of this project, but is not needed at compile or runtime by other

@@ -22,12 +22,15 @@
 
 package org.jboss.as.jsf.deployment;
 
-import org.jboss.as.ee.weld.WeldDeploymentMarker;
+import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
+
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.weld.deployment.WeldPortableExtensions;
+import org.jboss.as.weld.WeldCapability;
 
 /**
  * {@link DeploymentUnitProcessor} which registers CDI extensions. Currently only registers
@@ -46,9 +49,10 @@ public class JSFCdiExtensionDeploymentProcessor implements DeploymentUnitProcess
             return;
         }
 
-        if (WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
-            WeldPortableExtensions extensions = WeldPortableExtensions.getPortableExtensions(parent);
-            extensions.registerExtensionInstance(new JSFPassivatingViewScopedCdiExtension(), parent);
+        final CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
+        if (support.hasCapability(WELD_CAPABILITY_NAME)) {
+            support.getOptionalCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class).get()
+                    .registerExtensionInstance(new JSFPassivatingViewScopedCdiExtension(), parent);
         }
     }
 

@@ -2,7 +2,7 @@
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
 <config default-supplement="default">
     <extension-module>org.jboss.as.clustering.jgroups</extension-module>
-    <subsystem xmlns="urn:jboss:domain:jgroups:6.0">
+    <subsystem xmlns="urn:jboss:domain:jgroups:7.0">
         <channels default="ee">
             <channel name="ee" stack="udp" cluster="ejb"/>
         </channels>
@@ -11,7 +11,7 @@
                 <transport type="UDP" socket-binding="jgroups-udp"/>
                 <?UDP-DISCOVERY?>
                 <protocol type="MERGE3"/>
-                <protocol type="FD_SOCK"/>
+                <socket-protocol type="FD_SOCK" socket-binding="jgroups-tcp-fd"/>
                 <protocol type="FD_ALL"/>
                 <protocol type="VERIFY_SUSPECT"/>
                 <protocol type="pbcast.NAKACK2"/>
@@ -26,7 +26,7 @@
                 <transport type="TCP" socket-binding="jgroups-tcp"/>
                 <?TCP-DISCOVERY?>
                 <protocol type="MERGE3"/>
-                <protocol type="FD_SOCK"/>
+                <socket-protocol type="FD_SOCK" socket-binding="jgroups-udp-fd"/>
                 <protocol type="FD_ALL"/>
                 <protocol type="VERIFY_SUSPECT"/>
                 <protocol type="pbcast.NAKACK2"/>
@@ -138,7 +138,9 @@
     <supplement name="azure" includes="no-multicast azure-ping"/>
     <supplement name="gossip" includes="no-multicast gossip-discovery"/>
     <socket-binding name="jgroups-tcp" interface="private" port="7600"/>
+    <socket-binding name="jgroups-tcp-fd" interface="private" port="57600"/>
     <socket-binding name="jgroups-udp" interface="private" port="55200" multicast-address="${jboss.default.multicast.address:230.0.0.4}" multicast-port="45688"/>
+    <socket-binding name="jgroups-udp-fd" interface="private" port="54200"/>
     <socket-binding name="jgroups-mping" interface="private" multicast-address="${jboss.default.multicast.address:230.0.0.4}" multicast-port="45700"/>
     <interface name="private">
         <inet-address value="${jboss.bind.address.private:127.0.0.1}"/>

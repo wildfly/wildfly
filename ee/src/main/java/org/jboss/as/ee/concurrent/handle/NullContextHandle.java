@@ -1,27 +1,22 @@
 package org.jboss.as.ee.concurrent.handle;
 
-import java.io.ObjectStreamException;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
- * A context handle without invocation context to set.
+ * A context handle without invocation context to set. For now it provides only the setup and reset of TCCL captured at handle creation.
  * @author Eduardo Martins
  */
-public class NullContextHandle implements SetupContextHandle, ResetContextHandle {
+public class NullContextHandle implements SetupContextHandle {
 
-    public static final NullContextHandle INSTANCE = new NullContextHandle();
+    private final SetupContextHandle tcclSetupHandle;
 
-    private NullContextHandle() {
-
+    public NullContextHandle() {
+        tcclSetupHandle = new ClassLoaderContextHandleFactory.ClassLoaderSetupContextHandle(WildFlySecurityManager.getCurrentContextClassLoaderPrivileged());
     }
 
     @Override
     public ResetContextHandle setup() throws IllegalStateException {
-        return this;
-    }
-
-    @Override
-    public void reset() {
-
+        return tcclSetupHandle.setup();
     }
 
     @Override
@@ -29,7 +24,4 @@ public class NullContextHandle implements SetupContextHandle, ResetContextHandle
         return "NULL";
     }
 
-    protected Object readResolve() throws ObjectStreamException {
-        return INSTANCE;
-    }
 }

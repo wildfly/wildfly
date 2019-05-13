@@ -83,6 +83,11 @@
             </exclusions>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>io.undertow</groupId>
+            <artifactId>undertow-websockets-jsr</artifactId>
+            <scope>test</scope>
+        </dependency>
         <!-- Required for Java 11 -->
         <dependency>
             <groupId>javax.activation</groupId>
@@ -508,6 +513,7 @@
                                         <include>org/jboss/as/test/integration/transaction/inflow/TransactionInflowTestCase.java</include>
                                         <include>org/jboss/as/test/integration/transaction/MaximumTimeoutTestCase.java</include>
                                         <include>org/jboss/as/test/integration/jsr77/**/*TestCase*.java</include>
+                                        <include>org/jboss/as/test/integration/weld/context/application/lifecycle/ApplicationContextLifecycleTestCase.java</include>
                                     </includes>
 
                                     <environmentVariables>
@@ -571,6 +577,7 @@
                                         <exclude>org/jboss/as/test/integration/transaction/inflow/TransactionInflowTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/transaction/MaximumTimeoutTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/jsr77/**/*TestCase*.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/weld/context/application/lifecycle/ApplicationContextLifecycleTestCase.java</exclude>
                                     </excludes>
 
                                     <environmentVariables>

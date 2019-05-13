@@ -26,6 +26,7 @@ import static org.jboss.as.clustering.jgroups.subsystem.AbstractProtocolResource
 import static org.jboss.as.clustering.jgroups.subsystem.AbstractProtocolResourceDefinition.Attribute.PROPERTIES;
 import static org.jboss.as.clustering.jgroups.subsystem.AbstractProtocolResourceDefinition.Attribute.STATISTICS_ENABLED;
 
+import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
 import java.util.HashMap;
@@ -129,5 +130,15 @@ public abstract class AbstractProtocolConfigurationServiceConfigurator<P extends
         } catch (Exception e) {
             throw new IllegalArgumentException(e);
         }
+    }
+
+    void setValue(P protocol, String propertyName, Object propertyValue) {
+        PrivilegedAction<P> action = new PrivilegedAction<P>() {
+            @Override
+            public P run() {
+                return protocol.setValue(propertyName, propertyValue);
+            }
+        };
+        WildFlySecurityManager.doUnchecked(action);
     }
 }

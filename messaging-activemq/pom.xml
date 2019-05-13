@@ -168,7 +168,7 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-weld</artifactId>
+            <artifactId>wildfly-weld-common</artifactId>
         </dependency>
 
         <dependency>

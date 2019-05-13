@@ -69,11 +69,11 @@ public class ClassLoaderContextHandleFactory implements ContextHandleFactory {
         return new ClassLoaderSetupContextHandle(classLoader);
     }
 
-    private static class ClassLoaderSetupContextHandle implements SetupContextHandle {
+    static class ClassLoaderSetupContextHandle implements SetupContextHandle {
 
         private final ClassLoader classLoader;
 
-        private ClassLoaderSetupContextHandle(ClassLoader classLoader) {
+        ClassLoaderSetupContextHandle(ClassLoader classLoader) {
             this.classLoader = classLoader;
         }
 

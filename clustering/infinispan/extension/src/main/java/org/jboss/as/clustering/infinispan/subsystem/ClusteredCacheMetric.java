@@ -34,25 +34,25 @@ import org.jboss.dmr.ModelType;
  */
 public enum ClusteredCacheMetric implements Metric<RpcManagerImpl> {
 
-    AVERAGE_REPLICATION_TIME(MetricKeys.AVERAGE_REPLICATION_TIME, ModelType.LONG) {
+    AVERAGE_REPLICATION_TIME("average-replication-time", ModelType.LONG) {
         @Override
         public ModelNode execute(RpcManagerImpl manager) {
             return new ModelNode(manager.getAverageReplicationTime());
         }
     },
-    REPLICATION_COUNT(MetricKeys.REPLICATION_COUNT, ModelType.LONG) {
+    REPLICATION_COUNT("replication-count", ModelType.LONG) {
         @Override
         public ModelNode execute(RpcManagerImpl manager) {
             return new ModelNode(manager.getReplicationCount());
         }
     },
-    REPLICATION_FAILURES(MetricKeys.REPLICATION_FAILURES, ModelType.LONG) {
+    REPLICATION_FAILURES("replication-failures", ModelType.LONG) {
         @Override
         public ModelNode execute(RpcManagerImpl manager) {
             return new ModelNode(manager.getReplicationFailures());
         }
     },
-    SUCCESS_RATIO(MetricKeys.SUCCESS_RATIO, ModelType.DOUBLE) {
+    SUCCESS_RATIO("success-ratio", ModelType.DOUBLE) {
         @Override
         public ModelNode execute(RpcManagerImpl manager) {
             return new ModelNode(manager.getSuccessRatio());

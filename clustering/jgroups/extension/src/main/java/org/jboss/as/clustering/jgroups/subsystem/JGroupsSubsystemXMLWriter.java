@@ -117,7 +117,7 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
     }
 
     private static void writeProtocol(XMLExtendedStreamWriter writer, Property property) throws XMLStreamException {
-        writer.writeStartElement(XMLElement.forProtocolName(property.getName()).getLocalName());
+        writer.writeStartElement(XMLElement.forProtocolName(property).getLocalName());
         writeProtocolAttributes(writer, property);
         writeElement(writer, property.getValue(), AbstractProtocolResourceDefinition.Attribute.PROPERTIES);
         writer.writeEndElement();
@@ -134,7 +134,9 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
 
         String protocol = property.getName();
         if (containsName(ProtocolRegistration.MulticastProtocol.class, protocol)) {
-            writeAttributes(writer, property.getValue(), SocketBindingProtocolResourceDefinition.Attribute.class);
+            writeAttributes(writer, property.getValue(), MulticastProtocolResourceDefinition.Attribute.class);
+        } else if (containsName(ProtocolRegistration.SocketProtocol.class, protocol)) {
+            writeAttributes(writer, property.getValue(), SocketProtocolResourceDefinition.Attribute.class);
         } else if (containsName(ProtocolRegistration.JdbcProtocol.class, protocol)) {
             writeAttributes(writer, property.getValue(), JDBCProtocolResourceDefinition.Attribute.class);
         } else if (containsName(ProtocolRegistration.EncryptProtocol.class, protocol)) {

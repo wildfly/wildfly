@@ -73,6 +73,7 @@ public class BeanExpirationSchedulerTestCase {
 
         when(config.getTimeout()).thenReturn(Duration.ofMillis(1L));
         when(config.getRemoveListener()).thenReturn(listener);
+        when(remover.remove(beanId, listener)).thenReturn(true);
 
         try (Scheduler<String> scheduler = new BeanExpirationScheduler<>(batcher, remover, config)) {
             scheduler.schedule(beanId);
@@ -96,6 +97,7 @@ public class BeanExpirationSchedulerTestCase {
 
         when(config.getTimeout()).thenReturn(Duration.ofMinutes(1L));
         when(config.getRemoveListener()).thenReturn(listener);
+        when(remover.remove(beanId, listener)).thenReturn(true);
 
         try (Scheduler<String> scheduler = new BeanExpirationScheduler<>(batcher, remover, config)) {
             scheduler.schedule(beanId);

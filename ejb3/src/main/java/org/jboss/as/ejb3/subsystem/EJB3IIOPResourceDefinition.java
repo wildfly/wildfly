@@ -54,15 +54,17 @@ public class EJB3IIOPResourceDefinition extends SimpleResourceDefinition {
 
 
     static final SimpleAttributeDefinition USE_QUALIFIED_NAME =
-            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.USE_QUALIFIED_NAME, ModelType.BOOLEAN, true)
+            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.USE_QUALIFIED_NAME, ModelType.BOOLEAN)
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_NONE)
+                    .setRequired(true)
                     .build();
 
     static final SimpleAttributeDefinition ENABLE_BY_DEFAULT =
-            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.ENABLE_BY_DEFAULT, ModelType.BOOLEAN, true)
+            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.ENABLE_BY_DEFAULT, ModelType.BOOLEAN)
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_NONE)
+                    .setRequired(true)
                     .build();
 
     private static final Map<String, AttributeDefinition> ATTRIBUTES;

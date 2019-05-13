@@ -51,8 +51,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-weld</artifactId>
-            <scope>provided</scope>
+            <artifactId>wildfly-weld-common</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.logging</groupId>

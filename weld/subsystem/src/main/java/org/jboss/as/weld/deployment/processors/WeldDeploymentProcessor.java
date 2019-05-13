@@ -39,8 +39,8 @@ import java.util.function.Supplier;
 import javax.enterprise.inject.spi.Extension;
 
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import org.jboss.as.ee.concurrent.ConcurrentContextSetupAction;
 import org.jboss.as.ee.naming.JavaNamespaceSetup;
-import org.jboss.as.ee.weld.WeldDeploymentMarker;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.deployment.JndiNamingDependencyProcessor;
 import org.jboss.as.naming.service.DefaultNamespaceContextSelectorService;
@@ -57,6 +57,7 @@ import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.weld.ServiceNames;
 import org.jboss.as.weld.WeldBootstrapService;
+import org.jboss.as.weld._private.WeldDeploymentMarker;
 import org.jboss.as.weld.WeldStartService;
 import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl;
 import org.jboss.as.weld.deployment.BeanDeploymentModule;
@@ -329,6 +330,10 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         JavaNamespaceSetup naming = deploymentUnit.getAttachment(org.jboss.as.ee.naming.Attachments.JAVA_NAMESPACE_SETUP_ACTION);
         if (naming != null) {
             setupActions.add(naming);
+        }
+        final ConcurrentContextSetupAction concurrentContext = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.CONCURRENT_CONTEXT_SETUP_ACTION);
+        if (concurrentContext != null) {
+            setupActions.add(concurrentContext);
         }
         return setupActions;
     }

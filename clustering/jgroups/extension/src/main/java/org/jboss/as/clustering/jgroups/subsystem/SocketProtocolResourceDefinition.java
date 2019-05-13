@@ -34,17 +34,27 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelType;
 
 /**
- * Resource definition override for protocols that require a socket-binding.
+ * Resource definition override for protocols that have an optional socket-binding.
  * @author Paul Ferraro
  */
-public class SocketBindingProtocolResourceDefinition extends ProtocolResourceDefinition {
+public class SocketProtocolResourceDefinition extends ProtocolResourceDefinition {
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
         SOCKET_BINDING(ModelDescriptionConstants.SOCKET_BINDING, ModelType.STRING) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
+                        .setCapabilityReference(new CapabilityReference(Capability.PROTOCOL, CommonUnaryRequirement.SOCKET_BINDING))
+                        ;
+            }
+        },
+        CLIENT_SOCKET_BINDING("client-socket-binding", ModelType.STRING) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
@@ -57,7 +67,7 @@ public class SocketBindingProtocolResourceDefinition extends ProtocolResourceDef
 
         Attribute(String name, ModelType type) {
             this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, type)
-                    .setRequired(true)
+                    .setRequired(false)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     ).build();
         }
@@ -69,6 +79,11 @@ public class SocketBindingProtocolResourceDefinition extends ProtocolResourceDef
     }
 
     static void addTransformations(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
+        if (JGroupsModel.VERSION_7_0_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder()
+                    .setDiscard(DiscardAttributeChecker.UNDEFINED, Attribute.CLIENT_SOCKET_BINDING.getDefinition())
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.CLIENT_SOCKET_BINDING.getDefinition());
+        }
 
         ProtocolResourceDefinition.addTransformations(version, builder);
     }
@@ -86,7 +101,7 @@ public class SocketBindingProtocolResourceDefinition extends ProtocolResourceDef
         }
     }
 
-    SocketBindingProtocolResourceDefinition(String name, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfiguratorFactory serviceConfiguratorFactory, ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory) {
-        super(pathElement(name), new ResourceDescriptorConfigurator(configurator), serviceConfiguratorFactory, parentServiceConfiguratorFactory);
+    SocketProtocolResourceDefinition(String name, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory) {
+        super(pathElement(name), new ResourceDescriptorConfigurator(configurator), SocketProtocolConfigurationServiceConfigurator::new, parentServiceConfiguratorFactory);
     }
 }

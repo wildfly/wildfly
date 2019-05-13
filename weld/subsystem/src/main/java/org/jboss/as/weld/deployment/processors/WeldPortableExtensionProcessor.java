@@ -33,15 +33,15 @@ import java.util.List;
 
 import javax.enterprise.inject.spi.Extension;
 
-import org.jboss.as.ee.weld.WeldDeploymentMarker;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.PrivateSubDeploymentMarker;
-import org.jboss.as.weld.logging.WeldLogger;
+import org.jboss.as.weld._private.WeldDeploymentMarker;
 import org.jboss.as.weld.deployment.WeldPortableExtensions;
+import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.modules.Module;
 import org.jboss.vfs.VFSUtils;
 import org.wildfly.security.manager.WildFlySecurityManager;

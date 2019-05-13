@@ -28,12 +28,12 @@ import java.util.Collections;
 
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
-import org.jboss.as.ee.weld.WeldDeploymentMarker;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.web.common.WarMetaData;
+import org.jboss.as.weld._private.WeldDeploymentMarker;
 import org.jboss.as.weld.deployment.WeldPortableExtensions;
 import org.jboss.as.weld.util.Reflections;
 import org.jboss.as.weld.util.Utils;

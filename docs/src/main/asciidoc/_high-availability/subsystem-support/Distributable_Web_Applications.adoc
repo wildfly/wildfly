@@ -100,8 +100,8 @@ e.g. Creating a new session management profile, using ATTRIBUTE granularity with
 
 A web application can override the default distributable session management behavior in 1 of 2 ways:
 
-1. Reference a session-management profile by name
-1. Provide deployment-specific session management configuration
+. Reference a session-management profile by name
+. Provide deployment-specific session management configuration
 
 === Referencing an existing session management profile
 
@@ -195,3 +195,145 @@ e.g.
     </distributable-web>
 </jboss>
 ----
+
+== Optimizing performance of distributed web applications
+
+One of the primary design goals of WildFly's distributed session manager was the parity of HttpSession semantics between distributable and non-distributable web applications.
+In order to provide predictable behavior suitable for most web applications, the default distributed session manager configuration is quite conservative, generally favoring consistency over availability.
+However, these defaults may not be appropriate for your application.
+In general, the effective performance of the distributed session manager is constrained by:
+
+. Replication/persistence payload size
+. Locking/isolation of a given session
+
+To optimize the configuration of the distributed session manager for your application, you can address the above constraints by tuning one or more of the following:
+
+* <<session_granularity,Granularity>>
+* <<session_concurrency,Concurrency>>
+* <<session_attribute_immutability,Immutability>>
+* <<session_attribute_marshalling,Marshalling>>
+
+[[session_granularity]]
+=== Session granularity
+
+By default, WildFly's distributed session manager uses SESSION granularity, meaning that all session attributes are stored within a single cache entry.
+While this ensures that any object references shared between session attributes are preserved following replication/persistence, it means that a change to a single attribute results in the replication/persistence of *all* attributes.
+
+If your application does not share any object references between attributes, users are strongly advised to use ATTRIBUTE granularity.
+Using ATTRIBUTE granularity, each session attribute is stored in a separate cache entry.
+This means that a given request is only required to replicate/persist those attributes that were added/modified/removed/mutated in a given request.
+For read-heavy applications, this can dramatically reduce the replication/persistence payload per request.
+
+[[session_concurrency]]
+=== Session concurrency
+
+WildFly's default distributed session manager behavior is also conservative with respect to concurrent access to a given session.
+By default, a request acquires exclusive access to its associated session for the duration of a request, and until any async child context is complete.
+This maximizes the performance of a single request, as each request corresponds to a single cache transaction; allows for repeatable read semantics to the session; and ensures that subsequent requests are not prone to stale reads, even when handled by another cluster member.
+
+However, if multiple requests attempt to access the same session concurrently, their processing will be effectively serialized.  This might not be feasible, especially for heavily asynchronous web applications.
+
+Relaxing transaction isolation from REPEATABLE_READ to READ_COMMITTED on the associated cache configuration will allow concurrent requests to perform lock-free (but potentially stale) reads by deferring locking to the first attempt to write to the session.
+This improves the throughput of requests for the same session for highly asynchronous web applications whose session access is read-heavy.
+
+e.g.
+[source]
+----
+/subsystem=infinispan/cache-container=web/distributed-cache=dist/component=locking:write-attribute(name=isolation, value=READ_COMMITTED)
+----
+
+For asynchronous web applications whose session access is write-heavy, merely relaxing transaction isolation is not likely to be sufficient.
+These web applications will likely benefit from disabling cache transactions altogether.
+When transactions are disabled, cache entries are locked and released for every write to the session, resulting in last-write-wins semantics.
+For write-heavy applications, this typically improves the throughput of concurrent requests for the same session, at the cost of longer response times for individual requests.
+
+[source]
+----
+/subsystem=infinispan/cache-container=web/distributed-cache=dist/component=transaction:write-attribute(name=mode, value=NONE)
+----
+
+NOTE: Relaxing transaction isolation currently prevents WildFly from enforcing that a given session is handled by one JVM at a time, a constraint dictated by the servlet specification.
+
+[[session_attribute_immmutability]]
+=== Session attribute immutability
+
+In WildFly, distributed session attributes are presumed to be mutable objects, unless of a known immutable type, or unless otherwise specified.
+
+Take the following session access pattern:
+[source,java]
+----
+HttpSession session = request.getSession();
+MutableObject object = session.getAttribute("...");
+object.mutate();
+----
+
+By default, WildFly replicates/persists the mutable session attributes at the end of the request, ensuring that a subsequent request will read the mutated value, not the original value.
+However, the replication/persistence of mutable session attributes at the end of the request happens whether or not these objects were actually mutated.
+To avoid redundant session writes, users are strongly encouraged to store immutable objects in the session whenever possible.
+This allows the application more control over when session attributes will replicate/persist, since immutable session attributes will only update upon explicit calls to `HttpSession.setAttribute(...)`.
+
+WildFly can determine whether most JDK types are immutable, but any unrecognized/custom types are presumed to be mutable.
+To indicate that a given session attribute of a custom type should be treated as immutable by the distributed session manager, annotate the class with one of the following annotations:
+
+. `@org.wildfly.clustering.web.annotation.Immutable`
+. `@net.jcip.annotations.Immutable`
+
+e.g.
+[source,java]
+----
+@Immutable
+public class ImmutableClass implements Serializable {
+    // ...
+}
+----
+
+Alternatively, immutable classes can be enumerated via the distributable-web deployment descriptor.
+
+e.g.
+[source,xml]
+----
+<distributable-web xmlns="urn:jboss:distributable-web:1.0">
+    <session-management>
+        <immutable-class>foo.bar.ImmutableClass</immutable-class>
+        <immutable-class>...</immutable-class>
+    </session-management>
+</distributable-web>
+----
+
+[[session_attribute_marshalling]]
+=== Session attribute marshalling
+
+Minimizing the replication/persistence payload for individual session attributes has a direct impact on performance by reducing the number of bytes sent over the network or persisted to storage.
+A web application can optimize the marshalling of a given session attribute, either through custom JDK serialization logic, or by implementing a custom externalizer.
+An externalizer is an implementation of the `org.wildfly.clustering.marshalling.Externalizer` interface, which dictates how a given class should be marshalled.
+An externalizer reads/writes the state of an object directly from/to an input/output stream, but also:
+
+. Allows an application to store an object in the session that does not implement `java.io.Serializable`
+. Eliminates the need to serialize the class descriptor of an object along with its state
+
+e.g.
+[source,java]
+----
+public class MyObjectExternalizer implements org.wildfly.clustering.marshalling.Externalizer<MyObject> {
+
+    @Override
+    public Class<MyObject> getTargetClass() {
+        return MyObject.class;
+    }
+
+    @Override
+    public void writeObject(ObjectOutput output, MyObject object) throws IOException {
+        // Write object state to stream
+    }
+
+    @Override
+    public MyObject readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+        // Construct and read object state from stream
+        return ...;
+    }
+}
+----
+
+Externalizers are dynamically loaded during deployment via the service loader mechanism.
+Implementations should be enumerated within a file named:
+`/META-INF/services/org.wildfly.clustering.marshalling.Externalizer`

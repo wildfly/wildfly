@@ -26,11 +26,11 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.infinispan.commons.marshall.NotSerializableException;
+import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.Mutator;
 import org.wildfly.clustering.ee.infinispan.CacheProperties;
 import org.wildfly.clustering.marshalling.spi.Marshallability;
 import org.wildfly.clustering.web.infinispan.session.SessionAttributes;
-import org.wildfly.clustering.web.session.SessionAttributeImmutability;
 
 /**
  * Exposes session attributes for a coarse granularity session.
@@ -41,14 +41,16 @@ public class CoarseSessionAttributes extends CoarseImmutableSessionAttributes im
     private final Set<String> mutations;
     private final Mutator mutator;
     private final Marshallability marshallability;
+    private final Immutability immutability;
     private final CacheProperties properties;
 
-    public CoarseSessionAttributes(Map<String, Object> attributes, Mutator mutator, Marshallability marshallability, CacheProperties properties) {
+    public CoarseSessionAttributes(Map<String, Object> attributes, Mutator mutator, Marshallability marshallability, Immutability immutability, CacheProperties properties) {
         super(attributes);
         this.attributes = attributes;
         this.mutations = !properties.isTransactional() ? ConcurrentHashMap.newKeySet() : null;
         this.mutator = mutator;
         this.marshallability = marshallability;
+        this.immutability = immutability;
         this.properties = properties;
     }
 
@@ -81,7 +83,7 @@ public class CoarseSessionAttributes extends CoarseImmutableSessionAttributes im
     @Override
     public Object getAttribute(String name) {
         Object value = this.attributes.get(name);
-        if (!SessionAttributeImmutability.INSTANCE.test(value)) {
+        if (!this.immutability.test(value)) {
             if (this.mutations != null) {
                 this.mutations.add(name);
             } else {

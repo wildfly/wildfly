@@ -21,6 +21,10 @@
  */
 package org.jboss.as.txn.deployment;
 
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
 
@@ -52,31 +56,32 @@ import org.jboss.msc.service.ServiceTarget;
  * regardless of the presence of the {@link javax.annotation.Resource} annotation.
  *
  * @author Stuart Douglas
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class TransactionJndiBindingProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        if(DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
+            return;
+        }
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
-
         if(moduleDescription == null) {
             return;
         }
-
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
-        //if this is a war we need to bind to the modules comp namespace
-        if(DeploymentTypeMarker.isType(DeploymentType.WAR,deploymentUnit)) {
-            final ServiceName moduleContextServiceName = ContextNames.contextServiceNameOfModule(moduleDescription.getApplicationName(),moduleDescription.getModuleName());
-            bindServices(deploymentUnit, serviceTarget, moduleContextServiceName);
-        }
-
-        for(ComponentDescription component : moduleDescription.getComponentDescriptions()) {
-            if(component.getNamingMode() == ComponentNamingMode.CREATE) {
-                final ServiceName compContextServiceName = ContextNames.contextServiceNameOfComponent(moduleDescription.getApplicationName(),moduleDescription.getModuleName(),component.getComponentName());
-                bindServices(deploymentUnit, serviceTarget, compContextServiceName);
+        // bind to module
+        final ServiceName moduleContextServiceName = ContextNames.contextServiceNameOfModule(moduleDescription.getApplicationName(),moduleDescription.getModuleName());
+        bindServices(deploymentUnit, serviceTarget, moduleContextServiceName);
+        if (!DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
+            // bind to each component
+            for (ComponentDescription component : moduleDescription.getComponentDescriptions()) {
+                if (component.getNamingMode() == ComponentNamingMode.CREATE) {
+                    final ServiceName compContextServiceName = ContextNames.contextServiceNameOfComponent(moduleDescription.getApplicationName(), moduleDescription.getModuleName(), component.getComponentName());
+                    bindServices(deploymentUnit, serviceTarget, compContextServiceName);
+                }
             }
         }
-
     }
 
     /**
@@ -96,7 +101,12 @@ public class TransactionJndiBindingProcessor implements DeploymentUnitProcessor 
                     new ManagedReferenceInjector<UserTransaction>(userTransactionBindingService.getManagedObjectInjector()))
             .addDependency(contextServiceName, ServiceBasedNamingStore.class, userTransactionBindingService.getNamingStoreInjector())
             .install();
-        deploymentUnit.addToAttachmentList(org.jboss.as.server.deployment.Attachments.JNDI_DEPENDENCIES,userTransactionServiceName);
+        final Map<ServiceName, Set<ServiceName>> jndiComponentDependencies = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.COMPONENT_JNDI_DEPENDENCIES);
+        Set<ServiceName> jndiDependencies = jndiComponentDependencies.get(contextServiceName);
+        if (jndiDependencies == null) {
+            jndiComponentDependencies.put(contextServiceName, jndiDependencies = new HashSet<>());
+        }
+        jndiDependencies.add(userTransactionServiceName);
 
         final ServiceName transactionSynchronizationRegistryName = contextServiceName.append("TransactionSynchronizationRegistry");
         BinderService transactionSyncBinderService = new BinderService("TransactionSynchronizationRegistry");
@@ -105,7 +115,7 @@ public class TransactionJndiBindingProcessor implements DeploymentUnitProcessor 
                     new ManagedReferenceInjector<TransactionSynchronizationRegistry>(transactionSyncBinderService.getManagedObjectInjector()))
             .addDependency(contextServiceName, ServiceBasedNamingStore.class, transactionSyncBinderService.getNamingStoreInjector())
             .install();
-        deploymentUnit.addToAttachmentList(org.jboss.as.server.deployment.Attachments.JNDI_DEPENDENCIES,transactionSynchronizationRegistryName);
+        jndiDependencies.add(transactionSynchronizationRegistryName);
     }
 
 

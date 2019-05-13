@@ -28,7 +28,10 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.ContainerResource;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.HttpRequest;
+import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
@@ -38,6 +41,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertEquals;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 /**
  * Tests a JAX-RS deployment with an application bundled, that has no @ApplicationPath annotation.
@@ -76,6 +81,9 @@ public class EarApplicationPathIntegrationTestCase {
     @ArquillianResource
     private URL url;
 
+    @ContainerResource
+    private ManagementClient managementClient;
+
     private String performCall(String urlPattern) throws Exception {
         return HttpRequest.get(url + urlPattern, 10, TimeUnit.SECONDS);
     }
@@ -86,5 +94,23 @@ public class EarApplicationPathIntegrationTestCase {
         assertEquals("Hello World!", result);
     }
 
+    @Test
+    public void testReadRestResources() throws Exception {
+        ModelNode addr = new ModelNode().add("deployment", "jaxrsapp.ear").add("subdeployment", "jaxrsapp.war")
+                .add("subsystem", "jaxrs").add("rest-resource", HelloWorldResource.class.getName());
+        ModelNode operation = new ModelNode();
+        operation.get(OP).set("read-resource");
+        operation.get(OP_ADDR).set(addr);
+        operation.get("include-runtime").set(true);
+
+        ModelNode result = managementClient.getControllerClient().execute(operation).get("result");
+        assertEquals(HelloWorldResource.class.getName(), result.get("resource-class").asString());
+        ModelNode restResPath = result.get("rest-resource-paths").asList().get(0);
+        assertEquals("helloworld", restResPath.get("resource-path").asString());
+        assertEquals("java.lang.String " + HelloWorldResource.class.getName() + ".getMessage()",
+                restResPath.get("java-method").asString());
+        assertEquals("GET /jaxrsapp/hellopath/helloworld",
+                restResPath.get("resource-methods").asList().get(0).asString());
+    }
 
 }

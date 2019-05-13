@@ -22,6 +22,8 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import static org.jboss.as.clustering.jgroups.subsystem.MulticastProtocolResourceDefinition.Attribute.SOCKET_BINDING;
+
 import java.util.Collections;
 import java.util.Map;
 
@@ -56,7 +58,7 @@ public class MulticastSocketProtocolConfigurationServiceConfigurator extends Pro
 
     @Override
     public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        String bindingName = SocketBindingProtocolResourceDefinition.Attribute.SOCKET_BINDING.resolveModelAttribute(context, model).asString();
+        String bindingName = SOCKET_BINDING.resolveModelAttribute(context, model).asString();
         this.binding = new ServiceSupplierDependency<>(CommonUnaryRequirement.SOCKET_BINDING.getServiceName(context, bindingName));
         return super.configure(context, model);
     }

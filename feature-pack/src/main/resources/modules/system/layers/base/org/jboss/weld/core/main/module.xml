@@ -45,7 +45,7 @@
         <module name="javax.servlet.api"/>
         <module name="javax.transaction.api"/>
         <module name="javax.validation.api"/>
-        <module name="org.glassfish.javax.el" />
+        <module name="org.glassfish.jakarta.el" />
         <module name="org.jboss.classfilewriter"/>
         <module name="org.jboss.weld.api" export="true"/>
         <module name="org.jboss.weld.spi" export="true"/>

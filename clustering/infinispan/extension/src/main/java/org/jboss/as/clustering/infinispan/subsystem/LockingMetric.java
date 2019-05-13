@@ -35,19 +35,19 @@ import org.jboss.dmr.ModelType;
  */
 public enum LockingMetric implements Metric<DefaultLockManager> {
 
-    CURRENT_CONCURRENCY_LEVEL(MetricKeys.CURRENT_CONCURRENCY_LEVEL, ModelType.INT) {
+    CURRENT_CONCURRENCY_LEVEL("current-concurrency-level", ModelType.INT) {
         @Override
         public ModelNode execute(DefaultLockManager manager) {
             return new ModelNode(manager.getConcurrencyLevel());
         }
     },
-    NUMBER_OF_LOCKS_AVAILABLE(MetricKeys.NUMBER_OF_LOCKS_AVAILABLE, ModelType.INT) {
+    NUMBER_OF_LOCKS_AVAILABLE("number-of-locks-available", ModelType.INT) {
         @Override
         public ModelNode execute(DefaultLockManager manager) {
             return new ModelNode(manager.getNumberOfLocksAvailable());
         }
     },
-    NUMBER_OF_LOCKS_HELD(MetricKeys.NUMBER_OF_LOCKS_HELD, ModelType.INT) {
+    NUMBER_OF_LOCKS_HELD("number-of-locks-held", ModelType.INT) {
         @Override
         public ModelNode execute(DefaultLockManager manager) {
             return new ModelNode(manager.getNumberOfLocksHeld());

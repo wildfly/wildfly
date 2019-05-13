@@ -22,46 +22,25 @@
 
 package org.wildfly.clustering.web.session;
 
-import java.util.EnumSet;
-import java.util.function.Predicate;
-
-import org.wildfly.clustering.ee.CollectionImmutability;
 import org.wildfly.clustering.ee.Immutability;
+import org.wildfly.clustering.ee.immutable.AnnotationImmutability;
 import org.wildfly.clustering.web.annotation.Immutable;
 
 /**
+ * Session attribute immutability tests.
  * @author Paul Ferraro
  */
-public enum SessionAttributeImmutability implements Predicate<Object> {
-    JDK() {
-        @Override
-        public boolean test(Object object) {
-            // Skip Collection test, we override this below to extend the immutability test for collection elements.
-            for (Immutability immutability : EnumSet.complementOf(EnumSet.of(Immutability.COLLECTION))) {
-                if (immutability.test(object)) return true;
-            }
-            return false;
-        }
-    },
-    COLLECTION() {
-        @Override
-        public boolean test(Object object) {
-            return COLLECTION_INSTANCE.test(object);
-        }
-    },
-    ANNOTATION() {
-        @Override
-        public boolean test(Object object) {
-            return object.getClass().isAnnotationPresent(Immutable.class);
-        }
-    },
+public enum SessionAttributeImmutability implements Immutability {
+    ANNOTATION(new AnnotationImmutability(Immutable.class)),
     ;
+    private final Immutability immutability;
 
-    public static final Predicate<Object> INSTANCE = object -> {
-        for (SessionAttributeImmutability immutability : EnumSet.allOf(SessionAttributeImmutability.class)) {
-            if (immutability.test(object)) return true;
-        }
-        return false;
-    };
-    static final Predicate<Object> COLLECTION_INSTANCE = new CollectionImmutability(INSTANCE);
+    SessionAttributeImmutability(Immutability immutability) {
+        this.immutability = immutability;
+    }
+
+    @Override
+    public boolean test(Object object) {
+        return this.immutability.test(object);
+    }
 }
