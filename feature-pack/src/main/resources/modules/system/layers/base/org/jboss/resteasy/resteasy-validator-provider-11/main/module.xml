@@ -22,21 +22,4 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.jboss.resteasy.resteasy-validator-provider-11">
-    <resources>
-        <artifact name="${org.jboss.resteasy:resteasy-validator-provider-11}"/>
-    </resources>
-
-    <dependencies>
-        <module name="javax.ws.rs.api"/>
-        <module name="org.jboss.resteasy.resteasy-jaxrs"/>
-        <module name="javax.validation.api"/>
-        <module name="javax.xml.bind.api"/>
-        <module name="org.hibernate.validator"/>
-        <module name="com.fasterxml.classmate"/>
-        <module name="javax.persistence.api"/>
-        <module name="org.jboss.resteasy.resteasy-cdi"/>
-        <module name="javax.enterprise.api"/>
-        <module name="org.jboss.logging"/>
-    </dependencies>
-</module>
+<module-alias xmlns="urn:jboss:module:1.5" name="org.jboss.resteasy.resteasy-validator-provider-11" target-name="org.jboss.resteasy.resteasy-validator-provider"/>

@@ -35,6 +35,7 @@ public class JaxrsSubsystemDefinition extends SimpleResourceDefinition {
     public static final ModuleIdentifier RESTEASY_CDI = ModuleIdentifier.create("org.jboss.resteasy.resteasy-cdi");
     public static final ModuleIdentifier RESTEASY_CRYPTO = ModuleIdentifier.create("org.jboss.resteasy.resteasy-crypto");
     public static final ModuleIdentifier RESTEASY_VALIDATOR_11 = ModuleIdentifier.create("org.jboss.resteasy.resteasy-validator-provider-11");
+    public static final ModuleIdentifier RESTEASY_VALIDATOR = ModuleIdentifier.create("org.jboss.resteasy.resteasy-validator-provider");
     public static final ModuleIdentifier RESTEASY_JAXRS = ModuleIdentifier.create("org.jboss.resteasy.resteasy-jaxrs");
     public static final ModuleIdentifier RESTEASY_JAXB = ModuleIdentifier.create("org.jboss.resteasy.resteasy-jaxb-provider");
     public static final ModuleIdentifier RESTEASY_JACKSON2 = ModuleIdentifier.create("org.jboss.resteasy.resteasy-jackson2-provider");
@@ -71,6 +72,7 @@ public class JaxrsSubsystemDefinition extends SimpleResourceDefinition {
     public void registerAdditionalRuntimePackages(ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerAdditionalRuntimePackages(RuntimePackageDependency.passive(RESTEASY_CDI.getName()),
                     RuntimePackageDependency.passive(RESTEASY_VALIDATOR_11.getName()),
+                    RuntimePackageDependency.passive(RESTEASY_VALIDATOR.getName()),
                     RuntimePackageDependency.required(JAXRS_API.getName()),
                     RuntimePackageDependency.required(JAXB_API.getName()),
                     RuntimePackageDependency.required(JSON_API.getName()),
