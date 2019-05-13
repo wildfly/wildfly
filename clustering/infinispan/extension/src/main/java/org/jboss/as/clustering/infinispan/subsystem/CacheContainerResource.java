@@ -48,12 +48,12 @@ public class CacheContainerResource extends ComplexResource implements Registrar
 
     @Override
     public Registration register(String cache) {
-        ChildResourceProvider handler = this.apply(CHILD_TYPE);
-        handler.getChildren().add(cache);
+        ChildResourceProvider provider = this.apply(CHILD_TYPE);
+        provider.getChildren().add(cache);
         return new Registration() {
             @Override
             public void close() {
-                handler.getChildren().remove(cache);
+                provider.getChildren().remove(cache);
             }
         };
     }
