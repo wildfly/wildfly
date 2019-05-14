@@ -202,7 +202,7 @@
                                 </goals>
                                 <phase>package</phase>
                                 <configuration>
-                                    <fpGroupId>org.wildfly</fpGroupId>
+                                    <fpGroupId>${project.groupId}</fpGroupId>
                                     <fpArtifactId>wildfly-galleon-pack</fpArtifactId>
                                     <fpVersion>${project.version}</fpVersion>
                                 </configuration>
