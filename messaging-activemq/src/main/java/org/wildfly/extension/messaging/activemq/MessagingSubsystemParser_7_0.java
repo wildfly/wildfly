@@ -56,9 +56,9 @@ import org.wildfly.extension.messaging.activemq.jms.legacy.LegacyConnectionFacto
  *
  * @author Paul Ferraro
  */
-public class MessagingSubsystemParser_6_0 extends PersistentResourceXMLParser {
+public class MessagingSubsystemParser_7_0 extends PersistentResourceXMLParser {
 
-    static final String NAMESPACE = "urn:jboss:domain:messaging-activemq:6.0";
+    static final String NAMESPACE = "urn:jboss:domain:messaging-activemq:7.0";
 
     @Override
     public PersistentResourceXMLDescription getParserDescription(){
@@ -224,6 +224,7 @@ public class MessagingSubsystemParser_6_0 extends PersistentResourceXMLParser {
                                         ServerDefinition.JOURNAL_FILE_SIZE,
                                         ServerDefinition.JOURNAL_MIN_FILES,
                                         ServerDefinition.JOURNAL_POOL_FILES,
+                                        ServerDefinition.JOURNAL_FILE_OPEN_TIMEOUT,
                                         ServerDefinition.JOURNAL_COMPACT_PERCENTAGE,
                                         ServerDefinition.JOURNAL_COMPACT_MIN_FILES,
                                         ServerDefinition.JOURNAL_MAX_IO,
