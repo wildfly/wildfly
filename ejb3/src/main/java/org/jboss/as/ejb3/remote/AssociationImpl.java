@@ -64,6 +64,7 @@ import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.registry.RegistryListener;
 import org.wildfly.common.annotation.NotNull;
 import org.wildfly.security.auth.server.SecurityIdentity;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 import javax.ejb.EJBException;
 import javax.net.ssl.SSLSession;
@@ -125,12 +126,17 @@ final class AssociationImpl implements Association, AutoCloseable {
 
         final ClassLoader classLoader = ejbDeploymentInformation.getDeploymentClassLoader();
 
+        ClassLoader originalTccl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+        WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
+
         final InvocationRequest.Resolved requestContent;
         try {
             requestContent = invocationRequest.getRequestContent(classLoader);
         } catch (IOException | ClassNotFoundException e) {
             invocationRequest.writeException(new EJBException(e));
             return CancelHandle.NULL;
+        } finally {
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(originalTccl);
         }
 
         final Map<String, Object> attachments = requestContent.getAttachments();
