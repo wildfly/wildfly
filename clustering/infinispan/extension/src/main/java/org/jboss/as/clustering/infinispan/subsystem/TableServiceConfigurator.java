@@ -22,6 +22,8 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import static org.jboss.as.clustering.infinispan.subsystem.TableResourceDefinition.Attribute.CREATE_ON_START;
+import static org.jboss.as.clustering.infinispan.subsystem.TableResourceDefinition.Attribute.DROP_ON_STOP;
 import static org.jboss.as.clustering.infinispan.subsystem.TableResourceDefinition.Attribute.FETCH_SIZE;
 import static org.jboss.as.clustering.infinispan.subsystem.TableResourceDefinition.ColumnAttribute.DATA;
 import static org.jboss.as.clustering.infinispan.subsystem.TableResourceDefinition.ColumnAttribute.ID;
@@ -53,6 +55,8 @@ public class TableServiceConfigurator extends ComponentServiceConfigurator<Table
 
     private volatile int fetchSize;
     private volatile String prefix;
+    private volatile boolean createOnStart;
+    private volatile boolean dropOnStop;
 
     public TableServiceConfigurator(Attribute prefixAttribute, PathAddress address) {
         super(CacheComponent.STRING_TABLE, address.getParent());
@@ -70,12 +74,16 @@ public class TableServiceConfigurator extends ComponentServiceConfigurator<Table
 
         this.fetchSize = FETCH_SIZE.resolveModelAttribute(context, model).asInt();
         this.prefix = this.prefixAttribute.resolveModelAttribute(context, model).asString();
+        this.createOnStart = CREATE_ON_START.resolveModelAttribute(context, model).asBoolean();
+        this.dropOnStop = DROP_ON_STOP.resolveModelAttribute(context, model).asBoolean();
         return this;
     }
 
     @Override
     public TableManipulationConfiguration get() {
         return new ConfigurationBuilder().persistence().addStore(JdbcStringBasedStoreConfigurationBuilder.class).table()
+                .createOnStart(this.createOnStart)
+                .dropOnExit(this.dropOnStop)
                 .idColumnName(this.columns.get(ID).getKey())
                 .idColumnType(this.columns.get(ID).getValue())
                 .dataColumnName(this.columns.get(DATA).getKey())

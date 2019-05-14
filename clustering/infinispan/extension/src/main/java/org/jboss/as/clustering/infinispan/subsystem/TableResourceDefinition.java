@@ -43,6 +43,8 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -59,6 +61,8 @@ public abstract class TableResourceDefinition extends ChildResourceDefinition<Ma
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         FETCH_SIZE("fetch-size", ModelType.INT, new ModelNode(100)),
+        CREATE_ON_START("create-on-start", ModelType.BOOLEAN, ModelNode.TRUE),
+        DROP_ON_STOP("drop-on-stop", ModelType.BOOLEAN, ModelNode.FALSE),
         ;
         private final AttributeDefinition definition;
 
@@ -142,6 +146,12 @@ public abstract class TableResourceDefinition extends ChildResourceDefinition<Ma
     }
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
+        if (InfinispanModel.VERSION_11_0_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder()
+                    .setDiscard(DiscardAttributeChecker.UNDEFINED, Attribute.CREATE_ON_START.getDefinition(), Attribute.DROP_ON_STOP.getDefinition())
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.CREATE_ON_START.getDefinition(), Attribute.DROP_ON_STOP.getDefinition())
+                    ;
+        }
         if (InfinispanModel.VERSION_6_0_0.requiresTransformation(version)) {
             Converter converter = (PathAddress address, String name, ModelNode value, ModelNode model, TransformationContext context) -> {
                 PathAddress storeAddress = address.getParent();
