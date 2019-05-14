@@ -32,17 +32,19 @@ import java.util.function.UnaryOperator;
 import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.infinispan.transaction.LockingMode;
+import org.jboss.as.clustering.controller.AttributeTranslation;
 import org.jboss.as.clustering.controller.BinaryCapabilityNameResolver;
 import org.jboss.as.clustering.controller.BinaryRequirementCapability;
 import org.jboss.as.clustering.controller.Capability;
 import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
-import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.Operations;
+import org.jboss.as.clustering.controller.ReadAttributeTranslationHandler;
+import org.jboss.as.clustering.controller.Registration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
+import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.transform.AttributeOperationTransformer;
 import org.jboss.as.clustering.controller.transform.ChainedOperationTransformer;
@@ -142,6 +144,44 @@ public class TransactionResourceDefinition extends ComponentResourceDefinition {
         @Override
         public Class<?> getType() {
             return this.type;
+        }
+    }
+
+    enum DeprecatedMetric implements AttributeTranslation, Registration<ManagementResourceRegistration> {
+        COMMITS(TransactionMetric.COMMITS),
+        PREPARES(TransactionMetric.PREPARES),
+        ROLLBACKS(TransactionMetric.ROLLBACKS),
+        ;
+        private final AttributeDefinition definition;
+        private final org.jboss.as.clustering.controller.Attribute targetAttribute;
+
+        DeprecatedMetric(TransactionMetric metric) {
+            this.targetAttribute = metric;
+            this.definition = new SimpleAttributeDefinitionBuilder(metric.getName(), metric.getDefinition().getType())
+                    .setDeprecated(InfinispanModel.VERSION_10_0_0.getVersion())
+                    .setStorageRuntime()
+                    .build();
+        }
+
+        @Override
+        public void register(ManagementResourceRegistration registration) {
+            registration.registerReadOnlyAttribute(this.definition, new ReadAttributeTranslationHandler(this));
+        }
+
+        @Override
+        public org.jboss.as.clustering.controller.Attribute getTargetAttribute() {
+            return this.targetAttribute;
+        }
+
+        @Override
+        public UnaryOperator<PathAddress> getPathAddressTransformation() {
+            return new UnaryOperator<PathAddress>() {
+                @Override
+                public PathAddress apply(PathAddress address) {
+                    PathAddress cacheAddress = address.getParent();
+                    return cacheAddress.getParent().append(CacheRuntimeResourceDefinition.pathElement(cacheAddress.getLastElement().getValue()), TransactionRuntimeResourceDefinition.PATH);
+                }
+            };
         }
     }
 
@@ -290,7 +330,9 @@ public class TransactionResourceDefinition extends ComponentResourceDefinition {
         new SimpleResourceRegistration(descriptor, handler).register(registration);
 
         if (registration.isRuntimeOnlyRegistrationValid()) {
-            new MetricHandler<>(new TransactionMetricExecutor(), TransactionMetric.class).register(registration);
+            for (DeprecatedMetric metric : EnumSet.allOf(DeprecatedMetric.class)) {
+                metric.register(registration);
+            }
         }
 
         return registration;

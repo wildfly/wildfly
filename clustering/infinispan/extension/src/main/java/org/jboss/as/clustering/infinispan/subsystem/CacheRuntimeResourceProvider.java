@@ -40,7 +40,6 @@ public class CacheRuntimeResourceProvider extends SimpleChildResourceProvider {
 
     private static final ChildResourceProvider CHILD_PROVIDER = new SimpleChildResourceProvider(Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
             LockingRuntimeResourceDefinition.PATH.getValue(),
-            MemoryRuntimeResourceDefinition.PATH.getValue(),
             PersistenceRuntimeResourceDefinition.PATH.getValue(),
             PartitionHandlingRuntimeResourceDefinition.PATH.getValue(),
             TransactionRuntimeResourceDefinition.PATH.getValue()))));

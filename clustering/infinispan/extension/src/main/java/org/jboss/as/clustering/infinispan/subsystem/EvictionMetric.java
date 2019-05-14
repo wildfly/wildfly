@@ -18,36 +18,48 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.infinispan.Cache;
-import org.infinispan.interceptors.impl.CacheMgmtInterceptor;
-import org.jboss.as.clustering.controller.Metric;
+import java.util.function.UnaryOperator;
+
+import org.jboss.as.clustering.controller.Attribute;
+import org.jboss.as.clustering.controller.AttributeTranslation;
+import org.jboss.as.clustering.controller.ReadAttributeTranslationHandler;
+import org.jboss.as.clustering.controller.Registration;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
 /**
  * Enumeration of management metrics for cache eviction
  * @author Paul Ferraro
  */
-public enum EvictionMetric implements Metric<Cache<?, ?>> {
+public enum EvictionMetric implements AttributeTranslation, Registration<ManagementResourceRegistration> {
 
-    EVICTIONS("evictions", ModelType.LONG) {
-        @Override
-        public ModelNode execute(Cache<?, ?> cache) {
-            CacheMgmtInterceptor interceptor = CacheMetric.findInterceptor(cache, CacheMgmtInterceptor.class);
-            return new ModelNode((interceptor != null) ? interceptor.getEvictions() : 0);
-        }
-    },
+    EVICTIONS(CacheMetric.EVICTIONS),
     ;
     private final AttributeDefinition definition;
+    private final Attribute targetAttribute;
 
-    EvictionMetric(String name, ModelType type) {
-        this.definition = new SimpleAttributeDefinitionBuilder(name, type, true).setStorageRuntime().build();
+    EvictionMetric(Attribute targetAttribute) {
+        this.definition = new SimpleAttributeDefinitionBuilder(targetAttribute.getName(), targetAttribute.getDefinition().getType())
+                .setDeprecated(InfinispanModel.VERSION_10_0_0.getVersion())
+                .setStorageRuntime()
+                .build();
+        this.targetAttribute = targetAttribute;
     }
 
     @Override
-    public AttributeDefinition getDefinition() {
-        return this.definition;
+    public Attribute getTargetAttribute() {
+        return this.targetAttribute;
+    }
+
+    @Override
+    public UnaryOperator<PathAddress> getPathAddressTransformation() {
+        return PathAddress::getParent;
+    }
+
+    @Override
+    public void register(ManagementResourceRegistration registration) {
+        registration.registerReadOnlyAttribute(this.definition, new ReadAttributeTranslationHandler(this));
     }
 }

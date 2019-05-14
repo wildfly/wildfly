@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,32 +22,33 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.infinispan.AdvancedCache;
-import org.infinispan.partitionhandling.AvailabilityMode;
+import org.infinispan.interceptors.impl.CacheMgmtInterceptor;
 import org.jboss.as.clustering.controller.Operation;
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationDefinition;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
- * Enumerates partition handling operations.
  * @author Paul Ferraro
  */
-public enum PartitionHandlingOperation implements Operation<AdvancedCache<?, ?>> {
+public enum CacheOperation implements Operation<CacheMgmtInterceptor> {
 
-    FORCE_AVAILABLE("force-available") {
+    RESET_STATISTICS("reset-statistics", ModelType.UNDEFINED) {
         @Override
-        public ModelNode execute(ExpressionResolver expressionResolver, ModelNode operation, AdvancedCache<?, ?> cache) {
-            cache.setAvailability(AvailabilityMode.AVAILABLE);
+        public ModelNode execute(ExpressionResolver expressionResolver, ModelNode operation, CacheMgmtInterceptor interceptor) throws OperationFailedException {
+            interceptor.resetStatistics();
             return null;
         }
     },
     ;
     private final OperationDefinition definition;
 
-    PartitionHandlingOperation(String name) {
-        this.definition = new SimpleOperationDefinitionBuilder(name, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PartitionHandlingRuntimeResourceDefinition.PATH))
+    CacheOperation(String name, ModelType returnType) {
+        this.definition = new SimpleOperationDefinitionBuilder(name, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(CacheRuntimeResourceDefinition.WILDCARD_PATH))
+                .setReplyType(returnType)
                 .setRuntimeOnly()
                 .build();
     }

@@ -22,12 +22,12 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.EnumSet;
 import java.util.function.UnaryOperator;
 
 import org.infinispan.configuration.cache.StorageType;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
-import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
@@ -91,7 +91,9 @@ public class MemoryResourceDefinition extends ChildResourceDefinition<Management
         new SimpleResourceRegistration(descriptor, handler).register(registration);
 
         if (registration.isRuntimeOnlyRegistrationValid()) {
-            new MetricHandler<>(new EvictionMetricExecutor(), EvictionMetric.class).register(registration);
+            for (EvictionMetric metric : EnumSet.allOf(EvictionMetric.class)) {
+                metric.register(registration);
+            }
         }
 
         return registration;

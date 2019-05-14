@@ -29,7 +29,10 @@ import org.infinispan.interceptors.impl.CacheMgmtInterceptor;
 import org.infinispan.interceptors.impl.InvalidationInterceptor;
 import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -53,6 +56,13 @@ public enum CacheMetric implements Metric<Cache<?, ?>> {
             return new ModelNode((interceptor != null) ? interceptor.getAverageReadTime() : 0);
         }
     },
+    AVERAGE_REMOVE_TIME("average-remove-time", ModelType.LONG) {
+        @Override
+        public ModelNode execute(Cache<?, ?> cache) {
+            CacheMgmtInterceptor interceptor = findInterceptor(cache, CacheMgmtInterceptor.class);
+            return new ModelNode((interceptor != null) ? interceptor.getAverageRemoveTime() : 0);
+        }
+    },
     AVERAGE_WRITE_TIME("average-write-time", ModelType.LONG) {
         @Override
         public ModelNode execute(Cache<?, ?> cache) {
@@ -60,17 +70,11 @@ public enum CacheMetric implements Metric<Cache<?, ?>> {
             return new ModelNode((interceptor != null) ? interceptor.getAverageWriteTime() : 0);
         }
     },
-    CACHE_STATUS("cache-status", ModelType.STRING) {
-        @Override
-        public ModelNode execute(Cache<?, ?> cache) {
-            return new ModelNode(cache.getStatus().toString());
-        }
-    },
-    ELAPSED_TIME("elapsed-time", ModelType.LONG) {
+    EVICTIONS("evictions", ModelType.LONG) {
         @Override
         public ModelNode execute(Cache<?, ?> cache) {
             CacheMgmtInterceptor interceptor = findInterceptor(cache, CacheMgmtInterceptor.class);
-            return new ModelNode((interceptor != null) ? interceptor.getTimeSinceStart() : 0);
+            return new ModelNode((interceptor != null) ? interceptor.getEvictions() : 0);
         }
     },
     HIT_RATIO("hit-ratio", ModelType.DOUBLE) {
@@ -106,6 +110,13 @@ public enum CacheMetric implements Metric<Cache<?, ?>> {
         public ModelNode execute(Cache<?, ?> cache) {
             CacheMgmtInterceptor interceptor = findInterceptor(cache, CacheMgmtInterceptor.class);
             return new ModelNode((interceptor != null) ? interceptor.getNumberOfEntries() : 0);
+        }
+    },
+    NUMBER_OF_ENTRIES_IN_MEMORY("number-of-entries-in-memory", ModelType.INT) {
+        @Override
+        public ModelNode execute(Cache<?, ?> cache) {
+            CacheMgmtInterceptor interceptor = findInterceptor(cache, CacheMgmtInterceptor.class);
+            return new ModelNode((interceptor != null) ? interceptor.getNumberOfEntriesInMemory() : 0);
         }
     },
     PASSIVATIONS("passivations", ModelType.LONG) {
@@ -150,11 +161,18 @@ public enum CacheMetric implements Metric<Cache<?, ?>> {
             return new ModelNode((interceptor != null) ? interceptor.getTimeSinceReset() : 0);
         }
     },
+    TIME_SINCE_START("time-since-start", ModelType.LONG) {
+        @Override
+        public ModelNode execute(Cache<?, ?> cache) {
+            CacheMgmtInterceptor interceptor = findInterceptor(cache, CacheMgmtInterceptor.class);
+            return new ModelNode((interceptor != null) ? interceptor.getTimeSinceStart() : 0);
+        }
+    },
     ;
     private final AttributeDefinition definition;
 
     CacheMetric(String name, ModelType type) {
-        this.definition = new SimpleAttributeDefinitionBuilder(name, type, true).setStorageRuntime().build();
+        this.definition = new SimpleAttributeDefinitionBuilder(name, type).setStorageRuntime().build();
     }
 
     @Override
@@ -164,5 +182,15 @@ public enum CacheMetric implements Metric<Cache<?, ?>> {
 
     static <T extends AsyncInterceptor> T findInterceptor(Cache<?, ?> cache, Class<T> interceptorClass) {
         return cache.getAdvancedCache().getAsyncInterceptorChain().findInterceptorExtending(interceptorClass);
+    }
+
+    static void buildTransformations(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
+        if (InfinispanModel.VERSION_10_0_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder()
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, CacheMetric.AVERAGE_REMOVE_TIME.getDefinition())
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, CacheMetric.NUMBER_OF_ENTRIES_IN_MEMORY.getDefinition())
+                    .addRename(CacheMetric.TIME_SINCE_START.getDefinition(), CacheResourceDefinition.DeprecatedMetric.ELAPSED_TIME.getName())
+                    ;
+        }
     }
 }
