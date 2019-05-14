@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,22 +22,36 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.infinispan.AdvancedCache;
-import org.infinispan.Cache;
-import org.jboss.as.clustering.controller.BinaryCapabilityNameResolver;
+import org.infinispan.interceptors.impl.InvalidationInterceptor;
+import org.jboss.as.clustering.controller.Metric;
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
- * Executor for partition handling operations.
+ * Cache invalidation metrics.
  * @author Paul Ferraro
  */
-public class PartitionHandlingOperationExecutor extends CacheOperationExecutor<AdvancedCache<?, ?>> {
+public enum CacheInvalidationInterceptorMetric implements Metric<InvalidationInterceptor> {
 
-    public PartitionHandlingOperationExecutor() {
-        super(BinaryCapabilityNameResolver.GRANDPARENT_PARENT);
+    INVALIDATIONS("invalidations", ModelType.LONG) {
+        @Override
+        public ModelNode execute(InvalidationInterceptor interceptor) {
+            return new ModelNode(interceptor.getInvalidations());
+        }
+    },
+    ;
+    private final AttributeDefinition definition;
+
+    CacheInvalidationInterceptorMetric(String name, ModelType type) {
+        this.definition = new SimpleAttributeDefinitionBuilder(name, type)
+                .setStorageRuntime()
+                .build();
     }
 
     @Override
-    public AdvancedCache<?, ?> apply(Cache<?, ?> cache) {
-        return cache.getAdvancedCache();
+    public AttributeDefinition getDefinition() {
+        return this.definition;
     }
 }

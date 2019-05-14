@@ -55,7 +55,7 @@ public enum ClusteredCacheMetric implements Metric<RpcManagerImpl> {
     SUCCESS_RATIO("success-ratio", ModelType.DOUBLE) {
         @Override
         public ModelNode execute(RpcManagerImpl manager) {
-            return new ModelNode(manager.getSuccessRatio());
+            return new ModelNode(manager.getSuccessRatioFloatingPoint());
         }
     },
     ;

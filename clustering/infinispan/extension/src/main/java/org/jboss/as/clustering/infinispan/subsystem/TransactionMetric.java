@@ -33,23 +33,24 @@ import org.jboss.dmr.ModelType;
  *
  * @author Paul Ferraro
  */
-public enum TransactionMetric implements Metric<TxInterceptor<?, ?>> {
+@SuppressWarnings("rawtypes")
+public enum TransactionMetric implements Metric<TxInterceptor> {
 
     COMMITS("commits", ModelType.LONG) {
         @Override
-        public ModelNode execute(TxInterceptor<?, ?> interceptor) {
+        public ModelNode execute(TxInterceptor interceptor) {
             return new ModelNode(interceptor.getCommits());
         }
     },
     PREPARES("prepares", ModelType.LONG) {
         @Override
-        public ModelNode execute(TxInterceptor<?, ?> interceptor) {
+        public ModelNode execute(TxInterceptor interceptor) {
             return new ModelNode(interceptor.getPrepares());
         }
     },
     ROLLBACKS("rollbacks", ModelType.LONG) {
         @Override
-        public ModelNode execute(TxInterceptor<?, ?> interceptor) {
+        public ModelNode execute(TxInterceptor interceptor) {
             return new ModelNode(interceptor.getRollbacks());
         }
     },

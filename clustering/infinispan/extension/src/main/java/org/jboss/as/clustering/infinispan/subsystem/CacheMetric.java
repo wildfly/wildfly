@@ -21,15 +21,14 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.infinispan.Cache;
-import org.infinispan.eviction.ActivationManager;
-import org.infinispan.eviction.PassivationManager;
-import org.infinispan.interceptors.AsyncInterceptor;
 import org.infinispan.interceptors.impl.CacheMgmtInterceptor;
-import org.infinispan.interceptors.impl.InvalidationInterceptor;
 import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.client.helpers.MeasurementUnit;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -37,124 +36,110 @@ import org.jboss.dmr.ModelType;
  * Enumeration of management metrics for a cache.
  * @author Paul Ferraro
  */
-public enum CacheMetric implements Metric<Cache<?, ?>> {
+public enum CacheMetric implements Metric<CacheMgmtInterceptor> {
 
-    ACTIVATIONS("activations", ModelType.LONG) {
+    AVERAGE_READ_TIME("average-read-time", ModelType.LONG, MeasurementUnit.MILLISECONDS) {
         @Override
-        public ModelNode execute(Cache<?, ?> cache) {
-            ActivationManager manager = cache.getAdvancedCache().getComponentRegistry().getComponent(ActivationManager.class);
-            return new ModelNode((manager != null) ? manager.getActivationCount() : 0);
+        public ModelNode execute(CacheMgmtInterceptor interceptor) {
+            return new ModelNode(interceptor.getAverageReadTime());
         }
     },
-    AVERAGE_READ_TIME("average-read-time", ModelType.LONG) {
+    AVERAGE_REMOVE_TIME("average-remove-time", ModelType.LONG, MeasurementUnit.MILLISECONDS) {
         @Override
-        public ModelNode execute(Cache<?, ?> cache) {
-            CacheMgmtInterceptor interceptor = findInterceptor(cache, CacheMgmtInterceptor.class);
-            return new ModelNode((interceptor != null) ? interceptor.getAverageReadTime() : 0);
+        public ModelNode execute(CacheMgmtInterceptor interceptor) {
+            return new ModelNode(interceptor.getAverageRemoveTime());
         }
     },
-    AVERAGE_WRITE_TIME("average-write-time", ModelType.LONG) {
+    AVERAGE_WRITE_TIME("average-write-time", ModelType.LONG, MeasurementUnit.MILLISECONDS) {
         @Override
-        public ModelNode execute(Cache<?, ?> cache) {
-            CacheMgmtInterceptor interceptor = findInterceptor(cache, CacheMgmtInterceptor.class);
-            return new ModelNode((interceptor != null) ? interceptor.getAverageWriteTime() : 0);
+        public ModelNode execute(CacheMgmtInterceptor interceptor) {
+            return new ModelNode(interceptor.getAverageWriteTime());
         }
     },
-    CACHE_STATUS("cache-status", ModelType.STRING) {
+    EVICTIONS("evictions", ModelType.LONG) {
         @Override
-        public ModelNode execute(Cache<?, ?> cache) {
-            return new ModelNode(cache.getStatus().toString());
-        }
-    },
-    ELAPSED_TIME("elapsed-time", ModelType.LONG) {
-        @Override
-        public ModelNode execute(Cache<?, ?> cache) {
-            CacheMgmtInterceptor interceptor = findInterceptor(cache, CacheMgmtInterceptor.class);
-            return new ModelNode((interceptor != null) ? interceptor.getTimeSinceStart() : 0);
+        public ModelNode execute(CacheMgmtInterceptor interceptor) {
+            return new ModelNode(interceptor.getEvictions());
         }
     },
     HIT_RATIO("hit-ratio", ModelType.DOUBLE) {
         @Override
-        public ModelNode execute(Cache<?, ?> cache) {
-            CacheMgmtInterceptor interceptor = findInterceptor(cache, CacheMgmtInterceptor.class);
-            return new ModelNode((interceptor != null) ? interceptor.getHitRatio() : 0);
+        public ModelNode execute(CacheMgmtInterceptor interceptor) {
+            return new ModelNode(interceptor.getHitRatio());
         }
     },
     HITS("hits", ModelType.LONG) {
         @Override
-        public ModelNode execute(Cache<?, ?> cache) {
-            CacheMgmtInterceptor interceptor = findInterceptor(cache, CacheMgmtInterceptor.class);
-            return new ModelNode((interceptor != null) ? interceptor.getHits() : 0);
-        }
-    },
-    INVALIDATIONS("invalidations", ModelType.LONG) {
-        @Override
-        public ModelNode execute(Cache<?, ?> cache) {
-            InvalidationInterceptor interceptor = findInterceptor(cache, InvalidationInterceptor.class);
-            return new ModelNode((interceptor != null) ? interceptor.getInvalidations() : 0);
+        public ModelNode execute(CacheMgmtInterceptor interceptor) {
+            return new ModelNode(interceptor.getHits());
         }
     },
     MISSES("misses", ModelType.LONG) {
         @Override
-        public ModelNode execute(Cache<?, ?> cache) {
-            CacheMgmtInterceptor interceptor = findInterceptor(cache, CacheMgmtInterceptor.class);
-            return new ModelNode((interceptor != null) ? interceptor.getMisses() : 0);
+        public ModelNode execute(CacheMgmtInterceptor interceptor) {
+            return new ModelNode(interceptor.getMisses());
         }
     },
     NUMBER_OF_ENTRIES("number-of-entries", ModelType.INT) {
         @Override
-        public ModelNode execute(Cache<?, ?> cache) {
-            CacheMgmtInterceptor interceptor = findInterceptor(cache, CacheMgmtInterceptor.class);
-            return new ModelNode((interceptor != null) ? interceptor.getNumberOfEntries() : 0);
+        public ModelNode execute(CacheMgmtInterceptor interceptor) {
+            return new ModelNode(interceptor.getNumberOfEntries());
         }
     },
-    PASSIVATIONS("passivations", ModelType.LONG) {
+    NUMBER_OF_ENTRIES_IN_MEMORY("number-of-entries-in-memory", ModelType.INT) {
         @Override
-        public ModelNode execute(Cache<?, ?> cache) {
-            PassivationManager manager = cache.getAdvancedCache().getComponentRegistry().getComponent(PassivationManager.class);
-            return new ModelNode((manager != null) ? manager.getPassivations() : 0);
+        public ModelNode execute(CacheMgmtInterceptor interceptor) {
+            return new ModelNode(interceptor.getNumberOfEntriesInMemory());
         }
     },
     READ_WRITE_RATIO("read-write-ratio", ModelType.DOUBLE) {
         @Override
-        public ModelNode execute(Cache<?, ?> cache) {
-            CacheMgmtInterceptor interceptor = findInterceptor(cache, CacheMgmtInterceptor.class);
-            return new ModelNode((interceptor != null) ? interceptor.getReadWriteRatio() : 0);
+        public ModelNode execute(CacheMgmtInterceptor interceptor) {
+            return new ModelNode(interceptor.getReadWriteRatio());
         }
     },
     REMOVE_HITS("remove-hits", ModelType.LONG) {
         @Override
-        public ModelNode execute(Cache<?, ?> cache) {
-            CacheMgmtInterceptor interceptor = findInterceptor(cache, CacheMgmtInterceptor.class);
-            return new ModelNode((interceptor != null) ? interceptor.getRemoveHits() : 0);
+        public ModelNode execute(CacheMgmtInterceptor interceptor) {
+            return new ModelNode(interceptor.getRemoveHits());
         }
     },
     REMOVE_MISSES("remove-misses", ModelType.LONG) {
         @Override
-        public ModelNode execute(Cache<?, ?> cache) {
-            CacheMgmtInterceptor interceptor = findInterceptor(cache, CacheMgmtInterceptor.class);
-            return new ModelNode((interceptor != null) ? interceptor.getRemoveMisses() : 0);
+        public ModelNode execute(CacheMgmtInterceptor interceptor) {
+            return new ModelNode(interceptor.getRemoveMisses());
         }
     },
-    STORES("stores", ModelType.LONG) {
+    TIME_SINCE_RESET("time-since-reset", ModelType.LONG, MeasurementUnit.SECONDS) {
         @Override
-        public ModelNode execute(Cache<?, ?> cache) {
-            CacheMgmtInterceptor interceptor = findInterceptor(cache, CacheMgmtInterceptor.class);
-            return new ModelNode((interceptor != null) ? interceptor.getStores() : 0);
+        public ModelNode execute(CacheMgmtInterceptor interceptor) {
+            return new ModelNode(interceptor.getTimeSinceReset());
         }
     },
-    TIME_SINCE_RESET("time-since-reset", ModelType.LONG) {
+    TIME_SINCE_START("time-since-start", ModelType.LONG, MeasurementUnit.SECONDS) {
         @Override
-        public ModelNode execute(Cache<?, ?> cache) {
-            CacheMgmtInterceptor interceptor = findInterceptor(cache, CacheMgmtInterceptor.class);
-            return new ModelNode((interceptor != null) ? interceptor.getTimeSinceReset() : 0);
+        public ModelNode execute(CacheMgmtInterceptor interceptor) {
+            return new ModelNode(interceptor.getTimeSinceStart());
+        }
+    },
+    WRITES("writes", ModelType.LONG) {
+        @Override
+        public ModelNode execute(CacheMgmtInterceptor interceptor) {
+            return new ModelNode(interceptor.getStores());
         }
     },
     ;
     private final AttributeDefinition definition;
 
     CacheMetric(String name, ModelType type) {
-        this.definition = new SimpleAttributeDefinitionBuilder(name, type, true).setStorageRuntime().build();
+        this(name, type, null);
+    }
+
+    CacheMetric(String name, ModelType type, MeasurementUnit unit) {
+        this.definition = new SimpleAttributeDefinitionBuilder(name, type)
+                .setMeasurementUnit(unit)
+                .setStorageRuntime()
+                .build();
     }
 
     @Override
@@ -162,7 +147,14 @@ public enum CacheMetric implements Metric<Cache<?, ?>> {
         return this.definition;
     }
 
-    static <T extends AsyncInterceptor> T findInterceptor(Cache<?, ?> cache, Class<T> interceptorClass) {
-        return cache.getAdvancedCache().getAsyncInterceptorChain().findInterceptorExtending(interceptorClass);
+    static void buildTransformations(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
+        if (InfinispanModel.VERSION_11_0_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder()
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, CacheMetric.AVERAGE_REMOVE_TIME.getDefinition())
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, CacheMetric.NUMBER_OF_ENTRIES_IN_MEMORY.getDefinition())
+                    .addRename(CacheMetric.TIME_SINCE_START.getDefinition(), CacheResourceDefinition.DeprecatedMetric.ELAPSED_TIME.getName())
+                    .addRename(CacheMetric.WRITES.getDefinition(), CacheResourceDefinition.DeprecatedMetric.STORES.getName())
+                    ;
+        }
     }
 }

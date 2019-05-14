@@ -33,17 +33,18 @@ import org.jboss.dmr.ModelType;
  *
  * @author Paul Ferraro
  */
-public enum StoreMetric implements Metric<CacheLoaderInterceptor<?, ?>> {
+@SuppressWarnings("rawtypes")
+public enum StoreMetric implements Metric<CacheLoaderInterceptor> {
 
     CACHE_LOADER_LOADS("cache-loader-loads", ModelType.LONG) {
         @Override
-        public ModelNode execute(CacheLoaderInterceptor<?, ?> interceptor) {
+        public ModelNode execute(CacheLoaderInterceptor interceptor) {
             return new ModelNode(interceptor.getCacheLoaderLoads());
         }
     },
     CACHE_LOADER_MISSES("cache-loader-misses", ModelType.LONG) {
         @Override
-        public ModelNode execute(CacheLoaderInterceptor<?, ?> interceptor) {
+        public ModelNode execute(CacheLoaderInterceptor interceptor) {
             return new ModelNode(interceptor.getCacheLoaderMisses());
         }
     },
