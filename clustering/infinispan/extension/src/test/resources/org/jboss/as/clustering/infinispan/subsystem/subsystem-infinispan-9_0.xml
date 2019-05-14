@@ -90,7 +90,7 @@
             <expiration interval="10000" lifespan="10" max-idle="10"/>
             <jdbc-store data-source="ExampleDS" dialect="MARIA_DB" fetch-state="false" passivation="false" preload="true" purge="false" shared="false" singleton="false" max-batch-size="100">
                 <write-behind modification-queue-size="2048" thread-pool-size="1"/>
-                <table prefix="ispn_bucket" fetch-size="100">
+                <table prefix="ispn_bucket" fetch-size="100" create-on-start="false" drop-on-stop="true">
                     <id-column name="id" type="VARCHAR"/>
                     <data-column name="datum" type="BINARY"/>
                     <timestamp-column name="version" type="BIGINT"/>

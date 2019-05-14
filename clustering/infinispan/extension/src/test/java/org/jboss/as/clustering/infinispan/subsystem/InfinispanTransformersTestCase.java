@@ -161,10 +161,6 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
         testTransformation(ModelTestControllerVersion.EAP_7_2_0);
     }
 
-    private KernelServices buildKernelServices(ModelTestControllerVersion controllerVersion, ModelVersion version, String... mavenResourceURLs) throws Exception {
-        return this.buildKernelServices(this.getSubsystemXml(), controllerVersion, version, mavenResourceURLs);
-    }
-
     private KernelServices buildKernelServices(String xml, ModelTestControllerVersion controllerVersion, ModelVersion version, String... mavenResourceURLs) throws Exception {
         KernelServicesBuilder builder = this.createKernelServicesBuilder().setSubsystemXml(xml);
 
@@ -369,8 +365,8 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
         // test failed operations involving backups
-        List<ModelNode> xmlOps = builder.parseXmlResource("infinispan-transformer-reject.xml");
-        ModelTestUtils.checkFailedTransformedBootOperations(services, version, xmlOps, createFailedOperationConfig(version));
+        List<ModelNode> operations = builder.parseXmlResource("infinispan-transformer-reject.xml");
+        ModelTestUtils.checkFailedTransformedBootOperations(services, version, operations, createFailedOperationConfig(version));
     }
 
     @SuppressWarnings("deprecation")
@@ -379,6 +375,12 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
         FailedOperationTransformationConfig config = new FailedOperationTransformationConfig();
         PathAddress subsystemAddress = PathAddress.pathAddress(InfinispanSubsystemResourceDefinition.PATH);
         PathAddress containerAddress = subsystemAddress.append(CacheContainerResourceDefinition.WILDCARD_PATH);
+
+        if (InfinispanModel.VERSION_11_0_0.requiresTransformation(version) && !InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
+            PathAddress storeAddress = containerAddress.append(DistributedCacheResourceDefinition.WILDCARD_PATH, MixedKeyedJDBCStoreResourceDefinition.PATH);
+            config.addFailedAttribute(storeAddress.append(BinaryTableResourceDefinition.PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
+            config.addFailedAttribute(storeAddress.append(StringTableResourceDefinition.PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
+        }
 
         if (InfinispanModel.VERSION_7_0_0.requiresTransformation(version)) {
             config.addFailedAttribute(containerAddress.append(ReplicatedCacheResourceDefinition.WILDCARD_PATH, StateTransferResourceDefinition.PATH), new RejectedValueConfig(StateTransferResourceDefinition.Attribute.TIMEOUT, value -> value.asLong() <= 0));

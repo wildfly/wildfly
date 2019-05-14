@@ -747,6 +747,16 @@
                 <xs:documentation>The fetch size used when querying from this table.  Used to avoid heap memory exhaustion when query is large.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="create-on-start" type="xs:boolean" default="true">
+            <xs:annotation>
+                <xs:documentation>Indicates whether the store should create this database table the cache starts.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="drop-on-stop" type="xs:boolean" default="false">
+            <xs:annotation>
+                <xs:documentation>Indicates whether the store should drop this database table when the cache stops.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="id-column">
