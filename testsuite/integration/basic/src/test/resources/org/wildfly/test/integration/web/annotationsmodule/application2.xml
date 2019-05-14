@@ -1,0 +1,15 @@
+<application xmlns="http://java.sun.com/xml/ns/javaee"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/application_6.xsd"
+             version="6">
+    <module>
+        <ejb>library.jar</ejb>
+    </module>
+    <module>
+        <web>
+            <web-uri>web.war</web-uri>
+            <context-root>web-test2</context-root>
+        </web>
+    </module>
+    <initialize-in-order>true</initialize-in-order>
+</application>
