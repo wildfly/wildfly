@@ -202,12 +202,35 @@
                                 </goals>
                                 <phase>package</phase>
                                 <configuration>
+                                    <offline>true</offline>
                                     <fpGroupId>${project.groupId}</fpGroupId>
                                     <fpArtifactId>wildfly-galleon-pack</fpArtifactId>
                                     <fpVersion>${project.version}</fpVersion>
                                 </configuration>
                             </execution>
                         </executions>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.jboss.universe</groupId>
+                                <artifactId>community-universe</artifactId>
+                                <version>${version.org.jboss.universe.community-universe}</version>
+                                <scope>runtime</scope>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.jboss.universe.producer</groupId>
+                                <artifactId>wildfly-producers</artifactId>
+                                <version>${version.org.jboss.universe.producer.wildfly-producers}</version>
+                                <scope>runtime</scope>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.wildfly.core</groupId>
+                                <artifactId>wildfly-core-galleon-pack</artifactId>
+                                <version>${version.org.wildfly.core}</version>
+                                <type>txt</type>
+                                <classifier>artifact-list</classifier>
+                                <scope>runtime</scope>
+                            </dependency>
+                        </dependencies>
                     </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
