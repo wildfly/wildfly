@@ -2083,6 +2083,10 @@
                         <artifactId>javax.annotation-api</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>jakarta.xml.bind</groupId>
+                        <artifactId>jakarta.xml.bind-api</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>javax.xml.ws</groupId>
                         <artifactId>jaxws-api</artifactId>
                     </exclusion>
@@ -2097,6 +2101,14 @@
                     <exclusion>
                         <groupId>org.jacorb</groupId>
                         <artifactId>jacorb-omgapi</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jacorb</groupId>
+                        <artifactId>jacorb</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.rmi</groupId>
+                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.apache.geronimo.specs</groupId>
@@ -2137,6 +2149,14 @@
                     <exclusion>
                         <groupId>org.jacorb</groupId>
                         <artifactId>jacorb-omgapi</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jacorb</groupId>
+                        <artifactId>jacorb</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.rmi</groupId>
+                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.apache.geronimo.specs</groupId>
@@ -2227,6 +2247,14 @@
                         <artifactId>jacorb-omgapi</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>org.jacorb</groupId>
+                        <artifactId>jacorb</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.rmi</groupId>
+                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.apache.geronimo.specs</groupId>
                         <artifactId>geronimo-jta_1.1_spec</artifactId>
                     </exclusion>
@@ -2291,6 +2319,14 @@
                         <artifactId>jacorb-omgapi</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>org.jacorb</groupId>
+                        <artifactId>jacorb</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.rmi</groupId>
+                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.apache.geronimo.specs</groupId>
                         <artifactId>geronimo-jta_1.1_spec</artifactId>
                     </exclusion>
@@ -2333,6 +2369,14 @@
                     <exclusion>
                         <groupId>org.jacorb</groupId>
                         <artifactId>jacorb-omgapi</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jacorb</groupId>
+                        <artifactId>jacorb</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.rmi</groupId>
+                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.apache.geronimo.specs</groupId>
@@ -2379,6 +2423,14 @@
                         <artifactId>jacorb-omgapi</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>org.jacorb</groupId>
+                        <artifactId>jacorb</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.rmi</groupId>
+                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.apache.geronimo.specs</groupId>
                         <artifactId>geronimo-jta_1.1_spec</artifactId>
                     </exclusion>
@@ -2423,9 +2475,22 @@
                         <artifactId>jacorb-omgapi</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>org.jacorb</groupId>
+                        <artifactId>jacorb</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.rmi</groupId>
+                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.rmi</groupId>
+                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.apache.geronimo.specs</groupId>
                         <artifactId>geronimo-jta_1.1_spec</artifactId>
                     </exclusion>
+
                 </exclusions>
             </dependency>
 
@@ -2469,6 +2534,14 @@
                     <exclusion>
                         <groupId>org.jacorb</groupId>
                         <artifactId>jacorb-omgapi</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jacorb</groupId>
+                        <artifactId>jacorb</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.rmi</groupId>
+                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.apache.geronimo.specs</groupId>
@@ -2579,6 +2652,14 @@
                         <artifactId>jacorb-omgapi</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>org.jacorb</groupId>
+                        <artifactId>jacorb</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.rmi</groupId>
+                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.apache.geronimo.specs</groupId>
                         <artifactId>geronimo-jta_1.1_spec</artifactId>
                     </exclusion>
@@ -2613,6 +2694,14 @@
                     <exclusion>
                         <groupId>org.jacorb</groupId>
                         <artifactId>jacorb-omgapi</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jacorb</groupId>
+                        <artifactId>jacorb</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.rmi</groupId>
+                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.apache.geronimo.specs</groupId>
@@ -2687,6 +2776,14 @@
                         <artifactId>jacorb-omgapi</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>org.jacorb</groupId>
+                        <artifactId>jacorb</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.rmi</groupId>
+                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.apache.geronimo.specs</groupId>
                         <artifactId>geronimo-jta_1.1_spec</artifactId>
                     </exclusion>
@@ -2727,6 +2824,14 @@
                         <artifactId>jacorb-omgapi</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>org.jacorb</groupId>
+                        <artifactId>jacorb</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.rmi</groupId>
+                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.apache.geronimo.specs</groupId>
                         <artifactId>geronimo-jta_1.1_spec</artifactId>
                     </exclusion>
@@ -2761,6 +2866,14 @@
                     <exclusion>
                         <groupId>org.jacorb</groupId>
                         <artifactId>jacorb-omgapi</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jacorb</groupId>
+                        <artifactId>jacorb</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.rmi</groupId>
+                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.apache.geronimo.specs</groupId>
@@ -2837,6 +2950,14 @@
                     <exclusion>
                         <groupId>org.jacorb</groupId>
                         <artifactId>jacorb-omgapi</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jacorb</groupId>
+                        <artifactId>jacorb</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.rmi</groupId>
+                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.apache.geronimo.specs</groupId>
@@ -2917,6 +3038,14 @@
                     <exclusion>
                         <groupId>org.jacorb</groupId>
                         <artifactId>jacorb-omgapi</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jacorb</groupId>
+                        <artifactId>jacorb</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.rmi</groupId>
+                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.apache.geronimo.specs</groupId>
@@ -3010,6 +3139,14 @@
                         <groupId>org.jacorb</groupId>
                         <artifactId>jacorb-omgapi</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.jacorb</groupId>
+                        <artifactId>jacorb</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.rmi</groupId>
+                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -3045,6 +3182,14 @@
                     <exclusion>
                         <groupId>org.jacorb</groupId>
                         <artifactId>jacorb-omgapi</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jacorb</groupId>
+                        <artifactId>jacorb</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.rmi</groupId>
+                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.apache.geronimo.specs</groupId>
@@ -3083,6 +3228,14 @@
                         <artifactId>jacorb-omgapi</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>org.jacorb</groupId>
+                        <artifactId>jacorb</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.rmi</groupId>
+                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.apache.geronimo.specs</groupId>
                         <artifactId>geronimo-jta_1.1_spec</artifactId>
                     </exclusion>
@@ -3117,6 +3270,14 @@
                     <exclusion>
                         <groupId>org.jacorb</groupId>
                         <artifactId>jacorb-omgapi</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jacorb</groupId>
+                        <artifactId>jacorb</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.rmi</groupId>
+                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.apache.geronimo.specs</groupId>
@@ -3201,6 +3362,14 @@
                     <exclusion>
                         <groupId>org.jacorb</groupId>
                         <artifactId>jacorb-omgapi</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jacorb</groupId>
+                        <artifactId>jacorb</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.rmi</groupId>
+                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.apache.geronimo.specs</groupId>
@@ -3295,6 +3464,14 @@
                         <artifactId>jacorb-omgapi</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>org.jacorb</groupId>
+                        <artifactId>jacorb</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.rmi</groupId>
+                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.apache.geronimo.specs</groupId>
                         <artifactId>geronimo-jta_1.1_spec</artifactId>
                     </exclusion>
@@ -3387,6 +3564,14 @@
                         <artifactId>jacorb-omgapi</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>org.jacorb</groupId>
+                        <artifactId>jacorb</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.rmi</groupId>
+                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.apache.geronimo.specs</groupId>
                         <artifactId>geronimo-jta_1.1_spec</artifactId>
                     </exclusion>
@@ -3429,6 +3614,14 @@
                     <exclusion>
                         <groupId>org.jacorb</groupId>
                         <artifactId>jacorb-omgapi</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jacorb</groupId>
+                        <artifactId>jacorb</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.rmi</groupId>
+                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.apache.geronimo.specs</groupId>
@@ -3481,6 +3674,14 @@
                     <exclusion>
                         <groupId>org.jacorb</groupId>
                         <artifactId>jacorb-omgapi</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jacorb</groupId>
+                        <artifactId>jacorb</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.rmi</groupId>
+                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.apache.geronimo.specs</groupId>
@@ -3609,6 +3810,14 @@
                     <exclusion>
                         <groupId>org.jacorb</groupId>
                         <artifactId>jacorb-omgapi</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jacorb</groupId>
+                        <artifactId>jacorb</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.rmi</groupId>
+                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.apache.geronimo.specs</groupId>
@@ -3747,6 +3956,14 @@
                         <artifactId>jacorb-omgapi</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>org.jacorb</groupId>
+                        <artifactId>jacorb</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.rmi</groupId>
+                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.apache.geronimo.specs</groupId>
                         <artifactId>geronimo-jta_1.1_spec</artifactId>
                     </exclusion>
@@ -3851,6 +4068,14 @@
                         <artifactId>jacorb-omgapi</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>org.jacorb</groupId>
+                        <artifactId>jacorb</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.rmi</groupId>
+                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.apache.geronimo.specs</groupId>
                         <artifactId>geronimo-jta_1.1_spec</artifactId>
                     </exclusion>
@@ -3929,6 +4154,14 @@
                     <exclusion>
                         <groupId>org.jacorb</groupId>
                         <artifactId>jacorb-omgapi</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jacorb</groupId>
+                        <artifactId>jacorb</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.rmi</groupId>
+                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.apache.geronimo.specs</groupId>
@@ -4011,6 +4244,14 @@
                         <artifactId>jacorb-omgapi</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>org.jacorb</groupId>
+                        <artifactId>jacorb</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.rmi</groupId>
+                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.apache.geronimo.specs</groupId>
                         <artifactId>geronimo-jta_1.1_spec</artifactId>
                     </exclusion>
@@ -4055,6 +4296,14 @@
                         <artifactId>jacorb-omgapi</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>org.jacorb</groupId>
+                        <artifactId>jacorb</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.rmi</groupId>
+                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.apache.geronimo.specs</groupId>
                         <artifactId>geronimo-jta_1.1_spec</artifactId>
                     </exclusion>
@@ -4093,6 +4342,14 @@
                     <exclusion>
                         <groupId>org.jacorb</groupId>
                         <artifactId>jacorb-omgapi</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jacorb</groupId>
+                        <artifactId>jacorb</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.rmi</groupId>
+                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.apache.geronimo.specs</groupId>
@@ -4142,6 +4399,14 @@
                     <exclusion>
                         <groupId>org.jacorb</groupId>
                         <artifactId>jacorb-omgapi</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jacorb</groupId>
+                        <artifactId>jacorb</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.rmi</groupId>
+                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.apache.geronimo.specs</groupId>
@@ -4224,6 +4489,14 @@
                         <artifactId>jacorb-omgapi</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>org.jacorb</groupId>
+                        <artifactId>jacorb</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.rmi</groupId>
+                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.apache.geronimo.specs</groupId>
                         <artifactId>geronimo-jta_1.1_spec</artifactId>
                     </exclusion>
@@ -4272,6 +4545,14 @@
                         <artifactId>jacorb-omgapi</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>org.jacorb</groupId>
+                        <artifactId>jacorb</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.rmi</groupId>
+                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.apache.geronimo.specs</groupId>
                         <artifactId>geronimo-jta_1.1_spec</artifactId>
                     </exclusion>
@@ -4310,6 +4591,14 @@
                     <exclusion>
                         <groupId>org.jacorb</groupId>
                         <artifactId>jacorb-omgapi</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jacorb</groupId>
+                        <artifactId>jacorb</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.rmi</groupId>
+                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.apache.geronimo.specs</groupId>
@@ -4358,6 +4647,14 @@
                     <exclusion>
                         <groupId>org.jacorb</groupId>
                         <artifactId>jacorb-omgapi</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jacorb</groupId>
+                        <artifactId>jacorb</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.rmi</groupId>
+                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.apache.geronimo.specs</groupId>
@@ -6744,7 +7041,6 @@
                         <groupId>org.jboss.spec.javax.servlet</groupId>
                         <artifactId>jboss-servlet-api_3.1_spec</artifactId>
                     </exclusion>
-
                 </exclusions>
             </dependency>
 
@@ -6925,7 +7221,6 @@
                         <groupId>org.jboss.spec.javax.servlet</groupId>
                         <artifactId>jboss-servlet-api_3.1_spec</artifactId>
                     </exclusion>
-
                 </exclusions>
             </dependency>
 
