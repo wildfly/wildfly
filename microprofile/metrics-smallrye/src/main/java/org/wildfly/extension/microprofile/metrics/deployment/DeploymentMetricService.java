@@ -8,6 +8,7 @@ import java.util.function.Supplier;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentCompleteServiceProcessor;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.msc.Service;
@@ -65,7 +66,7 @@ public class DeploymentMetricService implements Service {
 
     private static PathAddress createDeploymentAddressPrefix(DeploymentUnit deploymentUnit) {
         if (deploymentUnit.getParent() == null) {
-            return PathAddress.pathAddress(DEPLOYMENT, deploymentUnit.getName());
+            return PathAddress.pathAddress(DEPLOYMENT, deploymentUnit.getAttachment(Attachments.MANAGEMENT_NAME));
         } else {
             return createDeploymentAddressPrefix(deploymentUnit.getParent()).append(SUBDEPLOYMENT, deploymentUnit.getName());
         }
