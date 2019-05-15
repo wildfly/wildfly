@@ -35,12 +35,14 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.xerces.XercesUsageServlet;
 import org.jboss.as.test.integration.xerces.ws.XercesUsageWSEndpoint;
 import org.jboss.as.test.integration.xerces.ws.XercesUsageWebService;
+import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.test.undertow.UndertowServiceActivator;
 
 /**
  * Tests that packaging a xerces jar within a web application containing a webservice implementation, doesn't break the
@@ -71,6 +73,17 @@ public class XercesUsageInWebServiceTestCase {
         war.addClasses(XercesUsageWebService.class, XercesUsageWSEndpoint.class);
         // add a web.xml containing the webservice mapping as a servlet
         war.addAsWebInfResource(XercesUsageServlet.class.getPackage(), "xerces-webservice-web.xml", "web.xml");
+        // add parmisions
+        war.addAsManifestResource(
+                PermissionUtils.createPermissionsXmlAsset(UndertowServiceActivator.appendPermissions(
+                        new RuntimePermission("accessClassInPackage.org.apache.xerces.impl.xs.identity"),
+                        new RuntimePermission("accessClassInPackage.org.apache.xerces.util"),
+                        new RuntimePermission("accessClassInPackage.org.apache.xerces.impl.dtd"),
+                        new RuntimePermission("accessClassInPackage.org.apache.xerces.xni.grammars"),
+                        new RuntimePermission("accessClassInPackage.org.apache.xerces.impl.validation"),
+                        new RuntimePermission("accessClassInPackage.org.apache.xerces.impl.msg"),
+                        new RuntimePermission("accessClassInPackage.org.apache.xerces.impl.io"))),
+                "permissions.xml");
         // add a dummy xml to parse
         war.addAsResource(XercesUsageServlet.class.getPackage(), "dummy.xml", "dummy.xml");
 
