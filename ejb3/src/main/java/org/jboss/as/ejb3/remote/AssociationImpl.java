@@ -74,6 +74,7 @@ import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -472,7 +473,7 @@ final class AssociationImpl implements Association, AutoCloseable {
             this.clusterTopologyListeners.clear();
         }
 
-        private ClusterTopologyListener.ClusterInfo getClusterInfo(final Map<String, List<ClientMapping>> entries) {
+        ClusterTopologyListener.ClusterInfo getClusterInfo(final Map<String, List<ClientMapping>> entries) {
             final List<ClusterTopologyListener.NodeInfo> nodeInfoList = new ArrayList<>(entries.size());
             for (Map.Entry<String, List<ClientMapping>> entry : entries.entrySet()) {
                 final String nodeName = entry.getKey();
@@ -496,6 +497,13 @@ final class AssociationImpl implements Association, AutoCloseable {
                 nodeInfoList.add(new ClusterTopologyListener.NodeInfo(nodeName, mappingInfoList));
             }
             return new ClusterTopologyListener.ClusterInfo(this.clientMappingRegistry.getGroup().getName(), nodeInfoList);
+        }
+
+        void sendClusterRemovalMessage(String cluster) {
+            for (ClusterTopologyListener listener : this.clusterTopologyListeners) {
+                // send the clusterRemoval message to the listener
+                listener.clusterRemoval(Arrays.asList(cluster));
+            }
         }
     }
 
@@ -626,5 +634,30 @@ final class AssociationImpl implements Association, AutoCloseable {
 
     void setExecutor(Executor executor) {
         this.executor = executor;
+    }
+
+    boolean isLoneMemberInCluster() {
+        // check if we are the only member in the cluster (either we have a local entry and we are the only member, or we do not and the entries are empty)
+        boolean loneMember = false;
+        if (clientMappingRegistry != null) {
+            Map.Entry<String, List<ClientMapping>> localEntry = clientMappingRegistry.getEntry(clientMappingRegistry.getGroup().getLocalNode());
+            Map<String, List<ClientMapping>> entries = clientMappingRegistry.getEntries();
+            loneMember = localEntry != null ? (entries.size() == 1) && entries.containsKey(localEntry.getKey()) : entries.isEmpty();
+        }
+        return loneMember;
+    }
+
+    /**
+     * Checks if this node is the last node in the cluster and sends a topology update to all connected clients if this is so
+     * This should only be called when the node is known to be shutting down (and not just suspending)
+     */
+    void sendTopologyUpdateIfLastNodeToLeave() {
+        if (clientMappingRegistry != null) {
+            // if we are the only member, we need to send a topology update, as there will not be other members left in the cluster to send it on our behalf (WFLY-11682)
+            if (isLoneMemberInCluster()) {
+                String cluster = clientMappingRegistry.getGroup().getName();
+                clusterTopologyRegistrar.sendClusterRemovalMessage(cluster);
+            }
+        }
     }
 }

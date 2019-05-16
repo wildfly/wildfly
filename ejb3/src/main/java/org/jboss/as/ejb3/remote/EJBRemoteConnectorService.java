@@ -90,7 +90,9 @@ public class EJBRemoteConnectorService implements Service<Void> {
 
     @Override
     public void stop(StopContext context) {
-        associationServiceInjectedValue.getValue().setExecutor(null);
+        final AssociationService associationService = associationServiceInjectedValue.getValue();
+        associationService.sendTopologyUpdateIfLastNodeToLeave();
+        associationService.setExecutor(null);
         registration.close();
     }
 
