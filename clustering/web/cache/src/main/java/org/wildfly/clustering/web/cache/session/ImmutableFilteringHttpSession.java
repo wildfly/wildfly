@@ -19,27 +19,48 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.session;
+package org.wildfly.clustering.web.cache.session;
 
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
+
+import org.wildfly.clustering.web.session.ImmutableSession;
+import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 
 /**
  * Adapts an {@link ImmutableSession} to the {@link HttpSession} interface.
  * @author Paul Ferraro
  */
-public class ImmutableHttpSessionAdapter implements HttpSession {
+public class ImmutableFilteringHttpSession implements FilteringHttpSession {
 
     private final ImmutableSession session;
     private final ServletContext context;
 
-    public ImmutableHttpSessionAdapter(ImmutableSession session, ServletContext context) {
+    public ImmutableFilteringHttpSession(ImmutableSession session, ServletContext context) {
         this.session = session;
         this.context = context;
+    }
+
+    @Override
+    public <T> Map<String, T> getAttributes(Class<T> targetClass) {
+        ImmutableSessionAttributes attributes = this.session.getAttributes();
+        Set<String> names = attributes.getAttributeNames();
+        if (names.isEmpty()) return Collections.emptyMap();
+        Map<String, T> result = new HashMap<>(names.size());
+        for (String name : names) {
+            Object attribute = attributes.getAttribute(name);
+            if (targetClass.isInstance(attribute)) {
+                result.put(name, targetClass.cast(attribute));
+            }
+        }
+        return Collections.unmodifiableMap(result);
     }
 
     @Override
