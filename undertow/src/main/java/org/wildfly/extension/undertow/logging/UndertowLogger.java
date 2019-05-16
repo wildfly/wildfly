@@ -410,4 +410,10 @@ public interface UndertowLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 101, value = "Duplicate servlet mapping %s found")
     void duplicateServletMapping(String mapping);
+
+    @Message(id = 102, value = "The pattern %s is not a valid date pattern.")
+    OperationFailedException invalidDateTimeFormatterPattern(String pattern);
+
+    @Message(id = 103, value = "The time zone id %s is invalid.")
+    OperationFailedException invalidTimeZoneId(String zoneId);
 }

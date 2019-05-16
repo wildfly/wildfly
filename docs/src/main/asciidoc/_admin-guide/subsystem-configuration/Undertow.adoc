@@ -249,6 +249,52 @@ be matched
 serve up requests that do not match anything.
 |=======================================================================
 
+==== Console Access Logging
+
+Each host allows for access logging to the console which writes structured data in JSON format. This only writes to
+`stdout` and is a single line of JSON structured data.
+
+The `attributes` management model attribute is used to determine which exchange attributes should be logged. This is
+similar to the `pattern` used for traditional access logging. The main difference being since the data is structured
+the ability to use defined keys is essential.
+
+A `metadata` attribute also exists which allows extra metadata to be added to the output. The value of the attribute is
+a set of arbitrary key/value pairs. The values can include management model expressions, which must be resolvable when
+the console access log service is started. The value is resolved once per start or reload of the server.
+
+
+===== CLI Examples
+
+.add-console-access-logging.cli
+----
+/subsystem=undertow/server=default-server/host=default-host/setting=console-access-log:add
+----
+
+.complex-add-console-access-logging.cli
+----
+/subsystem=undertow/server=default-server/host=default-host/setting=console-access-log:add(metadata={"@version"="1", "qualifiedHostName"=${jboss.qualified.host.name:unknown}}, attributes={bytes-sent={}, date-time={key="@timestamp", date-format="yyyy-MM-dd'T'HH:mm:ssSSS"}, remote-host={}, request-line={}, response-header={key-prefix="responseHeader", names=["Content-Type"]}, response-code={}, remote-user={}})
+----
+
+[source,json]
+----
+{
+    "eventSource":"web-access",
+    "hostName":"default-host",
+    "@version":"1",
+    "qualifiedHostName":"localhost.localdomain",
+    "bytesSent":1504,
+    "@timestamp":"2019-05-02T11:57:37123",
+    "remoteHost":"127.0.0.1",
+    "remoteUser":null,
+    "requestLine":"GET / HTTP/2.0",
+    "responseCode":200,
+    "responseHeaderContent-Type":"text/html"
+}
+----
+
+NOTE: The above JSON is formatted only for readability. The output will be on a single line.
+
+
 [[servlet-container-configuration]]
 == Servlet container configuration
 
