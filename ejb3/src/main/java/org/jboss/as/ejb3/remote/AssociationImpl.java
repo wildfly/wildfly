@@ -46,6 +46,7 @@ import org.jboss.ejb.client.EJBIdentifier;
 import org.jboss.ejb.client.EJBLocator;
 import org.jboss.ejb.client.EJBMethodLocator;
 import org.jboss.ejb.client.EJBModuleIdentifier;
+import org.jboss.ejb.client.NodeAffinity;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.client.StatefulEJBLocator;
 import org.jboss.ejb.server.Association;
@@ -247,19 +248,22 @@ final class AssociationImpl implements Association, AutoCloseable {
     private void updateAffinities(InvocationRequest invocationRequest, Map<String, Object> attachments, EJBLocator<?> ejbLocator, ComponentView componentView) {
         Affinity legacyAffinity = null;
         Affinity weakAffinity = null;
-        Affinity clusterAffinity = getClusterAffinity();
+        Affinity strongAffinity = null;
 
         if (ejbLocator.isStateful() && componentView.getComponent() instanceof StatefulSessionComponent) {
             final StatefulSessionComponent statefulSessionComponent = (StatefulSessionComponent) componentView.getComponent();
+            strongAffinity = getStrongAffinity(statefulSessionComponent);
             weakAffinity = legacyAffinity = getWeakAffinity(statefulSessionComponent, ejbLocator.asStateful());
         } else if (componentView.getComponent() instanceof StatelessSessionComponent) {
-            // V3 and less used cluster affinity as a weak affinity for SLSBs
-            legacyAffinity = clusterAffinity;
+            // Stateless invocations no not require strong affinity, only weak affinity to nodes within the same cluster, if present.
+            // However, since V3, the EJB client does not support weak affinity updates referencing a cluster (and even then, only via Affinity.WEAK_AFFINITY_CONTEXT_KEY), only a node.
+            // Until this is corrected, we need to use the strong affinity instead.
+            strongAffinity = legacyAffinity = this.getStatelessAffinity();
         }
 
-        // Always use the cluster as the strong affinity, if there is one
-        if (clusterAffinity != null) {
-            invocationRequest.updateStrongAffinity(clusterAffinity);
+        // cause the affinity values to get sent back to the client
+        if (strongAffinity != null && !(strongAffinity instanceof NodeAffinity)) {
+            invocationRequest.updateStrongAffinity(strongAffinity);
         }
 
         if (weakAffinity != null && !weakAffinity.equals(Affinity.NONE)) {
@@ -269,6 +273,10 @@ final class AssociationImpl implements Association, AutoCloseable {
         if (legacyAffinity != null && !legacyAffinity.equals(Affinity.NONE)) {
             attachments.put(Affinity.WEAK_AFFINITY_CONTEXT_KEY, legacyAffinity);
         }
+
+        EjbLogger.EJB3_INVOCATION_LOGGER.debugf("Called receiveInvocationRequest ( bean = %s ): strong affinity = %s, weak affinity = %s \n",
+                componentView.getComponent().getClass().getName(), strongAffinity, weakAffinity);
+
     }
 
     private void execute(Request request, Runnable task, final boolean isAsync) {
@@ -332,15 +340,19 @@ final class AssociationImpl implements Association, AutoCloseable {
                 return;
             }
 
-            Affinity clusterAffinity = getClusterAffinity();
-            if (clusterAffinity != null) {
-                sessionOpenRequest.updateStrongAffinity(clusterAffinity);
+            // do not update strongAffinity when it is of type NodeAffinity; this will be achieved on the client in DiscoveryInterceptor via targetAffinity
+            Affinity strongAffinity = getStrongAffinity(statefulSessionComponent);
+            if (strongAffinity != null && !(strongAffinity instanceof NodeAffinity)) {
+                sessionOpenRequest.updateStrongAffinity(strongAffinity);
             }
 
             Affinity weakAffinity = getWeakAffinity(statefulSessionComponent, sessionID);
             if (weakAffinity != null && !Affinity.NONE.equals(weakAffinity)) {
                 sessionOpenRequest.updateWeakAffinity(weakAffinity);
             }
+
+            EjbLogger.EJB3_INVOCATION_LOGGER.debugf("Called receiveSessionOpenRequest ( bean = %s ): strong affinity = %s, weak affinity = %s \n",
+                    statefulSessionComponent.getClass().getName(), strongAffinity, weakAffinity);
 
             sessionOpenRequest.convertToStateful(sessionID);
         };
@@ -588,6 +600,10 @@ final class AssociationImpl implements Association, AutoCloseable {
         return null;
     }
 
+    private static Affinity getStrongAffinity(final StatefulSessionComponent statefulSessionComponent) {
+        return statefulSessionComponent.getCache().getStrictAffinity();
+    }
+
     private static Affinity getWeakAffinity(final StatefulSessionComponent statefulSessionComponent, final StatefulEJBLocator<?> statefulEJBLocator) {
         final SessionID sessionID = statefulEJBLocator.getSessionId();
         return getWeakAffinity(statefulSessionComponent, sessionID);
@@ -597,7 +613,7 @@ final class AssociationImpl implements Association, AutoCloseable {
         return statefulSessionComponent.getCache().getWeakAffinity(sessionID);
     }
 
-    private Affinity getClusterAffinity() {
+    private Affinity getStatelessAffinity() {
         Registry<String, List<ClientMapping>> registry = this.clientMappingRegistry;
         Group group = registry != null ? registry.getGroup() : null;
 
