@@ -3,7 +3,6 @@
     <persistence-unit name="mypc">
         <description>Persistence Unit.</description>
         <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>
-        <shared-cache-mode>ENABLE_SELECTIVE</shared-cache-mode>
         <properties>
             <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
             <property name="hibernate.show_sql" value="false"/>
@@ -25,7 +24,6 @@
     <persistence-unit name="mypc2">
         <description>Persistence Unit.</description>
         <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>
-        <shared-cache-mode>ENABLE_SELECTIVE</shared-cache-mode>
         <properties>
             <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
             <property name="hibernate.show_sql" value="false"/>

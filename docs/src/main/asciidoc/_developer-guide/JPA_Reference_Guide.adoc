@@ -406,7 +406,7 @@ The Hibernate native API application will also need a MANIFEST.MF:
 Dependencies: org.infinispan,org.hibernate
 ....
 
-http://infinispan.org/docs/9.3.x/user_guide/user_guide.html#jpa_hibernate_2l_cache[Infinispan
+http://infinispan.org/docs/9.4.x/user_guide/user_guide.html#integrations_jpa_hibernate[Infinispan
 Hibernate/JPA second level cache provider documentation] contains
 advanced configuration information but you should bear in mind that when
 Hibernate runs within WildFly {wildflyVersion}, some of those configuration options,
