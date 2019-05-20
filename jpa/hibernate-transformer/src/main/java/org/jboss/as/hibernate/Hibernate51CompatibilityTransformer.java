@@ -96,18 +96,10 @@ public class Hibernate51CompatibilityTransformer implements ClassFileTransformer
         final TransformedState transformedState = new TransformedState();
         final ClassReader classReader = new ClassReader(classfileBuffer);
         final ClassWriter classWriter = new ClassWriter(classReader, COMPUTE_FRAMES);
-        ClassVisitor traceClassVisitor = classWriter;
-        PrintWriter tracePrintWriter = null;
-        try {
-            if (showTransformedClassFolder != null) {
-                tracePrintWriter = new PrintWriter(new File(showTransformedClassFolder, className.replace('/', '_') + ".asm"));
-                traceClassVisitor = new TraceClassVisitor(classWriter, tracePrintWriter);
-            }
-        } catch (IOException ignored) {
+        PrintWriter traceAfterPrintWriter = null;
 
-        }
         try {
-            classReader.accept(new ClassVisitor(useASM7 ? Opcodes.ASM7 : Opcodes.ASM6, traceClassVisitor) {
+            classReader.accept(new ClassVisitor(useASM7 ? Opcodes.ASM7 : Opcodes.ASM6, classWriter) {
 
                 // clear transformed state at start of each class visit
                 @Override
@@ -162,10 +154,25 @@ public class Hibernate51CompatibilityTransformer implements ClassFileTransformer
                 // no change was made, indicate so by returning null
                 return null;
             }
-            return classWriter.toByteArray();
+
+            byte[] result = classWriter.toByteArray();
+
+            try {
+                if (showTransformedClassFolder != null) {
+                    // generate .asm file that shows the transformed class
+                    ClassReader cr = new ClassReader(result);
+                    traceAfterPrintWriter =
+                        new PrintWriter(new File(showTransformedClassFolder, className.replace('/', '_') + ".asm"));
+                    ClassVisitor tv = new TraceClassVisitor(traceAfterPrintWriter);
+                    cr.accept(tv, 0);
+                }
+            } catch (IOException ignored) {
+
+            }
+            return result;
         } finally {
-            if (tracePrintWriter != null) {
-                tracePrintWriter.close();
+            if (traceAfterPrintWriter != null) {
+                traceAfterPrintWriter.close();
             }
         }
     }
