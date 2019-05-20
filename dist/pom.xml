@@ -173,7 +173,7 @@
                     <!-- Parameters to test cases. -->
                     <systemPropertyVariables combine.children="append">
                         <jboss.dist>${basedir}/target/xml-validation</jboss.dist>
-                        <jboss.actual.dist>${basedir}/target/wildfly-${project.version}</jboss.actual.dist>
+                        <jboss.actual.dist>${basedir}/target/${project.build.finalName}</jboss.actual.dist>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
