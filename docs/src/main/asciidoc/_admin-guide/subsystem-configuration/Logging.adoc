@@ -163,7 +163,7 @@ subdirectory of the distribution:
 
 |accept |accept |Accepts all log messages. |None |accept
 
-|deny |deny |enies all log messages. |None |deny
+|deny |deny |Denies all log messages. |None |deny
 
 |not |not(filterExpression) |Accepts a filter as an argument and inverts
 the returned value. |The expression takes a single filter for it's
