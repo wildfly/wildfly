@@ -23,29 +23,23 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.wildfly</groupId>
-        <artifactId>wildfly-parent</artifactId>
+        <groupId>org.wildfly.bom</groupId>
+        <artifactId>wildfly-client</artifactId>
         <!--
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
         <version>17.0.0.Beta1-SNAPSHOT</version>
-        <relativePath/>
     </parent>
 
-    <artifactId>wildfly-jms-client-bom</artifactId>
-    <!--
-    Maintain separation between the artifact id and the version to help prevent
-    merge conflicts between commits changing the GA and those changing the V.
-    -->
-    <version>17.0.0.Beta1-SNAPSHOT</version>
+    <artifactId>wildfly-jms-client-bom-builder</artifactId>
 
     <packaging>pom</packaging>
 
-    <name>WildFly BOMs: JMS Client</name>
+    <name>WildFly BOMs: JMS Client Builder</name>
 
     <description>
-        This artifact provides a bill of materials (BOM) for JMS client usage.
+        This artifact builds a bill of materials (BOM) for JMS client usage.
     </description>
 
     <licenses>
@@ -56,143 +50,159 @@
         </license>
     </licenses>
 
-    <dependencies>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-parent</artifactId>
+                <version>${version.server}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
-        <dependency>
-            <groupId>commons-beanutils</groupId>
-            <artifactId>commons-beanutils</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>commons-collections</groupId>
-            <artifactId>commons-collections</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-all</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>artemis-commons</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>artemis-core-client</artifactId>
-        </dependency>
-
-        <!-- required to allow Artemis client to connect to HornetQ servers -->
-        <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>artemis-hqclient-protocol</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>artemis-jms-client</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>artemis-selector</artifactId>
-        </dependency>
-        <!-- Required by the artemis-jms-client -->
-        <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>javax.json</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>javax.json</groupId>
-            <artifactId>javax.json-api</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.logging</groupId>
-            <artifactId>jboss-logging</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.marshalling</groupId>
-            <artifactId>jboss-marshalling</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.marshalling</groupId>
-            <artifactId>jboss-marshalling-river</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.remoting</groupId>
-            <artifactId>jboss-remoting</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.threads</groupId>
-            <artifactId>jboss-threads</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.spec.javax.jms</groupId>
-            <artifactId>jboss-jms-api_2.0_spec</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.xnio</groupId>
-            <artifactId>xnio-api</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.xnio</groupId>
-            <artifactId>xnio-nio</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jgroups</groupId>
-            <artifactId>jgroups</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>jcl-over-slf4j</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-naming-client</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.wildfly.common</groupId>
-            <artifactId>wildfly-common</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.wildfly.client</groupId>
-            <artifactId>wildfly-client-config</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.wildfly.security</groupId>
-            <artifactId>wildfly-elytron</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-client-properties</artifactId>
-        </dependency>
-
-    </dependencies>
-
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.wildfly.plugins</groupId>
+                <artifactId>wildfly-bom-builder-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>build-bom</id>
+                        <goals>
+                            <goal>build-bom</goal>
+                        </goals>
+                        <configuration>
+                            <parent>
+                                <groupId>org.jboss</groupId>
+                                <artifactId>jboss-parent</artifactId>
+                                <relativePath/>
+                            </parent>
+                            <bomGroupId>org.wildfly</bomGroupId>
+                            <bomArtifactId>wildfly-jms-client-bom</bomArtifactId>
+                            <bomVersion>${project.version}</bomVersion>
+                            <bomName>WildFly BOMs: JMS Client</bomName>
+                            <bomDescription>This artifact provides a bill of materials (BOM) for JMS client usage.</bomDescription>
+                            <bomWithDependencies>true</bomWithDependencies>
+                            <licenses>true</licenses>
+                            <inheritExclusions>ALL</inheritExclusions>
+                            <includeDependencies>
+                                <dependency>
+                                    <groupId>commons-beanutils</groupId>
+                                    <artifactId>commons-beanutils</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>commons-collections</groupId>
+                                    <artifactId>commons-collections</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>io.netty</groupId>
+                                    <artifactId>netty-all</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.apache.activemq</groupId>
+                                    <artifactId>artemis-commons</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.apache.activemq</groupId>
+                                    <artifactId>artemis-core-client</artifactId>
+                                </dependency>
+                                <!-- required to allow Artemis client to connect to HornetQ servers -->
+                                <dependency>
+                                    <groupId>org.apache.activemq</groupId>
+                                    <artifactId>artemis-hqclient-protocol</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.apache.activemq</groupId>
+                                    <artifactId>artemis-jms-client</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.apache.activemq</groupId>
+                                    <artifactId>artemis-selector</artifactId>
+                                </dependency>
+                                <!-- Required by the artemis-jms-client -->
+                                <dependency>
+                                    <groupId>org.glassfish</groupId>
+                                    <artifactId>javax.json</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>javax.json</groupId>
+                                    <artifactId>javax.json-api</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.logging</groupId>
+                                    <artifactId>jboss-logging</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.marshalling</groupId>
+                                    <artifactId>jboss-marshalling</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.marshalling</groupId>
+                                    <artifactId>jboss-marshalling-river</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.remoting</groupId>
+                                    <artifactId>jboss-remoting</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.threads</groupId>
+                                    <artifactId>jboss-threads</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.spec.javax.jms</groupId>
+                                    <artifactId>jboss-jms-api_2.0_spec</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.xnio</groupId>
+                                    <artifactId>xnio-api</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.xnio</groupId>
+                                    <artifactId>xnio-nio</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jgroups</groupId>
+                                    <artifactId>jgroups</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.slf4j</groupId>
+                                    <artifactId>jcl-over-slf4j</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.slf4j</groupId>
+                                    <artifactId>slf4j-api</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.wildfly</groupId>
+                                    <artifactId>wildfly-naming-client</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.wildfly.common</groupId>
+                                    <artifactId>wildfly-common</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.wildfly.client</groupId>
+                                    <artifactId>wildfly-client-config</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.wildfly.security</groupId>
+                                    <artifactId>wildfly-elytron</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>com.google.guava</groupId>
+                                    <artifactId>guava</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.wildfly</groupId>
+                                    <artifactId>wildfly-client-properties</artifactId>
+                                </dependency>
+                            </includeDependencies>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>
