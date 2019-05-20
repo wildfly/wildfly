@@ -2083,6 +2083,54 @@
                         </configuration>
                     </execution>
                     <execution>
+                        <id>open-tracing-provisioning</id>
+                        <goals>
+                            <goal>provision</goal>
+                        </goals>
+                        <phase>compile</phase>
+                        <configuration>
+                            <install-dir>${layers.install.dir}/open-tracing</install-dir>
+                            <record-state>false</record-state>
+                            <log-time>${galleon.log.time}</log-time>
+                            <offline>true</offline>
+                            <plugin-options>
+                                <jboss-maven-dist/>
+                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                <optional-packages>passive+</optional-packages>
+                            </plugin-options>
+                            <feature-packs>
+                                <feature-pack>
+                                    <transitive>true</transitive>
+                                    <groupId>org.wildfly.core</groupId>
+                                    <artifactId>wildfly-core-galleon-pack</artifactId>
+                                    <version>${version.org.wildfly.core}</version>
+                                </feature-pack>
+                                <feature-pack>
+                                    <transitive>true</transitive>
+                                    <groupId>${project.groupId}</groupId>
+                                    <artifactId>wildfly-servlet-galleon-pack</artifactId>
+                                    <version>${project.version}</version>
+                                </feature-pack>
+                                <feature-pack>
+                                    <groupId>${project.groupId}</groupId>
+                                    <artifactId>wildfly-galleon-pack</artifactId>
+                                    <version>${project.version}</version>
+                                    <inherit-configs>false</inherit-configs>
+                                    <inherit-packages>false</inherit-packages>
+                                </feature-pack>
+                            </feature-packs>
+                            <configurations>
+                                <config>
+                                    <model>standalone</model>
+                                    <name>standalone.xml</name>
+                                    <layers>
+                                        <layer>open-tracing</layer>
+                                    </layers>
+                                </config>
+                            </configurations>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>resource-adapters-provisioning</id>
                         <goals>
                             <goal>provision</goal>
@@ -2347,6 +2395,7 @@
                                         <layer>jms-activemq</layer>
                                         <layer>jpa</layer>
                                         <layer>observability</layer>
+                                        <layer>open-tracing</layer>
                                         <layer>resource-adapters</layer>
                                         <layer>transactions</layer>
                                         <layer>undertow</layer>
