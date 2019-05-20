@@ -53,7 +53,7 @@ public class AtomicTransactionSuspendTestCase extends AbstractTestCase {
                 AtomicTransactionRemoteService.class, TransactionParticipant.class)
                 .addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
                         new SocketPermission(serverHostPort, "connect, resolve"),
-                        //TODO:remove this permission when upgrade CXF to 3.3.3 or higher version: WFLY-12087 
+                        //TODO:remove this permission when upgrade CXF to 3.3.3 or higher version: WFLY-12087
                         new RuntimePermission("getClassLoader")
                 ), "permissions.xml");
     }
@@ -64,7 +64,7 @@ public class AtomicTransactionSuspendTestCase extends AbstractTestCase {
         return getRemoteServiceArchiveBase().addClasses(AtomicTransactionRemoteService.class, TransactionParticipant.class)
                 .addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
                         new SocketPermission(serverHostPort, "connect, resolve"),
-                        //TODO:remove this permission when upgrade CXF to 3.3.3 or higher version: WFLY-12087 
+                        //TODO:remove this permission when upgrade CXF to 3.3.3 or higher version: WFLY-12087
                         new RuntimePermission("getClassLoader")
                 ), "permissions.xml");
     }
