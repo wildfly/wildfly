@@ -16,19 +16,20 @@
 
 package org.jboss.as.test.integration.web.access.log;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.StringReader;
-import java.io.UncheckedIOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -64,11 +65,19 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
+ * Tests various console-access-log by overriding the {@link System#out stdout} and capturing each line.
+ * <p>
+ * Please note there was previously a test for a false predicate which has been removed. The reason for this is when
+ * testing that something is not logged we could get false positives as there could be a race condition between when
+ * the log is read vs when it is written.
+ * </p>
+ *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup(ConsoleAccessLogTestCase.ConsoleAccessLogSetupTask.class)
+@SuppressWarnings("MagicNumber")
 public class ConsoleAccessLogTestCase {
 
     private static final ModelNode CONSOLE_ACCESS_LOG_ADDRESS = Operations.createAddress("subsystem", "undertow",
@@ -104,6 +113,8 @@ public class ConsoleAccessLogTestCase {
             "thread-name",
             "transport-protocol",
     };
+
+    private static final int DFT_TIMEOUT = 60;
 
     @ArquillianResource
     private ManagementClient client;
@@ -145,16 +156,6 @@ public class ConsoleAccessLogTestCase {
             Assert.assertEquals("default-host", jsonObject.getString("hostName"));
             Assert.assertEquals(HttpStatus.SC_OK, jsonObject.getInt("responseCode"));
         }
-    }
-
-    @Test
-    public void testPredicate() throws Exception {
-        final ModelNode op = Operations.createAddOperation(CONSOLE_ACCESS_LOG_ADDRESS);
-        op.get("predicate").set(false);
-        executeOperation(client.getControllerClient(), op);
-        sendRequest();
-        final Collection<JsonObject> lines = findLines();
-        Assert.assertTrue("Expected no eventSource in " + stdout.toString(), lines.isEmpty());
     }
 
     @Test
@@ -298,19 +299,30 @@ public class ConsoleAccessLogTestCase {
     private Collection<JsonObject> findLines() throws InterruptedException {
         // Note this could be a potential spot for a race in the test validation. The console-access-log is
         // asynchronous so we need to wait to ensure it's fully written to the console.
-        TimeUnit.SECONDS.sleep(TimeoutUtil.adjust(1));
         final Collection<JsonObject> result = new ArrayList<>();
-        final String[] lines = stdout.toString().split(System.lineSeparator());
-
-        for (String line : lines) {
-            if (!line.isEmpty()) {
-                try (JsonReader reader = Json.createReader(new StringReader(line))) {
-                    final JsonObject jsonObject = reader.readObject();
-                    if (jsonObject.get("eventSource") != null) {
-                        result.add(jsonObject);
+        int counter = 0;
+        int timeout = TimeoutUtil.adjust(DFT_TIMEOUT) * 1000;
+        final long sleep = 100L;
+        while (timeout > 0) {
+            long before = System.currentTimeMillis();
+            final String[] lines = stdout.getLines(counter);
+            counter = lines.length;
+            for (String line : lines) {
+                if (!line.isEmpty()) {
+                    try (JsonReader reader = Json.createReader(new StringReader(line))) {
+                        final JsonObject jsonObject = reader.readObject();
+                        if (jsonObject.get("eventSource") != null) {
+                            result.add(jsonObject);
+                        }
                     }
                 }
             }
+            if (!result.isEmpty()) {
+                break;
+            }
+            timeout -= (System.currentTimeMillis() - before);
+            TimeUnit.MILLISECONDS.sleep(sleep);
+            timeout -= sleep;
         }
         return result;
     }
@@ -390,43 +402,121 @@ public class ConsoleAccessLogTestCase {
         }
     }
 
-    private static class Stdout extends ByteArrayOutputStream {
+    private static class Stdout extends OutputStream {
+        private static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
+        private static final String[] EMPTY = new String[0];
 
         private final OutputStream dftStdout;
+        private byte[] buffer;
+        private int bufferLen;
+        private String[] lines;
+        private int lineLen;
 
         private Stdout(final OutputStream dftStdout) {
             this.dftStdout = dftStdout;
+            buffer = new byte[1024];
+            lines = new String[20];
         }
 
         @Override
-        public synchronized void write(final int b) {
-            super.write(b);
-            try {
-                dftStdout.write(b);
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
+        public synchronized void write(final int b) throws IOException {
+            append(b);
+            dftStdout.write(b);
         }
 
         @Override
-        public synchronized void write(final byte[] b, final int off, final int len) {
-            super.write(b, off, len);
-            try {
-                dftStdout.write(b, off, len);
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
+        public synchronized void write(final byte[] b, final int off, final int len) throws IOException {
+            // Check the array of a new line
+            for (int i = off; i < len; i++) {
+                append(b[i]);
             }
+            dftStdout.write(b, off, len);
         }
 
         @Override
         public void write(final byte[] b) throws IOException {
-            super.write(b);
+            write(b, 0, b.length);
             dftStdout.write(b);
         }
 
         @Override
         public void flush() throws IOException {
             dftStdout.flush();
+        }
+
+        @Override
+        public String toString() {
+            final StringBuilder result = new StringBuilder();
+            final Iterator<String> iter = Arrays.asList(getLines()).iterator();
+            while (iter.hasNext()) {
+                result.append(iter.next());
+                if (iter.hasNext()) {
+                    result.append(System.lineSeparator());
+                }
+            }
+            return result.toString();
+        }
+
+        @SuppressWarnings("StatementWithEmptyBody")
+        private void append(final int b) {
+            if (b == '\n') {
+                ensureLineCapacity(lineLen + 1);
+                lines[lineLen++] = new String(buffer, 0, bufferLen, StandardCharsets.UTF_8);
+                bufferLen = 0;
+            } else if (b == '\r') {
+                // For out purposes just ignore this character
+            } else {
+                ensureBufferCapacity(bufferLen + 1);
+                buffer[bufferLen++] = (byte) b;
+            }
+        }
+
+        private void ensureBufferCapacity(final int minCapacity) {
+            if (minCapacity - buffer.length > 0)
+                growBuffer(minCapacity);
+        }
+
+        private void growBuffer(final int minCapacity) {
+            final int oldCapacity = buffer.length;
+            int newCapacity = oldCapacity << 1;
+            if (newCapacity - minCapacity < 0) {
+                newCapacity = minCapacity;
+            }
+            if (newCapacity - MAX_ARRAY_SIZE > 0) {
+                newCapacity = (minCapacity > MAX_ARRAY_SIZE) ? Integer.MAX_VALUE : MAX_ARRAY_SIZE;
+            }
+            buffer = Arrays.copyOf(buffer, newCapacity);
+        }
+
+        private void ensureLineCapacity(final int minCapacity) {
+            if (minCapacity - lines.length > 0)
+                growLine(minCapacity);
+        }
+
+        private void growLine(final int minCapacity) {
+            final int oldCapacity = lines.length;
+            int newCapacity = oldCapacity << 1;
+            if (newCapacity - minCapacity < 0) {
+                newCapacity = minCapacity;
+            }
+            if (newCapacity - MAX_ARRAY_SIZE > 0) {
+                newCapacity = (minCapacity > MAX_ARRAY_SIZE) ? Integer.MAX_VALUE : MAX_ARRAY_SIZE;
+            }
+            lines = Arrays.copyOf(lines, newCapacity);
+        }
+
+        synchronized String[] getLines() {
+            if (lineLen == 0) {
+                return EMPTY;
+            }
+            return Arrays.copyOf(lines, lineLen);
+        }
+
+        synchronized String[] getLines(final int offset) {
+            if (lineLen == 0) {
+                return EMPTY;
+            }
+            return Arrays.copyOfRange(lines, offset, lineLen);
         }
     }
 }
