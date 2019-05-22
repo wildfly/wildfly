@@ -26,7 +26,6 @@ import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttr
 
 import java.util.Arrays;
 import java.util.Collection;
-
 import org.jboss.as.controller.AbstractAttributeDefinitionBuilder;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
@@ -45,6 +44,7 @@ import org.wildfly.extension.messaging.activemq.AbstractTransportDefinition;
 import org.wildfly.extension.messaging.activemq.CommonAttributes;
 import org.wildfly.extension.messaging.activemq.MessagingExtension;
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common;
+import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.External;
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Pooled;
 
 /**
@@ -63,7 +63,7 @@ public class ExternalPooledConnectionFactoryDefinition extends PooledConnectionF
     // * keep in a single place the subtle differences (e.g. different default values for reconnect-attempts between
     //   the regular and pooled CF
     private static ConnectionFactoryAttribute[] define(ConnectionFactoryAttribute[] specific, ConnectionFactoryAttribute... common) {
-        int size = common.length + specific.length;
+        int size = common.length + specific.length + 1;
         ConnectionFactoryAttribute[] result = new ConnectionFactoryAttribute[size];
         for (int i = 0; i < specific.length; i++) {
             ConnectionFactoryAttribute attr = specific[i];
@@ -114,6 +114,7 @@ public class ExternalPooledConnectionFactoryDefinition extends PooledConnectionF
             }
             result[specific.length + i] = newAttr;
         }
+        result[size -1] = ConnectionFactoryAttribute.create(External.ENABLE_AMQ1_PREFIX, "enable1xPrefixes", true);
         return result;
     }
 

@@ -35,7 +35,8 @@
 
     <connection-factory name="InVmConnectionFactory"
                         connectors="in-vm client"
-                        entries="${connection-factory.entries.entry:java:/ClientConnectionFactory}" />
+                        entries="${connection-factory.entries.entry:java:/ClientConnectionFactory}"
+                        enable-amq1-prefix="true"/>
 
     <connection-factory name="RemoteClientConnectionFactory"
                         factory-type="XA_QUEUE"
@@ -53,7 +54,8 @@
                                password="alicepassword"
                                use-auto-recovery="${use.auto.recovery:true}"
                                connectors="in-vm-client"
-                               entries="java:/JmsLocal"/>
+                               entries="java:/JmsLocal"
+                               enable-amq1-prefix="true"/>
 
     <pooled-connection-factory name="activemq-ra-none"
                                transaction="none"

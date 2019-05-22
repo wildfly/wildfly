@@ -55,6 +55,8 @@ import org.wildfly.extension.messaging.activemq.TransportConfigOperationHandlers
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common;
 import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 
+import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX;
+
 /**
  * Update adding a connection factory to the subsystem. The
  * runtime action will create the {@link ExternalConnectionFactoryService}.
@@ -75,6 +77,7 @@ public class ExternalConnectionFactoryAdd extends AbstractAddStepHandler {
         final String name = context.getCurrentAddressValue();
         final ServiceName serviceName = ExternalConnectionFactoryDefinition.CAPABILITY.getCapabilityServiceName(context.getCurrentAddress());
         boolean ha = HA.resolveModelAttribute(context, model).asBoolean();
+        boolean enable1Prefixes = ENABLE_AMQ1_PREFIX.resolveModelAttribute(context, model).asBoolean();
         final ModelNode discoveryGroupName = Common.DISCOVERY_GROUP.resolveModelAttribute(context, model);
         JMSFactoryType jmsFactoryType = ConnectionFactoryType.valueOf(ConnectionFactoryAttributes.Regular.FACTORY_TYPE.resolveModelAttribute(context, model).asString()).getType();
         List<String> connectorNames = Common.CONNECTORS.unwrap(context, model);
@@ -104,7 +107,7 @@ public class ExternalConnectionFactoryAdd extends AbstractAddStepHandler {
                 Supplier<SocketBinding> groupBindingSupplier = builder.requires(groupBinding);
                 groupBindings.put(key, groupBindingSupplier);
             }
-            service = new ExternalConnectionFactoryService(getDiscoveryGroup(context, dgname), commandDispatcherFactories, groupBindings, clusterNames, jmsFactoryType, ha);
+            service = new ExternalConnectionFactoryService(getDiscoveryGroup(context, dgname), commandDispatcherFactories, groupBindings, clusterNames, jmsFactoryType, ha, enable1Prefixes);
         } else {
             Map<String, Supplier<SocketBinding>> socketBindings = new HashMap<>();
             Map<String, Supplier<OutboundSocketBinding>> outboundSocketBindings = new HashMap<>();
@@ -123,7 +126,7 @@ public class ExternalConnectionFactoryAdd extends AbstractAddStepHandler {
                     socketBindings.put(connectorSocketBinding, socketBindingsSupplier);
                 }
             }
-            service = new ExternalConnectionFactoryService(transportConfigurations, socketBindings, outboundSocketBindings, jmsFactoryType, ha);
+            service = new ExternalConnectionFactoryService(transportConfigurations, socketBindings, outboundSocketBindings, jmsFactoryType, ha, enable1Prefixes);
         }
         builder.setInstance(service);
         builder.install();

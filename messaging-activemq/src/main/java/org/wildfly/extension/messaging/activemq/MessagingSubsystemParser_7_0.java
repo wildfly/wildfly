@@ -19,7 +19,6 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.wildfly.extension.messaging.activemq;
 
 import static org.jboss.as.controller.PathElement.pathElement;
@@ -61,7 +60,7 @@ public class MessagingSubsystemParser_7_0 extends PersistentResourceXMLParser {
     static final String NAMESPACE = "urn:jboss:domain:messaging-activemq:7.0";
 
     @Override
-    public PersistentResourceXMLDescription getParserDescription(){
+    public PersistentResourceXMLDescription getParserDescription() {
 
         final PersistentResourceXMLBuilder discoveryGroup = builder(DiscoveryGroupDefinition.PATH)
                 .addAttributes(
@@ -95,71 +94,6 @@ public class MessagingSubsystemParser_7_0 extends PersistentResourceXMLParser {
                         CommonAttributes.FACTORY_CLASS,
                         CommonAttributes.PARAMS);
 
-        final PersistentResourceXMLBuilder pooledConnectionFactory =
-                                        builder(MessagingExtension.POOLED_CONNECTION_FACTORY_PATH)
-                                                .addAttributes(
-                                                        ConnectionFactoryAttributes.Common.ENTRIES,
-                                                        // common
-                                                        ConnectionFactoryAttributes.Common.DISCOVERY_GROUP,
-                                                        ConnectionFactoryAttributes.Common.CONNECTORS,
-                                                        CommonAttributes.HA,
-                                                        ConnectionFactoryAttributes.Common.CLIENT_FAILURE_CHECK_PERIOD,
-                                                        ConnectionFactoryAttributes.Common.CONNECTION_TTL,
-                                                        CommonAttributes.CALL_TIMEOUT,
-                                                        CommonAttributes.CALL_FAILOVER_TIMEOUT,
-                                                        ConnectionFactoryAttributes.Common.CONSUMER_WINDOW_SIZE,
-                                                        ConnectionFactoryAttributes.Common.CONSUMER_MAX_RATE,
-                                                        ConnectionFactoryAttributes.Common.CONFIRMATION_WINDOW_SIZE,
-                                                        ConnectionFactoryAttributes.Common.PRODUCER_WINDOW_SIZE,
-                                                        ConnectionFactoryAttributes.Common.PRODUCER_MAX_RATE,
-                                                        ConnectionFactoryAttributes.Common.PROTOCOL_MANAGER_FACTORY,
-                                                        ConnectionFactoryAttributes.Common.COMPRESS_LARGE_MESSAGES,
-                                                        ConnectionFactoryAttributes.Common.CACHE_LARGE_MESSAGE_CLIENT,
-                                                        CommonAttributes.MIN_LARGE_MESSAGE_SIZE,
-                                                        CommonAttributes.CLIENT_ID,
-                                                        ConnectionFactoryAttributes.Common.DUPS_OK_BATCH_SIZE,
-                                                        ConnectionFactoryAttributes.Common.TRANSACTION_BATCH_SIZE,
-                                                        ConnectionFactoryAttributes.Common.BLOCK_ON_ACKNOWLEDGE,
-                                                        ConnectionFactoryAttributes.Common.BLOCK_ON_NON_DURABLE_SEND,
-                                                        ConnectionFactoryAttributes.Common.BLOCK_ON_DURABLE_SEND,
-                                                        ConnectionFactoryAttributes.Common.AUTO_GROUP,
-                                                        ConnectionFactoryAttributes.Common.PRE_ACKNOWLEDGE,
-                                                        ConnectionFactoryAttributes.Common.RETRY_INTERVAL,
-                                                        ConnectionFactoryAttributes.Common.RETRY_INTERVAL_MULTIPLIER,
-                                                        CommonAttributes.MAX_RETRY_INTERVAL,
-                                                        ConnectionFactoryAttributes.Common.RECONNECT_ATTEMPTS,
-                                                        ConnectionFactoryAttributes.Common.FAILOVER_ON_INITIAL_CONNECTION,
-                                                        ConnectionFactoryAttributes.Common.CONNECTION_LOAD_BALANCING_CLASS_NAME,
-                                                        ConnectionFactoryAttributes.Common.USE_GLOBAL_POOLS,
-                                                        ConnectionFactoryAttributes.Common.SCHEDULED_THREAD_POOL_MAX_SIZE,
-                                                        ConnectionFactoryAttributes.Common.THREAD_POOL_MAX_SIZE,
-                                                        ConnectionFactoryAttributes.Common.GROUP_ID,
-                                                        ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST,
-                                                        ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST,
-                                                        // pooled
-                                                        // inbound config
-                                                        ConnectionFactoryAttributes.Pooled.USE_JNDI,
-                                                        ConnectionFactoryAttributes.Pooled.JNDI_PARAMS,
-                                                        ConnectionFactoryAttributes.Pooled.REBALANCE_CONNECTIONS,
-                                                        ConnectionFactoryAttributes.Pooled.USE_LOCAL_TX,
-                                                        ConnectionFactoryAttributes.Pooled.SETUP_ATTEMPTS,
-                                                        ConnectionFactoryAttributes.Pooled.SETUP_INTERVAL,
-                                                        // outbound config
-                                                        ConnectionFactoryAttributes.Pooled.ALLOW_LOCAL_TRANSACTIONS,
-
-                                                        ConnectionFactoryAttributes.Pooled.TRANSACTION,
-                                                        ConnectionFactoryAttributes.Pooled.USER,
-                                                        ConnectionFactoryAttributes.Pooled.PASSWORD,
-                                                        ConnectionFactoryAttributes.Pooled.CREDENTIAL_REFERENCE,
-                                                        ConnectionFactoryAttributes.Pooled.MIN_POOL_SIZE,
-                                                        ConnectionFactoryAttributes.Pooled.USE_AUTO_RECOVERY,
-                                                        ConnectionFactoryAttributes.Pooled.MAX_POOL_SIZE,
-                                                        ConnectionFactoryAttributes.Pooled.MANAGED_CONNECTION_POOL,
-                                                        ConnectionFactoryAttributes.Pooled.ENLISTMENT_TRACE,
-                                                        ConnectionFactoryAttributes.Common.INITIAL_MESSAGE_PACKET_SIZE,
-                                                        ConnectionFactoryAttributes.Pooled.INITIAL_CONNECT_ATTEMPTS,
-                                                        ConnectionFactoryAttributes.Pooled.STATISTICS_ENABLED);
-
         return builder(MessagingExtension.SUBSYSTEM_PATH, NAMESPACE)
                 .addAttributes(
                         MessagingSubsystemRootResourceDefinition.GLOBAL_CLIENT_THREAD_POOL_MAX_SIZE,
@@ -175,17 +109,18 @@ public class MessagingSubsystemParser_7_0 extends PersistentResourceXMLParser {
                                 ConnectionFactoryAttributes.Regular.FACTORY_TYPE,
                                 ConnectionFactoryAttributes.Common.DISCOVERY_GROUP,
                                 ConnectionFactoryAttributes.Common.CONNECTORS,
-                                ConnectionFactoryAttributes.Common.ENTRIES
-                                ))
-                .addChild(pooledConnectionFactory)
+                                ConnectionFactoryAttributes.Common.ENTRIES,
+                                ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX
+                        ))
+                .addChild(createPooledConnectionFactory(true))
                 .addChild(builder(MessagingExtension.EXTERNAL_JMS_QUEUE_PATH)
                         .addAttributes(
                                 ConnectionFactoryAttributes.Common.ENTRIES
-                                ))
+                        ))
                 .addChild(builder(MessagingExtension.EXTERNAL_JMS_TOPIC_PATH)
                         .addAttributes(
                                 ConnectionFactoryAttributes.Common.ENTRIES
-                                ))
+                        ))
                 .addChild(
                         builder(MessagingExtension.SERVER_PATH)
                                 .addAttributes(// no attribute groups
@@ -628,7 +563,7 @@ public class MessagingSubsystemParser_7_0 extends PersistentResourceXMLParser {
                                                         LegacyConnectionFactoryDefinition.THREAD_POOL_MAX_SIZE,
                                                         LegacyConnectionFactoryDefinition.TRANSACTION_BATCH_SIZE,
                                                         LegacyConnectionFactoryDefinition.USE_GLOBAL_POOLS))
-                                .addChild(pooledConnectionFactory))
+                                .addChild(createPooledConnectionFactory(false)))
                 .addChild(
                         builder(JMSBridgeDefinition.INSTANCE.getPathElement())
                                 .addAttributes(
@@ -655,6 +590,75 @@ public class MessagingSubsystemParser_7_0 extends PersistentResourceXMLParser {
                                         JMSBridgeDefinition.SOURCE_CONTEXT,
                                         JMSBridgeDefinition.TARGET_CONTEXT))
                 .build();
+    }
+
+    private PersistentResourceXMLBuilder createPooledConnectionFactory(boolean external) {
+        PersistentResourceXMLBuilder builder = builder(MessagingExtension.POOLED_CONNECTION_FACTORY_PATH)
+                .addAttributes(
+                        ConnectionFactoryAttributes.Common.ENTRIES,
+                        // common
+                        ConnectionFactoryAttributes.Common.DISCOVERY_GROUP,
+                        ConnectionFactoryAttributes.Common.CONNECTORS,
+                        CommonAttributes.HA,
+                        ConnectionFactoryAttributes.Common.CLIENT_FAILURE_CHECK_PERIOD,
+                        ConnectionFactoryAttributes.Common.CONNECTION_TTL,
+                        CommonAttributes.CALL_TIMEOUT,
+                        CommonAttributes.CALL_FAILOVER_TIMEOUT,
+                        ConnectionFactoryAttributes.Common.CONSUMER_WINDOW_SIZE,
+                        ConnectionFactoryAttributes.Common.CONSUMER_MAX_RATE,
+                        ConnectionFactoryAttributes.Common.CONFIRMATION_WINDOW_SIZE,
+                        ConnectionFactoryAttributes.Common.PRODUCER_WINDOW_SIZE,
+                        ConnectionFactoryAttributes.Common.PRODUCER_MAX_RATE,
+                        ConnectionFactoryAttributes.Common.PROTOCOL_MANAGER_FACTORY,
+                        ConnectionFactoryAttributes.Common.COMPRESS_LARGE_MESSAGES,
+                        ConnectionFactoryAttributes.Common.CACHE_LARGE_MESSAGE_CLIENT,
+                        CommonAttributes.MIN_LARGE_MESSAGE_SIZE,
+                        CommonAttributes.CLIENT_ID,
+                        ConnectionFactoryAttributes.Common.DUPS_OK_BATCH_SIZE,
+                        ConnectionFactoryAttributes.Common.TRANSACTION_BATCH_SIZE,
+                        ConnectionFactoryAttributes.Common.BLOCK_ON_ACKNOWLEDGE,
+                        ConnectionFactoryAttributes.Common.BLOCK_ON_NON_DURABLE_SEND,
+                        ConnectionFactoryAttributes.Common.BLOCK_ON_DURABLE_SEND,
+                        ConnectionFactoryAttributes.Common.AUTO_GROUP,
+                        ConnectionFactoryAttributes.Common.PRE_ACKNOWLEDGE,
+                        ConnectionFactoryAttributes.Common.RETRY_INTERVAL,
+                        ConnectionFactoryAttributes.Common.RETRY_INTERVAL_MULTIPLIER,
+                        CommonAttributes.MAX_RETRY_INTERVAL,
+                        ConnectionFactoryAttributes.Common.RECONNECT_ATTEMPTS,
+                        ConnectionFactoryAttributes.Common.FAILOVER_ON_INITIAL_CONNECTION,
+                        ConnectionFactoryAttributes.Common.CONNECTION_LOAD_BALANCING_CLASS_NAME,
+                        ConnectionFactoryAttributes.Common.USE_GLOBAL_POOLS,
+                        ConnectionFactoryAttributes.Common.SCHEDULED_THREAD_POOL_MAX_SIZE,
+                        ConnectionFactoryAttributes.Common.THREAD_POOL_MAX_SIZE,
+                        ConnectionFactoryAttributes.Common.GROUP_ID,
+                        ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST,
+                        ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST,
+                        // pooled
+                        // inbound config
+                        ConnectionFactoryAttributes.Pooled.USE_JNDI,
+                        ConnectionFactoryAttributes.Pooled.JNDI_PARAMS,
+                        ConnectionFactoryAttributes.Pooled.REBALANCE_CONNECTIONS,
+                        ConnectionFactoryAttributes.Pooled.USE_LOCAL_TX,
+                        ConnectionFactoryAttributes.Pooled.SETUP_ATTEMPTS,
+                        ConnectionFactoryAttributes.Pooled.SETUP_INTERVAL,
+                        // outbound config
+                        ConnectionFactoryAttributes.Pooled.ALLOW_LOCAL_TRANSACTIONS,
+                        ConnectionFactoryAttributes.Pooled.TRANSACTION,
+                        ConnectionFactoryAttributes.Pooled.USER,
+                        ConnectionFactoryAttributes.Pooled.PASSWORD,
+                        ConnectionFactoryAttributes.Pooled.CREDENTIAL_REFERENCE,
+                        ConnectionFactoryAttributes.Pooled.MIN_POOL_SIZE,
+                        ConnectionFactoryAttributes.Pooled.USE_AUTO_RECOVERY,
+                        ConnectionFactoryAttributes.Pooled.MAX_POOL_SIZE,
+                        ConnectionFactoryAttributes.Pooled.MANAGED_CONNECTION_POOL,
+                        ConnectionFactoryAttributes.Pooled.ENLISTMENT_TRACE,
+                        ConnectionFactoryAttributes.Common.INITIAL_MESSAGE_PACKET_SIZE,
+                        ConnectionFactoryAttributes.Pooled.INITIAL_CONNECT_ATTEMPTS,
+                        ConnectionFactoryAttributes.Pooled.STATISTICS_ENABLED);
+        if (external) {
+            builder.addAttributes(ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX);
+        }
+        return builder;
     }
 
 }

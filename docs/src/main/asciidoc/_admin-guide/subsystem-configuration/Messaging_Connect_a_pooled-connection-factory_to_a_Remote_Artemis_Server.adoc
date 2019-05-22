@@ -32,6 +32,15 @@ created at step (2).
 /subsystem=messaging-activemq/pooled-connection-factory=remote-artemis:add(connectors=[remote-artemis], entries=[java:/jms/remoteCF])
 ----
 
+In Artemis 1.x topics and queues used had a prefix(jms.topic. and jms.queue.) that were prepended to the destination name.
+In Artemis 2.x this is no longer the case, but for compatibility reasons WildFly still prepend those prefixes and tells Artemis to run in compatibility mode.
+If you  are connecting to a remote Artemis 2.x, it may not be in compatibility mode and thus the old prefixes may not be used anymore.
+If you need to use destinations without those prefixes, you can configure your connection factory not to use them by setting the attribute `enable-amq1-prefix` to false.
+[source,options="nowrap"]
+----
+/subsystem=messaging-activemq/pooled-connection-factory=remote-artemis:write-attribute(name="enable-amq1-prefix", value="false")
+----
+
 [[configuration-of-a-mdb-using-a-pooled-connection-factory]]
 == JMS Queues and Topics on a remote Artemis Server
 
