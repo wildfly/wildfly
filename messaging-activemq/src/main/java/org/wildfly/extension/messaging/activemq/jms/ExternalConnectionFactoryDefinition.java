@@ -46,7 +46,7 @@ public class ExternalConnectionFactoryDefinition extends PersistentResourceDefin
     static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.messaging.activemq.external.connection-factory", true, ExternalConnectionFactoryService.class).
             build();
     public static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[]{
-        CommonAttributes.HA, Regular.FACTORY_TYPE, Common.DISCOVERY_GROUP, CONNECTORS, Common.ENTRIES, External.ENABLE_AMQ1_PREFIX};
+        CommonAttributes.HA, Regular.FACTORY_TYPE, Common.DISCOVERY_GROUP, CONNECTORS, Common.ENTRIES, External.ENABLE_AMQ1_PREFIX, Common.USE_TOPOLOGY};
 
     private final boolean registerRuntimeOnly;
 

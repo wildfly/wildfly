@@ -31,7 +31,8 @@
     <connection-factory name="InVmConnectionFactory"
                         connectors="in-vm-client"
                         entries="${connection-factory.entries.entry:java:/ClientConnectionFactory}"
-                        enable-amq1-prefix="false"/>
+                        enable-amq1-prefix="false"
+                        use-topology-for-load-balancing="false" />
 
     <pooled-connection-factory name="hornetq-ra-local"
                                    transaction="local"
@@ -139,7 +140,8 @@
                                    password="alicepassword"
                                    connectors="in-vm"
                                    entries="java:/JmsLocal"
-                                   statistics-enabled="true">
+                                   statistics-enabled="true"
+                                   use-topology-for-load-balancing="false">
             <inbound-config
                     rebalance-connections="true" />
             <outbound-config

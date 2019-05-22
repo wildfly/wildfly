@@ -157,6 +157,7 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
         config.setInitialMessagePacketSize(ConnectionFactoryAttributes.Common.INITIAL_MESSAGE_PACKET_SIZE.resolveModelAttribute(context, model).asInt());
         config.setEnableSharedClientID(true);
         config.setEnable1xPrefixes(true);
+        config.setUseTopologyForLoadBalancing(ConnectionFactoryAttributes.Common.USE_TOPOLOGY.resolveModelAttribute(context, model).asBoolean());
         return config;
     }
 }

@@ -27,8 +27,6 @@ import static org.jboss.as.controller.transform.description.RejectAttributeCheck
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.CONNECTOR;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.IN_VM_CONNECTOR;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.REMOTE_CONNECTOR;
-import static org.wildfly.extension.messaging.activemq.CommonAttributes.CONNECTION_FACTORY;
-import static org.wildfly.extension.messaging.activemq.CommonAttributes.POOLED_CONNECTION_FACTORY;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.EXTERNAL_JMS_QUEUE_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.EXTERNAL_JMS_TOPIC_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.QUEUE_PATH;
@@ -82,11 +80,18 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
     }
 
     private static void registerTransformers_WF_17(ResourceTransformationDescriptionBuilder subsystem) {
-        ResourceTransformationDescriptionBuilder server = subsystem.addChildResource(SERVER_PATH);
-        rejectDefinedAttributeWithDefaultValue(server, ServerDefinition.JOURNAL_FILE_OPEN_TIMEOUT);
+        ResourceTransformationDescriptionBuilder externalConnectionFactory = subsystem.addChildResource(MessagingExtension.CONNECTION_FACTORY_PATH);
+        rejectDefinedAttributeWithDefaultValue(externalConnectionFactory, ConnectionFactoryAttributes.Common.USE_TOPOLOGY, ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX);
+        ResourceTransformationDescriptionBuilder externalPooledConnectionFactory = subsystem.addChildResource(MessagingExtension.POOLED_CONNECTION_FACTORY_PATH);
+        rejectDefinedAttributeWithDefaultValue(externalPooledConnectionFactory, ConnectionFactoryAttributes.Common.USE_TOPOLOGY, ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX);
 
-        rejectDefinedAttributeWithDefaultValue(subsystem.addChildResource(PathElement.pathElement(CONNECTION_FACTORY)), ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX);
-        rejectDefinedAttributeWithDefaultValue(subsystem.addChildResource(PathElement.pathElement(POOLED_CONNECTION_FACTORY)), ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX);
+        ResourceTransformationDescriptionBuilder server = subsystem.addChildResource(SERVER_PATH);
+        ResourceTransformationDescriptionBuilder connectionFactory = server.addChildResource(MessagingExtension.CONNECTION_FACTORY_PATH);
+        rejectDefinedAttributeWithDefaultValue(connectionFactory, ConnectionFactoryAttributes.Common.USE_TOPOLOGY);
+        ResourceTransformationDescriptionBuilder pooledConnectionFactory = server.addChildResource(MessagingExtension.POOLED_CONNECTION_FACTORY_PATH);
+        rejectDefinedAttributeWithDefaultValue(pooledConnectionFactory, ConnectionFactoryAttributes.Common.USE_TOPOLOGY);
+
+        rejectDefinedAttributeWithDefaultValue(server, ServerDefinition.JOURNAL_FILE_OPEN_TIMEOUT);
     }
 
     private static void registerTransformers_WF_16(ResourceTransformationDescriptionBuilder subsystem) {
@@ -117,8 +122,8 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
         subsystem.rejectChildResource(MessagingExtension.HTTP_CONNECTOR_PATH);
         subsystem.rejectChildResource(PathElement.pathElement(CONNECTOR));
         subsystem.rejectChildResource(PathElement.pathElement(IN_VM_CONNECTOR));
-        subsystem.rejectChildResource(PathElement.pathElement(CONNECTION_FACTORY));
-        subsystem.rejectChildResource(PathElement.pathElement(POOLED_CONNECTION_FACTORY));
+        subsystem.rejectChildResource(MessagingExtension.CONNECTION_FACTORY_PATH);
+        subsystem.rejectChildResource(MessagingExtension.POOLED_CONNECTION_FACTORY_PATH);
         subsystem.rejectChildResource(EXTERNAL_JMS_QUEUE_PATH);
         subsystem.rejectChildResource(EXTERNAL_JMS_TOPIC_PATH);
 
