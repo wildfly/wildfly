@@ -27,6 +27,7 @@ import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import org.jboss.marshalling.Marshaller;
@@ -55,7 +56,7 @@ public class CommandResponseMarshaller implements org.jgroups.blocks.Marshaller 
     }
 
     @Override
-    public void objectToStream(Object object, DataOutput stream) throws Exception {
+    public void objectToStream(Object object, DataOutput stream) throws IOException {
         int version = this.context.getCurrentVersion();
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         try (DataOutputStream output = new DataOutputStream(bytes)) {
@@ -72,7 +73,7 @@ public class CommandResponseMarshaller implements org.jgroups.blocks.Marshaller 
     }
 
     @Override
-    public Object objectFromStream(DataInput stream) throws Exception {
+    public Object objectFromStream(DataInput stream) throws IOException, ClassNotFoundException {
         int size = IndexSerializer.VARIABLE.readInt(stream);
         byte[] buffer = new byte[size];
         stream.readFully(buffer);
