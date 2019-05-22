@@ -37,6 +37,7 @@ import org.xnio.XnioWorker;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 class AccessLogAdd extends AbstractAddStepHandler {
 
@@ -79,7 +80,8 @@ class AccessLogAdd extends AbstractAddStepHandler {
         final String serverName = serverAddress.getLastElement().getValue();
         final String hostName = hostAddress.getLastElement().getValue();
 
-        final CapabilityServiceBuilder<AccessLogService> builder = context.getCapabilityServiceTarget().addCapability(AccessLogDefinition.ACCESS_LOG_CAPABILITY, service)
+        final CapabilityServiceBuilder builder = context.getCapabilityServiceTarget().addCapability(AccessLogDefinition.ACCESS_LOG_CAPABILITY)
+                .setInstance(service)
                 .addCapabilityRequirement(Capabilities.REF_IO_WORKER, XnioWorker.class, service.getWorker(), worker)
                 .addDependency(PathManagerService.SERVICE_NAME, PathManager.class, service.getPathManager())
                 .addCapabilityRequirement(Capabilities.CAPABILITY_HOST, Host.class, service.getHost(), serverName, hostName);

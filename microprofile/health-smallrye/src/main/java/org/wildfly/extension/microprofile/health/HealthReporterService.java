@@ -35,6 +35,7 @@ import org.jboss.msc.service.StopContext;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2018 Red Hat inc.
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class HealthReporterService implements Service<SmallRyeHealthReporter> {
 
@@ -42,8 +43,8 @@ public class HealthReporterService implements Service<SmallRyeHealthReporter> {
 
     static void install(OperationContext context) {
         context.getCapabilityServiceTarget()
-                .addCapability(RuntimeCapability.Builder.of(HEALTH_REPORTER_CAPABILITY, SmallRyeHealthReporter.class).build(),
-                        new HealthReporterService())
+                .addCapability(RuntimeCapability.Builder.of(HEALTH_REPORTER_CAPABILITY, SmallRyeHealthReporter.class).build())
+                .setInstance(new HealthReporterService())
                 .install();
     }
 

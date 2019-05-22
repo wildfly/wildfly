@@ -50,6 +50,7 @@ import org.xnio.XnioWorker;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 abstract class ListenerAdd extends AbstractAddStepHandler {
 
@@ -99,8 +100,8 @@ abstract class ListenerAdd extends AbstractAddStepHandler {
             service.addWrapperHandler(handler -> new DisallowedMethodsHandler(handler, methodSet));
         }
 
-        final CapabilityServiceBuilder<? extends UndertowListener> serviceBuilder = context.getCapabilityServiceTarget().addCapability(ListenerResourceDefinition.LISTENER_CAPABILITY, service);
-        serviceBuilder.addCapabilityRequirement(REF_IO_WORKER, XnioWorker.class, service.getWorker(), workerName)
+        final CapabilityServiceBuilder serviceBuilder = context.getCapabilityServiceTarget().addCapability(ListenerResourceDefinition.LISTENER_CAPABILITY);
+        serviceBuilder.setInstance(service).addCapabilityRequirement(REF_IO_WORKER, XnioWorker.class, service.getWorker(), workerName)
                 .addCapabilityRequirement(REF_SOCKET_BINDING, SocketBinding.class, service.getBinding(), bindingRef)
                 .addCapabilityRequirement(Capabilities.CAPABILITY_BYTE_BUFFER_POOL, ByteBufferPool.class, service.getBufferPool(), bufferPoolName)
                 .addCapabilityRequirement(Capabilities.CAPABILITY_SERVER, Server.class, service.getServerService(), serverName)
@@ -109,11 +110,10 @@ abstract class ListenerAdd extends AbstractAddStepHandler {
 
         configureAdditionalDependencies(context, serviceBuilder, model, service);
         serviceBuilder.install();
-
     }
 
     abstract ListenerService createService(String name, final String serverName, final OperationContext context, ModelNode model, OptionMap listenerOptions, OptionMap socketOptions) throws OperationFailedException;
 
-    abstract void configureAdditionalDependencies(OperationContext context, CapabilityServiceBuilder<? extends UndertowListener> serviceBuilder, ModelNode model, ListenerService service) throws OperationFailedException;
+    abstract void configureAdditionalDependencies(OperationContext context, CapabilityServiceBuilder serviceBuilder, ModelNode model, ListenerService service) throws OperationFailedException;
 
 }

@@ -51,6 +51,7 @@ import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
     static final ServletContainerAdd INSTANCE = new ServletContainerAdd();
@@ -140,8 +141,8 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
                 welcomeFiles, directoryListingEnabled, proactiveAuth, sessionIdLength, authenticationMechanisms, maxSessions, crawlerSessionManagerConfig, disableFileWatchService, disableSessionIdReususe, fileCacheMetadataSize, fileCacheMaxFileSize, fileCacheTimeToLive, defaultCookieVersion);
 
 
-        final CapabilityServiceBuilder<ServletContainerService> builder = context.getCapabilityServiceTarget()
-                .addCapability(ServletContainerDefinition.SERVLET_CONTAINER_CAPABILITY, container);
+        final CapabilityServiceBuilder<?> builder = context.getCapabilityServiceTarget()
+                .addCapability(ServletContainerDefinition.SERVLET_CONTAINER_CAPABILITY).setInstance(container);
         if(bufferCache != null) {
             builder.addDependency(BufferCacheService.SERVICE_NAME.append(bufferCache), DirectBufferCache.class, container.getBufferCacheInjectedValue());
         }
