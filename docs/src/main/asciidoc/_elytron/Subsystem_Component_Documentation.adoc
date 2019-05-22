@@ -14,5 +14,6 @@ In the third mode evidence is passed to the security realm and used to construct
 :leveloffset: +1
 
 include::components/JDBC_Security_Realm.adoc[]
+include::components/Filesystem_Security_Realm.adoc[]
 
 :leveloffset: -1

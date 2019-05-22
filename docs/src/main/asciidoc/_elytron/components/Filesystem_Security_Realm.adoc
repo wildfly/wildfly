@@ -1,0 +1,228 @@
+[[filesystem-security-realm]]
+= Filesystem Security Realm
+
+The filesystem security realm is a security realm developed to support storing of identities in a filesystem with the option of associating multiple credentials and multiple attributes with each identity. Both credentials and attributes can contain multiple values.
+
+== Create and Populate Filesystem Security Realm
+
+Every identity is stored in an XML file where the name of the file is the name of the identity. It is sufficient to just specify the path to the directory where identity files will be stored. There are other optional attributes.
+
+* `path` The actual filesystem path. Treated as an absolute path, unless the 'relative-to' attribute is specified, in which case the value is treated as relative to that path.
+* `relative-to` If 'relative-to' is provided, the value of the 'path' attribute is treated as relative to the path specified by this attribute.
+* `levels` The number of levels of directory hashing to apply. When this attribute is set to positive value, filesystem realm will store identities in directory structure where the name of subdirectories will be derived from first characters of identity name. For example, location of identity named "alex" could be `a/l/alex.xml`. This is useful not only because some filesystems can limit the amount of files that can be stored in a single directory, but also for performance reasons, because that might be influenced by the number of entries in a single directory as well. Default value is 2.
+* `encoded` When encoding is set to true, the identity names will be BASE32 encoded before they are used as filenames. This is beneficial, because some filesystems are case-insensitive or might restrict set of characters allowed in a filename. Default value is true.
+
+Filesystem security realm can be added with Wildfly management CLI or with Elytron API.
+
+=== Wildfly management CLI
+
+The following command creates realm with name `fsRealm` that resides in directory `fs-realm-users` inside the base configuration directory defined by `jboss.server.config.dir` property. The levels number is 2 and encoded value is true.
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/filesystem-realm=fsRealm:add(path=fs-realm-users, relative-to=jboss.server.config.dir)
+----
+
+To add identity with the name "alex" to this filesystem realm:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/filesystem-realm=fsRealm:add-identity(identity=alex)
+----
+
+To delete existing identity from filesystem realm:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/filesystem-realm=fsRealm:remove-identity(identity=alex)
+----
+
+=== Programmatic approach
+
+When creating filesystem realm with Elytron API, you can specify `name rewriter` in the constructor. The name rewriter will be applied to identity names to transform them from one form to another. It can be used to normalize the case, trim extra whitespaces, map one naming scheme to another, remove realm component from identity name (e.g. "user@realm" to "user") or to perform validation step on the syntax of the name.
+
+Class `org.wildfly.security.auth.realm.FileSystemSecurityRealm` is used to instantiate the realm.
+
+[source,options="nowrap"]
+----
+FileSystemSecurityRealm fsRealm = new FileSystemSecurityRealm(fsRealmPath, NameRewriter.IDENTITY_REWRITER, 2, true);
+----
+
+`org.wildfly.security.auth.server.NameRewriter.IDENTITY_REWRITER` is a simple identity name rewriter that does no rewriting. You can implement the `NameRewriter` interface and use your own rewriter.
+
+Class `org.wildfly.security.auth.principal.NamePrincipal` represents principal comprised of a simple name. Handle for the identity can be obtained by passing the `NamePrincipal` instance to the `getRealmIdentity` or `getRealmIdentityForUpdate` method. Received identity for the given principal might or might not exist in the filesystem realm. Method `exists` can be called to check whether the received identity exists. If it does not, you cannot modify its credentials or attributes.
+
+To add non existent identity to the filesystem realm, `create` method must be called. After this call, credentials and roles of this identity are empty. The exception will be thrown if method `create` is called on an existing identity.
+
+
+
+[source,options="nowrap"]
+----
+ModifiableRealmIdentity modifiableIdentity = fsRealm.getRealmIdentityForUpdate(new NamePrincipal("alex"));
+if (!modifiableIdentity.exists()) {
+    modifiableIdentity.create();
+}
+----
+
+To obtain read only instance of identity:
+[source,java]
+----
+RealmIdentity identity = fsRealm.getRealmIdentity(identityPrincipal);
+----
+
+To obtain identity that can be modified:
+[source,java]
+----
+ModifiableRealmIdentity modifiableIdentity = fsRealm.getRealmIdentityForUpdate(identityPrincipal);
+----
+
+ModifiableRealmIdentity handle must be cleaned up by a call to `dispose` when the modifying is done:
+
+[source,options="nowrap"]
+----
+modifiableIdentity.dispose();
+----
+
+To delete the identity from the realm:
+
+[source,options="nowrap"]
+----
+identity.delete();
+----
+
+== Credentials
+
+Supported password types for identity in filesystem realm are `Bcrypt`, `Clear`, `Simple Digest`, `Salted Simple Digest`, `Scram Digest`, `Digest` and `OTP`.
+
+=== Wildfly management CLI
+
+To set clear password to the identity:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/filesystem-realm=fsRealm:set-password(clear={password="alexPassword"}, identity=alex)
+----
+
+The above command will store password in clear text in identity's file. It is not recommended to use clear passwords in a production set up.
+
+To set digest password to the identity:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/filesystem-realm=fsRealm:set-password(digest={algorithm=digest-md5,password="demoPassword",realm=demoRealm},identity=alex)
+----
+
+*Note:* Operation set-password` replaces any existing credential(s) with the new value.
+
+=== Programmatic approach
+
+When using Elytron API, working with passwords require interaction with the `org.wildfly.security.password.PasswordFactory` API. Here is the simplest example that will store password in clear text in identity's file. Examples on how to work with other types of passwords can be found in <<Passwords, Passwords>> section of this documentation.
+
+[source,options="nowrap"]
+----
+PasswordFactory passwordFactory = PasswordFactory.getInstance(ClearPassword.ALGORITHM_CLEAR);
+PasswordCredential clearPassword = new PasswordCredential(passwordFactory.generatePassword(new ClearPasswordSpec("alexPassword".toCharArray())));
+identity.setCredentials(Collections.singleton(clearPassword));
+----
+
+*Note:* Operation `setCredentials` replaces any existing credential(s) with the new value.
+
+== Attributes
+
+Attributes associated with identities can be read and updated through CLI as well as programmatically.
+
+=== Wildfly management CLI
+
+To add attribute to the identity, you have to specify the name of the attribute and its values (values are of type LIST):
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/filesystem-realm=fsRealm:add-identity-attribute(
+    identity="alex",
+    name=Email,
+    value=["alex@email.com", "alex_email@email.com"])
+{"outcome" => "success"}
+----
+
+To read the identity with its attributes:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/filesystem-realm=fsRealm:read-identity(identity="alex")
+{
+    "outcome" => "success",
+    "result" => {
+        "name" => "alex",
+        "attributes" => {"Email" => [
+            "alex@email.com",
+            "alex_email@email.com"
+        ]}
+    }
+}
+----
+
+To remove individual values of the attribute:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/filesystem-realm=fsRealm:remove-identity-attribute(
+    identity=alex,
+    name=Email,
+    value=[alex@email.com])
+{"outcome" => "success"}
+/subsystem=elytron/filesystem-realm=fsRealm:read-identity(identity="alex")
+{
+    "outcome" => "success",
+    "result" => {
+        "name" => "alex",
+        "attributes" => {"Email" => ["alex_email@email.com"]}
+    }
+}
+----
+
+To remove the whole attribute:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/filesystem-realm=fsRealm:remove-identity-attribute(identity=alex, name=Email)
+{"outcome" => "success"}
+/subsystem=elytron/filesystem-realm=fsRealm:read-identity(identity=alex)
+{
+    "outcome" => "success",
+    "result" => {
+        "name" => "alex",
+        "attributes" => undefined
+    }
+}
+----
+
+=== Programmatic approach
+
+Interface `org.wildfly.security.authz.Attributes` represents collection of string attributes. To get attributes associated with specific identity:
+
+[source,java]
+----
+Attributes identityAttributes = identity.getAttributes();
+----
+
+To update attributes you can use `ModifiableRealmIdentity` instance. Class `org.wildfly.security.authz.MapAttributes` represents collection of attributes backed by `java.util.Map`:
+
+[source, java]
+----
+ModifiableRealmIdentity modifiableIdentity = fsRealm.getRealmIdentityForUpdate(identityPrincipal);
+MapAttributes attributes = new MapAttributes();
+attributes.addLast("email","alex@email.com");
+modifiableIdentity.setAttributes(attributes);
+modifiableIdentity.dispose();
+----
+
+== Converting legacy properties file into Filesystem realm
+
+Wildfly can use authentication with a properties file based identity store. One properties file maps users to passwords and another maps users to roles. You can use `Elytron Tool` to convert these properties files into a filesystem realm. Below is an example of how to run this tool from the command line:
+
+[source,options="nowrap"]
+----
+$JBOSS_HOME/bin/elytron-tool.sh filesystem-realm -u conf/users.properties -r conf/roles.properties --output-location realms/example --summary -f example-fs-realm
+----
+
+This command creates new filesystem realm with users taken from users.properties file and roles taken from roles.properties file. Script `example-fs-realm.sh` that contains the commands for WildFly CLI is generated as well. The script adds this filesystem realm to the Elytron subsystem and also adds new security domain that uses this filesystem realm as a default realm.

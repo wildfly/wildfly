@@ -226,7 +226,7 @@ not be exposed to manage the realm. However other services that depend
 on the realm will still be able to perform a type check and cast to gain
 access to the modification API.
 
-|filesystem-realm |A simple security realm definition backed by the
+|<<filesystem-security-realm, filesystem-realm>> |A simple security realm definition backed by the
 filesystem.
 
 |identity-realm |A security realm definition where identities are
