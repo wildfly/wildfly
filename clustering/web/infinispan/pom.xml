@@ -64,11 +64,11 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-web-container</artifactId>
+            <artifactId>wildfly-clustering-web-cache</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-web-spi</artifactId>
+            <artifactId>wildfly-clustering-web-container</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.security</groupId>

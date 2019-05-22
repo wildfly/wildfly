@@ -30,7 +30,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
-import org.wildfly.clustering.ee.infinispan.InfinispanBatcher;
+import org.wildfly.clustering.ee.infinispan.tx.InfinispanBatcher;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.registry.RegistryFactory;

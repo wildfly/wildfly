@@ -43,6 +43,8 @@
 
     <modules>
         <module>spi</module>
+        <module>cache</module>
+        <module>hotrod</module>
         <module>infinispan</module>
     </modules>
 

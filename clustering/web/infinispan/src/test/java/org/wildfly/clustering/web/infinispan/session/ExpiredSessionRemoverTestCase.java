@@ -27,6 +27,9 @@ import java.util.UUID;
 
 import org.junit.Test;
 import org.wildfly.clustering.Registration;
+import org.wildfly.clustering.web.cache.session.SessionAttributesFactory;
+import org.wildfly.clustering.web.cache.session.SessionFactory;
+import org.wildfly.clustering.web.cache.session.SessionMetaDataFactory;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;

@@ -33,7 +33,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.Remover;
-import org.wildfly.clustering.ee.infinispan.TransactionBatch;
+import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 
 /**

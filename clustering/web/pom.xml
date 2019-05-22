@@ -44,8 +44,10 @@
     <modules>
         <module>api</module>
         <module>spi</module>
+        <module>cache</module>
         <module>container</module>
         <module>undertow</module>
+        <module>hotrod</module>
         <module>infinispan</module>
         <module>extension</module>
     </modules>

@@ -47,8 +47,12 @@
         <module name="org.jboss.msc"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.vfs"/>
+        <module name="org.wildfly.clustering.infinispan.client"/>
         <module name="org.wildfly.clustering.infinispan.spi"/>
         <module name="org.wildfly.clustering.service"/>
+        <module name="org.wildfly.clustering.web.cache"/>
+        <module name="org.wildfly.clustering.web.hotrod"/>
+        <module name="org.wildfly.clustering.web.cache"/>
         <module name="org.wildfly.clustering.web.infinispan"/>
         <module name="org.wildfly.clustering.web.spi"/>
     </dependencies>

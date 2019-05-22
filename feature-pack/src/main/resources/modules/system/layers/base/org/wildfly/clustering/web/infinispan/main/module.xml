@@ -48,8 +48,8 @@
         <module name="org.jboss.metadata.web"/>
         <module name="org.jboss.msc"/>
         <module name="org.jboss.threads"/>
-        <module name="org.jgroups"/>
         <module name="org.wildfly.clustering.api"/>
+        <module name="org.wildfly.clustering.ee.cache" services="import"/>
         <module name="org.wildfly.clustering.ee.infinispan"/>
         <module name="org.wildfly.clustering.ee.spi"/>
         <module name="org.wildfly.clustering.infinispan.spi" services="import"/>
@@ -59,8 +59,8 @@
         <module name="org.wildfly.clustering.server" services="import"/>
         <module name="org.wildfly.clustering.service"/>
         <module name="org.wildfly.clustering.spi"/>
+        <module name="org.wildfly.clustering.web.cache" services="import"/>
         <module name="org.wildfly.clustering.web.spi"/>
-        <module name="org.wildfly.clustering.web.undertow" services="import"/>
         <module name="org.wildfly.common"/>
         <module name="org.wildfly.security.elytron-private"/>
     </dependencies>

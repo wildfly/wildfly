@@ -32,6 +32,7 @@ import org.infinispan.transaction.TransactionMode;
 import org.infinispan.util.concurrent.IsolationLevel;
 import org.junit.Assert;
 import org.junit.Test;
+import org.wildfly.clustering.ee.cache.CacheProperties;
 
 /**
  * @author Paul Ferraro

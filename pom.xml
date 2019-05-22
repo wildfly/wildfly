@@ -602,6 +602,16 @@
 
             <dependency>
                 <groupId>${project.groupId}</groupId>
+                <artifactId>wildfly-clustering-ee-cache</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>wildfly-clustering-ee-hotrod</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-clustering-ee-infinispan</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -622,6 +632,11 @@
                 <version>${project.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>wildfly-clustering-infinispan-client</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-clustering-infinispan-extension</artifactId>
@@ -706,12 +721,22 @@
             </dependency>
             <dependency>
                 <groupId>${project.groupId}</groupId>
+                <artifactId>wildfly-clustering-web-cache</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-clustering-web-container</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-clustering-web-extension</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>wildfly-clustering-web-hotrod</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

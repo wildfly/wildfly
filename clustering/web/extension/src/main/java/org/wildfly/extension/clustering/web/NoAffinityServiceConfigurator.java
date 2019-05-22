@@ -25,7 +25,7 @@ package org.wildfly.extension.clustering.web;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.PathAddress;
 import org.wildfly.clustering.web.WebDeploymentConfiguration;
-import org.wildfly.clustering.web.infinispan.routing.NullRouteLocatorServiceConfigurator;
+import org.wildfly.clustering.web.cache.routing.NullRouteLocatorServiceConfigurator;
 import org.wildfly.clustering.web.session.DistributableSessionManagementConfiguration;
 
 /**

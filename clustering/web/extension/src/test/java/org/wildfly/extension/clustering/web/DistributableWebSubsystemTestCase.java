@@ -30,6 +30,7 @@ import org.jboss.dmr.ModelNode;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+import org.wildfly.clustering.infinispan.client.InfinispanClientRequirement;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.spi.InfinispanDefaultCacheRequirement;
 
@@ -60,6 +61,7 @@ public class DistributableWebSubsystemTestCase extends ClusteringSubsystemTest<D
         return new AdditionalInitialization()
                 .require(InfinispanDefaultCacheRequirement.CONFIGURATION, "foo")
                 .require(InfinispanCacheRequirement.CONFIGURATION, "foo", "bar")
+                .require(InfinispanClientRequirement.REMOTE_CONTAINER, "foo")
                 ;
     }
 }

@@ -39,7 +39,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
-import org.wildfly.clustering.ee.infinispan.InfinispanBatcher;
+import org.wildfly.clustering.ee.infinispan.tx.InfinispanBatcher;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.provider.ServiceProviderRegistry;
 import org.wildfly.clustering.server.group.Group;

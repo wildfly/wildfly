@@ -51,7 +51,7 @@ import org.infinispan.persistence.spi.PersistenceException;
 import org.infinispan.persistence.spi.SegmentedAdvancedLoadWriteStore;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.reactivestreams.Publisher;
-import org.wildfly.clustering.infinispan.spi.RemoteCacheContainer;
+import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
 
 import io.reactivex.Flowable;
 import io.reactivex.functions.Consumer;

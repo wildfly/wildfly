@@ -22,8 +22,6 @@
 package org.wildfly.clustering.web.infinispan.session;
 
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
@@ -32,11 +30,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.servlet.ServletContext;
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpSessionActivationListener;
-import javax.servlet.http.HttpSessionBindingEvent;
-import javax.servlet.http.HttpSessionBindingListener;
-import javax.servlet.http.HttpSessionEvent;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
@@ -58,9 +51,9 @@ import org.wildfly.clustering.dispatcher.CommandDispatcherException;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.Invoker;
 import org.wildfly.clustering.ee.Recordable;
-import org.wildfly.clustering.ee.infinispan.CacheProperties;
-import org.wildfly.clustering.ee.infinispan.TransactionBatch;
-import org.wildfly.clustering.ee.retry.RetryingInvoker;
+import org.wildfly.clustering.ee.cache.CacheProperties;
+import org.wildfly.clustering.ee.cache.retry.RetryingInvoker;
+import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.infinispan.spi.PredicateKeyFilter;
@@ -69,10 +62,12 @@ import org.wildfly.clustering.infinispan.spi.distribution.Key;
 import org.wildfly.clustering.infinispan.spi.distribution.Locality;
 import org.wildfly.clustering.spi.NodeFactory;
 import org.wildfly.clustering.web.IdentifierFactory;
+import org.wildfly.clustering.web.cache.session.ImmutableSessionActivationNotifier;
+import org.wildfly.clustering.web.cache.session.ImmutableSessionBindingNotifier;
+import org.wildfly.clustering.web.cache.session.SessionFactory;
+import org.wildfly.clustering.web.cache.session.SimpleImmutableSession;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
-import org.wildfly.clustering.web.session.ImmutableHttpSessionAdapter;
 import org.wildfly.clustering.web.session.ImmutableSession;
-import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionAttributes;
@@ -306,17 +301,8 @@ public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, Tr
             Map.Entry<MV, AV> value = this.factory.findValue(id);
             if (value != null) {
                 ImmutableSession session = this.factory.createImmutableSession(id, value);
-                ImmutableSessionAttributes attributes = session.getAttributes();
 
-                HttpSession httpSession = new ImmutableHttpSessionAdapter(session, this.context);
-
-                for (String name: attributes.getAttributeNames()) {
-                    Object attribute = attributes.getAttribute(name);
-                    if (attribute instanceof HttpSessionBindingListener) {
-                        HttpSessionBindingListener listener = (HttpSessionBindingListener) attribute;
-                        listener.valueUnbound(new HttpSessionBindingEvent(httpSession, name, attribute));
-                    }
-                }
+                new ImmutableSessionBindingNotifier(session, this.context).unbound();
 
                 if (this.recorder != null) {
                     this.recorder.record(session);
@@ -326,35 +312,11 @@ public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, Tr
     }
 
     void triggerPrePassivationEvents(ImmutableSession session) {
-        List<HttpSessionActivationListener> listeners = findListeners(session);
-        if (!listeners.isEmpty()) {
-            HttpSessionEvent event = new HttpSessionEvent(new ImmutableHttpSessionAdapter(session, this.context));
-            for (HttpSessionActivationListener listener : listeners) {
-                listener.sessionWillPassivate(event);
-            }
-        }
+        new ImmutableSessionActivationNotifier(session, this.context).prePassivate();
     }
 
     void triggerPostActivationEvents(ImmutableSession session) {
-        List<HttpSessionActivationListener> listeners = findListeners(session);
-        if (!listeners.isEmpty()) {
-            HttpSessionEvent event = new HttpSessionEvent(new ImmutableHttpSessionAdapter(session, this.context));
-            for (HttpSessionActivationListener listener : listeners) {
-                listener.sessionDidActivate(event);
-            }
-        }
-    }
-
-    private static List<HttpSessionActivationListener> findListeners(ImmutableSession session) {
-        ImmutableSessionAttributes attributes = session.getAttributes();
-        List<HttpSessionActivationListener> listeners = new ArrayList<>(attributes.getAttributeNames().size());
-        for (String name : attributes.getAttributeNames()) {
-            Object attribute = attributes.getAttribute(name);
-            if (attribute instanceof HttpSessionActivationListener) {
-                listeners.add((HttpSessionActivationListener) attribute);
-            }
-        }
-        return listeners;
+        new ImmutableSessionActivationNotifier(session, this.context).postActivate();
     }
 
     // Session decorator that performs scheduling on close().

@@ -176,7 +176,7 @@ public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTest
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
-                if (cacheMode.isInvalidation()) {
+                if (!this.cacheMode.needsStateTransfer()) {
                     Assert.assertNotNull(entry);
                     Assert.assertEquals(NODE_3, entry.getValue());
                 } else {
@@ -207,7 +207,7 @@ public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTest
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
-                if (cacheMode.isInvalidation()) {
+                if (!this.cacheMode.needsStateTransfer()) {
                     Assert.assertNotNull(entry);
                     Assert.assertEquals(NODE_2, entry.getValue());
                 } else if (entry != null) {
@@ -238,7 +238,7 @@ public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTest
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
-                if (cacheMode.isInvalidation()) {
+                if (!this.cacheMode.needsStateTransfer()) {
                     Assert.assertNotNull(entry);
                     Assert.assertEquals(NODE_3, entry.getValue());
                 } else {
@@ -289,7 +289,7 @@ public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTest
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
-                if (cacheMode.isInvalidation()) {
+                if (!this.cacheMode.needsStateTransfer()) {
                     Assert.assertNotNull(entry);
                     Assert.assertEquals(NODE_3, entry.getValue());
                 } else {
@@ -330,7 +330,7 @@ public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTest
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
-                if (cacheMode.isInvalidation()) {
+                if (!this.cacheMode.needsStateTransfer()) {
                     Assert.assertNotNull(entry);
                     Assert.assertEquals(NODE_1, entry.getValue());
                 } else if (entry != null) {
@@ -360,11 +360,13 @@ public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTest
     }
 
     private void establishTopology(URL baseURL, String... nodes) throws URISyntaxException, IOException, InterruptedException {
-        ClusterHttpClientUtil.establishTopology(baseURL, "web", this.deploymentName, nodes);
+        if (this.cacheMode.isClustered()) {
+            ClusterHttpClientUtil.establishTopology(baseURL, "web", this.deploymentName, nodes);
 
-        // TODO we should be able to speed this up by observing changes in the routing registry
-        // prevents failing assertions when topology information is expected, e.g.:
-        //java.lang.AssertionError: expected null, but was:<bpAmUlICzeXMtFiOJvTiOCASbXNivRdHTIlQC00c=node-2>
-        Thread.sleep(GRACE_TIME_TOPOLOGY_CHANGE);
+            // TODO we should be able to speed this up by observing changes in the routing registry
+            // prevents failing assertions when topology information is expected, e.g.:
+            //java.lang.AssertionError: expected null, but was:<bpAmUlICzeXMtFiOJvTiOCASbXNivRdHTIlQC00c=node-2>
+            Thread.sleep(GRACE_TIME_TOPOLOGY_CHANGE);
+        }
     }
 }

@@ -30,7 +30,7 @@ import java.util.UUID;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
-import org.wildfly.clustering.web.infinispan.SessionIdentifierSerializer;
+import org.wildfly.clustering.web.cache.SessionIdentifierSerializer;
 
 @MetaInfServices(Externalizer.class)
 public class SessionAttributeKeyExternalizer implements Externalizer<SessionAttributeKey> {

@@ -24,6 +24,7 @@ package org.wildfly.clustering.web.session;
 
 import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.immutable.AnnotationImmutability;
+
 import org.wildfly.clustering.web.annotation.Immutable;
 
 /**
