@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <endpoint xmlns="urn:jboss-remoting:5.0">
+        <connections>
+            <connection destination="remote+http://localhost:8080" read-timeout="20000" write-timeout="20000" heartbeat-interval="10000"/>
+            <connection destination="remote+http://localhost:8380" read-timeout="20000" write-timeout="20000" heartbeat-interval="10000"/>
+        </connections>
+    </endpoint>
+</configuration>
