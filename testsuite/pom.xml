@@ -206,7 +206,7 @@
 
                <!--
                    A build of target/wildfly which is shared by all modules.
-                   Modules and bundles are not copied as they are read-only (see surefire props).
+                   Bundles are not copied as they are read-only (see surefire props).
                -->
                <plugin>
                    <groupId>org.apache.maven.plugins</groupId>
@@ -231,7 +231,6 @@
                                            <exclude>bin/*.bat</exclude>
                                            <exclude>bin/*.ps1</exclude>
                                            <exclude>docs/</exclude>
-                                           <exclude>modules/</exclude>
                                            <exclude>welcome-content/*.png</exclude>
                                            <exclude>standalone/data</exclude>
                                            <exclude>standalone/log</exclude>

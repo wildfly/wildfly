@@ -34,6 +34,10 @@
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
         <surefire.forked.process.timeout>3600</surefire.forked.process.timeout>
+
+        <!-- Used to provide an absolute location for the distribution under test. -->
+        <jboss.dist>${project.build.directory}/wildfly</jboss.dist>
+        <jboss.home>${jbossas.project.dir}/${wildfly.build.output.dir}</jboss.home>
     </properties>
 
     <dependencies>
