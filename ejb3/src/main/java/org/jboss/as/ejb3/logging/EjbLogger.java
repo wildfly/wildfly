@@ -103,6 +103,7 @@ import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.logging.annotations.Param;
 import org.jboss.logging.annotations.Signature;
 import org.jboss.metadata.ejb.spec.MethodParametersMetaData;
+import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
@@ -3192,4 +3193,7 @@ public interface EjbLogger extends BasicLogger {
 
     @Message(id = 512, value = "Method %s in server interceptor %s annotated with %s has invalid signature")
     RuntimeException serverInterceptorInvalidMethod(String methodName, String interceptorClass, String annotationClass, @Cause Exception e);
+
+    @Message(id = 513, value = "Cannot load server interceptor module %s")
+    RuntimeException cannotLoadServerInterceptorModule(ModuleIdentifier moduleId, @Cause Exception e);
 }

@@ -36,8 +36,8 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.CL
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.DEFAULT_CLUSTERED_SFSB_CACHE;
 
 import java.net.URI;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Supplier;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
@@ -115,6 +115,8 @@ import org.jboss.as.ejb3.deployment.processors.security.JaccEjbDeploymentProcess
 import org.jboss.as.ejb3.iiop.POARegistry;
 import org.jboss.as.ejb3.iiop.RemoteObjectSubstitutionService;
 import org.jboss.as.ejb3.iiop.stub.DynamicStubFactoryFactory;
+import org.jboss.as.ejb3.interceptor.server.ServerInterceptorMetaData;
+import org.jboss.as.ejb3.interceptor.server.ServerInterceptorCache;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.remote.AssociationService;
 import org.jboss.as.ejb3.remote.ClientMappingsRegistryServiceConfigurator;
@@ -379,24 +381,25 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         }
 
         if (model.hasDefined(SERVER_INTERCEPTORS)) {
-            final Set<String> serverInterceptorModules = new HashSet<>();
-            final Set<String> serverInterceptorClasses = new HashSet<>();
+            final List<ServerInterceptorMetaData> serverInterceptors = new ArrayList<>();
 
-            final ModelNode serverInterceptors = model.get(SERVER_INTERCEPTORS);
-            for(final ModelNode serverInterceptor: serverInterceptors.asList()){
-                serverInterceptorModules.add(serverInterceptor.get("module").asString());
-                serverInterceptorClasses.add(serverInterceptor.get("class").asString());
+            final ModelNode serverInterceptorsNode = model.get(SERVER_INTERCEPTORS);
+            for(final ModelNode serverInterceptor: serverInterceptorsNode.asList()){
+                serverInterceptors.add(new ServerInterceptorMetaData(serverInterceptor.get("module").asString(), serverInterceptor.get("class").asString()));
             }
+
             context.addStep(new AbstractDeploymentChainStep() {
                 protected void execute(DeploymentProcessorTarget processorTarget) {
                     processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_EJB_SERVER_INTERCEPTORS,
-                            new ServerInterceptorsDependenciesDeploymentUnitProcessor(serverInterceptorModules));
+                            new ServerInterceptorsDependenciesDeploymentUnitProcessor(serverInterceptors));
                 }
             }, OperationContext.Stage.RUNTIME);
+
+            final ServerInterceptorCache serverInterceptorCache = new ServerInterceptorCache(serverInterceptors);
             context.addStep(new AbstractDeploymentChainStep() {
                 protected void execute(DeploymentProcessorTarget processorTarget) {
                     processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_SERVER_INTERCEPTORS,
-                            new ServerInterceptorsBindingsProcessor(serverInterceptorClasses));
+                            new ServerInterceptorsBindingsProcessor(serverInterceptorCache));
                 }
             }, OperationContext.Stage.RUNTIME);
         }

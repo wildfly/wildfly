@@ -47,7 +47,6 @@ import javax.ejb.EJBLocalObject;
 import javax.ejb.TimerService;
 import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagementType;
-import javax.interceptor.AroundTimeout;
 import javax.interceptor.InvocationContext;
 import javax.transaction.TransactionSynchronizationRegistry;
 
@@ -72,9 +71,7 @@ import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.ViewService;
 import org.jboss.as.ee.component.interceptors.ComponentDispatcherInterceptor;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
-import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.naming.ContextInjectionSource;
-import org.jboss.as.ee.utils.ClassLoadingUtils;
 import org.jboss.as.ejb3.component.interceptors.AdditionalSetupInterceptor;
 import org.jboss.as.ejb3.component.interceptors.CurrentInvocationContextInterceptor;
 import org.jboss.as.ejb3.component.interceptors.EjbExceptionTransformingInterceptorFactories;
@@ -87,6 +84,7 @@ import org.jboss.as.ejb3.deployment.ApplicationExceptions;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
+import org.jboss.as.ejb3.interceptor.server.ServerInterceptorCache;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.security.ApplicationSecurityDomainConfig;
 import org.jboss.as.ejb3.security.EJBMethodSecurityAttribute;
@@ -130,7 +128,6 @@ import org.jboss.jandex.Indexer;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
-import org.jboss.modules.Module;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -285,7 +282,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
      */
     private Set<InterceptorDescription> allContainerInterceptors;
 
-    private Set<InterceptorDescription> serverInterceptors = new HashSet<>();
+    private ServerInterceptorCache serverInterceptorCache = null;
 
     /**
      * missing-method-permissions-deny-access that's used for secured EJBs
@@ -381,20 +378,9 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                     }
 
                     //server side interceptors
-                    final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
-                    final List<InterceptorFactory> serverInterceptorsAroundTimeout = new ArrayList<>();
-                    for (final InterceptorDescription interceptorDescription : serverInterceptors) {
-                        final String interceptorClassName = interceptorDescription.getInterceptorClassName();
-                        final Class<?> interceptorClass;
-                        try {
-                            interceptorClass = ClassLoadingUtils.loadClass(interceptorClassName, module);
-                        } catch (ClassNotFoundException e) {
-                            throw EeLogger.ROOT_LOGGER.cannotLoadInterceptor(e, interceptorClassName);
-                        }
-                        final Index index = buildIndexForClass(interceptorClass);
-                        serverInterceptorsAroundTimeout.addAll(findAnnotatedMethods(interceptorClass, index, AroundTimeout.class));
+                    if(serverInterceptorCache != null) {
+                        configuration.addTimeoutViewInterceptor(weaved(serverInterceptorCache.getServerInterceptorsAroundTimeout()), InterceptorOrder.View.USER_APP_SPECIFIC_CONTAINER_INTERCEPTORS);
                     }
-                    configuration.addTimeoutViewInterceptor(weaved(serverInterceptorsAroundTimeout), InterceptorOrder.View.USER_APP_SPECIFIC_CONTAINER_INTERCEPTORS);
                 }
                 if (!ejbSetupActions.isEmpty()) {
                     configuration.getStartDependencies().add(new DependencyConfigurator<ComponentStartService>() {
@@ -1225,8 +1211,12 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         return this.allContainerInterceptors;
     }
 
-    public Set<InterceptorDescription> getServerInterceptors(){
-        return serverInterceptors;
+    public ServerInterceptorCache getServerInterceptorCache() {
+        return serverInterceptorCache;
+    }
+
+    public void setServerInterceptorCache(ServerInterceptorCache serverInterceptorCache) {
+        this.serverInterceptorCache = serverInterceptorCache;
     }
 
     public String getPolicyContextID() {
