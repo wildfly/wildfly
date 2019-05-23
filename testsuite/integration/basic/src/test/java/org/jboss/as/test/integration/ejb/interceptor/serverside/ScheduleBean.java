@@ -21,17 +21,26 @@
  */
 package org.jboss.as.test.integration.ejb.interceptor.serverside;
 
-
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import javax.ejb.Local;
+import javax.ejb.Schedule;
+import javax.ejb.Stateless;
+import javax.ejb.Timer;
 
 /**
- * A test suite verifying an ability of adding a server-side configured interceptor without changing deployments.
- * See https://issues.jboss.org/browse/WFLY-6143 for more details.
- *
  * @author <a href="mailto:szhantem@redhat.com">Sultan Zhantemirov</a> (c) 2019 Red Hat, inc.
  */
-@RunWith(Suite.class)
-@Suite.SuiteClasses(value= {ServerInterceptorsTestCase.class, ServerInterceptorsExecutionTestCase.class})
-public class ServerInterceptorsTestSuite {
+@Stateless
+@Local
+public class ScheduleBean {
+    private static String timerInfo;
+
+    public String getTimerInfo() {
+        return timerInfo;
+    }
+
+    @Schedule(second="0/2", minute = "*", hour = "*", info = "info")
+    public void timeout(Timer timer) {
+        timerInfo = (String) timer.getInfo();
+    }
+
 }
