@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.subsystem;
 
 
 
+import org.jboss.as.ejb3.interceptor.server.ServerInterceptorMetaData;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -36,16 +37,19 @@ import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 
 import java.util.Collection;
+import java.util.HashSet;
 
 /**
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  */
 public class ServerInterceptorsDependenciesDeploymentUnitProcessor implements DeploymentUnitProcessor {
 
-    final Collection<String> interceptorModules;
+    final Collection<String> interceptorModules = new HashSet<>();
 
-    public ServerInterceptorsDependenciesDeploymentUnitProcessor(final Collection<String> interceptorModules){
-        this.interceptorModules = interceptorModules;
+    public ServerInterceptorsDependenciesDeploymentUnitProcessor(final Collection<ServerInterceptorMetaData> serverInterceptors){
+        for(final ServerInterceptorMetaData si: serverInterceptors){
+            interceptorModules.add(si.getModule());
+        }
     }
 
     @Override
