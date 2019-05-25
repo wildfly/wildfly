@@ -25,7 +25,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>17.0.0.Beta1-SNAPSHOT</version>
+        <version>17.0.0.Beta1</version>
     </parent>
 
     <artifactId>wildfly-quickstarts-bom-builder</artifactId>
