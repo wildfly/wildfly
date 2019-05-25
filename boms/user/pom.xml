@@ -91,6 +91,7 @@
     <modules>
         <module>client</module>
         <module>javaee8</module>
+        <module>quickstarts</module>
     </modules>
 
 </project>
