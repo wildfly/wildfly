@@ -58,6 +58,7 @@ import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.weld.ServiceNames;
 import org.jboss.as.weld.WeldBootstrapService;
 import org.jboss.as.weld._private.WeldDeploymentMarker;
+import org.jboss.as.weld.WeldStartCompletionService;
 import org.jboss.as.weld.WeldStartService;
 import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl;
 import org.jboss.as.weld.deployment.BeanDeploymentModule;
@@ -125,7 +126,9 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         //add a dependency on the weld service to web deployments
         final ServiceName weldBootstrapServiceName = parent.getServiceName().append(WeldBootstrapService.SERVICE_NAME);
         ServiceName weldStartServiceName = parent.getServiceName().append(WeldStartService.SERVICE_NAME);
+        ServiceName weldStartCompletionServiceName = parent.getServiceName().append(WeldStartCompletionService.SERVICE_NAME);
         deploymentUnit.addToAttachmentList(Attachments.WEB_DEPENDENCIES, weldStartServiceName);
+        deploymentUnit.addToAttachmentList(Attachments.WEB_DEPENDENCIES, weldStartCompletionServiceName);
 
         final Set<ServiceName> dependencies = new HashSet<ServiceName>();
 
