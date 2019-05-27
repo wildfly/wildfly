@@ -176,6 +176,27 @@ always returns the same constant.
 principal decoder.
 |=======================================================================
 
+[[evidence-decoders]]
+=== Evidence Decoders
+
+[cols=",",options="header"]
+|=======================================================================
+|Component |Description
+
+|x509-subject-alt-name-evidence-decoder |An evidence decoder that derives the
+principal associated with a certificate chain from an X.509 subject alternative
+name from the first certificate in the given chain.
+
+|x500-subject-evidence-decoder |An evidence decoder that derives the principal
+associated with a certificate chain from the subject from the first certificate
+in the given chain.
+
+|aggregate-evidence-decoder |An evidence decoder that is an aggregation of other
+evidence decoders. Given evidence, these evidence decoders will be attempted in
+order until one returns a non-null principal or until there are no more evidence
+decoders left to try.
+|=======================================================================
+
 [[realm-mappers]]
 === Realm Mappers
 
@@ -492,6 +513,7 @@ and openssl provider loaders.
         "security-properties" => undefined,
         "add-prefix-role-mapper" => undefined,
         "add-suffix-role-mapper" => undefined,
+        "aggregate-evidence-decoder" => undefined,
         "aggregate-http-server-mechanism-factory" => undefined,
         "aggregate-principal-decoder" => undefined,
         "aggregate-principal-transformer" => undefined,
@@ -742,7 +764,9 @@ and openssl provider loaders.
         "syslog-audit-log" => undefined,
         "token-realm" => undefined,
         "trust-manager" => undefined,
-        "x500-attribute-principal-decoder" => undefined
+        "x500-attribute-principal-decoder" => undefined,
+        "x500-subject-evidence-decoder" => undefined,
+        "x509-subject-alt-name-evidence-decoder" => undefined
     }
 }
 ----

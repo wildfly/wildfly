@@ -413,6 +413,101 @@ truststore configured in _ksRealm_.
 *IMPORTANT:* The decoded principal * *MUST** must be the _alias_ value
 you set in your server's truststore for the client's certificate.
 
+[[configure-an-evidence-decoder.]]
+==== Configure an evidence-decoder
+
+By default, the principal associated with a certificate will be the subject name
+from the certificate. This subject name will then be rewritten using any configured
+principal decoders and principal transformers to obtain the name that should be used
+when locating and loading the identity from the underlying identity store.
+
+To specify that a subject alternative name from a certificate should be used as the
+principal associated with that certificate, an `x509-subject-alt-name-evidence-decoder`
+needs to be configured. This element has two attributes:
+
+** `alt-name-type` - The subject alternative name type to decode. This attribute is
+required. Must be one of the subject alternative name types that can be represented
+as a `String`:
+*** `rfc822Name`
+*** `dNSName`
+*** `uniformResourceIdentifier`
+*** `iPAddress`
+*** `registeredID`
+*** `directoryName`
+
+** `segment` - The 0-based occurrence of the subject alternative name to map. This
+attribute is optional and only used when there is more than one subject alternative
+name of the given `alt-name-type`. The default value is `0`.
+
+For example, consider the following X.509 v3 Subject Alternative Name extension from
+the first certificate in an X.509 certificate chain:
+
+[source,xml]
+----
+X509v3 Subject Alternative Name:
+DNS:one.example.org, IP Address:127.0.0.1
+----
+
+To associate the certificate chain evidence with the principal "one.example.org", the
+following `x509-subject-alt-name-evidence-decoder` could be configured:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/x509-subject-alt-name-evidence-decoder=exampleDnsDecoder:add(alt-name-type=dNSName)
+----
+
+Next, consider the following X.509 v3 Subject Alternative Name extension from the first
+certificate in an X.509 certificate chain:
+
+[source,xml]
+----
+X509v3 Subject Alternative Name:
+DNS:one.example.org, DNS:two.example.org, IP Address:127.0.0.1
+----
+
+To associate the evidence with the principal "two.example.org", the following
+`x509-subject-alt-name-evidence-decoder` could be configured:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/x509-subject-alt-name-evidence-decoder=anotherDnsDecoder:add(alt-name-type=dNSName, segment=1)
+----
+
+It is also possible to configure an `x500-subject-evidence-decoder`. This evidence decoder
+will extract the subject from the first certificate in the certificate chain, as an `X500Principal`.
+Example configuration:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/x500-subject-evidence-decoder=exampleSubjectDecoder:add()
+----
+
+Finally, it is also possible to configure an `aggregate-evidence-decoder`. This consists of
+two or more `evidence-decoder` elements where each element is reference to a configured
+evidence decoder. Given evidence, these evidence decoders will be attempted in order until
+one returns a non-null principal or until there are no more evidence decoders left to try.
+
+Example configuration:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/x509-subject-alt-name-evidence-decoder=emailDecoder:add(alt-name-type=rfc822Name)
+/subsystem=elytron/x509-subject-alt-name-evidence-decoder=dnsDecoder:add(alt-name-type=dNSName)
+/subsystem=elytron/x500-subject-evidence-decoder=subjectDecoder:add()
+/subsystem=elytron/aggregate-evidence-decoder=aggregateDecoder:add(evidence-decoders=[emailDecoder,subjectDecoder,dnsDecoder])
+----
+
+Once an `evidence-decoder` has been configured, it can be referenced from a `security-domain`:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/security-domain=exampleCertSD:add(..., evidence-decoder=aggregateDecoder)
+----
+
+If no `evidence-decoder` is specified for a `security-domain`, then the principal associated with the evidence will
+just be the default principal for the evidence type, i.e., for an X.509 certificate chain, this would continue to
+default to the subject from the first certificate in the certificate chain.
+
 [[add-a-constant-role-mapper-for-assigning-roles.]]
 ==== Add a constant-role-mapper for assigning roles.
 
