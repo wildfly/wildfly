@@ -208,7 +208,7 @@
                                 <phase>none</phase>
                             </execution>
 
-                            <!-- Multi-node clustering tests excluding EJB tests -->
+                            <!-- Multi-node clustering tests -->
                             <execution>
                                 <id>ts.surefire.clustering.all</id>
                                 <phase>test</phase>
@@ -222,15 +222,6 @@
                                     <includes>
                                         <include>${test-group}/**/*TestCase.java</include>
                                     </includes>
-                                    <!-- Exclude test groups that require disabled fork reuse (i.e. tests using EJB client) corresponding
-                                     to the includes in the following execution. -->
-                                    <excludes>
-                                        <exclude>${test-group}/dispatcher/**/*TestCase.java</exclude>
-                                        <exclude>${test-group}/ejb/**/*TestCase.java</exclude>
-                                        <exclude>${test-group}/ejb2/**/*TestCase.java</exclude>
-                                        <exclude>${test-group}/provider/**/*TestCase.java</exclude>
-                                        <exclude>${test-group}/registry/**/*TestCase.java</exclude>
-                                    </excludes>
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
                                         <node0>${node0}</node0>
@@ -242,43 +233,8 @@
                                         <mcast2>${mcast2}</mcast2>
                                         <mcast3>${mcast3}</mcast3>
                                         <arquillian.launch>clustering-all</arquillian.launch>
-                                        <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
-                                        <!-- Override ${server.jvm.arg} to only include ${jvm.args.ip} but *not* include ${jvm.args.ip.server} -->
-                                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.other} ${jvm.args.timeouts} ${jvm.args.dirs} ${extra.server.jvm.args}</server.jvm.args>
-                                        <version.org.infinispan>${version.org.infinispan}</version.org.infinispan>
-                                    </systemPropertyVariables>
-                                </configuration>
-                            </execution>
-
-                            <!-- Multi-node clustering tests with fork reuse disabled for EJB tests -->
-                            <execution>
-                                <id>ts.surefire.clustering.all-ejb</id>
-                                <phase>test</phase>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
-                                <configuration>
-                                    <!-- Needed for EJB client tests -->
-                                    <reuseForks>false</reuseForks>
-                                    <runOrder>alphabetical</runOrder>
-                                    <includes>
-                                        <include>${test-group}/dispatcher/**/*TestCase.java</include>
-                                        <include>${test-group}/ejb/**/*TestCase.java</include>
-                                        <include>${test-group}/ejb2/**/*TestCase.java</include>
-                                        <include>${test-group}/provider/**/*TestCase.java</include>
-                                        <include>${test-group}/registry/**/*TestCase.java</include>
-                                    </includes>
-                                    <systemPropertyVariables combine.children="append">
-                                        <node0>${node0}</node0>
-                                        <node1>${node1}</node1>
-                                        <node2>${node2}</node2>
-                                        <node3>${node3}</node3>
-                                        <mcast>${mcast}</mcast>
-                                        <mcast1>${mcast1}</mcast1>
-                                        <mcast2>${mcast2}</mcast2>
-                                        <mcast3>${mcast3}</mcast3>
-                                        <arquillian.launch>clustering-all</arquillian.launch>
                                         <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
+                                        <!-- Override ${server.jvm.arg} to only include ${jvm.args.ip} but *not* include ${jvm.args.ip.server} -->
                                         <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.other} ${jvm.args.timeouts} ${jvm.args.dirs} ${extra.server.jvm.args}</server.jvm.args>
                                         <version.org.infinispan>${version.org.infinispan}</version.org.infinispan>
                                     </systemPropertyVariables>
@@ -308,7 +264,7 @@
                 </plugins>
             </build>
         </profile>
-        <!-- Disable other surefire executions when using -Dtest=... -->
+        <!-- Disable single node tests surefire executions when using -Dtest=... -->
         <profile>
             <id>ts.clustering.disable-executions-single-test</id>
             <activation>
@@ -322,10 +278,6 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <executions>
-                            <execution>
-                                <id>ts.surefire.clustering.all</id>
-                                <phase>none</phase>
-                            </execution>
                             <execution>
                                 <id>ts.surefire.clustering.single-node</id>
                                 <phase>none</phase>

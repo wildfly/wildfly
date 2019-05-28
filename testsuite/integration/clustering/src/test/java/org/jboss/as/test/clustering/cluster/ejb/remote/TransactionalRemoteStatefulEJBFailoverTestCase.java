@@ -28,8 +28,11 @@ import javax.ejb.NoSuchEJBException;
 import javax.transaction.UserTransaction;
 
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Incrementor;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.IncrementorBean;
@@ -37,6 +40,7 @@ import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Result;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.StatefulIncrementorBean;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.shrinkwrap.api.Archive;
@@ -75,7 +79,10 @@ public class TransactionalRemoteStatefulEJBFailoverTestCase extends AbstractClus
     }
 
     @Test
-    public void test() throws Exception {
+    public void test(
+            @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) ManagementClient client1,
+            @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) ManagementClient client2
+    ) throws Exception {
         try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME)) {
             Incrementor bean = directory.lookupStateful(StatefulIncrementorBean.class, Incrementor.class);
 
@@ -119,6 +126,13 @@ public class TransactionalRemoteStatefulEJBFailoverTestCase extends AbstractClus
                 // Expected
             } finally {
                 tx.rollback();
+
+                // TODO remove workaround for WFLY-12128
+                undeploy(TWO_DEPLOYMENTS);
+                ServerReload.executeReloadAndWaitForCompletion(client1);
+                ServerReload.executeReloadAndWaitForCompletion(client2);
+                // Workaround the above yielding "DeploymentException: Cannot deploy StatefulFailoverTestCase.war: WFLYCTL0379: System boot is in process; execution of remote management operations is not currently available"
+                Thread.sleep(GRACE_TIME_TOPOLOGY_CHANGE);
             }
         }
     }
