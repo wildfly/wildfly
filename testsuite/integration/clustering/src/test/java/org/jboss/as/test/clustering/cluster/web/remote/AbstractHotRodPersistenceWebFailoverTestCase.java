@@ -52,8 +52,7 @@ public abstract class AbstractHotRodPersistenceWebFailoverTestCase extends Abstr
     }
 
     public AbstractHotRodPersistenceWebFailoverTestCase(String deploymentName) {
-        // Use NON_TRANSACTIONAL to workaround for ISPN-10029
-        super(deploymentName, CacheMode.INVALIDATION_SYNC, TransactionMode.NON_TRANSACTIONAL);
+        super(deploymentName, CacheMode.INVALIDATION_SYNC, TransactionMode.TRANSACTIONAL);
     }
 
     @Override

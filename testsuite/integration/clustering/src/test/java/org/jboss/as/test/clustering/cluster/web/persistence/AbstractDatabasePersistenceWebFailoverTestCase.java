@@ -46,13 +46,12 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public abstract class AbstractDatabasePersistenceWebFailoverTestCase extends AbstractWebFailoverTestCase {
 
-    public AbstractDatabasePersistenceWebFailoverTestCase(String moduleName) {
-        // Use NON_TRANSACTIONAL to workaround for ISPN-10029
-        super(moduleName, CacheMode.INVALIDATION_SYNC, TransactionMode.TRANSACTIONAL);
+    public AbstractDatabasePersistenceWebFailoverTestCase(String deploymentName) {
+        super(deploymentName, CacheMode.INVALIDATION_SYNC, TransactionMode.TRANSACTIONAL);
     }
 
-    static Archive<?> getDeployment(String moduleName) {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, moduleName + ".war");
+    static Archive<?> getDeployment(String deploymentName) {
+        WebArchive war = ShrinkWrap.create(WebArchive.class, deploymentName);
         war.addClasses(SimpleServlet.class, Mutable.class);
         ClusterTestUtil.addTopologyListenerDependencies(war);
         war.setWebXML(AbstractWebFailoverTestCase.class.getPackage(), "web.xml");
