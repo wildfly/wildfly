@@ -34,6 +34,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MOD
 import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.net.URL;
+import java.security.PrivilegedExceptionAction;
 import java.util.concurrent.TimeUnit;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -56,6 +57,8 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
+
+import static java.security.AccessController.doPrivileged;
 
 /**
  * A test case verifying an ability of adding a server-side configured interceptor without changing deployments.
@@ -90,8 +93,12 @@ public class ServerInterceptorsTestCase {
         op.get(OP_ADDR).set(SUBSYSTEM, "ejb3");
         op.get(NAME).set("server-interceptors");
 
-        final ModelNode operationResult = managementClient.getControllerClient().execute(op);
-        assertTrue(operationResult.get(RESULT).asString().contains(moduleName));
+        doPrivileged((PrivilegedExceptionAction<Void>)() -> {
+            final ModelNode operationResult = managementClient.getControllerClient().execute(op);
+            assertTrue(operationResult.get(RESULT).asString().contains(moduleName));
+            return null;
+        });
+
     }
 
     @Test
