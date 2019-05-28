@@ -860,6 +860,11 @@
     </xs:complexType>
 
     <xs:complexType name="modClusterType">
+        <xs:sequence minOccurs="0">
+            <xs:choice>
+                <xs:group ref="affinity"/>
+            </xs:choice>
+        </xs:sequence>
         <xs:attribute name="name" use="required" type="xs:string"/>
         <xs:attribute name="management-socket-binding" type="xs:string" use="required"/>
         <xs:attribute name="advertise-socket-binding" type="xs:string" use="optional"/>
@@ -895,6 +900,48 @@
         <xs:attribute name="http2-max-frame-size" type="xs:int" use="optional" />
         <xs:attribute name="http2-max-header-list-size" type="xs:int" use="optional" />
         <xs:attribute name="max-retries" type="xs:int" use="optional" />
+    </xs:complexType>
+
+    <xs:group name="affinity">
+        <xs:choice>
+            <xs:element name="no-affinity" type="empty">
+                <xs:annotation>
+                    <xs:documentation>
+                        Web requests will not have an affinity for any particular server, routing information will be ignored.
+                        Intended for use cases where web session state is not maintained within the application server.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="single-affinity" type="empty">
+                <xs:annotation>
+                    <xs:documentation>
+                        Web requests have an affinity for the member that last handled a given session.
+                        This option corresponds to traditional sticky session behavior.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="ranked-affinity" type="ranked-affinity">
+                <xs:annotation>
+                    <xs:documentation>
+                        Web requests will have an affinity for the first available node in a list typically comprised of: primary owner, backup nodes, local node (if not a primary nor backup owner).
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:choice>
+    </xs:group>
+
+    <xs:complexType name="ranked-affinity">
+        <xs:attribute name="delimiter" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    The delimiter used to separate ranked routes within the session ID.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="empty">
+        <xs:sequence/>
     </xs:complexType>
 
     <xs:simpleType name="failoverStrategy">

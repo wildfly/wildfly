@@ -68,6 +68,9 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.undertow.filters.ModClusterDefinition;
+import org.wildfly.extension.undertow.filters.NoAffinityResourceDefinition;
+import org.wildfly.extension.undertow.filters.RankedAffinityResourceDefinition;
+import org.wildfly.extension.undertow.filters.SingleAffinityResourceDefinition;
 
 
 /**
@@ -112,6 +115,13 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
                     .addRejectCheck(RejectAttributeChecker.DEFINED, ENABLE_JASPI, INTEGRATED_JASPI)
                     .setDiscard(DiscardAttributeChecker.ALWAYS, ENABLE_JASPI, INTEGRATED_JASPI) // Discard so we don't send over the defaults.
                 .end();
+
+        ResourceTransformationDescriptionBuilder builder = subsystemBuilder.addChildResource(UndertowExtension.PATH_FILTERS)
+                .addChildResource(PathElement.pathElement(Constants.MOD_CLUSTER));
+
+        builder.rejectChildResource(NoAffinityResourceDefinition.PATH);
+        builder.discardChildResource(SingleAffinityResourceDefinition.PATH);
+        builder.rejectChildResource(RankedAffinityResourceDefinition.PATH);
     }
 
     private static void registerTransformers_EAP_7_1_0(ResourceTransformationDescriptionBuilder subsystemBuilder) {
