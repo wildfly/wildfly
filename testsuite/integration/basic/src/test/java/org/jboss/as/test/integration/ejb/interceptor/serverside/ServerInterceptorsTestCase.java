@@ -31,8 +31,11 @@ import static org.jboss.as.controller.client.helpers.ClientConstants.UNDEFINE_AT
 import static org.jboss.as.controller.client.helpers.ClientConstants.VALUE;
 import static org.jboss.as.controller.client.helpers.ClientConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODULE;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertTrue;
+
 import java.io.File;
+import java.io.FilePermission;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 import javax.naming.InitialContext;
@@ -47,6 +50,7 @@ import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.module.util.TestModule;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
+import org.jboss.remoting3.security.RemotingPermission;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -78,7 +82,13 @@ public class ServerInterceptorsTestCase {
     public static Archive<?> deploy() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "test-server-interceptor.jar");
         jar.addClasses(SampleBean.class, ScheduleBean.class);
-        jar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr \n"), "MANIFEST.MF");
+        jar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client," +
+                "org.jboss.dmr," + "org.jboss.remoting3\n"), "MANIFEST.MF");
+        jar.addAsManifestResource(createPermissionsXmlAsset(
+                new RemotingPermission("connect"),
+                new RemotingPermission("createEndpoint"),
+                new FilePermission(System.getProperty("jboss.inst") + "/standalone/tmp/auth/*", "read")
+        ), "permissions.xml");
         return jar;
     }
 
