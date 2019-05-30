@@ -56,7 +56,7 @@ public class VerifyHibernate51CompatibilityJDSEnabledTransformerTestCase
         ear.addAsModule(war);
 
         ear.addAsManifestResource(VerifyHibernate51CompatibilityJDSEnabledTransformerTestCase.class.getPackage(),
-                "jboss-deployment-structure.xml","jboss-deployment-structure.xml");
+                "jboss-deployment-structure.xml", "jboss-deployment-structure.xml");
         return ear;
     }
 }

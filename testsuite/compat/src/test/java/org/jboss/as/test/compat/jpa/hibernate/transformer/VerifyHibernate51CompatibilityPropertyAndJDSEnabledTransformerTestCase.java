@@ -25,12 +25,7 @@ package org.jboss.as.test.compat.jpa.hibernate.transformer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.arquillian.api.ServerSetupTask;
-import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.controller.client.helpers.Operations;
-import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
-import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
@@ -41,11 +36,14 @@ import org.junit.runner.RunWith;
 /**
  * Enable Hibernate bytecode transformer globally with system-property Hibernate51CompatibilityTransformer=true
  * and also enable it in application with jboss-deployment-structure.xml.
- *
+ * <p>
  * It should work, classes should be transformed only once (this test doesn't check it though)
  */
 @RunWith(Arquillian.class)
-@ServerSetup(VerifyHibernate51CompatibilityPropertyAndJDSEnabledTransformerTestCase.EnableHibernateBytecodeTransformerSetupTask.class)
+@ServerSetup({
+        AbstractVerifyHibernate51CompatibilityTestCase.EnableHibernateBytecodeTransformerSetupTask.class
+
+})
 public class VerifyHibernate51CompatibilityPropertyAndJDSEnabledTransformerTestCase
         extends AbstractVerifyHibernate51CompatibilityTestCase {
 
@@ -61,32 +59,12 @@ public class VerifyHibernate51CompatibilityPropertyAndJDSEnabledTransformerTestC
         ear.addAsModule(war);
 
         ear.addAsManifestResource(VerifyHibernate51CompatibilityJDSEnabledTransformerTestCase.class.getPackage(),
-                "jboss-deployment-structure.xml","jboss-deployment-structure.xml");
+                "jboss-deployment-structure.xml", "jboss-deployment-structure.xml");
         return ear;
     }
 
     @BeforeClass
     public static void skipSecurityManager() {
         AssumeTestGroupUtil.assumeSecurityManagerDisabled();
-    }
-
-    public static class EnableHibernateBytecodeTransformerSetupTask implements ServerSetupTask {
-        private static final ModelNode PROP_ADDR = new ModelNode()
-                .add("system-property", "Hibernate51CompatibilityTransformer");
-
-        @Override
-        public void setup(ManagementClient managementClient, String s) throws Exception {
-            ModelNode op = Operations.createAddOperation(PROP_ADDR);
-            op.get("value").set("true");
-            managementClient.getControllerClient().execute(op);
-            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
-        }
-
-        @Override
-        public void tearDown(ManagementClient managementClient, String s) throws Exception {
-            ModelNode op = Operations.createRemoveOperation(PROP_ADDR);
-            managementClient.getControllerClient().execute(op);
-            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
-        }
     }
 }

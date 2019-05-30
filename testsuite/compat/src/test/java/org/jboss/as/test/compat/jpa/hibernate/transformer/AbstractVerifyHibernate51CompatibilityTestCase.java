@@ -36,6 +36,11 @@ import java.util.Queue;
 import javax.inject.Inject;
 
 import org.hibernate.FlushMode;
+import org.jboss.as.arquillian.api.ServerSetupTask;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.client.helpers.Operations;
+import org.jboss.as.test.shared.ServerReload;
+import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -101,8 +106,7 @@ public abstract class AbstractVerifyHibernate51CompatibilityTestCase {
     private SFSBHibernateSessionFactory sfsb;
 
     protected static JavaArchive getLib() {
-        JavaArchive lib = ShrinkWrap.create(JavaArchive.class, "beans.jar");
-        lib = ShrinkWrap.create(JavaArchive.class, "entities.jar");
+        JavaArchive lib = ShrinkWrap.create(JavaArchive.class, "entities.jar");
         lib.addClasses(Student.class);
         lib.addClass(IntegerType.class);
         lib.addClass(IntegerUserVersionType.class);
@@ -461,5 +465,24 @@ public abstract class AbstractVerifyHibernate51CompatibilityTestCase {
             sfsb.cleanup();
         }
 
+    }
+
+    public static class EnableHibernateBytecodeTransformerSetupTask implements ServerSetupTask {
+        private static final ModelNode PROP_ADDR_ENABLETRANSFORMER = new ModelNode()
+                .add("system-property", "Hibernate51CompatibilityTransformer");
+
+        @Override
+        public void setup(ManagementClient managementClient, String s) throws Exception {
+            ModelNode op = Operations.createAddOperation(PROP_ADDR_ENABLETRANSFORMER);
+            op.get("value").set("true");
+            managementClient.getControllerClient().execute(op);
+        }
+
+        @Override
+        public void tearDown(ManagementClient managementClient, String s) throws Exception {
+            ModelNode op = Operations.createRemoveOperation(PROP_ADDR_ENABLETRANSFORMER);
+            managementClient.getControllerClient().execute(op);
+            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+        }
     }
 }
