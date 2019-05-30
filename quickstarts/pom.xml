@@ -38,12 +38,6 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>org.wildfly.bom</groupId>
-                <artifactId>wildfly-javaee8-with-tools</artifactId>
-                <version>${project.version}</version>
-                <type>pom</type>
-            </dependency>
-            <dependency>
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-parent</artifactId>
                 <version>${version.server}</version>
@@ -132,14 +126,6 @@
                                     <artifactId>javassist</artifactId>
                                 </dependency>
                             </includeDependencies>
-                            <importDependencies>
-                                <!--  jboss spec java ee8 bom should be in BOM's dep management with import scope -->
-                                <dependency>
-                                    <groupId>org.wildfly.bom</groupId>
-                                    <artifactId>wildfly-javaee8-with-tools</artifactId>
-                                    <type>pom</type>
-                                </dependency>
-                            </importDependencies>
                         </configuration>
                     </execution>
                 </executions>
