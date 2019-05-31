@@ -75,7 +75,12 @@ public class CoarseSessionAttributes extends CoarseImmutableSessionAttributes im
         Object old = this.attributes.put(name, value);
         this.mutator.mutate();
         if (this.mutations != null) {
-            this.mutations.remove(name);
+            // If the object is mutable, we need to indicate trigger a mutation on close
+            if (this.immutability.test(value)) {
+                this.mutations.remove(name);
+            } else {
+                this.mutations.add(name);
+            }
         }
         return old;
     }
