@@ -31,11 +31,10 @@ import org.jboss.shrinkwrap.api.Archive;
 /**
  * @author Paul Ferraro
  */
-@ServerSetup({ CoarseDatabasePersistenceWebFailoverTestCase.ServerSetupTask.class, AbstractDatabasePersistenceWebFailoverTestCase.ServerSetupTask.class })
-@org.junit.Ignore("Fails intermittently due to ISPN-10029")
+@ServerSetup({ AbstractDatabasePersistenceWebFailoverTestCase.ServerSetupTask.class, CoarseDatabasePersistenceWebFailoverTestCase.ServerSetupTask.class })
 public class CoarseDatabasePersistenceWebFailoverTestCase extends AbstractDatabasePersistenceWebFailoverTestCase {
 
-    private static final String MODULE_NAME = CoarseDatabasePersistenceWebFailoverTestCase.class.getSimpleName();
+    private static final String DEPLOYMENT_NAME = CoarseDatabasePersistenceWebFailoverTestCase.class.getSimpleName() + ".war";
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(NODE_1)
@@ -56,11 +55,11 @@ public class CoarseDatabasePersistenceWebFailoverTestCase extends AbstractDataba
     }
 
     private static Archive<?> getDeployment() {
-        return getDeployment(MODULE_NAME);
+        return getDeployment(DEPLOYMENT_NAME);
     }
 
     public CoarseDatabasePersistenceWebFailoverTestCase() {
-        super(MODULE_NAME);
+        super(DEPLOYMENT_NAME);
     }
 
     public static class ServerSetupTask extends CLIServerSetupTask {
