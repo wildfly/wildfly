@@ -706,7 +706,7 @@ public class WebMigrateOperation implements OperationStepHandler {
         StringBuilder sb = new StringBuilder();
         int lastIndex = 0;
         while (m.find()) {
-            sb.append(legacyPattern.substring(lastIndex, m.start()));
+            sb.append(legacyPattern, lastIndex, m.start());
             lastIndex = m.end();
             sb.append("%{");
             sb.append(m.group(2));
