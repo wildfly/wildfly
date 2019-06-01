@@ -144,7 +144,7 @@ public class DescriptorUtils {
     }
 
     public static String returnType(String methodDescriptor) {
-        return methodDescriptor.substring(methodDescriptor.lastIndexOf(')') + 1, methodDescriptor.length());
+        return methodDescriptor.substring(methodDescriptor.lastIndexOf(')') + 1);
     }
 
 

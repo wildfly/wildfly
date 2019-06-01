@@ -74,7 +74,7 @@ public abstract class ResourceDefinitionInjectionSource extends InjectionSource 
                 String propertyValue;
                 if (index != -1) {
                     propertyName = annotationProperty.substring(0, index);
-                    propertyValue = annotationProperty.length() > index ? annotationProperty.substring(index + 1, annotationProperty.length()) : "";
+                    propertyValue = annotationProperty.length() > index ? annotationProperty.substring(index + 1) : "";
                 } else {
                     propertyName = annotationProperty;
                     propertyValue = "";
