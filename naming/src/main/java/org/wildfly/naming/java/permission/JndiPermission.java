@@ -364,7 +364,7 @@ public final class JndiPermission extends Permission {
         for (;;) {
             String str;
             if (idx == -1) {
-                str = actionsString.substring(pos, actionsString.length()).trim();
+                str = actionsString.substring(pos).trim();
                 if (! str.isEmpty()) actions |= parseAction(str);
                 return actions;
             } else {

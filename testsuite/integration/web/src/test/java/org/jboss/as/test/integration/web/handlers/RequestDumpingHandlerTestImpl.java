@@ -205,7 +205,7 @@ public abstract class RequestDumpingHandlerTestImpl {
 
         // Split into request and response part:
         String request = content.substring(0, content.indexOf("-RESPONSE-"));
-        String response = content.substring(content.indexOf("-RESPONSE-"), content.length());
+        String response = content.substring(content.indexOf("-RESPONSE-"));
 
         // Check request dump part...
         searchInFile(request, "-+REQUEST-+");
