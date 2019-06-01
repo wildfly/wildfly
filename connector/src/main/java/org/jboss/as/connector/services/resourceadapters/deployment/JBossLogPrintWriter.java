@@ -107,12 +107,12 @@ public final class JBossLogPrintWriter extends PrintWriter {
             for (i = 0; i < len; i++) {
                 final char c = str.charAt(off + i);
                 if (c == '\n') {
-                    buffer.append(str.substring(mark + off, off + i));
+                    buffer.append(str, mark + off, off + i);
                     outputLogger();
                     mark = i + 1;
                 }
             }
-            buffer.append(str.substring(mark + off, off + i));
+            buffer.append(str, mark + off, off + i);
         }
     }
 
