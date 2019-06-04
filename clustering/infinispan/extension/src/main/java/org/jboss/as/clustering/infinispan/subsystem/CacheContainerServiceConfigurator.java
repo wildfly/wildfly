@@ -25,7 +25,6 @@ import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourc
 import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Capability.CONTAINER;
 
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -75,11 +74,11 @@ import org.wildfly.clustering.service.SupplierDependency;
 public class CacheContainerServiceConfigurator extends CapabilityServiceNameProvider implements ResourceServiceConfigurator, Function<EmbeddedCacheManager, CacheContainer>, Supplier<EmbeddedCacheManager>, Consumer<EmbeddedCacheManager> {
 
     private final Map<String, Registration> registrations = new ConcurrentHashMap<>();
-    private final List<ServiceName> aliases = new LinkedList<>();
     private final String name;
     private final SupplierDependency<GlobalConfiguration> configuration;
 
     private volatile Registrar<String> registrar;
+    private volatile ServiceName[] names;
 
     public CacheContainerServiceConfigurator(PathAddress address) {
         super(CONTAINER, address);
@@ -124,9 +123,11 @@ public class CacheContainerServiceConfigurator extends CapabilityServiceNameProv
 
     @Override
     public CacheContainerServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.aliases.clear();
-        for (ModelNode alias : ModelNodes.optionalList(ALIASES.resolveModelAttribute(context, model)).orElse(Collections.emptyList())) {
-            this.aliases.add(InfinispanRequirement.CONTAINER.getServiceName(context.getCapabilityServiceSupport(), alias.asString()));
+        List<ModelNode> aliases = ModelNodes.optionalList(ALIASES.resolveModelAttribute(context, model)).orElse(Collections.emptyList());
+        this.names = new ServiceName[aliases.size() + 1];
+        this.names[0] = this.getServiceName();
+        for (int i = 0; i < aliases.size(); ++i) {
+            this.names[i + 1] = InfinispanRequirement.CONTAINER.getServiceName(context.getCapabilityServiceSupport(), aliases.get(i).asString());
         }
         this.registrar = (CacheContainerResource) context.readResource(PathAddress.EMPTY_ADDRESS);
         return this;
@@ -135,10 +136,7 @@ public class CacheContainerServiceConfigurator extends CapabilityServiceNameProv
     @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
         ServiceBuilder<?> builder = target.addService(this.getServiceName());
-        for (ServiceName alias : this.aliases) {
-            builder.addAliases(alias);
-        }
-        Consumer<CacheContainer> container = this.configuration.register(builder).provides(this.getServiceName());
+        Consumer<CacheContainer> container = this.configuration.register(builder).provides(this.names);
         Service service = new FunctionalService<>(container, this, this, this);
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.PASSIVE);
     }
