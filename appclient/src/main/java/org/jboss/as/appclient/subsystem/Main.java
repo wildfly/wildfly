@@ -252,7 +252,7 @@ public final class Main {
                         value = "true";
                     } else {
                         name = arg.substring(2, idx);
-                        value = arg.substring(idx + 1, arg.length());
+                        value = arg.substring(idx + 1);
                     }
                     systemProperties.setProperty(name, value);
                     WildFlySecurityManager.setPropertyPrivileged(name, value);
