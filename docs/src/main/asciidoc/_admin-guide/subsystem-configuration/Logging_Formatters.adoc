@@ -109,11 +109,10 @@ NOTE: #Highlighted# symbols indicate the calculation of the caller is required w
 |&nbsp;
 
 |%h
-|The host name. A precision specifier can be used to alter the dot delimited host name.
+|The short host name. This will be the first portion of the qualified host name.
 |
 ----
 %h     localhost
-%h{2}  localdomain.localhost
 ----
 
 |%H
@@ -121,7 +120,7 @@ NOTE: #Highlighted# symbols indicate the calculation of the caller is required w
 |
 ----
 %H    developer.jboss.org
-%H{2} jboss.org
+%H{1} developer
 ----
 
 
