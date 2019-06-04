@@ -111,7 +111,6 @@ import org.jboss.as.connector.util.ModelNodeUtil;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
-import org.jboss.jca.common.api.metadata.Defaults;
 import org.jboss.jca.common.api.metadata.common.Capacity;
 import org.jboss.jca.common.api.metadata.common.Extension;
 import org.jboss.jca.common.api.metadata.common.FlushStrategy;
@@ -187,7 +186,7 @@ class DataSourceModelNodeUtil {
         final DsSecurity security = new DsSecurityImpl(username, password,
                 elytronEnabled? authenticationContext: securityDomain, elytronEnabled, credentialSourceSupplier, reauthPlugin);
 
-        final boolean sharePreparedStatements = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, SHARE_PREPARED_STATEMENTS);
+        final boolean sharePreparedStatements = SHARE_PREPARED_STATEMENTS.resolveModelAttribute(operationContext, dataSourceNode).asBoolean();
         final Long preparedStatementsCacheSize = ModelNodeUtil.getLongIfSetOrGetDefault(operationContext, dataSourceNode, PREPARED_STATEMENTS_CACHE_SIZE);
         final String trackStatementsString = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, TRACK_STATEMENTS);
         final Statement.TrackStatementsEnum trackStatements = Statement.TrackStatementsEnum.valueOf(trackStatementsString.toUpperCase(Locale.ENGLISH));
@@ -288,8 +287,7 @@ class DataSourceModelNodeUtil {
         final DsSecurity security = new DsSecurityImpl(username, password,
                 elytronEnabled? authenticationContext: securityDomain, elytronEnabled, credentialSourceSupplier, reauthPlugin);
 
-        final Boolean sharePreparedStatements = dataSourceNode.hasDefined(SHARE_PREPARED_STATEMENTS.getName()) ? dataSourceNode.get(
-                SHARE_PREPARED_STATEMENTS.getName()).asBoolean() : Defaults.SHARE_PREPARED_STATEMENTS;
+        final boolean sharePreparedStatements = SHARE_PREPARED_STATEMENTS.resolveModelAttribute(operationContext, dataSourceNode).asBoolean();
         final Long preparedStatementsCacheSize = ModelNodeUtil.getLongIfSetOrGetDefault(operationContext, dataSourceNode, PREPARED_STATEMENTS_CACHE_SIZE);
         final String trackStatementsString = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, TRACK_STATEMENTS);
         final Statement.TrackStatementsEnum trackStatements = Statement.TrackStatementsEnum.valueOf(trackStatementsString.toUpperCase(Locale.ENGLISH));

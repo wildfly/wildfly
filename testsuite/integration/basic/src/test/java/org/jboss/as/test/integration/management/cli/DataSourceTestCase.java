@@ -96,6 +96,28 @@ public class DataSourceTestCase extends AbstractCliTestBase {
         testRemoveXaDataSource();
     }
 
+    /**
+     * https://issues.jboss.org/browse/WFLY-12161
+     */
+    @Test
+    public void testSharedPreparedStatementsEpxr() throws Exception {
+        cli.sendLine("/system-property=prop:add(value=true)");
+        testAddDataSourceWithSharedPreparedStatementsEpxr();
+        testRemoveDataSource();
+        cli.sendLine("/system-property=prop:remove()");
+    }
+
+    /**
+     * https://issues.jboss.org/browse/WFLY-12161
+     */
+    @Test
+    public void testXaSharedPreparedStatementsEpxr() throws Exception {
+        cli.sendLine("/system-property=prop:add(value=true)");
+        testAddXaDataSourceWithSharedPreparedStatementsEpxr();
+        testRemoveXaDataSource();
+        cli.sendLine("/system-property=prop:remove()");
+    }
+
     private void testAddDataSource() throws Exception {
 
         // add data source
@@ -222,6 +244,34 @@ public class DataSourceTestCase extends AbstractCliTestBase {
         assertTrue(result.getResult() instanceof Map);
         Map<String,Object> dsProps = (Map<String, Object>) result.getResult();
         for (String[] props : DS_PROPS) assertTrue(dsProps.get(props[0]).equals(props[1]));
+
+    }
+
+    private void testAddDataSourceWithSharedPreparedStatementsEpxr() throws Exception {
+
+        // add data source
+        cli.sendLine("data-source add --name=TestDS --jndi-name=java:jboss/datasources/TestDS --driver-name=h2" +
+                " --datasource-class=org.h2.jdbcx.JdbcDataSource --connection-properties={\"url\"=>\"jdbc:h2:mem:test;DB_CLOSE_DELAY=-1\"}");
+
+        // check the data source is listed
+        cli.sendLine("cd /subsystem=datasources/data-source");
+        cli.sendLine("ls");
+        String ls = cli.readOutput();
+        assertTrue(ls.contains("TestDS"));
+
+    }
+
+    private void testAddXaDataSourceWithSharedPreparedStatementsEpxr() throws Exception {
+
+        // add data source
+        cli.sendLine("xa-data-source add --name=TestXADS --jndi-name=java:jboss/datasources/TestXADS --driver-name=h2" +
+                " --xa-datasource-properties={\"url\"=>\"jdbc:h2:mem:test\"} --share-prepared-statements=${prop}");
+
+        //check the data source is listed
+        cli.sendLine("cd /subsystem=datasources/xa-data-source");
+        cli.sendLine("ls");
+        String ls = cli.readOutput();
+        assertTrue(ls.contains("TestXADS"));
 
     }
 
