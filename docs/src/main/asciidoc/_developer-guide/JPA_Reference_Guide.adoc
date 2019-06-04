@@ -711,7 +711,7 @@ Hibernate51CompatibilityTransformer transformed application classes in 'deployme
 
 |Hibernate51CompatibilityTransformer.disableAmbiguousChanges| disable transformation of org.hibernate.Query.setFirstResult(int) + org.hibernate.Query.setMaxResults(int), since these methods are in both Hibernate ORM 5.1.x + 5.3.x|false
 
-|Hibernate51CompatibilityTransformer.showTransformedClassFolder| specifies the folder name to create bytecode level description of applications run through the transformer.  If the transformer actually makes a change to your application, a (boolean) class variable will be added "$_org_jboss_as_hibernate_Hibernate51CompatibilityTransformer_transformed_$", that ensures that the application is only transformed once|disabled
+|Hibernate51CompatibilityTransformer.showTransformedClassFolder| specifies the folder name to create bytecode level description of applications run through the transformer.  The specified folder must already exist.  If the transformer actually makes a change to your application, a (boolean) class variable will be added "$_org_jboss_as_hibernate_Hibernate51CompatibilityTransformer_transformed_$", that ensures that the application is only transformed once|disabled
 | 
 ----
 ----

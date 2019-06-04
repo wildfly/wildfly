@@ -58,6 +58,10 @@ public class StateType implements UserType {
     }
 
     public Object nullSafeGet(ResultSet rs, String[] names, SessionImplementor session, Object owner) throws HibernateException, SQLException {
+        return internalNullSafeGet(rs, names, session, owner);
+    }
+
+    private Object internalNullSafeGet(ResultSet rs, String[] names, SessionImplementor session, Object owner) throws HibernateException, SQLException {
         internalSessionImplementorUsingMethod(session);
         session.isTransactionInProgress();
         int result = rs.getInt( names[0] );
