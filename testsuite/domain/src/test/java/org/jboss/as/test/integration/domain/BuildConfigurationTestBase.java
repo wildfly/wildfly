@@ -97,7 +97,7 @@ public abstract class BuildConfigurationTestBase {
                     start = line.indexOf("<inet-address value=\"");
                     if (start >= 0) {
                         StringBuilder sb = new StringBuilder();
-                        sb.append(line.substring(0, start))
+                        sb.append(line, 0, start)
                             .append("<inet-address value=\"")
                             .append(hostAddress)
                             .append("\"/>");
@@ -106,7 +106,7 @@ public abstract class BuildConfigurationTestBase {
                         start = line.indexOf("<option value=\"");
                         if (start >= 0 && !processedOpt) {
                             StringBuilder sb = new StringBuilder();
-                            sb.append(line.substring(0, start));
+                            sb.append(line, 0, start);
                             List<String> opts = new ArrayList<String>();
                             TestSuiteEnvironment.getIpv6Args(opts);
                             for (String opt : opts) {

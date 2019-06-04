@@ -621,7 +621,7 @@ public abstract class ContainerAnalysis  extends ClassAnalysis {
                         b.append(s);
                         s = "";
                     } else {
-                        b.append(s.substring(0, idx));
+                        b.append(s, 0, idx);
                         if (s.length() > idx + 2 && s.charAt(idx + 2) == '_') {
                             // remove leading underscore in IDL escaped identifier
                             s = s.substring(idx + 3);
