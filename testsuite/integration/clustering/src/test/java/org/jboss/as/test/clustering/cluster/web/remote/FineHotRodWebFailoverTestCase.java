@@ -70,6 +70,7 @@ public class FineHotRodWebFailoverTestCase extends AbstractHotRodWebFailoverTest
         war.addClasses(SimpleServlet.class, Mutable.class);
         war.setWebXML(AbstractWebFailoverTestCase.class.getPackage(), "web.xml");
         war.addAsWebInfResource(FineHotRodWebFailoverTestCase.class.getPackage(), "jboss-all_fine.xml", "jboss-all.xml");
+        war.addAsWebInfResource(FineHotRodWebFailoverTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
         return war;
     }
 }
