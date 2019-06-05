@@ -24,12 +24,15 @@ package org.jboss.as.test.multinode.remotecall;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createFilePermission;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
+import java.util.Arrays;
 import javax.ejb.EJBException;
 import javax.naming.InitialContext;
 
@@ -42,7 +45,6 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.management.ManagementOperations;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
@@ -110,7 +112,6 @@ public class RemoteLocalCallProfileTestCase {
 
     @BeforeClass
     public static void printSysProps() {
-        AssumeTestGroupUtil.assumeSecurityManagerDisabled();
         log.trace("System properties:\n" + System.getProperties());
     }
 
@@ -126,7 +127,12 @@ public class RemoteLocalCallProfileTestCase {
     public static Archive<?> deployment1() {
         JavaArchive jar = createJar(ARCHIVE_NAME_CLIENT);
         jar.addClasses(RemoteLocalCallProfileTestCase.class);
-        jar.addAsManifestResource("META-INF/jboss-ejb-client-profile.xml", "jboss-ejb-client.xml");
+        jar.addAsManifestResource("META-INF/jboss-ejb-client-profile.xml", "jboss-ejb-client.xml")
+                .addAsManifestResource(createPermissionsXmlAsset(createFilePermission("read,write",
+                        "jbossas.multinode.client", Arrays.asList("standalone", "data", "ejb-xa-recovery")),
+                        createFilePermission("read,write",
+                                "jbossas.multinode.client", Arrays.asList("standalone", "data", "ejb-xa-recovery", "-"))),
+                        "permissions.xml");
         return jar;
     }
 

@@ -22,10 +22,11 @@
 
 package org.jboss.as.test.multinode.remotecall;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createFilePermission;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 import java.security.SecurityPermission;
-
+import java.util.Arrays;
 import javax.ejb.EJBException;
 import javax.naming.InitialContext;
 
@@ -34,7 +35,6 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -75,14 +75,13 @@ public class RemoteLocalCallTestCase {
         jar.addAsManifestResource("META-INF/jboss-ejb-client-receivers.xml", "jboss-ejb-client.xml");
         jar.addAsManifestResource(
                 createPermissionsXmlAsset(
-                        new SecurityPermission("putProviderProperty.WildFlyElytron")),
+                        new SecurityPermission("putProviderProperty.WildFlyElytron"),createFilePermission("read,write",
+                                "jbossas.multinode.client", Arrays.asList("standalone", "data", "ejb-xa-recovery")),
+                        createFilePermission("read,write",
+                                "jbossas.multinode.client", Arrays.asList("standalone", "data", "ejb-xa-recovery", "-"))),
+
                 "permissions.xml");
         return jar;
-    }
-
-    @BeforeClass
-    public static void skipSecurityManager() {
-        AssumeTestGroupUtil.assumeSecurityManagerDisabled();
     }
 
     private static JavaArchive createJar(String archiveName) {
