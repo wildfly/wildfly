@@ -23,10 +23,9 @@
 package org.jboss.as.clustering.infinispan.subsystem.remote;
 
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
-import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.configuration.Configuration;
 import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
@@ -48,9 +47,11 @@ import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SupplierDependency;
 
 /**
+ * Configures a service providing a {@link RemoteCacheContainer}.
  * @author Radoslav Husar
+ * @author Paul Ferraro
  */
-public class RemoteCacheContainerServiceConfigurator extends CapabilityServiceNameProvider implements ResourceServiceConfigurator, Function<RemoteCacheManager, RemoteCacheContainer>, Supplier<RemoteCacheManager>, Consumer<RemoteCacheManager> {
+public class RemoteCacheContainerServiceConfigurator extends CapabilityServiceNameProvider implements ResourceServiceConfigurator, UnaryOperator<RemoteCacheContainer>, Supplier<RemoteCacheContainer>, Consumer<RemoteCacheContainer> {
 
     private final String name;
 
@@ -76,22 +77,22 @@ public class RemoteCacheContainerServiceConfigurator extends CapabilityServiceNa
     }
 
     @Override
-    public RemoteCacheManager get() {
+    public RemoteCacheContainer get() {
         Configuration configuration = this.configuration.get();
-        RemoteCacheManager remoteCacheManager = new RemoteCacheManager(configuration);
-        remoteCacheManager.start();
+        RemoteCacheContainer container = new RemoteCacheManager(this.name, configuration);
+        container.start();
         InfinispanLogger.ROOT_LOGGER.remoteCacheContainerStarted(this.name);
-        return remoteCacheManager;
+        return container;
     }
 
     @Override
-    public void accept(RemoteCacheManager remoteCacheManager) {
-        remoteCacheManager.stop();
+    public void accept(RemoteCacheContainer container) {
+        container.stop();
         InfinispanLogger.ROOT_LOGGER.remoteCacheContainerStopped(this.name);
     }
 
     @Override
-    public RemoteCacheContainer apply(RemoteCacheManager remoteCacheManager) {
-        return new ManagedRemoteCacheContainer(RemoteCacheContainerServiceConfigurator.this.name, remoteCacheManager);
+    public RemoteCacheContainer apply(RemoteCacheContainer container) {
+        return new ManagedRemoteCacheContainer(container);
     }
 }
