@@ -559,6 +559,8 @@ class ServerAdd extends AbstractAddStepHandler {
             Configuration configuration = new ConfigurationImpl();
 
             configuration.setName(serverName);
+            //To avoid the automatic reloading of the logging.properties by the broker.
+            configuration.setConfigurationFileRefreshPeriod(-1);
 
             configuration.setEnabledAsyncConnectionExecution(ASYNC_CONNECTION_EXECUTION_ENABLED.resolveModelAttribute(context, model).asBoolean());
 
