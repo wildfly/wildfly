@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -23,9 +23,7 @@
 package org.wildfly.extension.undertow;
 
 import java.io.IOException;
-import java.util.Properties;
 
-import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.junit.Test;
@@ -35,28 +33,19 @@ import org.junit.Test;
  *
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
-public class UndertowSubsystem11TestCase extends AbstractUndertowSubsystemTestCase {
+public class UndertowSubsystem90TestCase extends AbstractUndertowSubsystemTestCase {
 
     private final String virtualHostName = "some-server";
-    private final int flag = 0;
+    private final int flag = 1;
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("undertow-1.1.xml");
+        return readResource("undertow-9.0.xml");
     }
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-undertow_1_1.xsd";
-    }
-
-    @Override
-    protected Properties getResolvedProperties() {
-        Properties properties = new Properties();
-        properties.put("jboss.home.dir", System.getProperty("java.io.tmpdir"));
-        properties.put("jboss.server.server.dir", System.getProperty("java.io.tmpdir"));
-        properties.put("server.data.dir", System.getProperty("java.io.tmpdir"));
-        return properties;
+        return "schema/wildfly-undertow_9_0.xsd";
     }
 
     @Override
@@ -67,16 +56,10 @@ public class UndertowSubsystem11TestCase extends AbstractUndertowSubsystemTestCa
     @Test
     public void testRuntime() throws Exception {
         setProperty();
-        KernelServicesBuilder builder = createKernelServicesBuilder(AbstractUndertowSubsystemTestCase.RUNTIME)
-                .setSubsystemXml(getSubsystemXml());
+        KernelServicesBuilder builder = createKernelServicesBuilder(RUNTIME).setSubsystemXml(getSubsystemXml());
         KernelServices mainServices = builder.build();
         testRuntime(mainServices, virtualHostName, flag);
         testRuntimeOther(mainServices);
+        testRuntimeLast(mainServices);
     }
-
-    @Override
-    protected AdditionalInitialization createAdditionalInitialization() {
-        return AbstractUndertowSubsystemTestCase.DEFAULT;
-    }
-
 }
