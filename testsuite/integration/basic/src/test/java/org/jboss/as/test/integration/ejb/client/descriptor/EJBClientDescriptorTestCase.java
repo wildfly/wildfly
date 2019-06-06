@@ -22,10 +22,12 @@
 
 package org.jboss.as.test.integration.ejb.client.descriptor;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createFilePermission;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
-
 import javax.ejb.EJBException;
 import javax.naming.Context;
 
@@ -109,7 +111,10 @@ public class EJBClientDescriptorTestCase {
 
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME_ONE + ".jar");
         jar.addPackage(EchoBean.class.getPackage());
-        jar.addAsManifestResource(EJBClientDescriptorTestCase.class.getPackage(), "jboss-ejb-client.xml", "jboss-ejb-client.xml");
+        jar.addAsManifestResource(EJBClientDescriptorTestCase.class.getPackage(), "jboss-ejb-client.xml", "jboss-ejb-client.xml")
+                .addAsManifestResource(createPermissionsXmlAsset(createFilePermission("read,write", "standalone", "data", "ejb-xa-recovery"),
+                        createFilePermission("read,write", "standalone", "data", "ejb-xa-recovery", "-")
+                ), "permissions.xml");
         return jar;
     }
 
@@ -118,7 +123,10 @@ public class EJBClientDescriptorTestCase {
 
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, JBOSS_EJB_CLIENT_1_2_MODULE_NAME + ".jar");
         jar.addPackage(EchoBean.class.getPackage());
-        jar.addAsManifestResource(EJBClientDescriptorTestCase.class.getPackage(), "jboss-ejb-client_1_2.xml", "jboss-ejb-client.xml");
+        jar.addAsManifestResource(EJBClientDescriptorTestCase.class.getPackage(), "jboss-ejb-client_1_2.xml", "jboss-ejb-client.xml")
+                .addAsManifestResource(createPermissionsXmlAsset(createFilePermission("read,write", "standalone", "data", "ejb-xa-recovery"),
+                        createFilePermission("read,write", "standalone", "data", "ejb-xa-recovery", "-")
+                ), "permissions.xml");
         return jar;
     }
 
@@ -127,7 +135,10 @@ public class EJBClientDescriptorTestCase {
 
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME_TWO + ".jar");
         jar.addPackage(EchoBean.class.getPackage());
-        jar.addAsManifestResource(EJBClientDescriptorTestCase.class.getPackage(), "no-ejb-receiver-jboss-ejb-client.xml", "jboss-ejb-client.xml");
+        jar.addAsManifestResource(EJBClientDescriptorTestCase.class.getPackage(), "no-ejb-receiver-jboss-ejb-client.xml", "jboss-ejb-client.xml")
+                .addAsManifestResource(createPermissionsXmlAsset(createFilePermission("read,write", "standalone", "data", "ejb-xa-recovery"),
+                        createFilePermission("read,write", "standalone", "data", "ejb-xa-recovery", "-")
+                ), "permissions.xml");
         return jar;
     }
 
@@ -136,7 +147,10 @@ public class EJBClientDescriptorTestCase {
 
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME_THREE + ".jar");
         jar.addPackage(EchoBean.class.getPackage());
-        jar.addAsManifestResource(EJBClientDescriptorTestCase.class.getPackage(), "local-and-remote-receiver-jboss-ejb-client.xml", "jboss-ejb-client.xml");
+        jar.addAsManifestResource(EJBClientDescriptorTestCase.class.getPackage(), "local-and-remote-receiver-jboss-ejb-client.xml", "jboss-ejb-client.xml")
+                .addAsManifestResource(createPermissionsXmlAsset(createFilePermission("read,write", "standalone", "data", "ejb-xa-recovery"),
+                        createFilePermission("read,write", "standalone", "data", "ejb-xa-recovery", "-")
+                ), "permissions.xml");
         return jar;
     }
 
@@ -146,7 +160,10 @@ public class EJBClientDescriptorTestCase {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, JBOSS_EJB_CLIENT_WITH_PROPERTIES_1_2_MODULE_NAME + ".jar");
         jar.addPackage(EchoBean.class.getPackage());
         jar.addAsManifestResource(EJBClientDescriptorTestCase.class.getPackage(), "jboss-ejb-client_with_properties_1_2.xml", "jboss-ejb-client.xml");
-        jar.addAsManifestResource(EJBClientDescriptorTestCase.class.getPackage(), "jboss-ejb-client_with_properties_1_2.properties", "jboss.properties");
+        jar.addAsManifestResource(EJBClientDescriptorTestCase.class.getPackage(), "jboss-ejb-client_with_properties_1_2.properties", "jboss.properties")
+                .addAsManifestResource(createPermissionsXmlAsset(createFilePermission("read,write", "standalone", "data", "ejb-xa-recovery"),
+                        createFilePermission("read,write", "standalone", "data", "ejb-xa-recovery", "-")
+                ), "permissions.xml");
 
         return jar;
     }
