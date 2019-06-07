@@ -205,9 +205,9 @@ realm mapper is used instead.
 |=======================================================================
 |Component |Description
 
-|aggregate-realm |A realm definition that is an aggregation of two
-realms, one for the authentication steps and one for loading the
-identity for the authorization steps.
+|<<aggregate-security-realm, aggregate-realm>> |A realm definition that is an aggregation of two
+or more realms, one for the authentication steps and one or more for loading the
+identity for the authorization steps and aggregating the resulting attributes.
 
 |caching-realm |A realm definition that enables caching to another
 security realm. Caching strategy is Least Recently Used where least

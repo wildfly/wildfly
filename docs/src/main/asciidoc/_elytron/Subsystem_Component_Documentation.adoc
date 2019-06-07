@@ -11,9 +11,12 @@ In the second mode the identity is loaded as in the first mode however no creden
 
 In the third mode evidence is passed to the security realm and used to construct the resulting identity, this mode is predominantly used with certificate and token based authentication mechanisms where the verified certificate or token can be used to construct the resulting identity.
 
+Once an identity has been loaded for authorization decisions the identity will have a set of associated attributes, these will subsequent be mapped using role decoders, role mappers, and permission mappers as required for identity specific authorization decisions.
+
 :leveloffset: +1
 
-include::components/JDBC_Security_Realm.adoc[]
+include::components/Aggregate_Security_Realm.adoc[]
 include::components/Filesystem_Security_Realm.adoc[]
+include::components/JDBC_Security_Realm.adoc[]
 
 :leveloffset: -1
