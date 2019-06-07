@@ -99,8 +99,14 @@ public class ServiceSupplier<T> implements Supplier<T> {
             Thread.currentThread().interrupt();
             throw new IllegalStateException(e);
         } finally {
-            monitor.removeController(controller);
             controller.setMode(ServiceController.Mode.REMOVE);
+            try {
+                monitor.awaitStability();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } finally {
+                monitor.removeController(controller);
+            }
         }
     }
 }
