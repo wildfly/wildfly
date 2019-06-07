@@ -133,12 +133,16 @@ public class HotRodSessionManagerFactoryServiceConfigurator<C extends Marshallab
     }
 
     @Override
-    public <K, V> RemoteCache<K, V> getCache() {
-        return this.container.get().administration().getOrCreateCache(this.getDeploymentName(), this.getConfigurationName());
+    public Immutability getImmutability() {
+        return this.factoryConfiguration.getImmutability();
     }
 
     @Override
-    public Immutability getImmutability() {
-        return this.factoryConfiguration.getImmutability();
+    public <K, V> RemoteCache<K, V> getCache() {
+        RemoteCacheContainer container = this.container.get();
+        String cacheName = this.getDeploymentName();
+        try (RemoteCacheContainer.NearCacheRegistration registration = container.registerNearCacheFactory(cacheName, new SessionManagerNearCacheFactory<>(this.getMaxActiveSessions(), this.getAttributePersistenceStrategy()))) {
+            return this.container.get().administration().getOrCreateCache(cacheName, this.getConfigurationName());
+        }
     }
 }

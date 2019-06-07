@@ -22,15 +22,25 @@
 
 package org.wildfly.clustering.infinispan.client;
 
+import java.util.function.Function;
+
 import org.infinispan.client.hotrod.RemoteCacheManagerAdmin;
+import org.infinispan.client.hotrod.event.impl.ClientListenerNotifier;
+import org.infinispan.client.hotrod.near.NearCacheService;
 
 /**
- * Exposes Infinispan's {@link org.wildfly.clustering.infinispan.client.client.hotrod.RemoteCacheContainer} additionally exposing the name of the
- * remote cache container and an administration utility.
+ * Extends Infinispan's {@link org.wildfly.clustering.infinispan.client.client.hotrod.RemoteCacheContainer} additionally exposing the name of the
+ * remote cache container, an administration utility, and a mechanism for configuring near caching per remote cache.
  *
  * @author Radoslav Husar
+ * @author Paul Ferraro
  */
 public interface RemoteCacheContainer extends org.infinispan.client.hotrod.RemoteCacheContainer {
+
+    interface NearCacheRegistration extends AutoCloseable {
+        @Override
+        void close();
+    }
 
     /**
      * Returns the name of this remote cache container.
@@ -45,4 +55,15 @@ public interface RemoteCacheContainer extends org.infinispan.client.hotrod.Remot
      * @return administration utility
      */
     RemoteCacheManagerAdmin administration();
+
+    /**
+     * Registers a factory for creating a near cache for a given cache.
+     * The returned registration can be closed once the associated cache is created.
+     * @param <K> the cache key
+     * @param <V> the cache value
+     * @param cacheName the name of a remote cache
+     * @param factory a factory for creating a near cache
+     * @return A near cache registration, which, when closed, unregisters the registered factory.
+     */
+    <K, V> NearCacheRegistration registerNearCacheFactory(String cacheName, Function<ClientListenerNotifier, NearCacheService<K, V>> factory);
 }
