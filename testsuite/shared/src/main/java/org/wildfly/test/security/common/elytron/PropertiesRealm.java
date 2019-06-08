@@ -33,7 +33,7 @@ import org.jboss.logging.Logger;
  *
  * @author Josef Cacek
  */
-public class PropertiesRealm extends AbstractUserRolesCapableElement implements SecurityRealm {
+public class PropertiesRealm extends AbstractUserAttributeValuesCapableElement implements SecurityRealm {
 
     private static final Logger LOGGER = Logger.getLogger(PropertiesRealm.class);
 
@@ -50,9 +50,9 @@ public class PropertiesRealm extends AbstractUserRolesCapableElement implements 
         this.tempFolder = createTemporaryFolder("ely-" + name);
         final Properties usersProperties = new Properties();
         final Properties rolesProperties = new Properties();
-        for (UserWithRoles user : getUsersWithRoles()) {
+        for (UserWithAttributeValues user : getUsersWithAttributeValues()) {
             usersProperties.setProperty(user.getName(), user.getPassword());
-            rolesProperties.setProperty(user.getName(), String.join(",", user.getRoles()));
+            rolesProperties.setProperty(user.getName(), String.join(",", user.getValues()));
         }
         File usersFile = writeProperties(usersProperties, "users.properties");
         File rolesFile = writeProperties(rolesProperties, "roles.properties");
@@ -94,7 +94,7 @@ public class PropertiesRealm extends AbstractUserRolesCapableElement implements 
     /**
      * Builder to build {@link PropertiesRealm}.
      */
-    public static final class Builder extends AbstractUserRolesCapableElement.Builder<Builder> {
+    public static final class Builder extends AbstractUserAttributeValuesCapableElement.Builder<Builder> {
         private String groupsAttribute;
 
         private Builder() {

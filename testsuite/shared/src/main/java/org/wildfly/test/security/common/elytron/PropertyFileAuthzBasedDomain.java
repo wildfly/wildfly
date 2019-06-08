@@ -50,7 +50,7 @@ import org.wildfly.security.auth.permission.LoginPermission;
  *
  * @author Ondrej Kotek
  */
-public class PropertyFileAuthzBasedDomain extends AbstractUserRolesCapableElement implements SecurityDomain {
+public class PropertyFileAuthzBasedDomain extends AbstractUserAttributeValuesCapableElement implements SecurityDomain {
 
     private static final Logger LOGGER = Logger.getLogger(PropertyFileAuthzBasedDomain.class);
 
@@ -74,9 +74,9 @@ public class PropertyFileAuthzBasedDomain extends AbstractUserRolesCapableElemen
         tempFolder = createTemporaryFolder("ely-" + getName());
         final Properties usersProperties = new Properties();
         final Properties rolesProperties = new Properties();
-        for (UserWithRoles user : getUsersWithRoles()) {
+        for (UserWithAttributeValues user : getUsersWithAttributeValues()) {
             usersProperties.setProperty(user.getName(), user.getPassword());
-            rolesProperties.setProperty(user.getName(), String.join(",", user.getRoles()));
+            rolesProperties.setProperty(user.getName(), String.join(",", user.getValues()));
         }
         File usersFile = writeProperties(usersProperties, "users.properties");
         File rolesFile = writeProperties(rolesProperties, "roles.properties");
@@ -132,7 +132,7 @@ public class PropertyFileAuthzBasedDomain extends AbstractUserRolesCapableElemen
         return new Builder();
     }
 
-    public static final class Builder extends AbstractUserRolesCapableElement.Builder<Builder> {
+    public static final class Builder extends AbstractUserAttributeValuesCapableElement.Builder<Builder> {
         private String authnRealm;
         private String principalDecoder;
 

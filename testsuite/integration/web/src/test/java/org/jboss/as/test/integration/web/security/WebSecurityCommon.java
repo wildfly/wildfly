@@ -31,7 +31,7 @@ import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
 import org.jboss.logging.Logger;
-import org.wildfly.test.security.common.elytron.UserWithRoles;
+import org.wildfly.test.security.common.elytron.UserWithAttributeValues;
 
 /**
  * @author Jan Stourac
@@ -49,14 +49,14 @@ public class WebSecurityCommon {
     private static final Logger LOGGER = Logger.getLogger(WebSecurityCommon.class);
 
 
-    public static PropertyFiles createPropertiesFiles(List<UserWithRoles> usersWithRoles, String realmName) throws
+    public static PropertyFiles createPropertiesFiles(List<UserWithAttributeValues> usersWithRoles, String realmName) throws
             Exception {
         File tempFolder = createTemporaryFolder("properties-" + realmName);
         final Properties usersProperties = new Properties();
         final Properties rolesProperties = new Properties();
-        for (UserWithRoles user : usersWithRoles) {
+        for (UserWithAttributeValues user : usersWithRoles) {
             usersProperties.setProperty(user.getName(), user.getPassword());
-            rolesProperties.setProperty(user.getName(), String.join(",", user.getRoles()));
+            rolesProperties.setProperty(user.getName(), String.join(",", user.getValues()));
         }
         File usersFile = new File(tempFolder, "users.properties");
         writeProperties(usersProperties, usersFile, realmName);

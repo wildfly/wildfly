@@ -21,18 +21,18 @@
  */
 package org.wildfly.test.integration.elytron.realm;
 
-import java.io.File;
-import java.io.IOException;
+import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
+import static javax.servlet.http.HttpServletResponse.SC_OK;
+import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
+import static org.junit.Assert.fail;
+
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
-import static javax.servlet.http.HttpServletResponse.SC_OK;
-import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
-import org.apache.commons.io.FileUtils;
+
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.message.BasicNameValuePair;
@@ -43,21 +43,20 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.arquillian.api.ServerSetupTask;
-import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.as.test.integration.security.common.Utils;
-import static org.jboss.as.test.integration.security.common.Utils.createTemporaryFolder;
 import org.jboss.as.test.integration.security.common.servlets.RolePrintingServlet;
-import org.jboss.as.test.shared.CliUtils;
-import static org.jboss.as.test.shared.CliUtils.asAbsolutePath;
-import org.jboss.as.test.shared.ServerReload;
-import org.jboss.crypto.CryptoUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import static org.junit.Assert.fail;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.test.security.common.AbstractElytronSetupTask;
+import org.wildfly.test.security.common.elytron.AggregateSecurityRealm;
+import org.wildfly.test.security.common.elytron.ConfigurableElement;
+import org.wildfly.test.security.common.elytron.FileSystemRealm;
+import org.wildfly.test.security.common.elytron.PropertiesRealm;
+import org.wildfly.test.security.common.elytron.SimpleSecurityDomain;
+import org.wildfly.test.security.common.elytron.UserWithAttributeValues;
+import org.wildfly.test.undertow.common.UndertowApplicationSecurityDomain;
 
 /**
  * Test case for Elytron Aggregate Realm.
@@ -506,176 +505,129 @@ public class AggregateRealmTestCase {
         }
     }
 
-    static class SetupTask implements ServerSetupTask {
-
-        private static final String PREDEFINED_HTTP_SERVER_MECHANISM_FACTORY = "global";
+    static class SetupTask extends AbstractElytronSetupTask {
 
         private static final String PROPERTIES_REALM_AUTHN_NAME = "elytron-authn-properties-realm";
         private static final String PROPERTIES_REALM_AUTHZ_NAME = "elytron-authz-properties-realm";
         private static final String FILESYSTEM_REALM_AUTHN_NAME = "elytron-authn-filesystem-realm";
 
-        private static final String USERS_AUTHN_REALM_FILENAME = "users-authn.properties";
-        private static final String ROLES_AUTHN_REALM_FILENAME = "roles-authn.properties";
-        private static final String USERS_AUTHZ_REALM_FILENAME = "users-authz.properties";
-        private static final String ROLES_AUTHZ_REALM_FILENAME = "roles-authz.properties";
-        private File usersAuthnRealmFile;
-        private File rolesAuthnRealmFile;
-        private File usersAuthzRealmFile;
-        private File rolesAuthzRealmFile;
-        private String fsRealmPath;
-
-        private File tempFolder;
-
         @Override
-        public void setup(ManagementClient mc, String string) throws Exception {
-            tempFolder = createTemporaryFolder("ely-" + AggregateRealmTestCase.class.getSimpleName());
-            String tempFolderAbsolutePath = tempFolder.getAbsolutePath();
-            usersAuthnRealmFile = new File(tempFolderAbsolutePath, USERS_AUTHN_REALM_FILENAME);
-            rolesAuthnRealmFile = new File(tempFolderAbsolutePath, ROLES_AUTHN_REALM_FILENAME);
-            usersAuthzRealmFile = new File(tempFolderAbsolutePath, USERS_AUTHZ_REALM_FILENAME);
-            rolesAuthzRealmFile = new File(tempFolderAbsolutePath, ROLES_AUTHZ_REALM_FILENAME);
-            fsRealmPath = CliUtils.escapePath(tempFolderAbsolutePath + File.separator + "fs-realm-users");
-            createPropertiesFiles();
-            try (CLIWrapper cli = new CLIWrapper(true)) {
-                cli.sendLine(String.format(
-                        "/subsystem=elytron/properties-realm=%s:add(users-properties={path=%s},groups-properties={path=%s})",
-                        PROPERTIES_REALM_AUTHN_NAME, asAbsolutePath(usersAuthnRealmFile),
-                        asAbsolutePath(rolesAuthnRealmFile)));
-                cli.sendLine(String.format(
-                        "/subsystem=elytron/properties-realm=%s:add(users-properties={path=%s},groups-properties={path=%s})",
-                        PROPERTIES_REALM_AUTHZ_NAME, asAbsolutePath(usersAuthzRealmFile),
-                        asAbsolutePath(rolesAuthzRealmFile)));
-                cli.sendLine(String.format(
-                        "/subsystem=elytron/filesystem-realm=%s:add(path=%s)",
-                        FILESYSTEM_REALM_AUTHN_NAME, fsRealmPath));
-                addUserToFilesystemRealm(cli, USER_WITHOUT_ROLE, CORRECT_PASSWORD);
-                addUserToFilesystemRealm(cli, USER_WITH_ONE_ROLE, CORRECT_PASSWORD);
-                addUserToFilesystemRealm(cli, USER_WITH_TWO_ROLES, CORRECT_PASSWORD);
-                addUserToFilesystemRealm(cli, USER_WITH_DIFFERENT_ROLE_IN_DIFFERENT_REALM, CORRECT_PASSWORD, ROLE_USER);
-                addUserToFilesystemRealm(cli, USER_ONLY_IN_AUTHORIZATION, CORRECT_PASSWORD);
-                addAggregateRealmAndRelatedResources(cli, AGGREGATE_REALM_SAME_TYPE_NAME, PROPERTIES_REALM_AUTHN_NAME,
-                        PROPERTIES_REALM_AUTHZ_NAME);
-                addAggregateRealmAndRelatedResources(cli, AGGREGATE_REALM_DIFFERENT_TYPE_NAME, FILESYSTEM_REALM_AUTHN_NAME,
-                        PROPERTIES_REALM_AUTHZ_NAME);
-            }
-            ServerReload.reloadIfRequired(mc.getControllerClient());
+        protected ConfigurableElement[] getConfigurableElements() {
+            ArrayList<ConfigurableElement> configurableElements = new ArrayList<>();
+            configurableElements.add(PropertiesRealm.builder()
+                    .withName(PROPERTIES_REALM_AUTHN_NAME)
+                    .withUser(UserWithAttributeValues.builder()
+                            .withName(USER_WITHOUT_ROLE)
+                            .withPassword(CORRECT_PASSWORD)
+                            .build())
+                    .withUser(UserWithAttributeValues.builder()
+                            .withName(USER_WITH_ONE_ROLE)
+                            .withPassword(CORRECT_PASSWORD)
+                            .build())
+                    .withUser(UserWithAttributeValues.builder()
+                            .withName(USER_WITH_TWO_ROLES)
+                            .withPassword(CORRECT_PASSWORD)
+                            .build())
+                    .withUser(UserWithAttributeValues.builder()
+                            .withName(USER_WITH_DIFFERENT_ROLE_IN_DIFFERENT_REALM)
+                            .withPassword(CORRECT_PASSWORD)
+                            .build())
+                    .withUser(UserWithAttributeValues.builder()
+                            .withName(USER_WITH_DIFFERENT_ROLE_IN_DIFFERENT_REALM)
+                            .withPassword(CORRECT_PASSWORD)
+                            .withValues(ROLE_USER)
+                            .build())
+                    .withUser(UserWithAttributeValues.builder()
+                            .withName(USER_ONLY_IN_AUTHORIZATION)
+                            .withPassword(CORRECT_PASSWORD)
+                            .build())
+                    .build());
+            configurableElements.add(PropertiesRealm.builder()
+                    .withName(PROPERTIES_REALM_AUTHZ_NAME)
+                    .withUser(UserWithAttributeValues.builder()
+                            .withName(USER_WITHOUT_ROLE)
+                            .withPassword(AUTHORIZATION_REALM_PASSWORD)
+                            .build())
+                    .withUser(UserWithAttributeValues.builder()
+                            .withName(USER_WITH_ONE_ROLE)
+                            .withPassword(AUTHORIZATION_REALM_PASSWORD)
+                            .withValues(ROLE_USER)
+                            .build())
+                    .withUser(UserWithAttributeValues.builder()
+                            .withName(USER_WITH_TWO_ROLES)
+                            .withPassword(AUTHORIZATION_REALM_PASSWORD)
+                            .withValues(ROLE_USER, ROLE_ADMIN)
+                            .build())
+                    .withUser(UserWithAttributeValues.builder()
+                            .withName(USER_WITH_DIFFERENT_ROLE_IN_DIFFERENT_REALM)
+                            .withPassword(AUTHORIZATION_REALM_PASSWORD)
+                            .withValues(ROLE_ADMIN)
+                            .build())
+                    .withUser(UserWithAttributeValues.builder()
+                            .withName(USER_ONLY_IN_AUTHORIZATION)
+                            .withValues(ROLE_USER)
+                            .build())
+                    .build());
+            configurableElements.add(FileSystemRealm.builder()
+                    .withName(FILESYSTEM_REALM_AUTHN_NAME)
+                    .withUser(UserWithAttributeValues.builder()
+                            .withName(USER_WITHOUT_ROLE)
+                            .withPassword(CORRECT_PASSWORD)
+                            .build())
+                    .withUser(UserWithAttributeValues.builder()
+                            .withName(USER_WITH_ONE_ROLE)
+                            .withPassword(CORRECT_PASSWORD)
+                            .build())
+                    .withUser(UserWithAttributeValues.builder()
+                            .withName(USER_WITH_TWO_ROLES)
+                            .withPassword(CORRECT_PASSWORD)
+                            .build())
+                    .withUser(UserWithAttributeValues.builder()
+                            .withName(USER_WITH_DIFFERENT_ROLE_IN_DIFFERENT_REALM)
+                            .withPassword(CORRECT_PASSWORD)
+                            .withValues(ROLE_USER)
+                            .build())
+                    .withUser(UserWithAttributeValues.builder()
+                            .withName(USER_ONLY_IN_AUTHORIZATION)
+                            .withPassword(CORRECT_PASSWORD)
+                            .build())
+                    .build());
+            configurableElements.add(AggregateSecurityRealm.builder(AGGREGATE_REALM_SAME_TYPE_NAME)
+                    .withAuthenticationRealm(PROPERTIES_REALM_AUTHN_NAME)
+                    .withAuthorizationRealm(PROPERTIES_REALM_AUTHZ_NAME)
+                    .build());
+            configurableElements.add(SimpleSecurityDomain.builder()
+                    .withName(AGGREGATE_REALM_SAME_TYPE_NAME)
+                    .withDefaultRealm(AGGREGATE_REALM_SAME_TYPE_NAME)
+                    .withPermissionMapper("default-permission-mapper")
+                    .withRealms(SimpleSecurityDomain.SecurityDomainRealm.builder()
+                            .withRealm(AGGREGATE_REALM_SAME_TYPE_NAME)
+                            .withRoleDecoder("groups-to-roles")
+                            .build())
+                    .build());
+            configurableElements.add(AggregateSecurityRealm.builder(AGGREGATE_REALM_DIFFERENT_TYPE_NAME)
+                    .withAuthenticationRealm(FILESYSTEM_REALM_AUTHN_NAME)
+                    .withAuthorizationRealm(PROPERTIES_REALM_AUTHZ_NAME)
+                    .build());
+            configurableElements.add(SimpleSecurityDomain.builder()
+                    .withName(AGGREGATE_REALM_DIFFERENT_TYPE_NAME)
+                    .withDefaultRealm(AGGREGATE_REALM_DIFFERENT_TYPE_NAME)
+                    .withPermissionMapper("default-permission-mapper")
+                    .withRealms(SimpleSecurityDomain.SecurityDomainRealm.builder()
+                            .withRealm(AGGREGATE_REALM_DIFFERENT_TYPE_NAME)
+                            .withRoleDecoder("groups-to-roles")
+                            .build())
+                    .build());
+            configurableElements.add(UndertowApplicationSecurityDomain.builder()
+                              .withName(AGGREGATE_REALM_SAME_TYPE_NAME)
+                    .withSecurityDomain(AGGREGATE_REALM_SAME_TYPE_NAME)
+                    .build());
+            configurableElements.add(UndertowApplicationSecurityDomain.builder()
+                              .withName(AGGREGATE_REALM_DIFFERENT_TYPE_NAME)
+                    .withSecurityDomain(AGGREGATE_REALM_DIFFERENT_TYPE_NAME)
+                    .build());
+            return configurableElements.toArray(new ConfigurableElement[configurableElements.size()]);
         }
-
-        @Override
-        public void tearDown(ManagementClient mc, String string) throws Exception {
-            try (CLIWrapper cli = new CLIWrapper(true)) {
-                removeAggregateRealmAndRelatedResources(mc, cli, AGGREGATE_REALM_DIFFERENT_TYPE_NAME);
-                removeAggregateRealmAndRelatedResources(mc, cli, AGGREGATE_REALM_SAME_TYPE_NAME);
-                ServerReload.reloadIfRequired(mc.getControllerClient());
-                cli.sendLine(String.format("/subsystem=elytron/filesystem-realm=%s:remove()", FILESYSTEM_REALM_AUTHN_NAME));
-                cli.sendLine(String.format("/subsystem=elytron/properties-realm=%s:remove()", PROPERTIES_REALM_AUTHZ_NAME));
-                cli.sendLine(String.format("/subsystem=elytron/properties-realm=%s:remove()", PROPERTIES_REALM_AUTHN_NAME));
-                ServerReload.reloadIfRequired(mc.getControllerClient());
-            } finally {
-                removePropertiesFiles();
-            }
-        }
-
-        private void createPropertiesFiles() throws IOException {
-            createUsersProperties_authnRealm();
-            createRolesProperties_authnRealm();
-            createUsersProperties_authzRealm();
-            createRolesProperties_authzRealm();
-        }
-
-        private void createUsersProperties_authnRealm() throws IOException {
-            StringBuilder sb = new StringBuilder();
-            sb.append("#$REALM_NAME=" + PROPERTIES_REALM_AUTHN_NAME + "$\n");
-            sb.append(createPropertiesUserWithHashedPassword(USER_WITHOUT_ROLE, CORRECT_PASSWORD, PROPERTIES_REALM_AUTHN_NAME));
-            sb.append(createPropertiesUserWithHashedPassword(USER_WITH_ONE_ROLE, CORRECT_PASSWORD, PROPERTIES_REALM_AUTHN_NAME));
-            sb.append(createPropertiesUserWithHashedPassword(USER_WITH_TWO_ROLES, CORRECT_PASSWORD, PROPERTIES_REALM_AUTHN_NAME));
-            sb.append(createPropertiesUserWithHashedPassword(USER_WITH_DIFFERENT_ROLE_IN_DIFFERENT_REALM, CORRECT_PASSWORD, PROPERTIES_REALM_AUTHN_NAME));
-            sb.append(createPropertiesUserWithHashedPassword(USER_ONLY_IN_AUTHORIZATION, CORRECT_PASSWORD, PROPERTIES_REALM_AUTHN_NAME));
-            FileUtils.writeStringToFile(usersAuthnRealmFile, sb.toString(), StandardCharsets.UTF_8);
-        }
-
-        private void createRolesProperties_authnRealm() throws IOException {
-            StringBuilder sb = new StringBuilder();
-            sb.append(USER_WITH_DIFFERENT_ROLE_IN_DIFFERENT_REALM + "=" + ROLE_USER + "\n");
-            FileUtils.writeStringToFile(rolesAuthnRealmFile, sb.toString(), StandardCharsets.UTF_8);
-        }
-
-        private void createUsersProperties_authzRealm() throws IOException {
-            StringBuilder sb = new StringBuilder();
-            sb.append("#$REALM_NAME=" + PROPERTIES_REALM_AUTHZ_NAME + "$\n");
-            sb.append(createPropertiesUserWithHashedPassword(USER_WITHOUT_ROLE, AUTHORIZATION_REALM_PASSWORD, PROPERTIES_REALM_AUTHZ_NAME));
-            sb.append(createPropertiesUserWithHashedPassword(USER_WITH_ONE_ROLE, AUTHORIZATION_REALM_PASSWORD, PROPERTIES_REALM_AUTHZ_NAME));
-            sb.append(createPropertiesUserWithHashedPassword(USER_WITH_TWO_ROLES, AUTHORIZATION_REALM_PASSWORD, PROPERTIES_REALM_AUTHZ_NAME));
-            sb.append(createPropertiesUserWithHashedPassword(USER_WITH_DIFFERENT_ROLE_IN_DIFFERENT_REALM, AUTHORIZATION_REALM_PASSWORD, PROPERTIES_REALM_AUTHZ_NAME));
-            FileUtils.writeStringToFile(usersAuthzRealmFile, sb.toString(), StandardCharsets.UTF_8);
-        }
-
-        private void createRolesProperties_authzRealm() throws IOException {
-            StringBuilder sb = new StringBuilder();
-            sb.append(USER_WITH_ONE_ROLE + "=" + ROLE_USER + "\n");
-            sb.append(USER_WITH_TWO_ROLES + "=" + ROLE_USER + "," + ROLE_ADMIN + "\n");
-            sb.append(USER_WITH_DIFFERENT_ROLE_IN_DIFFERENT_REALM + "=" + ROLE_ADMIN + "\n");
-            sb.append(USER_ONLY_IN_AUTHORIZATION + "=" + ROLE_USER + "\n");
-            FileUtils.writeStringToFile(rolesAuthzRealmFile, sb.toString(), StandardCharsets.UTF_8);
-        }
-
-        private String createPropertiesUserWithHashedPassword(String username, String password, String realmName) {
-            return username + "=" + createHashedPassword(username, password, realmName) + "\n";
-        }
-
-        private String createHashedPassword(String username, String password, String realmName) {
-            String clearTextPassword = username + ":" + realmName + ":" + password;
-            String hashedPassword = CryptoUtil.createPasswordHash("MD5", "hex", null, null, clearTextPassword);
-            return hashedPassword;
-        }
-
-        private void removePropertiesFiles() throws IOException {
-            FileUtils.deleteQuietly(usersAuthnRealmFile);
-            FileUtils.deleteQuietly(rolesAuthnRealmFile);
-            FileUtils.deleteQuietly(usersAuthzRealmFile);
-            FileUtils.deleteQuietly(rolesAuthzRealmFile);
-            FileUtils.deleteDirectory(new File(fsRealmPath));
-            FileUtils.deleteDirectory(tempFolder);
-        }
-
-        private void addUserToFilesystemRealm(CLIWrapper cli, String username, String password) throws Exception {
-            addUserToFilesystemRealm(cli, username, password, null);
-        }
-
-        private void addUserToFilesystemRealm(CLIWrapper cli, String username, String password, String role)
-                throws Exception {
-            cli.sendLine(String.format("/subsystem=elytron/filesystem-realm=%s:add-identity(identity=%s)",
-                    FILESYSTEM_REALM_AUTHN_NAME, username));
-            cli.sendLine(String.format("/subsystem=elytron/filesystem-realm=%s:set-password(identity=%s, clear={password=\"%s\"})",
-                    FILESYSTEM_REALM_AUTHN_NAME, username, password));
-            if (role != null) {
-                cli.sendLine(String.format("/subsystem=elytron/filesystem-realm=%s:add-identity-attribute(identity=%s, name=Roles, value=[\"%s\"])",
-                        FILESYSTEM_REALM_AUTHN_NAME, username, role));
-            }
-        }
-
-        private void addAggregateRealmAndRelatedResources(CLIWrapper cli, String name, String authnRealm, String authzRealm) {
-            cli.sendLine(String.format(
-                    "/subsystem=elytron/aggregate-realm=%s:add(authentication-realm=%s,authorization-realm=%s)",
-                    name, authnRealm, authzRealm));
-            cli.sendLine(String.format(
-                    "/subsystem=elytron/security-domain=%1$s:add(realms=[{realm=%1$s,role-decoder=groups-to-roles}],default-realm=%1$s,permission-mapper=default-permission-mapper)",
-                    name));
-            cli.sendLine(String.format(
-                    "/subsystem=elytron/http-authentication-factory=%1$s:add(http-server-mechanism-factory=%2$s,security-domain=%1$s,"
-                    + "mechanism-configurations=[{mechanism-name=BASIC,mechanism-realm-configurations=[{realm-name=\"Some realm\"}]}])",
-                    name, PREDEFINED_HTTP_SERVER_MECHANISM_FACTORY));
-            cli.sendLine(String.format(
-                    "/subsystem=undertow/application-security-domain=%1$s:add(http-authentication-factory=%1$s)",
-                    name));
-        }
-
-        private void removeAggregateRealmAndRelatedResources(ManagementClient mc, CLIWrapper cli, String name) throws Exception {
-            cli.sendLine(String.format("/subsystem=undertow/application-security-domain=%s:remove()", name));
-            cli.sendLine(String.format("/subsystem=elytron/http-authentication-factory=%s:remove()", name));
-            cli.sendLine(String.format("/subsystem=elytron/security-domain=%s:remove()", name));
-            cli.sendLine(String.format("/subsystem=elytron/aggregate-realm=%s:remove()", name));
-        }
-
     }
+
 }

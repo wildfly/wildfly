@@ -36,7 +36,7 @@ import org.jboss.as.test.integration.security.common.servlets.SimpleSecuredServl
 import org.jboss.as.test.integration.web.security.WebSecurityCommon;
 import org.wildfly.test.security.common.elytron.PropertyFileBasedDomain;
 import org.wildfly.test.security.common.elytron.UndertowDomainMapper;
-import org.wildfly.test.security.common.elytron.UserWithRoles;
+import org.wildfly.test.security.common.elytron.UserWithAttributeValues;
 
 /**
  * Security domain setup for digest tests. This prepare either legacy security-domain or elytron configuration.
@@ -96,11 +96,11 @@ public class WebSecurityDigestSecurityDomainSetup implements ServerSetupTask {
 
         @Override
         protected SecurityDomain[] getSecurityDomains() throws Exception {
-            List<UserWithRoles> userWithRoles = new ArrayList<UserWithRoles>();
-            userWithRoles.add(UserWithRoles.builder().withName(GOOD_USER_NAME).withPassword(GOOD_USER_PASSWORD)
-                    .withRoles(GOOD_USER_ROLE).build());
-            userWithRoles.add(UserWithRoles.builder().withName(SUPER_USER_NAME).withPassword(SUPER_USER_PASSWORD)
-                    .withRoles(SUPER_USER_ROLE).build());
+            List<UserWithAttributeValues> userWithRoles = new ArrayList<UserWithAttributeValues>();
+            userWithRoles.add(UserWithAttributeValues.builder().withName(GOOD_USER_NAME).withPassword(GOOD_USER_PASSWORD)
+                    .withValues(GOOD_USER_ROLE).build());
+            userWithRoles.add(UserWithAttributeValues.builder().withName(SUPER_USER_NAME).withPassword(SUPER_USER_PASSWORD)
+                    .withValues(SUPER_USER_ROLE).build());
             WebSecurityCommon.PropertyFiles propFiles = WebSecurityCommon.createPropertiesFiles(userWithRoles,
                     SECURITY_DOMAIN_NAME);
 

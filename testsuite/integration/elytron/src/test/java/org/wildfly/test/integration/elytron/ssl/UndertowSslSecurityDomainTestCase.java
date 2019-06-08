@@ -68,7 +68,7 @@ import org.wildfly.test.security.common.elytron.SimpleServerSslContext;
 import org.wildfly.test.security.common.elytron.SimpleTrustManager;
 import org.wildfly.test.security.common.elytron.X500AttributePrincipalDecoder;
 import org.wildfly.test.security.common.elytron.UndertowSslContext;
-import org.wildfly.test.security.common.elytron.UserWithRoles;
+import org.wildfly.test.security.common.elytron.UserWithAttributeValues;
 
 /**
  * Smoke tests for certificate based authentication using Elytron server-ssl-context, security domain,
@@ -241,7 +241,7 @@ public class UndertowSslSecurityDomainTestCase {
                 PropertyFileAuthzBasedDomain.builder().withName(NAME)
                         .withAuthnRealm(NAME)
                         .withPrincipalDecoder(NAME)
-                        .withUser(UserWithRoles.builder().withName("CN=client").withRoles("Role1").build())
+                        .withUser(UserWithAttributeValues.builder().withName("CN=client").withValues("Role1").build())
                         .build(),
                 ClientCertUndertowDomainMapper.builder().withName(NAME).withSecurityDomain(NAME).build(),
                 SimpleServerSslContext.builder().withName(NAME)
