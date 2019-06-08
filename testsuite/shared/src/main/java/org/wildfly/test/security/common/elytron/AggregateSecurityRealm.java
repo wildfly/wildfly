@@ -35,12 +35,14 @@ public class AggregateSecurityRealm implements SecurityRealm {
     private final String name;
     private final String authenticationRealm;
     private final String authorizationRealm;
+    private final String[] authorizationRealms;
 
-    AggregateSecurityRealm(final String name, final String authenticationRealm, final String authorizationRealm) {
+    AggregateSecurityRealm(final String name, final String authenticationRealm, final String authorizationRealm, final String[] authorizationRealms) {
         this.name = name;
         this.address = PathAddress.pathAddress(PathElement.pathElement("subsystem", "elytron"), PathElement.pathElement("aggregate-realm", name));
         this.authenticationRealm = authenticationRealm;
         this.authorizationRealm = authorizationRealm;
+        this.authorizationRealms = authorizationRealms;
     }
 
     @Override
@@ -53,6 +55,12 @@ public class AggregateSecurityRealm implements SecurityRealm {
         addOperation.get("authentication-realm").set(authenticationRealm);
         if (authorizationRealm != null) {
             addOperation.get("authorization-realm").set(authorizationRealm);
+        }
+        if (authorizationRealms != null) {
+            ModelNode realms = addOperation.get("authorization-realms");
+            for (String realmName : authorizationRealms) {
+                realms.add(realmName);
+            }
         }
 
         return addOperation;
@@ -81,6 +89,7 @@ public class AggregateSecurityRealm implements SecurityRealm {
         private final String name;
         private String authenticationRealm;
         private String authorizationRealm;
+        private String[] authorizationRealms;
 
         Builder(final String name) {
             this.name = name;
@@ -98,8 +107,14 @@ public class AggregateSecurityRealm implements SecurityRealm {
             return this;
         }
 
+        public Builder withAuthorizationRealms(final String... authorizationRealms) {
+            this.authorizationRealms = authorizationRealms;
+
+            return this;
+        }
+
         public SecurityRealm build() {
-            return new AggregateSecurityRealm(name, authenticationRealm, authorizationRealm);
+            return new AggregateSecurityRealm(name, authenticationRealm, authorizationRealm, authorizationRealms);
         }
 
     }
