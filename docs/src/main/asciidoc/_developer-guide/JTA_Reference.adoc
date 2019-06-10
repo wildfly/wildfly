@@ -236,6 +236,102 @@ NOTE: if a call is made from the container-managed method,
       call transaction managed bean annotated with
       `@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)`
 
+==== Transaction synchronization
+
+JTA API gives a chance to react to the event of a finishing transaction.
+The definition says that transaction manager announces the even of `beforeCompletion` and `afterCompletion`
+which are defined by the interface https://javaee.github.io/javaee-spec/javadocs/javax/transaction/Synchronization.html[javax.transaction.Synchronization].
+The https://javaee.github.io/javaee-spec/javadocs/javax/transaction/Synchronization.html#beforeCompletion--[`beforeCompletion`]
+callback is invoked at time the transaction manager starts to commit the global transaction. The invocation is processed in the transaction context.
+The https://javaee.github.io/javaee-spec/javadocs/javax/transaction/Synchronization.html#afterCompletion-int-[`afterCompletion`]
+is invoked after the transaction is committed or rolled-back (and is processed outside of the transaction context).
+
+The user needs just to create a simple Java POJO and implement the interface.
+
+[source,java,options="nowrap"]
+----
+public class MySynchronization
+        implements javax.transaction.Synchronization {
+  @Override
+  public void beforeCompletion() {
+    System.out.println("Transaction is about to be finished"):
+  }
+
+  @Override
+  public void afterCompletion(int status) {
+    System.out.println("Transaction finished with status " + status):
+  }
+}
+----
+
+For registration of the synchronization callback, the use can inject the
+https://docs.oracle.com/javaee/7/api/javax/transaction/TransactionSynchronizationRegistry.html[javax.transaction.TransactionSynchronizationRegistry].
+(the mandated JNDI location for the object is at `java:comp/TransactionSynchronizationRegistry`) and then to register
+the synchronization instance. The instance is bound to the currently active transaction.
+
+[source,java,options="nowrap"]
+----
+@Resource
+TransactionSynchronizationRegistry transactionSynchronizationRegistry;
+
+public void method() {
+  transactionSynchronizationRegistry
+    .registerInterposedSynchronization(new MySynchronization());
+}
+----
+
+The transaction synchronization registry adds other useful methods which are `putResource(Object key, Object value)`
+and `getResource(Object key)`. Their purpose is saving data objects alongside the transaction context.
+When the transaction is active you can store and retrieve the saved data. When the transaction is finished
+and there is no transaction context available (e.g. at `afterCompletion`) the `java.lang.IllegalStateException`
+is thrown.
+
+The other option for the user is to use https://javaee.github.io/javaee-spec/javadocs/javax/transaction/Transaction.html[the transaction object]
+to register the synchronization.
+
+[source,java,options="nowrap"]
+----
+@Resource(lookup = "java:/TransactionManager")
+TransactionManager tm;
+
+public void method() {
+tm.getTransaction().registerSynchronization(new MySynchronization());
+----
+
+When the user runs the Stateful Session Bean he can implement
+interface https://javaee.github.io/javaee-spec/javadocs/javax/ejb/SessionSynchronization.html[javax.ejb.SessionSynchronization]
+(or to use annotations) for the definition of the synchronization callbacks onto the bean.
+The session synchronization defines three methods.
+Of these three methods `afterBegin` is not connected to the transaction synchronization so we will not discuss it further.
+The  following example works with annotations but the bean may just implement the `SessionSynchronization`
+interface and it would work the same way.
+
+[source,java,options="nowrap"]
+----
+// only(!) SFSB can use the capability of SessionSynchronization
+@Stateful
+public class MyStatefulBean {
+  public void method() {
+    System.out.println("Running an important business logic...");
+    Thread.sleep(42000);
+  }
+
+  @BeforeCompletion
+  public void beforeCompletion() {
+    System.out.println("Transaction is about to be finished"):
+  }
+
+  @AfterCompletion
+  public void afterCompletion(boolean committed) {
+    System.out.println("Transaction finished with the outcome "
+      + (committed ? "committed" : "rolled-back")):
+  }
+}
+----
+
+NOTE: for more information about CDI and registration of transaction synchronization
+      look at https://jbossts.blogspot.com/2019/04/jta-and-cdi-integration.html[the article about Narayana integration of CDI events].
+
 [[classloading]]
 == Transactions subsystem class loading
 
