@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.AttributeTranslation;
+import org.jboss.as.clustering.controller.AttributeValueTranslator;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
@@ -422,10 +423,40 @@ public class ProxyConfigurationResourceDefinition extends ChildResourceDefinitio
         return registration;
     }
 
-    private AttributeTranslation SIMPLE_LOAD_PROVIDER_TRANSLATION = new AttributeTranslation() {
+    private static final AttributeTranslation SIMPLE_LOAD_PROVIDER_TRANSLATION = new AttributeTranslation() {
         @Override
         public org.jboss.as.clustering.controller.Attribute getTargetAttribute() {
             return SimpleLoadProviderResourceDefinition.Attribute.FACTOR;
+        }
+
+        private final AttributeValueTranslator simpleLoadFactorDefinedValidator = new AttributeValueTranslator() {
+            @Override
+            public ModelNode translate(OperationContext context, ModelNode value) throws OperationFailedException {
+                // Skip if executed on the existing current resource
+                PathAddress currentAddress = context.getCurrentAddress();
+                if (currentAddress.getLastElement().equals(SimpleLoadProviderResourceDefinition.PATH)) {
+                    return value;
+                }
+
+                try {
+                    // Otherwise, fail if operation executed on the legacy resource if dynamic load provider is defined
+                    PathAddress address = PathAddress.pathAddress(DynamicLoadProviderResourceDefinition.PATH);
+                    context.readResource(address, false);
+                } catch (Resource.NoSuchResourceException ignore) {
+                    return value;
+                }
+                throw ROOT_LOGGER.simpleLoadFactorProviderIsNotConfigured();
+            }
+        };
+
+        @Override
+        public AttributeValueTranslator getReadTranslator() {
+            return simpleLoadFactorDefinedValidator;
+        }
+
+        @Override
+        public AttributeValueTranslator getWriteTranslator() {
+            return simpleLoadFactorDefinedValidator;
         }
 
         @Override
