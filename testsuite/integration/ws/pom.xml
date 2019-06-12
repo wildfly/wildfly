@@ -134,6 +134,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.jboss.arquillian.junit</groupId>
+            <artifactId>arquillian-junit-container</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.ejb3</groupId>
             <artifactId>jboss-ejb3-ext-api</artifactId>
             <scope>test</scope>

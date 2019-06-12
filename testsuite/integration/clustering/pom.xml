@@ -59,6 +59,11 @@
             <artifactId>wildfly-clustering-singleton-api</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.jboss.arquillian.junit</groupId>
+            <artifactId>arquillian-junit-container</artifactId>
+            <scope>test</scope>
+        </dependency>
         <!-- Used for the infinispan-server-feature-pack -->
         <dependency>
             <groupId>org.wildfly</groupId>

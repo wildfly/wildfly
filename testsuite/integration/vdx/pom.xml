@@ -45,6 +45,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.jboss.arquillian.junit</groupId>
+            <artifactId>arquillian-junit-container</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.wildfly.extras.creaper</groupId>
             <artifactId>creaper-core</artifactId>
             <scope>test</scope>

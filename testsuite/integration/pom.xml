@@ -410,11 +410,6 @@
             <artifactId>wildfly-testsuite-shared</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>org.jboss.arquillian.junit</groupId>
-            <artifactId>arquillian-junit-container</artifactId>
-            <scope>test</scope>
-        </dependency>
       <!--  <dependency>
             <groupId>org.jboss.arquillian.testenricher</groupId>
             <artifactId>arquillian-testenricher-initialcontext</artifactId>
