@@ -28,20 +28,20 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * Object which holds user configuration (password, roles).
+ * Object which holds user configuration (password, values).
  *
  * @author Josef Cacek
  */
-public class UserWithRoles {
+public class UserWithAttributeValues {
 
     private final String name;
     private final String password;
-    private final Set<String> roles;
+    private final Set<String> values;
 
-    private UserWithRoles(Builder builder) {
+    private UserWithAttributeValues(Builder builder) {
         this.name = Objects.requireNonNull(builder.name, "Username must be not-null");
         this.password = builder.password != null ? builder.password : builder.name;
-        this.roles = new HashSet<>(builder.roles);
+        this.values = new HashSet<>(builder.values);
     }
 
     /**
@@ -61,12 +61,12 @@ public class UserWithRoles {
     /**
      * Set of roles to be assigned to the user.
      */
-    public Set<String> getRoles() {
-        return roles;
+    public Set<String> getValues() {
+        return values;
     }
 
     /**
-     * Creates builder to build {@link UserWithRoles}.
+     * Creates builder to build {@link UserWithAttributeValues}.
      *
      * @return created builder
      */
@@ -75,12 +75,12 @@ public class UserWithRoles {
     }
 
     /**
-     * Builder to build {@link UserWithRoles}.
+     * Builder to build {@link UserWithAttributeValues}.
      */
     public static final class Builder {
         private String name;
         private String password;
-        private final Set<String> roles = new HashSet<>();
+        private final Set<String> values = new HashSet<>();
 
         private Builder() {
         }
@@ -96,21 +96,21 @@ public class UserWithRoles {
         }
 
         /**
-         * Add given roles to the builder. It doesn't replace existing roles, but it adds given roles to them.
+         * Add given attribute values to the builder. It doesn't replace existing values, but it adds given valuess to them.
          */
-        public Builder withRoles(Set<String> roles) {
-            if (roles != null) {
-                this.roles.addAll(roles);
+        public Builder withValues(Set<String> values) {
+            if (values != null) {
+                this.values.addAll(values);
             }
             return this;
         }
 
         /**
-         * Add given roles to the builder. It doesn't replace existing roles, but it adds given roles to them.
+         * Add given values to the builder. It doesn't replace existing values, but it adds given value to them.
          */
-        public Builder withRoles(String... roles) {
-            if (roles != null) {
-                this.roles.addAll(Arrays.asList(roles));
+        public Builder withValues(String... values) {
+            if (values != null) {
+                this.values.addAll(Arrays.asList(values));
             }
             return this;
         }
@@ -118,8 +118,8 @@ public class UserWithRoles {
         /**
          * Clears set of already added roles.
          */
-        public Builder clearRoles() {
-            this.roles.clear();
+        public Builder clearValues() {
+            this.values.clear();
             return this;
         }
 
@@ -128,8 +128,8 @@ public class UserWithRoles {
          *
          * @return
          */
-        public UserWithRoles build() {
-            return new UserWithRoles(this);
+        public UserWithAttributeValues build() {
+            return new UserWithAttributeValues(this);
         }
     }
 

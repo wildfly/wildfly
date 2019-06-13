@@ -33,25 +33,25 @@ import java.util.Objects;
  *
  * @author Josef Cacek
  */
-public abstract class AbstractUserRolesCapableElement extends AbstractConfigurableElement implements UsersRolesCapableElement {
+public abstract class AbstractUserAttributeValuesCapableElement extends AbstractConfigurableElement implements UsersAttributeValuesCapableElement {
 
-    private final List<UserWithRoles> usersWithRoles;
+    private final List<UserWithAttributeValues> usersWithValues;
 
-    protected AbstractUserRolesCapableElement(Builder<?> builder) {
+    protected AbstractUserAttributeValuesCapableElement(Builder<?> builder) {
         super(builder);
-        this.usersWithRoles = Collections.unmodifiableList(new ArrayList<>(builder.usersWithRoles));
+        this.usersWithValues = Collections.unmodifiableList(new ArrayList<>(builder.usersWithValues));
     }
 
     @Override
-    public List<UserWithRoles> getUsersWithRoles() {
-        return usersWithRoles;
+    public List<UserWithAttributeValues> getUsersWithAttributeValues() {
+        return usersWithValues;
     }
 
     /**
-     * Builder to build {@link AbstractUserRolesCapableElement}.
+     * Builder to build {@link AbstractUserAttributeValuesCapableElement}.
      */
     public abstract static class Builder<T extends Builder<T>> extends AbstractConfigurableElement.Builder<T> {
-        private List<UserWithRoles> usersWithRoles = new ArrayList<>();
+        private List<UserWithAttributeValues> usersWithValues = new ArrayList<>();
 
         protected Builder() {
         }
@@ -59,22 +59,22 @@ public abstract class AbstractUserRolesCapableElement extends AbstractConfigurab
         /**
          * Adds the given user to list of users in the domain.
          *
-         * @param userWithRoles not-null {@link UserWithRoles} instance
+         * @param userWithValues not-null {@link UserWithAttributeValues} instance
          */
-        public final T withUser(UserWithRoles userWithRoles) {
-            this.usersWithRoles.add(Objects.requireNonNull(userWithRoles, "Provided user must not be null."));
+        public final T withUser(UserWithAttributeValues userWithValues) {
+            this.usersWithValues.add(Objects.requireNonNull(userWithValues, "Provided user must not be null."));
             return self();
         }
 
         /**
-         * Shortcut method for {@link #withUser(UserWithRoles)} one.
+         * Shortcut method for {@link #withUser(UserWithAttributeValues)} one.
          *
          * @param username must not be null
          * @param password must not be null
-         * @param roles roles to be assigned to user (may be null)
+         * @param values values to be assigned to user (may be null)
          */
-        public final T withUser(String username, String password, String... roles) {
-            this.usersWithRoles.add(UserWithRoles.builder().withName(username).withPassword(password).withRoles(roles).build());
+        public final T withUser(String username, String password, String... values) {
+            this.usersWithValues.add(UserWithAttributeValues.builder().withName(username).withPassword(password).withValues(values).build());
             return self();
         }
     }

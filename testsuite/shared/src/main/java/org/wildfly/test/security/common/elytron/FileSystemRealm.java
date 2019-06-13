@@ -29,7 +29,7 @@ import org.jboss.as.test.integration.management.util.CLIWrapper;
  *
  * @author Josef Cacek
  */
-public class FileSystemRealm extends AbstractUserRolesCapableElement implements SecurityRealm {
+public class FileSystemRealm extends AbstractUserAttributeValuesCapableElement implements SecurityRealm {
 
     private final Path path;
     private final Integer level;
@@ -55,15 +55,15 @@ public class FileSystemRealm extends AbstractUserRolesCapableElement implements 
     public void create(CLIWrapper cli) throws Exception {
         final String levelStr = level == null ? "" : ("level=" + level);
         cli.sendLine(String.format("/subsystem=elytron/filesystem-realm=%s:add(%s, %s)", name, path.asString(), levelStr));
-        for (UserWithRoles user : getUsersWithRoles()) {
+        for (UserWithAttributeValues user : getUsersWithAttributeValues()) {
             cli.sendLine(String.format("/subsystem=elytron/filesystem-realm=%s:add-identity(identity=%s)", name, user.getName()));
             cli.sendLine(
                     String.format("/subsystem=elytron/filesystem-realm=%s:set-password(identity=%s, clear={password=\"%s\"})",
                             name, user.getName(), user.getPassword()));
-            if (!user.getRoles().isEmpty()) {
+            if (!user.getValues().isEmpty()) {
                 cli.sendLine(String.format(
                         "/subsystem=elytron/filesystem-realm=%s:add-identity-attribute(identity=%s, name=groups, value=[%s])", name,
-                        user.getName(), String.join(",", user.getRoles())));
+                        user.getName(), String.join(",", user.getValues())));
             }
         }
     }
@@ -86,7 +86,7 @@ public class FileSystemRealm extends AbstractUserRolesCapableElement implements 
     /**
      * Builder to build {@link FileSystemRealm}.
      */
-    public static final class Builder extends AbstractUserRolesCapableElement.Builder<Builder> {
+    public static final class Builder extends AbstractUserAttributeValuesCapableElement.Builder<Builder> {
         private Path path;
         private Integer level;
 
