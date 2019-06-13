@@ -46,25 +46,15 @@ public enum AddressSerializer implements Serializer<Address> {
 
     @Override
     public void write(DataOutput output, Address address) throws IOException {
-        // Awkward exception handling due to JGRP-2242
-        try {
-            org.jgroups.util.Util.writeAddress(address, output);
-        } catch (IOException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new IOException(e);
-        }
+        org.jgroups.util.Util.writeAddress(address, output);
     }
 
     @Override
     public Address read(DataInput input) throws IOException {
-        // Awkward exception handling due to JGRP-2242
         try {
             return org.jgroups.util.Util.readAddress(input);
-        } catch (IOException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new IOException(e);
+        } catch (ClassNotFoundException e) {
+            throw new IllegalStateException(e);
         }
     }
 

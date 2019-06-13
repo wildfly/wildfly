@@ -25,6 +25,7 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import static org.jboss.as.clustering.jgroups.logging.JGroupsLogger.ROOT_LOGGER;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.Collections;
 import java.util.IdentityHashMap;
@@ -60,8 +61,8 @@ public class ProtocolDefaultsServiceConfigurator extends SimpleServiceNameProvid
     private static ProtocolStackConfigurator load(String resource) throws IllegalStateException {
         URL url = find(resource, JGroupsExtension.class.getClassLoader());
         ROOT_LOGGER.debugf("Loading JGroups protocol defaults from %s", url.toString());
-        try {
-            return XmlConfigurator.getInstance(url);
+        try (InputStream input = url.openStream()) {
+            return XmlConfigurator.getInstance(input);
         } catch (IOException e) {
             throw new IllegalArgumentException(JGroupsLogger.ROOT_LOGGER.parserFailure(url));
         }
