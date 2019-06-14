@@ -35,6 +35,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttri
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CLASS;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CLIENT_INTERCEPTORS;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.MODULE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SERVER_INTERCEPTORS;
 
@@ -58,6 +59,10 @@ public class EJB3Subsystem60Parser extends EJB3Subsystem50Parser {
         switch (element) {
             case SERVER_INTERCEPTORS: {
                 parseServerInterceptors(reader, ejb3SubsystemAddOperation);
+                break;
+            }
+            case CLIENT_INTERCEPTORS: {
+                parseClientInterceptors(reader, ejb3SubsystemAddOperation);
                 break;
             }
             default: {
@@ -84,6 +89,26 @@ public class EJB3Subsystem60Parser extends EJB3Subsystem50Parser {
         requireNoContent(reader);
 
         ejbSubsystemAddOperation.get(SERVER_INTERCEPTORS).set(interceptors);
+    }
+
+    protected void parseClientInterceptors(final XMLExtendedStreamReader reader, final ModelNode ejbSubsystemAddOperation) throws XMLStreamException {
+        final ModelNode interceptors = new ModelNode();
+
+        requireNoAttributes(reader);
+        while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
+            switch (EJB3SubsystemXMLElement.forName(reader.getLocalName())) {
+                case INTERCEPTOR: {
+                    parseInterceptor(reader, interceptors);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+        requireNoContent(reader);
+
+        ejbSubsystemAddOperation.get(CLIENT_INTERCEPTORS).set(interceptors);
     }
 
 

@@ -22,6 +22,7 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CLIENT_INTERCEPTORS;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_ENTITY_BEAN_INSTANCE_POOL;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_MDB_INSTANCE_POOL;
@@ -115,6 +116,7 @@ import org.jboss.as.ejb3.deployment.processors.security.JaccEjbDeploymentProcess
 import org.jboss.as.ejb3.iiop.POARegistry;
 import org.jboss.as.ejb3.iiop.RemoteObjectSubstitutionService;
 import org.jboss.as.ejb3.iiop.stub.DynamicStubFactoryFactory;
+import org.jboss.as.ejb3.interceptor.server.ClientInterceptorCache;
 import org.jboss.as.ejb3.interceptor.server.ServerInterceptorMetaData;
 import org.jboss.as.ejb3.interceptor.server.ServerInterceptorCache;
 import org.jboss.as.ejb3.logging.EjbLogger;
@@ -348,13 +350,28 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                             serverInterceptors.add(new ServerInterceptorMetaData(serverInterceptor.get("module").asString(), serverInterceptor.get("class").asString()));
                         }
                         processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_EJB_SERVER_INTERCEPTORS,
-                                new ServerInterceptorsDependenciesDeploymentUnitProcessor(serverInterceptors));
+                                new StaticInterceptorsDependenciesDeploymentUnitProcessor(serverInterceptors));
                         final ServerInterceptorCache serverInterceptorCache = new ServerInterceptorCache(serverInterceptors);
                         processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_SERVER_INTERCEPTORS,
                                 new ServerInterceptorsBindingsProcessor(serverInterceptorCache));
                     }
-                }
 
+                    if (model.hasDefined(CLIENT_INTERCEPTORS)) {
+                        final List<ServerInterceptorMetaData> clientInterceptors = new ArrayList<>();
+
+                        final ModelNode clientInterceptorsNode = model.get(CLIENT_INTERCEPTORS);
+                        for (final ModelNode clientInterceptor : clientInterceptorsNode.asList()) {
+                            clientInterceptors.add(new ServerInterceptorMetaData(clientInterceptor.get("module").asString(), clientInterceptor.get("class").asString()));
+                        }
+
+                        processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_EJB_SERVER_INTERCEPTORS,
+                                new StaticInterceptorsDependenciesDeploymentUnitProcessor(clientInterceptors));
+
+                        final ClientInterceptorCache clientInterceptorCache = new ClientInterceptorCache(clientInterceptors);
+                        processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.POST_MODULE_EJB_SERVER_INTERCEPTORS,
+                                new ClientInterceptorsBindingsProcessor(clientInterceptorCache));
+                    }
+                }
             }
         }, OperationContext.Stage.RUNTIME);
 

@@ -19,52 +19,45 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.ejb3.subsystem;
 
-
-
-import org.jboss.as.ejb3.interceptor.server.ServerInterceptorMetaData;
-import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.ejb3.interceptor.server.ClientInterceptorCache;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.module.ModuleDependency;
-import org.jboss.as.server.deployment.module.ModuleSpecification;
-import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
-import org.jboss.modules.ModuleLoader;
+import org.jboss.ejb.client.EJBClientInterceptor;
 
-import java.util.Collection;
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  */
-public class ServerInterceptorsDependenciesDeploymentUnitProcessor implements DeploymentUnitProcessor {
+public class ClientInterceptorsBindingsProcessor implements DeploymentUnitProcessor {
 
-    final Collection<String> interceptorModules = new HashSet<>();
+    private final ClientInterceptorCache clientInterceptorCache;
 
-    public ServerInterceptorsDependenciesDeploymentUnitProcessor(final Collection<ServerInterceptorMetaData> serverInterceptors){
-        for(final ServerInterceptorMetaData si: serverInterceptors){
-            interceptorModules.add(si.getModule());
-        }
+    public ClientInterceptorsBindingsProcessor(final ClientInterceptorCache clientInterceptorCache) {
+        this.clientInterceptorCache = clientInterceptorCache;
     }
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final ModuleLoader moduleLoader = Module.getBootModuleLoader();
-        final ModuleSpecification deploymentModuleSpec = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
-        for(final String interceptorModule : interceptorModules) {
-            final ModuleIdentifier interceptorModuleId = ModuleIdentifier.create(interceptorModule);
-            deploymentModuleSpec.addSystemDependency(new ModuleDependency(moduleLoader, interceptorModuleId, false, false, true, false));
+        try {
+            final List<EJBClientInterceptor> clientInterceptors = new ArrayList<>();
+            for (final Class<? extends EJBClientInterceptor> interceptorClass : clientInterceptorCache.getClientInterceptors()) {
+                clientInterceptors.add(interceptorClass.newInstance());
+            }
+            final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+            deploymentUnit.putAttachment(org.jboss.as.ejb3.subsystem.Attachments.STATIC_EJB_CLIENT_INTERCEPTORS, clientInterceptors);
+
+        } catch (InstantiationException | IllegalAccessException e) {
+            throw new DeploymentUnitProcessingException(e);
         }
     }
 
     @Override
     public void undeploy(final DeploymentUnit context) {
-
     }
 }
