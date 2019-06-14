@@ -111,15 +111,6 @@
                                     <groupId>com.sun.istack</groupId>
                                     <artifactId>istack-commons-runtime</artifactId>
                                 </dependency>
-                                <!-- helloworld-mutual-ssl, helloworld-mutual-ssl-secured -->
-                                <dependency>
-                                    <groupId>org.bouncycastle</groupId>
-                                    <artifactId>bcprov-jdk15on</artifactId>
-                                </dependency>
-                                <dependency>
-                                    <groupId>org.bouncycastle</groupId>
-                                    <artifactId>bcpkix-jdk15on</artifactId>
-                                </dependency>
                                 <!-- helloworld-classfiletransformers -->
                                 <dependency>
                                     <groupId>org.javassist</groupId>
