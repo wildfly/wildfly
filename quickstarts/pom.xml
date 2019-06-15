@@ -76,11 +76,6 @@
                                     <groupId>com.h2database</groupId>
                                     <artifactId>h2</artifactId>
                                 </dependency>
-                                <!-- jaxws-ejb -->
-                                <dependency>
-                                    <groupId>com.sun.istack</groupId>
-                                    <artifactId>istack-commons-runtime</artifactId>
-                                </dependency>
                             </includeDependencies>
                         </configuration>
                     </execution>
