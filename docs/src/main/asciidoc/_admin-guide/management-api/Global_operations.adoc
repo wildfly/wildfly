@@ -8,8 +8,8 @@ every resource.
 == The read-resource operation
 
 Reads a management resource's attribute values along with either basic
-or complete information about any child resources. Supports the +
-following parameters, none of which are required:
+or complete information about any child resources. Supports the following
+parameters, none of which are required:
 
 * `recursive` – (boolean, default is `false`) – whether to include
 complete information about child resources, recursively.
@@ -209,8 +209,7 @@ Management Model>> for details on the result of this operation.
 == The read-children-types operation
 
 Returns a list of the
-link:Management_resources.html#src-557064_Managementresources-Address[types
-of child resources] the resource supports. Takes two optional
+<<address,_types_ of child resources>> the resource supports. Takes two optional
 parameters:
 
 * `include-aliases` – (boolean, default is `false`) – whether to include
@@ -227,7 +226,7 @@ discussion around this topic].
 == The read-children-names operation
 
 Returns a list of the names of all child resources of a given
-link:Management_resources.html#src-557064_Managementresources-Address[type].
+<<address,type>>.
 Takes a single, required, parameter:
 
 * `child-type` – (string) – the name of the type
@@ -236,8 +235,7 @@ Takes a single, required, parameter:
 == The read-children-resources operation
 
 Returns information about all of a resource's children that are of a
-given
-link:Management_resources.html#src-557064_Managementresources-Address[type].
+given <<address,type>>.
 For each child resource, the returned information is equivalent to
 executing the `read-resource` operation on that resource. Takes the
 following parameters, of which only \{\{child-type} is required:
@@ -267,8 +265,7 @@ will include the default value for such parameters.
 == The read-attribute-group operation
 
 Returns a list of attributes of a
-link:Management_resources.html#src-557064_Managementresources-Address[type]
-for a given attribute group name. For each attribute the returned
+<<address,type>> for a given attribute group name. For each attribute the returned
 information is equivalent to executing the `read-attribute` operation of
 that resource. Takes the following parameters, of which only \{\{name}
 is required:
@@ -290,8 +287,7 @@ response.
 [[the-read-attribute-group-names-operation]]
 == The read-attribute-group-names operation
 
-Returns a list of attribute groups names for a given
-link:Management_resources.html#src-557064_Managementresources-Address[type].
+Returns a list of attribute groups names for a given <<address,type>>.
 Takes no parameters.
 
 [[standard-operations]]
