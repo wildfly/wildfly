@@ -298,8 +298,8 @@ public class UndertowTransformersTestCase extends AbstractSubsystemTest {
             init.addMavenResourceURL(controllerVersion.getMavenGroupId() + ":wildfly-clustering-common:" + controllerVersion.getMavenGavVersion());
             init.addMavenResourceURL(controllerVersion.getMavenGroupId() + ":wildfly-web-common:" + controllerVersion.getMavenGavVersion());
             // The version here appears to be required to be set to the current version of undertow
-            init.addMavenResourceURL("io.undertow:undertow-servlet:2.0.20.Final");
-            init.addMavenResourceURL("io.undertow:undertow-core:2.0.20.Final");
+            init.addMavenResourceURL("io.undertow:undertow-servlet:2.0.22.Final");
+            init.addMavenResourceURL("io.undertow:undertow-core:2.0.22.Final");
         }
     }
 
