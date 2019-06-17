@@ -31,7 +31,7 @@ import javax.rmi.PortableRemoteObject;
 import org.jboss.logging.Logger;
 
 /**
- * Util class which is used for remote lookups in transaction relatd tests.
+ * Util class which is used for remote lookups in transaction related tests.
  *
  * @author Ondra Chaloupka <ochaloup@redhat.com>
  */
