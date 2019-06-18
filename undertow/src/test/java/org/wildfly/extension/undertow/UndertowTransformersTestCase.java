@@ -286,9 +286,9 @@ public class UndertowTransformersTestCase extends AbstractSubsystemTest {
         if (controllerVersion == ModelTestControllerVersion.EAP_7_1_0 || controllerVersion == ModelTestControllerVersion.EAP_7_2_0) {
             init.addMavenResourceURL(controllerVersion.getMavenGroupId() + ":wildfly-clustering-common:" + controllerVersion.getMavenGavVersion());
             init.addMavenResourceURL(controllerVersion.getMavenGroupId() + ":wildfly-web-common:" + controllerVersion.getMavenGavVersion());
-            // The version here appears to be required to be set to the current version of undertow
-            init.addMavenResourceURL("io.undertow:undertow-servlet:2.0.20.Final");
-            init.addMavenResourceURL("io.undertow:undertow-core:2.0.20.Final");
+            // Prevent service loader loading of io.undertow.predicate.PredicateBuilder or io.undertow.attribute.ExchangeAttributeBuilder
+            // from the parent as the parent includes classes not available in the child
+            init.excludeResourceFromParent("META-INF/services/io.undertow.*");
         }
     }
 
