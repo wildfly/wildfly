@@ -8,7 +8,9 @@ The `aggregate-realm` resource contains the following attributes: -
  * `authentication-realm` - This realm use used to load the credentials of the identity or perform evidence verification.
  * `authorization-realm` - The realm to use to load the identities attributes used for authorization.
  * `authorization-realms` - A list of one or more realms to use to load the identities attributes and aggregate into a single set of attributes.
- 
+ * `principal-transformer` - A principal transformer that can be used to transform the principal after loading the credentials
+ for authentication but before loading the identities attributes for authorization. This attribute is optional.
+
 NOTE: `authorization-realm` and `authorization-realms` are mutually exclusive so exactly one of these must be specified.
 
 == Defining a Simple Aggregation
@@ -31,6 +33,17 @@ The following command is exactly the same except the `authorization-realms` attr
 /subsystem=elytron/aggregate-realm=combined:add(
     authentication-realm=properties-realm, 
     authorization-realms=[jdbc-realm])
+----
+
+The following command will reference a principal transformer defined in the mappers configuration to be used to transform the principal
+after authentication.
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/aggregate-realm=combined:add(
+    authentication-realm=properties-realm,
+    authorization-realms=[jdbc-realm],
+    principal-transformer=custom-transformer)
 ----
 
 == Aggregating Attributes
