@@ -2009,6 +2009,81 @@ use custom implementations of the following components:
 When creating custom implementations of Elytron components, they must
 present the appropriate capabilities and requirements.
 
+=== Configuring a server SSLContext
+
+Using the Elytron subsystem, it is possible to configure an `SSLContext` for use on the server side of a connection.
+
+Adding a server `SSLContext` takes the general form:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/server-ssl-context=test-server-ssl-context:add(...)
+----
+
+The following attributes can be specified when creating a `server-ssl-context`:
+
+security-domain:: _(Optional)_ A reference to the `security-domain` to use for authentication during SSL session
+establishment.
+key-manager:: _(Optional)_ A reference to the `KeyManager` to be used by this `SSLContext`.
+trust-manager:: _(Optional)_ A reference to the `TrustManager` to be used by this `SSLContext`.
+cipher-suite-filter:: _(Optional)_ The filter to be applied to the cipher suites for TLSv1.2 and below made available
+by this SSLContext. The format of this attribute is described in detail in
+http://wildfly-security.github.io/wildfly-elytron/master/org/wildfly/security/ssl/CipherSuiteSelector.html#fromString-java.lang.String-[org.wildfly.security.ssl.CipherSuiteSelector.fromString(selector)].
+The default value is `DEFAULT`, which corresponds to all known cipher suites that do not have NULL encryption and
+excludes any cipher suites that have no authentication.
+protocols:: _(Optional)_ A space separated list of the protocols to be supported by this `SSLContext`.
+want-client-auth:: _(Optional)_ To request (but not to require) a client certificate on SSL handshake. If a
+`security-domain` is configured and supports X509 evidence, this will be set to `true` automatically. Ignored when
+`need-client-auth` is set. The default value is `false`.
+need-client-auth:: _(Optional)_ If `true`, a client certificate is required on SSL handshake. A connection without a
+trusted client certificate will be rejected. The default value is `false`.
+authentication-optional:: _(Optional)_ Rejection of the client certificate by the configured `security-domain` will not
+prevent the connection. This allows a fall through to use other authentication mechanisms (like form login) when the
+client certificate is rejected by the
+`security-domain`. This has an effect only when the `security-domain` is configured. The default value is `false`.
+use-cipher-suites-order:: _(Optional)_ If `true`, the cipher suites order defined on the server will be used. If `false`,
+the cipher suites order presented by the client will be used. The default value is `true`.
+provider-name:: _(Optional)_ The name of the provider to use. If not specified, all providers from `providers` will be
+passed to the `SSLContext`.
+providers:: _(Optional)_ The name of the providers to obtain the `Provider[]` to use to load the `SSLContext`.
+maximum-session-cache-size:: _(Optional)_ The maximum number of SSL sessions to be cached. The default value `-1`
+indicates that the JVM default value should be used. A value of `0` means there is no limit.
+session-timeout:: _(Optional)_ The timeout for SSL sessions. The default value `-1` indicates that the JVM default value
+should be used. A value of `0` means there is no limit.
+wrap:: _(Optional)_ If `true`, the returned `SSLEngine`, `SSLSocket`, and `SSLServerSocket` instances will be wrapped to
+protect against further modification. The default value is `false`.
+pre-realm-principal-transformer:: _(Optional)_ A principal transformer to apply before the realm is selected.
+post-realm-principal-transformer:: _(Optional)_ A principal transformer to apply after the realm is selected.
+final-principal-transformer:: _(Optional)_ A final principal transformer to apply for this mechanism realm.
+realm-mapper:: _(Optional)_ The realm mapper to be used for SSL authentication.
+
+
+=== Configuring a client SSLContext
+
+Using the Elytron subsystem, it is possible to configure an `SSLContext` for use on the client side of a connection.
+
+Adding a client `SSLContext` takes the general form:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/client-ssl-context=test-client-ssl-context:add(...)
+----
+
+The following attributes can be specified when creating a `client-ssl-context`:
+
+key-manager:: _(Optional)_ A reference to the `KeyManager` to be used by this `SSLContext`.
+trust-manager:: _(Optional)_ A reference to the `TrustManager` to be used by this `SSLContext`.
+cipher-suite-filter:: _(Optional)_ The filter to be applied to the cipher suites for TLSv1.2 and below made available
+by this SSLContext. The format of this attribute is described in detail in
+http://wildfly-security.github.io/wildfly-elytron/master/org/wildfly/security/ssl/CipherSuiteSelector.html#fromString-java.lang.String-[org.wildfly.security.ssl.CipherSuiteSelector.fromString(selector)].
+The default value is `DEFAULT`, which corresponds to all known cipher suites that do not have NULL encryption and
+excludes any cipher suites that have no authentication.
+protocols:: _(Optional)_ A space separated list of the protocols to be supported by this `SSLContext`.
+provider-name:: _(Optional)_ The name of the provider to use. If not specified, all providers from `providers` will be
+passed to the `SSLContext`.
+providers:: _(Optional)_ The name of the providers to obtain the `Provider[]` to use to load the `SSLContext`.
+
+
 === Default SSLContext
 
 Many libraries that can be used within deployments may require SSL configuration for any connections they establish, these libraries tend to be configurable by the caller or if no configuration is provided fall back to using the default `SSLContext` for the process available from: -
