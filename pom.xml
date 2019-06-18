@@ -208,7 +208,7 @@
         <version.org.jboss.galleon>4.0.0.Final</version.org.jboss.galleon>
         <version.org.jboss.universe.producer.wildfly-producers>1.0.2.Final</version.org.jboss.universe.producer.wildfly-producers>
         <version.org.jboss.universe.community-universe>1.0.2.Final</version.org.jboss.universe.community-universe>
-        <version.org.wildfly.build-tools>1.2.10.Final</version.org.wildfly.build-tools>
+        <version.org.wildfly.build-tools>1.2.11.Final</version.org.wildfly.build-tools>
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.common>1.5.1.Final</version.org.wildfly.common>
         <version.org.wildfly.component-matrix-plugin>1.0.3.Final</version.org.wildfly.component-matrix-plugin>
@@ -239,16 +239,16 @@
         <version.com.github.ben-manes.caffeine>2.6.2</version.com.github.ben-manes.caffeine>
         <version.com.github.fge.jackson-coreutils>1.0</version.com.github.fge.jackson-coreutils>
         <version.com.github.fge.json-patch>1.3</version.com.github.fge.json-patch>
-        <version.com.github.spullara.mustache>0.9.4</version.com.github.spullara.mustache>
-        <version.com.google.code.gson>2.8.2</version.com.google.code.gson>
+        <version.com.github.spullara.mustache>0.9.6</version.com.github.spullara.mustache>
+        <version.com.google.code.gson>2.8.5</version.com.google.code.gson>
         <version.com.google.guava>25.0-jre</version.com.google.guava>
         <version.com.h2database>1.4.193</version.com.h2database>
         <version.com.microsoft.azure>6.1.0</version.com.microsoft.azure>
         <version.com.squareup.okhttp3>3.9.0</version.com.squareup.okhttp3>
         <version.com.squareup.okio>1.13.0</version.com.squareup.okio>
         <version.com.sun.faces>2.3.9.SP02</version.com.sun.faces>
-        <version.com.sun.istack>3.0.7</version.com.sun.istack>
-        <version.com.sun.xml.fastinfoset>1.2.13</version.com.sun.xml.fastinfoset>
+        <version.com.sun.istack>3.0.8</version.com.sun.istack>
+        <version.com.sun.xml.fastinfoset>1.2.16</version.com.sun.xml.fastinfoset>
         <version.commons-beanutils>1.9.3</version.commons-beanutils>
         <version.commons-cli>1.3.1</version.commons-cli>
         <version.commons-codec>1.11</version.commons-codec>
@@ -257,20 +257,20 @@
         <version.commons-lang3>3.9</version.commons-lang3>
         <version.dom4j>2.1.1</version.dom4j>
         <version.gnu.getopt>1.0.13</version.gnu.getopt>
-        <version.groovy-all>2.4.7</version.groovy-all>
-        <version.httpunit>1.7.2</version.httpunit>
+        <version.groovy-all>2.4.17</version.groovy-all>
+        <version.httpunit>1.7.3</version.httpunit>
         <version.io.agroal>1.3</version.io.agroal>
         <version.io.jaegertracing>0.34.0</version.io.jaegertracing>
         <version.io.netty>4.1.29.Final</version.io.netty>
         <version.io.opentracing>0.31.0</version.io.opentracing>
         <version.io.opentracing.concurrent>0.1.0</version.io.opentracing.concurrent>
         <version.io.opentracing.jaxrs2>0.1.7</version.io.opentracing.jaxrs2>
-        <version.io.opentracing.tracerresolver>0.1.5</version.io.opentracing.tracerresolver>
+        <version.io.opentracing.tracerresolver>0.1.8</version.io.opentracing.tracerresolver>
         <version.io.opentracing.servlet>0.1.0</version.io.opentracing.servlet>
-        <version.io.reactivex.rxjava>2.2.2</version.io.reactivex.rxjava>
+        <version.io.reactivex.rxjava>2.2.9</version.io.reactivex.rxjava>
         <version.io.prometheus.simpleclient>0.6.0</version.io.prometheus.simpleclient>
-        <version.io.smallrye.smallrye-config>1.3.4</version.io.smallrye.smallrye-config>
-        <version.io.smallrye.smallrye-health>1.0.2</version.io.smallrye.smallrye-health>
+        <version.io.smallrye.smallrye-config>1.3.7</version.io.smallrye.smallrye-config>
+        <version.io.smallrye.smallrye-health>1.0.3</version.io.smallrye.smallrye-health>
         <version.io.smallrye.smallrye-metrics>1.1.3</version.io.smallrye.smallrye-metrics>
         <version.io.smallrye.opentracing>1.1.1</version.io.smallrye.opentracing>
         <version.io.undertow.jastow>2.0.7.Final</version.io.undertow.jastow>
@@ -299,7 +299,7 @@
         <version.org.apache.james.apache-mime4j>0.6</version.org.apache.james.apache-mime4j>
         <version.org.apache.jstl>1.2.6-RC1</version.org.apache.jstl>
         <version.org.apache.lucene>5.5.5</version.org.apache.lucene>
-        <version.org.apache.myfaces.core>2.3.1</version.org.apache.myfaces.core>
+        <version.org.apache.myfaces.core>2.3.4</version.org.apache.myfaces.core>
         <version.org.apache.neethi>3.1.1</version.org.apache.neethi>
         <version.org.apache.openjpa>2.4.2</version.org.apache.openjpa>
         <version.org.apache.qpid.proton>0.32.0</version.org.apache.qpid.proton>
@@ -309,19 +309,19 @@
         <version.org.apache.ws.security>2.2.3</version.org.apache.ws.security>
         <version.org.apache.ws.xmlschema>2.2.4</version.org.apache.ws.xmlschema>
         <version.org.apache.xalan>2.7.1.jbossorg-4</version.org.apache.xalan>
-        <version.org.bouncycastle>1.60</version.org.bouncycastle>
+        <version.org.bouncycastle>1.62</version.org.bouncycastle>
         <version.org.bytebuddy>1.9.5</version.org.bytebuddy>
         <version.org.codehaus.jackson>1.9.13</version.org.codehaus.jackson>
         <version.org.codehaus.jettison>1.3.8</version.org.codehaus.jettison>
-        <version.org.cryptacular>1.2.0</version.org.cryptacular>
+        <version.org.cryptacular>1.2.3</version.org.cryptacular>
         <version.org.eclipse.jdt.core.compiler>4.6.1</version.org.eclipse.jdt.core.compiler>
         <version.org.eclipse.microprofile.config.api>1.3</version.org.eclipse.microprofile.config.api>
         <version.org.eclipse.microprofile.health.api>1.0</version.org.eclipse.microprofile.health.api>
         <version.org.eclipse.microprofile.metrics.api>1.1</version.org.eclipse.microprofile.metrics.api>
         <version.org.eclipse.microprofile.opentracing>1.1</version.org.eclipse.microprofile.opentracing>
         <version.org.eclipse.microprofile.rest.client.api>1.0.1</version.org.eclipse.microprofile.rest.client.api>
-        <version.org.eclipse.yasson>1.0.3</version.org.eclipse.yasson>
-        <version.org.eclipselink.version>2.7.3</version.org.eclipselink.version>
+        <version.org.eclipse.yasson>1.0.4</version.org.eclipse.yasson>
+        <version.org.eclipselink.version>2.7.4</version.org.eclipselink.version>
         <version.org.glassfish.jakarta.el>3.0.2</version.org.glassfish.jakarta.el>
         <version.org.glassfish.javax.enterprise.concurrent>1.0</version.org.glassfish.javax.enterprise.concurrent>
         <version.org.glassfish.soteria>1.0</version.org.glassfish.soteria>
@@ -331,11 +331,11 @@
         <version.org.hibernate.validator>6.0.16.Final</version.org.hibernate.validator>
         <version.org.hornetq>2.4.7.Final</version.org.hornetq>
         <version.org.infinispan>9.4.14.Final</version.org.infinispan>
-        <version.org.jasypt>1.9.2</version.org.jasypt>
+        <version.org.jasypt>1.9.3</version.org.jasypt>
         <version.org.javassist>3.23.2-GA</version.org.javassist>
         <version.org.jberet>1.3.4.Final</version.org.jberet>
         <version.org.jboss.activemq.artemis.integration>1.0.2</version.org.jboss.activemq.artemis.integration>
-        <version.org.jboss.arquillian.core>1.4.0.Final</version.org.jboss.arquillian.core>
+        <version.org.jboss.arquillian.core>1.4.1.Final</version.org.jboss.arquillian.core>
         <version.org.jboss.common.jboss-common-beans>2.0.1.Final</version.org.jboss.common.jboss-common-beans>
         <version.org.jboss.ejb-client>4.0.18.Final</version.org.jboss.ejb-client>
         <version.org.jboss.ejb-client-legacy>3.0.3.Final</version.org.jboss.ejb-client-legacy>
@@ -354,7 +354,7 @@
         <version.org.jboss.resteasy>3.7.0.Final</version.org.jboss.resteasy>
         <version.org.jboss.seam.int>7.0.0.GA</version.org.jboss.seam.int>
         <version.org.jboss.security.jboss-negotiation>3.0.6.Final</version.org.jboss.security.jboss-negotiation>
-        <version.org.jboss.security.jbossxacml>2.0.8.Final</version.org.jboss.security.jbossxacml>
+        <version.org.jboss.security.jbossxacml>2.0.9.Final</version.org.jboss.security.jbossxacml>
         <!-- only needed here until wildfly-arquillian has this version properly synced with arquillian itslef  -->
         <version.org.jboss.shrinkwrap.descriptors>2.0.0</version.org.jboss.shrinkwrap.descriptors>
         <version.org.jboss.shrinkwrap.shrinkwrap>1.2.6</version.org.jboss.shrinkwrap.shrinkwrap>
@@ -386,7 +386,7 @@
         <version.org.jboss.ws.cxf>5.3.0.Final</version.org.jboss.ws.cxf>
         <version.org.jboss.ws.jaxws-undertow-httpspi>1.0.1.Final</version.org.jboss.ws.jaxws-undertow-httpspi>
         <version.org.jboss.ws.spi>3.2.3.Final</version.org.jboss.ws.spi>
-        <version.org.jboss.xnio.netty.netty-xnio-transport>0.1.6.Final</version.org.jboss.xnio.netty.netty-xnio-transport>
+        <version.org.jboss.xnio.netty.netty-xnio-transport>0.1.7.Final</version.org.jboss.xnio.netty.netty-xnio-transport>
         <version.org.jgroups>4.1.1.Final</version.org.jgroups>
         <version.org.jgroups.azure>1.2.1.Final</version.org.jgroups.azure>
         <version.org.jgroups.kubernetes>1.0.9.Final</version.org.jgroups.kubernetes>
@@ -406,7 +406,7 @@
         <version.org.wildfly.transaction.client>1.1.3.Final</version.org.wildfly.transaction.client>
         <version.org.yaml.snakeyaml>1.18</version.org.yaml.snakeyaml>
         <version.rhino.js>1.7R2</version.rhino.js>
-        <version.sun.jaxb>2.3.1</version.sun.jaxb>
+        <version.sun.jaxb>2.3.2</version.sun.jaxb>
         <version.sun.saaj-impl>1.3.16-jbossorg-1</version.sun.saaj-impl>
         <version.wsdl4j>1.6.3</version.wsdl4j>
         <version.xml-resolver>1.2</version.xml-resolver>
