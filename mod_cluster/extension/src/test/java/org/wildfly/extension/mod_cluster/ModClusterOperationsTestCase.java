@@ -151,9 +151,19 @@ public class ModClusterOperationsTestCase extends AbstractSubsystemTest {
     @Test
     public void testLegacyLoadProviderOperations() throws Exception {
         KernelServices services = this.buildKernelServices();
+        int testFactor = 66;
 
-        ModelNode op = Util.createRemoveOperation(getLegacyModClusterConfigDynamicLoadProviderAddress());
+        // Test for WFLY-10872 - with dynamic load provider defined, check that a non-cryptic message is given to the user when
+        // they attempt to execute something like /subsystem=modcluster/mod-cluster-config=configuration/:write-attribute(name=simple-load-provider, value=0)
+        ModelNode op = Util.createOperation(WRITE_ATTRIBUTE_OPERATION, getProxyAddress(PROXY_NAME));
+        op.get(NAME).set(ProxyConfigurationResourceDefinition.DeprecatedAttribute.SIMPLE_LOAD_PROVIDER.getName());
+        op.get(VALUE).set(testFactor);
         ModelNode result = services.executeOperation(op);
+        Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(), FAILED, result.get(OUTCOME).asString());
+        Assert.assertTrue(result.get(FAILURE_DESCRIPTION).asString().contains("WFLYMODCLS0024"));
+
+        op = Util.createRemoveOperation(getLegacyModClusterConfigDynamicLoadProviderAddress());
+        result = services.executeOperation(op);
         Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(), SUCCESS, result.get(OUTCOME).asString());
 
         op = Util.createAddOperation(getSimpleLoadProviderAddress(PROXY_NAME));
@@ -161,7 +171,6 @@ public class ModClusterOperationsTestCase extends AbstractSubsystemTest {
         Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(), SUCCESS, result.get(OUTCOME).asString());
 
         // Write on legacy path
-        int testFactor = 66;
         op = Util.createOperation(WRITE_ATTRIBUTE_OPERATION, getProxyAddress(PROXY_NAME));
         op.get(NAME).set(ProxyConfigurationResourceDefinition.DeprecatedAttribute.SIMPLE_LOAD_PROVIDER.getName());
         op.get(VALUE).set(testFactor);
