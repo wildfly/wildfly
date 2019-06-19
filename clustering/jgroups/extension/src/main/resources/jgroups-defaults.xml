@@ -76,6 +76,8 @@
     />
     <pbcast.GMS print_local_addr="false"/>
     <UFC max_credits="2m"/>
+    <UFC_NB max_credits="3m"/>
     <MFC max_credits="2m"/>
+    <MFC_NB max_credits="3m"/>
     <FRAG2 frag_size="30k"/>
 </config>
