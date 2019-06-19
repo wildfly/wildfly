@@ -28,7 +28,6 @@ import java.util.Set;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
-import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -51,6 +50,7 @@ import static org.jboss.as.server.deployment.Attachments.SETUP_ACTIONS;
  *
  * @author John E. Bailey
  * @author Eduardo Martins
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class ModuleContextProcessor implements DeploymentUnitProcessor {
 
@@ -84,12 +84,12 @@ public class ModuleContextProcessor implements DeploymentUnitProcessor {
         deploymentUnit.putAttachment(MODULE_CONTEXT_CONFIG, moduleContextServiceName);
 
         final InjectedEENamespaceContextSelector selector = new InjectedEENamespaceContextSelector();
-        phaseContext.addDependency(appContextServiceName, NamingStore.class, selector.getAppContextInjector());
-        phaseContext.addDependency(moduleContextServiceName, NamingStore.class, selector.getModuleContextInjector());
-        phaseContext.addDependency(moduleContextServiceName, NamingStore.class, selector.getCompContextInjector());
-        phaseContext.addDependency(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, NamingStore.class, selector.getJbossContextInjector());
-        phaseContext.addDependency(ContextNames.EXPORTED_CONTEXT_SERVICE_NAME, NamingStore.class, selector.getExportedContextInjector());
-        phaseContext.addDependency(ContextNames.GLOBAL_CONTEXT_SERVICE_NAME, NamingStore.class, selector.getGlobalContextInjector());
+        phaseContext.requires(appContextServiceName, selector.getAppContextSupplier());
+        phaseContext.requires(moduleContextServiceName, selector.getModuleContextSupplier());
+        phaseContext.requires(moduleContextServiceName, selector.getCompContextSupplier());
+        phaseContext.requires(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, selector.getJbossContextSupplier());
+        phaseContext.requires(ContextNames.EXPORTED_CONTEXT_SERVICE_NAME, selector.getExportedContextSupplier());
+        phaseContext.requires(ContextNames.GLOBAL_CONTEXT_SERVICE_NAME, selector.getGlobalContextSupplier());
 
         moduleDescription.setNamespaceContextSelector(selector);
 

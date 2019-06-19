@@ -32,12 +32,11 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.txn.service.TransactionManagerService;
 
-import javax.transaction.TransactionManager;
-
 /**
  * Processor which adds the {@link  org.jboss.as.ee.concurrent.handle.ContextHandleFactory} to the deployment component's EE Concurrency configuration.
  *
  * @author Eduardo Martins
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class EEConcurrencyContextHandleFactoryProcessor implements DeploymentUnitProcessor {
 
@@ -50,9 +49,9 @@ public class EEConcurrencyContextHandleFactoryProcessor implements DeploymentUni
         }
         final ComponentConfigurator componentConfigurator = new ComponentConfigurator() {
             @Override
-            public void configure(DeploymentPhaseContext context, ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
+            public void configure(DeploymentPhaseContext context, ComponentDescription description, final ComponentConfiguration configuration) {
                 final TransactionLeakContextHandleFactory transactionLeakContextHandleFactory = new TransactionLeakContextHandleFactory();
-                context.addDependency(TransactionManagerService.INTERNAL_SERVICE_NAME, TransactionManager.class, transactionLeakContextHandleFactory);
+                context.requires(TransactionManagerService.INTERNAL_SERVICE_NAME, transactionLeakContextHandleFactory.getTransactionManagerSupplier());
                 configuration.getConcurrentContext().addFactory(transactionLeakContextHandleFactory);
             }
         };

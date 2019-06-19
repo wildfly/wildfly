@@ -28,64 +28,64 @@ import javax.naming.NamingException;
 
 import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.context.NamespaceContextSelector;
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.value.InjectedValue;
+import org.jboss.as.server.deployment.DelegatingSupplier;
 
 /**
  * A simple EE-style namespace context selector which uses injected services for the contexts.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public final class InjectedEENamespaceContextSelector extends NamespaceContextSelector {
 
     private static final CompositeName EMPTY_NAME = new CompositeName();
-    private final InjectedValue<NamingStore> jbossContext = new InjectedValue<NamingStore>();
-    private final InjectedValue<NamingStore> globalContext = new InjectedValue<NamingStore>();
-    private final InjectedValue<NamingStore> appContext = new InjectedValue<NamingStore>();
-    private final InjectedValue<NamingStore> moduleContext = new InjectedValue<NamingStore>();
-    private final InjectedValue<NamingStore> compContext = new InjectedValue<NamingStore>();
-    private final InjectedValue<NamingStore> exportedContext = new InjectedValue<NamingStore>();
+    private final DelegatingSupplier<NamingStore> jbossContext = new DelegatingSupplier<>();
+    private final DelegatingSupplier<NamingStore> globalContext = new DelegatingSupplier<>();
+    private final DelegatingSupplier<NamingStore> appContext = new DelegatingSupplier<>();
+    private final DelegatingSupplier<NamingStore> moduleContext = new DelegatingSupplier<>();
+    private final DelegatingSupplier<NamingStore> compContext = new DelegatingSupplier<>();
+    private final DelegatingSupplier<NamingStore> exportedContext = new DelegatingSupplier<>();
 
     public InjectedEENamespaceContextSelector() {
     }
 
-    public Injector<NamingStore> getAppContextInjector() {
+    public DelegatingSupplier<NamingStore> getAppContextSupplier() {
         return appContext;
     }
 
-    public Injector<NamingStore> getModuleContextInjector() {
+    public DelegatingSupplier<NamingStore> getModuleContextSupplier() {
         return moduleContext;
     }
 
-    public Injector<NamingStore> getCompContextInjector() {
+    public DelegatingSupplier<NamingStore> getCompContextSupplier() {
         return compContext;
     }
 
-    public Injector<NamingStore> getJbossContextInjector() {
+    public DelegatingSupplier<NamingStore> getJbossContextSupplier() {
         return jbossContext;
     }
 
-    public Injector<NamingStore> getGlobalContextInjector() {
+    public DelegatingSupplier<NamingStore> getGlobalContextSupplier() {
         return globalContext;
     }
 
-    public Injector<NamingStore> getExportedContextInjector() {
+    public DelegatingSupplier<NamingStore> getExportedContextSupplier() {
         return exportedContext;
     }
 
     private NamingStore getNamingStore(final String identifier) {
         if (identifier.equals("jboss")) {
-            return jbossContext.getOptionalValue();
+            return jbossContext.get();
         } else if (identifier.equals("global")) {
-            return globalContext.getOptionalValue();
+            return globalContext.get();
         } else if (identifier.equals("app")) {
-            return appContext.getOptionalValue();
+            return appContext.get();
         } else if (identifier.equals("module")) {
-            return moduleContext.getOptionalValue();
+            return moduleContext.get();
         } else if (identifier.equals("comp")) {
-            return compContext.getOptionalValue();
+            return compContext.get();
         } else if (identifier.equals("jboss/exported")) {
-            return exportedContext.getOptionalValue();
+            return exportedContext.get();
         } else {
             return null;
         }
