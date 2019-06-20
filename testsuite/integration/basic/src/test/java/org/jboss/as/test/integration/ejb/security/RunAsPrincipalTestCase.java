@@ -21,6 +21,14 @@
  */
 package org.jboss.as.test.integration.ejb.security;
 
+import java.io.BufferedReader;
+import java.net.SocketPermission;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.AllPermission;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.PropertyPermission;
 import java.util.concurrent.Callable;
 
 import javax.ejb.EJBAccessException;
@@ -33,6 +41,7 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.ejb.security.runasprincipal.Caller;
 import org.jboss.as.test.integration.ejb.security.runasprincipal.CallerRunAsPrincipal;
@@ -44,8 +53,12 @@ import org.jboss.as.test.integration.ejb.security.runasprincipal.transitive.Simp
 import org.jboss.as.test.integration.ejb.security.runasprincipal.transitive.SingletonStartupBean;
 import org.jboss.as.test.integration.ejb.security.runasprincipal.transitive.StatelessSingletonUseBean;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
+import org.jboss.as.test.integration.security.common.Utils;
+import org.jboss.as.test.shared.TestLogHandlerSetupTask;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
+import org.jboss.as.test.shared.util.LoggingUtil;
 import org.jboss.logging.Logger;
+import org.jboss.remoting3.security.RemotingPermission;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -64,7 +77,7 @@ import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.
  * @author Carlo de Wolf, Ondrej Chaloupka
  */
 @RunWith(Arquillian.class)
-@ServerSetup({EjbSecurityDomainSetup.class})
+@ServerSetup({EjbSecurityDomainSetup.class, RunAsPrincipalTestCase.TestLogHandlerSetup.class})
 @Category(CommonCriteria.class)
 public class RunAsPrincipalTestCase  {
 
@@ -74,6 +87,8 @@ public class RunAsPrincipalTestCase  {
 
     @ArquillianResource
     public Deployer deployer;
+    @ArquillianResource
+    private ManagementClient managementClient;
 
     @Deployment(name = STARTUP_SINGLETON_DEPLOYMENT, managed = false, testable = false)
     public static Archive<?> runAsStartupTransitiveDeployment() {
@@ -89,7 +104,11 @@ public class RunAsPrincipalTestCase  {
                 .addClasses(AbstractSecurityDomainSetup.class, EjbSecurityDomainSetup.class)
                 .addAsWebInfResource(RunAsPrincipalTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr\n"), "MANIFEST.MF")
-                .addAsManifestResource(createPermissionsXmlAsset(new ElytronPermission("getSecurityDomain")), "permissions.xml");
+                .addAsManifestResource(createPermissionsXmlAsset(new ElytronPermission("getSecurityDomain"),
+                        new PropertyPermission("node0", "read"),
+                        new RemotingPermission("connect"),
+                        new SocketPermission(Utils.getDefaultHost(true), "accept,connect,listen,resolve"),
+                        new RuntimePermission("getClassLoader")), "permissions.xml");
         war.addPackage(CommonCriteria.class.getPackage());
         return war;
     }
@@ -104,10 +123,12 @@ public class RunAsPrincipalTestCase  {
                 .addClass(Util.class)
                 .addClass(Entry.class)
                 .addClass(RunAsPrincipalTestCase.class)
+                .addClass(TestLogHandlerSetupTask.class)
+                .addClass(LoggingUtil.class)
                 .addClasses(AbstractSecurityDomainSetup.class, EjbSecurityDomainSetup.class)
                 .addAsWebInfResource(RunAsPrincipalTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr\n"), "MANIFEST.MF")
-                .addAsManifestResource(createPermissionsXmlAsset(new ElytronPermission("getSecurityDomain")), "permissions.xml");
+                .addAsManifestResource(createPermissionsXmlAsset(new AllPermission()), "permissions.xml");
         war.addPackage(CommonCriteria.class.getPackage());
         return war;
     }
@@ -155,6 +176,11 @@ public class RunAsPrincipalTestCase  {
         Util.switchIdentitySCF("user1", "password1", callable);
     }
 
+    /**
+     * Test when only RunAsPrincipal is defined, it should fail but also warn the user about
+     * configuration problem.
+     * @throws Exception
+     */
     @Test
     public void testRunAsPrincipal() throws Exception {
         WhoAmI bean = lookupCallerRunAsPrincipal();
@@ -163,6 +189,7 @@ public class RunAsPrincipalTestCase  {
             Assert.fail("Expected EJBAccessException and it was get identity: " + actual);
         } catch (EJBAccessException e) {
             // good
+            Assert.assertTrue("@RunAs warning not found", logContainsWARN());
         }
     }
 
@@ -217,5 +244,59 @@ public class RunAsPrincipalTestCase  {
             return checkEjbException(ex.getCause());
         }
         return ex;
+    }
+
+    private boolean logContainsWARN() throws Exception {
+
+        BufferedReader fileReader = null;
+        boolean found = false;
+        Path logPath = LoggingUtil.getLogPath(managementClient, "periodic-rotating-file-handler", TEST_HANDLER_NAME);
+
+        fileReader = Files.newBufferedReader(logPath);
+
+        String line = "";
+
+        while ((line = fileReader.readLine()) != null) {
+            if(line.contains("WFLYEJB0510")) {
+                found = true;
+                break;
+            }
+        }
+        fileReader.close();
+
+        return found;
+    }
+
+    private static final String TEST_HANDLER_NAME;
+    private static final String TEST_LOG_FILE_NAME;
+
+    static {
+        /*
+         * Make both the test handler name and the test log file specific for this class and execution so that we do not
+         * interfere with other test classes or multiple subsequent executions of this class against the same container
+         */
+        TEST_HANDLER_NAME = "test-" + RunAsPrincipalTestCase.class.getSimpleName();
+        TEST_LOG_FILE_NAME = TEST_HANDLER_NAME + ".log";
+    }
+
+    public static class TestLogHandlerSetup extends TestLogHandlerSetupTask {
+
+        @Override
+        public Collection<String> getCategories() {
+            return Arrays.asList("org.jboss.as.ejb3.deployment");
+        }
+
+        @Override
+        public String getLevel() {
+            return "WARN";
+        }
+        @Override
+        public String getHandlerName() {
+            return TEST_HANDLER_NAME;
+        }
+        @Override
+        public String getLogFileName() {
+            return TEST_LOG_FILE_NAME;
+        }
     }
 }

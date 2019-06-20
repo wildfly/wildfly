@@ -29,6 +29,7 @@ import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.metadata.ClassAnnotationInformation;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.security.metadata.EJBBoundSecurityMetaData;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -61,14 +62,18 @@ public class RunAsMergingProcessor extends AbstractMergingProcessor<EJBComponent
             return;
         }
         final ClassAnnotationInformation<RunAs, String> runAs = clazz.getAnnotationInformation(RunAs.class);
+        final ClassAnnotationInformation<RunAsPrincipal, String> runAsPrincipal = clazz
+                .getAnnotationInformation(RunAsPrincipal.class);
         if (runAs == null) {
+            if(runAsPrincipal != null) {
+                EjbLogger.DEPLOYMENT_LOGGER.missingRunAsAnnotation(componentClass.getName());
+            }
             return;
         }
         if (!runAs.getClassLevelAnnotations().isEmpty()) {
             componentConfiguration.setRunAs(runAs.getClassLevelAnnotations().get(0));
         }
-        final ClassAnnotationInformation<RunAsPrincipal, String> runAsPrincipal = clazz
-                .getAnnotationInformation(RunAsPrincipal.class);
+
         String principal = DEFAULT_RUN_AS_PRINCIPAL;
         if (runAsPrincipal != null) {
             if (!runAsPrincipal.getClassLevelAnnotations().isEmpty()) {
