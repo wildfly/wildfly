@@ -558,6 +558,27 @@ CLI:
 }
 ----
 
+[[jms-bridge-statistics]]
+=== Statistics of a JMS Bridge
+
+Currently two statistics are available on a JMS bridge: the number of processed messages and the number of aborted/rolled back messages.
+Those are available with the following command :
+
+[source, ruby]
+----
+/subsystem=messaging/jms-bridge=myBridge:read-attribute(name=message-count)
+{
+    "outcome" => "success",
+    "result" => 0L
+}
+
+/subsystem=messaging/jms-bridge=myBridge:read-attribute(name=aborted-message-count)
+{
+    "outcome" => "success",
+    "result" => 0L
+}
+----
+
 == Component Reference
 
 The messaging-activemq subsystem is provided by the Artemis project. For
