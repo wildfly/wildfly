@@ -3184,4 +3184,9 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 509, value = "Clustered EJBs in Node: %s are bound to INADDR_ANY(%s). Either use a non-wildcard server bind address or add client-mapping entries to the relevant socket-binding for the Remoting connector")
     void clusteredEJBsBoundToINADDRANY(String nodeName, String ip);
 
+    @LogMessage(level = WARN)
+    @Message(id = 510, value = "@RunAs annotation is required when using @RunAsPrincipal on class %s")
+    void missingRunAsAnnotation(String className);
+
+
 }
