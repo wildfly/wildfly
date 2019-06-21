@@ -1,0 +1,4 @@
+<subsystem xmlns="urn:wildfly:microprofile-health-smallrye:2.0"
+           security-enabled="${security-enabled:true}"
+           empty-liveness-checks-status="${empty-liveness-checks-status:UP}"
+           empty-readiness-checks-status="${empty-readiness-checks-status:UP}" />

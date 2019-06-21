@@ -22,47 +22,67 @@
 
 package org.wildfly.extension.microprofile.health;
 
+import static org.junit.Assert.assertTrue;
+import static org.wildfly.extension.microprofile.health.MicroProfileHealthExtension.VERSION_1_0_0;
+
 import java.io.IOException;
 import java.util.Properties;
 
+import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.KernelServices;
+import org.jboss.as.subsystem.test.KernelServicesBuilder;
+import org.junit.Test;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2018 Red Hat inc.
  */
-public class Subsystem_1_0_ParsingTestCase extends AbstractSubsystemBaseTest {
+public class Subsystem_2_0_ParsingTestCase extends AbstractSubsystemBaseTest {
 
-    public Subsystem_1_0_ParsingTestCase() {
+    public Subsystem_2_0_ParsingTestCase() {
         super(MicroProfileHealthExtension.SUBSYSTEM_NAME, new MicroProfileHealthExtension());
     }
 
-    @Override
-    protected KernelServices standardSubsystemTest(String configId, boolean compareXml) throws Exception {
-        return super.standardSubsystemTest(configId, false);
-    }
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem_1_0.xml");
+        return readResource("subsystem_2_0.xml");
     }
 
     @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
+    protected String[] getSubsystemTemplatePaths() {
         return new String[] {
                 "/subsystem-templates/microprofile-health-smallrye.xml"
         };
     }
 
     @Override
-    protected String getSubsystemXsdPath() throws IOException {
-        return "schema/wildfly-microprofile-health-smallrye_1_0.xsd";
+    protected String getSubsystemXsdPath() {
+        return "schema/wildfly-microprofile-health-smallrye_2_0.xsd";
     }
 
     protected Properties getResolvedProperties() {
         return System.getProperties();
     }
 
+    @Test
+    public void testTransformersWildfly17() throws Exception {
+        testTransformers(ModelTestControllerVersion.MASTER, VERSION_1_0_0);
+    }
 
+    private void testTransformers(ModelTestControllerVersion controllerVersion, ModelVersion healthExtensionVersion) throws Exception {
+        //Boot up empty controllers with the resources needed for the ops coming from the xml to work
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
+                .setSubsystemXmlResource("subsystem_2_0_transform.xml");
+        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, healthExtensionVersion)
+                .skipReverseControllerCheck()
+                .dontPersistXml();
 
+        KernelServices mainServices = builder.build();
+        assertTrue(mainServices.isSuccessfulBoot());
+        assertTrue(mainServices.getLegacyServices(healthExtensionVersion).isSuccessfulBoot());
+
+        checkSubsystemModelTransformation(mainServices, healthExtensionVersion);
+    }
 }

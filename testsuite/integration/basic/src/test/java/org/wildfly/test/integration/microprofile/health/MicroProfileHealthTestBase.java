@@ -59,12 +59,12 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public abstract class MicroProfileHealthTestBase {
 
-    abstract void checkGlobalOutcome(ManagementClient managementClient, boolean mustBeUP, String probeName) throws IOException;
+    abstract void checkGlobalOutcome(ManagementClient managementClient, String operation, boolean mustBeUP, String probeName) throws IOException;
 
     @Deployment(name = "MicroProfileHealthTestCase", managed = false)
     public static Archive<?> deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "MicroProfileHealthTestCase.war")
-                .addClasses(TestApplication.class, TestApplication.Resource.class, MyProbe.class)
+                .addClasses(TestApplication.class, TestApplication.Resource.class, MyProbe.class, MyLiveProbe.class)
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
         return war;
     }
@@ -78,7 +78,8 @@ public abstract class MicroProfileHealthTestBase {
     @Test
     @InSequence(1)
     public void testHealthCheckBeforeDeployment() throws Exception {
-        checkGlobalOutcome(managementClient, true, null);
+        checkGlobalOutcome(managementClient, "check", true, null);
+        checkGlobalOutcome(managementClient, "check-live", true, null);
 
         // deploy the archive
         deployer.deploy("MicroProfileHealthTestCase");
@@ -90,7 +91,8 @@ public abstract class MicroProfileHealthTestBase {
     public void testHealthCheckAfterDeployment(@ArquillianResource URL url) throws Exception {
         try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
 
-            checkGlobalOutcome(managementClient, true, "myProbe");
+            checkGlobalOutcome(managementClient, "check", true, "myProbe");
+            checkGlobalOutcome(managementClient, "check-live", true, "myLiveProbe");
 
             HttpPost request = new HttpPost(url + "microprofile/myApp");
             List<NameValuePair> nvps = new ArrayList<NameValuePair>();
@@ -100,7 +102,8 @@ public abstract class MicroProfileHealthTestBase {
             CloseableHttpResponse response = client.execute(request);
             assertEquals(200, response.getStatusLine().getStatusCode());
 
-            checkGlobalOutcome(managementClient, false, "myProbe");
+            checkGlobalOutcome(managementClient, "check", false, "myProbe");
+            checkGlobalOutcome(managementClient, "check-live", false, "myLiveProbe");
         }
     }
 
@@ -110,7 +113,8 @@ public abstract class MicroProfileHealthTestBase {
 
         deployer.undeploy("MicroProfileHealthTestCase");
 
-        checkGlobalOutcome(managementClient, true, null);
+        checkGlobalOutcome(managementClient, "check", true, null);
+        checkGlobalOutcome(managementClient, "check-live", true, null);
     }
 
 

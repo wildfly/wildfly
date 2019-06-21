@@ -22,30 +22,26 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.8" name="org.wildfly.extension.microprofile.health-smallrye">
-    <properties>
-        <property name="jboss.api" value="private"/>
-    </properties>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="urn:wildfly:microprofile-health-smallrye:2.0"
+           xmlns="urn:wildfly:microprofile-health-smallrye:2.0"
+           elementFormDefault="qualified"
+           attributeFormDefault="unqualified"
+           version="1.0">
 
-    <resources>
-        <artifact name="${org.wildfly:wildfly-microprofile-health-smallrye}"/>
-    </resources>
+    <!-- The subsystem root element -->
+    <xs:element name="subsystem">
+        <xs:complexType>
+            <xs:attribute name="security-enabled" type="xs:boolean" default="true" />
+            <xs:attribute name="empty-liveness-checks-status" default="UP" type="check-statusType" />
+            <xs:attribute name="empty-readiness-checks-status" default="UP" type="check-statusType" />
+        </xs:complexType>
+    </xs:element>
 
-    <dependencies>
-        <module name="io.smallrye.health" />
-        <module name="io.undertow.core"/>
-        <module name="javax.api"/>
-        <module name="org.jboss.staxmapper"/>
-        <module name="org.jboss.as.controller"/>
-        <module name="org.jboss.as.server"/>
-        <module name="org.jboss.modules"/>
-        <module name="org.jboss.msc"/>
-        <module name="org.jboss.logging"/>
-        <module name="org.jboss.vfs"/>
-        <module name="org.eclipse.microprofile.health.api"/>
-        <module name="org.jboss.as.weld.common" />
-        <module name="javax.enterprise.api" />
-        <module name="javax.annotation.api" />
-        <module name="javax.json.api" />
-    </dependencies>
-</module>
+    <xs:simpleType name="check-statusType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="UP"/>
+            <xs:enumeration value="DOWN"/>
+        </xs:restriction>
+    </xs:simpleType>
+</xs:schema>
