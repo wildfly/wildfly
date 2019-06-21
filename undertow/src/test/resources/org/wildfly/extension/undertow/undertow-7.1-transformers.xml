@@ -39,7 +39,6 @@
             <filter-ref name="static-gzip" predicate="path-suffix('.js')"/>
          </location>
          <access-log directory="${jboss.server.server.dir}" pattern="REQ %{i,test-header}" predicate="not path-suffix(*.css)" prefix="access" rotate="false"/>
-         <!-- <access-log directory="${jboss.server.server.dir}" pattern="REQ %{i,test-header}" prefix="access" rotate="false"/> -->
          <single-sign-on cookie-name="SSOID" domain="${prop.domain:myDomain}" http-only="true" path="/path" secure="true"/>
       </host>
       <host alias="www.mysite.com,${prop.value:default-alias}" default-response-code="501" default-web-module="something-else.war" disable-console-redirect="true" name="other-host">
