@@ -2987,7 +2987,7 @@
 
         <dependency>
             <groupId>io.smallrye</groupId>
-            <artifactId>smallrye-health</artifactId>
+            <artifactId>smallrye-health-2.0</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>

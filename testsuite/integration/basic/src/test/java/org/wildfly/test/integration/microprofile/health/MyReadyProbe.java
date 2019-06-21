@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,20 +20,22 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.microprofile.health.test;
+package org.wildfly.test.integration.microprofile.health;
 
-import org.jboss.arquillian.container.test.impl.enricher.resource.URIResourceProvider;
-import org.jboss.arquillian.container.test.spi.client.deployment.ApplicationArchiveProcessor;
-import org.jboss.arquillian.core.spi.LoadableExtension;
-import org.jboss.arquillian.test.spi.enricher.resource.ResourceProvider;
+import org.eclipse.microprofile.health.HealthCheck;
+import org.eclipse.microprofile.health.HealthCheckResponse;
+import org.eclipse.microprofile.health.Readiness;
 
 /**
- * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2017 Red Hat inc.
+ * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2019 Red Hat inc.
  */
-public class WildFlyArquillianExtension implements LoadableExtension {
+@Readiness
+public class MyReadyProbe implements HealthCheck {
+
     @Override
-    public void register(ExtensionBuilder extensionBuilder) {
-        extensionBuilder.override(ResourceProvider.class, URIResourceProvider.class, WildFlyURIProvider.class);
-        extensionBuilder.service(ApplicationArchiveProcessor.class, DeploymentProcessor.class);
+    public HealthCheckResponse call() {
+        return HealthCheckResponse.named("myReadyProbe")
+                .up()
+                .build();
     }
 }

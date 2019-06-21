@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2018, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -32,9 +32,9 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.dmr.ModelNode;
 
 /**
- * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2018 Red Hat inc.
+ * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2019 Red Hat inc.
  */
-public class MicroProfileHealthCheckOperationTestCase extends MicroProfileHealthTestBase{
+public class MicroProfileHealthApplicationReadyOperationTestCase extends MicroProfileHealthApplicationReadyTestBase {
 
     void checkGlobalOutcome(ManagementClient managementClient, String operation, boolean mustBeUP, String probeName) throws IOException {
         final ModelNode address = new ModelNode();
