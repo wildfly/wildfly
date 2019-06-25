@@ -191,6 +191,8 @@ name from the first certificate in the given chain.
 associated with a certificate chain from the subject from the first certificate
 in the given chain.
 
+|custom-evidence-decoder |Definition of a custom evidence decoder.
+
 |aggregate-evidence-decoder |An evidence decoder that is an aggregation of other
 evidence decoders. Given evidence, these evidence decoders will be attempted in
 order until one returns a non-null principal or until there are no more evidence
@@ -547,6 +549,7 @@ and openssl provider loaders.
         "constant-role-mapper" => {"super-user-mapper" => {"roles" => ["SuperUser"]}},
         "credential-store" => undefined,
         "custom-credential-security-factory" => undefined,
+        "custom-evidence-decoder" => undefined,
         "custom-modifiable-realm" => undefined,
         "custom-permission-mapper" => undefined,
         "custom-principal-decoder" => undefined,

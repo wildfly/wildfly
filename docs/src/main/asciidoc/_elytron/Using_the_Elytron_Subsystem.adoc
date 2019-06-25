@@ -482,6 +482,19 @@ Example configuration:
 /subsystem=elytron/x500-subject-evidence-decoder=exampleSubjectDecoder:add()
 ----
 
+To make use of a custom `org.wildfly.security.auth.server.EvidenceDecoder` implementation, a
+`custom-evidence-decoder` can be configured. The custom implementation class needs to first be
+packaged in a JAR. A module can then be added to WildFly that contains this JAR. See
+<<Custom_Components#, Custom Components>> for more information on how to add a custom Elytron
+component to WildFly.
+
+Example configuration:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/custom-evidence-decoder=myCustomEvidenceDecoder:add(module=org.wildfly.security.examples, class-name=org.wildfly.security.examples.MyCustomEvidenceDecoder)
+----
+
 Finally, it is also possible to configure an `aggregate-evidence-decoder`. This consists of
 two or more `evidence-decoder` elements where each element is reference to a configured
 evidence decoder. Given evidence, these evidence decoders will be attempted in order until
