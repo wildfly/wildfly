@@ -169,6 +169,11 @@
             <artifactId>picketbox</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.jboss.arquillian.junit</groupId>
+            <artifactId>arquillian-junit-container</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.logmanager</groupId>
             <artifactId>commons-logging-jboss-logmanager</artifactId>
         </dependency>

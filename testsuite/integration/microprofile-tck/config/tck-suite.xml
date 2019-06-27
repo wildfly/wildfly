@@ -1,0 +1,32 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+
+<suite name="microprofile-config-TCK" verbose="2" configfailurepolicy="continue" >
+
+    <test name="microprofile-config 1.2 TCK">
+        <packages>
+            <package name="org.eclipse.microprofile.config.tck.*">
+            </package>
+        </packages>
+        <classes>
+            <!-- Exclude these 3 classes as they rely on a @ShouldThrowException(DeploymentException.class)
+                 that is not working with Arquillian WildFly container (https://issues.jboss.org/browse/WFARQ-59)
+            -->
+            <class name="org.eclipse.microprofile.config.tck.broken.MissingConverterOnInstanceInjectionTest">
+                <methods>
+                    <exclude name=".*" />
+                </methods>
+            </class>
+            <class name="org.eclipse.microprofile.config.tck.broken.MissingValueOnInstanceInjectionTest">
+                <methods>
+                    <exclude name=".*" />
+                </methods>
+            </class>
+            <class name="org.eclipse.microprofile.config.tck.broken.WrongConverterOnInstanceInjectionTest">
+                <methods>
+                    <exclude name=".*" />
+                </methods>
+            </class>
+        </classes>
+    </test>
+
+</suite>

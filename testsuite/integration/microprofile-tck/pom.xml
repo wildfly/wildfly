@@ -44,6 +44,7 @@
     </properties>
 
     <modules>
+        <module>config</module>
         <module>health</module>
         <module>opentracing</module>
     </modules>
