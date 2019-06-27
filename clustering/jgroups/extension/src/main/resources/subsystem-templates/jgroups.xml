@@ -11,7 +11,7 @@
                 <transport type="UDP" socket-binding="jgroups-udp"/>
                 <?UDP-DISCOVERY?>
                 <protocol type="MERGE3"/>
-                <socket-protocol type="FD_SOCK" socket-binding="jgroups-tcp-fd"/>
+                <socket-protocol type="FD_SOCK" socket-binding="jgroups-udp-fd"/>
                 <protocol type="FD_ALL"/>
                 <protocol type="VERIFY_SUSPECT"/>
                 <protocol type="pbcast.NAKACK2"/>
@@ -26,7 +26,7 @@
                 <transport type="TCP" socket-binding="jgroups-tcp"/>
                 <?TCP-DISCOVERY?>
                 <protocol type="MERGE3"/>
-                <socket-protocol type="FD_SOCK" socket-binding="jgroups-udp-fd"/>
+                <socket-protocol type="FD_SOCK" socket-binding="jgroups-tcp-fd"/>
                 <protocol type="FD_ALL"/>
                 <protocol type="VERIFY_SUSPECT"/>
                 <protocol type="pbcast.NAKACK2"/>
