@@ -25,8 +25,8 @@
                 <feature spec="subsystem.jgroups.stack.protocol">
                     <param name="protocol" value="MERGE3"/>
                 </feature>
-                <feature spec="subsystem.jgroups.stack.protocol">
-                    <param name="protocol" value="FD_SOCK"/>
+                <feature spec="subsystem.jgroups.stack.protocol.FD_SOCK">
+                    <param name="socket-binding" value="jgroups-tcp-fd"/>
                 </feature>
                 <feature spec="subsystem.jgroups.stack.protocol">
                     <param name="protocol" value="FD_ALL"/>
@@ -63,8 +63,8 @@
                 <feature spec="subsystem.jgroups.stack.protocol">
                     <param name="protocol" value="MERGE3"/>
                 </feature>
-                <feature spec="subsystem.jgroups.stack.protocol">
-                    <param name="protocol" value="FD_SOCK"/>
+                <feature spec="subsystem.jgroups.stack.protocol.FD_SOCK">
+                    <param name="socket-binding" value="jgroups-udp-fd"/>
                 </feature>
                 <feature spec="subsystem.jgroups.stack.protocol">
                     <param name="protocol" value="FD_ALL"/>
