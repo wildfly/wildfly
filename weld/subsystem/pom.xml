@@ -32,8 +32,8 @@
                   <configuration>
                      <artifactItems>
                         <artifactItem>
-                           <groupId>org.jboss.spec.javax.annotation</groupId>
-                           <artifactId>jboss-annotations-api_1.3_spec</artifactId>
+                           <groupId>jakarta.annotation</groupId>
+                           <artifactId>jakarta.annotation-api</artifactId>
                         </artifactItem>
                      </artifactItems>
                      <outputDirectory>${project.build.directory}/endorsed</outputDirectory>
@@ -116,8 +116,8 @@
 
       <!-- Needed for @Resource(lookup=) -->
       <dependency>
-         <groupId>org.jboss.spec.javax.annotation</groupId>
-         <artifactId>jboss-annotations-api_1.3_spec</artifactId>
+         <groupId>jakarta.annotation</groupId>
+         <artifactId>jakarta.annotation-api</artifactId>
       </dependency>
 
       <dependency>
