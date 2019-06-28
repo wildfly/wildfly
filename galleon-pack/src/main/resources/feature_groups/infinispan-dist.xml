@@ -47,8 +47,8 @@
                     <param name="mode" value="BATCH"/>
                 </feature>
             </feature>
-            <feature spec="subsystem.infinispan.cache-container.distributed-cache">
-                <param name="distributed-cache" value="routing"/>
+            <feature spec="subsystem.infinispan.cache-container.replicated-cache">
+                <param name="replicated-cache" value="routing"/>
             </feature>
         </feature>
 
