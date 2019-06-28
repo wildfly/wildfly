@@ -121,11 +121,13 @@ Basic layers:
 * _jpa_: Support for jpa (latest WildFly supported hibernate release).
 * _observability_: Support for microprofile monitoring and configuration features (config, health, metrics, open-tracing).
 * _resource-adapters_: Support for deployment of JCA adapters.
-* _h2-database_: Support for h2 database.
+* _h2-driver_: Support for h2 driver.
+* _h2-datasource_: Support for h2 datasource.
+* _h2-default-datasource_: Support for h2 datasource set as ee subsystem default datasource.
 
 Aggregation layers:
 
-* _cloud-profile_, an aggregation of the basic layers (except _h2-database_).
+* _cloud-profile_, an aggregation of the basic layers (except _h2-*_ layers).
 
 [NOTE]
 ====
