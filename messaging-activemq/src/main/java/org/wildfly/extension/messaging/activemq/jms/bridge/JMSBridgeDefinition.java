@@ -24,6 +24,7 @@ package org.wildfly.extension.messaging.activemq.jms.bridge;
 
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECONDS;
+import static org.jboss.as.controller.registry.AttributeAccess.Flag.COUNTER_METRIC;
 import static org.jboss.dmr.ModelType.BOOLEAN;
 import static org.jboss.dmr.ModelType.INT;
 import static org.jboss.dmr.ModelType.LONG;
@@ -206,6 +207,8 @@ public class JMSBridgeDefinition extends PersistentResourceDefinition {
 
      public static final SimpleAttributeDefinition ABORTED_MESSAGE_COUNT = create("aborted-message-count", LONG)
             .setStorageRuntime()
+            .setUndefinedMetricValue(new ModelNode(0))
+            .addFlag(COUNTER_METRIC)
             .build();
 
     public static final AttributeDefinition[] ATTRIBUTES = {
