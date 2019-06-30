@@ -55,4 +55,17 @@ public class LoggingUtil {
         return Paths.get(Operations.readResult(result).asString());
     }
 
+    /**
+     * Will return the full log path for the given log file relative to the the jboss.server.log.dir.
+     * Meant for use by test code that runs in the server VM. Tests that use this should add
+     * the following permission to allow the call to succeed in a testsuite run with the security manager enabled:
+     * new PropertyPermission("jboss.server.log.dir", "read")
+     *
+     * @param logFile name of the log file, relative to the server log directory
+     * @return the path
+     */
+    public static Path getInServerLogPath(String logFile) {
+        return Paths.get(System.getProperty("jboss.server.log.dir")).resolve(logFile);
+    }
+
 }

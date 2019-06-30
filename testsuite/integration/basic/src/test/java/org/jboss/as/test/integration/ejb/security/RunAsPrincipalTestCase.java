@@ -22,10 +22,8 @@
 package org.jboss.as.test.integration.ejb.security;
 
 import java.io.BufferedReader;
-import java.net.SocketPermission;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.AllPermission;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.PropertyPermission;
@@ -41,7 +39,6 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.ejb.security.runasprincipal.Caller;
 import org.jboss.as.test.integration.ejb.security.runasprincipal.CallerRunAsPrincipal;
@@ -53,12 +50,11 @@ import org.jboss.as.test.integration.ejb.security.runasprincipal.transitive.Simp
 import org.jboss.as.test.integration.ejb.security.runasprincipal.transitive.SingletonStartupBean;
 import org.jboss.as.test.integration.ejb.security.runasprincipal.transitive.StatelessSingletonUseBean;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
-import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.shared.TestLogHandlerSetupTask;
+import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
 import org.jboss.as.test.shared.util.LoggingUtil;
 import org.jboss.logging.Logger;
-import org.jboss.remoting3.security.RemotingPermission;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -87,8 +83,6 @@ public class RunAsPrincipalTestCase  {
 
     @ArquillianResource
     public Deployer deployer;
-    @ArquillianResource
-    private ManagementClient managementClient;
 
     @Deployment(name = STARTUP_SINGLETON_DEPLOYMENT, managed = false, testable = false)
     public static Archive<?> runAsStartupTransitiveDeployment() {
@@ -104,11 +98,7 @@ public class RunAsPrincipalTestCase  {
                 .addClasses(AbstractSecurityDomainSetup.class, EjbSecurityDomainSetup.class)
                 .addAsWebInfResource(RunAsPrincipalTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr\n"), "MANIFEST.MF")
-                .addAsManifestResource(createPermissionsXmlAsset(new ElytronPermission("getSecurityDomain"),
-                        new PropertyPermission("node0", "read"),
-                        new RemotingPermission("connect"),
-                        new SocketPermission(Utils.getDefaultHost(true), "accept,connect,listen,resolve"),
-                        new RuntimePermission("getClassLoader")), "permissions.xml");
+                .addAsManifestResource(createPermissionsXmlAsset(new ElytronPermission("getSecurityDomain")), "permissions.xml");
         war.addPackage(CommonCriteria.class.getPackage());
         return war;
     }
@@ -128,7 +118,9 @@ public class RunAsPrincipalTestCase  {
                 .addClasses(AbstractSecurityDomainSetup.class, EjbSecurityDomainSetup.class)
                 .addAsWebInfResource(RunAsPrincipalTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr\n"), "MANIFEST.MF")
-                .addAsManifestResource(createPermissionsXmlAsset(new AllPermission()), "permissions.xml");
+                .addAsManifestResource(createPermissionsXmlAsset(new ElytronPermission("getSecurityDomain"),
+                        new PropertyPermission("jboss.server.log.dir", "read"),
+                        PermissionUtils.createFilePermission("read", "standalone", "log", TEST_LOG_FILE_NAME)), "permissions.xml");
         war.addPackage(CommonCriteria.class.getPackage());
         return war;
     }
@@ -250,7 +242,7 @@ public class RunAsPrincipalTestCase  {
 
         BufferedReader fileReader = null;
         boolean found = false;
-        Path logPath = LoggingUtil.getLogPath(managementClient, "periodic-rotating-file-handler", TEST_HANDLER_NAME);
+        Path logPath = LoggingUtil.getInServerLogPath(TEST_LOG_FILE_NAME);
 
         fileReader = Files.newBufferedReader(logPath);
 
