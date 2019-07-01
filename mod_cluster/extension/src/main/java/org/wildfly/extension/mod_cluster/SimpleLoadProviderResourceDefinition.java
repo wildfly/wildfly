@@ -93,6 +93,7 @@ public class SimpleLoadProviderResourceDefinition extends ChildResourceDefinitio
         ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
 
         if (ModClusterModel.VERSION_6_0_0.requiresTransformation(version)) {
+            parent.discardChildResource(SimpleLoadProviderResourceDefinition.PATH);
             builder.addRawOperationTransformationOverride(ModelDescriptionConstants.ADD, new org.jboss.as.controller.transform.OperationTransformer() {
                 @Override
                 public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) {
