@@ -69,9 +69,11 @@ public class SimpleServlet extends HttpServlet {
         resp.addHeader(SESSION_ID_HEADER, session.getId());
         Mutable custom = (Mutable) session.getAttribute(ATTRIBUTE);
         if (custom == null) {
+            if (!session.isNew()) throw new IllegalStateException();
             custom = new Mutable(1);
             session.setAttribute(ATTRIBUTE, custom);
         } else {
+            if (session.isNew()) throw new IllegalStateException();
             custom.increment();
         }
         resp.setIntHeader(VALUE_HEADER, custom.getValue());

@@ -122,13 +122,38 @@ public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTest
 
             this.nonTxWait.run();
 
-            response = client.execute(new HttpGet(uri1));
+            response = client.execute(new HttpGet(uri2));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
                 Map.Entry<String, String> entry = parseSessionRoute(response);
-                // Ensure routing is not changed on 2nd query
-                Assert.assertNull(entry);
+
+                if (!this.cacheMode.needsStateTransfer()) {
+                    Assert.assertNotNull(entry);
+                    Assert.assertEquals(NODE_2, entry.getValue());
+                    lastOwner = entry.getValue();
+                } else {
+                    Assert.assertNull(entry);
+                }
+            } finally {
+                HttpClientUtils.closeQuietly(response);
+            }
+
+            this.nonTxWait.run();
+
+            response = client.execute(new HttpGet(uri3));
+            try {
+                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                Assert.assertEquals(value++, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
+                Map.Entry<String, String> entry = parseSessionRoute(response);
+
+                if (!this.cacheMode.needsStateTransfer()) {
+                    Assert.assertNotNull(entry);
+                    Assert.assertEquals(NODE_3, entry.getValue());
+                    lastOwner = entry.getValue();
+                } else {
+                    Assert.assertNull(entry);
+                }
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
