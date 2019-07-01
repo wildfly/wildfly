@@ -58,24 +58,7 @@
             <id>ts.integ.allGroups</id>
             <activation><property><name>allTests</name></property></activation>
             <modules>
-                <module>ws</module>
-                <module>web</module>
-                <module>smoke</module>
                 <module>basic</module>
-                <module>microprofile-tck</module>
-                <module>vdx</module>
-                <module>iiop</module>
-                <module>xts</module>
-                <module>rts</module>
-                <module>rbac</module>
-                <module>clustering</module>
-                <module>multinode</module>
-                <module>manualmode</module>
-                <module>picketlink</module>
-                <module>secman</module>
-                <module>legacy</module>
-                <module>legacy-ejb-client</module>
-                <module>elytron</module>
             </modules>
         </profile>
         <!-- Define ts.integration uber-group. -->

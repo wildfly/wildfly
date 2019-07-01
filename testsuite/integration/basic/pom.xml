@@ -491,34 +491,7 @@
                                 <configuration>
                                     <!-- Tests to execute. Overriden in webProfileExclusion.profile . -->
                                     <includes>
-                                        <include>org/jboss/as/test/integration/ee/remotelookup/*TestCase*.java</include>
-                                        <include>org/jboss/as/test/integration/ee/injection/support/jpa/*TestCase*.java</include>
-                                        <include>org/jboss/as/test/integration/ee/injection/resource/substitution/*TestCase*.java</include>
-                                        <include>org/jboss/as/test/integration/ejb/iiop/**/*TestCase*.java</include>
-                                        <exclude>org/jboss/as/test/integration/ejb/**/jts/**/*TestCase*.java</exclude>
-                                        <include>org/jboss/as/test/integration/*/security/**/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/ejb/**/mdb/**/*TestCase*.java</include>
-                                        <include>org/jboss/as/test/integration/ejb/log/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/ejb/pool/**/*TestCase*.java</include>
-                                        <include>org/jboss/as/test/integration/ejb/management/deployments/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/ejb/singleton/dependson/mdb/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/ejb/transaction/bmt/lazyenlist</include>
-                                        <include>org/jboss/as/test/integration/ejb/timerservice/gettimers/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/jaxr/**/*TestCase*.java</include>
-                                        <include>org/jboss/as/test/integration/jca/bootstrap/**/*TestCase*.java</include>
-                                        <include>org/jboss/as/test/integration/jmx/full/**/*TestCase*.java</include>
-                                        <include>org/jboss/as/test/integration/messaging/**/*TestCase*.java</include>
-                                        <include>org/jboss/as/test/integration/microprofile/opentracing/**/*TestCase*.java</include>
-                                        <include>org/jboss/as/test/integration/management/cli/**/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/naming/remote/**/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/ee/injection/resource/resourceref/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/ee/injection/resource/enventry/EnvEntryTestCase.java</include>
-                                        <include>org/jboss/as/test/integration/ee/injection/resource/basic/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/ee/naming/defaultbindings/**/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/transaction/inflow/TransactionInflowTestCase.java</include>
                                         <include>org/jboss/as/test/integration/transaction/MaximumTimeoutTestCase.java</include>
-                                        <include>org/jboss/as/test/integration/jsr77/**/*TestCase*.java</include>
-                                        <include>org/jboss/as/test/integration/weld/context/application/lifecycle/ApplicationContextLifecycleTestCase.java</include>
                                     </includes>
 
                                     <environmentVariables>
@@ -555,7 +528,8 @@
                                         <!-- truststore setting used in LDAPs testing is affected by some other test -->
                                         <exclude>org/jboss/as/test/integration/security/loginmodules/Ldap*TestCase.java</exclude>
                                         <!-- 2nd run tests are run in other execution. -->
-                                        <exclude>org/jboss/as/test/integration/**/*SecondTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/**/*Test*.java</exclude>
+                                        <exclude>org/wildfly/test/integration/**/*Test*.java</exclude>
                                         <!-- Tests which need FULL config. -->
                                         <exclude>org/jboss/as/test/integration/ee/remotelookup/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ee/injection/resource/substitution/*TestCase*.java</exclude>
@@ -571,7 +545,7 @@
                                         <exclude>org/jboss/as/test/integration/jca/bootstrap/**/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/jmx/full/**/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/messaging/**/*TestCase*.java</exclude>
-                                        <include>org/jboss/as/test/integration/microprofile/opentracing/**/*TestCase*.java</include>
+                                        <exclude>org/jboss/as/test/integration/microprofile/opentracing/**/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/management/cli/**/*TestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/naming/remote/**/*TestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ee/injection/resource/resourceref/*TestCase.java</exclude>
@@ -614,7 +588,7 @@
                                     <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <enableAssertions>true</enableAssertions>
                                     <includes>
-                                        <include>org/jboss/as/test/integration/**/*SecondTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/**/IGNOREME*SecondTestCase.java</include>
                                     </includes>
                                     <excludes>
                                         <exclude>none</exclude>
@@ -629,7 +603,7 @@
                             <!-- truststore setting used in LDAPs testing was affected by some other test - need an extra run -->
                             <execution>
                                 <id>basic-integration-ldap.surefire</id>
-                                <phase>test</phase>
+                                <phase>none</phase>
                                 <goals>
                                     <goal>test</goal>
                                 </goals>
