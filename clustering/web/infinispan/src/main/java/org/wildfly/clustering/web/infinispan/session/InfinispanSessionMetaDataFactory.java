@@ -103,12 +103,13 @@ public class InfinispanSessionMetaDataFactory<L> implements SessionMetaDataFacto
 
     @Override
     public InvalidatableSessionMetaData createSessionMetaData(String id, CompositeSessionMetaDataEntry<L> entry) {
+        boolean created = entry.getAccessMetaData().getLastAccessedDuration().isZero();
         SessionCreationMetaDataKey creationMetaDataKey = new SessionCreationMetaDataKey(id);
-        Mutator creationMutator = this.properties.isTransactional() && this.creationMetaDataCache.getAdvancedCache().getCacheEntry(creationMetaDataKey).isCreated() ? Mutator.PASSIVE : new CacheEntryMutator<>(this.creationMetaDataCache, creationMetaDataKey, new SessionCreationMetaDataEntry<>(entry.getCreationMetaData(), entry.getLocalContext()));
+        Mutator creationMutator = this.properties.isTransactional() && created ? Mutator.PASSIVE : new CacheEntryMutator<>(this.creationMetaDataCache, creationMetaDataKey, new SessionCreationMetaDataEntry<>(entry.getCreationMetaData(), entry.getLocalContext()));
         SessionCreationMetaData creationMetaData = new MutableSessionCreationMetaData(entry.getCreationMetaData(), creationMutator);
 
         SessionAccessMetaDataKey accessMetaDataKey = new SessionAccessMetaDataKey(id);
-        Mutator accessMutator = this.properties.isTransactional() && this.accessMetaDataCache.getAdvancedCache().getCacheEntry(accessMetaDataKey).isCreated() ? Mutator.PASSIVE : new CacheEntryMutator<>(this.accessMetaDataCache, accessMetaDataKey, entry.getAccessMetaData());
+        Mutator accessMutator = this.properties.isTransactional() && created ? Mutator.PASSIVE : new CacheEntryMutator<>(this.accessMetaDataCache, accessMetaDataKey, entry.getAccessMetaData());
         SessionAccessMetaData accessMetaData = new MutableSessionAccessMetaData(entry.getAccessMetaData(), accessMutator);
 
         return new CompositeSessionMetaData(creationMetaData, accessMetaData);
