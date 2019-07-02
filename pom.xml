@@ -288,7 +288,7 @@
         <version.joda-time>2.9.7</version.joda-time>
         <version.jsoup>1.8.3</version.jsoup>
         <version.net.jcip>1.0</version.net.jcip>
-        <version.net.shibboleth.utilities.java-support>7.1.1</version.net.shibboleth.utilities.java-support>
+        <version.net.shibboleth.utilities.java-support>7.3.0</version.net.shibboleth.utilities.java-support>
         <version.org.apache.activemq.artemis>2.8.1</version.org.apache.activemq.artemis>
         <version.org.apache.activemq.artemis.native>1.0.0</version.org.apache.activemq.artemis.native>
         <version.org.apache.avro>1.7.6</version.org.apache.avro>
