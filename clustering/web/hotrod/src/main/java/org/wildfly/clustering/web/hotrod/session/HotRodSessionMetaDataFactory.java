@@ -22,8 +22,6 @@
 
 package org.wildfly.clustering.web.hotrod.session;
 
-import java.time.Duration;
-
 import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.MetadataValue;
 import org.infinispan.client.hotrod.RemoteCache;
@@ -86,7 +84,7 @@ public class HotRodSessionMetaDataFactory<L> implements SessionMetaDataFactory<C
     @Override
     public InvalidatableSessionMetaData createSessionMetaData(String id, CompositeSessionMetaDataEntry<L> entry) {
         SessionCreationMetaDataKey creationMetaDataKey = new SessionCreationMetaDataKey(id);
-        boolean created = entry.getAccessMetaData().getLastAccessedDuration() == Duration.ZERO;
+        boolean created = entry.getAccessMetaData().getLastAccessedDuration().isZero();
         Mutator creationMutator = this.properties.isTransactional() && created ? Mutator.PASSIVE : new RemoteCacheEntryMutator<>(this.creationMetaDataCache, creationMetaDataKey, new SessionCreationMetaDataEntry<>(entry.getCreationMetaData(), entry.getLocalContext()));
         SessionCreationMetaData creationMetaData = new MutableSessionCreationMetaData(entry.getCreationMetaData(), creationMutator);
 
