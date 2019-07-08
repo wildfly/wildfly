@@ -123,11 +123,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-testsuite-shared</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.wildfly.arquillian</groupId>
             <artifactId>wildfly-arquillian-container-managed</artifactId>
             <scope>test</scope>
@@ -138,6 +133,39 @@
             <artifactId>wildfly-batch-jberet</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <!-- crl -->
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcpkix-jdk15on</artifactId>
+            <version>${version.org.bouncycastle}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcmail-jdk15on</artifactId>
+            <version>${version.org.bouncycastle}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15on</artifactId>
+            <version>${version.org.bouncycastle}</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- /crl -->
+
+        <!-- This needs to be after the org.bouncycaslte dependencies. The reason is that apacheds-all dependency,
+             which is part of wildfly-testsuite-shared module, contains implementation of BouncyCastle provider based
+             on older version of BouncyCastle. -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-testsuite-shared</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
