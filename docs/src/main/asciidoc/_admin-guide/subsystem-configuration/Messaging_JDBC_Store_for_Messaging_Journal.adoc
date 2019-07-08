@@ -56,6 +56,6 @@ The name of these tables can be configured with the
 ****
 
 * Artemis JDBC Persistence -
-http://activemq.apache.org/artemis/docs/1.5.0/persistence.html#configuring-jdbc-persistence
+https://activemq.apache.org/components/artemis/documentation/latest/persistence.html#configuring-jdbc-persistence
 
 ****
