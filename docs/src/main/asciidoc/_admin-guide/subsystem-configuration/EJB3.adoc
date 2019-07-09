@@ -220,3 +220,49 @@ top level deployment with a META-INF/jboss-ejb-client.xml containing:
     </client-context>
 </jboss-ejb-client>
 ----
+
+[[server-interceptors]]
+== <server-interceptors>
+
+This element configures a number of server-side interceptors which can be
+configured without changing the deployments.
+
+Each interceptor is configured in _<interceptor>_ tag which contains the
+following fields:
+
+* `module` - the module in which the interceptor is defined
+* `class` - the class which implements the interceptor
+
+In order to use server interceptors you have to create a module that implements
+them and place it into _${WILDFLY_HOME}/modules_ directory.
+
+Interceptor implementations are POJO classes which use
+_javax.interceptor.AroundInvoke_ and _javax.interceptor.AroundTimeout_ to
+mark interceptor methods.
+
+Sample configuration:
+
+[source,xml,options="nowrap"]
+----
+<server-interceptors>
+	<interceptor module="org.foo:FooInterceptor:1.0" class="org.foo.FooInterceptor"/>
+</server-interceptors>
+----
+
+Sample interceptor implementation:
+[source:java,options="nowrap"]
+----
+package org.foo;
+
+import javax.annotation.PostConstruct;
+import javax.interceptor.AroundInvoke;
+import javax.interceptor.InvocationContext;
+
+public class FooInterceptor {
+
+    @AroundInvoke
+    public Object bar(final InvocationContext invocationContext) throws Exception {
+        return invocationContext.proceed();
+    }
+}
+----
