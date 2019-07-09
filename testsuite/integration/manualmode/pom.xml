@@ -34,6 +34,11 @@
             <artifactId>jbossws-cxf-client</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-client-all</artifactId>
+            <scope>test</scope>
+        </dependency>
         <!-- Required for Java 11 -->
         <dependency>
             <groupId>javax.activation</groupId>
@@ -150,7 +155,6 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
-                        <version>1.6.0</version>
                         <executions>
                             <execution>
                                 <id>generate-jboss-stores</id>
@@ -204,7 +208,7 @@
                             <reuseForks>false</reuseForks>
 
                             <environmentVariables>
-                                        <JBOSS_HOME>${wildfly.dir}</JBOSS_HOME>
+                                <JBOSS_HOME>${wildfly.dir}</JBOSS_HOME>
                             </environmentVariables>
 
                             <!-- Parameters to test cases. -->
@@ -221,6 +225,11 @@
                                 <javax.net.ssl.keyStorePassword>clientPassword</javax.net.ssl.keyStorePassword>
                                 <!-- EJB client library hack, see WFLY-4973-->
                                 <org.jboss.ejb.client.wildfly-testsuite-hack>true</org.jboss.ejb.client.wildfly-testsuite-hack>
+                                <node0>${node0}</node0>
+                                <node1>${node1}</node1>
+                                <node2>${node2}</node2>
+                                <node3>${node3}</node3>
+                                <mcast>${mcast}</mcast>
                             </systemPropertyVariables>
                         </configuration>
                     </plugin>
