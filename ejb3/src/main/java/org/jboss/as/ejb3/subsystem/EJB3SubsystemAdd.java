@@ -338,6 +338,20 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                     processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_EJB_MANAGEMENT_RESOURCES, new EjbManagementDeploymentUnitProcessor());
                     processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_CACHE_DEPENDENCIES, new CacheDependenciesProcessor());
                     processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_EE_MODULE_CONFIG + 1, new MdbDeliveryDependenciesProcessor()); // TODO Phase: replace by  Phase.INSTALL_MDB_DELIVERY_DEPENDENCIES
+
+                    if (model.hasDefined(SERVER_INTERCEPTORS)) {
+                        final List<ServerInterceptorMetaData> serverInterceptors = new ArrayList<>();
+
+                        final ModelNode serverInterceptorsNode = model.get(SERVER_INTERCEPTORS);
+                        for (final ModelNode serverInterceptor : serverInterceptorsNode.asList()) {
+                            serverInterceptors.add(new ServerInterceptorMetaData(serverInterceptor.get("module").asString(), serverInterceptor.get("class").asString()));
+                        }
+                        processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_EJB_SERVER_INTERCEPTORS,
+                                new ServerInterceptorsDependenciesDeploymentUnitProcessor(serverInterceptors));
+                        final ServerInterceptorCache serverInterceptorCache = new ServerInterceptorCache(serverInterceptors);
+                        processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_SERVER_INTERCEPTORS,
+                                new ServerInterceptorsBindingsProcessor(serverInterceptorCache));
+                    }
                 }
 
             }
@@ -378,30 +392,6 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         if (model.hasDefined(DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING)) {
             EJB3SubsystemDefaultEntityBeanOptimisticLockingWriteHandler.INSTANCE.updateOptimisticLocking(context, model);
-        }
-
-        if (model.hasDefined(SERVER_INTERCEPTORS)) {
-            final List<ServerInterceptorMetaData> serverInterceptors = new ArrayList<>();
-
-            final ModelNode serverInterceptorsNode = model.get(SERVER_INTERCEPTORS);
-            for(final ModelNode serverInterceptor: serverInterceptorsNode.asList()){
-                serverInterceptors.add(new ServerInterceptorMetaData(serverInterceptor.get("module").asString(), serverInterceptor.get("class").asString()));
-            }
-
-            context.addStep(new AbstractDeploymentChainStep() {
-                protected void execute(DeploymentProcessorTarget processorTarget) {
-                    processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_EJB_SERVER_INTERCEPTORS,
-                            new ServerInterceptorsDependenciesDeploymentUnitProcessor(serverInterceptors));
-                }
-            }, OperationContext.Stage.RUNTIME);
-
-            final ServerInterceptorCache serverInterceptorCache = new ServerInterceptorCache(serverInterceptors);
-            context.addStep(new AbstractDeploymentChainStep() {
-                protected void execute(DeploymentProcessorTarget processorTarget) {
-                    processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_SERVER_INTERCEPTORS,
-                            new ServerInterceptorsBindingsProcessor(serverInterceptorCache));
-                }
-            }, OperationContext.Stage.RUNTIME);
         }
 
         ExceptionLoggingWriteHandler.INSTANCE.updateOrCreateDefaultExceptionLoggingEnabledService(context, model);

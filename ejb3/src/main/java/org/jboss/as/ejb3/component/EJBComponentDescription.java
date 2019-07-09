@@ -23,9 +23,6 @@ package org.jboss.as.ejb3.component;
 
 import static org.jboss.as.ejb3.subsystem.IdentityResourceDefinition.IDENTITY_CAPABILITY;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.rmi.Remote;
 import java.util.ArrayList;
@@ -47,7 +44,6 @@ import javax.ejb.EJBLocalObject;
 import javax.ejb.TimerService;
 import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagementType;
-import javax.interceptor.InvocationContext;
 import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
@@ -102,8 +98,6 @@ import org.jboss.as.ejb3.subsystem.EJB3RemoteResourceDefinition;
 import org.jboss.as.ejb3.suspend.EJBSuspendHandlerService;
 import org.jboss.as.ejb3.timerservice.AutoTimer;
 import org.jboss.as.ejb3.timerservice.NonFunctionalTimerService;
-import org.jboss.as.naming.ManagedReference;
-import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.as.security.deployment.SecurityAttachments;
 import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -120,20 +114,11 @@ import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.Interceptors;
 import org.jboss.invocation.proxy.MethodIdentifier;
-import org.jboss.jandex.AnnotationInstance;
-import org.jboss.jandex.AnnotationTarget;
-import org.jboss.jandex.DotName;
-import org.jboss.jandex.Index;
-import org.jboss.jandex.Indexer;
-import org.jboss.jandex.MethodInfo;
 import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.value.CachedValue;
-import org.jboss.msc.value.ConstructedValue;
-import org.jboss.msc.value.Value;
 import org.jboss.security.SecurityConstants;
 import org.wildfly.security.authz.RoleMapper;
 import org.wildfly.security.authz.Roles;
@@ -415,47 +400,6 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         addServerSecurityManagerDependency();
     }
 
-    private static final Class<?>[] EMPTY_CLASS_ARRAY = new Class[0];
-
-    private Index buildIndexForClass(final Class<?> interceptorClass) {
-        try {
-            final String classNameAsResource = interceptorClass.getName().replaceAll("\\.", "/").concat(".class");
-            final InputStream stream = interceptorClass.getClassLoader().getResourceAsStream(classNameAsResource);
-            final Indexer indexer = new Indexer();
-            indexer.index(stream);
-            stream.close();
-            return indexer.complete();
-        } catch (IOException e) {
-            throw EjbLogger.ROOT_LOGGER.cannotBuildIndexForServerInterceptor(interceptorClass.getName(), e);
-        }
-    }
-
-    private List<InterceptorFactory> findAnnotatedMethods(final Class<?> interceptorClass, final Index index, final Class<?> annotationClass){
-        final List<InterceptorFactory> interceptorFactories = new ArrayList<>();
-        final DotName annotationName = DotName.createSimple(annotationClass.getName());
-        final List<AnnotationInstance> annotations = index.getAnnotations(annotationName);
-
-        for (final AnnotationInstance annotation : annotations) {
-            if (annotation.target().kind() == AnnotationTarget.Kind.METHOD) {
-                final MethodInfo methodInfo = annotation.target().asMethod();
-                final Constructor<?> constructor;
-                try {
-                    constructor = interceptorClass.getConstructor(EMPTY_CLASS_ARRAY);
-                } catch (NoSuchMethodException e) {
-                    throw EjbLogger.ROOT_LOGGER.serverInterceptorNoEmptyConstructor(interceptorClass.toString(), e);
-                }
-                try {
-                    final Method annotatedMethod = interceptorClass.getMethod(methodInfo.name(), new Class[]{InvocationContext.class});
-                    final InterceptorFactory interceptorFactory = createInterceptorFactoryForServerInterceptor(annotatedMethod, constructor);
-                    interceptorFactories.add(interceptorFactory);
-                } catch (NoSuchMethodException e) {
-                    EjbLogger.ROOT_LOGGER.serverInterceptorInvalidMethod(methodInfo.name(), interceptorClass.toString(), annotationClass.toString(), e);
-                }
-            }
-        }
-        return interceptorFactories;
-    }
-
     private static InterceptorFactory weaved(final Collection<InterceptorFactory> interceptorFactories) {
         return new InterceptorFactory() {
             @Override
@@ -469,20 +413,6 @@ public abstract class EJBComponentDescription extends ComponentDescription {
             }
         };
     }
-
-    private InterceptorFactory createInterceptorFactoryForServerInterceptor(final Method method, final Constructor interceptorConstructor) {
-        // The managed reference is going to be ConstructedValue, using the container-interceptor's constructor
-        final ConstructedValue interceptorInstanceValue = new ConstructedValue(interceptorConstructor, Collections.<Value<?>>emptyList());
-        // we *don't* create multiple instances of the container-interceptor class, but we just reuse a single instance and it's *not*
-        // tied to the EJB component instance lifecycle.
-        final CachedValue cachedInterceptorInstanceValue = new CachedValue(interceptorInstanceValue);
-        // ultimately create the managed reference which is backed by the CachedValue
-        final ManagedReference interceptorInstanceRef = new ValueManagedReference(cachedInterceptorInstanceValue);
-        // return the ContainerInterceptorMethodInterceptorFactory which is responsible for creating an Interceptor
-        // which can invoke the container-interceptor's around-invoke/around-timeout methods
-        return new ContainerInterceptorMethodInterceptorFactory(interceptorInstanceRef, method);
-    }
-
 
     public void addLocalHome(final String localHome) {
         final EjbHomeViewDescription view = new EjbHomeViewDescription(this, localHome, MethodIntf.LOCAL_HOME);
