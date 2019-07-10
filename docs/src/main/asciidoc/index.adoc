@@ -1,6 +1,7 @@
 [[index]]
 = WildFly Documentation
 :ext-relative: {outfilesuffix}
+ifdef::env-github[:imagesdir: images/]
 :toc!:
 
 image:splash_wildflylogo_small.png[WildFly, align="center"]

@@ -1,6 +1,6 @@
 [[Default_HTTP_Interface_Security]]
 = Default HTTP Interface Security
-ifdef::env-github[:imagesdir: ../]
+ifdef::env-github[:imagesdir: ../images/]
 
 WildFly is distributed secured by default. The default security
 mechanism is username / password based making use of HTTP Digest for the
@@ -14,7 +14,7 @@ default user in the distribution.
 If you attempt to connect to the admin console before you have added a
 user to the server you will be presented with the following screen.
 
-image:images/no-users.png[no-users.png]
+image:no-users.png[images/no-users.png]
 
 The user are stored in a properties file called mgmt-users.properties
 under standalone/configuration and domain/configuration depending on the
@@ -32,7 +32,7 @@ the same password.
 To manipulate the files and add users we provide a utility add-user.sh
 and add-user.bat to add the users and generate the hashes, to add a user
 you should execute the script and follow the guided process.
-image:images/add-user.png[Add User] +
+image:add-user.png[images/add-user.png] +
 The full details of the add-user utility are described later but for the
 purpose of accessing the management interface you need to enter the
 following values: -
