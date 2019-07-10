@@ -9,6 +9,7 @@ WildFly team;
 :doctype: book
 :icons: font
 :source-highlighter: coderay
+ifdef::env-github[:imagesdir: images/]
 
 // ifndef::ebook-format[:leveloffset: 1]
 
@@ -389,7 +390,7 @@ As with previous WildFly releases, you can point your browser to
 *_http://localhost:8080_* (if using the default configured http port)
 which brings you to the Welcome Screen:
 
-image:images/wildfly.png[wildfly.png]
+image:wildfly.png[images/wildfly.png]
 
 From here you can access links to the WildFly community documentation
 set, stay up-to-date on the latest project information, have a
