@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2018, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,21 +22,16 @@
 
 package org.jboss.as.test.clustering.cluster.web.remote;
 
-import org.infinispan.configuration.cache.CacheMode;
-import org.infinispan.transaction.TransactionMode;
 import org.jboss.as.test.clustering.NodeUtil;
-import org.jboss.as.test.clustering.cluster.web.AbstractWebFailoverTestCase;
+import org.jboss.as.test.clustering.cluster.web.AbstractSessionActivationTestCase;
 
 /**
- * Variation of {@link AbstractWebFailoverTestCase} using invalidation cache with HotRod-based store implementation referencing
- * {@literal remote-cache-container} configuration. Test runs against running genuine Infinispan Server instance.
- *
- * @author Radoslav Husar
+ * @author Paul Ferraro
  */
-public abstract class AbstractHotRodWebFailoverTestCase extends AbstractWebFailoverTestCase {
+public abstract class AbstractHotRodSessionActivationTestCase extends AbstractSessionActivationTestCase {
 
-    public AbstractHotRodWebFailoverTestCase(String deploymentName) {
-        super(deploymentName, CacheMode.LOCAL, TransactionMode.NON_TRANSACTIONAL);
+    protected AbstractHotRodSessionActivationTestCase(boolean transactional) {
+        super(transactional);
     }
 
     @Override

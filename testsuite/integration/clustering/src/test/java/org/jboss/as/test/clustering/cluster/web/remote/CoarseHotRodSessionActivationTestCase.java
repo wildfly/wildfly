@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2018, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -26,9 +26,8 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.test.clustering.cluster.web.AbstractWebFailoverTestCase;
-import org.jboss.as.test.clustering.single.web.Mutable;
-import org.jboss.as.test.clustering.single.web.SimpleServlet;
+import org.jboss.as.test.clustering.cluster.web.DistributableTestCase;
+import org.jboss.as.test.clustering.cluster.web.event.SessionActivationServlet;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -39,13 +38,10 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @ServerSetup({ InfinispanServerSetupTask.class, LocalRoutingServerSetup.class })
-public class CoarseHotRodWebFailoverTestCase extends AbstractHotRodWebFailoverTestCase {
+public class CoarseHotRodSessionActivationTestCase extends AbstractHotRodSessionActivationTestCase {
 
-    private static final String DEPLOYMENT_NAME = CoarseHotRodWebFailoverTestCase.class.getSimpleName() + ".war";
-
-    public CoarseHotRodWebFailoverTestCase() {
-        super(DEPLOYMENT_NAME);
-    }
+    private static final String MODULE_NAME = CoarseHotRodSessionActivationTestCase.class.getSimpleName();
+    private static final String DEPLOYMENT_NAME = MODULE_NAME + ".war";
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(NODE_1)
@@ -67,10 +63,13 @@ public class CoarseHotRodWebFailoverTestCase extends AbstractHotRodWebFailoverTe
 
     private static Archive<?> getDeployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME);
-        war.addClasses(SimpleServlet.class, Mutable.class);
-        war.setWebXML(AbstractWebFailoverTestCase.class.getPackage(), "web.xml");
-        war.addAsWebInfResource(CoarseHotRodWebFailoverTestCase.class.getPackage(), "jboss-all_coarse.xml", "jboss-all.xml");
-        war.addAsWebInfResource(CoarseHotRodWebFailoverTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
+        war.addClasses(SessionActivationServlet.class);
+        war.setWebXML(DistributableTestCase.class.getPackage(), "web.xml");
+        war.addAsWebInfResource(AbstractHotRodSessionActivationTestCase.class.getPackage(), "jboss-all_coarse.xml", "jboss-all.xml");
         return war;
+    }
+
+    public CoarseHotRodSessionActivationTestCase() {
+        super(false);
     }
 }
