@@ -485,7 +485,6 @@ public class ProxyConfigurationResourceDefinition extends ChildResourceDefinitio
         ResourceTransformationDescriptionBuilder builder = ModClusterModel.VERSION_6_0_0.requiresTransformation(version) ? parent.addChildRedirection(WILDCARD_PATH, new PathAddressTransformer.BasicPathAddressTransformer(LEGACY_PATH), new ProxyConfigurationDynamicDiscardPolicy()) : parent.addChildResource(WILDCARD_PATH);
 
         if (ModClusterModel.VERSION_6_0_0.requiresTransformation(version)) {
-            builder.discardChildResource(SimpleLoadProviderResourceDefinition.PATH);
             builder.setCustomResourceTransformer(new ResourceTransformer() {
                 @Override
                 public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
