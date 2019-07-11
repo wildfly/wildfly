@@ -15,13 +15,17 @@ completion:
 ----
 [standalone@localhost:9990 /] /subsystem=elytron/custom-
 custom-credential-security-factory  custom-realm
-custom-modifiable-realm             custom-realm-mapper
-custom-permission-mapper            custom-role-decoder
-custom-principal-decoder            custom-role-mapper
-custom-principal-transformer        custom-security-event-listener
+custom-evidence-decoder             custom-realm-mapper
+custom-modifiable-realm             custom-role-decoder
+custom-permission-mapper            custom-role-mapper
+custom-principal-decoder            custom-security-event-listener
+custom-principal-transformer
 ----
 
 == Security event listener
+
+This section describes how to add a custom security event listener. Similar steps can be followed to add another
+custom component type.
 
 To create custom security event listener you need to implement `java.util.function.Consumer<org.wildfly.security.auth.server.event.SecurityEvent>` interface.
 Resulting class needs to be packed into JAR and WildFly module created.
