@@ -1336,6 +1336,63 @@ trusted certificate into the browser's truststore.
 
 Two-Way HTTPS is now enabled for applications.
 
+
+[[configure-certificate-revocation-in-trust-manager]]
+=== Configure certificate revocation in trust-manager
+
+
+[[configure-certificate-revocation-list]]
+==== Configure Certificate Revocation List:
+
+You can configure your trust-manager to use certificate-revocation-list (CRL) to check revocation status of obtained certificates.
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/trust-manager=twoWayTM:write-attribute(name=certificate-revocation-list, value={})
+----
+
+This will use CRLs obtained from distribution points referenced in your certificates.
+
+*NOTE:* To use a CRL your trust store must contain the certificate chain in order to check validity of both CRL list.
+
+[[override-crl-location-obtained-from-certificates]]
+===== Override CRL location obtained from certificates:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/trust-manager=twoWayTM:write-attribute(name=certificate-revocation-list.path, value=intermediate.crl.pem)
+----
+
+[[other-trust-manager-configuration]]
+==== Other trust-manager configuration:
+
+[[configure-trust-manager-to-only-check-leaf-certificates-for-revocation-status]]
+===== Configure trust-manager to only check leaf certificates for revocation status
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/trust-manager=twoWayTM:write-attribute(name=only-leaf-cert, value="true")
+----
+
+[[configure-trust-manager-to-accept-certificates-with-unknown-revocation-status]]
+===== Configure trust-manager to accept certificates with unknown revocation status
+In case you want to accept certificates with unknown revocation status, you can enable soft-fail behaviour in your trust-manager.
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/trust-manager=twoWayTM:write-attribute(name=soft-fail, value=true)
+----
+
+[[set-maximum-number-of-intermediate-certificates-of-trust-manager]]
+===== Set maximum number of intermediate certificates of trust-manager
+
+Sets the value of the maximum number of non-self-issued intermediate certificates that may exist in a certification path with default value of 5.
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/trust-manager=twoWayTM:write-attribute(name=maximum-cert-path, value=10)
+----
+
 [[enable-one-way-ssltls-for-the-management-interfaces]]
 === Enable One-way SSL/TLS for the Management Interfaces
 
