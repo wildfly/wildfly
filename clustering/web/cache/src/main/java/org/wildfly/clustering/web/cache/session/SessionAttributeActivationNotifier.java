@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,15 +22,20 @@
 
 package org.wildfly.clustering.web.cache.session;
 
-import javax.servlet.ServletContext;
-
-import org.wildfly.clustering.ee.Creator;
-import org.wildfly.clustering.ee.Remover;
-import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
-
 /**
  * @author Paul Ferraro
  */
-public interface SessionAttributesFactory<V> extends ImmutableSessionAttributesFactory<V>, Creator<String, V, Void>, Remover<String> {
-    SessionAttributes createSessionAttributes(String id, V value, ImmutableSessionMetaData metaData, ServletContext context);
+public interface SessionAttributeActivationNotifier extends AutoCloseable {
+    /**
+     * Notifies the specified attribute that it will be passivated, if interested.
+     */
+    void prePassivate(Object value);
+
+    /**
+     * Notifies the specified attribute that it was activated, if interested.
+     */
+    void postActivate(Object value);
+
+    @Override
+    void close();
 }

@@ -23,12 +23,14 @@ package org.wildfly.clustering.web.cache.session;
 
 import java.util.Map;
 
+import javax.servlet.ServletContext;
+
 import org.wildfly.clustering.ee.Creator;
 import org.wildfly.clustering.ee.Remover;
 import org.wildfly.clustering.web.session.Session;
 
 /**
- * Factory for creating sessions.  This represents the cache mapping strategy for sessions.
+ * Factory for creating sessions. Encapsulates the cache mapping strategy for sessions.
  * @author Paul Ferraro
  */
 public interface SessionFactory<MV, AV, L> extends ImmutableSessionFactory<MV, AV>, Creator<String, Map.Entry<MV, AV>, Void>, Remover<String> {
@@ -37,5 +39,5 @@ public interface SessionFactory<MV, AV, L> extends ImmutableSessionFactory<MV, A
     @Override
     SessionAttributesFactory<AV> getAttributesFactory();
 
-    Session<L> createSession(String id, Map.Entry<MV, AV> entry);
+    Session<L> createSession(String id, Map.Entry<MV, AV> entry, ServletContext context);
 }

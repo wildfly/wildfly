@@ -219,22 +219,17 @@ public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, Tr
             return null;
         }
         this.cancel(id);
-        if (this.properties.isPersistent()) {
-            // If cache is clustered or configured with a write-through cache store
-            // then we need to trigger any HttpSessionActivationListeners per request
-            // See SRV.7.7.2 Distributed Environments
-            this.triggerPostActivationEvents(session);
-        }
-        return new SchedulableSession(this.factory.createSession(id, value), session);
+
+        return new SchedulableSession(this.factory.createSession(id, value, this.context));
     }
 
     @Override
     public Session<L> createSession(String id) {
         Map.Entry<MV, AV> entry = this.factory.createValue(id, null);
         if (entry == null) return null;
-        Session<L> session = this.factory.createSession(id, entry);
+        Session<L> session = this.factory.createSession(id, entry, this.context);
         session.getMetaData().setMaxInactiveInterval(this.defaultMaxInactiveInterval);
-        return new SchedulableSession(session, session);
+        return new SchedulableSession(session);
     }
 
     @Override
@@ -275,7 +270,7 @@ public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, Tr
             Map.Entry<MV, AV> value = this.factory.findValue(id);
             if (value != null) {
                 ImmutableSession session = this.factory.createImmutableSession(id, value);
-                this.triggerPostActivationEvents(session);
+                new ImmutableSessionActivationNotifier(session, this.context).postActivate();
             }
         }
     }
@@ -288,7 +283,7 @@ public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, Tr
             Map.Entry<MV, AV> value = this.factory.findValue(id);
             if (value != null) {
                 ImmutableSession session = this.factory.createImmutableSession(id, value);
-                this.triggerPrePassivationEvents(session);
+                new ImmutableSessionActivationNotifier(session, this.context).prePassivate();
             }
         }
     }
@@ -311,22 +306,12 @@ public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, Tr
         }
     }
 
-    void triggerPrePassivationEvents(ImmutableSession session) {
-        new ImmutableSessionActivationNotifier(session, this.context).prePassivate();
-    }
-
-    void triggerPostActivationEvents(ImmutableSession session) {
-        new ImmutableSessionActivationNotifier(session, this.context).postActivate();
-    }
-
     // Session decorator that performs scheduling on close().
     private class SchedulableSession implements Session<L> {
         private final Session<L> session;
-        private final ImmutableSession immutableSession;
 
-        SchedulableSession(Session<L> session, ImmutableSession immutableSession) {
+        SchedulableSession(Session<L> session) {
             this.session = session;
-            this.immutableSession = immutableSession;
         }
 
         @Override
@@ -366,12 +351,9 @@ public class InfinispanSessionManager<MV, AV, L> implements SessionManager<L, Tr
         @Override
         public void close() {
             boolean valid = this.session.isValid();
-            if (valid && InfinispanSessionManager.this.isPersistent()) {
-                InfinispanSessionManager.this.triggerPrePassivationEvents(this.immutableSession);
-            }
             this.session.close();
             if (valid) {
-                InfinispanSessionManager.this.schedule(this.immutableSession.getId(), this.immutableSession.getMetaData());
+                InfinispanSessionManager.this.schedule(this.session.getId(), this.session.getMetaData());
             }
         }
 

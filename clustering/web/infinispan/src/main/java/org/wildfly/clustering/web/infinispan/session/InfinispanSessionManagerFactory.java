@@ -64,6 +64,7 @@ import org.wildfly.clustering.spi.NodeFactory;
 import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.cache.session.CompositeSessionFactory;
 import org.wildfly.clustering.web.cache.session.CompositeSessionMetaDataEntry;
+import org.wildfly.clustering.web.cache.session.ImmutableSessionMetaDataFactory;
 import org.wildfly.clustering.web.cache.session.MarshalledValueSessionAttributesFactoryConfiguration;
 import org.wildfly.clustering.web.cache.session.SessionAttributesFactory;
 import org.wildfly.clustering.web.cache.session.SessionFactory;
@@ -239,7 +240,7 @@ public class InfinispanSessionManagerFactory<C extends Marshallability, L> imple
     }
 
     private void schedule(Locality oldLocality, Locality newLocality) {
-        SessionMetaDataFactory<CompositeSessionMetaDataEntry<L>> metaDataFactory = this.factory.getMetaDataFactory();
+        ImmutableSessionMetaDataFactory<CompositeSessionMetaDataEntry<L>> metaDataFactory = this.factory.getMetaDataFactory();
         // Iterate over sessions in memory
         try (CloseableIterator<Key<String>> keys = this.cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD).keySet().iterator()) {
             while (keys.hasNext()) {

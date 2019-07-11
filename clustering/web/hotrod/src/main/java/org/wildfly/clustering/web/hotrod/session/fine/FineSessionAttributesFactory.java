@@ -27,6 +27,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 
+import javax.servlet.ServletContext;
+
 import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.wildfly.clustering.ee.Immutability;
@@ -35,6 +37,9 @@ import org.wildfly.clustering.ee.cache.CacheProperties;
 import org.wildfly.clustering.ee.hotrod.RemoteCacheMutatorFactory;
 import org.wildfly.clustering.marshalling.spi.InvalidSerializedFormException;
 import org.wildfly.clustering.marshalling.spi.Marshaller;
+import org.wildfly.clustering.web.cache.session.CompositeImmutableSession;
+import org.wildfly.clustering.web.cache.session.ImmutableSessionAttributeActivationNotifier;
+import org.wildfly.clustering.web.cache.session.SessionAttributeActivationNotifier;
 import org.wildfly.clustering.web.cache.session.SessionAttributes;
 import org.wildfly.clustering.web.cache.session.SessionAttributesFactory;
 import org.wildfly.clustering.web.cache.session.fine.FineImmutableSessionAttributes;
@@ -42,6 +47,7 @@ import org.wildfly.clustering.web.cache.session.fine.FineSessionAttributes;
 import org.wildfly.clustering.web.hotrod.Logger;
 import org.wildfly.clustering.web.hotrod.session.HotRodSessionAttributesFactoryConfiguration;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
+import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 
 /**
  * {@link SessionAttributesFactory} for fine granularity sessions.
@@ -108,8 +114,10 @@ public class FineSessionAttributesFactory<V> implements SessionAttributesFactory
     }
 
     @Override
-    public SessionAttributes createSessionAttributes(String id, Map<String, UUID> names) {
-        return new FineSessionAttributes<>(new SessionAttributeNamesKey(id), names, this.namesCache, getKeyFactory(id), this.attributeCache.withFlags(Flag.FORCE_RETURN_VALUE), this.marshaller, this.mutatorFactory, this.immutability, this.properties);
+    public SessionAttributes createSessionAttributes(String id, Map<String, UUID> names, ImmutableSessionMetaData metaData, ServletContext context) {
+        ImmutableSessionAttributes attributes = this.createImmutableSessionAttributes(id, names);
+        SessionAttributeActivationNotifier notifier = new ImmutableSessionAttributeActivationNotifier(new CompositeImmutableSession(id, metaData, attributes), context);
+        return new FineSessionAttributes<>(new SessionAttributeNamesKey(id), names, this.namesCache, getKeyFactory(id), this.attributeCache.withFlags(Flag.FORCE_RETURN_VALUE), this.marshaller, this.mutatorFactory, this.immutability, this.properties, notifier);
     }
 
     @Override
