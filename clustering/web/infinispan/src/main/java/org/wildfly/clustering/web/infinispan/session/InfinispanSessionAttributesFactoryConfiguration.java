@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,20 +19,19 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.clustering.web.infinispan.session;
 
-import org.infinispan.remoting.transport.Address;
-import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
-import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
-import org.wildfly.clustering.marshalling.spi.Marshallability;
-import org.wildfly.clustering.spi.NodeFactory;
-import org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration;
+import org.wildfly.clustering.ee.cache.CacheProperties;
+import org.wildfly.clustering.web.cache.session.SessionAttributesFactoryConfiguration;
 
-public interface InfinispanSessionManagerFactoryConfiguration<C extends Marshallability, L> extends InfinispanSessionManagementConfiguration, SessionManagerFactoryConfiguration<C, L>, InfinispanSessionMetaDataFactoryConfiguration {
+/**
+ * @author Paul Ferraro
+ */
+public interface InfinispanSessionAttributesFactoryConfiguration<V, S> extends InfinispanSessionMetaDataFactoryConfiguration, SessionAttributesFactoryConfiguration<V, S> {
 
-    KeyAffinityServiceFactory getKeyAffinityServiceFactory();
-
-    CommandDispatcherFactory getCommandDispatcherFactory();
-
-    NodeFactory<Address> getMemberFactory();
+    @Override
+    default CacheProperties getCacheProperties() {
+        return InfinispanSessionMetaDataFactoryConfiguration.super.getCacheProperties();
+    }
 }

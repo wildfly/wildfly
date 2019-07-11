@@ -51,13 +51,12 @@ public class HotRodSessionMetaDataFactory<L> implements SessionMetaDataFactory<C
     private final MutatorFactory<SessionAccessMetaDataKey, SessionAccessMetaData> accessMetaDataMutatorFactory;
     private final CacheProperties properties;
 
-    @SuppressWarnings("unchecked")
-    public HotRodSessionMetaDataFactory(RemoteCache<?, ?> cache, CacheProperties properties) {
-        this.creationMetaDataCache = (RemoteCache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<L>>) cache;
+    public HotRodSessionMetaDataFactory(HotRodSessionMetaDataFactoryConfiguration configuration) {
+        this.creationMetaDataCache = configuration.getCache();
         this.creationMetaDataMutatorFactory = new RemoteCacheMutatorFactory<>(this.creationMetaDataCache);
-        this.accessMetaDataCache = (RemoteCache<SessionAccessMetaDataKey, SessionAccessMetaData>) cache;
+        this.accessMetaDataCache = configuration.getCache();
         this.accessMetaDataMutatorFactory = new RemoteCacheMutatorFactory<>(this.accessMetaDataCache);
-        this.properties = properties;
+        this.properties = configuration.getCacheProperties();
     }
 
     @Override

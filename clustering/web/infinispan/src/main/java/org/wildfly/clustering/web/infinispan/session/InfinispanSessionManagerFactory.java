@@ -47,11 +47,9 @@ import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
-import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.Recordable;
 import org.wildfly.clustering.ee.cache.CacheProperties;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
-import org.wildfly.clustering.ee.infinispan.InfinispanCacheProperties;
 import org.wildfly.clustering.ee.infinispan.tx.InfinispanBatcher;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
@@ -61,12 +59,12 @@ import org.wildfly.clustering.infinispan.spi.distribution.Key;
 import org.wildfly.clustering.infinispan.spi.distribution.Locality;
 import org.wildfly.clustering.infinispan.spi.distribution.SimpleLocality;
 import org.wildfly.clustering.marshalling.spi.Marshallability;
-import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
-import org.wildfly.clustering.marshalling.spi.MarshalledValueMarshaller;
+import org.wildfly.clustering.marshalling.spi.MarshalledValue;
 import org.wildfly.clustering.spi.NodeFactory;
 import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.cache.session.CompositeSessionFactory;
 import org.wildfly.clustering.web.cache.session.CompositeSessionMetaDataEntry;
+import org.wildfly.clustering.web.cache.session.MarshalledValueSessionAttributesFactoryConfiguration;
 import org.wildfly.clustering.web.cache.session.SessionAttributesFactory;
 import org.wildfly.clustering.web.cache.session.SessionFactory;
 import org.wildfly.clustering.web.cache.session.SessionMetaDataFactory;
@@ -112,8 +110,8 @@ public class InfinispanSessionManagerFactory<C extends Marshallability, L> imple
         this.cache = config.getCache();
         this.memberFactory = config.getMemberFactory();
         this.batcher = new InfinispanBatcher(this.cache);
-        this.properties = new InfinispanCacheProperties(this.cache.getCacheConfiguration());
-        SessionMetaDataFactory<CompositeSessionMetaDataEntry<L>, L> metaDataFactory = new InfinispanSessionMetaDataFactory<>(config.getCache(), this.properties);
+        this.properties = config.getCacheProperties();
+        SessionMetaDataFactory<CompositeSessionMetaDataEntry<L>, L> metaDataFactory = new InfinispanSessionMetaDataFactory<>(config);
         this.factory = new CompositeSessionFactory<>(metaDataFactory, this.createSessionAttributesFactory(config), config.getLocalContextFactory());
         CommandDispatcherFactory dispatcherFactory = config.getCommandDispatcherFactory();
         ExpiredSessionRemover<?, ?, L> remover = new ExpiredSessionRemover<>(this.factory);
@@ -188,16 +186,12 @@ public class InfinispanSessionManagerFactory<C extends Marshallability, L> imple
     }
 
     private SessionAttributesFactory<?> createSessionAttributesFactory(InfinispanSessionManagerFactoryConfiguration<C, L> configuration) {
-        MarshalledValueFactory<C> factory = configuration.getMarshalledValueFactory();
-        C context = configuration.getMarshallingContext();
-        Immutability immutability = configuration.getImmutability();
-
         switch (configuration.getAttributePersistenceStrategy()) {
             case FINE: {
-                return new FineSessionAttributesFactory<>(configuration.getCache(), configuration.getCache(), new MarshalledValueMarshaller<>(factory, context), immutability, this.properties);
+                return new FineSessionAttributesFactory<>(new InfinispanMarshalledValueSessionAttributesFactoryConfiguration<>(configuration));
             }
             case COARSE: {
-                return new CoarseSessionAttributesFactory<>(configuration.getCache(), new MarshalledValueMarshaller<>(factory, context), immutability, this.properties);
+                return new CoarseSessionAttributesFactory<>(new InfinispanMarshalledValueSessionAttributesFactoryConfiguration<>(configuration));
             }
             default: {
                 // Impossible
@@ -268,6 +262,20 @@ public class InfinispanSessionManagerFactory<C extends Marshallability, L> imple
                     }
                 }
             }
+        }
+    }
+
+    private static class InfinispanMarshalledValueSessionAttributesFactoryConfiguration<V, C extends Marshallability, L> extends MarshalledValueSessionAttributesFactoryConfiguration<V, C, L> implements InfinispanSessionAttributesFactoryConfiguration<V, MarshalledValue<V, C>> {
+        private final InfinispanSessionManagerFactoryConfiguration<C, L> configuration;
+
+        InfinispanMarshalledValueSessionAttributesFactoryConfiguration(InfinispanSessionManagerFactoryConfiguration<C, L> configuration) {
+            super(configuration);
+            this.configuration = configuration;
+        }
+
+        @Override
+        public <CK, CV> Cache<CK, CV> getCache() {
+            return this.configuration.getCache();
         }
     }
 }

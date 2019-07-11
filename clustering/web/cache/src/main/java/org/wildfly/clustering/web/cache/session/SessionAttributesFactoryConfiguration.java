@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,20 +19,22 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.infinispan.session;
 
-import org.infinispan.remoting.transport.Address;
-import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
-import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
-import org.wildfly.clustering.marshalling.spi.Marshallability;
-import org.wildfly.clustering.spi.NodeFactory;
-import org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration;
+package org.wildfly.clustering.web.cache.session;
 
-public interface InfinispanSessionManagerFactoryConfiguration<C extends Marshallability, L> extends InfinispanSessionManagementConfiguration, SessionManagerFactoryConfiguration<C, L>, InfinispanSessionMetaDataFactoryConfiguration {
+import org.wildfly.clustering.ee.Immutability;
+import org.wildfly.clustering.ee.cache.CacheProperties;
+import org.wildfly.clustering.marshalling.spi.Marshaller;
 
-    KeyAffinityServiceFactory getKeyAffinityServiceFactory();
-
-    CommandDispatcherFactory getCommandDispatcherFactory();
-
-    NodeFactory<Address> getMemberFactory();
+/**
+ * Configuration of a factory for creating a {@link SessionAttributes} object.
+ * @author Paul Ferraro
+ * @param <MV> meta-data cache entry type
+ * @param <V> attributes cache entry type
+ * @param <S> attributes serialized form type
+ */
+public interface SessionAttributesFactoryConfiguration<V, S> {
+    Marshaller<V, S> getMarshaller();
+    CacheProperties getCacheProperties();
+    Immutability getImmutability();
 }

@@ -39,6 +39,7 @@ import org.wildfly.clustering.web.cache.session.SessionAttributesFactory;
 import org.wildfly.clustering.web.cache.session.coarse.CoarseImmutableSessionAttributes;
 import org.wildfly.clustering.web.cache.session.coarse.CoarseSessionAttributes;
 import org.wildfly.clustering.web.hotrod.Logger;
+import org.wildfly.clustering.web.hotrod.session.HotRodSessionAttributesFactoryConfiguration;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 
 /**
@@ -52,12 +53,12 @@ public class CoarseSessionAttributesFactory<V> implements SessionAttributesFacto
     private final CacheProperties properties;
     private final MutatorFactory<SessionAttributesKey, V> mutatorFactory;
 
-    public CoarseSessionAttributesFactory(RemoteCache<SessionAttributesKey, V> cache, Marshaller<Map<String, Object>, V> marshaller, Immutability immutability, CacheProperties properties) {
-        this.cache = cache;
-        this.marshaller = marshaller;
-        this.immutability = immutability;
-        this.properties = properties;
-        this.mutatorFactory = new RemoteCacheMutatorFactory<>(cache);
+    public CoarseSessionAttributesFactory(HotRodSessionAttributesFactoryConfiguration<Map<String, Object>, V> configuration) {
+        this.cache = configuration.getCache();
+        this.marshaller = configuration.getMarshaller();
+        this.immutability = configuration.getImmutability();
+        this.properties = configuration.getCacheProperties();
+        this.mutatorFactory = new RemoteCacheMutatorFactory<>(this.cache);
     }
 
     @Override

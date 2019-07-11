@@ -45,6 +45,7 @@ import org.wildfly.clustering.web.cache.session.SessionAttributesFactory;
 import org.wildfly.clustering.web.cache.session.coarse.CoarseImmutableSessionAttributes;
 import org.wildfly.clustering.web.cache.session.coarse.CoarseSessionAttributes;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
+import org.wildfly.clustering.web.infinispan.session.InfinispanSessionAttributesFactoryConfiguration;
 import org.wildfly.clustering.web.infinispan.session.SessionCreationMetaDataKey;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 
@@ -61,12 +62,12 @@ public class CoarseSessionAttributesFactory<V> implements SessionAttributesFacto
     private final Immutability immutability;
     private final MutatorFactory<SessionAttributesKey, V> mutatorFactory;
 
-    public CoarseSessionAttributesFactory(Cache<SessionAttributesKey, V> cache, Marshaller<Map<String, Object>, V> marshaller, Immutability immutability, CacheProperties properties) {
-        this.cache = cache;
-        this.marshaller = marshaller;
-        this.immutability = immutability;
-        this.properties = properties;
-        this.mutatorFactory = new InfinispanMutatorFactory<>(cache, properties);
+    public CoarseSessionAttributesFactory(InfinispanSessionAttributesFactoryConfiguration<Map<String, Object>, V> configuration) {
+        this.cache = configuration.getCache();
+        this.marshaller = configuration.getMarshaller();
+        this.immutability = configuration.getImmutability();
+        this.properties = configuration.getCacheProperties();
+        this.mutatorFactory = new InfinispanMutatorFactory<>(this.cache, this.properties);
     }
 
     @Override
