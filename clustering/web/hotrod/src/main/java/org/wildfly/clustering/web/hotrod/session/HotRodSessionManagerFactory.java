@@ -36,6 +36,7 @@ import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.cache.session.CompositeSessionFactory;
 import org.wildfly.clustering.web.cache.session.CompositeSessionMetaDataEntry;
 import org.wildfly.clustering.web.cache.session.MarshalledValueSessionAttributesFactoryConfiguration;
+import org.wildfly.clustering.web.cache.session.Scheduler;
 import org.wildfly.clustering.web.cache.session.SessionAttributesFactory;
 import org.wildfly.clustering.web.cache.session.SessionFactory;
 import org.wildfly.clustering.web.cache.session.SessionMetaDataFactory;

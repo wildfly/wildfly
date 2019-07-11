@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.hotrod.session;
+package org.wildfly.clustering.web.cache.session;
 
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 

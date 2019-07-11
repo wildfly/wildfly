@@ -28,6 +28,7 @@ import java.time.Instant;
 import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.marshalling.spi.DefaultExternalizer;
 import org.wildfly.clustering.web.cache.session.CompositeSessionMetaData;
+import org.wildfly.clustering.web.cache.session.Scheduler;
 import org.wildfly.clustering.web.cache.session.SessionAccessMetaData;
 import org.wildfly.clustering.web.cache.session.SessionCreationMetaData;
 import org.wildfly.clustering.web.cache.session.SimpleSessionAccessMetaData;

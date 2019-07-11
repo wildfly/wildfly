@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,29 +19,22 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.hotrod.session;
 
-import java.time.Duration;
+package org.wildfly.clustering.web.cache.logging;
 
-import javax.servlet.ServletContext;
-
-import org.wildfly.clustering.Registrar;
-import org.wildfly.clustering.ee.Batcher;
-import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
-import org.wildfly.clustering.web.IdentifierFactory;
-import org.wildfly.clustering.web.cache.session.Scheduler;
-import org.wildfly.clustering.web.session.SessionExpirationListener;
+import org.jboss.logging.BasicLogger;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageLogger;
 
 /**
- * Configuration for an {@link HotRodSessionManager}.
  * @author Paul Ferraro
  */
-public interface HotRodSessionManagerConfiguration {
-    ServletContext getServletContext();
-    SessionExpirationListener getExpirationListener();
-    Registrar<SessionExpirationListener> getExpirationRegistrar();
-    Scheduler getExpirationScheduler();
-    IdentifierFactory<String> getIdentifierFactory();
-    Batcher<TransactionBatch> getBatcher();
-    Duration getStopTimeout();
+@MessageLogger(projectCode = "WFLYCLWEB", length = 4)
+public interface Logger extends BasicLogger {
+    String ROOT_LOGGER_CATEGORY = "org.wildfly.clustering.web.cache";
+
+    Logger ROOT_LOGGER = org.jboss.logging.Logger.getMessageLogger(Logger.class, ROOT_LOGGER_CATEGORY);
+
+    @Message(id = 1, value = "Session %s is not valid")
+    IllegalStateException invalidSession(String sessionId);
 }

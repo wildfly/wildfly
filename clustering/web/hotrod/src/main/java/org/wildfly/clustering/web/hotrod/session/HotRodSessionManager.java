@@ -33,15 +33,15 @@ import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.web.IdentifierFactory;
+import org.wildfly.clustering.web.cache.session.Scheduler;
 import org.wildfly.clustering.web.cache.session.SessionFactory;
 import org.wildfly.clustering.web.cache.session.SimpleImmutableSession;
+import org.wildfly.clustering.web.cache.session.ValidSession;
 import org.wildfly.clustering.web.hotrod.Logger;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.Session;
-import org.wildfly.clustering.web.session.SessionAttributes;
 import org.wildfly.clustering.web.session.SessionExpirationListener;
 import org.wildfly.clustering.web.session.SessionManager;
-import org.wildfly.clustering.web.session.SessionMetaData;
 
 /**
  * Generic HotRod-based session manager implementation - independent of cache mapping strategy.
@@ -121,7 +121,7 @@ public class HotRodSessionManager<MV, AV, L> implements SessionManager<L, Transa
             return null;
         }
         this.expirationScheduler.cancel(id);
-        return new SchedulableSession(this.factory.createSession(id, entry, this.context));
+        return new ValidSession<>(this.factory.createSession(id, entry, this.context), this.expirationScheduler);
     }
 
     @Override
@@ -130,7 +130,7 @@ public class HotRodSessionManager<MV, AV, L> implements SessionManager<L, Transa
         if (entry == null) return null;
         Session<L> session = this.factory.createSession(id, entry, this.context);
         session.getMetaData().setMaxInactiveInterval(this.defaultMaxInactiveInterval);
-        return new SchedulableSession(session);
+        return new ValidSession<>(session, this.expirationScheduler);
     }
 
     @Override
@@ -152,66 +152,5 @@ public class HotRodSessionManager<MV, AV, L> implements SessionManager<L, Transa
     @Override
     public long getActiveSessionCount() {
         return this.getActiveSessions().size();
-    }
-
-    void schedule(ImmutableSession session) {
-        this.expirationScheduler.schedule(session.getId(), session.getMetaData());
-    }
-
-    // Session decorator that performs scheduling on close().
-    private class SchedulableSession implements Session<L> {
-        private final Session<L> session;
-
-        SchedulableSession(Session<L> session) {
-            this.session = session;
-        }
-
-        @Override
-        public String getId() {
-            return this.session.getId();
-        }
-
-        @Override
-        public SessionMetaData getMetaData() {
-            if (!this.session.isValid()) {
-                throw Logger.ROOT_LOGGER.invalidSession(this.getId());
-            }
-            return this.session.getMetaData();
-        }
-
-        @Override
-        public boolean isValid() {
-            return this.session.isValid();
-        }
-
-        @Override
-        public void invalidate() {
-            if (!this.session.isValid()) {
-                throw Logger.ROOT_LOGGER.invalidSession(this.getId());
-            }
-            this.session.invalidate();
-        }
-
-        @Override
-        public SessionAttributes getAttributes() {
-            if (!this.session.isValid()) {
-                throw Logger.ROOT_LOGGER.invalidSession(this.getId());
-            }
-            return this.session.getAttributes();
-        }
-
-        @Override
-        public void close() {
-            boolean valid = this.session.isValid();
-            this.session.close();
-            if (valid) {
-                HotRodSessionManager.this.schedule(this.session);
-            }
-        }
-
-        @Override
-        public L getLocalContext() {
-            return this.session.getLocalContext();
-        }
     }
 }
