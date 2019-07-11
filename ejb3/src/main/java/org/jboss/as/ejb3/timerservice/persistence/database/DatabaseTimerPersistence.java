@@ -824,6 +824,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                             statement.setString(1, timedObjectId);
                             statement.setString(2, partition);
                             resultSet = statement.executeQuery();
+                            final TimerServiceImpl timerService = listener.getTimerService();
                             while (resultSet.next()) {
                                 try {
                                     String id = resultSet.getString(1);
@@ -831,7 +832,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                                         synchronized (DatabaseTimerPersistence.this) {
                                             knownTimerIds.get(timedObjectId).add(id);
                                         }
-                                        final Holder holder = timerFromResult(resultSet, listener.getTimerService());
+                                        final Holder holder = timerFromResult(resultSet, timerService);
                                         if(holder != null) {
                                             listener.timerAdded(holder.timer);
                                         }
@@ -844,8 +845,11 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                             synchronized (DatabaseTimerPersistence.this) {
                                 Set<String> timers = knownTimerIds.get(timedObjectId);
                                 for (String timer : existing) {
-                                    timers.remove(timer);
-                                    listener.timerRemoved(timer);
+                                    TimerImpl timer1 = timerService.getTimer(timer);
+                                    if (timer1 != null && timer1.getState() != TimerState.CREATED) {
+                                        timers.remove(timer);
+                                        listener.timerRemoved(timer);
+                                    }
                                 }
                             }
                         } catch (SQLException e) {
