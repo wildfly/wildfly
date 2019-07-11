@@ -36,11 +36,11 @@ import org.wildfly.clustering.web.session.Session;
  */
 public class CompositeSessionFactory<V, L> implements SessionFactory<CompositeSessionMetaDataEntry<L>, V, L> {
 
-    private final SessionMetaDataFactory<CompositeSessionMetaDataEntry<L>, L> metaDataFactory;
+    private final SessionMetaDataFactory<CompositeSessionMetaDataEntry<L>> metaDataFactory;
     private final SessionAttributesFactory<V> attributesFactory;
     private final LocalContextFactory<L> localContextFactory;
 
-    public CompositeSessionFactory(SessionMetaDataFactory<CompositeSessionMetaDataEntry<L>, L> metaDataFactory, SessionAttributesFactory<V> attributesFactory, LocalContextFactory<L> localContextFactory) {
+    public CompositeSessionFactory(SessionMetaDataFactory<CompositeSessionMetaDataEntry<L>> metaDataFactory, SessionAttributesFactory<V> attributesFactory, LocalContextFactory<L> localContextFactory) {
         this.metaDataFactory = metaDataFactory;
         this.attributesFactory = attributesFactory;
         this.localContextFactory = localContextFactory;
@@ -92,7 +92,7 @@ public class CompositeSessionFactory<V, L> implements SessionFactory<CompositeSe
     }
 
     @Override
-    public SessionMetaDataFactory<CompositeSessionMetaDataEntry<L>, L> getMetaDataFactory() {
+    public SessionMetaDataFactory<CompositeSessionMetaDataEntry<L>> getMetaDataFactory() {
         return this.metaDataFactory;
     }
 

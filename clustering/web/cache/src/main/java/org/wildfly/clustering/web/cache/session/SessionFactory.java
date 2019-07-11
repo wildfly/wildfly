@@ -33,7 +33,7 @@ import org.wildfly.clustering.web.session.Session;
  */
 public interface SessionFactory<MV, AV, L> extends ImmutableSessionFactory<MV, AV>, Creator<String, Map.Entry<MV, AV>, Void>, Remover<String> {
     @Override
-    SessionMetaDataFactory<MV, L> getMetaDataFactory();
+    SessionMetaDataFactory<MV> getMetaDataFactory();
     @Override
     SessionAttributesFactory<AV> getAttributesFactory();
 

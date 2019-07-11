@@ -59,7 +59,7 @@ public class HotRodSessionManagerFactory<L, C extends Marshallability> implement
     private final SessionFactory<CompositeSessionMetaDataEntry<L>, ?, L> sessionFactory;
 
     public HotRodSessionManagerFactory(HotRodSessionManagerFactoryConfiguration<C, L> config) {
-        SessionMetaDataFactory<CompositeSessionMetaDataEntry<L>, L> metaDataFactory = new HotRodSessionMetaDataFactory<>(config);
+        SessionMetaDataFactory<CompositeSessionMetaDataEntry<L>> metaDataFactory = new HotRodSessionMetaDataFactory<>(config);
         this.sessionFactory = new CompositeSessionFactory<>(metaDataFactory, this.createSessionAttributesFactory(config), config.getLocalContextFactory());
         ExpiredSessionRemover<CompositeSessionMetaDataEntry<L>, ?, L> remover = new ExpiredSessionRemover<>(this.sessionFactory);
         this.expirationRegistrar = remover;

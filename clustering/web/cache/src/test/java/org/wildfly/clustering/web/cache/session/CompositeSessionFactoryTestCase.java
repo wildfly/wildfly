@@ -41,7 +41,7 @@ import org.wildfly.clustering.web.session.Session;
  * @author Paul Ferraro
  */
 public class CompositeSessionFactoryTestCase {
-    private final SessionMetaDataFactory<CompositeSessionMetaDataEntry<Object>, Object> metaDataFactory = mock(SessionMetaDataFactory.class);
+    private final SessionMetaDataFactory<CompositeSessionMetaDataEntry<Object>> metaDataFactory = mock(SessionMetaDataFactory.class);
     private final SessionAttributesFactory<Object> attributesFactory = mock(SessionAttributesFactory.class);
     private final LocalContextFactory<Object> localContextFactory = mock(LocalContextFactory.class);
 

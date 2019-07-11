@@ -28,6 +28,6 @@ import org.wildfly.clustering.ee.Remover;
 /**
  * @author Paul Ferraro
  */
-public interface SessionMetaDataFactory<V, L> extends ImmutableSessionMetaDataFactory<V>, Creator<String, V, Void>, Remover<String> {
+public interface SessionMetaDataFactory<V> extends ImmutableSessionMetaDataFactory<V>, Creator<String, V, Void>, Remover<String> {
     InvalidatableSessionMetaData createSessionMetaData(String id, V value);
 }

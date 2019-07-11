@@ -111,7 +111,7 @@ public class InfinispanSessionManagerFactory<C extends Marshallability, L> imple
         this.memberFactory = config.getMemberFactory();
         this.batcher = new InfinispanBatcher(this.cache);
         this.properties = config.getCacheProperties();
-        SessionMetaDataFactory<CompositeSessionMetaDataEntry<L>, L> metaDataFactory = new InfinispanSessionMetaDataFactory<>(config);
+        SessionMetaDataFactory<CompositeSessionMetaDataEntry<L>> metaDataFactory = new InfinispanSessionMetaDataFactory<>(config);
         this.factory = new CompositeSessionFactory<>(metaDataFactory, this.createSessionAttributesFactory(config), config.getLocalContextFactory());
         CommandDispatcherFactory dispatcherFactory = config.getCommandDispatcherFactory();
         ExpiredSessionRemover<?, ?, L> remover = new ExpiredSessionRemover<>(this.factory);
@@ -239,7 +239,7 @@ public class InfinispanSessionManagerFactory<C extends Marshallability, L> imple
     }
 
     private void schedule(Locality oldLocality, Locality newLocality) {
-        SessionMetaDataFactory<CompositeSessionMetaDataEntry<L>, L> metaDataFactory = this.factory.getMetaDataFactory();
+        SessionMetaDataFactory<CompositeSessionMetaDataEntry<L>> metaDataFactory = this.factory.getMetaDataFactory();
         // Iterate over sessions in memory
         try (CloseableIterator<Key<String>> keys = this.cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD).keySet().iterator()) {
             while (keys.hasNext()) {

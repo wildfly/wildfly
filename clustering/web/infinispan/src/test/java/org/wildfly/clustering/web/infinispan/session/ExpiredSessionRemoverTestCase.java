@@ -44,7 +44,7 @@ public class ExpiredSessionRemoverTestCase {
     @Test
     public void test() {
         SessionFactory<UUID, UUID, Object> factory = mock(SessionFactory.class);
-        SessionMetaDataFactory<UUID, Object> metaDataFactory = mock(SessionMetaDataFactory.class);
+        SessionMetaDataFactory<UUID> metaDataFactory = mock(SessionMetaDataFactory.class);
         SessionAttributesFactory<UUID> attributesFactory = mock(SessionAttributesFactory.class);
         SessionExpirationListener listener = mock(SessionExpirationListener.class);
         ImmutableSessionAttributes expiredAttributes = mock(ImmutableSessionAttributes.class);

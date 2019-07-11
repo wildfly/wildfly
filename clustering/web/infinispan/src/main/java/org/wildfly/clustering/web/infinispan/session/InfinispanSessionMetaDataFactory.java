@@ -52,7 +52,7 @@ import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
  * @author Paul Ferraro
  */
 @Listener(sync = false)
-public class InfinispanSessionMetaDataFactory<L> implements SessionMetaDataFactory<CompositeSessionMetaDataEntry<L>, L> {
+public class InfinispanSessionMetaDataFactory<L> implements SessionMetaDataFactory<CompositeSessionMetaDataEntry<L>> {
 
     private final Cache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<L>> creationMetaDataCache;
     private final MutatorFactory<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<L>> creationMetaDataMutatorFactory;
