@@ -80,6 +80,7 @@ public class TransactionLeakContextHandleFactory implements ContextHandleFactory
 
     private static class TransactionLeakSetupContextHandle implements SetupContextHandle {
 
+        private static final long serialVersionUID = -8142799455606311295L;
         private final TransactionManager transactionManager;
 
         private TransactionLeakSetupContextHandle(TransactionManager transactionManager) {
@@ -117,6 +118,7 @@ public class TransactionLeakContextHandleFactory implements ContextHandleFactory
 
     private static class TransactionLeakResetContextHandle implements ResetContextHandle {
 
+        private static final long serialVersionUID = -1726741825781759990L;
         private final TransactionManager transactionManager;
         private final Transaction transactionOnSetup;
 

@@ -148,6 +148,7 @@ public class ConcurrentContext {
      */
     private static class ChainedSetupContextHandle implements SetupContextHandle {
 
+        private static final long serialVersionUID = 3609876437062603461L;
         private transient ConcurrentContext concurrentContext;
         private transient List<SetupContextHandle> setupHandles;
 
@@ -270,6 +271,7 @@ public class ConcurrentContext {
      */
     private static class ChainedResetContextHandle implements ResetContextHandle {
 
+        private static final long serialVersionUID = 8329909590327062062L;
         private transient List<ResetContextHandle> resetHandles;
 
         private ChainedResetContextHandle(List<ResetContextHandle> resetHandles) {
