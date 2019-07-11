@@ -1363,6 +1363,34 @@ This will use CRLs obtained from distribution points referenced in your certific
 /subsystem=elytron/trust-manager=twoWayTM:write-attribute(name=certificate-revocation-list.path, value=intermediate.crl.pem)
 ----
 
+[[configure-ocsp-certificate-revocation]]
+==== Configure OCSP certificate revocation:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/trust-manager=twoWayTM:write-attribute(name=ocsp, value={})
+----
+
+This will enable OCSP certificate revocation by using OCSP responder inside the certificate. In case the responder is known but OCSP revocation status is unknown, the verification will fail.
+
+[[override-ocsp-responder-uri-extracted-from-certificate]]
+===== Override OCSP responder URI extracted from certificate:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/trust-manager=twoWayTM:write-attribute(name=ocsp.responder, value="http://example.com/ocsp-responder")
+----
+
+[[configure-order-of-certificate-revocation-mechanisms]]
+==== Configure order of revocation mechanisms:
+
+If both CRL and OCSP are defined, Elytron will use OCSP for obtaining revocation status as first by default. In case you want to prefer CRL:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/trust-manager=twoWayTM:write-attribute(name=ocsp.prefer-crls, value="true")
+----
+
 [[other-trust-manager-configuration]]
 ==== Other trust-manager configuration:
 
