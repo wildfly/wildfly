@@ -329,7 +329,7 @@ public class LegacyConnectionFactoryDefinition extends PersistentResourceDefinit
      * @see HornetQClient.DEFAULT_RECONNECT_ATTEMPTS
      */
     public static final AttributeDefinition RECONNECT_ATTEMPTS = create("reconnect-attempts", INT)
-            .setDefaultValue(new ModelNode(0))
+            .setDefaultValue(ModelNode.ZERO)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()

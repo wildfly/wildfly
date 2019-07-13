@@ -86,7 +86,7 @@ class JspDefinition extends PersistentResourceDefinition {
     protected static final SimpleAttributeDefinition CHECK_INTERVAL =
             new SimpleAttributeDefinitionBuilder(Constants.CHECK_INTERVAL, ModelType.INT, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode(0))
+                    .setDefaultValue(ModelNode.ZERO)
                     .setAllowExpression(true)
                     .build();
     protected static final SimpleAttributeDefinition MODIFICATION_TEST_INTERVAL =

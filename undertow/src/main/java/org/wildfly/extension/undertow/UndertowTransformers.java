@@ -129,7 +129,7 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
                     .setDiscard(new DiscardAttributeValueChecker(new ModelNode(10 * 1024 * 1024)), FILE_CACHE_MAX_FILE_SIZE)
                     .setDiscard(new DiscardAttributeValueChecker(new ModelNode(100)), FILE_CACHE_METADATA_SIZE)
                     .setDiscard(DiscardAttributeChecker.UNDEFINED, FILE_CACHE_TIME_TO_LIVE)
-                    .setDiscard(new DiscardAttributeValueChecker(new ModelNode(0)), DEFAULT_COOKIE_VERSION)
+                    .setDiscard(new DiscardAttributeValueChecker(ModelNode.ZERO), DEFAULT_COOKIE_VERSION)
                     .addRejectCheck(RejectAttributeChecker.DEFINED,
                             FILE_CACHE_MAX_FILE_SIZE, FILE_CACHE_METADATA_SIZE, FILE_CACHE_TIME_TO_LIVE, DEFAULT_COOKIE_VERSION)
                 .end();
@@ -202,7 +202,7 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
                 .addChildResource(UndertowExtension.PATH_WEBSOCKETS)
                 .getAttributeBuilder()
                     .setDiscard(FALSE_DISCARD_CHECKER, PER_MESSAGE_DEFLATE)
-                    .setDiscard(new DiscardAttributeValueChecker(new ModelNode(0)), DEFLATER_LEVEL)
+                    .setDiscard(new DiscardAttributeValueChecker(ModelNode.ZERO), DEFLATER_LEVEL)
                     .addRejectCheck(RejectAttributeChecker.DEFINED, PER_MESSAGE_DEFLATE, DEFLATER_LEVEL)
                 .end();
 

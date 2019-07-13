@@ -338,7 +338,7 @@ public interface ConnectionFactoryAttributes {
          * @see ActiveMQClient.DEFAULT_RECONNECT_ATTEMPTS
          */
         SimpleAttributeDefinition RECONNECT_ATTEMPTS = create("reconnect-attempts", INT)
-                .setDefaultValue(new ModelNode(0))
+                .setDefaultValue(ModelNode.ZERO)
                 .setRequired(false)
                 .setAllowExpression(true)
                 .setRestartAllServices()

@@ -39,7 +39,7 @@ public class SimpleElectionPolicyResourceDefinition extends ElectionPolicyResour
     static final PathElement PATH = pathElement(PATH_VALUE);
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        POSITION("position", ModelType.INT, new ModelNode(0)),
+        POSITION("position", ModelType.INT, ModelNode.ZERO),
         ;
         private final SimpleAttributeDefinition definition;
 

@@ -74,27 +74,27 @@ public class JMSTopicDefinition extends PersistentResourceDefinition {
 
     static final AttributeDefinition DURABLE_MESSAGE_COUNT = create(CommonAttributes.DURABLE_MESSAGE_COUNT, INT)
             .setStorageRuntime()
-            .setUndefinedMetricValue(new ModelNode(0))
+            .setUndefinedMetricValue(ModelNode.ZERO)
             .build();
 
     static final AttributeDefinition NON_DURABLE_MESSAGE_COUNT = create(CommonAttributes.NON_DURABLE_MESSAGE_COUNT, INT)
             .setStorageRuntime()
-            .setUndefinedMetricValue(new ModelNode(0))
+            .setUndefinedMetricValue(ModelNode.ZERO)
             .build();
 
     static final AttributeDefinition SUBSCRIPTION_COUNT = create(CommonAttributes.SUBSCRIPTION_COUNT, INT)
             .setStorageRuntime()
-            .setUndefinedMetricValue(new ModelNode(0))
+            .setUndefinedMetricValue(ModelNode.ZERO)
             .build();
 
     static final AttributeDefinition DURABLE_SUBSCRIPTION_COUNT = create(CommonAttributes.DURABLE_SUBSCRIPTION_COUNT, INT)
             .setStorageRuntime()
-            .setUndefinedMetricValue(new ModelNode(0))
+            .setUndefinedMetricValue(ModelNode.ZERO)
             .build();
 
     static final AttributeDefinition NON_DURABLE_SUBSCRIPTION_COUNT = create(CommonAttributes.NON_DURABLE_SUBSCRIPTION_COUNT, INT)
             .setStorageRuntime()
-            .setUndefinedMetricValue(new ModelNode(0))
+            .setUndefinedMetricValue(ModelNode.ZERO)
             .build();
 
     static final AttributeDefinition[] METRICS = { CommonAttributes.DELIVERING_COUNT,

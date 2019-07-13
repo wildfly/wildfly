@@ -66,7 +66,7 @@ public class ResourceAdaptersTransformers implements ExtensionTransformerRegistr
         ResourceTransformationDescriptionBuilder parentBuilder = chainedBuilder.createBuilder(subsystemRegistration.getCurrentSubsystemVersion(), EAP_7_1);
         ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PathElement.pathElement(RESOURCEADAPTER_NAME))
                 .getAttributeBuilder()
-                .setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode(0), true), INITIAL_POOL_SIZE)
+                .setValueConverter(AttributeConverter.Factory.createHardCoded(ModelNode.ZERO, true), INITIAL_POOL_SIZE)
                 .end();
 
         parentBuilder = chainedBuilder.createBuilder(EAP_7_1, EAP_7_0);

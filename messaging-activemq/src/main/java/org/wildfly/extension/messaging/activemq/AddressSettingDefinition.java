@@ -133,7 +133,7 @@ public class AddressSettingDefinition extends PersistentResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition MESSAGE_COUNTER_HISTORY_DAY_LIMIT = create("message-counter-history-day-limit", ModelType.INT)
-            .setDefaultValue(new ModelNode(0))
+            .setDefaultValue(ModelNode.ZERO)
             .setMeasurementUnit(DAYS)
             .setRequired(false)
             .setAllowExpression(true)

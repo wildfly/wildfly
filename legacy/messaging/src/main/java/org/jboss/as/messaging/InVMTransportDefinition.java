@@ -41,7 +41,7 @@ import org.jboss.dmr.ModelNode;
 public class InVMTransportDefinition extends AbstractTransportDefinition {
 
     public static final SimpleAttributeDefinition SERVER_ID = create("server-id", INT)
-            .setDefaultValue(new ModelNode(0))
+            .setDefaultValue(ModelNode.ZERO)
             .setAllowExpression(true)
             .setAttributeMarshaller(new AttributeMarshaller() {
                 public void marshallAsAttribute(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {

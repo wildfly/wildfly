@@ -87,7 +87,7 @@ public class ManagedExecutorServiceResourceDefinition extends SimpleResourceDefi
                     .setAllowExpression(true)
                     .setValidator(new LongRangeValidator(0, Long.MAX_VALUE, true, true))
                     .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
-                    .setDefaultValue(new ModelNode(0))
+                    .setDefaultValue(ModelNode.ZERO)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
 

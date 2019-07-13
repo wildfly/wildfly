@@ -55,31 +55,31 @@ final class WSEndpointMetrics implements OperationStepHandler {
 
 
     static final AttributeDefinition MIN_PROCESSING_TIME = new SimpleAttributeDefinitionBuilder("min-processing-time", ModelType.INT, false)
-            .setUndefinedMetricValue(new ModelNode(0))
+            .setUndefinedMetricValue(ModelNode.ZERO)
             .setStorageRuntime()
             .build();
     static final AttributeDefinition MAX_PROCESSING_TIME = new SimpleAttributeDefinitionBuilder("max-processing-time", ModelType.INT, false)
-            .setUndefinedMetricValue(new ModelNode(0))
+            .setUndefinedMetricValue(ModelNode.ZERO)
             .setStorageRuntime()
             .build();
     static final AttributeDefinition AVERAGE_PROCESSING_TIME = new SimpleAttributeDefinitionBuilder("average-processing-time", ModelType.INT, false)
-            .setUndefinedMetricValue(new ModelNode(0))
+            .setUndefinedMetricValue(ModelNode.ZERO)
             .setStorageRuntime()
             .build();
     static final AttributeDefinition TOTAL_PROCESSING_TIME = new SimpleAttributeDefinitionBuilder("total-processing-time", ModelType.INT, false)
-            .setUndefinedMetricValue(new ModelNode(0))
+            .setUndefinedMetricValue(ModelNode.ZERO)
             .setStorageRuntime()
             .build();
     static final AttributeDefinition REQUEST_COUNT = new SimpleAttributeDefinitionBuilder("request-count", ModelType.INT, false)
-            .setUndefinedMetricValue(new ModelNode(0))
+            .setUndefinedMetricValue(ModelNode.ZERO)
             .setStorageRuntime()
             .build();
     static final AttributeDefinition RESPONSE_COUNT = new SimpleAttributeDefinitionBuilder("response-count", ModelType.INT, false)
-            .setUndefinedMetricValue(new ModelNode(0))
+            .setUndefinedMetricValue(ModelNode.ZERO)
             .setStorageRuntime()
             .build();
     static final AttributeDefinition FAULT_COUNT = new SimpleAttributeDefinitionBuilder("fault-count", ModelType.INT, false)
-            .setUndefinedMetricValue(new ModelNode(0))
+            .setUndefinedMetricValue(ModelNode.ZERO)
             .setStorageRuntime()
             .build();
 

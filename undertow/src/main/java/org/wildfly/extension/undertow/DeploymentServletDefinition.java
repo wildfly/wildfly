@@ -56,23 +56,23 @@ public class DeploymentServletDefinition extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition SERVLET_NAME = new SimpleAttributeDefinitionBuilder("servlet-name", ModelType.STRING, false).setStorageRuntime().build();
     static final SimpleAttributeDefinition SERVLET_CLASS = new SimpleAttributeDefinitionBuilder("servlet-class", ModelType.STRING, false).setStorageRuntime().build();
     static final SimpleAttributeDefinition MAX_REQUEST_TIME = new SimpleAttributeDefinitionBuilder("max-request-time", ModelType.LONG)
-            .setUndefinedMetricValue(new ModelNode(0))
+            .setUndefinedMetricValue(ModelNode.ZERO)
             .setMeasurementUnit(MILLISECONDS)
             .setStorageRuntime()
             .build();
     static final SimpleAttributeDefinition MIN_REQUEST_TIME = new SimpleAttributeDefinitionBuilder("min-request-time", ModelType.LONG)
-            .setUndefinedMetricValue(new ModelNode(0))
+            .setUndefinedMetricValue(ModelNode.ZERO)
             .setMeasurementUnit(MILLISECONDS)
             .setStorageRuntime()
             .build();
     static final SimpleAttributeDefinition TOTAL_REQUEST_TIME = new SimpleAttributeDefinitionBuilder("total-request-time", ModelType.LONG)
-            .setUndefinedMetricValue(new ModelNode(0))
+            .setUndefinedMetricValue(ModelNode.ZERO)
             .setMeasurementUnit(MILLISECONDS)
             .setFlags(COUNTER_METRIC)
             .setStorageRuntime()
             .build();
     static final SimpleAttributeDefinition REQUEST_COUNT = new SimpleAttributeDefinitionBuilder("request-count", ModelType.LONG)
-            .setUndefinedMetricValue(new ModelNode(0))
+            .setUndefinedMetricValue(ModelNode.ZERO)
             .setFlags(COUNTER_METRIC)
             .setStorageRuntime()
             .build();

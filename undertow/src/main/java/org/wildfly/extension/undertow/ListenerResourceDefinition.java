@@ -168,35 +168,35 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
 
     public enum ConnectorStat {
         REQUEST_COUNT(new SimpleAttributeDefinitionBuilder("request-count", ModelType.LONG)
-                .setUndefinedMetricValue(new ModelNode(0))
+                .setUndefinedMetricValue(ModelNode.ZERO)
                 .setFlags(COUNTER_METRIC)
                 .setStorageRuntime()
                 .build()),
         BYTES_SENT(new SimpleAttributeDefinitionBuilder("bytes-sent", ModelType.LONG)
-                .setUndefinedMetricValue(new ModelNode(0))
+                .setUndefinedMetricValue(ModelNode.ZERO)
                 .setMeasurementUnit(MeasurementUnit.BYTES)
                 .setFlags(COUNTER_METRIC)
                 .setStorageRuntime()
                 .build()),
         BYTES_RECEIVED(new SimpleAttributeDefinitionBuilder("bytes-received", ModelType.LONG)
-                .setUndefinedMetricValue(new ModelNode(0))
+                .setUndefinedMetricValue(ModelNode.ZERO)
                 .setMeasurementUnit(MeasurementUnit.BYTES)
                 .setFlags(COUNTER_METRIC)
                 .setStorageRuntime()
                 .build()),
         ERROR_COUNT(new SimpleAttributeDefinitionBuilder("error-count", ModelType.LONG)
-                .setUndefinedMetricValue(new ModelNode(0))
+                .setUndefinedMetricValue(ModelNode.ZERO)
                 .setFlags(COUNTER_METRIC)
                 .setStorageRuntime().build()),
         PROCESSING_TIME(new SimpleAttributeDefinitionBuilder("processing-time", ModelType.LONG)
-                .setUndefinedMetricValue(new ModelNode(0))
+                .setUndefinedMetricValue(ModelNode.ZERO)
                 .setMeasurementUnit(MeasurementUnit.NANOSECONDS)
                 .setFlags(COUNTER_METRIC)
                 .setStorageRuntime()
                 .build()),
         MAX_PROCESSING_TIME(new SimpleAttributeDefinitionBuilder("max-processing-time", ModelType.LONG)
                 .setMeasurementUnit(MeasurementUnit.NANOSECONDS)
-                .setUndefinedMetricValue(new ModelNode(0)).setStorageRuntime().build());
+                .setUndefinedMetricValue(ModelNode.ZERO).setStorageRuntime().build());
 
         private static final Map<String, ConnectorStat> MAP = new HashMap<>();
 

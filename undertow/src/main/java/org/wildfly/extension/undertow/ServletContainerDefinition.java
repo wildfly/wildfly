@@ -186,7 +186,7 @@ class ServletContainerDefinition extends PersistentResourceDefinition {
             new SimpleAttributeDefinitionBuilder(Constants.DEFAULT_COOKIE_VERSION, ModelType.INT, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setAllowExpression(true)
-                    .setDefaultValue(new ModelNode(0))
+                    .setDefaultValue(ModelNode.ZERO)
                     .setValidator(new IntRangeValidator(0, 1, true,true))
                     .build();
 

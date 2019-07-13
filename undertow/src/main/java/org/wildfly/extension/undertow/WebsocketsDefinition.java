@@ -93,7 +93,7 @@ class WebsocketsDefinition extends PersistentResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setAllowExpression(true)
                     .setValidator(new IntRangeValidator(0, 9, true, true))
-                    .setDefaultValue(new ModelNode(0))
+                    .setDefaultValue(ModelNode.ZERO)
                     .build();
 
     protected static final List<AttributeDefinition> ATTRIBUTES = Arrays.asList(
