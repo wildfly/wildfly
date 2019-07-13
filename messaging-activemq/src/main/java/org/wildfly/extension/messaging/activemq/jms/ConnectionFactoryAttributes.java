@@ -544,7 +544,7 @@ public interface ConnectionFactoryAttributes {
                 .build();
 
         SimpleAttributeDefinition MIN_POOL_SIZE = SimpleAttributeDefinitionBuilder.create("min-pool-size", INT)
-                .setDefaultValue(new ModelNode().set(0))
+                .setDefaultValue(ModelNode.ZERO)
                 .setRequired(false)
                 .setAllowExpression(true)
                 .setRestartAllServices()

@@ -248,7 +248,7 @@ public interface ConnectionFactoryAttributes {
 
 
         AttributeDefinition RECONNECT_ATTEMPTS = create("reconnect-attempts", INT)
-                .setDefaultValue(new ModelNode().set(0))
+                .setDefaultValue(ModelNode.ZERO)
                 .setRequired(false)
                 .setAllowExpression(true)
                 .build();
