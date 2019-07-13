@@ -92,7 +92,7 @@ public class TransformUtils {
                         if (legacyValue.asString().equals(JacORBSubsystemConstants.ON)) {
                             value = new ModelNode(true);
                         } else {
-                            value = new ModelNode(false);
+                            value = ModelNode.FALSE;
                         }
                         break;
                     default:

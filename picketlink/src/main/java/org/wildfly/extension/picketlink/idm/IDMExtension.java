@@ -84,7 +84,7 @@ public class IDMExtension implements Extension {
 
         ldapTransfDescBuilder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED,
                 LDAPStoreResourceDefinition.ACTIVE_DIRECTORY)
-                .setDiscard(new DiscardAttributeValueChecker(new ModelNode(false)),
+                .setDiscard(new DiscardAttributeValueChecker(ModelNode.FALSE),
                         LDAPStoreResourceDefinition.ACTIVE_DIRECTORY);
 
         ldapTransfDescBuilder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED,

@@ -68,7 +68,7 @@ public class DivertDefinition extends PersistentResourceDefinition {
      * @see ActiveMQDefaultConfiguration#isDefaultDivertExclusive
      */
     public static final SimpleAttributeDefinition EXCLUSIVE = create("exclusive", BOOLEAN)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()

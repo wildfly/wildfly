@@ -85,7 +85,7 @@ public interface CommonAttributes {
             .build();
 
     SimpleAttributeDefinition BACKUP = create("backup", BOOLEAN)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -119,7 +119,7 @@ public interface CommonAttributes {
             .build();
 
     SimpleAttributeDefinition CHECK_FOR_LIVE_SERVER = create("check-for-live-server", BOOLEAN)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -127,7 +127,7 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition CLUSTERED = create("clustered", BOOLEAN)
             .setRequired(false)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setDeprecated(VERSION_1_2_0)
             .setRestartAllServices()
             .build();
@@ -233,7 +233,7 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition FAILOVER_ON_SHUTDOWN = create("failover-on-shutdown", BOOLEAN)
             // TODO should be ConfigurationImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN but field is private
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
             .setAllowExpression(true)
             .build();
@@ -265,7 +265,7 @@ public interface CommonAttributes {
             .build();
 
     SimpleAttributeDefinition HA = create("ha", BOOLEAN)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -287,7 +287,7 @@ public interface CommonAttributes {
             .build();
 
     SimpleAttributeDefinition JMX_MANAGEMENT_ENABLED = create("jmx-management-enabled", BOOLEAN)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -416,7 +416,7 @@ public interface CommonAttributes {
             .build();
 
     SimpleAttributeDefinition LOG_JOURNAL_WRITE_RATE = create("log-journal-write-rate", BOOLEAN)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -470,13 +470,13 @@ public interface CommonAttributes {
             .build();
 
     SimpleAttributeDefinition STATISTICS_ENABLED = create(ModelDescriptionConstants.STATISTICS_ENABLED, BOOLEAN)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     SimpleAttributeDefinition MESSAGE_COUNTER_ENABLED = create("message-counter-enabled", BOOLEAN)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
             .setAllowExpression(true)
             .setDeprecated(ModelVersion.create(2))
@@ -548,7 +548,7 @@ public interface CommonAttributes {
             .build();
 
     SimpleAttributeDefinition PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY = create("persist-delivery-count-before-delivery", BOOLEAN)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -622,7 +622,7 @@ public interface CommonAttributes {
             .build();
 
     SimpleAttributeDefinition RUN_SYNC_SPEED_TEST = create("run-sync-speed-test", BOOLEAN)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()

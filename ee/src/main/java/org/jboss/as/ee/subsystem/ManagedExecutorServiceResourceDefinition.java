@@ -94,7 +94,7 @@ public class ManagedExecutorServiceResourceDefinition extends SimpleResourceDefi
     public static final SimpleAttributeDefinition LONG_RUNNING_TASKS_AD =
             new SimpleAttributeDefinitionBuilder(LONG_RUNNING_TASKS, ModelType.BOOLEAN, true)
                     .setAllowExpression(true)
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(ModelNode.FALSE)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
 

@@ -316,7 +316,7 @@ class ExchangeAttributeDefinitions {
     private static final SimpleAttributeDefinition INCLUDE_QUESTION_MARK = SimpleAttributeDefinitionBuilder
             .create("include-question-mark", ModelType.BOOLEAN, true)
             .setAllowExpression(true)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .build();
     private static final ObjectTypeAttributeDefinition QUERY_STRING = create(
             ObjectTypeAttributeDefinition.create("query-string", QUERY_STRING_KEY, INCLUDE_QUESTION_MARK),
@@ -353,7 +353,7 @@ class ExchangeAttributeDefinitions {
     private static final SimpleAttributeDefinition REMOTE_IP_KEY = createKey("remoteIp");
     private static final SimpleAttributeDefinition OBFUSCATED = SimpleAttributeDefinitionBuilder.create("obfuscated", ModelType.BOOLEAN, true)
             .setAllowExpression(true)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .build();
     private static final ObjectTypeAttributeDefinition REMOTE_IP = create(
             ObjectTypeAttributeDefinition.create("remote-ip", REMOTE_IP_KEY, OBFUSCATED),

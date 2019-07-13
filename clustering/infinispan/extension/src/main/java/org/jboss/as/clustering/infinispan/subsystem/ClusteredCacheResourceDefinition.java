@@ -83,7 +83,7 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
 
     @Deprecated
     enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
-        ASYNC_MARSHALLING("async-marshalling", ModelType.BOOLEAN, new ModelNode(false), InfinispanModel.VERSION_4_0_0),
+        ASYNC_MARSHALLING("async-marshalling", ModelType.BOOLEAN, ModelNode.FALSE, InfinispanModel.VERSION_4_0_0),
         MODE("mode", ModelType.STRING, new ModelNode(Mode.SYNC.name()), InfinispanModel.VERSION_6_0_0) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {

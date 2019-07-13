@@ -78,7 +78,7 @@ interface Attributes {
 
     SimpleAttributeDefinition STATISTICS_ENABLED = new SimpleAttributeDefinitionBuilder(Constants.STATISTICS_ENABLED, ModelType.BOOLEAN)
             .setRequired(false)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setAllowExpression(true)
             .build();
 

@@ -60,7 +60,7 @@ public class DivertDefinition extends ModelOnlyResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition EXCLUSIVE = create("exclusive", BOOLEAN)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()

@@ -60,7 +60,7 @@ public class LDAPStoreResourceDefinition extends AbstractIdentityStoreResourceDe
         .build();
     public static final SimpleAttributeDefinition ACTIVE_DIRECTORY = new SimpleAttributeDefinitionBuilder(ModelElement.LDAP_STORE_ACTIVE_DIRECTORY.getName(), ModelType.BOOLEAN, true)
             .setAllowExpression(true)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .build();
     public static final SimpleAttributeDefinition UNIQUE_ID_ATTRIBUTE_NAME = new SimpleAttributeDefinitionBuilder(ModelElement.LDAP_STORE_UNIQUE_ID_ATTRIBUTE_NAME
             .getName(), ModelType.STRING, true)

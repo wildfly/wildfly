@@ -81,7 +81,7 @@ public class StackResourceDefinition extends ChildResourceDefinition<ManagementR
         STATISTICS_ENABLED(ModelDescriptionConstants.STATISTICS_ENABLED, ModelType.BOOLEAN) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setDefaultValue(new ModelNode(false));
+                return builder.setDefaultValue(ModelNode.FALSE);
             }
         },
         ;
@@ -143,7 +143,7 @@ public class StackResourceDefinition extends ChildResourceDefinition<ManagementR
                     .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(true)), Attribute.STATISTICS_ENABLED.getDefinition())
                     .addRejectCheck(RejectAttributeChecker.UNDEFINED, Attribute.STATISTICS_ENABLED.getDefinition())
                     .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Attribute.STATISTICS_ENABLED.getDefinition())
-                    .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(false)), Attribute.STATISTICS_ENABLED.getDefinition())
+                    .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(ModelNode.FALSE), Attribute.STATISTICS_ENABLED.getDefinition())
                     .end();
         }
 

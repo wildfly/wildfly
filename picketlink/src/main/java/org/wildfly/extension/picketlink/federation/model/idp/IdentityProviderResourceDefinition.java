@@ -68,15 +68,15 @@ public class IdentityProviderResourceDefinition extends AbstractFederationResour
         .setAllowExpression(true)
         .build();
     public static final SimpleAttributeDefinition EXTERNAL = new SimpleAttributeDefinitionBuilder(ModelElement.IDENTITY_PROVIDER_EXTERNAL.getName(), ModelType.BOOLEAN, true)
-        .setDefaultValue(new ModelNode(false))
+        .setDefaultValue(ModelNode.FALSE)
         .setAllowExpression(true)
         .build();
     public static final SimpleAttributeDefinition SUPPORT_METADATA = new SimpleAttributeDefinitionBuilder(ModelElement.COMMON_SUPPORT_METADATA.getName(), ModelType.BOOLEAN, true)
-        .setDefaultValue(new ModelNode(false))
+        .setDefaultValue(ModelNode.FALSE)
         .setAllowExpression(true)
         .build();
     public static final SimpleAttributeDefinition SSL_AUTHENTICATION = new SimpleAttributeDefinitionBuilder(ModelElement.IDENTITY_PROVIDER_SSL_AUTHENTICATION.getName(), ModelType.BOOLEAN, true)
-        .setDefaultValue(new ModelNode(false))
+        .setDefaultValue(ModelNode.FALSE)
         .setAllowExpression(true)
         .build();
     public static final SimpleAttributeDefinition[] ATTRIBUTE_DEFINITIONS = new SimpleAttributeDefinition[]{URL,

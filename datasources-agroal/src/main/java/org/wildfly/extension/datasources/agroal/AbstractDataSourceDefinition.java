@@ -90,7 +90,7 @@ abstract class AbstractDataSourceDefinition extends PersistentResourceDefinition
 
     static final SimpleAttributeDefinition STATISTICS_ENABLED_ATTRIBUTE = create("statistics-enabled", ModelType.BOOLEAN)
             .setAllowExpression(true)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
             .build();
 

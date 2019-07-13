@@ -98,7 +98,7 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
         STATISTICS_ENABLED("statistics-enabled", ModelType.BOOLEAN) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setDefaultValue(new ModelNode(false));
+                return builder.setDefaultValue(ModelNode.FALSE);
             }
         },
         ;
@@ -119,7 +119,7 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
         BATCHING("batching", ModelType.BOOLEAN, InfinispanModel.VERSION_3_0_0) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setDefaultValue(new ModelNode(false));
+                return builder.setDefaultValue(ModelNode.FALSE);
             }
         },
         INDEXING("indexing", ModelType.STRING, InfinispanModel.VERSION_4_0_0) {

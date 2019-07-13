@@ -47,7 +47,7 @@ public class SecurityRoleDefinition extends ModelOnlyResourceDefinition {
     private static SimpleAttributeDefinition create(final String name, final String xmlName) {
         return SimpleAttributeDefinitionBuilder.create(name, BOOLEAN)
                 .setXmlName(xmlName)
-                .setDefaultValue(new ModelNode(false))
+                .setDefaultValue(ModelNode.FALSE)
                 .setFlags(RESTART_NONE)
                 .build();
     }
@@ -59,7 +59,7 @@ public class SecurityRoleDefinition extends ModelOnlyResourceDefinition {
     static final SimpleAttributeDefinition CREATE_NON_DURABLE_QUEUE = create("create-non-durable-queue", "createNonDurableQueue");
     static final SimpleAttributeDefinition DELETE_NON_DURABLE_QUEUE = create("delete-non-durable-queue", "deleteNonDurableQueue");
     static final SimpleAttributeDefinition MANAGE = SimpleAttributeDefinitionBuilder.create("manage", BOOLEAN)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setFlags(RESTART_NONE)
             .addAccessConstraint(CommonAttributes.MESSAGING_MANAGEMENT_DEF)
             .build();

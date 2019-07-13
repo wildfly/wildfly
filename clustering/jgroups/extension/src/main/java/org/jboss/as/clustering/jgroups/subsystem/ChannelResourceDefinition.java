@@ -121,7 +121,7 @@ public class ChannelResourceDefinition extends ChildResourceDefinition<Managemen
         STATISTICS_ENABLED("statistics-enabled", ModelType.BOOLEAN) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setDefaultValue(new ModelNode(false));
+                return builder.setDefaultValue(ModelNode.FALSE);
             }
         },
         ;

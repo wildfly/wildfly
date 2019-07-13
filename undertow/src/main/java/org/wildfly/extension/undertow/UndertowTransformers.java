@@ -74,7 +74,7 @@ import org.wildfly.extension.undertow.filters.ModClusterDefinition;
  * @author Tomaz Cerar (c) 2016 Red Hat Inc.
  */
 public class UndertowTransformers implements ExtensionTransformerRegistration {
-    public static final DiscardAttributeValueChecker FALSE_DISCARD_CHECKER = new DiscardAttributeValueChecker(new ModelNode(false));
+    public static final DiscardAttributeValueChecker FALSE_DISCARD_CHECKER = new DiscardAttributeValueChecker(ModelNode.FALSE);
     private static ModelVersion MODEL_VERSION_EAP7_0_0 = ModelVersion.create(3, 1, 0);
     private static ModelVersion MODEL_VERSION_EAP7_1_0 = ModelVersion.create(4, 0, 0);
     private static ModelVersion MODEL_VERSION_EAP7_2_0 = ModelVersion.create(7, 0, 0);
@@ -135,12 +135,12 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
                 .end();
 
         final AttributeTransformationDescriptionBuilder http = serverBuilder.addChildResource(UndertowExtension.HTTP_LISTENER_PATH).getAttributeBuilder()
-                .setDiscard(new DiscardAttributeValueChecker(new ModelNode(false)), PROXY_PROTOCOL)
+                .setDiscard(new DiscardAttributeValueChecker(ModelNode.FALSE), PROXY_PROTOCOL)
                 .addRejectCheck(new SimpleRejectAttributeChecker(new ModelNode(true)), PROXY_PROTOCOL.getName());
         addCommonListenerRules_EAP_7_1_0(http);
 
         final AttributeTransformationDescriptionBuilder https = serverBuilder.addChildResource(UndertowExtension.HTTPS_LISTENER_PATH).getAttributeBuilder()
-                .setDiscard(new DiscardAttributeValueChecker(new ModelNode(false)), PROXY_PROTOCOL)
+                .setDiscard(new DiscardAttributeValueChecker(ModelNode.FALSE), PROXY_PROTOCOL)
                 .addRejectCheck(new SimpleRejectAttributeChecker(new ModelNode(true)), PROXY_PROTOCOL);
         addCommonListenerRules_EAP_7_1_0(https);
 

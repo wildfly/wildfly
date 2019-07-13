@@ -44,7 +44,7 @@ public class RemotingProfileResourceDefinition extends SimpleResourceDefinition 
 
     public static final SimpleAttributeDefinition EXCLUDE_LOCAL_RECEIVER = new SimpleAttributeDefinitionBuilder(
             EJB3SubsystemModel.EXCLUDE_LOCAL_RECEIVER, ModelType.BOOLEAN, true).setAllowExpression(true)
-            .setDefaultValue(new ModelNode(false)).build();
+            .setDefaultValue(ModelNode.FALSE).build();
 
     public static final SimpleAttributeDefinition LOCAL_RECEIVER_PASS_BY_VALUE = new SimpleAttributeDefinitionBuilder(
             EJB3SubsystemModel.LOCAL_RECEIVER_PASS_BY_VALUE, ModelType.BOOLEAN, true).setAllowExpression(true).build();

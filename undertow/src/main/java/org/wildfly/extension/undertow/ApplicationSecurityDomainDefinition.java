@@ -144,7 +144,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
             .build();
 
     static final SimpleAttributeDefinition OVERRIDE_DEPLOYMENT_CONFIG = new SimpleAttributeDefinitionBuilder(Constants.OVERRIDE_DEPLOYMENT_CONFIG, ModelType.BOOLEAN, true)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRestartAllServices()
             .setRequires(Constants.HTTP_AUTHENITCATION_FACTORY)
             .build();
@@ -162,7 +162,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
             .build();
 
     static final SimpleAttributeDefinition ENABLE_JACC = new SimpleAttributeDefinitionBuilder(Constants.ENABLE_JACC, ModelType.BOOLEAN, true)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setMinSize(1)
             .setRestartAllServices()
             .build();

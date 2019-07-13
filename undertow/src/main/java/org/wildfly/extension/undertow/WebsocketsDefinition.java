@@ -85,7 +85,7 @@ class WebsocketsDefinition extends PersistentResourceDefinition {
             new SimpleAttributeDefinitionBuilder("per-message-deflate", ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setAllowExpression(true)
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(ModelNode.FALSE)
                     .build();
 
     protected static final SimpleAttributeDefinition DEFLATER_LEVEL =

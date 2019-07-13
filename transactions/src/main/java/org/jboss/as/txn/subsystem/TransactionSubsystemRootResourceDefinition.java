@@ -222,7 +222,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .setRequires(CommonAttributes.USE_JOURNAL_STORE).build();
 
     public static final SimpleAttributeDefinition USE_JDBC_STORE = new SimpleAttributeDefinitionBuilder(CommonAttributes.USE_JDBC_STORE, ModelType.BOOLEAN, true)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .addAlternatives(CommonAttributes.USE_JOURNAL_STORE)
             .addAlternatives(CommonAttributes.USE_HORNETQ_STORE)
             .setRequires(CommonAttributes.JDBC_STORE_DATASOURCE)
@@ -239,7 +239,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .setAllowExpression(true)
             .setRequires(CommonAttributes.USE_JDBC_STORE).build();
     public static final SimpleAttributeDefinition JDBC_ACTION_STORE_DROP_TABLE = new SimpleAttributeDefinitionBuilder(CommonAttributes.JDBC_ACTION_STORE_DROP_TABLE, ModelType.BOOLEAN, true)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setFlags(AttributeAccess.Flag.RESTART_JVM)
             .setXmlName(Attribute.DROP_TABLE.getLocalName())
             .setAllowExpression(true)
@@ -250,7 +250,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .setAllowExpression(true)
             .setRequires(CommonAttributes.USE_JDBC_STORE).build();
     public static final SimpleAttributeDefinition JDBC_COMMUNICATION_STORE_DROP_TABLE = new SimpleAttributeDefinitionBuilder(CommonAttributes.JDBC_COMMUNICATION_STORE_DROP_TABLE, ModelType.BOOLEAN, true)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setFlags(AttributeAccess.Flag.RESTART_JVM)
             .setXmlName(Attribute.DROP_TABLE.getLocalName())
             .setAllowExpression(true)
@@ -261,7 +261,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .setAllowExpression(true)
             .setRequires(CommonAttributes.USE_JDBC_STORE).build();
     public static final SimpleAttributeDefinition JDBC_STATE_STORE_DROP_TABLE = new SimpleAttributeDefinitionBuilder(CommonAttributes.JDBC_STATE_STORE_DROP_TABLE, ModelType.BOOLEAN, true)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setFlags(AttributeAccess.Flag.RESTART_JVM)
             .setXmlName(Attribute.DROP_TABLE.getLocalName())
             .setAllowExpression(true)
@@ -402,7 +402,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
 
                     ModelNode resourceModel = model.getModel();
                     if (resourceModel.hasDefined(mutualAttributeName) && resourceModel.get(mutualAttributeName).asBoolean()) {
-                        resourceModel.get(mutualAttributeName).set(new ModelNode(false));
+                        resourceModel.get(mutualAttributeName).set(ModelNode.FALSE);
                     }
                 }
             }
@@ -483,7 +483,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
 
                     ModelNode resourceModel = model.getModel();
                     if (resourceModel.hasDefined(PROCESS_ID_UUID.getName()) && resourceModel.get(PROCESS_ID_UUID.getName()).asBoolean()) {
-                        resourceModel.get(PROCESS_ID_UUID.getName()).set(new ModelNode(false));
+                        resourceModel.get(PROCESS_ID_UUID.getName()).set(ModelNode.FALSE);
                     }
                 }
             }

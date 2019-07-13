@@ -179,7 +179,7 @@ public interface CommonAttributes {
      * @see ActiveMQClient.DEFAULT_HA
      */
     SimpleAttributeDefinition HA = create("ha", BOOLEAN)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()

@@ -330,7 +330,7 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
 
         @Override
         protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
-            return new ModelNode(false);
+            return ModelNode.FALSE;
         }
 
     }

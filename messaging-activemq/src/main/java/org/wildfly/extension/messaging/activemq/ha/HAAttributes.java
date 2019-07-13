@@ -111,7 +111,7 @@ public class HAAttributes {
      * @see ActiveMQDefaultConfiguration#isDefaultFailoverOnServerShutdown
      */
     public static final SimpleAttributeDefinition FAILOVER_ON_SERVER_SHUTDOWN = create("failover-on-server-shutdown", ModelType.BOOLEAN)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -158,7 +158,7 @@ public class HAAttributes {
      * @see ActiveMQDefaultConfiguration#isDefaultHapolicyRequestBackup
      */
     public static final SimpleAttributeDefinition REQUEST_BACKUP = create("request-backup", BOOLEAN)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()

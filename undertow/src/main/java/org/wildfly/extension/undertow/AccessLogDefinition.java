@@ -93,13 +93,13 @@ class AccessLogDefinition extends PersistentResourceDefinition {
 
     protected static final SimpleAttributeDefinition USE_SERVER_LOG = new SimpleAttributeDefinitionBuilder(Constants.USE_SERVER_LOG, ModelType.BOOLEAN)
             .setRequired(false)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     protected static final SimpleAttributeDefinition EXTENDED = new SimpleAttributeDefinitionBuilder(Constants.EXTENDED, ModelType.BOOLEAN, true)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();

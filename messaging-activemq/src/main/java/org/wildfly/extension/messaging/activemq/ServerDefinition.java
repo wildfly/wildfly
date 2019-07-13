@@ -177,7 +177,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
     public static final SimpleAttributeDefinition STATISTICS_ENABLED = create(ModelDescriptionConstants.STATISTICS_ENABLED, BOOLEAN)
             .setAttributeGroup("statistics")
             .setXmlName("enabled")
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
             .setAllowExpression(true)
             .build();
@@ -446,7 +446,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
     public static final SimpleAttributeDefinition LOG_JOURNAL_WRITE_RATE = create("log-journal-write-rate", BOOLEAN)
             .setAttributeGroup("journal")
             .setXmlName("log-write-rate")
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -557,7 +557,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
     @Deprecated
     public static final SimpleAttributeDefinition RUN_SYNC_SPEED_TEST = create("run-sync-speed-test", BOOLEAN)
             .setAttributeGroup("debug")
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -659,7 +659,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
     public static final SimpleAttributeDefinition JMX_MANAGEMENT_ENABLED = create("jmx-management-enabled", BOOLEAN)
             .setAttributeGroup("management")
             .setXmlName("jmx-enabled")
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -690,7 +690,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
      * @see ActiveMQDefaultConfiguration#isDefaultPersistDeliveryCountBeforeDelivery
      */
     public static final SimpleAttributeDefinition PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY = create("persist-delivery-count-before-delivery", BOOLEAN)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()

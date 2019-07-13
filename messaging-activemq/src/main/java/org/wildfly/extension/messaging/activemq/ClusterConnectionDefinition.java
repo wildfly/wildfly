@@ -73,7 +73,7 @@ public class ClusterConnectionDefinition extends PersistentResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition ALLOW_DIRECT_CONNECTIONS_ONLY = create("allow-direct-connections-only", BOOLEAN)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
             .setAllowExpression(true)
             .setRequires(STATIC_CONNECTORS)

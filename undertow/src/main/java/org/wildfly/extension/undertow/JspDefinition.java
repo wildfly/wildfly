@@ -50,13 +50,13 @@ class JspDefinition extends PersistentResourceDefinition {
     protected static final SimpleAttributeDefinition DEVELOPMENT =
             new SimpleAttributeDefinitionBuilder(Constants.DEVELOPMENT, ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(ModelNode.FALSE)
                     .setAllowExpression(true)
                     .build();
     protected static final SimpleAttributeDefinition DISABLED =
             new SimpleAttributeDefinitionBuilder(Constants.DISABLED, ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(ModelNode.FALSE)
                     .setAllowExpression(true)
                     .build();
     protected static final SimpleAttributeDefinition KEEP_GENERATED =
@@ -68,7 +68,7 @@ class JspDefinition extends PersistentResourceDefinition {
     protected static final SimpleAttributeDefinition TRIM_SPACES =
             new SimpleAttributeDefinitionBuilder(Constants.TRIM_SPACES, ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(ModelNode.FALSE)
                     .setAllowExpression(true)
                     .build();
     protected static final SimpleAttributeDefinition TAG_POOLING =
@@ -98,7 +98,7 @@ class JspDefinition extends PersistentResourceDefinition {
     protected static final SimpleAttributeDefinition RECOMPILE_ON_FAIL =
             new SimpleAttributeDefinitionBuilder(Constants.RECOMPILE_ON_FAIL, ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(ModelNode.FALSE)
                     .setAllowExpression(true)
                     .build();
     protected static final SimpleAttributeDefinition SMAP =
@@ -110,19 +110,19 @@ class JspDefinition extends PersistentResourceDefinition {
     protected static final SimpleAttributeDefinition DUMP_SMAP =
             new SimpleAttributeDefinitionBuilder(Constants.DUMP_SMAP, ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(ModelNode.FALSE)
                     .setAllowExpression(true)
                     .build();
     protected static final SimpleAttributeDefinition GENERATE_STRINGS_AS_CHAR_ARRAYS =
             new SimpleAttributeDefinitionBuilder(Constants.GENERATE_STRINGS_AS_CHAR_ARRAYS, ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(ModelNode.FALSE)
                     .setAllowExpression(true)
                     .build();
     protected static final SimpleAttributeDefinition ERROR_ON_USE_BEAN_INVALID_CLASS_ATTRIBUTE =
             new SimpleAttributeDefinitionBuilder(Constants.ERROR_ON_USE_BEAN_INVALID_CLASS_ATTRIBUTE, ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(ModelNode.FALSE)
                     .setAllowExpression(true)
                     .build();
     protected static final SimpleAttributeDefinition SCRATCH_DIR =
@@ -171,7 +171,7 @@ class JspDefinition extends PersistentResourceDefinition {
             new SimpleAttributeDefinitionBuilder(Constants.OPTIMIZE_SCRIPTLETS, ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, true))
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(ModelNode.FALSE)
                     .setAllowExpression(true)
                     .build();
     protected static final SimpleAttributeDefinition[] ATTRIBUTES = {

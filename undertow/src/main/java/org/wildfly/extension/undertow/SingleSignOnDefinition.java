@@ -40,8 +40,8 @@ class SingleSignOnDefinition extends PersistentResourceDefinition {
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         DOMAIN(Constants.DOMAIN, ModelType.STRING, null),
         PATH("path", ModelType.STRING, new ModelNode("/")),
-        HTTP_ONLY("http-only", ModelType.BOOLEAN, new ModelNode(false)),
-        SECURE("secure", ModelType.BOOLEAN, new ModelNode(false)),
+        HTTP_ONLY("http-only", ModelType.BOOLEAN, ModelNode.FALSE),
+        SECURE("secure", ModelType.BOOLEAN, ModelNode.FALSE),
         COOKIE_NAME("cookie-name", ModelType.STRING, new ModelNode("JSESSIONIDSSO")),
         ;
         private final AttributeDefinition definition;

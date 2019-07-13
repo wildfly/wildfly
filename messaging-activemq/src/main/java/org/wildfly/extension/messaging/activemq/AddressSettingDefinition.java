@@ -65,7 +65,7 @@ public class AddressSettingDefinition extends PersistentResourceDefinition {
     // Property exists in Artemis 2 but is no longer honoured
     @Deprecated
     public static final SimpleAttributeDefinition AUTO_CREATE_JMS_QUEUES = create("auto-create-jms-queues", ModelType.BOOLEAN)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
             .setAllowExpression(true)
             .setDeprecated(VERSION_3_0_0)
@@ -74,20 +74,20 @@ public class AddressSettingDefinition extends PersistentResourceDefinition {
     // Property exists in Artemis 2 but is no longer honoured
     @Deprecated
     public static final SimpleAttributeDefinition AUTO_DELETE_JMS_QUEUES = create("auto-delete-jms-queues", ModelType.BOOLEAN)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
             .setAllowExpression(true)
             .setDeprecated(VERSION_3_0_0)
             .build();
 
     public static final SimpleAttributeDefinition AUTO_CREATE_QUEUES = create("auto-create-queues", ModelType.BOOLEAN)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     public static final SimpleAttributeDefinition AUTO_DELETE_QUEUES = create("auto-delete-queues", ModelType.BOOLEAN)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
             .setAllowExpression(true)
             .build();
@@ -107,7 +107,7 @@ public class AddressSettingDefinition extends PersistentResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition LAST_VALUE_QUEUE = create("last-value-queue", ModelType.BOOLEAN)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
             .setAllowExpression(true)
             .build();
@@ -173,7 +173,7 @@ public class AddressSettingDefinition extends PersistentResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition SEND_TO_DLA_ON_NO_ROUTE = create("send-to-dla-on-no-route", ModelType.BOOLEAN)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
             .setAllowExpression(true)
             .build();

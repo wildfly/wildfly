@@ -52,7 +52,7 @@ class DataSourceDefinition extends AbstractDataSourceDefinition {
 
     static final SimpleAttributeDefinition CONNECTABLE_ATTRIBUTE = create("connectable", ModelType.BOOLEAN)
             .setAllowExpression(true)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
             .setRestartAllServices()
             .build();
