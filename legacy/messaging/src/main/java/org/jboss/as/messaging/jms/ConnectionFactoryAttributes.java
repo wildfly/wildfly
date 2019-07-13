@@ -58,13 +58,13 @@ public interface ConnectionFactoryAttributes {
 
     interface Common {
         AttributeDefinition AUTO_GROUP = SimpleAttributeDefinitionBuilder.create("auto-group", BOOLEAN)
-                .setDefaultValue(new ModelNode().set(false))
+                .setDefaultValue(ModelNode.FALSE)
                 .setRequired(false)
                 .setAllowExpression(true)
                 .build();
 
         AttributeDefinition BLOCK_ON_ACKNOWLEDGE = SimpleAttributeDefinitionBuilder.create("block-on-acknowledge", BOOLEAN)
-                .setDefaultValue(new ModelNode().set(false))
+                .setDefaultValue(ModelNode.FALSE)
                 .setRequired(false)
                 .setAllowExpression(true)
                 .build();
@@ -76,13 +76,13 @@ public interface ConnectionFactoryAttributes {
                 .build();
 
         AttributeDefinition BLOCK_ON_NON_DURABLE_SEND = SimpleAttributeDefinitionBuilder.create("block-on-non-durable-send", BOOLEAN)
-                .setDefaultValue(new ModelNode().set(false))
+                .setDefaultValue(ModelNode.FALSE)
                 .setRequired(false)
                 .setAllowExpression(true)
                 .build();
 
         AttributeDefinition CACHE_LARGE_MESSAGE_CLIENT = SimpleAttributeDefinitionBuilder.create("cache-large-message-client", BOOLEAN)
-                .setDefaultValue(new ModelNode().set(false))
+                .setDefaultValue(ModelNode.FALSE)
                 .setRequired(false)
                 .setAllowExpression(true)
                 .build();
@@ -95,7 +95,7 @@ public interface ConnectionFactoryAttributes {
                 .build();
 
         AttributeDefinition COMPRESS_LARGE_MESSAGES = SimpleAttributeDefinitionBuilder.create("compress-large-messages", BOOLEAN)
-                .setDefaultValue(new ModelNode().set(false))
+                .setDefaultValue(ModelNode.FALSE)
                 .setRequired(false)
                 .setAllowExpression(true)
                 .build();
@@ -196,7 +196,7 @@ public interface ConnectionFactoryAttributes {
                 .build();
 
         AttributeDefinition FAILOVER_ON_INITIAL_CONNECTION = SimpleAttributeDefinitionBuilder.create("failover-on-initial-connection", BOOLEAN)
-                .setDefaultValue(new ModelNode().set(false))
+                .setDefaultValue(ModelNode.FALSE)
                 .setRequired(false)
                 .setAllowExpression(true)
                 .build();
@@ -227,7 +227,7 @@ public interface ConnectionFactoryAttributes {
                 .build();
 
         AttributeDefinition PRE_ACKNOWLEDGE = SimpleAttributeDefinitionBuilder.create("pre-acknowledge", BOOLEAN)
-                .setDefaultValue(new ModelNode().set(false))
+                .setDefaultValue(ModelNode.FALSE)
                 .setRequired(false)
                 .setAllowExpression(true)
                 .build();

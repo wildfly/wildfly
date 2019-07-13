@@ -77,7 +77,7 @@ public class JcaArchiveValidationDefinition extends SimpleResourceDefinition {
         ARCHIVE_VALIDATION_FAIL_ON_WARN(SimpleAttributeDefinitionBuilder.create("fail-on-warn", ModelType.BOOLEAN)
                 .setAllowExpression(true)
                 .setRequired(false)
-                .setDefaultValue(new ModelNode().set(false))
+                .setDefaultValue(ModelNode.FALSE)
                 .setMeasurementUnit(MeasurementUnit.NONE)
                 .setRestartAllServices()
                 .setXmlName("fail-on-warn")

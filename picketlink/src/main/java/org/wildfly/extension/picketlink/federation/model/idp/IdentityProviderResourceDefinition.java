@@ -56,11 +56,11 @@ public class IdentityProviderResourceDefinition extends AbstractFederationResour
         .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
         .build();
     public static final SimpleAttributeDefinition ENCRYPT = new SimpleAttributeDefinitionBuilder(ModelElement.IDENTITY_PROVIDER_ENCRYPT.getName(), ModelType.BOOLEAN, true)
-        .setDefaultValue(new ModelNode().set(false))
+        .setDefaultValue(ModelNode.FALSE)
         .setAllowExpression(true)
         .build();
     public static final SimpleAttributeDefinition SUPPORT_SIGNATURES = new SimpleAttributeDefinitionBuilder(ModelElement.COMMON_SUPPORTS_SIGNATURES.getName(), ModelType.BOOLEAN, true)
-        .setDefaultValue(new ModelNode().set(false))
+        .setDefaultValue(ModelNode.FALSE)
         .setAllowExpression(true)
         .build();
     public static final SimpleAttributeDefinition STRICT_POST_BINDING = new SimpleAttributeDefinitionBuilder(ModelElement.COMMON_STRICT_POST_BINDING.getName(), ModelType.BOOLEAN, true)
