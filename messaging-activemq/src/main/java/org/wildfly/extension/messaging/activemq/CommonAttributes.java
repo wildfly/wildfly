@@ -153,7 +153,7 @@ public interface CommonAttributes {
             .build();
 
     SimpleAttributeDefinition DURABLE = create("durable", BOOLEAN)
-            .setDefaultValue(new ModelNode().set(true))
+            .setDefaultValue(ModelNode.TRUE)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()

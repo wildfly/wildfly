@@ -619,7 +619,7 @@ public interface ConnectionFactoryAttributes {
                 .build();
 
         AttributeDefinition USE_AUTO_RECOVERY = SimpleAttributeDefinitionBuilder.create("use-auto-recovery", BOOLEAN)
-                .setDefaultValue(new ModelNode().set(true)) // ActiveMQQResourceAdapter.useAutoRecovery = true but is not exposed publicly
+                .setDefaultValue(ModelNode.TRUE) // ActiveMQQResourceAdapter.useAutoRecovery = true but is not exposed publicly
                 .setRequired(false)
                 .setAllowExpression(true)
                 .setRestartAllServices()

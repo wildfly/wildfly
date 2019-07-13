@@ -70,7 +70,7 @@ public interface ConnectionFactoryAttributes {
                 .build();
 
         AttributeDefinition BLOCK_ON_DURABLE_SEND = SimpleAttributeDefinitionBuilder.create("block-on-durable-send", BOOLEAN)
-                .setDefaultValue(new ModelNode().set(true))
+                .setDefaultValue(ModelNode.TRUE)
                 .setRequired(false)
                 .setAllowExpression(true)
                 .build();
@@ -285,7 +285,7 @@ public interface ConnectionFactoryAttributes {
                 .build();
 
         AttributeDefinition USE_GLOBAL_POOLS = SimpleAttributeDefinitionBuilder.create("use-global-pools", BOOLEAN)
-                .setDefaultValue(new ModelNode().set(true))
+                .setDefaultValue(ModelNode.TRUE)
                 .setRequired(false)
                 .setAllowExpression(true)
                 .build();
@@ -440,7 +440,7 @@ public interface ConnectionFactoryAttributes {
                 .build();
 
         AttributeDefinition USE_AUTO_RECOVERY = SimpleAttributeDefinitionBuilder.create("use-auto-recovery", BOOLEAN)
-                .setDefaultValue(new ModelNode().set(true)) // HornetQResourceAdapter.useAutoRecovery = true but is not exposed publicly
+                .setDefaultValue(ModelNode.TRUE) // HornetQResourceAdapter.useAutoRecovery = true but is not exposed publicly
                 .setRequired(false)
                 .setAllowExpression(true)
                 .setRestartAllServices()
