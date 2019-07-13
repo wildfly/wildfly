@@ -102,7 +102,7 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
                     .setAllowExpression(true)
                     .build();
     static final SimpleAttributeDefinition INITIALIZE_JACC = new SimpleAttributeDefinitionBuilder(Constants.INITIALIZE_JACC, ModelType.BOOLEAN, true)
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(ModelNode.TRUE)
             .setAllowExpression(true)
             .build();
 

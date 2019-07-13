@@ -73,7 +73,7 @@ public class ImportJournalOperation extends AbstractRuntimeOnlyHandler {
 
     private static AttributeDefinition LEGACY_PREFIXES = SimpleAttributeDefinitionBuilder.create("legacy-prefixes", ModelType.BOOLEAN)
             // import with legacy prefix by default for backwards compatibility
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(ModelNode.TRUE)
             .setAllowExpression(false)
             .setRequired(false)
             .build();

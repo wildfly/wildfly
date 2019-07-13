@@ -59,13 +59,13 @@ public class EeSubsystemRootResource extends SimpleResourceDefinition {
     public static final SimpleAttributeDefinition SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT =
             new SimpleAttributeDefinitionBuilder(EESubsystemModel.SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT, ModelType.BOOLEAN, true)
                     .setAllowExpression(true)
-                    .setDefaultValue(new ModelNode(true))
+                    .setDefaultValue(ModelNode.TRUE)
                     .build();
 
     public static final SimpleAttributeDefinition JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT =
             new SimpleAttributeDefinitionBuilder(EESubsystemModel.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT, ModelType.BOOLEAN, true)
                     .setAllowExpression(true)
-                    .setDefaultValue(new ModelNode(true))
+                    .setDefaultValue(ModelNode.TRUE)
                     .build();
 
     public static final SimpleAttributeDefinition ANNOTATION_PROPERTY_REPLACEMENT =

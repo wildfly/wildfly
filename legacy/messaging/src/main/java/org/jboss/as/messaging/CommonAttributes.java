@@ -71,14 +71,14 @@ public interface CommonAttributes {
     SensitiveTargetAccessConstraintDefinition MESSAGING_SECURITY_DEF = new SensitiveTargetAccessConstraintDefinition(MESSAGING_SECURITY);
 
     SimpleAttributeDefinition ALLOW_FAILBACK = create("allow-failback", BOOLEAN)
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(ModelNode.TRUE)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition ASYNC_CONNECTION_EXECUTION_ENABLED = create( "async-connection-execution-enabled", BOOLEAN)
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(ModelNode.TRUE)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -175,14 +175,14 @@ public interface CommonAttributes {
             .build();
 
     SimpleAttributeDefinition CREATE_BINDINGS_DIR = create("create-bindings-dir", BOOLEAN)
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(ModelNode.TRUE)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition CREATE_JOURNAL_DIR = create("create-journal-dir", BOOLEAN)
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(ModelNode.TRUE)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -348,14 +348,14 @@ public interface CommonAttributes {
             .build();
 
     SimpleAttributeDefinition JOURNAL_SYNC_NON_TRANSACTIONAL = create("journal-sync-non-transactional", BOOLEAN)
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(ModelNode.TRUE)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition JOURNAL_SYNC_TRANSACTIONAL = create("journal-sync-transactional", BOOLEAN)
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(ModelNode.TRUE)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -527,7 +527,7 @@ public interface CommonAttributes {
             .build();
 
     SimpleAttributeDefinition OVERRIDE_IN_VM_SECURITY = create("override-in-vm-security", BOOLEAN)
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(ModelNode.TRUE)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -555,14 +555,14 @@ public interface CommonAttributes {
             .build();
 
     SimpleAttributeDefinition PERSISTENCE_ENABLED = create("persistence-enabled", BOOLEAN)
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(ModelNode.TRUE)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition PERSIST_ID_CACHE = create("persist-id-cache", BOOLEAN)
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(ModelNode.TRUE)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -645,7 +645,7 @@ public interface CommonAttributes {
             .build();
 
     SimpleAttributeDefinition SECURITY_ENABLED = create("security-enabled", BOOLEAN)
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(ModelNode.TRUE)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -677,7 +677,7 @@ public interface CommonAttributes {
             .build();
 
     SimpleAttributeDefinition SHARED_STORE = create("shared-store", BOOLEAN)
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(ModelNode.TRUE)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -725,7 +725,7 @@ public interface CommonAttributes {
             .build();
 
     SimpleAttributeDefinition WILD_CARD_ROUTING_ENABLED = create("wild-card-routing-enabled", BOOLEAN)
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(ModelNode.TRUE)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()

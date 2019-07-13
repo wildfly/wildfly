@@ -58,7 +58,7 @@ class ConsoleAccessLogDefinition extends PersistentResourceDefinition {
 
     static final SimpleAttributeDefinition INCLUDE_HOST_NAME = SimpleAttributeDefinitionBuilder.create("include-host-name", ModelType.BOOLEAN, true)
             .setAllowExpression(true)
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(ModelNode.TRUE)
             .setRestartAllServices()
             .build();
 

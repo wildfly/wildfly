@@ -91,7 +91,7 @@ public class FileHandler extends Handler {
     public static final AttributeDefinition CASE_SENSITIVE = new SimpleAttributeDefinitionBuilder("case-sensitive", ModelType.BOOLEAN)
             .setRequired(false)
             .setAllowExpression(true)
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(ModelNode.TRUE)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 

@@ -72,7 +72,7 @@ class AccessLogDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .build();
     protected static final SimpleAttributeDefinition ROTATE = new SimpleAttributeDefinitionBuilder(Constants.ROTATE, ModelType.BOOLEAN, true)
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(ModelNode.TRUE)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();

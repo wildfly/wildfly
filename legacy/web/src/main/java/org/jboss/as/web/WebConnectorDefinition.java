@@ -83,7 +83,7 @@ public class WebConnectorDefinition extends ModelOnlyResourceDefinition {
             new SimpleAttributeDefinitionBuilder(Constants.ENABLED, ModelType.BOOLEAN)
                     .setRequired(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode(true))
+                    .setDefaultValue(ModelNode.TRUE)
                     .setAllowExpression(true)
                     .build();
     protected static final SimpleAttributeDefinition ENABLE_LOOKUPS =

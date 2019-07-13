@@ -73,7 +73,7 @@ public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition EXECUTE_IN_WORKER =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.EXECUTE_IN_WORKER, ModelType.BOOLEAN, true)
                     .setAllowExpression(true)
-                    .setDefaultValue(new ModelNode(true))
+                    .setDefaultValue(ModelNode.TRUE)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 

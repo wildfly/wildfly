@@ -62,7 +62,7 @@ public class WebValveDefinition extends ModelOnlyResourceDefinition {
             .setRequired(false)
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(ModelNode.TRUE)
             .build();
     protected static final PropertiesAttributeDefinition PARAMS = new PropertiesAttributeDefinition.Builder(Constants.PARAM, true)
             .setAllowExpression(true)

@@ -47,7 +47,7 @@ public class HAAttributes {
      * @see ActiveMQDefaultConfiguration#isDefaultAllowAutoFailback
      */
     public static final SimpleAttributeDefinition ALLOW_FAILBACK = create("allow-failback", BOOLEAN)
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(ModelNode.TRUE)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -88,7 +88,7 @@ public class HAAttributes {
 
     // WFLY-8256 change default value to true instead of Artemis's false
     public static final SimpleAttributeDefinition CHECK_FOR_LIVE_SERVER = create(CommonAttributes.CHECK_FOR_LIVE_SERVER2, BOOLEAN)
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(ModelNode.TRUE)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -168,7 +168,7 @@ public class HAAttributes {
      * @see ActiveMQDefaultConfiguration#isDefaultRestartBackup
      */
     public static final SimpleAttributeDefinition RESTART_BACKUP = create("restart-backup", BOOLEAN)
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(ModelNode.TRUE)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()

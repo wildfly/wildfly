@@ -243,7 +243,7 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
             .setRequired(false)
             .setRestartAllServices()
             .setAllowExpression(true)
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(ModelNode.TRUE)
             .build();
 
     public static final OptionAttributeDefinition HTTP2_HEADER_TABLE_SIZE = OptionAttributeDefinition.builder("http2-header-table-size", UndertowOptions.HTTP2_SETTINGS_HEADER_TABLE_SIZE)

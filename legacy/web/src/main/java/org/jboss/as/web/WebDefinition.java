@@ -48,7 +48,7 @@ public class WebDefinition extends ModelOnlyResourceDefinition {
             new SimpleAttributeDefinitionBuilder(Constants.NATIVE, ModelType.BOOLEAN, true)
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode(true))
+                    .setDefaultValue(ModelNode.TRUE)
                     .build();
     protected static final SimpleAttributeDefinition INSTANCE_ID =
             new SimpleAttributeDefinitionBuilder(Constants.INSTANCE_ID, ModelType.STRING, true)

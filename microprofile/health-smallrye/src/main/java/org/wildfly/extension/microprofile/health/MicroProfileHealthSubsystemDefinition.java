@@ -59,7 +59,7 @@ public class MicroProfileHealthSubsystemDefinition extends PersistentResourceDef
     static final ServiceName HTTP_CONTEXT_SERVICE = HTTP_CONTEXT_CAPABILITY.getCapabilityServiceName();
 
     static final AttributeDefinition SECURITY_ENABLED = SimpleAttributeDefinitionBuilder.create("security-enabled", ModelType.BOOLEAN)
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(ModelNode.TRUE)
             .setRequired(false)
             .setRestartAllServices()
             .setAllowExpression(true)

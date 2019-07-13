@@ -57,7 +57,7 @@ public class HTTPAcceptorDefinition extends PersistentResourceDefinition {
             .setRequired(true)
             .build();
     static final SimpleAttributeDefinition UPGRADE_LEGACY = create("upgrade-legacy", ModelType.BOOLEAN)
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(ModelNode.TRUE)
             .setRequired(false)
             .setAllowExpression(true)
             .build();

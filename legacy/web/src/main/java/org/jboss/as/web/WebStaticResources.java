@@ -64,7 +64,7 @@ public class WebStaticResources extends ModelOnlyResourceDefinition {
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, true))
-                    .setDefaultValue(new ModelNode(true))
+                    .setDefaultValue(ModelNode.TRUE)
                     .build();
     protected static final SimpleAttributeDefinition WEBDAV =
             new SimpleAttributeDefinitionBuilder(Constants.WEBDAV, ModelType.BOOLEAN, true)

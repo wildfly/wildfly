@@ -55,7 +55,7 @@ public class ServiceProviderResourceDefinition extends AbstractFederationResourc
         .setAllowExpression(true)
         .build();
     public static final SimpleAttributeDefinition POST_BINDING = new SimpleAttributeDefinitionBuilder(ModelElement.SERVICE_PROVIDER_POST_BINDING.getName(), ModelType.BOOLEAN, true)
-        .setDefaultValue(new ModelNode(true))
+        .setDefaultValue(ModelNode.TRUE)
         .setAllowExpression(true)
         .build();
     public static final SimpleAttributeDefinition SUPPORT_SIGNATURES = new SimpleAttributeDefinitionBuilder(ModelElement.COMMON_SUPPORTS_SIGNATURES.getName(), ModelType.BOOLEAN, true)
@@ -67,7 +67,7 @@ public class ServiceProviderResourceDefinition extends AbstractFederationResourc
         .setAllowExpression(true)
         .build();
     public static final SimpleAttributeDefinition STRICT_POST_BINDING = new SimpleAttributeDefinitionBuilder(ModelElement.COMMON_STRICT_POST_BINDING.getName(), ModelType.BOOLEAN, true)
-        .setDefaultValue(new ModelNode(true))
+        .setDefaultValue(ModelNode.TRUE)
         .setAllowExpression(true)
         .build();
     public static final SimpleAttributeDefinition ERROR_PAGE = new SimpleAttributeDefinitionBuilder(ModelElement.SERVICE_PROVIDER_ERROR_PAGE.getName(), ModelType.STRING, true)

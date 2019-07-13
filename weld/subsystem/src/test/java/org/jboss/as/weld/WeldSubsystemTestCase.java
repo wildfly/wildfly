@@ -220,7 +220,7 @@ public class WeldSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         @Override
         protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
-            return new ModelNode(true);
+            return ModelNode.TRUE;
         }
     }
 

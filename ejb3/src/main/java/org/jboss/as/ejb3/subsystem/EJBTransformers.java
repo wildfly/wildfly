@@ -115,7 +115,7 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
                 .end();
 
         //This used to behave as 'true' and it is now defaulting as 'true'
-        builder.getAttributeBuilder().setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(true)), EJB3SubsystemRootResourceDefinition.LOG_EJB_EXCEPTIONS);
+        builder.getAttributeBuilder().setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(ModelNode.TRUE), EJB3SubsystemRootResourceDefinition.LOG_EJB_EXCEPTIONS);
         builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.LOG_EJB_EXCEPTIONS);
 
         builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS);
@@ -248,7 +248,7 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
         ResourceTransformationDescriptionBuilder db = timerService.addChildResource(EJB3SubsystemModel.DATABASE_DATA_STORE_PATH);
                 db.getAttributeBuilder()
                         .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(-1)), REFRESH_INTERVAL)
-                        .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(true)), ALLOW_EXECUTION)
+                        .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(ModelNode.TRUE), ALLOW_EXECUTION)
                         .addRejectCheck(RejectAttributeChecker.DEFINED, REFRESH_INTERVAL, ALLOW_EXECUTION);
     }
 
@@ -320,7 +320,7 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
 
         ResourceTransformationDescriptionBuilder child = parent.addChildRedirection(PassivationStoreResourceDefinition.INSTANCE.getPathElement(), PathElement.pathElement(EJB3SubsystemModel.CLUSTER_PASSIVATION_STORE));
         child.getAttributeBuilder()
-                .setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode(true), true), EJB3SubsystemModel.PASSIVATE_EVENTS_ON_REPLICATE)
+                .setValueConverter(AttributeConverter.Factory.createHardCoded(ModelNode.TRUE, true), EJB3SubsystemModel.PASSIVATE_EVENTS_ON_REPLICATE)
                 .setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode("default"), true), EJB3SubsystemModel.CLIENT_MAPPINGS_CACHE)
                 .setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode().set(Long.valueOf(Integer.MAX_VALUE)), true), EJB3SubsystemModel.IDLE_TIMEOUT)
                 .setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode().set(TimeUnit.SECONDS.name()), true), EJB3SubsystemModel.IDLE_TIMEOUT_UNIT)

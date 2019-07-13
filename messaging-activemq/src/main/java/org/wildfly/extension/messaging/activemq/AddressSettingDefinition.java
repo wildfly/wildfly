@@ -51,13 +51,13 @@ import org.jboss.dmr.ModelType;
 public class AddressSettingDefinition extends PersistentResourceDefinition {
 
     public static final SimpleAttributeDefinition AUTO_CREATE_ADDRESSES = create("auto-create-addresses", ModelType.BOOLEAN)
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(ModelNode.TRUE)
             .setRequired(false)
             .setAllowExpression(true)
             .build();
 
     public static final SimpleAttributeDefinition AUTO_DELETE_ADDRESSES = create("auto-delete-addresses", ModelType.BOOLEAN)
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(ModelNode.TRUE)
             .setRequired(false)
             .setAllowExpression(true)
             .build();

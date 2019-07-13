@@ -91,7 +91,7 @@ public class LegacyConnectionFactoryDefinition extends PersistentResourceDefinit
      * @see HornetQClient.DEFAULT_BLOCK_ON_DURABLE_SEND
      */
     public static final AttributeDefinition BLOCK_ON_DURABLE_SEND = SimpleAttributeDefinitionBuilder.create("block-on-durable-send", BOOLEAN)
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(ModelNode.TRUE)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()

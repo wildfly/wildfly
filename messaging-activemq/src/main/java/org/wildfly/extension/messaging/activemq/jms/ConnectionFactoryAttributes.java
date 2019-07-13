@@ -90,7 +90,7 @@ public interface ConnectionFactoryAttributes {
      * @see ActiveMQClient.DEFAULT_BLOCK_ON_DURABLE_SEND
      */
         AttributeDefinition BLOCK_ON_DURABLE_SEND = SimpleAttributeDefinitionBuilder.create("block-on-durable-send", BOOLEAN)
-                .setDefaultValue(new ModelNode(true))
+                .setDefaultValue(ModelNode.TRUE)
                 .setRequired(false)
                 .setAllowExpression(true)
                 .setRestartAllServices()
@@ -403,7 +403,7 @@ public interface ConnectionFactoryAttributes {
          * @see ActiveMQClient.DEFAULT_USE_GLOBAL_POOLS
          */
         AttributeDefinition USE_GLOBAL_POOLS = SimpleAttributeDefinitionBuilder.create("use-global-pools", BOOLEAN)
-                .setDefaultValue(new ModelNode(true))
+                .setDefaultValue(ModelNode.TRUE)
                 .setRequired(false)
                 .setAllowExpression(true)
                 .setRestartAllServices()
@@ -682,7 +682,7 @@ public interface ConnectionFactoryAttributes {
 
     interface External {
         AttributeDefinition ENABLE_AMQ1_PREFIX = create("enable-amq1-prefix", BOOLEAN)
-                .setDefaultValue(new ModelNode(true))
+                .setDefaultValue(ModelNode.TRUE)
                 .setValidator(ConnectionFactoryType.VALIDATOR)
                 .setRequired(false)
                 .setAllowExpression(true)

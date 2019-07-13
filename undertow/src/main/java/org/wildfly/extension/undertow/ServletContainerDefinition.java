@@ -115,7 +115,7 @@ class ServletContainerDefinition extends PersistentResourceDefinition {
             new SimpleAttributeDefinitionBuilder("disable-caching-for-secured-pages", ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setAllowExpression(true)
-                    .setDefaultValue(new ModelNode(true))
+                    .setDefaultValue(ModelNode.TRUE)
                     .build();
 
     protected static final AttributeDefinition DIRECTORY_LISTING =
@@ -127,7 +127,7 @@ class ServletContainerDefinition extends PersistentResourceDefinition {
     protected static final AttributeDefinition PROACTIVE_AUTHENTICATION =
             new SimpleAttributeDefinitionBuilder(Constants.PROACTIVE_AUTHENTICATION, ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode(true))
+                    .setDefaultValue(ModelNode.TRUE)
                     .setAllowExpression(true)
                     .build();
 

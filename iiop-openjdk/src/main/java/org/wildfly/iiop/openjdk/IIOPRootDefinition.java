@@ -134,7 +134,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
     protected static final AttributeDefinition EXPORT_CORBALOC = new SimpleAttributeDefinitionBuilder(
             Constants.NAMING_EXPORT_CORBALOC, ModelType.BOOLEAN, true)
             .setAttributeGroup(Constants.NAMING)
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(ModelNode.TRUE)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
             .build();
@@ -187,7 +187,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             Constants.SECURITY_ADD_COMP_VIA_INTERCEPTOR, ModelType.BOOLEAN, true)
             .setDeprecated(IIOPExtension.VERSION_1)
             .setAttributeGroup(Constants.SECURITY)
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(ModelNode.TRUE)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
             .addAccessConstraint(IIOP_SECURITY_DEF)

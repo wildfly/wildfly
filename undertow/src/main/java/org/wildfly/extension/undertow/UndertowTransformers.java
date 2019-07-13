@@ -136,12 +136,12 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
 
         final AttributeTransformationDescriptionBuilder http = serverBuilder.addChildResource(UndertowExtension.HTTP_LISTENER_PATH).getAttributeBuilder()
                 .setDiscard(new DiscardAttributeValueChecker(ModelNode.FALSE), PROXY_PROTOCOL)
-                .addRejectCheck(new SimpleRejectAttributeChecker(new ModelNode(true)), PROXY_PROTOCOL.getName());
+                .addRejectCheck(new SimpleRejectAttributeChecker(ModelNode.TRUE), PROXY_PROTOCOL.getName());
         addCommonListenerRules_EAP_7_1_0(http);
 
         final AttributeTransformationDescriptionBuilder https = serverBuilder.addChildResource(UndertowExtension.HTTPS_LISTENER_PATH).getAttributeBuilder()
                 .setDiscard(new DiscardAttributeValueChecker(ModelNode.FALSE), PROXY_PROTOCOL)
-                .addRejectCheck(new SimpleRejectAttributeChecker(new ModelNode(true)), PROXY_PROTOCOL);
+                .addRejectCheck(new SimpleRejectAttributeChecker(ModelNode.TRUE), PROXY_PROTOCOL);
         addCommonListenerRules_EAP_7_1_0(https);
 
         final AttributeTransformationDescriptionBuilder ajp = serverBuilder.addChildResource(UndertowExtension.AJP_LISTENER_PATH).getAttributeBuilder();

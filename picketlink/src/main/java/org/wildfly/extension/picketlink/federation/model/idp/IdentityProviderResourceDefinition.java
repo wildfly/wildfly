@@ -64,7 +64,7 @@ public class IdentityProviderResourceDefinition extends AbstractFederationResour
         .setAllowExpression(true)
         .build();
     public static final SimpleAttributeDefinition STRICT_POST_BINDING = new SimpleAttributeDefinitionBuilder(ModelElement.COMMON_STRICT_POST_BINDING.getName(), ModelType.BOOLEAN, true)
-        .setDefaultValue(new ModelNode(true))
+        .setDefaultValue(ModelNode.TRUE)
         .setAllowExpression(true)
         .build();
     public static final SimpleAttributeDefinition EXTERNAL = new SimpleAttributeDefinitionBuilder(ModelElement.IDENTITY_PROVIDER_EXTERNAL.getName(), ModelType.BOOLEAN, true)

@@ -108,7 +108,7 @@ public class ProxyConfigurationResourceDefinition extends ChildResourceDefinitio
     }
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
-        ADVERTISE("advertise", ModelType.BOOLEAN, new ModelNode(true)),
+        ADVERTISE("advertise", ModelType.BOOLEAN, ModelNode.TRUE),
         ADVERTISE_SECURITY_KEY("advertise-security-key", ModelType.STRING, null) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
@@ -127,7 +127,7 @@ public class ProxyConfigurationResourceDefinition extends ChildResourceDefinitio
                         ;
             }
         },
-        AUTO_ENABLE_CONTEXTS("auto-enable-contexts", ModelType.BOOLEAN, new ModelNode(true)),
+        AUTO_ENABLE_CONTEXTS("auto-enable-contexts", ModelType.BOOLEAN, ModelNode.TRUE),
         BALANCER("balancer", ModelType.STRING, null),
         EXCLUDED_CONTEXTS("excluded-contexts", ModelType.STRING, null),
         FLUSH_PACKETS("flush-packets", ModelType.BOOLEAN, ModelNode.FALSE),
@@ -262,7 +262,7 @@ public class ProxyConfigurationResourceDefinition extends ChildResourceDefinitio
                         .setValidator(new IntRangeValidator(1, true, true));
             }
         },
-        STICKY_SESSION("sticky-session", ModelType.BOOLEAN, new ModelNode(true)),
+        STICKY_SESSION("sticky-session", ModelType.BOOLEAN, ModelNode.TRUE),
         STICKY_SESSION_REMOVE("sticky-session-remove", ModelType.BOOLEAN, ModelNode.FALSE),
         STICKY_SESSION_FORCE("sticky-session-force", ModelType.BOOLEAN, ModelNode.FALSE),
         STOP_CONTEXT_TIMEOUT("stop-context-timeout", ModelType.INT, new ModelNode(10)) {

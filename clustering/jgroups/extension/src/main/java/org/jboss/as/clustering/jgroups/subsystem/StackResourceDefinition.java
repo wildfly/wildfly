@@ -140,7 +140,7 @@ public class StackResourceDefinition extends ChildResourceDefinition<ManagementR
 
         if (JGroupsModel.VERSION_4_1_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
-                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(true)), Attribute.STATISTICS_ENABLED.getDefinition())
+                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(ModelNode.TRUE), Attribute.STATISTICS_ENABLED.getDefinition())
                     .addRejectCheck(RejectAttributeChecker.UNDEFINED, Attribute.STATISTICS_ENABLED.getDefinition())
                     .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Attribute.STATISTICS_ENABLED.getDefinition())
                     .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(ModelNode.FALSE), Attribute.STATISTICS_ENABLED.getDefinition())

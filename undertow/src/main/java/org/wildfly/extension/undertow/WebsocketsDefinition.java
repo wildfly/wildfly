@@ -78,7 +78,7 @@ class WebsocketsDefinition extends PersistentResourceDefinition {
             new SimpleAttributeDefinitionBuilder("dispatch-to-worker", ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setAllowExpression(true)
-                    .setDefaultValue(new ModelNode(true))
+                    .setDefaultValue(ModelNode.TRUE)
                     .build();
 
     protected static final SimpleAttributeDefinition PER_MESSAGE_DEFLATE =

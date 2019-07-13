@@ -165,7 +165,7 @@ public class TransactionResourceDefinition extends ComponentResourceDefinition {
                         if ((mode.getType() == ModelType.STRING) && (TransactionMode.valueOf(mode.asString()) == TransactionMode.BATCH)) {
                             mode.set(TransactionMode.NONE.name());
                             PathAddress address = Operations.getPathAddress(operation);
-                            return Operations.createCompositeOperation(operation, Operations.createWriteAttributeOperation(cacheAddress(address), CacheResourceDefinition.DeprecatedAttribute.BATCHING, new ModelNode(true)));
+                            return Operations.createCompositeOperation(operation, Operations.createWriteAttributeOperation(cacheAddress(address), CacheResourceDefinition.DeprecatedAttribute.BATCHING, ModelNode.TRUE));
                         }
                     }
                     return operation;
