@@ -75,6 +75,7 @@ public class NamingContextHandleFactory implements ContextHandleFactory {
 
     private static class NamingContextHandle implements SetupContextHandle, ResetContextHandle {
 
+        private static final long serialVersionUID = -4631099493960707685L;
         private final NamespaceContextSelector namespaceContextSelector;
         private final ServiceName duServiceName;
 
