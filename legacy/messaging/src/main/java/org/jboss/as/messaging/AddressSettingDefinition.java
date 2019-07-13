@@ -78,7 +78,7 @@ public class AddressSettingDefinition extends ModelOnlyResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition MAX_REDELIVERY_DELAY = create("max-redelivery-delay", ModelType.LONG)
-            .setDefaultValue(new ModelNode(0L))
+            .setDefaultValue(ModelNode.ZERO_LONG)
             .setMeasurementUnit(MILLISECONDS)
             .setRequired(false)
             .setAllowExpression(true)
@@ -112,7 +112,7 @@ public class AddressSettingDefinition extends ModelOnlyResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition REDELIVERY_DELAY = create("redelivery-delay", ModelType.LONG)
-            .setDefaultValue(new ModelNode(0L))
+            .setDefaultValue(ModelNode.ZERO_LONG)
             .setMeasurementUnit(MILLISECONDS)
             .setRequired(false)
             .setAllowExpression(true)
