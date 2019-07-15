@@ -24,6 +24,7 @@ package org.wildfly.clustering.web.infinispan.routing;
 
 import org.infinispan.Cache;
 import org.infinispan.remoting.transport.Address;
+import org.wildfly.clustering.infinispan.spi.distribution.Key;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.spi.NodeFactory;
 
@@ -34,7 +35,7 @@ public interface PrimaryOwnerRouteLocatorConfiguration {
 
     Registry<String, Void> getRegistry();
 
-    Cache<String, ?> getCache();
+    Cache<Key<String>, ?> getCache();
 
     NodeFactory<Address> getMemberFactory();
 }
