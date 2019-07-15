@@ -51,7 +51,7 @@ public class RewriteFilterDefinition extends Filter {
 
     public static final AttributeDefinition REDIRECT = new SimpleAttributeDefinitionBuilder("redirect", ModelType.BOOLEAN)
             .setRequired(false)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();

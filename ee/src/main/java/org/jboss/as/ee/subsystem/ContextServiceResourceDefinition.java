@@ -50,7 +50,7 @@ public class ContextServiceResourceDefinition extends SimpleResourceDefinition {
     public static final SimpleAttributeDefinition USE_TRANSACTION_SETUP_PROVIDER_AD =
             new SimpleAttributeDefinitionBuilder(USE_TRANSACTION_SETUP_PROVIDER, ModelType.BOOLEAN, true)
                     .setAllowExpression(true)
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(ModelNode.FALSE)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
 

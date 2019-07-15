@@ -122,7 +122,7 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
     static final SimpleAttributeDefinition STATISTICS_ENABLED =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.STATISTICS_ENABLED, ModelType.BOOLEAN, true)
                     .setAllowExpression(true)
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(ModelNode.FALSE)
                     .build();
 
     static final SimpleAttributeDefinition DEFAULT_DISTINCT_NAME =
@@ -141,38 +141,38 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
     public static final SimpleAttributeDefinition PASS_BY_VALUE =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.IN_VM_REMOTE_INTERFACE_INVOCATION_PASS_BY_VALUE, ModelType.BOOLEAN, true)
                     .setAllowExpression(true)
-                    .setDefaultValue(new ModelNode(true))
+                    .setDefaultValue(ModelNode.TRUE)
                     .build();
 
 
     public static final SimpleAttributeDefinition DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS, ModelType.BOOLEAN, true)
                     .setAllowExpression(true)
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(ModelNode.FALSE)
                     .build();
 
     public static final SimpleAttributeDefinition DISABLE_DEFAULT_EJB_PERMISSIONS =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DISABLE_DEFAULT_EJB_PERMISSIONS, ModelType.BOOLEAN, true)
                     .setDeprecated(ModelVersion.create(3, 0, 0))
                     .setAllowExpression(true)
-                    .setDefaultValue(new ModelNode(true))
+                    .setDefaultValue(ModelNode.TRUE)
                     .build();
 
     public static final SimpleAttributeDefinition ENABLE_GRACEFUL_TXN_SHUTDOWN =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.ENABLE_GRACEFUL_TXN_SHUTDOWN, ModelType.BOOLEAN, true)
                     .setAllowExpression(true)
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(ModelNode.FALSE)
                     .build();
 
     public static final SimpleAttributeDefinition LOG_EJB_EXCEPTIONS =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.LOG_SYSTEM_EXCEPTIONS, ModelType.BOOLEAN, true)
                     .setAllowExpression(true)
-                    .setDefaultValue(new ModelNode(true))
+                    .setDefaultValue(ModelNode.TRUE)
                     .build();
 
     public static final SimpleAttributeDefinition ALLOW_EJB_NAME_REGEX =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.ALLOW_EJB_NAME_REGEX, ModelType.BOOLEAN, true)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setAllowExpression(true)
             .build();
 

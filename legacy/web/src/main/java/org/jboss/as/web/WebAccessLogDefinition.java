@@ -54,14 +54,14 @@ public class WebAccessLogDefinition extends ModelOnlyResourceDefinition {
             new SimpleAttributeDefinitionBuilder(Constants.RESOLVE_HOSTS, ModelType.BOOLEAN, true)
                     .setXmlName(Constants.RESOLVE_HOSTS)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(ModelNode.FALSE)
                     .build();
 
     protected static final SimpleAttributeDefinition EXTENDED =
             new SimpleAttributeDefinitionBuilder(Constants.EXTENDED, ModelType.BOOLEAN, true)
                     .setXmlName(Constants.EXTENDED)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(ModelNode.FALSE)
                     .build();
 
     protected static final SimpleAttributeDefinition PREFIX =
@@ -76,7 +76,7 @@ public class WebAccessLogDefinition extends ModelOnlyResourceDefinition {
             new SimpleAttributeDefinitionBuilder(Constants.ROTATE, ModelType.BOOLEAN, true)
                     .setXmlName(Constants.ROTATE)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode(true))
+                    .setDefaultValue(ModelNode.TRUE)
                     .build();
     protected static final SimpleAttributeDefinition[] ACCESS_LOG_ATTRIBUTES = {
             // IMPORTANT -- keep these in xsd order as this order controls marshalling

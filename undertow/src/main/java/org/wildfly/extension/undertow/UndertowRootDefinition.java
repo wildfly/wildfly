@@ -92,7 +92,7 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
             new SimpleAttributeDefinitionBuilder(Constants.STATISTICS_ENABLED, ModelType.BOOLEAN, true)
                     .setRestartAllServices()
                     .setAllowExpression(true)
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(ModelNode.FALSE)
                     .build();
     protected static final SimpleAttributeDefinition DEFAULT_SECURITY_DOMAIN =
             new SimpleAttributeDefinitionBuilder(Constants.DEFAULT_SECURITY_DOMAIN, ModelType.STRING, true)

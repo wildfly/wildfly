@@ -218,14 +218,14 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
 
     public static final SimpleAttributeDefinition USE_ALIAS = new SimpleAttributeDefinitionBuilder(Constants.USE_ALIAS, ModelType.BOOLEAN)
             .setRequired(false)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRestartAllServices()
             .build();
 
 
     public static final SimpleAttributeDefinition ENABLE_HTTP2 = new SimpleAttributeDefinitionBuilder(Constants.ENABLE_HTTP2, ModelType.BOOLEAN)
             .setRequired(false)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRestartAllServices()
             .build();
 
@@ -243,7 +243,7 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
             .setRequired(false)
             .setRestartAllServices()
             .setAllowExpression(true)
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(ModelNode.TRUE)
             .build();
 
     public static final OptionAttributeDefinition HTTP2_HEADER_TABLE_SIZE = OptionAttributeDefinition.builder("http2-header-table-size", UndertowOptions.HTTP2_SETTINGS_HEADER_TABLE_SIZE)

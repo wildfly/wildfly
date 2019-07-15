@@ -69,7 +69,7 @@ public class LockingResourceDefinition extends ComponentResourceDefinition {
                 return builder.setValidator(new EnumValidator<>(IsolationLevel.class));
             }
         },
-        STRIPING("striping", ModelType.BOOLEAN, new ModelNode(false)),
+        STRIPING("striping", ModelType.BOOLEAN, ModelNode.FALSE),
         ;
         private final AttributeDefinition definition;
 

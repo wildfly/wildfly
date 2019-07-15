@@ -397,37 +397,37 @@ public class DeploymentDefinition extends SimpleResourceDefinition {
 
     public enum SessionStat {
         ACTIVE_SESSIONS(new SimpleAttributeDefinitionBuilder("active-sessions", ModelType.INT)
-                .setUndefinedMetricValue(new ModelNode(0)).setStorageRuntime().build()),
+                .setUndefinedMetricValue(ModelNode.ZERO).setStorageRuntime().build()),
         EXPIRED_SESSIONS(new SimpleAttributeDefinitionBuilder("expired-sessions", ModelType.INT)
-                .setUndefinedMetricValue(new ModelNode(0))
+                .setUndefinedMetricValue(ModelNode.ZERO)
                 .setFlags(COUNTER_METRIC)
                 .setStorageRuntime()
                 .build()),
         SESSIONS_CREATED(new SimpleAttributeDefinitionBuilder("sessions-created", ModelType.INT)
-                .setUndefinedMetricValue(new ModelNode(0))
+                .setUndefinedMetricValue(ModelNode.ZERO)
                 .setFlags(COUNTER_METRIC)
                 .setStorageRuntime()
                 .build()),
         //DUPLICATED_SESSION_IDS(new SimpleAttributeDefinition("duplicated-session-ids", ModelType.INT, false)),
         SESSION_AVG_ALIVE_TIME(new SimpleAttributeDefinitionBuilder("session-avg-alive-time", ModelType.INT)
-                .setUndefinedMetricValue(new ModelNode(0))
+                .setUndefinedMetricValue(ModelNode.ZERO)
                 .setMeasurementUnit(SECONDS)
                 .setStorageRuntime()
                 .build()),
         SESSION_MAX_ALIVE_TIME(new SimpleAttributeDefinitionBuilder("session-max-alive-time", ModelType.INT)
-                .setUndefinedMetricValue(new ModelNode(0))
+                .setUndefinedMetricValue(ModelNode.ZERO)
                 .setMeasurementUnit(SECONDS)
                 .setStorageRuntime()
                 .build()),
         REJECTED_SESSIONS(new SimpleAttributeDefinitionBuilder("rejected-sessions", ModelType.INT)
-                .setUndefinedMetricValue(new ModelNode(0))
+                .setUndefinedMetricValue(ModelNode.ZERO)
                 .setStorageRuntime()
                 .setFlags(COUNTER_METRIC)
                 .build()),
         MAX_ACTIVE_SESSIONS(new SimpleAttributeDefinitionBuilder("max-active-sessions", ModelType.INT)
-                .setUndefinedMetricValue(new ModelNode(0)).setStorageRuntime().build()),
+                .setUndefinedMetricValue(ModelNode.ZERO).setStorageRuntime().build()),
         HIGHEST_SESSION_COUNT(new SimpleAttributeDefinitionBuilder("highest-session-count", ModelType.INT)
-                .setUndefinedMetricValue(new ModelNode(0)).setStorageRuntime().build());
+                .setUndefinedMetricValue(ModelNode.ZERO).setStorageRuntime().build());
 
         private static final Map<String, SessionStat> MAP = new HashMap<>();
 

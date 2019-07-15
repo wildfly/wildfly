@@ -87,7 +87,7 @@ public class StateTransferResourceDefinition extends ComponentResourceDefinition
 
     @Deprecated
     enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
-        ENABLED("enabled", ModelType.BOOLEAN, new ModelNode(true), InfinispanModel.VERSION_4_0_0),
+        ENABLED("enabled", ModelType.BOOLEAN, ModelNode.TRUE, InfinispanModel.VERSION_4_0_0),
         ;
         private final AttributeDefinition definition;
 

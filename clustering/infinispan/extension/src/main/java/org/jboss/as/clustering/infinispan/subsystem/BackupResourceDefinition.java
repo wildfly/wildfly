@@ -57,7 +57,7 @@ public class BackupResourceDefinition extends ChildResourceDefinition<Management
     }
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
-        ENABLED("enabled", ModelType.BOOLEAN, new ModelNode(true)),
+        ENABLED("enabled", ModelType.BOOLEAN, ModelNode.TRUE),
         FAILURE_POLICY("failure-policy", ModelType.STRING, new ModelNode(BackupFailurePolicy.WARN.name())) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
@@ -91,7 +91,7 @@ public class BackupResourceDefinition extends ChildResourceDefinition<Management
 
     enum TakeOfflineAttribute implements org.jboss.as.clustering.controller.Attribute {
         AFTER_FAILURES("after-failures", ModelType.INT, new ModelNode(1)),
-        MIN_WAIT("min-wait", ModelType.LONG, new ModelNode(0L)),
+        MIN_WAIT("min-wait", ModelType.LONG, ModelNode.ZERO_LONG),
         ;
         private final AttributeDefinition definition;
 

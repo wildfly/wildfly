@@ -82,7 +82,7 @@ public class DatabaseDataStoreResourceDefinition extends SimpleResourceDefinitio
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.ALLOW_EXECUTION, ModelType.BOOLEAN, true)
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                    .setDefaultValue(new ModelNode(true))
+                    .setDefaultValue(ModelNode.TRUE)
                     .build();
 
     public static final Map<String, AttributeDefinition> ATTRIBUTES ;

@@ -80,14 +80,14 @@ public class ManagedScheduledExecutorServiceResourceDefinition extends SimpleRes
                     .setAllowExpression(true)
                     .setValidator(new LongRangeValidator(0, Long.MAX_VALUE, true, true))
                     .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
-                    .setDefaultValue(new ModelNode(0))
+                    .setDefaultValue(ModelNode.ZERO)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
 
     public static final SimpleAttributeDefinition LONG_RUNNING_TASKS_AD =
             new SimpleAttributeDefinitionBuilder(LONG_RUNNING_TASKS, ModelType.BOOLEAN, true)
                     .setAllowExpression(true)
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(ModelNode.FALSE)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
 

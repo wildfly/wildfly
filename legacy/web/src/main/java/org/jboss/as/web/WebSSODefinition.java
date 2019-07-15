@@ -66,7 +66,7 @@ public class WebSSODefinition extends ModelOnlyResourceDefinition {
             new SimpleAttributeDefinitionBuilder(Constants.HTTP_ONLY, ModelType.BOOLEAN, true)
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode(true))
+                    .setDefaultValue(ModelNode.TRUE)
                     .build();
     protected static SimpleAttributeDefinition[] SSO_ATTRIBUTES = {
             // IMPORTANT -- keep these in xsd order as this order controls marshalling

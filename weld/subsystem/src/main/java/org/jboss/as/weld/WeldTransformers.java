@@ -65,7 +65,7 @@ public class WeldTransformers implements ExtensionTransformerRegistration {
         builder100.getAttributeBuilder()
                 // These new attributes are assumed to be 'true' in the old version but default to false in the current version. So discard if 'true' and reject
                 // if 'undefined'.
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)),
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, ModelNode.TRUE),
                         WeldResourceDefinition.NON_PORTABLE_MODE_ATTRIBUTE, WeldResourceDefinition.REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE)
                 .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
 
@@ -82,7 +82,7 @@ public class WeldTransformers implements ExtensionTransformerRegistration {
                 }, WeldResourceDefinition.NON_PORTABLE_MODE_ATTRIBUTE, WeldResourceDefinition.REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE)
 
                 // development mode - not supported in older versions
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), WeldResourceDefinition.DEVELOPMENT_MODE_ATTRIBUTE)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(ModelNode.FALSE), WeldResourceDefinition.DEVELOPMENT_MODE_ATTRIBUTE)
                 // if the attribute was not discarded it means that it is defined as 'true'. Therefore, reject.
                 .addRejectCheck(RejectAttributeChecker.DEFINED, WeldResourceDefinition.DEVELOPMENT_MODE_ATTRIBUTE).end();
 

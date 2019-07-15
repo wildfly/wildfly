@@ -42,7 +42,7 @@ public class WebStaticResources extends ModelOnlyResourceDefinition {
             new SimpleAttributeDefinitionBuilder(Constants.LISTINGS, ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, true))
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(ModelNode.FALSE)
                     .setAllowExpression(true)
                     .build();
     protected static final SimpleAttributeDefinition SENDFILE =
@@ -64,14 +64,14 @@ public class WebStaticResources extends ModelOnlyResourceDefinition {
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, true))
-                    .setDefaultValue(new ModelNode(true))
+                    .setDefaultValue(ModelNode.TRUE)
                     .build();
     protected static final SimpleAttributeDefinition WEBDAV =
             new SimpleAttributeDefinitionBuilder(Constants.WEBDAV, ModelType.BOOLEAN, true)
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, true))
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(ModelNode.FALSE)
                     .build();
 
     protected static final SimpleAttributeDefinition SECRET =
@@ -93,7 +93,7 @@ public class WebStaticResources extends ModelOnlyResourceDefinition {
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, true))
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(ModelNode.FALSE)
                     .build();
     protected static final SimpleAttributeDefinition[] STATIC_ATTRIBUTES = {
             // IMPORTANT -- keep these in xsd order as this order controls marshalling

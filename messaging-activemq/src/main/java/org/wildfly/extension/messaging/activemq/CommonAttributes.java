@@ -131,7 +131,7 @@ public interface CommonAttributes {
 
     AttributeDefinition DELIVERING_COUNT = create("delivering-count", INT)
             .setStorageRuntime()
-            .setUndefinedMetricValue(new ModelNode(0))
+            .setUndefinedMetricValue(ModelNode.ZERO)
             .build();
 
     StringListAttributeDefinition DESTINATION_ENTRIES = new StringListAttributeDefinition.Builder(ENTRIES)
@@ -153,7 +153,7 @@ public interface CommonAttributes {
             .build();
 
     SimpleAttributeDefinition DURABLE = create("durable", BOOLEAN)
-            .setDefaultValue(new ModelNode().set(true))
+            .setDefaultValue(ModelNode.TRUE)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -179,7 +179,7 @@ public interface CommonAttributes {
      * @see ActiveMQClient.DEFAULT_HA
      */
     SimpleAttributeDefinition HA = create("ha", BOOLEAN)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -229,12 +229,12 @@ public interface CommonAttributes {
 
     AttributeDefinition MESSAGE_COUNT = create("message-count", LONG)
             .setStorageRuntime()
-            .setUndefinedMetricValue(new ModelNode(0))
+            .setUndefinedMetricValue(ModelNode.ZERO)
             .build();
 
     AttributeDefinition MESSAGES_ADDED = create("messages-added", LONG)
             .setStorageRuntime()
-            .setUndefinedMetricValue(new ModelNode(0))
+            .setUndefinedMetricValue(ModelNode.ZERO)
             .setFlags(COUNTER_METRIC)
             .build();
 
@@ -299,7 +299,7 @@ public interface CommonAttributes {
 
     AttributeDefinition SCHEDULED_COUNT = create("scheduled-count", LONG)
             .setStorageRuntime()
-            .setUndefinedMetricValue(new ModelNode(0))
+            .setUndefinedMetricValue(ModelNode.ZERO)
             .build();
 
     SimpleAttributeDefinition SELECTOR = create("selector", ModelType.STRING)

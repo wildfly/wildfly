@@ -65,7 +65,7 @@ public class WebTransformers implements ExtensionTransformerRegistration {
         final ResourceTransformationDescriptionBuilder ssoBuilder = hostBuilder.addChildResource(SSO_PATH);
         ssoBuilder.getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.DEFINED, WebSSODefinition.HTTP_ONLY)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(true)), WebSSODefinition.HTTP_ONLY)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, ModelNode.TRUE), WebSSODefinition.HTTP_ONLY)
                 .end();
 
         final ResourceTransformationDescriptionBuilder connectorBuilder = subsystemRoot.addChildResource(CONNECTOR_PATH);
@@ -92,7 +92,7 @@ public class WebTransformers implements ExtensionTransformerRegistration {
         final ResourceTransformationDescriptionBuilder ssoBuilder = hostBuilder.addChildResource(SSO_PATH);
         ssoBuilder.getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.DEFINED, WebSSODefinition.HTTP_ONLY)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(true)), WebSSODefinition.HTTP_ONLY)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, ModelNode.TRUE), WebSSODefinition.HTTP_ONLY)
                 .end();
 
         TransformationDescription.Tools.register(subsystemRoot.build(), registration, ModelVersion.create(1, 4, 0));
@@ -110,7 +110,7 @@ public class WebTransformers implements ExtensionTransformerRegistration {
         final ResourceTransformationDescriptionBuilder ssoBuilder = hostBuilder.addChildResource(SSO_PATH);
         ssoBuilder.getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.DEFINED, WebSSODefinition.HTTP_ONLY)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(true)), WebSSODefinition.HTTP_ONLY)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, ModelNode.TRUE), WebSSODefinition.HTTP_ONLY)
                 .end();
 
         if (minor == 0) {

@@ -67,7 +67,7 @@ interface Attributes {
 
     SimpleAttributeDefinition MODIFY_WSDL_ADDRESS = new SimpleAttributeDefinitionBuilder(Constants.MODIFY_WSDL_ADDRESS, ModelType.BOOLEAN)
             .setRequired(false)
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(ModelNode.TRUE)
             .setAllowExpression(true)
             .build();
 
@@ -78,7 +78,7 @@ interface Attributes {
 
     SimpleAttributeDefinition STATISTICS_ENABLED = new SimpleAttributeDefinitionBuilder(Constants.STATISTICS_ENABLED, ModelType.BOOLEAN)
             .setRequired(false)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setAllowExpression(true)
             .build();
 

@@ -144,7 +144,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
             .build();
 
     static final SimpleAttributeDefinition OVERRIDE_DEPLOYMENT_CONFIG = new SimpleAttributeDefinitionBuilder(Constants.OVERRIDE_DEPLOYMENT_CONFIG, ModelType.BOOLEAN, true)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRestartAllServices()
             .setRequires(Constants.HTTP_AUTHENITCATION_FACTORY)
             .build();
@@ -162,19 +162,19 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
             .build();
 
     static final SimpleAttributeDefinition ENABLE_JACC = new SimpleAttributeDefinitionBuilder(Constants.ENABLE_JACC, ModelType.BOOLEAN, true)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setMinSize(1)
             .setRestartAllServices()
             .build();
 
     static final SimpleAttributeDefinition ENABLE_JASPI = new SimpleAttributeDefinitionBuilder(Constants.ENABLE_JASPI, ModelType.BOOLEAN, true)
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(ModelNode.TRUE)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     static final SimpleAttributeDefinition INTEGRATED_JASPI = new SimpleAttributeDefinitionBuilder(Constants.INTEGRATED_JASPI, ModelType.BOOLEAN, true)
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(ModelNode.TRUE)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();

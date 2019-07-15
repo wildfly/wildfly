@@ -55,7 +55,7 @@ class ServletContainerDefinition extends PersistentResourceDefinition {
     protected static final SimpleAttributeDefinition ALLOW_NON_STANDARD_WRAPPERS =
             new SimpleAttributeDefinitionBuilder(Constants.ALLOW_NON_STANDARD_WRAPPERS, ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(ModelNode.FALSE)
                     .setAllowExpression(true)
                     .build();
 
@@ -84,7 +84,7 @@ class ServletContainerDefinition extends PersistentResourceDefinition {
             new SimpleAttributeDefinitionBuilder(Constants.USE_LISTENER_ENCODING, ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setAllowExpression(true)
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(ModelNode.FALSE)
                     .build();
 
 
@@ -92,14 +92,14 @@ class ServletContainerDefinition extends PersistentResourceDefinition {
             new SimpleAttributeDefinitionBuilder(Constants.IGNORE_FLUSH, ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setAllowExpression(true)
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(ModelNode.FALSE)
                     .build();
 
     protected static final AttributeDefinition EAGER_FILTER_INIT =
             new SimpleAttributeDefinitionBuilder("eager-filter-initialization", ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setAllowExpression(true)
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(ModelNode.FALSE)
                     .build();
 
     protected static final AttributeDefinition DEFAULT_SESSION_TIMEOUT =
@@ -115,7 +115,7 @@ class ServletContainerDefinition extends PersistentResourceDefinition {
             new SimpleAttributeDefinitionBuilder("disable-caching-for-secured-pages", ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setAllowExpression(true)
-                    .setDefaultValue(new ModelNode(true))
+                    .setDefaultValue(ModelNode.TRUE)
                     .build();
 
     protected static final AttributeDefinition DIRECTORY_LISTING =
@@ -127,7 +127,7 @@ class ServletContainerDefinition extends PersistentResourceDefinition {
     protected static final AttributeDefinition PROACTIVE_AUTHENTICATION =
             new SimpleAttributeDefinitionBuilder(Constants.PROACTIVE_AUTHENTICATION, ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode(true))
+                    .setDefaultValue(ModelNode.TRUE)
                     .setAllowExpression(true)
                     .build();
 
@@ -150,14 +150,14 @@ class ServletContainerDefinition extends PersistentResourceDefinition {
     protected static final AttributeDefinition DISABLE_FILE_WATCH_SERVICE =
             new SimpleAttributeDefinitionBuilder(Constants.DISABLE_FILE_WATCH_SERVICE, ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(ModelNode.FALSE)
                     .setAllowExpression(true)
                     .build();
 
     protected static final AttributeDefinition DISABLE_SESSION_ID_REUSE =
             new SimpleAttributeDefinitionBuilder(Constants.DISABLE_SESSION_ID_REUSE, ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(ModelNode.FALSE)
                     .setAllowExpression(true)
                     .build();
 
@@ -186,7 +186,7 @@ class ServletContainerDefinition extends PersistentResourceDefinition {
             new SimpleAttributeDefinitionBuilder(Constants.DEFAULT_COOKIE_VERSION, ModelType.INT, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setAllowExpression(true)
-                    .setDefaultValue(new ModelNode(0))
+                    .setDefaultValue(ModelNode.ZERO)
                     .setValidator(new IntRangeValidator(0, 1, true,true))
                     .build();
 
