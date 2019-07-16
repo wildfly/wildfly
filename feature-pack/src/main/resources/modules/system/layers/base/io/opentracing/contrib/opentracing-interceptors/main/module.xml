@@ -14,29 +14,27 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<module xmlns="urn:jboss:module:1.8" name="io.smallrye.opentracing">
+<module xmlns="urn:jboss:module:1.8" name="io.opentracing.contrib.opentracing-interceptors">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
 
     <resources>
-        <artifact name="${io.smallrye:smallrye-opentracing}"/>
+        <artifact name="${io.opentracing.contrib:opentracing-interceptors}"/>
     </resources>
 
     <dependencies>
         <module name="java.logging"/>
+
         <module name="javax.annotation.api"/>
-        <module name="javax.enterprise.api" />
+        <module name="javax.enterprise.api"/>
         <module name="javax.inject.api"/>
         <module name="javax.ws.rs.api"/>
 
         <module name="io.opentracing.opentracing-api"/>
-        <module name="io.opentracing.contrib.opentracing-jaxrs2"/>
-        <module name="io.opentracing.contrib.opentracing-interceptors" services="import"/>
+        <module name="io.opentracing.opentracing-util"/>
+        <module name="io.opentracing.contrib.opentracing-tracerresolver"/>
         <module name="org.eclipse.microprofile.opentracing"/>
         <module name="org.wildfly.microprofile.opentracing-smallrye"/>
-        <module name="org.eclipse.microprofile.restclient"/>
-
-        <module name="org.eclipse.microprofile.config.api"/>
     </dependencies>
 </module>

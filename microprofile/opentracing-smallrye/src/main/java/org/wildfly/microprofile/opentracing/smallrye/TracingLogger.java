@@ -58,4 +58,12 @@ public interface TracingLogger extends BasicLogger {
     @LogMessage(level = DEBUG)
     @Message(id = 6, value = "Extra Tracer bean found: %s. Vetoing it, please use TracerResolver to specify a custom tracer to use.")
     void extraTracerBean(String clazz);
+
+    @LogMessage(level = WARN)
+    @Message(id = 7, value = "Provided operation name does not match 'http-path' or 'class-method'. Using default 'class-method'.")
+    void wrongOperationNameProvider();
+
+    @LogMessage(level = DEBUG)
+    @Message(id = 8, value = "Producing tracer from ServletContext, using %s.")
+    void producingTracer(Object tracerObject);
 }

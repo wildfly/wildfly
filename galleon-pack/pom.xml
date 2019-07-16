@@ -1488,6 +1488,17 @@
         </dependency>
 
         <dependency>
+            <groupId>io.opentracing.contrib</groupId>
+            <artifactId>opentracing-interceptors</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
             <groupId>io.reactivex.rxjava2</groupId>
             <artifactId>rxjava</artifactId>
             <scope>provided</scope>

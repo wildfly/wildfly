@@ -35,5 +35,7 @@
         <module name="io.opentracing.contrib.opentracing-web-servlet-filter"/>
 
         <module name="org.eclipse.microprofile.opentracing"/>
+        <module name="org.eclipse.microprofile.config.api"/>
+        <module name="io.smallrye.config"/>
     </dependencies>
 </module>
