@@ -350,7 +350,7 @@
                 </plugins>
             </build>
         </profile>
-        <!-- Disable single node tests surefire executions when using -Dtest=... -->
+        <!-- Disable single node and byteman tests surefire executions when using -Dtest=... -->
         <profile>
             <id>ts.clustering.disable-executions-single-test</id>
             <activation>
@@ -366,6 +366,16 @@
                         <executions>
                             <execution>
                                 <id>ts.surefire.clustering.single-node</id>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>ts.surefire.clustering.all-ejb-byteman</id>
                                 <phase>none</phase>
                             </execution>
                         </executions>
