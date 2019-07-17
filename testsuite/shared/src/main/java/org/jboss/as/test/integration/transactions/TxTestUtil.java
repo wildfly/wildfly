@@ -46,6 +46,15 @@ public final class TxTestUtil {
         // no instance here
     }
 
+    public static TestXAResource enlistTestXAResource(TransactionManager tm, TransactionCheckerSingleton checker) {
+        try {
+            return enlistTestXAResource(tm.getTransaction(), checker);
+        } catch (SystemException se) {
+            throw new RuntimeException(String.format("Can't obtain transaction for transaction manager '%s' "
+                    + "to enlist %s", tm, TestXAResource.class.getName()), se);
+        }
+    }
+
     public static TestXAResource enlistTestXAResource(Transaction txn, TransactionCheckerSingleton checker) {
         TestXAResource xaResource = new TestXAResource(checker);
         try {
@@ -61,6 +70,15 @@ public final class TxTestUtil {
             txn.enlistResource(xaResource);
         } catch (IllegalStateException | RollbackException | SystemException e) {
             throw new RuntimeException("Can't enlist test xa resource '" + xaResource + "'", e);
+        }
+    }
+
+    public static void addSynchronization(TransactionManager tm, TransactionCheckerSingletonRemote checker) {
+        try {
+            addSynchronization(tm.getTransaction(), checker);
+        } catch (SystemException se) {
+            throw new RuntimeException(String.format("Can't obtain transaction for transaction manager '%s' "
+                    + "to enlist add test synchronization '%s'"), se);
         }
     }
 
