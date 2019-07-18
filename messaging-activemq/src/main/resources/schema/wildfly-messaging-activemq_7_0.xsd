@@ -24,10 +24,13 @@
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
            xmlns="urn:jboss:domain:messaging-activemq:7.0"
+           xmlns:credential-reference="urn:wildfly:credential-reference:1.0"
            targetNamespace="urn:jboss:domain:messaging-activemq:7.0"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
            version="7.0">
+
+    <xs:import namespace="urn:wildfly:credential-reference:1.0" schemaLocation="wildfly-credential-reference_1_0.xsd"/>
 
     <xs:element name="subsystem">
         <xs:complexType>
@@ -73,7 +76,7 @@
                                     <xs:attribute name="allow-local-transactions" type="xs:boolean" use="optional" />
                                 </xs:complexType>
                             </xs:element>
-                            <xs:element name="credential-reference" type="credentialReferenceType" minOccurs="0" maxOccurs="1">
+                            <xs:element name="credential-reference" type="credential-reference:credentialReferenceType" minOccurs="0" maxOccurs="1">
                                 <xs:annotation>
                                     <xs:documentation>
                                         Credential to be used by the configuration.
@@ -157,7 +160,7 @@
             <xs:element name="cluster" minOccurs="0" maxOccurs="1">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="credential-reference" type="credentialReferenceType" minOccurs="0" maxOccurs="1">
+                        <xs:element name="credential-reference" type="credential-reference:credentialReferenceType" minOccurs="0" maxOccurs="1">
                             <xs:annotation>
                                 <xs:documentation>
                                     Credential to be used by the configuration.
@@ -529,7 +532,7 @@
             <xs:element name="bridge" minOccurs="0" maxOccurs="unbounded">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="credential-reference" type="credentialReferenceType" minOccurs="0" maxOccurs="1">
+                        <xs:element name="credential-reference" type="credential-reference:credentialReferenceType" minOccurs="0" maxOccurs="1">
                             <xs:annotation>
                                 <xs:documentation>
                                     Credential to be used by the configuration.
@@ -664,7 +667,7 @@
                                 <xs:attribute name="allow-local-transactions" type="xs:boolean" use="optional" />
                             </xs:complexType>
                         </xs:element>
-                        <xs:element name="credential-reference" type="credentialReferenceType" minOccurs="0" maxOccurs="1">
+                        <xs:element name="credential-reference" type="credential-reference:credentialReferenceType" minOccurs="0" maxOccurs="1">
                             <xs:annotation>
                                 <xs:documentation>
                                     Credential to be used by the configuration.
@@ -908,7 +911,7 @@
                 <xs:complexType>
                     <xs:sequence>
                         <xs:element name="source-context" type="contextType" minOccurs="0" maxOccurs="1" />
-                        <xs:element name="source-credential-reference" type="credentialReferenceType" minOccurs="0" maxOccurs="1">
+                        <xs:element name="source-credential-reference" type="credential-reference:credentialReferenceType" minOccurs="0" maxOccurs="1">
                             <xs:annotation>
                                 <xs:documentation>
                                     Credential to be used by the configuration to connect to the source destination.
@@ -926,7 +929,7 @@
                 <xs:complexType>
                     <xs:sequence>
                         <xs:element name="target-context" type="contextType" minOccurs="0" maxOccurs="1" />
-                        <xs:element name="target-credential-reference" type="credentialReferenceType" minOccurs="0" maxOccurs="1">
+                        <xs:element name="target-credential-reference" type="credential-reference:credentialReferenceType" minOccurs="0" maxOccurs="1">
                             <xs:annotation>
                                 <xs:documentation>
                                     Credential to be used by the configuration to connect to the target destination.
@@ -973,50 +976,6 @@
                 </xs:complexType>
             </xs:element>
         </xs:sequence>
-    </xs:complexType>
-
-    <!-- Credential Reference Types -->
-    <xs:attributeGroup name="credentialReferenceStoreBased">
-        <xs:annotation>
-            <xs:documentation>
-                Group of attributes used when referencing credential through credential store.
-            </xs:documentation>
-        </xs:annotation>
-        <xs:attribute name="store" type="xs:string" use="optional">
-            <xs:annotation>
-                <xs:documentation>
-                    Credential store name used to fetch credential with given 'alias' from.
-                    Credential store name has to be defined elsewhere.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="alias" type="xs:string" use="optional">
-            <xs:annotation>
-                <xs:documentation>
-                    Alias of credential in the credential store.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="type" type="xs:string" use="optional">
-            <xs:annotation>
-                <xs:documentation>
-                    Type of credential to be fetched from credential store.
-                    It is usually fully qualified class name.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-    </xs:attributeGroup>
-
-    <xs:complexType name="credentialReferenceType">
-        <xs:attributeGroup ref="credentialReferenceStoreBased"/>
-        <xs:attribute name="clear-text" type="xs:string" use="optional">
-            <xs:annotation>
-                <xs:documentation>
-                    Credential/password in clear text. Use just for testing purpose.
-                    Otherwise use credential store to mask the actual credential from your configuration.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
     </xs:complexType>
 
 </xs:schema>
