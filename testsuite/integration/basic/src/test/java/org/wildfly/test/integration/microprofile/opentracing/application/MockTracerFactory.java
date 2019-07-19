@@ -1,4 +1,4 @@
-package org.jboss.as.test.integration.microprofile.opentracing.application;
+package org.wildfly.test.integration.microprofile.opentracing.application;
 
 import io.opentracing.Tracer;
 import io.opentracing.contrib.tracerresolver.TracerFactory;

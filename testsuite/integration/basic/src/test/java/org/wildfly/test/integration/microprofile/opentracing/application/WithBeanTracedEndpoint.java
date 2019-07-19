@@ -1,4 +1,4 @@
-package org.jboss.as.test.integration.microprofile.opentracing.application;
+package org.wildfly.test.integration.microprofile.opentracing.application;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;

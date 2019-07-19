@@ -1,4 +1,4 @@
-package org.jboss.as.test.integration.microprofile.opentracing;
+package org.wildfly.test.integration.microprofile.opentracing;
 
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
@@ -11,9 +11,9 @@ import org.eclipse.microprofile.opentracing.ClientTracingRegistrar;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.integration.microprofile.opentracing.application.MockTracerFactory;
-import org.jboss.as.test.integration.microprofile.opentracing.application.OpenTracingApplication;
-import org.jboss.as.test.integration.microprofile.opentracing.application.TracedEndpoint;
+import org.wildfly.test.integration.microprofile.opentracing.application.MockTracerFactory;
+import org.wildfly.test.integration.microprofile.opentracing.application.OpenTracingApplication;
+import org.wildfly.test.integration.microprofile.opentracing.application.TracedEndpoint;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;

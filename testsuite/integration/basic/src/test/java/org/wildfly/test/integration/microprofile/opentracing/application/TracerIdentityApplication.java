@@ -18,46 +18,36 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- *
  */
-package jboss.as.test.integration.microprofile.opentracing.application;
+package org.wildfly.test.integration.microprofile.opentracing.application;
 
 import javax.inject.Inject;
+import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Application;
 
+import io.jaegertracing.internal.JaegerTracer;
 import io.opentracing.Tracer;
 
 /**
- * A simple REST service which is able to respond with simple message or perform request to another URI.
- *
- * @author jstourac@redhat.com
+ * @author <a href="mailto:mjurc@redhat.com">Michal Jurc</a> (c) 2018 Red Hat, Inc.
  */
+@ApplicationPath("service-endpoint")
+public class TracerIdentityApplication extends Application {
 
-@Path("/")
-public class SimpleJaxRs extends Application {
+    @Path("/app")
+    public static class TestResource {
 
-    public static final String GET_TRACER = "/getTracer";
+        @Inject
+        private Tracer tracer;
 
-    public static final String TRACER_NOT_INITIALIZED = "No Tracer instance initialized!";
-
-    @Inject
-    Tracer tracer;
-
-    @QueryParam("uri")
-    String uri;
-
-    @GET
-    @Path(GET_TRACER)
-    @Produces({"text/html"})
-    public String getTracer() {
-        if (tracer == null) {
-            return TRACER_NOT_INITIALIZED;
-        } else {
-            return "Tracer instance is: " + tracer.toString();
+        @GET
+        @Produces("text/plain")
+        public String get() {
+            JaegerTracer jTracer = (JaegerTracer) tracer;
+            return Integer.toString(System.identityHashCode(jTracer));
         }
     }
 }
