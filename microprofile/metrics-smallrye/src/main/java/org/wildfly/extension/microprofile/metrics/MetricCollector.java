@@ -33,7 +33,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBDEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.wildfly.extension.microprofile.metrics.UnitConverter.unitSuffix;
 import static org.wildfly.extension.microprofile.metrics._private.MicroProfileMetricsLogger.LOGGER;
 
 import java.util.ArrayList;
@@ -42,14 +41,20 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import io.prometheus.client.Collector.MetricFamilySamples;
-import io.prometheus.client.CollectorRegistry;
-import io.prometheus.client.CounterMetricFamily;
-import io.prometheus.client.GaugeMetricFamily;
+import io.smallrye.metrics.ExtendedMetadata;
+import io.smallrye.metrics.MetricRegistries;
+import org.eclipse.microprofile.metrics.Counter;
+import org.eclipse.microprofile.metrics.Gauge;
+import org.eclipse.microprofile.metrics.Metadata;
+import org.eclipse.microprofile.metrics.Metric;
+import org.eclipse.microprofile.metrics.MetricID;
+import org.eclipse.microprofile.metrics.MetricRegistry;
+import org.eclipse.microprofile.metrics.MetricType;
+import org.eclipse.microprofile.metrics.MetricUnits;
+import org.eclipse.microprofile.metrics.Tag;
 import org.jboss.as.controller.LocalModelControllerClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -65,7 +70,6 @@ import org.jboss.dmr.ModelType;
 public class MetricCollector {
 
 
-    private final PrometheusCollector prometheusCollector;
     private final boolean exposeAnySubsystem;
     private String globalPrefix;
     private final List<String> exposedSubsystems;
@@ -76,28 +80,22 @@ public class MetricCollector {
         this.exposedSubsystems = exposedSubsystems;
         this.exposeAnySubsystem = exposedSubsystems.remove("*");
         this.globalPrefix = globalPrefix;
-        this.prometheusCollector = new PrometheusCollector();
-        this.prometheusCollector.register(CollectorRegistry.defaultRegistry);
-    }
-
-    void close() {
-        CollectorRegistry.defaultRegistry.unregister(prometheusCollector);
     }
 
     // collect metrics from the resources
     public MetricRegistration collectResourceMetrics(final Resource resource,
-                                              ImmutableManagementResourceRegistration managementResourceRegistration,
-                                              Function<PathAddress, PathAddress> resourceAddressResolver) {
+                                                     ImmutableManagementResourceRegistration managementResourceRegistration,
+                                                     Function<PathAddress, PathAddress> resourceAddressResolver) {
         MetricRegistration registration = new MetricRegistration();
         collectResourceMetrics0(resource, managementResourceRegistration, EMPTY_ADDRESS, resourceAddressResolver, registration);
         return registration;
     }
 
     private void collectResourceMetrics0(final Resource current,
-                                        ImmutableManagementResourceRegistration managementResourceRegistration,
+                                         ImmutableManagementResourceRegistration managementResourceRegistration,
                                          PathAddress address,
                                          Function<PathAddress, PathAddress> resourceAddressResolver,
-                                        MetricRegistration registration) {
+                                         MetricRegistration registration) {
         if (!isExposingMetrics(address)) {
             return;
         }
@@ -122,40 +120,15 @@ public class MetricCollector {
             }
             PathAddress resourceAddress = resourceAddressResolver.apply(address);
             MeasurementUnit unit = attributeAccess.getAttributeDefinition().getMeasurementUnit();
-            boolean counter = attributeAccess.getFlags().contains(AttributeAccess.Flag.COUNTER_METRIC);
-            MetricMetadata metricMetadata = new MetricMetadata(attributeName, resourceAddress, unit, globalPrefix, counter);
+            boolean isCounter = attributeAccess.getFlags().contains(AttributeAccess.Flag.COUNTER_METRIC);
+            MetricMetadata metricMetadata = new MetricMetadata(attributeName, resourceAddress, globalPrefix);
             String attributeDescription = resourceDescription.get(ATTRIBUTES, attributeName, DESCRIPTION).asStringOrNull();
-            final MetricFamilySamples metricFamilySamples;
-            if (counter) {
-                metricFamilySamples = new CounterMetricFamily(metricMetadata.metricName, attributeDescription, metricMetadata.labelNames);
-            } else {
-                metricFamilySamples = new GaugeMetricFamily(metricMetadata.metricName, attributeDescription, metricMetadata.labelNames);
-            }
-            Supplier<Optional<MetricFamilySamples.Sample>> sampleSupplier = () -> {
-                final ModelNode readAttributeOp = new ModelNode();
-                readAttributeOp.get(OP).set(READ_ATTRIBUTE_OPERATION);
-                readAttributeOp.get(OP_ADDR).set(resourceAddress.toModelNode());
-                readAttributeOp.get(ModelDescriptionConstants.INCLUDE_UNDEFINED_METRIC_VALUES).set(true);
-                readAttributeOp.get(NAME).set(attributeName);
-                ModelNode response = modelControllerClient.execute(readAttributeOp);
-                String error = getFailureDescription(response);
-                if (error != null) {
-                    throw LOGGER.unableToReadAttribute(attributeName, address, error);
-                }
-                ModelNode result = response.get(RESULT);
-                if (result.isDefined()) {
-                    try {
-                        double initialValue = result.asDouble();
-                        double scaledValue = UnitConverter.scaleToBase(initialValue, unit);
-                        return Optional.of(new MetricFamilySamples.Sample(metricMetadata.metricName, metricMetadata.labelNames, metricMetadata.labelValues, scaledValue));
-                    } catch (Exception e) {
-                        throw LOGGER.unableToConvertAttribute(attributeName, address, e);
-                    }
-                }
-                return Optional.empty();
-            };
-            prometheusCollector.addMetricFamilySampleSupplier(metricFamilySamples, sampleSupplier);
-            registration.addUnregistrationTask(() -> prometheusCollector.removeMetricFamilySampleSupplier(metricMetadata.metricName, sampleSupplier));
+
+            Tag[] tags = createTags(metricMetadata);
+            MetricID metricID = new MetricID(metricMetadata.metricName, tags);
+
+            registerMetric(metricMetadata, resourceAddress, attributeName, unit, attributeDescription, isCounter, tags);
+            registration.addUnregistrationTask(() -> MetricRegistries.get(MetricRegistry.Type.VENDOR).remove(metricID));
         }
 
         for (String type : current.getChildTypes()) {
@@ -167,6 +140,169 @@ public class MetricCollector {
                 }
             }
         }
+    }
+
+    private void registerMetric(MetricMetadata metricMetadata, PathAddress address, String attributeName, MeasurementUnit unit, String description, boolean isCounter, Tag[] tags) {
+        final Metric metric;
+        if (isCounter) {
+            metric = new Counter() {
+                @Override
+                public void inc() {
+                }
+
+                @Override
+                public void inc(long n) {
+                }
+
+                @Override
+                public long getCount() {
+                    ModelNode result = readAttributeValue(address, attributeName);
+                    if (result.isDefined()) {
+                        try {
+                            return result.asLong();
+                        } catch (Exception e) {
+                            throw LOGGER.unableToConvertAttribute(attributeName, address, e);
+                        }
+                    }
+                    return 0;
+                }
+            };
+        } else {
+            metric = new Gauge<Number>() {
+                @Override
+                public Double getValue() {
+                    ModelNode result = readAttributeValue(address, attributeName);
+                    if (result.isDefined()) {
+                        try {
+                            return result.asDouble();
+                        } catch (Exception e) {
+                            throw LOGGER.unableToConvertAttribute(attributeName, address, e);
+                        }
+                    }
+                    return 0.0;
+                }
+            };
+        }
+        final Metadata metadata;
+        MetricRegistry vendorRegistry = MetricRegistries.get(MetricRegistry.Type.VENDOR);
+        synchronized (vendorRegistry) {
+            Metadata existingMetadata = vendorRegistry.getMetadata().get(metricMetadata.metricName);
+            if (existingMetadata != null) {
+                metadata = existingMetadata;
+            } else {
+                metadata = new ExtendedMetadata(metricMetadata.metricName, metricMetadata.metricName, description,
+                        isCounter ? MetricType.COUNTER : MetricType.GAUGE, metricUnit(unit),
+                        null, false,
+                        // for WildFly subsystem metrics, the microprofile scope is put in the OpenMetrics tags
+                        // so that the name of the metric does not change ("vendor_" will not be prepended to it).
+                        Optional.of(false));
+            }
+            vendorRegistry.register(metadata, metric, tags);
+        }
+    }
+
+    private String metricUnit(MeasurementUnit unit) {
+        if (unit == null) {
+            return MetricUnits.NONE;
+        }
+        switch (unit) {
+
+            case PERCENTAGE:
+                return MetricUnits.PERCENT;
+            case BYTES:
+                return MetricUnits.BYTES;
+            case KILOBYTES:
+                return MetricUnits.KILOBYTES;
+            case MEGABYTES:
+                return MetricUnits.MEGABYTES;
+            case GIGABYTES:
+                return MetricUnits.GIGABYTES;
+            case TERABYTES:
+                return "terabytes";
+            case PETABYTES:
+                return "petabytes";
+            case BITS:
+                return MetricUnits.BITS;
+            case KILOBITS:
+                return MetricUnits.KILOBITS;
+            case MEGABITS:
+                return MetricUnits.MEBIBITS;
+            case GIGABITS:
+                return MetricUnits.GIGABITS;
+            case TERABITS:
+                return "terabits";
+            case PETABITS:
+                return "petabits";
+            case EPOCH_MILLISECONDS:
+                return MetricUnits.MILLISECONDS;
+            case EPOCH_SECONDS:
+                return MetricUnits.SECONDS;
+            case JIFFYS:
+                return "jiffys";
+            case NANOSECONDS:
+                return MetricUnits.NANOSECONDS;
+            case MICROSECONDS:
+                return MetricUnits.MICROSECONDS;
+            case MILLISECONDS:
+                return MetricUnits.MILLISECONDS;
+            case SECONDS:
+                return MetricUnits.SECONDS;
+            case MINUTES:
+                return MetricUnits.MINUTES;
+            case HOURS:
+                return MetricUnits.HOURS;
+            case DAYS:
+                return MetricUnits.DAYS;
+            case PER_JIFFY:
+                return "per-jiffy";
+            case PER_NANOSECOND:
+                return "per_nanoseconds";
+            case PER_MICROSECOND:
+                return "per_microseconds";
+            case PER_MILLISECOND:
+                return "per_milliseconds";
+            case PER_SECOND:
+                return MetricUnits.PER_SECOND;
+            case PER_MINUTE:
+                return "per_minutes";
+            case PER_HOUR:
+                return "per_hour";
+            case PER_DAY:
+                return "per_day";
+            case CELSIUS:
+                return "degree_celsius";
+            case KELVIN:
+                return "kelvin";
+            case FAHRENHEIGHT:
+                return "degree_fahrenheit";
+            case NONE:
+                default:
+                    return "none";
+        }
+    }
+
+    private Tag[] createTags(MetricMetadata metadata) {
+        Tag[] tags = new Tag[metadata.labelNames.size()];
+        for (int i = 0; i < metadata.labelNames.size(); i++) {
+            String name = metadata.labelNames.get(i);
+            String value = metadata.labelValues.get(i);
+            tags[i] = new Tag(name, value);
+        }
+        return tags;
+    }
+
+    private ModelNode readAttributeValue(PathAddress address, String attributeName) {
+        final ModelNode readAttributeOp = new ModelNode();
+        readAttributeOp.get(OP).set(READ_ATTRIBUTE_OPERATION);
+        readAttributeOp.get(OP_ADDR).set(address.toModelNode());
+        readAttributeOp.get(ModelDescriptionConstants.INCLUDE_UNDEFINED_METRIC_VALUES).set(true);
+        readAttributeOp.get(NAME).set(attributeName);
+        ModelNode response = modelControllerClient.execute(readAttributeOp);
+        String error = getFailureDescription(response);
+        if (error != null) {
+            throw LOGGER.unableToReadAttribute(attributeName, address, error);
+        }
+        return  response.get(RESULT);
     }
 
     private boolean isExposingMetrics(PathAddress address) {
@@ -190,43 +326,6 @@ public class MetricCollector {
             return address.getElement(0).getValue();
         } else {
             return getSubsystemName(address.subAddress(1));
-        }
-    }
-
-    void collectMetricFamilies(ImmutableManagementResourceRegistration managementResourceRegistration,
-                                       final PathAddress address) {
-        if (!isExposingMetrics(address)) {
-            return;
-        }
-
-        ModelNode resourceDescription = null;
-        Map<String, AttributeAccess> attributes = managementResourceRegistration.getAttributes(address);
-        for (Map.Entry<String, AttributeAccess> entry : attributes.entrySet()) {
-            String attributeName = entry.getKey();
-            AttributeAccess attributeAccess = entry.getValue();
-            if (!isCollectibleMetric(attributeAccess)) {
-                LOGGER.debugf("Type %s is not supported for MicroProfile Metrics, the attribute %s on %s will not be registered.",
-                        attributeAccess.getAttributeDefinition().getType(), attributeName, address);
-                continue;
-            }
-            if (resourceDescription == null) {
-                DescriptionProvider modelDescription = managementResourceRegistration.getModelDescription(address);
-                resourceDescription = modelDescription.getModelDescription(Locale.getDefault());
-            }
-            boolean counter = attributeAccess.getFlags().contains(AttributeAccess.Flag.COUNTER_METRIC);
-            MetricMetadata metricMetadata = new MetricMetadata(attributeName, address, attributeAccess.getAttributeDefinition().getMeasurementUnit(), globalPrefix, counter);
-            String attributeDescription = resourceDescription.get(ATTRIBUTES, attributeName, DESCRIPTION).asStringOrNull();
-            final MetricFamilySamples metricFamilySamples;
-            if (counter) {
-                metricFamilySamples = new CounterMetricFamily(metricMetadata.metricName, attributeDescription, metricMetadata.labelNames);
-            } else {
-                metricFamilySamples = new GaugeMetricFamily(metricMetadata.metricName, attributeDescription, metricMetadata.labelNames);
-            }
-            prometheusCollector.addMetricFamilySamples(metricFamilySamples);
-        }
-
-        for (PathElement childAddress : managementResourceRegistration.getChildAddresses(address)) {
-            collectMetricFamilies(managementResourceRegistration, address.append(childAddress));
         }
     }
 
@@ -277,7 +376,7 @@ public class MetricCollector {
         private final List<String> labelNames;
         private final List<String> labelValues;
 
-        MetricMetadata(String attributeName, PathAddress address, MeasurementUnit unit, String globalPrefix, boolean counter) {
+        MetricMetadata(String attributeName, PathAddress address, String globalPrefix) {
             String metricPrefix = "";
             labelNames = new ArrayList<>();
             labelValues = new ArrayList<>();
@@ -286,10 +385,10 @@ public class MetricCollector {
                 String value = element.getValue();
                 // prepend the subsystem or statistics name to the attribute
                 if (key.equals(SUBSYSTEM) || key.equals("statistics")) {
-                    metricPrefix += value + "_";
+                    metricPrefix += value + "-";
                     continue;
                 }
-                labelNames.add(getPrometheusMetricName(key, null, false));
+                labelNames.add(getPrometheusMetricName(key));
                 labelValues.add(value);
             }
             // if the resource address defines a deployment (without subdeployment),
@@ -298,16 +397,15 @@ public class MetricCollector {
                 labelValues.add(labelValues.get(labelNames.indexOf(DEPLOYMENT)));
             }
             if (globalPrefix != null && !globalPrefix.isEmpty()) {
-                metricPrefix = globalPrefix + "_" + metricPrefix;
+                metricPrefix = globalPrefix + "-" + metricPrefix;
             }
-            metricName = getPrometheusMetricName(metricPrefix + attributeName, unit, counter);
+            metricName = getPrometheusMetricName(metricPrefix + attributeName);
         }
 
-        private static String getPrometheusMetricName(String name, MeasurementUnit unit, boolean counter) {
-            String prometheusName = name + unitSuffix(unit) + (counter ? "_total" : "");
-            prometheusName =prometheusName.replaceAll("[^\\w]+","_");
-            prometheusName = decamelize(prometheusName);
-            return prometheusName;
+        private static String getPrometheusMetricName(String name) {
+            name =name.replaceAll("[^\\w]+","_");
+            name = decamelize(name);
+            return name;
         }
 
 
