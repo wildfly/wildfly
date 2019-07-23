@@ -29,7 +29,6 @@ import org.wildfly.clustering.ee.Batcher;
  *
  * @author Paul Ferraro
  *
- * @param <G> the group identifier type
  * @param <I> the bean identifier type
  * @param <T> the bean instance type
  */

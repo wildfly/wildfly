@@ -30,7 +30,6 @@ import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
  *
  * @author Paul Ferraro
  *
- * @param <G> the group identifier type
  * @param <I> the bean identifier type
  * @param <T> the bean type
  */
