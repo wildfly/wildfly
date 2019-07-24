@@ -1766,6 +1766,12 @@
                 <groupId>net.shibboleth.utilities</groupId>
                 <artifactId>java-support</artifactId>
                 <version>${version.net.shibboleth.utilities.java-support}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.google.code.findbugs</groupId>
+                        <artifactId>jsr305</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -3047,6 +3053,10 @@
                     <exclusion>
                         <groupId>org.springframework</groupId>
                         <artifactId>spring-web</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>jcl-over-slf4j</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.slf4j</groupId>
@@ -4968,8 +4978,8 @@
                 <version>${version.org.apache.ws.security}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-javamail_1.4_spec</artifactId>
+                        <groupId>org.apache.geronimo.javamail</groupId>
+                        <artifactId>geronimo-javamail_1.4_mail</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.opensaml</groupId>
@@ -5195,8 +5205,16 @@
                 <version>${version.sun.jaxb}</version>
                 <exclusions>
                     <exclusion>
+                        <groupId>javax.activation</groupId>
+                        <artifactId>javax.activation-api</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>javax.xml.bind</groupId>
                         <artifactId>jaxb-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jvnet.staxex</groupId>
+                        <artifactId>stax-ex</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -7333,6 +7351,12 @@
                 <groupId>org.jboss.ws.projects</groupId>
                 <artifactId>jaxws-undertow-httpspi</artifactId>
                 <version>${version.org.jboss.ws.jaxws-undertow-httpspi}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.xml.ws</groupId>
+                        <artifactId>jboss-jaxws-api_2.2_spec</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -7395,6 +7419,12 @@
                 <groupId>org.opensaml</groupId>
                 <artifactId>opensaml-core</artifactId>
                 <version>${version.org.opensaml.opensaml}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>io.dropwizard.metrics</groupId>
+                        <artifactId>metrics-core</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -7413,6 +7443,12 @@
                 <groupId>org.opensaml</groupId>
                 <artifactId>opensaml-saml-impl</artifactId>
                 <version>${version.org.opensaml.opensaml}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.velocity</groupId>
+                        <artifactId>velocity</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
