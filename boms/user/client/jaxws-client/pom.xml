@@ -87,6 +87,16 @@
                             <bomWithDependencies>true</bomWithDependencies>
                             <licenses>true</licenses>
                             <inheritExclusions>UNMANAGED</inheritExclusions>
+                            <excludeDependencies>
+                                <dependency>
+                                    <groupId>log4j</groupId>
+                                    <artifactId>log4j</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.slf4j</groupId>
+                                    <artifactId>jcl-over-slf4j</artifactId>
+                                </dependency>
+                            </excludeDependencies>
                             <includeDependencies>
                                 <dependency>
                                     <groupId>org.jboss.ws.cxf</groupId>
