@@ -133,7 +133,7 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
                 return builder.setAllowExpression(false).setCapabilityReference(new CapabilityReference(DEFAULT_CAPABILITIES.get(InfinispanCacheRequirement.CONFIGURATION), InfinispanCacheRequirement.CONFIGURATION, WILDCARD_PATH));
             }
         },
-        MODULE("module", ModelType.STRING) {
+        MODULE(ModelDescriptionConstants.MODULE, ModelType.STRING) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setDefaultValue(new ModelNode("org.jboss.as.clustering.infinispan"))
@@ -141,7 +141,7 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
                         ;
             }
         },
-        STATISTICS_ENABLED("statistics-enabled", ModelType.BOOLEAN) {
+        STATISTICS_ENABLED(ModelDescriptionConstants.STATISTICS_ENABLED, ModelType.BOOLEAN) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setDefaultValue(ModelNode.FALSE);
