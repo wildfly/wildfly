@@ -18,6 +18,7 @@
  */
 package org.jboss.as.clustering.controller;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
@@ -33,12 +34,18 @@ import org.jboss.dmr.ModelNode;
  */
 public interface Operation<C> extends Definable<OperationDefinition> {
 
+    final AttributeDefinition[] NO_ATTRIBUTES = new AttributeDefinition[0];
+
     default String getName() {
         return this.getDefinition().getName();
     }
 
     default boolean isReadOnly() {
         return this.getDefinition().getFlags().contains(OperationEntry.Flag.READ_ONLY);
+    }
+
+    default AttributeDefinition[] getParameters() {
+        return NO_ATTRIBUTES;
     }
 
     /**
