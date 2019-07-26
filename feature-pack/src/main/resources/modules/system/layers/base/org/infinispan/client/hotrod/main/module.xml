@@ -20,7 +20,10 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-<module xmlns="urn:jboss:module:1.5" name="org.infinispan.client.hotrod">
+<!-- Workaround for ISPN-10248 -->
+<!-- Absorb into org.wildfly.clustering.infinispan.client to prevent linkage errors -->
+<module-alias xmlns="urn:jboss:module:1.5" name="org.infinispan.client.hotrod" target-name="org.wildfly.clustering.infinispan.client"/>
+<!--module xmlns="urn:jboss:module:1.5" name="org.infinispan.client.hotrod">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -38,4 +41,4 @@
         <module name="org.infinispan.commons"/>
         <module name="org.jboss.logging"/>
     </dependencies>
-</module>
+</module-->
