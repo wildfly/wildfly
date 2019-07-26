@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OCSPServer master="true" xmlns="http://xipki.org/ocsp/conf/v2">
+    <responders>
+        <responder name="responder1">
+            <servletPaths>
+                <servletPath>/ocsp</servletPath>
+            </servletPaths>
+            <mode>RFC2560</mode>
+            <inheritCaRevocation>true</inheritCaRevocation>
+            <signer>signer1</signer>
+            <request>request1</request>
+            <response>response1</response>
+            <stores>
+                <store>dbstore1</store>
+            </stores>
+        </responder>
+    </responders>
+    <!-- signers -->
+    <signers>
+        <signer name="signer1">
+            <type>JKS</type>
+            <key>password=Elytron,keystore=file:target/test-classes/ca/jks/ocsp-responder.keystore</key>
+            <algorithms>
+                <algorithm>SHA1withRSA</algorithm>
+            </algorithms>
+        </signer>
+    </signers>
+    <!-- datasources -->
+    <datasources>
+        <datasource name="datasource1">
+            <conf>
+                <file>target/test-classes/org/wildfly/test/integration/elytron/certs/ocsp/ocsp-db.properties</file>
+            </conf>
+        </datasource>
+    </datasources>
+    <!-- stores -->
+    <stores>
+        <store name="dbstore1">
+            <source>
+                <type>XIPKI-DB</type>
+                <datasource>datasource1</datasource>
+                <conf></conf>
+            </source>
+            <ignoreExpiredCert>true</ignoreExpiredCert>
+            <ignoreNotYetValidCert>true</ignoreNotYetValidCert>
+            <retentionInterval>-1</retentionInterval>
+            <unknownSerialAsGood>false</unknownSerialAsGood>
+            <includeArchiveCutoff>true</includeArchiveCutoff>
+            <includeCrlID>false</includeCrlID>
+        </store>
+    </stores>
+    <!-- requestOptions -->
+    <requestOptions>
+        <requestOption name="request1">
+            <supportsHttpGet>true</supportsHttpGet>
+            <maxRequestListCount>10</maxRequestListCount>
+            <maxRequestSize>4096</maxRequestSize>
+            <versions>
+                <version>v1</version>
+            </versions>
+            <nonce>
+                <occurrence>optional</occurrence>
+                <minLen>4</minLen>
+                <maxLen>32</maxLen>
+            </nonce>
+            <signatureRequired>false</signatureRequired>
+            <validateSignature>false</validateSignature>
+            <hashAlgorithms>
+                <algorithm>SHA1</algorithm>
+                <algorithm>SHA256</algorithm>
+                <algorithm>SHA384</algorithm>
+                <algorithm>SHA512</algorithm>
+            </hashAlgorithms>
+        </requestOption>
+    </requestOptions>
+    <responseOptions>
+        <responseOption name="response1">
+            <responderIdByName>true</responderIdByName>
+            <embedCertsMode>SIGNER_AND_CA</embedCertsMode>
+            <includeRevReason>true</includeRevReason>
+            <includeInvalidityDate>false</includeInvalidityDate>
+            <includeCertHash>false</includeCertHash>
+            <certhashAlgorithm>SHA1</certhashAlgorithm>
+        </responseOption>
+    </responseOptions>
+</OCSPServer>
