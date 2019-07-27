@@ -24,6 +24,7 @@ package org.jboss.as.clustering.infinispan.subsystem.remote;
 
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
@@ -95,9 +96,14 @@ public class InvalidationNearCacheResourceDefinition extends NearCacheResourceDe
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(InvalidationNearCacheResourceDefinition.Attribute.class)
                 ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler(InvalidationNearCacheServiceConfigurator::new);
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler(this);
         new SimpleResourceRegistration(descriptor, handler).register(registration);
 
         return registration;
+    }
+
+    @Override
+    public ResourceServiceConfigurator createServiceConfigurator(PathAddress address) {
+        return new InvalidationNearCacheServiceConfigurator(address);
     }
 }
