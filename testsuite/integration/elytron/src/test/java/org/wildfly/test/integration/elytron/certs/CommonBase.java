@@ -83,8 +83,59 @@ public class CommonBase {
                             "/subsystem=elytron/trust-manager=serverTrustManager:write-attribute(name=certificate-revocation-list, value={path=%s})",
                             crlFile));
                 } else {
+                    cli.sendLine(
+                            "/subsystem=elytron/trust-manager=serverTrustManager:undefine-attribute(name=certificate-revocation-list)");
+                }
+            } finally {
+                cli.sendLine(String.format("reload"));
+            }
+        }
+    }
+
+    protected void setPreferCrls(Boolean preferCrls) throws Exception {
+        try (CLIWrapper cli = new CLIWrapper(true)) {
+            try {
+                if (preferCrls != null) {
                     cli.sendLine(String.format(
-                            "/subsystem=elytron/trust-manager=serverTrustManager:undefine-attribute(name=certificate-revocation-list)"));
+                            "/subsystem=elytron/trust-manager=serverTrustManager:write-attribute(name=ocsp.prefer-crls, value=%s)",
+                            preferCrls));
+                } else {
+                    cli.sendLine(
+                            "/subsystem=elytron/trust-manager=serverTrustManager:undefine-attribute(name=ocsp.prefer-crls)");
+                }
+            } finally {
+                cli.sendLine(String.format("reload"));
+            }
+        }
+    }
+
+    protected void setOcspUrl(String ocspResponderUrl) throws Exception {
+        try (CLIWrapper cli = new CLIWrapper(true)) {
+            try {
+                if (ocspResponderUrl != null) {
+                    cli.sendLine(String.format(
+                            "/subsystem=elytron/trust-manager=serverTrustManager:write-attribute(name=ocsp.responder, value=%s)",
+                            ocspResponderUrl));
+                } else {
+                    cli.sendLine(
+                            "/subsystem=elytron/trust-manager=serverTrustManager:undefine-attribute(name=ocsp.responder)");
+                }
+            } finally {
+                cli.sendLine(String.format("reload"));
+            }
+        }
+    }
+
+    protected void setMaxCertChain(Integer maximumCertPath) throws Exception {
+        try (CLIWrapper cli = new CLIWrapper(true)) {
+            try {
+                if (maximumCertPath != null) {
+                    cli.sendLine(String.format(
+                            "/subsystem=elytron/trust-manager=serverTrustManager:write-attribute(name=maximum-cert-path, value=%s)",
+                            maximumCertPath));
+                } else {
+                    cli.sendLine(
+                            "/subsystem=elytron/trust-manager=serverTrustManager:undefine-attribute(name=maximum-cert-path)");
                 }
             } finally {
                 cli.sendLine(String.format("reload"));
