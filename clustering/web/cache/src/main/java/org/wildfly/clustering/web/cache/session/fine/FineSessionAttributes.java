@@ -27,11 +27,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.Mutator;
+import org.wildfly.clustering.ee.MutatorFactory;
 import org.wildfly.clustering.ee.cache.CacheProperties;
 import org.wildfly.clustering.ee.cache.function.ConcurrentMapPutFunction;
 import org.wildfly.clustering.ee.cache.function.ConcurrentMapRemoveFunction;
@@ -52,13 +52,13 @@ public class FineSessionAttributes<NK, K, V> implements SessionAttributes {
     private final Map<K, V> attributeCache;
     private final Map<UUID, Mutator> mutations = new ConcurrentHashMap<>();
     private final Marshaller<Object, V> marshaller;
-    private final BiFunction<K, V, Mutator> mutatorFactory;
+    private final MutatorFactory<K, V> mutatorFactory;
     private final Immutability immutability;
     private final CacheProperties properties;
 
     private volatile Map<String, UUID> names;
 
-    public FineSessionAttributes(NK key, Map<String, UUID> names, Map<NK, Map<String, UUID>> namesCache, Function<UUID, K> keyFactory, Map<K, V> attributeCache, Marshaller<Object, V> marshaller, BiFunction<K, V, Mutator> mutatorFactory, Immutability immutability, CacheProperties properties) {
+    public FineSessionAttributes(NK key, Map<String, UUID> names, Map<NK, Map<String, UUID>> namesCache, Function<UUID, K> keyFactory, Map<K, V> attributeCache, Marshaller<Object, V> marshaller, MutatorFactory<K, V> mutatorFactory, Immutability immutability, CacheProperties properties) {
         this.key = key;
         this.setNames(names);
         this.namesCache = namesCache;
@@ -109,7 +109,7 @@ public class FineSessionAttributes<NK, K, V> implements SessionAttributes {
             if (this.immutability.test(attribute)) {
                 this.mutations.remove(attributeId);
             } else {
-                this.mutations.put(attributeId, this.mutatorFactory.apply(key, value));
+                this.mutations.put(attributeId, this.mutatorFactory.createMutator(key, value));
             }
         }
         return result;
@@ -126,7 +126,7 @@ public class FineSessionAttributes<NK, K, V> implements SessionAttributes {
         if (attribute != null) {
             // If the object is mutable, we need to trigger a mutation on close
             if (!this.immutability.test(attribute)) {
-                this.mutations.putIfAbsent(attributeId, this.mutatorFactory.apply(key, value));
+                this.mutations.putIfAbsent(attributeId, this.mutatorFactory.createMutator(key, value));
             }
         }
         return attribute;
