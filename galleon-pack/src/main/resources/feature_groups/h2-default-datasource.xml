@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="h2-default-datasource" xmlns="urn:jboss:galleon:feature-group:1.0">
+    <feature spec="subsystem.ee.service.default-bindings">
+        <param name="datasource" value="java:jboss/datasources/ExampleDS"/>
+    </feature>
+</feature-group-spec>
+

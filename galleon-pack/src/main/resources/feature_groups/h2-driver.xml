@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="h2-driver" xmlns="urn:jboss:galleon:feature-group:1.0">
+    <feature spec="subsystem.datasources">
+        <feature spec="subsystem.datasources.jdbc-driver">
+            <param name="jdbc-driver" value="h2"/>
+            <param name="driver-name" value="h2"/>
+            <param name="driver-module-name" value="com.h2database.h2"/>
+            <param name="driver-xa-datasource-class-name" value="org.h2.jdbcx.JdbcDataSource"/>
+        </feature>
+    </feature>
+</feature-group-spec>
+

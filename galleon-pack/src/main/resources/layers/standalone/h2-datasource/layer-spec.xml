@@ -1,0 +1,7 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="h2-datasource">
+    <dependencies>
+        <layer name="h2-driver"/>
+    </dependencies>
+    <feature-group name="h2-datasource"/>
+</layer-spec>
