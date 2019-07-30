@@ -27,6 +27,7 @@ import static org.jboss.as.ejb3.deployment.processors.AbstractDeploymentUnitProc
 import java.lang.reflect.Modifier;
 import java.util.List;
 
+import javax.ejb.SessionBean;
 import javax.ejb.Singleton;
 import javax.ejb.Stateful;
 import javax.ejb.Stateless;
@@ -65,6 +66,7 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
     private static final DotName STATELESS_ANNOTATION = DotName.createSimple(Stateless.class.getName());
     private static final DotName STATEFUL_ANNOTATION = DotName.createSimple(Stateful.class.getName());
     private static final DotName SINGLETON_ANNOTATION = DotName.createSimple(Singleton.class.getName());
+    private static final DotName SESSION_BEAN_INTERFACE = DotName.createSimple(SessionBean.class.getName());
     private final boolean defaultSlsbPoolAvailable;
 
     public SessionBeanComponentDescriptionFactory(final boolean appclient, final boolean defaultSlsbPoolAvailable) {
@@ -162,6 +164,9 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
                     ((StatefulComponentDescription) sessionBeanDescription).setPassivationApplicable(passivationApplicable);
                     break;
                 case SINGLETON:
+                    if (sessionBeanClassInfo.interfaceNames().contains(SESSION_BEAN_INTERFACE)) {
+                        EjbLogger.ROOT_LOGGER.singletonCantImplementSessionBean(beanClassName);
+                    }
                     sessionBeanDescription = new SingletonComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnitServiceName, beanMetaData);
                     break;
                 default:
