@@ -37,8 +37,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
-import org.wildfly.clustering.infinispan.client.InfinispanClientRequirement;
-import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
+import org.wildfly.clustering.infinispan.client.service.RemoteCacheServiceConfigurator;
 import org.wildfly.clustering.marshalling.spi.Marshallability;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
 import org.wildfly.clustering.service.FunctionalService;
@@ -59,7 +58,9 @@ public class HotRodSessionManagerFactoryServiceConfigurator<C extends Marshallab
     private final HotRodSessionManagementConfiguration configuration;
     private final SessionManagerFactoryConfiguration<C, L> factoryConfiguration;
 
-    private volatile SupplierDependency<RemoteCacheContainer> container;
+    private volatile ServiceConfigurator cacheConfigurator;
+    @SuppressWarnings("rawtypes")
+    private volatile SupplierDependency<RemoteCache> cache;
 
     public HotRodSessionManagerFactoryServiceConfigurator(HotRodSessionManagementConfiguration configuration, SessionManagerFactoryConfiguration<C, L> factoryConfiguration) {
         super(ServiceName.JBOSS.append("clustering", "web", factoryConfiguration.getDeploymentName()));
@@ -70,14 +71,17 @@ public class HotRodSessionManagerFactoryServiceConfigurator<C extends Marshallab
     @Override
     public ServiceConfigurator configure(CapabilityServiceSupport support) {
         String containerName = this.configuration.getContainerName();
-        this.container = new ServiceSupplierDependency<>(InfinispanClientRequirement.REMOTE_CONTAINER.getServiceName(support, containerName));
+        this.cacheConfigurator = new RemoteCacheServiceConfigurator<>(this.getServiceName().append("cache"), containerName, this.getDeploymentName(), this.getConfigurationName(), new SessionManagerNearCacheFactory<>(this.getMaxActiveSessions(), this.getAttributePersistenceStrategy())).configure(support);
+        this.cache = new ServiceSupplierDependency<>(this.cacheConfigurator.getServiceName());
         return this;
     }
 
     @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
+        this.cacheConfigurator.build(target).install();
+
         ServiceBuilder<?> builder = target.addService(this.getServiceName());
-        Consumer<SessionManagerFactory<L, TransactionBatch>> factory = this.container.register(builder).provides(this.getServiceName());
+        Consumer<SessionManagerFactory<L, TransactionBatch>> factory = this.cache.register(builder).provides(this.getServiceName());
         Service service = new FunctionalService<>(factory, Function.identity(), this, Consumers.close());
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
@@ -139,10 +143,6 @@ public class HotRodSessionManagerFactoryServiceConfigurator<C extends Marshallab
 
     @Override
     public <K, V> RemoteCache<K, V> getCache() {
-        RemoteCacheContainer container = this.container.get();
-        String cacheName = this.getDeploymentName();
-        try (RemoteCacheContainer.NearCacheRegistration registration = container.registerNearCacheFactory(cacheName, new SessionManagerNearCacheFactory<>(this.getMaxActiveSessions(), this.getAttributePersistenceStrategy()))) {
-            return this.container.get().administration().getOrCreateCache(cacheName, this.getConfigurationName());
-        }
+        return this.cache.get();
     }
 }
