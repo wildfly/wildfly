@@ -1,6 +1,6 @@
 [[RBAC]]
 = Authorizing management actions with Role Based Access Control
-ifdef::env-github[:imagesdir: ../]
+ifdef::env-github[:imagesdir: ../images/]
 
 WildFly introduces a Role Based Access Control scheme that allows
 different administrative users to have different sets of permissions to
@@ -257,7 +257,7 @@ admin console.
 Navigate to the "Administration" tab and the "Users" subtab. From there
 individual user mappings can be added, removed, or edited.
 
-image:images/usermapping.png[images/usermapping.png,width=450]
+image:usermapping.png[images/usermapping.png,width=450]
 
 The CLI can also be used to map individuals users to roles.
 
@@ -342,7 +342,7 @@ console.
 Navigate to the "Administration" tab and the "Groups" subtab. From there
 group mappings can be added, removed, or edited.
 
-image:images/groupmapping.png[images/groupmapping.png,width=450]
+image:groupmapping.png[images/groupmapping.png,width=450]
 
 The CLI can also be used to map groups to roles. The only difference to
 individual user mapping is the value of the `type` attribute should be
@@ -394,7 +394,7 @@ In the web based admin console, navigate to the "Administration" tab,
 "Roles" subtab, highlight the relevant role, click the "Edit" button and
 click on the "Include All" checkbox:
 
-image:images/includeall.png[images/includeall.png,width=450]
+image:includeall.png[images/includeall.png,width=450]
 
 The same change can be made using the CLI:
 
@@ -421,7 +421,7 @@ where the `include-all` attribute is set to true for a role.
 In the admin console, excludes are done in the same screens as includes.
 In the add dialog, simply change the "Type" pulldown to "Exclude".
 
-image:images/excludemapping.png[images/excludemapping.png,width=450]
+image:excludemapping.png[images/excludemapping.png,width=450]
 
 In the CLI, excludes are identical to includes, except the resource
 address has `exclude` instead of `include` as the key for the last
@@ -588,14 +588,14 @@ Both server-group and host scoped roles can be added, removed or edited
 via the admin console. Select "Scoped Roles" from the "Administration"
 tab, "Roles" subtab:
 
-image:images/scopedroles.png[images/scopedroles.png,width=450]
+image:scopedroles.png[images/scopedroles.png,width=450]
 
 When adding a new scoped role, use the dialogue's "Type" pull down to
 choose between a host scoped role and a server-group scoped role. Then
 place the names of the relevant hosts or server groups in the "Scope"
 text are.
 
-image:images/addscopedrole.png[images/addscopedrole.png,width=450]
+image:addscopedrole.png[images/addscopedrole.png,width=450]
 
 [[configuring-constraints]]
 == Configuring constraints
@@ -1171,7 +1171,7 @@ Users can learn in which roles they are operating. In the admin console,
 click on your name in the top right corner; the roles you are in will be
 shown.
 
-image:images/callersroles.png[images/callersroles.png,width=450]
+image:callersroles.png[images/callersroles.png,width=450]
 
 CLI users should use the `whoami` operation with the `verbose` attribute
 set:
@@ -1251,11 +1251,11 @@ Admin console users can change the role in which they operate by
 clicking on their name in the top right corner and clicking on the "Run
 as..." link.
 
-image:images/callersroles.png[images/callersroles.png,width=450]
+image:callersroles.png[images/callersroles.png,width=450]
 
 Then select the role in which you wish to operate:
 
-image:images/runasrole.png[images/runasrole.png,width=450]
+image:runasrole.png[images/runasrole.png,width=450]
 
 The console will need to be restarted in order for the change to take
 effect.
