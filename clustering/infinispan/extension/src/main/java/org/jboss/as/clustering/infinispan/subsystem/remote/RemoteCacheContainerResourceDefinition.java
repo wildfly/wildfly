@@ -29,6 +29,7 @@ import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
+import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
@@ -45,8 +46,11 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.transform.description.AttributeConverter.DefaultValueAttributeConverter;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker.DiscardAttributeValueChecker;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -106,6 +110,7 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
             }
         },
         SOCKET_TIMEOUT("socket-timeout", ModelType.INT, new ModelNode(60000)),
+        STATISTICS_ENABLED(ModelDescriptionConstants.STATISTICS_ENABLED, ModelType.BOOLEAN, ModelNode.FALSE),
         TCP_NO_DELAY("tcp-no-delay", ModelType.BOOLEAN, ModelNode.TRUE),
         TCP_KEEP_ALIVE("tcp-keep-alive", ModelType.BOOLEAN, ModelNode.FALSE),
         VALUE_SIZE_ESTIMATE("value-size-estimate", ModelType.INT, new ModelNode(512)),
@@ -139,9 +144,17 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
         } else {
             ResourceTransformationDescriptionBuilder builder = parent.addChildResource(RemoteCacheContainerResourceDefinition.WILDCARD_PATH);
 
+            if (InfinispanModel.VERSION_11_0_0.requiresTransformation(version)) {
+                builder.getAttributeBuilder()
+                        .setDiscard(new DiscardAttributeValueChecker(false, true, ModelNode.FALSE), Attribute.STATISTICS_ENABLED.getDefinition())
+                        .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.STATISTICS_ENABLED.getDefinition())
+                        .end();
+            }
             if (InfinispanModel.VERSION_9_0_0.requiresTransformation(version)) {
                 builder.getAttributeBuilder().setValueConverter(new DefaultValueAttributeConverter(Attribute.PROTOCOL_VERSION.getDefinition()), Attribute.PROTOCOL_VERSION.getDefinition());
             }
+
+            RemoteCacheContainerMetric.buildTransformation(version, builder);
 
             ConnectionPoolResourceDefinition.buildTransformation(version, builder);
             SecurityResourceDefinition.buildTransformation(version, builder);
@@ -151,6 +164,8 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
             RemoteClusterResourceDefinition.buildTransformation(version, builder);
 
             ThreadPoolResourceDefinition.CLIENT.buildTransformation(version, builder);
+
+            RemoteCacheResourceDefinition.buildTransformation(version, builder);
         }
     }
 
@@ -167,6 +182,7 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
                 .addCapabilities(Capability.class)
                 .addRequiredChildren(ConnectionPoolResourceDefinition.PATH, ThreadPoolResourceDefinition.CLIENT.getPathElement(), SecurityResourceDefinition.PATH, RemoteTransactionResourceDefinition.PATH)
                 .addRequiredSingletonChildren(NoNearCacheResourceDefinition.PATH)
+                .setResourceTransformation(RemoteCacheContainerResource::new)
                 ;
         ResourceServiceHandler handler = new RemoteCacheContainerServiceHandler(this);
         new SimpleResourceRegistration(descriptor, handler).register(registration);
@@ -180,6 +196,12 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
         new NoNearCacheResourceDefinition().register(registration);
 
         ThreadPoolResourceDefinition.CLIENT.register(registration);
+
+        if (registration.isRuntimeOnlyRegistrationValid()) {
+            new MetricHandler<>(new RemoteCacheContainerMetricExecutor(), RemoteCacheContainerMetric.class).register(registration);
+
+            new RemoteCacheResourceDefinition().register(registration);
+        }
 
         return registration;
     }

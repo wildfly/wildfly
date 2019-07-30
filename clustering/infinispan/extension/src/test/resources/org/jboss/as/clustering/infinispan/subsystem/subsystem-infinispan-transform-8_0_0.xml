@@ -173,7 +173,7 @@
                          min-evictable-idle-time="4"
                          min-idle="5"
         />
-        <invalidation-near-cache max-entries="20"/>
+        <invalidation-near-cache/>
         <remote-clusters>
             <remote-cluster name="primary-site" socket-bindings="jdg1 jdg2 jdg3"/>
             <remote-cluster name="failover-site" socket-bindings="jdg4 jdg5 jdg6"/>

@@ -23,8 +23,8 @@
 package org.jboss.as.clustering.infinispan.subsystem.remote;
 
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.function.UnaryOperator;
 
 import org.infinispan.client.hotrod.configuration.Configuration;
 import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
@@ -38,6 +38,7 @@ import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.clustering.Registrar;
 import org.wildfly.clustering.infinispan.client.InfinispanClientRequirement;
 import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
 import org.wildfly.clustering.infinispan.client.manager.RemoteCacheManager;
@@ -52,11 +53,12 @@ import org.wildfly.clustering.service.SupplierDependency;
  * @author Radoslav Husar
  * @author Paul Ferraro
  */
-public class RemoteCacheContainerServiceConfigurator extends CapabilityServiceNameProvider implements ResourceServiceConfigurator, UnaryOperator<RemoteCacheContainer>, Supplier<RemoteCacheContainer>, Consumer<RemoteCacheContainer> {
+public class RemoteCacheContainerServiceConfigurator extends CapabilityServiceNameProvider implements ResourceServiceConfigurator, Function<RemoteCacheManager, RemoteCacheContainer>, Supplier<RemoteCacheManager>, Consumer<RemoteCacheManager> {
 
     private final String name;
 
     private volatile SupplierDependency<Configuration> configuration;
+    private volatile Registrar<String> registrar;
 
     public RemoteCacheContainerServiceConfigurator(PathAddress address) {
         super(RemoteCacheContainerResourceDefinition.Capability.CONTAINER, address);
@@ -66,6 +68,7 @@ public class RemoteCacheContainerServiceConfigurator extends CapabilityServiceNa
     @Override
     public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.configuration = new ServiceSupplierDependency<>(InfinispanClientRequirement.REMOTE_CONTAINER_CONFIGURATION.getServiceName(context, this.name));
+        this.registrar = (RemoteCacheContainerResource) context.readResource(PathAddress.EMPTY_ADDRESS);
         return this;
     }
 
@@ -78,22 +81,22 @@ public class RemoteCacheContainerServiceConfigurator extends CapabilityServiceNa
     }
 
     @Override
-    public RemoteCacheContainer get() {
+    public RemoteCacheManager get() {
         Configuration configuration = this.configuration.get();
-        RemoteCacheContainer container = new RemoteCacheManager(this.name, configuration);
+        RemoteCacheManager container = new RemoteCacheManager(this.name, configuration, this.registrar);
         container.start();
         InfinispanLogger.ROOT_LOGGER.remoteCacheContainerStarted(this.name);
         return container;
     }
 
     @Override
-    public void accept(RemoteCacheContainer container) {
+    public void accept(RemoteCacheManager container) {
         container.stop();
         InfinispanLogger.ROOT_LOGGER.remoteCacheContainerStopped(this.name);
     }
 
     @Override
-    public RemoteCacheContainer apply(RemoteCacheContainer container) {
+    public RemoteCacheContainer apply(RemoteCacheManager container) {
         return new ManagedRemoteCacheContainer(container);
     }
 }

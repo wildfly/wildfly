@@ -1874,6 +1874,12 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     readAttribute(reader, i, operation, RemoteCacheContainerResourceDefinition.Attribute.VALUE_SIZE_ESTIMATE);
                     break;
                 }
+                case STATISTICS_ENABLED: {
+                    if (this.schema.since(InfinispanSchema.VERSION_9_0)) {
+                        readAttribute(reader, i, operation, RemoteCacheContainerResourceDefinition.Attribute.STATISTICS_ENABLED);
+                        break;
+                    }
+                }
                 default: {
                     throw ParseUtils.unexpectedAttribute(reader, i);
                 }
