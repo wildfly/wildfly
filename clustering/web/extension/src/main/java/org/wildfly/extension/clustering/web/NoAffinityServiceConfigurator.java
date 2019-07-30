@@ -22,10 +22,9 @@
 
 package org.wildfly.extension.clustering.web;
 
-import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.PathAddress;
-import org.wildfly.clustering.web.WebDeploymentConfiguration;
-import org.wildfly.clustering.web.cache.routing.NullRouteLocatorServiceConfigurator;
+import org.wildfly.clustering.web.cache.routing.NullRouteLocatorServiceConfiguratorFactory;
+import org.wildfly.clustering.web.routing.RouteLocatorServiceConfiguratorFactory;
 import org.wildfly.clustering.web.session.DistributableSessionManagementConfiguration;
 
 /**
@@ -38,7 +37,7 @@ public class NoAffinityServiceConfigurator extends AffinityServiceConfigurator<D
     }
 
     @Override
-    public CapabilityServiceConfigurator createRouteLocatorServiceConfigurator(DistributableSessionManagementConfiguration managementConfiguration, WebDeploymentConfiguration deploymentConfiguration) {
-        return new NullRouteLocatorServiceConfigurator(deploymentConfiguration);
+    public RouteLocatorServiceConfiguratorFactory<DistributableSessionManagementConfiguration> get() {
+        return new NullRouteLocatorServiceConfiguratorFactory<>();
     }
 }

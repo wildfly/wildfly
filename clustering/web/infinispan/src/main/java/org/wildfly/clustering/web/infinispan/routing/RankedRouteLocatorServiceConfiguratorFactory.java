@@ -20,24 +20,31 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.clustering.web;
+package org.wildfly.clustering.web.infinispan.routing;
 
-import org.jboss.as.controller.PathAddress;
-import org.wildfly.clustering.web.cache.routing.LocalRouteLocatorServiceConfiguratorFactory;
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
+import org.wildfly.clustering.web.WebDeploymentConfiguration;
+import org.wildfly.clustering.web.infinispan.session.InfinispanSessionManagementConfiguration;
 import org.wildfly.clustering.web.routing.RouteLocatorServiceConfiguratorFactory;
-import org.wildfly.clustering.web.session.DistributableSessionManagementConfiguration;
 
 /**
+ * Factory for creating a service configurator for a ranked route locator.
  * @author Paul Ferraro
  */
-public class LocalAffinityServiceConfigurator extends AffinityServiceConfigurator<DistributableSessionManagementConfiguration> {
+public class RankedRouteLocatorServiceConfiguratorFactory implements RouteLocatorServiceConfiguratorFactory<InfinispanSessionManagementConfiguration> {
 
-    public LocalAffinityServiceConfigurator(PathAddress address) {
-        super(address);
+    private final RankedRoutingConfiguration config;
+
+    public RankedRouteLocatorServiceConfiguratorFactory(RankedRoutingConfiguration config) {
+        this.config = config;
     }
 
     @Override
-    public RouteLocatorServiceConfiguratorFactory<DistributableSessionManagementConfiguration> get() {
-        return new LocalRouteLocatorServiceConfiguratorFactory<>();
+    public CapabilityServiceConfigurator createRouteLocatorServiceConfigurator(InfinispanSessionManagementConfiguration managementConfiguration, WebDeploymentConfiguration deploymentConfiguration) {
+        return new RankedRouteLocatorServiceConfigurator(managementConfiguration, deploymentConfiguration, this.config);
+    }
+
+    public RankedRoutingConfiguration getConfiguration() {
+        return this.config;
     }
 }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2018, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,47 +22,32 @@
 
 package org.wildfly.extension.clustering.web.deployment;
 
-import java.util.Locale;
-
-import javax.xml.namespace.QName;
-
-import org.jboss.as.clustering.controller.Schema;
+import org.wildfly.clustering.web.infinispan.routing.RankedRoutingConfiguration;
+import org.wildfly.extension.clustering.web.RankedAffinityResourceDefinition;
 
 /**
- * Enumerate the schema versions of the distibutable-web deployment descriptor.
  * @author Paul Ferraro
  */
-public enum DistributableWebDeploymentSchema implements Schema<DistributableWebDeploymentSchema> {
+public class MutableRankedRoutingConfiguration implements RankedRoutingConfiguration {
 
-    VERSION_1_0(1, 0),
-    VERSION_2_0(2, 0),
-    ;
-    private static final String ROOT = "distributable-web";
+    private String delimter = RankedAffinityResourceDefinition.Attribute.DELIMITER.getDefinition().getDefaultValue().asString();
+    private int maxRoutes = RankedAffinityResourceDefinition.Attribute.MAX_ROUTES.getDefinition().getDefaultValue().asInt();
 
-    private final int major;
-    private final int minor;
+    @Override
+    public String getDelimiter() {
+        return this.delimter;
+    }
 
-    DistributableWebDeploymentSchema(int major, int minor) {
-        this.major = major;
-        this.minor = minor;
+    public void setDelimiter(String delimiter) {
+        this.delimter = delimiter;
     }
 
     @Override
-    public int major() {
-        return this.major;
+    public int getMaxRoutes() {
+        return this.maxRoutes;
     }
 
-    @Override
-    public int minor() {
-        return this.minor;
-    }
-
-    @Override
-    public String getNamespaceUri() {
-        return String.format(Locale.ROOT, "urn:jboss:%s:%d.%d", ROOT, this.major, this.minor);
-    }
-
-    public QName getRoot() {
-        return new QName(this.getNamespaceUri(), ROOT);
+    public void setMaxRoutes(int maxRoutes) {
+        this.maxRoutes = maxRoutes;
     }
 }
