@@ -26,6 +26,7 @@ import org.infinispan.remoting.transport.Address;
 import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -72,7 +73,10 @@ public enum CacheContainerMetric implements Metric<EmbeddedCacheManager> {
     private final AttributeDefinition definition;
 
     CacheContainerMetric(String name, ModelType type) {
-        this.definition = new SimpleAttributeDefinitionBuilder(name, type, true).setStorageRuntime().build();
+        this.definition = new SimpleAttributeDefinitionBuilder(name, type, true)
+                .setFlags(AttributeAccess.Flag.GAUGE_METRIC)
+                .setStorageRuntime()
+                .build();
     }
 
     @Override

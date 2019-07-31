@@ -26,6 +26,7 @@ import org.infinispan.interceptors.impl.InvalidationInterceptor;
 import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -35,7 +36,7 @@ import org.jboss.dmr.ModelType;
  */
 public enum CacheInvalidationInterceptorMetric implements Metric<InvalidationInterceptor> {
 
-    INVALIDATIONS("invalidations", ModelType.LONG) {
+    INVALIDATIONS("invalidations", ModelType.LONG, AttributeAccess.Flag.COUNTER_METRIC) {
         @Override
         public ModelNode execute(InvalidationInterceptor interceptor) {
             return new ModelNode(interceptor.getInvalidations());
@@ -44,7 +45,7 @@ public enum CacheInvalidationInterceptorMetric implements Metric<InvalidationInt
     ;
     private final AttributeDefinition definition;
 
-    CacheInvalidationInterceptorMetric(String name, ModelType type) {
+    CacheInvalidationInterceptorMetric(String name, ModelType type, AttributeAccess.Flag metricType) {
         this.definition = new SimpleAttributeDefinitionBuilder(name, type)
                 .setStorageRuntime()
                 .build();

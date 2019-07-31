@@ -26,6 +26,7 @@ import org.infinispan.eviction.PassivationManager;
 import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -34,7 +35,7 @@ import org.jboss.dmr.ModelType;
  */
 public enum CachePassivationMetric implements Metric<PassivationManager> {
 
-    PASSIVATIONS("passivations", ModelType.LONG) {
+    PASSIVATIONS("passivations", ModelType.LONG, AttributeAccess.Flag.COUNTER_METRIC) {
         @Override
         public ModelNode execute(PassivationManager manager) {
             return new ModelNode(manager.getPassivations());
@@ -43,8 +44,9 @@ public enum CachePassivationMetric implements Metric<PassivationManager> {
     ;
     private final AttributeDefinition definition;
 
-    CachePassivationMetric(String name, ModelType type) {
+    CachePassivationMetric(String name, ModelType type, AttributeAccess.Flag metricType) {
         this.definition = new SimpleAttributeDefinitionBuilder(name, type)
+                .setFlags(metricType)
                 .setStorageRuntime()
                 .build();
     }
