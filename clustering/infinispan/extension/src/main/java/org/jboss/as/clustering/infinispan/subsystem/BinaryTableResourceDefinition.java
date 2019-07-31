@@ -23,6 +23,8 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.Set;
 
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.transform.OperationTransformer;
@@ -78,8 +80,8 @@ public class BinaryTableResourceDefinition extends TableResourceDefinition {
                 public ModelNode transformOperation(ModelNode operation) {
                     PathAddress storeAddress = Operations.getPathAddress(operation).getParent();
                     ModelNode value = new ModelNode();
-                    for (Class<? extends org.jboss.as.clustering.controller.Attribute> attributeClass : Arrays.asList(Attribute.class, TableResourceDefinition.Attribute.class, TableResourceDefinition.ColumnAttribute.class)) {
-                        for (org.jboss.as.clustering.controller.Attribute attribute : attributeClass.getEnumConstants()) {
+                    for (Set<? extends org.jboss.as.clustering.controller.Attribute> attributes : Arrays.asList(EnumSet.allOf(Attribute.class), EnumSet.complementOf(EnumSet.of(TableResourceDefinition.Attribute.CREATE_ON_START, TableResourceDefinition.Attribute.DROP_ON_STOP)), EnumSet.allOf(TableResourceDefinition.ColumnAttribute.class))) {
+                        for (org.jboss.as.clustering.controller.Attribute attribute : attributes) {
                             String name = attribute.getName();
                             if (operation.hasDefined(name)) {
                                 value.get(name).set(operation.get(name));
