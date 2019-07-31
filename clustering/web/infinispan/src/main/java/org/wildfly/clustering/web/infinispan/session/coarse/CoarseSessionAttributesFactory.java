@@ -35,8 +35,9 @@ import org.infinispan.notifications.cachelistener.event.CacheEntriesEvictedEvent
 import org.wildfly.clustering.infinispan.spi.distribution.Key;
 import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.Mutator;
+import org.wildfly.clustering.ee.MutatorFactory;
 import org.wildfly.clustering.ee.cache.CacheProperties;
-import org.wildfly.clustering.ee.infinispan.CacheEntryMutator;
+import org.wildfly.clustering.ee.infinispan.InfinispanMutatorFactory;
 import org.wildfly.clustering.marshalling.spi.InvalidSerializedFormException;
 import org.wildfly.clustering.marshalling.spi.Marshaller;
 import org.wildfly.clustering.web.cache.session.SessionAttributes;
@@ -58,12 +59,14 @@ public class CoarseSessionAttributesFactory<V> implements SessionAttributesFacto
     private final Marshaller<Map<String, Object>, V> marshaller;
     private final CacheProperties properties;
     private final Immutability immutability;
+    private final MutatorFactory<SessionAttributesKey, V> mutatorFactory;
 
     public CoarseSessionAttributesFactory(Cache<SessionAttributesKey, V> cache, Marshaller<Map<String, Object>, V> marshaller, Immutability immutability, CacheProperties properties) {
         this.cache = cache;
         this.marshaller = marshaller;
         this.immutability = immutability;
         this.properties = properties;
+        this.mutatorFactory = new InfinispanMutatorFactory<>(cache, properties);
     }
 
     @Override
@@ -98,7 +101,7 @@ public class CoarseSessionAttributesFactory<V> implements SessionAttributesFacto
     @Override
     public SessionAttributes createSessionAttributes(String id, Map.Entry<Map<String, Object>, V> entry) {
         SessionAttributesKey key = new SessionAttributesKey(id);
-        Mutator mutator = this.properties.isTransactional() && this.cache.getAdvancedCache().getCacheEntry(key).isCreated() ? Mutator.PASSIVE : new CacheEntryMutator<>(this.cache, key, entry.getValue());
+        Mutator mutator = this.properties.isTransactional() && this.cache.getAdvancedCache().getCacheEntry(key).isCreated() ? Mutator.PASSIVE : this.mutatorFactory.createMutator(key, entry.getValue());
         return new CoarseSessionAttributes(entry.getKey(), mutator, this.marshaller, this.immutability, this.properties);
     }
 
