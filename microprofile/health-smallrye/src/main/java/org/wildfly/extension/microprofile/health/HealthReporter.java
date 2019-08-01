@@ -2,6 +2,7 @@ package org.wildfly.extension.microprofile.health;
 
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -24,6 +25,7 @@ public class HealthReporter {
     public static final String UP = "UP";
     private List<HealthCheck> healthChecks = new ArrayList<>();
     private List<HealthCheck> livenessChecks = new ArrayList<>();
+    private List<HealthCheck> serverReadinessChecks = new ArrayList<>();
     private List<HealthCheck> readinessChecks = new ArrayList<>();
 
     private final String emptyLivenessChecksStatus;
@@ -36,34 +38,51 @@ public class HealthReporter {
 
     public SmallRyeHealth getHealth() {
         String emptyChecksStatus = emptyLivenessChecksStatus.equals(DOWN) || emptyReadinessChecksStatus.equals(DOWN) ? DOWN : UP;
-        return getHealth(emptyChecksStatus, healthChecks, livenessChecks, readinessChecks);
+        return getHealth(emptyChecksStatus, serverReadinessChecks, healthChecks, livenessChecks, readinessChecks);
     }
 
     public SmallRyeHealth getLiveness() {
-        return getHealth(emptyLivenessChecksStatus, livenessChecks);
+        return getHealth(emptyLivenessChecksStatus, Collections.emptyList(), livenessChecks);
     }
 
     public SmallRyeHealth getReadiness() {
-        return getHealth(emptyReadinessChecksStatus, readinessChecks);
+        return getHealth(emptyReadinessChecksStatus, serverReadinessChecks, readinessChecks);
     }
 
 
     @SafeVarargs
-    private final SmallRyeHealth getHealth(String emptyChecksStatus, List<HealthCheck>... checks) {
+    private final SmallRyeHealth getHealth(String emptyChecksStatus, List<HealthCheck> serverChecks, List<HealthCheck>... deploymentChecks) {
         JsonArrayBuilder results = Json.createArrayBuilder();
         HealthCheckResponse.State status = HealthCheckResponse.State.UP;
 
-        if (checks != null) {
-            for (List<HealthCheck> instance : checks) {
-                status = processChecks(instance, results, status);
+        if (serverChecks != null) {
+            status = processChecks(serverChecks, results, status);
+        }
+        boolean emptyDeploymentChecks = true;
+        for (List<HealthCheck> instance : deploymentChecks) {
+            if (!instance.isEmpty()) {
+                emptyDeploymentChecks = false;
             }
+            status = processChecks(instance, results, status);
+        }
+
+        // if there were no deployment checks
+        if (emptyDeploymentChecks && System.getProperty("__MP_HEALTH_TCK_DISABLE_SERVER_CHECKS") == null) {
+            status = processChecks(Collections.singletonList(new HealthCheck() {
+                @Override
+                public HealthCheckResponse call() {
+                    return HealthCheckResponse.named("empty-deployment-readiness-checks")
+                            .state(emptyChecksStatus.equals("UP"))
+                            .build();
+                }
+            }), results, status);
         }
 
         JsonObjectBuilder builder = Json.createObjectBuilder();
 
         JsonArray checkResults = results.build();
 
-        builder.add("status", checkResults.isEmpty() ? emptyChecksStatus : status.toString());
+        builder.add("status", status.toString());
         builder.add("checks", checkResults);
 
         return new SmallRyeHealth(builder.build());
@@ -142,6 +161,12 @@ public class HealthReporter {
     public void addReadinessCheck(HealthCheck check) {
         if (check != null) {
             readinessChecks.add(check);
+        }
+    }
+
+    public void addServerReadinessCheck(HealthCheck check) {
+        if (check != null) {
+            serverReadinessChecks.add(check);
         }
     }
 

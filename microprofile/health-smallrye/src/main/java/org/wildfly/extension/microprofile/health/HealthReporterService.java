@@ -84,9 +84,11 @@ public class HealthReporterService implements Service<HealthReporter> {
 
         modelControllerClient = modelControllerClientFactory.get().createClient(managementExecutor.get());
 
-        healthReporter.addReadinessCheck(new ServerStateCheck(modelControllerClient));
-        healthReporter.addReadinessCheck(new NoBootErrorsCheck(modelControllerClient));
-        healthReporter.addReadinessCheck(new DeploymentsStatusCheck(modelControllerClient));
+        if (System.getProperty("__MP_HEALTH_TCK_DISABLE_SERVER_CHECKS") == null) {
+            healthReporter.addServerReadinessCheck(new ServerStateCheck(modelControllerClient));
+            healthReporter.addServerReadinessCheck(new NoBootErrorsCheck(modelControllerClient));
+            healthReporter.addServerReadinessCheck(new DeploymentsStatusCheck(modelControllerClient));
+        }
 
         HealthCheckResponse.setResponseProvider(new ResponseProvider());
     }
