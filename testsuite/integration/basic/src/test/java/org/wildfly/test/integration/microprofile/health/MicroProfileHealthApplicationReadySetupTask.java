@@ -34,7 +34,7 @@ public class MicroProfileHealthApplicationReadySetupTask implements ServerSetupT
     public void setup(ManagementClient managementClient, String containerId) throws Exception {
         final ModelNode address = Operations.createAddress("subsystem", "microprofile-health-smallrye");
         final ModelNode op = Operations.createWriteAttributeOperation(address, "empty-readiness-checks-status", "DOWN" );
-        ModelNode result = managementClient.getControllerClient().execute(op);
+        managementClient.getControllerClient().execute(op);
 
         ServerReload.reloadIfRequired(managementClient);
     }

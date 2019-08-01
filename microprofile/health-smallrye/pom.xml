@@ -66,6 +66,10 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-controller-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-server</artifactId>
             <exclusions>
                 <exclusion>
@@ -127,11 +131,6 @@
         <dependency>
             <groupId>org.projectodd.vdx</groupId>
             <artifactId>vdx-wildfly</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-controller-client</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
