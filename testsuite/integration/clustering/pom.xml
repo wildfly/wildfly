@@ -93,11 +93,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <dependency>
-            <groupId>org.jboss.arquillian.junit</groupId>
-            <artifactId>arquillian-junit-container</artifactId>
-            <scope>test</scope>
-        </dependency>
         <!-- Byteman dependencies -->
         <dependency>
             <groupId>org.jboss.byteman</groupId>
