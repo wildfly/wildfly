@@ -32,8 +32,8 @@ import java.util.function.Supplier;
 
 import org.infinispan.client.hotrod.MetadataValue;
 import org.infinispan.client.hotrod.event.impl.ClientListenerNotifier;
-import org.infinispan.client.hotrod.near.CaffeineNearCacheService;
 import org.infinispan.client.hotrod.near.NearCacheService;
+import org.wildfly.clustering.infinispan.client.near.CaffeineNearCacheService;
 import org.wildfly.clustering.infinispan.client.near.SimpleKeyWeigher;
 import org.wildfly.clustering.web.hotrod.session.coarse.SessionAttributesKey;
 import org.wildfly.clustering.web.hotrod.session.fine.SessionAttributeKey;
