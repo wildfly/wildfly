@@ -1,0 +1,25 @@
+[[webservices-client]]
+= webservices-client
+<webservices /> - Webservices Client
+
+The _<webservices />_ element in a `wildfly-config.xml` file can be used to specify Web Services Client configuration that will apply during link:https://docs.jboss.org/author/display/JBWS/Predefined+client+and+endpoint+configurations[assigning of configurations] when building a client. This element is from the “urn:elytron:client:1.5” namespace. Below is the example of use:
+
+[source,xml,options="nowrap"]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+...
+    <webservices>
+       ...
+    </webservices>
+...
+</configuration>
+----
+
+The _<webservices />_ element can optionally contain the following child elements:
+
+* *<set-http-mechanism name="BASIC"/>* This element is used to specify an HTTP mechanism that WS client should use to authenticate. Currently only the HTTP Basic authentication is supported and used as default.
+* *<set-ws-security-type name="UsernameToken"/>* This element is used to specify WS-Security type that WS client will use to authenticate with the server. Currently only Username Token Profile can be configured.
+
+These elements will take effect only if both username and password are configured in Elytron client.

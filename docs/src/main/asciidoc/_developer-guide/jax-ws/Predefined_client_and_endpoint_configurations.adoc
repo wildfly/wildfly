@@ -400,6 +400,11 @@ port.echo("Kermit");
  
 configurer.setConfigProperties(port, null, "Container Custom Client Config"); //reads from current container configurations if available
 port.echo("Kermit");
+
+...
+
+configurer.setConfigProperties(port, null, null); //reads from current Elytron client configuration if available
+port.echo("Kermit");
 ----
 
 The default `ClientConfigurer` implementation parses the specified
@@ -408,6 +413,8 @@ using the current thread context classloader. The
 http://anonsvn.jboss.org/repos/jbossws/spi/tags/jbossws-spi-2.1.0.Beta1/src/main/resources/schema/jbossws-jaxws-config_4_0.xsd[jbossws-jaxws-config
 schema] defines the descriptor contents and is included in the
 _jbossws-spi_ artifact.
+
+If WildFly Elytron client configuration is present, the client will automatically use SSL context and credentials (for HTTP Basic authentication or Username Token Profile) from this configuration if these were not already configured.
 
 [[automatic-configuration-from-default-descriptors]]
 === Automatic configuration from default descriptors

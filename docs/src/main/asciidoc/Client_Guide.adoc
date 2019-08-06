@@ -42,4 +42,6 @@ include::_client-guide/Remoting_Client_Configuration.adoc[]
 
 include::_client-guide/XNIO_Client_Configuration.adoc[]
 
+include::_client-guide/Webservices_Client_Configuration.adoc[]
+
 :leveloffset: -2
