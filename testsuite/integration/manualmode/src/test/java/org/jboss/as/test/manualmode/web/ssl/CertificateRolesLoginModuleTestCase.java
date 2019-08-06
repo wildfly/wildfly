@@ -85,8 +85,7 @@ public class CertificateRolesLoginModuleTestCase extends AbstractCertificateLogi
     private static ManagementClient managementClient;
 
     @BeforeClass
-    public static void noJDK13Plus() {
-        Assume.assumeFalse("Avoiding JDK 13 due to https://issues.jboss.org/browse/WFCORE-4532", "13".equals(System.getProperty("java.specification.version")));
+    public static void noJDK14Plus() {
         Assume.assumeFalse("Avoiding JDK 14 due to https://issues.jboss.org/browse/WFCORE-4532", "14".equals(System.getProperty("java.specification.version")));
     }
 
