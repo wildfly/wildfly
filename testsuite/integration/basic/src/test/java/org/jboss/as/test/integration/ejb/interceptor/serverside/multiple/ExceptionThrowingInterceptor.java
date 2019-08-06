@@ -19,40 +19,18 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.ejb.interceptor.serverside;
+package org.jboss.as.test.integration.ejb.interceptor.serverside.multiple;
 
-import java.util.concurrent.CountDownLatch;
 import javax.interceptor.AroundInvoke;
-import javax.interceptor.AroundTimeout;
 import javax.interceptor.InvocationContext;
 
 /**
- * Server side sample interceptor
- * @author <a href="mailto:szhantem@redhat.com">Sultan Zhantemirov</a> (c) 2019 Red Hat, inc.
+ * Simple interceptor imitating forbidden EJB access
  */
-public class ServerInterceptor {
-
-    public static final CountDownLatch latch = new CountDownLatch(1);
-    public static final CountDownLatch timeoutLatch = new CountDownLatch(1);
-
-    public ServerInterceptor() {
-    }
+public class ExceptionThrowingInterceptor {
 
     @AroundInvoke
-    public Object aroundInvoke(final InvocationContext invocationContext) throws Exception {
-        try {
-            return invocationContext.proceed();
-        } finally {
-            latch.countDown();
-        }
-    }
-
-    @AroundTimeout
-    public Object aroundTimeout(final InvocationContext invocationContext) throws Exception {
-        try {
-            return invocationContext.proceed();
-        } finally {
-            timeoutLatch.countDown();
-        }
+    public Object throwException(InvocationContext invocationContext) throws Exception {
+        throw new IllegalArgumentException("Intercepted: throwing an exception.");
     }
 }

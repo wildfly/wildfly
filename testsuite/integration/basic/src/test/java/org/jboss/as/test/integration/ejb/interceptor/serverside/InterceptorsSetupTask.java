@@ -21,38 +21,16 @@
  */
 package org.jboss.as.test.integration.ejb.interceptor.serverside;
 
-import java.util.concurrent.CountDownLatch;
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.AroundTimeout;
-import javax.interceptor.InvocationContext;
+import java.util.List;
+import org.jboss.as.arquillian.container.ManagementClient;
 
-/**
- * Server side sample interceptor
- * @author <a href="mailto:szhantem@redhat.com">Sultan Zhantemirov</a> (c) 2019 Red Hat, inc.
- */
-public class ServerInterceptor {
+public interface InterceptorsSetupTask {
 
-    public static final CountDownLatch latch = new CountDownLatch(1);
-    public static final CountDownLatch timeoutLatch = new CountDownLatch(1);
+    void packModule(InterceptorModule module) throws Exception;
 
-    public ServerInterceptor() {
-    }
+    List<InterceptorModule> getModules();
 
-    @AroundInvoke
-    public Object aroundInvoke(final InvocationContext invocationContext) throws Exception {
-        try {
-            return invocationContext.proceed();
-        } finally {
-            latch.countDown();
-        }
-    }
+    void modifyServerInterceptors(List<InterceptorModule> interceptorModules, ManagementClient managementClient) throws Exception;
 
-    @AroundTimeout
-    public Object aroundTimeout(final InvocationContext invocationContext) throws Exception {
-        try {
-            return invocationContext.proceed();
-        } finally {
-            timeoutLatch.countDown();
-        }
-    }
+    void revertServerInterceptors(ManagementClient managementClient) throws Exception;
 }
