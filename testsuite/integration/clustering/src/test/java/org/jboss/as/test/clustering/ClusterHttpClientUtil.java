@@ -45,7 +45,6 @@ import org.apache.http.impl.client.HttpClients;
  * Helper class to start and stop container including a deployment.
  *
  * @author Radoslav Husar
- * @version April 2012
  */
 public final class ClusterHttpClientUtil {
 
@@ -75,11 +74,6 @@ public final class ClusterHttpClientUtil {
 
     /**
      * Tries a get on the provided client with default GRACE_TIME_TO_MEMBERSHIP_CHANGE.
-     *
-     * @param client
-     * @param url
-     * @return HTTP response
-     * @throws IOException
      */
     public static HttpResponse tryGet(final HttpClient client, final String url) throws IOException {
         return tryGet(client, url, GRACE_TIME_TO_REPLICATE);
@@ -97,12 +91,6 @@ public final class ClusterHttpClientUtil {
 
     /**
      * Tries a get on the provided client with specified graceTime in milliseconds.
-     *
-     * @param client
-     * @param url
-     * @param graceTime
-     * @return
-     * @throws IOException
      */
     public static HttpResponse tryGet(final HttpClient client, final String url, final long graceTime) throws IOException {
         return tryGet(client, new HttpGet(url));
@@ -110,11 +98,6 @@ public final class ClusterHttpClientUtil {
 
     /**
      * Tries a get on the provided client consuming the request body.
-     *
-     * @param client
-     * @param url
-     * @return response body as string
-     * @throws IOException
      */
     public static String tryGetAndConsume(final HttpClient client, final String url) throws IOException {
         // Get the response
