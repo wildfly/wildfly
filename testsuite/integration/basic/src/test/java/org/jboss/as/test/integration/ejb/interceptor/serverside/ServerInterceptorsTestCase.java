@@ -27,16 +27,11 @@ import static org.jboss.as.controller.client.helpers.ClientConstants.OP_ADDR;
 import static org.jboss.as.controller.client.helpers.ClientConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.client.helpers.ClientConstants.RESULT;
 import static org.jboss.as.controller.client.helpers.ClientConstants.SUBSYSTEM;
-import static org.jboss.as.controller.client.helpers.ClientConstants.UNDEFINE_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.client.helpers.ClientConstants.VALUE;
-import static org.jboss.as.controller.client.helpers.ClientConstants.WRITE_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODULE;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertTrue;
-
-import java.io.File;
 import java.io.FilePermission;
-import java.net.URL;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -44,11 +39,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.controller.client.helpers.Operations;
-import org.jboss.as.test.module.util.TestModule;
-import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.jboss.remoting3.security.RemotingPermission;
 import org.jboss.shrinkwrap.api.Archive;
@@ -81,7 +72,7 @@ public class ServerInterceptorsTestCase {
     @Deployment
     public static Archive<?> deploy() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "test-server-interceptor.jar");
-        jar.addClasses(SampleBean.class, ScheduleBean.class);
+        jar.addPackage(AbstractServerInterceptorsSetupTask.class.getPackage());
         jar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client," +
                 "org.jboss.dmr," + "org.jboss.remoting3\n"), "MANIFEST.MF");
         jar.addAsManifestResource(createPermissionsXmlAsset(
@@ -140,68 +131,18 @@ public class ServerInterceptorsTestCase {
         Assert.assertEquals(0, ServerInterceptor.timeoutLatch.getCount());
     }
 
-    static class SetupTask implements ServerSetupTask {
-        private static TestModule testModule;
-
-        /**
-         * Pack a sample interceptor to module and place to $JBOSS_HOME/modules directory
-         */
-        void packModule() throws Exception {
-            URL url = ServerInterceptorsTestCase.class.getResource("module.xml");
-            if (url == null) {
-                throw new IllegalStateException("Could not find module.xml");
-            }
-            File moduleXmlFile = new File(url.toURI());
-            testModule = new TestModule(moduleName, moduleXmlFile);
-            JavaArchive jar = testModule.addResource("server-side-interceptor.jar");
-            jar.addClass(ServerInterceptor.class);
-            testModule.create(true);
-        }
-
-        /**
-         * /subsystem=ejb3:write-attribute(name=server-interceptors,value=[{module=moduleName,class=className}])
-         */
-        void serverInterceptorsInfoModify(ManagementClient managementClient) throws Exception {
-            final ModelNode op = new ModelNode();
-            op.get(OP_ADDR).set(SUBSYSTEM, "ejb3");
-            op.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-            op.get(NAME).set("server-interceptors");
-
-            final ModelNode value = new ModelNode();
-            ModelNode module = new ModelNode();
-            module.get(MODULE).set(moduleName);
-            module.get("class").set(ServerInterceptor.class.getName());
-            value.add(module);
-
-            op.get(VALUE).set(value);
-            managementClient.getControllerClient().execute(op);
-        }
-
-        void serverInterceptorsInfoRevert(ManagementClient managementClient) throws Exception {
-            final ModelNode op = new ModelNode();
-            op.get(OP_ADDR).set(SUBSYSTEM, "ejb3");
-            op.get(OP).set(UNDEFINE_ATTRIBUTE_OPERATION);
-            op.get(NAME).set("server-interceptors");
-
-            final ModelNode operationResult = managementClient.getControllerClient().execute(op);
-            // check whether the operation was successful
-            assertTrue(Operations.isSuccessfulOutcome(operationResult));
-        }
-
+    static class SetupTask extends AbstractServerInterceptorsSetupTask.SetupTask {
         @Override
-        public void setup(ManagementClient managementClient, String s) throws Exception {
-            packModule();
-            serverInterceptorsInfoModify(managementClient);
-            // reload in order to apply server-interceptors changes
-            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
-        }
-
-        @Override
-        public void tearDown(ManagementClient managementClient, String s) throws Exception {
-            testModule.remove();
-            serverInterceptorsInfoRevert(managementClient);
-            // reload in order to apply server-interceptors changes
-            ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
+        public List<InterceptorModule> getModules() {
+            return Collections.singletonList(new InterceptorModule(
+                    ServerInterceptor.class,
+                    moduleName,
+                    "module.xml",
+                    ServerInterceptorsTestCase.class.getResource("module.xml"),
+                    "server-side-interceptor.jar"
+                    )
+            );
         }
     }
+
 }

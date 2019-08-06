@@ -19,40 +19,23 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.ejb.interceptor.serverside;
+package org.jboss.as.test.integration.ejb.interceptor.serverside.remote;
 
-import java.util.concurrent.CountDownLatch;
 import javax.interceptor.AroundInvoke;
-import javax.interceptor.AroundTimeout;
 import javax.interceptor.InvocationContext;
+import org.jboss.logging.Logger;
 
 /**
- * Server side sample interceptor
- * @author <a href="mailto:szhantem@redhat.com">Sultan Zhantemirov</a> (c) 2019 Red Hat, inc.
+ * A simple interceptor that adds a prefix to the result based on the result data type.
  */
-public class ServerInterceptor {
-
-    public static final CountDownLatch latch = new CountDownLatch(1);
-    public static final CountDownLatch timeoutLatch = new CountDownLatch(1);
-
-    public ServerInterceptor() {
-    }
+public class LoggingInterceptor {
+    private static final Logger log = Logger.getLogger(LoggingInterceptor.class);
+    static final String PREFIX = "Intercepted";
 
     @AroundInvoke
-    public Object aroundInvoke(final InvocationContext invocationContext) throws Exception {
-        try {
-            return invocationContext.proceed();
-        } finally {
-            latch.countDown();
-        }
-    }
-
-    @AroundTimeout
-    public Object aroundTimeout(final InvocationContext invocationContext) throws Exception {
-        try {
-            return invocationContext.proceed();
-        } finally {
-            timeoutLatch.countDown();
-        }
+    public Object logBeanAccess(final InvocationContext invocationContext) throws Exception {
+        log.trace("Intercepted");
+        Object result = invocationContext.proceed();
+        return result instanceof String ? PREFIX + result : result;
     }
 }
