@@ -35,5 +35,8 @@
         <copy todir="target/wildfly-4" overwrite="true">
             <fileset dir="${basedir}/target/wildfly-1"/>
         </copy>
+        <copy todir="target/wildfly-load-balancer-1" overwrite="true">
+            <fileset dir="${basedir}/target/wildfly-1"/>
+        </copy>
     </target>
 </project>

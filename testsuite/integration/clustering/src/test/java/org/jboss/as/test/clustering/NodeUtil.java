@@ -30,7 +30,6 @@ import org.jboss.logging.Logger;
  * Utility class to start and stop containers and/or deployments.
  *
  * @author Radoslav Husar
- * @version Oct 2012
  */
 public final class NodeUtil {
 
