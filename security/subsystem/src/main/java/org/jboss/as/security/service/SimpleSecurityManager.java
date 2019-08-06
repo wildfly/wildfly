@@ -69,6 +69,7 @@ import org.wildfly.security.auth.server.IdentityCredentials;
 import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.auth.server.SecurityIdentity;
 import org.wildfly.security.credential.PasswordCredential;
+import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.security.password.interfaces.ClearPassword;
 
 /**
@@ -76,6 +77,11 @@ import org.wildfly.security.password.interfaces.ClearPassword;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class SimpleSecurityManager implements ServerSecurityManager {
+    protected static final PrivilegedAction<SecurityContext> GET_SECURITY_CONTEXT = new PrivilegedAction<SecurityContext>() {
+        public SecurityContext run() {
+            return SecurityContextAssociation.getSecurityContext();
+        }
+    };
     private ThreadLocalStack<SecurityContext> contexts = new ThreadLocalStack<SecurityContext>();
     /**
      * Indicates if we propagate previous SecurityContext informations to the current one or not.
@@ -94,14 +100,6 @@ public class SimpleSecurityManager implements ServerSecurityManager {
     }
 
     private ISecurityManagement securityManagement = null;
-
-    private PrivilegedAction<SecurityContext> securityContext() {
-        return new PrivilegedAction<SecurityContext>() {
-            public SecurityContext run() {
-                return SecurityContextAssociation.getSecurityContext();
-            }
-        };
-    }
 
     private SecurityContext establishSecurityContext(final String securityDomain) {
         // Do not use SecurityFactory.establishSecurityContext, its static init is broken.
@@ -122,7 +120,12 @@ public class SimpleSecurityManager implements ServerSecurityManager {
     }
 
     public Principal getCallerPrincipal() {
-        final SecurityContext securityContext = doPrivileged(securityContext());
+        final SecurityContext securityContext;
+        if (WildFlySecurityManager.isChecking()) {
+            securityContext = doPrivileged(GET_SECURITY_CONTEXT);
+        } else {
+            securityContext = SecurityContextAssociation.getSecurityContext();
+        }
         if (securityContext == null) {
             return getUnauthenticatedIdentity().asPrincipal();
         }
@@ -138,7 +141,12 @@ public class SimpleSecurityManager implements ServerSecurityManager {
     }
 
     public Subject getSubject() {
-        final SecurityContext securityContext = doPrivileged(securityContext());
+        final SecurityContext securityContext;
+        if (WildFlySecurityManager.isChecking()) {
+            securityContext = doPrivileged(GET_SECURITY_CONTEXT);
+        } else {
+            securityContext = SecurityContextAssociation.getSecurityContext();
+        }
         if (securityContext != null) {
             return getSubjectInfo(securityContext).getAuthenticatedSubject();
         }
@@ -192,8 +200,12 @@ public class SimpleSecurityManager implements ServerSecurityManager {
      */
     public boolean isCallerInRole(final String ejbName, final String policyContextID, final Object incommingMappedRoles,
                                   final Map<String, Collection<String>> roleLinks, final String... roleNames) {
-
-        final SecurityContext securityContext = doPrivileged(securityContext());
+        final SecurityContext securityContext;
+        if (WildFlySecurityManager.isChecking()) {
+            securityContext = doPrivileged(GET_SECURITY_CONTEXT);
+        } else {
+            securityContext = SecurityContextAssociation.getSecurityContext();
+        }
         if (securityContext == null) {
             return false;
         }
@@ -245,8 +257,12 @@ public class SimpleSecurityManager implements ServerSecurityManager {
     }
 
     public boolean authorize(String ejbName, CodeSource ejbCodeSource, String ejbMethodIntf, Method ejbMethod, Set<Principal> methodRoles, String contextID) {
-
-        final SecurityContext securityContext = doPrivileged(securityContext());
+        final SecurityContext securityContext;
+        if (WildFlySecurityManager.isChecking()) {
+            securityContext = doPrivileged(GET_SECURITY_CONTEXT);
+        } else {
+            securityContext = SecurityContextAssociation.getSecurityContext();
+        }
         if (securityContext == null) {
             return false;
         }
