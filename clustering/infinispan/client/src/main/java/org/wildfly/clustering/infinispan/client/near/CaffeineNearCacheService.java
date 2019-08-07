@@ -20,55 +20,34 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.infinispan.client.hotrod.near;
+package org.wildfly.clustering.infinispan.client.near;
 
-import java.util.Map;
+import java.util.function.Supplier;
 
 import org.infinispan.client.hotrod.MetadataValue;
+import org.infinispan.client.hotrod.configuration.NearCacheConfiguration;
+import org.infinispan.client.hotrod.event.impl.ClientListenerNotifier;
+import org.infinispan.client.hotrod.near.NearCache;
+import org.infinispan.client.hotrod.near.NearCacheService;
 
 import com.github.benmanes.caffeine.cache.Cache;
 
 /**
- * Near cache implementation based on a Caffeine cache.
+ * Near cache service that constructs its near cache using a generic factory.
  * Workaround for ISPN-10248, {@link NearCache} is package protected.
  * To be refactored into org.wildfly.clustering.infinispan.client.near package once Infinispan increases visibility of {@link NearCache}.
  * @author Paul Ferraro
  */
-public class CaffeineNearCache<K, V> implements NearCache<K, V> {
+public class CaffeineNearCacheService<K, V> extends NearCacheService<K, V> {
+    private final Supplier<Cache<K, MetadataValue<V>>> factory;
 
-    private final Map<K, MetadataValue<V>> map;
-
-    public CaffeineNearCache(Cache<K, MetadataValue<V>> cache) {
-        this.map = cache.asMap();
+    public CaffeineNearCacheService(Supplier<Cache<K, MetadataValue<V>>> factory, ClientListenerNotifier listenerNotifier) {
+        super(null, listenerNotifier);
+        this.factory = factory;
     }
 
     @Override
-    public void put(K key, MetadataValue<V> value) {
-        this.map.put(key, value);
-    }
-
-    @Override
-    public void putIfAbsent(K key, MetadataValue<V> value) {
-        this.map.putIfAbsent(key, value);
-    }
-
-    @Override
-    public boolean remove(K key) {
-        return this.map.remove(key) != null;
-    }
-
-    @Override
-    public MetadataValue<V> get(K key) {
-        return this.map.get(key);
-    }
-
-    @Override
-    public void clear() {
-        this.map.clear();
-    }
-
-    @Override
-    public int size() {
-        return this.map.size();
+    protected NearCache<K, V> createNearCache(NearCacheConfiguration config) {
+        return new CaffeineNearCache<>(this.factory.get());
     }
 }
