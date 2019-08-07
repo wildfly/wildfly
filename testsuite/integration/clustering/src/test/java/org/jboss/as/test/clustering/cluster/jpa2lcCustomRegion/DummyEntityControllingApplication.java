@@ -20,14 +20,14 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.clustering.cluster.jpa2lc;
+package org.jboss.as.test.clustering.cluster.jpa2lcCustomRegion;
 
 import javax.ws.rs.ApplicationPath;
 import java.util.HashSet;
 import java.util.Set;
 
 /**
- * @author Jan Martiska
+ * @author Tommaso Borgato
  */
 @ApplicationPath("/")
 public class DummyEntityControllingApplication extends javax.ws.rs.core.Application {
@@ -35,7 +35,7 @@ public class DummyEntityControllingApplication extends javax.ws.rs.core.Applicat
     @Override
     public Set<Class<?>> getClasses() {
         Set<Class<?>> s = new HashSet<Class<?>>();
-        s.add(DummyEntityRESTResource.class);
+        s.add(DummyEntityCustomRegionRESTResource.class);
         return s;
     }
 

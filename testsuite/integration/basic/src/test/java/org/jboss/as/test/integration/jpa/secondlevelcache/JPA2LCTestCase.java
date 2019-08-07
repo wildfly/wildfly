@@ -22,30 +22,35 @@
 
 package org.jboss.as.test.integration.jpa.secondlevelcache;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.sql.Connection;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
-
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.integration.management.util.CLIOpResult;
+import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
+import java.sql.Connection;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 /**
  * JPA Second level cache tests
  *
- * @author Scott Marlow and Zbynek Roubalik
+ * @author Scott Marlow and Zbynek Roubalik and Tommaso Borgato
  */
 @RunWith(Arquillian.class)
 public class JPA2LCTestCase {
@@ -63,7 +68,10 @@ public class JPA2LCTestCase {
                 Employee.class,
                 Company.class,
                 SFSB1.class,
-                SFSB2LC.class
+                SFSB2LC.class,
+                SFSB3LC.class,
+                SFSB4LC.class,
+                RollbackException.class
         );
 
         jar.addAsManifestResource(JPA2LCTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
@@ -274,6 +282,57 @@ public class JPA2LCTestCase {
             fail(message);
         }
 
+    }
+
+    /**
+     <p>
+     Check that, when L2 cache is enabled, it does not prevent recovery in separate transactions;
+     </p>
+     <p>
+     Note that all EJB calls are marked with <code>TransactionAttributeType.REQUIRES_NEW</code>;
+     </p>
+     <p>
+     Test sequence:
+     <ul>
+     <li>{@link SFSB3LC} calls {@link SFSB4LC}</li>
+     <li>{@link SFSB4LC} throws and exception</li>
+     <li>{@link SFSB3LC} intercepts the exception and calls again {@link SFSB4LC} (hence creating a new transaction)</li>
+     <li>this time {@link SFSB4LC} succeeds and {@link SFSB3LC} should succeed as well</li>
+     </ul>
+     </p>
+     */
+    @Test
+    @InSequence(9)
+    public void testTransaction() throws Exception {
+        SFSB3LC sfsb = lookup("SFSB3LC", SFSB3LC.class);
+
+        int id = 10_000;
+
+        // create entity
+        sfsb.createEmployee("Gisele Bundchen", "Milan, ITALY", id);
+
+        String message = sfsb.entityCacheCheck(id);
+
+        if (!message.equals("OK")) {
+            fail(message);
+        }
+
+        // update entity
+        message = sfsb.testL2CacheWithRollbackAndRetry(id, "Brookline, Massachusetts (MA), US");
+        assertEquals("Expected message is OK", "OK", message);
+    }
+
+    /**
+     * Verify that we can read Cache Region Statistics via cli
+     */
+    @Test
+    @InSequence(10)
+    @RunAsClient
+    public void testStatistics() throws Exception {
+        CLIWrapper cli = new CLIWrapper(true);
+        cli.sendLine(String.format("/deployment=%s.jar:read-resource(include-runtime=true,recursive=true)", ARCHIVE_NAME));
+        CLIOpResult opResult = cli.readAllAsOpResult();
+        Assert.assertTrue(opResult.isIsOutcomeSuccess());
     }
 
 }
