@@ -64,11 +64,20 @@ public class WildFlyCustomJtaPlatform extends JBossAppServerJtaPlatform implemen
 
     private TransactionSynchronizationRegistry locateTransactionSynchronizationRegistry() {
         TransactionSynchronizationRegistry curTsr = transactionSynchronizationRegistry;
-        return curTsr != null ? curTsr : (TransactionSynchronizationRegistry) jndiService().locate(TSR_NAME);
+        if (curTsr != null) {
+            return curTsr;
+        }
+        synchronized (WildFlyCustomJtaPlatform.class) {
+            curTsr = transactionSynchronizationRegistry;
+            if (curTsr != null) {
+                return curTsr;
+            }
+            return transactionSynchronizationRegistry = (TransactionSynchronizationRegistry) jndiService().locate(TSR_NAME);
+        }
     }
 
     /**
-     * Hibernate native applications cannot know when the TransactionManager + TransactionSynchronizationRegistry
+     * Hibernate native applications cannot know when the TransactionManaTransactionManagerSerger + TransactionSynchronizationRegistry
      * services are stopped but JPA container managed applications can and will call setTransactionSynchronizationRegistry
      * with the new (global) TransactionSynchronizationRegistry to use.
      *
