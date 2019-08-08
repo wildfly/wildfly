@@ -26,6 +26,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -87,6 +88,7 @@ import org.xnio.OptionMap;
  *
  * @author Jaikiran Pai
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
+ * @author <a href="mailto:wfink@redhat.com">Wolf Dieter Fink</a>
  */
 public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProcessor {
 
@@ -197,7 +199,8 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
             if (deploymentNodeSelectorClassName != null) {
                 final DeploymentNodeSelector deploymentNodeSelector;
                 try {
-                    deploymentNodeSelector = module.getClassLoader().loadClass(deploymentNodeSelectorClassName).asSubclass(DeploymentNodeSelector.class).getConstructor().newInstance();
+                    deploymentNodeSelector = getNodeSelector(module, DeploymentNodeSelector.class, deploymentNodeSelectorClassName);
+
                 } catch (Exception e) {
                     throw EjbLogger.ROOT_LOGGER.failedToCreateDeploymentNodeSelector(e, deploymentNodeSelectorClassName);
                 }
@@ -228,7 +231,7 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
                     if (clusterNodeSelectorClassName != null) {
                         final ClusterNodeSelector clusterNodeSelector;
                         try {
-                            clusterNodeSelector = module.getClassLoader().loadClass(clusterNodeSelectorClassName).asSubclass(ClusterNodeSelector.class).getConstructor().newInstance();
+                            clusterNodeSelector = getNodeSelector(module, ClusterNodeSelector.class, clusterNodeSelectorClassName);
                         } catch (Exception e) {
                             throw EjbLogger.ROOT_LOGGER.failureDuringLoadOfClusterNodeSelector(clusterNodeSelectorClassName, clusterName, e);
                         }
@@ -303,6 +306,22 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
         // attach the service name of this EJB client context to the deployment unit
         phaseContext.addDeploymentDependency(ejbClientContextServiceName, EjbDeploymentAttachmentKeys.EJB_CLIENT_CONTEXT_SERVICE);
         deploymentUnit.putAttachment(EjbDeploymentAttachmentKeys.EJB_CLIENT_CONTEXT_SERVICE_NAME, ejbClientContextServiceName);
+    }
+
+    /**
+     * get the Deployment/Cluster NodeSelector from configured class or FIELD name of Interface
+     * @return default implementation of Interface or custom NodeSelector class if fully qualified and found
+     * @throws Exception if full qualified class not found or loaded
+     */
+    private static <T> T getNodeSelector(Module module, Class<T> type, String name) throws Exception {
+            try {
+                Field f = type.getDeclaredField(name);
+                EjbLogger.ROOT_LOGGER.debugf("Field %s found", name);
+                return (T) f.get(type);
+            } catch (NoSuchFieldException | ClassCastException e) {
+                // Ignore failure as it is no field
+            }
+        return module.getClassLoader().loadClass(name).asSubclass(type).getConstructor().newInstance();
     }
 
     @Override
