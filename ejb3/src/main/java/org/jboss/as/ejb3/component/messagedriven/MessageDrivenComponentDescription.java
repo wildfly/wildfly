@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.component.messagedriven;
 
+import static org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT;
+
 import java.util.Properties;
 
 import javax.ejb.MessageDrivenBean;
@@ -112,7 +114,7 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
         this.addSetMessageDrivenContextMethodInvocationInterceptor();
         getConfigurators().add(new ComponentConfigurator() {
             @Override
-            public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
+            public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) {
                 configuration.addTimeoutViewInterceptor(MessageDrivenComponentInstanceAssociatingFactory.instance(), InterceptorOrder.View.ASSOCIATING_INTERCEPTOR);
             }
         });
@@ -137,10 +139,18 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
         // setup the configurator to inject the resource adapter
         mdbComponentConfiguration.getCreateDependencies().add(new ResourceAdapterInjectingConfiguration());
 
-        mdbComponentConfiguration.getCreateDependencies().add(new DependencyConfigurator<MessageDrivenComponentCreateService>() {
+        getConfigurators().add(new ComponentConfigurator() {
             @Override
-            public void configureDependency(final ServiceBuilder<?> serviceBuilder, final MessageDrivenComponentCreateService mdbComponentCreateService) throws DeploymentUnitProcessingException {
-                serviceBuilder.addDependency(SuspendController.SERVICE_NAME, SuspendController.class, mdbComponentCreateService.getSuspendControllerInjectedValue());
+            public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
+                final ServiceName suspendControllerName = context.getDeploymentUnit()
+                        .getAttachment(CAPABILITY_SERVICE_SUPPORT)
+                        .getCapabilityServiceName("org.wildfly.server.suspend-controller");
+                configuration.getCreateDependencies().add(new DependencyConfigurator<MessageDrivenComponentCreateService>() {
+                    @Override
+                    public void configureDependency(final ServiceBuilder<?> serviceBuilder, final MessageDrivenComponentCreateService mdbComponentCreateService) throws DeploymentUnitProcessingException {
+                        serviceBuilder.addDependency(suspendControllerName, SuspendController.class, mdbComponentCreateService.getSuspendControllerInjectedValue());
+                    }
+                });
             }
         });
 

@@ -350,7 +350,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
                 .addDependency(UndertowService.UNDERTOW, UndertowService.class, undertowDeploymentInfoService.getUndertowService())
                 .addDependency(hostServiceName, Host.class, undertowDeploymentInfoService.getHost())
                 .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, undertowDeploymentInfoService.getServerEnvironmentInjectedValue())
-                .addDependency(SuspendController.SERVICE_NAME, SuspendController.class, undertowDeploymentInfoService.getSuspendControllerInjectedValue());
+                .addDependency(capabilitySupport.getCapabilityServiceName(Capabilities.REF_SUSPEND_CONTROLLER), SuspendController.class, undertowDeploymentInfoService.getSuspendControllerInjectedValue());
         for (final ServiceName additionalDependency : additionalDependencies) {
             infoBuilder.requires(additionalDependency);
         }

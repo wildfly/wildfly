@@ -220,7 +220,7 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
             try {
                 SSLContext sslContext = SSLContext.getDefault();
 
-                target.addService(SuspendController.SERVICE_NAME, new SuspendController()).install();
+                target.addService(ServiceName.parse(Capabilities.REF_SUSPEND_CONTROLLER), new SuspendController()).install();
 
                 target.addService(Services.JBOSS_SERVICE_MODULE_LOADER, new ServiceModuleLoader(null)).install();
                 target.addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME, new NamingStoreService())
