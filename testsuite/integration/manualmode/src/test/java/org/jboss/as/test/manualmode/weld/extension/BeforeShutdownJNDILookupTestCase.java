@@ -68,13 +68,19 @@ public class BeforeShutdownJNDILookupTestCase {
         controller.start(CONTAINER);
         controller.kill(CONTAINER);
 
-        List<String> output = Files.readAllLines(TEST_PATH);
-        if (output.get(0).equals("Exception")) {
-            String stacktrace = output.get(1).replaceAll(",", System.getProperty("line.separator"));
-            String msg = "An exception was thrown by the deployment %s during shutdown.  The server stacktrace is shown below: %n%s";
-            Assert.fail(String.format(msg, DEPLOYMENT, stacktrace));
+        try {
+            List<String> output = Files.readAllLines(TEST_PATH);
+            if (output.get(0).equals("Exception")) {
+                String stacktrace = output.get(1).replaceAll(",", System.getProperty("line.separator"));
+                String msg = "An exception was thrown by the deployment %s during shutdown.  The server stacktrace is shown below: %n%s";
+                Assert.fail(String.format(msg, DEPLOYMENT, stacktrace));
+            }
+            assertEquals("Contents of result.txt is not valid!", "UserTransaction", output.get(0));
+        } finally {
+            // start and stop the container to effective remove the managed deployment from the server
+            controller.start(CONTAINER);
+            controller.stop(CONTAINER);
         }
-        assertEquals("Contents of result.txt is not valid!", "UserTransaction", output.get(0));
     }
 
     @AfterClass

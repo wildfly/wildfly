@@ -54,6 +54,9 @@ enum Element {
 
     DEFAULT_BINDINGS("default-bindings"),
 
+    GLOBAL_DIRECTORIES("global-directories"),
+    DIRECTORY("directory"),
+
     UNKNOWN(null);
 
     private final String name;

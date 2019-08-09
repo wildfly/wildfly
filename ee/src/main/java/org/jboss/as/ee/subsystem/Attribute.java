@@ -25,6 +25,8 @@ package org.jboss.as.ee.subsystem;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.as.domain.management.ModelDescriptionConstants;
+
 /**
  * Enumeration of attributes used in the EE subsystem.
  *
@@ -57,7 +59,9 @@ enum Attribute {
     JMS_CONNECTION_FACTORY(DefaultBindingsResourceDefinition.JMS_CONNECTION_FACTORY),
     MANAGED_EXECUTOR_SERVICE(DefaultBindingsResourceDefinition.MANAGED_EXECUTOR_SERVICE),
     MANAGED_SCHEDULED_EXECUTOR_SERVICE(DefaultBindingsResourceDefinition.MANAGED_SCHEDULED_EXECUTOR_SERVICE),
-    MANAGED_THREAD_FACTORY(DefaultBindingsResourceDefinition.MANAGED_THREAD_FACTORY)
+    MANAGED_THREAD_FACTORY(DefaultBindingsResourceDefinition.MANAGED_THREAD_FACTORY),
+    PATH(ModelDescriptionConstants.PATH),
+    RELATIVE_TO(ModelDescriptionConstants.RELATIVE_TO)
     ;
 
     private final String name;

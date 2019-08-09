@@ -73,6 +73,10 @@ class EESubsystemParser50 implements XMLStreamConstants, XMLElementReader<List<M
                             eeSubSystem.get(GlobalModulesDefinition.GLOBAL_MODULES).set(model);
                             break;
                         }
+                        case GLOBAL_DIRECTORIES: {
+                            parseGlobalDirectories(reader, list, subsystemPathAddress);
+                            break;
+                        }
                         case EAR_SUBDEPLOYMENTS_ISOLATED: {
                             final String earSubDeploymentsIsolated = parseEarSubDeploymentsIsolatedElement(reader);
                             // set the ear subdeployment isolation on the subsystem operation
@@ -563,6 +567,59 @@ class EESubsystemParser50 implements XMLStreamConstants, XMLElementReader<List<M
         }
         requireNoContent(reader);
         final PathAddress address = subsystemPathAddress.append(EESubsystemModel.DEFAULT_BINDINGS_PATH);
+        addOperation.get(OP_ADDR).set(address.toModelNode());
+        operations.add(addOperation);
+    }
+
+    static void parseGlobalDirectories(XMLExtendedStreamReader reader, List<ModelNode> operations, PathAddress subsystemPathAddress) throws XMLStreamException {
+        requireNoAttributes(reader);
+        boolean empty = true;
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Element.forName(reader.getLocalName())) {
+                case DIRECTORY: {
+                    empty = false;
+                    parseDirectory(reader, operations, subsystemPathAddress);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+        if (empty) {
+            throw missingRequired(reader, EnumSet.of(Element.DIRECTORY));
+        }
+    }
+
+    static void parseDirectory(XMLExtendedStreamReader reader, List<ModelNode> operations, PathAddress subsystemPathAddress) throws XMLStreamException {
+        final ModelNode addOperation = Util.createAddOperation();
+        final int count = reader.getAttributeCount();
+        String name = null;
+        final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME, Attribute.PATH);
+        for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            required.remove(attribute);
+            switch (attribute) {
+                case NAME:
+                    name = value.trim();
+                    break;
+                case PATH:
+                    GlobalDirectoryResourceDefinition.PATH.parseAndSetParameter(value, addOperation, reader);
+                    break;
+                case RELATIVE_TO:
+                    GlobalDirectoryResourceDefinition.RELATIVE_TO.parseAndSetParameter(value, addOperation, reader);
+                    break;
+                default:
+                    throw unexpectedAttribute(reader, i);
+            }
+        }
+        if (!required.isEmpty()) {
+            throw missingRequired(reader, required);
+        }
+        requireNoContent(reader);
+        final PathAddress address = subsystemPathAddress.append(EESubsystemModel.GLOBAL_DIRECTORY, name);
         addOperation.get(OP_ADDR).set(address.toModelNode());
         operations.add(addOperation);
     }
