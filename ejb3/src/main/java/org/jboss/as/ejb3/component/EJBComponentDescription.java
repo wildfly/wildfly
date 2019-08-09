@@ -32,6 +32,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -79,6 +80,7 @@ import org.jboss.as.ejb3.deployment.ApplicationExceptions;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
+import org.jboss.as.ejb3.interceptor.server.ServerInterceptorCache;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.security.ApplicationSecurityDomainConfig;
 import org.jboss.as.ejb3.security.EJBMethodSecurityAttribute;
@@ -109,6 +111,8 @@ import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
+import org.jboss.invocation.InterceptorFactoryContext;
+import org.jboss.invocation.Interceptors;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
@@ -263,6 +267,8 @@ public abstract class EJBComponentDescription extends ComponentDescription {
      */
     private Set<InterceptorDescription> allContainerInterceptors;
 
+    private ServerInterceptorCache serverInterceptorCache = null;
+
     /**
      * missing-method-permissions-deny-access that's used for secured EJBs
      */
@@ -355,6 +361,11 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                     for (final Method method : classMethods) {
                         configuration.addTimeoutViewInterceptor(method, new ImmediateInterceptorFactory(new ComponentDispatcherInterceptor(method)), InterceptorOrder.View.COMPONENT_DISPATCHER);
                     }
+
+                    //server side interceptors
+                    if(serverInterceptorCache != null) {
+                        configuration.addTimeoutViewInterceptor(weaved(serverInterceptorCache.getServerInterceptorsAroundTimeout()), InterceptorOrder.View.USER_APP_SPECIFIC_CONTAINER_INTERCEPTORS);
+                    }
                 }
                 if (!ejbSetupActions.isEmpty()) {
                     configuration.getStartDependencies().add(new DependencyConfigurator<ComponentStartService>() {
@@ -389,6 +400,19 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         addServerSecurityManagerDependency();
     }
 
+    private static InterceptorFactory weaved(final Collection<InterceptorFactory> interceptorFactories) {
+        return new InterceptorFactory() {
+            @Override
+            public Interceptor create(InterceptorFactoryContext context) {
+                final Interceptor[] interceptors = new Interceptor[interceptorFactories.size()];
+                final Iterator<InterceptorFactory> factories = interceptorFactories.iterator();
+                for (int i = 0; i < interceptors.length; i++) {
+                    interceptors[i] = factories.next().create(context);
+                }
+                return Interceptors.getWeavedInterceptor(interceptors);
+            }
+        };
+    }
 
     public void addLocalHome(final String localHome) {
         final EjbHomeViewDescription view = new EjbHomeViewDescription(this, localHome, MethodIntf.LOCAL_HOME);
@@ -1115,6 +1139,14 @@ public abstract class EJBComponentDescription extends ComponentDescription {
             }
         }
         return this.allContainerInterceptors;
+    }
+
+    public ServerInterceptorCache getServerInterceptorCache() {
+        return serverInterceptorCache;
+    }
+
+    public void setServerInterceptorCache(ServerInterceptorCache serverInterceptorCache) {
+        this.serverInterceptorCache = serverInterceptorCache;
     }
 
     public String getPolicyContextID() {

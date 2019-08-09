@@ -74,6 +74,7 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
     private static final ModelVersion VERSION_1_3_0 = ModelVersion.create(1, 3, 0);
     private static final ModelVersion VERSION_3_0_0 = ModelVersion.create(3, 0, 0);
     private static final ModelVersion VERSION_4_0_0 = ModelVersion.create(4, 0, 0);
+    private static final ModelVersion VERSION_5_0_0 = ModelVersion.create(5, 0, 0);
 
     @Override
     public String getSubsystemName() {
@@ -86,6 +87,7 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
         registerTimerTransformers_1_3_0(subsystemRegistration);
         registerTransformers_3_0_0(subsystemRegistration);
         registerTransformers_4_0_0(subsystemRegistration);
+        registerTransformers_5_0_0(subsystemRegistration);
     }
 
     private static void registerTransformers_1_2_1(SubsystemTransformerRegistration subsystemRegistration) {
@@ -130,6 +132,7 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
 
         builder.getAttributeBuilder().setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(ModelNode.FALSE), EJB3SubsystemRootResourceDefinition.ENABLE_GRACEFUL_TXN_SHUTDOWN)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.ENABLE_GRACEFUL_TXN_SHUTDOWN);
+        builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.SERVER_INTERCEPTORS);
 
         registerPassivationStoreTransformers_1_2_1_and_1_3_0(builder);
         registerRemoteTransformers(builder);
@@ -159,6 +162,7 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
         builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.ALLOW_EJB_NAME_REGEX);
         builder.getAttributeBuilder().setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(ModelNode.FALSE), EJB3SubsystemRootResourceDefinition.ENABLE_GRACEFUL_TXN_SHUTDOWN);
         builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.ENABLE_GRACEFUL_TXN_SHUTDOWN);
+        builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.SERVER_INTERCEPTORS);
         registerMdbDeliveryGroupTransformers(builder);
         registerRemoteTransformers(builder);
         registerStrictMaxPoolTransformers(builder);
@@ -185,11 +189,21 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
         builder.getAttributeBuilder().setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(ModelNode.FALSE), EJB3SubsystemRootResourceDefinition.ENABLE_GRACEFUL_TXN_SHUTDOWN);
         builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.ENABLE_GRACEFUL_TXN_SHUTDOWN);
 
+        builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.SERVER_INTERCEPTORS);
+
         // Rename new statistics-enabled attribute to old enable-statistics
         builder.getAttributeBuilder()
                .addRename(EJB3SubsystemModel.STATISTICS_ENABLED, EJB3SubsystemModel.ENABLE_STATISTICS);
 
         TransformationDescription.Tools.register(builder.build(), subsystemRegistration, VERSION_4_0_0);
+    }
+
+    private static void registerTransformers_5_0_0(SubsystemTransformerRegistration subsystemRegistration) {
+        final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+
+        builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.SERVER_INTERCEPTORS);
+
+        TransformationDescription.Tools.register(builder.build(), subsystemRegistration, VERSION_5_0_0);
     }
 
     private static void registerRemoteTransformers(ResourceTransformationDescriptionBuilder parent) {
