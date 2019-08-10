@@ -22,6 +22,12 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.Util;
@@ -31,13 +37,6 @@ import org.jboss.as.threads.ThreadsParser;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -740,7 +739,7 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
             EJB3SubsystemNamespace readerNS = EJB3SubsystemNamespace.forUri(reader.getNamespaceURI());
             switch (EJB3SubsystemXMLElement.forName(reader.getLocalName())) {
                 case THREAD_POOL: {
-                    ThreadsParser.getInstance().parseUnboundedQueueThreadPool(reader, readerNS.getUriString(),
+                    ThreadsParser.getInstance().parseEnhancedQueueThreadPool(reader, readerNS.getUriString(),
                             Namespace.THREADS_1_1, parentAddress, operations, THREAD_POOL, null);
                     break;
                 }

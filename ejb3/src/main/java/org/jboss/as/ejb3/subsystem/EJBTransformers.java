@@ -22,20 +22,6 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.ALLOW_EXECUTION;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CLIENT_MAPPINGS_CLUSTER_NAME;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SFSB_CACHE;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.EXECUTE_IN_WORKER;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.REFRESH_INTERVAL;
-import static org.jboss.as.ejb3.subsystem.StrictMaxPoolResourceDefinition.DERIVE_SIZE;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -63,8 +49,23 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.as.ejb3.logging.EjbLogger;
+import org.jboss.as.threads.PoolAttributeDefinitions;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.ALLOW_EXECUTION;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CLIENT_MAPPINGS_CLUSTER_NAME;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SFSB_CACHE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.EXECUTE_IN_WORKER;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.REFRESH_INTERVAL;
+import static org.jboss.as.ejb3.subsystem.StrictMaxPoolResourceDefinition.DERIVE_SIZE;
 
 /**
  * @author Tomaz Cerar (c) 2017 Red Hat Inc.
@@ -140,6 +141,8 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
         registerStrictMaxPoolTransformers(builder);
         registerApplicationSecurityDomainDTransformers(builder);
         registerIdentityTransformers(builder);
+        registerThreadPoolTransformers(builder);
+
         builder.rejectChildResource(PathElement.pathElement(EJB3SubsystemModel.REMOTING_PROFILE));
         if (version.equals(VERSION_1_2_1)) {
             registerTimerTransformers_1_2_0(builder);
@@ -168,6 +171,7 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
         registerStrictMaxPoolTransformers(builder);
         registerApplicationSecurityDomainDTransformers(builder);
         registerIdentityTransformers(builder);
+        registerThreadPoolTransformers(builder);
 
         // Rename new statistics-enabled attribute to old enable-statistics
         builder.getAttributeBuilder().addRename(EJB3SubsystemModel.STATISTICS_ENABLED, EJB3SubsystemModel.ENABLE_STATISTICS);
@@ -179,6 +183,7 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
 
         registerApplicationSecurityDomainDTransformers(builder);
         registerIdentityTransformers(builder);
+        registerThreadPoolTransformers(builder);
         builder.addChildResource(RemotingProfileResourceDefinition.INSTANCE).getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.DEFINED, StaticEJBDiscoveryDefinition.INSTANCE)
                 .end();
@@ -204,6 +209,8 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
         builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.SERVER_INTERCEPTORS);
 
         TransformationDescription.Tools.register(builder.build(), subsystemRegistration, VERSION_5_0_0);
+
+        registerThreadPoolTransformers(builder);
     }
 
     private static void registerRemoteTransformers(ResourceTransformationDescriptionBuilder parent) {
@@ -228,6 +235,12 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
                 .getAttributeBuilder()
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(StrictMaxPoolResourceDefinition.DeriveSize.NONE.toString())), DERIVE_SIZE)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, DERIVE_SIZE);
+    }
+
+    private static void registerThreadPoolTransformers(ResourceTransformationDescriptionBuilder parent) {
+        parent.addChildResource(PathElement.pathElement(EJB3SubsystemModel.THREAD_POOL))
+                .getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.DEFINED, PoolAttributeDefinitions.CORE_THREADS);
     }
 
     private static void registerMdbDeliveryGroupTransformers(ResourceTransformationDescriptionBuilder parent) {

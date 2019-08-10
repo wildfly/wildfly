@@ -22,6 +22,9 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import java.util.List;
+import javax.xml.stream.XMLStreamException;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.remoting.Attribute;
@@ -30,10 +33,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.stream.XMLStreamException;
-
-import java.util.List;
 
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.*;
 
@@ -304,7 +303,7 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
 
     private void writeThreadPools(final XMLExtendedStreamWriter writer, final ModelNode threadPoolsModel) throws XMLStreamException {
         for (Property threadPool : threadPoolsModel.asPropertyList()) {
-            ThreadsParser.getInstance().writeUnboundedQueueThreadPool(writer, threadPool, EJB3SubsystemXMLElement.THREAD_POOL.getLocalName(), true);
+            ThreadsParser.getInstance().writeEnhancedQueueThreadPool(writer, threadPool, EJB3SubsystemXMLElement.THREAD_POOL.getLocalName(), true);
         }
     }
 
