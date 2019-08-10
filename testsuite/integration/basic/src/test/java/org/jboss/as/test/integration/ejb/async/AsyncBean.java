@@ -25,6 +25,7 @@ package org.jboss.as.test.integration.ejb.async;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+
 import javax.annotation.Resource;
 import javax.ejb.AsyncResult;
 import javax.ejb.Asynchronous;
@@ -85,21 +86,28 @@ public class AsyncBean implements AsyncBeanCancelRemoteInterface {
     }
 
     public Future<String> asyncRemoteCancelMethod() throws InterruptedException {
-        String result;
-        result = ctx.wasCancelCalled() ? "true" : "false";
+        try {
+            System.out.println("ASYNC REMOTE ");
+            String result;
+            result = ctx.wasCancelCalled() ? "true" : "false";
 
-        synchronizeBean.latchCountDown();
-        long end = System.currentTimeMillis() + 5000;
-        while (System.currentTimeMillis() < end) {
-            if (ctx.wasCancelCalled()) {
-                break;
+            System.out.println("DO COUNTDOWN ");
+            synchronizeBean.latchCountDown();
+            long end = System.currentTimeMillis() + 5000;
+            while (System.currentTimeMillis() < end) {
+                if (ctx.wasCancelCalled()) {
+                    break;
+                }
+                Thread.sleep(50);
             }
-            Thread.sleep(50);
-        }
-        result += ";";
+            result += ";";
 
-        result += ctx.wasCancelCalled() ? "true" : "false";
-        return new AsyncResult<String>(result);
+            result += ctx.wasCancelCalled() ? "true" : "false";
+            return new AsyncResult<String>(result);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
     }
 
     public Future<String> asyncMethodWithException(boolean isException) {
