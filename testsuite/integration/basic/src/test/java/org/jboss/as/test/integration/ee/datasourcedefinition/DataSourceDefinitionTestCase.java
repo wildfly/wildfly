@@ -37,7 +37,9 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 /**
@@ -47,6 +49,9 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class DataSourceDefinitionTestCase {
+
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
 
     @Deployment
     public static Archive<?> deploy() {
@@ -119,5 +124,25 @@ public class DataSourceDefinitionTestCase {
     public void testEmbeddedDatasource() throws NamingException, SQLException {
         DataSourceBean bean = (DataSourceBean)ctx.lookup("java:module/" + DataSourceBean.class.getSimpleName());
         Assert.assertEquals(bean.getDataSource5().getConnection().nativeSQL("dse"),"dse");
+    }
+
+    /**
+     * Test if NullPointerException ir raised when connection is closed and then method connection.isWrapperFor(...) is called
+     * See https://issues.jboss.org/browse/JBJCA-1389
+     */
+    @Test
+    public void testCloseConnectionWrapperFor() throws NamingException, SQLException {
+        expectedException.expect(SQLException.class);
+        expectedException.expectMessage("IJ031041");
+
+        DataSourceBean bean = (DataSourceBean)ctx.lookup("java:module/" + DataSourceBean.class.getSimpleName());
+        DataSource ds = bean.getDataSource();
+        Connection c = ds.getConnection();
+        c.close();
+        try {
+            c.isWrapperFor(ResultSet.class);
+        } catch (NullPointerException e) {
+            Assert.fail("Wrong exception is raised. The exception should be Connection is not associated with a managed connection: ... See JBJCA-1389.");
+        }
     }
 }
