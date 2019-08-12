@@ -28,7 +28,7 @@
            xmlns="urn:jboss:domain:transactions:5.0"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
-           version="4.1">
+           version="5.0">
 
     <!-- The transaction subsystem root element -->
     <xs:element name="subsystem" type="subsystem"/>

@@ -48,6 +48,7 @@ import java.util.List;
 import static org.jboss.as.txn.subsystem.TransactionTransformers.MODEL_VERSION_EAP64;
 import static org.jboss.as.txn.subsystem.TransactionTransformers.MODEL_VERSION_EAP70;
 import static org.jboss.as.txn.subsystem.TransactionTransformers.MODEL_VERSION_EAP71;
+import static org.jboss.as.txn.subsystem.TransactionTransformers.MODEL_VERSION_EAP72;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -179,6 +180,11 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
         testTransformersFull(ModelTestControllerVersion.EAP_7_1_0, MODEL_VERSION_EAP71);
     }
 
+    @Test
+    public void testTransformersFullEAP720() throws Exception {
+        testTransformersFull(ModelTestControllerVersion.EAP_7_2_0, MODEL_VERSION_EAP72);
+    }
+
     private void testTransformersFull(ModelTestControllerVersion controllerVersion, ModelVersion modelVersion) throws Exception {
         String subsystemXml = readResource(String.format("full-%s.xml", modelVersion));
 
@@ -218,6 +224,7 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
                 break;
             case EAP_7_0_0:
             case EAP_7_1_0:
+            case EAP_7_2_0:
                 modelFixer = new ModelFixer() {
                     @Override
                     public ModelNode fixModel(ModelNode modelNode) {
