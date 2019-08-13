@@ -273,8 +273,9 @@ public class ObjectStoreTypeTestCase extends AbstractCliTestBase {
         assertTrue(modeNode != null);
         ModelNode alternatives = modeNode.get("alternatives");
         assertTrue(alternatives != null);
-        assertEquals(2, alternatives.asList().size());
-        for ( int nbAlternative = 0; nbAlternative < 2 ; nbAlternative++ )
+        final int alternativesCount = mode == StorageMode.USE_JDBC_STORE ? 2 : 1;
+        assertEquals(alternativesCount, alternatives.asList().size());
+        for ( int nbAlternative = 0; nbAlternative < alternativesCount ; nbAlternative++ )
             checkAlternative(alternatives.get(nbAlternative).asString(), mode);
     }
 
