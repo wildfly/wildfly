@@ -201,7 +201,6 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
     public static final SimpleAttributeDefinition USE_HORNETQ_STORE = new SimpleAttributeDefinitionBuilder(CommonAttributes.USE_HORNETQ_STORE, ModelType.BOOLEAN, true)
             .setDefaultValue(ModelNode.FALSE)
             .addAlternatives(CommonAttributes.USE_JDBC_STORE)
-            .addAlternatives(CommonAttributes.USE_JOURNAL_STORE)
             .setFlags(AttributeAccess.Flag.RESTART_JVM)
             .setAllowExpression(false)
             .setDeprecated(ModelVersion.create(3)).build();
@@ -216,7 +215,6 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
     public static final SimpleAttributeDefinition USE_JOURNAL_STORE = new SimpleAttributeDefinitionBuilder(CommonAttributes.USE_JOURNAL_STORE, ModelType.BOOLEAN, true)
             .setDefaultValue(ModelNode.FALSE)
             .addAlternatives(CommonAttributes.USE_JDBC_STORE)
-            .addAlternatives(CommonAttributes.USE_HORNETQ_STORE)
             .setFlags(AttributeAccess.Flag.RESTART_JVM)
             .setAllowExpression(false).build();
     public static final SimpleAttributeDefinition JOURNAL_STORE_ENABLE_ASYNC_IO = new SimpleAttributeDefinitionBuilder(CommonAttributes.JOURNAL_STORE_ENABLE_ASYNC_IO, ModelType.BOOLEAN, true)
