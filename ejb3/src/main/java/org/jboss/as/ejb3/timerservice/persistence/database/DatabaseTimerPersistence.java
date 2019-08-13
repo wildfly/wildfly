@@ -52,6 +52,7 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Pattern;
 
 import javax.sql.DataSource;
 import javax.transaction.HeuristicMixedException;
@@ -236,6 +237,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
      * @return A unified dialect identifier
      */
     private String identifyDialect(String name) {
+        Pattern mssqlPattern = Pattern.compile("(sqlserver|microsoft|mssql)");
         String unified = null;
 
         if (name != null) {
@@ -253,7 +255,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                 unified = "h2";
             } else if (name.toLowerCase().contains("oracle")) {
                 unified = "oracle";
-            }else if (name.toLowerCase().contains("microsoft")) {
+            }else if (mssqlPattern.matcher(name.toLowerCase()).find()) {
                 unified = "mssql";
             }else if (name.toLowerCase().contains("jconnect")) {
                 unified = "sybase";
