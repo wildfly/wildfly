@@ -38,7 +38,7 @@
        <thread-pools>
            <thread-pool name="default">
                <max-threads count="10"/>
-               <keepalive-time time="100" unit="milliseconds"/>
+               <keepalive-time time="60" unit="seconds"/>
            </thread-pool>
        </thread-pools>
        <server-interceptors>
