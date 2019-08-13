@@ -42,6 +42,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.ee.concurrent.service.ManagedScheduledExecutorServiceService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -139,18 +140,34 @@ public class ManagedScheduledExecutorServiceResourceDefinition extends SimpleRes
                     .setValidator(EnumValidator.create(AbstractManagedExecutorService.RejectPolicy.class, true, true))
                     .build();
 
-
     static final SimpleAttributeDefinition[] ATTRIBUTES = {JNDI_NAME_AD, CONTEXT_SERVICE_AD, THREAD_FACTORY_AD, THREAD_PRIORITY_AD, HUNG_TASK_THRESHOLD_AD, LONG_RUNNING_TASKS_AD, CORE_THREADS_AD, KEEPALIVE_TIME_AD, REJECT_POLICY_AD};
 
     public static final PathElement PATH_ELEMENT = PathElement.pathElement(EESubsystemModel.MANAGED_SCHEDULED_EXECUTOR_SERVICE);
 
-    public static final ManagedScheduledExecutorServiceResourceDefinition INSTANCE = new ManagedScheduledExecutorServiceResourceDefinition();
+    /**
+     * metrics op step handler
+     */
+    private static final ManagedExecutorServiceMetricsHandler METRICS_HANDLER = new ManagedExecutorServiceMetricsHandler.Builder<ManagedScheduledExecutorServiceService>(CAPABILITY)
+            .addMetric(ManagedExecutorServiceMetricsAttributes.ACTIVE_THREAD_COUNT_AD, (context, service) -> context.getResult().set(service.getExecutorService().getRuntimeStats().getActiveThreadsCount()))
+            .addMetric(ManagedExecutorServiceMetricsAttributes.COMPLETED_TASK_COUNT_AD, (context, service) -> context.getResult().set(service.getExecutorService().getRuntimeStats().getCompletedTaskCount()))
+            .addMetric(ManagedExecutorServiceMetricsAttributes.CURRENT_QUEUE_SIZE_AD, (context, service) -> context.getResult().set(service.getExecutorService().getRuntimeStats().getQueueSize()))
+            .addMetric(ManagedExecutorServiceMetricsAttributes.HUNG_THREAD_COUNT_AD, (context, service) -> context.getResult().set(service.getExecutorService().getRuntimeStats().getHungThreadsCount()))
+            .addMetric(ManagedExecutorServiceMetricsAttributes.MAX_THREAD_COUNT_AD, (context, service) -> context.getResult().set(service.getExecutorService().getRuntimeStats().getMaxThreadsCount()))
+            .addMetric(ManagedExecutorServiceMetricsAttributes.TASK_COUNT_AD, (context, service) -> context.getResult().set(service.getExecutorService().getRuntimeStats().getTaskCount()))
+            .addMetric(ManagedExecutorServiceMetricsAttributes.THREAD_COUNT_AD, (context, service) -> context.getResult().set(service.getExecutorService().getRuntimeStats().getThreadsCount()))
+            .build();
 
-    private ManagedScheduledExecutorServiceResourceDefinition() {
+    /**
+     *
+     */
+    private final boolean registerRuntimeOnly;
+
+    ManagedScheduledExecutorServiceResourceDefinition(boolean registerRuntimeOnly) {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, EeExtension.getResourceDescriptionResolver(EESubsystemModel.MANAGED_SCHEDULED_EXECUTOR_SERVICE))
                 .setAddHandler(ManagedScheduledExecutorServiceAdd.INSTANCE)
                 .setRemoveHandler(new ServiceRemoveStepHandler(ManagedScheduledExecutorServiceAdd.INSTANCE))
                 .addCapabilities(CAPABILITY));
+        this.registerRuntimeOnly = registerRuntimeOnly;
     }
 
     @Override
@@ -158,6 +175,9 @@ public class ManagedScheduledExecutorServiceResourceDefinition extends SimpleRes
         OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
         for (AttributeDefinition attr : ATTRIBUTES) {
             resourceRegistration.registerReadWriteAttribute(attr, null, writeHandler);
+        }
+        if (registerRuntimeOnly) {
+            METRICS_HANDLER.registerAttributes(resourceRegistration);
         }
     }
 

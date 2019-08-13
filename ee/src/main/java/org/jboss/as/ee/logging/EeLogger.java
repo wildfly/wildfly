@@ -1147,4 +1147,9 @@ public interface EeLogger extends BasicLogger {
     //        "Support for this setting will be removed once all EE 8 APIs are provided and certified.")
     //void notUsingEE8PreviewMode();
 
+    @Message(id = 120, value = "Failed to locate executor service '%s'")
+    OperationFailedException executorServiceNotFoundForMetrics(ServiceName serviceName);
+
+    @Message(id = 121, value = "Unsupported attribute '%s'")
+    IllegalStateException unsupportedExecutorServiceMetric(String attributeName);
 }

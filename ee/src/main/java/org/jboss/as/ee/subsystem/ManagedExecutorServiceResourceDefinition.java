@@ -46,6 +46,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.ee.concurrent.service.ManagedExecutorServiceService;
 import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -160,18 +161,34 @@ public class ManagedExecutorServiceResourceDefinition extends SimpleResourceDefi
                     .setValidator(EnumValidator.create(AbstractManagedExecutorService.RejectPolicy.class, true, true))
                     .build();
 
-
     static final SimpleAttributeDefinition[] ATTRIBUTES = {JNDI_NAME_AD, CONTEXT_SERVICE_AD, THREAD_FACTORY_AD, THREAD_PRIORITY_AD, HUNG_TASK_THRESHOLD_AD, LONG_RUNNING_TASKS_AD, CORE_THREADS_AD, MAX_THREADS_AD, KEEPALIVE_TIME_AD, QUEUE_LENGTH_AD, REJECT_POLICY_AD};
 
     public static final PathElement PATH_ELEMENT = PathElement.pathElement(EESubsystemModel.MANAGED_EXECUTOR_SERVICE);
 
-    public static final ManagedExecutorServiceResourceDefinition INSTANCE = new ManagedExecutorServiceResourceDefinition();
+    /**
+     * metrics op step handler
+     */
+    private static final ManagedExecutorServiceMetricsHandler METRICS_HANDLER = new ManagedExecutorServiceMetricsHandler.Builder<ManagedExecutorServiceService>(CAPABILITY)
+            .addMetric(ManagedExecutorServiceMetricsAttributes.ACTIVE_THREAD_COUNT_AD, (context, service) -> context.getResult().set(service.getExecutorService().getRuntimeStats().getActiveThreadsCount()))
+            .addMetric(ManagedExecutorServiceMetricsAttributes.COMPLETED_TASK_COUNT_AD, (context, service) -> context.getResult().set(service.getExecutorService().getRuntimeStats().getCompletedTaskCount()))
+            .addMetric(ManagedExecutorServiceMetricsAttributes.CURRENT_QUEUE_SIZE_AD, (context, service) -> context.getResult().set(service.getExecutorService().getRuntimeStats().getQueueSize()))
+            .addMetric(ManagedExecutorServiceMetricsAttributes.HUNG_THREAD_COUNT_AD, (context, service) -> context.getResult().set(service.getExecutorService().getRuntimeStats().getHungThreadsCount()))
+            .addMetric(ManagedExecutorServiceMetricsAttributes.MAX_THREAD_COUNT_AD, (context, service) -> context.getResult().set(service.getExecutorService().getRuntimeStats().getMaxThreadsCount()))
+            .addMetric(ManagedExecutorServiceMetricsAttributes.TASK_COUNT_AD, (context, service) -> context.getResult().set(service.getExecutorService().getRuntimeStats().getTaskCount()))
+            .addMetric(ManagedExecutorServiceMetricsAttributes.THREAD_COUNT_AD, (context, service) -> context.getResult().set(service.getExecutorService().getRuntimeStats().getThreadsCount()))
+            .build();
 
-    private ManagedExecutorServiceResourceDefinition() {
+    /**
+     *
+     */
+    private final boolean registerRuntimeOnly;
+
+    ManagedExecutorServiceResourceDefinition(boolean registerRuntimeOnly) {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, EeExtension.getResourceDescriptionResolver(EESubsystemModel.MANAGED_EXECUTOR_SERVICE))
                 .setAddHandler(ManagedExecutorServiceAdd.INSTANCE)
                 .setRemoveHandler(new ServiceRemoveStepHandler(ManagedExecutorServiceAdd.INSTANCE))
                 .addCapabilities(CAPABILITY));
+        this.registerRuntimeOnly = registerRuntimeOnly;
     }
 
     @Override
@@ -179,6 +196,9 @@ public class ManagedExecutorServiceResourceDefinition extends SimpleResourceDefi
         OperationStepHandler writeHandler = new ValidatingWriteHandler(ATTRIBUTES);
         for (AttributeDefinition attr : ATTRIBUTES) {
             resourceRegistration.registerReadWriteAttribute(attr, null, writeHandler);
+        }
+        if (registerRuntimeOnly) {
+            METRICS_HANDLER.registerAttributes(resourceRegistration);
         }
     }
 
