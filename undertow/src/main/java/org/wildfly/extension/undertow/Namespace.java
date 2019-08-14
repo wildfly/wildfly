@@ -45,7 +45,7 @@ enum Namespace {
     UNDERTOW_7_0("urn:jboss:domain:undertow:7.0"),
     UNDERTOW_8_0("urn:jboss:domain:undertow:8.0"),
     UNDERTOW_9_0("urn:jboss:domain:undertow:9.0"),
-    UNDERTOW_10_0("urn:jboss:domain:undertow:10.0");
+    UNDERTOW_10_0("urn:jboss:domain:undertow:10.0"),
     ;
 
     /**

@@ -18,6 +18,7 @@ e.g.
 </web-app>
 ----
 
+[[distributable-web-subsystem]]
 == Distributable Web Subsystem
 
 The distributable-web subsystem manages a set of session management profiles that encapsulate the configuration of a distributable session manager.

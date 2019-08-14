@@ -129,6 +129,11 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
         return this;
     }
 
+    public ResourceDescriptor addAttributes(Collection<AttributeDefinition> attributes) {
+        this.attributes.addAll(attributes);
+        return this;
+    }
+
     public <E extends Enum<E> & Attribute> ResourceDescriptor addExtraParameters(Class<E> enumClass) {
         return this.addExtraParameters(EnumSet.allOf(enumClass));
     }

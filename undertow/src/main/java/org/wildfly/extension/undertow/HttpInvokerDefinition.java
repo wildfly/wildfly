@@ -62,7 +62,7 @@ public class HttpInvokerDefinition extends PersistentResourceDefinition {
                         .addRequirements(Capabilities.CAPABILITY_HTTP_INVOKER)
                         .build();
 
-    static final SimpleAttributeDefinition HTTP_AUTHENTICATION_FACTORY = new SimpleAttributeDefinitionBuilder(Constants.HTTP_AUTHENITCATION_FACTORY, ModelType.STRING, true)
+    static final SimpleAttributeDefinition HTTP_AUTHENTICATION_FACTORY = new SimpleAttributeDefinitionBuilder(Constants.HTTP_AUTHENTICATION_FACTORY, ModelType.STRING, true)
             .setValidator(new StringLengthValidator(1, true))
             .setRestartAllServices()
             .setCapabilityReference(Capabilities.REF_HTTP_AUTHENTICATION_FACTORY)
@@ -75,7 +75,7 @@ public class HttpInvokerDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false))
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_REALM_REF)
-            .setAlternatives(Constants.HTTP_AUTHENITCATION_FACTORY)
+            .setAlternatives(Constants.HTTP_AUTHENTICATION_FACTORY)
             .build();
 
     protected static final SimpleAttributeDefinition PATH = new SimpleAttributeDefinitionBuilder(Constants.PATH, ModelType.STRING, true)

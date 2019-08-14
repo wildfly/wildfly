@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,28 +20,26 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.clustering;
+package org.wildfly.extension.undertow.filters;
 
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
+import org.jboss.as.clustering.controller.ChildResourceDefinition;
+import org.jboss.as.controller.PathElement;
+import org.wildfly.extension.undertow.Constants;
+import org.wildfly.extension.undertow.UndertowExtension;
 
 /**
- * Servlet returning the serving node name.
+ * Base class for affinity resources.
  *
- * @author Ondrej Chaloupka
+ * @author Radoslav Husar
  */
-@WebServlet(urlPatterns = { NodeInfoServlet.SERVLET_PATH })
-public class NodeInfoServlet extends HttpServlet {
-    private static final long serialVersionUID = 1L;
+public abstract class AffinityResourceDefinition extends ChildResourceDefinition {
 
-    public static final String SERVLET_NAME = "nodename";
-    public static final String SERVLET_PATH = "/" + SERVLET_NAME;
-
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        resp.getWriter().write(NodeNameGetter.getNodeName());
+    protected static PathElement pathElement(String value) {
+        return PathElement.pathElement(Constants.AFFINITY, value);
     }
+
+    AffinityResourceDefinition(PathElement path) {
+        super(path, UndertowExtension.getResolver(Constants.HANDLER, Constants.AFFINITY, path.getValue()));
+    }
+
 }
