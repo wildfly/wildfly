@@ -93,6 +93,10 @@
                                     <artifactId>jboss-ejb-client-legacy</artifactId>
                                 </dependency>
                                 <dependency>
+                                    <groupId>org.jboss.ejb3</groupId>
+                                    <artifactId>jboss-ejb3-ext-api</artifactId>
+                                </dependency>
+                                <dependency>
                                     <groupId>org.jboss.logging</groupId>
                                     <artifactId>jboss-logging</artifactId>
                                 </dependency>
