@@ -38,9 +38,9 @@ import static org.jboss.as.subsystem.test.AdditionalInitialization.MANAGEMENT;
  *
  * @author <a href="lbarreiro@redhat.com">Luis Barreiro</a>
  */
-public class SubsystemFullParsingTestCase extends AbstractSubsystemTest {
+public class SubsystemFullParsing10TestCase extends AbstractSubsystemTest {
 
-    public SubsystemFullParsingTestCase() {
+    public SubsystemFullParsing10TestCase() {
         super(AgroalExtension.SUBSYSTEM_NAME, new AgroalExtension());
     }
 
@@ -56,8 +56,8 @@ public class SubsystemFullParsingTestCase extends AbstractSubsystemTest {
      * Tests that the xml is parsed into the correct operations
      */
     @Test
-    public void testParseSubsystem() throws Exception {
-        parseXmlResource("agroal_2_0-full.xml");
+    public void testParse_1_0_Subsystem() throws Exception {
+        parseXmlResource("agroal_1_0-full.xml");
     }
 
     @SuppressWarnings("SameParameterValue")
