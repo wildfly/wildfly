@@ -39,19 +39,32 @@ import org.junit.Test;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
-public class MailSubsystem30TestCase extends MailSubsystemTestBase {
-    public MailSubsystem30TestCase() {
+public class MailSubsystem40TestCase extends MailSubsystemTestBase {
+    public MailSubsystem40TestCase() {
         super(MailExtension.SUBSYSTEM_NAME, new MailExtension());
     }
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem_3_0.xml");
+        return readResource("subsystem_4_0.xml");
     }
 
     @Override
-    protected KernelServices standardSubsystemTest(String configId, boolean compareXml) throws Exception {
-        return super.standardSubsystemTest(configId, false);
+    protected String getSubsystemXsdPath() throws Exception {
+        return "schema/wildfly-mail_4_0.xsd";
+    }
+
+    @Override
+    protected String[] getSubsystemTemplatePaths() throws IOException {
+        return new String[]{
+                "/subsystem-templates/mail.xml"
+        };
+    }
+
+    @Test
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        super.testSchemaOfSubsystemTemplates();
     }
 
     @Test

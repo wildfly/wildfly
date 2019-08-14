@@ -57,7 +57,7 @@ public class MailTransformersTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("mail_3_0-transformers.xml");
+        return readResource("mail_4_0-transformers.xml");
     }
 
     @Test
@@ -124,7 +124,7 @@ public class MailTransformersTestCase extends AbstractSubsystemBaseTest {
         assertTrue(mainServices.isSuccessfulBoot());
         assertTrue(mainServices.getLegacyServices(targetVersion).isSuccessfulBoot());
 
-        List<ModelNode> ops = builder.parseXmlResource("mail_3_0-reject.xml");
+        List<ModelNode> ops = builder.parseXmlResource("mail_4_0-reject.xml");
         PathAddress sessionAddress = PathAddress.pathAddress(MailExtension.SUBSYSTEM_PATH).append(MailExtension.MAIL_SESSION_PATH);
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, targetVersion, ops, new FailedOperationTransformationConfig()
                         .addFailedAttribute(sessionAddress.append("server"),
