@@ -1519,7 +1519,7 @@
 
         <dependency>
             <groupId>io.smallrye</groupId>
-            <artifactId>smallrye-metrics</artifactId>
+            <artifactId>smallrye-metrics-2.0</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>

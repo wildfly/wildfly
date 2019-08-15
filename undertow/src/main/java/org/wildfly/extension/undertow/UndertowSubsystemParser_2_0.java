@@ -226,7 +226,7 @@ public class UndertowSubsystemParser_2_0 extends PersistentResourceXMLParser {
                                 builder(ErrorPageDefinition.INSTANCE.getPathElement())
                                         .addAttributes(ErrorPageDefinition.CODE, ErrorPageDefinition.PATH)
                         ).addChild(
-                                builder(ModClusterDefinition.INSTANCE.getPathElement())
+                                builder(ModClusterDefinition.PATH)
                                 .addAttributes(ModClusterDefinition.MANAGEMENT_SOCKET_BINDING,
                                         ModClusterDefinition.ADVERTISE_SOCKET_BINDING,
                                         ModClusterDefinition.SECURITY_KEY,

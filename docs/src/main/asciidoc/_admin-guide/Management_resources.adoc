@@ -241,7 +241,7 @@ configuration:
 
 [source,options="nowrap"]
 ----
-[standalone@localhost:9990 /] /subsystem=undertow/server=default-server/http-listener=default:read-resource(include-runtime=false
+[standalone@localhost:9990 /] /subsystem=undertow/server=default-server/http-listener=default:read-resource(include-runtime=false)
 {
     "outcome" => "success",
     "result" => {

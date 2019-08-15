@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -28,31 +28,25 @@ import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.junit.Test;
 
-/**
- * This is the barebone test example that tests subsystem
- *
- * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
- */
-public class UndertowSubsystemTestCase extends AbstractUndertowSubsystemTestCase {
+public class UndertowSubsystem100TestCase extends AbstractUndertowSubsystemTestCase {
 
     private final String virtualHostName = "some-server";
     private final int flag = 1;
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("undertow-9.0.xml");
+        return readResource("undertow-10.0.xml");
     }
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-undertow_9_0.xsd";
+        return "schema/wildfly-undertow_10_0.xsd";
     }
 
     @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[]{"/subsystem-templates/undertow.xml"};
+    protected String[] getSubsystemTemplatePaths() {
+        return new String[] { "/subsystem-templates/undertow.xml" };
     }
-
 
     @Test
     @Override

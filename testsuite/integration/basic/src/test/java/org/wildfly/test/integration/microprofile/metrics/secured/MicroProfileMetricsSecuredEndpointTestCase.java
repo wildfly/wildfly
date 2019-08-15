@@ -89,7 +89,9 @@ public class MicroProfileMetricsSecuredEndpointTestCase {
             assertEquals(200, resp.getStatusLine().getStatusCode());
             String content = EntityUtils.toString(resp.getEntity());
             resp.close();
-            assertTrue("'base:jvm_uptime_seconds' message is expected in the response", content.contains("base:jvm_uptime_seconds"));
+            // MicroProfile Metrics 2.0 has changed its Prometheus conversion format from "base:x" to "base_x"
+            String expectedMetric = "base_jvm_uptime_seconds";
+            assertTrue(expectedMetric + " metric is expected in the response", content.contains(expectedMetric));
         }
     }
 }

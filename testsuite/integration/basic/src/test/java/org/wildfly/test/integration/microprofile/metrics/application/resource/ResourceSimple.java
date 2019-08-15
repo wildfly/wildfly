@@ -27,7 +27,7 @@ import javax.ws.rs.core.Response;
 public class ResourceSimple {
     @GET
     @Produces("text/plain")
-    @Counted(description = "counter of the Hello call", absolute = true, monotonic = true)
+    @Counted(description = "counter of the Hello call", absolute = true)
     public Response hello() {
         return Response.ok("Hello From WildFly!").build();
     }

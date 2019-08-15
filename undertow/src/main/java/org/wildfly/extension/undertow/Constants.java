@@ -230,10 +230,19 @@ public interface Constants {
     String DEFLATER_LEVEL = "deflater-level";
     String MAX_RETRIES = "max-retries";
 
+    // Affinity
+    String AFFINITY = "affinity";
+    String NO_AFFINITY = "no-affinity";
+    String SINGLE = "single";
+    String SINGLE_AFFINITY = "single-affinity";
+    String RANKED = "ranked";
+    String RANKED_AFFINITY = "ranked-affinity";
+    String DELIMITER = "delimiter";
+
     // Elytron Integration
     String APPLICATION_SECURITY_DOMAIN = "application-security-domain";
     String APPLICATION_SECURITY_DOMAINS = "application-security-domains";
-    String HTTP_AUTHENITCATION_FACTORY = "http-authentication-factory";
+    String HTTP_AUTHENTICATION_FACTORY = "http-authentication-factory";
     String OVERRIDE_DEPLOYMENT_CONFIG = "override-deployment-config";
     String REFERENCING_DEPLOYMENTS = "referencing-deployments";
     String SECURITY_DOMAIN = "security-domain";

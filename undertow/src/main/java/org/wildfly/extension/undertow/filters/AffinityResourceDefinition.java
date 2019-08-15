@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,25 +19,27 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ee.subsystem;
 
-import org.jboss.as.controller.ServiceRemoveStepHandler;
-import org.jboss.as.ee.concurrent.service.ConcurrentServiceNames;
-import org.jboss.msc.service.ServiceName;
+package org.wildfly.extension.undertow.filters;
+
+import org.jboss.as.clustering.controller.ChildResourceDefinition;
+import org.jboss.as.controller.PathElement;
+import org.wildfly.extension.undertow.Constants;
+import org.wildfly.extension.undertow.UndertowExtension;
 
 /**
- * @author Eduardo Martins
+ * Base class for affinity resources.
+ *
+ * @author Radoslav Husar
  */
-public class ManagedThreadFactoryRemove extends ServiceRemoveStepHandler {
+public abstract class AffinityResourceDefinition extends ChildResourceDefinition {
 
-    static final ManagedThreadFactoryRemove INSTANCE = new ManagedThreadFactoryRemove();
-
-    private ManagedThreadFactoryRemove() {
-        super(ManagedThreadFactoryAdd.INSTANCE);
+    protected static PathElement pathElement(String value) {
+        return PathElement.pathElement(Constants.AFFINITY, value);
     }
 
-    @Override
-    protected ServiceName serviceName(String name) {
-        return ConcurrentServiceNames.getManagedThreadFactoryServiceName(name);
+    AffinityResourceDefinition(PathElement path) {
+        super(path, UndertowExtension.getResolver(Constants.HANDLER, Constants.AFFINITY, path.getValue()));
     }
+
 }

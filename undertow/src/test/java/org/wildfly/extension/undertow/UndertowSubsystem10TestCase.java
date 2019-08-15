@@ -68,7 +68,7 @@ public class UndertowSubsystem10TestCase extends AbstractUndertowSubsystemTestCa
     public void testRuntime() throws Exception {
 
         setProperty();
-        KernelServicesBuilder builder = createKernelServicesBuilder(UndertowSubsystemTestCase.RUNTIME)
+        KernelServicesBuilder builder = createKernelServicesBuilder(AbstractUndertowSubsystemTestCase.RUNTIME)
                 .setSubsystemXml(getSubsystemXml());
         KernelServices mainServices = builder.build();
         testRuntime(mainServices, virtualHostName, flag);
@@ -76,7 +76,7 @@ public class UndertowSubsystem10TestCase extends AbstractUndertowSubsystemTestCa
 
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
-        return UndertowSubsystemTestCase.DEFAULT;
+        return AbstractUndertowSubsystemTestCase.DEFAULT;
     }
 
 }

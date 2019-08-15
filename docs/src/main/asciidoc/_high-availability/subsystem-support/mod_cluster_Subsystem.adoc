@@ -14,7 +14,7 @@ on server startup (e.g. via `-Djboss.node.name=XYZ`).
 
 [source,options="nowrap"]
 ----
-[standalone@localhost:9990 /] /subsystem=undertow/:read-attribute(name=instance-id)
+[standalone@localhost:9990 /] /subsystem=undertow:read-attribute(name=instance-id)
 {
     "outcome" => "success",
     "result" => expression "${jboss.node.name}"
@@ -26,7 +26,7 @@ property in Undertow subsystem:
 
 [source,options="nowrap"]
 ----
-[standalone@localhost:9990 /] /subsystem=undertow/:write-attribute(name=instance-id,value=myroute)
+[standalone@localhost:9990 /] /subsystem=undertow:write-attribute(name=instance-id,value=myroute)
 {
     "outcome" => "success",
     "response-headers" => {
