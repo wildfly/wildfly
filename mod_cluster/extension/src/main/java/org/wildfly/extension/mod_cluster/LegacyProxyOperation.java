@@ -42,11 +42,12 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.modcluster.ModClusterServiceMBean;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.service.ActiveServiceSupplier;
+import org.wildfly.clustering.service.PassiveServiceSupplier;
 
 /**
  * These are legacy operations suffering from multiple issues such as WFLY-10442, WFLY-10445, WFLY-10444, WFLY-10441, etc.
@@ -427,11 +428,14 @@ public enum LegacyProxyOperation implements Definable<OperationDefinition>, Oper
 
     @Override
     public final void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        if (context.isNormalServer() && getService(context) != null) {
+        PathAddress proxyAddress = LegacyMetricOperationsRegistration.translateProxyPath(context, context.getCurrentAddress());
+        ServiceName serviceName = ProxyConfigurationResourceDefinition.Capability.SERVICE.getServiceName(proxyAddress);
+        if (context.isNormalServer() && new PassiveServiceSupplier<ModClusterServiceMBean>(context.getServiceRegistry(false), serviceName).get() != null) {
+            boolean readOnly = this.getDefinition().getFlags().contains(OperationEntry.Flag.READ_ONLY);
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    ModClusterServiceMBean service = getService(context);
+                    ModClusterServiceMBean service = new PassiveServiceSupplier<ModClusterServiceMBean>(context.getServiceRegistry(!readOnly), serviceName).get();
                     LegacyProxyOperation.this.execute(context, operation, service);
                 }
             }, OperationContext.Stage.RUNTIME);
@@ -439,10 +443,4 @@ public enum LegacyProxyOperation implements Definable<OperationDefinition>, Oper
     }
 
     abstract void execute(OperationContext context, ModelNode operation, ModClusterServiceMBean service) throws OperationFailedException;
-
-    static ModClusterServiceMBean getService(OperationContext context) throws OperationFailedException {
-        PathAddress proxyAddress = LegacyMetricOperationsRegistration.translateProxyPath(context, context.getCurrentAddress());
-        ServiceName serviceName = ProxyConfigurationResourceDefinition.Capability.SERVICE.getServiceName(proxyAddress);
-        return new ActiveServiceSupplier<ModClusterServiceMBean>(context.getServiceRegistry(true), serviceName).get();
-    }
 }
