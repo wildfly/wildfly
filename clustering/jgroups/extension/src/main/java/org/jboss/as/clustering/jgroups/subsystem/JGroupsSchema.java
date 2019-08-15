@@ -35,12 +35,13 @@ public enum JGroupsSchema implements Schema<JGroupsSchema> {
     VERSION_1_1(1, 1), // AS 7.1
     VERSION_2_0(2, 0), // WildFly 8
     VERSION_3_0(3, 0), // WildFly 9
-    VERSION_4_0(4, 0), // WildFly 10
-    VERSION_5_0(5, 0), // WildFly 11
-    VERSION_6_0(6, 0), // WildFly 12-16
-    VERSION_7_0(7, 0), // WildFly 17
+    VERSION_4_0(4, 0), // WildFly 10, EAP 7.0
+    VERSION_5_0(5, 0), // WildFly 11, EAP 7.1
+    VERSION_6_0(6, 0), // WildFly 12-16, EAP 7.2
+    VERSION_7_0(7, 0), // WildFly 17-18, EAP 7.3
+    VERSION_8_0(8, 0), // WildFly 19
     ;
-    public static final JGroupsSchema CURRENT = VERSION_7_0;
+    public static final JGroupsSchema CURRENT = VERSION_8_0;
 
     private final int major;
     private final int minor;
