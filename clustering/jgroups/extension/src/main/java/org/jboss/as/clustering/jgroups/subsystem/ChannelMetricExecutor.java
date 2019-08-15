@@ -43,7 +43,7 @@ public class ChannelMetricExecutor implements MetricExecutor<JChannel> {
     public ModelNode execute(OperationContext context, Metric<JChannel> metric) throws OperationFailedException {
         String channelName = context.getCurrentAddressValue();
         ServiceName serviceName = JGroupsRequirement.CHANNEL.getServiceName(context, channelName);
-        JChannel channel = new PassiveServiceSupplier<JChannel>(context.getServiceRegistry(true), serviceName).get();
+        JChannel channel = new PassiveServiceSupplier<JChannel>(context.getServiceRegistry(false), serviceName).get();
 
         return (channel != null) ? metric.execute(channel) : null;
     }

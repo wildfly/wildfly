@@ -64,7 +64,7 @@ public class ForkProtocolRuntimeResourceRegistration implements RuntimeResourceR
         String forkName = address.getElement(address.size() - 2).getValue();
         String protocolName = address.getElement(address.size() - 1).getValue();
 
-        ServiceRegistry registry = context.getServiceRegistry(true);
+        ServiceRegistry registry = context.getServiceRegistry(false);
         JChannel channel = new PassiveServiceSupplier<JChannel>(registry, JGroupsRequirement.CHANNEL.getServiceName(context, channelName)).get();
         if (channel != null) {
             FORK fork = (FORK) channel.getProtocolStack().findProtocol(FORK.class);
