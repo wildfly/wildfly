@@ -29,6 +29,9 @@ import org.jboss.msc.service.ServiceRegistry;
 
 /**
  * Returns the value supplied by a {@link Service}, starting if necessary.
+ * If used within the context of a management operation, the requisite {@link ServiceRegistry} should be obtained via:
+ * <code>OperationContext.getServiceRegistry(true)</code>, requiring an exclusive lock on the service registry,
+ * since the temporary service installed might force the target service to change state.
  * @author Paul Ferraro
  */
 public class ActiveServiceSupplier<T> extends ServiceSupplier<T> {
