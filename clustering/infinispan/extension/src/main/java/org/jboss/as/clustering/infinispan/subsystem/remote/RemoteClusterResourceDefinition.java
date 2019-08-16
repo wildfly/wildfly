@@ -27,6 +27,7 @@ import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
+import org.jboss.as.clustering.controller.OperationHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.RestartParentResourceRegistration;
@@ -97,7 +98,6 @@ public class RemoteClusterResourceDefinition extends ChildResourceDefinition<Man
         }
     }
 
-
     enum Capability implements org.jboss.as.clustering.controller.Capability {
         REMOTE_CLUSTER("org.wildfly.clustering.infinispan.remote-cache-container.remote-cluster"),
         ;
@@ -111,6 +111,12 @@ public class RemoteClusterResourceDefinition extends ChildResourceDefinition<Man
         public RuntimeCapability<Void> getDefinition() {
             return this.definition;
         }
+    }
+
+    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
+        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
+
+        RemoteClusterOperation.buildTransformation(version, builder);
     }
 
     private final ResourceServiceConfiguratorFactory serviceConfiguratorFactory;
@@ -129,10 +135,10 @@ public class RemoteClusterResourceDefinition extends ChildResourceDefinition<Man
                 .addCapabilities(Capability.class);
         new RestartParentResourceRegistration(this.serviceConfiguratorFactory, descriptor).register(registration);
 
-        return registration;
-    }
+        if (registration.isRuntimeOnlyRegistrationValid()) {
+            new OperationHandler<>(new RemoteClusterOperationExecutor(), RemoteClusterOperation.class).register(registration);
+        }
 
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        // Nothing to transform yet
+        return registration;
     }
 }
