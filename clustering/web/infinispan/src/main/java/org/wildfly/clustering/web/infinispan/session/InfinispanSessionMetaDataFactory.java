@@ -52,7 +52,7 @@ import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
  * @author Paul Ferraro
  */
 @Listener(sync = false)
-public class InfinispanSessionMetaDataFactory<L> implements SessionMetaDataFactory<CompositeSessionMetaDataEntry<L>, L> {
+public class InfinispanSessionMetaDataFactory<L> implements SessionMetaDataFactory<CompositeSessionMetaDataEntry<L>> {
 
     private final Cache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<L>> creationMetaDataCache;
     private final MutatorFactory<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<L>> creationMetaDataMutatorFactory;
@@ -61,14 +61,13 @@ public class InfinispanSessionMetaDataFactory<L> implements SessionMetaDataFacto
     private final MutatorFactory<SessionAccessMetaDataKey, SessionAccessMetaData> accessMetaDataMutatorFactory;
     private final CacheProperties properties;
 
-    @SuppressWarnings("unchecked")
-    public InfinispanSessionMetaDataFactory(Cache<? extends Key<String>, ?> cache, CacheProperties properties) {
-        this.creationMetaDataCache = (Cache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<L>>) cache;
-        this.findCreationMetaDataCache = properties.isLockOnRead() ? this.creationMetaDataCache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK) : this.creationMetaDataCache;
-        this.accessMetaDataCache = (Cache<SessionAccessMetaDataKey, SessionAccessMetaData>) cache;
-        this.properties = properties;
-        this.creationMetaDataMutatorFactory = new InfinispanMutatorFactory<>(this.creationMetaDataCache, properties);
-        this.accessMetaDataMutatorFactory = new InfinispanMutatorFactory<>(this.accessMetaDataCache, properties);
+    public InfinispanSessionMetaDataFactory(InfinispanSessionMetaDataFactoryConfiguration configuration) {
+        this.properties = configuration.getCacheProperties();
+        this.creationMetaDataCache = configuration.getCache();
+        this.creationMetaDataMutatorFactory = new InfinispanMutatorFactory<>(this.creationMetaDataCache, this.properties);
+        this.findCreationMetaDataCache = this.properties.isLockOnRead() ? this.creationMetaDataCache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK) : this.creationMetaDataCache;
+        this.accessMetaDataCache = configuration.getCache();
+        this.accessMetaDataMutatorFactory = new InfinispanMutatorFactory<>(this.accessMetaDataCache, this.properties);
     }
 
     @Override

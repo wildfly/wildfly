@@ -25,6 +25,8 @@ package org.wildfly.clustering.web.cache.session;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Map;
 
+import javax.servlet.ServletContext;
+
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
@@ -34,13 +36,14 @@ import org.wildfly.clustering.web.session.Session;
 /**
  * @author Paul Ferraro
  */
-public class CompositeSessionFactory<V, L> implements SessionFactory<CompositeSessionMetaDataEntry<L>, V, L> {
+public class CompositeSessionFactory<V, L> extends CompositeImmutableSessionFactory<V, L> implements SessionFactory<CompositeSessionMetaDataEntry<L>, V, L> {
 
-    private final SessionMetaDataFactory<CompositeSessionMetaDataEntry<L>, L> metaDataFactory;
+    private final SessionMetaDataFactory<CompositeSessionMetaDataEntry<L>> metaDataFactory;
     private final SessionAttributesFactory<V> attributesFactory;
     private final LocalContextFactory<L> localContextFactory;
 
-    public CompositeSessionFactory(SessionMetaDataFactory<CompositeSessionMetaDataEntry<L>, L> metaDataFactory, SessionAttributesFactory<V> attributesFactory, LocalContextFactory<L> localContextFactory) {
+    public CompositeSessionFactory(SessionMetaDataFactory<CompositeSessionMetaDataEntry<L>> metaDataFactory, SessionAttributesFactory<V> attributesFactory, LocalContextFactory<L> localContextFactory) {
+        super(metaDataFactory, attributesFactory);
         this.metaDataFactory = metaDataFactory;
         this.attributesFactory = attributesFactory;
         this.localContextFactory = localContextFactory;
@@ -92,7 +95,7 @@ public class CompositeSessionFactory<V, L> implements SessionFactory<CompositeSe
     }
 
     @Override
-    public SessionMetaDataFactory<CompositeSessionMetaDataEntry<L>, L> getMetaDataFactory() {
+    public SessionMetaDataFactory<CompositeSessionMetaDataEntry<L>> getMetaDataFactory() {
         return this.metaDataFactory;
     }
 
@@ -102,10 +105,10 @@ public class CompositeSessionFactory<V, L> implements SessionFactory<CompositeSe
     }
 
     @Override
-    public Session<L> createSession(String id, Map.Entry<CompositeSessionMetaDataEntry<L>, V> entry) {
+    public Session<L> createSession(String id, Map.Entry<CompositeSessionMetaDataEntry<L>, V> entry, ServletContext context) {
         CompositeSessionMetaDataEntry<L> key = entry.getKey();
         InvalidatableSessionMetaData metaData = this.metaDataFactory.createSessionMetaData(id, key);
-        SessionAttributes attributes = this.attributesFactory.createSessionAttributes(id, entry.getValue());
+        SessionAttributes attributes = this.attributesFactory.createSessionAttributes(id, entry.getValue(), metaData, context);
         return new CompositeSession<>(id, metaData, attributes, key.getLocalContext(), this.localContextFactory, this);
     }
 

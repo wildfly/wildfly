@@ -20,10 +20,10 @@
 ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 -->
-<jboss-web version="8.0" xmlns="http://www.jboss.com/xml/ns/javaee"
-           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-           xsi:schemaLocation="http://www.jboss.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-web_8_0.xsd">
-    <replication-config>
-        <cache-name>web.concurrent</cache-name>
-    </replication-config>
-</jboss-web>
+<jboss xmlns="urn:jboss:1.0">
+    <distributable-web xmlns="urn:jboss:distributable-web:1.0">
+        <infinispan-session-management cache-container="web" cache="concurrent" granularity="SESSION">
+            <primary-owner-affinity/>
+        </infinispan-session-management>
+    </distributable-web>
+</jboss>

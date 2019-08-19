@@ -21,11 +21,8 @@
  */
 package org.wildfly.clustering.web.hotrod.session;
 
-import org.infinispan.client.hotrod.RemoteCache;
 import org.wildfly.clustering.marshalling.spi.Marshallability;
 import org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration;
 
-public interface HotRodSessionManagerFactoryConfiguration<C extends Marshallability, L> extends HotRodSessionManagementConfiguration, SessionManagerFactoryConfiguration<C, L> {
-
-    <K, V> RemoteCache<K, V> getCache();
+public interface HotRodSessionManagerFactoryConfiguration<C extends Marshallability, L> extends HotRodSessionManagementConfiguration, SessionManagerFactoryConfiguration<C, L>, HotRodSessionMetaDataFactoryConfiguration {
 }

@@ -29,6 +29,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 
+import javax.servlet.ServletContext;
+
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
 import org.infinispan.notifications.Listener;
@@ -41,13 +43,18 @@ import org.wildfly.clustering.ee.infinispan.InfinispanMutatorFactory;
 import org.wildfly.clustering.infinispan.spi.distribution.Key;
 import org.wildfly.clustering.marshalling.spi.InvalidSerializedFormException;
 import org.wildfly.clustering.marshalling.spi.Marshaller;
+import org.wildfly.clustering.web.cache.session.CompositeImmutableSession;
+import org.wildfly.clustering.web.cache.session.ImmutableSessionAttributeActivationNotifier;
+import org.wildfly.clustering.web.cache.session.SessionAttributeActivationNotifier;
 import org.wildfly.clustering.web.cache.session.SessionAttributes;
 import org.wildfly.clustering.web.cache.session.SessionAttributesFactory;
 import org.wildfly.clustering.web.cache.session.fine.FineImmutableSessionAttributes;
 import org.wildfly.clustering.web.cache.session.fine.FineSessionAttributes;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
+import org.wildfly.clustering.web.infinispan.session.InfinispanSessionAttributesFactoryConfiguration;
 import org.wildfly.clustering.web.infinispan.session.SessionCreationMetaDataKey;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
+import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 
 /**
  * {@link SessionAttributesFactory} for fine granularity sessions.
@@ -65,13 +72,13 @@ public class FineSessionAttributesFactory<V> implements SessionAttributesFactory
     private final CacheProperties properties;
     private final MutatorFactory<SessionAttributeKey, V> mutatorFactory;
 
-    public FineSessionAttributesFactory(Cache<SessionAttributeNamesKey, Map<String, UUID>> namesCache, Cache<SessionAttributeKey, V> attributeCache, Marshaller<Object, V> marshaller, Immutability immutability, CacheProperties properties) {
-        this.namesCache = namesCache;
-        this.attributeCache = attributeCache;
-        this.marshaller = marshaller;
-        this.immutability = immutability;
-        this.properties = properties;
-        this.mutatorFactory = new InfinispanMutatorFactory<>(attributeCache, properties);
+    public FineSessionAttributesFactory(InfinispanSessionAttributesFactoryConfiguration<Object, V> configuration) {
+        this.namesCache = configuration.getCache();
+        this.attributeCache = configuration.getCache();
+        this.marshaller = configuration.getMarshaller();
+        this.immutability = configuration.getImmutability();
+        this.properties = configuration.getCacheProperties();
+        this.mutatorFactory = new InfinispanMutatorFactory<>(this.attributeCache, this.properties);
     }
 
     @Override
@@ -115,8 +122,10 @@ public class FineSessionAttributesFactory<V> implements SessionAttributesFactory
     }
 
     @Override
-    public SessionAttributes createSessionAttributes(String id, Map<String, UUID> names) {
-        return new FineSessionAttributes<>(new SessionAttributeNamesKey(id), names, this.namesCache, getKeyFactory(id), this.attributeCache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS), this.marshaller, this.mutatorFactory, this.immutability, this.properties);
+    public SessionAttributes createSessionAttributes(String id, Map<String, UUID> names, ImmutableSessionMetaData metaData, ServletContext context) {
+        ImmutableSessionAttributes attributes = this.createImmutableSessionAttributes(id, names);
+        SessionAttributeActivationNotifier notifier = new ImmutableSessionAttributeActivationNotifier(new CompositeImmutableSession(id, metaData, attributes), context);
+        return new FineSessionAttributes<>(new SessionAttributeNamesKey(id), names, this.namesCache, getKeyFactory(id), this.attributeCache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS), this.marshaller, this.mutatorFactory, this.immutability, this.properties, notifier);
     }
 
     @Override

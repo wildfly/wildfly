@@ -26,7 +26,6 @@ import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.transaction.TransactionMode;
 import org.jboss.as.test.clustering.NodeUtil;
 import org.jboss.as.test.clustering.cluster.web.AbstractWebFailoverTestCase;
-import org.jboss.as.test.shared.CLIServerSetupTask;
 
 /**
  * Variation of {@link AbstractWebFailoverTestCase} using invalidation cache with HotRod-based store implementation referencing
@@ -47,16 +46,5 @@ public abstract class AbstractHotRodWebFailoverTestCase extends AbstractWebFailo
 
         NodeUtil.start(this.controller, this.nodes);
         NodeUtil.deploy(this.deployer, this.deployments);
-    }
-
-    public static class ServerSetupTask extends CLIServerSetupTask {
-        public ServerSetupTask() {
-            this.builder.node(THREE_NODES)
-                    .setup("/subsystem=distributable-web/routing=infinispan:remove")
-                    .setup("/subsystem=distributable-web/routing=local:add")
-                    .teardown("/subsystem=distributable-web/routing=local:remove")
-                    .teardown("/subsystem=distributable-web/routing=infinispan:add(cache-container=web, cache=routing)")
-            ;
-        }
     }
 }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,28 +22,16 @@
 
 package org.wildfly.clustering.web.hotrod.session;
 
-import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
+import org.wildfly.clustering.ee.cache.CacheProperties;
+import org.wildfly.clustering.web.cache.session.SessionAttributesFactoryConfiguration;
 
 /**
- * A scheduler for some task.
  * @author Paul Ferraro
  */
-public interface Scheduler extends AutoCloseable {
-    /**
-     * Schedules a task for the specified session.
-     * @param session a web session.
-     */
-    void schedule(String sessionId, ImmutableSessionMetaData metaData);
+public interface HotRodSessionAttributesFactoryConfiguration<V, S> extends SessionAttributesFactoryConfiguration<V, S>, HotRodSessionMetaDataFactoryConfiguration {
 
-    /**
-     * Cancels a previously scheduled task for the specified session
-     * @param sessionId the web session identifier
-     */
-    void cancel(String sessionId);
-
-    /**
-     * Closes any resources used by this scheduler.
-     */
     @Override
-    void close();
+    default CacheProperties getCacheProperties() {
+        return HotRodSessionMetaDataFactoryConfiguration.super.getCacheProperties();
+    }
 }

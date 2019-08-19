@@ -44,7 +44,7 @@ public class RankedRouteLocator implements RouteLocator {
 
     private final NodeFactory<Address> factory;
     private final Registry<String, Void> registry;
-    private final Cache<String, ?> cache;
+    private final Cache<Key<String>, ?> cache;
     private final String localRoute;
     private final boolean preferPrimary;
     private final String delimiter;

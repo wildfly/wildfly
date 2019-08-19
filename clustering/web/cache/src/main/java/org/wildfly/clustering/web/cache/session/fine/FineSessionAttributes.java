@@ -39,6 +39,7 @@ import org.wildfly.clustering.ee.cache.function.CopyOnWriteMapPutFunction;
 import org.wildfly.clustering.ee.cache.function.CopyOnWriteMapRemoveFunction;
 import org.wildfly.clustering.marshalling.spi.InvalidSerializedFormException;
 import org.wildfly.clustering.marshalling.spi.Marshaller;
+import org.wildfly.clustering.web.cache.session.SessionAttributeActivationNotifier;
 import org.wildfly.clustering.web.cache.session.SessionAttributes;
 
 /**
@@ -55,10 +56,11 @@ public class FineSessionAttributes<NK, K, V> implements SessionAttributes {
     private final MutatorFactory<K, V> mutatorFactory;
     private final Immutability immutability;
     private final CacheProperties properties;
+    private final SessionAttributeActivationNotifier notifier;
 
     private volatile Map<String, UUID> names;
 
-    public FineSessionAttributes(NK key, Map<String, UUID> names, Map<NK, Map<String, UUID>> namesCache, Function<UUID, K> keyFactory, Map<K, V> attributeCache, Marshaller<Object, V> marshaller, MutatorFactory<K, V> mutatorFactory, Immutability immutability, CacheProperties properties) {
+    public FineSessionAttributes(NK key, Map<String, UUID> names, Map<NK, Map<String, UUID>> namesCache, Function<UUID, K> keyFactory, Map<K, V> attributeCache, Marshaller<Object, V> marshaller, MutatorFactory<K, V> mutatorFactory, Immutability immutability, CacheProperties properties, SessionAttributeActivationNotifier notifier) {
         this.key = key;
         this.setNames(names);
         this.namesCache = namesCache;
@@ -68,6 +70,7 @@ public class FineSessionAttributes<NK, K, V> implements SessionAttributes {
         this.mutatorFactory = mutatorFactory;
         this.immutability = immutability;
         this.properties = properties;
+        this.notifier = notifier;
     }
 
     @Override
@@ -78,7 +81,12 @@ public class FineSessionAttributes<NK, K, V> implements SessionAttributes {
         this.setNames(this.namesCache.computeIfPresent(this.key, this.properties.isTransactional() ? new CopyOnWriteMapRemoveFunction<>(name) : new ConcurrentMapRemoveFunction<>(name)));
 
         Object result = this.read(this.attributeCache.remove(this.keyFactory.apply(attributeId)));
-        this.mutations.remove(attributeId);
+        if (result != null) {
+            this.mutations.remove(attributeId);
+            if (this.properties.isPersistent()) {
+                this.notifier.postActivate(result);
+            }
+        }
         return result;
     }
 
@@ -91,7 +99,6 @@ public class FineSessionAttributes<NK, K, V> implements SessionAttributes {
             throw new IllegalArgumentException(new NotSerializableException(attribute.getClass().getName()));
         }
 
-        V value = this.marshaller.write(attribute);
         UUID attributeId = this.names.get(name);
         if (attributeId == null) {
             UUID newAttributeId = UUID.randomUUID();
@@ -100,7 +107,22 @@ public class FineSessionAttributes<NK, K, V> implements SessionAttributes {
         }
 
         K key = this.keyFactory.apply(attributeId);
+        V value = this.marshaller.write(attribute);
+
+        if (this.properties.isPersistent()) {
+            this.notifier.prePassivate(attribute);
+        }
+
         Object result = this.read(this.attributeCache.put(key, value));
+
+        if (this.properties.isPersistent()) {
+            this.notifier.postActivate(attribute);
+
+            if (result != attribute) {
+                this.notifier.postActivate(result);
+            }
+        }
+
         if (this.properties.isTransactional()) {
             // Add a passive mutation to prevent any subsequent mutable getAttribute(...) from triggering a redundant mutation on close.
             this.mutations.put(attributeId, Mutator.PASSIVE);
@@ -122,14 +144,18 @@ public class FineSessionAttributes<NK, K, V> implements SessionAttributes {
 
         K key = this.keyFactory.apply(attributeId);
         V value = this.attributeCache.get(key);
-        Object attribute = this.read(value);
-        if (attribute != null) {
+        Object result = this.read(value);
+        if (result != null) {
+            if (this.properties.isPersistent()) {
+                this.notifier.postActivate(result);
+            }
+
             // If the object is mutable, we need to trigger a mutation on close
-            if (!this.immutability.test(attribute)) {
+            if (!this.immutability.test(result)) {
                 this.mutations.putIfAbsent(attributeId, this.mutatorFactory.createMutator(key, value));
             }
         }
-        return attribute;
+        return result;
     }
 
     @Override
@@ -139,6 +165,8 @@ public class FineSessionAttributes<NK, K, V> implements SessionAttributes {
 
     @Override
     public void close() {
+        this.notifier.close();
+
         for (Mutator mutator : this.mutations.values()) {
             mutator.mutate();
         }

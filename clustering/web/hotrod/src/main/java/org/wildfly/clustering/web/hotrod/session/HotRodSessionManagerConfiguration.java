@@ -29,6 +29,7 @@ import org.wildfly.clustering.Registrar;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.web.IdentifierFactory;
+import org.wildfly.clustering.web.cache.session.Scheduler;
 import org.wildfly.clustering.web.session.SessionExpirationListener;
 
 /**

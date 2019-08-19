@@ -23,34 +23,16 @@
 package org.wildfly.clustering.web.infinispan.session;
 
 import org.wildfly.clustering.infinispan.spi.distribution.Locality;
-import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 
 /**
  * A scheduler for some task.
  * @author Paul Ferraro
  */
-public interface Scheduler extends AutoCloseable {
-    /**
-     * Schedules a task for the specified session.
-     * @param session a web session.
-     */
-    void schedule(String sessionId, ImmutableSessionMetaData metaData);
-
-    /**
-     * Cancels a previously scheduled task for the specified session
-     * @param sessionId the web session identifier
-     */
-    void cancel(String sessionId);
+public interface Scheduler extends org.wildfly.clustering.web.cache.session.Scheduler {
 
     /**
      * Cancels any previous scheduled tasks for session which are no longer local to the current node
      * @param location the cache locality
      */
     void cancel(Locality locality);
-
-    /**
-     * Closes any resources used by this scheduler.
-     */
-    @Override
-    void close();
 }

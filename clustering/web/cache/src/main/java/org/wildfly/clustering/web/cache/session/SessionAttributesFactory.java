@@ -22,15 +22,15 @@
 
 package org.wildfly.clustering.web.cache.session;
 
+import javax.servlet.ServletContext;
+
 import org.wildfly.clustering.ee.Creator;
-import org.wildfly.clustering.ee.Locator;
 import org.wildfly.clustering.ee.Remover;
-import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
+import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 
 /**
  * @author Paul Ferraro
  */
-public interface SessionAttributesFactory<V> extends Creator<String, V, Void>, Locator<String, V>, Remover<String> {
-    SessionAttributes createSessionAttributes(String id, V value);
-    ImmutableSessionAttributes createImmutableSessionAttributes(String id, V value);
+public interface SessionAttributesFactory<V> extends ImmutableSessionAttributesFactory<V>, Creator<String, V, Void>, Remover<String> {
+    SessionAttributes createSessionAttributes(String id, V value, ImmutableSessionMetaData metaData, ServletContext context);
 }

@@ -28,6 +28,8 @@ import static org.mockito.Mockito.*;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
+import javax.servlet.ServletContext;
+
 import org.junit.Test;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.session.ImmutableSession;
@@ -41,7 +43,7 @@ import org.wildfly.clustering.web.session.Session;
  * @author Paul Ferraro
  */
 public class CompositeSessionFactoryTestCase {
-    private final SessionMetaDataFactory<CompositeSessionMetaDataEntry<Object>, Object> metaDataFactory = mock(SessionMetaDataFactory.class);
+    private final SessionMetaDataFactory<CompositeSessionMetaDataEntry<Object>> metaDataFactory = mock(SessionMetaDataFactory.class);
     private final SessionAttributesFactory<Object> attributesFactory = mock(SessionAttributesFactory.class);
     private final LocalContextFactory<Object> localContextFactory = mock(LocalContextFactory.class);
 
@@ -126,14 +128,15 @@ public class CompositeSessionFactoryTestCase {
         Object attributesValue = new Object();
         InvalidatableSessionMetaData metaData = mock(InvalidatableSessionMetaData.class);
         SessionAttributes attributes = mock(SessionAttributes.class);
+        ServletContext context = mock(ServletContext.class);
         String id = "id";
 
         when(entry.getKey()).thenReturn(metaDataValue);
         when(entry.getValue()).thenReturn(attributesValue);
         when(this.metaDataFactory.createSessionMetaData(id, metaDataValue)).thenReturn(metaData);
-        when(this.attributesFactory.createSessionAttributes(id, attributesValue)).thenReturn(attributes);
+        when(this.attributesFactory.createSessionAttributes(same(id), same(attributesValue), same(metaData), same(context))).thenReturn(attributes);
 
-        Session<Object> result = this.factory.createSession(id, entry);
+        Session<Object> result = this.factory.createSession(id, entry, context);
 
         assertSame(id, result.getId());
         assertSame(metaData, result.getMetaData());
