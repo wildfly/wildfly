@@ -22,6 +22,12 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
+import java.util.concurrent.ExecutorService;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -56,10 +62,6 @@ import org.jboss.as.threads.ThreadFactoryResolver;
 import org.jboss.as.threads.ThreadsServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-
-import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 /**
  * {@link org.jboss.as.controller.ResourceDefinition} for the EJB3 subsystem's root management resource.
@@ -353,7 +355,7 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
                 new EJB3ThreadFactoryResolver(),
                 EJB3SubsystemModel.BASE_THREAD_POOL_SERVICE_NAME,
                 registerRuntimeOnly,
-                EnhancedQueueExecutorResourceDefinition.CAPABILITY,
+                ThreadsServices.createCapability(EJB3SubsystemModel.BASE_EJB_THREAD_POOL_NAME, ExecutorService.class),
                 false));
 
         // subsystem=ejb3/service=iiop
