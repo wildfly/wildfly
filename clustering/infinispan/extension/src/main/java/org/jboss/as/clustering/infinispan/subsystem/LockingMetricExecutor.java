@@ -42,7 +42,7 @@ public class LockingMetricExecutor implements MetricExecutor<DefaultLockManager>
         String containerName = cacheAddress.getParent().getLastElement().getValue();
         String cacheName = cacheAddress.getLastElement().getValue();
 
-        Cache<?, ?> cache = new PassiveServiceSupplier<Cache<?, ?>>(context.getServiceRegistry(true), InfinispanCacheRequirement.CACHE.getServiceName(context, containerName, cacheName)).get();
+        Cache<?, ?> cache = new PassiveServiceSupplier<Cache<?, ?>>(context.getServiceRegistry(false), InfinispanCacheRequirement.CACHE.getServiceName(context, containerName, cacheName)).get();
         return (cache != null) ? metric.execute((DefaultLockManager) cache.getAdvancedCache().getLockManager()) : null;
     }
 }

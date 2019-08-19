@@ -42,7 +42,7 @@ public class StoreMetricExecutor implements MetricExecutor<CacheLoaderIntercepto
         String containerName = cacheAddress.getParent().getLastElement().getValue();
         String cacheName = cacheAddress.getLastElement().getValue();
 
-        Cache<?, ?> cache = new PassiveServiceSupplier<Cache<?, ?>>(context.getServiceRegistry(true), InfinispanCacheRequirement.CACHE.getServiceName(context, containerName, cacheName)).get();
+        Cache<?, ?> cache = new PassiveServiceSupplier<Cache<?, ?>>(context.getServiceRegistry(false), InfinispanCacheRequirement.CACHE.getServiceName(context, containerName, cacheName)).get();
         if (cache != null) {
             CacheLoaderInterceptor<?, ?> interceptor = CacheMetric.findInterceptor(cache, CacheLoaderInterceptor.class);
             if (interceptor != null) {

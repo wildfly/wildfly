@@ -21,6 +21,7 @@ package org.jboss.as.clustering.controller;
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -34,6 +35,10 @@ public interface Operation<C> extends Definable<OperationDefinition> {
 
     default String getName() {
         return this.getDefinition().getName();
+    }
+
+    default boolean isReadOnly() {
+        return this.getDefinition().getFlags().contains(OperationEntry.Flag.READ_ONLY);
     }
 
     /**

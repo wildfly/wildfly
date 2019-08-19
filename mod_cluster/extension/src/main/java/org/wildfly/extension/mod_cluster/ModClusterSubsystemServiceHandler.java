@@ -164,7 +164,7 @@ class ModClusterSubsystemServiceHandler implements ResourceServiceHandler {
                 String className = CustomLoadMetricResourceDefinition.Attribute.CLASS.resolveModelAttribute(context, node).asString();
                 String moduleName = CustomLoadMetricResourceDefinition.Attribute.MODULE.resolveModelAttribute(context, node).asString();
 
-                ServiceModuleLoader serviceModuleLoader = new ActiveServiceSupplier<ServiceModuleLoader>(context.getServiceRegistry(false), Services.JBOSS_SERVICE_MODULE_LOADER).get();
+                ServiceModuleLoader serviceModuleLoader = new ActiveServiceSupplier<ServiceModuleLoader>(context.getServiceRegistry(true), Services.JBOSS_SERVICE_MODULE_LOADER).get();
 
                 try {
                     Module module = serviceModuleLoader.loadModule(moduleName);
