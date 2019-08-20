@@ -50,4 +50,21 @@
             <property name="custom_prop" value="some-custom-prop-value"/>
         </custom-server>
     </mail-session>
+    <mail-session name="customWithCredentialReference" debug="true" jndi-name="java:jboss/mail/Custom2">
+        <custom-server name="pop3" outbound-socket-binding-ref="mail-pop3" username="user1">
+            <credential-reference store="store" clear-text="user1-pass"/>
+            <property name="custom_prop" value="some-custom-prop-value"/>
+        </custom-server>
+    </mail-session>
+    <mail-session name="serverWithCredentialReference" jndi-name="java:/Mail" from="user dot name at domain dot tld">
+        <smtp-server outbound-socket-binding-ref="mail-smtp" tls="true" username="${exp.name:nobody}">
+            <credential-reference store="store" clear-text="pass"/>
+        </smtp-server>
+        <pop3-server outbound-socket-binding-ref="mail-pop3">
+            <credential-reference store="store" clear-text="different-pass"/>
+        </pop3-server>
+        <imap-server outbound-socket-binding-ref="mail-imap" username="${exp.name:nobody}">
+            <credential-reference store="store" clear-text="different-pass"/>
+        </imap-server>
+    </mail-session>
 </subsystem>
