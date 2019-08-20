@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2018, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -41,24 +41,15 @@ import org.apache.http.util.EntityUtils;
 import org.jboss.as.arquillian.container.ManagementClient;
 
 /**
- * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2018 Red Hat inc.
+ * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2019 Red Hat inc.
  */
-public class MicroProfileHealthHTTPEndpointTestCase extends MicroProfileHealthTestBase{
+public class MicroProfileHealthApplicationReadyHTTPEndpointTestCase extends MicroProfileHealthApplicationReadyTestBase {
 
     void checkGlobalOutcome(ManagementClient managementClient, String operation, boolean mustBeUP, String probeName) throws IOException {
 
-        final String httpEndpoint;
-        switch(operation) {
-            case "check-live":
-                httpEndpoint = "/health/live";
-                break;
-            case "check-ready":
-                httpEndpoint = "/health/ready";
-                break;
-            case "check":
-            default:
-                httpEndpoint = "/health";
-        }
+        assertEquals("check-ready", operation);
+        final String httpEndpoint = "/health/ready";
+
         final String healthURL = "http://" + managementClient.getMgmtAddress() + ":" + managementClient.getMgmtPort() + httpEndpoint;
 
         try (CloseableHttpClient client = HttpClients.createDefault()) {

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2018, Red Hat, Inc., and individual contributors
+ * Copyright 2019, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -10,7 +10,7 @@
  * the License, or (at your option) any later version.
  *
  * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
  *
@@ -22,20 +22,11 @@
 
 package org.wildfly.test.integration.microprofile.health;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 
-import org.apache.http.NameValuePair;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.message.BasicNameValuePair;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
@@ -44,6 +35,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ContainerResource;
+import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -52,19 +44,24 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-/**
- * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2018 Red Hat inc.
- */
 @RunWith(Arquillian.class)
 @RunAsClient
-public abstract class MicroProfileHealthTestBase {
+@ServerSetup({MicroProfileHealthApplicationReadySetupTask.class})
+public abstract class MicroProfileHealthApplicationReadyTestBase {
 
     abstract void checkGlobalOutcome(ManagementClient managementClient, String operation, boolean mustBeUP, String probeName) throws IOException;
 
-    @Deployment(name = "MicroProfileHealthTestCase", managed = false)
+    @Deployment(name = "MicroProfileHealthApplicationReadyTestBaseSetup")
+    public static Archive<?> deploySetup() {
+        WebArchive war = ShrinkWrap.create(WebArchive.class, "MicroProfileHealthApplicationReadyTestBaseSetup.war")
+                .addClass(MicroProfileHealthApplicationReadySetupTask.class);
+        return war;
+    }
+
+    @Deployment(name = "MicroProfileHealthApplicationReadyTestBase", managed = false)
     public static Archive<?> deploy() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, "MicroProfileHealthTestCase.war")
-                .addClasses(TestApplication.class, TestApplication.Resource.class, MyProbe.class, MyLiveProbe.class)
+        WebArchive war = ShrinkWrap.create(WebArchive.class, "MicroProfileHealthApplicationReadyTestBase.war")
+                .addClass(MyReadyProbe.class)
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
         return war;
     }
@@ -77,33 +74,20 @@ public abstract class MicroProfileHealthTestBase {
 
     @Test
     @InSequence(1)
-    public void testHealthCheckBeforeDeployment() throws Exception {
-        checkGlobalOutcome(managementClient, "check", true, null);
-        checkGlobalOutcome(managementClient, "check-live", true, null);
+    public void testApplicationReadinessBeforeDeployment() throws Exception {
+        checkGlobalOutcome(managementClient, "check-ready", false, null);
 
         // deploy the archive
-        deployer.deploy("MicroProfileHealthTestCase");
+        deployer.deploy("MicroProfileHealthApplicationReadyTestBase");
     }
 
     @Test
     @InSequence(2)
-    @OperateOnDeployment("MicroProfileHealthTestCase")
-    public void testHealthCheckAfterDeployment(@ArquillianResource URL url) throws Exception {
+    @OperateOnDeployment("MicroProfileHealthApplicationReadyTestBase")
+    public void testApplicationReadinessAfterDeployment(@ArquillianResource URL url) throws Exception {
         try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
 
-            checkGlobalOutcome(managementClient, "check", true, "myProbe");
-            checkGlobalOutcome(managementClient, "check-live", true, "myLiveProbe");
-
-            HttpPost request = new HttpPost(url + "microprofile/myApp");
-            List<NameValuePair> nvps = new ArrayList<NameValuePair>();
-            nvps.add(new BasicNameValuePair("up", "false"));
-            request.setEntity(new UrlEncodedFormEntity(nvps));
-
-            CloseableHttpResponse response = client.execute(request);
-            assertEquals(200, response.getStatusLine().getStatusCode());
-
-            checkGlobalOutcome(managementClient, "check", false, "myProbe");
-            checkGlobalOutcome(managementClient, "check-live", false, "myLiveProbe");
+            checkGlobalOutcome(managementClient, "check-ready", true, "myReadyProbe");
         }
     }
 
@@ -111,11 +95,9 @@ public abstract class MicroProfileHealthTestBase {
     @InSequence(3)
     public void testHealthCheckAfterUndeployment() throws Exception {
 
-        deployer.undeploy("MicroProfileHealthTestCase");
+        deployer.undeploy("MicroProfileHealthApplicationReadyTestBase");
 
-        checkGlobalOutcome(managementClient, "check", true, null);
-        checkGlobalOutcome(managementClient, "check-live", true, null);
+        checkGlobalOutcome(managementClient, "check-ready", false, null);
     }
-
 
 }
