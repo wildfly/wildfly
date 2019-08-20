@@ -19,12 +19,25 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.test.multinode.clientinterceptor.protocol;
 
-package org.jboss.as.test.multinode.clientinterceptor;
+import org.jboss.ejb.client.EJBClientInterceptor;
+import org.jboss.ejb.client.EJBClientInvocationContext;
 
-/**
- * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
- */
-public interface StatelessRemote {
-    int method() throws Exception;
+public class ProtocolSampleClientInterceptor implements EJBClientInterceptor {
+    static final int COUNT = 10;
+
+    @Override
+    public void handleInvocation(EJBClientInvocationContext context) throws Exception {
+        context.sendRequest();
+    }
+
+    @Override
+    public Object handleInvocationResult(EJBClientInvocationContext context) throws Exception {
+        Object result = context.getResult();
+        if (result instanceof Integer) {
+            return COUNT + (int) result;
+        }
+        return result;
+    }
 }

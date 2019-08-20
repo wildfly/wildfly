@@ -19,12 +19,40 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.test.multinode.clientinterceptor.secured;
 
-package org.jboss.as.test.multinode.clientinterceptor;
+import javax.annotation.Resource;
+import javax.annotation.security.DenyAll;
+import javax.annotation.security.PermitAll;
+import javax.annotation.security.RolesAllowed;
+import javax.ejb.Remote;
+import javax.ejb.SessionContext;
+import javax.ejb.Stateless;
 
-/**
- * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
- */
-public interface StatelessRemote {
-    int method() throws Exception;
+@Stateless
+@Remote(Secured.class)
+public class SecuredBean implements Secured {
+
+    @Resource
+    private SessionContext sessionContext;
+
+    @PermitAll
+    public String permitAll(String message) {
+        return message;
+    }
+
+    @DenyAll
+    public void denyAll(String message) {
+    }
+
+    @RolesAllowed("Role1")
+    public String roleEcho(final String message) {
+        return message;
+    }
+
+    @RolesAllowed("Role2")
+    public String role2Echo(final String message) {
+        return message;
+    }
+
 }

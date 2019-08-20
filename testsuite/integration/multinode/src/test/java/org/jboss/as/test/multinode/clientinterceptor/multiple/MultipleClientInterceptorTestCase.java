@@ -19,20 +19,22 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
-package org.jboss.as.test.multinode.clientinterceptor;
+package org.jboss.as.test.multinode.clientinterceptor.multiple;
 
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createFilePermission;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.junit.Assert.fail;
 import java.security.SecurityPermission;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.test.multinode.clientinterceptor.ClientInterceptor;
+import org.jboss.as.test.multinode.clientinterceptor.StatelessBean;
+import org.jboss.as.test.multinode.clientinterceptor.StatelessRemote;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
 import org.jboss.as.test.shared.integration.interceptor.clientside.AbstractClientInterceptorsSetupTask;
 import org.jboss.as.test.shared.integration.interceptor.clientside.InterceptorModule;
@@ -45,16 +47,22 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
+ * A test case verifying:
+ *  1. Multiple client-side interceptors execution
+ *  2. An exception thrown in an interceptor is propagated.
+ * See https://issues.jboss.org/browse/WFLY-6144 for more details.
+ *
+ * @author <a href="mailto:szhantem@redhat.com">Sultan Zhantemirov</a> (c) 2019 Red Hat, inc.
  */
 @RunWith(Arquillian.class)
-@ServerSetup({RemoteCallClientInterceptorTestCase.SetupTask.class})
-public class RemoteCallClientInterceptorTestCase {
+@ServerSetup(MultipleClientInterceptorTestCase.SetupTask.class)
+public class MultipleClientInterceptorTestCase {
 
-    private static final String ARCHIVE_NAME_CLIENT = "remotelocalcall-test-client";
-    private static final String ARCHIVE_NAME_SERVER = "remotelocalcall-test-server";
+    private static final String ARCHIVE_NAME_CLIENT = "multiple-interceptors-test-client";
+    private static final String ARCHIVE_NAME_SERVER = "multiple-interceptors-test-server";
 
-    private static final String moduleName = "remote-call-interceptor-module";
+    private static final String firstModuleName = "interceptor-first-module";
+    private static final String secondModuleName = "interceptor-second-module";
 
     @Deployment(name = AbstractClientInterceptorsSetupTask.DEPLOYMENT_NAME_SERVER)
     @TargetsContainer(AbstractClientInterceptorsSetupTask.TARGER_CONTAINER_SERVER)
@@ -70,7 +78,7 @@ public class RemoteCallClientInterceptorTestCase {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME_CLIENT + ".jar");
         jar.addClasses(Util.class, ClientInterceptorUtil.class);
         jar.addClasses(StatelessBean.class, StatelessRemote.class);
-        jar.addClasses(RemoteCallClientInterceptorTestCase.class, ClientInterceptor.class);
+        jar.addClasses(MultipleClientInterceptorTestCase.class, ClientInterceptor.class, ExceptionClientInterceptor.class);
         jar.addPackage(AbstractClientInterceptorsSetupTask.class.getPackage());
         jar.addAsManifestResource("META-INF/jboss-ejb-client-receivers.xml", "jboss-ejb-client.xml");
         jar.addAsManifestResource(
@@ -85,27 +93,43 @@ public class RemoteCallClientInterceptorTestCase {
     }
 
     @Test
-    @OperateOnDeployment("client")
-    public void testStateless() throws Exception {
+    @OperateOnDeployment(AbstractClientInterceptorsSetupTask.DEPLOYMENT_NAME_CLIENT)
+    public void testMultiple() throws Exception {
         StatelessRemote bean = ClientInterceptorUtil.lookupStatelessRemote(ARCHIVE_NAME_SERVER, StatelessBean.class, StatelessRemote.class);
         Assert.assertNotNull(bean);
 
-        int methodCount = bean.method();
-        Assert.assertEquals(1, methodCount);
-        Assert.assertEquals(0, ClientInterceptor.invocationLatch.getCount());
-        Assert.assertEquals(0, ClientInterceptor.resultLatch.getCount());
+        try {
+            bean.method();
+            fail("Client interceptor should have thrown an IllegalArgumentException");
+        } catch (Exception e) {
+            // expected
+            Assert.assertTrue(e instanceof IllegalArgumentException);
+            Assert.assertEquals(0, ClientInterceptor.invocationLatch.getCount());
+            Assert.assertEquals(0, ClientInterceptor.resultLatch.getCount());
+        }
     }
 
     static class SetupTask extends AbstractClientInterceptorsSetupTask.SetupTask {
         @Override
         public List<InterceptorModule> getModules() {
-            return Collections.singletonList(new InterceptorModule(
+            InterceptorModule firstModule = new InterceptorModule(
                     ClientInterceptor.class,
-                    moduleName,
-                    "module.xml",
-                    RemoteCallClientInterceptorTestCase.class.getResource("module.xml"),
-                    "client-side-interceptor.jar"
-            ));
+                    firstModuleName,
+                    "first-module.xml",
+                    MultipleClientInterceptorTestCase.class.getResource("first-module.xml"),
+                    "first-client-side-interceptor.jar"
+            );
+
+            InterceptorModule secondModule = new InterceptorModule(
+                    ExceptionClientInterceptor.class,
+                    secondModuleName,
+                    "second-module.xml",
+                    MultipleClientInterceptorTestCase.class.getResource("second-module.xml"),
+                    "second-client-side-interceptor.jar"
+            );
+
+            return Arrays.asList(firstModule, secondModule);
+
         }
     }
 }

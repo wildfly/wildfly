@@ -19,12 +19,14 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.test.multinode.clientinterceptor.secured;
 
-package org.jboss.as.test.multinode.clientinterceptor;
+public interface Secured {
 
-/**
- * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
- */
-public interface StatelessRemote {
-    int method() throws Exception;
+    String permitAll(String message);
+    void denyAll(String message);
+
+    String roleEcho(String message);
+    String role2Echo(String message);
+
 }

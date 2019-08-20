@@ -19,12 +19,25 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.test.multinode.clientinterceptor.secured;
 
-package org.jboss.as.test.multinode.clientinterceptor;
+import java.util.concurrent.CountDownLatch;
+import org.jboss.ejb.client.EJBClientInterceptor;
+import org.jboss.ejb.client.EJBClientInvocationContext;
 
-/**
- * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
- */
-public interface StatelessRemote {
-    int method() throws Exception;
+public class SampleSecureInterceptor implements EJBClientInterceptor {
+    public static final CountDownLatch latch = new CountDownLatch(4);
+
+
+    @Override
+    public void handleInvocation(EJBClientInvocationContext context) throws Exception {
+        latch.countDown();
+        context.sendRequest();
+    }
+
+    @Override
+    public Object handleInvocationResult(EJBClientInvocationContext context) throws Exception {
+        latch.countDown();
+        return context.getResult();
+    }
 }

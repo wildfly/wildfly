@@ -33,7 +33,7 @@ import javax.ejb.Stateless;
 
 @Stateless
 @Remote(StatelessRemote.class)
-public class StatelessBean {
+public class StatelessBean implements StatelessRemote {
     private static final Logger log = Logger.getLogger(StatelessBean.class);
 
     private static int methodCount = 0;
@@ -43,6 +43,4 @@ public class StatelessBean {
         log.trace("Method called " + methodCount);
         return methodCount;
     }
-
-
 }
