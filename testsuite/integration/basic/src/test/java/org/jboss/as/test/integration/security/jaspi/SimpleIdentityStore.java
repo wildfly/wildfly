@@ -3,10 +3,10 @@ package org.jboss.as.test.integration.security.jaspi;
 import java.util.Collections;
 
 import javax.enterprise.context.RequestScoped;
-import javax.security.enterprise.credential.Credential;
-import javax.security.enterprise.credential.UsernamePasswordCredential;
-import javax.security.enterprise.identitystore.CredentialValidationResult;
-import javax.security.enterprise.identitystore.IdentityStore;
+import jakarta.security.enterprise.credential.Credential;
+import jakarta.security.enterprise.credential.UsernamePasswordCredential;
+import jakarta.security.enterprise.identitystore.CredentialValidationResult;
+import jakarta.security.enterprise.identitystore.IdentityStore;
 
 @RequestScoped
 public class SimpleIdentityStore implements IdentityStore {

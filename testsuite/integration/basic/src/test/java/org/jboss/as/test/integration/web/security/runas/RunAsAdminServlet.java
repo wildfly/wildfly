@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.web.security.runas;
 
-import javax.annotation.security.DeclareRoles;
-import javax.annotation.security.RunAs;
+import jakarta.annotation.security.DeclareRoles;
+import jakarta.annotation.security.RunAs;
 import javax.servlet.annotation.WebServlet;
 
 /**

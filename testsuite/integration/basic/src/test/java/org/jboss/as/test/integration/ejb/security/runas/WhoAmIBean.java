@@ -25,7 +25,7 @@ import static javax.ejb.TransactionAttributeType.SUPPORTS;
 
 import java.security.Principal;
 
-import javax.annotation.security.RolesAllowed;
+import jakarta.annotation.security.RolesAllowed;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;

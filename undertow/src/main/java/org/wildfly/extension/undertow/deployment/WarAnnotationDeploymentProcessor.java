@@ -28,8 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.annotation.security.DeclareRoles;
-import javax.annotation.security.RunAs;
+import jakarta.annotation.security.DeclareRoles;
+import jakarta.annotation.security.RunAs;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.ServletSecurity;
 import javax.servlet.annotation.WebFilter;

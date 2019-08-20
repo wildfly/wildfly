@@ -24,7 +24,7 @@ package org.jboss.as.test.integration.web.security.runas;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
-import javax.annotation.security.DeclareRoles;
+import jakarta.annotation.security.DeclareRoles;
 import javax.ejb.EJB;
 import javax.naming.NamingException;
 import javax.servlet.ServletException;

@@ -29,8 +29,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
-import javax.annotation.security.PermitAll;
-import javax.annotation.security.RunAs;
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RunAs;
 import javax.ejb.EJB;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;

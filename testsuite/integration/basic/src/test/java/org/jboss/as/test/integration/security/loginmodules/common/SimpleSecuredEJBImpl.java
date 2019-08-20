@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.security.loginmodules.common;
 
-import javax.annotation.security.RolesAllowed;
+import jakarta.annotation.security.RolesAllowed;
 import javax.ejb.Stateful;
 
 import org.jboss.ejb3.annotation.SecurityDomain;

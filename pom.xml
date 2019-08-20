@@ -279,13 +279,13 @@
         <version.io.smallrye.opentracing>1.1.1</version.io.smallrye.opentracing>
         <version.io.undertow.jastow>2.0.7.Final</version.io.undertow.jastow>
         <version.io.undertow.js>1.0.2.Final</version.io.undertow.js>
+        <version.jakarta.security.enterprise>1.0.1</version.jakarta.security.enterprise>
         <version.javax.activation>1.1.1</version.javax.activation>
         <version.javax.enterprise>2.0.SP1</version.javax.enterprise>
         <version.javax.json.bind.api>1.0</version.javax.json.bind.api>
         <version.javax.jws.jsr181-api>1.0-MR1</version.javax.jws.jsr181-api>
         <version.javax.mail>1.6.2</version.javax.mail>
         <version.javax.persistence>2.2</version.javax.persistence>
-        <version.javax.security.enterprise>1.0</version.javax.security.enterprise>
         <version.javax.validation>2.0.1.Final</version.javax.validation>
         <version.jaxen>1.1.6</version.jaxen>
         <version.jboss.jaxbintros>1.0.3.GA</version.jboss.jaxbintros>
@@ -328,7 +328,7 @@
         <version.org.eclipselink.version>2.7.3</version.org.eclipselink.version>
         <version.org.glassfish.jakarta.el>3.0.2</version.org.glassfish.jakarta.el>
         <version.org.glassfish.javax.enterprise.concurrent>1.0</version.org.glassfish.javax.enterprise.concurrent>
-        <version.org.glassfish.soteria>1.0</version.org.glassfish.soteria>
+        <version.org.glassfish.soteria>1.0.1</version.org.glassfish.soteria>
         <version.org.harmcrest>1.3</version.org.harmcrest>
         <version.org.hibernate>5.3.11.Final</version.org.hibernate>
         <version.org.hibernate.commons.annotations>5.0.5.Final</version.org.hibernate.commons.annotations>
@@ -1689,9 +1689,9 @@
             </dependency>
 
             <dependency>
-                <groupId>javax.security.enterprise</groupId>
-                <artifactId>javax.security.enterprise-api</artifactId>
-                <version>${version.javax.security.enterprise}</version>
+                <groupId>jakarta.security.enterprise</groupId>
+                <artifactId>jakarta.security.enterprise-api</artifactId>
+                <version>${version.jakarta.security.enterprise}</version>
             </dependency>
 
             <dependency>
@@ -5278,7 +5278,7 @@
 
             <dependency>
                 <groupId>org.glassfish.soteria</groupId>
-                <artifactId>javax.security.enterprise</artifactId>
+                <artifactId>jakarta.security.enterprise</artifactId>
                 <version>${version.org.glassfish.soteria}</version>
             </dependency>
 

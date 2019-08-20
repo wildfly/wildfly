@@ -17,7 +17,7 @@
 package org.jboss.as.test.integration.ejb.security.authorization;
 
 import javax.annotation.Resource;
-import javax.annotation.security.PermitAll;
+import jakarta.annotation.security.PermitAll;
 import javax.ejb.EJBContext;
 import javax.ejb.Remote;
 import javax.ejb.Stateless;

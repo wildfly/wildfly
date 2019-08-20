@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.security;
 
-import javax.annotation.security.DenyAll;
+import jakarta.annotation.security.DenyAll;
 import javax.ejb.LocalBean;
 import javax.ejb.Singleton;
 

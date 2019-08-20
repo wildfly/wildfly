@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.security;
 
-import javax.annotation.security.DenyAll;
+import jakarta.annotation.security.DenyAll;
 
 /**
  * User: jpai

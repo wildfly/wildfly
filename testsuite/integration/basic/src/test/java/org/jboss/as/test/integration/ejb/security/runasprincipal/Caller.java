@@ -23,7 +23,7 @@ package org.jboss.as.test.integration.ejb.security.runasprincipal;
 
 import org.jboss.ejb3.annotation.SecurityDomain;
 
-import javax.annotation.security.RunAs;
+import jakarta.annotation.security.RunAs;
 import javax.ejb.EJB;
 import javax.ejb.Remote;
 import javax.ejb.Stateless;

@@ -3,7 +3,7 @@ package org.jboss.as.test.manualmode.ejb.client.outbound.connection.security;
 import org.jboss.ejb3.annotation.SecurityDomain;
 
 import javax.annotation.Resource;
-import javax.annotation.security.PermitAll;
+import jakarta.annotation.security.PermitAll;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 

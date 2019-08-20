@@ -22,8 +22,8 @@
 package org.jboss.as.test.integration.ejb.security.runas.propagation;
 
 import javax.annotation.Resource;
-import javax.annotation.security.PermitAll;
-import javax.annotation.security.RunAs;
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RunAs;
 import javax.ejb.EJB;
 import javax.ejb.Remote;
 import javax.ejb.SessionContext;

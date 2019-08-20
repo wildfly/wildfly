@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.servlet;
 
-import javax.annotation.security.RolesAllowed;
+import jakarta.annotation.security.RolesAllowed;
 import javax.ejb.EJB;
 import javax.ejb.Local;
 import javax.ejb.LocalHome;

@@ -26,8 +26,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.annotation.Resource;
-import javax.annotation.security.PermitAll;
-import javax.annotation.security.RunAs;
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RunAs;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 

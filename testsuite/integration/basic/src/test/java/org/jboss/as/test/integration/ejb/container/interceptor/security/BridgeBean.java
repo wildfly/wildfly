@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ejb.container.interceptor.security;
 
-import javax.annotation.security.PermitAll;
+import jakarta.annotation.security.PermitAll;
 import javax.ejb.Remote;
 import javax.ejb.Stateless;
 import javax.naming.NamingException;

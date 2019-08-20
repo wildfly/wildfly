@@ -685,8 +685,8 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>javax.security.enterprise</groupId>
-      <artifactId>javax.security.enterprise-api</artifactId>
+      <groupId>jakarta.security.enterprise</groupId>
+      <artifactId>jakarta.security.enterprise-api</artifactId>
       <licenses>
         <license>
           <name>Common Development and Distribution License 1.1</name>
@@ -1928,7 +1928,7 @@
     </dependency>
     <dependency>
       <groupId>org.glassfish.soteria</groupId>
-      <artifactId>javax.security.enterprise</artifactId>
+      <artifactId>jakarta.security.enterprise</artifactId>
       <licenses>
         <license>
           <name>Common Development and Distribution License 1.1</name>

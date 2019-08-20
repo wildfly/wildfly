@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ws.authentication;
 
-import javax.annotation.security.RolesAllowed;
+import jakarta.annotation.security.RolesAllowed;
 import javax.ejb.Stateless;
 import javax.jws.WebService;
 

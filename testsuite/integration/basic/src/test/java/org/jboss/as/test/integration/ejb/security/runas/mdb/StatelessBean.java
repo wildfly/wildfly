@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.ejb.security.runas.mdb;
 
-import javax.annotation.security.RolesAllowed;
+import jakarta.annotation.security.RolesAllowed;
 import javax.ejb.Remote;
 import javax.ejb.Stateless;
 

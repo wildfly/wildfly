@@ -25,7 +25,7 @@ package org.jboss.as.test.integration.ejb.security.authorization;
 import org.jboss.ejb3.annotation.SecurityDomain;
 
 import javax.annotation.Resource;
-import javax.annotation.security.RunAs;
+import jakarta.annotation.security.RunAs;
 import javax.ejb.ActivationConfigProperty;
 import javax.ejb.EJB;
 import javax.ejb.EJBAccessException;

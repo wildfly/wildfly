@@ -23,8 +23,8 @@
 package org.jboss.as.test.integration.ejb.security.runas.ejb2mdb;
 
 import javax.annotation.Resource;
-import javax.annotation.security.RunAs;
-import javax.annotation.security.PermitAll;
+import jakarta.annotation.security.RunAs;
+import jakarta.annotation.security.PermitAll;
 import javax.ejb.ActivationConfigProperty;
 import javax.ejb.EJB;
 import javax.ejb.MessageDriven;

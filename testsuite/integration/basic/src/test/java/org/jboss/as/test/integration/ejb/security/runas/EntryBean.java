@@ -23,7 +23,7 @@ package org.jboss.as.test.integration.ejb.security.runas;
 
 import static javax.ejb.TransactionAttributeType.SUPPORTS;
 
-import javax.annotation.security.RunAs;
+import jakarta.annotation.security.RunAs;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;

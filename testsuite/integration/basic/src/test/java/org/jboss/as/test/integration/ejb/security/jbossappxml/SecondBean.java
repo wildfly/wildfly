@@ -22,7 +22,7 @@
 package org.jboss.as.test.integration.ejb.security.jbossappxml;
 
 import javax.annotation.Resource;
-import javax.annotation.security.RolesAllowed;
+import jakarta.annotation.security.RolesAllowed;
 import javax.ejb.LocalBean;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;

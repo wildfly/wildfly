@@ -17,7 +17,7 @@
 package org.jboss.as.spec.api.test;
 
 import javax.annotation.*;
-import javax.annotation.security.*;
+import jakarta.annotation.security.*;
 import javax.annotation.sql.*;
 import javax.batch.api.*;
 import javax.batch.api.chunk.*;

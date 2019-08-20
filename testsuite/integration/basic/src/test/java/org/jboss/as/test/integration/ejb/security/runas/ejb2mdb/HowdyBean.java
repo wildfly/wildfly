@@ -23,7 +23,7 @@
 package org.jboss.as.test.integration.ejb.security.runas.ejb2mdb;
 
 import javax.annotation.Resource;
-import javax.annotation.security.RolesAllowed;
+import jakarta.annotation.security.RolesAllowed;
 import javax.ejb.EJB;
 import javax.ejb.Local;
 import javax.ejb.SessionContext;

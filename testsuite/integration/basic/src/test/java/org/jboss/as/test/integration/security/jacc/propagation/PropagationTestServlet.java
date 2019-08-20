@@ -24,7 +24,7 @@ package org.jboss.as.test.integration.security.jacc.propagation;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import javax.annotation.security.DeclareRoles;
+import jakarta.annotation.security.DeclareRoles;
 import javax.ejb.EJBAccessException;
 import javax.naming.Context;
 import javax.naming.InitialContext;

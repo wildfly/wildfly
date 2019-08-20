@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.security.context;
 
-import javax.annotation.security.DeclareRoles;
-import javax.annotation.security.RolesAllowed;
+import jakarta.annotation.security.DeclareRoles;
+import jakarta.annotation.security.RolesAllowed;
 import javax.ejb.Stateless;
 import static org.jboss.as.test.integration.security.context.EjbSecurityDomainAsServletImpl.SECURITY_DOMAIN;
 import org.jboss.ejb3.annotation.SecurityDomain;

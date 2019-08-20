@@ -22,7 +22,7 @@ import java.io.PrintWriter;
 import java.security.Principal;
 import java.util.concurrent.Callable;
 
-import javax.annotation.security.DeclareRoles;
+import jakarta.annotation.security.DeclareRoles;
 import javax.naming.NamingException;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HttpConstraint;

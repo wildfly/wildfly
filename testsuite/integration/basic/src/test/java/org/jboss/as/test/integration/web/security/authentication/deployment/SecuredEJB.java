@@ -18,7 +18,7 @@
 package org.jboss.as.test.integration.web.security.authentication.deployment;
 
 import javax.annotation.Resource;
-import javax.annotation.security.RolesAllowed;
+import jakarta.annotation.security.RolesAllowed;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 

@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.security;
 
-import javax.annotation.security.RunAs;
+import jakarta.annotation.security.RunAs;
 import javax.ejb.Stateful;
 
 /**

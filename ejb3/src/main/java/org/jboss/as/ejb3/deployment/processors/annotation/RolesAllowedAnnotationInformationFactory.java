@@ -25,7 +25,7 @@ import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.metadata.property.PropertyReplacer;
 
-import javax.annotation.security.RolesAllowed;
+import jakarta.annotation.security.RolesAllowed;
 
 /**
  * @author Stuart Douglas

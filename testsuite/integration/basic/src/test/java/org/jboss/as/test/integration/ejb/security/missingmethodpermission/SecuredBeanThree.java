@@ -23,7 +23,7 @@
 package org.jboss.as.test.integration.ejb.security.missingmethodpermission;
 
 import javax.annotation.Resource;
-import javax.annotation.security.RolesAllowed;
+import jakarta.annotation.security.RolesAllowed;
 import javax.ejb.EJBContext;
 import javax.ejb.Remote;
 import javax.ejb.Stateless;

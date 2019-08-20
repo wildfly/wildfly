@@ -22,7 +22,7 @@
 package org.jboss.as.test.integration.ejb.security.runas.mdb;
 
 import javax.annotation.Resource;
-import javax.annotation.security.RunAs;
+import jakarta.annotation.security.RunAs;
 import javax.ejb.ActivationConfigProperty;
 import javax.ejb.EJB;
 import javax.ejb.MessageDriven;

@@ -26,8 +26,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.annotation.security.DenyAll;
-import javax.annotation.security.PermitAll;
+import jakarta.annotation.security.DenyAll;
+import jakarta.annotation.security.PermitAll;
 import javax.ejb.AfterBegin;
 import javax.ejb.AfterCompletion;
 import javax.ejb.Asynchronous;

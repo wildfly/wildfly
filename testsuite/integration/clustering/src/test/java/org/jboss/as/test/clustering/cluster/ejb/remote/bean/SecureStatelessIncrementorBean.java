@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.clustering.cluster.ejb.remote.bean;
 
-import javax.annotation.security.RolesAllowed;
+import jakarta.annotation.security.RolesAllowed;
 import javax.ejb.Remote;
 import javax.ejb.Stateless;
 

@@ -27,7 +27,7 @@ import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
 
 import javax.annotation.Resource;
-import javax.annotation.security.RolesAllowed;
+import jakarta.annotation.security.RolesAllowed;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.jws.HandlerChain;

@@ -25,7 +25,7 @@ package org.jboss.as.test.integration.ee.concurrent;
 import java.security.Principal;
 import java.util.concurrent.Future;
 import javax.annotation.Resource;
-import javax.annotation.security.RolesAllowed;
+import jakarta.annotation.security.RolesAllowed;
 import javax.ejb.EJBContext;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;

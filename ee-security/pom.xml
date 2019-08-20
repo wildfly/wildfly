@@ -54,7 +54,7 @@
 
         <dependency>
             <groupId>org.glassfish.soteria</groupId>
-            <artifactId>javax.security.enterprise</artifactId>
+            <artifactId>jakarta.security.enterprise</artifactId>
         </dependency>
 
         <dependency>

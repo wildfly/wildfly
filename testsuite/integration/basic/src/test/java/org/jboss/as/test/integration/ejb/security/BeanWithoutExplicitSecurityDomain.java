@@ -23,9 +23,9 @@
 package org.jboss.as.test.integration.ejb.security;
 
 import javax.annotation.Resource;
-import javax.annotation.security.DenyAll;
-import javax.annotation.security.PermitAll;
-import javax.annotation.security.RolesAllowed;
+import jakarta.annotation.security.DenyAll;
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 import javax.ejb.Local;
 import javax.ejb.LocalBean;
 import javax.ejb.SessionContext;

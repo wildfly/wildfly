@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.concurrent.Callable;
 
-import javax.annotation.security.DeclareRoles;
+import jakarta.annotation.security.DeclareRoles;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.servlet.ServletException;

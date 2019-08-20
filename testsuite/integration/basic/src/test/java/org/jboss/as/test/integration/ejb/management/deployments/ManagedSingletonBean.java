@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.ejb.management.deployments;
 
-import javax.annotation.security.DeclareRoles;
-import javax.annotation.security.RunAs;
+import jakarta.annotation.security.DeclareRoles;
+import jakarta.annotation.security.RunAs;
 import javax.ejb.Lock;
 import javax.ejb.Schedule;
 import javax.ejb.Singleton;

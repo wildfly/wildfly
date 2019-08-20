@@ -22,7 +22,7 @@
 package org.jboss.as.test.integration.ws.wsse.trust;
 
 import javax.annotation.Resource;
-import javax.annotation.security.PermitAll;
+import jakarta.annotation.security.PermitAll;
 import javax.ejb.Remote;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;

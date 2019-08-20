@@ -23,7 +23,7 @@ package org.jboss.as.test.integration.security.context;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import javax.annotation.security.DeclareRoles;
+import jakarta.annotation.security.DeclareRoles;
 import javax.ejb.EJB;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HttpConstraint;

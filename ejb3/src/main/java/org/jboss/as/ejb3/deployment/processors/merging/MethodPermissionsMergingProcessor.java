@@ -28,9 +28,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.security.DenyAll;
-import javax.annotation.security.PermitAll;
-import javax.annotation.security.RolesAllowed;
+import jakarta.annotation.security.DenyAll;
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.metadata.MethodAnnotationAggregator;
@@ -55,7 +55,7 @@ import org.jboss.metadata.ejb.spec.MethodPermissionsMetaData;
 import org.jboss.metadata.ejb.spec.MethodsMetaData;
 
 /**
- * Handles the {@link javax.annotation.security.RolesAllowed} {@link DenyAll} {@link javax.annotation.security.PermitAll} annotations
+ * Handles the {@link jakarta.annotation.security.RolesAllowed} {@link DenyAll} {@link jakarta.annotation.security.PermitAll} annotations
  * <p/>
  * Also processes the &lt;method-permission&gt; elements of an EJB and sets up appropriate security permissions on the EJB.
  * <p/>

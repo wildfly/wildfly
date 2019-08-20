@@ -22,7 +22,7 @@ import javax.annotation.Resource;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
-import javax.security.enterprise.SecurityContext;
+import jakarta.security.enterprise.SecurityContext;
 
 import org.jboss.ejb3.annotation.SecurityDomain;
 

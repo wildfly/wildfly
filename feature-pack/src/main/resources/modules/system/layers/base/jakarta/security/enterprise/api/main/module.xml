@@ -22,13 +22,13 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="javax.security.enterprise.api">
+<module xmlns="urn:jboss:module:1.5" name="jakarta.security.enterprise.api">
     <properties>
         <property name="jboss.api" value="public"/>
     </properties>
 
     <resources>
-        <artifact name="${javax.security.enterprise:javax.security.enterprise-api}"/>
+        <artifact name="${jakarta.security.enterprise:jakarta.security.enterprise-api}"/>
     </resources>
 
     <dependencies>

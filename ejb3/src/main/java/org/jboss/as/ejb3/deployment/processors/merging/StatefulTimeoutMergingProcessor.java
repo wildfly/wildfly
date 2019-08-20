@@ -37,7 +37,7 @@ import javax.ejb.StatefulTimeout;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Handles the {@link javax.annotation.security.RunAs} annotation merging
+ * Handles the {@link jakarta.annotation.security.RunAs} annotation merging
  *
  * @author Stuart DouglasrunAs
  */

@@ -22,7 +22,7 @@ import java.security.Principal;
 
 import javax.ejb.EJB;
 import javax.inject.Inject;
-import javax.security.enterprise.SecurityContext;
+import jakarta.security.enterprise.SecurityContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;

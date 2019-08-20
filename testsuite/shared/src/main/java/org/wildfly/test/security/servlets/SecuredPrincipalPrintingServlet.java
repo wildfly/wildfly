@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.security.Principal;
 
-import javax.annotation.security.DeclareRoles;
+import jakarta.annotation.security.DeclareRoles;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HttpConstraint;
 import javax.servlet.annotation.ServletSecurity;
