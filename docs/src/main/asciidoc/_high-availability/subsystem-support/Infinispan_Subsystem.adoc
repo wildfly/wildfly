@@ -522,3 +522,19 @@ The runtime remote cache resource exposes usage metrics (e.g. reads, writes, rem
 /subsystem=infinispan:remote-cache-container=foo/remote-cache=bar:read-resource(include-runtime=true)
 ----
 
+==== Switching remote clusters
+
+If a remote-cache-container configures multiple remote-clusters (e.g. when the infinispan servers are configured with cross site replication),
+the hotrod client can toggle the remote-cluster with which it interacts via a runtime management operation.
+
+For example, when the client is configured with multiple remote clusters, typically representing multiple data centers (this presumes that the infinispan servers are configured with cross-site replication),
+if connectivity to the default remote cluster fails, the client will automatically fail over to a backup remote cluster.
+Once the underlying connectivity issue is resolved, a user can manually fail back to the local site via the `switch-cluster` operation:
+
+[source,options="nowrap"]
+----
+/subsystem=infinispan/remote-cache-container=foo/remote-cluster=bar:switch-cluster()
+----
+
+This operation returns `true` if the switch was successful, or `false` otherwise.
+See the server log for specifics in the event that the switch was unsuccessful.
