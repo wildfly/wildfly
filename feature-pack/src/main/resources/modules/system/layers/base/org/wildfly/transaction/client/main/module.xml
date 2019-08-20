@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.wildfly.transaction.client">
+<module xmlns="urn:jboss:module:1.8" name="org.wildfly.transaction.client">
     <exports>
         <exclude path="org/wildfly/transaction/client/_private" />
     </exports>
@@ -43,6 +43,7 @@
         <module name="org.jboss.jts" optional="true"/>
         <!-- Not needed if the transaction subsystem is not present to build a JBossLocalTransactionProvider -->
         <module name="org.jboss.jts.integration" optional="true"/>
+        <module name="org.wildfly.http-client.transaction" optional="true"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.remoting"/>
         <module name="org.jboss.xnio"/>
@@ -51,4 +52,9 @@
         <module name="org.wildfly.naming-client"/>
         <module name="org.wildfly.security.elytron"/>
     </dependencies>
+    <provides>
+        <service name="org.wildfly.transaction.client.spi.RemoteTransactionProvider">
+            <with-class name="org.wildfly.httpclient.transaction.HttpRemoteTransactionProvider"/>
+        </service>
+    </provides>
 </module>
