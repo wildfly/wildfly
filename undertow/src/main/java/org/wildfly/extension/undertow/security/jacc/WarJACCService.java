@@ -309,8 +309,8 @@ public class WarJACCService extends JaccService<WarMetaData> {
             // JACC 1.1: create !(httpmethods) in unchecked perms
             if(jbossWebMetaData.getDenyUncoveredHttpMethods() == null) {
                 if (seenMethods.size() != NUMBER_OF_HTTP_METHODS) {
-                    WebResourcePermission wrpUnchecked = new WebResourcePermission(qurl, "!"
-                            + getCommaSeparatedString(seenMethods.toArray(new String[seenMethods.size()])));
+                    WebResourcePermission wrpUnchecked = seenMethods.size() == 0 ? new WebResourcePermission(qurl, (String) null)
+                            : new WebResourcePermission(qurl, "!" + getCommaSeparatedString(seenMethods.toArray(new String[seenMethods.size()])));
                     pc.addToUncheckedPolicy(wrpUnchecked);
                 }
             }
