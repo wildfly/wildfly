@@ -497,3 +497,28 @@ Once the SSL Context is configured, use the following CLI script to configure `r
 ----
 /subsystem=infinispan/remote-cache-container=foo/component=security:write-attribute(name=ssl-context, value=hotrod-ssl-context)
 ----
+
+==== Statistics
+
+To enable the gathering of statistics for a given `remote-cache-container`, use the `statistics-enabled` attribute:
+
+[source,options="nowrap"]
+----
+/subsystem=infinispan/remote-cache-container=foo:write-attribute(name=statistics-enabled, value=true)
+----
+
+Using the exposed runtime metrics, users can tune the HotRod thread pool configuration by looking at active vs idle connections.
+
+[source,options="nowrap"]
+----
+/subsystem=infinispan:remote-cache-container=foo:read-resource(include-runtime=true)
+----
+
+The Infinispan subsystem additionally exposes a runtime resource for each started remote cache instance.
+The runtime remote cache resource exposes usage metrics (e.g. reads, writes, removes, etc) as well as metrics for tuning near-cache sizes (e.g. hits vs misses).
+
+[source,options="nowrap"]
+----
+/subsystem=infinispan:remote-cache-container=foo/remote-cache=bar:read-resource(include-runtime=true)
+----
+
