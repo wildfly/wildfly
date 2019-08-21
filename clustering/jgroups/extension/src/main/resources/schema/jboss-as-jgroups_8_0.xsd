@@ -172,6 +172,11 @@
                         <xs:documentation>Defines a non-transport protocol for a stack.</xs:documentation>
                     </xs:annotation>
                 </xs:element>
+                <xs:element name="ssl-context-protocol" type="tns:ssl-context-protocol">
+                    <xs:annotation>
+                        <xs:documentation>Defines a non-transport protocol for a stack.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
                 <xs:element name="auth-protocol" type="tns:auth-protocol">
                     <xs:annotation>
                         <xs:documentation>Defines a non-transport protocol for a stack.</xs:documentation>
@@ -292,6 +297,28 @@
                 <xs:attribute name="key-alias" type="xs:string" use="required">
                     <xs:annotation>
                         <xs:documentation>The alias of the key used to encrypt.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="ssl-context-protocol">
+        <xs:complexContent>
+            <xs:extension base="tns:generic-protocol">
+                <xs:attribute name="client-ssl-context" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>References an Elytron-provided SSLContext to be used as server in key exchange mechanism.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="server-ssl-context" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>References an Elytron-provided SSLContext to be used as client in key exchange mechanism.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="socket-binding" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>Provides a server SSL socket binding for a protocol.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
             </xs:extension>

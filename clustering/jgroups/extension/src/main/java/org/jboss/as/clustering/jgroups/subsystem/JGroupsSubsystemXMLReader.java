@@ -336,6 +336,12 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
                         break;
                     }
                 }
+                case SSL_CONTEXT_PROTOCOL: {
+                    if (this.schema.since(JGroupsSchema.VERSION_8_0)) {
+                        this.parseSslContextProtocol(reader, address, operations);
+                        break;
+                    }
+                }
                 case AUTH_PROTOCOL: {
                     if (this.schema.since(JGroupsSchema.VERSION_5_0)) {
                         this.parseAuthProtocol(reader, address, operations);
@@ -583,6 +589,43 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
 
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             this.parseEncryptProtocolElement(reader, address, operations);
+        }
+    }
+
+    private void parseSslContextProtocol(XMLExtendedStreamReader reader, PathAddress stackAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
+
+        String type = require(reader, XMLAttribute.TYPE);
+        PathAddress address = stackAddress.append(ProtocolResourceDefinition.pathElement(type));
+        ModelNode operation = Util.createAddOperation(address);
+        operations.put(address, operation);
+
+        for (int i = 0; i < reader.getAttributeCount(); i++) {
+            XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case CLIENT_SSL_CONTEXT: {
+                    readAttribute(reader, i, operation, SSLContextProtocolResourceDefinition.Attribute.CLIENT_SSL_CONTEXT);
+                    break;
+                }
+                case SERVER_SSL_CONTEXT: {
+                    readAttribute(reader, i, operation, SSLContextProtocolResourceDefinition.Attribute.SERVER_SSL_CONTEXT);
+                    break;
+                }
+                case SOCKET_BINDING: {
+                    readAttribute(reader, i, operation, SocketProtocolResourceDefinition.Attribute.SOCKET_BINDING);
+                    break;
+                }
+                default: {
+                    parseProtocolAttribute(reader, i, operation);
+                }
+            }
+        }
+
+        require(reader, operation, SSLContextProtocolResourceDefinition.Attribute.CLIENT_SSL_CONTEXT);
+        require(reader, operation, SSLContextProtocolResourceDefinition.Attribute.SERVER_SSL_CONTEXT);
+        require(reader, operation, SocketProtocolResourceDefinition.Attribute.SOCKET_BINDING);
+
+        while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
+            this.parseProtocolElement(reader, address, operations);
         }
     }
 

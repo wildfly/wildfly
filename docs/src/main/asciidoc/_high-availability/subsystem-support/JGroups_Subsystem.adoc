@@ -163,7 +163,7 @@ This element is used to configure a (non-transport) protocol layer in
 the JGroups stack. Protocol layers are ordered within the stack.
 
 * `type` This attribute specifies the name of the JGroups protocol
-implementation (e.g. MPING, pbcast.GMS), with the package prefix
+implementation (e.g. `MPING`, `pbcast.GMS`), with the package prefix
 org.jgroups.protocols removed.
 * `socket-binding` This attribute references a defined socket binding in
 the server profile. It is used when JGroups needs to create general
@@ -196,6 +196,39 @@ this configuration applies.
 communication between this site and the remote site.
 * `cluster` This attribute specifies the name of the JGroups channel to
 use for communication between this site and the remote site.
+
+[[jgroups-protocols]]
+== Protocols
+
+For documentation for all available JGroups protocols, please refer to http://www.jgroups.org/manual4/index.html[JGroups documentation].
+This section documents protocols for which a tight integration with the application server is available or required.
+
+[[ssl-key-exchange]]
+=== SSL_KEY_EXCHANGE
+
+To configure the `SSL_KEY_EXCHANGE` protocol the following attributes are required:
+
+* `client-ssl-context` referencing an Elytron-provided SSLContext to be used as client in key exchange mechanism.
+* `server-ssl-context` referencing an Elytron-provided SSLContext to be used as server in key exchange mechanism.
+* `socket-binding` referencing a socket biding to be used for server SSL socket. The socket binding needs to be configured with a fixed port.
+
+The protocol is automatically configured with a `port-range` of 0.
+
+The following is an example CLI script to reconfigure the server to use the protocol:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/key-store=jgroups:add(relative-to="jboss.server.config.dir",path="application.keystore",required=true,type=JKS,credential-reference={clear-text=password})
+/subsystem=elytron/key-manager=jgroups:add(algorithm=SunX509,key-store=jgroups,credential-reference={clear-text=password})
+/subsystem=elytron/trust-manager=jgroups:add(algorithm=SunX509,key-store=jgroups)
+/subsystem=elytron/client-ssl-context=jgroups-client:add(key-manager=jgroups,trust-manager=jgroups)
+/subsystem=elytron/server-ssl-context=jgroups-server:add(key-manager=jgroups,trust-manager=jgroups)
+/subsystem=jgroups/stack=tcp/protocol=ASYM_ENCRYPT:add(add-index=5)
+/subsystem=jgroups/stack=tcp/protocol=org.jgroups.protocols.ASYM_ENCRYPT:map-put(name=properties,key=use_external_key_exchange,value=true)
+/socket-binding-group=standard-sockets/socket-binding=jgroups-ssl-key-exchange:add(interface=private,port=2157,fixed-port=true)
+/subsystem=jgroups/stack=tcp/protocol=SSL_KEY_EXCHANGE:add(add-index=5,client-ssl-context=jgroups-client,server-ssl-context=jgroups-server,socket-binding=jgroups-ssl-key-exchange)
+----
+
 
 [[jgroups-use-cases]]
 == Use Cases

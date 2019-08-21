@@ -58,6 +58,7 @@
         timeout_check_interval="5000"/>
     <FD_SOCK/>
     <VERIFY_SUSPECT timeout="1000"/>
+    <SSL_KEY_EXCHANGE port_range="0"/>
     <pbcast.NAKACK2
         xmit_interval="100"
         xmit_table_num_rows="50"
