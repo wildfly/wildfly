@@ -123,7 +123,7 @@ public class ObjectStoreTypeTestCase extends AbstractCliTestBase {
     @Test
     public void ifJournalIsTrueThenHornetQToo() throws IOException, MgmtOperationException {
         useJournalStore();
-        checkThatAllUseAttributesAreConsistent("true", "false", "true");
+        checkThatAllUseAttributesAreConsistent("true", "undefined", "true");
     }
 
     private void useJdbcStore() throws IOException, MgmtOperationException {
@@ -209,11 +209,11 @@ public class ObjectStoreTypeTestCase extends AbstractCliTestBase {
             // Set journal store
             useJournalStore();
             // Check that attributes are consistent with setting
-            checkThatAllUseAttributesAreConsistent("true", "false", "true");
+            checkThatAllUseAttributesAreConsistent("true", "undefined", "true");
             // Use jdbcStore
             useJdbcStore();
             // Check that attributes are consistent with setting
-            checkThatAllUseAttributesAreConsistent("false", "true", "false");
+            checkThatAllUseAttributesAreConsistent("undefined", "true", "undefined");
         } finally {
             cleanJdbcSettingsAndResetToObjectStore();
         }
