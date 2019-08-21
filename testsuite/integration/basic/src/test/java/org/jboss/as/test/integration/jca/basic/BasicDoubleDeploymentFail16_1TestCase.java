@@ -40,16 +40,11 @@ import org.jboss.as.test.integration.jca.rar.MultipleAdminObject1;
 import org.jboss.as.test.integration.jca.rar.MultipleConnectionFactory1;
 import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
-import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
-import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.shared.FileUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -61,7 +56,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @ServerSetup(BasicDoubleDeploymentFail16_1TestCase.BasicDoubleDeploymentTestCaseSetup.class)
-public class BasicDoubleDeploymentFail16_1TestCase extends ContainerResourceMgmtTestBase {
+public class BasicDoubleDeploymentFail16_1TestCase {
 
     // deployment archive name must match "archive" element.
     private static final String DEPLOYMENT_MODULE_NAME = "basic";
@@ -114,17 +109,13 @@ public class BasicDoubleDeploymentFail16_1TestCase extends ContainerResourceMgmt
     public static ResourceAdapterArchive createDeployment() {
         ResourceAdapterArchive raa = ShrinkWrap.create(ResourceAdapterArchive.class, DEPLOYMENT_NAME);
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class, SUB_DEPLOYMENT_NAME);
-        ja.addPackage(MultipleConnectionFactory1.class.getPackage()).addClasses(MgmtOperationException.class,
-                XMLElementReader.class, XMLElementWriter.class, BasicDoubleDeploymentFail16_1TestCase.class,
+        ja.addPackage(MultipleConnectionFactory1.class.getPackage()).addClasses(BasicDoubleDeploymentFail16_1TestCase.class,
                 BasicDeploymentTestCaseSetup.class);
-        ja.addPackage(AbstractMgmtTestBase.class.getPackage());
+        ja.addPackage(AbstractMgmtTestBase.class.getPackage()); // needed to process the @ServerSetup annotation on the server side
 
         raa.addAsLibrary(ja);
 
-        raa.addAsManifestResource(BasicDeployment16TestCase.class.getPackage(), "ra16.xml", "ra.xml")
-                .addAsManifestResource(
-                        new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli\n"),
-                        "MANIFEST.MF");
+        raa.addAsManifestResource(BasicDeployment16TestCase.class.getPackage(), "ra16.xml", "ra.xml");
         return raa;
     }
 

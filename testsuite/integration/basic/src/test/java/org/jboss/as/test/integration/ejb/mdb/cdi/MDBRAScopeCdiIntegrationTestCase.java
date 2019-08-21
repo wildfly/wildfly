@@ -206,7 +206,7 @@ public class MDBRAScopeCdiIntegrationTestCase extends ContainerResourceMgmtTestB
         raa.addAsManifestResource(RarInsideEarReDeploymentTestCase.class.getPackage(), "ra.xml", "ra.xml")
                 .addAsManifestResource(
                         new StringAsset(
-                                "Dependencies: org.jboss.as.controller-client, org.jboss.as.controller, org.jboss.dmr,org.jboss.as.cli\n"),
+                                "Dependencies: org.jboss.as.controller-client, org.jboss.as.controller, org.jboss.dmr\n"),
                         "MANIFEST.MF");
 
         return raa;

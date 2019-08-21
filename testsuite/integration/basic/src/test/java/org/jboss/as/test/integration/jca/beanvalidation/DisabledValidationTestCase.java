@@ -31,13 +31,10 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.jca.JcaMgmtBase;
 import org.jboss.as.test.integration.jca.JcaMgmtServerSetupTask;
 import org.jboss.as.test.integration.jca.beanvalidation.ra.ValidConnectionFactory;
-import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -48,7 +45,7 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @ServerSetup(DisabledValidationTestCase.DisabledValidationTestCaseSetup.class)
 @RunAsClient
-public class DisabledValidationTestCase extends JcaMgmtBase {
+public class DisabledValidationTestCase {
 
     static class DisabledValidationTestCaseSetup extends JcaMgmtServerSetupTask {
         ModelNode bvAddress = subsystemAddress.clone().add("bean-validation", "bean-validation");
@@ -75,8 +72,7 @@ public class DisabledValidationTestCase extends JcaMgmtBase {
         ResourceAdapterArchive raa = ShrinkWrap.create(ResourceAdapterArchive.class, deploymentName + ".rar");
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class, deploymentName + ".jar");
         ja.addPackage(ValidConnectionFactory.class.getPackage()).addClasses(DisabledValidationTestCase.class,
-                MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class, JcaMgmtServerSetupTask.class,
-                JcaMgmtBase.class);
+                JcaMgmtServerSetupTask.class, JcaMgmtBase.class);
         raa.addAsLibrary(ja);
 
         raa.addAsManifestResource(DisabledValidationTestCase.class.getPackage(), "ra.xml", "ra.xml").addAsManifestResource(

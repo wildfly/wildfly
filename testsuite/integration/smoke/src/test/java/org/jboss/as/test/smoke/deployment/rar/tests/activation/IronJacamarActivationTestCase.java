@@ -27,18 +27,12 @@ import javax.annotation.Resource;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
-import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
-import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.smoke.deployment.rar.MultipleAdminObject1;
 import org.jboss.as.test.smoke.deployment.rar.MultipleAdminObject2;
 import org.jboss.as.test.smoke.deployment.rar.MultipleConnectionFactory1;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -48,7 +42,7 @@ import org.junit.runner.RunWith;
  *         JBQA-5736 -IronJacamar deployment test
  */
 @RunWith(Arquillian.class)
-public class IronJacamarActivationTestCase extends ContainerResourceMgmtTestBase {
+public class IronJacamarActivationTestCase {
 
 
     /**
@@ -57,21 +51,19 @@ public class IronJacamarActivationTestCase extends ContainerResourceMgmtTestBase
      * @return The deployment archive
      */
     @Deployment
-    public static ResourceAdapterArchive createDeployment() throws Exception {
+    public static ResourceAdapterArchive createDeployment() {
         String deploymentName = "archive_ij.rar";
 
         ResourceAdapterArchive raa =
                 ShrinkWrap.create(ResourceAdapterArchive.class, deploymentName);
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "multiple.jar");
         ja.addPackage(MultipleConnectionFactory1.class.getPackage()).
-                addClasses(IronJacamarActivationTestCase.class, MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class);
+                addClasses(IronJacamarActivationTestCase.class);
 
-        ja.addPackage(AbstractMgmtTestBase.class.getPackage());
         raa.addAsLibrary(ja);
 
         raa.addAsManifestResource(IronJacamarActivationTestCase.class.getPackage(), "ra.xml", "ra.xml")
-                .addAsManifestResource(IronJacamarActivationTestCase.class.getPackage(), "ironjacamar.xml", "ironjacamar.xml")
-                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli\n"), "MANIFEST.MF");
+                .addAsManifestResource(IronJacamarActivationTestCase.class.getPackage(), "ironjacamar.xml", "ironjacamar.xml");
 
         return raa;
     }

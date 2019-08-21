@@ -34,12 +34,8 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.jca.JcaMgmtBase;
 import org.jboss.as.test.integration.jca.JcaMgmtServerSetupTask;
-import org.jboss.as.test.integration.jca.JcaTestsUtil;
-import org.jboss.as.test.integration.management.ManagementOperations;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
-import org.jboss.as.test.integration.management.jca.DsMgmtTestBase;
-import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.remoting3.security.RemotingPermission;
 import org.jboss.shrinkwrap.api.Archive;
@@ -60,7 +56,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @ServerSetup(DatasourceSetTxQueryTimeoutTestCase.DatasourceServerSetupTask.class)
-public class DatasourceSetTxQueryTimeoutTestCase extends JcaMgmtBase {
+public class DatasourceSetTxQueryTimeoutTestCase {
 
     private static final String TX_DS_NAME = "JTADS";
 
@@ -109,21 +105,14 @@ public class DatasourceSetTxQueryTimeoutTestCase extends JcaMgmtBase {
                 DatasourceSetTxQueryTimeoutTestCase.class,
                 Datasource.class,
                 JcaMgmtBase.class,
-                ManagementOperations.class,
                 ContainerResourceMgmtTestBase.class,
                 AbstractMgmtTestBase.class,
-                JcaMgmtServerSetupTask.class,
-                MgmtOperationException.class,
-                DsMgmtTestBase.class,
-                JcaTestsUtil.class);
+                JcaMgmtServerSetupTask.class);
         jar.addAsManifestResource(new StringAsset(
                 "Dependencies: javax.inject.api,org.jboss.as.connector," +
-                    "org.jboss.as.controller, " +
-                    "org.jboss.dmr,org.jboss.as.cli, " +
                     "org.jboss.staxmapper,  " +
                     "org.jboss.ironjacamar.impl, " +
-                    "org.jboss.ironjacamar.jdbcadapters, " +
-                    "org.jboss.remoting3\n"
+                    "org.jboss.ironjacamar.jdbcadapters\n"
         ), "MANIFEST.MF");
 
         jar.addAsManifestResource(createPermissionsXmlAsset(

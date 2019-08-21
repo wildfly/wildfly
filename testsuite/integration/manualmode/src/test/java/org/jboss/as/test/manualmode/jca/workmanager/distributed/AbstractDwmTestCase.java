@@ -396,7 +396,6 @@ public abstract class AbstractDwmTestCase {
         jar.addClass(LongWork.class).addClass(ShortWork.class)
                 .addPackage(DistributedConnection1.class.getPackage());
         jar.addAsManifestResource(new StringAsset("Dependencies: javax.inject.api,org.jboss.as.connector,"
-                + "org.jboss.as.controller,org.jboss.dmr,org.jboss.as.cli,org.jboss.staxmapper,"
                 + "org.jboss.ironjacamar.impl\n"), "MANIFEST.MF");
         return jar;
     }
@@ -408,7 +407,7 @@ public abstract class AbstractDwmTestCase {
                         "ironjacamar.xml")
                 .addAsManifestResource(
                         new StringAsset(
-                                "Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli,org.jboss.as.connector \n"),
+                                "Dependencies: org.jboss.as.connector \n"),
                         "MANIFEST.MF");
         return rar;
     }
