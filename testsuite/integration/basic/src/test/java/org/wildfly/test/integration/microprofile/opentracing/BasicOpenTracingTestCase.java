@@ -1,4 +1,4 @@
-package org.jboss.as.test.integration.microprofile.opentracing;
+package org.wildfly.test.integration.microprofile.opentracing;
 
 import io.jaegertracing.internal.JaegerTracer;
 import io.opentracing.Tracer;

@@ -19,12 +19,13 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.wildfly.microprofile.opentracing.smallrye;
 
 import io.opentracing.Tracer;
 import io.opentracing.contrib.jaxrs2.server.OperationNameProvider;
+import io.opentracing.contrib.jaxrs2.server.OperationNameProvider.ClassNameOperationName;
 import io.opentracing.contrib.jaxrs2.server.ServerTracingDynamicFeature;
+import java.util.Optional;
 
 import javax.servlet.ServletContext;
 import javax.ws.rs.container.DynamicFeature;
@@ -32,14 +33,20 @@ import javax.ws.rs.container.ResourceInfo;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.FeatureContext;
 import javax.ws.rs.ext.Provider;
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
 
 @Provider
 public class TracerDynamicFeature implements DynamicFeature {
+
     @Context
     ServletContext servletContext;
 
     @Override
     public void configure(ResourceInfo resourceInfo, FeatureContext context) {
+        Config config = ConfigProvider.getConfig();
+        Optional<String> skipPattern = config.getOptionalValue("mp.opentracing.server.skip-pattern", String.class);
+        Optional<String> operationNameProvider = config.getOptionalValue("mp.opentracing.server.operation-name-provider", String.class);
         Tracer tracer;
 
         Object tracerObject = servletContext.getAttribute(TracerInitializer.SMALLRYE_OPENTRACING_TRACER);
@@ -52,10 +59,21 @@ public class TracerDynamicFeature implements DynamicFeature {
             return;
         }
 
-        ServerTracingDynamicFeature delegate = new ServerTracingDynamicFeature.Builder(tracer)
-                .withOperationNameProvider(OperationNameProvider.ClassNameOperationName.newBuilder())
-                .withTraceSerialization(false)
-                .build();
+        ServerTracingDynamicFeature.Builder builder = new ServerTracingDynamicFeature.Builder(tracer)
+                .withOperationNameProvider(ClassNameOperationName.newBuilder())
+                .withTraceSerialization(false);
+        if (skipPattern.isPresent()) {
+            builder.withSkipPattern(skipPattern.get());
+        }
+        if (operationNameProvider.isPresent()) {
+            if ("http-path".equalsIgnoreCase(operationNameProvider.get())) {
+                builder.withOperationNameProvider(OperationNameProvider.WildcardOperationName.newBuilder());
+            } else if (!"class-method".equalsIgnoreCase(operationNameProvider.get())) {
+                TracingLogger.ROOT_LOGGER.wrongOperationNameProvider();
+            }
+        }
+
+        ServerTracingDynamicFeature delegate = builder.build();
 
         delegate.configure(resourceInfo, context);
     }

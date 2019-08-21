@@ -55,7 +55,7 @@ public class WildFlyClientTracingRegistrarProvider implements ClientTracingRegis
 
         ResteasyClientBuilder resteasyClientBuilder = (ResteasyClientBuilder) clientBuilder;
         return resteasyClientBuilder
-                .asyncExecutor(new TracedExecutorService(executorService, tracer))
+                .executorService(new TracedExecutorService(executorService, tracer))
                 .register(new SmallRyeClientTracingFeature(tracer));
     }
 }

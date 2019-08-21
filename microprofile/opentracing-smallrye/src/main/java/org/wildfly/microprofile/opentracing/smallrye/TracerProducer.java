@@ -37,6 +37,7 @@ public class TracerProducer {
     @Produces
     public Tracer getTracer() {
         Object tracerObject = servletContext.getAttribute(TracerInitializer.SMALLRYE_OPENTRACING_TRACER);
+        TracingLogger.ROOT_LOGGER.producingTracer(tracerObject);
         if (tracerObject instanceof Tracer) {
             return (Tracer) tracerObject;
         }

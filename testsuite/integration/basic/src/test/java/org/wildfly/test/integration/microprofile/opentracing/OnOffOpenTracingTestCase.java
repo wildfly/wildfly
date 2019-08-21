@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package jboss.as.test.integration.microprofile.opentracing;
+package org.wildfly.test.integration.microprofile.opentracing;
 
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 import static org.jboss.as.test.shared.ServerReload.executeReloadAndWaitForCompletion;
@@ -45,7 +45,7 @@ import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 
-import jboss.as.test.integration.microprofile.opentracing.application.SimpleJaxRs;
+import org.wildfly.test.integration.microprofile.opentracing.application.SimpleJaxRs;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;

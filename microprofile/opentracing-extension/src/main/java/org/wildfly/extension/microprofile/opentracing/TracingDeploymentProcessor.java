@@ -23,6 +23,7 @@
 package org.wildfly.extension.microprofile.opentracing;
 
 import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
+import static org.wildfly.extension.microprofile.opentracing.TracingExtensionLogger.ROOT_LOGGER;
 
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.structure.DeploymentType;
@@ -46,32 +47,25 @@ import java.util.List;
 public class TracingDeploymentProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(DeploymentPhaseContext deploymentPhaseContext) throws DeploymentUnitProcessingException {
-        TracingExtensionLogger.ROOT_LOGGER.processingDeployment();
-
+        ROOT_LOGGER.processingDeployment();
         final DeploymentUnit deploymentUnit = deploymentPhaseContext.getDeploymentUnit();
-        final CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
-
-        final WeldCapability weldCapability;
-        try {
-            weldCapability = support.getCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class);
-        } catch (CapabilityServiceSupport.NoSuchCapabilityException e) {
-            //We should not be here since the subsystem depends on weld capability. Just in case ...
-            throw new DeploymentUnitProcessingException(TracingExtensionLogger.ROOT_LOGGER.deploymentRequiresCapability(
-                    deploymentPhaseContext.getDeploymentUnit().getName(),
-                    WELD_CAPABILITY_NAME
-            ));
-        }
-
         if (DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
             return;
         }
-
-        if (!weldCapability.isPartOfWeldDeployment(deploymentUnit)) {
-            // SmallRye JAX-RS requires CDI. Without CDI, there's no integration needed
-            TracingExtensionLogger.ROOT_LOGGER.noCdiDeployment();
-            return;
+        final CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
+        try {
+            final WeldCapability weldCapability = support.getCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class);
+            if (!weldCapability.isPartOfWeldDeployment(deploymentUnit)) {
+                // SmallRye JAX-RS requires CDI. Without CDI, there's no integration needed
+                ROOT_LOGGER.noCdiDeployment();
+                return;
+            }
+        } catch (CapabilityServiceSupport.NoSuchCapabilityException e) {
+            //We should not be here since the subsystem depends on weld capability. Just in case ...
+            throw new DeploymentUnitProcessingException(ROOT_LOGGER.deploymentRequiresCapability(
+                    deploymentPhaseContext.getDeploymentUnit().getName(), WELD_CAPABILITY_NAME
+            ));
         }
-
         setServiceName(deploymentUnit);
         addListeners(deploymentUnit);
     }
@@ -83,7 +77,7 @@ public class TracingDeploymentProcessor implements DeploymentUnitProcessor {
             return;
         }
 
-        TracingExtensionLogger.ROOT_LOGGER.registeringTracerInitializer();
+        ROOT_LOGGER.registeringTracerInitializer();
 
         ListenerMetaData listenerMetaData = new ListenerMetaData();
         listenerMetaData.setListenerClass(TracerInitializer.class.getName());
@@ -145,7 +139,7 @@ public class TracingDeploymentProcessor implements DeploymentUnitProcessor {
                 serviceName = deploymentUnit.getServiceName().getSimpleName();
             }
 
-            TracingExtensionLogger.ROOT_LOGGER.serviceNameDerivedFromDeploymentUnit(serviceName);
+            ROOT_LOGGER.serviceNameDerivedFromDeploymentUnit(serviceName);
         }
 
         return serviceName;

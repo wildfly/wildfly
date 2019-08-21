@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.microprofile.opentracing;
+package org.wildfly.test.integration.microprofile.opentracing;
 
 import java.net.URL;
 
@@ -28,34 +28,66 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.OperateOnDeployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.wildfly.test.integration.microprofile.opentracing.application.TracerIdentityApplication;
 import org.jboss.as.test.shared.ServerReload;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
- * A parent for EAR-based OpenTracing tests
+ * Test verifying the assumption that different services provided by multiple WARs have different tracers.
  *
- * @author <a href="mailto:manovotn@redhat.com">Matej Novotny</a>
+ * @author <a href="mailto:mjurc@redhat.com">Michal Jurc</a> (c) 2018 Red Hat, Inc.
  */
-public abstract class AbstractEarOpenTracingTestCase {
+@RunWith(Arquillian.class)
+@RunAsClient
+public class MultiWarOpenTracingTestCase {
 
     @ContainerResource
     ManagementClient managementClient;
 
     @ArquillianResource
-    private URL url;
+    @OperateOnDeployment("ServiceOne.war")
+    private URL serviceOneUrl;
+
+    @ArquillianResource
+    @OperateOnDeployment("ServiceTwo.war")
+    private URL serviceTwoUrl;
+
+    @Deployment(name = "ServiceOne.war")
+    public static Archive<?> deployServiceOne() {
+        WebArchive serviceOne = ShrinkWrap.create(WebArchive.class, "ServiceOne.war")
+                .addClass(TracerIdentityApplication.class)
+                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+        return serviceOne;
+    }
+
+    @Deployment(name = "ServiceTwo.war")
+    public static Archive<?> deployServiceTwo() {
+        WebArchive serviceTwo = ShrinkWrap.create(WebArchive.class, "ServiceTwo.war")
+                .addClass(TracerIdentityApplication.class)
+                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+        return serviceTwo;
+    }
 
     @Test
-    public void testEarServicesUseDifferentTracers() throws Exception {
+    public void testMultipleWarServicesUseDifferentTracers() throws Exception {
         testHttpInvokation();
     }
 
     @Test
-    public void testEarServicesUseDifferentTracersAfterReload() throws Exception {
-        //TODO the tracer instance is same after reload as before it - check whether this is correct or no
+    public void testMultipleWarServicesUseDifferentTracersAfterReload() throws Exception {
         testHttpInvokation();
         ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
         testHttpInvokation();
@@ -63,15 +95,14 @@ public abstract class AbstractEarOpenTracingTestCase {
 
     private void testHttpInvokation() throws Exception {
         try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
-            HttpResponse svcOneResponse = client.execute(new HttpGet(url.toString() + "/ServiceOne/service-endpoint/app"));
+            HttpResponse svcOneResponse = client.execute(new HttpGet(serviceOneUrl.toString() + "service-endpoint/app"));
             Assert.assertEquals(200, svcOneResponse.getStatusLine().getStatusCode());
             String serviceOneTracer = EntityUtils.toString(svcOneResponse.getEntity());
-
-            HttpResponse svcTwoResponse = client.execute(new HttpGet(url.toString() + "/ServiceTwo/service-endpoint/app"));
+            HttpResponse svcTwoResponse = client.execute(new HttpGet(serviceTwoUrl.toString() + "service-endpoint/app"));
             Assert.assertEquals(200, svcTwoResponse.getStatusLine().getStatusCode());
             String serviceTwoTracer = EntityUtils.toString(svcTwoResponse.getEntity());
             Assert.assertNotEquals("Service one and service two tracer instance hash is same - " + serviceTwoTracer,
-                serviceOneTracer, serviceTwoTracer);
+                    serviceOneTracer, serviceTwoTracer);
         }
     }
 }

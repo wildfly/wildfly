@@ -48,6 +48,10 @@
             <artifactId>opentracing-jaxrs2</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.opentracing.contrib</groupId>
+            <artifactId>opentracing-interceptors</artifactId>
+        </dependency>
+        <dependency>
             <groupId>io.smallrye</groupId>
             <artifactId>smallrye-opentracing</artifactId>
         </dependency>
