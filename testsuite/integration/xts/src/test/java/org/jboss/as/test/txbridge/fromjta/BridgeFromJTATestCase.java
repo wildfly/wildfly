@@ -28,10 +28,11 @@ import javax.transaction.UserTransaction;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.txbridge.fromjta.service.FirstServiceAT;
+import org.jboss.as.test.xts.util.DeploymentHelper;
 import org.jboss.logging.Logger;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -65,11 +66,11 @@ public class BridgeFromJTATestCase {
     private FirstServiceAT firstClient;
 
     @Deployment(name = DEPLOYMENT)
-    public static JavaArchive createTestArchive1() {
-        JavaArchive archive = ShrinkWrap.create(JavaArchive.class, DEPLOYMENT + ".jar")
+    public static Archive<?> createDeployment() {
+        final WebArchive archive = DeploymentHelper.getInstance().getWebArchiveWithPermissions("test")
             .addPackages(true, BridgeFromJTATestCase.class.getPackage())
             .addAsManifestResource(new StringAsset(ManifestMF), "MANIFEST.MF")
-            .addAsManifestResource(new StringAsset(persistentXml), "persistence.xml");
+            .addAsWebInfResource(new StringAsset(persistentXml), "classes/META-INF/persistence.xml" );
         return archive;
     }
 

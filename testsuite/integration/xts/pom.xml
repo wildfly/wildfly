@@ -214,6 +214,7 @@
                             <!-- Tests to execute. -->
                             <includes>
                                 <include>org/jboss/as/test/xts/**/*TestCase.java</include>
+                                <include>org/jboss/as/test/txbridge/**/*TestCase.java</include>
                             </includes>
                             <systemPropertyVariables combine.children="append">
                                 <arquillian.launch>xts-servers</arquillian.launch>
