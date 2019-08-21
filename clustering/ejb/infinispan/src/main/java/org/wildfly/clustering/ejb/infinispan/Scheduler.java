@@ -36,6 +36,13 @@ public interface Scheduler<I> extends AutoCloseable {
     void schedule(I id);
 
     /**
+     * Schedules a task for the specified bean.
+     * @param id a bean identifier
+     * @param entry a bean entry
+     */
+    void schedule(I id, ImmutableBeanEntry<I> entry);
+
+    /**
      * Cancels a previously scheduled task for specified bean.
      * @param id a bean identifier
      */
