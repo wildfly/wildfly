@@ -21,10 +21,10 @@
   ~ 2110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:jboss:domain:datasources-agroal:2.0"
-           xmlns="urn:jboss:domain:datasources-agroal:2.0" xmlns:credential-reference="urn:wildfly:credential-reference:1.0"
+           xmlns="urn:jboss:domain:datasources-agroal:2.0" xmlns:credential-reference="urn:wildfly:credential-reference:1.1"
            elementFormDefault="qualified" version="1.0">
 
-    <xs:import namespace="urn:wildfly:credential-reference:1.0" schemaLocation="wildfly-credential-reference_1_0.xsd"/>
+    <xs:import namespace="urn:wildfly:credential-reference:1.1" schemaLocation="wildfly-credential-reference_1_1.xsd"/>
 
     <xs:element name="subsystem" type="subsystemType"/>
 
