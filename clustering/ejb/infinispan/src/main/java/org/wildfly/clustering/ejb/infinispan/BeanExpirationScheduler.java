@@ -22,6 +22,7 @@
 package org.wildfly.clustering.ejb.infinispan;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -45,24 +46,34 @@ import org.wildfly.clustering.infinispan.spi.distribution.Locality;
 public class BeanExpirationScheduler<I, T> implements Scheduler<I> {
     final Map<I, Future<?>> expirationFutures = new ConcurrentHashMap<>();
     final Batcher<TransactionBatch> batcher;
-    final BeanRemover<I, T> remover;
+    final BeanFactory<I, T> factory;
     final ExpirationConfiguration<T> expiration;
 
-    public BeanExpirationScheduler(Batcher<TransactionBatch> batcher, BeanRemover<I, T> remover, ExpirationConfiguration<T> expiration) {
+    public BeanExpirationScheduler(Batcher<TransactionBatch> batcher, BeanFactory<I, T> factory, ExpirationConfiguration<T> expiration) {
         this.batcher = batcher;
-        this.remover = remover;
+        this.factory = factory;
         this.expiration = expiration;
     }
 
     @Override
     public void schedule(I id) {
+        BeanEntry<I> entry = this.factory.findValue(id);
+        if (entry != null) {
+            this.schedule(id, entry);
+        }
+    }
+
+    @Override
+    public void schedule(I id, ImmutableBeanEntry<I> entry) {
         Duration timeout = this.expiration.getTimeout();
         if (!timeout.isNegative()) {
             InfinispanEjbLogger.ROOT_LOGGER.tracef("Scheduling stateful session bean %s to expire in %s", id, timeout);
             Runnable task = new ExpirationTask(id);
+            Duration delay = Duration.between(Instant.now(), entry.getLastAccessedTime().plus(timeout));
+            long millis = !delay.isNegative() ? delay.toMillis() : 0;
             // Make sure the expiration future map insertion happens before map removal (during task execution).
             synchronized (task) {
-                this.expirationFutures.put(id, this.expiration.getExecutor().schedule(task, timeout.toMillis(), TimeUnit.MILLISECONDS));
+                this.expirationFutures.put(id, this.expiration.getExecutor().schedule(task, millis, TimeUnit.MILLISECONDS));
             }
         }
     }
@@ -114,21 +125,28 @@ public class BeanExpirationScheduler<I, T> implements Scheduler<I> {
         @Override
         public void run() {
             InfinispanEjbLogger.ROOT_LOGGER.tracef("Expiring stateful session bean %s", this.id);
-            boolean removed = false;
+            BeanEntry<I> entry = null;
             try (Batch batch = BeanExpirationScheduler.this.batcher.createBatch()) {
                 try {
-                    removed = BeanExpirationScheduler.this.remover.remove(this.id, BeanExpirationScheduler.this.expiration.getRemoveListener());
+                    entry = BeanExpirationScheduler.this.factory.findValue(this.id);
+                    if (entry != null) {
+                        if (entry.isExpired(BeanExpirationScheduler.this.expiration.getTimeout())) {
+                            InfinispanEjbLogger.ROOT_LOGGER.tracef("Removing expired bean %s", this.id);
+                            BeanExpirationScheduler.this.factory.remove(this.id, BeanExpirationScheduler.this.expiration.getRemoveListener());
+                            entry = null;
+                        }
+                    }
                 } catch (Throwable e) {
                     InfinispanEjbLogger.ROOT_LOGGER.failedToExpireBean(e, this.id);
                     batch.discard();
                 }
             } finally {
                 synchronized (this) {
-                    if (removed) {
+                    if (entry == null) {
                         BeanExpirationScheduler.this.expirationFutures.remove(this.id);
                     } else {
-                        // If bean failed to expire, likely due to a lock timeout, just reschedule it
-                        BeanExpirationScheduler.this.schedule(this.id);
+                        // If bean was not yet expired or failed to expire (likely due to a lock timeout), just reschedule it
+                        BeanExpirationScheduler.this.schedule(this.id, entry);
                     }
                 }
             }
