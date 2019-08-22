@@ -32,8 +32,8 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
-import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
-import org.wildfly.clustering.infinispan.spi.RemoteCacheContainer;
+import org.wildfly.clustering.infinispan.client.InfinispanClientRequirement;
+import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
 import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SupplierDependency;
@@ -54,7 +54,7 @@ public class HotRodStoreServiceConfigurator extends StoreServiceConfigurator<Hot
     public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.cacheConfiguration = CACHE_CONFIGURATION.resolveModelAttribute(context, model).asStringOrNull();
         String remoteCacheContainerName = REMOTE_CACHE_CONTAINER.resolveModelAttribute(context, model).asString();
-        this.remoteCacheContainer = new ServiceSupplierDependency<>(InfinispanRequirement.REMOTE_CONTAINER.getServiceName(context, remoteCacheContainerName));
+        this.remoteCacheContainer = new ServiceSupplierDependency<>(InfinispanClientRequirement.REMOTE_CONTAINER.getServiceName(context, remoteCacheContainerName));
         return super.configure(context, model);
     }
 

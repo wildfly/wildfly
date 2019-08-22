@@ -5,7 +5,11 @@
     <infinispan-session-management name="attribute" cache-container="foo" cache="bar" granularity="ATTRIBUTE">
         <local-affinity/>
     </infinispan-session-management>
+    <hotrod-session-management name="remote" remote-cache-container="foo" cache-configuration="bar" granularity="ATTRIBUTE">
+        <no-affinity/>
+    </hotrod-session-management>
     <infinispan-single-sign-on-management name="default" cache-container="foo"/>
     <infinispan-single-sign-on-management name="domain" cache-container="foo" cache="bar"/>
+    <hotrod-single-sign-on-management name="remote" remote-cache-container="foo"/>
     <infinispan-routing cache-container="web" cache="routing"/>
 </subsystem>

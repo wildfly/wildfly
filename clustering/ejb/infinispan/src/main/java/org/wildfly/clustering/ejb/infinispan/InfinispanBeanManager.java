@@ -35,6 +35,7 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -42,8 +43,8 @@ import org.infinispan.Cache;
 import org.infinispan.affinity.KeyAffinityService;
 import org.infinispan.affinity.KeyGenerator;
 import org.infinispan.commons.CacheException;
+import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.context.Flag;
-import org.infinispan.distribution.DistributionManager;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.DataRehashed;
 import org.infinispan.notifications.cachelistener.event.DataRehashedEvent;
@@ -58,14 +59,16 @@ import org.wildfly.clustering.dispatcher.CommandDispatcherException;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.Invoker;
-import org.wildfly.clustering.ee.infinispan.CacheProperties;
-import org.wildfly.clustering.ee.infinispan.InfinispanBatcher;
-import org.wildfly.clustering.ee.infinispan.TransactionBatch;
-import org.wildfly.clustering.ee.retry.RetryingInvoker;
+import org.wildfly.clustering.ee.cache.CacheProperties;
+import org.wildfly.clustering.ee.cache.retry.RetryingInvoker;
+import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
+import org.wildfly.clustering.ee.infinispan.PrimaryOwnerLocator;
+import org.wildfly.clustering.ee.infinispan.tx.InfinispanBatcher;
 import org.wildfly.clustering.ejb.Bean;
 import org.wildfly.clustering.ejb.BeanManager;
 import org.wildfly.clustering.ejb.IdentifierFactory;
 import org.wildfly.clustering.ejb.RemoveListener;
+import org.wildfly.clustering.ejb.infinispan.bean.InfinispanBeanKey;
 import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
@@ -76,7 +79,6 @@ import org.wildfly.clustering.infinispan.spi.distribution.ConsistentHashLocality
 import org.wildfly.clustering.infinispan.spi.distribution.Locality;
 import org.wildfly.clustering.infinispan.spi.distribution.SimpleLocality;
 import org.wildfly.clustering.registry.Registry;
-import org.wildfly.clustering.spi.NodeFactory;
 import org.wildfly.common.function.ExceptionSupplier;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
@@ -110,13 +112,13 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
     private final IdentifierFactory<I> identifierFactory;
     private final KeyAffinityService<BeanKey<I>> affinity;
     private final Registry<String, ?> registry;
-    private final NodeFactory<Address> nodeFactory;
     private final CommandDispatcherFactory dispatcherFactory;
     private final ExpirationConfiguration<T> expiration;
     private final PassivationConfiguration<T> passivation;
     private final Batcher<TransactionBatch> batcher;
     private final Predicate<Map.Entry<? super BeanKey<I>, ? super BeanEntry<I>>> filter;
     private final AtomicReference<Future<?>> rehashFuture = new AtomicReference<>();
+    private final Function<BeanKey<I>, Node> primaryOwnerLocator;
 
     private volatile Scheduler<I> scheduler;
     private volatile ExecutorService executor;
@@ -136,10 +138,10 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
         this.affinity = affinityFactory.createService(this.cache, beanKeyGenerator);
         this.identifierFactory = () -> this.affinity.getKeyForAddress(address).getId();
         this.registry = configuration.getRegistry();
-        this.nodeFactory = configuration.getNodeFactory();
         this.dispatcherFactory = configuration.getCommandDispatcherFactory();
         this.expiration = configuration.getExpirationConfiguration();
         this.passivation = configuration.getPassivationConfiguration();
+        this.primaryOwnerLocator = new PrimaryOwnerLocator<>(beanConfiguration.getCache(), configuration.getNodeFactory(), configuration.getRegistry().getGroup());
     }
 
     @Override
@@ -209,8 +211,9 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
 
     @Override
     public Affinity getWeakAffinity(I id) {
-        if (this.cache.getCacheConfiguration().clustering().cacheMode().isClustered()) {
-            Node node = this.locatePrimaryOwner(id);
+        CacheMode mode = this.cache.getCacheConfiguration().clustering().cacheMode();
+        if (mode.isClustered()) {
+            Node node = mode.needsStateTransfer() && !mode.isScattered() ? this.locatePrimaryOwner(id) : this.registry.getGroup().getLocalMember();
             Map.Entry<String, ?> entry = this.registry.getEntry(node);
             if (entry != null) {
                 return new NodeAffinity(entry.getKey());
@@ -253,16 +256,14 @@ public class InfinispanBeanManager<I, T> implements BeanManager<I, T, Transactio
     }
 
     Node locatePrimaryOwner(I id) {
-        DistributionManager dist = this.cache.getAdvancedCache().getDistributionManager();
-        Address address = (dist != null) && !this.cache.getCacheConfiguration().clustering().cacheMode().isScattered() ? dist.getCacheTopology().getDistribution(new Key<>(id)).primary() : null;
-        Node member = (address != null) ? this.nodeFactory.createNode(address) : null;
-        return (member != null) ? member : this.registry.getGroup().getLocalMember();
+        return this.primaryOwnerLocator.apply(new InfinispanBeanKey<>(id));
     }
 
     @Override
     public Bean<I, T> createBean(I id, I groupId, T bean) {
         InfinispanEjbLogger.ROOT_LOGGER.tracef("Creating bean %s associated with group %s", id, groupId);
-        BeanGroup<I, T> group = this.groupFactory.createGroup(groupId, this.groupFactory.createValue(groupId, null));
+        BeanGroupEntry<I, T> groupEntry = (id == groupId) ? this.groupFactory.createValue(groupId, null) : this.groupFactory.findValue(groupId);
+        BeanGroup<I, T> group = this.groupFactory.createGroup(groupId, groupEntry);
         group.addBean(id, bean);
         group.releaseBean(id, this.properties.isPersistent() ? this.passivation.getPassivationListener() : null);
         return new SchedulableBean(this.beanFactory.createBean(id, this.beanFactory.createValue(id, groupId)));

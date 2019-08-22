@@ -33,17 +33,19 @@
     </resources>
 
     <dependencies>
-        <module name="org.codehaus.jackson.jackson-core-asl"/>
-        <module name="org.codehaus.jackson.jackson-jaxrs"/>
-        <module name="org.codehaus.jackson.jackson-mapper-asl"/>
-        <module name="org.codehaus.jackson.jackson-xc"/>
         <module name="javax.xml.bind.api"/>
         <module name="javax.api"/>
         <module name="javax.enterprise.api"/>
         <module name="javax.servlet.api"/>
         <module name="javax.ws.rs.api"/>
-        <module name="org.jboss.resteasy.resteasy-jackson-provider" services="import"/>
+        <module name="org.jboss.resteasy.resteasy-jackson2-provider" services="import"/>
         <module name="org.jboss.resteasy.resteasy-jaxrs" services="import"/>
         <module name="org.jboss.logging"/>
-    </dependencies>
+        <module name="com.fasterxml.jackson.core.jackson-annotations"/>
+        <module name="com.fasterxml.jackson.core.jackson-core"/>
+        <module name="com.fasterxml.jackson.core.jackson-databind"/>
+        <module name="com.fasterxml.jackson.jaxrs.jackson-jaxrs-json-provider"/>
+        <module name="com.fasterxml.jackson.datatype.jackson-datatype-jdk8"/>
+        <module name="com.fasterxml.jackson.datatype.jackson-datatype-jsr310"/>
+</dependencies>
 </module>

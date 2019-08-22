@@ -82,6 +82,7 @@ import org.jboss.security.auth.spi.BaseCertLoginModule;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assume;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -140,6 +141,11 @@ public class HTTPSWebConnectorTestCase {
 
     @ArquillianResource
     private Deployer deployer;
+
+    @BeforeClass
+    public static void noJDK14Plus() {
+        Assume.assumeFalse("Avoiding JDK 14 due to https://issues.jboss.org/browse/WFCORE-4532", "14".equals(System.getProperty("java.specification.version")));
+    }
 
     @Deployment(name = APP_CONTEXT, testable = false, managed = false)
     public static WebArchive deployment() {

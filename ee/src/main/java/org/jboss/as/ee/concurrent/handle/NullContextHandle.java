@@ -8,6 +8,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class NullContextHandle implements SetupContextHandle {
 
+    private static final long serialVersionUID = 2928225776829357837L;
     private final SetupContextHandle tcclSetupHandle;
 
     public NullContextHandle() {

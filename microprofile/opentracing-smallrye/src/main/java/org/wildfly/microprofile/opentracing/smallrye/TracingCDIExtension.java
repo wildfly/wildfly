@@ -23,7 +23,6 @@
 package org.wildfly.microprofile.opentracing.smallrye;
 
 import io.opentracing.Tracer;
-import io.smallrye.opentracing.SmallRyeTracingCDIInterceptor;
 
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.BeanManager;
@@ -36,7 +35,6 @@ public class TracingCDIExtension implements Extension {
     public void observeBeforeBeanDiscovery(@Observes BeforeBeanDiscovery bbd, BeanManager manager) {
         String extensionName = TracingCDIExtension.class.getName();
         bbd.addAnnotatedType(manager.createAnnotatedType(TracerProducer.class), extensionName + "-" + TracerProducer.class.getName());
-        bbd.addAnnotatedType(manager.createAnnotatedType(SmallRyeTracingCDIInterceptor.class), extensionName + "-" + SmallRyeTracingCDIInterceptor.class.getName());
     }
 
     public void skipTracerBeans(@Observes ProcessAnnotatedType<? extends Tracer> processAnnotatedType) {

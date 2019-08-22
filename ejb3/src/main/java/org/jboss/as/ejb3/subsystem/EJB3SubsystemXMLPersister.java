@@ -53,7 +53,7 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
     @Override
     public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
 
-        context.startSubsystemElement(EJB3SubsystemNamespace.EJB3_5_0.getUriString(), false);
+        context.startSubsystemElement(EJB3SubsystemNamespace.EJB3_6_0.getUriString(), false);
         writeElements(writer, context);
         // write the subsystem end element
         writer.writeEndElement();
@@ -282,6 +282,17 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
         if (model.hasDefined(ALLOW_EJB_NAME_REGEX)) {
             writer.writeStartElement(EJB3SubsystemXMLElement.ALLOW_EJB_NAME_REGEX.getLocalName());
             writer.writeAttribute(EJB3SubsystemXMLAttribute.VALUE.getLocalName(), model.get(EJB3SubsystemModel.ALLOW_EJB_NAME_REGEX).asString());
+            writer.writeEndElement();
+        }
+
+        if (model.hasDefined(SERVER_INTERCEPTORS)) {
+            writer.writeStartElement(EJB3SubsystemXMLElement.SERVER_INTERCEPTORS.getLocalName());
+            for (final ModelNode interceptor : model.get(SERVER_INTERCEPTORS).asList()) {
+                writer.writeStartElement(EJB3SubsystemXMLElement.INTERCEPTOR.getLocalName());
+                writer.writeAttribute(EJB3SubsystemXMLAttribute.MODULE.getLocalName(), interceptor.get(EJB3SubsystemXMLAttribute.MODULE.getLocalName()).asString());
+                writer.writeAttribute(EJB3SubsystemXMLAttribute.CLASS.getLocalName(), interceptor.get(EJB3SubsystemXMLAttribute.CLASS.getLocalName()).asString());
+                writer.writeEndElement();
+            }
             writer.writeEndElement();
         }
     }

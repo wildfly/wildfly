@@ -32,7 +32,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>17.0.0.Beta1-SNAPSHOT</version>
+        <version>18.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ-clustering</artifactId>
@@ -46,6 +46,8 @@
         <test-group>org/jboss/as/test/clustering/cluster</test-group>
         <!-- Needs to kept inline with what the infinispan-server-feature-pack requires -->
         <version.org.jboss.infinispan-wildfly>14.0.1.Final</version.org.jboss.infinispan-wildfly>
+        <!-- Byteman configuration -->
+        <version.org.jboss.byteman>4.0.6</version.org.jboss.byteman>
     </properties>
 
     <dependencies>
@@ -57,6 +59,11 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-singleton-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.arquillian.junit</groupId>
+            <artifactId>arquillian-junit-container</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- Used for the infinispan-server-feature-pack -->
@@ -72,6 +79,35 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <!-- ARQ extension for Byteman -->
+        <dependency>
+            <groupId>org.jboss.arquillian.extension</groupId>
+            <artifactId>arquillian-extension-byteman</artifactId>
+            <version>1.0.0</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.sun</groupId>
+                    <artifactId>tools</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- Byteman dependencies -->
+        <dependency>
+            <groupId>org.jboss.byteman</groupId>
+            <artifactId>byteman</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.byteman</groupId>
+            <artifactId>byteman-submit</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss</groupId>
+            <artifactId>jboss-ejb-client</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -92,10 +128,10 @@
                         <executions>
                             <execution>
                                 <id>provision-infinispan-server</id>
+                                <phase>test-compile</phase>
                                 <goals>
                                     <goal>build</goal>
                                 </goals>
-                                <phase>test-compile</phase>
                                 <configuration>
                                     <config-file>infinispan-server-provisioning.xml</config-file>
                                     <buildName>${basedir}/target/</buildName>
@@ -104,41 +140,102 @@
                             </execution>
                         </executions>
                     </plugin>
-                    <!-- Update server profile with shared configuration changes -->
+                    <!-- Update server profile with shared configuration changes and the load balancer -->
                     <plugin>
                         <groupId>org.wildfly.plugins</groupId>
                         <artifactId>wildfly-maven-plugin</artifactId>
                         <version>${version.org.wildfly.plugin}</version>
                         <executions>
                             <execution>
+                                <id>ts.config-as.configure-wildfly</id>
+                                <phase>process-test-resources</phase>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
+                                <configuration>
+                                    <offline>true</offline>
+                                    <scripts>
+                                        <script>clustering-all.cli</script>
+                                    </scripts>
+                                    <jboss-home>${wildfly.dir}</jboss-home>
+                                    <stdout>${project.build.directory}/wildfly-plugin.log</stdout>
+                                    <java-opts>${modular.jdk.args}</java-opts>
+                                    <system-properties>
+                                        <maven.repo.local>${settings.localRepository}</maven.repo.local>
+                                        <module.path>${jboss.dist}/modules</module.path>
+                                    </system-properties>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>ts.config-as.configure-lb</id>
                                 <phase>generate-test-resources</phase>
                                 <goals>
                                     <goal>execute-commands</goal>
                                 </goals>
+                                <configuration>
+                                    <offline>true</offline>
+                                    <scripts>
+                                        <script>clustering-lb.cli</script>
+                                    </scripts>
+                                    <jboss-home>${wildfly.dir}</jboss-home>
+                                    <stdout>${project.build.directory}/wildfly-plugin.log</stdout>
+                                    <java-opts>${modular.jdk.args}</java-opts>
+                                    <system-properties>
+                                        <maven.repo.local>${settings.localRepository}</maven.repo.local>
+                                        <module.path>${jboss.dist}/modules</module.path>
+                                    </system-properties>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>keytool-maven-plugin</artifactId>
+                        <version>1.5</version>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.codehaus.mojo</groupId>
+                                <artifactId>keytool-api-1.7</artifactId>
+                                <version>1.5</version>
+                            </dependency>
+                        </dependencies>
+                        <executions>
+                            <execution>
+                                <phase>process-test-resources</phase>
+                                <id>clean-keystore</id>
+                                <goals>
+                                    <goal>clean</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <phase>process-test-resources</phase>
+                                <id>genkey-keystore</id>
+                                <goals>
+                                    <goal>generateKeyPair</goal>
+                                </goals>
                             </execution>
                         </executions>
                         <configuration>
-                            <offline>true</offline>
-                            <scripts>
-                                <script>clustering-all.cli</script>
-                            </scripts>
-                            <jboss-home>${wildfly.dir}</jboss-home>
-                            <stdout>${project.build.directory}/wildfly-plugin.log</stdout>
-                            <java-opts>${modular.jdk.args}</java-opts>
-                            <system-properties>
-                                <maven.repo.local>${settings.localRepository}</maven.repo.local>
-                                <module.path>${jboss.dist}/modules</module.path>
-                            </system-properties>
+                            <keystore>${wildfly.dir}/standalone/configuration/sso.keystore</keystore>
+                            <dname>cn=commonName, ou=organizationUnit, o=organizationName, c=countryCode</dname>
+                            <storetype>PKCS12</storetype>
+                            <keypass>password</keypass>
+                            <storepass>password</storepass>
+                            <alias>localhost</alias>
+                            <keyalg>RSA</keyalg>
+                            <keysize>2048</keysize>
+                            <validity>365</validity>
+                            <verbose>true</verbose>
                         </configuration>
                     </plugin>
-                    <!-- Copy 4 containers based on the shared configuration -->
+                    <!-- Copy 4 containers based on the shared configuration and one load balancer profile -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-antrun-plugin</artifactId>
                         <executions combine.children="append">
                             <execution>
                                 <id>ts.config-as.clustering</id>
-                                <phase>process-test-resources</phase>
+                                <phase>test-compile</phase>
                                 <goals>
                                     <goal>run</goal>
                                 </goals>
@@ -158,7 +255,6 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <version>${version.surefire.plugin}</version>
                         <executions combine.children="append">
-
                             <!-- Disable default-test execution. -->
                             <execution>
                                 <id>default-test</id>
@@ -167,8 +263,7 @@
                                 </goals>
                                 <phase>none</phase>
                             </execution>
-
-                            <!-- Multi-node clustering tests excluding EJB tests -->
+                            <!-- Multi-node clustering tests -->
                             <execution>
                                 <id>ts.surefire.clustering.all</id>
                                 <phase>test</phase>
@@ -182,14 +277,9 @@
                                     <includes>
                                         <include>${test-group}/**/*TestCase.java</include>
                                     </includes>
-                                    <!-- Exclude test groups that require disabled fork reuse (i.e. tests using EJB client) corresponding
-                                     to the includes in the following execution. -->
+                                    <!-- Skip byteman tests -->
                                     <excludes>
-                                        <exclude>${test-group}/dispatcher/**/*TestCase.java</exclude>
-                                        <exclude>${test-group}/ejb/**/*TestCase.java</exclude>
-                                        <exclude>${test-group}/ejb2/**/*TestCase.java</exclude>
-                                        <exclude>${test-group}/provider/**/*TestCase.java</exclude>
-                                        <exclude>${test-group}/registry/**/*TestCase.java</exclude>
+                                        <exclude>${test-group}/**/byteman/*TestCase.java</exclude>
                                     </excludes>
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
@@ -201,44 +291,10 @@
                                         <mcast1>${mcast1}</mcast1>
                                         <mcast2>${mcast2}</mcast2>
                                         <mcast3>${mcast3}</mcast3>
-                                        <arquillian.launch>clustering-all</arquillian.launch>
-                                        <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
-                                        <!-- Override ${server.jvm.arg} to only include ${jvm.args.ip} but *not* include ${jvm.args.ip.server} -->
-                                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.other} ${jvm.args.timeouts} ${jvm.args.dirs} ${extra.server.jvm.args}</server.jvm.args>
-                                        <version.org.infinispan>${version.org.infinispan}</version.org.infinispan>
-                                    </systemPropertyVariables>
-                                </configuration>
-                            </execution>
-
-                            <!-- Multi-node clustering tests with fork reuse disabled for EJB tests -->
-                            <execution>
-                                <id>ts.surefire.clustering.all-ejb</id>
-                                <phase>test</phase>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
-                                <configuration>
-                                    <!-- Needed for EJB client tests -->
-                                    <reuseForks>false</reuseForks>
-                                    <runOrder>alphabetical</runOrder>
-                                    <includes>
-                                        <include>${test-group}/dispatcher/**/*TestCase.java</include>
-                                        <include>${test-group}/ejb/**/*TestCase.java</include>
-                                        <include>${test-group}/ejb2/**/*TestCase.java</include>
-                                        <include>${test-group}/provider/**/*TestCase.java</include>
-                                        <include>${test-group}/registry/**/*TestCase.java</include>
-                                    </includes>
-                                    <systemPropertyVariables combine.children="append">
-                                        <node0>${node0}</node0>
-                                        <node1>${node1}</node1>
-                                        <node2>${node2}</node2>
-                                        <node3>${node3}</node3>
-                                        <mcast>${mcast}</mcast>
-                                        <mcast1>${mcast1}</mcast1>
-                                        <mcast2>${mcast2}</mcast2>
-                                        <mcast3>${mcast3}</mcast3>
+                                        <arquillian.xml>arquillian.xml</arquillian.xml>
                                         <arquillian.launch>clustering-all</arquillian.launch>
                                         <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
+                                        <!-- Override ${server.jvm.arg} to only include ${jvm.args.ip} but *not* include ${jvm.args.ip.server} -->
                                         <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.other} ${jvm.args.timeouts} ${jvm.args.dirs} ${extra.server.jvm.args}</server.jvm.args>
                                         <version.org.infinispan>${version.org.infinispan}</version.org.infinispan>
                                     </systemPropertyVariables>
@@ -263,12 +319,51 @@
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
+
+                            <!-- Multi-node clustering tests (based on Byteman) for EJB tests -->
+                            <!-- Byteman extension doesn't work with JDK 11, because tools.jar was removed: https://github.com/arquillian/arquillian-extension-byteman/issues/25 -->
+                            <execution>
+                                <id>ts.surefire.clustering.all-ejb-byteman</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <argLine>${surefire.byteman.argline}</argLine>
+                                    <!-- Needed for EJB client tests -->
+                                    <useSystemClassLoader>true</useSystemClassLoader>
+                                    <useManifestOnlyJar>true</useManifestOnlyJar>
+                                    <forkMode>once</forkMode>
+                                    <environmentVariables>
+                                        <BYTEMAN_HOME/>
+                                    </environmentVariables>
+                                    <includes>
+                                        <include>${test-group}/**/byteman/*TestCase.java</include>
+                                    </includes>
+                                    <systemPropertyVariables combine.children="append">
+                                        <node0>${node0}</node0>
+                                        <node1>${node1}</node1>
+                                        <node2>${node2}</node2>
+                                        <node3>${node3}</node3>
+                                        <mcast>${mcast}</mcast>
+                                        <mcast1>${mcast1}</mcast1>
+                                        <mcast2>${mcast2}</mcast2>
+                                        <mcast3>${mcast3}</mcast3>
+                                        <arquillian.xml>arquillian-byteman.xml</arquillian.xml>
+                                        <arquillian.launch>clustering-all</arquillian.launch>
+                                        <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
+                                        <!-- Usual server JVM args plus additional Byteman args (-Djboss.modules.system.pkgs, -Xbootclasspath)-->
+                                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.other} ${jvm.args.timeouts} ${jvm.args.dirs} ${extra.server.jvm.args} ${surefire.byteman.args}</server.jvm.args>
+                                        <version.org.infinispan>${version.org.infinispan}</version.org.infinispan>
+                                    </systemPropertyVariables>
+                                </configuration>
+                            </execution>
                         </executions>
                     </plugin>
                 </plugins>
             </build>
         </profile>
-        <!-- Disable other surefire executions when using -Dtest=... -->
+        <!-- Disable single node and byteman tests surefire executions when using -Dtest=... -->
         <profile>
             <id>ts.clustering.disable-executions-single-test</id>
             <activation>
@@ -283,11 +378,11 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>ts.surefire.clustering.all</id>
+                                <id>ts.surefire.clustering.single-node</id>
                                 <phase>none</phase>
                             </execution>
                             <execution>
-                                <id>ts.surefire.clustering.single-node</id>
+                                <id>ts.surefire.clustering.all-ejb-byteman</id>
                                 <phase>none</phase>
                             </execution>
                         </executions>
@@ -322,6 +417,26 @@
                 </plugins>
             </build>
         </profile>
-
+        <profile>
+            <!-- Selectively disable executions for tests that only work on Java 8 -->
+            <id>ts.clustering.java8</id>
+            <activation>
+                <jdk>[1.9,)</jdk>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions combine.children="append">
+                            <execution>
+                                <id>ts.surefire.clustering.all-ejb-byteman</id>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 </project>

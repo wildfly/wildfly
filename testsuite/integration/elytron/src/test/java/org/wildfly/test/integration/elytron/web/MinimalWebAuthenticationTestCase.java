@@ -35,7 +35,7 @@ import org.wildfly.test.security.common.elytron.ServletElytronDomainSetup;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 @RunWith(Arquillian.class)
-@ServerSetup({ WebAuthenticationTestCaseBase.ElytronDomainSetupOverride.class, ServletElytronDomainSetup.class })
+@ServerSetup({ WebAuthenticationTestCaseBase.ElytronDomainSetupOverride.class, MinimalWebAuthenticationTestCase.ElytronServletSetupOverride.class })
 public class MinimalWebAuthenticationTestCase extends WebAuthenticationTestCaseBase {
 
     @Override

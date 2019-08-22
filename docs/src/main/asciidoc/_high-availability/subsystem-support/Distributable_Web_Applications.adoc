@@ -18,6 +18,7 @@ e.g.
 </web-app>
 ----
 
+[[distributable-web-subsystem]]
 == Distributable Web Subsystem
 
 The distributable-web subsystem manages a set of session management profiles that encapsulate the configuration of a distributable session manager.
@@ -81,6 +82,10 @@ affinity=primary-owner:::
 Web requests will have an affinity to the primary owner of a given session.
 This is the default affinity for this distributed session manager.
 Behaves the same as affinity=local if the backing cache is not distributed nor replicated.
+affinity=ranked:::
+Web requests will have an affinity to the first available node in a ranked list comprised of: primary owner, backup nodes, local node (if not a primary nor backup owner).
+Only for use with load balancers that support multiple routes.
+Behaves the same as affinity=local if cache is not distributed nor replicated.
 
 e.g. Creating a new session management profile, using ATTRIBUTE granularity with local session affinity:
 
@@ -95,6 +100,45 @@ e.g. Creating a new session management profile, using ATTRIBUTE granularity with
     "outcome" => "success"
 }
 ----
+
+The subsystem also supports session management where session data is stored in a remote infinispan-server cluster via the HotRod protocol.
+
+e.g.
+
+[source]
+----
+[standalone@embedded /] /subsystem=distributable-web/hotrod-session-management=foo:add(remote-cache-container=datagrid, cache-configuration=foo, granularity=ATTRIBUTE)
+{
+    "outcome" => "success"
+}
+----
+
+remote-cache-container::
+This references a <<remote_cache_container,remote-cache-container>> defined in the Infinispan subsystem into which session data will be stored.
+cache-configuration::
+If a remote cache whose name matches the deployment name does not exist, this attribute defines a cache configuration within the remote infinispan server, from which an application-specific cache will be created.
+granularity::
+This defines how the session manager will map a session into individual cache entries.
+Possible values are:
+SESSION:::
+Stores all session attributes within a single cache entry.
+This is generally more expensive than ATTRIBUTE granularity, but preserves any cross-attribute object references.
+ATTRIBUTE:::
+Stores each session attribute within a separate cache entry.
+This is generally more efficient than SESSION granularity, but does not preserve any cross-attribute object references.
+affinity::
+This resource defines the affinity that a web request should have for a given server.
+The affinity of the associated web session determines the algorithm for generating the route to be appended onto the session ID (within the JSESSIONID cookie, or when encoding URLs).
+This annotation of the session ID is used by load balancers to advise how future requests for existing sessions should be directed.
+Routing is designed to be opaque to application code such that calls to `HttpSession.getId()` always return an unmodified session ID.
+This is only generated when creating/updating the JSESSIONID cookie, or when encoding URLs via `HttpServletResponse.encodeURL()` and `encodeRedirectURL()`.
+Possible values are:
+affinity=none:::
+Web requests will have no affinity to any particular node.
+This option is intended for use cases where web session state is not maintained within the application server.
+affinity=local:::
+Web requests will have an affinity to the server that last handled a request for a given session.
+This option corresponds to traditional sticky session behavior.
 
 == Overriding default behavior
 
@@ -113,7 +157,7 @@ e.g.
 [source,xml]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
-<distributable-web xmlns="urn:jboss:distributable-web:1.0">
+<distributable-web xmlns="urn:jboss:distributable-web:2.0">
     <session-management name="foo"/>
 </distributable-web>
 ----
@@ -127,7 +171,7 @@ e.g.
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 <jboss xmlns="urn:jboss:1.0">
-    <distributable-web xmlns="urn:jboss:distributable-web:1.0">
+    <distributable-web xmlns="urn:jboss:distributable-web:2.0">
         <session-management name="foo"/>
     </distributable-web>
 </jboss>
@@ -144,7 +188,7 @@ e.g.
 [source,xml]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
-<distributable-web xmlns="urn:jboss:distributable-web:1.0">
+<distributable-web xmlns="urn:jboss:distributable-web:2.0">
     <infinispan-session-management cache-container="foo" cache="bar" granularity="SESSION">
         <primary-owner-affinity/>
     </infinispan-session-management>
@@ -160,7 +204,7 @@ e.g.
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 <jboss xmlns="urn:jboss:1.0">
-    <distributable-web xmlns="urn:jboss:distributable-web:1.0">
+    <distributable-web xmlns="urn:jboss:distributable-web:2.0">
         <infinispan-session-management cache-container="foo" cache="bar" granularity="ATTRIBUTE">
             <local-affinity/>
         </infinispan-session-management>
@@ -190,7 +234,7 @@ e.g.
             </cookie-config>
         </session-config>
     </shared-session-config>
-    <distributable-web xmlns="urn:jboss:distributable-web:1.0">
+    <distributable-web xmlns="urn:jboss:distributable-web:2.0">
         <session-management name="foo"/>
     </distributable-web>
 </jboss>
@@ -292,7 +336,7 @@ Alternatively, immutable classes can be enumerated via the distributable-web dep
 e.g.
 [source,xml]
 ----
-<distributable-web xmlns="urn:jboss:distributable-web:1.0">
+<distributable-web xmlns="urn:jboss:distributable-web:2.0">
     <session-management>
         <immutable-class>foo.bar.ImmutableClass</immutable-class>
         <immutable-class>...</immutable-class>

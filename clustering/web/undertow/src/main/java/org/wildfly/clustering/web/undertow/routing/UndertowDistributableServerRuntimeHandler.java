@@ -49,6 +49,7 @@ import org.wildfly.extension.undertow.session.DistributableServerRuntimeHandler;
 /**
  * @author Paul Ferraro
  */
+@SuppressWarnings("deprecation")
 @MetaInfServices(DistributableServerRuntimeHandler.class)
 public class UndertowDistributableServerRuntimeHandler implements DistributableServerRuntimeHandler {
 

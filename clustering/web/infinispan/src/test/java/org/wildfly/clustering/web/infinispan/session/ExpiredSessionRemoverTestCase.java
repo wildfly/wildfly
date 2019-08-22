@@ -21,12 +21,19 @@
  */
 package org.wildfly.clustering.web.infinispan.session;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.UUID;
 
 import org.junit.Test;
 import org.wildfly.clustering.Registration;
+import org.wildfly.clustering.web.cache.session.SessionAttributesFactory;
+import org.wildfly.clustering.web.cache.session.SessionFactory;
+import org.wildfly.clustering.web.cache.session.SessionMetaDataFactory;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
@@ -41,7 +48,7 @@ public class ExpiredSessionRemoverTestCase {
     @Test
     public void test() {
         SessionFactory<UUID, UUID, Object> factory = mock(SessionFactory.class);
-        SessionMetaDataFactory<UUID, Object> metaDataFactory = mock(SessionMetaDataFactory.class);
+        SessionMetaDataFactory<UUID> metaDataFactory = mock(SessionMetaDataFactory.class);
         SessionAttributesFactory<UUID> attributesFactory = mock(SessionAttributesFactory.class);
         SessionExpirationListener listener = mock(SessionExpirationListener.class);
         ImmutableSessionAttributes expiredAttributes = mock(ImmutableSessionAttributes.class);

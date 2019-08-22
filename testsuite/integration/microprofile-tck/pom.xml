@@ -28,7 +28,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-ts-integ</artifactId>
-        <version>17.0.0.Beta1-SNAPSHOT</version>
+        <version>18.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ-mp</artifactId>
@@ -44,7 +44,9 @@
     </properties>
 
     <modules>
+        <module>config</module>
         <module>health</module>
+        <module>metrics</module>
         <module>opentracing</module>
     </modules>
 </project>

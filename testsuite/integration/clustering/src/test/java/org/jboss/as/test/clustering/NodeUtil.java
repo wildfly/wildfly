@@ -30,7 +30,6 @@ import org.jboss.logging.Logger;
  * Utility class to start and stop containers and/or deployments.
  *
  * @author Radoslav Husar
- * @version Oct 2012
  */
 public final class NodeUtil {
 
@@ -91,6 +90,10 @@ public final class NodeUtil {
         } else {
             log.tracef("Container %s was already stopped", container);
         }
+    }
+
+    public static boolean isStarted(ContainerController controller, String container) {
+        return controller.isStarted(container);
     }
 
     public static void stop(WildFlyContainerController controller, int timeout, String... containers) {

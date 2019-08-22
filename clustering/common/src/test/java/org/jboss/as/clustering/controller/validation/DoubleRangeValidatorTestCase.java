@@ -47,7 +47,7 @@ public class DoubleRangeValidatorTestCase {
     public void testExclusive() {
         int lower = 0;
         ParameterValidator validator = new DoubleRangeValidatorBuilder().lowerBoundExclusive(lower).build();
-        assertFalse(isValid(validator, new ModelNode(0)));
+        assertFalse(isValid(validator, ModelNode.ZERO));
         assertTrue(isValid(validator, new ModelNode(0.1)));
         assertTrue(isValid(validator, new ModelNode(Double.MAX_VALUE)));
 

@@ -99,30 +99,73 @@ public class HibernatePersistenceProviderAdaptor implements PersistenceProviderA
         final Properties properties = pu.getProperties();
         final String sharedCacheMode = properties.getProperty(SHARED_CACHE_MODE);
 
-        if ( Classification.NONE.equals(platform.defaultCacheClassification())) {
+        if (Classification.NONE.equals(platform.defaultCacheClassification())) {
             JPA_LOGGER.tracef("second level cache is not supported in platform, ignoring shared cache mode");
             pu.setSharedCacheMode(SharedCacheMode.NONE);
         }
-        // check if 2lc is explicitly disabled which takes precedence over other settings
-        boolean sharedCacheDisabled = SharedCacheMode.NONE.equals(pu.getSharedCacheMode())
-                ||
-                NONE.equals(sharedCacheMode) ||
-                SharedCacheMode.UNSPECIFIED.equals(pu.getSharedCacheMode()) ||
-                UNSPECIFIED.equals(sharedCacheMode);
-        if (!sharedCacheDisabled &&
-                (null == properties.getProperty(AvailableSettings.USE_SECOND_LEVEL_CACHE) ||
-                        Boolean.parseBoolean(properties.getProperty(AvailableSettings.USE_SECOND_LEVEL_CACHE))))
-                {
+        // precedence order of cache settings (1 overrides other settings and 3 is lowest precedence level):
+        // 1 - SharedCacheMode.NONE
+        // 2 - AvailableSettings.USE_SECOND_LEVEL_CACHE
+        // 2 - AvailableSettings.USE_QUERY_CACHE
+        // 3 - SharedCacheMode.UNSPECIFIED
+        // 3 - SharedCacheMode.ENABLE_SELECTIVE
+        // 3 - SharedCacheMode.DISABLE_SELECTIVE
+
+        // if SharedCacheMode.NONE, set cacheDisabled to true.
+        boolean cacheDisabled = noneCacheMode(pu)
+        // Or if Hibernate cache settings are specified and Hibernate settings indicate cache is disabled, set cacheDisabled to true.
+                || (haveHibernateCachePropertyDefined(pu) && !hibernateCacheEnabled(pu));
+
+        if (!cacheDisabled) {
             HibernateSecondLevelCache.addSecondLevelCacheDependencies(pu.getProperties(), pu.getScopedPersistenceUnitName());
             JPA_LOGGER.tracef("second level cache enabled for %s", pu.getScopedPersistenceUnitName());
+            // for SharedCacheMode.UNSPECIFIED, enable the cache and enable caching for entities marked with Cacheable
+            if (unspecifiedCacheMode(pu)) {
+                pu.setSharedCacheMode(SharedCacheMode.ENABLE_SELECTIVE);
+            }
+
         } else {
             JPA_LOGGER.tracef("second level cache disabled for %s, pu %s property = %s, pu.getSharedCacheMode = %s",
                     pu.getScopedPersistenceUnitName(),
                     SHARED_CACHE_MODE,
                     sharedCacheMode,
                     pu.getSharedCacheMode().toString());
-            pu.setSharedCacheMode(SharedCacheMode.NONE);  // ensure that Hibernate doesn't try to use the 2lc for UNSPECIFIED
+            pu.setSharedCacheMode(SharedCacheMode.NONE);  // ensure that Hibernate doesn't try to use the 2lc
         }
+    }
+
+    /**
+     * Determine if Hibernate cache properties are specified.
+     *
+     * @param pu
+     * @return true if Hibernate cache setting are specified.
+     */
+    private boolean haveHibernateCachePropertyDefined(PersistenceUnitMetadata pu) {
+        return (pu.getProperties().getProperty(AvailableSettings.USE_SECOND_LEVEL_CACHE) != null ||
+                pu.getProperties().getProperty(AvailableSettings.USE_QUERY_CACHE) != null);
+    }
+
+    /**
+     * Determine if Hibernate cache properties are enabling or disabling cache.
+     *
+     * @param pu
+     * @return true if cache enabled, false if cache disabled.
+     */
+    private boolean hibernateCacheEnabled(PersistenceUnitMetadata pu) {
+        return (Boolean.parseBoolean(pu.getProperties().getProperty(AvailableSettings.USE_SECOND_LEVEL_CACHE))
+                || Boolean.parseBoolean(pu.getProperties().getProperty(AvailableSettings.USE_QUERY_CACHE))
+        );
+
+    }
+
+    private boolean unspecifiedCacheMode(PersistenceUnitMetadata pu) {
+        return SharedCacheMode.UNSPECIFIED.equals(pu.getSharedCacheMode()) ||
+                UNSPECIFIED.equals(pu.getProperties().getProperty(SHARED_CACHE_MODE));
+    }
+
+    private boolean noneCacheMode(PersistenceUnitMetadata pu) {
+        return SharedCacheMode.NONE.equals(pu.getSharedCacheMode()) ||
+                NONE.equals(pu.getProperties().getProperty(SHARED_CACHE_MODE));
     }
 
     private void putPropertyIfAbsent(PersistenceUnitMetadata pu, Map properties, String property, Object value) {

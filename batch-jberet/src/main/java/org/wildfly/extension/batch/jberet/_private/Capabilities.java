@@ -72,4 +72,9 @@ public class Capabilities {
      * The capability name for the Elytron security domain.
      */
     public static final String SECURITY_DOMAIN_CAPABILITY = "org.wildfly.security.security-domain";
+
+    /**
+     * The capability name for the kernel SuspendController
+     */
+    public static final String SUSPEND_CONTROLLER_CAPABILITY = "org.wildfly.server.suspend-controller";
 }

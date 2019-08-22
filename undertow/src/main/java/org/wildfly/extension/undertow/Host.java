@@ -37,6 +37,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import io.undertow.Handlers;
@@ -88,6 +89,8 @@ public class Host implements Service<Host>, FilterLocation {
     private final DefaultResponseCodeHandler defaultHandler;
     private final boolean queueRequestsOnStart;
     private final int defaultResponseCode;
+
+    private volatile Function<HttpHandler, HttpHandler> accessLogHttpHandler;
 
     private final InjectedValue<SuspendController> suspendControllerInjectedValue = new InjectedValue<>();
 
@@ -158,6 +161,7 @@ public class Host implements Service<Host>, FilterLocation {
     private HttpHandler configureRootHandler() {
         AccessLogService logService = accessLogService;
         HttpHandler rootHandler = pathHandler;
+        final Function<HttpHandler, HttpHandler> accessLogHttpHandler = this.accessLogHttpHandler;
 
         ArrayList<UndertowFilter> filters = new ArrayList<>(this.filters);
 
@@ -170,6 +174,9 @@ public class Host implements Service<Host>, FilterLocation {
         rootHandler = LocationService.configureHandlerChain(rootHandler, filters);
         if (logService != null) {
             rootHandler = logService.configureAccessLogHandler(rootHandler);
+        }
+        if (accessLogHttpHandler != null) {
+            rootHandler = accessLogHttpHandler.apply(rootHandler);
         }
 
         // handle .well-known requests from ACME certificate authorities
@@ -215,6 +222,11 @@ public class Host implements Service<Host>, FilterLocation {
 
     void setAccessLogService(AccessLogService service) {
         this.accessLogService = service;
+        rootHandler = null;
+    }
+
+    void setAccessLogHandler(final Function<HttpHandler, HttpHandler> accessLogHttpHandler) {
+        this.accessLogHttpHandler = accessLogHttpHandler;
         rootHandler = null;
     }
 

@@ -23,6 +23,7 @@ package org.wildfly.clustering.server.dispatcher;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.PrivilegedAction;
 import java.time.Duration;
@@ -159,7 +160,7 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
         }
     }
 
-    private Callable<Object> read(Message message) throws Exception {
+    private Callable<Object> read(Message message) throws IOException, ClassNotFoundException {
         try (DataInputStream input = new DataInputStream(new ByteArrayInputStream(message.getRawBuffer(), message.getOffset(), message.getLength()))) {
             int version = IndexSerializer.VARIABLE.readInt(input);
             try (Unmarshaller unmarshaller = this.marshallingContext.createUnmarshaller(version)) {

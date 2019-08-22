@@ -33,7 +33,7 @@ import org.infinispan.configuration.cache.Configuration;
  * Retrying invoker whose retry intervals are auto-generated based an Infinispan cache configuration.
  * @author Paul Ferraro
  */
-public class RetryingInvoker extends org.wildfly.clustering.ee.retry.RetryingInvoker {
+public class RetryingInvoker extends org.wildfly.clustering.ee.cache.retry.RetryingInvoker {
 
     public RetryingInvoker(Cache<?, ?> cache) {
         super(calculateRetryIntervals(cache.getCacheConfiguration()));

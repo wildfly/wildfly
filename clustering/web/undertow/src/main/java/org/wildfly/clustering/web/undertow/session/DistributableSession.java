@@ -163,9 +163,6 @@ public class DistributableSession implements io.undertow.server.session.Session 
         if (value == null) {
             return this.removeAttribute(name);
         }
-        // Workaround for WELD-2577, skip unnecessary session attribute if bean index is empty, i.e. hash value is zero.
-        if (name.equals("WELD_S_HASH") && value.equals(Integer.valueOf(0))) return null;
-
         Session<LocalSessionContext> session = this.entry.getKey();
         this.validate(session);
         try (BatchContext context = this.resumeBatch()) {

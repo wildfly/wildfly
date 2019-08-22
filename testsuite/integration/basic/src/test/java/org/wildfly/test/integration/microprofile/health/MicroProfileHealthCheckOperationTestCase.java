@@ -36,10 +36,10 @@ import org.jboss.dmr.ModelNode;
  */
 public class MicroProfileHealthCheckOperationTestCase extends MicroProfileHealthTestBase{
 
-    void checkGlobalOutcome(ManagementClient managementClient, boolean mustBeUP, String probeName) throws IOException {
+    void checkGlobalOutcome(ManagementClient managementClient, String operation, boolean mustBeUP, String probeName) throws IOException {
         final ModelNode address = new ModelNode();
         address.add("subsystem", "microprofile-health-smallrye");
-        ModelNode checkOp = getEmptyOperation("check", address);
+        ModelNode checkOp = getEmptyOperation(operation, address);
 
         ModelNode response = managementClient.getControllerClient().execute(checkOp);
 
@@ -47,14 +47,14 @@ public class MicroProfileHealthCheckOperationTestCase extends MicroProfileHealth
         assertEquals("success", opOutcome);
 
         ModelNode result = response.get("result");
-        assertEquals(mustBeUP? "UP" : "DOWN", result.get("outcome").asString());
+        assertEquals(mustBeUP? "UP" : "DOWN", result.get("status").asString());
 
         if (probeName != null) {
             for (ModelNode check : result.get("checks").asList()) {
                 if (probeName.equals(check.get("name").asString())) {
                     // probe name found
                     // global outcome is driven by this probe state
-                    assertEquals(mustBeUP? "UP" : "DOWN", check.get("state").asString());
+                    assertEquals(mustBeUP? "UP" : "DOWN", check.get("status").asString());
                     return;
                 }
             }

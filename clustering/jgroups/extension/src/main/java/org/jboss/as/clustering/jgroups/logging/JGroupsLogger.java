@@ -160,4 +160,8 @@ public interface JGroupsLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 30, value = "Protocol %s is obsolete and will be auto-updated to %s")
     void legacyProtocol(String legacyProtocol, String targetProtocol);
+
+    @LogMessage(level = WARN)
+    @Message(id = 31, value = "Ignoring unrecognized %s property: %s")
+    void unrecognizedProtocolProperty(String protocol, String property);
 }

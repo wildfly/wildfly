@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module xmlns="urn:jboss:module:1.5" name="interceptor-module-remote">
+    <resources>
+        <resource-root path="server-side-interceptor-remote.jar"/>
+    </resources>
+    <dependencies>
+        <module name="javax.interceptor.api"/>
+        <module name="org.jboss.logging"/>
+    </dependencies>
+</module>

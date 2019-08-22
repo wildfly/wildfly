@@ -27,7 +27,6 @@ import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
 import java.util.Arrays;
 import java.util.Collection;
 
-import io.smallrye.health.SmallRyeHealthReporter;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
@@ -46,7 +45,7 @@ public class MicroProfileHealthSubsystemDefinition extends PersistentResourceDef
     static final String HEALTH_REPORTER_CAPABILITY = "org.wildlfy.microprofile.health.reporter";
 
     static final RuntimeCapability<Void> HEALTH_REPORTER_RUNTIME_CAPABILITY =
-            RuntimeCapability.Builder.of(HEALTH_REPORTER_CAPABILITY, SmallRyeHealthReporter.class)
+            RuntimeCapability.Builder.of(HEALTH_REPORTER_CAPABILITY, HealthReporter.class)
                     .addRequirements(WELD_CAPABILITY_NAME)
                     .build();
 
@@ -59,12 +58,29 @@ public class MicroProfileHealthSubsystemDefinition extends PersistentResourceDef
     static final ServiceName HTTP_CONTEXT_SERVICE = HTTP_CONTEXT_CAPABILITY.getCapabilityServiceName();
 
     static final AttributeDefinition SECURITY_ENABLED = SimpleAttributeDefinitionBuilder.create("security-enabled", ModelType.BOOLEAN)
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(ModelNode.TRUE)
             .setRequired(false)
             .setRestartAllServices()
             .setAllowExpression(true)
             .build();
-    static final AttributeDefinition[] ATTRIBUTES = { SECURITY_ENABLED };
+
+    static final AttributeDefinition EMPTY_LIVENESS_CHECKS_STATUS = SimpleAttributeDefinitionBuilder.create("empty-liveness-checks-status", ModelType.STRING)
+            .setDefaultValue(new ModelNode("UP"))
+            .setRequired(false)
+            .setRestartAllServices()
+            .setAllowExpression(true)
+            .setAllowedValues("UP", "DOWN")
+            .build();
+
+    static final AttributeDefinition EMPTY_READINESS_CHECKS_STATUS = SimpleAttributeDefinitionBuilder.create("empty-readiness-checks-status", ModelType.STRING)
+            .setDefaultValue(new ModelNode("UP"))
+            .setRequired(false)
+            .setRestartAllServices()
+            .setAllowExpression(true)
+            .setAllowedValues("UP", "DOWN")
+            .build();
+
+    static final AttributeDefinition[] ATTRIBUTES = { SECURITY_ENABLED, EMPTY_LIVENESS_CHECKS_STATUS, EMPTY_READINESS_CHECKS_STATUS};
     private boolean registerRuntimeOperations;
 
     protected MicroProfileHealthSubsystemDefinition(boolean registerRuntimeOperations) {
@@ -86,7 +102,7 @@ public class MicroProfileHealthSubsystemDefinition extends PersistentResourceDef
         super.registerOperations(resourceRegistration);
 
         if (registerRuntimeOperations) {
-            CheckOperation.register(resourceRegistration);
+            CheckOperations.register(resourceRegistration);
         }
     }
 

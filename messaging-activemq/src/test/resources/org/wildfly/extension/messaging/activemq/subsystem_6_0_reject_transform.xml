@@ -66,8 +66,7 @@
                  page-store-table="MY_PAGE_STORE"
                  global-max-disk-usage="70"
                  global-max-memory-size="100000"
-                 disk-scan-period="10000"
-                 file-open-timeout="7"/>
+                 disk-scan-period="10000"/>
 
         <replication-colocated>
             <master />

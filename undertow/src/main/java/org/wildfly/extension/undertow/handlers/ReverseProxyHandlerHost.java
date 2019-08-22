@@ -76,6 +76,7 @@ import org.xnio.ssl.XnioSsl;
 /**
  * @author Stuart Douglas
  * @author Tomaz Cerar
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
 
@@ -131,7 +132,7 @@ public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
 
     public static final SimpleAttributeDefinition ENABLE_HTTP2 = new SimpleAttributeDefinitionBuilder(Constants.ENABLE_HTTP2, ModelType.BOOLEAN)
             .setRequired(false)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setRestartAllServices()
             .build();
 
@@ -185,8 +186,9 @@ public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
                 jvmRoute = null;
             }
             ReverseProxyHostService service = new ReverseProxyHostService(scheme, jvmRoute, path, enableHttp2);
-            CapabilityServiceBuilder<ReverseProxyHostService> builder = context.getCapabilityServiceTarget()
-                    .addCapability(REVERSE_PROXY_HOST_RUNTIME_CAPABILITY, service)
+            CapabilityServiceBuilder builder = context.getCapabilityServiceTarget()
+                    .addCapability(REVERSE_PROXY_HOST_RUNTIME_CAPABILITY)
+                    .setInstance(service)
                     .addCapabilityRequirement(Capabilities.CAPABILITY_HANDLER, HttpHandler.class, service.proxyHandler, proxyName)
                     .addCapabilityRequirement(Capabilities.REF_OUTBOUND_SOCKET, OutboundSocketBinding.class, service.socketBinding, socketBinding);
 

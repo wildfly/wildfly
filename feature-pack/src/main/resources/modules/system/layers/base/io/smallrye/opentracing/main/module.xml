@@ -32,8 +32,11 @@
 
         <module name="io.opentracing.opentracing-api"/>
         <module name="io.opentracing.contrib.opentracing-jaxrs2"/>
-
+        <module name="io.opentracing.contrib.opentracing-interceptors" services="import"/>
         <module name="org.eclipse.microprofile.opentracing"/>
         <module name="org.wildfly.microprofile.opentracing-smallrye"/>
+        <module name="org.eclipse.microprofile.restclient"/>
+
+        <module name="org.eclipse.microprofile.config.api"/>
     </dependencies>
 </module>

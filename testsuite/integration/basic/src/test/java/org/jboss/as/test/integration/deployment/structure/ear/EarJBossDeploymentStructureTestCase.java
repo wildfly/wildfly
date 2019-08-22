@@ -32,6 +32,7 @@ public class EarJBossDeploymentStructureTestCase {
     private ClassLoadingEJB ejb;
 
     public static final String TO_BE_FOUND_CLASS_NAME = "org.jboss.as.test.integration.deployment.structure.ear.Available";
+    public static final String TO_BE_FOUND_CLASS_NAME_2 = "org.jboss.as.test.integration.deployment.structure.ear.Available2";
     public static final String TO_BE_MISSSING_CLASS_NAME = "org.jboss.as.test.integration.deployment.structure.ear.ToBeIgnored";
     public static final String METAINF_RESOURCE_TXT = "aa/metainf-resource.txt";
 
@@ -46,6 +47,8 @@ public class EarJBossDeploymentStructureTestCase {
      * |
      * |--- available.jar
      * |
+     * |--- available2.jar (test case for WFCORE-3670)
+     * |
      * |--- ignored.jar
      *
      * @return
@@ -59,6 +62,10 @@ public class EarJBossDeploymentStructureTestCase {
         jarOne.addClass(Available.class);
         jarOne.addAsManifestResource(new StringAsset("test resource"), METAINF_RESOURCE_TXT);
 
+        final JavaArchive jarTwo = ShrinkWrap.create(JavaArchive.class, "available2.jar");
+        jarTwo.addClass(Available2.class);
+        jarTwo.addAsManifestResource(new StringAsset("test resource"), METAINF_RESOURCE_TXT);
+
         final JavaArchive ignoredJar = ShrinkWrap.create(JavaArchive.class, "ignored.jar");
         ignoredJar.addClass(ToBeIgnored.class);
 
@@ -68,6 +75,7 @@ public class EarJBossDeploymentStructureTestCase {
         ejbJar.addAsResource(createPermissionsXmlAsset(new RuntimePermission("getProtectionDomain")), "META-INF/jboss-permissions.xml");
 
         ear.addAsModule(jarOne);
+        ear.addAsModule(jarTwo);
         ear.addAsModule(ignoredJar);
         ear.addAsModule(ejbJar);
 
@@ -83,6 +91,7 @@ public class EarJBossDeploymentStructureTestCase {
     @Test
     public void testDeploymentStructureFilters() throws Exception {
         this.ejb.loadClass(TO_BE_FOUND_CLASS_NAME);
+        this.ejb.loadClass(TO_BE_FOUND_CLASS_NAME_2);
 
         try {
             this.ejb.loadClass(TO_BE_MISSSING_CLASS_NAME);
@@ -96,6 +105,8 @@ public class EarJBossDeploymentStructureTestCase {
     public void testUsePhysicalCodeSource() throws ClassNotFoundException {
         Class<?> clazz = this.ejb.loadClass(TO_BE_FOUND_CLASS_NAME);
         Assert.assertTrue(clazz.getProtectionDomain().getCodeSource().getLocation().getProtocol().equals("jar"));
+        Class<?> clazzTwo = this.ejb.loadClass(TO_BE_FOUND_CLASS_NAME_2);
+        Assert.assertTrue(clazzTwo.getProtectionDomain().getCodeSource().getLocation().getProtocol().equals("jar"));
         Assert.assertTrue(ClassLoadingEJB.class.getProtectionDomain().getCodeSource().getLocation().getProtocol().equals("jar"));
     }
 

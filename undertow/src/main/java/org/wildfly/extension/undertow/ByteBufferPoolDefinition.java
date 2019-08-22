@@ -25,6 +25,9 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
+/**
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
+ */
 public class ByteBufferPoolDefinition extends PersistentResourceDefinition {
 
 
@@ -87,7 +90,7 @@ public class ByteBufferPoolDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .setValidator(new IntRangeValidator(0, true, true))
             .setAllowExpression(true)
-            .setDefaultValue(new ModelNode(0))
+            .setDefaultValue(ModelNode.ZERO)
             .build();
 
     private static final List<AttributeDefinition> ATTRIBUTES = Arrays.asList(BUFFER_SIZE, MAX_POOL_SIZE, DIRECT, THREAD_LOCAL_CACHE_SIZE, LEAK_DETECTION_PERCENT);
@@ -128,10 +131,10 @@ public class ByteBufferPoolDefinition extends PersistentResourceDefinition {
             final boolean direct = directModel.asBoolean(defaultDirectBuffers);
 
             final ByteBufferPoolService service = new ByteBufferPoolService(direct, bufferSize, maxPoolSize, threadLocalCacheSize, leakDetectionPercent);
-            context.getCapabilityServiceTarget().addCapability(UNDERTOW_BUFFER_POOL_RUNTIME_CAPABILITY, service)
+            context.getCapabilityServiceTarget().addCapability(UNDERTOW_BUFFER_POOL_RUNTIME_CAPABILITY)
+                    .setInstance(service)
                     .setInitialMode(ServiceController.Mode.ACTIVE)
                     .install();
-
         }
     }
 

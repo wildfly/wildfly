@@ -148,13 +148,8 @@
         <host-exclude name="WildFly14.0">
             <host-release id="WildFly14.0"/>
             <excluded-extensions>
-                <extension module="org.wildfly.extension.microprofile.metrics-smallrye"/>
-            </excluded-extensions>
-        </host-exclude>
-        <host-exclude name="WildFly14.0">
-            <host-release id="WildFly14.0"/>
-            <excluded-extensions>
                 <extension module="org.wildfly.extension.clustering.web"/>
+                <extension module="org.wildfly.extension.microprofile.metrics-smallrye"/>
             </excluded-extensions>
         </host-exclude>
     </host-excludes>

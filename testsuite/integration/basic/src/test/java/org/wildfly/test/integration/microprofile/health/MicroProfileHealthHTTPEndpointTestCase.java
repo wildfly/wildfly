@@ -45,9 +45,21 @@ import org.jboss.as.arquillian.container.ManagementClient;
  */
 public class MicroProfileHealthHTTPEndpointTestCase extends MicroProfileHealthTestBase{
 
-    void checkGlobalOutcome(ManagementClient managementClient, boolean mustBeUP, String probeName) throws IOException {
+    void checkGlobalOutcome(ManagementClient managementClient, String operation, boolean mustBeUP, String probeName) throws IOException {
 
-        final String healthURL = "http://" + managementClient.getMgmtAddress() + ":" + managementClient.getMgmtPort() + "/health";
+        final String httpEndpoint;
+        switch(operation) {
+            case "check-live":
+                httpEndpoint = "/health/live";
+                break;
+            case "check-ready":
+                httpEndpoint = "/health/ready";
+                break;
+            case "check":
+            default:
+                httpEndpoint = "/health";
+        }
+        final String healthURL = "http://" + managementClient.getMgmtAddress() + ":" + managementClient.getMgmtPort() + httpEndpoint;
 
         try (CloseableHttpClient client = HttpClients.createDefault()) {
 
@@ -61,14 +73,14 @@ public class MicroProfileHealthHTTPEndpointTestCase extends MicroProfileHealthTe
                     JsonReader jsonReader = Json.createReader(new StringReader(content))
             ) {
                 JsonObject payload = jsonReader.readObject();
-                String outcome = payload.getString("outcome");
+                String outcome = payload.getString("status");
                 assertEquals(mustBeUP ? "UP": "DOWN", outcome);
 
                 if (probeName != null) {
                     for (JsonValue check : payload.getJsonArray("checks")) {
                         if (probeName.equals(check.asJsonObject().getString("name"))) {
                             // probe name found
-                            assertEquals(mustBeUP ? "UP" : "DOWN", check.asJsonObject().getString("state"));
+                            assertEquals(mustBeUP ? "UP" : "DOWN", check.asJsonObject().getString("status"));
                             return;
                         }
                     }

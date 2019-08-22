@@ -29,7 +29,16 @@ Using AIO will typically provide even better performance than using Java
 NIO.
 
 The AIO journal is only available when running Linux kernel 2.6 or later
-and after having installed libaio (if it's not already installed).
+and after having installed libaio (if it's not already installed). If AIO is
+not supported on the system then Artemis will fallback to NIO. To know which
+type of journal is effectively used you can execute the following command using jboss-cli:
+
+[source,options="nowrap"]
+----
+/subsystem=messaging-activemq/server=default:read-attribute(name=runtime-journal-type)
+----
+
+Please note that AIO is represented by ASYNCIO in the WildFly model configuration.
 
 Also, please note that AIO will only work with the following file
 systems: ext2, ext3, ext4, jfs, xfs. With other file systems, e.g. NFS
@@ -53,7 +62,7 @@ If you see the following exception in your WildFly log file / console
 
 that means that AIO isn't working properly on your system.
 
-To use NIO instead execute the following commnd using jboss-cli :
+To use NIO instead execute the following command using jboss-cli:
 
 [source,options="nowrap"]
 ----

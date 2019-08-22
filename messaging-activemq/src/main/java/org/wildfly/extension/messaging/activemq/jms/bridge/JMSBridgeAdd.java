@@ -183,7 +183,7 @@ public class JMSBridgeAdd extends AbstractAddStepHandler {
                     maxBatchTime,
                     subName,
                     clientID,
-                    addMessageIDInHeader);
+                    addMessageIDInHeader).setBridgeName(context.getCurrentAddressValue());
         } catch (ModuleNotFoundException e) {
             throw MessagingLogger.ROOT_LOGGER.moduleNotFound(moduleName, e.getMessage(), e);
         } catch (ModuleLoadException e) {

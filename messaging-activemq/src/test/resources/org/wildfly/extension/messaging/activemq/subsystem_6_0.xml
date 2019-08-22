@@ -182,7 +182,6 @@
                 file-size="${journal.file.size:102400}"
                 min-files="${journal.min.files:2}"
                 pool-files="${journal.pool.files:5}"
-                file-open-timeout="${journal.file.open.timeout:7}"
                 compact-percentage="${journal.compact.percentage:83}"
                 compact-min-files="${journal.compact.min.files:2}"
                 max-io="${journal.max.io:50}"

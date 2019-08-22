@@ -81,12 +81,12 @@ class HostDefinition extends PersistentResourceDefinition {
             .build();
     static final SimpleAttributeDefinition DISABLE_CONSOLE_REDIRECT = new SimpleAttributeDefinitionBuilder("disable-console-redirect", ModelType.BOOLEAN, true)
             .setRestartAllServices()
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setAllowExpression(true)
             .build();
     static final SimpleAttributeDefinition QUEUE_REQUESTS_ON_START = new SimpleAttributeDefinitionBuilder("queue-requests-on-start", ModelType.BOOLEAN, true)
             .setRestartAllServices()
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(ModelNode.TRUE)
             .setAllowExpression(true)
             .build();
 
@@ -95,6 +95,7 @@ class HostDefinition extends PersistentResourceDefinition {
     private static final List<? extends PersistentResourceDefinition> CHILDREN = Collections.unmodifiableList(Arrays.asList(
             LocationDefinition.INSTANCE,
             AccessLogDefinition.INSTANCE,
+            ConsoleAccessLogDefinition.INSTANCE,
             FilterRefDefinition.INSTANCE,
             HttpInvokerDefinition.INSTANCE,
             new HostSingleSignOnDefinition()

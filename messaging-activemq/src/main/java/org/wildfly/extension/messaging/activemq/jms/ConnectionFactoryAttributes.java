@@ -70,7 +70,7 @@ public interface ConnectionFactoryAttributes {
      * @see ActiveMQClient.DEFAULT_AUTO_GROUP
      */
         AttributeDefinition AUTO_GROUP = SimpleAttributeDefinitionBuilder.create("auto-group", BOOLEAN)
-                .setDefaultValue(new ModelNode(false))
+                .setDefaultValue(ModelNode.FALSE)
                 .setRequired(false)
                 .setAllowExpression(true)
                 .setRestartAllServices()
@@ -80,7 +80,7 @@ public interface ConnectionFactoryAttributes {
      * @see ActiveMQClient.DEFAULT_BLOCK_ON_ACKNOWLEDGE
      */
         AttributeDefinition BLOCK_ON_ACKNOWLEDGE = SimpleAttributeDefinitionBuilder.create("block-on-acknowledge", BOOLEAN)
-                .setDefaultValue(new ModelNode(false))
+                .setDefaultValue(ModelNode.FALSE)
                 .setRequired(false)
                 .setAllowExpression(true)
                 .setRestartAllServices()
@@ -90,7 +90,7 @@ public interface ConnectionFactoryAttributes {
      * @see ActiveMQClient.DEFAULT_BLOCK_ON_DURABLE_SEND
      */
         AttributeDefinition BLOCK_ON_DURABLE_SEND = SimpleAttributeDefinitionBuilder.create("block-on-durable-send", BOOLEAN)
-                .setDefaultValue(new ModelNode(true))
+                .setDefaultValue(ModelNode.TRUE)
                 .setRequired(false)
                 .setAllowExpression(true)
                 .setRestartAllServices()
@@ -100,7 +100,7 @@ public interface ConnectionFactoryAttributes {
      * @see ActiveMQClient.DEFAULT_BLOCK_ON_NON_DURABLE_SEND
      */
         AttributeDefinition BLOCK_ON_NON_DURABLE_SEND = SimpleAttributeDefinitionBuilder.create("block-on-non-durable-send", BOOLEAN)
-                .setDefaultValue(new ModelNode(false))
+                .setDefaultValue(ModelNode.FALSE)
                 .setRequired(false)
                 .setAllowExpression(true)
                 .setRestartAllServices()
@@ -110,7 +110,7 @@ public interface ConnectionFactoryAttributes {
      * @see ActiveMQClient.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT
      */
         AttributeDefinition CACHE_LARGE_MESSAGE_CLIENT = SimpleAttributeDefinitionBuilder.create("cache-large-message-client", BOOLEAN)
-                .setDefaultValue(new ModelNode(false))
+                .setDefaultValue(ModelNode.FALSE)
                 .setRequired(false)
                 .setAllowExpression(true)
                 .setRestartAllServices()
@@ -132,7 +132,7 @@ public interface ConnectionFactoryAttributes {
      * @see ActiveMQClient.DEFAULT_COMPRESS_LARGE_MESSAGES
      */
         AttributeDefinition COMPRESS_LARGE_MESSAGES = SimpleAttributeDefinitionBuilder.create("compress-large-messages", BOOLEAN)
-                .setDefaultValue(new ModelNode(false))
+                .setDefaultValue(ModelNode.FALSE)
                 .setRequired(false)
                 .setAllowExpression(true)
                 .setRestartAllServices()
@@ -253,7 +253,7 @@ public interface ConnectionFactoryAttributes {
      * @see ActiveMQClient.DEFAULT_FAILOVER_ON_INITIAL_CONNECTION
      */
         AttributeDefinition FAILOVER_ON_INITIAL_CONNECTION = SimpleAttributeDefinitionBuilder.create("failover-on-initial-connection", BOOLEAN)
-                .setDefaultValue(new ModelNode(false))
+                .setDefaultValue(ModelNode.FALSE)
                 .setRequired(false)
                 .setAllowExpression(true)
                 .setRestartAllServices()
@@ -299,7 +299,7 @@ public interface ConnectionFactoryAttributes {
      * @see ActiveMQClient.DEFAULT_PRE_ACKNOWLEDGE
      */
         AttributeDefinition PRE_ACKNOWLEDGE = SimpleAttributeDefinitionBuilder.create("pre-acknowledge", BOOLEAN)
-                .setDefaultValue(new ModelNode(false))
+                .setDefaultValue(ModelNode.FALSE)
                 .setRequired(false)
                 .setAllowExpression(true)
                 .setRestartAllServices()
@@ -338,7 +338,7 @@ public interface ConnectionFactoryAttributes {
          * @see ActiveMQClient.DEFAULT_RECONNECT_ATTEMPTS
          */
         SimpleAttributeDefinition RECONNECT_ATTEMPTS = create("reconnect-attempts", INT)
-                .setDefaultValue(new ModelNode(0))
+                .setDefaultValue(ModelNode.ZERO)
                 .setRequired(false)
                 .setAllowExpression(true)
                 .setRestartAllServices()
@@ -403,7 +403,18 @@ public interface ConnectionFactoryAttributes {
          * @see ActiveMQClient.DEFAULT_USE_GLOBAL_POOLS
          */
         AttributeDefinition USE_GLOBAL_POOLS = SimpleAttributeDefinitionBuilder.create("use-global-pools", BOOLEAN)
-                .setDefaultValue(new ModelNode(true))
+                .setDefaultValue(ModelNode.TRUE)
+                .setRequired(false)
+                .setAllowExpression(true)
+                .setRestartAllServices()
+                .build();
+
+
+        /**
+         * @see ActiveMQClient.DEFAULT_USE_TOPOLOGY_FOR_LOADBALANCING
+         */
+        AttributeDefinition USE_TOPOLOGY = create("use-topology-for-load-balancing", BOOLEAN)
+                .setDefaultValue(ModelNode.TRUE)
                 .setRequired(false)
                 .setAllowExpression(true)
                 .setRestartAllServices()
@@ -452,7 +463,8 @@ public interface ConnectionFactoryAttributes {
                 create(GROUP_ID, "groupID", true),
                 create(DESERIALIZATION_BLACKLIST, "deserializationBlackList", true),
                 create(DESERIALIZATION_WHITELIST, "deserializationWhiteList", true),
-                create(INITIAL_MESSAGE_PACKET_SIZE, "initialMessagePacketSize", true)
+                create(INITIAL_MESSAGE_PACKET_SIZE, "initialMessagePacketSize", true),
+                create(USE_TOPOLOGY, "useTopologyForLoadBalancing", true)
         };
     }
 
@@ -483,7 +495,7 @@ public interface ConnectionFactoryAttributes {
                 .setAttributeGroup("outbound-config")
                 .setRequired(false)
                 .setAllowExpression(true)
-                .setDefaultValue(new ModelNode(false))
+                .setDefaultValue(ModelNode.FALSE)
                 .setRestartAllServices()
                 .build();
 
@@ -532,7 +544,7 @@ public interface ConnectionFactoryAttributes {
                 .build();
 
         SimpleAttributeDefinition MIN_POOL_SIZE = SimpleAttributeDefinitionBuilder.create("min-pool-size", INT)
-                .setDefaultValue(new ModelNode().set(0))
+                .setDefaultValue(ModelNode.ZERO)
                 .setRequired(false)
                 .setAllowExpression(true)
                 .setRestartAllServices()
@@ -550,7 +562,7 @@ public interface ConnectionFactoryAttributes {
         SimpleAttributeDefinition REBALANCE_CONNECTIONS = SimpleAttributeDefinitionBuilder.create("rebalance-connections", BOOLEAN)
                 .setRequired(false)
                 .setAllowExpression(true)
-                .setDefaultValue(new ModelNode(false))
+                .setDefaultValue(ModelNode.FALSE)
                 .setAttributeGroup("inbound-config")
                 .setRestartAllServices()
                 .build();
@@ -607,7 +619,7 @@ public interface ConnectionFactoryAttributes {
                 .build();
 
         AttributeDefinition USE_AUTO_RECOVERY = SimpleAttributeDefinitionBuilder.create("use-auto-recovery", BOOLEAN)
-                .setDefaultValue(new ModelNode().set(true)) // ActiveMQQResourceAdapter.useAutoRecovery = true but is not exposed publicly
+                .setDefaultValue(ModelNode.TRUE) // ActiveMQQResourceAdapter.useAutoRecovery = true but is not exposed publicly
                 .setRequired(false)
                 .setAllowExpression(true)
                 .setRestartAllServices()
@@ -635,7 +647,7 @@ public interface ConnectionFactoryAttributes {
                 .build();
 
         SimpleAttributeDefinition STATISTICS_ENABLED = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.STATISTICS_ENABLED, BOOLEAN)
-                .setDefaultValue(new ModelNode(false))
+                .setDefaultValue(ModelNode.FALSE)
                 .setRequired(false)
                 .setAllowExpression(true)
                 .build();
@@ -668,6 +680,18 @@ public interface ConnectionFactoryAttributes {
         };
     }
 
+    interface External {
+        AttributeDefinition ENABLE_AMQ1_PREFIX = create("enable-amq1-prefix", BOOLEAN)
+                .setDefaultValue(ModelNode.TRUE)
+                .setValidator(ConnectionFactoryType.VALIDATOR)
+                .setRequired(false)
+                .setAllowExpression(true)
+                .setRestartAllServices()
+                .build();
+
+        AttributeDefinition[] ATTRIBUTES = { ENABLE_AMQ1_PREFIX } ;
+
+    }
     static class TransactionNameAllowedValuesValidator extends StringAllowedValuesValidator {
         public TransactionNameAllowedValuesValidator(String... values) {
             super(values);

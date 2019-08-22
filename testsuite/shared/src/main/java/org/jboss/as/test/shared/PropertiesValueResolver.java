@@ -154,7 +154,7 @@ public class PropertiesValueResolver {
                 case DEFAULT: {
                     if (ch == '}') {
                         state = INITIAL;
-                        builder.append(value.substring(start, i));
+                        builder.append(value, start, i);
                     }
                     continue;
                 }

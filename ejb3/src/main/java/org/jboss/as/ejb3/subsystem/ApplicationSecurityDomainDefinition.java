@@ -92,7 +92,7 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
             .build();
 
     static final SimpleAttributeDefinition ENABLE_JACC = new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.ENABLE_JACC, ModelType.BOOLEAN, true)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setMinSize(1)
             .setRestartAllServices()
             .build();

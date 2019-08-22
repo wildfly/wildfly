@@ -24,8 +24,6 @@ package org.jboss.as.test.clustering.cluster.web.remote;
 
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.transaction.TransactionMode;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.clustering.ClusterTestUtil;
 import org.jboss.as.test.clustering.NodeUtil;
 import org.jboss.as.test.clustering.cluster.web.AbstractWebFailoverTestCase;
@@ -35,7 +33,6 @@ import org.jboss.as.test.shared.CLIServerSetupTask;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.runner.RunWith;
 
 /**
  * Variation of {@link AbstractWebFailoverTestCase} using invalidation cache with HotRod-based store implementation referencing
@@ -43,8 +40,6 @@ import org.junit.runner.RunWith;
  *
  * @author Radoslav Husar
  */
-@RunWith(Arquillian.class)
-@ServerSetup(AbstractHotRodPersistenceWebFailoverTestCase.ServerSetupTask.class)
 public abstract class AbstractHotRodPersistenceWebFailoverTestCase extends AbstractWebFailoverTestCase {
 
     static Archive<?> getDeployment(String deploymentName, String deploymentDescriptor) {
@@ -57,8 +52,7 @@ public abstract class AbstractHotRodPersistenceWebFailoverTestCase extends Abstr
     }
 
     public AbstractHotRodPersistenceWebFailoverTestCase(String deploymentName) {
-        // Use NON_TRANSACTIONAL to workaround for ISPN-10029
-        super(deploymentName, CacheMode.INVALIDATION_SYNC, TransactionMode.NON_TRANSACTIONAL);
+        super(deploymentName, CacheMode.INVALIDATION_SYNC, TransactionMode.TRANSACTIONAL);
     }
 
     @Override
@@ -73,19 +67,12 @@ public abstract class AbstractHotRodPersistenceWebFailoverTestCase extends Abstr
     public static class ServerSetupTask extends CLIServerSetupTask {
         public ServerSetupTask() {
             this.builder.node(THREE_NODES)
-                    // remote-cache-container=web-sessions
-                    .setup("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=infinispan-server-1:add(port=11622,host=%s)", TESTSUITE_NODE0)
-                    .setup("/subsystem=infinispan/remote-cache-container=web-sessions:add(default-remote-cluster=infinispan-server-cluster)")
-                    .setup("/subsystem=infinispan/remote-cache-container=web-sessions/remote-cluster=infinispan-server-cluster:add(socket-bindings=[infinispan-server-1])")
-                    // store=hotrod
                     .setup("/subsystem=infinispan/cache-container=web/invalidation-cache=hotrod-persistence:add")
-                    .setup("/subsystem=infinispan/cache-container=web/invalidation-cache=hotrod-persistence/store=hotrod:add(remote-cache-container=web-sessions,cache-configuration=default,fetch-state=false,purge=false,passivation=false,shared=true")
+                    .setup("/subsystem=infinispan/cache-container=web/invalidation-cache=hotrod-persistence/store=hotrod:add(remote-cache-container=web, cache-configuration=default, fetch-state=false, purge=false, passivation=false, shared=true)")
                     .setup("/subsystem=infinispan/cache-container=web/invalidation-cache=hotrod-persistence/component=transaction:add(mode=BATCH)")
                     .setup("/subsystem=infinispan/cache-container=web/invalidation-cache=hotrod-persistence/component=locking:add(isolation=REPEATABLE_READ)")
                     .teardown("/subsystem=infinispan/cache-container=web/invalidation-cache=hotrod-persistence:remove")
-                    .teardown("/subsystem=infinispan/remote-cache-container=web-sessions:remove")
-                    .teardown("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=infinispan-server-1:remove")
-            ;
+                    ;
         }
     }
 }

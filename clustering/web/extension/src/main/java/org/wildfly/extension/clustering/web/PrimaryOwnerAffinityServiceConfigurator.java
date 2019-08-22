@@ -22,11 +22,10 @@
 
 package org.wildfly.extension.clustering.web;
 
-import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.PathAddress;
-import org.wildfly.clustering.web.WebDeploymentConfiguration;
-import org.wildfly.clustering.web.infinispan.routing.PrimaryOwnerRouteLocatorServiceConfigurator;
+import org.wildfly.clustering.web.infinispan.routing.PrimaryOwnerRouteLocatorServiceConfiguratorFactory;
 import org.wildfly.clustering.web.infinispan.session.InfinispanSessionManagementConfiguration;
+import org.wildfly.clustering.web.routing.RouteLocatorServiceConfiguratorFactory;
 
 /**
  * @author Paul Ferraro
@@ -38,7 +37,7 @@ public class PrimaryOwnerAffinityServiceConfigurator extends AffinityServiceConf
     }
 
     @Override
-    public CapabilityServiceConfigurator createRouteLocatorServiceConfigurator(InfinispanSessionManagementConfiguration managementConfiguration, WebDeploymentConfiguration deploymentConfiguration) {
-        return new PrimaryOwnerRouteLocatorServiceConfigurator(managementConfiguration, deploymentConfiguration);
+    public RouteLocatorServiceConfiguratorFactory<InfinispanSessionManagementConfiguration> get() {
+        return new PrimaryOwnerRouteLocatorServiceConfiguratorFactory();
     }
 }

@@ -35,6 +35,7 @@ import org.jboss.as.clustering.controller.Schema;
 public enum DistributableWebDeploymentSchema implements Schema<DistributableWebDeploymentSchema> {
 
     VERSION_1_0(1, 0),
+    VERSION_2_0(2, 0),
     ;
     private static final String ROOT = "distributable-web";
 

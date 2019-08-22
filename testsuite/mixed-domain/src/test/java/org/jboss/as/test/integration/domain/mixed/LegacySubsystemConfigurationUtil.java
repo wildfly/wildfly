@@ -110,7 +110,7 @@ public class LegacySubsystemConfigurationUtil {
                 if (!line.contains(SUBSYSTEM_CLOSE)) {
                     sb.append(line);
                 } else {
-                    sb.append(line.substring(0, line.indexOf(SUBSYSTEM_CLOSE) + SUBSYSTEM_CLOSE.length()));
+                    sb.append(line, 0, line.indexOf(SUBSYSTEM_CLOSE) + SUBSYSTEM_CLOSE.length());
                     break;
                 }
             }

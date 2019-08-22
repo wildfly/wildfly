@@ -49,6 +49,7 @@ import io.undertow.security.impl.SingleSignOnManager;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2014 Red Hat Inc.
  * @author Paul Ferraro
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 class HostSingleSignOnServiceHandler implements ResourceServiceHandler {
 
@@ -93,7 +94,8 @@ class HostSingleSignOnServiceHandler implements ResourceServiceHandler {
         this.provider.getServiceConfigurator(managerServiceName, configuration).configure(context).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 
         SingleSignOnService service = new SingleSignOnService(domain, path, httpOnly, secure, cookieName);
-        target.addCapability(HostSingleSignOnDefinition.HOST_SSO_CAPABILITY, service)
+        target.addCapability(HostSingleSignOnDefinition.HOST_SSO_CAPABILITY)
+                .setInstance(service)
                 .addAliases(serviceName)
                 .addDependency(virtualHostServiceName, Host.class, service.getHost())
                 .addDependency(managerServiceName, SingleSignOnManager.class, service.getSingleSignOnSessionManager())

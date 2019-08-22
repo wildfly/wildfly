@@ -33,13 +33,13 @@ import org.wildfly.clustering.ee.CompositeIterable;
 import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.immutable.CompositeImmutability;
 import org.wildfly.clustering.ee.immutable.DefaultImmutability;
-import org.wildfly.clustering.ee.immutable.ImmutabilityTestCase;
+import org.wildfly.clustering.ee.immutable.DefaultImmutabilityTestCase;
 import org.wildfly.clustering.web.annotation.Immutable;
 
 /**
  * @author Paul Ferraro
  */
-public class SessionAttributeImmutabilityTestCase extends ImmutabilityTestCase {
+public class SessionAttributeImmutabilityTestCase extends DefaultImmutabilityTestCase {
 
     @Override
     @Test

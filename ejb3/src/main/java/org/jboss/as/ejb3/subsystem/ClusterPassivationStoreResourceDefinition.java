@@ -69,7 +69,7 @@ public class ClusterPassivationStoreResourceDefinition extends LegacyPassivation
     @Deprecated
     static final SimpleAttributeDefinition PASSIVATE_EVENTS_ON_REPLICATE = new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.PASSIVATE_EVENTS_ON_REPLICATE, ModelType.BOOLEAN, true)
             .setXmlName(EJB3SubsystemXMLAttribute.PASSIVATE_EVENTS_ON_REPLICATE.getLocalName())
-            .setDefaultValue(new ModelNode(true))
+            .setDefaultValue(ModelNode.TRUE)
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_NONE)
             .setDeprecated(DEPRECATED_VERSION)

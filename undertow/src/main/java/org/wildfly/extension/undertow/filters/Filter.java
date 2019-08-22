@@ -54,9 +54,7 @@ abstract class Filter extends AbstractHandlerDefinition {
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         FilterAdd add = new FilterAdd(this);
         registerAddOperation(resourceRegistration, add, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
-        //registerRemoveOperation(resourceRegistration, new ServiceRemoveStepHandler(UndertowService.FILTER, add), OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
         registerRemoveOperation(resourceRegistration, new ServiceRemoveStepHandler(UndertowService.FILTER, add), OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
-
     }
 
     public HttpHandler createHttpHandler(final Predicate predicate, final ModelNode model, HttpHandler next) {

@@ -253,4 +253,7 @@ public interface TransactionLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 39, value = "A value of zero is not permitted for the maximum timeout, as such the timeout has been set to %s")
     void timeoutValueIsSetToMaximum(int maximum_timeout);
+
+    @Message(id = 40, value = "There is no active transaction at the current context to register synchronization '%s'")
+    IllegalStateException noActiveTransactionToRegisterSynchronization(Synchronization sync);
 }

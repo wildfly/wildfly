@@ -195,5 +195,12 @@ public final class AssociationService implements Service<AssociationService> {
             value.setExecutor(executor);
         }
     }
+
+    void sendTopologyUpdateIfLastNodeToLeave() {
+        if(value != null) {
+            value.sendTopologyUpdateIfLastNodeToLeave();
+        }
+    }
+
 }
 

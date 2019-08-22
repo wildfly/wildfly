@@ -35,6 +35,9 @@
         <module name="javax.transaction.api"/>
         <module name="org.infinispan"/>
         <module name="org.infinispan.commons"/>
+        <module name="org.wildfly.clustering.api"/>
+        <module name="org.wildfly.clustering.ee.cache"/>
         <module name="org.wildfly.clustering.ee.spi"/>
+        <module name="org.wildfly.clustering.spi"/>
     </dependencies>
 </module>

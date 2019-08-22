@@ -51,6 +51,7 @@ import org.wildfly.security.auth.server.HttpAuthenticationFactory;
 
 /**
  * @author Stuart Douglas
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class HttpInvokerDefinition extends PersistentResourceDefinition {
 
@@ -61,7 +62,7 @@ public class HttpInvokerDefinition extends PersistentResourceDefinition {
                         .addRequirements(Capabilities.CAPABILITY_HTTP_INVOKER)
                         .build();
 
-    static final SimpleAttributeDefinition HTTP_AUTHENTICATION_FACTORY = new SimpleAttributeDefinitionBuilder(Constants.HTTP_AUTHENITCATION_FACTORY, ModelType.STRING, true)
+    static final SimpleAttributeDefinition HTTP_AUTHENTICATION_FACTORY = new SimpleAttributeDefinitionBuilder(Constants.HTTP_AUTHENTICATION_FACTORY, ModelType.STRING, true)
             .setValidator(new StringLengthValidator(1, true))
             .setRestartAllServices()
             .setCapabilityReference(Capabilities.REF_HTTP_AUTHENTICATION_FACTORY)
@@ -74,7 +75,7 @@ public class HttpInvokerDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false))
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_REALM_REF)
-            .setAlternatives(Constants.HTTP_AUTHENITCATION_FACTORY)
+            .setAlternatives(Constants.HTTP_AUTHENTICATION_FACTORY)
             .build();
 
     protected static final SimpleAttributeDefinition PATH = new SimpleAttributeDefinitionBuilder(Constants.PATH, ModelType.STRING, true)
@@ -130,8 +131,9 @@ public class HttpInvokerDefinition extends PersistentResourceDefinition {
             final String serverName = serverAddress.getLastElement().getValue();
             final String hostName = hostAddress.getLastElement().getValue();
 
-            final CapabilityServiceBuilder<HttpInvokerHostService> builder = context.getCapabilityServiceTarget()
-                    .addCapability(HTTP_INVOKER_HOST_CAPABILITY, service)
+            final CapabilityServiceBuilder<?> builder = context.getCapabilityServiceTarget()
+                    .addCapability(HTTP_INVOKER_HOST_CAPABILITY)
+                    .setInstance(service)
                     .addCapabilityRequirement(HTTP_INVOKER_RUNTIME_CAPABILITY.getName(), PathHandler.class, service.getRemoteHttpInvokerServiceInjectedValue())
                     .addCapabilityRequirement(Capabilities.CAPABILITY_HOST, Host.class, service.getHost(), serverName, hostName)
                     ;

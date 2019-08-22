@@ -18,6 +18,7 @@
 
 package org.jboss.as.hibernate;
 
+import static org.objectweb.asm.ClassWriter.COMPUTE_FRAMES;
 import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
 import static org.objectweb.asm.Opcodes.ACC_STATIC;
 
@@ -74,27 +75,31 @@ public class Hibernate51CompatibilityTransformer implements ClassFileTransformer
 
     @Override
     public byte[] transform(final ClassLoader loader, final String className, final Class<?> classBeingRedefined, final ProtectionDomain protectionDomain, final byte[] classfileBuffer) {
+
+        // ignore these non-application classes
+        if(className.startsWith("org/jboss/arquillian") ||
+           className.startsWith("org/jboss/as/arquillian") ||
+           className.startsWith("org/junit") ||
+           className.startsWith("org/jboss/shrinkwrap")) {
+            logger.debugf("Hibernate51CompatibilityTransformer ignoring class '%s' from '%s'", className, getModuleName(loader));
+            return null;
+        }
         logger.debugf("Hibernate51CompatibilityTransformer transforming deployment class '%s' from '%s'", className, getModuleName(loader));
 
         final Set<String> parentClassesAndInterfaces = new HashSet<>();
+
         collectClassesAndInterfaces(parentClassesAndInterfaces, loader, className);
         logger.tracef("Class %s extends or implements %s", className, parentClassesAndInterfaces);
 
+        final boolean rewriteSessionImplementor = parentExpectsSharedSessionContractImplementor(parentClassesAndInterfaces);
+
         final TransformedState transformedState = new TransformedState();
         final ClassReader classReader = new ClassReader(classfileBuffer);
-        final ClassWriter classWriter = new ClassWriter(classReader, 0);
-        ClassVisitor traceClassVisitor = classWriter;
-        PrintWriter tracePrintWriter = null;
-        try {
-            if (showTransformedClassFolder != null) {
-                tracePrintWriter = new PrintWriter(new File(showTransformedClassFolder, className.replace('/', '_') + ".asm"));
-                traceClassVisitor = new TraceClassVisitor(classWriter, tracePrintWriter);
-            }
-        } catch (IOException ignored) {
+        final ClassWriter classWriter = new ClassWriter(classReader, COMPUTE_FRAMES);
+        PrintWriter traceAfterPrintWriter = null;
 
-        }
         try {
-            classReader.accept(new ClassVisitor(useASM7 ? Opcodes.ASM7 : Opcodes.ASM6, traceClassVisitor) {
+            classReader.accept(new ClassVisitor(useASM7 ? Opcodes.ASM7 : Opcodes.ASM6, classWriter) {
 
                 // clear transformed state at start of each class visit
                 @Override
@@ -128,203 +133,15 @@ public class Hibernate51CompatibilityTransformer implements ClassFileTransformer
                 public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
 
                     // Handle changing SessionImplementor parameter to SharedSessionContractImplementor
-                    boolean rewriteSessionImplementor = false;
                     final String descOrig = desc;
 
                     logger.tracef("method %s, description %s, signature %s", name, desc, signature);
-                    if (parentClassesAndInterfaces.contains("org/hibernate/usertype/UserType")) {
-                        if (name.equals("nullSafeGet") &&
-                                "(Ljava/sql/ResultSet;[Ljava/lang/String;Lorg/hibernate/engine/spi/SessionImplementor;Ljava/lang/Object;)Ljava/lang/Object;".equals(desc)) {
-                            desc = replaceSessionImplementor(desc);
-                        } else if (name.equals("nullSafeSet") &&
-                                "(Ljava/sql/PreparedStatement;Ljava/lang/Object;ILorg/hibernate/engine/spi/SessionImplementor;)V".equals(desc)) {
-                            desc = replaceSessionImplementor(desc);
-                        }
 
-                        rewriteSessionImplementor = true;
-                    }
-
-                    if (parentClassesAndInterfaces.contains("org/hibernate/usertype/CompositeUserType")) {
-                        if (name.equals("nullSafeGet") &&
-                                "(Ljava/sql/ResultSet;[Ljava/lang/String;Lorg/hibernate/engine/spi/SessionImplementor;Ljava/lang/Object;)Ljava/lang/Object;".equals(desc)) {
-                            desc = replaceSessionImplementor(desc);
-                        } else if (name.equals("nullSafeSet") &&
-                                "(Ljava/sql/PreparedStatement;Ljava/lang/Object;ILorg/hibernate/engine/spi/SessionImplementor;)V".equals(desc)) {
-                            desc = replaceSessionImplementor(desc);
-                        } else if (name.equals("assemble") &&
-                                "(Ljava/io/Serializable;Lorg/hibernate/engine/spi/SessionImplementor;Ljava/lang/Object;)Ljava/lang/Object;".equals(desc)) {
-                            desc = replaceSessionImplementor(desc);
-                        } else if (name.equals("disassemble") &&
-                                "(Ljava/lang/Object;Lorg/hibernate/engine/spi/SessionImplementor;)Ljava/io/Serializable;".equals(desc)) {
-                            desc = replaceSessionImplementor(desc);
-                        } else if (name.equals("replace") &&
-                                "(Ljava/lang/Object;Ljava/lang/Object;Lorg/hibernate/engine/spi/SessionImplementor;Ljava/lang/Object;)Ljava/lang/Object;".equals(desc)) {
-                            desc = replaceSessionImplementor(desc);
-                        }
-                        rewriteSessionImplementor = true;
-                    }
-
-                    if (parentClassesAndInterfaces.contains("org/hibernate/usertype/UserCollectionType")) {
-                        if (name.equals("instantiate") &&
-                                "(Lorg/hibernate/engine/spi/SessionImplementor;Lorg/hibernate/persister/collection/CollectionPersister;)Lorg/hibernate/collection/spi/PersistentCollection;".equals(desc)) {
-                            desc = replaceSessionImplementor(desc);
-                        } else if (name.equals("replaceElements") &&
-                                "(Ljava/lang/Object;Ljava/lang/Object;Lorg/hibernate/persister/collection/CollectionPersister;Ljava/lang/Object;Ljava/util/Map;Lorg/hibernate/engine/spi/SessionImplementor;)Ljava/lang/Object;".equals(desc)) {
-                            desc = replaceSessionImplementor(desc);
-                        } else if (name.equals("wrap") &&
-                                "(Lorg/hibernate/engine/spi/SessionImplementor;Ljava/lang/Object;)Lorg/hibernate/collection/spi/PersistentCollection;".equals(desc)) {
-                            desc = replaceSessionImplementor(desc);
-                        }
-
-                        rewriteSessionImplementor = true;
-                    }
-
-                    if (parentClassesAndInterfaces.contains("org/hibernate/usertype/UserVersionType")) {
-                        if (name.equals("seed") &&
-                                "(Lorg/hibernate/engine/spi/SessionImplementor;)Ljava/lang/Object;".equals(desc)) {
-                            desc = replaceSessionImplementor(desc);
-                        } else if (name.equals("next") &&
-                                "(Ljava/lang/Object;Lorg/hibernate/engine/spi/SessionImplementor;)Ljava/lang/Object;".equals(desc)) {
-                            desc = replaceSessionImplementor(desc);
-                        }
-
-                        rewriteSessionImplementor = true;
-                    }
-
-                    if (parentClassesAndInterfaces.contains("org/hibernate/type/Type")) {
-                        if (name.equals("assemble") &&
-                                "(Ljava/io/Serializable;Lorg/hibernate/engine/spi/SessionImplementor;Ljava/lang/Object;)Ljava/lang/Object;".equals(desc)) {
-                            desc = replaceSessionImplementor(desc);
-                        } else if (name.equals("disassemble") &&
-                                "(Ljava/lang/Object;Lorg/hibernate/engine/spi/SessionImplementor;)Ljava/io/Serializable;".equals(desc)) {
-                            desc = replaceSessionImplementor(desc);
-                        } else if (name.equals("beforeAssemble") &&
-                                "(Ljava/io/Serializable;Lorg/hibernate/engine/spi/SessionImplementor;)V".equals(desc)) {
-                            desc = replaceSessionImplementor(desc);
-                        } else if (name.equals("hydrate") &&
-                                "(Ljava/sql/ResultSet;[Ljava/lang/String;Lorg/hibernate/engine/spi/SessionImplementor;Ljava/lang/Object;)Ljava/lang/Object;".equals(desc)) {
-                            desc = replaceSessionImplementor(desc);
-                        } else if (name.equals("isDirty") &&
-                                "(Ljava/lang/Object;Ljava/lang/Object;Lorg/hibernate/engine/spi/SessionImplementor;)Z".equals(desc)) {
-                            desc = replaceSessionImplementor(desc);
-                        } else if (name.equals("isDirty") &&
-                                "(Ljava/lang/Object;Ljava/lang/Object;[ZLorg/hibernate/engine/spi/SessionImplementor;)Z".equals(desc)) {
-                            desc = replaceSessionImplementor(desc);
-                        } else if (name.equals("isModified") &&
-                                "(Ljava/lang/Object;Ljava/lang/Object;[ZLorg/hibernate/engine/spi/SessionImplementor;)Z".equals(desc)) {
-                            desc = replaceSessionImplementor(desc);
-                        } else if (name.equals("nullSafeGet") &&
-                                "(Ljava/sql/ResultSet;[Ljava/lang/String;Lorg/hibernate/engine/spi/SessionImplementor;Ljava/lang/Object;)Ljava/lang/Object;".equals(desc)) {
-                            desc = replaceSessionImplementor(desc);
-                        } else if (name.equals("nullSafeGet") &&
-                                "(Ljava/sql/ResultSet;Ljava/lang/String;Lorg/hibernate/engine/spi/SessionImplementor;Ljava/lang/Object;)Ljava/lang/Object;".equals(desc)) {
-                            desc = replaceSessionImplementor(desc);
-                        } else if (name.equals("nullSafeSet") &&
-                                "(Ljava/sql/PreparedStatement;Ljava/lang/Object;I[ZLorg/hibernate/engine/spi/SessionImplementor;)V".equals(desc)) {
-                            desc = replaceSessionImplementor(desc);
-                        } else if (name.equals("nullSafeSet") &&
-                                "(Ljava/sql/PreparedStatement;Ljava/lang/Object;ILorg/hibernate/engine/spi/SessionImplementor;)V".equals(desc)) {
-                            desc = replaceSessionImplementor(desc);
-                        } else if (name.equals("replace") &&
-                                "(Ljava/lang/Object;Ljava/lang/Object;Lorg/hibernate/engine/spi/SessionImplementor;Ljava/lang/Object;Ljava/util/Map;)Ljava/lang/Object;".equals(desc)) {
-                            desc = replaceSessionImplementor(desc);
-                        } else if (name.equals("replace") &&
-                                "(Ljava/lang/Object;Ljava/lang/Object;Lorg/hibernate/engine/spi/SessionImplementor;Ljava/lang/Object;Ljava/util/Map;Lorg/hibernate/type/ForeignKeyDirection;)Ljava/lang/Object;".equals(desc)) {
-                            desc = replaceSessionImplementor(desc);
-                        } else if (name.equals("resolve") &&
-                                "(Ljava/lang/Object;Lorg/hibernate/engine/spi/SessionImplementor;Ljava/lang/Object;)Ljava/lang/Object;".equals(desc)) {
-                            desc = replaceSessionImplementor(desc);
-                        } else if (name.equals("resolve") &&
-                                "(Ljava/lang/Object;Lorg/hibernate/engine/spi/SessionImplementor;Ljava/lang/Object;Ljava/lang/Boolean;)Ljava/lang/Object;".equals(desc)) {
-                            desc = replaceSessionImplementor(desc);
-                        } else if (name.equals("semiResolve") &&
-                                "(Ljava/lang/Object;Lorg/hibernate/engine/spi/SessionImplementor;Ljava/lang/Object;)Ljava/lang/Object;".equals(desc)) {
-                            desc = replaceSessionImplementor(desc);
-                        }
-
-                        rewriteSessionImplementor = true;
-                    }
-
-                    if (parentClassesAndInterfaces.contains("org/hibernate/type/SingleColumnType")) {
-                        if (name.equals("nullSafeGet") &&
-                                "(Ljava/sql/ResultSet;Ljava/lang/String;Lorg/hibernate/engine/spi/SessionImplementor;)Ljava/lang/Object;".equals(desc)) {
-                            desc = replaceSessionImplementor(desc);
-                        } else if (name.equals("get") &&
-                                "(Ljava/sql/ResultSet;Ljava/lang/String;Lorg/hibernate/engine/spi/SessionImplementor;)Ljava/lang/Object;".equals(desc)) {
-                            desc = replaceSessionImplementor(desc);
-                        } else if (name.equals("set") &&
-                                "(Ljava/sql/PreparedStatement;Ljava/lang/Object;ILorg/hibernate/engine/spi/SessionImplementor;)V".equals(desc)) {
-                            desc = replaceSessionImplementor(desc);
-                        }
-
-                        rewriteSessionImplementor = true;
-                    }
-
-                    if (parentClassesAndInterfaces.contains("org/hibernate/type/AbstractStandardBasicType")) {
-                        if (name.equals("get") &&
-                                "(Ljava/sql/ResultSet;Ljava/lang/String;Lorg/hibernate/engine/spi/SessionImplementor;)Ljava/lang/Object;".equals(desc)) {
-                            desc = replaceSessionImplementor(desc);
-                        } else if (name.equals("nullSafeGet") &&
-                                "(Ljava/sql/ResultSet;Ljava/lang/String;Lorg/hibernate/engine/spi/SessionImplementor;)Ljava/lang/Object;".equals(desc)) {
-                            desc = replaceSessionImplementor(desc);
-                        } else if (name.equals("set") &&
-                                "(Ljava/sql/PreparedStatement;Ljava/lang/Object;ILorg/hibernate/engine/spi/SessionImplementor;)V".equals(desc)) {
-                            desc = replaceSessionImplementor(desc);
-                        }
-
-                        rewriteSessionImplementor = true;
-                    }
-
-                    if (parentClassesAndInterfaces.contains("org/hibernate/type/ProcedureParameterExtractionAware")) {
-                        if (name.equals("extract")
-                                && (desc.startsWith(
-                                "(Ljava/sql/CallableStatement;ILorg/hibernate/engine/spi/SessionImplementor;)")
-                                || desc.startsWith(
-                                "(Ljava/sql/CallableStatement;[Ljava/lang/String;Lorg/hibernate/engine/spi/SessionImplementor;)"))) {
-                            desc = replaceSessionImplementor(desc);
-                        }
-
-                        rewriteSessionImplementor = true;
-                    }
-
-                    if (parentClassesAndInterfaces.contains("org/hibernate/type/ProcedureParameterNamedBinder")) {
-                        if (name.equals("nullSafeSet") &&
-                                "(Ljava/sql/CallableStatement;Ljava/lang/Object;Ljava/lang/String;Lorg/hibernate/engine/spi/SessionImplementor;)V".equals(desc)) {
-                            desc = replaceSessionImplementor(desc);
-                        }
-
-                        rewriteSessionImplementor = true;
-                    }
-
-                    if (parentClassesAndInterfaces.contains("org/hibernate/type/VersionType")) {
-                        if (name.equals("seed") &&
-                                desc.startsWith("(Lorg/hibernate/engine/spi/SessionImplementor;)")) {
-                            desc = replaceSessionImplementor(desc);
-                        } else if (name.equals("next") &&
-                                desc.contains("Lorg/hibernate/engine/spi/SessionImplementor;")) {
-                            desc = replaceSessionImplementor(desc);
-                        }
-
-                        rewriteSessionImplementor = true;
-                    }
-
-                    if (parentClassesAndInterfaces.contains("org/hibernate/collection/spi/PersistentCollection")) {
-                        if (name.equals("unsetSession") &&
-                                desc.equals("(Lorg/hibernate/engine/spi/SessionImplementor;)Z")) {
-                            desc = replaceSessionImplementor(desc);
-                        } else if (name.equals("setCurrentSession") &&
-                                desc.equals("(Lorg/hibernate/engine/spi/SessionImplementor;)Z")) {
-                            desc = replaceSessionImplementor(desc);
-                        }
-
-                        rewriteSessionImplementor = true;
-                    }
-
-                    if (rewriteSessionImplementor && name.equals("<init>")) {
-                        // update constructor methods to use SharedSessionContractImplementor instead of SessionImplementor
+                    // If application class has certain checked Hibernate ORM classes as super class,
+                    // replace method parameters of type 'SessionImplementor', to instead use type 'SharedSessionContractImplementor'.
+                    if (rewriteSessionImplementor && desc.contains("org/hibernate/engine/spi/SessionImplementor")) {
                         desc = replaceSessionImplementor(desc);
                     }
-
                     if (descOrig != desc) {  // if we are changing from type SessionImplementor to SharedSessionContractImplementor
                         // mark the class as transformed
                         transformedState.setClassTransformed(true);
@@ -334,13 +151,28 @@ public class Hibernate51CompatibilityTransformer implements ClassFileTransformer
                 }
             }, 0);
             if (!transformedState.transformationsMade()) {
-                // no change was actually made, indicate so by returning null
+                // no change was made, indicate so by returning null
                 return null;
             }
-            return classWriter.toByteArray();
+
+            byte[] result = classWriter.toByteArray();
+
+            try {
+                if (showTransformedClassFolder != null) {
+                    // generate .asm file that shows the transformed class
+                    ClassReader cr = new ClassReader(result);
+                    traceAfterPrintWriter =
+                        new PrintWriter(new File(showTransformedClassFolder, className.replace('/', '_') + ".asm"));
+                    ClassVisitor tv = new TraceClassVisitor(traceAfterPrintWriter);
+                    cr.accept(tv, 0);
+                }
+            } catch (IOException ignored) {
+
+            }
+            return result;
         } finally {
-            if (tracePrintWriter != null) {
-                tracePrintWriter.close();
+            if (traceAfterPrintWriter != null) {
+                traceAfterPrintWriter.close();
             }
         }
     }
@@ -360,10 +192,25 @@ public class Hibernate51CompatibilityTransformer implements ClassFileTransformer
                 "Lorg/hibernate/engine/spi/SharedSessionContractImplementor;");
     }
 
+    private boolean parentExpectsSharedSessionContractImplementor(Set parentClassesAndInterfaces) {
+        return (parentClassesAndInterfaces.contains("org/hibernate/usertype/UserType")
+                || parentClassesAndInterfaces.contains("org/hibernate/usertype/CompositeUserType")
+                || parentClassesAndInterfaces.contains("org/hibernate/usertype/UserCollectionType")
+                || parentClassesAndInterfaces.contains("org/hibernate/usertype/UserVersionType")
+                || parentClassesAndInterfaces.contains("org/hibernate/type/Type")
+                || parentClassesAndInterfaces.contains("org/hibernate/type/SingleColumnType")
+                || parentClassesAndInterfaces.contains("org/hibernate/type/AbstractStandardBasicType")
+                || parentClassesAndInterfaces.contains("org/hibernate/type/ProcedureParameterExtractionAware")
+                || parentClassesAndInterfaces.contains("org/hibernate/type/ProcedureParameterNamedBinder")
+                || parentClassesAndInterfaces.contains("org/hibernate/type/VersionType")
+                || parentClassesAndInterfaces.contains("org/hibernate/collection/spi/PersistentCollection"));
+    }
+
     private void collectClassesAndInterfaces(Set<String> classesAndInterfaces, ClassLoader classLoader, String className) {
         if (className == null || "java/lang/Object".equals(className)) {
             return;
         }
+
 
         try (InputStream is = classLoader.getResourceAsStream(className.replace('.', '/') + ".class")) {
             ClassReader classReader = new ClassReader(is);
@@ -392,7 +239,7 @@ public class Hibernate51CompatibilityTransformer implements ClassFileTransformer
 
             }, 0);
         } catch (IOException e) {
-            logger.warn("Unable to open class file %1$s", className, e);
+            logger.debugf("Unable to open class file %s, due to exception %s", className, e);
         }
     }
 
@@ -407,5 +254,6 @@ public class Hibernate51CompatibilityTransformer implements ClassFileTransformer
         }
         return major;
     }
+
 }
 

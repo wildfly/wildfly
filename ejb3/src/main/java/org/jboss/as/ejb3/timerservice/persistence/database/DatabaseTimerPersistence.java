@@ -52,6 +52,7 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Pattern;
 
 import javax.sql.DataSource;
 import javax.transaction.HeuristicMixedException;
@@ -134,6 +135,8 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
     private static final String UPDATE_RUNNING = "update-running";
     /** The format for scheduler start and end date*/
     private static final String SCHEDULER_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
+    /** Pattern to pickout MSSQL */
+    private static final Pattern MSSQL_PATTERN = Pattern.compile("(sqlserver|microsoft|mssql)");
 
     public DatabaseTimerPersistence(final String database, String partition, String nodeName, int refreshInterval, boolean allowExecution) {
         this.database = database;
@@ -253,9 +256,9 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                 unified = "h2";
             } else if (name.toLowerCase().contains("oracle")) {
                 unified = "oracle";
-            }else if (name.toLowerCase().contains("microsoft")) {
+            } else if (MSSQL_PATTERN.matcher(name.toLowerCase()).find()) {
                 unified = "mssql";
-            }else if (name.toLowerCase().contains("jconnect")) {
+            } else if (name.toLowerCase().contains("jconnect")) {
                 unified = "sybase";
             }
          }
@@ -824,6 +827,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                             statement.setString(1, timedObjectId);
                             statement.setString(2, partition);
                             resultSet = statement.executeQuery();
+                            final TimerServiceImpl timerService = listener.getTimerService();
                             while (resultSet.next()) {
                                 try {
                                     String id = resultSet.getString(1);
@@ -831,7 +835,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                                         synchronized (DatabaseTimerPersistence.this) {
                                             knownTimerIds.get(timedObjectId).add(id);
                                         }
-                                        final Holder holder = timerFromResult(resultSet, listener.getTimerService());
+                                        final Holder holder = timerFromResult(resultSet, timerService);
                                         if(holder != null) {
                                             listener.timerAdded(holder.timer);
                                         }
@@ -844,8 +848,11 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                             synchronized (DatabaseTimerPersistence.this) {
                                 Set<String> timers = knownTimerIds.get(timedObjectId);
                                 for (String timer : existing) {
-                                    timers.remove(timer);
-                                    listener.timerRemoved(timer);
+                                    TimerImpl timer1 = timerService.getTimer(timer);
+                                    if (timer1 != null && timer1.getState() != TimerState.CREATED) {
+                                        timers.remove(timer);
+                                        listener.timerRemoved(timer);
+                                    }
                                 }
                             }
                         } catch (SQLException e) {

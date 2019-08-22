@@ -93,14 +93,27 @@ public class JdbcSecurityRealm implements SecurityRealm {
         }
 
         public PrincipalQueryBuilder withPasswordMapper(final String passwordType, final String algorithm, final int passwordIndex, final int saltIndex, final int iteractionCountIndex) {
+            return withPasswordMapper(passwordType, algorithm, passwordIndex, Encoding.BASE64, saltIndex, Encoding.BASE64, iteractionCountIndex);
+        }
+
+        public PrincipalQueryBuilder withPasswordMapper(final String passwordType, final String algorithm, final int passwordIndex, final Encoding passwordEncoding,
+                final int saltIndex, final Encoding saltEncoding, final int iteractionCountIndex) {
             ModelNode passwordMapper = new ModelNode();
             if (algorithm != null) {
                 passwordMapper.get("algorithm").set(algorithm);
             }
             passwordMapper.get("password-index").set(passwordIndex);
+            if (passwordEncoding == Encoding.HEX) {
+                passwordMapper.get("hash-encoding").set("hex");
+            }
+
             if (saltIndex > 0) {
                 passwordMapper.get("salt-index").set(saltIndex);
+                if (saltEncoding == Encoding.HEX) {
+                    passwordMapper.get("salt-encoding").set("hex");
+                }
             }
+
             if (iteractionCountIndex > 0) {
                 passwordMapper.get("iteration-count-index").set(iteractionCountIndex);
             }
@@ -160,6 +173,9 @@ public class JdbcSecurityRealm implements SecurityRealm {
 
     }
 
+    public enum Encoding {
+        BASE64, HEX;
+    }
 
 
 

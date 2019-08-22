@@ -100,7 +100,7 @@ public class BridgeDefinition extends ModelOnlyResourceDefinition {
 
     public static final SimpleAttributeDefinition USE_DUPLICATE_DETECTION = create("use-duplicate-detection", BOOLEAN)
             .setRequired(false)
-            .setDefaultValue(new ModelNode().set(true))
+            .setDefaultValue(ModelNode.TRUE)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();

@@ -23,91 +23,97 @@
 package org.jboss.as.clustering.infinispan.subsystem.remote;
 
 import org.infinispan.client.hotrod.RemoteCache;
-import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.RemoteCacheManagerAdmin;
 import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.client.hotrod.configuration.TransactionMode;
+import org.infinispan.client.hotrod.event.impl.ClientListenerNotifier;
+import org.infinispan.client.hotrod.near.NearCacheService;
 import org.infinispan.commons.api.BasicCache;
 import org.infinispan.commons.marshall.Marshaller;
-import org.wildfly.clustering.infinispan.spi.RemoteCacheContainer;
+import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
 
 import java.util.Set;
+import java.util.function.Function;
 
 import javax.transaction.TransactionManager;
 
 /**
- * Default implementation of container managed {@link RemoteCacheContainer}.
+ * Container managed {@link RemoteCacheContainer} decorator, whose lifecycle methods are no-ops.
  *
  * @author Radoslav Husar
+ * @author Paul Ferraro
  */
 public class ManagedRemoteCacheContainer implements RemoteCacheContainer {
 
-    private final String name;
-    private final RemoteCacheManager remoteCacheManager;
+    private final RemoteCacheContainer container;
 
-    public ManagedRemoteCacheContainer(String name, RemoteCacheManager remoteCacheManager) {
-        this.name = name;
-        this.remoteCacheManager = remoteCacheManager;
+    public ManagedRemoteCacheContainer(RemoteCacheContainer container) {
+        this.container = container;
     }
 
     @Override
     public String getName() {
-        return this.name;
+        return this.container.getName();
     }
 
     @Override
     public RemoteCacheManagerAdmin administration() {
-        return this.remoteCacheManager.administration();
+        return this.container.administration();
+    }
+
+    @Override
+    public <K, V> NearCacheRegistration registerNearCacheFactory(String cacheName, Function<ClientListenerNotifier, NearCacheService<K, V>> factory) {
+        return this.container.registerNearCacheFactory(cacheName, factory);
     }
 
     @Override
     public <K, V> BasicCache<K, V> getCache() {
-        return this.remoteCacheManager.getCache();
+        return this.container.getCache();
     }
 
     @Override
     public <K, V> BasicCache<K, V> getCache(String cacheName) {
-        return this.remoteCacheManager.getCache(cacheName);
+        return this.container.getCache(cacheName);
     }
 
     @Override
     public <K, V> RemoteCache<K, V> getCache(String cacheName, TransactionMode transactionMode, TransactionManager transactionManager) {
-        return this.remoteCacheManager.getCache(cacheName, transactionMode, transactionManager);
+        return this.container.getCache(cacheName, transactionMode, transactionManager);
     }
 
     @Override
     public <K, V> RemoteCache<K, V> getCache(String cacheName, boolean forceReturnValue, TransactionMode transactionMode, TransactionManager transactionManager) {
-        return this.remoteCacheManager.getCache(cacheName, forceReturnValue, transactionMode, transactionManager);
+        return this.container.getCache(cacheName, forceReturnValue, transactionMode, transactionManager);
     }
 
     @Override
     public Configuration getConfiguration() {
-        return this.remoteCacheManager.getConfiguration();
+        return this.container.getConfiguration();
     }
 
     @Override
     public boolean isStarted() {
-        return this.remoteCacheManager.isStarted();
+        return this.container.isStarted();
     }
 
     @Override
     public boolean switchToCluster(String clusterName) {
-        return this.remoteCacheManager.switchToCluster(clusterName);
+        return this.container.switchToCluster(clusterName);
     }
 
     @Override
     public boolean switchToDefaultCluster() {
-        return this.remoteCacheManager.switchToDefaultCluster();
+        return this.container.switchToDefaultCluster();
     }
 
     @Override
     public Marshaller getMarshaller() {
-        return this.remoteCacheManager.getMarshaller();
+        return this.container.getMarshaller();
     }
 
     @Override
     public Set<String> getCacheNames() {
-        return this.remoteCacheManager.getCacheNames();
+        return this.container.getCacheNames();
     }
 
     @Override

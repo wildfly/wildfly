@@ -53,7 +53,7 @@ public class SAMLResourceDefinition extends AbstractFederationResourceDefinition
         .setAllowExpression(true)
         .build();
     public static final SimpleAttributeDefinition CLOCK_SKEW = new SimpleAttributeDefinitionBuilder(ModelElement.SAML_CLOCK_SKEW.getName(), ModelType.INT, true)
-        .setDefaultValue(new ModelNode(0))
+        .setDefaultValue(ModelNode.ZERO)
         .setAllowExpression(true)
         .build();
 

@@ -28,7 +28,7 @@
     </properties>
 
     <resources>
-        <artifact name="${io.smallrye:smallrye-health}"/>
+        <artifact name="${io.smallrye:smallrye-health-2.0}"/>
     </resources>
 
     <dependencies>

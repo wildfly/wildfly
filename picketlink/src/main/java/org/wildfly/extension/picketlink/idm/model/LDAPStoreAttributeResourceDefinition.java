@@ -41,11 +41,11 @@ public class LDAPStoreAttributeResourceDefinition extends AbstractIDMResourceDef
         .setAllowExpression(true)
         .build();
     public static final SimpleAttributeDefinition IS_IDENTIFIER = new SimpleAttributeDefinitionBuilder(ModelElement.LDAP_STORE_ATTRIBUTE_IS_IDENTIFIER.getName(), ModelType.BOOLEAN, true)
-        .setDefaultValue(new ModelNode(false))
+        .setDefaultValue(ModelNode.FALSE)
         .setAlternatives(ModelElement.LDAP_STORE_ATTRIBUTE_READ_ONLY.getName())
         .build();
     public static final SimpleAttributeDefinition READ_ONLY = new SimpleAttributeDefinitionBuilder(ModelElement.LDAP_STORE_ATTRIBUTE_READ_ONLY.getName(), ModelType.BOOLEAN, true)
-        .setDefaultValue(new ModelNode(false))
+        .setDefaultValue(ModelNode.FALSE)
         .setAlternatives(ModelElement.LDAP_STORE_ATTRIBUTE_IS_IDENTIFIER.getName())
         .build();
     public static final LDAPStoreAttributeResourceDefinition INSTANCE = new LDAPStoreAttributeResourceDefinition(NAME, LDAP_NAME, IS_IDENTIFIER, READ_ONLY);

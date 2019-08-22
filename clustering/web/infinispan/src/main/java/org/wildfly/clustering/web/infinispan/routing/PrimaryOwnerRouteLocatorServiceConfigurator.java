@@ -36,6 +36,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
+import org.wildfly.clustering.infinispan.spi.distribution.Key;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.FunctionalService;
@@ -45,6 +46,7 @@ import org.wildfly.clustering.service.SupplierDependency;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 import org.wildfly.clustering.spi.NodeFactory;
 import org.wildfly.clustering.web.WebDeploymentConfiguration;
+import org.wildfly.clustering.web.cache.routing.RouteLocatorServiceNameProvider;
 import org.wildfly.clustering.web.infinispan.session.InfinispanSessionManagementConfiguration;
 import org.wildfly.clustering.web.routing.RouteLocator;
 
@@ -58,7 +60,7 @@ public class PrimaryOwnerRouteLocatorServiceConfigurator extends RouteLocatorSer
     private final WebDeploymentConfiguration deploymentConfiguration;
 
     private volatile SupplierDependency<Registry<String, Void>> registry;
-    private volatile SupplierDependency<Cache<String, ?>> cache;
+    private volatile SupplierDependency<Cache<Key<String>, ?>> cache;
     private volatile SupplierDependency<NodeFactory<Address>> factory;
 
     public PrimaryOwnerRouteLocatorServiceConfigurator(InfinispanSessionManagementConfiguration managementConfiguration, WebDeploymentConfiguration deploymentConfiguration) {
@@ -95,7 +97,7 @@ public class PrimaryOwnerRouteLocatorServiceConfigurator extends RouteLocatorSer
     }
 
     @Override
-    public Cache<String, ?> getCache() {
+    public Cache<Key<String>, ?> getCache() {
         return this.cache.get();
     }
 

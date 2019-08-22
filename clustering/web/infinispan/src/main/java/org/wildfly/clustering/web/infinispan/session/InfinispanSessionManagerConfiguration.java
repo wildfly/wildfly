@@ -24,17 +24,14 @@ package org.wildfly.clustering.web.infinispan.session;
 import javax.servlet.ServletContext;
 
 import org.infinispan.Cache;
-import org.infinispan.remoting.transport.Address;
 import org.wildfly.clustering.Registrar;
-import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.Recordable;
-import org.wildfly.clustering.ee.infinispan.CacheProperties;
-import org.wildfly.clustering.ee.infinispan.TransactionBatch;
-import org.wildfly.clustering.group.Group;
+import org.wildfly.clustering.ee.cache.CacheProperties;
+import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.infinispan.spi.distribution.Key;
-import org.wildfly.clustering.spi.NodeFactory;
 import org.wildfly.clustering.web.IdentifierFactory;
+import org.wildfly.clustering.web.cache.session.Scheduler;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.SessionExpirationListener;
 
@@ -49,9 +46,7 @@ public interface InfinispanSessionManagerConfiguration {
     CacheProperties getProperties();
     IdentifierFactory<String> getIdentifierFactory();
     Batcher<TransactionBatch> getBatcher();
-    CommandDispatcher<Scheduler> getCommandDispatcher();
-    NodeFactory<Address> getMemberFactory();
+    Scheduler getExpirationScheduler();
     Recordable<ImmutableSession> getInactiveSessionRecorder();
     Registrar<SessionExpirationListener> getExpirationRegistar();
-    Group getGroup();
 }

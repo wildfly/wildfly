@@ -53,6 +53,8 @@ public class WeldSecurityServices implements Service, SecurityServices {
     // that doesn't matter, just to make it harder for someone to modify this class and
     // accidentally introduce any unnecessary loading of ServerSecurityManager
     private final Supplier<?> securityManagerSupplier;
+    // Cache the object obtained from securityManagerSupplier to avoid contended reads of the supplier
+    private volatile Object securityManagerRef;
 
     public WeldSecurityServices(final Consumer<SecurityServices> securityServicesConsumer, final Supplier<?> securityManagerSupplier) {
         this.securityServicesConsumer = securityServicesConsumer;
@@ -66,6 +68,7 @@ public class WeldSecurityServices implements Service, SecurityServices {
 
     @Override
     public void stop(final StopContext context) {
+        securityManagerRef = null;
         securityServicesConsumer.accept(null);
     }
 
@@ -78,7 +81,7 @@ public class WeldSecurityServices implements Service, SecurityServices {
 
         // Use 'Object' initially to avoid loading ServerSecurityManager (which may not be present)
         // until we know for sure we need it.
-        final Object securityManager = securityManagerSupplier != null ? securityManagerSupplier.get() : null;
+        final Object securityManager = getSecurityManagerRef();
         if (securityManager == null)
             throw WeldLogger.ROOT_LOGGER.securityNotEnabled();
         if (WildFlySecurityManager.isChecking()) {
@@ -121,6 +124,14 @@ public class WeldSecurityServices implements Service, SecurityServices {
         } else {
             return SecurityDomain.getCurrent();
         }
+    }
+
+    private Object getSecurityManagerRef() {
+        Object result = this.securityManagerRef;
+        if (result == null && this.securityManagerSupplier != null) {
+            result = this.securityManagerRef = securityManagerSupplier.get();
+        }
+        return result;
     }
 
     static class WeldSecurityContext implements org.jboss.weld.security.spi.SecurityContext, PrivilegedAction<Void> {

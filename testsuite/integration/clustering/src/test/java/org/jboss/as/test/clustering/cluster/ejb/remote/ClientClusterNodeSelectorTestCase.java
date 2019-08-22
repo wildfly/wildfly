@@ -1,5 +1,26 @@
-package org.jboss.as.test.clustering.cluster.ejb.remote;
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2018, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 
+package org.jboss.as.test.clustering.cluster.ejb.remote;
 
 import org.apache.commons.lang.math.RandomUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -53,6 +74,7 @@ public class ClientClusterNodeSelectorTestCase extends AbstractClusteringTestCas
 
     private static final String MODULE_NAME = ClientClusterNodeSelectorTestCase.class.getSimpleName();
     private static final long CLIENT_TOPOLOGY_UPDATE_WAIT = TimeoutUtil.adjust(2000);
+
     /**
      * Implementation of {@link ClusterNodeSelector} to be used for custom cluster node selection
      */
@@ -60,8 +82,7 @@ public class ClientClusterNodeSelectorTestCase extends AbstractClusteringTestCas
         private static volatile String PICK_NODE = null;
 
         @Override
-        public String selectNode(
-                String clusterName, String[] connectedNodes, String[] totalAvailableNodes) {
+        public String selectNode(String clusterName, String[] connectedNodes, String[] totalAvailableNodes) {
             if (PICK_NODE != null) {
                 return PICK_NODE;
             }
@@ -69,32 +90,32 @@ public class ClientClusterNodeSelectorTestCase extends AbstractClusteringTestCas
         }
     }
 
-    public ClientClusterNodeSelectorTestCase() throws Exception {
+    public ClientClusterNodeSelectorTestCase() {
         super(FOUR_NODES);
     }
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(NODE_1)
     public static Archive<?> createDeploymentForContainer1() {
-        return createDeployment(MODULE_NAME);
+        return createDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
     @TargetsContainer(NODE_2)
     public static Archive<?> createDeploymentForContainer2() {
-        return createDeployment(MODULE_NAME);
+        return createDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_3, managed = false, testable = false)
     @TargetsContainer(NODE_3)
     public static Archive<?> createDeploymentForContainer3() {
-        return createDeployment(MODULE_NAME);
+        return createDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_4, managed = false, testable = false)
     @TargetsContainer(NODE_4)
     public static Archive<?> createDeploymentForContainer4() {
-        return createDeployment(MODULE_NAME);
+        return createDeployment();
     }
 
     /**
@@ -144,9 +165,7 @@ public class ClientClusterNodeSelectorTestCase extends AbstractClusteringTestCas
 
             ctx.close();
         } finally {
-            if ((BKP != null)) {
-                EJBClientContext.getContextManager().setThreadDefault(BKP);
-            }
+            EJBClientContext.getContextManager().setThreadDefault(BKP);
         }
     }
 
@@ -167,8 +186,8 @@ public class ClientClusterNodeSelectorTestCase extends AbstractClusteringTestCas
     /**
      * Test archive containing the EJB to call
      */
-    private static Archive<?> createDeployment(String moduleName) {
-        return ShrinkWrap.create(JavaArchive.class, moduleName + ".jar")
+    private static Archive<?> createDeployment() {
+        return ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar")
                 .addPackage(EJBDirectory.class.getPackage())
                 .addClasses(Result.class, Heartbeat.class, HeartbeatBean.class, RandomUtils.class)
                 .addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(new PropertyPermission(NODE_NAME_PROPERTY, "read")), "permissions.xml")

@@ -22,7 +22,6 @@
 
 package org.wildfly.extension.undertow.handlers;
 
-import io.undertow.server.HttpHandler;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
@@ -35,6 +34,7 @@ import org.wildfly.extension.undertow.Capabilities;
 
 /**
  * @author Tomaz Cerar (c) 2013 Red Hat Inc.
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 class HandlerAdd extends AbstractAddStepHandler {
     private Handler handler;
@@ -50,7 +50,8 @@ class HandlerAdd extends AbstractAddStepHandler {
 
         final HandlerService service = new HandlerService(handler.createHandler(context, model), name);
 
-        CapabilityServiceBuilder<HttpHandler> builder = context.getCapabilityServiceTarget().addCapability(Handler.CAPABILITY, service)
+        CapabilityServiceBuilder<?> builder = context.getCapabilityServiceTarget().addCapability(Handler.CAPABILITY)
+                .setInstance(service)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND);
         final RuntimeCapability newCapability = Handler.CAPABILITY.fromBaseCapability(context.getCurrentAddress());
         if (context.hasOptionalCapability(Capabilities.REF_REQUEST_CONTROLLER, newCapability.getName(), null)) {

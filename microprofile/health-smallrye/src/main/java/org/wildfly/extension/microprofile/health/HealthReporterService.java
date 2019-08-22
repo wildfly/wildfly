@@ -35,25 +35,30 @@ import org.jboss.msc.service.StopContext;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2018 Red Hat inc.
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public class HealthReporterService implements Service<SmallRyeHealthReporter> {
+public class HealthReporterService implements Service<HealthReporter> {
 
-    private SmallRyeHealthReporter healthReporter;
+    private static HealthReporter healthReporter;
+    private String emptyLivenessChecksStatus;
+    private String emptyReadinessChecksStatus;
 
-    static void install(OperationContext context) {
+    static void install(OperationContext context, String emptyLivenessChecksStatus, String emptyReadinessChecksStatus) {
         context.getCapabilityServiceTarget()
-                .addCapability(RuntimeCapability.Builder.of(HEALTH_REPORTER_CAPABILITY, SmallRyeHealthReporter.class).build(),
-                        new HealthReporterService())
+                .addCapability(RuntimeCapability.Builder.of(HEALTH_REPORTER_CAPABILITY, SmallRyeHealthReporter.class).build())
+                .setInstance(new HealthReporterService(emptyLivenessChecksStatus, emptyReadinessChecksStatus))
                 .install();
     }
 
-    private HealthReporterService() {
+    private HealthReporterService(String emptyLivenessChecksStatus, String emptyReadinessChecksStatus) {
+        this.emptyLivenessChecksStatus = emptyLivenessChecksStatus;
+        this.emptyReadinessChecksStatus = emptyReadinessChecksStatus;
     }
 
     @Override
     public void start(StartContext context) {
+        healthReporter = new HealthReporter(emptyLivenessChecksStatus, emptyReadinessChecksStatus);
         HealthCheckResponse.setResponseProvider(new ResponseProvider());
-        this.healthReporter = new SmallRyeHealthReporter();
     }
 
     @Override
@@ -63,7 +68,7 @@ public class HealthReporterService implements Service<SmallRyeHealthReporter> {
     }
 
     @Override
-    public SmallRyeHealthReporter getValue() {
+    public HealthReporter getValue() {
         return healthReporter;
     }
 }

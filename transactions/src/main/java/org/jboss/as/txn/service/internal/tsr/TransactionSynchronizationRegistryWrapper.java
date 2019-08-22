@@ -25,6 +25,7 @@ import javax.transaction.Synchronization;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionSynchronizationRegistry;
 
+import org.jboss.as.txn.logging.TransactionLogger;
 import org.wildfly.transaction.client.AbstractTransaction;
 import org.wildfly.transaction.client.ContextTransactionManager;
 import org.wildfly.transaction.client.ContextTransactionSynchronizationRegistry;
@@ -61,6 +62,9 @@ public class TransactionSynchronizationRegistryWrapper implements TransactionSyn
         throws IllegalStateException {
         try {
             AbstractTransaction tx = ContextTransactionManager.getInstance().getTransaction();
+            if(tx == null) {
+                throw TransactionLogger.ROOT_LOGGER.noActiveTransactionToRegisterSynchronization(sync);
+            }
             JCAOrderedLastSynchronizationList jcaOrderedLastSynchronization = (JCAOrderedLastSynchronizationList) tx.getResource(key);
             if (jcaOrderedLastSynchronization == null) {
                 final ContextTransactionSynchronizationRegistry tsr = ContextTransactionSynchronizationRegistry.getInstance();

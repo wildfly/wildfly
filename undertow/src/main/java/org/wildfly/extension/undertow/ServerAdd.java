@@ -42,6 +42,7 @@ import org.wildfly.extension.undertow.session.DistributableServerRuntimeHandler;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 class ServerAdd extends AbstractAddStepHandler {
 
@@ -63,7 +64,8 @@ class ServerAdd extends AbstractAddStepHandler {
         final String defaultServerName = UndertowRootDefinition.DEFAULT_SERVER.resolveModelAttribute(context, parentModel).asString();
 
         final Server service = new Server(name, defaultHost);
-        final CapabilityServiceBuilder<Server> builder = context.getCapabilityServiceTarget().addCapability(SERVER_CAPABILITY, service)
+        final CapabilityServiceBuilder<?> builder = context.getCapabilityServiceTarget().addCapability(SERVER_CAPABILITY)
+                .setInstance(service)
                 .addCapabilityRequirement(Capabilities.CAPABILITY_SERVLET_CONTAINER, ServletContainerService.class, service.getServletContainerInjector(), servletContainer)
                 .addCapabilityRequirement(Capabilities.CAPABILITY_UNDERTOW, UndertowService.class, service.getUndertowServiceInjector());
 
@@ -74,7 +76,8 @@ class ServerAdd extends AbstractAddStepHandler {
             builder.addAliases(UndertowService.DEFAULT_SERVER);//register default server service name
 
             WebServerService commonWebServer = new WebServerService();
-            final ServiceBuilder<WebServerService> commonServerBuilder = context.getCapabilityServiceTarget().addCapability(CommonWebServer.CAPABILITY, commonWebServer)
+            final ServiceBuilder<?> commonServerBuilder = context.getCapabilityServiceTarget().addCapability(CommonWebServer.CAPABILITY)
+                    .setInstance(commonWebServer)
                     .addCapabilityRequirement(Capabilities.CAPABILITY_SERVER, Server.class, commonWebServer.getServerInjectedValue(), name)
                     .setInitialMode(ServiceController.Mode.PASSIVE);
 
@@ -104,7 +107,7 @@ class ServerAdd extends AbstractAddStepHandler {
         }
     }
 
-    private void addCommonHostListenerDeps(OperationContext context, ServiceBuilder<WebServerService> builder, final PathElement listenerPath) {
+    private void addCommonHostListenerDeps(OperationContext context, ServiceBuilder<?> builder, final PathElement listenerPath) {
         ModelNode listeners = Resource.Tools.readModel(context.readResource(PathAddress.pathAddress(listenerPath)), 1);
         if (listeners.isDefined()) {
             for (Property p : listeners.asPropertyList()) {

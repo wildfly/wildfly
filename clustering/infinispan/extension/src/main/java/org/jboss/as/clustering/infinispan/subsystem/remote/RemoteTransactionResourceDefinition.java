@@ -50,7 +50,7 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
+import org.wildfly.clustering.infinispan.client.InfinispanClientRequirement;
 
 /**
  * Resource definition for the transaction component of a remote cache container.
@@ -104,7 +104,7 @@ public class RemoteTransactionResourceDefinition extends ComponentResourceDefini
     @Override
     public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
         ManagementResourceRegistration registration = parent.registerSubModel(new RemoteTransactionResourceDefinition());
-        Capability dependentCapability = new UnaryRequirementCapability(InfinispanRequirement.REMOTE_CONTAINER_CONFIGURATION, UnaryCapabilityNameResolver.PARENT);
+        Capability dependentCapability = new UnaryRequirementCapability(InfinispanClientRequirement.REMOTE_CONTAINER_CONFIGURATION, UnaryCapabilityNameResolver.PARENT);
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
                 // Add a requirement on the tm capability to the parent cache capability

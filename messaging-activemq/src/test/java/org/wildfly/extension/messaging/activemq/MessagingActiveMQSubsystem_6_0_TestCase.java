@@ -105,10 +105,9 @@ public class MessagingActiveMQSubsystem_6_0_TestCase extends AbstractSubsystemBa
         return properties;
     }
 
-    @Test
     @Override
-    public void testSchemaOfSubsystemTemplates() throws Exception {
-        super.testSchemaOfSubsystemTemplates();
+    protected KernelServices standardSubsystemTest(String configId, boolean compareXml) throws Exception {
+        return super.standardSubsystemTest(configId, false);
     }
 
     @Test
@@ -122,7 +121,6 @@ public class MessagingActiveMQSubsystem_6_0_TestCase extends AbstractSubsystemBa
         Assert.assertEquals(102400, serverModel.get(ServerDefinition.JOURNAL_FILE_SIZE.getName()).resolve().asInt());
         Assert.assertEquals(2, serverModel.get(ServerDefinition.JOURNAL_MIN_FILES.getName()).resolve().asInt());
         Assert.assertEquals(5, serverModel.get(ServerDefinition.JOURNAL_POOL_FILES.getName()).resolve().asInt());
-        Assert.assertEquals(7, serverModel.get(ServerDefinition.JOURNAL_FILE_OPEN_TIMEOUT.getName()).resolve().asInt());
     }
 
     /////////////////////////////////////////
@@ -341,7 +339,7 @@ public class MessagingActiveMQSubsystem_6_0_TestCase extends AbstractSubsystemBa
                 // The attribute won't be defined in the :write-attribute(name=<attribute name>,.. boot operation so don't reject in that case
                 return false;
             }
-            return !attribute.equals(new ModelNode(true));
+            return !attribute.equals(ModelNode.TRUE);
         }
 
         @Override
@@ -351,7 +349,7 @@ public class MessagingActiveMQSubsystem_6_0_TestCase extends AbstractSubsystemBa
 
         @Override
         protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
-            return new ModelNode(true);
+            return ModelNode.TRUE;
         }
     }
 }

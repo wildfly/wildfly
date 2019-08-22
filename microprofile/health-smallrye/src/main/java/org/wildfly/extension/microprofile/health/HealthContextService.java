@@ -27,7 +27,6 @@ import static org.wildfly.extension.microprofile.health.MicroProfileHealthSubsys
 import java.util.function.Supplier;
 
 import io.smallrye.health.SmallRyeHealth;
-import io.smallrye.health.SmallRyeHealthReporter;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.Headers;
@@ -47,14 +46,14 @@ public class HealthContextService implements Service {
 
     private final Supplier<ExtensibleHttpManagement> extensibleHttpManagement;
     private final boolean securityEnabled;
-    private final Supplier<SmallRyeHealthReporter> healthReporter;
+    private final Supplier<HealthReporter> healthReporter;
 
 
     static void install(OperationContext context, boolean securityEnabled) {
         ServiceBuilder<?> serviceBuilder = context.getServiceTarget().addService(HTTP_CONTEXT_SERVICE);
 
         Supplier<ExtensibleHttpManagement> extensibleHttpManagement = serviceBuilder.requires(context.getCapabilityServiceName(MicroProfileHealthSubsystemDefinition.HTTP_EXTENSIBILITY_CAPABILITY, ExtensibleHttpManagement.class));
-        Supplier<SmallRyeHealthReporter> healthReporter = serviceBuilder.requires(context.getCapabilityServiceName(MicroProfileHealthSubsystemDefinition.HEALTH_REPORTER_CAPABILITY, SmallRyeHealthReporter.class));
+        Supplier<HealthReporter> healthReporter = serviceBuilder.requires(context.getCapabilityServiceName(MicroProfileHealthSubsystemDefinition.HEALTH_REPORTER_CAPABILITY, HealthReporter.class));
 
         Service healthContextService = new HealthContextService(extensibleHttpManagement, securityEnabled, healthReporter);
 
@@ -62,7 +61,7 @@ public class HealthContextService implements Service {
                 .install();
     }
 
-    HealthContextService(Supplier<ExtensibleHttpManagement> extensibleHttpManagement, boolean securityEnabled, Supplier<SmallRyeHealthReporter> healthReporter) {
+    HealthContextService(Supplier<ExtensibleHttpManagement> extensibleHttpManagement, boolean securityEnabled, Supplier<HealthReporter> healthReporter) {
         this.extensibleHttpManagement = extensibleHttpManagement;
         this.securityEnabled = securityEnabled;
         this.healthReporter = healthReporter;
@@ -81,15 +80,33 @@ public class HealthContextService implements Service {
     }
 
     private class HealthCheckHandler implements HttpHandler {
-        private final SmallRyeHealthReporter healthReporter;
+        private final HealthReporter healthReporter;
 
-        public HealthCheckHandler(SmallRyeHealthReporter healthReporter) {
+        public static final String HEALTH = "/" + CONTEXT_NAME;
+
+        public static final String HEALTH_LIVE = HEALTH + "/live";
+
+        public static final String HEALTH_READY = HEALTH + "/ready";
+
+
+        public HealthCheckHandler(HealthReporter healthReporter) {
             this.healthReporter = healthReporter;
         }
 
         @Override
         public void handleRequest(HttpServerExchange exchange) {
-            final SmallRyeHealth health = healthReporter.getHealth();
+            final SmallRyeHealth health;
+            if (HEALTH.equals(exchange.getRequestPath())) {
+                health = healthReporter.getHealth();
+            } else if (HEALTH_LIVE.equals(exchange.getRequestPath())) {
+                health = healthReporter.getLiveness();
+            } else if (HEALTH_READY.equals(exchange.getRequestPath())) {
+                health = healthReporter.getReadiness();
+            } else {
+                exchange.setStatusCode(404);
+                return;
+            }
+
             exchange.setStatusCode(health.isDown() ? 503 : 200)
                     .getResponseHeaders().add(Headers.CONTENT_TYPE, "application/json");
             exchange.getResponseSender().send(health.getPayload().toString());

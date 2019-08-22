@@ -42,11 +42,12 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.modcluster.ModClusterServiceMBean;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.service.ActiveServiceSupplier;
+import org.wildfly.clustering.service.PassiveServiceSupplier;
 
 /**
  * These are legacy operations suffering from multiple issues such as WFLY-10442, WFLY-10445, WFLY-10444, WFLY-10441, etc.
@@ -60,6 +61,7 @@ import org.wildfly.clustering.service.ActiveServiceSupplier;
 @Deprecated
 public enum LegacyProxyOperation implements Definable<OperationDefinition>, OperationStepHandler {
     ADD_PROXY {
+        @Override
         public OperationDefinition getDefinition() {
             return new SimpleOperationDefinitionBuilder(ProxyOperation.ADD_PROXY.getName(), ModClusterExtension.SUBSYSTEM_RESOLVER)
                     .addParameter(HOST)
@@ -71,35 +73,27 @@ public enum LegacyProxyOperation implements Definable<OperationDefinition>, Oper
         }
 
         @Override
-        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            if (context.isNormalServer() && getService(context) != null) {
-                context.addStep(new OperationStepHandler() {
-                    @Override
-                    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                        ModClusterServiceMBean service = getService(context);
-                        ROOT_LOGGER.debugf("add-proxy: %s", operation);
+        void execute(OperationContext context, ModelNode operation, ModClusterServiceMBean service) throws OperationFailedException {
+            ROOT_LOGGER.debugf("add-proxy: %s", operation);
 
-                        String host = HOST.resolveModelAttribute(context, operation).asString();
-                        int port = PORT.resolveModelAttribute(context, operation).asInt();
+            String host = HOST.resolveModelAttribute(context, operation).asString();
+            int port = PORT.resolveModelAttribute(context, operation).asInt();
 
-                        // Keeping this test here to maintain same behavior as previous versions.
-                        try {
-                            InetAddress.getByName(host);
-                        } catch (UnknownHostException e) {
-                            throw new OperationFailedException(ROOT_LOGGER.couldNotResolveProxyIpAddress(), e);
-                        }
-
-                        service.addProxy(host, port);
-
-                        context.completeStep(new OperationContext.RollbackHandler() {
-                            @Override
-                            public void handleRollback(OperationContext context, ModelNode operation) {
-                                service.removeProxy(host, port);
-                            }
-                        });
-                    }
-                }, OperationContext.Stage.RUNTIME);
+            // Keeping this test here to maintain same behavior as previous versions.
+            try {
+                InetAddress.getByName(host);
+            } catch (UnknownHostException e) {
+                throw new OperationFailedException(ROOT_LOGGER.couldNotResolveProxyIpAddress(), e);
             }
+
+            service.addProxy(host, port);
+
+            context.completeStep(new OperationContext.RollbackHandler() {
+                @Override
+                public void handleRollback(OperationContext context, ModelNode operation) {
+                    service.removeProxy(host, port);
+                }
+            });
         }
     },
     DISABLE {
@@ -112,26 +106,19 @@ public enum LegacyProxyOperation implements Definable<OperationDefinition>, Oper
         }
 
         @Override
-        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            if (context.isNormalServer() && getService(context) != null) {
-                context.addStep(new OperationStepHandler() {
-                    @Override
-                    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                        ModClusterServiceMBean service = getService(context);
-                        service.disable();
+        void execute(OperationContext context, ModelNode operation, ModClusterServiceMBean service) throws OperationFailedException {
+            service.disable();
 
-                        context.completeStep(new OperationContext.RollbackHandler() {
-                            @Override
-                            public void handleRollback(OperationContext context, ModelNode operation) {
-                                service.enable();
-                            }
-                        });
-                    }
-                }, OperationContext.Stage.RUNTIME);
-            }
+            context.completeStep(new OperationContext.RollbackHandler() {
+                @Override
+                public void handleRollback(OperationContext context, ModelNode operation) {
+                    service.enable();
+                }
+            });
         }
     },
     DISABLE_CONTEXT {
+        @Override
         public OperationDefinition getDefinition() {
             return new SimpleOperationDefinitionBuilder(ProxyOperation.DISABLE_CONTEXT.getName(), ModClusterExtension.SUBSYSTEM_RESOLVER)
                     .addParameter(VIRTUAL_HOST)
@@ -142,35 +129,28 @@ public enum LegacyProxyOperation implements Definable<OperationDefinition>, Oper
         }
 
         @Override
-        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            if (context.isNormalServer() && getService(context) != null) {
-                context.addStep(new OperationStepHandler() {
-                    @Override
-                    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                        ModClusterServiceMBean service = getService(context);
-                        ROOT_LOGGER.debugf("disable-context: %s", operation);
+        void execute(OperationContext context, ModelNode operation, ModClusterServiceMBean service) throws OperationFailedException {
+            ROOT_LOGGER.debugf("disable-context: %s", operation);
 
-                        String webHost = VIRTUAL_HOST.resolveModelAttribute(context, operation).asString();
-                        String webContext = CONTEXT.resolveModelAttribute(context, operation).asString();
+            String webHost = VIRTUAL_HOST.resolveModelAttribute(context, operation).asString();
+            String webContext = CONTEXT.resolveModelAttribute(context, operation).asString();
 
-                        try {
-                            service.disableContext(webHost, webContext);
-                        } catch (IllegalArgumentException e) {
-                            throw new OperationFailedException(ModClusterLogger.ROOT_LOGGER.contextOrHostNotFound(webHost, webContext));
-                        }
-
-                        context.completeStep(new OperationContext.RollbackHandler() {
-                            @Override
-                            public void handleRollback(OperationContext context, ModelNode operation) {
-                                service.enableContext(webHost, webContext);
-                            }
-                        });
-                    }
-                }, OperationContext.Stage.RUNTIME);
+            try {
+                service.disableContext(webHost, webContext);
+            } catch (IllegalArgumentException e) {
+                throw new OperationFailedException(ModClusterLogger.ROOT_LOGGER.contextOrHostNotFound(webHost, webContext));
             }
+
+            context.completeStep(new OperationContext.RollbackHandler() {
+                @Override
+                public void handleRollback(OperationContext context, ModelNode operation) {
+                    service.enableContext(webHost, webContext);
+                }
+            });
         }
     },
     ENABLE {
+        @Override
         public OperationDefinition getDefinition() {
             return new SimpleOperationDefinitionBuilder(ProxyOperation.ENABLE.getName(), ModClusterExtension.SUBSYSTEM_RESOLVER)
                     .setRuntimeOnly()
@@ -179,26 +159,19 @@ public enum LegacyProxyOperation implements Definable<OperationDefinition>, Oper
         }
 
         @Override
-        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            if (context.isNormalServer() && getService(context) != null) {
-                context.addStep(new OperationStepHandler() {
-                    @Override
-                    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                        ModClusterServiceMBean service = getService(context);
-                        service.enable();
+        void execute(OperationContext context, ModelNode operation, ModClusterServiceMBean service) throws OperationFailedException {
+            service.enable();
 
-                        context.completeStep(new OperationContext.RollbackHandler() {
-                            @Override
-                            public void handleRollback(OperationContext context, ModelNode operation) {
-                                service.disable();
-                            }
-                        });
-                    }
-                }, OperationContext.Stage.RUNTIME);
-            }
+            context.completeStep(new OperationContext.RollbackHandler() {
+                @Override
+                public void handleRollback(OperationContext context, ModelNode operation) {
+                    service.disable();
+                }
+            });
         }
     },
     ENABLE_CONTEXT {
+        @Override
         public OperationDefinition getDefinition() {
             return new SimpleOperationDefinitionBuilder(ProxyOperation.ENABLE_CONTEXT.getName(), ModClusterExtension.SUBSYSTEM_RESOLVER)
                     .addParameter(VIRTUAL_HOST)
@@ -209,35 +182,28 @@ public enum LegacyProxyOperation implements Definable<OperationDefinition>, Oper
         }
 
         @Override
-        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            if (context.isNormalServer() && getService(context) != null) {
-                context.addStep(new OperationStepHandler() {
-                    @Override
-                    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                        ModClusterServiceMBean service = getService(context);
-                        ROOT_LOGGER.debugf("enable-context: %s", operation);
+        void execute(OperationContext context, ModelNode operation, ModClusterServiceMBean service) throws OperationFailedException {
+            ROOT_LOGGER.debugf("enable-context: %s", operation);
 
-                        String webHost = VIRTUAL_HOST.resolveModelAttribute(context, operation).asString();
-                        String webContext = CONTEXT.resolveModelAttribute(context, operation).asString();
+            String webHost = VIRTUAL_HOST.resolveModelAttribute(context, operation).asString();
+            String webContext = CONTEXT.resolveModelAttribute(context, operation).asString();
 
-                        try {
-                            service.enableContext(webHost, webContext);
-                        } catch (IllegalArgumentException e) {
-                            throw new OperationFailedException(ModClusterLogger.ROOT_LOGGER.contextOrHostNotFound(webHost, webContext));
-                        }
-
-                        context.completeStep(new OperationContext.RollbackHandler() {
-                            @Override
-                            public void handleRollback(OperationContext context, ModelNode operation) {
-                                service.disableContext(webHost, webContext);
-                            }
-                        });
-                    }
-                }, OperationContext.Stage.RUNTIME);
+            try {
+                service.enableContext(webHost, webContext);
+            } catch (IllegalArgumentException e) {
+                throw new OperationFailedException(ModClusterLogger.ROOT_LOGGER.contextOrHostNotFound(webHost, webContext));
             }
+
+            context.completeStep(new OperationContext.RollbackHandler() {
+                @Override
+                public void handleRollback(OperationContext context, ModelNode operation) {
+                    service.disableContext(webHost, webContext);
+                }
+            });
         }
     },
     LIST_PROXIES {
+        @Override
         public OperationDefinition getDefinition() {
             return new SimpleOperationDefinitionBuilder(ProxyOperation.LIST_PROXIES.getName(), ModClusterExtension.SUBSYSTEM_RESOLVER)
                     .setReadOnly()
@@ -250,28 +216,21 @@ public enum LegacyProxyOperation implements Definable<OperationDefinition>, Oper
         }
 
         @Override
-        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            if (context.isNormalServer() && getService(context) != null) {
-                context.addStep(new OperationStepHandler() {
-                    @Override
-                    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                        ModClusterServiceMBean service = getService(context);
-                        Map<InetSocketAddress, String> map = service.getProxyInfo();
-                        ROOT_LOGGER.debugf("Mod_cluster ListProxies %s", map);
-                        if (!map.isEmpty()) {
-                            ModelNode result = new ModelNode();
-                            InetSocketAddress[] addr = map.keySet().toArray(new InetSocketAddress[map.size()]);
-                            for (InetSocketAddress address : addr) {
-                                result.add(address.getHostName() + ":" + address.getPort());
-                            }
-                            context.getResult().set(result);
-                        }
-                    }
-                }, OperationContext.Stage.RUNTIME);
+        void execute(OperationContext context, ModelNode operation, ModClusterServiceMBean service) throws OperationFailedException {
+            Map<InetSocketAddress, String> map = service.getProxyInfo();
+            ROOT_LOGGER.debugf("Mod_cluster ListProxies %s", map);
+            if (!map.isEmpty()) {
+                ModelNode result = new ModelNode();
+                InetSocketAddress[] addr = map.keySet().toArray(new InetSocketAddress[map.size()]);
+                for (InetSocketAddress address : addr) {
+                    result.add(address.getHostName() + ":" + address.getPort());
+                }
+                context.getResult().set(result);
             }
         }
     },
     READ_PROXIES_CONFIGURATION {
+        @Override
         public OperationDefinition getDefinition() {
             return new SimpleOperationDefinitionBuilder(ProxyOperation.READ_PROXIES_CONFIGURATION.getName(), ModClusterExtension.SUBSYSTEM_RESOLVER)
                     .setReadOnly()
@@ -284,32 +243,25 @@ public enum LegacyProxyOperation implements Definable<OperationDefinition>, Oper
         }
 
         @Override
-        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            if (context.isNormalServer() && getService(context) != null) {
-                context.addStep(new OperationStepHandler() {
-                    @Override
-                    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                        ModClusterServiceMBean service = getService(context);
-                        Map<InetSocketAddress, String> map = service.getProxyConfiguration();
-                        ROOT_LOGGER.debugf("Mod_cluster ProxyConfiguration %s", map);
-                        if (!map.isEmpty()) {
-                            ModelNode result = new ModelNode();
-                            for (Map.Entry<InetSocketAddress, String> entry : map.entrySet()) {
-                                result.add(entry.getKey().getHostName() + ":" + entry.getKey().getPort());
-                                if (entry.getValue() == null) {
-                                    result.add();
-                                } else {
-                                    result.add(entry.getValue());
-                                }
-                            }
-                            context.getResult().set(result);
-                        }
+        void execute(OperationContext context, ModelNode operation, ModClusterServiceMBean service) throws OperationFailedException {
+            Map<InetSocketAddress, String> map = service.getProxyConfiguration();
+            ROOT_LOGGER.debugf("Mod_cluster ProxyConfiguration %s", map);
+            if (!map.isEmpty()) {
+                ModelNode result = new ModelNode();
+                for (Map.Entry<InetSocketAddress, String> entry : map.entrySet()) {
+                    result.add(entry.getKey().getHostName() + ":" + entry.getKey().getPort());
+                    if (entry.getValue() == null) {
+                        result.add();
+                    } else {
+                        result.add(entry.getValue());
                     }
-                }, OperationContext.Stage.RUNTIME);
+                }
+                context.getResult().set(result);
             }
         }
     },
     READ_PROXIES_INFO {
+        @Override
         public OperationDefinition getDefinition() {
             return new SimpleOperationDefinitionBuilder(ProxyOperation.READ_PROXIES_INFO.getName(), ModClusterExtension.SUBSYSTEM_RESOLVER)
                     .setReadOnly()
@@ -322,32 +274,25 @@ public enum LegacyProxyOperation implements Definable<OperationDefinition>, Oper
         }
 
         @Override
-        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            if (context.isNormalServer() && getService(context) != null) {
-                context.addStep(new OperationStepHandler() {
-                    @Override
-                    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                        ModClusterServiceMBean service = getService(context);
-                        Map<InetSocketAddress, String> map = service.getProxyInfo();
-                        ROOT_LOGGER.debugf("Mod_cluster ProxyInfo %s", map);
-                        if (!map.isEmpty()) {
-                            ModelNode result = new ModelNode();
-                            for (Map.Entry<InetSocketAddress, String> entry : map.entrySet()) {
-                                result.add(entry.getKey().getHostName() + ":" + entry.getKey().getPort());
-                                if (entry.getValue() == null) {
-                                    result.add();
-                                } else {
-                                    result.add(entry.getValue());
-                                }
-                            }
-                            context.getResult().set(result);
-                        }
+        void execute(OperationContext context, ModelNode operation, ModClusterServiceMBean service) throws OperationFailedException {
+            Map<InetSocketAddress, String> map = service.getProxyInfo();
+            ROOT_LOGGER.debugf("Mod_cluster ProxyInfo %s", map);
+            if (!map.isEmpty()) {
+                ModelNode result = new ModelNode();
+                for (Map.Entry<InetSocketAddress, String> entry : map.entrySet()) {
+                    result.add(entry.getKey().getHostName() + ":" + entry.getKey().getPort());
+                    if (entry.getValue() == null) {
+                        result.add();
+                    } else {
+                        result.add(entry.getValue());
                     }
-                }, OperationContext.Stage.RUNTIME);
+                }
+                context.getResult().set(result);
             }
         }
     },
     REFRESH {
+        @Override
         public OperationDefinition getDefinition() {
             return new SimpleOperationDefinitionBuilder(ProxyOperation.REFRESH.getName(), ModClusterExtension.SUBSYSTEM_RESOLVER)
                     .setRuntimeOnly()
@@ -356,20 +301,13 @@ public enum LegacyProxyOperation implements Definable<OperationDefinition>, Oper
         }
 
         @Override
-        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            if (context.isNormalServer() && getService(context) != null) {
-                context.addStep(new OperationStepHandler() {
-                    @Override
-                    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                        ModClusterServiceMBean service = getService(context);
-                        service.refresh();
-                        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
-                    }
-                }, OperationContext.Stage.RUNTIME);
-            }
+        void execute(OperationContext context, ModelNode operation, ModClusterServiceMBean service) throws OperationFailedException {
+            service.refresh();
+            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
         }
     },
     REMOVE_PROXY {
+        @Override
         public OperationDefinition getDefinition() {
             return new SimpleOperationDefinitionBuilder(ProxyOperation.REMOVE_PROXY.getName(), ModClusterExtension.SUBSYSTEM_RESOLVER)
                     .addParameter(HOST)
@@ -381,39 +319,32 @@ public enum LegacyProxyOperation implements Definable<OperationDefinition>, Oper
         }
 
         @Override
-        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            if (context.isNormalServer() && getService(context) != null) {
-                context.addStep(new OperationStepHandler() {
-                    @Override
-                    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                        ModClusterServiceMBean service = getService(context);
-                        ROOT_LOGGER.debugf("remove-proxy: %s", operation);
+        void execute(OperationContext context, ModelNode operation, ModClusterServiceMBean service) throws OperationFailedException {
+            ROOT_LOGGER.debugf("remove-proxy: %s", operation);
 
-                        String host = HOST.resolveModelAttribute(context, operation).asString();
-                        int port = PORT.resolveModelAttribute(context, operation).asInt();
+            String host = HOST.resolveModelAttribute(context, operation).asString();
+            int port = PORT.resolveModelAttribute(context, operation).asInt();
 
-                        // Keeping this test here to maintain same behavior as previous versions.
-                        try {
-                            InetAddress.getByName(host);
-                        } catch (UnknownHostException e) {
-                            throw new OperationFailedException(ModClusterLogger.ROOT_LOGGER.couldNotResolveProxyIpAddress(), e);
-                        }
-
-                        service.removeProxy(host, port);
-
-                        context.completeStep(new OperationContext.RollbackHandler() {
-                            @Override
-                            public void handleRollback(OperationContext context, ModelNode operation) {
-                                // TODO What if mod_cluster was never aware of this proxy?
-                                service.addProxy(host, port);
-                            }
-                        });
-                    }
-                }, OperationContext.Stage.RUNTIME);
+            // Keeping this test here to maintain same behavior as previous versions.
+            try {
+                InetAddress.getByName(host);
+            } catch (UnknownHostException e) {
+                throw new OperationFailedException(ModClusterLogger.ROOT_LOGGER.couldNotResolveProxyIpAddress(), e);
             }
+
+            service.removeProxy(host, port);
+
+            context.completeStep(new OperationContext.RollbackHandler() {
+                @Override
+                public void handleRollback(OperationContext context, ModelNode operation) {
+                    // TODO What if mod_cluster was never aware of this proxy?
+                    service.addProxy(host, port);
+                }
+            });
         }
     },
     RESET {
+        @Override
         public OperationDefinition getDefinition() {
             return new SimpleOperationDefinitionBuilder(ProxyOperation.RESET.getName(), ModClusterExtension.SUBSYSTEM_RESOLVER)
                     .setRuntimeOnly()
@@ -421,22 +352,14 @@ public enum LegacyProxyOperation implements Definable<OperationDefinition>, Oper
                     .build();
         }
 
-
         @Override
-        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            if (context.isNormalServer() && getService(context) != null) {
-                context.addStep(new OperationStepHandler() {
-                    @Override
-                    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                        ModClusterServiceMBean service = getService(context);
-                        service.reset();
-                        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
-                    }
-                }, OperationContext.Stage.RUNTIME);
-            }
+        void execute(OperationContext context, ModelNode operation, ModClusterServiceMBean service) throws OperationFailedException {
+            service.reset();
+            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
         }
     },
     STOP {
+        @Override
         public OperationDefinition getDefinition() {
             return new SimpleOperationDefinitionBuilder(ProxyOperation.STOP.getName(), ModClusterExtension.SUBSYSTEM_RESOLVER)
                     .addParameter(WAIT_TIME)
@@ -446,32 +369,25 @@ public enum LegacyProxyOperation implements Definable<OperationDefinition>, Oper
         }
 
         @Override
-        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            if (context.isNormalServer() && getService(context) != null) {
-                context.addStep(new OperationStepHandler() {
-                    @Override
-                    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                        ModClusterServiceMBean service = getService(context);
-                        ROOT_LOGGER.debugf("stop: %s", operation);
+        void execute(OperationContext context, ModelNode operation, ModClusterServiceMBean service) throws OperationFailedException {
+            ROOT_LOGGER.debugf("stop: %s", operation);
 
-                        int waitTime = WAIT_TIME.resolveModelAttribute(context, operation).asInt();
+            int waitTime = WAIT_TIME.resolveModelAttribute(context, operation).asInt();
 
-                        boolean success = service.stop(waitTime, TimeUnit.SECONDS);
-                        context.getResult().get(SESSION_DRAINING_COMPLETE).set(success);
+            boolean success = service.stop(waitTime, TimeUnit.SECONDS);
+            context.getResult().get(SESSION_DRAINING_COMPLETE).set(success);
 
-                        context.completeStep(new OperationContext.RollbackHandler() {
-                            @Override
-                            public void handleRollback(OperationContext context, ModelNode operation) {
-                                // TODO We're assuming that the all contexts were previously enabled, but they could have been disabled
-                                service.enable();
-                            }
-                        });
-                    }
-                }, OperationContext.Stage.RUNTIME);
-            }
+            context.completeStep(new OperationContext.RollbackHandler() {
+                @Override
+                public void handleRollback(OperationContext context, ModelNode operation) {
+                    // TODO We're assuming that the all contexts were previously enabled, but they could have been disabled
+                    service.enable();
+                }
+            });
         }
     },
     STOP_CONTEXT {
+        @Override
         public OperationDefinition getDefinition() {
             return new SimpleOperationDefinitionBuilder(ProxyOperation.STOP_CONTEXT.getName(), ModClusterExtension.SUBSYSTEM_RESOLVER)
                     .addParameter(VIRTUAL_HOST)
@@ -483,44 +399,48 @@ public enum LegacyProxyOperation implements Definable<OperationDefinition>, Oper
         }
 
         @Override
-        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            if (context.isNormalServer() && getService(context) != null) {
-                context.addStep(new OperationStepHandler() {
-                    @Override
-                    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                        ModClusterServiceMBean service = getService(context);
-                        ROOT_LOGGER.debugf("stop-context: %s", operation);
+        void execute(OperationContext context, ModelNode operation, ModClusterServiceMBean service) throws OperationFailedException {
+            ROOT_LOGGER.debugf("stop-context: %s", operation);
 
-                        String webHost = VIRTUAL_HOST.resolveModelAttribute(context, operation).asString();
-                        String webContext = CONTEXT.resolveModelAttribute(context, operation).asString();
-                        int waitTime = WAIT_TIME.resolveModelAttribute(context, operation).asInt();
+            String webHost = VIRTUAL_HOST.resolveModelAttribute(context, operation).asString();
+            String webContext = CONTEXT.resolveModelAttribute(context, operation).asString();
+            int waitTime = WAIT_TIME.resolveModelAttribute(context, operation).asInt();
 
-                        try {
-                            boolean success = service.stopContext(webHost, webContext, waitTime, TimeUnit.SECONDS);
-                            context.getResult().get(SESSION_DRAINING_COMPLETE).set(success);
-                        } catch (IllegalArgumentException e) {
-                            throw new OperationFailedException(ModClusterLogger.ROOT_LOGGER.contextOrHostNotFound(webHost, webContext));
-                        }
-
-                        context.completeStep(new OperationContext.RollbackHandler() {
-                            @Override
-                            public void handleRollback(OperationContext context, ModelNode operation) {
-                                // TODO We're assuming that the context was previously enabled, but it could have been disabled
-                                service.enableContext(webHost, webContext);
-                            }
-                        });
-                    }
-                }, OperationContext.Stage.RUNTIME);
+            try {
+                boolean success = service.stopContext(webHost, webContext, waitTime, TimeUnit.SECONDS);
+                context.getResult().get(SESSION_DRAINING_COMPLETE).set(success);
+            } catch (IllegalArgumentException e) {
+                throw new OperationFailedException(ModClusterLogger.ROOT_LOGGER.contextOrHostNotFound(webHost, webContext));
             }
+
+            context.completeStep(new OperationContext.RollbackHandler() {
+                @Override
+                public void handleRollback(OperationContext context, ModelNode operation) {
+                    // TODO We're assuming that the context was previously enabled, but it could have been disabled
+                    service.enableContext(webHost, webContext);
+                }
+            });
         }
     },
     ;
 
     static final String SESSION_DRAINING_COMPLETE = "session-draining-complete";
 
-    private static ModClusterServiceMBean getService(OperationContext context) throws OperationFailedException {
+    @Override
+    public final void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         PathAddress proxyAddress = LegacyMetricOperationsRegistration.translateProxyPath(context, context.getCurrentAddress());
         ServiceName serviceName = ProxyConfigurationResourceDefinition.Capability.SERVICE.getServiceName(proxyAddress);
-        return new ActiveServiceSupplier<ModClusterServiceMBean>(context.getServiceRegistry(true), serviceName).get();
+        if (context.isNormalServer() && new PassiveServiceSupplier<ModClusterServiceMBean>(context.getServiceRegistry(false), serviceName).get() != null) {
+            boolean readOnly = this.getDefinition().getFlags().contains(OperationEntry.Flag.READ_ONLY);
+            context.addStep(new OperationStepHandler() {
+                @Override
+                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                    ModClusterServiceMBean service = new PassiveServiceSupplier<ModClusterServiceMBean>(context.getServiceRegistry(!readOnly), serviceName).get();
+                    LegacyProxyOperation.this.execute(context, operation, service);
+                }
+            }, OperationContext.Stage.RUNTIME);
+        }
     }
+
+    abstract void execute(OperationContext context, ModelNode operation, ModClusterServiceMBean service) throws OperationFailedException;
 }

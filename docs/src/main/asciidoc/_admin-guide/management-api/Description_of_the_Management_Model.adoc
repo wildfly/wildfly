@@ -7,7 +7,7 @@ make up the management model provided by an individual WildFly instance
 or by any Domain Controller or slave Host Controller process can be
 queried using the `read-resource-description`, `read-operation-names`,
 `read-operation-description` and `read-child-types` operations described
-in the link:Global_operations{outfilesuffix}[Global operations] section. In this
+in the <<Global_operations,Global operations>> section. In this
 section we provide details on what's included in those descriptions.
 
 [[description-of-the-wildfly-managed-resources]]
@@ -15,7 +15,7 @@ section we provide details on what's included in those descriptions.
 
 All portions of the management model exposed by WildFly are addressable
 via an ordered list of key/value pairs. For each addressable
-<<Management_resources#management-resources, Management Resource>>, the following
+<<management-resources, Management Resource>>, the following
 descriptive information will be available:
 
 * `description` – String – text description of this portion of the model
@@ -76,7 +76,7 @@ For example:
 
 An attribute is a portion of the management model that is not directly
 addressable. Instead, it is conceptually a property of an addressable
-link:../Management_resources{outfilesuffix}[management resource]. For
+<<management-resources,management resource>>. For
 each attribute in the model, the following descriptive information will
 be available:
 

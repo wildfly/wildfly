@@ -25,6 +25,7 @@ package org.wildfly.clustering.ee.infinispan;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.transaction.LockingMode;
 import org.infinispan.util.concurrent.IsolationLevel;
+import org.wildfly.clustering.ee.cache.CacheProperties;
 
 /**
  * Eagerly calculates the properties of a cache configuration.

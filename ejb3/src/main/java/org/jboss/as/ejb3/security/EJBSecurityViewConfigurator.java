@@ -145,7 +145,9 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
         }
 
         final boolean securityRequired = beanHasMethodLevelSecurityMetadata || ejbComponentDescription.hasBeanLevelSecurityMetadata();
-        ejbComponentDescription.setSecurityRequired(securityRequired);
+        if (securityRequired) {
+            ejbComponentDescription.setSecurityRequired(securityRequired);
+        }
         // setup the security context interceptor
         if (isSecurityDomainKnown) {
             final HashMap<Integer, InterceptorFactory> elytronInterceptorFactories = ejbComponentDescription.getElytronInterceptorFactories(contextID, ejbComponentDescription.isEnableJacc(), true);

@@ -69,6 +69,7 @@ import org.wildfly.extension.undertow.session.SharedSessionConfigSchema;
  * Handler responsible for adding the subsystem resource to the model
  *
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 class UndertowSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
@@ -105,7 +106,8 @@ class UndertowSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         DefaultDeploymentMappingProvider.instance().clear();//we clear provider on system boot, as on reload it could cause issues.
 
-        context.getCapabilityServiceTarget().addCapability(UndertowRootDefinition.UNDERTOW_CAPABILITY, new UndertowService(defaultContainer, defaultServer, defaultVirtualHost, instanceId, stats))
+        context.getCapabilityServiceTarget().addCapability(UndertowRootDefinition.UNDERTOW_CAPABILITY)
+                .setInstance(new UndertowService(defaultContainer, defaultServer, defaultVirtualHost, instanceId, stats))
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .addAliases(UndertowService.UNDERTOW)
                 .install();
@@ -152,7 +154,8 @@ class UndertowSubsystemAdd extends AbstractBoottimeAddStepHandler {
         }, OperationContext.Stage.RUNTIME);
 
         context.getCapabilityServiceTarget()
-                .addCapability(HTTP_INVOKER_RUNTIME_CAPABILITY, new RemoteHttpInvokerService())
+                .addCapability(HTTP_INVOKER_RUNTIME_CAPABILITY)
+                .setInstance(new RemoteHttpInvokerService())
                 .install();
     }
 

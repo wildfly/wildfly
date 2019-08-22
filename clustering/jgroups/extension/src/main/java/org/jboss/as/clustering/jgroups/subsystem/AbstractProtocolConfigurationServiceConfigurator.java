@@ -30,6 +30,7 @@ import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -38,6 +39,7 @@ import java.util.function.Supplier;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.jgroups.ProtocolDefaults;
+import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.server.Services;
@@ -49,7 +51,10 @@ import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
+import org.jgroups.stack.Configurator;
 import org.jgroups.stack.Protocol;
+import org.jgroups.util.StackType;
+import org.jgroups.util.Util;
 import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 import org.wildfly.clustering.jgroups.spi.ProtocolStackConfiguration;
 import org.wildfly.clustering.service.Dependency;
@@ -107,19 +112,42 @@ public abstract class AbstractProtocolConfigurationServiceConfigurator<P extends
 
     @Override
     public final P createProtocol(ProtocolStackConfiguration stackConfiguration) {
+        String protocolName = this.name;
+        String moduleName = this.moduleName;
         // A "native" protocol is one that is not specified as a class name
-        boolean nativeProtocol = this.moduleName.equals(AbstractProtocolResourceDefinition.Attribute.MODULE.getDefinition().getDefaultValue().asString()) && !this.name.startsWith(org.jgroups.conf.ProtocolConfiguration.protocol_prefix);
-        String className = nativeProtocol ? String.join(".", org.jgroups.conf.ProtocolConfiguration.protocol_prefix, this.name) : this.name;
+        boolean nativeProtocol = moduleName.equals(AbstractProtocolResourceDefinition.Attribute.MODULE.getDefinition().getDefaultValue().asString()) && !protocolName.startsWith(org.jgroups.conf.ProtocolConfiguration.protocol_prefix);
+        String className = nativeProtocol ? String.join(".", org.jgroups.conf.ProtocolConfiguration.protocol_prefix, protocolName) : protocolName;
         try {
-            Module module = this.loader.get().loadModule(this.moduleName);
+            Module module = this.loader.get().loadModule(moduleName);
             Class<? extends Protocol> protocolClass = module.getClassLoader().loadClass(className).asSubclass(Protocol.class);
             Map<String, String> properties = new HashMap<>(this.defaults.get().getProperties(protocolClass));
             properties.putAll(this.properties);
-            PrivilegedExceptionAction<Protocol> action = () -> {
-                try {
-                    return protocolClass.newInstance().setProperties(properties);
-                } catch (InstantiationException | IllegalAccessException e) {
-                    throw new IllegalStateException(e);
+            PrivilegedExceptionAction<Protocol> action = new PrivilegedExceptionAction<Protocol>() {
+                @Override
+                public Protocol run() throws Exception {
+                    try {
+                        Protocol protocol = protocolClass.newInstance();
+                        // These Configurator methods are destructive, so make a defensive copy
+                        Map<String, String> copy = new HashMap<>(properties);
+                        StackType type = Util.getIpStackType();
+                        Configurator.resolveAndAssignFields(protocol, copy, type);
+                        Configurator.resolveAndInvokePropertyMethods(protocol, copy, type);
+                        List<Object> objects = protocol.getConfigurableObjects();
+                        if (objects != null) {
+                            for (Object object : objects) {
+                                Configurator.resolveAndAssignFields(object, copy, type);
+                                Configurator.resolveAndInvokePropertyMethods(object, copy, type);
+                            }
+                        }
+                        if (!copy.isEmpty()) {
+                            for (String property : copy.keySet()) {
+                                JGroupsLogger.ROOT_LOGGER.unrecognizedProtocolProperty(protocolName, property);
+                            }
+                        }
+                        return protocol;
+                    } catch (InstantiationException | IllegalAccessException e) {
+                        throw new IllegalStateException(e);
+                    }
                 }
             };
             @SuppressWarnings("unchecked")

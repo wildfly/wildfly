@@ -34,8 +34,6 @@ import static org.jboss.as.mail.extension.MailSubsystemModel.USER_NAME;
 
 import java.util.Map;
 
-import javax.mail.Session;
-
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.CapabilityServiceTarget;
@@ -59,6 +57,7 @@ import org.jboss.msc.service.ServiceName;
 
 /**
  * @author Tomaz Cerar
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  * @created 27.7.11 0:55
  */
 class MailSessionAdd extends AbstractAddStepHandler {
@@ -90,7 +89,7 @@ class MailSessionAdd extends AbstractAddStepHandler {
         installRuntimeServices(context, address, fullTree);
     }
 
-    private static void addCredentialStoreReference(ServerConfig serverConfig, OperationContext context, ModelNode model, ServiceBuilder<?> serviceBuilder, String... modelFilter) throws OperationFailedException {
+    private static void addCredentialStoreReference(ServerConfig serverConfig, OperationContext context, ModelNode model, ServiceBuilder serviceBuilder, String... modelFilter) throws OperationFailedException {
         if (serverConfig != null) {
             ModelNode filteredModelNode = model;
             if (modelFilter != null && modelFilter.length > 0) {
@@ -117,7 +116,7 @@ class MailSessionAdd extends AbstractAddStepHandler {
         final MailSessionConfig config = from(context, fullModel);
         final MailSessionService service = new MailSessionService(config);
 
-        final CapabilityServiceBuilder<Session> mailSessionBuilder = serviceTarget.addCapability(SESSION_CAPABILITY.fromBaseCapability(address.getLastElement().getValue()), service);
+        final CapabilityServiceBuilder mailSessionBuilder = serviceTarget.addCapability(SESSION_CAPABILITY.fromBaseCapability(address.getLastElement().getValue())).setInstance(service);
         addOutboundSocketDependency(service, mailSessionBuilder, config.getImapServer());
         addCredentialStoreReference(config.getImapServer(), context, fullModel, mailSessionBuilder, MailSubsystemModel.IMAP_SERVER_PATH.getKey(), MailSubsystemModel.IMAP_SERVER_PATH.getValue());
         addOutboundSocketDependency(service, mailSessionBuilder, config.getPop3Server());

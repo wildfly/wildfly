@@ -104,7 +104,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .build();
 
     public static final SimpleAttributeDefinition RECOVERY_LISTENER = new SimpleAttributeDefinitionBuilder(CommonAttributes.RECOVERY_LISTENER, ModelType.BOOLEAN, true)
-            .setDefaultValue(new ModelNode().set(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setXmlName(Attribute.RECOVERY_LISTENER.getLocalName())
             .setAllowExpression(true).build();
@@ -112,13 +112,13 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
     //core environment
     public static final SimpleAttributeDefinition NODE_IDENTIFIER = new SimpleAttributeDefinitionBuilder(CommonAttributes.NODE_IDENTIFIER, ModelType.STRING, true)
             .setDefaultValue(new ModelNode().set("1"))
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setFlags(AttributeAccess.Flag.RESTART_JVM)
             .setAllowExpression(true)
             .setValidator(new StringBytesLengthValidator(0,23,true,true))
             .build();
 
     public static final SimpleAttributeDefinition PROCESS_ID_UUID = new SimpleAttributeDefinitionBuilder("process-id-uuid", ModelType.BOOLEAN, true)
-            .setDefaultValue(new ModelNode().set(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setAlternatives("process-id-socket-binding")
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
@@ -145,19 +145,19 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
 
     //coordinator environment
     public static final SimpleAttributeDefinition STATISTICS_ENABLED = new SimpleAttributeDefinitionBuilder(CommonAttributes.STATISTICS_ENABLED, ModelType.BOOLEAN, true)
-            .setDefaultValue(new ModelNode().set(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setFlags(AttributeAccess.Flag.RESTART_NONE)
             .setAllowExpression(true).build();
 
     public static final SimpleAttributeDefinition ENABLE_STATISTICS = new SimpleAttributeDefinitionBuilder(CommonAttributes.ENABLE_STATISTICS, ModelType.BOOLEAN, true)
-            .setDefaultValue(new ModelNode().set(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setFlags(AttributeAccess.Flag.RESTART_NONE)
             .setXmlName(Attribute.ENABLE_STATISTICS.getLocalName())
             .setDeprecated(ModelVersion.create(2))
             .setAllowExpression(true).build();
 
     public static final SimpleAttributeDefinition ENABLE_TSM_STATUS = new SimpleAttributeDefinitionBuilder(CommonAttributes.ENABLE_TSM_STATUS, ModelType.BOOLEAN, true)
-            .setDefaultValue(new ModelNode().set(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)  // TODO is this runtime-changeable?
             .setXmlName(Attribute.ENABLE_TSM_STATUS.getLocalName())
             .setAllowExpression(true).build();
@@ -188,19 +188,19 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .setAllowExpression(true).build();
 
     public static final SimpleAttributeDefinition JTS = new SimpleAttributeDefinitionBuilder(CommonAttributes.JTS, ModelType.BOOLEAN, true)
-            .setDefaultValue(new ModelNode().set(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setFlags(AttributeAccess.Flag.RESTART_JVM)  //I think the use of statics in arjunta will require a JVM restart
             .setAllowExpression(false).build();
 
     public static final SimpleAttributeDefinition USE_HORNETQ_STORE = new SimpleAttributeDefinitionBuilder(CommonAttributes.USE_HORNETQ_STORE, ModelType.BOOLEAN, true)
-            .setDefaultValue(new ModelNode().set(false))
+            .setDefaultValue(ModelNode.FALSE)
             .addAlternatives(CommonAttributes.USE_JDBC_STORE)
             .addAlternatives(CommonAttributes.USE_JOURNAL_STORE)
             .setFlags(AttributeAccess.Flag.RESTART_JVM)
             .setAllowExpression(false)
             .setDeprecated(ModelVersion.create(3)).build();
     public static final SimpleAttributeDefinition HORNETQ_STORE_ENABLE_ASYNC_IO = new SimpleAttributeDefinitionBuilder(CommonAttributes.HORNETQ_STORE_ENABLE_ASYNC_IO, ModelType.BOOLEAN, true)
-            .setDefaultValue(new ModelNode().set(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setFlags(AttributeAccess.Flag.RESTART_JVM)
             .setXmlName(Attribute.ENABLE_ASYNC_IO.getLocalName())
             .setAllowExpression(true)
@@ -208,20 +208,20 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .setDeprecated(ModelVersion.create(3)).build();
 
     public static final SimpleAttributeDefinition USE_JOURNAL_STORE = new SimpleAttributeDefinitionBuilder(CommonAttributes.USE_JOURNAL_STORE, ModelType.BOOLEAN, true)
-            .setDefaultValue(new ModelNode().set(false))
+            .setDefaultValue(ModelNode.FALSE)
             .addAlternatives(CommonAttributes.USE_JDBC_STORE)
             .addAlternatives(CommonAttributes.USE_HORNETQ_STORE)
             .setFlags(AttributeAccess.Flag.RESTART_JVM)
             .setAllowExpression(false).build();
     public static final SimpleAttributeDefinition JOURNAL_STORE_ENABLE_ASYNC_IO = new SimpleAttributeDefinitionBuilder(CommonAttributes.JOURNAL_STORE_ENABLE_ASYNC_IO, ModelType.BOOLEAN, true)
-            .setDefaultValue(new ModelNode().set(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setFlags(AttributeAccess.Flag.RESTART_JVM)
             .setXmlName(Attribute.ENABLE_ASYNC_IO.getLocalName())
             .setAllowExpression(true)
             .setRequires(CommonAttributes.USE_JOURNAL_STORE).build();
 
     public static final SimpleAttributeDefinition USE_JDBC_STORE = new SimpleAttributeDefinitionBuilder(CommonAttributes.USE_JDBC_STORE, ModelType.BOOLEAN, true)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .addAlternatives(CommonAttributes.USE_JOURNAL_STORE)
             .addAlternatives(CommonAttributes.USE_HORNETQ_STORE)
             .setRequires(CommonAttributes.JDBC_STORE_DATASOURCE)
@@ -238,7 +238,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .setAllowExpression(true)
             .setRequires(CommonAttributes.USE_JDBC_STORE).build();
     public static final SimpleAttributeDefinition JDBC_ACTION_STORE_DROP_TABLE = new SimpleAttributeDefinitionBuilder(CommonAttributes.JDBC_ACTION_STORE_DROP_TABLE, ModelType.BOOLEAN, true)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setFlags(AttributeAccess.Flag.RESTART_JVM)
             .setXmlName(Attribute.DROP_TABLE.getLocalName())
             .setAllowExpression(true)
@@ -249,7 +249,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .setAllowExpression(true)
             .setRequires(CommonAttributes.USE_JDBC_STORE).build();
     public static final SimpleAttributeDefinition JDBC_COMMUNICATION_STORE_DROP_TABLE = new SimpleAttributeDefinitionBuilder(CommonAttributes.JDBC_COMMUNICATION_STORE_DROP_TABLE, ModelType.BOOLEAN, true)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setFlags(AttributeAccess.Flag.RESTART_JVM)
             .setXmlName(Attribute.DROP_TABLE.getLocalName())
             .setAllowExpression(true)
@@ -260,7 +260,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .setAllowExpression(true)
             .setRequires(CommonAttributes.USE_JDBC_STORE).build();
     public static final SimpleAttributeDefinition JDBC_STATE_STORE_DROP_TABLE = new SimpleAttributeDefinitionBuilder(CommonAttributes.JDBC_STATE_STORE_DROP_TABLE, ModelType.BOOLEAN, true)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(ModelNode.FALSE)
             .setFlags(AttributeAccess.Flag.RESTART_JVM)
             .setXmlName(Attribute.DROP_TABLE.getLocalName())
             .setAllowExpression(true)
@@ -401,7 +401,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
 
                     ModelNode resourceModel = model.getModel();
                     if (resourceModel.hasDefined(mutualAttributeName) && resourceModel.get(mutualAttributeName).asBoolean()) {
-                        resourceModel.get(mutualAttributeName).set(new ModelNode(false));
+                        resourceModel.get(mutualAttributeName).set(ModelNode.FALSE);
                     }
                 }
             }
@@ -482,7 +482,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
 
                     ModelNode resourceModel = model.getModel();
                     if (resourceModel.hasDefined(PROCESS_ID_UUID.getName()) && resourceModel.get(PROCESS_ID_UUID.getName()).asBoolean()) {
-                        resourceModel.get(PROCESS_ID_UUID.getName()).set(new ModelNode(false));
+                        resourceModel.get(PROCESS_ID_UUID.getName()).set(ModelNode.FALSE);
                     }
                 }
             }

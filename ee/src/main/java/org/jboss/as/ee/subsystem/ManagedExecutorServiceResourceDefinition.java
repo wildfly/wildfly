@@ -22,6 +22,7 @@
 package org.jboss.as.ee.subsystem;
 
 import org.glassfish.enterprise.concurrent.AbstractManagedExecutorService;
+import org.glassfish.enterprise.concurrent.ManagedExecutorServiceAdapter;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -29,9 +30,11 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
@@ -50,6 +53,12 @@ import org.jboss.dmr.ModelType;
  * @author Eduardo Martins
  */
 public class ManagedExecutorServiceResourceDefinition extends SimpleResourceDefinition {
+
+    /**
+     * the resource definition's dynamic runtime capability
+     */
+    public static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.ee.concurrent.executor", true, ManagedExecutorServiceAdapter.class)
+            .build();
 
     public static final String JNDI_NAME = "jndi-name";
     public static final String CONTEXT_SERVICE = "context-service";
@@ -73,6 +82,7 @@ public class ManagedExecutorServiceResourceDefinition extends SimpleResourceDefi
                     .setAllowExpression(false)
                     .setValidator(new StringLengthValidator(0, true))
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .setCapabilityReference(ContextServiceResourceDefinition.CAPABILITY.getName(), CAPABILITY)
                     .build();
 
     public static final SimpleAttributeDefinition THREAD_FACTORY_AD =
@@ -80,6 +90,7 @@ public class ManagedExecutorServiceResourceDefinition extends SimpleResourceDefi
                     .setAllowExpression(false)
                     .setValidator(new StringLengthValidator(0, true))
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .setCapabilityReference(ManagedThreadFactoryResourceDefinition.CAPABILITY.getName(), CAPABILITY)
                     .build();
 
     public static final SimpleAttributeDefinition HUNG_TASK_THRESHOLD_AD =
@@ -87,14 +98,14 @@ public class ManagedExecutorServiceResourceDefinition extends SimpleResourceDefi
                     .setAllowExpression(true)
                     .setValidator(new LongRangeValidator(0, Long.MAX_VALUE, true, true))
                     .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
-                    .setDefaultValue(new ModelNode(0))
+                    .setDefaultValue(ModelNode.ZERO)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
 
     public static final SimpleAttributeDefinition LONG_RUNNING_TASKS_AD =
             new SimpleAttributeDefinitionBuilder(LONG_RUNNING_TASKS, ModelType.BOOLEAN, true)
                     .setAllowExpression(true)
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(ModelNode.FALSE)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
 
@@ -142,7 +153,10 @@ public class ManagedExecutorServiceResourceDefinition extends SimpleResourceDefi
     public static final ManagedExecutorServiceResourceDefinition INSTANCE = new ManagedExecutorServiceResourceDefinition();
 
     private ManagedExecutorServiceResourceDefinition() {
-        super(PathElement.pathElement(EESubsystemModel.MANAGED_EXECUTOR_SERVICE), EeExtension.getResourceDescriptionResolver(EESubsystemModel.MANAGED_EXECUTOR_SERVICE), ManagedExecutorServiceAdd.INSTANCE, ManagedExecutorServiceRemove.INSTANCE);
+        super(new SimpleResourceDefinition.Parameters(PathElement.pathElement(EESubsystemModel.MANAGED_EXECUTOR_SERVICE), EeExtension.getResourceDescriptionResolver(EESubsystemModel.MANAGED_EXECUTOR_SERVICE))
+                .setAddHandler(ManagedExecutorServiceAdd.INSTANCE)
+                .setRemoveHandler(new ServiceRemoveStepHandler(ManagedExecutorServiceAdd.INSTANCE))
+                .addCapabilities(CAPABILITY));
     }
 
     @Override

@@ -22,6 +22,7 @@
 package org.wildfly.clustering.web.infinispan.session;
 
 import org.wildfly.clustering.dispatcher.Command;
+import org.wildfly.clustering.web.cache.session.Scheduler;
 
 /**
  * Command that cancels the scheduling of a session.

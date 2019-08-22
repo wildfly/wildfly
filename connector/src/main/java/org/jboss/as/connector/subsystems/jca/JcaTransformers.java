@@ -48,13 +48,13 @@ public class JcaTransformers implements ExtensionTransformerRegistration{
         ResourceTransformationDescriptionBuilder parentBuilder = chainedBuilder.createBuilder(subsystemRegistration.getCurrentSubsystemVersion(), EAP_7_0);
         ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_DISTRIBUTED_WORK_MANAGER);
         builder.getAttributeBuilder()
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(false)),
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, ModelNode.FALSE),
                         JcaDistributedWorkManagerDefinition.DWmParameters.ELYTRON_ENABLED.getAttribute())
                 .addRejectCheck(RejectAttributeChecker.DEFINED, JcaDistributedWorkManagerDefinition.DWmParameters.ELYTRON_ENABLED.getAttribute())
                 .end();
         builder = parentBuilder.addChildResource(PATH_WORK_MANAGER);
         builder.getAttributeBuilder()
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(false)),
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, ModelNode.FALSE),
                         JcaWorkManagerDefinition.WmParameters.ELYTRON_ENABLED.getAttribute())
                 .addRejectCheck(RejectAttributeChecker.DEFINED, JcaWorkManagerDefinition.WmParameters.ELYTRON_ENABLED.getAttribute())
                 .end();

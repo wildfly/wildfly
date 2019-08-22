@@ -43,7 +43,7 @@ public class CacheMetricExecutor implements MetricExecutor<Cache<?, ?>> {
         String containerName = address.getParent().getLastElement().getValue();
         String cacheName = address.getLastElement().getValue();
 
-        Cache<?, ?> cache = new PassiveServiceSupplier<Cache<?, ?>>(context.getServiceRegistry(true), InfinispanCacheRequirement.CACHE.getServiceName(context, containerName, cacheName)).get();
+        Cache<?, ?> cache = new PassiveServiceSupplier<Cache<?, ?>>(context.getServiceRegistry(false), InfinispanCacheRequirement.CACHE.getServiceName(context, containerName, cacheName)).get();
         return (cache != null) ? metric.execute(cache) : null;
     }
 }

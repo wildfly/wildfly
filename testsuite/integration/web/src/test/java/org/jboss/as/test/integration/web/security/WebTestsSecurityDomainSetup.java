@@ -52,7 +52,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.wildfly.test.security.common.elytron.PropertyFileBasedDomain;
 import org.wildfly.test.security.common.elytron.UndertowDomainMapper;
-import org.wildfly.test.security.common.elytron.UserWithRoles;
+import org.wildfly.test.security.common.elytron.UserWithAttributeValues;
 
 /**
  * @author Stuart Douglas
@@ -118,12 +118,12 @@ public class WebTestsSecurityDomainSetup extends AbstractSecurityDomainSetup {
         address = address.append(Constants.AUTHENTICATION, Constants.CLASSIC);
         steps.add(Util.createAddOperation(address));
 
-        List<UserWithRoles> userWithRoles = new ArrayList<UserWithRoles>();
-        userWithRoles.add(UserWithRoles.builder().withName(GOOD_USER_NAME).withPassword(GOOD_USER_PASSWORD).withRoles
+        List<UserWithAttributeValues> userWithRoles = new ArrayList<UserWithAttributeValues>();
+        userWithRoles.add(UserWithAttributeValues.builder().withName(GOOD_USER_NAME).withPassword(GOOD_USER_PASSWORD).withValues
                 (GOOD_USER_ROLE).build());
-        userWithRoles.add(UserWithRoles.builder().withName(SUPER_USER_NAME).withPassword(SUPER_USER_PASSWORD)
-                .withRoles(SUPER_USER_ROLE).build());
-        userWithRoles.add(UserWithRoles.builder().withName(BAD_GUY_NAME).withPassword(BAD_GUY_PASSWORD).withRoles
+        userWithRoles.add(UserWithAttributeValues.builder().withName(SUPER_USER_NAME).withPassword(SUPER_USER_PASSWORD)
+                .withValues(SUPER_USER_ROLE).build());
+        userWithRoles.add(UserWithAttributeValues.builder().withName(BAD_GUY_NAME).withPassword(BAD_GUY_PASSWORD).withValues
                 (BAD_GUY_ROLE).build());
         WebSecurityCommon.PropertyFiles propFiles = WebSecurityCommon.createPropertiesFiles(userWithRoles,
                 WEB_SECURITY_DOMAIN);

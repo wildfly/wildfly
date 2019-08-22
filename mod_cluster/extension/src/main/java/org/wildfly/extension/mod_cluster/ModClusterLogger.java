@@ -25,6 +25,7 @@ package org.wildfly.extension.mod_cluster;
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.WARN;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Cause;
@@ -200,4 +201,8 @@ interface ModClusterLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 23, value = "Error loading module '%s' to load custom metric from.")
     void errorLoadingModuleForCustomMetric(String moduleName, @Cause Throwable cause);
+
+    @Message(id = 24, value = "Dynamic load factor provider is currently configured. A simple load factor provider needs to be configured first to read or write a static factor.")
+    OperationFailedException simpleLoadFactorProviderIsNotConfigured();
+
 }

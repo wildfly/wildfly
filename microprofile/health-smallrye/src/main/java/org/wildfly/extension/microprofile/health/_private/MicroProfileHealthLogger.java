@@ -24,6 +24,7 @@ package org.wildfly.extension.microprofile.health._private;
 
 import static org.jboss.logging.Logger.Level.INFO;
 
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.LogMessage;
@@ -50,5 +51,5 @@ public interface MicroProfileHealthLogger extends BasicLogger {
     void activatingSubsystem();
 
     @Message(id = 2, value = "Deployment %s requires use of the '%s' capability but it is not currently registered")
-    String deploymentRequiresCapability(String deploymentName, String capabilityName);
+    DeploymentUnitProcessingException deploymentRequiresCapability(String deploymentName, String capabilityName);
 }

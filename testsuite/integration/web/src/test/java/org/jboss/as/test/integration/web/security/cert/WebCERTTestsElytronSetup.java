@@ -35,7 +35,7 @@ import org.wildfly.test.security.common.elytron.SimpleKeyManager;
 import org.wildfly.test.security.common.elytron.SimpleKeyStore;
 import org.wildfly.test.security.common.elytron.SimpleServerSslContext;
 import org.wildfly.test.security.common.elytron.SimpleTrustManager;
-import org.wildfly.test.security.common.elytron.UserWithRoles;
+import org.wildfly.test.security.common.elytron.UserWithAttributeValues;
 import org.wildfly.test.security.common.elytron.X500AttributePrincipalDecoder;
 import org.wildfly.test.security.common.other.SimpleSocketBinding;
 import org.wildfly.test.undertow.common.elytron.SimpleHttpsListener;
@@ -90,8 +90,8 @@ public class WebCERTTestsElytronSetup extends AbstractElytronSetupTask {
                 PropertyFileAuthzBasedDomain.builder().withName(SECURITY_DOMAIN_NAME)
                         .withAuthnRealm(NAME)
                         .withPrincipalDecoder(NAME)
-                        .withUser(UserWithRoles.builder().withName("test client").withRoles("gooduser").build())
-                        .withUser(UserWithRoles.builder().withName("test client 2").withRoles("superuser").build())
+                        .withUser(UserWithAttributeValues.builder().withName("test client").withValues("gooduser").build())
+                        .withUser(UserWithAttributeValues.builder().withName("test client 2").withValues("superuser").build())
                         .build(),
                 ClientCertUndertowDomainMapper.builder().withName(SECURITY_DOMAIN_NAME).withSecurityDomain
                         (SECURITY_DOMAIN_NAME).build(),

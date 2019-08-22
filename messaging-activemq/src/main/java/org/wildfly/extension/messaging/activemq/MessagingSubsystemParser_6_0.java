@@ -224,7 +224,6 @@ public class MessagingSubsystemParser_6_0 extends PersistentResourceXMLParser {
                                         ServerDefinition.JOURNAL_FILE_SIZE,
                                         ServerDefinition.JOURNAL_MIN_FILES,
                                         ServerDefinition.JOURNAL_POOL_FILES,
-                                        ServerDefinition.JOURNAL_FILE_OPEN_TIMEOUT,
                                         ServerDefinition.JOURNAL_COMPACT_PERCENTAGE,
                                         ServerDefinition.JOURNAL_COMPACT_MIN_FILES,
                                         ServerDefinition.JOURNAL_MAX_IO,

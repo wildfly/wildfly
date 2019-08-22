@@ -34,7 +34,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>17.0.0.Beta1-SNAPSHOT</version>
+        <version>18.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-dist</artifactId>
@@ -173,7 +173,7 @@
                     <!-- Parameters to test cases. -->
                     <systemPropertyVariables combine.children="append">
                         <jboss.dist>${basedir}/target/xml-validation</jboss.dist>
-                        <jboss.actual.dist>${basedir}/target/wildfly-${project.version}</jboss.actual.dist>
+                        <jboss.actual.dist>${basedir}/target/${project.build.finalName}</jboss.actual.dist>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
@@ -202,12 +202,35 @@
                                 </goals>
                                 <phase>package</phase>
                                 <configuration>
-                                    <fpGroupId>org.wildfly</fpGroupId>
+                                    <offline>true</offline>
+                                    <fpGroupId>${project.groupId}</fpGroupId>
                                     <fpArtifactId>wildfly-galleon-pack</fpArtifactId>
                                     <fpVersion>${project.version}</fpVersion>
                                 </configuration>
                             </execution>
                         </executions>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.jboss.universe</groupId>
+                                <artifactId>community-universe</artifactId>
+                                <version>${version.org.jboss.universe.community-universe}</version>
+                                <scope>runtime</scope>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.jboss.universe.producer</groupId>
+                                <artifactId>wildfly-producers</artifactId>
+                                <version>${version.org.jboss.universe.producer.wildfly-producers}</version>
+                                <scope>runtime</scope>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.wildfly.core</groupId>
+                                <artifactId>wildfly-core-galleon-pack</artifactId>
+                                <version>${version.org.wildfly.core}</version>
+                                <type>txt</type>
+                                <classifier>artifact-list</classifier>
+                                <scope>runtime</scope>
+                            </dependency>
+                        </dependencies>
                     </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>

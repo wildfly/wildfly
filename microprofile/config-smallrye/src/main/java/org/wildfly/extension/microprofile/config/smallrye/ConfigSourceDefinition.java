@@ -87,7 +87,7 @@ class ConfigSourceDefinition extends PersistentResourceDefinition {
 
     static AttributeDefinition PATH = create(ModelDescriptionConstants.PATH, ModelType.STRING, false)
             .setAllowExpression(true)
-            .addArbitraryDescriptor(FILESYSTEM_PATH, new ModelNode(true))
+            .addArbitraryDescriptor(FILESYSTEM_PATH, ModelNode.TRUE)
             .build();
 
     static AttributeDefinition RELATIVE_TO = create(ModelDescriptionConstants.RELATIVE_TO, ModelType.STRING, true)

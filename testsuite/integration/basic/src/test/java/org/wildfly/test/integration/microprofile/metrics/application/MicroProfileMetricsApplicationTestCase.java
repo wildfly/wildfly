@@ -129,7 +129,7 @@ public class MicroProfileMetricsApplicationTestCase {
     @InSequence(2)
     @OperateOnDeployment("MicroProfileMetricsApplicationTestCase")
     public void testApplicationMetricWithPrometheusAfterDeployment(@ArquillianResource URL url) throws Exception {
-        getPrometheusMetrics(managementClient, "application", false);
+        getPrometheusMetrics(managementClient, "application", true);
 
         String text = performCall(url);
         assertNotNull(text);

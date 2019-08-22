@@ -28,10 +28,14 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
-import org.wildfly.clustering.ee.infinispan.CacheProperties;
+import org.wildfly.clustering.ee.cache.CacheProperties;
 import org.wildfly.clustering.marshalling.spi.InvalidSerializedFormException;
 import org.wildfly.clustering.marshalling.spi.Marshaller;
 import org.wildfly.clustering.web.LocalContextFactory;
+import org.wildfly.clustering.web.cache.sso.AuthenticationEntry;
+import org.wildfly.clustering.web.cache.sso.CompositeSSO;
+import org.wildfly.clustering.web.cache.sso.SSOFactory;
+import org.wildfly.clustering.web.cache.sso.SessionsFactory;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.sso.SSO;
 import org.wildfly.clustering.web.sso.Sessions;
@@ -59,7 +63,7 @@ public class InfinispanSSOFactory<AV, SV, A, D, S, L> implements SSOFactory<Map.
     public SSO<A, D, S, L> createSSO(String id, Map.Entry<Map.Entry<A, AtomicReference<L>>, SV> value) {
         Map.Entry<A, AtomicReference<L>> authenticationEntry = value.getKey();
         Sessions<D, S> sessions = this.sessionsFactory.createSessions(id, value.getValue());
-        return new InfinispanSSO<>(id, authenticationEntry.getKey(), sessions, authenticationEntry.getValue(), this.localContextFactory, this);
+        return new CompositeSSO<>(id, authenticationEntry.getKey(), sessions, authenticationEntry.getValue(), this.localContextFactory, this);
     }
 
     @Override

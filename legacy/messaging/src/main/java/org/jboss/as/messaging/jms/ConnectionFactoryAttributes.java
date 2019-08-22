@@ -58,31 +58,31 @@ public interface ConnectionFactoryAttributes {
 
     interface Common {
         AttributeDefinition AUTO_GROUP = SimpleAttributeDefinitionBuilder.create("auto-group", BOOLEAN)
-                .setDefaultValue(new ModelNode().set(false))
+                .setDefaultValue(ModelNode.FALSE)
                 .setRequired(false)
                 .setAllowExpression(true)
                 .build();
 
         AttributeDefinition BLOCK_ON_ACKNOWLEDGE = SimpleAttributeDefinitionBuilder.create("block-on-acknowledge", BOOLEAN)
-                .setDefaultValue(new ModelNode().set(false))
+                .setDefaultValue(ModelNode.FALSE)
                 .setRequired(false)
                 .setAllowExpression(true)
                 .build();
 
         AttributeDefinition BLOCK_ON_DURABLE_SEND = SimpleAttributeDefinitionBuilder.create("block-on-durable-send", BOOLEAN)
-                .setDefaultValue(new ModelNode().set(true))
+                .setDefaultValue(ModelNode.TRUE)
                 .setRequired(false)
                 .setAllowExpression(true)
                 .build();
 
         AttributeDefinition BLOCK_ON_NON_DURABLE_SEND = SimpleAttributeDefinitionBuilder.create("block-on-non-durable-send", BOOLEAN)
-                .setDefaultValue(new ModelNode().set(false))
+                .setDefaultValue(ModelNode.FALSE)
                 .setRequired(false)
                 .setAllowExpression(true)
                 .build();
 
         AttributeDefinition CACHE_LARGE_MESSAGE_CLIENT = SimpleAttributeDefinitionBuilder.create("cache-large-message-client", BOOLEAN)
-                .setDefaultValue(new ModelNode().set(false))
+                .setDefaultValue(ModelNode.FALSE)
                 .setRequired(false)
                 .setAllowExpression(true)
                 .build();
@@ -95,7 +95,7 @@ public interface ConnectionFactoryAttributes {
                 .build();
 
         AttributeDefinition COMPRESS_LARGE_MESSAGES = SimpleAttributeDefinitionBuilder.create("compress-large-messages", BOOLEAN)
-                .setDefaultValue(new ModelNode().set(false))
+                .setDefaultValue(ModelNode.FALSE)
                 .setRequired(false)
                 .setAllowExpression(true)
                 .build();
@@ -196,7 +196,7 @@ public interface ConnectionFactoryAttributes {
                 .build();
 
         AttributeDefinition FAILOVER_ON_INITIAL_CONNECTION = SimpleAttributeDefinitionBuilder.create("failover-on-initial-connection", BOOLEAN)
-                .setDefaultValue(new ModelNode().set(false))
+                .setDefaultValue(ModelNode.FALSE)
                 .setRequired(false)
                 .setAllowExpression(true)
                 .build();
@@ -227,7 +227,7 @@ public interface ConnectionFactoryAttributes {
                 .build();
 
         AttributeDefinition PRE_ACKNOWLEDGE = SimpleAttributeDefinitionBuilder.create("pre-acknowledge", BOOLEAN)
-                .setDefaultValue(new ModelNode().set(false))
+                .setDefaultValue(ModelNode.FALSE)
                 .setRequired(false)
                 .setAllowExpression(true)
                 .build();
@@ -248,7 +248,7 @@ public interface ConnectionFactoryAttributes {
 
 
         AttributeDefinition RECONNECT_ATTEMPTS = create("reconnect-attempts", INT)
-                .setDefaultValue(new ModelNode().set(0))
+                .setDefaultValue(ModelNode.ZERO)
                 .setRequired(false)
                 .setAllowExpression(true)
                 .build();
@@ -285,7 +285,7 @@ public interface ConnectionFactoryAttributes {
                 .build();
 
         AttributeDefinition USE_GLOBAL_POOLS = SimpleAttributeDefinitionBuilder.create("use-global-pools", BOOLEAN)
-                .setDefaultValue(new ModelNode().set(true))
+                .setDefaultValue(ModelNode.TRUE)
                 .setRequired(false)
                 .setAllowExpression(true)
                 .build();
@@ -440,7 +440,7 @@ public interface ConnectionFactoryAttributes {
                 .build();
 
         AttributeDefinition USE_AUTO_RECOVERY = SimpleAttributeDefinitionBuilder.create("use-auto-recovery", BOOLEAN)
-                .setDefaultValue(new ModelNode().set(true)) // HornetQResourceAdapter.useAutoRecovery = true but is not exposed publicly
+                .setDefaultValue(ModelNode.TRUE) // HornetQResourceAdapter.useAutoRecovery = true but is not exposed publicly
                 .setRequired(false)
                 .setAllowExpression(true)
                 .setRestartAllServices()

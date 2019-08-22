@@ -48,7 +48,7 @@ import org.jboss.as.controller.transform.description.AttributeConverter.DefaultV
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
+import org.wildfly.clustering.infinispan.client.InfinispanClientRequirement;
 import org.wildfly.clustering.service.UnaryRequirement;
 
 /**
@@ -65,8 +65,8 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
     }
 
     public enum Capability implements CapabilityProvider {
-        CONTAINER(InfinispanRequirement.REMOTE_CONTAINER),
-        CONFIGURATION(InfinispanRequirement.REMOTE_CONTAINER_CONFIGURATION),
+        CONTAINER(InfinispanClientRequirement.REMOTE_CONTAINER),
+        CONFIGURATION(InfinispanClientRequirement.REMOTE_CONTAINER_CONFIGURATION),
         ;
 
         private final org.jboss.as.clustering.controller.Capability capability;
@@ -104,8 +104,8 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
             }
         },
         SOCKET_TIMEOUT("socket-timeout", ModelType.INT, new ModelNode(60000)),
-        TCP_NO_DELAY("tcp-no-delay", ModelType.BOOLEAN, new ModelNode(true)),
-        TCP_KEEP_ALIVE("tcp-keep-alive", ModelType.BOOLEAN, new ModelNode(false)),
+        TCP_NO_DELAY("tcp-no-delay", ModelType.BOOLEAN, ModelNode.TRUE),
+        TCP_KEEP_ALIVE("tcp-keep-alive", ModelType.BOOLEAN, ModelNode.FALSE),
         VALUE_SIZE_ESTIMATE("value-size-estimate", ModelType.INT, new ModelNode(512)),
         ;
 

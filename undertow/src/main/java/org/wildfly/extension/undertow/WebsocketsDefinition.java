@@ -78,14 +78,14 @@ class WebsocketsDefinition extends PersistentResourceDefinition {
             new SimpleAttributeDefinitionBuilder("dispatch-to-worker", ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setAllowExpression(true)
-                    .setDefaultValue(new ModelNode(true))
+                    .setDefaultValue(ModelNode.TRUE)
                     .build();
 
     protected static final SimpleAttributeDefinition PER_MESSAGE_DEFLATE =
             new SimpleAttributeDefinitionBuilder("per-message-deflate", ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setAllowExpression(true)
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(ModelNode.FALSE)
                     .build();
 
     protected static final SimpleAttributeDefinition DEFLATER_LEVEL =
@@ -93,7 +93,7 @@ class WebsocketsDefinition extends PersistentResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setAllowExpression(true)
                     .setValidator(new IntRangeValidator(0, 9, true, true))
-                    .setDefaultValue(new ModelNode(0))
+                    .setDefaultValue(ModelNode.ZERO)
                     .build();
 
     protected static final List<AttributeDefinition> ATTRIBUTES = Arrays.asList(

@@ -42,7 +42,7 @@ public class ClusteredCacheMetricExecutor implements MetricExecutor<RpcManagerIm
         String containerName = address.getParent().getLastElement().getValue();
         String cacheName = address.getLastElement().getValue();
 
-        Cache<?, ?> cache = new PassiveServiceSupplier<Cache<?, ?>>(context.getServiceRegistry(true), InfinispanCacheRequirement.CACHE.getServiceName(context, containerName, cacheName)).get();
+        Cache<?, ?> cache = new PassiveServiceSupplier<Cache<?, ?>>(context.getServiceRegistry(false), InfinispanCacheRequirement.CACHE.getServiceName(context, containerName, cacheName)).get();
 
         RpcManagerImpl manager = (cache != null) ? (RpcManagerImpl) cache.getAdvancedCache().getRpcManager() : null;
         return (manager != null) ? metric.execute(manager) : null;

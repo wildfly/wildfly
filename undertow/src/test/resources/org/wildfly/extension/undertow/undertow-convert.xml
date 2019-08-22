@@ -20,7 +20,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<subsystem xmlns="urn:jboss:domain:undertow:8.0" default-server="default-server" default-servlet-container="myContainer" default-virtual-host="default-virtual-host" instance-id="some-id" statistics-enabled="true">
+<subsystem xmlns="urn:jboss:domain:undertow:10.0" default-server="default-server" default-servlet-container="myContainer" default-virtual-host="default-virtual-host" instance-id="some-id" statistics-enabled="true">
    <buffer-cache buffer-size="1025" buffers-per-region="1054" max-regions="15" name="default"/>
    <buffer-cache buffer-size="1025" buffers-per-region="1054" max-regions="15" name="extra"/>
    <server default-host="other-host" name="default-server" servlet-container="myContainer">
@@ -39,6 +39,25 @@
             <filter-ref name="static-gzip" predicate="path-suffix('.js')"/>
          </location>
          <access-log directory="${jboss.server.server.dir}" pattern="REQ %{i,test-header}" predicate="not path-suffix(*.css)" prefix="access" rotate="false"/>
+         <console-access-log predicate="not path-suffix(*.css)">
+            <attributes>
+               <date-time date-format="yyyy-MM-dd'T'HH:mm:ss" key="timestamp"/>
+               <query-parameter>
+                  <name value="test"/>
+                  <name value="foo"/>
+               </query-parameter>
+               <response-code/>
+               <response-header key-prefix="responseHeader">
+                  <name value="Content-Type"/>
+                  <name value="Content-Encoding"/>
+               </response-header>
+               <response-time time-unit="MICROSECONDS"/>
+            </attributes>
+            <metadata>
+               <property name="@version" value="1"/>
+               <property name="qualifiedHost" value="${jboss.qualified.host.name:unknown}"/>
+            </metadata>
+         </console-access-log>
          <single-sign-on cookie-name="SSOID" domain="${prop.domain:myDomain}" http-only="true" path="/path" secure="true"/>
       </host>
       <host alias="www.mysite.com,${prop.value:default-alias}" default-response-code="501" default-web-module="something-else.war" disable-console-redirect="true" name="other-host">

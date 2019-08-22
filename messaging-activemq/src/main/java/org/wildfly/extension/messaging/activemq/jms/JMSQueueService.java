@@ -19,17 +19,17 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.wildfly.extension.messaging.activemq.jms;
 
 import static org.jboss.as.server.Services.addServerExecutorDependency;
+import static org.wildfly.extension.messaging.activemq.jms.JMSTopicService.JMS_TOPIC_PREFIX;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 
 import javax.jms.Queue;
 
-import org.apache.activemq.artemis.jms.client.ActiveMQQueue;
+import org.apache.activemq.artemis.jms.client.ActiveMQDestination;
 import org.apache.activemq.artemis.jms.server.JMSServerManager;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -61,8 +61,12 @@ public class JMSQueueService implements Service<Queue> {
 
     private Queue queue;
 
-    public JMSQueueService(final String queueName, String selectorString, boolean durable) {
-        this.queueName = queueName;
+    public JMSQueueService(final String name, String selectorString, boolean durable) {
+        if (name.startsWith(JMS_TOPIC_PREFIX)) {
+            this.queueName = name.substring(JMS_TOPIC_PREFIX.length());
+        } else {
+            this.queueName = name;
+        }
         this.selectorString = selectorString;
         this.durable = durable;
     }
@@ -76,7 +80,7 @@ public class JMSQueueService implements Service<Queue> {
                 try {
                     // add back the jms.queue. prefix to be consistent with ActiveMQ Artemis 1.x addressing scheme
                     jmsManager.createQueue(false, JMS_QUEUE_PREFIX + queueName, queueName, selectorString, durable);
-                    JMSQueueService.this.queue = new ActiveMQQueue(JMS_QUEUE_PREFIX + queueName, queueName);
+                    JMSQueueService.this.queue = ActiveMQDestination.createQueue(JMS_QUEUE_PREFIX + queueName, queueName);
                     context.complete();
                 } catch (Throwable e) {
                     context.failed(MessagingLogger.ROOT_LOGGER.failedToCreate(e, "JMS Queue"));

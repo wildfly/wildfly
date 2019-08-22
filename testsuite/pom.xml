@@ -59,7 +59,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>17.0.0.Beta1-SNAPSHOT</version>
+        <version>18.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-testsuite</artifactId>
@@ -322,18 +322,60 @@
 
     <profiles>
 
+        <!-- tools.jar dependency: needed for Byteman tests. -->
         <profile>
-            <id>tools-jar</id>
+            <id>ts.clustering.use-toolsjar-jigsaw.profile</id>
             <activation>
-                <jdk>[1.7,1.9)</jdk>
+                <jdk>[1.9,)</jdk>
             </activation>
+            <properties>
+                <!-- needed for arquillian-bytenman-extension -->
+                <surefire.byteman.argline>-Djdk.attach.allowAttachSelf=true</surefire.byteman.argline>
+                <surefire.byteman.args>-Djboss.modules.system.packages=org.jboss.byteman -Djdk.attach.allowAttachSelf=true</surefire.byteman.args>
+            </properties>
+            <dependencies/>
+        </profile>
+        <profile>
+            <id>ts.clustering.use-toolsjar-default.profile</id>
+            <activation>
+                <file>
+                    <exists>${java.home}/../lib/tools.jar</exists>
+                </file>
+            </activation>
+            <properties>
+                <surefire.byteman.argline></surefire.byteman.argline>
+                <tools.jar>${java.home}/../lib/tools.jar</tools.jar>
+                <surefire.byteman.args>-Djboss.modules.system.packages=com.sun.tools.attach,org.jboss.byteman -Xbootclasspath/a:${tools.jar}</surefire.byteman.args>
+            </properties>
             <dependencies>
                 <dependency>
                     <groupId>com.sun</groupId>
                     <artifactId>tools</artifactId>
                     <version>1.8</version>
                     <scope>system</scope>
-                    <systemPath>${java.home}/../lib/tools.jar</systemPath>
+                    <systemPath>${tools.jar}</systemPath>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>ts.clustering.use-toolsjar-osx.profile</id>
+            <activation>
+                <file>
+                    <exists>${java.home}/../Classes/classes.jar</exists>
+                </file>
+            </activation>
+            <properties>
+                <surefire.byteman.argline></surefire.byteman.argline>
+                <tools.jar>${java.home}/../Classes/classes.jar</tools.jar>
+                <surefire.byteman.args>-Djboss.modules.system.packages=com.sun.tools.attach,org.jboss.byteman -Xbootclasspath/a:${tools.jar}</surefire.byteman.args>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>com.sun</groupId>
+                    <artifactId>tools</artifactId>
+                    <version>1.8</version>
+                    <scope>system</scope>
+                    <systemPath>${tools.jar}</systemPath>
                 </dependency>
             </dependencies>
         </profile>

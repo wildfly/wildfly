@@ -24,13 +24,16 @@ package org.jboss.as.test.clustering.cluster.web.remote;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
+import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.shrinkwrap.api.Archive;
+import org.junit.runner.RunWith;
 
 /**
  * @author Paul Ferraro
  */
-@ServerSetup(CoarseHotRodPersistenceWebFailoverTestCase.ServerSetupTask.class)
+@RunWith(Arquillian.class)
+@ServerSetup({ InfinispanServerSetupTask.class, AbstractHotRodPersistenceWebFailoverTestCase.ServerSetupTask.class })
 public class CoarseHotRodPersistenceWebFailoverTestCase extends AbstractHotRodPersistenceWebFailoverTestCase {
 
     private static final String DEPLOYMENT_NAME = CoarseHotRodPersistenceWebFailoverTestCase.class.getSimpleName() + ".war";

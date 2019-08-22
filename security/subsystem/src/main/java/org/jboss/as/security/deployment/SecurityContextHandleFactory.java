@@ -77,6 +77,7 @@ public class SecurityContextHandleFactory implements ContextHandleFactory {
 
     private static class SecuritySetupContextHandle implements SetupContextHandle {
 
+        private static final long serialVersionUID = -3687196529822940542L;
         private final SecurityContext securityContext;
 
         private SecuritySetupContextHandle() {
@@ -126,6 +127,7 @@ public class SecurityContextHandleFactory implements ContextHandleFactory {
 
     private static class SecurityResetContextHandle implements ResetContextHandle {
 
+        private static final long serialVersionUID = 1207300896528747343L;
         private final SecurityContext previous;
 
         private SecurityResetContextHandle(SecurityContext previous) {

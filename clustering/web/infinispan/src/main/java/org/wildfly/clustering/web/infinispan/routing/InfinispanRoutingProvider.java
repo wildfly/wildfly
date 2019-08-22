@@ -37,6 +37,7 @@ import org.wildfly.clustering.service.SupplierDependency;
 import org.wildfly.clustering.spi.CacheServiceConfiguratorProvider;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 import org.wildfly.clustering.spi.DistributedCacheServiceConfiguratorProvider;
+import org.wildfly.clustering.web.cache.routing.LocalRouteServiceConfigurator;
 import org.wildfly.clustering.web.routing.RoutingProvider;
 
 /**

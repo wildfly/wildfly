@@ -1,8 +1,8 @@
 [[Undertow_using_as_a_Load_Balancer]]
-= Using Wildfly as a Load Balancer
+= Using WildFly as a Load Balancer
 :wildflyVersion: 10.1
 
-Wildfly 10 adds support for using the Undertow subsystem as a load
+WildFly 10 added support for using the Undertow subsystem as a load
 balancer. Wildfly supports two different approaches, you can either
 define a static load balancer, and specify the back end hosts in your
 configuration, or use it as a mod_cluster frontend, and use mod_cluster
@@ -36,7 +36,7 @@ the backend know that it should not attempt to push for this request.
 
 === Load balancer server profiles
 
-WildFly 11 adds load balancer profiles for both standalone and domain modes.
+WildFly 11 added load balancer profiles for both standalone and domain modes.
 
 ==== Example: Start standalone load balancer
 
@@ -79,7 +79,7 @@ $WILDFLY_HOME/bin/standalone.sh -c standalone-ha.xml -b $MY_IP -bprivate $MY_IP
 Again, to make it safe, users should configure private/internal IP address into {{MY_IP}} variable. 
 
 [[using-wildly-as-a-static-load-balancer]]
-== Using Wildly as a static load balancer
+== Using WildFly as a static load balancer
 
 To use WildFly as a static load balancer the first step is to create a
 proxy handler in the Undertow subsystem. For the purposes of this

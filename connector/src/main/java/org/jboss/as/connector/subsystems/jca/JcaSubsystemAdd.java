@@ -55,6 +55,7 @@ import org.jboss.tm.XAResourceRecoveryRegistry;
  *
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  * @author @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 class JcaSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
@@ -80,7 +81,8 @@ class JcaSubsystemAdd extends AbstractBoottimeAddStepHandler {
         TransactionIntegrationService tiService = new TransactionIntegrationService();
 
         serviceTarget
-                .addCapability(TRANSACTION_INTEGRATION_CAPABILITY, tiService)
+                .addCapability(TRANSACTION_INTEGRATION_CAPABILITY)
+                .setInstance(tiService)
                 // Ensure the local transaction provider is started
                 .addCapabilityRequirement(LOCAL_TRANSACTION_PROVIDER_CAPABILITY, Void.class)
                 .addCapabilityRequirement(TRANSACTION_XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY, XAResourceRecoveryRegistry.class, tiService.getRrInjector())

@@ -26,8 +26,9 @@ import java.time.Duration;
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
 import org.wildfly.clustering.ee.Mutator;
-import org.wildfly.clustering.ee.infinispan.CacheEntryMutator;
-import org.wildfly.clustering.ee.infinispan.CacheProperties;
+import org.wildfly.clustering.ee.MutatorFactory;
+import org.wildfly.clustering.ee.cache.CacheProperties;
+import org.wildfly.clustering.ee.infinispan.InfinispanMutatorFactory;
 import org.wildfly.clustering.ejb.Bean;
 import org.wildfly.clustering.ejb.PassivationListener;
 import org.wildfly.clustering.ejb.RemoveListener;
@@ -55,6 +56,7 @@ public class InfinispanBeanFactory<I, T> implements BeanFactory<I, T> {
     private final Cache<BeanKey<I>, BeanEntry<I>> findCache;
     private final Duration timeout;
     private final PassivationListener<T> listener;
+    private final MutatorFactory<BeanKey<I>, BeanEntry<I>> mutatorFactory;
 
     public InfinispanBeanFactory(String beanName, BeanGroupFactory<I, T> groupFactory, Cache<BeanKey<I>, BeanEntry<I>> cache, CacheProperties properties, Duration timeout, PassivationListener<T> listener) {
         this.beanName = beanName;
@@ -63,6 +65,7 @@ public class InfinispanBeanFactory<I, T> implements BeanFactory<I, T> {
         this.findCache = properties.isLockOnRead() ? this.cache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK) : this.cache;
         this.timeout = timeout;
         this.listener = listener;
+        this.mutatorFactory = new InfinispanMutatorFactory<>(cache, properties);
     }
 
     @Override
@@ -80,7 +83,7 @@ public class InfinispanBeanFactory<I, T> implements BeanFactory<I, T> {
             return null;
         }
         BeanGroup<I, T> group = this.groupFactory.createGroup(groupId, groupEntry);
-        Mutator mutator = (entry.getLastAccessedTime() == null) ? Mutator.PASSIVE : new CacheEntryMutator<>(this.cache, this.createKey(id), entry);
+        Mutator mutator = (entry.getLastAccessedTime() == null) ? Mutator.PASSIVE : this.mutatorFactory.createMutator(this.createKey(id), entry);
         return new InfinispanBean<>(id, entry, group, mutator, this, this.timeout, this.listener);
     }
 
@@ -97,8 +100,8 @@ public class InfinispanBeanFactory<I, T> implements BeanFactory<I, T> {
     @Override
     public BeanEntry<I> createValue(I id, I groupId) {
         BeanEntry<I> entry = new InfinispanBeanEntry<>(this.beanName, groupId);
-        BeanEntry<I> existing = this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).putIfAbsent(this.createKey(id), entry);
-        return (existing == null) ? entry : existing;
+        this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(this.createKey(id), entry);
+        return entry;
     }
 
     @Override

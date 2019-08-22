@@ -36,6 +36,7 @@ public final class Capabilities {
     public static final String CAPABILITY_HOST_SSO = "org.wildfly.undertow.host.sso";
     public static final String CAPABILITY_LOCATION = "org.wildfly.undertow.host.location";
     public static final String CAPABILITY_ACCESS_LOG = "org.wildfly.undertow.host.access-log";
+    public static final String CAPABILITY_CONSOLE_ACCESS_LOG = "org.wildfly.undertow.host.console-access-log";
     public static final String CAPABILITY_HANDLER = "org.wildfly.extension.undertow.handler";
     public static final String CAPABILITY_MOD_CLUSTER_FILTER = "org.wildfly.undertow.mod_cluster-filter";
     public static final String CAPABILITY_SERVLET_CONTAINER = "org.wildfly.undertow.servlet-container";
@@ -59,4 +60,5 @@ public final class Capabilities {
     public static final String REF_JACC_POLICY = "org.wildfly.security.jacc-policy";
     public static final String REF_OUTBOUND_SOCKET = "org.wildfly.network.outbound-socket-binding";
     public static final String REF_REQUEST_CONTROLLER = "org.wildfly.request-controller";
+    public static final String REF_SUSPEND_CONTROLLER = "org.wildfly.server.suspend-controller";
 }

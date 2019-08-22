@@ -44,6 +44,7 @@ import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 public class ExternalConnectionFactoryService implements Service<ConnectionFactory> {
 
     private final boolean ha;
+    private final boolean enable1Prefixes;
     private final DiscoveryGroupConfiguration groupConfiguration;
     private final TransportConfiguration[] connectors;
     private final JMSFactoryType type;
@@ -59,16 +60,17 @@ public class ExternalConnectionFactoryService implements Service<ConnectionFacto
 
     ExternalConnectionFactoryService(DiscoveryGroupConfiguration groupConfiguration,
             Map<String, Supplier<CommandDispatcherFactory>> commandDispatcherFactories,
-            Map<String, Supplier<SocketBinding>> groupBindings, Map<String, String> clusterNames, JMSFactoryType type, boolean ha) {
-        this(ha, type, groupConfiguration, Collections.emptyMap(), Collections.emptyMap(),commandDispatcherFactories, groupBindings, clusterNames, null);
+            Map<String, Supplier<SocketBinding>> groupBindings, Map<String, String> clusterNames, JMSFactoryType type, boolean ha, boolean enable1Prefixes) {
+        this(ha, enable1Prefixes, type, groupConfiguration, Collections.emptyMap(), Collections.emptyMap(),commandDispatcherFactories, groupBindings, clusterNames, null);
     }
 
     ExternalConnectionFactoryService(TransportConfiguration[] connectors, Map<String, Supplier<SocketBinding>> socketBindings,
-            Map<String, Supplier<OutboundSocketBinding>> outboundSocketBindings, JMSFactoryType type, boolean ha) {
-        this(ha, type, null, socketBindings, outboundSocketBindings, Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap(), connectors);
+            Map<String, Supplier<OutboundSocketBinding>> outboundSocketBindings, JMSFactoryType type, boolean ha, boolean enable1Prefixes) {
+        this(ha, enable1Prefixes, type, null, socketBindings, outboundSocketBindings, Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap(), connectors);
     }
 
     private ExternalConnectionFactoryService(boolean ha,
+            boolean enable1Prefixes,
             JMSFactoryType type,
             DiscoveryGroupConfiguration groupConfiguration,
             Map<String, Supplier<SocketBinding>> socketBindings,
@@ -79,6 +81,7 @@ public class ExternalConnectionFactoryService implements Service<ConnectionFacto
             TransportConfiguration[] connectors) {
         assert (connectors != null && connectors.length > 0) || groupConfiguration != null;
         this.ha = ha;
+        this.enable1Prefixes = enable1Prefixes;
         this.type = type;
         this.groupConfiguration = groupConfiguration;
         this.connectors = connectors;
@@ -121,6 +124,7 @@ public class ExternalConnectionFactoryService implements Service<ConnectionFacto
                     factory = ActiveMQJMSClient.createConnectionFactoryWithoutHA(config, type);
                 }
             }
+            factory.setEnable1xPrefixes(enable1Prefixes);
         } catch (Throwable e) {
             throw MessagingLogger.ROOT_LOGGER.failedToCreate(e, "connection-factory");
         }

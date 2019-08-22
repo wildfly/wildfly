@@ -35,7 +35,6 @@
         <module name="javax.api"/>
         <module name="com.github.ben-manes.caffeine"/>
         <module name="org.infinispan"/>
-        <module name="org.infinispan.client.hotrod"/>
         <module name="org.infinispan.commons"/>
         <module name="org.jboss.as.clustering.common"/>
         <module name="org.jboss.as.controller"/>
