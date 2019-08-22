@@ -116,7 +116,7 @@ WildFly defined layers to assemble a custom configuration. <<galleon-cli-recipes
 Basic layers:
 
 * _cdi_: Support for cdi.
-* _jaxrs_: Support for jaxrs.
+* _jaxrs_: Support for jaxrs. Depends on _web-server_ (layer defined in the WildFly servlet feature-pack).
 * _jms-activemq_: Support for connections to a remote jms broker. 
 * _jpa_: Support for jpa (latest WildFly supported hibernate release).
 * _observability_: Support for microprofile monitoring and configuration features (config, health, metrics, open-tracing).
@@ -127,14 +127,7 @@ Basic layers:
 
 Aggregation layers:
 
-* _cloud-profile_, an aggregation of the basic layers (except _h2-*_ layers).
-
-[NOTE]
-====
-These layers depend at least on the _web-server_ layer defined in the WildFly servlet 
-feature-pack (on which WildFly feature-pack depends). This means that when creating an 
-installation with these layers, the installed WildFly server is also configured to be a servlet container. 
-====
+* _cloud-profile_, an aggregation of the basic layers (except _h2-*_ layers) and a _web-server_ .
 
 ==== WildFly servlet layers
 
