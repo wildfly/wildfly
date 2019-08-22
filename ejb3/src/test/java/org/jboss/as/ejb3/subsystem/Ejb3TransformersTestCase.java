@@ -84,27 +84,12 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testTransformerEAP620() throws Exception {
-        ModelTestControllerVersion controller = ModelTestControllerVersion.EAP_6_2_0;
-        testTransformation(ModelVersion.create(1, 2, 1), controller,
-                formatLegacySubsystemArtifact(controller),
-                formatArtifact("org.jboss.as:jboss-as-threads:%s", controller));
-    }
-
-    @Test
-    public void testTransformerEAP630() throws Exception {
-        ModelTestControllerVersion controller = ModelTestControllerVersion.EAP_6_3_0;
-        testTransformation(ModelVersion.create(1, 2, 1), controller,
-                formatLegacySubsystemArtifact(controller),
-                formatArtifact("org.jboss.as:jboss-as-threads:%s", controller));
-    }
-
-    @Test
     public void testTransformerEAP640() throws Exception {
         ModelTestControllerVersion controller = ModelTestControllerVersion.EAP_6_4_0;
         testTransformation(ModelVersion.create(1, 3, 0), controller,
                 formatLegacySubsystemArtifact(controller),
-                formatArtifact("org.jboss.as:jboss-as-threads:%s", controller));
+                formatArtifact("org.jboss.as:jboss-as-threads:%s", controller),
+                "org.jboss.spec.javax.rmi:jboss-rmi-api_1.0_spec:1.0.4.Final-redhat-3");
     }
 
     /**
@@ -154,27 +139,12 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testRejectionsEAP620() throws Exception {
-        ModelTestControllerVersion controller = ModelTestControllerVersion.EAP_6_2_0;
-        this.testRejections(ModelVersion.create(1, 2, 1), controller,
-                formatLegacySubsystemArtifact(controller),
-                formatArtifact("org.jboss.as:jboss-as-threads:%s", controller), LEGACY_EJB_CLIENT_ARTIFACT);
-    }
-
-    @Test
-    public void testRejectionsEAP630() throws Exception {
-        ModelTestControllerVersion controller = ModelTestControllerVersion.EAP_6_3_0;
-        this.testRejections(ModelVersion.create(1, 2, 1), controller,
-                formatLegacySubsystemArtifact(controller),
-                formatArtifact("org.jboss.as:jboss-as-threads:%s", controller), LEGACY_EJB_CLIENT_ARTIFACT);
-    }
-
-    @Test
     public void testRejectionsEAP640() throws Exception {
         ModelTestControllerVersion controller = ModelTestControllerVersion.EAP_6_4_0;
         this.testRejections(ModelVersion.create(1, 3, 0), controller,
                 formatLegacySubsystemArtifact(controller),
-                formatArtifact("org.jboss.as:jboss-as-threads:%s", controller), LEGACY_EJB_CLIENT_ARTIFACT);
+                formatArtifact("org.jboss.as:jboss-as-threads:%s", controller), LEGACY_EJB_CLIENT_ARTIFACT,
+                "org.jboss.spec.javax.rmi:jboss-rmi-api_1.0_spec:1.0.4.Final-redhat-3");
     }
 
     @Override
