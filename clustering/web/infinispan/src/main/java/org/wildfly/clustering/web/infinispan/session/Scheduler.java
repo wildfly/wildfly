@@ -29,6 +29,11 @@ import org.wildfly.clustering.infinispan.spi.distribution.Locality;
  * @author Paul Ferraro
  */
 public interface Scheduler extends org.wildfly.clustering.web.cache.session.Scheduler {
+    /**
+     * Schedules the session with the specified identifier.
+     * @param sessionId a session identifier
+     */
+    void schedule(String sessionId);
 
     /**
      * Cancels any previous scheduled tasks for session which are no longer local to the current node

@@ -25,8 +25,10 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
@@ -40,23 +42,27 @@ import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.Remover;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.infinispan.spi.distribution.Locality;
+import org.wildfly.clustering.web.cache.session.ImmutableSessionMetaDataFactory;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
+import org.wildfly.clustering.web.session.SessionExpirationListener;
 
 /**
  * Session expiration scheduler that eagerly expires sessions as soon as they are eligible.
  * If/When Infinispan implements expiration notifications (ISPN-694), this will be obsolete.
  * @author Paul Ferraro
  */
-public class SessionExpirationScheduler implements Scheduler {
+public class SessionExpirationScheduler<MV> implements Scheduler {
 
+    final Collection<SessionExpirationListener> listeners = new CopyOnWriteArraySet<>();
     final Map<String, Future<?>> expirationFutures = new ConcurrentHashMap<>();
     final Batcher<TransactionBatch> batcher;
     final Remover<String> remover;
+    private final ImmutableSessionMetaDataFactory<MV> metaDataFactory;
     private final ScheduledExecutorService executor;
 
-    public SessionExpirationScheduler(Batcher<TransactionBatch> batcher, Remover<String> remover) {
-        this(batcher, remover, createScheduledExecutor(createThreadFactory()));
+    public SessionExpirationScheduler(Batcher<TransactionBatch> batcher, ImmutableSessionMetaDataFactory<MV> metaDataFactory, Remover<String> remover) {
+        this(batcher, metaDataFactory, remover, createScheduledExecutor(createThreadFactory()));
     }
 
     private static ThreadFactory createThreadFactory() {
@@ -75,8 +81,9 @@ public class SessionExpirationScheduler implements Scheduler {
         return executor;
     }
 
-    public SessionExpirationScheduler(Batcher<TransactionBatch> batcher, Remover<String> remover, ScheduledExecutorService executor) {
+    public SessionExpirationScheduler(Batcher<TransactionBatch> batcher, ImmutableSessionMetaDataFactory<MV> metaDataFactory, Remover<String> remover, ScheduledExecutorService executor) {
         this.batcher = batcher;
+        this.metaDataFactory = metaDataFactory;
         this.remover = remover;
         this.executor = executor;
     }
@@ -90,16 +97,25 @@ public class SessionExpirationScheduler implements Scheduler {
     }
 
     @Override
+    public void schedule(String sessionId) {
+        MV value = this.metaDataFactory.findValue(sessionId);
+        if (value != null) {
+            ImmutableSessionMetaData metaData = this.metaDataFactory.createImmutableSessionMetaData(sessionId, value);
+            this.schedule(sessionId, metaData);
+        }
+    }
+
+    @Override
     public void schedule(String sessionId, ImmutableSessionMetaData metaData) {
         Duration maxInactiveInterval = metaData.getMaxInactiveInterval();
         if (!maxInactiveInterval.isZero()) {
             Instant lastAccessed = metaData.getLastAccessedTime();
             Duration delay = Duration.between(Instant.now(), lastAccessed.plus(maxInactiveInterval));
             Runnable task = new ExpirationTask(sessionId);
-            long seconds = !delay.isNegative() ? delay.getSeconds() + 1 : 0;
-            InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will expire in %d sec", sessionId, seconds);
+            long millis = !delay.isNegative() ? delay.toMillis() : 0;
+            InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will expire in %d ms", sessionId, millis);
             synchronized (task) {
-                this.expirationFutures.put(sessionId, this.executor.schedule(task, seconds, TimeUnit.SECONDS));
+                this.expirationFutures.put(sessionId, this.executor.schedule(task, millis, TimeUnit.MILLISECONDS));
             }
         }
     }
