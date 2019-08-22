@@ -834,13 +834,13 @@ public class ServerDefinition extends PersistentResourceDefinition {
 
     @Override
     protected List<? extends PersistentResourceDefinition> getChildren() {
-        List<PersistentResourceDefinition> children = new ArrayList();
+        List<PersistentResourceDefinition> children = new ArrayList<>();
         // Static resources
         children.addAll(Arrays.asList(
                 // HA policy
                 LiveOnlyDefinition.INSTANCE,
-                ReplicationMasterDefinition.INSTANCE,
-                ReplicationSlaveDefinition.INSTANCE,
+                registerRuntimeOnly ? ReplicationMasterDefinition.INSTANCE : ReplicationMasterDefinition.HC_INSTANCE,
+                registerRuntimeOnly ? ReplicationSlaveDefinition.INSTANCE : ReplicationSlaveDefinition.HC_INSTANCE,
                 ReplicationColocatedDefinition.INSTANCE,
                 SharedStoreMasterDefinition.INSTANCE,
                 SharedStoreSlaveDefinition.INSTANCE,
@@ -895,7 +895,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
         }
     }
 
-    enum JournalType {
+    private enum JournalType {
         NIO, ASYNCIO;
     }
 }

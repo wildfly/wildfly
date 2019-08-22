@@ -65,14 +65,17 @@ public class ReplicationSlaveDefinition extends PersistentResourceDefinition {
         ATTRIBUTES = Collections.unmodifiableCollection(attributes);
     }
 
-    public static final ReplicationSlaveDefinition INSTANCE = new ReplicationSlaveDefinition(MessagingExtension.REPLICATION_SLAVE_PATH, false);
-    public static final ReplicationSlaveDefinition CONFIGURATION_INSTANCE = new ReplicationSlaveDefinition(MessagingExtension.CONFIGURATION_SLAVE_PATH, true);
+    public static final ReplicationSlaveDefinition INSTANCE = new ReplicationSlaveDefinition(MessagingExtension.REPLICATION_SLAVE_PATH, false, true);
+    public static final ReplicationSlaveDefinition HC_INSTANCE = new ReplicationSlaveDefinition(MessagingExtension.REPLICATION_SLAVE_PATH, false, false);
+    public static final ReplicationSlaveDefinition CONFIGURATION_INSTANCE = new ReplicationSlaveDefinition(MessagingExtension.CONFIGURATION_SLAVE_PATH, true, true);
 
-    private ReplicationSlaveDefinition(PathElement path, boolean allowSibling) {
+    private final boolean registerRuntime;
+    private ReplicationSlaveDefinition(PathElement path, boolean allowSibling, boolean registerRuntime) {
         super(path,
                 MessagingExtension.getResourceDescriptionResolver(HA_POLICY),
                 createAddOperation(path.getKey(), allowSibling, ATTRIBUTES),
                 ReloadRequiredRemoveStepHandler.INSTANCE);
+        this.registerRuntime = registerRuntime;
     }
 
     @Override
@@ -80,6 +83,9 @@ public class ReplicationSlaveDefinition extends PersistentResourceDefinition {
         AbstractWriteAttributeHandler writeAttribute = new ActiveMQReloadRequiredHandlers.WriteAttributeHandler(ATTRIBUTES);
         for (AttributeDefinition attribute : ATTRIBUTES) {
             resourceRegistration.registerReadWriteAttribute(attribute, null, writeAttribute);
+        }
+        if(registerRuntime) {
+            HAPolicySynchronizationStatusReadHandler.registerSlaveAttributes(resourceRegistration);
         }
     }
 
