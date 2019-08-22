@@ -21,16 +21,16 @@
  */
 package org.wildfly.test.integration.elytron.realm;
 
-import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
-import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.wildfly.test.integration.elytron.realm.AggregateRealmUtil.assertAttribute;
+import static org.wildfly.test.integration.elytron.realm.AggregateRealmUtil.assertAuthenticationFailed;
+import static org.wildfly.test.integration.elytron.realm.AggregateRealmUtil.assertInRole;
+import static org.wildfly.test.integration.elytron.realm.AggregateRealmUtil.assertNoRoleAssigned;
+import static org.wildfly.test.integration.elytron.realm.AggregateRealmUtil.assertNotInRole;
+import static org.wildfly.test.integration.elytron.realm.AggregateRealmUtil.prepareRolesPrintingURL;
 
-import java.io.ByteArrayInputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -41,14 +41,12 @@ import java.util.Properties;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.message.BasicNameValuePair;
-import org.codehaus.plexus.util.StringUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.servlets.RolePrintingServlet;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -510,27 +508,12 @@ public class AggregateRealmTestCase {
         assertAttribute(properties, "City", "San Francisco");
     }
 
-    private void assertAttribute(Properties properties, String attributeName, String... attributeValues) {
-        assertTrue("Attribute Exists", properties.containsKey(attributeName));
-        List<String> values = Arrays.asList(properties.getProperty(attributeName).split(","));
-        assertEquals("Value Count", attributeValues.length, values.size());
-        for (String currentValue : attributeValues) {
-            assertTrue("Value Exists", values.contains(currentValue));
-        }
-    }
-
-    private Properties getAttributes(URL webAppURL, final String identity) throws Exception {
-        URL adjustedUrl = new URL(webAppURL.toExternalForm() + AttributePrintingServlet.SERVLET_PATH.substring(1));
-        final String attributesResponse = Utils.makeCallWithBasicAuthn(adjustedUrl, identity, CORRECT_PASSWORD, SC_OK);
-
-        Properties properties = new Properties();
-        properties.load(new ByteArrayInputStream(attributesResponse.getBytes()));
-
-        return properties;
+    private static Properties getAttributes(URL webAppURL, final String identity) throws Exception {
+        return AggregateRealmUtil.getAttributes(webAppURL, identity, CORRECT_PASSWORD);
     }
 
     private void userWithNoRoles_userInBothRealm(URL webAppURL) throws Exception {
-        assertNoRoleAssigned(webAppURL, USER_WITHOUT_ROLE, CORRECT_PASSWORD);
+        assertNoRoleAssigned(webAppURL, USER_WITHOUT_ROLE, CORRECT_PASSWORD, QUERY_ROLES);
     }
 
     private void userWithOneRole_userInBothRealm(URL webAppURL) throws Exception {
@@ -542,19 +525,19 @@ public class AggregateRealmTestCase {
     }
 
     private void wrongPassword_userInBothRealm(URL webAppURL) throws Exception {
-        assertAuthenticationFailed(webAppURL, USER_WITH_ONE_ROLE, WRONG_PASSWORD);
+        assertAuthenticationFailed(webAppURL, USER_WITH_ONE_ROLE, WRONG_PASSWORD, QUERY_ROLES);
     }
 
     private void emptyPassword_userInBothRealm(URL webAppURL) throws Exception {
-        assertAuthenticationFailed(webAppURL, USER_WITH_ONE_ROLE, EMPTY_PASSWORD);
+        assertAuthenticationFailed(webAppURL, USER_WITH_ONE_ROLE, EMPTY_PASSWORD, QUERY_ROLES);
     }
 
     private void passwordFromAuthzRealm_userInBothRealm(URL webAppURL) throws Exception {
-        assertAuthenticationFailed(webAppURL, USER_WITH_ONE_ROLE, AUTHORIZATION_REALM_PASSWORD);
+        assertAuthenticationFailed(webAppURL, USER_WITH_ONE_ROLE, AUTHORIZATION_REALM_PASSWORD, QUERY_ROLES);
     }
 
     private void wrongUser(URL webAppURL) throws Exception {
-        assertAuthenticationFailed(webAppURL, WRONG_USER, CORRECT_PASSWORD);
+        assertAuthenticationFailed(webAppURL, WRONG_USER, CORRECT_PASSWORD, QUERY_ROLES);
     }
 
     private void userWithDifferentRoleInDifferentRealm(URL webAppURL) throws Exception {
@@ -566,15 +549,15 @@ public class AggregateRealmTestCase {
     }
 
     private void wrongPassword_userOnlyInAuthzRealm(URL webAppURL) throws Exception {
-        assertAuthenticationFailed(webAppURL, USER_ONLY_IN_AUTHORIZATION, WRONG_PASSWORD);
+        assertAuthenticationFailed(webAppURL, USER_ONLY_IN_AUTHORIZATION, WRONG_PASSWORD, QUERY_ROLES);
     }
 
     private void emptyPassword_userOnlyInAuthzRealm(URL webAppURL) throws Exception {
-        assertAuthenticationFailed(webAppURL, USER_ONLY_IN_AUTHORIZATION, EMPTY_PASSWORD);
+        assertAuthenticationFailed(webAppURL, USER_ONLY_IN_AUTHORIZATION, EMPTY_PASSWORD, QUERY_ROLES);
     }
 
     private void testAssignedRoles(URL webAppURL, String username, String password, String... assignedRoles) throws Exception {
-        final URL rolesPrintingURL = prepareRolesPrintingURL(webAppURL);
+        final URL rolesPrintingURL = prepareRolesPrintingURL(webAppURL, QUERY_ROLES);
         final String rolesResponse = Utils.makeCallWithBasicAuthn(rolesPrintingURL, username, password, SC_OK);
 
         final List<String> assignedRolesList = Arrays.asList(assignedRoles);
@@ -585,32 +568,6 @@ public class AggregateRealmTestCase {
             } else {
                 assertNotInRole(rolesResponse, role);
             }
-        }
-    }
-
-    private void assertNoRoleAssigned(URL webAppURL, String username, String password) throws Exception {
-        final URL rolesPrintingURL = prepareRolesPrintingURL(webAppURL);
-        Utils.makeCallWithBasicAuthn(rolesPrintingURL, username, password, SC_FORBIDDEN);
-    }
-
-    private void assertAuthenticationFailed(URL webAppURL, String username, String password) throws Exception {
-        final URL rolesPrintingURL = prepareRolesPrintingURL(webAppURL);
-        Utils.makeCallWithBasicAuthn(rolesPrintingURL, username, password, SC_UNAUTHORIZED);
-    }
-
-    private URL prepareRolesPrintingURL(URL webAppURL) throws MalformedURLException {
-        return new URL(webAppURL.toExternalForm() + RolePrintingServlet.SERVLET_PATH.substring(1) + "?" + QUERY_ROLES);
-    }
-
-    private void assertInRole(final String rolePrintResponse, String role) {
-        if (!StringUtils.contains(rolePrintResponse, "," + role + ",")) {
-            fail("Missing role '" + role + "' assignment");
-        }
-    }
-
-    private void assertNotInRole(final String rolePrintResponse, String role) {
-        if (StringUtils.contains(rolePrintResponse, "," + role + ",")) {
-            fail("Unexpected role '" + role + "' assignment");
         }
     }
 
@@ -780,12 +737,12 @@ public class AggregateRealmTestCase {
                     .withSecurityDomain(AGGREGATE_REALM_DIFFERENT_TYPE_NAME)
                     .build());
 
-            configurableElements.add(new CustomFSAttributes(FILESYSTEM_REALM_AUTHN_NAME, USER_FIRST_ATTRIBUTES, "Colours", "Red", "Orange"));
-            configurableElements.add(new CustomFSAttributes(FILESYSTEM_REALM_2_AUTHN_NAME, USER_SECOND_ATTRIBUTES, "Colours", "Yellow", "Green"));
-            configurableElements.add(new CustomFSAttributes(FILESYSTEM_REALM_AUTHN_NAME, USER_COMBINED_ATTRIBUTES, "Colours", "Blue", "Violet"));
-            configurableElements.add(new CustomFSAttributes(FILESYSTEM_REALM_AUTHN_NAME, USER_COMBINED_ATTRIBUTES, "Year", "1979"));
-            configurableElements.add(new CustomFSAttributes(FILESYSTEM_REALM_2_AUTHN_NAME, USER_COMBINED_ATTRIBUTES, "Colours", "Pink", "Turqoise"));
-            configurableElements.add(new CustomFSAttributes(FILESYSTEM_REALM_2_AUTHN_NAME, USER_COMBINED_ATTRIBUTES, "City", "San Francisco"));
+            configurableElements.add(new AggregateRealmUtil.CustomFSAttributes(FILESYSTEM_REALM_AUTHN_NAME, USER_FIRST_ATTRIBUTES, "Colours", "Red", "Orange"));
+            configurableElements.add(new AggregateRealmUtil.CustomFSAttributes(FILESYSTEM_REALM_2_AUTHN_NAME, USER_SECOND_ATTRIBUTES, "Colours", "Yellow", "Green"));
+            configurableElements.add(new AggregateRealmUtil.CustomFSAttributes(FILESYSTEM_REALM_AUTHN_NAME, USER_COMBINED_ATTRIBUTES, "Colours", "Blue", "Violet"));
+            configurableElements.add(new AggregateRealmUtil.CustomFSAttributes(FILESYSTEM_REALM_AUTHN_NAME, USER_COMBINED_ATTRIBUTES, "Year", "1979"));
+            configurableElements.add(new AggregateRealmUtil.CustomFSAttributes(FILESYSTEM_REALM_2_AUTHN_NAME, USER_COMBINED_ATTRIBUTES, "Colours", "Pink", "Turqoise"));
+            configurableElements.add(new AggregateRealmUtil.CustomFSAttributes(FILESYSTEM_REALM_2_AUTHN_NAME, USER_COMBINED_ATTRIBUTES, "City", "San Francisco"));
 
             configurableElements.add(AggregateSecurityRealm.builder(AGGREGATE_ATTRIBUTES_NAME)
                     .withAuthenticationRealm(PROPERTIES_REALM_AUTHN_NAME)
@@ -807,34 +764,6 @@ public class AggregateRealmTestCase {
 
             return configurableElements.toArray(new ConfigurableElement[configurableElements.size()]);
         }
-    }
-
-     static class CustomFSAttributes implements ConfigurableElement {
-
-        private final String realm;
-        private final String identity;
-        private final String attributeName;
-        private final String[] values;
-
-        CustomFSAttributes(String realm, String identity, String attributeName, String... values) {
-            this.realm = realm;
-            this.identity = identity;
-            this.attributeName = attributeName;
-            this.values = values;
-        }
-
-        @Override
-        public String getName() {
-            return String.format("Attribute '$s' for identity '%s' in realm '%s'", attributeName, identity, realm);
-        }
-
-        @Override
-        public void create(CLIWrapper cli) throws Exception {
-            cli.sendLine(String.format(
-                    "/subsystem=elytron/filesystem-realm=%s:add-identity-attribute(identity=%s, name=%s, value=[%s])", realm,
-                    identity, attributeName, String.join(",", values)));
-        }
-
     }
 
 }
