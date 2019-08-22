@@ -88,6 +88,11 @@
             <artifactId>undertow-websockets-jsr</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>jakarta.security.enterprise</groupId>
+            <artifactId>jakarta.security.enterprise-api</artifactId>
+            <scope>test</scope>
+        </dependency>
         <!-- Required for Java 11 -->
         <dependency>
             <groupId>javax.activation</groupId>
@@ -108,11 +113,6 @@
         <dependency>
             <groupId>javax.persistence</groupId>
             <artifactId>javax.persistence-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>javax.security.enterprise</groupId>
-            <artifactId>javax.security.enterprise-api</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
