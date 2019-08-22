@@ -873,8 +873,12 @@ public class ServerDefinition extends PersistentResourceDefinition {
 
         children.add(new BridgeDefinition(registerRuntimeOnly));
         children.add(new BroadcastGroupDefinition(registerRuntimeOnly));
+        children.add(new SocketBroadcastGroupDefinition(registerRuntimeOnly));
+        children.add(new JGroupsBroadcastGroupDefinition(registerRuntimeOnly));
         // WFLY-10518 - keep discovery-group resource under server
         children.add(new DiscoveryGroupDefinition(registerRuntimeOnly, false));
+        children.add(new JGroupsDiscoveryGroupDefinition(registerRuntimeOnly, false));
+        children.add(new SocketDiscoveryGroupDefinition(registerRuntimeOnly, false));
         children.add(new ClusterConnectionDefinition(registerRuntimeOnly));
         children.add(new QueueDefinition(registerRuntimeOnly, MessagingExtension.QUEUE_PATH));
         children.add(new JMSQueueDefinition(false, registerRuntimeOnly));
@@ -887,7 +891,6 @@ public class ServerDefinition extends PersistentResourceDefinition {
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         super.registerChildren(resourceRegistration);
-
         // runtime queues and core-address are only registered when it is ok to register runtime resource (ie they are not registered on HC).
         if (registerRuntimeOnly) {
             resourceRegistration.registerSubModel(new QueueDefinition(registerRuntimeOnly,  MessagingExtension.RUNTIME_QUEUE_PATH));

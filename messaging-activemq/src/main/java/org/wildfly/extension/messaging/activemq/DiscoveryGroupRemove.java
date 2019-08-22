@@ -22,17 +22,15 @@
 
 package org.wildfly.extension.messaging.activemq;
 
-import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_CLUSTER;
-import static org.wildfly.extension.messaging.activemq.DiscoveryGroupDefinition.CAPABILITY;
-import static org.wildfly.extension.messaging.activemq.DiscoveryGroupDefinition.JGROUPS_CHANNEL;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
-import org.wildfly.clustering.spi.ClusteringDefaultRequirement;
 
 /**
  * Removes a discovery group.
@@ -41,22 +39,34 @@ import org.wildfly.clustering.spi.ClusteringDefaultRequirement;
  */
 public class DiscoveryGroupRemove extends AbstractRemoveStepHandler {
 
-    public static final DiscoveryGroupRemove INSTANCE = new DiscoveryGroupRemove();
+    public static final DiscoveryGroupRemove INSTANCE = new DiscoveryGroupRemove(false);
+    public static final DiscoveryGroupRemove LEGACY_INSTANCE = new DiscoveryGroupRemove(true);
 
-    private DiscoveryGroupRemove() {
+    private final boolean isLegacyCall;
+
+    private DiscoveryGroupRemove(boolean isLegacyCall) {
         super();
+        this.isLegacyCall = isLegacyCall;
     }
 
     @Override
-    protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
-        PathAddress address = context.getCurrentAddress();
-
-        ModelNode model = resource.getModel();
-        if (JGROUPS_CLUSTER.resolveModelAttribute(context, model).isDefined() && !JGROUPS_CHANNEL.resolveModelAttribute(context, model).isDefined()) {
-            context.deregisterCapabilityRequirement(ClusteringDefaultRequirement.COMMAND_DISPATCHER_FACTORY.getName(), CAPABILITY.getDynamicName(address));
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        if (!isLegacyCall) {
+            ModelNode op = operation.clone();
+            PathAddress target = context.getCurrentAddress().getParent();
+            OperationStepHandler removeHandler;
+            try {
+                context.readResourceFromRoot(target.append(CommonAttributes.JGROUPS_DISCOVERY_GROUP, context.getCurrentAddressValue()), false);
+                target = target.append(CommonAttributes.JGROUPS_DISCOVERY_GROUP, context.getCurrentAddressValue());
+                removeHandler = JGroupsDiscoveryGroupRemove.LEGACY_INSTANCE;
+            } catch(Resource.NoSuchResourceException ex) {
+                target = target.append(CommonAttributes.SOCKET_DISCOVERY_GROUP, context.getCurrentAddressValue());
+                removeHandler = SocketDiscoveryGroupRemove.LEGACY_INSTANCE;
+            }
+            op.get(OP_ADDR).set(target.toModelNode());
+            context.addStep(op, removeHandler, OperationContext.Stage.MODEL, true);
         }
-
-        context.deregisterCapability(CAPABILITY.getDynamicName(address));
+        super.execute(context, operation);
     }
 
     @Override

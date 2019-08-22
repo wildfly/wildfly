@@ -38,6 +38,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
+import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.AttributeConverter.DefaultValueAttributeConverter;
@@ -68,6 +69,7 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
     public void registerTransformers(SubsystemTransformerRegistration registration) {
         ChainedTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(registration.getCurrentSubsystemVersion());
 
+        registerTransformers_WF_19(builder.createBuilder(MessagingExtension.VERSION_9_0_0, MessagingExtension.VERSION_8_0_0));
         registerTransformers_WF_18(builder.createBuilder(MessagingExtension.VERSION_8_0_0, MessagingExtension.VERSION_7_0_0));
         registerTransformers_WF_17(builder.createBuilder(MessagingExtension.VERSION_7_0_0, MessagingExtension.VERSION_6_0_0));
         registerTransformers_WF_16(builder.createBuilder(MessagingExtension.VERSION_6_0_0, MessagingExtension.VERSION_5_0_0));
@@ -78,11 +80,24 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
 
         builder.buildAndRegister(registration, new ModelVersion[] { MessagingExtension.VERSION_1_0_0, MessagingExtension.VERSION_2_0_0,
             MessagingExtension.VERSION_3_0_0, MessagingExtension.VERSION_4_0_0, MessagingExtension.VERSION_5_0_0,
-            MessagingExtension.VERSION_6_0_0, MessagingExtension.VERSION_7_0_0});
+            MessagingExtension.VERSION_6_0_0, MessagingExtension.VERSION_7_0_0, MessagingExtension.VERSION_8_0_0,
+            MessagingExtension.VERSION_9_0_0});
+    }
+
+    private static void registerTransformers_WF_19(ResourceTransformationDescriptionBuilder subsystem) {
+        subsystem.addChildResource(DiscoveryGroupDefinition.PATH).setCustomResourceTransformer(ResourceTransformer.DISCARD);
+        subsystem.addChildRedirection(JGroupsDiscoveryGroupDefinition.PATH, DiscoveryGroupDefinition.PATH);
+        subsystem.addChildRedirection(SocketDiscoveryGroupDefinition.PATH, DiscoveryGroupDefinition.PATH);
+        ResourceTransformationDescriptionBuilder server = subsystem.addChildResource(MessagingExtension.SERVER_PATH);
+        server.addChildRedirection(MessagingExtension.JGROUPS_BROADCAST_GROUP_PATH, MessagingExtension.BROADCAST_GROUP_PATH);
+        server.addChildRedirection(MessagingExtension.SOCKET_BROADCAST_GROUP_PATH, MessagingExtension.BROADCAST_GROUP_PATH);
+        server.addChildRedirection(JGroupsDiscoveryGroupDefinition.PATH, DiscoveryGroupDefinition.PATH);
+        server.addChildRedirection(SocketDiscoveryGroupDefinition.PATH, DiscoveryGroupDefinition.PATH);
+        server.addChildResource(DiscoveryGroupDefinition.PATH).setCustomResourceTransformer(ResourceTransformer.DISCARD);
+        server.addChildResource(MessagingExtension.BROADCAST_GROUP_PATH).setCustomResourceTransformer(ResourceTransformer.DISCARD);
     }
 
     private static void registerTransformers_WF_18(ResourceTransformationDescriptionBuilder subsystem) {
-
     }
 
     private static void registerTransformers_WF_17(ResourceTransformationDescriptionBuilder subsystem) {

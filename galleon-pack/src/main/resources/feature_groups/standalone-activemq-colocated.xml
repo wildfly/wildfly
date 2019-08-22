@@ -33,13 +33,13 @@
                     <unset param="params"/>
                 </feature>
 
-                <feature spec="subsystem.messaging-activemq.server.broadcast-group">
-                    <param name="broadcast-group" value="bg-group1"/>
+                <feature spec="subsystem.messaging-activemq.server.jgroups-broadcast-group">
+                    <param name="jgroups-broadcast-group" value="bg-group1"/>
                     <param name="jgroups-cluster" value="activemq-cluster"/>
                     <param name="connectors" value="[http-connector]"/>
                 </feature>
-                <feature spec="subsystem.messaging-activemq.server.discovery-group">
-                    <param name="discovery-group" value="dg-group1"/>
+                <feature spec="subsystem.messaging-activemq.server.jgroups-discovery-group">
+                    <param name="jgroups-discovery-group" value="dg-group1"/>
                     <param name="jgroups-cluster" value="activemq-cluster"/>
                 </feature>
                 <feature spec="subsystem.messaging-activemq.server.cluster-connection">
@@ -88,13 +88,13 @@
                     <param name="http-acceptor" value="http-acceptor-backup"/>
                     <param name="http-listener" value="default"/>
                 </feature>
-                <feature spec="subsystem.messaging-activemq.server.broadcast-group">
-                    <param name="broadcast-group" value="bg-group1"/>
+                <feature spec="subsystem.messaging-activemq.server.jgroups-broadcast-group">
+                    <param name="jgroups-broadcast-group" value="bg-group1"/>
                     <param name="jgroups-cluster" value="activemq-cluster"/>
                     <param name="connectors" value="[http-connector-backup]"/>
                 </feature>
-                <feature spec="subsystem.messaging-activemq.server.discovery-group">
-                    <param name="discovery-group" value="dg-group2"/>
+                <feature spec="subsystem.messaging-activemq.server.jgroups-discovery-group">
+                    <param name="jgroups-discovery-group" value="dg-group2"/>
                     <param name="jgroups-cluster" value="activemq-cluster"/>
                 </feature>
                 <feature spec="subsystem.messaging-activemq.server.cluster-connection">

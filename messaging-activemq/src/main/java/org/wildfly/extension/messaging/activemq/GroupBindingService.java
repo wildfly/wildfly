@@ -22,13 +22,13 @@
 
 package org.wildfly.extension.messaging.activemq;
 
+import java.util.function.Supplier;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 
 
 /**
@@ -40,8 +40,11 @@ public class GroupBindingService implements Service<SocketBinding> {
     private static final String BROADCAST = "broadcast";
     private static final String DISCOVERY = "discovery";
 
-    private final InjectedValue<SocketBinding> bindingRef = new InjectedValue<SocketBinding>();
+    private final Supplier<SocketBinding> bindingSupplier;
 
+    public GroupBindingService(Supplier<SocketBinding> bindingSupplier) {
+        this.bindingSupplier = bindingSupplier;
+    }
     @Override
     public void start(final StartContext context) throws StartException {
         //
@@ -54,11 +57,7 @@ public class GroupBindingService implements Service<SocketBinding> {
 
     @Override
     public SocketBinding getValue() throws IllegalStateException, IllegalArgumentException {
-        return bindingRef.getValue();
-    }
-
-    public InjectedValue<SocketBinding> getBindingRef() {
-        return bindingRef;
+        return bindingSupplier.get();
     }
 
     public static ServiceName getBroadcastBaseServiceName(ServiceName activeMQServiceName) {

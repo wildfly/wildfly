@@ -72,4 +72,20 @@ public class Capabilities {
      * @see <a href="https://github.com/wildfly/wildfly-capabilities/blob/master/org/wildfly/remoting/http-listener-registry/capability.adoc">documentation</a>
      */
     static final String HTTP_LISTENER_REGISTRY_CAPABILITY_NAME = "org.wildfly.remoting.http-listener-registry";
+
+    /**
+     * The capability for the SocketBinding capability
+     *
+     * @see <a href="https://github.com/wildfly/wildfly-capabilities/blob/master/org/wildfly/network/socket-binding/capability.adoc">documentation</a>
+     */
+    static final RuntimeCapability<Void> SOCKET_BINDING_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.network.socket-binding", true)
+            .build();
+
+    /**
+     * A capability for the current messaging-activemq server configuration.
+     *
+     * @see <a href="https://github.com/wildfly/wildfly-capabilities/blob/master/org/wildfly/network/outbound-socket-binding/capability.adoc">Capability documentation</a>
+     */
+    static final RuntimeCapability<Void> OUTBOUND_SOCKET_BINDING_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.network.outbound-socket-binding", true)
+            .build();
 }
