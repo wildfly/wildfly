@@ -35,7 +35,6 @@ import org.wildfly.clustering.ee.cache.retry.RetryingInvoker;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.infinispan.spi.distribution.Key;
 import org.wildfly.clustering.marshalling.spi.Marshallability;
-import org.wildfly.clustering.web.cache.session.Scheduler;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 import org.wildfly.common.function.ExceptionSupplier;
@@ -44,7 +43,7 @@ import org.wildfly.common.function.ExceptionSupplier;
  * {@link Scheduler} decorator that executes schedule and cancellation commands on the primary owner of a given session.
  * @author Paul Ferraro
  */
-public class PrimaryOwnerScheduler implements Scheduler {
+public class PrimaryOwnerScheduler implements org.wildfly.clustering.web.cache.session.Scheduler {
     private static final Invoker INVOKER = new RetryingInvoker(Duration.ZERO, Duration.ofMillis(10), Duration.ofMillis(100));
 
     private final Function<Key<String>, Node> primaryOwnerLocator;
