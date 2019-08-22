@@ -132,6 +132,11 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
         testRejectingTransformer7ElytronEnabled("resource-adapters-pool-elytron-enabled.xml", ModelTestControllerVersion.EAP_7_0_0, ModelVersion.create(4, 0, 0));
     }
 
+    @Test
+    public void testElytronEnabledEAP71() throws Exception {
+        testRejectingTransformer71ElytronEnabled("resource-adapters-pool-elytron-enabled-6_0-reject.xml", ModelTestControllerVersion.EAP_7_1_0, ModelVersion.create(5, 0, 0));
+    }
+
     /**
      * Tests transformation of model from current to passed one
      *
@@ -170,6 +175,38 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
                         new FailedOperationTransformationConfig.NewAttributesConfig(ELYTRON_ENABLED, AUTHENTICATION_CONTEXT, AUTHENTICATION_CONTEXT_AND_APPLICATION,
                                         RECOVERY_ELYTRON_ENABLED, RECOVERY_AUTHENTICATION_CONTEXT, RECOVERY_CREDENTIAL_REFERENCE)));
     }
+
+    private void testRejectingTransformer71ElytronEnabled(String subsystemXml, ModelTestControllerVersion controllerVersion, ModelVersion modelVersion) throws Exception {
+        //Use the non-runtime version of the extension which will happen on the HC
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
+        //.setSubsystemXmlResource(subsystemXml);
+        String artifactId = ":wildfly-connector:";
+        String ironJacamarVersion = "1.3.3.Final-redhat-1";
+        // Add legacy subsystems
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
+                .addMavenResourceURL(controllerVersion.getMavenGroupId() + artifactId  + controllerVersion.getMavenGavVersion())
+                .addMavenResourceURL("org.jboss.ironjacamar:ironjacamar-spec-api:" + ironJacamarVersion)
+                .addMavenResourceURL("org.jboss.ironjacamar:ironjacamar-common-api:" + ironJacamarVersion)
+                .setExtensionClassName("org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension")
+                .addOperationValidationResolve("add", PathAddress.pathAddress(
+                        PathElement.pathElement(SUBSYSTEM, getMainSubsystemName()),
+                        PathElement.pathElement("resource-adapter", "*"),
+                        PathElement.pathElement("connection-definitions", "*")))
+                .excludeFromParent(SingleClassFilter.createFilter(ConnectorLogger.class)).skipReverseControllerCheck();
+
+        KernelServices mainServices = builder.build();
+        org.junit.Assert.assertTrue(mainServices.isSuccessfulBoot());
+        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+        org.junit.Assert.assertTrue(legacyServices.isSuccessfulBoot());
+        org.junit.Assert.assertNotNull(legacyServices);
+
+        List<ModelNode> ops = builder.parseXmlResource(subsystemXml);
+        PathAddress subsystemAddress = PathAddress.pathAddress(ResourceAdaptersExtension.SUBSYSTEM_PATH);
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, ops, new FailedOperationTransformationConfig()
+                .addFailedAttribute(subsystemAddress.append(PathElement.pathElement(RESOURCEADAPTER_NAME), ConnectionDefinitionResourceDefinition.PATH),
+                        FailedOperationTransformationConfig.REJECTED_RESOURCE));
+    }
+
     /**
      * Tests transformation of model from current to passed one
      *

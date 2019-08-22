@@ -17,6 +17,7 @@ package org.jboss.as.connector.subsystems.resourceadapters;
 
 import static org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.VALIDATE_ON_MATCH;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_CREDENTIAL_REFERENCE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTER_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.STATISTICS_ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRACKING;
@@ -31,6 +32,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SE
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_MAPPING_REQUIRED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_MAPPING_USER;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_MAPPING_USERS;
+import static org.jboss.as.controller.security.CredentialReference.REJECT_CREDENTIAL_REFERENCE_WITH_BOTH_STORE_AND_CLEAR_TEXT;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
@@ -67,6 +69,10 @@ public class ResourceAdaptersTransformers implements ExtensionTransformerRegistr
         ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PathElement.pathElement(RESOURCEADAPTER_NAME))
                 .getAttributeBuilder()
                 .setValueConverter(AttributeConverter.Factory.createHardCoded(ModelNode.ZERO, true), INITIAL_POOL_SIZE)
+                .end();
+        builder.addChildResource(ConnectionDefinitionResourceDefinition.PATH)
+                .getAttributeBuilder()
+                .addRejectCheck(REJECT_CREDENTIAL_REFERENCE_WITH_BOTH_STORE_AND_CLEAR_TEXT, RECOVERY_CREDENTIAL_REFERENCE)
                 .end();
 
         parentBuilder = chainedBuilder.createBuilder(EAP_7_1, EAP_7_0);
