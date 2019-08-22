@@ -81,8 +81,6 @@
               <!--Optional:-->
               <user-name>userName</user-name>
               <!--Optional:-->
-              <password>pwd</password>
-              <!--Optional:-->
               <credential-reference store="teststore" alias="myalias"/>
               <!--Optional:-->
               <elytron-enabled>true</elytron-enabled>
