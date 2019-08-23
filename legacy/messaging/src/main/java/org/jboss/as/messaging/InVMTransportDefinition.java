@@ -40,7 +40,7 @@ import org.jboss.dmr.ModelNode;
  */
 public class InVMTransportDefinition extends AbstractTransportDefinition {
 
-    public static final SimpleAttributeDefinition SERVER_ID = create("server-id", INT)
+    public static final SimpleAttributeDefinition SERVER_ID = create("server-id", INT, true)
             .setDefaultValue(ModelNode.ZERO)
             .setAllowExpression(true)
             .setAttributeMarshaller(new AttributeMarshaller() {
