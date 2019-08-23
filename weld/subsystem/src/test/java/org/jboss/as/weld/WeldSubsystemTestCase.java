@@ -89,16 +89,6 @@ public class WeldSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testTransformersASEAP620() throws Exception {
-        testTransformers10(ModelTestControllerVersion.EAP_6_2_0);
-    }
-
-    @Test
-    public void testTransformersASEAP630() throws Exception {
-        testTransformers10(ModelTestControllerVersion.EAP_6_3_0);
-    }
-
-    @Test
     public void testTransformersASEAP640() throws Exception {
         testTransformers10(ModelTestControllerVersion.EAP_6_4_0);
     }
@@ -134,16 +124,6 @@ public class WeldSubsystemTestCase extends AbstractSubsystemBaseTest {
         assertTrue(mainServices.isSuccessfulBoot());
         assertTrue(legacyServices.isSuccessfulBoot());
         checkSubsystemModelTransformation(mainServices, modelVersion);
-    }
-
-    @Test
-    public void testTransformersRejectionASEAP620() throws Exception {
-        testRejectTransformers10(ModelTestControllerVersion.EAP_6_2_0);
-    }
-
-    @Test
-    public void testTransformersRejectionASEAP630() throws Exception {
-        testRejectTransformers10(ModelTestControllerVersion.EAP_6_3_0);
     }
 
     @Test

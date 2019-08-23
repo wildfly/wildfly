@@ -68,16 +68,6 @@ public class EeSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testTransformersEAP620() throws Exception {
-        testTransformers1_1(ModelTestControllerVersion.EAP_6_2_0, ModelVersion.create(1,0));
-    }
-
-    @Test
-    public void testTransformersEAP630() throws Exception {
-        testTransformers1_1(ModelTestControllerVersion.EAP_6_3_0, ModelVersion.create(1,1));
-    }
-
-    @Test
     public void testTransformersEAP640() throws Exception {
         testTransformers1_1(ModelTestControllerVersion.EAP_6_4_0, ModelVersion.create(1,1));
     }
@@ -99,16 +89,6 @@ public class EeSubsystemTestCase extends AbstractSubsystemBaseTest {
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
         checkSubsystemModelTransformation(mainServices, modelVersion);
-    }
-
-    @Test
-    public void testTransformersEAP620Reject() throws Exception {
-        testTransformers1_0_x_reject(ModelTestControllerVersion.EAP_6_2_0, ModelVersion.create(1,0));
-    }
-
-    @Test
-    public void testTransformersEAP630Reject() throws Exception {
-        testTransformers1_1_x_reject(ModelTestControllerVersion.EAP_6_3_0);
     }
 
     @Test
@@ -176,17 +156,6 @@ public class EeSubsystemTestCase extends AbstractSubsystemBaseTest {
 
             ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, xmlOps, config);
         }
-
-
-    @Test
-    public void testTransformersDiscardsImpliedValuesEAP620() throws Exception {
-        testTransformersDiscardsImpliedValues1_0_0(ModelTestControllerVersion.EAP_6_2_0);
-    }
-
-    @Test
-    public void testTransformersDiscardsImpliedValuesEAP630() throws Exception {
-        testTransformersDiscardsImpliedValues1_1_0(ModelTestControllerVersion.EAP_6_3_0);
-    }
 
     @Test
     public void testTransformersDiscardsImpliedValuesEAP640() throws Exception {

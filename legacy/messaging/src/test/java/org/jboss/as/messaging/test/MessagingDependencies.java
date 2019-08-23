@@ -37,26 +37,6 @@ public class MessagingDependencies {
     static {
         Map<ModelTestControllerVersion, String[]> map = new HashMap<ModelTestControllerVersion, String[]>();
 
-        map.put(ModelTestControllerVersion.EAP_6_2_0, new String[] {
-                "org.hornetq:hornetq-commons:2.3.12.Final-redhat-1",
-                "org.hornetq:hornetq-journal:2.3.12.Final-redhat-1",
-                "org.hornetq:hornetq-server:2.3.12.Final-redhat-1",
-                "org.hornetq:hornetq-jms-server:2.3.12.Final-redhat-1",
-                "org.hornetq:hornetq-core-client:2.3.12.Final-redhat-1",
-                "org.hornetq:hornetq-jms-client:2.3.12.Final-redhat-1",
-                "org.hornetq:hornetq-ra:2.3.12.Final-redhat-1",
-        });
-
-        map.put(ModelTestControllerVersion.EAP_6_3_0, new String[]{
-                "org.hornetq:hornetq-commons:2.3.20.Final-redhat-1",
-                "org.hornetq:hornetq-journal:2.3.20.Final-redhat-1",
-                "org.hornetq:hornetq-server:2.3.20.Final-redhat-1",
-                "org.hornetq:hornetq-jms-server:2.3.20.Final-redhat-1",
-                "org.hornetq:hornetq-core-client:2.3.20.Final-redhat-1",
-                "org.hornetq:hornetq-jms-client:2.3.20.Final-redhat-1",
-                "org.hornetq:hornetq-ra:2.3.20.Final-redhat-1",
-        });
-
         map.put(ModelTestControllerVersion.EAP_6_4_0, new String[]{
                 "org.hornetq:hornetq-commons:2.3.25.Final-redhat-1",
                 "org.hornetq:hornetq-journal:2.3.25.Final-redhat-1",
