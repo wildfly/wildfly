@@ -24,13 +24,13 @@
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
            xmlns="urn:jboss:domain:messaging-activemq:10.0"
-           xmlns:credential-reference="urn:wildfly:credential-reference:1.0"
+           xmlns:credential-reference="urn:wildfly:credential-reference:1.1"
            targetNamespace="urn:jboss:domain:messaging-activemq:10.0"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
            version="9.0">
 
-    <xs:import namespace="urn:wildfly:credential-reference:1.0" schemaLocation="wildfly-credential-reference_1_0.xsd"/>
+    <xs:import namespace="urn:wildfly:credential-reference:1.1" schemaLocation="wildfly-credential-reference_1_1.xsd"/>
 
     <xs:element name="subsystem">
         <xs:complexType>

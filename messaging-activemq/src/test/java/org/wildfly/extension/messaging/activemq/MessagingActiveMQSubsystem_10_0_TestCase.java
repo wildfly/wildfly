@@ -231,6 +231,16 @@ public class MessagingActiveMQSubsystem_10_0_TestCase extends AbstractSubsystemB
         PathAddress subsystemAddress = PathAddress.pathAddress(SUBSYSTEM_PATH);
 
         FailedOperationTransformationConfig config = new FailedOperationTransformationConfig();
+        if (messagingVersion.compareTo(MessagingExtension.VERSION_10_0_0) > 0) {
+            config.addFailedAttribute(subsystemAddress.append(pathElement(SERVER, "server1")),
+                    FailedOperationTransformationConfig.REJECTED_RESOURCE);
+            config.addFailedAttribute(subsystemAddress.append(pathElement(SERVER, "server2")).append(BRIDGE_PATH),
+                    FailedOperationTransformationConfig.REJECTED_RESOURCE);
+            config.addFailedAttribute(subsystemAddress.append(pathElement(SERVER, "server3")).append(POOLED_CONNECTION_FACTORY_PATH),
+                    FailedOperationTransformationConfig.REJECTED_RESOURCE);
+            config.addFailedAttribute(subsystemAddress.append(pathElement(JMS_BRIDGE, "bridge-with-credential-reference")),
+                    FailedOperationTransformationConfig.REJECTED_RESOURCE);
+        }
         if (messagingVersion.compareTo(MessagingExtension.VERSION_9_0_0) > 0) {
             config.addFailedAttribute(subsystemAddress.append(pathElement(SERVER, "server1")),
                     FailedOperationTransformationConfig.REJECTED_RESOURCE);
