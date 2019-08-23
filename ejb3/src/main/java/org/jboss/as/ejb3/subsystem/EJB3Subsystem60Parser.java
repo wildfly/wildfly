@@ -86,7 +86,6 @@ public class EJB3Subsystem60Parser extends EJB3Subsystem50Parser {
                 }
             }
         }
-        requireNoContent(reader);
 
         ejbSubsystemAddOperation.get(SERVER_INTERCEPTORS).set(interceptors);
     }
@@ -106,7 +105,6 @@ public class EJB3Subsystem60Parser extends EJB3Subsystem50Parser {
                 }
             }
         }
-        requireNoContent(reader);
 
         ejbSubsystemAddOperation.get(CLIENT_INTERCEPTORS).set(interceptors);
     }

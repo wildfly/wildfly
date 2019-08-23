@@ -303,7 +303,7 @@ Sample configuration:
 [source,xml,options="nowrap"]
 ----
 <client-interceptors>
-	<client-interceptor module="org.foo:FooInterceptor:1.0" class="org.foo.FooInterceptor"/>
+	<interceptor module="org.foo:FooInterceptor:1.0" class="org.foo.FooInterceptor"/>
 </client-interceptors>
 ----
 
