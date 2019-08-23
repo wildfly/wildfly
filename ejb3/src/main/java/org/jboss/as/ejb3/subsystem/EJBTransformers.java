@@ -207,10 +207,9 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
         builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.SERVER_INTERCEPTORS);
+        registerThreadPoolTransformers(builder);
 
         TransformationDescription.Tools.register(builder.build(), subsystemRegistration, VERSION_5_0_0);
-
-        registerThreadPoolTransformers(builder);
     }
 
     private static void registerRemoteTransformers(ResourceTransformationDescriptionBuilder parent) {
@@ -240,7 +239,8 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
     private static void registerThreadPoolTransformers(ResourceTransformationDescriptionBuilder parent) {
         parent.addChildResource(PathElement.pathElement(EJB3SubsystemModel.THREAD_POOL))
                 .getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.DEFINED, PoolAttributeDefinitions.CORE_THREADS);
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, PoolAttributeDefinitions.CORE_THREADS)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, PoolAttributeDefinitions.CORE_THREADS).end();
     }
 
     private static void registerMdbDeliveryGroupTransformers(ResourceTransformationDescriptionBuilder parent) {
