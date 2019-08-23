@@ -60,6 +60,7 @@ import org.jboss.security.audit.AuditLevel;
 import org.jboss.security.audit.AuditManager;
 import org.jboss.security.authorization.resources.EJBResource;
 import org.jboss.security.identity.Identity;
+import org.jboss.security.identity.RoleGroup;
 import org.jboss.security.identity.plugins.SimpleIdentity;
 import org.jboss.security.identity.plugins.SimpleRoleGroup;
 import org.jboss.security.javaee.AbstractEJBAuthorizationHelper;
@@ -298,8 +299,7 @@ public class SimpleSecurityManager implements ServerSecurityManager {
         contexts.push(previous);
         SecurityContext current = establishSecurityContext(securityDomain);
         if (propagate && previous != null) {
-            current.setSubjectInfo(getSubjectInfo(previous));
-
+            propagateSubject(current,previous);
             // If the outgoing run-as identity is not set, take the incoming
             // run-as identity and propagate it (it could be null which is fine)
             if( previous.getOutgoingRunAs() != null ) {
@@ -352,7 +352,7 @@ public class SimpleSecurityManager implements ServerSecurityManager {
         contexts.push(previous);
         SecurityContext current = establishSecurityContext(securityDomain);
         if (propagate &&  previous != null) {
-            current.setSubjectInfo(getSubjectInfo(previous));
+            propagateSubject(current,previous);
             current.setIncomingRunAs(previous.getOutgoingRunAs());
         }
 
@@ -363,6 +363,22 @@ public class SimpleSecurityManager implements ServerSecurityManager {
             SecurityContextUtil util = current.getUtil();
             util.createSubjectInfo(new SimplePrincipal(userName), new String(password), subject);
         }
+    }
+
+    private void propagateSubject(final SecurityContext target, final SecurityContext source) {
+        final SecurityContextUtil previousUtil = source.getUtil();
+        final SecurityContextUtil currentUtil = target.getUtil();
+        currentUtil.createSubjectInfo(previousUtil.getUserPrincipal(), previousUtil.getCredential(), previousUtil.getSubject());
+        if (previousUtil.getRoles() != null) {
+            try {
+                currentUtil.setRoles((RoleGroup) previousUtil.getRoles().clone());
+            } catch (CloneNotSupportedException e) {
+                // should not happen, RoleGroup supports clone.
+                throw new RuntimeException(e);
+            }
+        }
+        currentUtil.setIdentities(previousUtil.getIdentities(Identity.class));
+
     }
 
     public void authenticate() {

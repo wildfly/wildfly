@@ -201,7 +201,7 @@ public class WildFlyActivationRaWithWMSecurityDomainWorkManagerTestCase {
         MyWork myWork = new MyWork(wm, bean, "eis", "eis-role");
         wm.doWork(myWork);
         verifyUsers(myWork, "eis", "wm-default-principal");
-        verifyRoles(myWork, "**", "eis-role", "wm-default-group");
+        verifyRoles(myWork, "eis-role", "wm-default-group");
     }
 
     @Test
