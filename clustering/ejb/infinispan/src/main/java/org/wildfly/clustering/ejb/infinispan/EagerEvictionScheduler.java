@@ -82,6 +82,11 @@ public class EagerEvictionScheduler<I, T> implements Scheduler<I>, BeanGroupEvic
     }
 
     @Override
+    public void prepareRescheduling(I id) {
+        cancel(id);
+    }
+
+    @Override
     public void cancel(I id) {
         Future<?> future = this.evictionFutures.remove(id);
         if (future != null) {
