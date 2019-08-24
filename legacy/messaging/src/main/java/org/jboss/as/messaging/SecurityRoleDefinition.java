@@ -45,7 +45,7 @@ import org.jboss.dmr.ModelNode;
 public class SecurityRoleDefinition extends ModelOnlyResourceDefinition {
 
     private static SimpleAttributeDefinition create(final String name, final String xmlName) {
-        return SimpleAttributeDefinitionBuilder.create(name, BOOLEAN)
+        return SimpleAttributeDefinitionBuilder.create(name, BOOLEAN, true)
                 .setXmlName(xmlName)
                 .setDefaultValue(ModelNode.FALSE)
                 .setFlags(RESTART_NONE)
@@ -58,7 +58,7 @@ public class SecurityRoleDefinition extends ModelOnlyResourceDefinition {
     static final SimpleAttributeDefinition DELETE_DURABLE_QUEUE = create("delete-durable-queue", "deleteDurableQueue");
     static final SimpleAttributeDefinition CREATE_NON_DURABLE_QUEUE = create("create-non-durable-queue", "createNonDurableQueue");
     static final SimpleAttributeDefinition DELETE_NON_DURABLE_QUEUE = create("delete-non-durable-queue", "deleteNonDurableQueue");
-    static final SimpleAttributeDefinition MANAGE = SimpleAttributeDefinitionBuilder.create("manage", BOOLEAN)
+    static final SimpleAttributeDefinition MANAGE = SimpleAttributeDefinitionBuilder.create("manage", BOOLEAN, true)
             .setDefaultValue(ModelNode.FALSE)
             .setFlags(RESTART_NONE)
             .addAccessConstraint(CommonAttributes.MESSAGING_MANAGEMENT_DEF)
