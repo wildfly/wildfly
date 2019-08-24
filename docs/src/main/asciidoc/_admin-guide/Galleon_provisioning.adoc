@@ -122,6 +122,7 @@ Basic layers:
 * _jms-activemq_: Support for connections to a remote jms broker. 
 * _jpa_: Support for jpa (latest WildFly supported hibernate release).
 * _observability_: Support for microprofile monitoring and configuration features (config, health, metrics, open-tracing).
+* _web-clustering_: Expands on _web-server_ (layer defined in the WildFly servlet feature-pack) to include embedded Infinispan-based distributed web session caching.
 * _resource-adapters_: Support for deployment of JCA adapters.
 * _h2-driver_: Support for h2 driver.
 * _h2-datasource_: Support for h2 datasource.
