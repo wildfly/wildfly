@@ -37,5 +37,6 @@
         <module name="javax.enterprise.api" />
         <module name="javax.annotation.api" />
         <module name="javax.json.api" />
+        <module name="org.jboss.logging" />
     </dependencies>
 </module>
