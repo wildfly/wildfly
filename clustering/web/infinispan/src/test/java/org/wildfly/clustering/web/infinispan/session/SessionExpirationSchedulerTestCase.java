@@ -34,6 +34,7 @@ import org.junit.Test;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.Remover;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
+import org.wildfly.clustering.web.cache.session.ImmutableSessionMetaDataFactory;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 
 /**
@@ -47,6 +48,7 @@ public class SessionExpirationSchedulerTestCase {
         Batcher<TransactionBatch> batcher = mock(Batcher.class);
         TransactionBatch batch = mock(TransactionBatch.class);
         Remover<String> remover = mock(Remover.class);
+        ImmutableSessionMetaDataFactory<Object> metaDataFactory = mock(ImmutableSessionMetaDataFactory.class);
         ImmutableSessionMetaData immortalSessionMetaData = mock(ImmutableSessionMetaData.class);
         ImmutableSessionMetaData expiringSessionMetaData = mock(ImmutableSessionMetaData.class);
         ImmutableSessionMetaData canceledSessionMetaData = mock(ImmutableSessionMetaData.class);
@@ -64,7 +66,7 @@ public class SessionExpirationSchedulerTestCase {
         when(expiringSessionMetaData.getLastAccessedTime()).thenReturn(now);
         when(canceledSessionMetaData.getLastAccessedTime()).thenReturn(now);
 
-        try (Scheduler scheduler = new SessionExpirationScheduler(batcher, remover)) {
+        try (Scheduler scheduler = new SessionExpirationScheduler<>(batcher, metaDataFactory, remover)) {
             scheduler.schedule(immortalSessionId, immortalSessionMetaData);
             scheduler.schedule(canceledSessionId, canceledSessionMetaData);
             scheduler.schedule(expiringSessionId, expiringSessionMetaData);
@@ -72,7 +74,6 @@ public class SessionExpirationSchedulerTestCase {
             TimeUnit.SECONDS.sleep(1L);
 
             scheduler.cancel(canceledSessionId);
-            scheduler.schedule(canceledSessionId, canceledSessionMetaData);
         }
 
         verify(remover, never()).remove(immortalSessionId);
