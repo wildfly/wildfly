@@ -46,6 +46,13 @@ public class CompositeScheduler<I> implements Scheduler<I> {
     }
 
     @Override
+    public void schedule(I id, ImmutableBeanEntry<I> entry) {
+        for (Scheduler<I> scheduler : this.schedulers) {
+            scheduler.schedule(id, entry);
+        }
+    }
+
+    @Override
     public void cancel(I id) {
         for (Scheduler<I> scheduler : this.schedulers) {
             scheduler.cancel(id);
