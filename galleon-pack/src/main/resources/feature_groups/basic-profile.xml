@@ -61,25 +61,7 @@
 
     <feature spec="subsystem.discovery"/>
 
-    <feature spec="subsystem.distributable-web">
-        <param name="default-session-management" value="default"/>
-        <param name="default-single-sign-on-management" value="default"/>
-        <feature spec="subsystem.distributable-web.infinispan-session-management">
-            <param name="infinispan-session-management" value="default"/>
-            <param name="cache-container" value="web"/>
-            <param name="granularity" value="SESSION"/>
-            <feature spec="subsystem.distributable-web.infinispan-session-management.affinity.primary-owner"/>
-        </feature>
-        <feature spec="subsystem.distributable-web.infinispan-single-sign-on-management">
-            <param name="infinispan-single-sign-on-management" value="default"/>
-            <param name="cache-container" value="web"/>
-            <param name="cache" value="sso"/>
-        </feature>
-        <feature spec="subsystem.distributable-web.routing.infinispan">
-            <param name="cache-container" value="web"/>
-            <param name="cache" value="routing"/>
-        </feature>
-    </feature>
+    <feature-group name="distributable-web"/>
 
     <feature spec="subsystem.ee">
         <feature spec="subsystem.ee.context-service">
