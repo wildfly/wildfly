@@ -115,6 +115,48 @@
                         </configuration>
                     </execution>
                     <execution>
+                        <id>undertow-legacy-https-provisioning</id>
+                        <goals>
+                            <goal>provision</goal>
+                        </goals>
+                        <phase>compile</phase>
+                        <configuration>
+                            <install-dir>${servlet.layers.install.dir}/undertow-legacy-https</install-dir>
+                            <record-state>false</record-state>
+                            <log-time>${galleon.log.time}</log-time>
+                            <offline>true</offline>
+                            <plugin-options>
+                                <jboss-maven-dist/>
+                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                <optional-packages>passive+</optional-packages>
+                            </plugin-options>
+                            <feature-packs>
+                                <feature-pack>
+                                    <transitive>true</transitive>
+                                    <groupId>org.wildfly.core</groupId>
+                                    <artifactId>wildfly-core-galleon-pack</artifactId>
+                                    <version>${version.org.wildfly.core}</version>
+                                </feature-pack>
+                                <feature-pack>
+                                    <groupId>${project.groupId}</groupId>
+                                    <artifactId>wildfly-servlet-galleon-pack</artifactId>
+                                    <version>${project.version}</version>
+                                    <inherit-configs>false</inherit-configs>
+                                    <inherit-packages>false</inherit-packages>
+                                </feature-pack>
+                            </feature-packs>
+                            <configurations>
+                                <config>
+                                    <model>standalone</model>
+                                    <name>standalone.xml</name>
+                                    <layers>
+                                        <layer>undertow-legacy-https</layer>
+                                    </layers>
+                                </config>
+                            </configurations>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>undertow-load-balancer-provisioning</id>
                         <goals>
                             <goal>provision</goal>
@@ -408,6 +450,7 @@
                                         <layer>vault</layer>
                                         <layer>legacy-security</layer>
                                         <layer>undertow</layer>
+                                        <layer>undertow-legacy-https</layer>
                                         <layer>web-server</layer>
                                         <!-- core-server, core-tools are from core, 
                                         required to compare all layers with reference installation -->
@@ -510,6 +553,54 @@
                                     <name>standalone.xml</name>
                                     <layers>
                                         <layer>cloud-profile</layer>
+                                    </layers>
+                                </config>
+                            </configurations>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>datasources-provisioning</id>
+                        <goals>
+                            <goal>provision</goal>
+                        </goals>
+                        <phase>compile</phase>
+                        <configuration>
+                            <install-dir>${layers.install.dir}/datasources</install-dir>
+                            <record-state>false</record-state>
+                            <log-time>${galleon.log.time}</log-time>
+                            <offline>true</offline>
+                            <plugin-options>
+                                <jboss-maven-dist/>
+                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                <optional-packages>passive+</optional-packages>
+                            </plugin-options>
+                            <feature-packs>
+                                <feature-pack>
+                                    <transitive>true</transitive>
+                                    <groupId>org.wildfly.core</groupId>
+                                    <artifactId>wildfly-core-galleon-pack</artifactId>
+                                    <version>${version.org.wildfly.core}</version>
+                                </feature-pack>
+                                <feature-pack>
+                                    <transitive>true</transitive>
+                                    <groupId>${project.groupId}</groupId>
+                                    <artifactId>wildfly-servlet-galleon-pack</artifactId>
+                                    <version>${project.version}</version>
+                                </feature-pack>
+                                <feature-pack>
+                                    <groupId>${project.groupId}</groupId>
+                                    <artifactId>wildfly-galleon-pack</artifactId>
+                                    <version>${project.version}</version>
+                                    <inherit-configs>false</inherit-configs>
+                                    <inherit-packages>false</inherit-packages>
+                                </feature-pack>
+                            </feature-packs>
+                            <configurations>
+                                <config>
+                                    <model>standalone</model>
+                                    <name>standalone.xml</name>
+                                    <layers>
+                                        <layer>datasources</layer>
                                     </layers>
                                 </config>
                             </configurations>
@@ -1141,6 +1232,7 @@
                                     <layers>
                                         <layer>cdi</layer>
                                         <layer>cloud-profile</layer>
+                                        <layer>datasources</layer>
                                         <layer>h2-driver</layer>
                                         <layer>h2-datasource</layer>
                                         <layer>h2-default-datasource</layer>
@@ -1152,6 +1244,7 @@
                                         <layer>resource-adapters</layer>
                                         <layer>transactions</layer>
                                         <layer>undertow</layer>
+                                        <layer>undertow-legacy-https</layer>
                                         <layer>vault</layer>
                                     </layers>
                                 </config>
