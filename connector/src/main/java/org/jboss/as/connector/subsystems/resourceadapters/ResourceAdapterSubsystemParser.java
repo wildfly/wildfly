@@ -259,7 +259,15 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
 
         writer.writeStartElement(localName);
         writer.writeAttribute("name", name);
-        writer.writeCharacters(value);
+        // TODO if WFCORE-4625 goes in, use the util method.
+        if (value.indexOf('\n') > -1) {
+            // Multiline content. Use the overloaded variant that staxmapper will format
+            writer.writeCharacters(value);
+        } else {
+            // Staxmapper will just output the chars without adding newlines if this is used
+            char[] chars = value.toCharArray();
+            writer.writeCharacters(chars, 0, chars.length);
+        }
         writer.writeEndElement();
 
     }
