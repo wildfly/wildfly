@@ -114,7 +114,7 @@
     </supplement>
     <supplement name="gossip-discovery">
         <replacement placeholder="TCP-DISCOVERY">
-            <protocol type="TCPGOSSIP">
+            <protocol type="org.jgroups.protocols.TCPGOSSIP">
                 <property name="initial_hosts">
                     ${jboss.jgroups.gossip.initial_hosts}
                 </property>
@@ -124,7 +124,7 @@
             </protocol>
         </replacement>
         <replacement placeholder="UDP-DISCOVERY">
-            <protocol type="TCPGOSSIP">
+            <protocol type="org.jgroups.protocols.TCPGOSSIP">
                 <property name="initial_hosts">
                     ${jboss.jgroups.gossip.initial_hosts}
                 </property>

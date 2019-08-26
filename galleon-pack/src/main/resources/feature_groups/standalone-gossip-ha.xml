@@ -19,7 +19,7 @@
                     <param name="socket-binding" value="jgroups-tcp"/>
                 </feature>
                 <feature spec="subsystem.jgroups.stack.protocol">
-                    <param name="protocol" value="TCPGOSSIP"/>
+                    <param name="protocol" value="org.jgroups.protocols.TCPGOSSIP"/>
                     <param name="properties" value="initial_hosts=&quot;${jboss.jgroups.gossip.initial_hosts}&quot;,num_initial_members=&quot;${jboss.jgroups.gossip.num_initial_members}&quot;"/>
                 </feature>
                 <feature spec="subsystem.jgroups.stack.protocol">
@@ -57,7 +57,7 @@
                     <param name="socket-binding" value="jgroups-udp"/>
                 </feature>
                 <feature spec="subsystem.jgroups.stack.protocol">
-                    <param name="protocol" value="TCPGOSSIP"/>
+                    <param name="protocol" value="org.jgroups.protocols.TCPGOSSIP"/>
                     <param name="properties" value="initial_hosts=&quot;${jboss.jgroups.gossip.initial_hosts}&quot;,num_initial_members=&quot;${jboss.jgroups.gossip.num_initial_members}&quot;"/>
                 </feature>
                 <feature spec="subsystem.jgroups.stack.protocol">
