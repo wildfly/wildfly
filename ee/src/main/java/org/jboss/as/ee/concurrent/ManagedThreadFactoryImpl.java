@@ -24,7 +24,6 @@ package org.jboss.as.ee.concurrent;
 
 import org.glassfish.enterprise.concurrent.AbstractManagedThread;
 import org.glassfish.enterprise.concurrent.ContextServiceImpl;
-import org.glassfish.enterprise.concurrent.ManagedThreadFactoryImpl;
 import org.glassfish.enterprise.concurrent.spi.ContextHandle;
 import org.wildfly.security.auth.server.SecurityIdentity;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -39,16 +38,30 @@ import java.security.PrivilegedAction;
  *
  * @author <a href="mailto:jkalina@redhat.com">Jan Kalina</a>
  */
-public class ElytronManagedThreadFactory extends ManagedThreadFactoryImpl {
+public class ManagedThreadFactoryImpl extends org.glassfish.enterprise.concurrent.ManagedThreadFactoryImpl {
+
+    /**
+     * the priority set on new threads
+     */
+    private final int priority;
 
     /**
      * the factory's ACC
      */
     private final AccessControlContext accessControlContext;
 
-    public ElytronManagedThreadFactory(String name, ContextServiceImpl contextService, int priority) {
+    public ManagedThreadFactoryImpl(String name, ContextServiceImpl contextService, int priority) {
         super(name, contextService, priority);
+        this.priority = priority;
         this.accessControlContext = AccessController.getContext();
+    }
+
+    /**
+     *
+     * @return the priority set on new threads
+     */
+    public int getPriority() {
+        return priority;
     }
 
     protected AbstractManagedThread createThread(Runnable r, final ContextHandle contextHandleForSetup) {
@@ -81,7 +94,7 @@ public class ElytronManagedThreadFactory extends ManagedThreadFactoryImpl {
 
         @Override
         public AbstractManagedThread run() {
-            return ElytronManagedThreadFactory.super.createThread(r, contextHandleForSetup);
+            return ManagedThreadFactoryImpl.super.createThread(r, contextHandleForSetup);
         }
     }
 }
