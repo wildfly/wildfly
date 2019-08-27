@@ -30,6 +30,7 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.management.ManagementOperations;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
+import org.jboss.remoting3.security.RemotingPermission;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -37,6 +38,9 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 
 import javax.naming.InitialContext;
+import java.io.FilePermission;
+
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 public class Ejb3ThreadPoolBase {
 
@@ -54,7 +58,12 @@ public class Ejb3ThreadPoolBase {
         jar.addClass(ScheduleSingletonOneTimer.class);
         jar.addClasses(Ejb3ThreadPoolBase.class, Ejb3NonCoreThreadTimeoutTestCase.class, ModelNode.class, PathAddress.class,
                 ManagementOperations.class, MgmtOperationException.class);
-        jar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller\n"), "MANIFEST.MF");
+        jar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.remoting3, org.jboss.as.controller\n"), "MANIFEST.MF");
+        jar.addAsManifestResource(createPermissionsXmlAsset(
+                new RemotingPermission("createEndpoint"),
+                new RemotingPermission("connect"),
+                new FilePermission(System.getProperty("jboss.inst") + "/standalone/tmp/auth/*", "read")
+        ), "permissions.xml");
         return jar;
     }
 
