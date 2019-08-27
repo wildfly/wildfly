@@ -67,5 +67,12 @@
                        socket-binding="jgroups-tcp"
                        client-socket-binding="client-binding"/>
         </stack>
+        <stack name="credentialReference1">
+            <transport type="TCP_NIO2"
+                       socket-binding="jgroups-tcp"/>
+            <encrypt-protocol type="SYM_ENCRYPT" key-store="my-key-store" key-alias="alias">
+                <key-credential-reference store="my-credential-store" alias="credential-alias" clear-text="protocolpass" type="PASSWORD"/>
+            </encrypt-protocol>
+        </stack>
     </stacks>
 </subsystem>

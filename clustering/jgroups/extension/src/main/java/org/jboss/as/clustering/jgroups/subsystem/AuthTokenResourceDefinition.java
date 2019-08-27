@@ -22,23 +22,38 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import static org.jboss.as.clustering.jgroups.subsystem.AuthTokenResourceDefinition.Attribute.SHARED_SECRET;
+import static org.jboss.as.controller.security.CredentialReference.handleCredentialReferenceUpdate;
+import static org.jboss.as.controller.security.CredentialReference.rollbackCredentialStoreUpdate;
+
 import java.util.function.UnaryOperator;
 
+import org.jboss.as.clustering.controller.AddStepHandler;
+import org.jboss.as.clustering.controller.AddStepHandlerDescriptor;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
+import org.jboss.as.clustering.controller.RemoveStepHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
+import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
+import org.jboss.as.clustering.controller.WriteAttributeStepHandler;
+import org.jboss.as.clustering.controller.WriteAttributeStepHandlerDescriptor;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.security.CredentialReference;
+import org.jboss.as.controller.security.CredentialReferenceWriteAttributeHandler;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.dmr.ModelNode;
 import org.jgroups.auth.AuthToken;
 import org.wildfly.clustering.service.UnaryRequirement;
 
@@ -87,8 +102,8 @@ public class AuthTokenResourceDefinition<T extends AuthToken> extends ChildResou
         ProtocolResourceDefinition.addTransformations(version, builder);
     }
 
-    private final UnaryOperator<ResourceDescriptor> configurator;
-    private final ResourceServiceConfiguratorFactory serviceConfiguratorFactory;
+    protected final UnaryOperator<ResourceDescriptor> configurator;
+    protected final ResourceServiceConfiguratorFactory serviceConfiguratorFactory;
 
     AuthTokenResourceDefinition(PathElement path, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfiguratorFactory serviceConfiguratorFactory) {
         super(path, JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(path, WILDCARD_PATH));
@@ -103,8 +118,58 @@ public class AuthTokenResourceDefinition<T extends AuthToken> extends ChildResou
                 .addAttributes(Attribute.class)
                 .addCapabilities(Capability.class)
                 ;
-        new SimpleResourceRegistration(descriptor, new SimpleResourceServiceHandler(this.serviceConfiguratorFactory)).register(registration);
+        new TokenResourceRegistration(descriptor, new SimpleResourceServiceHandler(this.serviceConfiguratorFactory)).register(registration);
 
         return registration;
+    }
+
+    private static class TokenResourceRegistration extends SimpleResourceRegistration {
+
+        public TokenResourceRegistration(ResourceDescriptor descriptor, ResourceServiceHandler handler) {
+            super(descriptor, new TokenAddStepHandler(descriptor, handler), new RemoveStepHandler(descriptor, handler), new TokenWriteAttributeStepHandler(descriptor));
+        }
+    }
+
+    private static class TokenAddStepHandler extends AddStepHandler {
+
+        public TokenAddStepHandler(AddStepHandlerDescriptor descriptor, ResourceServiceHandler handler) {
+            super(descriptor, handler);
+        }
+
+        @Override
+        protected void populateModel(final OperationContext context, final ModelNode operation, final Resource resource) throws OperationFailedException {
+            super.populateModel(context, operation, resource);
+            final ModelNode model = resource.getModel();
+            handleCredentialReferenceUpdate(context, model.get(SHARED_SECRET.getName()), SHARED_SECRET.getName());
+        }
+
+        @Override
+        protected void rollbackRuntime(OperationContext context, final ModelNode operation, final Resource resource) {
+            rollbackCredentialStoreUpdate(SHARED_SECRET.getDefinition(), context, resource);
+            super.rollbackRuntime(context, operation, resource);
+        }
+    }
+
+    private static class TokenWriteAttributeStepHandler extends WriteAttributeStepHandler {
+
+        private final WriteAttributeStepHandlerDescriptor descriptor;
+
+        public TokenWriteAttributeStepHandler(WriteAttributeStepHandlerDescriptor descriptor) {
+            super(descriptor, null);
+            this.descriptor = descriptor;
+        }
+
+        @Override
+        public void register(ManagementResourceRegistration registration) {
+            CredentialReferenceWriteAttributeHandler credentialReferenceWriteAttributeHandler = new CredentialReferenceWriteAttributeHandler(SHARED_SECRET.getDefinition());
+            for (AttributeDefinition attribute : this.descriptor.getAttributes()) {
+                if (attribute.equals(SHARED_SECRET.getDefinition())) {
+                    registration.registerReadWriteAttribute(attribute, null, credentialReferenceWriteAttributeHandler);
+                } else {
+                    registration.registerReadWriteAttribute(attribute, null, this);
+                }
+            }
+        }
+
     }
 }

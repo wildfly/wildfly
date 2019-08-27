@@ -22,6 +22,8 @@
 
 package org.jboss.as.clustering.controller;
 
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+
 /**
  * Registers a {@link AddStepHandler}, {@link RemoveStepHandler}, and {@link WriteAttributeStepHandler} on behalf of a resource definition.
  * @author Paul Ferraro
@@ -30,5 +32,9 @@ public class SimpleResourceRegistration extends ResourceRegistration {
 
     public SimpleResourceRegistration(ResourceDescriptor descriptor, ResourceServiceHandler handler) {
         super(descriptor, new AddStepHandler(descriptor, handler), new RemoveStepHandler(descriptor, handler), new WriteAttributeStepHandler(descriptor, handler));
+    }
+
+    public SimpleResourceRegistration(AddStepHandlerDescriptor descriptor, Registration<org.jboss.as.controller.registry.ManagementResourceRegistration> addRegistration, Registration<org.jboss.as.controller.registry.ManagementResourceRegistration> removeRegistration, Registration<ManagementResourceRegistration> writeAttributeRegistration) {
+        super(descriptor, addRegistration, removeRegistration, writeAttributeRegistration);
     }
 }

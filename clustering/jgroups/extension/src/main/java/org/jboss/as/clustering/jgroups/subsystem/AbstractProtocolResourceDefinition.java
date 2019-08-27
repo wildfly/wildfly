@@ -161,9 +161,9 @@ public class AbstractProtocolResourceDefinition extends ChildResourceDefinition<
         PropertyResourceDefinition.buildTransformation(version, builder);
     }
 
-    private final UnaryOperator<ResourceDescriptor> configurator;
-    private final ResourceServiceHandler handler;
-    private final ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory;
+    protected final UnaryOperator<ResourceDescriptor> configurator;
+    protected final ResourceServiceHandler handler;
+    protected final ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory;
 
     AbstractProtocolResourceDefinition(Parameters parameters, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfiguratorFactory serviceConfiguratorFactory, ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory) {
         super(parameters);

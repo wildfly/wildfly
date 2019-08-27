@@ -112,6 +112,8 @@ public class JGroupsTransformersTestCase extends OperationTestCaseBase {
     private static org.jboss.as.subsystem.test.AdditionalInitialization createAdditionalInitialization() {
         return new AdditionalInitialization()
                 .require(CommonUnaryRequirement.SOCKET_BINDING, "jgroups-tcp", "jgroups-udp", "jgroups-udp-fd", "some-binding", "client-binding", "jgroups-diagnostics", "jgroups-mping", "jgroups-tcp-fd", "jgroups-client-fd", "jgroups-state-xfr")
+                .require(CommonUnaryRequirement.KEY_STORE, "my-key-store")
+                .require(CommonUnaryRequirement.CREDENTIAL_STORE, "my-credential-store")
                 ;
     }
 
@@ -368,6 +370,11 @@ public class JGroupsTransformersTestCase extends OperationTestCaseBase {
         FailedOperationTransformationConfig config = new FailedOperationTransformationConfig();
 
         PathAddress subsystemAddress = PathAddress.pathAddress(JGroupsSubsystemResourceDefinition.PATH);
+
+        if (JGroupsModel.VERSION_8_0_0.requiresTransformation(version)) {
+            config.addFailedAttribute(subsystemAddress.append(StackResourceDefinition.pathElement("credentialReference1")).append(EncryptProtocolResourceDefinition.pathElement("SYM_ENCRYPT")),
+                    FailedOperationTransformationConfig.REJECTED_RESOURCE);
+        }
 
         if (JGroupsModel.VERSION_7_0_0.requiresTransformation(version)) {
             config.addFailedAttribute(subsystemAddress.append(StackResourceDefinition.WILDCARD_PATH).append(TransportResourceDefinition.pathElement("TCP_NIO2")), FailedOperationTransformationConfig.REJECTED_RESOURCE);
