@@ -54,7 +54,7 @@ public class UndertowEngineTestCase {
     private final String hostName = "default-host";
     private final String route = "route";
     private final Host host = new Host(this.hostName, Collections.emptyList(), "ROOT.war", StatusCodes.NOT_FOUND, false);
-    private final HttpsListenerService listener = new HttpsListenerService(PathAddress.pathAddress(Constants.HTTPS_LISTENER, "default"), "https", OptionMap.EMPTY, null, OptionMap.EMPTY, false);
+    private final HttpsListenerService listener = new HttpsListenerService(null, PathAddress.pathAddress(Constants.HTTPS_LISTENER, "default"), "https", OptionMap.EMPTY, null, OptionMap.EMPTY, false);
 
     private final UndertowService service = new TestUndertowService("default-container", this.serverName, this.hostName, this.route, false, this.server);
     private final Server server = new TestServer(this.serverName, this.hostName, this.service, this.host, this.listener);
@@ -116,7 +116,7 @@ public class UndertowEngineTestCase {
 
         // after restart, recreate all objects, is the route still the same if config is kept unchanged?
         final Host host2 = new Host(this.hostName, Collections.emptyList(), "ROOT.war", StatusCodes.NOT_FOUND, false);
-        final HttpsListenerService listener2 = new HttpsListenerService(PathAddress.pathAddress(Constants.HTTPS_LISTENER, "default"), "https", OptionMap.EMPTY, null, OptionMap.EMPTY, false);
+        final HttpsListenerService listener2 = new HttpsListenerService(null, PathAddress.pathAddress(Constants.HTTPS_LISTENER, "default"), "https", OptionMap.EMPTY, null, OptionMap.EMPTY, false);
         final UndertowService service2 = new TestUndertowService("default-container", this.serverName, this.hostName, this.route, true, null);
         final Server server2 = new TestServer(this.serverName, this.hostName, service2, host2, listener2);
         final Connector connector2 = mock(Connector.class);

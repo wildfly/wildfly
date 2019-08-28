@@ -24,6 +24,7 @@ package org.wildfly.extension.undertow;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import javax.net.ssl.SSLContext;
@@ -58,6 +59,7 @@ import org.xnio.ssl.XnioSsl;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  * @author Tomaz Cerar
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class HttpsListenerService extends HttpListenerService {
 
@@ -67,12 +69,12 @@ public class HttpsListenerService extends HttpListenerService {
     private final String cipherSuites;
     private final boolean proxyProtocol;
 
-    public HttpsListenerService(final PathAddress address, String serverName, OptionMap listenerOptions, String cipherSuites, OptionMap socketOptions, boolean proxyProtocol) {
-        this(address, serverName, listenerOptions, cipherSuites, socketOptions, false, false, proxyProtocol);
+    public HttpsListenerService(final Consumer<ListenerService> serviceConsumer, final PathAddress address, String serverName, OptionMap listenerOptions, String cipherSuites, OptionMap socketOptions, boolean proxyProtocol) {
+        this(serviceConsumer, address, serverName, listenerOptions, cipherSuites, socketOptions, false, false, proxyProtocol);
     }
 
-    HttpsListenerService(final PathAddress address, String serverName, OptionMap listenerOptions, String cipherSuites, OptionMap socketOptions, boolean certificateForwarding, boolean proxyAddressForwarding, boolean proxyProtocol) {
-        super(address, serverName, listenerOptions, socketOptions, certificateForwarding, proxyAddressForwarding, proxyProtocol);
+    HttpsListenerService(final Consumer<ListenerService> serviceConsumer, final PathAddress address, String serverName, OptionMap listenerOptions, String cipherSuites, OptionMap socketOptions, boolean certificateForwarding, boolean proxyAddressForwarding, boolean proxyProtocol) {
+        super(serviceConsumer, address, serverName, listenerOptions, socketOptions, certificateForwarding, proxyAddressForwarding, proxyProtocol);
         this.cipherSuites = cipherSuites;
         this.proxyProtocol = proxyProtocol;
     }
@@ -86,7 +88,7 @@ public class HttpsListenerService extends HttpListenerService {
         SSLContext sslContext = sslContextSupplier.get();
         OptionMap combined = getSSLOptions(sslContext);
 
-        return new UndertowXnioSsl(worker.getValue().getXnio(), combined, sslContext);
+        return new UndertowXnioSsl(worker.get().getXnio(), combined, sslContext);
     }
 
     protected OptionMap getSSLOptions(SSLContext sslContext) {
@@ -119,7 +121,7 @@ public class HttpsListenerService extends HttpListenerService {
 
     private OpenListener createAlpnOpenListener() {
         OptionMap undertowOptions = OptionMap.builder().addAll(commonOptions).addAll(listenerOptions).set(UndertowOptions.ENABLE_CONNECTOR_STATISTICS, getUndertowService().isStatisticsEnabled()).getMap();
-        ByteBufferPool bufferPool = getBufferPool().getValue();
+        ByteBufferPool bufferPool = getBufferPool().get();
         HttpOpenListener http =  new HttpOpenListener(bufferPool, undertowOptions);
         AlpnOpenListener alpn = new AlpnOpenListener(bufferPool, undertowOptions, http);
 
@@ -136,7 +138,6 @@ public class HttpsListenerService extends HttpListenerService {
 
     @Override
     protected void startListening(XnioWorker worker, InetSocketAddress socketAddress, ChannelListener<AcceptingChannel<StreamConnection>> acceptListener) throws IOException {
-
         if(proxyProtocol) {
             sslServer = worker.createStreamConnectionServer(socketAddress, (ChannelListener) acceptListener, getSSLOptions(sslContextSupplier.get()));
         } else {
@@ -162,7 +163,7 @@ public class HttpsListenerService extends HttpListenerService {
         IoUtils.safeClose(sslServer);
         sslServer = null;
         UndertowLogger.ROOT_LOGGER.listenerStopped("HTTPS", getName(), NetworkUtils.formatIPAddressForURI(boundAddress.getAddress()), boundAddress.getPort());
-        httpListenerRegistry.getValue().removeListener(getName());
+        httpListenerRegistry.get().removeListener(getName());
     }
 
     @Override

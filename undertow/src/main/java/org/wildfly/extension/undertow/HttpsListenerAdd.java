@@ -25,16 +25,17 @@ import static org.wildfly.extension.undertow.Capabilities.REF_SSL_CONTEXT;
 
 import javax.net.ssl.SSLContext;
 
+import io.undertow.server.ListenerRegistry;
 import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.xnio.OptionMap;
 
-import io.undertow.server.ListenerRegistry;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * Add handler for HTTPS listeners.
@@ -42,14 +43,14 @@ import io.undertow.server.ListenerRegistry;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public class HttpsListenerAdd extends ListenerAdd {
+class HttpsListenerAdd extends ListenerAdd {
 
     HttpsListenerAdd(HttpsListenerResourceDefinition def) {
         super(def);
     }
 
     @Override
-    ListenerService createService(String name, final String serverName, final OperationContext context, ModelNode model, OptionMap listenerOptions, OptionMap socketOptions) throws OperationFailedException {
+    ListenerService createService(final Consumer<ListenerService> serviceConsumer, final String name, final String serverName, final OperationContext context, ModelNode model, OptionMap listenerOptions, OptionMap socketOptions) throws OperationFailedException {
         OptionMap.Builder builder = OptionMap.builder().addAll(socketOptions);
 
         ModelNode securityRealmModel = HttpsListenerResourceDefinition.SECURITY_REALM.resolveModelAttribute(context, model);
@@ -76,38 +77,28 @@ public class HttpsListenerAdd extends ListenerAdd {
         final boolean certificateForwarding = HttpListenerResourceDefinition.CERTIFICATE_FORWARDING.resolveModelAttribute(context, model).asBoolean();
         final boolean proxyAddressForwarding = HttpListenerResourceDefinition.PROXY_ADDRESS_FORWARDING.resolveModelAttribute(context, model).asBoolean();
 
-        return new HttpsListenerService(context.getCurrentAddress(), serverName, listenerBuilder.getMap(), cipherSuites, builder.getMap(), certificateForwarding, proxyAddressForwarding, proxyProtocol);
+
+        return new HttpsListenerService(serviceConsumer, context.getCurrentAddress(), serverName, listenerBuilder.getMap(), cipherSuites, builder.getMap(), certificateForwarding, proxyAddressForwarding, proxyProtocol);
     }
 
     @Override
-    void configureAdditionalDependencies(OperationContext context, CapabilityServiceBuilder serviceBuilder, ModelNode model, ListenerService service) throws OperationFailedException {
+    void configureAdditionalDependencies(OperationContext context, CapabilityServiceBuilder<?> serviceBuilder, ModelNode model, ListenerService service) throws OperationFailedException {
+        ((HttpListenerService) service).getHttpListenerRegistry().set(serviceBuilder.requiresCapability(Capabilities.REF_HTTP_LISTENER_REGISTRY, ListenerRegistry.class));
 
-        serviceBuilder.addCapabilityRequirement(Capabilities.REF_HTTP_LISTENER_REGISTRY, ListenerRegistry.class, ((HttpListenerService) service).getHttpListenerRegistry());
-
-        ModelNode sslContextModel = HttpsListenerResourceDefinition.SSL_CONTEXT.resolveModelAttribute(context, model);
-        ModelNode securityRealmModel = HttpsListenerResourceDefinition.SECURITY_REALM.resolveModelAttribute(context, model);
-
+        final ModelNode sslContextModel = HttpsListenerResourceDefinition.SSL_CONTEXT.resolveModelAttribute(context, model);
+        final ModelNode securityRealmModel = HttpsListenerResourceDefinition.SECURITY_REALM.resolveModelAttribute(context, model);
         final String sslContextRef = sslContextModel.isDefined() ? sslContextModel.asString() : null;
+        final Supplier<SSLContext> sslContextInjector = sslContextRef != null ? serviceBuilder.requiresCapability(REF_SSL_CONTEXT, SSLContext.class, sslContextRef) : null;
         final String securityRealmRef = securityRealmModel.isDefined() ? securityRealmModel.asString() : null;
-
-        final InjectedValue<SSLContext> sslContextInjector = new InjectedValue<>();
-        final InjectedValue<SecurityRealm> securityRealmInjector = new InjectedValue<>();
-
-        if (securityRealmRef != null) {
-            SecurityRealm.ServiceUtil.addDependency(serviceBuilder, securityRealmInjector, securityRealmRef);
-        }
-
-        if (sslContextRef != null) {
-            serviceBuilder.addCapabilityRequirement(REF_SSL_CONTEXT, SSLContext.class, sslContextInjector, sslContextRef);
-        }
+        final Supplier<SecurityRealm> securityRealmInjector = securityRealmRef != null ? SecurityRealm.ServiceUtil.requires(serviceBuilder, securityRealmRef) : null;
 
         ((HttpsListenerService)service).setSSLContextSupplier(()-> {
             if (sslContextRef != null) {
-                return sslContextInjector.getValue();
+                return sslContextInjector.get();
             }
 
             if (securityRealmRef != null) {
-                 SSLContext sslContext = securityRealmInjector.getValue().getSSLContext();
+                 SSLContext sslContext = securityRealmInjector.get().getSSLContext();
 
                  if (sslContext == null) {
                      throw UndertowLogger.ROOT_LOGGER.noSslContextInSecurityRealm(securityRealmRef);

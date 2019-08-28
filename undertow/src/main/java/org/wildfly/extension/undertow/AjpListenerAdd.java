@@ -31,6 +31,8 @@ import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.xnio.OptionMap;
 
+import java.util.function.Consumer;
+
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
@@ -42,7 +44,7 @@ class AjpListenerAdd extends ListenerAdd {
     }
 
     @Override
-    ListenerService createService(String name, final String serverName, final OperationContext context, ModelNode model, OptionMap listenerOptions, OptionMap socketOptions) throws OperationFailedException {
+    ListenerService createService(final Consumer<ListenerService> serviceConsumer, final String name, final String serverName, final OperationContext context, ModelNode model, OptionMap listenerOptions, OptionMap socketOptions) throws OperationFailedException {
         ModelNode schemeNode = AjpListenerResourceDefinition.SCHEME.resolveModelAttribute(context, model);
         String scheme = null;
         if (schemeNode.isDefined()) {
@@ -50,14 +52,14 @@ class AjpListenerAdd extends ListenerAdd {
         }
         OptionMap.Builder listenerBuilder = OptionMap.builder().addAll(listenerOptions);
         AjpListenerResourceDefinition.MAX_AJP_PACKET_SIZE.resolveOption(context, model,listenerBuilder);
-        return new AjpListenerService(context.getCurrentAddress(), scheme, listenerBuilder.getMap(), socketOptions);
+        return new AjpListenerService(serviceConsumer, context.getCurrentAddress(), scheme, listenerBuilder.getMap(), socketOptions);
     }
 
     @Override
-    void configureAdditionalDependencies(OperationContext context, CapabilityServiceBuilder serviceBuilder, ModelNode model, ListenerService service) throws OperationFailedException {
+    void configureAdditionalDependencies(OperationContext context, CapabilityServiceBuilder<?> serviceBuilder, ModelNode model, ListenerService service) throws OperationFailedException {
         ModelNode redirectBindingRef = ListenerResourceDefinition.REDIRECT_SOCKET.resolveModelAttribute(context, model);
         if (redirectBindingRef.isDefined()) {
-            serviceBuilder.addCapabilityRequirement(REF_SOCKET_BINDING, SocketBinding.class, service.getRedirectSocket(), redirectBindingRef.asString());
+            service.getRedirectSocket().set(serviceBuilder.requiresCapability(REF_SOCKET_BINDING, SocketBinding.class, redirectBindingRef.asString()));
         }
     }
 }
