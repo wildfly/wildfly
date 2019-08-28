@@ -27,13 +27,17 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.extension.undertow.Handler;
 import org.wildfly.extension.undertow.UndertowService;
 
+import java.util.function.Consumer;
+
 /**
  * @author Tomaz Cerar (c) 2013 Red Hat Inc.
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 class FilterAdd extends AbstractAddStepHandler {
 
@@ -47,12 +51,12 @@ class FilterAdd extends AbstractAddStepHandler {
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         final String name = context.getCurrentAddressValue();
-
-        final FilterService service = new FilterService(handler, getResolvedModel(context, model));
         final ServiceTarget target = context.getServiceTarget();
-        target.addService(UndertowService.FILTER.append(name), service)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                .install();
+        final ServiceBuilder<?> sb = target.addService(UndertowService.FILTER.append(name));
+        final Consumer<FilterService> serviceConsumer = sb.provides(UndertowService.FILTER.append(name));
+        sb.setInstance(new FilterService(serviceConsumer, handler, getResolvedModel(context, model)));
+        sb.setInitialMode(ServiceController.Mode.ON_DEMAND);
+        sb.install();
     }
 
     private ModelNode getResolvedModel(OperationContext context, ModelNode model) throws OperationFailedException {
