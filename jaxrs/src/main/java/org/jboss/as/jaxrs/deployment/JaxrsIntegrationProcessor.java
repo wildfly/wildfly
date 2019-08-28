@@ -22,6 +22,8 @@
 
 package org.jboss.as.jaxrs.deployment;
 
+import static org.jboss.as.jaxrs.logging.JaxrsLogger.JAXRS_LOGGER;
+
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.net.URLDecoder;
@@ -31,6 +33,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.ws.rs.ApplicationPath;
@@ -39,6 +42,11 @@ import javax.ws.rs.core.Application;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
+import org.jboss.as.jaxrs.DeploymentRestResourcesDefintion;
+import org.jboss.as.jaxrs.Jackson2Annotations;
+import org.jboss.as.jaxrs.JacksonAnnotations;
+import org.jboss.as.jaxrs.JaxrsContextParamHandler;
+import org.jboss.as.jaxrs.JaxrsExtension;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentResourceSupport;
@@ -49,6 +57,8 @@ import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.web.common.WarMetaData;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.jandex.DotName;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.jboss.JBossServletMetaData;
@@ -61,13 +71,6 @@ import org.jboss.modules.ModuleIdentifier;
 import org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher;
 import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
 import org.wildfly.security.manager.WildFlySecurityManager;
-
-import static org.jboss.as.jaxrs.logging.JaxrsLogger.JAXRS_LOGGER;
-
-import org.jboss.as.jaxrs.DeploymentRestResourcesDefintion;
-import org.jboss.as.jaxrs.Jackson2Annotations;
-import org.jboss.as.jaxrs.JacksonAnnotations;
-import org.jboss.as.jaxrs.JaxrsExtension;
 
 
 /**
@@ -104,6 +107,21 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
 
         deploymentUnit.getDeploymentSubsystemModel(JaxrsExtension.SUBSYSTEM_NAME);
         final List<ParamValueMetaData> params = webdata.getContextParams();
+
+        for (Entry<String, ModelNode> entry : JaxrsContextParamHandler.getContextParameters().entrySet()) {
+            // Allow context parameters in web.xml files to take precedence.
+            if (paramExists(params, entry.getKey())) {
+               continue;
+            }
+            if (ModelType.LIST.equals(entry.getValue().getType())) {
+               if (entry.getValue().asList().size() > 0) {
+                  setContextParameter(webdata, entry.getKey(), stringifyList(entry.getValue()));
+               }
+            } else {
+               setContextParameter(webdata, entry.getKey(), entry.getValue().asString());
+            }
+         }
+
         boolean entityExpandEnabled = false;
         if (params != null) {
             Iterator<ParamValueMetaData> it = params.iterator();
@@ -458,5 +476,29 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
         params.add(param);
     }
 
+    private boolean paramExists(List<ParamValueMetaData> params, String name) {
+        if (params == null) {
+            return false;
+        }
+        for (ParamValueMetaData param : params) {
+           if (name.equals(param.getParamName())) {
+              return true;
+           }
+        }
+        return false;
+     }
 
+    private String stringifyList(ModelNode list) {
+       StringBuffer sb = new StringBuffer();
+       boolean first = true;
+       for (ModelNode element : list.asList()) {
+          if (first) {
+             first = false;
+          } else {
+             sb.append(",");
+          }
+          sb.append(element.asString());
+       }
+       return sb.toString();
+    }
 }

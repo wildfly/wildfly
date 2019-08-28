@@ -24,6 +24,7 @@ package org.jboss.as.jaxrs;
 import java.io.IOException;
 
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.jboss.as.subsystem.test.KernelServices;
 import org.junit.Test;
 
 /**
@@ -48,8 +49,12 @@ public class JaxrsSubsystemTestCase extends AbstractSubsystemBaseTest {
     @Override
     protected String[] getSubsystemTemplatePaths() throws IOException {
         return new String[]{
-                "/subsystem-templates/jaxrs.xml"
+                "/subsystem-templates/jaxrs_1_0.xml"
         };
+    }
+    @Override
+    protected KernelServices standardSubsystemTest(String configId, boolean compareXml) throws Exception {
+        return super.standardSubsystemTest(configId, false);
     }
 
     @Test

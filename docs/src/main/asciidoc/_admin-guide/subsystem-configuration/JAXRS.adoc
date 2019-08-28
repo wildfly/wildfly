@@ -1,0 +1,59 @@
+[[JAXRS]]
+= JAXRS subsystem configuration
+
+The jaxrs subsystem presents RESTful facilities as defined by the Jakarta RESTful Web Services
+project (https://projects.eclipse.org/projects/ee4j.jaxrs) and implemented
+by the RESTEasy project (https://resteasy.github.io). 
+
+jaxrs is a key facility and is implemented in the usual out of the box wildfly profiles, such as
+standalone.xml, standalone-full.xml, etc.
+
+*Required extension:*
+
+[source,xml,options="nowrap"]
+----
+<extension module="org.jboss.as.jaxrs"/>
+----
+
+*Basic subsystem configuration example:*
+
+jaxrs ships as an empty xml element:
+
+[source,xml,options="nowrap"]
+----
+<subsystem xmlns="urn:jboss:domain:jaxrs:2.0"/>
+----
+
+but it can be expanded to configure parameters described in Section 3.4 "Configuration switches"
+of the RESTEasy User Guide (https://resteasy.github.io/docs.html). For example:
+
+[source,xml,options="nowrap"]
+----
+<subsystem xmlns="urn:jboss:domain:jaxrs:2.0">
+    <context-parameters>
+        <context-parameter name="resteasy.add.charset" value="true"/>
+        <context-parameter name="resteasy.gzip.max.input" value="17"/>
+        <context-parameter name="resteasy.language.mappings" value="es : es,fr:fr,en:en-US"/>
+        <context-parameter name="resteasy.media.type.param.mapping" value="mt"/>
+        <context-parameter name="resteasy.providers" value="com.bluemonkey.reader,com.bluemonkey.writer"/>
+    </context-parameters>
+</subsystem>
+----
+
+For a discussion of the various parameters, see the RESTEasy User Guide.
+The important thing to understand as that once a parameter is set, by way of the CLI interface, for example,
+that parameter and its value will be passed to subsequent deployments as web.xml context parameters. Existing 
+deployments are not affected.
+
+A parameter value is of one of five types:
+
+1. boolean
+2. integer
+3. string
+4. list
+5. map
+
+The syntax of the first three is as usual. A list is comma separated, and
+a map is a comma separated list of "key:value" elements.
+
+
