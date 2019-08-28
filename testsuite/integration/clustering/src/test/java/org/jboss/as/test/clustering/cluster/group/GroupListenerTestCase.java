@@ -34,6 +34,7 @@ import org.jboss.as.test.clustering.cluster.group.bean.ClusterTopologyRetrieverB
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.as.test.shared.TimeoutUtil;
+import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -62,9 +63,10 @@ public class GroupListenerTestCase extends AbstractClusteringTestCase {
     }
 
     private static Archive<?> createDeployment() {
-        final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
-        ejbJar.addPackage(ClusterTopologyRetriever.class.getPackage());
-        return ejbJar;
+        final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
+        jar.addPackage(ClusterTopologyRetriever.class.getPackage());
+        jar.addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(new RuntimePermission("getClassLoader")), "permissions.xml");
+        return jar;
     }
 
     @Test

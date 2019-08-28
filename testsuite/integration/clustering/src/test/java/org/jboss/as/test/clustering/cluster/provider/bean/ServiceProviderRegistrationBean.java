@@ -51,6 +51,12 @@ public class ServiceProviderRegistrationBean implements ServiceProviderRegistrat
 
     @Override
     public void providersChanged(Set<Node> nodes) {
+        try {
+            // Ensure the thread context classloader of the notification is correct
+            Thread.currentThread().getContextClassLoader().loadClass(this.getClass().getName());
+        } catch (ClassNotFoundException e) {
+            throw new IllegalStateException(e);
+        }
         log.info(String.format("ProviderRegistration.Listener.providersChanged(%s)", nodes));
     }
 }

@@ -39,7 +39,7 @@ public class RegistryTestCase extends AbstractClusteringTestCase {
     private static Archive<?> createDeployment() {
         return ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar")
                 .addPackage(RegistryRetriever.class.getPackage())
-                .addAsManifestResource(createPermissionsXmlAsset(new PropertyPermission(NODE_NAME_PROPERTY, "read")), "permissions.xml")
+                .addAsManifestResource(createPermissionsXmlAsset(new PropertyPermission(NODE_NAME_PROPERTY, "read"), new RuntimePermission("getClassLoader")), "permissions.xml")
                 ;
     }
 

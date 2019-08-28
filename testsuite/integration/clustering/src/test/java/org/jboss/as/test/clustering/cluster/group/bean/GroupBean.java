@@ -34,6 +34,12 @@ public class GroupBean implements Group, GroupListener {
 
     @Override
     public void membershipChanged(Membership previousMembership, Membership membership, boolean merged) {
+        try {
+            // Ensure the thread context classloader of the notification is correct
+            Thread.currentThread().getContextClassLoader().loadClass(this.getClass().getName());
+        } catch (ClassNotFoundException e) {
+            throw new IllegalStateException(e);
+        }
         this.previousMembership = previousMembership;
     }
 
