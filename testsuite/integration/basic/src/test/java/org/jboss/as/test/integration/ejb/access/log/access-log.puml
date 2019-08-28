@@ -1,0 +1,44 @@
+@startuml
+
+abstract class AbstractAccessLogTestCase {
+- APP_NAME = "ejb-access-logs-test-app"
+- MODULE_NAME_EJB = "ejb-access-logs-test-app-ejb"
+}
+note bottom : base class for EJB Access log tests
+
+abstract class AbstractConsoleAccessLogTestCase {
+}
+note bottom : @Before to intercept stdout
+
+class ConsoleAccessLogJsonTestCase {
+}
+class ConsoleAccessLogTestCase {
+}
+class ConsoleAndServerLogAccessLogTestCase {
+}
+note top : test with multiple outputs: console + file
+class FileAccessLogJsonTestCase {
+}
+class FileAccessLogTestCase {
+}
+class ServelLogAccessLogJsonTestCase {
+}
+class ServelLogAccessLogTestCase {
+}
+
+AbstractConsoleAccessLogTestCase ---|> AbstractAccessLogTestCase
+AbstractFileAccessLogTestCase ---|> AbstractAccessLogTestCase
+AbstractServelLogAccessLogTestCase ---|> AbstractAccessLogTestCase
+
+ConsoleAccessLogJsonTestCase ---|> AbstractConsoleAccessLogTestCase
+ConsoleAccessLogTestCase ---|> AbstractConsoleAccessLogTestCase
+ConsoleAndServerLogAndFileAccessLogTestCase ---|> AbstractConsoleAccessLogTestCase
+
+FileAccessLogJsonTestCase ---|> AbstractAccessLogTestCase
+FileAccessLogTestCase ---|> AbstractAccessLogTestCase
+
+ServelLogAccessLogJsonTestCase ---|> AbstractAccessLogTestCase
+ServelLogAccessLogTestCase ---|> AbstractAccessLogTestCase
+
+
+@enduml
