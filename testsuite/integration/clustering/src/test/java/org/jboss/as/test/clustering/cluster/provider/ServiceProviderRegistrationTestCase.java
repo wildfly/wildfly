@@ -12,6 +12,7 @@ import org.jboss.as.test.clustering.cluster.provider.bean.ServiceProviderRetriev
 import org.jboss.as.test.clustering.cluster.provider.bean.ServiceProviderRetrieverBean;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
+import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -35,9 +36,10 @@ public class ServiceProviderRegistrationTestCase extends AbstractClusteringTestC
     }
 
     private static Archive<?> createDeployment() {
-        final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
-        ejbJar.addPackage(ServiceProviderRetriever.class.getPackage());
-        return ejbJar;
+        final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
+        jar.addPackage(ServiceProviderRetriever.class.getPackage());
+        jar.addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(new RuntimePermission("getClassLoader")), "permissions.xml");
+        return jar;
     }
 
     @Test

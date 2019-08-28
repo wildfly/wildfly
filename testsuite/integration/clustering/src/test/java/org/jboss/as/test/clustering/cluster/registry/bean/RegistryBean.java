@@ -56,17 +56,35 @@ public class RegistryBean implements Registry<String, String>, RegistryListener<
 
     @Override
     public void addedEntries(Map<String, String> added) {
-        //System.out.println("New registry entry:" + added);
+        try {
+            // Ensure the thread context classloader of the notification is correct
+            Thread.currentThread().getContextClassLoader().loadClass(this.getClass().getName());
+        } catch (ClassNotFoundException e) {
+            throw new IllegalStateException(e);
+        }
+        System.out.println("New registry entry:" + added);
     }
 
     @Override
     public void updatedEntries(Map<String, String> updated) {
-        //System.out.println("Updated registry entry:" + updated);
+        try {
+            // Ensure the thread context classloader of the notification is correct
+            Thread.currentThread().getContextClassLoader().loadClass(this.getClass().getName());
+        } catch (ClassNotFoundException e) {
+            throw new IllegalStateException(e);
+        }
+        System.out.println("Updated registry entry:" + updated);
     }
 
     @Override
     public void removedEntries(Map<String, String> removed) {
-        //System.out.println("Removed registry entry:" + removed);
+        try {
+            // Ensure the thread context classloader of the notification is correct
+            Thread.currentThread().getContextClassLoader().loadClass(this.getClass().getName());
+        } catch (ClassNotFoundException e) {
+            throw new IllegalStateException(e);
+        }
+        System.out.println("Removed registry entry:" + removed);
     }
 
     @Override
