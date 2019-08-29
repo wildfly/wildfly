@@ -32,14 +32,16 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
 import org.xnio.XnioWorker;
+
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-class AccessLogAdd extends AbstractAddStepHandler {
+final class AccessLogAdd extends AbstractAddStepHandler {
 
     private AccessLogAdd() {
         super(AccessLogDefinition.ATTRIBUTES);
@@ -49,7 +51,6 @@ class AccessLogAdd extends AbstractAddStepHandler {
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-
         final PathAddress address = context.getCurrentAddress();
         final PathAddress hostAddress = address.getParent();
         final PathAddress serverAddress = hostAddress.getParent();
@@ -70,25 +71,21 @@ class AccessLogAdd extends AbstractAddStepHandler {
             predicate = Predicates.parse(predicateNode.asString(), getClass().getClassLoader());
         }
 
-        final AccessLogService service;
-        if (useServerLog) {
-            service = new AccessLogService(pattern, extended, predicate);
-        } else {
-            service = new AccessLogService(pattern, directory, relativeTo, filePrefix, fileSuffix, rotate, extended, predicate);
-        }
-
         final String serverName = serverAddress.getLastElement().getValue();
         final String hostName = hostAddress.getLastElement().getValue();
 
-        final CapabilityServiceBuilder builder = context.getCapabilityServiceTarget().addCapability(AccessLogDefinition.ACCESS_LOG_CAPABILITY)
-                .setInstance(service)
-                .addCapabilityRequirement(Capabilities.REF_IO_WORKER, XnioWorker.class, service.getWorker(), worker)
-                .addDependency(PathManagerService.SERVICE_NAME, PathManager.class, service.getPathManager())
-                .addCapabilityRequirement(Capabilities.CAPABILITY_HOST, Host.class, service.getHost(), serverName, hostName);
-        //only for backward compatibility
-        builder.addAliases(UndertowService.accessLogServiceName(serverName, hostName));
-
-        builder.setInitialMode(ServiceController.Mode.ACTIVE)
-                .install();
+        final CapabilityServiceBuilder<?> sb = context.getCapabilityServiceTarget().addCapability(AccessLogDefinition.ACCESS_LOG_CAPABILITY);
+        final Consumer<AccessLogService> sConsumer = sb.provides(AccessLogDefinition.ACCESS_LOG_CAPABILITY, UndertowService.accessLogServiceName(serverName, hostName));
+        final Supplier<Host> hSupplier = sb.requiresCapability(Capabilities.CAPABILITY_HOST, Host.class, serverName, hostName);
+        final Supplier<XnioWorker> wSupplier = sb.requiresCapability(Capabilities.REF_IO_WORKER, XnioWorker.class, worker);
+        final Supplier<PathManager> pmSupplier = sb.requires(PathManagerService.SERVICE_NAME);
+        final AccessLogService service;
+        if (useServerLog) {
+            service = new AccessLogService(sConsumer, hSupplier, wSupplier, pmSupplier, pattern, extended, predicate);
+        } else {
+            service = new AccessLogService(sConsumer, hSupplier, wSupplier, pmSupplier, pattern, directory, relativeTo, filePrefix, fileSuffix, rotate, extended, predicate);
+        }
+        sb.setInstance(service);
+        sb.install();
     }
 }
