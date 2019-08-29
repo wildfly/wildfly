@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.undertow;
 
+import java.util.function.Supplier;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -33,32 +34,36 @@ import io.undertow.server.handlers.RedirectHandler;
 import io.undertow.util.Headers;
 import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.server.mgmt.domain.HttpManagement;
-import org.jboss.msc.service.Service;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 
 /**
  * A service to setup a redirect for the web administration console.
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-class ConsoleRedirectService implements Service<ConsoleRedirectService> {
+final class ConsoleRedirectService implements Service {
 
     private static final String CONSOLE_PATH = "/console";
     private static final String NO_CONSOLE = "/noconsole.html";
     private static final String NO_REDIRECT = "/noredirect.html";
 
-    private final InjectedValue<HttpManagement> httpManagementInjector = new InjectedValue<>();
-    private final InjectedValue<Host> hostInjector = new InjectedValue<>();
+    private final Supplier<HttpManagement> httpManagement;
+    private final Supplier<Host> host;
+
+    ConsoleRedirectService(final Supplier<HttpManagement> httpManagement, final Supplier<Host> host) {
+        this.httpManagement = httpManagement;
+        this.host = host;
+    }
 
     @Override
-    public void start(final StartContext startContext) throws StartException {
-        final Host host = hostInjector.getValue();
+    public void start(final StartContext startContext) {
+        final Host host = this.host.get();
         UndertowLogger.ROOT_LOGGER.debugf("Starting console redirect for %s", host.getName());
-        final HttpManagement httpManagement = httpManagementInjector.getOptionalValue();
+        final HttpManagement httpManagement = this.httpManagement != null ? this.httpManagement.get() : null;
         if (httpManagement != null) {
             if (httpManagement.hasConsole()) {
                 host.registerHandler(CONSOLE_PATH, new ConsoleRedirectHandler(httpManagement));
@@ -72,22 +77,9 @@ class ConsoleRedirectService implements Service<ConsoleRedirectService> {
 
     @Override
     public void stop(final StopContext stopContext) {
-        final Host host = hostInjector.getValue();
+        final Host host = this.host.get();
         UndertowLogger.ROOT_LOGGER.debugf("Stopping console redirect for %s", host.getName());
         host.unregisterHandler(CONSOLE_PATH);
-    }
-
-    @Override
-    public ConsoleRedirectService getValue() throws IllegalStateException, IllegalArgumentException {
-        return this;
-    }
-
-    protected InjectedValue<HttpManagement> getHttpManagementInjector() {
-        return httpManagementInjector;
-    }
-
-    protected InjectedValue<Host> getHostInjector() {
-        return hostInjector;
     }
 
     private static class ConsoleRedirectHandler implements HttpHandler {
