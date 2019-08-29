@@ -46,6 +46,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -65,7 +67,7 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
         installRuntimeServices(context, resource.getModel(), context.getCurrentAddressValue());
     }
 
-    public void installRuntimeServices(OperationContext context, ModelNode model, String name) throws OperationFailedException {
+    void installRuntimeServices(OperationContext context, ModelNode model, String name) throws OperationFailedException {
         final ModelNode fullModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS), 2);
 
         final SessionCookieConfig config = SessionCookieDefinition.INSTANCE.getConfig(context, fullModel.get(SessionCookieDefinition.INSTANCE.getPathElement().getKeyValuePair()));
@@ -127,37 +129,20 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
         authenticationMechanisms.put("SPNEGO", new NegotiationMechanismFactory());
         authenticationMechanisms.put(HttpServletRequest.DIGEST_AUTH, DigestAuthenticationMechanismFactory.FACTORY);
 
-        final ServletContainerService container = new ServletContainerService(allowNonStandardWrappers,
-                ServletStackTraces.valueOf(stackTracesString.toUpperCase().replace('-', '_')),
-                config,
-                jspConfig,
-                defaultEncoding,
-                useListenerEncoding,
-                ignoreFlush,
-                eagerFilterInit,
-                sessionTimeout,
+        final CapabilityServiceBuilder<?> sb = context.getCapabilityServiceTarget().addCapability(ServletContainerDefinition.SERVLET_CONTAINER_CAPABILITY);
+        final Consumer<ServletContainerService> sConsumer = sb.provides(ServletContainerDefinition.SERVLET_CONTAINER_CAPABILITY, UndertowService.SERVLET_CONTAINER.append(name));
+        final Supplier<SessionPersistenceManager> spmSupplier = persistentSessions ? sb.requires(AbstractPersistentSessionManager.SERVICE_NAME) : null;
+        final Supplier<DirectBufferCache> bcSupplier = bufferCache != null ? sb.requires(BufferCacheService.SERVICE_NAME.append(bufferCache)) : null;
+        final Supplier<ByteBufferPool> bbpSupplier = webSocketInfo != null ? sb.requiresCapability(Capabilities.CAPABILITY_BYTE_BUFFER_POOL, ByteBufferPool.class, webSocketInfo.getBufferPool()) : null;
+        final Supplier<XnioWorker> xwSupplier = webSocketInfo != null ? sb.requiresCapability(Capabilities.REF_IO_WORKER, XnioWorker.class, webSocketInfo.getWorker()) : null;
+        final ServletContainerService container = new ServletContainerService(sConsumer, spmSupplier, bcSupplier, bbpSupplier, xwSupplier,
+                allowNonStandardWrappers, ServletStackTraces.valueOf(stackTracesString.toUpperCase().replace('-', '_')), config,
+                jspConfig, defaultEncoding, useListenerEncoding, ignoreFlush, eagerFilterInit, sessionTimeout,
                 disableCachingForSecuredPages, webSocketInfo != null, webSocketInfo != null && webSocketInfo.isDispatchToWorker(),
-                webSocketInfo != null && webSocketInfo.isPerMessageDeflate(), webSocketInfo == null ? -1 : webSocketInfo.getDeflaterLevel(),
-                mimeMappings,
-                welcomeFiles, directoryListingEnabled, proactiveAuth, sessionIdLength, authenticationMechanisms, maxSessions, crawlerSessionManagerConfig, disableFileWatchService, disableSessionIdReususe, fileCacheMetadataSize, fileCacheMaxFileSize, fileCacheTimeToLive, defaultCookieVersion,
-                preservePathOnForward);
-
-
-        final CapabilityServiceBuilder<?> builder = context.getCapabilityServiceTarget()
-                .addCapability(ServletContainerDefinition.SERVLET_CONTAINER_CAPABILITY).setInstance(container);
-        if(bufferCache != null) {
-            builder.addDependency(BufferCacheService.SERVICE_NAME.append(bufferCache), DirectBufferCache.class, container.getBufferCacheInjectedValue());
-        }
-        if(persistentSessions) {
-            builder.addDependency(AbstractPersistentSessionManager.SERVICE_NAME, SessionPersistenceManager.class, container.getSessionPersistenceManagerInjectedValue());
-        }
-        if(webSocketInfo != null) {
-            builder.addCapabilityRequirement(Capabilities.REF_IO_WORKER, XnioWorker.class, container.getWebsocketsWorker(), webSocketInfo.getWorker());
-            builder.addCapabilityRequirement(Capabilities.CAPABILITY_BYTE_BUFFER_POOL, ByteBufferPool.class, container.getWebsocketsBufferPool(), webSocketInfo.getBufferPool());
-        }
-
-        builder.setInitialMode(ServiceController.Mode.ON_DEMAND)
-               .addAliases(UndertowService.SERVLET_CONTAINER.append(name))
-                .install();
+                webSocketInfo != null && webSocketInfo.isPerMessageDeflate(), webSocketInfo == null ? -1 : webSocketInfo.getDeflaterLevel(), mimeMappings,
+                welcomeFiles, directoryListingEnabled, proactiveAuth, sessionIdLength, authenticationMechanisms, maxSessions, crawlerSessionManagerConfig, disableFileWatchService, disableSessionIdReususe, fileCacheMetadataSize, fileCacheMaxFileSize, fileCacheTimeToLive, defaultCookieVersion, preservePathOnForward);
+        sb.setInstance(container);
+        sb.setInitialMode(ServiceController.Mode.ON_DEMAND);
+        sb.install();
     }
 }

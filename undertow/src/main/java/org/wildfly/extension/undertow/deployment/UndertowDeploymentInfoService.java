@@ -981,8 +981,8 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
             //now setup websockets if they are enabled
             if(servletContainer.isWebsocketsEnabled() && webSocketDeploymentInfo != null) {
-                webSocketDeploymentInfo.setBuffers(servletContainer.getWebsocketsBufferPool().getValue());
-                webSocketDeploymentInfo.setWorker(servletContainer.getWebsocketsWorker().getValue());
+                webSocketDeploymentInfo.setBuffers(servletContainer.getWebsocketsBufferPool());
+                webSocketDeploymentInfo.setWorker(servletContainer.getWebsocketsWorker());
                 webSocketDeploymentInfo.setDispatchToWorkerThread(servletContainer.isDispatchWebsocketInvocationToWorker());
 
                 if(servletContainer.isPerMessageDeflate()) {
