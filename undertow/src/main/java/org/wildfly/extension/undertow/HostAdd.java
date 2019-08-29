@@ -106,8 +106,8 @@ final class HostAdd extends AbstractAddStepHandler {
         if (isDefaultHost) {
             addCommonHost(context, aliases, serverName, virtualHostServiceName);
             final RuntimeCapability<?>[] capabilitiesParam = new RuntimeCapability<?>[] {HostDefinition.HOST_CAPABILITY};
-            final ServiceName[] aliasesParam = new ServiceName[] {UndertowService.virtualHostName(serverName, name), UndertowService.DEFAULT_HOST};
-            hostConsumer = csb.provides(capabilitiesParam, aliasesParam);
+            final ServiceName[] serviceNamesParam = new ServiceName[] {UndertowService.virtualHostName(serverName, name), UndertowService.DEFAULT_HOST};
+            hostConsumer = csb.provides(capabilitiesParam, serviceNamesParam);
         } else {
             hostConsumer = csb.provides(HostDefinition.HOST_CAPABILITY, UndertowService.virtualHostName(serverName, name));
         }
@@ -142,28 +142,26 @@ final class HostAdd extends AbstractAddStepHandler {
         }
     }
 
-    private void addCommonHost(OperationContext context, List<String> aliases,
-                                                     String serverName, ServiceName virtualHostServiceName) {
-        WebHostService service = new WebHostService();
-        final CapabilityServiceBuilder<?> builder = context.getCapabilityServiceTarget()
-                .addCapability(WebHost.CAPABILITY)
-                .setInstance(service)
-                .addCapabilityRequirement(Capabilities.CAPABILITY_SERVER, Server.class, service.getServer(), serverName)
-                .addCapabilityRequirement(CommonWebServer.CAPABILITY_NAME, CommonWebServer.class)
-                .addDependency(virtualHostServiceName, Host.class, service.getHost());
-
-        if(context.hasOptionalCapability(Capabilities.REF_REQUEST_CONTROLLER, null, null)) {
-            builder.addCapabilityRequirement(Capabilities.REF_REQUEST_CONTROLLER, RequestController.class, service.getRequestControllerInjectedValue());
-        }
-
-        builder.addAliases(WebHost.SERVICE_NAME.append(context.getCurrentAddressValue()));
+    private void addCommonHost(OperationContext context, List<String> aliases, String serverName, ServiceName virtualHostServiceName) {
+        final RuntimeCapability<?>[] capabilitiesParam = new RuntimeCapability<?>[] {WebHost.CAPABILITY};
+        final ServiceName[] serviceNamesParam = new ServiceName[aliases == null ? 1 : aliases.size() + 1];
         if (aliases != null) {
-            for (String alias : aliases) {
-                builder.addAliases(WebHost.SERVICE_NAME.append(alias));
+            int i = 0;
+            for (final String alias : aliases) {
+                serviceNamesParam[i++] = WebHost.SERVICE_NAME.append(alias);
             }
         }
+        serviceNamesParam[serviceNamesParam.length - 1] = WebHost.SERVICE_NAME.append(context.getCurrentAddressValue());
+        final boolean rqCapabilityAvailable = context.hasOptionalCapability(Capabilities.REF_REQUEST_CONTROLLER, null, null);
 
-        builder.setInitialMode(Mode.PASSIVE);
-        builder.install();
+        final CapabilityServiceBuilder<?> sb = context.getCapabilityServiceTarget().addCapability(WebHost.CAPABILITY);
+        final Consumer<WebHost> whConsumer = sb.provides(capabilitiesParam, serviceNamesParam);
+        final Supplier<Server> sSupplier = sb.requiresCapability(Capabilities.CAPABILITY_SERVER, Server.class, serverName);
+        final Supplier<Host> hSupplier = sb.requires(virtualHostServiceName);
+        final Supplier<RequestController> rcSupplier = rqCapabilityAvailable ? sb.requiresCapability(Capabilities.REF_REQUEST_CONTROLLER, RequestController.class) : null;
+        sb.setInstance(new WebHostService(whConsumer, sSupplier, hSupplier, rcSupplier));
+        sb.requiresCapability(CommonWebServer.CAPABILITY_NAME, CommonWebServer.class);
+        sb.setInitialMode(Mode.PASSIVE);
+        sb.install();
     }
 }
