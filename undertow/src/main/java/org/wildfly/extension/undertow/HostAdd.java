@@ -27,6 +27,8 @@ import static org.wildfly.extension.undertow.ServerDefinition.SERVER_CAPABILITY;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.CapabilityServiceBuilder;
@@ -36,6 +38,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.server.mgmt.UndertowHttpManagementService;
 import org.jboss.as.server.mgmt.domain.HttpManagement;
 import org.jboss.as.server.suspend.SuspendController;
@@ -52,7 +55,7 @@ import org.wildfly.extension.undertow.deployment.DefaultDeploymentMappingProvide
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-class HostAdd extends AbstractAddStepHandler {
+final class HostAdd extends AbstractAddStepHandler {
 
     static final HostAdd INSTANCE = new HostAdd();
 
@@ -98,24 +101,23 @@ class HostAdd extends AbstractAddStepHandler {
 
         final ServiceName virtualHostServiceName = HostDefinition.HOST_CAPABILITY.fromBaseCapability(address).getCapabilityServiceName();
 
-        final Host service = new Host(name, aliases == null ? new LinkedList<>(): aliases, defaultWebModule, defaultResponseCode, queueRequestsOnStart);
-
-        final ServiceBuilder<?> builder = context.getCapabilityServiceTarget().addCapability(HostDefinition.HOST_CAPABILITY)
-                .setInstance(service)
-                .addCapabilityRequirement(Capabilities.CAPABILITY_SERVER, Server.class, service.getServerInjection(), serverName)
-                .addCapabilityRequirement(Capabilities.CAPABILITY_UNDERTOW, UndertowService.class, service.getUndertowService())
-                .addDependency(context.getCapabilityServiceName(Capabilities.REF_SUSPEND_CONTROLLER, SuspendController.class), SuspendController.class, service.getSuspendControllerInjectedValue())
-                .addDependency(ControlledProcessStateService.SERVICE_NAME, ControlledProcessStateService.class, service.getControlledProcessStateServiceInjectedValue());
-
-        builder.setInitialMode(Mode.ON_DEMAND);
-
+        final CapabilityServiceBuilder<?> csb = context.getCapabilityServiceTarget().addCapability(HostDefinition.HOST_CAPABILITY);
+        Consumer<Host> hostConsumer;
         if (isDefaultHost) {
             addCommonHost(context, aliases, serverName, virtualHostServiceName);
-            builder.addAliases(UndertowService.DEFAULT_HOST);//add alias for default host of default server service
+            final RuntimeCapability<?>[] capabilitiesParam = new RuntimeCapability<?>[] {HostDefinition.HOST_CAPABILITY};
+            final ServiceName[] aliasesParam = new ServiceName[] {UndertowService.virtualHostName(serverName, name), UndertowService.DEFAULT_HOST};
+            hostConsumer = csb.provides(capabilitiesParam, aliasesParam);
+        } else {
+            hostConsumer = csb.provides(HostDefinition.HOST_CAPABILITY, UndertowService.virtualHostName(serverName, name));
         }
-        //this is workaround for a bit so old service names still work!
-        builder.addAliases(UndertowService.virtualHostName(serverName, name));
-        builder.install();
+        final Supplier<Server> sSupplier = csb.requiresCapability(Capabilities.CAPABILITY_SERVER, Server.class, serverName);
+        final Supplier<UndertowService> usSupplier = csb.requiresCapability(Capabilities.CAPABILITY_UNDERTOW, UndertowService.class);
+        final Supplier<ControlledProcessStateService> cpssSupplier = csb.requires(ControlledProcessStateService.SERVICE_NAME);
+        final Supplier<SuspendController> scSupplier = csb.requires(context.getCapabilityServiceName(Capabilities.REF_SUSPEND_CONTROLLER, SuspendController.class));
+        csb.setInstance(new Host(hostConsumer, sSupplier, usSupplier, cpssSupplier, scSupplier, name, aliases == null ? new LinkedList<>(): aliases, defaultWebModule, defaultResponseCode, queueRequestsOnStart));
+        csb.setInitialMode(Mode.ON_DEMAND);
+        csb.install();
 
         if (enableConsoleRedirect) {
             // Setup the web console redirect
