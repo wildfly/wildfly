@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.dist.subsystem.xml;
+package org.wildfly.dist.legacy.subsystem.xml;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
