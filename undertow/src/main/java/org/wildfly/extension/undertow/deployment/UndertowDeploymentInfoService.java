@@ -526,7 +526,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 if (port<0){
                     UndertowLogger.ROOT_LOGGER.debugf("Confidential port not defined for port %s", port);
                 }
-                return host.getValue().getServer().getValue().lookupSecurePort(port);
+                return host.getValue().getServer().lookupSecurePort(port);
             }
         };
     }

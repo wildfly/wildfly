@@ -31,16 +31,16 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import org.jboss.as.network.SocketBinding;
-import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
@@ -56,18 +56,24 @@ import org.wildfly.extension.undertow.logging.UndertowLogger;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class Server implements Service<Server> {
+    private final Consumer<Server> serverConsumer;
+    private final Supplier<ServletContainerService> servletContainer;
+    private final Supplier<UndertowService> undertowService;
     private final String defaultHost;
     private final String name;
     private final NameVirtualHostHandler virtualHostHandler = new NameVirtualHostHandler();
-    private final InjectedValue<ServletContainerService> servletContainer = new InjectedValue<>();
-    private final InjectedValue<UndertowService> undertowService = new InjectedValue<>();
-    private volatile HttpHandler root;
     private final List<ListenerService> listeners = new CopyOnWriteArrayList<>();
     private final Set<Host> hosts = new CopyOnWriteArraySet<>();
-
     private final HashMap<Integer,Integer> securePortMappings = new HashMap<>();
+    private volatile HttpHandler root;
 
-    protected Server(String name, String defaultHost) {
+    protected Server(final Consumer<Server> serverConsumer,
+                     final Supplier<ServletContainerService> servletContainer,
+                     final Supplier<UndertowService> undertowService,
+                     final String name, final String defaultHost) {
+        this.serverConsumer = serverConsumer;
+        this.servletContainer = servletContainer;
+        this.undertowService = undertowService;
         this.name = name;
         this.defaultHost = defaultHost;
     }
@@ -80,7 +86,19 @@ public class Server implements Service<Server> {
         root = new DefaultHostHandler(root);
 
         UndertowLogger.ROOT_LOGGER.startedServer(name);
-        undertowService.getValue().registerServer(this);
+        undertowService.get().registerServer(this);
+        serverConsumer.accept(this);
+    }
+
+    @Override
+    public void stop(final StopContext stopContext) {
+        serverConsumer.accept(null);
+        undertowService.get().unregisterServer(this);
+    }
+
+    @Override
+    public Server getValue() {
+        return this;
     }
 
     protected void registerListener(ListenerService listener) {
@@ -128,34 +146,16 @@ public class Server implements Service<Server> {
         return securePortMappings.get(unsecurePort);
     }
 
-    @Override
-    public void stop(StopContext stopContext) {
-        undertowService.getValue().unregisterServer(this);
-    }
-
-    @Override
-    public Server getValue() throws IllegalStateException, IllegalArgumentException {
-        return this;
-    }
-
-    Injector<ServletContainerService> getServletContainerInjector() {
-        return servletContainer;
-    }
-
     public ServletContainerService getServletContainer() {
-        return servletContainer.getValue();
+        return servletContainer.get();
     }
 
     protected HttpHandler getRoot() {
         return root;
     }
 
-    protected Injector<UndertowService> getUndertowServiceInjector() {
-        return undertowService;
-    }
-
     UndertowService getUndertowService() {
-        return undertowService.getValue();
+        return undertowService.get();
     }
 
     public String getName() {
@@ -175,7 +175,7 @@ public class Server implements Service<Server> {
     }
 
     public String getRoute() {
-        final UndertowService service = this.undertowService.getValue();
+        final UndertowService service = this.undertowService.get();
         final String defaultServerRoute = service.getInstanceId();
         if (service.isObfuscateSessionRoute()) {
             try {

@@ -26,14 +26,13 @@ import org.wildfly.extension.undertow.ListenerService;
 import org.wildfly.extension.undertow.Server;
 import org.wildfly.extension.undertow.UndertowService;
 
-public class TestServer extends Server {
-    public TestServer(String name, String defaultHost) {
-        super(name, defaultHost);
+final class TestServer extends Server {
+    TestServer(final String name, final String defaultHost) {
+        super(null, null, null, name, defaultHost);
     }
 
-    public TestServer(String name, String defaultHost, UndertowService service, Host host, ListenerService listener) {
-        this(name, defaultHost);
-        this.getUndertowServiceInjector().inject(service);
+    TestServer(final String name, final String defaultHost, final UndertowService service, final Host host, final ListenerService listener) {
+        super(null, null, () -> service, name, defaultHost);
         this.registerHost(host);
         this.registerListener(listener);
     }
