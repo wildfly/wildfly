@@ -56,14 +56,9 @@ embed-server --admin-only=true --server-config=standalone-full.xml
 /subsystem=elytron/credential-store=cred-store-default:remove()
 
 
-# datasources and ejb3 still has dependency on legacy security subsystem, so we can't remove it completely now
+# Legacy security subsystem is not needed
 
-# /subsystem=security:remove
-# /extension=org.jboss.as.security:remove
-
-/subsystem=security/security-domain=other:remove
-/subsystem=security/security-domain=jaspitest:remove
-/subsystem=security/security-domain=jboss-ejb-policy:remove
-/subsystem=security/security-domain=jboss-web-policy:remove
+/subsystem=security:remove
+/extension=org.jboss.as.security:remove
 
 stop-embedded-server

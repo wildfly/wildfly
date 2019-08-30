@@ -40,13 +40,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.as.test.integration.security.common.Utils;
-import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
@@ -182,37 +176,14 @@ public class SecurityAPITestCase {
         @Override
         protected ConfigurableElement[] getConfigurableElements() {
             ConfigurableElement[] elements = new ConfigurableElement[3];
-            // 1 - Switch off PicketBox JACC
-            elements[0] = new ConfigurableElement() {
-
-                private final PathAddress ADDRESS = PathAddress.pathAddress(PathElement.pathElement("subsystem", "security"));
-
-                @Override
-                public String getName() {
-                    return "Disable PicketBox JACC";
-                }
-
-                @Override
-                public void create(ModelControllerClient client, CLIWrapper cli) throws Exception {
-                    ModelNode write = Util.getWriteAttributeOperation(ADDRESS, "initialize-jacc", "false");
-                    Utils.applyUpdate(write, client);
-                }
-
-                @Override
-                public void remove(ModelControllerClient client, CLIWrapper cli) throws Exception {
-                    ModelNode write = Util.getWriteAttributeOperation(ADDRESS, "initialize-jacc", "true");
-                    Utils.applyUpdate(write, client);
-                }
-
-            };
-            // 2 - Add empty JACC Policy
-            elements[1] = Policy.builder()
+            // 1 - Add empty JACC Policy
+            elements[0] = Policy.builder()
                     .withName("jacc")
                     .withJaccPolicy()
                     .build();
 
-            // 3 - Map the application-security-domain
-            elements[2] = UndertowApplicationSecurityDomain.builder()
+            // 2 - Map the application-security-domain
+            elements[1] = UndertowApplicationSecurityDomain.builder()
                     .withName("SecurityAPI")
                     .withSecurityDomain("ApplicationDomain")
                     .withIntegratedJaspi(false)
