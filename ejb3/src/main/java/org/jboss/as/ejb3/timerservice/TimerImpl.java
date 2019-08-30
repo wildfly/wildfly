@@ -30,9 +30,9 @@ import javax.ejb.ScheduleExpression;
 import javax.ejb.Timer;
 import javax.ejb.TimerHandle;
 
-import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
 import org.jboss.as.ejb3.component.allowedmethods.MethodType;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 
 /**

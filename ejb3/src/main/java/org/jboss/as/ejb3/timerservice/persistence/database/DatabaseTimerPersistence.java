@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -838,6 +839,25 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                                         final Holder holder = timerFromResult(resultSet, timerService);
                                         if(holder != null) {
                                             listener.timerAdded(holder.timer);
+                                        }
+                                    } else {
+                                        final Holder holder = timerFromResult(resultSet, listener.getTimerService());
+                                        if (holder != null) {
+                                            TimerImpl oldTimer = listener.getTimerService().getTimer(id);
+                                            // if it is already in memory but it is not in sync we have a problem
+                                            // remove and add -> the probable cause is db glitch
+                                            EnumSet<TimerState> valid = EnumSet.of(TimerState.IN_TIMEOUT, TimerState.RETRY_TIMEOUT, TimerState.CREATED, TimerState.ACTIVE);
+                                            boolean validDBTimer = valid.contains(holder.timer.getState());
+                                            boolean validMemoryTimer = !valid.contains(oldTimer.getState());
+                                            // if timers memory - db are in non intersect subsets of valid/invalid states. we put them in sync
+                                            if (validMemoryTimer && validDBTimer) {
+                                                synchronized (DatabaseTimerPersistence.this) {
+                                                    Set<String> timers = knownTimerIds.get(timedObjectId);
+                                                    timers.remove(oldTimer.getId());
+                                                    listener.timerSync(oldTimer, holder.timer);
+                                                }
+
+                                            }
                                         }
                                     }
                                 } catch (Exception e) {
