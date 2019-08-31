@@ -150,10 +150,12 @@ public class ManagedExecutorServiceResourceDefinition extends SimpleResourceDefi
 
     static final SimpleAttributeDefinition[] ATTRIBUTES = {JNDI_NAME_AD, CONTEXT_SERVICE_AD, THREAD_FACTORY_AD, HUNG_TASK_THRESHOLD_AD, LONG_RUNNING_TASKS_AD, CORE_THREADS_AD, MAX_THREADS_AD, KEEPALIVE_TIME_AD, QUEUE_LENGTH_AD, REJECT_POLICY_AD};
 
+    public static final PathElement PATH_ELEMENT = PathElement.pathElement(EESubsystemModel.MANAGED_EXECUTOR_SERVICE);
+
     public static final ManagedExecutorServiceResourceDefinition INSTANCE = new ManagedExecutorServiceResourceDefinition();
 
     private ManagedExecutorServiceResourceDefinition() {
-        super(new SimpleResourceDefinition.Parameters(PathElement.pathElement(EESubsystemModel.MANAGED_EXECUTOR_SERVICE), EeExtension.getResourceDescriptionResolver(EESubsystemModel.MANAGED_EXECUTOR_SERVICE))
+        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, EeExtension.getResourceDescriptionResolver(EESubsystemModel.MANAGED_EXECUTOR_SERVICE))
                 .setAddHandler(ManagedExecutorServiceAdd.INSTANCE)
                 .setRemoveHandler(new ServiceRemoveStepHandler(ManagedExecutorServiceAdd.INSTANCE))
                 .addCapabilities(CAPABILITY));
@@ -167,9 +169,8 @@ public class ManagedExecutorServiceResourceDefinition extends SimpleResourceDefi
         }
     }
 
-    void registerTransformers_4_0(final ResourceTransformationDescriptionBuilder builder) {
-        final PathElement pathElement = getPathElement();
-        final ResourceTransformationDescriptionBuilder resourceBuilder = builder.addChildResource(pathElement);
+    static void registerTransformers_4_0(final ResourceTransformationDescriptionBuilder builder) {
+        final ResourceTransformationDescriptionBuilder resourceBuilder = builder.addChildResource(PATH_ELEMENT);
         resourceBuilder.getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.UNDEFINED, CORE_THREADS_AD)
                 .end();
