@@ -78,7 +78,7 @@ public abstract class AbstractCertificateLoginModuleTestCase {
     private static Logger LOGGER = Logger.getLogger(AbstractCertificateLoginModuleTestCase.class);
     protected static SecurityTraceLoggingServerSetupTask TRACE_SECURITY = new SecurityTraceLoggingServerSetupTask();
 
-    protected static final File WORK_DIR = new File("keystores-workdir");
+    protected static final File WORK_DIR = new File("target" + File.separatorChar + "test-classes" + File.separatorChar + "keystores-workdir");
     protected static final File SERVER_KEYSTORE_FILE = new File(WORK_DIR, SecurityTestConstants.SERVER_KEYSTORE);
     protected static final File SERVER_TRUSTSTORE_FILE = new File(WORK_DIR, SecurityTestConstants.SERVER_TRUSTSTORE);
     protected static final File CLIENT_KEYSTORE_FILE = new File(WORK_DIR, SecurityTestConstants.CLIENT_KEYSTORE);
