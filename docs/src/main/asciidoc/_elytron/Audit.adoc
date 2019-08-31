@@ -13,3 +13,137 @@ While in WildFly 14 there was only one attribute `synchronized`, which had influ
 * `autoflush` defines whether should be output stream flushed after every audit event (guarantees that the log message is passed to the operating system immediately)
 * `synchonized` defines whether should be file descriptor synchronized after every audit event (guarantees that all system buffers are synchronized with the underlying device)
 
+== Syslog Audit Logging
+
+Syslog audit logging logs security events to a syslog server using a transmission protocol.
+WildFly Elytron supports using UDP, TCP, or TCP with SSL, with the latter protocol requiring
+a ```SSLContext``` to be defined. When syslog audit logging is first defined, Elytron will send
+an ```INFORMATIONAL``` priority event to the defined syslog server containing the message
+"Elytron audit logging enabled with RFC format: <format>", where ```<format>``` is the
+RFC format that the audit logging handler has been defined with, defaulting to ```RFC5424```.
+If the given syslog server is not defined, resulting in Elytron being unable to send the
+message, then Elytron will keep track of the amount of attempts that sending a message has
+failed, up to a maximum defined by the ```reconnect-attempts``` parameter, before
+closing the endpoint and reporting an error. It is possible to define this value
+as infinite, by specifying ```-1```, in which case Elytron will never close the
+endpoint and so will always attempt to send audit messages despite previous failures.
+
+=== Required Parameters
+
+[cols="30,70"]
+|===
+|Parameter |Value
+
+| ```server-address```
+| String consisting of the IP address, or a name recognized by Java's InetAddress.getByName(), of the syslog server
+
+| ```port```
+| ```int``` of the listening port on the syslog server
+
+| ```host-name```
+| String of the host name that will be embedded into all events sent to the syslog server
+
+| ```ssl-context```
+| The ```SSLContext``` used to connect to the syslog server, only required if ```transport``` is set to ```SSL_TCP```
+
+|===
+
+=== Optional Parameters
+
+[cols="10,60,20,10"]
+|===
+|Parameter |Description |Possible Values |Default Value
+
+| ```transport```
+| The transport protocol to be used to connect to the syslog server
+| String of: ```UDP```, ```TCP```, or ```SSL_TCP```
+| ```TCP```
+
+| ```format```
+| The format that audit events should be recorded in
+| String of ```SIMPLE``` or ```JSON```
+| ```SIMPLE```
+
+| ```syslog-format```
+| The RFC format to be used for describing the audit event
+| String of ```RFC5424``` or ```RFC3164```
+| ```RFC5424```
+
+| ```reconnect-attempts```
+| The maximum number of times that elytron will attempt to send successive messages to a syslog server before closing the endpoint to disallow further attempts to send messages.
+| ```int``` of ```-1``` (infinite attempts) or higher
+| ```0```
+
+|===
+
+=== Defining Syslog Audit Logging
+
+Syslog audit logging can be defined under the ```elytron``` subsystem resource. Some
+examples syslog audit logging resources can be created with the following commands:
+
+==== Minimum Resource Definition
+
+Using the following command will generate a syslog audit logging resource that connects with
+TCP, records audit events in a simple format, and uses RFC5424 to describe the audit event.
+
+[source,options="nowrap"]
+---
+/subsystem=elytron/syslog-audit-log=syslog-example:add(
+    server-address=127.0.0.1,
+    port=10857,
+    host-name=localhost
+)
+---
+
+==== Default Format and Reconnect Attempts with UDP and RFC3164
+
+Using the following command will generate a syslog audit logging resource that connects with
+UDP, does not send any further messages to the syslog server if there is an error sending,
+records audit events in a simple format, and uses RFC3164 to describe the audit event.
+
+[source,options="nowrap"]
+---
+/subsystem=elytron/syslog-audit-log=syslog-example:add(
+    server-address=127.0.0.1,
+    port=10837,
+    host-name=localhost,
+    transport=UDP,
+    syslog-format=RFC3164
+)
+---
+
+==== Full UDP Definition with RFC5424 Explicitly Set and 10 Reconnect Attempts
+
+Using the following command will generate a syslog audit logging resource that connects with
+UDP, attempts to send messages 10 times if there is an error sending before no longer sending messages,
+records audit events in a simple format, and uses RFC5424 to describe the audit event.
+
+[source,options="nowrap"]
+---
+/subsystem=elytron/syslog-audit-log=syslog-example:add(
+    server-address=127.0.0.1,
+    port=10837,
+    host-name=localhost,
+    transport=UDP,
+    syslog-format=RFC5424,
+    reconnect-attempts=10
+)
+---
+
+==== Full UDP Definition with Infinite Reconnect Attempts and JSON Format
+
+Using the following command will generate a syslog audit logging resource that connects with
+UDP, always attempts to send messages despite previous failures sending messages, records audit
+events in a JSON format, and uses RFC5424 to describe the audit event.
+
+[source,options="nowrap"]
+---
+/subsystem=elytron/syslog-audit-log=syslog-example:add(
+    server-address=127.0.0.1,
+    port=10837,
+    host-name=localhost,
+    transport=UDP,
+    format=JSON,
+    reconnect-attempts=-1
+)
+---
