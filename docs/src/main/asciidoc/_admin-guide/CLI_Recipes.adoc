@@ -566,6 +566,11 @@ Do you confirm y/n :y
 ----
 NB: Once the command is executed, the CLI will reload the server and reconnect to it.
 
+This command can also obtain the certificates from the Let's Encrypt certificate authority
+by use of the --lets-encrypt parameter.
+Besides the mentioned workflow the user will be prompted to specify more information
+(eg: account key store, certificate authority account) to obtain the certificate from Let's Encrypt.
+
 * _security disable-ssl-management_: To disable SSL (elytron SSLContext) for the
 management interfaces. Type _help security disable-ssl-management_ for
 a complete description of the command.
@@ -573,6 +578,11 @@ a complete description of the command.
 * _security enable-ssl-http-server_: To enable SSL (elytron SSLContext) for the
 _undertow_ server. The same wizard as the _enable-ssl-management_ action is available.
 Type _help security enable-ssl-http-server_ for a complete description of the command.
+
+This command can also obtain the certificates from the Let's Encrypt certificate authority
+by use of the --lets-encrypt parameter.
+Besides the mentioned workflow the user will be prompted to specify more information
+(eg: account key store, certificate authority account) to obtain the certificate from Let's Encrypt.
 
 * _security disable-ssl-http-server_: To disable SSL (elytron SSLContext) for the
 _undertow_ server. Type _help security disable-ssl-http-server_ for a complete
