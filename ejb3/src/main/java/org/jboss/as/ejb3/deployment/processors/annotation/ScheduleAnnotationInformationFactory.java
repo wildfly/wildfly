@@ -94,7 +94,7 @@ public class ScheduleAnnotationInformationFactory extends ClassAnnotationInforma
                 timer.getScheduleExpression().second(value);
             }
         },
-        TIMEZONE("timezone", "") {
+        TIMEZONE("timezone", null) {
             protected void setString(final AutoTimer timer, final String value) {
                 timer.getScheduleExpression().timezone(value);
             }
