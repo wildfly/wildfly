@@ -22,6 +22,7 @@
 package org.jboss.as.naming.deployment;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -77,6 +78,7 @@ public class JndiNamingDependencyProcessor implements DeploymentUnitProcessor {
     }
 
     private static Set<ServiceName> installComponentJndiAggregatingServices(final ServiceTarget target, final Map<ServiceName, Set<ServiceName>> mappings) {
+        if (mappings == null) return Collections.emptySet();
         final Set<ServiceName> retVal = new HashSet<>();
         ServiceBuilder sb;
         ServiceName sn;
