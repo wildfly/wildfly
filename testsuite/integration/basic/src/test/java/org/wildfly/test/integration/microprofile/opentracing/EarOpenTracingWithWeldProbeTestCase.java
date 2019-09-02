@@ -51,7 +51,12 @@ public class EarOpenTracingWithWeldProbeTestCase extends AbstractEarOpenTracingT
         + "xsi:schemaLocation=\"http://java.sun.com/xml/ns/javaee\n"
         + "http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd\">\n<context-param>\n"
         + "<param-name>org.jboss.weld.development</param-name>\n"
-        + "<param-value>true</param-value>\n</context-param>\n"
+        + "<param-value>true</param-value>\n"
+        // [WELD-2595] explicitely exclude SmallRyeHealthReporter CDI bean otherwise Weld fails
+        // during deployment with a WELD-001504 because this class declares a final method.
+        + "<param-name>org.jboss.weld.probe.invocationMonitor.excludeType</param-name>\n"
+        + "<param-value>io.smallrye.health.SmallRyeHealthReporter</param-value>\n"
+        + "</context-param>\n"
         + "</web-app>";
 
     private static String WELD_PROPERTIES = "org.jboss.weld.probe.allowRemoteAddress=" + System.getProperty("node0")
