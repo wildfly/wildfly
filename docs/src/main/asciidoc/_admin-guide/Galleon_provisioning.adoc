@@ -117,6 +117,7 @@ Basic layers:
 
 * _cdi_: Support for cdi.
 * _datasources_: Support for datasources.
+* _ee-security_: Support for Java EE Security API
 * _jaxrs_: Support for jaxrs. Depends on _web-server_ (layer defined in the WildFly servlet feature-pack).
 * _jms-activemq_: Support for connections to a remote jms broker. 
 * _jpa_: Support for jpa (latest WildFly supported hibernate release).
